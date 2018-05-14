@@ -38,8 +38,7 @@ ChromeLayoutProvider* ChromeLayoutProvider::Get() {
 // static
 std::unique_ptr<views::LayoutProvider>
 ChromeLayoutProvider::CreateLayoutProvider() {
-  if (ui::MaterialDesignController::GetMode() ==
-      ui::MaterialDesignController::MATERIAL_REFRESH)
+  if (ui::MaterialDesignController::IsRefreshUi())
     return std::make_unique<MaterialRefreshLayoutProvider>();
   return ui::MaterialDesignController::IsSecondaryUiMaterial()
              ? std::make_unique<HarmonyLayoutProvider>()

@@ -30,7 +30,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const int mode = ui::MaterialDesignController::GetMode();
   const bool hybrid = mode == ui::MaterialDesignController::MATERIAL_HYBRID;
   const bool touch_optimized_material =
-      mode == ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
   const bool newer_material = ui::MaterialDesignController::IsNewerMaterialUi();
   switch (constant) {
     case BOOKMARK_BAR_HEIGHT:
@@ -61,7 +61,7 @@ int GetLayoutConstant(LayoutConstant constant) {
         return 0;
       return hybrid ? 3 : 1;
     case LOCATION_BAR_HEIGHT: {
-      constexpr int kHeights[] = {28, 32, 36, 28};
+      constexpr int kHeights[] = {28, 32, 36, 28, 36};
       return kHeights[mode];
     }
     case LOCATION_BAR_ICON_SIZE:
@@ -75,7 +75,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TAB_ALERT_INDICATOR_ICON_WIDTH:
       return touch_optimized_material ? 12 : 16;
     case TAB_HEIGHT: {
-      constexpr int kTabHeight[] = {29, 33, 41, 36};
+      constexpr int kTabHeight[] = {29, 33, 41, 36, 41};
       return kTabHeight[mode];
     }
     case TAB_PRE_TITLE_PADDING:
@@ -87,11 +87,11 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TAB_STANDARD_WIDTH:
       return touch_optimized_material ? 245 : 193;
     case TOOLBAR_ELEMENT_PADDING: {
-      constexpr int kPadding[] = {0, 8, 0, 4};
+      constexpr int kPadding[] = {0, 8, 0, 4, 0};
       return kPadding[mode];
     }
     case TOOLBAR_STANDARD_SPACING: {
-      constexpr int kSpacings[] = {4, 8, 12, 8};
+      constexpr int kSpacings[] = {4, 8, 12, 8, 12};
       return kSpacings[mode];
     }
     default:
@@ -108,7 +108,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
       // TODO(pkasting): This should disappear; the horizontal portion should
       // be computed in tab.cc, and the vertical portion become a standalone
       // value (that should perhaps be 0 in Refresh).
-      constexpr int kTabHorizontalInset[] = {16, 18, 24, 16};
+      constexpr int kTabHorizontalInset[] = {16, 18, 24, 16, 16};
       return gfx::Insets(1, kTabHorizontalInset[mode]);
     }
     case TOOLBAR_BUTTON:
@@ -118,7 +118,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     case TOOLBAR_ACTION_VIEW: {
       // TODO(afakhry): Unify all toolbar button sizes on all platforms.
       // https://crbug.com/822967.
-      constexpr int kToolbarActionsInsets[] = {2, 4, 10, 2};
+      constexpr int kToolbarActionsInsets[] = {2, 4, 10, 2, 10};
       return gfx::Insets(kToolbarActionsInsets[mode]);
     }
   }
@@ -130,8 +130,11 @@ gfx::Size GetLayoutSize(LayoutSize size, bool is_incognito) {
   const int mode = ui::MaterialDesignController::GetMode();
   switch (size) {
     case NEW_TAB_BUTTON: {
-      const gfx::Size sizes[] = {
-          {36, 18}, {39, 21}, {(is_incognito ? 42 : 24), 24}, {28, 28}};
+      const gfx::Size sizes[] = {{36, 18},
+                                 {39, 21},
+                                 {(is_incognito ? 42 : 24), 24},
+                                 {28, 28},
+                                 {28, 28}};
       return sizes[mode];
     }
   }

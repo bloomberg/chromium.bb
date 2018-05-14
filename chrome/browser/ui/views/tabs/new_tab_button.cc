@@ -245,7 +245,7 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
   // Fill.
   SkPath fill, stroke;
   const bool is_touch_ui = MD::IsTouchOptimizedUiEnabled();
-  if (MD::GetMode() != MD::MATERIAL_REFRESH) {
+  if (!MD::IsRefreshUi()) {
     fill = is_touch_ui ? GetTouchOptimizedButtonPath(0, scale, false, true)
                        : GetNonTouchOptimizedButtonPath(0, visible_height,
                                                         scale, false, true);
@@ -389,7 +389,7 @@ void NewTabButton::GetBorderPath(float button_y,
   const int button_height =
       GetLayoutSize(NEW_TAB_BUTTON, is_incognito_).height();
 
-  if (MD::GetMode() == MD::MATERIAL_REFRESH) {
+  if (MD::IsRefreshUi()) {
     path->addRect(0, extend_to_top ? 0 : button_y, width() * scale,
                   button_y + button_height * scale);
     return;

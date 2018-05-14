@@ -108,8 +108,7 @@ const double kSelectedTabThrobScale = 0.95 - kSelectedTabOpacity;
 float GetTabEndcapWidth() {
   // TODO(pkasting): This should become a member function and vary with
   // GetCornerRadius().
-  return GetLayoutInsets(TAB).left() -
-         (MD::GetMode() == MD::MATERIAL_REFRESH ? 0.0f : 0.5f);
+  return GetLayoutInsets(TAB).left() - (MD::IsRefreshUi() ? 0.0f : 0.5f);
 }
 
 void DrawHighlight(gfx::Canvas* canvas,
@@ -147,7 +146,7 @@ gfx::Path GetInteriorPath(float scale,
   // width, and to implement cases where |horizontal_inset| != 0.
   gfx::Path right_path;
   gfx::Path left_path;
-  if (MD::GetMode() == MD::MATERIAL_REFRESH) {
+  if (MD::IsRefreshUi()) {
     const float radius = (endcap_width / 2) * scale;
 
     const float stroke_thickness = TabStrip::ShouldDrawStrokes() ? 1 : 0;
@@ -240,7 +239,7 @@ gfx::Path GetBorderPath(float scale,
   path.moveTo(0, bottom);
   path.rLineTo(0, -1);
 
-  if (MD::GetMode() == MD::MATERIAL_REFRESH) {
+  if (MD::IsRefreshUi()) {
     const float radius = (endcap_width / 2) * scale;
     const float bottom_radius = radius - stroke_thickness;
     const float top_radius = radius + stroke_thickness;
@@ -432,7 +431,7 @@ void Tab::ActiveStateChanged() {
   }
   OnButtonColorMaybeChanged();
   alert_indicator_button_->UpdateEnabledForMuteToggle();
-  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+  if (MD::IsRefreshUi())
     RepaintSubsequentTab();
   Layout();
 }
@@ -924,7 +923,7 @@ void Tab::OnMouseCaptureLost() {
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   hover_controller_.Show(views::GlowHoverController::SUBTLE);
-  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+  if (MD::IsRefreshUi())
     RepaintSubsequentTab();
   Layout();
 }
@@ -936,7 +935,7 @@ void Tab::OnMouseMoved(const ui::MouseEvent& event) {
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
   hover_controller_.Hide();
-  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+  if (MD::IsRefreshUi())
     RepaintSubsequentTab();
   Layout();
 }
@@ -1194,7 +1193,7 @@ void Tab::PaintTabBackgroundStroke(gfx::Canvas* canvas,
 }
 
 void Tab::PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color) {
-  if (MD::GetMode() != MD::MATERIAL_REFRESH)
+  if (!MD::IsRefreshUi())
     return;
 
   // If the tab to the left is active, the separator on this tab should not be

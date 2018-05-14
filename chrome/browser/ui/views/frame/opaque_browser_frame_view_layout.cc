@@ -320,7 +320,7 @@ int OpaqueBrowserFrameViewLayout::TabStripCaptionSpacing() const {
   // ensure the window remains draggable, which is sufficient padding to the
   // other tabstrip contents.
   using MD = ui::MaterialDesignController;
-  if (MD::GetMode() == MD::MATERIAL_REFRESH)
+  if (MD::IsRefreshUi())
     return 0;
 
   return (has_trailing_buttons_ && IsTitleBarCondensed()) ?

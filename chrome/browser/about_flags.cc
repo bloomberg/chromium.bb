@@ -482,7 +482,10 @@ const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
     {flag_descriptions::kTopChromeMdMaterialTouchOptimized,
      switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized},
     {flag_descriptions::kTopChromeMdMaterialRefresh, switches::kTopChromeMD,
-     switches::kTopChromeMDMaterialRefresh}};
+     switches::kTopChromeMDMaterialRefresh},
+    {flag_descriptions::kTopChromeMdMaterialRefreshTouchOptimized,
+     switches::kTopChromeMD,
+     switches::kTopChromeMDMaterialRefreshTouchOptimized}};
 
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kAshShelfColorChoices[] = {
