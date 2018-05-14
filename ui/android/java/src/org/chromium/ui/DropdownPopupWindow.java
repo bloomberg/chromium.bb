@@ -29,7 +29,7 @@ public class DropdownPopupWindow {
      * @param anchorView Popup view to be anchored.
      */
     public DropdownPopupWindow(Context context, View anchorView) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             mPopup = new DropdownPopupWindowImpl(context, anchorView);
         } else {
             mPopup = new DropdownPopupWindowJellyBean(context, anchorView);
