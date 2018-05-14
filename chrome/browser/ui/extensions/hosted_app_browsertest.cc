@@ -12,6 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
@@ -59,9 +60,11 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/test/test_extension_dir.h"
+#include "net/base/host_port_pair.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "ui/base/clipboard/clipboard.h"
 
 #if defined(OS_MACOSX)
@@ -76,6 +79,7 @@ namespace {
 
 constexpr const char kExampleURL[] = "http://example.org/";
 constexpr const char kExampleURL2[] = "http://example.com/";
+constexpr const char kImagePath[] = "/ssl/google_files/logo.gif";
 constexpr const char kAppDotComManifest[] =
     "{"
     "  \"name\": \"Hosted App\","
@@ -163,6 +167,44 @@ void CheckMixedContentFailedToLoad(Browser* browser) {
       browser->tab_strip_model()->GetActiveWebContents(),
       ssl_test_util::CertError::NONE, security_state::SECURE,
       ssl_test_util::AuthState::NONE);
+}
+
+// Returns a path string that points to a page with the
+// "REPLACE_WITH_HOST_AND_PORT" string replaced with |host_port_pair|.
+// The page at |original_path| should contain the string
+// "REPLACE_WITH_HOST_AND_PORT".
+std::string GetPathWithHostAndPortReplaced(const std::string& original_path,
+                                           net::HostPortPair host_port_pair) {
+  base::StringPairs replacement_text = {
+      {"REPLACE_WITH_HOST_AND_PORT", host_port_pair.ToString()}};
+
+  std::string path_with_replaced_text;
+  net::test_server::GetFilePathWithReplacements(original_path, replacement_text,
+                                                &path_with_replaced_text);
+
+  return path_with_replaced_text;
+}
+
+// Tries to load an image at |image_url| and returns whether or not it loaded
+// successfully.
+//
+// The image could fail to load because it was blocked from being loaded or
+// because |image_url| doesn't exist. Therefore, it failing to load is not a
+// reliable indicator of insecure content being blocked. Users of the function
+// should check the state of security indicators.
+bool TryToLoadImage(const content::ToRenderFrameHost& adapter,
+                    const GURL& image_url) {
+  const std::string script = base::StringPrintf(
+      "let i = document.createElement('img');"
+      "document.body.appendChild(i);"
+      "i.addEventListener('load', () => domAutomationController.send(true));"
+      "i.addEventListener('error', () => domAutomationController.send(false));"
+      "i.src = '%s';",
+      image_url.spec().c_str());
+
+  bool image_loaded;
+  CHECK(content::ExecuteScriptAndExtractBool(adapter, script, &image_loaded));
+  return image_loaded;
 }
 
 }  // namespace
@@ -279,9 +321,29 @@ class HostedAppTest
     return https_server()->GetURL("app.com", "/ssl/google.html");
   }
 
+  GURL GetSecureIFrameAppURL() {
+    net::HostPortPair host_port_pair = net::HostPortPair::FromURL(
+        https_server()->GetURL("foo.com", "/simple.html"));
+    const std::string path = GetPathWithHostAndPortReplaced(
+        "/ssl/page_with_cross_site_frame.html", host_port_pair);
+
+    return https_server_.GetURL("app.com", path);
+  }
+
   void InstallMixedContentPWA() { return InstallPWA(GetMixedContentAppURL()); }
 
+  void InstallMixedContentIFramePWA() {
+    net::HostPortPair host_port_pair = net::HostPortPair::FromURL(
+        https_server()->GetURL("foo.com", "/simple.html"));
+    const std::string path = GetPathWithHostAndPortReplaced(
+        "/ssl/page_displays_insecure_content_in_iframe.html", host_port_pair);
+
+    InstallPWA(https_server()->GetURL("app.com", path));
+  }
+
   void InstallSecurePWA() { return InstallPWA(GetSecureAppURL()); }
+
+  void InstallSecureIFramePWA() { return InstallPWA(GetSecureIFrameAppURL()); }
 
   void InstallPWA(const GURL& app_url) {
     WebApplicationInfo web_app_info;
@@ -566,17 +628,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest,
   // Load mixed content; now the location bar should be shown.
   content::WebContents* web_contents =
       app_browser_->tab_strip_model()->GetActiveWebContents();
-  ssl_test_util::SecurityStateWebContentsObserver observer(web_contents);
-  ASSERT_TRUE(content::ExecuteScript(
-      web_contents,
-      base::StringPrintf("let i = document.createElement('img');"
-                         "i.src = '%s';"
-                         "document.body.appendChild(i);",
-                         embedded_test_server()
-                             ->GetURL("foo.com", "/ssl/google_files/logo.gif")
-                             .spec()
-                             .c_str())));
-  observer.WaitForDidChangeVisibleSecurityState();
+  EXPECT_TRUE(TryToLoadImage(
+      web_contents, embedded_test_server()->GetURL("foo.com", kImagePath)));
   EXPECT_TRUE(app_browser_->hosted_app_controller()->ShouldShowLocationBar());
 }
 
@@ -1013,6 +1066,62 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
   // After reloading, mixed content should fail to load, because the WebContents
   // is now in a PWA window.
   CheckMixedContentFailedToLoad(app_browser);
+}
+
+// Tests that mixed content is not loaded inside iframes in PWA windows.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, IFrameMixedContentInPWA) {
+  ASSERT_TRUE(https_server()->Start());
+
+  InstallMixedContentIFramePWA();
+
+  CheckMixedContentFailedToLoad(app_browser_);
+}
+
+// Tests that iframes can't dynamically load mixed content in a PWA window, when
+// the iframe was created in a regular tab.
+IN_PROC_BROWSER_TEST_P(
+    HostedAppPWAOnlyTest,
+    IFrameDynamicMixedContentInPWAReparentWebContentsIntoAppBrowser) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecureIFramePWA();
+
+  NavigateToURLAndWait(browser(), GetSecureIFrameAppURL());
+  CheckMixedContentFailedToLoad(browser());
+
+  app_browser_ = ReparentWebContentsIntoAppBrowser(
+      browser()->tab_strip_model()->GetActiveWebContents(), app_);
+  CheckMixedContentFailedToLoad(app_browser_);
+
+  content::RenderFrameHost* main_frame =
+      app_browser_->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  content::RenderFrameHost* iframe = content::ChildFrameAt(main_frame, 0);
+  EXPECT_FALSE(TryToLoadImage(
+      iframe, embedded_test_server()->GetURL("foo.com", kImagePath)));
+
+  CheckMixedContentFailedToLoad(app_browser_);
+}
+
+// Tests that iframes can dynamically load mixed content in a regular browser
+// tab, when the iframe was created in a PWA window.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       IFrameDynamicMixedContentInPWAOpenInChrome) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecureIFramePWA();
+
+  chrome::OpenInChrome(app_browser_);
+
+  content::RenderFrameHost* main_frame =
+      browser()->tab_strip_model()->GetActiveWebContents()->GetMainFrame();
+  content::RenderFrameHost* iframe = content::ChildFrameAt(main_frame, 0);
+
+  EXPECT_TRUE(TryToLoadImage(
+      iframe, embedded_test_server()->GetURL("foo.com", kImagePath)));
+
+  CheckMixedContentLoaded(browser());
 }
 
 // Check that uninstalling a PWA with a window opened doesn't crash.
