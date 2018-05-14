@@ -290,6 +290,7 @@ const char kHelpSubPage[] = "help";
 const char kInternetSubPage[] = "internet";
 const char kNetworkDetailSubPage[] = "networkDetail";
 const char kPowerSubPage[] = "power";
+const char kSmbSharesPage[] = "smbShares";
 const char kStylusSubPage[] = "stylus";
 #else
 const char kCreateProfileSubPage[] = "createProfile";

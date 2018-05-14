@@ -281,6 +281,7 @@ extern const char kHelpSubPage[];
 extern const char kInternetSubPage[];
 extern const char kNetworkDetailSubPage[];
 extern const char kPowerSubPage[];
+extern const char kSmbSharesPage[];
 extern const char kStylusSubPage[];
 #endif
 #if defined(OS_WIN)
