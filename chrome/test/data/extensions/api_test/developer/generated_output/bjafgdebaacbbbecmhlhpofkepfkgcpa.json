@@ -30,7 +30,7 @@
    "name": "My extension 3",
    "offlineEnabled": false,
    "runOnAllUrls": {
-      "isActive": false,
+      "isActive": true,
       "isEnabled": false
    },
    "runtimeErrors": [  ],

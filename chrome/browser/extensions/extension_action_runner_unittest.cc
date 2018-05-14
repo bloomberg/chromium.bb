@@ -116,9 +116,6 @@ const Extension* ExtensionActionRunnerUnitTest::AddExtension() {
 
   ExtensionRegistry::Get(profile())->AddEnabled(extension_);
   PermissionsUpdater(profile()).InitializePermissions(extension_.get());
-
-  ScriptingPermissionsModifier(profile(), extension_.get())
-      .SetAllowedOnAllUrls(false);
   return extension_.get();
 }
 

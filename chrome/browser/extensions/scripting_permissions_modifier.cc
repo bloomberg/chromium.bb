@@ -66,42 +66,6 @@ void SetAllowedOnAllUrlsPref(bool by_user,
   }
 }
 
-// Partitions |permissions| into two sets of permissions, placing any
-// all-hosts-like permissions into |withheld_permissions_out| and the rest
-// into |granted_permissions_out|.
-void PartitionPermissions(
-    const PermissionSet& permissions,
-    std::unique_ptr<const PermissionSet>* granted_permissions_out,
-    std::unique_ptr<const PermissionSet>* withheld_permissions_out) {
-  auto segregate_url_permissions = [](const URLPatternSet& patterns,
-                                      URLPatternSet* granted,
-                                      URLPatternSet* withheld) {
-    for (const URLPattern& pattern : patterns) {
-      if (pattern.MatchesEffectiveTld())
-        withheld->AddPattern(pattern);
-      else
-        granted->AddPattern(pattern);
-    }
-  };
-
-  URLPatternSet granted_explicit_hosts;
-  URLPatternSet withheld_explicit_hosts;
-  URLPatternSet granted_scriptable_hosts;
-  URLPatternSet withheld_scriptable_hosts;
-  segregate_url_permissions(permissions.explicit_hosts(),
-                            &granted_explicit_hosts, &withheld_explicit_hosts);
-  segregate_url_permissions(permissions.scriptable_hosts(),
-                            &granted_scriptable_hosts,
-                            &withheld_scriptable_hosts);
-
-  granted_permissions_out->reset(
-      new PermissionSet(permissions.apis(), permissions.manifest_permissions(),
-                        granted_explicit_hosts, granted_scriptable_hosts));
-  withheld_permissions_out->reset(
-      new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
-                        withheld_explicit_hosts, withheld_scriptable_hosts));
-}
-
 }  // namespace
 
 ScriptingPermissionsModifier::ScriptingPermissionsModifier(
@@ -134,6 +98,11 @@ void ScriptingPermissionsModifier::SetAllowedOnAllUrlsForSync(
   SetAllowedOnAllUrlsPref(true, allowed, id, ExtensionPrefs::Get(context));
 }
 
+// static
+bool ScriptingPermissionsModifier::DefaultAllowedOnAllUrls() {
+  return !base::FeatureList::IsEnabled(features::kRuntimeHostPermissions);
+}
+
 void ScriptingPermissionsModifier::SetAllowedOnAllUrls(bool allowed) {
   if (ExtensionMustBeAllowedOnAllUrls(*extension_)) {
     CleanUpPrefsIfNecessary();
@@ -163,9 +132,11 @@ bool ScriptingPermissionsModifier::IsAllowedOnAllUrls() {
   bool allowed = false;
   if (!extension_prefs_->ReadPrefAsBoolean(
           extension_->id(), kExtensionAllowedOnAllUrlsPrefName, &allowed)) {
-    // If there is no value present, we make one, defaulting it to true -
-    // extensions are granted permissions until revoked.
-    allowed = true;
+    // If there is no value present, we make one, defaulting it to the value of
+    // the features::kRuntimeHostPermissions feature. If the feature is
+    // enabled, then the extension does not have permission to access all
+    // urls by default.
+    allowed = DefaultAllowedOnAllUrls();
     SetAllowedOnAllUrlsPref(false, allowed, extension_->id(), extension_prefs_);
   }
   return allowed;
@@ -214,30 +185,20 @@ void ScriptingPermissionsModifier::GrantHostPermission(const GURL& url) {
 
 bool ScriptingPermissionsModifier::HasGrantedHostPermission(const GURL& url) {
   GURL origin = url.GetOrigin();
-  // If the extension doesn't have access to the host, it clearly hasn't been
-  // granted permission.
+  const PermissionSet& required_permissions =
+      PermissionsParser::GetRequiredPermissions(extension_.get());
   if (!extension_->permissions_data()
            ->active_permissions()
            .effective_hosts()
-           .MatchesURL(origin)) {
+           .MatchesURL(origin))
     return false;
-  }
-
-  // Check which permissions would have been withheld. If access to the host
-  // would have otherwise been withheld, then we know that access has been
-  // explicitly granted.
-  // TODO(devlin): This seems wrong, and won't work with trying to grant or
-  // withhold e.g. optional permissions. It's also overly expensive.
-  const PermissionSet& required_permissions =
-      PermissionsParser::GetRequiredPermissions(extension_.get());
   std::unique_ptr<const PermissionSet> granted_permissions;
   std::unique_ptr<const PermissionSet> withheld_permissions;
-  PartitionPermissions(required_permissions, &granted_permissions,
-                       &withheld_permissions);
+  WithholdPermissions(required_permissions, &granted_permissions,
+                      &withheld_permissions, true);
   if (!granted_permissions->effective_hosts().MatchesURL(origin) &&
-      withheld_permissions->effective_hosts().MatchesURL(origin)) {
+      withheld_permissions->effective_hosts().MatchesURL(origin))
     return true;
-  }
 
   return false;
 }
@@ -251,10 +212,6 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
   URLPatternSet scriptable_hosts;
   const PermissionSet& active_permissions =
       extension_->permissions_data()->active_permissions();
-
-  // We know the host permission was granted, but it may only be requested in
-  // either explicit or scriptable hosts. Only remove it if it is already
-  // present.
   if (active_permissions.explicit_hosts().MatchesURL(url))
     explicit_hosts.AddOrigin(UserScript::ValidUserScriptSchemes(), origin);
   if (active_permissions.scriptable_hosts().MatchesURL(url))
@@ -271,9 +228,20 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
 void ScriptingPermissionsModifier::WithholdPermissions(
     const PermissionSet& permissions,
     std::unique_ptr<const PermissionSet>* granted_permissions_out,
-    std::unique_ptr<const PermissionSet>* withheld_permissions_out) {
-  bool should_withhold =
-      CanAffectExtension(permissions) && !IsAllowedOnAllUrls();
+    std::unique_ptr<const PermissionSet>* withheld_permissions_out,
+    bool use_initial_state) {
+  bool should_withhold = false;
+  if (CanAffectExtension(permissions)) {
+    if (use_initial_state) {
+      // If the user ever set the extension's "all-urls" preference, then the
+      // initial state was withheld. This is important, since the all-urls
+      // permission should be shown as revokable. Otherwise, default to whatever
+      // the system setting is.
+      should_withhold = HasSetAllowedOnAllUrls() || !DefaultAllowedOnAllUrls();
+    } else {
+      should_withhold = !IsAllowedOnAllUrls();
+    }
+  }
 
   if (!should_withhold) {
     *granted_permissions_out = permissions.Clone();
@@ -281,32 +249,33 @@ void ScriptingPermissionsModifier::WithholdPermissions(
     return;
   }
 
-  PartitionPermissions(permissions, granted_permissions_out,
-                       withheld_permissions_out);
-}
+  auto segregate_url_permissions = [](const URLPatternSet& patterns,
+                                      URLPatternSet* granted,
+                                      URLPatternSet* withheld) {
+    for (const URLPattern& pattern : patterns) {
+      if (pattern.MatchesEffectiveTld())
+        withheld->AddPattern(pattern);
+      else
+        granted->AddPattern(pattern);
+    }
+  };
 
-std::unique_ptr<const PermissionSet>
-ScriptingPermissionsModifier::GetRevokablePermissions() {
-  // No additional revokable permissions for extensions that must be allowed
-  // to run everywhere.
-  if (ExtensionMustBeAllowedOnAllUrls(*extension_))
-    return nullptr;
+  URLPatternSet granted_explicit_hosts;
+  URLPatternSet withheld_explicit_hosts;
+  URLPatternSet granted_scriptable_hosts;
+  URLPatternSet withheld_scriptable_hosts;
+  segregate_url_permissions(permissions.explicit_hosts(),
+                            &granted_explicit_hosts, &withheld_explicit_hosts);
+  segregate_url_permissions(permissions.scriptable_hosts(),
+                            &granted_scriptable_hosts,
+                            &withheld_scriptable_hosts);
 
-  bool experiment_is_enabled =
-      base::FeatureList::IsEnabled(features::kRuntimeHostPermissions);
-  // Check for revokable permissions if either the experiment is enabled or if
-  // the extension has been affected in the past.
-  // TODO(devlin): This should only rely on the experiment state.
-  // https://crbug.com/841465
-  if (!experiment_is_enabled && !HasAffectedExtension())
-    return nullptr;
-
-  std::unique_ptr<const PermissionSet> granted_permissions;
-  std::unique_ptr<const PermissionSet> withheld_permissions;
-  PartitionPermissions(extension_->permissions_data()->active_permissions(),
-                       &granted_permissions, &withheld_permissions);
-
-  return withheld_permissions;
+  granted_permissions_out->reset(
+      new PermissionSet(permissions.apis(), permissions.manifest_permissions(),
+                        granted_explicit_hosts, granted_scriptable_hosts));
+  withheld_permissions_out->reset(
+      new PermissionSet(APIPermissionSet(), ManifestPermissionSet(),
+                        withheld_explicit_hosts, withheld_scriptable_hosts));
 }
 
 void ScriptingPermissionsModifier::GrantWithheldImpliedAllHosts() {

@@ -129,6 +129,42 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
   run_loop.Run();
 }
 
+TEST_F(ExtensionInstallPromptUnitTest, PromptShowsWithheldPermissions) {
+  // Enable features::kRuntimeHostPermissions so that <all_hosts> permissions
+  // get withheld.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+
+  scoped_refptr<const Extension> extension =
+      ExtensionBuilder()
+          .SetManifest(
+              DictionaryBuilder()
+                  .Set("name", "foo")
+                  .Set("version", "1.0")
+                  .Set("manifest_version", 2)
+                  .Set("description", "Random Ext")
+                  .Set("permissions", ListBuilder()
+                                          .Append("http://*/*")
+                                          .Append("http://www.google.com/")
+                                          .Append("tabs")
+                                          .Build())
+                  .Build())
+          .Build();
+
+  content::TestWebContentsFactory factory;
+  ExtensionInstallPrompt prompt(factory.CreateWebContents(profile()));
+  base::RunLoop run_loop;
+
+  // We expect <all_hosts> to be withheld, but http://www.google.com/ and tabs
+  // permissions should be granted as regular permissions.
+  prompt.ShowDialog(
+      ExtensionInstallPrompt::DoneCallback(), extension.get(), nullptr,
+      base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
+                 2u,    // |regular_permissions_count|.
+                 1u));  // |withheld_permissions_count|.
+  run_loop.Run();
+}
+
 TEST_F(ExtensionInstallPromptUnitTest,
        DelegatedPromptShowsOptionalPermissions) {
   scoped_refptr<const Extension> extension =
