@@ -66,11 +66,13 @@ void NonMainThreadScheduler::PostNonNestableIdleTask(
       base::BindOnce(&NonMainThreadScheduler::RunIdleTask, std::move(task)));
 }
 
-base::SingleThreadTaskRunner* NonMainThreadScheduler::V8TaskRunner() {
-  return v8_task_runner_.get();
+scoped_refptr<base::SingleThreadTaskRunner>
+NonMainThreadScheduler::V8TaskRunner() {
+  return v8_task_runner_;
 }
 
-base::SingleThreadTaskRunner* NonMainThreadScheduler::CompositorTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+NonMainThreadScheduler::CompositorTaskRunner() {
   return nullptr;
 }
 

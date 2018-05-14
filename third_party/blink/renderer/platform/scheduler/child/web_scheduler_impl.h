@@ -38,8 +38,8 @@ class PLATFORM_EXPORT WebSchedulerImpl : public ThreadScheduler {
                     WebThread::IdleTask task) override;
   void PostNonNestableIdleTask(const base::Location& location,
                                WebThread::IdleTask task) override;
-  base::SingleThreadTaskRunner* V8TaskRunner() override;
-  base::SingleThreadTaskRunner* CompositorTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   std::unique_ptr<PageScheduler> CreatePageScheduler(
       PageScheduler::Delegate*) override;
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override

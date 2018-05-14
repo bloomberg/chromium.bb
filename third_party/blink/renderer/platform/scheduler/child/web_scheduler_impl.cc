@@ -60,11 +60,12 @@ void WebSchedulerImpl::PostNonNestableIdleTask(
       base::BindOnce(&WebSchedulerImpl::RunIdleTask, std::move(task)));
 }
 
-base::SingleThreadTaskRunner* WebSchedulerImpl::V8TaskRunner() {
-  return v8_task_runner_.get();
+scoped_refptr<base::SingleThreadTaskRunner> WebSchedulerImpl::V8TaskRunner() {
+  return v8_task_runner_;
 }
 
-base::SingleThreadTaskRunner* WebSchedulerImpl::CompositorTaskRunner() {
+scoped_refptr<base::SingleThreadTaskRunner>
+WebSchedulerImpl::CompositorTaskRunner() {
   return nullptr;
 }
 

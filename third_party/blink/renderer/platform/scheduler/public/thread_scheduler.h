@@ -59,12 +59,13 @@ class PLATFORM_EXPORT ThreadScheduler {
                                        WebThread::IdleTask) = 0;
 
   // Returns a task runner for kV8 tasks. Can be called from any thread.
-  virtual base::SingleThreadTaskRunner* V8TaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() = 0;
 
   // Returns a task runner for compositor tasks. This is intended only to be
   // used by specific animation and rendering related tasks (e.g. animated GIFS)
   // and should not generally be used.
-  virtual base::SingleThreadTaskRunner* CompositorTaskRunner() = 0;
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  CompositorTaskRunner() = 0;
 
   // Creates a new PageScheduler for a given Page. Must be called from the
   // associated WebThread.
