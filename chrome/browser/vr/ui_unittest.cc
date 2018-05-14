@@ -978,9 +978,10 @@ TEST_F(UiTest, OmniboxSuggestionNavigates) {
       base::string16(), base::string16(), ACMatchClassifications(),
       ACMatchClassifications(), AutocompleteMatch::Type::VOICE_SUGGEST, gurl,
       base::string16(), base::string16()));
+  OnBeginFrame();
 
   // Let the omnibox fade in.
-  RunForMs(100);
+  RunForMs(200);
 
   UiElement* suggestions = scene_->GetUiElementByName(kOmniboxSuggestions);
   ASSERT_NE(suggestions, nullptr);

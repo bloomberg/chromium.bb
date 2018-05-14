@@ -16,7 +16,7 @@ PagedGridLayout::PagedGridLayout(size_t rows,
 
 PagedGridLayout::~PagedGridLayout() {}
 
-void PagedGridLayout::LayOutChildren() {
+void PagedGridLayout::LayOutNonContributingChildren() {
   current_page_ = NumPages() > 0 ? std::min(NumPages() - 1, current_page_) : 0;
 
   gfx::SizeF page_size(columns_ * tile_size_.width() + (columns_ - 1) * margin_,

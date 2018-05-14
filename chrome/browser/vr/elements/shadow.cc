@@ -137,7 +137,7 @@ void Shadow::Render(UiElementRenderer* renderer,
       computed_opacity() * kShadowOpacity * intensity_, corner_radius());
 }
 
-void Shadow::LayOutChildren() {
+void Shadow::LayOutContributingChildren() {
   DCHECK(shadow_caster_ || !children().empty());
   UiElement* shadow_caster =
       shadow_caster_ ? shadow_caster_ : children().back().get();

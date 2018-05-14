@@ -63,7 +63,7 @@ void PagedScrollView::NotifyClientFloatAnimated(
   }
 }
 
-void PagedScrollView::LayOutChildren() {
+void PagedScrollView::LayOutNonContributingChildren() {
   scrolling_element_->SetLayoutOffset(
       (scrolling_element_->size().width() - page_width_) * 0.5f +
           scroll_offset_ + scroll_drag_delta_,

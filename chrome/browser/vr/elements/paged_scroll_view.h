@@ -28,7 +28,7 @@ class PagedScrollView : public UiElement {
   void NotifyClientFloatAnimated(float value,
                                  int target_property_id,
                                  cc::KeyframeModel* keyframe_model) override;
-  void LayOutChildren() override;
+  void LayOutNonContributingChildren() override;
 
   size_t current_page() const { return current_page_; }
   void set_margin(float margin) { margin_ = margin; }

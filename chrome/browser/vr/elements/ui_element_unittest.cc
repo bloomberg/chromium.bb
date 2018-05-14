@@ -30,7 +30,7 @@ TEST(UiElement, BoundsContainChildren) {
   auto* c1_ptr = c1.get();
   parent->AddChild(std::move(c1));
 
-  parent->DoLayOutChildren();
+  parent->SizeAndLayOut();
   EXPECT_RECT_NEAR(gfx::RectF(2.5f, 2.5f, 3.2f, 3.4f),
                    gfx::RectF(parent->local_origin(), parent->size()),
                    kEpsilon);
@@ -41,7 +41,7 @@ TEST(UiElement, BoundsContainChildren) {
   c2->SetTranslate(-3.0f, 0.0f, 0.0f);
   parent->AddChild(std::move(c2));
 
-  parent->DoLayOutChildren();
+  parent->SizeAndLayOut();
   EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 1.0f, 9.2f, 6.4f),
                    gfx::RectF(parent->local_origin(), parent->size()),
                    kEpsilon);
@@ -51,7 +51,7 @@ TEST(UiElement, BoundsContainChildren) {
   c3->SetTranslate(0.0f, -2.0f, 0.0f);
   parent->AddChild(std::move(c3));
 
-  parent->DoLayOutChildren();
+  parent->SizeAndLayOut();
   EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 0.5f, 9.2f, 7.4f),
                    gfx::RectF(parent->local_origin(), parent->size()),
                    kEpsilon);
@@ -63,7 +63,7 @@ TEST(UiElement, BoundsContainChildren) {
   parent->AddChild(std::move(c4));
 
   // We expect no change due to an invisible child.
-  parent->DoLayOutChildren();
+  parent->SizeAndLayOut();
   EXPECT_RECT_NEAR(gfx::RectF(-0.5f, 0.5f, 9.2f, 7.4f),
                    gfx::RectF(parent->local_origin(), parent->size()),
                    kEpsilon);
@@ -80,7 +80,7 @@ TEST(UiElement, BoundsContainChildren) {
   auto* anchored_ptr = anchored.get();
   grand_parent->AddChild(std::move(anchored));
 
-  grand_parent->DoLayOutChildren();
+  grand_parent->SizeAndLayOut();
   EXPECT_RECT_NEAR(
       gfx::RectF(-0.5f, 0.5f, 9.4f, 7.8f),
       gfx::RectF(grand_parent->local_origin(), grand_parent->size()), kEpsilon);
@@ -130,11 +130,11 @@ TEST(UiElement, IgnoringAsymmetricPadding) {
   d->SetSize(0.5f, 0.5f);
 
   c->AddChild(std::move(d));
-  c->DoLayOutChildren();
+  c->SizeAndLayOut();
   b->AddChild(std::move(c));
-  b->DoLayOutChildren();
+  b->SizeAndLayOut();
   a->AddChild(std::move(b));
-  a->DoLayOutChildren();
+  a->SizeAndLayOut();
 
   a->UpdateWorldSpaceTransform(false);
 
@@ -154,6 +154,7 @@ TEST(UiElement, BoundsContainPaddingWithAnchoring) {
   child->SetSize(0.5, 0.5);
   child->set_padding(2.0, 2.0);
   child->set_bounds_contain_padding(false);
+  child->set_bounds_contain_children(true);
 
   auto* child_ptr = child.get();
 
@@ -171,9 +172,10 @@ TEST(UiElement, BoundsContainPaddingWithAnchoring) {
   };
 
   for (auto test_case : test_cases) {
+    child_ptr->set_contributes_to_parent_bounds(false);
     child_ptr->set_x_anchoring(test_case.x_anchoring);
     child_ptr->set_y_anchoring(test_case.y_anchoring);
-    parent->DoLayOutChildren();
+    parent->SizeAndLayOut();
     gfx::Point3F p;
     child_ptr->LocalTransform().TransformPoint(&p);
     EXPECT_VECTOR3DF_EQ(test_case.expected_position, p);
@@ -212,10 +214,10 @@ TEST(UiElement, BoundsContainPaddingWithCentering) {
   };
 
   for (auto test_case : test_cases) {
+    child_ptr->set_contributes_to_parent_bounds(false);
     child_ptr->set_x_centering(test_case.x_centering);
     child_ptr->set_y_centering(test_case.y_centering);
-    child_ptr->DoLayOutChildren();
-    parent->DoLayOutChildren();
+    parent->SizeAndLayOut();
     gfx::Point3F p;
     child_ptr->LocalTransform().TransformPoint(&p);
     EXPECT_VECTOR3DF_EQ(test_case.expected_position, p);
@@ -237,7 +239,7 @@ TEST(UiElement, BoundsContainScaledChildren) {
   c->AddChild(std::move(a));
   c->AddChild(std::move(b));
 
-  c->DoLayOutChildren();
+  c->SizeAndLayOut();
   EXPECT_RECT_NEAR(gfx::RectF(0.3f, 0.0f, 1.1f, 0.7f),
                    gfx::RectF(c->local_origin(), c->size()), kEpsilon);
 }
@@ -517,6 +519,7 @@ TEST(UiElement, ClipChildren) {
   parent->set_clip_descendants(true);
   auto child = std::make_unique<UiElement>();
   child->SetSize(4.0f, 4.0f);
+  child->set_contributes_to_parent_bounds(false);
   child->set_y_anchoring(TOP);
   auto* p_child = child.get();
   parent->AddChild(std::move(child));
@@ -527,8 +530,7 @@ TEST(UiElement, ClipChildren) {
                        p_child->clip_rect());
 
   p_child->SetScale(0.5f, 0.5f, 1.0f);
-  parent->DoLayOutChildren();
-  parent->ClipChildren();
+  parent->SizeAndLayOut();
   EXPECT_FLOAT_RECT_EQ(gfx::RectF(-16.0f, 0.0f, 32.0f, 16.0f),
                        p_child->clip_rect());
 }

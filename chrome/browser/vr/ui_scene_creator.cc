@@ -360,6 +360,7 @@ void OnTabModelAdded(UiScene* scene,
   item->background()->AddChild(std::move(text));
 
   auto shadow = Create<Shadow>(kNone, kPhaseForeground);
+  shadow->set_contributes_to_parent_bounds(false);
   shadow->set_x_anchoring(RIGHT);
   shadow->set_y_anchoring(TOP);
   shadow->set_intensity(kTabsViewRemoveButtonShadowIntensity);
@@ -552,6 +553,7 @@ std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
   auto layout = Create<LinearLayout>(name, kPhaseNone, LinearLayout::kLeft);
   layout->set_margin(kControllerLabelLayoutMargin);
   layout->SetTranslate(0, 0, z_offset);
+  layout->set_contributes_to_parent_bounds(false);
   layout->AddBinding(VR_BIND_FUNC(
       LayoutAlignment, Model, model,
       model->controller.handedness == PlatformController::kRightHanded ? LEFT
@@ -833,6 +835,7 @@ std::unique_ptr<UiElement> CreateHostedUi(
   shadow->SetTranslate(0, 0, kHostedUiDepthOffset - kHostedUiShadowOffset);
   shadow->SetVisible(false);
   shadow->set_opacity_when_visible(1.0);
+  shadow->set_contributes_to_parent_bounds(false);
   shadow->SetTransitionedProperties({OPACITY});
   shadow->AddChild(std::move(hosted_ui));
   shadow->AddBinding(std::make_unique<Binding<std::pair<bool, gfx::PointF>>>(
@@ -1215,6 +1218,7 @@ void UiSceneCreator::CreateSystemIndicators() {
   auto indicator_layout =
       Create<LinearLayout>(kIndicatorLayout, kPhaseNone, LinearLayout::kRight);
   indicator_layout->set_margin(kIndicatorMarginDMM);
+  indicator_layout->set_contributes_to_parent_bounds(false);
 
   auto* content_frame = scene_->GetUiElementByName(kContentFrame);
   content_frame->AddBinding(std::make_unique<Binding<bool>>(
@@ -1286,6 +1290,7 @@ void UiSceneCreator::CreateSystemIndicators() {
     VR_BIND_COLOR(model_, tooltip.get(),
                   &ColorScheme::webvr_permission_background, &Rect::SetColor);
     tooltip->set_bounds_contain_children(true);
+    tooltip->set_contributes_to_parent_bounds(false);
     tooltip->set_padding(kIndicatorXPaddingDMM, kIndicatorYPaddingDMM,
                          kIndicatorXPaddingDMM, kIndicatorYPaddingDMM);
     tooltip->set_y_anchoring(BOTTOM);
@@ -1633,6 +1638,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_EXIT_BUTTON_LABEL));
   timeout_button_text->SetColor(model_->color_scheme().web_vr_timeout_spinner);
   timeout_button_text->SetFieldWidth(kTimeoutButtonTextWidthDMM);
+  timeout_button_text->set_contributes_to_parent_bounds(false);
   timeout_button_text->set_y_anchoring(BOTTOM);
   timeout_button_text->SetTranslate(0, -kTimeoutButtonTextVerticalOffsetDMM, 0);
   timeout_button_text->set_hit_testable(true);
@@ -2099,6 +2105,7 @@ void UiSceneCreator::CreateUrlBar() {
   indicator_fg->SetDrawPhase(kPhaseForeground);
   indicator_fg->SetName(kLoadingIndicatorForeground);
   indicator_fg->set_x_anchoring(LEFT);
+  indicator_fg->set_contributes_to_parent_bounds(false);
   indicator_fg->set_corner_radius(kLoadingIndicatorHeightDMM * 0.5f);
   VR_BIND_COLOR(model_, indicator_fg.get(),
                 &ColorScheme::loading_indicator_foreground, &Rect::SetColor);
@@ -2335,6 +2342,7 @@ void UiSceneCreator::CreateOverflowMenu() {
       base::Unretained(model_));
   overflow_backplane->set_event_handlers(event_handlers);
   overflow_backplane->SetSize(kBackplaneSize, kBackplaneSize);
+  overflow_backplane->set_contributes_to_parent_bounds(false);
   overflow_backplane->set_y_anchoring(TOP);
   overflow_backplane->SetRotate(1, 0, 0, -kUrlBarRotationRad);
   VR_BIND_VISIBILITY(overflow_backplane, model->overflow_menu_enabled);
@@ -2343,6 +2351,7 @@ void UiSceneCreator::CreateOverflowMenu() {
   overflow_menu->set_hit_testable(true);
   overflow_menu->set_y_centering(BOTTOM);
   overflow_menu->set_bounds_contain_children(true);
+  overflow_menu->set_contributes_to_parent_bounds(false);
   overflow_menu->SetTranslate(0, kOverflowMenuOffset, 0);
   overflow_menu->set_corner_radius(kUrlBarItemCornerRadiusDMM);
   VR_BIND_COLOR(model_, overflow_menu.get(), &ColorScheme::omnibox_background,
@@ -2786,6 +2795,7 @@ void UiSceneCreator::CreateOmnibox() {
   omnibox_background->set_bounds_contain_children(true);
   omnibox_background->set_hit_testable(true);
   omnibox_background->set_y_centering(BOTTOM);
+  omnibox_background->set_contributes_to_parent_bounds(false);
   omnibox_background->set_focusable(false);
   omnibox_background->set_corner_radius(kOmniboxCornerRadiusDMM);
   omnibox_background->SetTranslate(

@@ -40,7 +40,7 @@ gfx::Point3F GetLayoutPosition(const UiElement& element) {
 TEST(PagedGridLayout, NoElements) {
   PagedGridLayout view(4lu, 4lu, gfx::SizeF(kElementWidth, kElementHeight));
   view.set_margin(0.05f);
-  view.LayOutChildren();
+  view.SizeAndLayOut();
   EXPECT_EQ(0lu, view.NumPages());
   EXPECT_EQ(0lu, view.current_page());
 }
@@ -53,7 +53,7 @@ TEST(PagedGridLayout, SinglePage) {
 
   AddChildren(&view, &elements, 2lu);
 
-  view.LayOutChildren();
+  view.SizeAndLayOut();
   EXPECT_EQ(1lu, view.NumPages());
   EXPECT_EQ(0lu, view.current_page());
 
@@ -71,7 +71,7 @@ TEST(PagedGridLayout, UnfilledPage) {
 
   AddChildren(&view, &elements, 1lu);
 
-  view.LayOutChildren();
+  view.SizeAndLayOut();
   EXPECT_EQ(1lu, view.NumPages());
   EXPECT_EQ(0lu, view.current_page());
 
@@ -91,7 +91,7 @@ TEST(PagedGridLayout, MultiplePages) {
 
   AddChildren(&view, &elements, 3lu);
 
-  view.LayOutChildren();
+  view.SizeAndLayOut();
   EXPECT_EQ(margin * 1 + kElementWidth * 2, view.size().width());
   EXPECT_EQ(margin * 1 + kElementHeight * 2, view.size().height());
   EXPECT_EQ(2lu, view.NumPages());
@@ -116,7 +116,7 @@ TEST(PagedGridLayout, MultiplePages) {
   // transform provided by the parent. I.e., it will adjust the transform of
   // |view|.
   view.SetCurrentPage(1lu);
-  view.LayOutChildren();
+  view.SizeAndLayOut();
   EXPECT_POINT3F_EQ(gfx::Point3F(0.5f * (kElementWidth - view.size().width()),
                                  0.5f * (kElementHeight + margin), 0.0f),
                     GetLayoutPosition(*elements[0]));
@@ -133,7 +133,7 @@ TEST(PagedGridLayout, MultiplePages) {
   // response. Again, this should have no impact on the laid out position of the
   // children.
   view.RemoveChild(elements.back());
-  view.LayOutChildren();
+  view.SizeAndLayOut();
 
   EXPECT_EQ(1lu, view.NumPages());
   EXPECT_EQ(0lu, view.current_page());
@@ -152,7 +152,7 @@ TEST(PagedGridLayout, LayoutOrder) {
 
   AddChildren(&view, &elements, 8lu);
 
-  view.LayOutChildren();
+  view.SizeAndLayOut();
   EXPECT_EQ(2lu, view.NumPages());
   EXPECT_EQ(0lu, view.current_page());
 

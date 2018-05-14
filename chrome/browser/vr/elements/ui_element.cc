@@ -811,13 +811,29 @@ bool UiElement::SizeAndLayOut() {
   bool changed = SizeAndLayOutChildren();
 
   changed |= PrepareToDraw();
+
+  LayOutContributingChildren();
+
+  if (bounds_contain_children_) {
+    gfx::RectF bounds = ComputeContributingChildrenBounds();
+    if (bounds.size() != GetTargetSize())
+      SetSize(bounds.width(), bounds.height());
+  } else {
+    DCHECK_EQ(0.0f, right_padding_);
+    DCHECK_EQ(0.0f, left_padding_);
+    DCHECK_EQ(0.0f, top_padding_);
+    DCHECK_EQ(0.0f, bottom_padding_);
+  }
   set_update_phase(kUpdatedSize);
-  DoLayOutChildren();
+
+  LayOutNonContributingChildren();
+
   if (clips_descendants_) {
     clip_rect_ = {-0.5f * size().width(), 0.5f * size().height(),
                   size().width(), size().height()};
     ClipChildren();
   }
+
   set_update_phase(kUpdatedLayout);
   return changed;
 }
@@ -829,20 +845,10 @@ bool UiElement::SizeAndLayOutChildren() {
   return changed;
 }
 
-void UiElement::DoLayOutChildren() {
-  LayOutChildren();
-  if (!bounds_contain_children_) {
-    DCHECK_EQ(0.0f, right_padding_);
-    DCHECK_EQ(0.0f, left_padding_);
-    DCHECK_EQ(0.0f, top_padding_);
-    DCHECK_EQ(0.0f, bottom_padding_);
-    return;
-  }
-
-  bool requires_relayout = false;
+gfx::RectF UiElement::ComputeContributingChildrenBounds() {
   gfx::RectF bounds;
   for (auto& child : children_) {
-    if (!child->IsVisible())
+    if (!child->IsVisible() || !child->contributes_to_parent_bounds())
       continue;
 
     gfx::RectF outer_bounds(child->size());
@@ -852,11 +858,7 @@ void UiElement::DoLayOutChildren() {
                          child->right_padding_, child->top_padding_);
     }
     gfx::SizeF size = inner_bounds.size();
-    if (child->x_anchoring() != NONE || child->y_anchoring() != NONE) {
-      DCHECK(!child->contributes_to_parent_bounds());
-      requires_relayout = true;
-    }
-    if (size.IsEmpty() || !child->contributes_to_parent_bounds())
+    if (size.IsEmpty())
       continue;
 
     gfx::Vector2dF delta =
@@ -883,20 +885,30 @@ void UiElement::DoLayOutChildren() {
     world_space_transform_dirty_ = true;
     local_origin_ = bounds.origin();
   }
-  if (bounds.size() == GetTargetSize())
-    return;
 
-  SetSize(bounds.width(), bounds.height());
-
-  if (requires_relayout)
-    LayOutChildren();
+  return bounds;
 }
 
-void UiElement::LayOutChildren() {
+void UiElement::LayOutContributingChildren() {
+  for (auto& child : children_) {
+    if (!child->IsVisible() || !child->contributes_to_parent_bounds())
+      continue;
+    // Nothing to actually do since we aren't a layout object.  Children that
+    // contribute to parent bounds cannot center or anchor to the edge of the
+    // parent.
+    DCHECK_EQ(child->x_centering(), NONE) << child->DebugName();
+    DCHECK_EQ(child->y_centering(), NONE) << child->DebugName();
+    DCHECK_EQ(child->x_anchoring(), NONE) << child->DebugName();
+    DCHECK_EQ(child->y_anchoring(), NONE) << child->DebugName();
+  }
+}
+
+void UiElement::LayOutNonContributingChildren() {
   DCHECK_LE(kUpdatedSize, update_phase_);
   for (auto& child : children_) {
-    if (!child->IsVisible())
+    if (!child->IsVisible() || child->contributes_to_parent_bounds())
       continue;
+
     // To anchor a child, use the parent's size to find its edge.
     float x_offset = 0.0f;
     if (child->x_anchoring() == LEFT) {

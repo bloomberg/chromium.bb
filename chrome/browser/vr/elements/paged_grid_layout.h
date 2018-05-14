@@ -28,7 +28,7 @@ class PagedGridLayout : public UiElement {
   ~PagedGridLayout() override;
 
   // UiElement overrides.
-  void LayOutChildren() override;
+  void LayOutNonContributingChildren() override;
 
   size_t current_page() const { return current_page_; }
   // Sets the horizontal/vertical margin between elements and horizontal margin

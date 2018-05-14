@@ -265,6 +265,7 @@ TEST_P(AlignmentTest, VerifyCorrectPosition) {
   element = std::make_unique<UiElement>();
   UiElement* child = element.get();
   element->SetSize(1, 1);
+  element->set_contributes_to_parent_bounds(false);
   element->set_x_anchoring(GetParam().x_anchoring);
   element->set_y_anchoring(GetParam().y_anchoring);
   element->set_x_centering(GetParam().x_centering);
