@@ -12,12 +12,14 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.SystemClock;
 import android.system.Os;
+import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -224,11 +226,14 @@ public abstract class PathUtils {
         } else {
             files = new File[] {Environment.getExternalStorageDirectory()};
         }
-        String[] result = new String[files.length];
+
+        ArrayList<String> absolutePaths = new ArrayList<String>();
         for (int i = 0; i < files.length; ++i) {
-            result[i] = files[i].getAbsolutePath();
+            if (files[i] == null || TextUtils.isEmpty(files[i].getAbsolutePath())) continue;
+            absolutePaths.add(files[i].getAbsolutePath());
         }
-        return result;
+
+        return absolutePaths.toArray(new String[absolutePaths.size()]);
     }
 
     /**
