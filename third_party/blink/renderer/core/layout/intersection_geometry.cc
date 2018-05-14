@@ -116,6 +116,9 @@ void IntersectionGeometry::InitializeRootRect() {
   if (root_->IsLayoutView() &&
       !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
     root_rect_ = LayoutRect(root_->GetFrameView()->VisibleContentRect());
+    LOG(ERROR)
+        << "GM:"
+        << RuntimeEnabledFeatures::IntersectionObserverGeometryMapperEnabled();
     root_->MapToVisualRectInAncestorSpace(
         nullptr, root_rect_,
         RuntimeEnabledFeatures::IntersectionObserverGeometryMapperEnabled()

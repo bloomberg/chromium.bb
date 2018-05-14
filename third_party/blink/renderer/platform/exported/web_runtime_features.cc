@@ -160,6 +160,10 @@ void WebRuntimeFeatures::EnableInputMultipleFieldsUI(bool enable) {
   RuntimeEnabledFeatures::SetInputMultipleFieldsUIEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableIntersectionObserverGeometryMapper(bool enable) {
+  RuntimeEnabledFeatures::SetIntersectionObserverGeometryMapperEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableLayeredAPI(bool enable) {
   RuntimeEnabledFeatures::SetLayeredAPIEnabled(enable);
 }
