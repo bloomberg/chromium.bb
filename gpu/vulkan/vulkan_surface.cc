@@ -72,6 +72,21 @@ class VulkanWSISurface : public VulkanSurface {
 #endif
 
     DCHECK_NE(static_cast<VkSurfaceKHR>(VK_NULL_HANDLE), surface_);
+
+    VkBool32 present_support;
+    if (vkGetPhysicalDeviceSurfaceSupportKHR(
+            device_queue->GetVulkanPhysicalDevice(),
+            device_queue->GetVulkanQueueIndex(), surface_,
+            &present_support) != VK_SUCCESS) {
+      DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceSupportKHR() failed: "
+                  << result;
+      return false;
+    }
+    if (!present_support) {
+      DLOG(ERROR) << "Surface not supported by present queue.";
+      return false;
+    }
+
     DCHECK(device_queue);
     device_queue_ = device_queue;
 
