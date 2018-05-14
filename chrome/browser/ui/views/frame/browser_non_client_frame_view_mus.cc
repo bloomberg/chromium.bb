@@ -87,12 +87,7 @@ BrowserNonClientFrameViewMus::BrowserNonClientFrameViewMus(
       tab_strip_(nullptr) {
 }
 
-BrowserNonClientFrameViewMus::~BrowserNonClientFrameViewMus() {
-  if (tab_strip_) {
-    tab_strip_->RemoveObserver(this);
-    tab_strip_ = nullptr;
-  }
-}
+BrowserNonClientFrameViewMus::~BrowserNonClientFrameViewMus() {}
 
 void BrowserNonClientFrameViewMus::Init() {
   // Initializing the TabIconView is expensive, so only do it if we need to.
@@ -113,7 +108,6 @@ void BrowserNonClientFrameViewMus::OnBrowserViewInitViewsComplete() {
   DCHECK(browser_view()->tabstrip());
   DCHECK(!tab_strip_);
   tab_strip_ = browser_view()->tabstrip();
-  tab_strip_->AddObserver(this);
 }
 
 gfx::Rect BrowserNonClientFrameViewMus::GetBoundsForTabStrip(
@@ -235,6 +229,11 @@ void BrowserNonClientFrameViewMus::UpdateMinimumSize() {
 int BrowserNonClientFrameViewMus::GetTabStripLeftInset() const {
   return BrowserNonClientFrameView::GetTabStripLeftInset() +
          frame_values().normal_insets.left();
+}
+
+void BrowserNonClientFrameViewMus::OnTabsMaxXChanged() {
+  BrowserNonClientFrameView::OnTabsMaxXChanged();
+  UpdateClientArea();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -395,10 +394,6 @@ AvatarButtonStyle BrowserNonClientFrameViewMus::GetAvatarButtonStyle() const {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewMus, private:
-
-void BrowserNonClientFrameViewMus::OnTabsMaxXChanged() {
-  UpdateClientArea();
-}
 
 int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
   int right_inset = frame_values().normal_insets.right() +

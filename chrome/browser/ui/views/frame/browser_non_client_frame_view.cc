@@ -45,7 +45,8 @@ BrowserNonClientFrameView::BrowserNonClientFrameView(BrowserFrame* frame,
     : frame_(frame),
       browser_view_(browser_view),
       profile_switcher_(this),
-      profile_indicator_icon_(nullptr) {
+      profile_indicator_icon_(nullptr),
+      tab_strip_observer_(this) {
   // The profile manager may by null in tests.
   if (g_browser_process->profile_manager()) {
     g_browser_process->profile_manager()->
@@ -67,6 +68,10 @@ int BrowserNonClientFrameView::GetAvatarIconPadding() {
 }
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
+  if (browser_view()->tabstrip()) {
+    DCHECK(!tab_strip_observer_.IsObserving(browser_view()->tabstrip()));
+    tab_strip_observer_.Add(browser_view()->tabstrip());
+  }
   UpdateMinimumSize();
 }
 
@@ -126,14 +131,43 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
     OnProfileAvatarChanged(base::FilePath());
 }
 
+void BrowserNonClientFrameView::OnTabAdded(int index) {
+  if (MD::GetMode() == MD::MATERIAL_REFRESH &&
+      browser_view()->tabstrip()->tab_count() == 2) {
+    // We are exiting single-tab mode and need to repaint the frame.
+    SchedulePaint();
+  }
+}
+
+void BrowserNonClientFrameView::OnTabRemoved(int index) {
+  if (MD::GetMode() == MD::MATERIAL_REFRESH &&
+      browser_view()->tabstrip()->tab_count() == 1) {
+    // We are entering single-tab mode and need to repaint the frame.
+    SchedulePaint();
+  }
+}
+
 bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
   return browser_view_->IsBrowserTypeNormal();
 }
 
+bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
+  // Single-tab mode is only available in Refresh. The special color we use for
+  // won't be visible if there's a frame image, but since it's used to determine
+  // constrast of other UI elements, the theme color should be used instead.
+  return MD::GetMode() == MD::MATERIAL_REFRESH && GetFrameImage().isNull() &&
+         browser_view()->IsTabStripVisible() &&
+         browser_view()->tabstrip()->tab_count() == 1;
+}
+
 SkColor BrowserNonClientFrameView::GetFrameColor(bool active) const {
-  ThemeProperties::OverwritableByUserThemeProperty color_id =
-      active ? ThemeProperties::COLOR_FRAME
-             : ThemeProperties::COLOR_FRAME_INACTIVE;
+  ThemeProperties::OverwritableByUserThemeProperty color_id;
+  if (ShouldPaintAsSingleTabMode()) {
+    color_id = ThemeProperties::COLOR_TOOLBAR;
+  } else {
+    color_id = active ? ThemeProperties::COLOR_FRAME
+                      : ThemeProperties::COLOR_FRAME_INACTIVE;
+  }
   return ShouldPaintAsThemed()
              ? GetThemeProviderForProfile()->GetColor(color_id)
              : ThemeProperties::GetDefaultColor(color_id,

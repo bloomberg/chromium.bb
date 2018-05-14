@@ -76,8 +76,7 @@ GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,
       restore_button_(nullptr),
       close_button_(nullptr),
       throbber_running_(false),
-      throbber_frame_(0),
-      tab_strip_observer_(this) {
+      throbber_frame_(0) {
   // We initialize all fields despite some of them being unused in some modes,
   // since it's possible for modes to flip dynamically (e.g. if the user enables
   // a high-contrast theme). Throbber icons are only used when ShowSystemIcon()
@@ -190,13 +189,6 @@ gfx::Size GlassBrowserFrameView::GetMinimumSize() const {
 
 int GlassBrowserFrameView::GetTabStripLeftInset() const {
   return incognito_bounds_.right() + GetAvatarIconPadding();
-}
-
-void GlassBrowserFrameView::OnBrowserViewInitViewsComplete() {
-  if (browser_view()->tabstrip()) {
-    DCHECK(!tab_strip_observer_.IsObserving(browser_view()->tabstrip()));
-    tab_strip_observer_.Add(browser_view()->tabstrip());
-  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -374,6 +366,7 @@ gfx::ImageSkia GlassBrowserFrameView::GetFaviconForTabIconView() {
 }
 
 void GlassBrowserFrameView::OnTabRemoved(int index) {
+  BrowserNonClientFrameView::OnTabRemoved(index);
   // The profile switcher button may need to change height here, too.
   // TabStripMaxXChanged is not enough when a tab other than the last tab is
   // closed.
@@ -381,6 +374,7 @@ void GlassBrowserFrameView::OnTabRemoved(int index) {
 }
 
 void GlassBrowserFrameView::OnTabsMaxXChanged() {
+  BrowserNonClientFrameView::OnTabsMaxXChanged();
   // The profile switcher button's height depends on the position of the new
   // tab button, which may have changed if the tabs max X changed.
   LayoutProfileSwitcher();
