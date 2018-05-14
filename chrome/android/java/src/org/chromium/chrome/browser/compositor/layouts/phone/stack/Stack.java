@@ -566,6 +566,10 @@ public class Stack {
                 mLayout.uiDoneEnteringStack();
                 break;
             case FULL_ROLL:
+                for (int i = 0; i < mStackTabs.length; i++) {
+                    mStackTabs[i].getLayoutTab().setTiltX(0, 0);
+                    mStackTabs[i].getLayoutTab().setTiltY(0, 0);
+                }
                 springBack(time);
                 break;
             case TAB_FOCUSED:
@@ -1799,106 +1803,22 @@ public class Stack {
     }
 
     /**
-     * ComputeTabPosition pass 4:
-     * Update the tilt of each tab.
+     * Update the tilt of each tab for full roll if necessary.
      *
      * @param time      The current time of the app in ms.
      * @param stackRect The frame of the stack.
      */
-    private void computeTabTiltHelper(long time, RectF stackRect) {
-        final boolean portrait = mCurrentMode == Orientation.PORTRAIT;
-        final float parentWidth = stackRect.width();
-        final float parentHeight = stackRect.height();
-        final float overscrollPercent = computeOverscrollPercent();
-
-        // All the animations that sets the tilt value must be listed here.
-        if (mOverviewAnimationType == OverviewAnimationType.START_PINCH
-                || mOverviewAnimationType == OverviewAnimationType.DISCARD
-                || mOverviewAnimationType == OverviewAnimationType.FULL_ROLL
-                || mOverviewAnimationType == OverviewAnimationType.TAB_FOCUSED
-                || mOverviewAnimationType == OverviewAnimationType.UNDISCARD
-                || mOverviewAnimationType == OverviewAnimationType.DISCARD_ALL) {
-            // Let the animation handle setting tilt values
-        } else if (mPinch0TabIndex >= 0 || overscrollPercent == 0.0f
-                || mOverviewAnimationType == OverviewAnimationType.REACH_TOP) {
-            // Keep tabs flat during pinch
-            for (int i = 0; i < mStackTabs.length; ++i) {
-                StackTab stackTab = mStackTabs[i];
-                LayoutTab layoutTab = stackTab.getLayoutTab();
-                layoutTab.setTiltX(0, 0);
-                layoutTab.setTiltY(0, 0);
-            }
-        } else if (overscrollPercent < 0) {
-            if (mOverScrollCounter >= OVERSCROLL_FULL_ROLL_TRIGGER) {
-                startAnimation(time, OverviewAnimationType.FULL_ROLL);
-                mOverScrollCounter = 0;
-                // Remove overscroll so when the animation finishes the overscroll won't
-                // be bothering.
-                setScrollTarget(
-                        MathUtils.clamp(mScrollOffset, getMinScroll(false), getMaxScroll(false)),
-                        false);
-            } else {
-                // Handle tilting tabs backwards (top or left of the tab goes away
-                // from the camera). Each tab pivots the same amount around the
-                // same point on the screen. The pivot point is the middle of the
-                // top tab.
-
-                float tilt = 0;
-                if (overscrollPercent < -OVERSCROLL_TOP_SLIDE_PCTG) {
-                    // Start tilting tabs after they're done sliding together.
-                    float scaledOverscroll = (overscrollPercent + OVERSCROLL_TOP_SLIDE_PCTG)
-                            / (1 - OVERSCROLL_TOP_SLIDE_PCTG);
-                    tilt = mUnderScrollAngleInterpolator.getInterpolation(-scaledOverscroll)
-                            * -mMaxOverScrollAngle * BACKWARDS_TILT_SCALE;
-                }
-
-                float pivotOffset = 0;
-                LayoutTab topTab = mStackTabs[mStackTabs.length - 1].getLayoutTab();
-                pivotOffset = portrait ? topTab.getScaledContentHeight() / 2 + topTab.getY()
-                                       : topTab.getScaledContentWidth() / 2 + topTab.getX();
-
-                for (int i = 0; i < mStackTabs.length; ++i) {
-                    StackTab stackTab = mStackTabs[i];
-                    LayoutTab layoutTab = stackTab.getLayoutTab();
-                    if (portrait) {
-                        layoutTab.setTiltX(tilt, pivotOffset - layoutTab.getY());
-                    } else {
-                        layoutTab.setTiltY(LocalizationUtils.isLayoutRtl() ? -tilt : tilt,
-                                pivotOffset - layoutTab.getX());
-                    }
-                }
-            }
-        } else {
-            // Handle tilting tabs forwards (top or left of the tab comes
-            // towards the camera). Each tab pivots around a point 1/3 of the
-            // way down from the top/left of itself. The angle angle is scaled
-            // based on its distance away from the top/left.
-
-            float tilt = mOverScrollAngleInterpolator.getInterpolation(overscrollPercent)
-                    * mMaxOverScrollAngle;
-            float offset = mOverscrollSlideInterpolator.getInterpolation(overscrollPercent)
-                    * mMaxOverScrollSlide;
-
-            for (int i = 0; i < mStackTabs.length; ++i) {
-                StackTab stackTab = mStackTabs[i];
-                LayoutTab layoutTab = stackTab.getLayoutTab();
-                if (portrait) {
-                    // portrait LTR & RTL
-                    float adjust = MathUtils.clamp((layoutTab.getY() / parentHeight) + 0.50f, 0, 1);
-                    layoutTab.setTiltX(tilt * adjust, layoutTab.getScaledContentHeight() / 3);
-                    layoutTab.setY(layoutTab.getY() + offset);
-                } else if (LocalizationUtils.isLayoutRtl()) {
-                    // landscape RTL
-                    float adjust = MathUtils.clamp(-(layoutTab.getX() / parentWidth) + 0.50f, 0, 1);
-                    layoutTab.setTiltY(-tilt * adjust, layoutTab.getScaledContentWidth() * 2 / 3);
-                    layoutTab.setX(layoutTab.getX() - offset);
-                } else {
-                    // landscape LTR
-                    float adjust = MathUtils.clamp((layoutTab.getX() / parentWidth) + 0.50f, 0, 1);
-                    layoutTab.setTiltY(tilt * adjust, layoutTab.getScaledContentWidth() / 3);
-                    layoutTab.setX(layoutTab.getX() + offset);
-                }
-            }
+    private void fullRollHelper(long time, RectF stackRect) {
+        if (mOverviewAnimationType != OverviewAnimationType.FULL_ROLL
+                && computeOverscrollPercent() < 0
+                && mOverScrollCounter >= OVERSCROLL_FULL_ROLL_TRIGGER) {
+            startAnimation(time, OverviewAnimationType.FULL_ROLL);
+            mOverScrollCounter = 0;
+            // Remove overscroll so when the animation finishes the overscroll won't
+            // be bothering.
+            setScrollTarget(
+                    MathUtils.clamp(mScrollOffset, getMinScroll(false), getMaxScroll(false)),
+                    false);
         }
     }
 
@@ -1923,8 +1843,8 @@ public class Stack {
         // Step 3: Compute the actual position.
         computeTabOffsetHelper(stackRect);
 
-        // Step 4: Update the tilt of each tab.
-        computeTabTiltHelper(time, stackRect);
+        // Step 4: Test if the full-roll animation needs to be run.
+        fullRollHelper(time, stackRect);
 
         // Step 5: Clipping, visibility and adjust overall alpha.
         computeTabClippingVisibilityHelper();
