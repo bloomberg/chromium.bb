@@ -30765,6 +30765,13 @@ Called by update_use_counter_css.py.-->
   <int value="2" label="Foreground renderer navigates to other URL"/>
 </enum>
 
+<enum name="NearV8HeapLimitHandling">
+  <int value="0" label="Forwarded handling to the browser process"/>
+  <int value="1" label="Ignored due to small uptime of the renderer process"/>
+  <int value="2" label="Ignored because V8 heap limit was already changed"/>
+  <int value="3" label="Ignored worker isolate"/>
+</enum>
+
 <enum name="NegativeSampleReason">
   <int value="0" label="Histogram had logged value but no active sample."/>
   <int value="1" label="Histogram active sample less than logged value."/>

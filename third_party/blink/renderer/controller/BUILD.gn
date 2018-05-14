@@ -38,6 +38,8 @@ component("controller") {
     "blink_initializer.h",
     "blink_leak_detector.cc",
     "blink_leak_detector.h",
+    "bloated_renderer_detector.cc",
+    "bloated_renderer_detector.h",
     "controller_export.h",
     "dev_tools_frontend_impl.cc",
     "dev_tools_frontend_impl.h",
@@ -92,6 +94,7 @@ jumbo_source_set("webkit_unit_tests_sources") {
   testonly = true
 
   sources = [
+    "bloated_renderer_detector_test.cc",
     "oom_intervention_impl_test.cc",
     "tests/run_all_tests.cc",
   ]

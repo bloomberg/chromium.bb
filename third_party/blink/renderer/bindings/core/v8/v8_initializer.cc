@@ -28,6 +28,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/binding_security.h"
@@ -85,6 +86,69 @@ static void ReportOOMErrorInMainThread(const char* location, bool is_js_heap) {
   DVLOG(1) << "V8 " << (is_js_heap ? "javascript" : "process") << " OOM: ("
            << location << ").";
   OOM_CRASH();
+}
+
+namespace {
+
+// Set to BloatedRendererDetector::OnNearV8HeapLimitOnMainThread during startup.
+static NearV8HeapLimitCallback g_near_heap_limit_on_main_thread_callback_ =
+    nullptr;
+
+void Record(NearV8HeapLimitHandling handling) {
+  UMA_HISTOGRAM_ENUMERATION("BloatedRenderer.V8.NearV8HeapLimitHandling",
+                            handling);
+}
+
+size_t IncreaseV8HeapLimit(size_t v8_heap_limit) {
+  // The heap limit for a bloated page should be increased to avoid immediate
+  // OOM crash. The exact amount is not important, it should be sufficiently
+  // large to give enough time for the browser process to reload the page.
+  // Increase the heap limit by 25%.
+  return v8_heap_limit + v8_heap_limit / 4;
+}
+
+size_t NearHeapLimitCallbackOnMainThread(void* isolate,
+                                         size_t current_heap_limit,
+                                         size_t initial_heap_limit) {
+  V8PerIsolateData* per_isolate_data =
+      V8PerIsolateData::From(reinterpret_cast<v8::Isolate*>(isolate));
+  if (per_isolate_data->IsNearV8HeapLimitHandled()) {
+    // Ignore all calls after the first one.
+    return current_heap_limit;
+  }
+  per_isolate_data->HandledNearV8HeapLimit();
+  if (current_heap_limit != initial_heap_limit) {
+    Record(NearV8HeapLimitHandling::kIgnoredDueToChangedHeapLimit);
+    return current_heap_limit;
+  }
+
+  NearV8HeapLimitHandling handling =
+      g_near_heap_limit_on_main_thread_callback_();
+  Record(handling);
+  return (handling == NearV8HeapLimitHandling::kForwardedToBrowser)
+             ? IncreaseV8HeapLimit(current_heap_limit)
+             : current_heap_limit;
+}
+
+size_t NearHeapLimitCallbackOnWorkerThread(void* isolate,
+                                           size_t current_heap_limit,
+                                           size_t initial_heap_limit) {
+  V8PerIsolateData* per_isolate_data =
+      V8PerIsolateData::From(reinterpret_cast<v8::Isolate*>(isolate));
+  if (per_isolate_data->IsNearV8HeapLimitHandled()) {
+    // Ignore all calls after the first one.
+    return current_heap_limit;
+  }
+  per_isolate_data->HandledNearV8HeapLimit();
+  Record(NearV8HeapLimitHandling::kIgnoredDueToWorker);
+  return current_heap_limit;
+}
+
+}  // anonymous namespace
+
+void V8Initializer::SetNearV8HeapLimitOnMainThreadCallback(
+    NearV8HeapLimitCallback callback) {
+  g_near_heap_limit_on_main_thread_callback_ = callback;
 }
 
 static String ExtractMessageForConsole(v8::Isolate* isolate,
@@ -619,6 +683,12 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   InitializeV8Common(isolate);
 
   isolate->SetOOMErrorHandler(ReportOOMErrorInMainThread);
+
+  if (RuntimeEnabledFeatures::BloatedRendererDetectionEnabled()) {
+    DCHECK(g_near_heap_limit_on_main_thread_callback_);
+    isolate->AddNearHeapLimitCallback(NearHeapLimitCallbackOnMainThread,
+                                      isolate);
+  }
   isolate->SetFatalErrorHandler(ReportFatalErrorInMainThread);
   isolate->AddMessageListenerWithErrorLevel(
       MessageHandlerInMainThread,
@@ -686,6 +756,10 @@ void V8Initializer::InitializeWorker(v8::Isolate* isolate) {
   isolate->SetStackLimit(reinterpret_cast<uintptr_t>(&here) -
                          kWorkerMaxStackSize);
   isolate->SetPromiseRejectCallback(PromiseRejectHandlerInWorker);
+  if (RuntimeEnabledFeatures::BloatedRendererDetectionEnabled()) {
+    isolate->AddNearHeapLimitCallback(NearHeapLimitCallbackOnWorkerThread,
+                                      isolate);
+  }
 }
 
 }  // namespace blink

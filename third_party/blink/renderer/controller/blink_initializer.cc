@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_initializer.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_external_references.h"
 #include "third_party/blink/renderer/controller/blink_leak_detector.h"
+#include "third_party/blink/renderer/controller/bloated_renderer_detector.h"
 #include "third_party/blink/renderer/controller/dev_tools_frontend_impl.h"
 #include "third_party/blink/renderer/controller/oom_intervention_impl.h"
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
@@ -105,6 +106,12 @@ void Initialize(Platform* platform, service_manager::BinderRegistry* registry) {
 
   // BlinkInitializer::Initialize() must be called before InitializeMainThread
   GetBlinkInitializer().Initialize();
+
+  if (RuntimeEnabledFeatures::BloatedRendererDetectionEnabled()) {
+    BloatedRendererDetector::Initialize();
+    V8Initializer::SetNearV8HeapLimitOnMainThreadCallback(
+        BloatedRendererDetector::OnNearV8HeapLimitOnMainThread);
+  }
 
   V8Initializer::InitializeMainThread(
       V8ContextSnapshotExternalReferences::GetTable());

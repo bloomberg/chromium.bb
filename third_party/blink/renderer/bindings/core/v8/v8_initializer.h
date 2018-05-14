@@ -32,10 +32,32 @@
 
 namespace blink {
 
+// Specifies how the near V8 heap limit event was handled by the callback.
+// This enum is also used for UMA histogram recording. It must be kept in sync
+// with the corresponding enum in tools/metrics/histograms/enums.xml. See that
+// enum for the detailed description of each case.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class NearV8HeapLimitHandling {
+  kForwardedToBrowser = 0,
+  kIgnoredDueToSmallUptime = 1,
+  kIgnoredDueToChangedHeapLimit = 2,
+  kIgnoredDueToWorker = 3,
+  kMaxValue = kIgnoredDueToWorker
+};
+
+// A callback function called when V8 reaches the heap limit.
+using NearV8HeapLimitCallback = NearV8HeapLimitHandling (*)();
+
 class CORE_EXPORT V8Initializer {
   STATIC_ONLY(V8Initializer);
 
  public:
+  // This must be called before InitializeMainThread.
+  static void SetNearV8HeapLimitOnMainThreadCallback(
+      NearV8HeapLimitCallback callback);
+
   static void InitializeMainThread(const intptr_t* reference_table);
   static void InitializeWorker(v8::Isolate*);
 

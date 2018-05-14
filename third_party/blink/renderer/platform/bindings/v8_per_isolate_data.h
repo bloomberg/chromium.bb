@@ -234,6 +234,9 @@ class PLATFORM_EXPORT V8PerIsolateData {
   ScriptWrappableMarkingVisitor* GetScriptWrappableMarkingVisitor() {
     return script_wrappable_visitor_.get();
   }
+  int IsNearV8HeapLimitHandled() { return handled_near_v8_heap_limit_; }
+
+  void HandledNearV8HeapLimit() { handled_near_v8_heap_limit_ = true; }
 
  private:
   V8PerIsolateData(scoped_refptr<base::SingleThreadTaskRunner>,
@@ -305,6 +308,7 @@ class PLATFORM_EXPORT V8PerIsolateData {
   std::unique_ptr<ScriptWrappableMarkingVisitor> script_wrappable_visitor_;
 
   RuntimeCallStats runtime_call_stats_;
+  bool handled_near_v8_heap_limit_;
 };
 
 }  // namespace blink
