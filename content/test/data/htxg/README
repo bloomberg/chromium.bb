@@ -76,3 +76,15 @@ gen-signedexchange \
   -responseHeader 'Content-Type: text/plain; charset=iso-8859-1' \
   -date 2018-03-12T05:53:20Z \
   -o test.example.org_hello.txt.htxg
+
+
+# Install gen-certurl command from the original WICG repository [1].
+# (Note: this overwrites gen-certurl fetched from [2] in the above.)
+go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-certurl
+
+# Currently OCSP and SCT are just dummy data.
+echo -n OCSP >/tmp/ocsp; echo -n SCT >/tmp/sct
+
+# Generate the certificate chain CBOR for "*.example.org".
+gen-certurl -pem /tmp/wildcard_example.org.public.pem \
+ -ocsp /tmp/ocsp -sct /tmp/sct > wildcard_example.org.public.pem.cbor
