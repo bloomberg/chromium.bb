@@ -14,14 +14,14 @@ cr.define('settings', function() {
      * Attempts to mount an Smb filesystem with the provided url.
      * @param {string} smbUrl
      */
-    smbMount(smbUrl) {}
+    smbMount(smbUrl, username, password) {}
   }
 
   /** @implements {settings.SmbBrowserProxy} */
   class SmbBrowserProxyImpl {
     /** @override */
-    smbMount(smbUrl) {
-      chrome.send('smbMount', [smbUrl]);
+    smbMount(smbUrl, username, password) {
+      chrome.send('smbMount', [smbUrl, username, password]);
     }
   }
 

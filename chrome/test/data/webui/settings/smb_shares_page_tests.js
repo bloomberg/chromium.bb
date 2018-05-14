@@ -11,8 +11,8 @@ class TestSmbBrowserProxy extends TestBrowserProxy {
   }
 
   /** @override */
-  smbMount(smbUrl) {
-    this.methodCalled('smbMount', smbUrl);
+  smbMount(smbUrl, username, password) {
+    this.methodCalled('smbMount', [smbUrl, username, password]);
   }
 }
 
@@ -62,19 +62,29 @@ suite('AddSmbShareDialogTests', function() {
 
   test('ClickAdd', function() {
     const expectedSmbUrl = 'smb://192.168.1.1/testshare';
+    const expectedUsername = 'username';
+    const expectedPassword = 'password';
 
     const url = addDialog.$$('#address');
     expectTrue(!!url);
-
     url.value = expectedSmbUrl;
-    expectTrue(!!addDialog);
+
+    const un = addDialog.$$('#username');
+    expectTrue(!!un);
+    un.value = expectedUsername;
+
+    const pw = addDialog.$$('#password');
+    expectTrue(!!pw);
+    pw.value = expectedPassword;
 
     const addButton = addDialog.$$('.action-button');
     expectTrue(!!addButton);
 
     addButton.click();
-    return smbBrowserProxy.whenCalled('smbMount').then(function(actualSmbUrl) {
-      expectEquals(expectedSmbUrl, actualSmbUrl);
+    return smbBrowserProxy.whenCalled('smbMount').then(function(args) {
+      expectEquals(expectedSmbUrl, args[0]);
+      expectEquals(expectedUsername, args[1]);
+      expectEquals(expectedPassword, args[2]);
     });
   });
 });
