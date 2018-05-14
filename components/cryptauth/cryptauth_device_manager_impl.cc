@@ -12,10 +12,12 @@
 
 #include "base/base64url.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/cryptauth_client.h"
 #include "components/cryptauth/pref_names.h"
+#include "components/cryptauth/software_feature_state.h"
 #include "components/cryptauth/sync_scheduler_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -50,15 +52,14 @@ const char kExternalDeviceKeyDeviceType[] = "device_type";
 const char kExternalDeviceKeyBeaconSeeds[] = "beacon_seeds";
 const char kExternalDeviceKeyArcPlusPlus[] = "arc_plus_plus";
 const char kExternalDeviceKeyPixelPhone[] = "pixel_phone";
-const char kExternalDeviceKeySupportedSoftwareFeatures[] =
-    "supported_software_features";
-const char kExternalDeviceKeyEnabledSoftwareFeatures[] =
-    "enabled_software_features";
 
 // Keys for ExternalDeviceInfo's BeaconSeed.
 const char kExternalDeviceKeyBeaconSeedData[] = "beacon_seed_data";
 const char kExternalDeviceKeyBeaconSeedStartMs[] = "beacon_seed_start_ms";
 const char kExternalDeviceKeyBeaconSeedEndMs[] = "beacon_seed_end_ms";
+
+// Keys specific to the dictionary which stores ExternalDeviceInfo info.
+const char kDictionaryKeySoftwareFeatures[] = "software_features";
 
 // Converts BeaconSeed protos to a list value that can be stored in user prefs.
 std::unique_ptr<base::ListValue> BeaconSeedsToListValue(
@@ -100,14 +101,46 @@ std::unique_ptr<base::ListValue> BeaconSeedsToListValue(
   return list;
 }
 
-// Converts SoftwareFeature protos to a list value that can be stored in user
-// prefs.
-std::unique_ptr<base::ListValue> SoftwareFeaturesToListValue(
-    const google::protobuf::RepeatedField<int>& software_features) {
-  std::unique_ptr<base::ListValue> list = std::make_unique<base::ListValue>();
-  for (auto software_feature : software_features)
-    list->AppendInteger(software_feature);
-  return list;
+void RecordDeviceSyncSoftwareFeaturesResult(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("CryptAuth.DeviceSyncSoftwareFeaturesResult", success);
+}
+
+// Converts supported and enabled SoftwareFeature protos to a single dictionary
+// value that can be stored in user prefs.
+std::unique_ptr<base::DictionaryValue>
+SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
+    const google::protobuf::RepeatedField<int>& supported_software_features,
+    const google::protobuf::RepeatedField<int>& enabled_software_features) {
+  std::unique_ptr<base::DictionaryValue> dictionary =
+      std::make_unique<base::DictionaryValue>();
+
+  for (const auto& supported_software_feature : supported_software_features) {
+    dictionary->SetInteger(std::to_string(supported_software_feature),
+                           static_cast<int>(SoftwareFeatureState::kSupported));
+  }
+
+  for (const auto& enabled_software_feature : enabled_software_features) {
+    std::string software_feature_key = std::to_string(enabled_software_feature);
+
+    int software_feature_state;
+    if (!dictionary->GetInteger(software_feature_key,
+                                &software_feature_state) ||
+        static_cast<SoftwareFeatureState>(software_feature_state) !=
+            SoftwareFeatureState::kSupported) {
+      PA_LOG(ERROR) << "A feature is marked as enabled but not as supported: "
+                    << software_feature_key;
+      RecordDeviceSyncSoftwareFeaturesResult(false /* success */);
+
+      continue;
+    } else {
+      RecordDeviceSyncSoftwareFeaturesResult(true /* success */);
+    }
+
+    dictionary->SetInteger(software_feature_key,
+                           static_cast<int>(SoftwareFeatureState::kEnabled));
+  }
+
+  return dictionary;
 }
 
 // Converts an unlock key proto to a dictionary that can be stored in user
@@ -181,12 +214,10 @@ std::unique_ptr<base::DictionaryValue> UnlockKeyToDictionary(
     dictionary->SetBoolean(kExternalDeviceKeyPixelPhone, device.pixel_phone());
   }
 
-  dictionary->Set(
-      kExternalDeviceKeySupportedSoftwareFeatures,
-      SoftwareFeaturesToListValue(device.supported_software_features()));
-  dictionary->Set(
-      kExternalDeviceKeyEnabledSoftwareFeatures,
-      SoftwareFeaturesToListValue(device.enabled_software_features()));
+  dictionary->Set(kDictionaryKeySoftwareFeatures,
+                  SupportedAndEnabledSoftwareFeaturesToDictionaryValue(
+                      device.supported_software_features(),
+                      device.enabled_software_features()));
 
   return dictionary;
 }
@@ -238,34 +269,26 @@ void AddBeaconSeedsToExternalDevice(const base::ListValue& beacon_seeds,
 }
 
 void AddSoftwareFeaturesToExternalDevice(
-    const base::DictionaryValue& dictionary,
-    const std::string& software_feature_dictionary_key,
+    const base::DictionaryValue& software_features_dictionary,
     ExternalDeviceInfo* external_device) {
-  DCHECK(software_feature_dictionary_key ==
-             kExternalDeviceKeySupportedSoftwareFeatures ||
-         software_feature_dictionary_key ==
-             kExternalDeviceKeyEnabledSoftwareFeatures);
-
-  const base::ListValue* software_features;
-  if (!dictionary.GetList(software_feature_dictionary_key, &software_features))
-    return;
-
-  for (size_t i = 0; i < software_features->GetSize(); i++) {
-    int software_feature;
-    if (!software_features->GetInteger(i, &software_feature) ||
-        !SoftwareFeature_IsValid(software_feature)) {
+  for (const auto& it : software_features_dictionary.DictItems()) {
+    int software_feature_state;
+    if (!it.second.GetAsInteger(&software_feature_state)) {
       PA_LOG(WARNING) << "Unable to retrieve SoftwareFeature; skipping.";
       continue;
     }
 
-    if (software_feature_dictionary_key ==
-        kExternalDeviceKeySupportedSoftwareFeatures) {
-      external_device->add_supported_software_features(
-          static_cast<SoftwareFeature>(software_feature));
-    } else if (software_feature_dictionary_key ==
-               kExternalDeviceKeyEnabledSoftwareFeatures) {
-      external_device->add_enabled_software_features(
-          static_cast<SoftwareFeature>(software_feature));
+    SoftwareFeature software_feature =
+        static_cast<SoftwareFeature>(std::stoi(it.first));
+    switch (static_cast<SoftwareFeatureState>(software_feature_state)) {
+      case SoftwareFeatureState::kEnabled:
+        external_device->add_enabled_software_features(software_feature);
+        FALLTHROUGH;
+      case SoftwareFeatureState::kSupported:
+        external_device->add_supported_software_features(software_feature);
+        break;
+      default:
+        break;
     }
   }
 }
@@ -346,9 +369,8 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
     external_device->set_device_type(static_cast<DeviceType>(device_type));
   }
 
-  const base::ListValue* beacon_seeds = nullptr;
-  dictionary.GetList(kExternalDeviceKeyBeaconSeeds, &beacon_seeds);
-  if (beacon_seeds)
+  const base::ListValue* beacon_seeds;
+  if (dictionary.GetList(kExternalDeviceKeyBeaconSeeds, &beacon_seeds))
     AddBeaconSeedsToExternalDevice(*beacon_seeds, external_device);
 
   bool arc_plus_plus;
@@ -359,10 +381,12 @@ bool DictionaryToUnlockKey(const base::DictionaryValue& dictionary,
   if (dictionary.GetBoolean(kExternalDeviceKeyPixelPhone, &pixel_phone))
     external_device->set_pixel_phone(pixel_phone);
 
-  AddSoftwareFeaturesToExternalDevice(
-      dictionary, kExternalDeviceKeySupportedSoftwareFeatures, external_device);
-  AddSoftwareFeaturesToExternalDevice(
-      dictionary, kExternalDeviceKeyEnabledSoftwareFeatures, external_device);
+  const base::DictionaryValue* software_features_dictionary;
+  if (dictionary.GetDictionary(kDictionaryKeySoftwareFeatures,
+                               &software_features_dictionary)) {
+    AddSoftwareFeaturesToExternalDevice(*software_features_dictionary,
+                                        external_device);
+  }
 
   return true;
 }

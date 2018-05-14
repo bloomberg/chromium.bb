@@ -20,6 +20,7 @@
 #include "components/cryptauth/mock_cryptauth_client.h"
 #include "components/cryptauth/mock_sync_scheduler.h"
 #include "components/cryptauth/pref_names.h"
+#include "components/cryptauth/software_feature_state.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -309,39 +310,48 @@ void ExpectSyncedDevicesAndPrefAreEqual(
       EXPECT_FALSE(expected_device.has_pixel_phone());
     }
 
-    const base::ListValue* supported_software_features_from_prefs;
-    if (device_dictionary->GetList("supported_software_features",
-                                   &supported_software_features_from_prefs)) {
+    const base::DictionaryValue* software_features_from_prefs;
+    if (device_dictionary->GetDictionary("software_features",
+                                         &software_features_from_prefs)) {
+      std::vector<SoftwareFeature> supported_software_features;
+      std::vector<SoftwareFeature> enabled_software_features;
+
+      for (const auto& it : software_features_from_prefs->DictItems()) {
+        int software_feature_state;
+        ASSERT_TRUE(it.second.GetAsInteger(&software_feature_state));
+
+        SoftwareFeature software_feature =
+            static_cast<SoftwareFeature>(std::stoi(it.first));
+        switch (static_cast<SoftwareFeatureState>(software_feature_state)) {
+          case SoftwareFeatureState::kEnabled:
+            enabled_software_features.push_back(software_feature);
+            FALLTHROUGH;
+          case SoftwareFeatureState::kSupported:
+            supported_software_features.push_back(software_feature);
+            break;
+          default:
+            break;
+        }
+      }
+
       ASSERT_EQ(static_cast<size_t>(
                     expected_device.supported_software_features_size()),
-                supported_software_features_from_prefs->GetSize());
-      for (size_t i = 0; i < supported_software_features_from_prefs->GetSize();
-           i++) {
-        int supported_software_feature;
-        ASSERT_TRUE(supported_software_features_from_prefs->GetInteger(
-            i, &supported_software_feature));
-        EXPECT_EQ(expected_device.supported_software_features(i),
-                  supported_software_feature);
+                supported_software_features.size());
+      ASSERT_EQ(
+          static_cast<size_t>(expected_device.enabled_software_features_size()),
+          enabled_software_features.size());
+      for (auto supported_software_feature :
+           expected_device.supported_software_features()) {
+        EXPECT_TRUE(base::ContainsValue(supported_software_features,
+                                        supported_software_feature));
+      }
+      for (auto enabled_software_feature :
+           expected_device.enabled_software_features()) {
+        EXPECT_TRUE(base::ContainsValue(enabled_software_features,
+                                        enabled_software_feature));
       }
     } else {
       EXPECT_FALSE(expected_device.supported_software_features_size());
-    }
-
-    const base::ListValue* enabled_software_features_from_prefs;
-    if (device_dictionary->GetList("enabled_software_features",
-                                   &enabled_software_features_from_prefs)) {
-      ASSERT_EQ(
-          static_cast<size_t>(expected_device.enabled_software_features_size()),
-          enabled_software_features_from_prefs->GetSize());
-      for (size_t i = 0; i < enabled_software_features_from_prefs->GetSize();
-           i++) {
-        int enabled_software_feature;
-        ASSERT_TRUE(enabled_software_features_from_prefs->GetInteger(
-            i, &enabled_software_feature));
-        EXPECT_EQ(expected_device.enabled_software_features(i),
-                  enabled_software_feature);
-      }
-    } else {
       EXPECT_FALSE(expected_device.enabled_software_features_size());
     }
   }
@@ -485,10 +495,8 @@ class CryptAuthDeviceManagerImplTest
     device_dictionary->SetBoolean("mobile_hotspot_supported",
                                   kStoredMobileHotspotSupported);
     device_dictionary->Set("beacon_seeds", std::make_unique<base::ListValue>());
-    device_dictionary->Set("supported_software_features",
-                           std::make_unique<base::ListValue>());
-    device_dictionary->Set("enabled_software_features",
-                           std::make_unique<base::ListValue>());
+    device_dictionary->Set("software_features",
+                           std::make_unique<base::DictionaryValue>());
     {
       ListPrefUpdate update(&pref_service_,
                             prefs::kCryptAuthDeviceSyncUnlockKeys);

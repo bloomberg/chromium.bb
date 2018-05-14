@@ -85,6 +85,7 @@ static_library("cryptauth") {
     "software_feature_manager.h",
     "software_feature_manager_impl.cc",
     "software_feature_manager_impl.h",
+    "software_feature_state.h",
     "switches.cc",
     "switches.h",
     "sync_scheduler.cc",
