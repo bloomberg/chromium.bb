@@ -23,7 +23,7 @@ class Service;
 // instances of embedded services.
 struct SERVICE_MANAGER_EMBEDDER_EXPORT EmbeddedServiceInfo {
   using ServiceFactory =
-      base::Callback<std::unique_ptr<service_manager::Service>()>;
+      base::RepeatingCallback<std::unique_ptr<service_manager::Service>()>;
 
   EmbeddedServiceInfo();
   EmbeddedServiceInfo(const EmbeddedServiceInfo& other);

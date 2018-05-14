@@ -92,7 +92,7 @@ void RegisterRemovableStorageWriterService(
     ChromeContentUtilityClient::StaticServiceMap* services) {
   service_manager::EmbeddedServiceInfo service_info;
   service_info.factory =
-      base::Bind(&RemovableStorageWriterService::CreateService);
+      base::BindRepeating(&RemovableStorageWriterService::CreateService);
   services->emplace(chrome::mojom::kRemovableStorageWriterServiceName,
                     service_info);
 }
@@ -136,7 +136,7 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
     // TODO(crbug.com/798782): remove when the Cloud print chrome/service is
     // removed.
     registry->AddInterface(
-        base::Bind(printing::PdfToEmfConverterFactory::Create),
+        base::BindRepeating(printing::PdfToEmfConverterFactory::Create),
         base::ThreadTaskRunnerHandle::Get());
 #endif
   }
@@ -162,7 +162,8 @@ void ChromeContentUtilityClient::RegisterServices(
   if (utility_process_running_elevated_) {
 #if defined(OS_WIN) && BUILDFLAG(ENABLE_EXTENSIONS)
     service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory = base::Bind(&WifiUtilWinService::CreateService);
+    service_info.factory =
+        base::BindRepeating(&WifiUtilWinService::CreateService);
     services->emplace(chrome::mojom::kWifiUtilWinServiceName, service_info);
 
     RegisterRemovableStorageWriterService(services);
@@ -172,25 +173,22 @@ void ChromeContentUtilityClient::RegisterServices(
 
 #if BUILDFLAG(ENABLE_PRINTING)
   service_manager::EmbeddedServiceInfo pdf_compositor_info;
-  pdf_compositor_info.factory =
-      base::Bind(&printing::CreatePdfCompositorService, GetUserAgent());
+  pdf_compositor_info.factory = base::BindRepeating(
+      &printing::CreatePdfCompositorService, GetUserAgent());
   services->emplace(printing::mojom::kServiceName, pdf_compositor_info);
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-  {
-    service_manager::EmbeddedServiceInfo printing_info;
-    printing_info.factory =
-        base::Bind(&printing::PrintingService::CreateService);
-    services->emplace(printing::mojom::kChromePrintingServiceName,
-                      printing_info);
-  }
+  service_manager::EmbeddedServiceInfo printing_info;
+  printing_info.factory =
+      base::BindRepeating(&printing::PrintingService::CreateService);
+  services->emplace(printing::mojom::kChromePrintingServiceName, printing_info);
 #endif
 
   service_manager::EmbeddedServiceInfo profiling_info;
   profiling_info.task_runner = content::ChildThread::Get()->GetIOTaskRunner();
   profiling_info.factory =
-      base::Bind(&heap_profiling::HeapProfilingService::CreateService);
+      base::BindRepeating(&heap_profiling::HeapProfilingService::CreateService);
   services->emplace(heap_profiling::mojom::kServiceName, profiling_info);
 
 #if !defined(OS_ANDROID)
@@ -198,13 +196,13 @@ void ChromeContentUtilityClient::RegisterServices(
   proxy_resolver_info.task_runner =
       content::ChildThread::Get()->GetIOTaskRunner();
   proxy_resolver_info.factory =
-      base::Bind(&proxy_resolver::ProxyResolverService::CreateService);
+      base::BindRepeating(&proxy_resolver::ProxyResolverService::CreateService);
   services->emplace(proxy_resolver::mojom::kProxyResolverServiceName,
                     proxy_resolver_info);
 
   service_manager::EmbeddedServiceInfo profile_import_info;
   profile_import_info.factory =
-      base::Bind(&ProfileImportService::CreateService);
+      base::BindRepeating(&ProfileImportService::CreateService);
   services->emplace(chrome::mojom::kProfileImportServiceName,
                     profile_import_info);
 #endif
@@ -212,7 +210,7 @@ void ChromeContentUtilityClient::RegisterServices(
 #if defined(OS_WIN)
   {
     service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory = base::Bind(&UtilWinService::CreateService);
+    service_info.factory = base::BindRepeating(&UtilWinService::CreateService);
     services->emplace(chrome::mojom::kUtilWinServiceName, service_info);
   }
 #endif
@@ -220,14 +218,15 @@ void ChromeContentUtilityClient::RegisterServices(
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
   {
     service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory = base::Bind(&FileUtilService::CreateService);
+    service_info.factory = base::BindRepeating(&FileUtilService::CreateService);
     services->emplace(chrome::mojom::kFileUtilServiceName, service_info);
   }
 #endif
 
   {
     service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory = base::Bind(&patch::PatchService::CreateService);
+    service_info.factory =
+        base::BindRepeating(&patch::PatchService::CreateService);
     services->emplace(patch::mojom::kServiceName, service_info);
   }
 
@@ -246,7 +245,8 @@ void ChromeContentUtilityClient::RegisterServices(
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
   {
     service_manager::EmbeddedServiceInfo service_info;
-    service_info.factory = base::Bind(&MediaGalleryUtilService::CreateService);
+    service_info.factory =
+        base::BindRepeating(&MediaGalleryUtilService::CreateService);
     services->emplace(chrome::mojom::kMediaGalleryUtilServiceName,
                       service_info);
   }
