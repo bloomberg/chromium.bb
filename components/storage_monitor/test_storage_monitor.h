@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "build/build_config.h"
 #include "components/storage_monitor/storage_monitor.h"
@@ -47,8 +48,7 @@ class TestStorageMonitor : public StorageMonitor {
 #endif
 
 #if defined(OS_CHROMEOS)
-  device::MediaTransferProtocolManager* media_transfer_protocol_manager()
-      override;
+  device::mojom::MtpManager* media_transfer_protocol_manager() override;
 #endif
 
   Receiver* receiver() const override;
@@ -74,8 +74,7 @@ class TestStorageMonitor : public StorageMonitor {
   std::vector<base::FilePath> removable_paths_;
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<device::MediaTransferProtocolManager>
-      media_transfer_protocol_manager_;
+  device::mojom::MtpManagerPtr media_transfer_protocol_manager_;
 #endif
 };
 

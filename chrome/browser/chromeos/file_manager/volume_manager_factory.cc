@@ -15,7 +15,6 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/storage_monitor/storage_monitor.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 
 namespace file_manager {
 

@@ -73,7 +73,9 @@ void GetFileInfoCallbackWrapper(mojom::MtpManager::GetFileInfoCallback callback,
 
 }  // namespace
 
-MtpDeviceManager::MtpDeviceManager() {}
+MtpDeviceManager::MtpDeviceManager()
+    : media_transfer_protocol_manager_(
+          MediaTransferProtocolManager::Initialize()) {}
 
 MtpDeviceManager::~MtpDeviceManager() {}
 
@@ -92,14 +94,14 @@ void MtpDeviceManager::EnumerateStoragesAndSetClient(
   client_ptr.Bind(std::move(client));
   observer_ = std::make_unique<ForwardingMediaTransferProtocolManagerObserver>(
       std::move(client_ptr));
-  MediaTransferProtocolManager::GetInstance()->AddObserverAndEnumerateStorages(
+  media_transfer_protocol_manager_->AddObserverAndEnumerateStorages(
       observer_.get(),
       base::BindOnce(EnumerateStorageCallbackWrapper, std::move(callback)));
 }
 
 void MtpDeviceManager::GetStorageInfo(const std::string& storage_name,
                                       GetStorageInfoCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->GetStorageInfo(
+  media_transfer_protocol_manager_->GetStorageInfo(
       storage_name,
       base::BindOnce(GetStorageInfoCallbackWrapper, std::move(callback)));
 }
@@ -107,7 +109,7 @@ void MtpDeviceManager::GetStorageInfo(const std::string& storage_name,
 void MtpDeviceManager::GetStorageInfoFromDevice(
     const std::string& storage_name,
     GetStorageInfoFromDeviceCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->GetStorageInfoFromDevice(
+  media_transfer_protocol_manager_->GetStorageInfoFromDevice(
       storage_name,
       base::Bind(GetStorageInfoFromDeviceCallbackWrapper,
                  base::AdaptCallbackForRepeating(std::move(callback))));
@@ -116,13 +118,13 @@ void MtpDeviceManager::GetStorageInfoFromDevice(
 void MtpDeviceManager::OpenStorage(const std::string& storage_name,
                                    const std::string& mode,
                                    OpenStorageCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->OpenStorage(
+  media_transfer_protocol_manager_->OpenStorage(
       storage_name, mode, base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
 void MtpDeviceManager::CloseStorage(const std::string& storage_handle,
                                     CloseStorageCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->CloseStorage(
+  media_transfer_protocol_manager_->CloseStorage(
       storage_handle, base::AdaptCallbackForRepeating(std::move(callback)));
 }
 
@@ -130,7 +132,7 @@ void MtpDeviceManager::CreateDirectory(const std::string& storage_handle,
                                        uint32_t parent_id,
                                        const std::string& directory_name,
                                        CreateDirectoryCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->CreateDirectory(
+  media_transfer_protocol_manager_->CreateDirectory(
       storage_handle, parent_id, directory_name,
       base::AdaptCallbackForRepeating(std::move(callback)));
 }
@@ -139,7 +141,7 @@ void MtpDeviceManager::ReadDirectory(const std::string& storage_handle,
                                      uint32_t file_id,
                                      uint64_t max_size,
                                      ReadDirectoryCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->ReadDirectory(
+  media_transfer_protocol_manager_->ReadDirectory(
       storage_handle, file_id, max_size,
       base::Bind(ReadDirectoryCallbackWrapper,
                  base::AdaptCallbackForRepeating(std::move(callback))));
@@ -150,7 +152,7 @@ void MtpDeviceManager::ReadFileChunk(const std::string& storage_handle,
                                      uint32_t offset,
                                      uint32_t count,
                                      ReadFileChunkCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->ReadFileChunk(
+  media_transfer_protocol_manager_->ReadFileChunk(
       storage_handle, file_id, offset, count,
       base::AdaptCallbackForRepeating(std::move(callback)));
 }
@@ -158,7 +160,7 @@ void MtpDeviceManager::ReadFileChunk(const std::string& storage_handle,
 void MtpDeviceManager::GetFileInfo(const std::string& storage_handle,
                                    uint32_t file_id,
                                    GetFileInfoCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->GetFileInfo(
+  media_transfer_protocol_manager_->GetFileInfo(
       storage_handle, file_id,
       base::Bind(GetFileInfoCallbackWrapper,
                  base::AdaptCallbackForRepeating(std::move(callback))));
@@ -168,7 +170,7 @@ void MtpDeviceManager::RenameObject(const std::string& storage_handle,
                                     uint32_t object_id,
                                     const std::string& new_name,
                                     RenameObjectCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->RenameObject(
+  media_transfer_protocol_manager_->RenameObject(
       storage_handle, object_id, new_name,
       base::AdaptCallbackForRepeating(std::move(callback)));
 }
@@ -178,7 +180,7 @@ void MtpDeviceManager::CopyFileFromLocal(const std::string& storage_handle,
                                          uint32_t parent_id,
                                          const std::string& file_name,
                                          CopyFileFromLocalCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->CopyFileFromLocal(
+  media_transfer_protocol_manager_->CopyFileFromLocal(
       storage_handle, source_file_descriptor, parent_id, file_name,
       base::AdaptCallbackForRepeating(std::move(callback)));
 }
@@ -186,7 +188,7 @@ void MtpDeviceManager::CopyFileFromLocal(const std::string& storage_handle,
 void MtpDeviceManager::DeleteObject(const std::string& storage_handle,
                                     uint32_t object_id,
                                     DeleteObjectCallback callback) {
-  MediaTransferProtocolManager::GetInstance()->DeleteObject(
+  media_transfer_protocol_manager_->DeleteObject(
       storage_handle, object_id,
       base::AdaptCallbackForRepeating(std::move(callback)));
 }

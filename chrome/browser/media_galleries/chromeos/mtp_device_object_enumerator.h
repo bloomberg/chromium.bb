@@ -19,7 +19,7 @@
 class MTPDeviceObjectEnumerator {
  public:
   explicit MTPDeviceObjectEnumerator(
-      const std::vector<device::mojom::MtpFileEntry>& entries);
+      std::vector<device::mojom::MtpFileEntryPtr> entries);
 
   ~MTPDeviceObjectEnumerator();
 
@@ -42,7 +42,7 @@ class MTPDeviceObjectEnumerator {
   bool IsIndexReadyAndInRange() const;
 
   // List of directory file entries information.
-  const std::vector<device::mojom::MtpFileEntry> file_entries_;
+  const std::vector<device::mojom::MtpFileEntryPtr> file_entries_;
 
   // Index into |file_entries_|.
   // Should only be used when |is_index_ready_| is true.

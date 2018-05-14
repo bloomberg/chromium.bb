@@ -42,6 +42,8 @@ static_library("storage_monitor") {
   deps = [
     "//base",
     "//content/public/browser",
+    "//mojo/public/cpp/bindings",
+    "//services/service_manager/public/cpp",
     "//ui/base",
   ]
 
@@ -55,14 +57,10 @@ static_library("storage_monitor") {
 
   if (is_chromeos && use_dbus) {
     deps += [
-      "//device/media_transfer_protocol",
-      "//mojo/public/cpp/bindings",
+      "//device/media_transfer_protocol/public/mojom",
       "//services/device/public/mojom",
-      "//services/service_manager/public/cpp",
     ]
     sources += [
-      "media_transfer_protocol_device_observer_chromeos.cc",
-      "media_transfer_protocol_device_observer_chromeos.h",
       "mtp_manager_client_chromeos.cc",
       "mtp_manager_client_chromeos.h",
       "storage_info_utils.cc",
@@ -118,7 +116,7 @@ static_library("test_support") {
 
   if (is_chromeos && use_dbus) {
     deps = [
-      "//device/media_transfer_protocol",
+      "//services/device/public/mojom",
     ]
   }
 
@@ -134,7 +132,6 @@ source_set("unit_tests") {
   sources = [
     "image_capture_device_manager_unittest.mm",
     "media_storage_util_unittest.cc",
-    "media_transfer_protocol_device_observer_chromeos_unittest.cc",
     "storage_info_unittest.cc",
     "storage_monitor_mac_unittest.mm",
     "storage_monitor_unittest.cc",
@@ -151,10 +148,13 @@ source_set("unit_tests") {
   if (use_dbus) {
     if (is_chromeos) {
       deps += [
-        "//device/media_transfer_protocol",
+        "//services/device/public/mojom",
         "//testing/gmock",
       ]
-      sources += [ "storage_monitor_chromeos_unittest.cc" ]
+      sources += [
+        "mtp_manager_client_chromeos_unittest.cc",
+        "storage_monitor_chromeos_unittest.cc",
+      ]
     } else if (is_linux) {
       sources += [ "storage_monitor_linux_unittest.cc" ]
     }

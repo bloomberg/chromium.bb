@@ -169,7 +169,7 @@ class MTPDeviceTaskHelper {
   // caller.
   void OnGetFileInfo(const GetFileInfoSuccessCallback& success_callback,
                      const ErrorCallback& error_callback,
-                     const device::mojom::MtpFileEntry& file_entry,
+                     device::mojom::MtpFileEntryPtr file_entry,
                      bool error) const;
 
   // Called when CreateDirectory completes.
@@ -188,14 +188,14 @@ class MTPDeviceTaskHelper {
   void OnDidReadDirectory(
       const ReadDirectorySuccessCallback& success_callback,
       const ErrorCallback& error_callback,
-      const std::vector<device::mojom::MtpFileEntry>& file_entries,
+      std::vector<device::mojom::MtpFileEntryPtr> file_entries,
       bool has_more,
       bool error) const;
 
   // Intermediate step to finish a ReadBytes request.
   void OnGetFileInfoToReadBytes(
       const MTPDeviceAsyncDelegate::ReadBytesRequest& request,
-      const device::mojom::MtpFileEntry& file_entry,
+      device::mojom::MtpFileEntryPtr file_entry,
       bool error);
 
   // Query callback for ReadBytes();

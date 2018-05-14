@@ -13,9 +13,11 @@
 namespace storage_monitor {
 
 MtpManagerClientChromeOS::MtpManagerClientChromeOS(
+    StorageMonitor::Receiver* receiver,
     device::mojom::MtpManager* mtp_manager)
     : mtp_manager_(mtp_manager),
       binding_(this),
+      notifications_(receiver),
       weak_ptr_factory_(this) {
   device::mojom::MtpManagerClientAssociatedPtrInfo client;
   binding_.Bind(mojo::MakeRequest(&client));
@@ -91,9 +93,8 @@ void MtpManagerClientChromeOS::StorageAttached(
                            product_name, 0);
   storage_map_[location] = storage_info;
 
-  // TODO(donna.wu@intel.com): Notify StorageMonitor observers about the event
-  // atomically with porting clients away from
-  // MediaTransferProtocolDeviceObserverChromeOS to this class.
+  // Notify StorageMonitor observers about the event.
+  notifications_->ProcessAttach(storage_info);
 }
 
 // device::mojom::MtpManagerClient override.
@@ -106,9 +107,8 @@ void MtpManagerClientChromeOS::StorageDetached(
   if (it == storage_map_.end())
     return;
 
-  // TODO(donna.wu@intel.com): Notify StorageMonitor observers about the event
-  // atomically with porting clients away from
-  // MediaTransferProtocolDeviceObserverChromeOS to this class.
+  // Notify StorageMonitor observers about the event.
+  notifications_->ProcessDetach(it->second.device_id());
   storage_map_.erase(it);
 }
 

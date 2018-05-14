@@ -189,8 +189,8 @@ class VolumeManagerTest : public testing::Test {
    private:
     void GetFakeMtpStorageInfo(
         const std::string& storage_name,
-        device::MediaTransferProtocolManager::GetStorageInfoCallback callback) {
-      std::move(callback).Run(&fake_mtp_storage_info_);
+        device::mojom::MtpManager::GetStorageInfoCallback callback) {
+      std::move(callback).Run(device::mojom::MtpStorageInfo::New());
     }
 
     std::unique_ptr<TestingProfile> profile_;
@@ -198,7 +198,6 @@ class VolumeManagerTest : public testing::Test {
     std::unique_ptr<chromeos::file_system_provider::Service>
         file_system_provider_service_;
     std::unique_ptr<VolumeManager> volume_manager_;
-    const device::mojom::MtpStorageInfo fake_mtp_storage_info_;
   };
 
   void SetUp() override {

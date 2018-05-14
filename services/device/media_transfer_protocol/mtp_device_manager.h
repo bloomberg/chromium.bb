@@ -72,6 +72,9 @@ class MtpDeviceManager : public mojom::MtpManager {
                     DeleteObjectCallback callback) override;
 
  private:
+  std::unique_ptr<MediaTransferProtocolManager>
+      media_transfer_protocol_manager_;
+
   std::unique_ptr<MediaTransferProtocolManager::Observer> observer_;
   mojo::BindingSet<mojom::MtpManager> bindings_;
 
@@ -79,4 +82,5 @@ class MtpDeviceManager : public mojom::MtpManager {
 };
 
 }  // namespace device
+
 #endif  // SERVICES_DEVICE_MEDIA_TRANSFER_PROTOCOL_MTP_DEVICE_MANAGER_H_

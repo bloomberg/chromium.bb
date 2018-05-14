@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// MediaTransferProtocolDeviceObserverChromeOS unit tests.
+// MtpManagerClientChromeOS unit tests.
 
-#include "components/storage_monitor/media_transfer_protocol_device_observer_chromeos.h"
+#include "components/storage_monitor/mtp_manager_client_chromeos.h"
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -19,14 +20,14 @@
 #include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "services/device/public/mojom/mtp_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace storage_monitor {
 
 namespace {
 
-// Sample mtp device storage information.
+// Sample MTP device storage information.
 const char kStorageWithInvalidInfo[] = "usb:2,3:11111";
 const char kStorageWithValidInfo[] = "usb:2,2:88888";
 const char kStorageVendor[] = "ExampleVendor";
@@ -44,7 +45,7 @@ const char kStorageDescription[] = "ExampleDescription";
 const char kStorageVolumeIdentifier[] = "ExampleVolumeId";
 
 base::LazyInstance<std::map<std::string, device::mojom::MtpStorageInfo>>::Leaky
-      g_fake_storage_info_map = LAZY_INSTANCE_INITIALIZER;
+    g_fake_storage_info_map = LAZY_INSTANCE_INITIALIZER;
 
 const device::mojom::MtpStorageInfo* GetFakeMtpStorageInfoSync(
     const std::string& storage_name) {
@@ -71,65 +72,50 @@ const device::mojom::MtpStorageInfo* GetFakeMtpStorageInfoSync(
   return it != g_fake_storage_info_map.Get().end() ? &it->second : nullptr;
 }
 
-// Helper function to get fake MTP device details.
-void GetFakeMtpStorageInfo(
-    const std::string& storage_name,
-    device::MediaTransferProtocolManager::GetStorageInfoCallback callback) {
-  std::move(callback).Run(GetFakeMtpStorageInfoSync(storage_name));
-}
-
-class TestMediaTransferProtocolDeviceObserverChromeOS
-    : public MediaTransferProtocolDeviceObserverChromeOS {
+class FakeMtpManagerClientChromeOS : public MtpManagerClientChromeOS {
  public:
-  TestMediaTransferProtocolDeviceObserverChromeOS(
-      StorageMonitor::Receiver* receiver,
-      device::MediaTransferProtocolManager* mtp_manager)
-      : MediaTransferProtocolDeviceObserverChromeOS(
-            receiver,
-            mtp_manager,
-            base::BindRepeating(&GetFakeMtpStorageInfo)) {}
+  FakeMtpManagerClientChromeOS(StorageMonitor::Receiver* receiver,
+                               device::mojom::MtpManager* mtp_manager)
+      : MtpManagerClientChromeOS(receiver, mtp_manager) {}
 
-  // Notifies MediaTransferProtocolDeviceObserverChromeOS about the attachment
-  // of
-  // mtp storage device given the |storage_name|.
+  // Notifies MtpManagerClientChromeOS about the attachment of MTP storage
+  // device given the |storage_name|.
   void MtpStorageAttached(const std::string& storage_name) {
     auto* storage_info = GetFakeMtpStorageInfoSync(storage_name);
     DCHECK(storage_info);
 
-    StorageAttached(*storage_info);
+    StorageAttached(storage_info->Clone());
     base::RunLoop().RunUntilIdle();
   }
 
-  // Notifies MediaTransferProtocolDeviceObserverChromeOS about the detachment
-  // of
-  // mtp storage device given the |storage_name|.
+  // Notifies MtpManagerClientChromeOS about the detachment of MTP storage
+  // device given the |storage_name|.
   void MtpStorageDetached(const std::string& storage_name) {
     StorageDetached(storage_name);
     base::RunLoop().RunUntilIdle();
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolDeviceObserverChromeOS);
+  DISALLOW_COPY_AND_ASSIGN(FakeMtpManagerClientChromeOS);
 };
 
 }  // namespace
 
-// A class to test the functionality of
-// MediaTransferProtocolDeviceObserverChromeOS member functions.
-class MediaTransferProtocolDeviceObserverChromeOSTest : public testing::Test {
+// A class to test the functionality of MtpManagerClientChromeOS member
+// functions.
+class MtpManagerClientChromeOSTest : public testing::Test {
  public:
-  MediaTransferProtocolDeviceObserverChromeOSTest()
+  MtpManagerClientChromeOSTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
-  ~MediaTransferProtocolDeviceObserverChromeOSTest() override {}
+  ~MtpManagerClientChromeOSTest() override {}
 
  protected:
   void SetUp() override {
     mock_storage_observer_.reset(new MockRemovableStorageObserver);
     TestStorageMonitor* monitor = TestStorageMonitor::CreateAndInstall();
-    mtp_device_observer_.reset(
-        new TestMediaTransferProtocolDeviceObserverChromeOS(
-            monitor->receiver(), monitor->media_transfer_protocol_manager()));
+    mtp_device_observer_ = std::make_unique<FakeMtpManagerClientChromeOS>(
+        monitor->receiver(), monitor->media_transfer_protocol_manager());
     monitor->AddObserver(mock_storage_observer_.get());
   }
 
@@ -143,26 +129,25 @@ class MediaTransferProtocolDeviceObserverChromeOSTest : public testing::Test {
   // Returns the device changed observer object.
   MockRemovableStorageObserver& observer() { return *mock_storage_observer_; }
 
-  TestMediaTransferProtocolDeviceObserverChromeOS* mtp_device_observer() {
+  FakeMtpManagerClientChromeOS* mtp_device_observer() {
     return mtp_device_observer_.get();
   }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
 
-  std::unique_ptr<TestMediaTransferProtocolDeviceObserverChromeOS>
-      mtp_device_observer_;
+  std::unique_ptr<FakeMtpManagerClientChromeOS> mtp_device_observer_;
   std::unique_ptr<MockRemovableStorageObserver> mock_storage_observer_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaTransferProtocolDeviceObserverChromeOSTest);
+  DISALLOW_COPY_AND_ASSIGN(MtpManagerClientChromeOSTest);
 };
 
-// Test to verify basic mtp storage attach and detach notifications.
-TEST_F(MediaTransferProtocolDeviceObserverChromeOSTest, BasicAttachDetach) {
+// Test to verify basic MTP storage attach and detach notifications.
+TEST_F(MtpManagerClientChromeOSTest, BasicAttachDetach) {
   auto* mtpStorageInfo = GetFakeMtpStorageInfoSync(kStorageWithValidInfo);
   std::string device_id = GetDeviceIdFromStorageInfo(*mtpStorageInfo);
 
-  // Attach a mtp storage.
+  // Attach a MTP storage.
   mtp_device_observer()->MtpStorageAttached(kStorageWithValidInfo);
 
   EXPECT_EQ(1, observer().attach_calls());
@@ -183,11 +168,10 @@ TEST_F(MediaTransferProtocolDeviceObserverChromeOSTest, BasicAttachDetach) {
   EXPECT_EQ(device_id, observer().last_detached().device_id());
 }
 
-// When a mtp storage device with invalid storage label and id is
+// When a MTP storage device with invalid storage label and id is
 // attached/detached, there should not be any device attach/detach
 // notifications.
-TEST_F(MediaTransferProtocolDeviceObserverChromeOSTest,
-       StorageWithInvalidInfo) {
+TEST_F(MtpManagerClientChromeOSTest, StorageWithInvalidInfo) {
   // Attach the mtp storage with invalid storage info.
   mtp_device_observer()->MtpStorageAttached(kStorageWithInvalidInfo);
 

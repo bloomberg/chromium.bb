@@ -13,15 +13,16 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/storage_monitor/test_media_transfer_protocol_manager_chromeos.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"  // nogncheck
 #endif
 
 namespace storage_monitor {
 
 TestStorageMonitor::TestStorageMonitor() : init_called_(false) {
 #if defined(OS_CHROMEOS)
-  media_transfer_protocol_manager_.reset(
-      new TestMediaTransferProtocolManagerChromeOS());
+  auto* fake_mtp_manager =
+      TestMediaTransferProtocolManagerChromeOS::GetFakeMtpManager();
+  fake_mtp_manager->AddBinding(
+      mojo::MakeRequest(&media_transfer_protocol_manager_));
 #endif
 }
 
@@ -114,7 +115,7 @@ bool TestStorageMonitor::GetMTPStorageInfoFromDeviceId(
 #endif
 
 #if defined(OS_CHROMEOS)
-device::MediaTransferProtocolManager*
+device::mojom::MtpManager*
 TestStorageMonitor::media_transfer_protocol_manager() {
   return media_transfer_protocol_manager_.get();
 }

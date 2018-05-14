@@ -24,7 +24,8 @@ namespace storage_monitor {
 // from MtpManager and forwards them to StorageMonitor.
 class MtpManagerClientChromeOS : public device::mojom::MtpManagerClient {
  public:
-  explicit MtpManagerClientChromeOS(device::mojom::MtpManager* mtp_manager);
+  MtpManagerClientChromeOS(StorageMonitor::Receiver* receiver,
+                           device::mojom::MtpManager* mtp_manager);
   ~MtpManagerClientChromeOS() override;
 
   // Finds the storage that contains |path| and populates |storage_info|.
@@ -62,6 +63,10 @@ class MtpManagerClientChromeOS : public device::mojom::MtpManagerClient {
   device::mojom::MtpManager* const mtp_manager_;
 
   mojo::AssociatedBinding<device::mojom::MtpManagerClient> binding_;
+
+  // The notifications object to use to signal newly attached devices.
+  // Guaranteed to outlive this class.
+  StorageMonitor::Receiver* const notifications_;
 
   base::WeakPtrFactory<MtpManagerClientChromeOS> weak_ptr_factory_;
 

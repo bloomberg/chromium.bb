@@ -27,7 +27,6 @@
 
 namespace storage_monitor {
 
-class MediaTransferProtocolDeviceObserverChromeOS;
 class MtpManagerClientChromeOS;
 
 class StorageMonitorCros : public StorageMonitor,
@@ -44,7 +43,7 @@ class StorageMonitorCros : public StorageMonitor,
 
  protected:
   void SetMediaTransferProtocolManagerForTest(
-      device::MediaTransferProtocolManager* test_manager);
+      device::mojom::MtpManagerPtr test_manager);
 
   // chromeos::disks::DiskMountManager::Observer implementation.
   void OnAutoMountableDiskEvent(
@@ -71,8 +70,7 @@ class StorageMonitorCros : public StorageMonitor,
                              StorageInfo* device_info) const override;
   void EjectDevice(const std::string& device_id,
                    base::Callback<void(EjectStatus)> callback) override;
-  device::MediaTransferProtocolManager* media_transfer_protocol_manager()
-      override;
+  device::mojom::MtpManager* media_transfer_protocol_manager() override;
 
  private:
   // Mapping of mount path to removable mass storage info.
@@ -101,17 +99,8 @@ class StorageMonitorCros : public StorageMonitor,
   // Mapping of relevant mount points and their corresponding mount devices.
   MountMap mount_map_;
 
-  std::unique_ptr<device::MediaTransferProtocolManager>
-      media_transfer_protocol_manager_;
-
-  std::unique_ptr<MediaTransferProtocolDeviceObserverChromeOS>
-      media_transfer_protocol_device_observer_;
-
-  // These two items are mojo format counterparts which will replace
-  // the existing ones.
-  // This will replace |media_transfer_protocol_manager_|
   device::mojom::MtpManagerPtr mtp_device_manager_;
-  // This will replace |media_transfer_protocol_device_observer_|
+
   std::unique_ptr<MtpManagerClientChromeOS> mtp_manager_client_;
 
   base::WeakPtrFactory<StorageMonitorCros> weak_ptr_factory_;
