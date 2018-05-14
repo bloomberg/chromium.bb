@@ -61,10 +61,6 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
       PageScheduler::Delegate*) override;
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override
       WARN_UNUSED_RESULT;
-  void AddPendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType type) override {}
-  void RemovePendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType type) override {}
 
   // Returns TimeTicks::Now() by default.
   base::TimeTicks MonotonicallyIncreasingVirtualTime() const override;

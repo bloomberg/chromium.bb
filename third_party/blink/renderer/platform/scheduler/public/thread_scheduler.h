@@ -76,15 +76,6 @@ class PLATFORM_EXPORT ThreadScheduler {
   virtual std::unique_ptr<RendererPauseHandle> PauseScheduler()
       WARN_UNUSED_RESULT = 0;
 
-  // Tells the scheduler that a navigation task is pending.
-  // TODO(alexclarke): Long term should this be a task trait?
-  virtual void AddPendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType) = 0;
-
-  // Tells the scheduler that a navigation task is no longer pending.
-  virtual void RemovePendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType) = 0;
-
   // Returns the current time recognized by the scheduler, which may perhaps
   // be based on a real or virtual time domain. Used by Timer.
   virtual base::TimeTicks MonotonicallyIncreasingVirtualTime() const = 0;

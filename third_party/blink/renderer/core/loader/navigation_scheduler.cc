@@ -360,19 +360,9 @@ class ScheduledFormSubmission final : public ScheduledNavigation {
   Member<FormSubmission> submission_;
 };
 
-NavigationScheduler::NavigationScheduler(LocalFrame* frame)
-    : frame_(frame),
-      frame_type_(frame_->IsMainFrame()
-                      ? scheduler::WebMainThreadScheduler::NavigatingFrameType::
-                            kMainFrame
-                      : scheduler::WebMainThreadScheduler::NavigatingFrameType::
-                            kChildFrame) {}
+NavigationScheduler::NavigationScheduler(LocalFrame* frame) : frame_(frame) {}
 
 NavigationScheduler::~NavigationScheduler() {
-  if (navigate_task_handle_.IsActive()) {
-    Platform::Current()->CurrentThread()->Scheduler()->RemovePendingNavigation(
-        frame_type_);
-  }
 }
 
 bool NavigationScheduler::LocationChangePending() {
@@ -501,9 +491,6 @@ void NavigationScheduler::ScheduleReload() {
 }
 
 void NavigationScheduler::NavigateTask() {
-  Platform::Current()->CurrentThread()->Scheduler()->RemovePendingNavigation(
-      frame_type_);
-
   if (!frame_->GetPage())
     return;
   if (frame_->GetPage()->Paused()) {
@@ -550,10 +537,6 @@ void NavigationScheduler::StartTimer() {
   if (!redirect_->ShouldStartTimer(frame_))
     return;
 
-  ThreadScheduler* scheduler =
-      Platform::Current()->CurrentThread()->Scheduler();
-  scheduler->AddPendingNavigation(frame_type_);
-
   // wrapWeakPersistent(this) is safe because a posted task is canceled when the
   // task handle is destroyed on the dtor of this NavigationScheduler.
   navigate_task_handle_ = PostDelayedCancellableTask(
@@ -567,8 +550,6 @@ void NavigationScheduler::StartTimer() {
 
 void NavigationScheduler::Cancel() {
   if (navigate_task_handle_.IsActive()) {
-    Platform::Current()->CurrentThread()->Scheduler()->RemovePendingNavigation(
-        frame_type_);
     probe::frameClearedScheduledNavigation(frame_);
   }
   navigate_task_handle_.Cancel();

@@ -91,10 +91,6 @@ void FakeRendererScheduler::PauseTimersForAndroidWebView() {}
 void FakeRendererScheduler::ResumeTimersForAndroidWebView() {}
 #endif
 
-void FakeRendererScheduler::AddPendingNavigation(NavigatingFrameType type) {}
-
-void FakeRendererScheduler::RemovePendingNavigation(NavigatingFrameType type) {}
-
 bool FakeRendererScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }

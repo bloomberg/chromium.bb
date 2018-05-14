@@ -52,8 +52,6 @@ class MockRendererScheduler : public WebMainThreadScheduler {
   MOCK_METHOD0(PauseTimersForAndroidWebView, void());
   MOCK_METHOD0(ResumeTimersForAndroidWebView, void());
 #endif
-  MOCK_METHOD1(AddPendingNavigation, void(NavigatingFrameType));
-  MOCK_METHOD1(RemovePendingNavigation, void(NavigatingFrameType));
   MOCK_METHOD0(OnNavigate, void());
   MOCK_METHOD0(IsHighPriorityWorkAnticipated, bool());
   MOCK_CONST_METHOD0(CanExceedIdleDeadlineIfRequired, bool());

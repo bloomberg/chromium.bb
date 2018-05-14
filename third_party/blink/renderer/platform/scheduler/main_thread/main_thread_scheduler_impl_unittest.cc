@@ -583,10 +583,6 @@ class MainThreadSchedulerImplTest : public testing::Test {
     return scheduler_->main_thread_only().estimated_next_frame_begin;
   }
 
-  int NavigationTaskExpectedCount() {
-    return scheduler_->main_thread_only().navigation_task_expected_count;
-  }
-
   void AdvanceTimeWithTask(double duration) {
     base::TimeTicks start = clock_.NowTicks();
     scheduler_->OnTaskStarted(fake_queue_.get(), fake_task_, start);
@@ -2730,115 +2726,11 @@ TEST_F(MainThreadSchedulerImplTest,
   scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
   SimulateExpensiveTasks(loading_task_runner_);
   ForceTouchStartToBeExpectedSoon();
-  scheduler_->AddPendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType::kChildFrame);
 
   PostTestTasks(&run_order, "L1 D1");
   RunUntilIdle();
 
   // The expensive loading task gets blocked.
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
-  EXPECT_EQ(v8::PERFORMANCE_RESPONSE, GetRAILMode());
-}
-
-TEST_F(MainThreadSchedulerImplTest,
-       ExpensiveLoadingTasksNotBlockedIfMainFrameNavigationExpected) {
-  std::vector<std::string> run_order;
-
-  DoMainFrame();
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  SimulateExpensiveTasks(loading_task_runner_);
-  ForceTouchStartToBeExpectedSoon();
-  scheduler_->AddPendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType::kMainFrame);
-
-  PostTestTasks(&run_order, "L1 D1");
-  RunUntilIdle();
-
-  EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
-  EXPECT_TRUE(HaveSeenABeginMainframe());
-  EXPECT_TRUE(LoadingTasksSeemExpensive());
-  EXPECT_FALSE(TimerTasksSeemExpensive());
-  EXPECT_TRUE(TouchStartExpectedSoon());
-  EXPECT_EQ(1, NavigationTaskExpectedCount());
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("D1")));
-
-  // After the nagigation has been cancelled, the expensive loading tasks should
-  // get blocked.
-  scheduler_->RemovePendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType::kMainFrame);
-  run_order.clear();
-
-  PostTestTasks(&run_order, "L1 D1");
-  RunUntilIdle();
-
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-  EXPECT_TRUE(HaveSeenABeginMainframe());
-  EXPECT_TRUE(LoadingTasksSeemExpensive());
-  EXPECT_FALSE(TimerTasksSeemExpensive());
-  EXPECT_TRUE(TouchStartExpectedSoon());
-  EXPECT_EQ(0, NavigationTaskExpectedCount());
-  EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
-  EXPECT_EQ(v8::PERFORMANCE_RESPONSE, GetRAILMode());
-}
-
-TEST_F(MainThreadSchedulerImplTest,
-       ExpensiveLoadingTasksNotBlockedIfMainFrameNavigationExpected_Multiple) {
-  std::vector<std::string> run_order;
-
-  DoMainFrame();
-  scheduler_->SetHasVisibleRenderWidgetWithTouchHandler(true);
-  SimulateExpensiveTasks(loading_task_runner_);
-  ForceTouchStartToBeExpectedSoon();
-  scheduler_->AddPendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType::kMainFrame);
-  scheduler_->AddPendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType::kMainFrame);
-
-  PostTestTasks(&run_order, "L1 D1");
-  RunUntilIdle();
-
-  EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
-  EXPECT_TRUE(HaveSeenABeginMainframe());
-  EXPECT_TRUE(LoadingTasksSeemExpensive());
-  EXPECT_FALSE(TimerTasksSeemExpensive());
-  EXPECT_TRUE(TouchStartExpectedSoon());
-  EXPECT_EQ(2, NavigationTaskExpectedCount());
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("D1")));
-
-  run_order.clear();
-  scheduler_->RemovePendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType::kMainFrame);
-  // Navigation task expected ref count non-zero so expensive tasks still not
-  // blocked.
-  PostTestTasks(&run_order, "L1 D1");
-  RunUntilIdle();
-
-  EXPECT_EQ(UseCase::kNone, ForceUpdatePolicyAndGetCurrentUseCase());
-  EXPECT_TRUE(HaveSeenABeginMainframe());
-  EXPECT_TRUE(LoadingTasksSeemExpensive());
-  EXPECT_FALSE(TimerTasksSeemExpensive());
-  EXPECT_TRUE(TouchStartExpectedSoon());
-  EXPECT_EQ(1, NavigationTaskExpectedCount());
-  EXPECT_THAT(run_order,
-              testing::ElementsAre(std::string("L1"), std::string("D1")));
-
-  run_order.clear();
-  scheduler_->RemovePendingNavigation(
-      scheduler::WebMainThreadScheduler::NavigatingFrameType::kMainFrame);
-  // Navigation task expected ref count is now zero, the expensive loading tasks
-  // should get blocked.
-  PostTestTasks(&run_order, "L1 D1");
-  RunUntilIdle();
-
-  EXPECT_EQ(UseCase::kNone, CurrentUseCase());
-  EXPECT_TRUE(HaveSeenABeginMainframe());
-  EXPECT_TRUE(LoadingTasksSeemExpensive());
-  EXPECT_FALSE(TimerTasksSeemExpensive());
-  EXPECT_TRUE(TouchStartExpectedSoon());
-  EXPECT_EQ(0, NavigationTaskExpectedCount());
   EXPECT_THAT(run_order, testing::ElementsAre(std::string("D1")));
   EXPECT_EQ(v8::PERFORMANCE_RESPONSE, GetRAILMode());
 }
