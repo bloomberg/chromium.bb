@@ -1726,12 +1726,16 @@ void VrShellGl::DrawIntoAcquiredFrame(int16_t frame_index,
       // Continue with submit once the previous frame's GL fence signals that
       // it is done rendering. This avoids blocking in GVR's Submit. Fence is
       // null for the first frame, in that case the fence wait is skipped.
-      fence.reset(webvr_prev_frame_completion_fence_.release());
-      if (fence && fence->HasCompleted()) {
-        // The fence had already signaled, so we don't know how long ago
-        // rendering had finished. We can submit immediately.
-        AddWebVrRenderTimeEstimate(frame_index, false);
-        fence = nullptr;
+      if (webvr_prev_frame_completion_fence_ &&
+          webvr_prev_frame_completion_fence_->HasCompleted()) {
+        // The fence had already signaled. We can get the signaled time from the
+        // fence and submit immediately.
+        AddWebVrRenderTimeEstimate(
+            frame_index,
+            webvr_prev_frame_completion_fence_->GetStatusChangeTime());
+        webvr_prev_frame_completion_fence_.reset();
+      } else {
+        fence.reset(webvr_prev_frame_completion_fence_.release());
       }
     } else {
       // Continue with submit once a GL fence signals that current drawing
@@ -1812,36 +1816,24 @@ void VrShellGl::DrawFrameSubmitWhenReady(
   if (fence && webvr_use_gpu_fence_) {
     // We were waiting for the fence, so the time now is the actual
     // finish time for the previous frame's rendering.
-    AddWebVrRenderTimeEstimate(frame_index, true);
+    AddWebVrRenderTimeEstimate(frame_index, base::TimeTicks::Now());
   }
 
   webvr_delayed_gvr_submit_.Cancel();
   DrawFrameSubmitNow(frame_index, head_pose);
 }
 
-void VrShellGl::AddWebVrRenderTimeEstimate(int16_t frame_index, bool did_wait) {
+void VrShellGl::AddWebVrRenderTimeEstimate(
+    int16_t frame_index,
+    const base::TimeTicks& fence_complete_time) {
   if (!webxr_->HaveRenderingFrame())
     return;
 
   WebXrFrame* rendering_frame = webxr_->GetRenderingFrame();
   base::TimeTicks prev_js_submit = rendering_frame->time_js_submit;
-  if (webvr_use_gpu_fence_ && !prev_js_submit.is_null()) {
-    // If we don't wait for rendering to complete, estimate render time for the
-    // *previous* frame based on fence completion wait time.
-    base::TimeDelta prev_render = base::TimeTicks::Now() - prev_js_submit;
-    if (did_wait) {
-      // Fence wasn't complete on first check. We've now waited for rendering to
-      // finish, so the elapsed time is the actual render time.
-      webvr_render_time_.AddSample(prev_render);
-    } else {
-      // Fence was already complete when we checked. It completed sometime
-      // between the saved webvr_time_copied_ and now. Use the midpoint of
-      // that as an estimate.
-      base::TimeDelta lower_limit =
-          rendering_frame->time_copied - prev_js_submit;
-      base::TimeDelta midpoint = (lower_limit + prev_render) / 2;
-      webvr_render_time_.AddSample(midpoint);
-    }
+  if (webvr_use_gpu_fence_ && !prev_js_submit.is_null() &&
+      !fence_complete_time.is_null()) {
+    webvr_render_time_.AddSample(fence_complete_time - prev_js_submit);
   }
 }
 
@@ -1855,7 +1847,8 @@ void VrShellGl::WebVrSendRenderNotification(bool was_rendered) {
 
     if (was_rendered) {
       // Save a fence for local completion checking.
-      webvr_prev_frame_completion_fence_ = gl::GLFenceEGL::Create();
+      webvr_prev_frame_completion_fence_ =
+          gl::GLFenceAndroidNativeFenceSync::CreateForGpuFence();
     }
 
     // Create a local GpuFence and pass it to the Renderer via IPC.
