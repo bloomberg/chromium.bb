@@ -22,6 +22,8 @@ class MockDisplayClient : public mojom::DisplayClient {
   MOCK_METHOD1(OnDisplayReceivedCALayerParams, void(const gfx::CALayerParams&));
   MOCK_METHOD1(DidSwapAfterSnapshotRequestReceived,
                void(const std::vector<ui::LatencyInfo>&));
+  MOCK_METHOD1(CreateLayeredWindowUpdater,
+               void(mojom::LayeredWindowUpdaterRequest));
 
  private:
   mojo::Binding<mojom::DisplayClient> binding_;

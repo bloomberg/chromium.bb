@@ -6,27 +6,19 @@
 
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_checker.h"
-#include "base/win/windows_version.h"
+#include "components/viz/common/display/use_layered_window.h"
+#include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/service/display_embedder/output_device_backing.h"
+#include "mojo/public/cpp/system/platform_handle.h"
+#include "services/viz/privileged/interfaces/compositing/layered_window_updater.mojom.h"
 #include "skia/ext/platform_canvas.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/base/win/internal_constants.h"
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skia_util.h"
 
 namespace viz {
 namespace {
-
-bool NeedsToUseLayerWindow(HWND hwnd) {
-  // Layered windows are a legacy way of supporting transparency for HWNDs. With
-  // Desktop Window Manager (DWM) HWNDs support transparency natively. DWM is
-  // always enabled on Windows 8 and later. However, for Windows 7 (and earlier)
-  // DWM might be disabled and layered windows are necessary to guarantee the
-  // HWND will support transparency.
-  return base::win::GetVersion() <= base::win::VERSION_WIN7 &&
-         GetProp(hwnd, ui::kWindowTranslucent);
-}
 
 // Shared base class for Windows SoftwareOutputDevice implementations.
 class SoftwareOutputDeviceWinBase : public SoftwareOutputDevice {
@@ -228,13 +220,145 @@ void SoftwareOutputDeviceWinLayered::EndPaintDelegated(
                       RGB(0xFF, 0xFF, 0xFF), &blend, ULW_ALPHA);
 }
 
+// SoftwareOutputDevice implementation that uses layered window API to draw
+// indirectly. Since UpdateLayeredWindow() is blocked by the GPU sandbox an
+// implementation of mojom::LayeredWindowUpdater in the browser process handles
+// calling UpdateLayeredWindow. Pixel backing is in SharedMemory so no copying
+// between processes is required.
+class SoftwareOutputDeviceWinProxy : public SoftwareOutputDeviceWinBase {
+ public:
+  SoftwareOutputDeviceWinProxy(
+      HWND hwnd,
+      mojom::LayeredWindowUpdaterPtr layered_window_updater);
+  ~SoftwareOutputDeviceWinProxy() override = default;
+
+  // SoftwareOutputDevice implementation.
+  void OnSwapBuffers(base::OnceClosure swap_ack_callback) override;
+
+  // SoftwareOutputDeviceWinBase implementation.
+  void ResizeDelegated() override;
+  SkCanvas* BeginPaintDelegated() override;
+  void EndPaintDelegated(const gfx::Rect& rect) override;
+
+ private:
+  // Runs |swap_ack_callback_| after draw has happened.
+  void DrawAck();
+
+  mojom::LayeredWindowUpdaterPtr layered_window_updater_;
+
+  std::unique_ptr<SkCanvas> canvas_;
+  bool waiting_on_draw_ack_ = false;
+  base::OnceClosure swap_ack_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceWinProxy);
+};
+
+SoftwareOutputDeviceWinProxy::SoftwareOutputDeviceWinProxy(
+    HWND hwnd,
+    mojom::LayeredWindowUpdaterPtr layered_window_updater)
+    : SoftwareOutputDeviceWinBase(hwnd),
+      layered_window_updater_(std::move(layered_window_updater)) {
+  DCHECK(layered_window_updater_.is_bound());
+}
+
+void SoftwareOutputDeviceWinProxy::OnSwapBuffers(
+    base::OnceClosure swap_ack_callback) {
+  DCHECK(swap_ack_callback_.is_null());
+
+  // We aren't waiting on DrawAck() and can immediately run the callback.
+  if (!waiting_on_draw_ack_) {
+    task_runner_->PostTask(FROM_HERE, std::move(swap_ack_callback));
+    return;
+  }
+
+  swap_ack_callback_ = std::move(swap_ack_callback);
+}
+
+void SoftwareOutputDeviceWinProxy::ResizeDelegated() {
+  canvas_.reset();
+
+  size_t required_bytes;
+  if (!ResourceSizes::MaybeSizeInBytes(
+          viewport_pixel_size_, ResourceFormat::RGBA_8888, &required_bytes)) {
+    DLOG(ERROR) << "Invalid viewport size " << viewport_pixel_size_.ToString();
+    return;
+  }
+
+  base::SharedMemory shm;
+  if (!shm.CreateAnonymous(required_bytes)) {
+    DLOG(ERROR) << "Failed to allocate " << required_bytes << " bytes";
+    return;
+  }
+
+  // The SkCanvas maps shared memory on creation and unmaps on destruction.
+  canvas_ = skia::CreatePlatformCanvasWithSharedSection(
+      viewport_pixel_size_.width(), viewport_pixel_size_.height(), true,
+      shm.handle().GetHandle(), skia::CRASH_ON_FAILURE);
+
+  // Transfer handle ownership to the browser process.
+  mojo::ScopedSharedBufferHandle scoped_handle = mojo::WrapSharedMemoryHandle(
+      shm.TakeHandle(), required_bytes,
+      mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
+
+  layered_window_updater_->OnAllocatedSharedMemory(viewport_pixel_size_,
+                                                   std::move(scoped_handle));
+}
+
+SkCanvas* SoftwareOutputDeviceWinProxy::BeginPaintDelegated() {
+  return canvas_.get();
+}
+
+void SoftwareOutputDeviceWinProxy::EndPaintDelegated(
+    const gfx::Rect& damage_rect) {
+  DCHECK(!waiting_on_draw_ack_);
+
+  if (!canvas_)
+    return;
+
+  layered_window_updater_->Draw(base::BindOnce(
+      &SoftwareOutputDeviceWinProxy::DrawAck, base::Unretained(this)));
+  waiting_on_draw_ack_ = true;
+
+  TRACE_EVENT_ASYNC_BEGIN0("viz", "SoftwareOutputDeviceWinProxy::Draw", this);
+}
+
+void SoftwareOutputDeviceWinProxy::DrawAck() {
+  DCHECK(waiting_on_draw_ack_);
+  DCHECK(!swap_ack_callback_.is_null());
+
+  TRACE_EVENT_ASYNC_END0("viz", "SoftwareOutputDeviceWinProxy::Draw", this);
+
+  waiting_on_draw_ack_ = false;
+  std::move(swap_ack_callback_).Run();
+}
+
 }  // namespace
 
-std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWin(
+std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinBrowser(
     HWND hwnd,
     OutputDeviceBacking* backing) {
   if (NeedsToUseLayerWindow(hwnd))
     return std::make_unique<SoftwareOutputDeviceWinLayered>(hwnd);
+
+  return std::make_unique<SoftwareOutputDeviceWinDirect>(hwnd, backing);
+}
+
+std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWinGpu(
+    HWND hwnd,
+    OutputDeviceBacking* backing,
+    mojom::DisplayClient* display_client) {
+  if (NeedsToUseLayerWindow(hwnd)) {
+    DCHECK(display_client);
+
+    // Setup mojom::LayeredWindowUpdater implementation in the browser process
+    // to draw to the HWND.
+    mojom::LayeredWindowUpdaterPtr layered_window_updater;
+    display_client->CreateLayeredWindowUpdater(
+        mojo::MakeRequest(&layered_window_updater));
+
+    return std::make_unique<SoftwareOutputDeviceWinProxy>(
+        hwnd, std::move(layered_window_updater));
+  }
 
   return std::make_unique<SoftwareOutputDeviceWinDirect>(hwnd, backing);
 }

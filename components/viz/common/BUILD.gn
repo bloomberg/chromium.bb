@@ -181,6 +181,15 @@ viz_component("common") {
     deps += [ "//gpu/vulkan" ]
   }
 
+  if (is_win) {
+    sources += [
+      "display/use_layered_window.cc",
+      "display/use_layered_window.h",
+    ]
+
+    deps += [ "//ui/base" ]
+  }
+
   public_deps = [
     ":resource_format",
     "//gpu/command_buffer/client",

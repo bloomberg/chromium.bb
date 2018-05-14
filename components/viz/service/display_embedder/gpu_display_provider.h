@@ -51,6 +51,7 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
+      mojom::DisplayClient* display_client,
       ExternalBeginFrameControllerImpl* external_begin_frame_controller,
       const RendererSettings& renderer_settings,
       std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source)
@@ -58,7 +59,8 @@ class VIZ_SERVICE_EXPORT GpuDisplayProvider : public DisplayProvider {
 
  private:
   std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceForPlatform(
-      gpu::SurfaceHandle surface_handle);
+      gpu::SurfaceHandle surface_handle,
+      mojom::DisplayClient* display_client);
 
   const uint32_t restart_id_;
   GpuServiceImpl* const gpu_service_impl_;

@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "gpu/ipc/common/surface_handle.h"
+#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
 
 namespace viz {
 
@@ -29,6 +30,7 @@ class DisplayProvider {
       const FrameSinkId& frame_sink_id,
       gpu::SurfaceHandle surface_handle,
       bool gpu_compositing,
+      mojom::DisplayClient* display_client,
       ExternalBeginFrameControllerImpl* external_begin_frame_controller,
       const RendererSettings& renderer_settings,
       std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) = 0;
