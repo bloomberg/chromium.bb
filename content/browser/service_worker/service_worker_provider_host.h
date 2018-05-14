@@ -677,6 +677,9 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // redirects.
   bool is_execution_ready_ = false;
 
+  // TODO(crbug.com/838410): Temporary debugging for the linked bug.
+  bool in_dtor_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerProviderHost);
 };
 

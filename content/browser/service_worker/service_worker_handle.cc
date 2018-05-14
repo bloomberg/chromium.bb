@@ -11,6 +11,7 @@
 #include "content/browser/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 
 namespace content {
@@ -180,6 +181,12 @@ ServiceWorkerHandle::ServiceWorkerHandle(
 }
 
 ServiceWorkerHandle::~ServiceWorkerHandle() {
+  // TODO(crbug.com/838410): These CHECKs are temporary debugging for the linked
+  // bug.
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  CHECK(!in_dtor_);
+  in_dtor_ = true;
+
   version_->RemoveListener(this);
 }
 

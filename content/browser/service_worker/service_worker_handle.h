@@ -122,6 +122,9 @@ class CONTENT_EXPORT ServiceWorkerHandle
   mojo::AssociatedInterfacePtrSet<blink::mojom::ServiceWorkerObject>
       remote_objects_;
 
+  // TODO(crbug.com/838410): Temporary debugging for the linked bug.
+  bool in_dtor_ = false;
+
   base::WeakPtrFactory<ServiceWorkerHandle> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerHandle);
