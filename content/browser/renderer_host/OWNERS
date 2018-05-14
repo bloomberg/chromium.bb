@@ -23,9 +23,8 @@ fsamuel@chromium.org
 per-file *delegated_frame*=fsamuel@chromium.org
 
 # WebSQL
-per-file database_*=jsbell@chromium.org
-per-file database_*=michaeln@chromium.org
-per-file database_*=pwnall@chromium.org
+per-file web_database_*=jsbell@chromium.org
+per-file web_database_*=pwnall@chromium.org
 
 # Embedded Frame Sinks (eg. Offscreen Canvas)
 per-file embedded_frame_sink*.*=xlai@chromium.org

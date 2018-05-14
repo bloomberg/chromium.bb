@@ -2,8 +2,5 @@ jsbell@chromium.org
 cmumford@chromium.org
 dmurph@chromium.org
 
-# Secondary: only if other OWNERS are unavailable and something is urgent.
-michaeln@chromium.org
-
 # TEAM: storage-dev@chromium.org
 # COMPONENT: Blink>Storage>IndexedDB
