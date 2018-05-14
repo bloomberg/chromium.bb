@@ -1339,11 +1339,6 @@ void UiSceneCreator::CreateContentQuad() {
                               Resizer, resizer.get(),
                               if (value) { view->Reset(); }));
 
-  auto shadow = Create<Shadow>(kContentQuadShadow, kPhaseForeground);
-  shadow->set_intensity(kContentShadowIntesity);
-  shadow->SetTranslate(0, 0, -kContentShadowOffset);
-  shadow->set_corner_radius(kContentCornerRadius);
-
   auto main_content = std::make_unique<ContentElement>(
       content_input_delegate_,
       base::BindRepeating(&UiBrowserInterface::OnContentScreenBoundsChanged,
@@ -1366,7 +1361,6 @@ void UiSceneCreator::CreateContentQuad() {
   main_content->SetDrawPhase(kPhaseForeground);
   main_content->SetSize(kContentWidth, kContentHeight);
   main_content->set_corner_radius(kContentCornerRadius);
-  main_content->SetTranslate(0, 0, kContentShadowOffset);
   main_content->SetTransitionedProperties({BOUNDS});
   main_content->SetTextInputDelegate(text_input_delegate_);
   main_content->AddBinding(std::make_unique<Binding<bool>>(
@@ -1442,8 +1436,7 @@ void UiSceneCreator::CreateContentQuad() {
                                  model->reposition_window_permitted(),
                                  UiElement, plane.get(), set_hit_testable));
 
-  shadow->AddChild(std::move(main_content));
-  resizer->AddChild(std::move(shadow));
+  resizer->AddChild(std::move(main_content));
   plane->AddChild(std::move(resizer));
   frame->AddChild(std::move(plane));
   scene_->AddUiElement(k2dBrowsingContentGroup, std::move(frame));
@@ -2578,14 +2571,6 @@ void UiSceneCreator::CreateOmnibox() {
       base::TimeDelta::FromMilliseconds(kOmniboxTransitionMs));
   VR_BIND_VISIBILITY(omnibox_root, model->get_mode() == kModeEditingOmnibox);
 
-  // The shadow also controls omnibox Y offset.
-  auto shadow = Create<Shadow>(kOmniboxShadow, kPhaseForeground);
-  shadow->set_intensity(kOmniboxShadowIntensity);
-  shadow->set_y_centering(BOTTOM);
-  shadow->set_corner_radius(kOmniboxCornerRadiusDMM);
-  shadow->SetTranslate(0, kOmniboxVerticalOffsetDMM - 0.5 * kOmniboxHeightDMM,
-                       -kOmniboxShadowOffset);
-
   auto omnibox_outer_layout =
       Create<LinearLayout>(kOmniboxOuterLayout, kPhaseNone, LinearLayout::kUp);
 
@@ -2799,18 +2784,18 @@ void UiSceneCreator::CreateOmnibox() {
   auto omnibox_background = Create<Rect>(kOmniboxBackground, kPhaseForeground);
   omnibox_background->set_bounds_contain_children(true);
   omnibox_background->set_hit_testable(true);
+  omnibox_background->set_y_centering(BOTTOM);
   omnibox_background->set_focusable(false);
   omnibox_background->set_corner_radius(kOmniboxCornerRadiusDMM);
-  omnibox_background->SetTranslate(0, 0, kOmniboxShadowOffset);
+  omnibox_background->SetTranslate(
+      0, kOmniboxVerticalOffsetDMM - 0.5 * kOmniboxHeightDMM, 0);
   VR_BIND_COLOR(model_, omnibox_background.get(),
                 &ColorScheme::omnibox_background, &Rect::SetColor);
   omnibox_background->AddChild(std::move(omnibox_outer_layout));
 
-  shadow->AddChild(std::move(omnibox_background));
-
   button_scaler->AddChild(std::move(close_button));
 
-  omnibox_root->AddChild(std::move(shadow));
+  omnibox_root->AddChild(std::move(omnibox_background));
   omnibox_root->AddChild(std::move(button_scaler));
 
   scaler->AddChild(std::move(omnibox_root));

@@ -52,7 +52,6 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kContentFrame,
     kContentFrameHitPlane,
     kContentQuad,
-    kContentQuadShadow,
     kBackplane,
     kUrlBar,
     kUrlBarBackButton,
@@ -459,7 +458,6 @@ TEST_F(UiTest, HostedUiInWebVr) {
 TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
   auto visible_in_fullscreen = kFloorCeilingBackgroundElements;
   visible_in_fullscreen.insert(kContentQuad);
-  visible_in_fullscreen.insert(kContentQuadShadow);
   visible_in_fullscreen.insert(kBackplane);
   visible_in_fullscreen.insert(kCloseButton);
   visible_in_fullscreen.insert(kController);
