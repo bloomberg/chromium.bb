@@ -1377,9 +1377,6 @@ config("default_warnings") {
       # which we no longer use. Check if it makes sense to remove
       # this as well. http://crbug.com/316352
       "-Wno-unneeded-internal-declaration",
-
-      # TODO(hans): Get this cleaned up, http://crbug.com/428099
-      "-Wno-inconsistent-missing-override",
     ]
 
     # use_xcode_clang only refers to the iOS toolchain, host binaries use
