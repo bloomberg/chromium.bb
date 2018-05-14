@@ -19,8 +19,7 @@ class AccessorySheetMediator {
     }
 
     KeyboardAccessoryData.Tab getTab() {
-        if (mTab == null) mTab = new KeyboardAccessoryData.Tab() {};
-        return mTab;
+        return null; // TODO(fhorschig): Return the active tab.
     }
 
     @VisibleForTesting

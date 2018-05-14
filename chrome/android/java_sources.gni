@@ -695,6 +695,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/modaldialog/TabModalLifetimeHandler.java",
   "java/src/org/chromium/chrome/browser/modaldialog/TabModalPresenter.java",
   "java/src/org/chromium/chrome/browser/modelutil/LazyViewBinderAdapter.java",
+  "java/src/org/chromium/chrome/browser/modelutil/ListModelChangeProcessor.java",
   "java/src/org/chromium/chrome/browser/modelutil/ListObservable.java",
   "java/src/org/chromium/chrome/browser/modelutil/PropertyModelChangeProcessor.java",
   "java/src/org/chromium/chrome/browser/modelutil/PropertyObservable.java",

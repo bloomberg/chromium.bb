@@ -53,8 +53,10 @@ public class KeyboardAccessoryControllerTest {
     @Mock
     private KeyboardAccessoryView mMockView;
 
-    private static class FakeTab implements KeyboardAccessoryData.Tab {}
-    private static class FakeAction implements Action {
+    @Mock
+    private KeyboardAccessoryData.Tab mMockTab;
+
+    private static class FakeAction implements KeyboardAccessoryData.Action {
         @Override
         public String getCaption() {
             return null;
@@ -111,18 +113,16 @@ public class KeyboardAccessoryControllerTest {
     @SmallTest
     @Feature({"keyboard-accessory"})
     public void testChangingTabsNotifiesTabObserver() {
-        final FakeTab testTab = new FakeTab();
-
         mModel.addTabListObserver(mMockTabListObserver);
 
         // Calling addTab on the coordinator should make model propagate that it has a new tab.
-        mCoordinator.addTab(testTab);
+        mCoordinator.addTab(mMockTab);
         verify(mMockTabListObserver).onItemRangeInserted(mModel.getTabList(), 0, 1);
         assertThat(mModel.getTabList().getItemCount(), is(1));
-        assertThat(mModel.getTabList().get(0), is(equalTo(testTab)));
+        assertThat(mModel.getTabList().get(0), is(equalTo(mMockTab)));
 
         // Calling hide on the coordinator should make model propagate that it's invisible.
-        mCoordinator.removeTab(testTab);
+        mCoordinator.removeTab(mMockTab);
         verify(mMockTabListObserver).onItemRangeRemoved(mModel.getTabList(), 0, 1);
         assertThat(mModel.getTabList().getItemCount(), is(0));
     }
@@ -240,7 +240,7 @@ public class KeyboardAccessoryControllerTest {
         assertThat(mModel.isVisible(), is(false));
 
         // Adding actions while the keyboard is visible triggers the accessory.
-        mCoordinator.addTab(new FakeTab());
+        mCoordinator.addTab(mMockTab);
         assertThat(mModel.isVisible(), is(true));
     }
 }

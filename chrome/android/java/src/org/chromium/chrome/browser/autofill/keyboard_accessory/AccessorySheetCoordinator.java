@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.view.View;
 import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
@@ -25,8 +26,8 @@ public class AccessorySheetCoordinator {
      * @param viewStub The view stub that can be inflated into the accessory layout.
      */
     public AccessorySheetCoordinator(ViewStub viewStub) {
-        LazyViewBinderAdapter.StubHolder stubHolder =
-                new LazyViewBinderAdapter.StubHolder(viewStub);
+        LazyViewBinderAdapter.StubHolder<View> stubHolder =
+                new LazyViewBinderAdapter.StubHolder<>(viewStub);
         AccessorySheetModel model = new AccessorySheetModel();
         model.addObserver(new PropertyModelChangeProcessor<>(
                 model, stubHolder, new LazyViewBinderAdapter<>(new AccessorySheetViewBinder())));

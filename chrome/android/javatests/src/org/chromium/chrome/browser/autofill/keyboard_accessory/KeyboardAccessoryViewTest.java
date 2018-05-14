@@ -10,11 +10,14 @@ import static android.support.test.espresso.assertion.ViewAssertions.doesNotExis
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
+import static android.support.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
@@ -22,10 +25,13 @@ import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
+import android.graphics.drawable.Drawable;
 import android.support.test.filters.MediumTest;
+import android.support.v7.widget.AppCompatImageView;
 import android.view.View;
 import android.view.ViewGroup;
 
+import org.hamcrest.Matcher;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,10 +42,8 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.ActionViewBinder;
+import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
-import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 
@@ -53,7 +57,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class KeyboardAccessoryViewTest {
     private KeyboardAccessoryModel mModel;
-    private KeyboardAccessoryViewBinder.AccessoryViewHolder mViewHolder;
+    private LazyViewBinderAdapter.StubHolder<KeyboardAccessoryView> mViewHolder;
 
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
@@ -74,22 +78,41 @@ public class KeyboardAccessoryViewTest {
         };
     }
 
+    private KeyboardAccessoryData.Tab createTestTab(String contentDescription) {
+        return new KeyboardAccessoryData.Tab() {
+            @Override
+            public Drawable getIcon() {
+                return mActivityTestRule.getActivity().getResources().getDrawable(
+                        android.R.drawable.ic_lock_lock);
+            }
+
+            @Override
+            public String getContentDescription() {
+                return contentDescription;
+            }
+        };
+    }
+
+    /**
+     * Matches a tab with a given content description. Selecting the content description alone will
+     * match all icons of the tabs as well.
+     * @param description The description to look for.
+     * @return Returns a matcher that can be used in |onView| or within other {@link Matcher}s.
+     */
+    private static Matcher<View> isTabWithDescription(String description) {
+        return allOf(withContentDescription(description),
+                instanceOf(AppCompatImageView.class)); // Match only the image.
+    }
+
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
         mModel = new KeyboardAccessoryModel();
+        mViewHolder = new LazyViewBinderAdapter.StubHolder<>(
+                mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub));
 
-        RecyclerViewAdapter<
-                KeyboardAccessoryModel.SimpleListObservable<KeyboardAccessoryData.Action>,
-                ActionViewBinder.ViewHolder> actionsAdapter =
-                new RecyclerViewAdapter<>(mModel.getActionList(), new ActionViewBinder());
-        mViewHolder = new KeyboardAccessoryViewBinder.AccessoryViewHolder(
-                mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub),
-                actionsAdapter);
-        mModel.addObserver(new PropertyModelChangeProcessor<>(
-                mModel, mViewHolder, new KeyboardAccessoryViewBinder()));
-
-        mModel.addActionListObserver(new RecyclerViewModelChangeProcessor<>(actionsAdapter));
+        mModel.addObserver(new PropertyModelChangeProcessor<>(mModel, mViewHolder,
+                new LazyViewBinderAdapter<>(new KeyboardAccessoryViewBinder())));
     }
 
     @Test
@@ -141,10 +164,8 @@ public class KeyboardAccessoryViewTest {
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(matches(isDisplayed()));
 
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mModel.setVisible(true);
-            mModel.getActionList().add(createTestAction("Third", action -> {}));
-        });
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mModel.getActionList().add(createTestAction("Third", action -> {})));
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Third")));
         onView(withText("First")).check(matches(isDisplayed()));
@@ -177,5 +198,56 @@ public class KeyboardAccessoryViewTest {
         onView(withText("First")).check(matches(isDisplayed()));
         onView(withText("Second")).check(doesNotExist());
         onView(withText("Third")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    public void testRemovesTabs() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.setVisible(true);
+            mModel.getTabList().set(new KeyboardAccessoryData.Tab[] {createTestTab("FirstTab"),
+                    createTestTab("SecondTab"), createTestTab("ThirdTab")});
+        });
+
+        onView(isRoot()).check(
+                (root, e) -> waitForView((ViewGroup) root, isTabWithDescription("FirstTab")));
+        onView(isTabWithDescription("FirstTab")).check(matches(isDisplayed()));
+        onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
+        onView(isTabWithDescription("ThirdTab")).check(matches(isDisplayed()));
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> mModel.getTabList().remove(mModel.getTabList().get(1)));
+
+        onView(isRoot()).check(
+                (root, e)
+                        -> waitForView((ViewGroup) root, isTabWithDescription("SecondTab"),
+                                VIEW_INVISIBLE | VIEW_GONE | VIEW_NULL));
+        onView(isTabWithDescription("FirstTab")).check(matches(isDisplayed()));
+        onView(isTabWithDescription("SecondTab")).check(doesNotExist());
+        onView(isTabWithDescription("ThirdTab")).check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
+    public void testAddsTabs() {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mModel.setVisible(true);
+            mModel.getTabList().set(new KeyboardAccessoryData.Tab[] {
+                    createTestTab("FirstTab"), createTestTab("SecondTab")});
+        });
+
+        onView(isRoot()).check(
+                (root, e) -> waitForView((ViewGroup) root, isTabWithDescription("FirstTab")));
+        onView(isTabWithDescription("FirstTab")).check(matches(isDisplayed()));
+        onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
+        onView(isTabWithDescription("ThirdTab")).check(doesNotExist());
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.getTabList().add(createTestTab("ThirdTab")));
+
+        onView(isRoot()).check(
+                (root, e) -> waitForView((ViewGroup) root, isTabWithDescription("ThirdTab")));
+        onView(isTabWithDescription("FirstTab")).check(matches(isDisplayed()));
+        onView(isTabWithDescription("SecondTab")).check(matches(isDisplayed()));
+        onView(isTabWithDescription("ThirdTab")).check(matches(isDisplayed()));
     }
 }

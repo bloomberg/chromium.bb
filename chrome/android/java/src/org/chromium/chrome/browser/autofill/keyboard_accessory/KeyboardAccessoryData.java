@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.graphics.drawable.Drawable;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,7 +46,17 @@ public class KeyboardAccessoryData {
      * accessory. Typically, a tab is responsible to change the bottom sheet below the accessory.
      */
     public interface Tab {
-        // E.g. getIcon(), getDescription() and onTabSelected()
+        /**
+         * Provides the icon that will be displayed in the {@link KeyboardAccessoryCoordinator}.
+         * @return The small icon that identifies this tab uniquely.
+         */
+        Drawable getIcon();
+
+        /**
+         * The description for this tab. It will become the content description of the icon.
+         * @return A short string describing the task of this tab.
+         */
+        String getContentDescription();
     }
 
     /**
