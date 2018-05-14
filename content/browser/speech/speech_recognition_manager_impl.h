@@ -67,9 +67,6 @@ class CONTENT_EXPORT SpeechRecognitionManagerImpl
       int session_id) const override;
   SpeechRecognitionSessionContext GetSessionContext(
       int session_id) const override;
-  int GetSession(int render_process_id,
-                 int render_frame_id,
-                 int request_id) const override;
 
   // SpeechRecognitionEventListener methods.
   void OnRecognitionStart(int session_id) override;

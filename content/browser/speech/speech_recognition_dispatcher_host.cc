@@ -15,7 +15,6 @@
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/speech/speech_recognition_manager_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/common/speech_recognition_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/speech_recognition_manager_delegate.h"
@@ -29,12 +28,10 @@ namespace content {
 SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
     int render_process_id,
     int render_frame_id,
-    scoped_refptr<net::URLRequestContextGetter> context_getter,
-    base::WeakPtr<IPC::Sender> sender)
+    scoped_refptr<net::URLRequestContextGetter> context_getter)
     : render_process_id_(render_process_id),
       render_frame_id_(render_frame_id),
       context_getter_(std::move(context_getter)),
-      sender_(std::move(sender)),
       weak_factory_(this) {
   // Do not add any non-trivial initialization here, instead do it lazily when
   // required (e.g. see the method |SpeechRecognitionManager::GetInstance()|) or
@@ -46,12 +43,11 @@ void SpeechRecognitionDispatcherHost::Create(
     int render_process_id,
     int render_frame_id,
     scoped_refptr<net::URLRequestContextGetter> context_getter,
-    base::WeakPtr<IPC::Sender> sender,
     mojom::SpeechRecognizerRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<SpeechRecognitionDispatcherHost>(
-                              render_process_id, render_frame_id,
-                              std::move(context_getter), std::move(sender)),
-                          std::move(request));
+  mojo::MakeStrongBinding(
+      std::make_unique<SpeechRecognitionDispatcherHost>(
+          render_process_id, render_frame_id, std::move(context_getter)),
+      std::move(request));
 }
 
 SpeechRecognitionDispatcherHost::~SpeechRecognitionDispatcherHost() {}
@@ -63,9 +59,7 @@ SpeechRecognitionDispatcherHost::AsWeakPtr() {
 
 // -------- mojom::SpeechRecognizer interface implementation ------------------
 
-// TODO(adithyas): Posting a task on the UI thread (and subsequently the IO
-// thread) could result in a race. See https://crbug.com/836870 for details.
-void SpeechRecognitionDispatcherHost::StartRequest(
+void SpeechRecognitionDispatcherHost::Start(
     mojom::StartSpeechRecognitionRequestParamsPtr params) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -85,109 +79,6 @@ void SpeechRecognitionDispatcherHost::StartRequest(
                      AsWeakPtr(), render_process_id_, render_frame_id_,
                      std::move(params)));
 }
-
-void SpeechRecognitionDispatcherHost::AbortRequest(int32_t request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  int session_id = SpeechRecognitionManager::GetInstance()->GetSession(
-      render_process_id_, render_frame_id_, request_id);
-
-  // The renderer might provide an invalid |request_id| if the session was not
-  // started as expected, e.g., due to unsatisfied security requirements.
-  if (session_id != SpeechRecognitionManager::kSessionIDInvalid)
-    SpeechRecognitionManager::GetInstance()->AbortSession(session_id);
-}
-
-void SpeechRecognitionDispatcherHost::AbortAllRequests() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  SpeechRecognitionManager::GetInstance()->AbortAllSessionsForRenderFrame(
-      render_process_id_, render_frame_id_);
-}
-
-void SpeechRecognitionDispatcherHost::StopCaptureRequest(int32_t request_id) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  int session_id = SpeechRecognitionManager::GetInstance()->GetSession(
-      render_process_id_, render_frame_id_, request_id);
-
-  // The renderer might provide an invalid |request_id| if the session was not
-  // started as expected, e.g., due to unsatisfied security requirements.
-  if (session_id != SpeechRecognitionManager::kSessionIDInvalid) {
-    SpeechRecognitionManager::GetInstance()->StopAudioCaptureForSession(
-        session_id);
-  }
-}
-
-// -------- SpeechRecognitionEventListener interface implementation -----------
-
-void SpeechRecognitionDispatcherHost::OnRecognitionStart(int session_id) {
-  const SpeechRecognitionSessionContext& context =
-      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-  Send(new SpeechRecognitionMsg_Started(context.render_frame_id,
-                                        context.request_id));
-}
-
-void SpeechRecognitionDispatcherHost::OnAudioStart(int session_id) {
-  const SpeechRecognitionSessionContext& context =
-      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-  Send(new SpeechRecognitionMsg_AudioStarted(context.render_frame_id,
-                                             context.request_id));
-}
-
-void SpeechRecognitionDispatcherHost::OnSoundStart(int session_id) {
-  const SpeechRecognitionSessionContext& context =
-      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-  Send(new SpeechRecognitionMsg_SoundStarted(context.render_frame_id,
-                                             context.request_id));
-}
-
-void SpeechRecognitionDispatcherHost::OnSoundEnd(int session_id) {
-  const SpeechRecognitionSessionContext& context =
-      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-  Send(new SpeechRecognitionMsg_SoundEnded(context.render_frame_id,
-                                           context.request_id));
-}
-
-void SpeechRecognitionDispatcherHost::OnAudioEnd(int session_id) {
-  const SpeechRecognitionSessionContext& context =
-      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-  Send(new SpeechRecognitionMsg_AudioEnded(context.render_frame_id,
-                                           context.request_id));
-}
-
-void SpeechRecognitionDispatcherHost::OnRecognitionEnd(int session_id) {
-  const SpeechRecognitionSessionContext& context =
-      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-  Send(new SpeechRecognitionMsg_Ended(context.render_frame_id,
-                                      context.request_id));
-}
-
-void SpeechRecognitionDispatcherHost::OnRecognitionResults(
-    int session_id,
-    const SpeechRecognitionResults& results) {
-  const SpeechRecognitionSessionContext& context =
-      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-  Send(new SpeechRecognitionMsg_ResultRetrieved(context.render_frame_id,
-                                                context.request_id, results));
-}
-
-void SpeechRecognitionDispatcherHost::OnRecognitionError(
-    int session_id,
-    const SpeechRecognitionError& error) {
-  const SpeechRecognitionSessionContext& context =
-      SpeechRecognitionManager::GetInstance()->GetSessionContext(session_id);
-  Send(new SpeechRecognitionMsg_ErrorOccurred(context.render_frame_id,
-                                              context.request_id, error));
-}
-
-// The events below are currently not used by speech JS APIs implementation.
-void SpeechRecognitionDispatcherHost::OnAudioLevelsChange(int session_id,
-                                                          float volume,
-                                                          float noise_volume) {}
-
-void SpeechRecognitionDispatcherHost::OnEnvironmentEstimationComplete(
-    int session_id) {}
 
 // static
 void SpeechRecognitionDispatcherHost::StartRequestOnUI(
@@ -263,7 +154,9 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   context.render_frame_id = render_frame_id_;
   context.embedder_render_process_id = embedder_render_process_id;
   context.embedder_render_frame_id = embedder_render_frame_id;
-  context.request_id = params->request_id;
+
+  auto session =
+      std::make_unique<SpeechRecognitionSession>(std::move(params->client));
 
   SpeechRecognitionSessionConfig config;
   config.language = params->language;
@@ -275,20 +168,85 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   config.filter_profanities = filter_profanities;
   config.continuous = params->continuous;
   config.interim_results = params->interim_results;
-  config.event_listener = AsWeakPtr();
+  config.event_listener = session->AsWeakPtr();
 
   int session_id =
       SpeechRecognitionManager::GetInstance()->CreateSession(config);
   DCHECK_NE(session_id, SpeechRecognitionManager::kSessionIDInvalid);
+  session->SetSessionId(session_id);
+  mojo::MakeStrongBinding(std::move(session),
+                          std::move(params->session_request));
+
   SpeechRecognitionManager::GetInstance()->StartSession(session_id);
 }
 
-void SpeechRecognitionDispatcherHost::Send(IPC::Message* message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  // The weak ptr must only be accessed on the UI thread.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(base::IgnoreResult(&IPC::Sender::Send), sender_, message));
+// ---------------------- SpeechRecognizerSession -----------------------------
+
+SpeechRecognitionSession::SpeechRecognitionSession(
+    mojom::SpeechRecognitionSessionClientPtrInfo client_ptr_info)
+    : session_id_(SpeechRecognitionManager::kSessionIDInvalid),
+      client_(std::move(client_ptr_info)),
+      weak_factory_(this) {}
+
+SpeechRecognitionSession::~SpeechRecognitionSession() = default;
+
+base::WeakPtr<SpeechRecognitionSession> SpeechRecognitionSession::AsWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void SpeechRecognitionSession::Abort() {
+  SpeechRecognitionManager::GetInstance()->AbortSession(session_id_);
+}
+
+void SpeechRecognitionSession::StopCapture() {
+  SpeechRecognitionManager::GetInstance()->StopAudioCaptureForSession(
+      session_id_);
+}
+
+// -------- SpeechRecognitionEventListener interface implementation -----------
+
+void SpeechRecognitionSession::OnRecognitionStart(int session_id) {
+  client_->Started();
+}
+
+void SpeechRecognitionSession::OnAudioStart(int session_id) {
+  client_->AudioStarted();
+}
+
+void SpeechRecognitionSession::OnSoundStart(int session_id) {
+  client_->SoundStarted();
+}
+
+void SpeechRecognitionSession::OnSoundEnd(int session_id) {
+  client_->SoundEnded();
+}
+
+void SpeechRecognitionSession::OnAudioEnd(int session_id) {
+  client_->AudioEnded();
+}
+
+void SpeechRecognitionSession::OnRecognitionEnd(int session_id) {
+  client_->Ended();
+}
+
+void SpeechRecognitionSession::OnRecognitionResults(
+    int session_id,
+    const SpeechRecognitionResults& results) {
+  client_->ResultRetrieved(results);
+}
+
+void SpeechRecognitionSession::OnRecognitionError(
+    int session_id,
+    const SpeechRecognitionError& error) {
+  client_->ErrorOccurred(error);
+}
+
+// The events below are currently not used by speech JS APIs implementation.
+void SpeechRecognitionSession::OnAudioLevelsChange(int session_id,
+                                                   float volume,
+                                                   float noise_volume) {}
+
+void SpeechRecognitionSession::OnEnvironmentEstimationComplete(int session_id) {
 }
 
 }  // namespace content

@@ -122,14 +122,6 @@ void FakeSpeechRecognitionManager::AbortAllSessionsForRenderFrame(
   did_cancel_all_ = true;
 }
 
-int FakeSpeechRecognitionManager::GetSession(int render_process_id,
-                                             int render_frame_id,
-                                             int request_id) const {
-  return session_ctx_.render_process_id == render_process_id &&
-         session_ctx_.render_frame_id == render_frame_id &&
-         session_ctx_.request_id == request_id;
-}
-
 const SpeechRecognitionSessionConfig&
     FakeSpeechRecognitionManager::GetSessionConfig(int session_id) const {
   EXPECT_EQ(session_id, session_id_);

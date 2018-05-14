@@ -12,8 +12,7 @@ SpeechRecognitionSessionContext::SpeechRecognitionSessionContext()
     : render_process_id(0),
       render_frame_id(MSG_ROUTING_NONE),
       embedder_render_process_id(0),
-      embedder_render_frame_id(MSG_ROUTING_NONE),
-      request_id(0) {}
+      embedder_render_frame_id(MSG_ROUTING_NONE) {}
 
 SpeechRecognitionSessionContext::SpeechRecognitionSessionContext(
     const SpeechRecognitionSessionContext& other) = default;

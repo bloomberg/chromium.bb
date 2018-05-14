@@ -346,7 +346,7 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
   if (ask_user) {
     SpeechRecognitionSessionContext& context = session->context;
     context.label = media_stream_manager_->MakeMediaAccessRequest(
-        context.render_process_id, context.render_frame_id, context.request_id,
+        context.render_process_id, context.render_frame_id, session_id,
         StreamControls(true, false), context.security_origin,
         base::BindOnce(
             &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
@@ -587,26 +587,6 @@ void SpeechRecognitionManagerImpl::OnRecognitionEnd(int session_id) {
       FROM_HERE, base::BindOnce(&SpeechRecognitionManagerImpl::DispatchEvent,
                                 weak_factory_.GetWeakPtr(), session_id,
                                 EVENT_RECOGNITION_ENDED));
-}
-
-int SpeechRecognitionManagerImpl::GetSession(int render_process_id,
-                                             int render_frame_id,
-                                             int request_id) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  auto iter = std::find_if(
-      sessions_.begin(), sessions_.end(),
-      [render_process_id, render_frame_id, request_id](
-          const std::pair<int, std::unique_ptr<Session>>& session_pair) {
-        const SpeechRecognitionSessionContext& context =
-            session_pair.second->context;
-        return context.render_process_id == render_process_id &&
-               context.render_frame_id == render_frame_id &&
-               context.request_id == request_id;
-      });
-  if (iter == sessions_.end())
-    return kSessionIDInvalid;
-
-  return iter->first;
 }
 
 SpeechRecognitionSessionContext
