@@ -311,10 +311,6 @@ const base::Feature kResamplingInputEvents{"ResamplingInputEvents",
 const base::Feature kResourceLoadScheduler{"ResourceLoadScheduler",
                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Use common overflow scroll mechanism for frames. See http://crbug.com/417782.
-const base::Feature kRootLayerScrolling{"RootLayerScrolling",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Run video capture service in the Browser process as opposed to a dedicated
 // utility process
 const base::Feature kRunVideoCaptureServiceInBrowserProcess{
