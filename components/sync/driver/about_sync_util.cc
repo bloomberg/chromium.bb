@@ -285,9 +285,9 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   Stat<std::string>* last_synced = section_local->AddStringStat("Last Synced");
   Stat<bool>* is_setup_complete =
       section_local->AddBoolStat("Sync First-Time Setup Complete");
-  Stat<std::string>* backend_initialization =
-      section_local->AddStringStat("Sync Backend Initialization");
-  Stat<bool>* is_syncing = section_local->AddBoolStat("Syncing");
+  Stat<std::string>* engine_initialization_state =
+      section_local->AddStringStat("Sync Engine State");
+  Stat<bool>* is_syncing = section_local->AddBoolStat("Sync Cycle Ongoing");
   Stat<bool>* is_local_sync_enabled =
       section_local->AddBoolStat("Local Sync Backend Enabled");
   Stat<std::string>* local_backend_path =
@@ -417,7 +417,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   server_connection->Set(GetConnectionStatus(token_status));
   last_synced->Set(GetLastSyncedTimeString(service->GetLastSyncedTime()));
   is_setup_complete->Set(service->IsFirstSetupComplete());
-  backend_initialization->Set(service->GetEngineInitializationStateString());
+  engine_initialization_state->Set(
+      service->GetEngineInitializationStateString());
   if (is_status_valid)
     is_syncing->Set(full_status.syncing);
   is_local_sync_enabled->Set(service->IsLocalSyncEnabled());

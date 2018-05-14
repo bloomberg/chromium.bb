@@ -49,6 +49,7 @@ struct SyncStatus {
   // Number of items successfully committed during most recent sync cycle.
   int committed_count;
 
+  // Whether a sync cycle is going on right now.
   bool syncing;
 
   // Total updates received by the syncer since browser start.
