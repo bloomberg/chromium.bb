@@ -1025,6 +1025,34 @@ TEST_P(VisualRectMappingTest, FixedContentsWithScrollOffset) {
                                       ancestor, kDefaultVisualRectFlags, true);
 }
 
+TEST_P(VisualRectMappingTest, FixedContentsUnderViewWithScrollOffset) {
+  GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
+      true);
+  SetBodyInnerHTML(R"HTML(
+    <style>body { margin:0; } ::-webkit-scrollbar { display:none; }</style>
+    <div id='fixed' style='
+        position:fixed; top:0; left:0; width:400px; height:300px;'>
+    </div>
+    <div id='forcescroll' style='height:1000px;'></div>
+  )HTML");
+
+  auto* fixed = GetDocument().getElementById("fixed")->GetLayoutObject();
+
+  CheckMapToVisualRectInAncestorSpace(
+      LayoutRect(0, 0, 400, 300), LayoutRect(0, 0, 400, 300), fixed,
+      fixed->View(), kDefaultVisualRectFlags, true);
+
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 50), kProgrammaticScroll);
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // Results of mapping to ancestor are in absolute coordinates of the
+  // ancestor. Therefore a fixed-position element is (reverse) offset by scroll.
+  CheckMapToVisualRectInAncestorSpace(
+      LayoutRect(0, 0, 400, 300), LayoutRect(0, 50, 400, 300), fixed,
+      fixed->View(), kDefaultVisualRectFlags, true);
+}
+
 TEST_P(VisualRectMappingTest, InclusiveIntersect) {
   GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(R"HTML(

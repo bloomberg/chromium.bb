@@ -2556,8 +2556,9 @@ bool LayoutBox::MapToVisualRectInAncestorSpaceInternal(
 
   if (container->IsLayoutView()) {
     bool use_fixed_position_adjustment =
-        !RuntimeEnabledFeatures::RootLayerScrollingEnabled() &&
-        position == EPosition::kFixed;
+        position == EPosition::kFixed &&
+        (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
+         container == ancestor);
     return ToLayoutView(container)->MapToVisualRectInAncestorSpaceInternal(
         ancestor, transform_state, use_fixed_position_adjustment ? kIsFixed : 0,
         visual_rect_flags);
