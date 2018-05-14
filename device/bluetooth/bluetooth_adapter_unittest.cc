@@ -434,12 +434,17 @@ TEST(BluetoothAdapterTest, GetMergedDiscoveryFilterAllFields) {
 }
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_ConstructDefaultAdapter ConstructDefaultAdapter
 #else
 #define MAYBE_ConstructDefaultAdapter DISABLED_ConstructDefaultAdapter
 #endif
+
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, ConstructDefaultAdapter) {
+#else
 TEST_F(BluetoothTest, MAYBE_ConstructDefaultAdapter) {
+#endif
   InitWithDefaultAdapter();
   if (!adapter_->IsPresent()) {
     LOG(WARNING) << "Bluetooth adapter not present; skipping unit test.";
@@ -486,12 +491,17 @@ TEST_F(BluetoothTest, MAYBE_ConstructWithoutDefaultAdapter) {
 }
 
 // TODO(scheib): Enable BluetoothTest fixture tests on all platforms.
-#if defined(OS_ANDROID) || defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_ANDROID) || defined(OS_MACOSX)
 #define MAYBE_ConstructFakeAdapter ConstructFakeAdapter
 #else
 #define MAYBE_ConstructFakeAdapter DISABLED_ConstructFakeAdapter
 #endif
+
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrt, ConstructFakeAdapter) {
+#else
 TEST_F(BluetoothTest, MAYBE_ConstructFakeAdapter) {
+#endif  // defined(OS_WIN)
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;

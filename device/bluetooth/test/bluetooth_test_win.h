@@ -7,10 +7,13 @@
 
 #include "device/bluetooth/test/bluetooth_test.h"
 
+#include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
+#include "base/win/scoped_winrt_initializer.h"
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_classic_win_fake.h"
 #include "device/bluetooth/bluetooth_low_energy_win_fake.h"
@@ -111,16 +114,14 @@ typedef BluetoothTestWin BluetoothTest;
 class BluetoothTestWinrt : public BluetoothTestWin,
                            public ::testing::WithParamInterface<bool> {
  public:
-  BluetoothTestWinrt() {
-    if (GetParam()) {
-      scoped_feature_list_.InitAndEnableFeature(kNewBLEWinImplementation);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(kNewBLEWinImplementation);
-    }
-  }
+  BluetoothTestWinrt();
+  ~BluetoothTestWinrt();
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::Optional<base::win::ScopedWinrtInitializer> scoped_winrt_initializer_;
+
+  DISALLOW_COPY_AND_ASSIGN(BluetoothTestWinrt);
 };
 
 }  // namespace device
