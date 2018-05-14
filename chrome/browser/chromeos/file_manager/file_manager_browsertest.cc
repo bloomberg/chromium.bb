@@ -282,7 +282,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE, "restoreGeometry"),
                       TestParameter(IN_GUEST_MODE, "restoreGeometry"),
                       TestParameter(NOT_IN_GUEST_MODE,
-                                    "restoreGeometryMaximizedState")));
+                                    "restoreGeometryMaximized")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Traverse,

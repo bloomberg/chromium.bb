@@ -5,7 +5,7 @@
 'use strict';
 
 /**
- * Tests restoring geometry of the Files app.
+ * Tests restoring window geometry of the Files app.
  */
 testcase.restoreGeometry = function() {
   var appId;
@@ -50,7 +50,10 @@ testcase.restoreGeometry = function() {
   ]);
 };
 
-testcase.restoreGeometryMaximizedState = function() {
+/**
+ * Tests restoring a maximized Files app window.
+ */
+testcase.restoreGeometryMaximized = function() {
   var appId;
   var appId2;
   var caller = getCaller();
