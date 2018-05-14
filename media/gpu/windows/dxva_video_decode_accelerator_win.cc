@@ -1146,44 +1146,40 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
   return true;
 }
 
-void DXVAVideoDecodeAccelerator::Decode(
-    const BitstreamBuffer& bitstream_buffer) {
+void DXVAVideoDecodeAccelerator::Decode(const BitstreamBuffer& bitstream) {
+  Decode(bitstream.ToDecoderBuffer(), bitstream.id());
+}
+
+void DXVAVideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
+                                        int32_t bitstream_id) {
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::Decode");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
-  // SharedMemory will take over the ownership of handle.
-  base::SharedMemory shm(bitstream_buffer.handle(), true);
+  RETURN_AND_NOTIFY_ON_FAILURE(bitstream_id >= 0,
+                               "Invalid bitstream, id: " << bitstream_id,
+                               INVALID_ARGUMENT, );
+
+  if (!buffer) {
+    if (client_)
+      client_->NotifyEndOfBitstreamBuffer(bitstream_id);
+    return;
+  }
 
   State state = GetState();
   RETURN_AND_NOTIFY_ON_FAILURE(
       (state == kNormal || state == kStopped || state == kFlushing),
       "Invalid state: " << state, ILLEGAL_STATE, );
-  if (bitstream_buffer.id() < 0) {
-    RETURN_AND_NOTIFY_ON_FAILURE(
-        false, "Invalid bitstream_buffer, id: " << bitstream_buffer.id(),
-        INVALID_ARGUMENT, );
-  }
-
-  if (bitstream_buffer.size() == 0) {
-    if (client_)
-      client_->NotifyEndOfBitstreamBuffer(bitstream_buffer.id());
-    return;
-  }
 
   Microsoft::WRL::ComPtr<IMFSample> sample;
-  RETURN_AND_NOTIFY_ON_FAILURE(shm.Map(bitstream_buffer.size()),
-                               "Failed in base::SharedMemory::Map",
-                               PLATFORM_FAILURE, );
-
   sample = CreateInputSample(
-      reinterpret_cast<const uint8_t*>(shm.memory()), bitstream_buffer.size(),
-      std::min<uint32_t>(bitstream_buffer.size(), input_stream_info_.cbSize),
+      buffer->data(), buffer->data_size(),
+      std::min<uint32_t>(buffer->data_size(), input_stream_info_.cbSize),
       input_stream_info_.cbAlignment);
   RETURN_AND_NOTIFY_ON_FAILURE(sample.Get(), "Failed to create input sample",
                                PLATFORM_FAILURE, );
 
   RETURN_AND_NOTIFY_ON_HR_FAILURE(
-      sample->SetSampleTime(bitstream_buffer.id()),
+      sample->SetSampleTime(bitstream_id),
       "Failed to associate input buffer id with sample", PLATFORM_FAILURE, );
 
   decoder_thread_task_runner_->PostTask(
