@@ -8,6 +8,8 @@
 
 #include <string>
 
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/windows_version.h"
@@ -308,14 +310,21 @@ void DynamicCodeTestHarness(sandbox::MitigationFlags which_mitigation,
 
   // Ensure sandbox access to the file on disk.
   base::FilePath dll_path;
-  EXPECT_TRUE(base::PathService::Get(base::DIR_EXE, &dll_path));
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll_path));
   dll_path = dll_path.Append(hooking_dll::g_hook_dll_file);
 
+  // File must be writable, so create a writable copy in a temporary directory.
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath temp_dll_path =
+      temp_dir.GetPath().Append(hooking_dll::g_hook_dll_file);
+  ASSERT_TRUE(base::CopyFile(dll_path, temp_dll_path));
+
   EXPECT_TRUE(runner.AddFsRule(sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                               dll_path.value().c_str()));
+                               temp_dll_path.value().c_str()));
 
   test = base::StringPrintf(L"%ls %u \"%ls\"", shared.c_str(), MAPVIEWFILE,
-                            dll_path.value().c_str());
+                            temp_dll_path.value().c_str());
   EXPECT_EQ((expect_success ? sandbox::SBOX_TEST_SUCCEEDED
                             : ERROR_DYNAMIC_CODE_BLOCKED),
             runner.RunTest(test.c_str()));
