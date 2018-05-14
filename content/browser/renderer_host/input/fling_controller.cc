@@ -4,6 +4,7 @@
 
 #include "content/browser/renderer_host/input/fling_controller.h"
 
+#include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/public/common/content_features.h"
 #include "ui/compositor/compositor.h"
@@ -21,6 +22,8 @@ namespace {
 // progress.
 constexpr base::TimeDelta kMaxMicrosecondsFromFlingTimestampToFirstProgress =
     base::TimeDelta::FromMicroseconds(33333);
+
+const char* kFlingTraceName = "FlingController::HandlingGestureFling";
 }  // namespace
 
 namespace content {
@@ -116,10 +119,30 @@ bool FlingController::FilterGestureEventForFlingBoosting(
     CancelCurrentFling();
   }
 
-  if (should_filter_event &&
-      gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart) {
-    UpdateCurrentFlingState(gesture_event.event,
-                            fling_booster_->current_fling_velocity());
+  if (should_filter_event) {
+    if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart) {
+      UpdateCurrentFlingState(gesture_event.event,
+                              fling_booster_->current_fling_velocity());
+      TRACE_EVENT_INSTANT2("input",
+                           fling_booster_->fling_boosted()
+                               ? "FlingController::FlingBoosted"
+                               : "FlingController::FlingReplaced",
+                           TRACE_EVENT_SCOPE_THREAD, "vx",
+                           fling_booster_->current_fling_velocity().x(), "vy",
+                           fling_booster_->current_fling_velocity().y());
+    } else if (gesture_event.event.GetType() ==
+               WebInputEvent::kGestureFlingCancel) {
+      DCHECK(fling_booster_->fling_cancellation_is_deferred());
+      TRACE_EVENT_INSTANT0("input", "FlingController::FlingBoostStart",
+                           TRACE_EVENT_SCOPE_THREAD);
+    } else if (gesture_event.event.GetType() ==
+                   WebInputEvent::kGestureScrollBegin ||
+               gesture_event.event.GetType() ==
+                   WebInputEvent::kGestureScrollUpdate) {
+      TRACE_EVENT_INSTANT0("input",
+                           "FlingController::ExtendBoostedFlingTimeout",
+                           TRACE_EVENT_SCOPE_THREAD);
+    }
   }
 
   return should_filter_event;
@@ -158,6 +181,8 @@ void FlingController::ProcessGestureFlingStart(
   if (!UpdateCurrentFlingState(gesture_event.event, gfx::Vector2dF(vx, vy)))
     return;
 
+  TRACE_EVENT_ASYNC_BEGIN2("input", kFlingTraceName, this, "vx", vx, "vy", vy);
+
   has_fling_animation_started_ = false;
   fling_in_progress_ = true;
   fling_booster_ = std::make_unique<ui::FlingBooster>(
@@ -183,6 +208,7 @@ void FlingController::ProgressFling(base::TimeTicks current_time) {
   if (!fling_curve_)
     return;
 
+  TRACE_EVENT_ASYNC_STEP_INTO0("input", kFlingTraceName, this, "ProgressFling");
   DCHECK(fling_booster_);
   fling_booster_->set_last_fling_animation_time(
       (current_time - base::TimeTicks()).InSecondsF());
@@ -378,8 +404,10 @@ void FlingController::CancelCurrentFling() {
             scroll_begin_event, ui::LatencyInfo(latency_source_event_type)));
   }
 
-  if (had_active_fling)
+  if (had_active_fling) {
     scheduler_client_->DidStopFlingingOnBrowser(weak_ptr_factory_.GetWeakPtr());
+    TRACE_EVENT_ASYNC_END0("input", kFlingTraceName, this);
+  }
 }
 
 bool FlingController::UpdateCurrentFlingState(
