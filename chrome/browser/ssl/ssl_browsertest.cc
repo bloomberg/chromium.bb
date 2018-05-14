@@ -5147,6 +5147,59 @@ IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
             contents->GetLastCommittedURL().spec());
 }
 
+// Visit the URL www.mail.example.com on a server that presents an invalid
+// certificate for mail.example.com. Verify that the page shows an interstitial
+// for www.mail.example.com with no crash.
+IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,
+                       NoCrashIfBothSubdomainsHaveCommonNameErrors) {
+  net::EmbeddedTestServer https_server_example_domain(
+      net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server_example_domain.ServeFilesFromSourceDirectory(
+      base::FilePath(kDocRoot));
+  ASSERT_TRUE(https_server_example_domain.Start());
+
+  scoped_refptr<net::X509Certificate> cert =
+      https_server_example_domain.GetCertificate();
+
+  // Use the "spdy_pooling.pem" cert which has "mail.example.com"
+  // as one of its SANs.
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "spdy_pooling.pem");
+  verify_result.cert_status = net::CERT_STATUS_COMMON_NAME_INVALID;
+
+  // Request to "www.mail.example.com" should result in
+  // |net::ERR_CERT_COMMON_NAME_INVALID| error.
+  mock_cert_verifier()->AddResultForCertAndHost(
+      cert.get(), "www.mail.example.com", verify_result,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+
+  // Request to "mail.example.com" should also result in
+  // |net::ERR_CERT_COMMON_NAME_INVALID| error.
+  mock_cert_verifier()->AddResultForCertAndHost(
+      cert.get(), "mail.example.com", verify_result,
+      net::ERR_CERT_COMMON_NAME_INVALID);
+
+  // Use a complex URL to ensure the path, etc., are preserved. The path itself
+  // does not matter.
+  const GURL https_server_url =
+      https_server_example_domain.GetURL("/ssl/google.html?a=b#anchor");
+  GURL::Replacements replacements;
+  replacements.SetHostStr("www.mail.example.com");
+  const GURL https_server_mismatched_url =
+      https_server_url.ReplaceComponents(replacements);
+
+  // Should simply show an interstitial, because both subdomains have common
+  // name errors.
+  WebContents* contents = browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(browser(), https_server_mismatched_url);
+  WaitForInterstitial(contents);
+
+  CheckSecurityState(contents, net::CERT_STATUS_COMMON_NAME_INVALID,
+                     security_state::DANGEROUS,
+                     AuthState::SHOWING_INTERSTITIAL);
+}
+
 // Visit the URL example.org on a server that presents a valid certificate
 // for www.example.org. Verify that the page redirects to www.example.org.
 IN_PROC_BROWSER_TEST_P(CommonNameMismatchBrowserTest,

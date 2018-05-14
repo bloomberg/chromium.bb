@@ -123,15 +123,9 @@ void CommonNameMismatchHandler::Cancel() {
   check_url_callback_.Reset();
 }
 
-void CommonNameMismatchHandler::OnSimpleLoaderRedirect(
-    const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
-  OnSimpleLoaderResponseStarted(redirect_info.new_url, response_head);
-}
-
-void CommonNameMismatchHandler::OnSimpleLoaderResponseStarted(
+void CommonNameMismatchHandler::OnSimpleLoaderHandler(
     const GURL& final_url,
-    const network::ResourceResponseHead& response_head) {
+    const network::ResourceResponseHead* head) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsCheckingSuggestedUrl());
   DCHECK(!check_url_callback_.is_null());
@@ -140,8 +134,9 @@ void CommonNameMismatchHandler::OnSimpleLoaderResponseStarted(
 
   // Make sure the URL is a HTTPS page and returns a proper response code.
   int response_code = -1;
-  if (response_head.headers) {
-    response_code = response_head.headers->response_code();
+  // head may be null here, if called from OnSimpleLoaderComplete.
+  if (head && head->headers) {
+    response_code = head->headers->response_code();
   }
   if (response_code == 200 && final_url.SchemeIsCryptographic() &&
       final_url.host() != request_url_.host()) {
@@ -152,10 +147,22 @@ void CommonNameMismatchHandler::OnSimpleLoaderResponseStarted(
   base::ResetAndReturn(&check_url_callback_).Run(result, check_url_);
 }
 
+void CommonNameMismatchHandler::OnSimpleLoaderRedirect(
+    const net::RedirectInfo& redirect_info,
+    const network::ResourceResponseHead& response_head) {
+  OnSimpleLoaderHandler(redirect_info.new_url, &response_head);
+}
+
+void CommonNameMismatchHandler::OnSimpleLoaderResponseStarted(
+    const GURL& final_url,
+    const network::ResourceResponseHead& response_head) {
+  OnSimpleLoaderHandler(final_url, &response_head);
+}
+
 void CommonNameMismatchHandler::OnSimpleLoaderComplete(
     std::unique_ptr<std::string> response_body) {
-  OnSimpleLoaderResponseStarted(simple_url_loader_->GetFinalURL(),
-                                *simple_url_loader_->ResponseInfo());
+  OnSimpleLoaderHandler(simple_url_loader_->GetFinalURL(),
+                        simple_url_loader_->ResponseInfo());
 }
 
 bool CommonNameMismatchHandler::IsCheckingSuggestedUrl() const {
