@@ -631,7 +631,7 @@
     },
     {
       name: "KeyboardLock",
-      status: "test",
+      status: "stable",
     },
     {
       name: "KeyboardMap",
