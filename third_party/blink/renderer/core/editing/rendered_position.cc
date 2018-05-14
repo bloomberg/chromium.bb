@@ -104,7 +104,7 @@ unsigned char RenderedPosition::BidiLevelOnRight() const {
 }
 
 RenderedPosition RenderedPosition::LeftBoundaryOfBidiRun(
-    unsigned char bidi_level_of_run) {
+    unsigned char bidi_level_of_run) const {
   if (!inline_box_ || bidi_level_of_run > inline_box_->BidiLevel())
     return RenderedPosition();
 
@@ -115,7 +115,7 @@ RenderedPosition RenderedPosition::LeftBoundaryOfBidiRun(
 }
 
 RenderedPosition RenderedPosition::RightBoundaryOfBidiRun(
-    unsigned char bidi_level_of_run) {
+    unsigned char bidi_level_of_run) const {
   if (!inline_box_ || bidi_level_of_run > inline_box_->BidiLevel())
     return RenderedPosition();
 
