@@ -1071,15 +1071,15 @@ class IsolateServerDownloadTest(TestCase):
     actual = {}
     def putfile_mock(
         srcfileobj, dstpath, file_mode=None, size=-1, use_symlink=False):
-      actual[dstpath] = srcfileobj.read(size)
+      actual[dstpath] = (srcfileobj.read(size), file_mode)
     self.mock(isolateserver, 'putfile', putfile_mock)
     self.mock(os, 'makedirs', lambda _: None)
     server = 'http://example.com'
 
     files = {
-      os.path.join('a', 'foo'): 'Content',
-      'b': 'More content',
-      'c': 'Even more content!',
+      os.path.join('a', 'foo'): ('Content', 0500),
+      'b': ('More content', 0400),
+      'c': ('Even more content!', 0500),
     }
 
     # Generate a tar archive
@@ -1089,12 +1089,14 @@ class IsolateServerDownloadTest(TestCase):
       f1.type = tarfile.REGTYPE
       f1.name = 'a/foo'
       f1.size = 7
+      f1.mode = 0570
       tar.addfile(f1, io.BytesIO('Content'))
 
       f2 = tarfile.TarInfo()
       f2.type = tarfile.REGTYPE
       f2.name = 'b'
       f2.size = 12
+      f2.mode = 0666
       tar.addfile(f2, io.BytesIO('More content'))
     archive = tf.getvalue()
 
@@ -1108,17 +1110,18 @@ class IsolateServerDownloadTest(TestCase):
           't': 'tar',
         },
         'c': {
-          'h': isolateserver_mock.hash_content(files['c']),
-          's': len(files['c']),
+          'h': isolateserver_mock.hash_content(files['c'][0]),
+          's': len(files['c'][0]),
         },
       },
+      'read_only': 1,
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
     isolated_hash = isolateserver_mock.hash_content(isolated_data)
     requests = [
       (isolated['files']['archive1']['h'], archive),
-      (isolated['files']['c']['h'], files['c']),
+      (isolated['files']['c']['h'], files['c'][0]),
     ]
     requests.append((isolated_hash, isolated_data))
     requests = [

@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.8.3'
+__version__ = '0.8.4'
 
 import errno
 import functools
@@ -1773,10 +1773,11 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
               filetype = props.get('t', 'basic')
 
               if filetype == 'basic':
-                file_mode = props.get('m')
-                if file_mode:
-                  # Ignore all bits apart from the user
-                  file_mode &= 0700
+                # Ignore all bits apart from the user.
+                file_mode = (props.get('m') or 0500) & 0700
+                if bundle.read_only:
+                  # Enforce read-only if the root bundle does.
+                  file_mode &= 0500
                 putfile(
                     srcfileobj, fullpath, file_mode,
                     use_symlink=use_symlinks)
@@ -1801,7 +1802,11 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
                           fp)
                     ifd = t.extractfile(ti)
                     file_path.ensure_tree(os.path.dirname(fp))
-                    putfile(ifd, fp, 0700, ti.size)
+                    file_mode = ti.mode & 0700
+                    if bundle.read_only:
+                      # Enforce read-only if the root bundle does.
+                      file_mode &= 0500
+                    putfile(ifd, fp, file_mode, ti.size)
 
               else:
                 raise isolated_format.IsolatedError(
