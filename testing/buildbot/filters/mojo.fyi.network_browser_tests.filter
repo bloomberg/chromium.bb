@@ -23,7 +23,6 @@
 -PKPModelClientTest.PKPEnforced/0
 -PKPModelClientTest.PKPEnforced/1
 -PolicyTest.DefaultCookiesSetting
--PrefetchBrowserTestPredictionDisabled.ExperimentDisabled
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
 -ProfileWindowBrowserTest.GuestClearsCookies

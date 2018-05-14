@@ -921,11 +921,9 @@ void ResourceDispatcherHostImpl::ContinuePendingBeginRequest(
       static_cast<ResourceType>(request_data.resource_type), &resource_context,
       &request_context);
 
-  // Allow the observer to block/handle the request.
-  if (delegate_ && !delegate_->ShouldBeginRequest(
-                       request_data.method, request_data.url,
-                       static_cast<ResourceType>(request_data.resource_type),
-                       resource_context)) {
+  // All PREFETCH requests should be GETs, but be defensive about it.
+  if (request_data.resource_type == RESOURCE_TYPE_PREFETCH &&
+      request_data.method != "GET") {
     AbortRequestBeforeItStarts(requester_info->filter(), request_id,
                                std::move(url_loader_client));
     return;
@@ -1590,10 +1588,7 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
       !policy->IsWebSafeScheme(info.common_params.url.scheme()) &&
       !is_external_protocol;
 
-  if (is_shutdown_ || non_web_url_in_guest ||
-      (delegate_ && !delegate_->ShouldBeginRequest(
-                        info.common_params.method, info.common_params.url,
-                        resource_type, resource_context))) {
+  if (is_shutdown_ || non_web_url_in_guest) {
     url_loader_client->OnComplete(
         network::URLLoaderCompletionStatus(net::ERR_ABORTED));
     return;

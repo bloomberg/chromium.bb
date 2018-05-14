@@ -13,7 +13,6 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -363,32 +362,6 @@ ChromeResourceDispatcherHostDelegate::~ChromeResourceDispatcherHostDelegate() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   CHECK(stream_target_info_.empty());
 #endif
-}
-
-bool ChromeResourceDispatcherHostDelegate::ShouldBeginRequest(
-    const std::string& method,
-    const GURL& url,
-    ResourceType resource_type,
-    content::ResourceContext* resource_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  // Handle a PREFETCH resource type. If prefetch is disabled, squelch the
-  // request.  Otherwise, do a normal request to warm the cache.
-  if (resource_type == content::RESOURCE_TYPE_PREFETCH) {
-    // All PREFETCH requests should be GETs, but be defensive about it.
-    if (method != "GET")
-      return false;
-
-    // If prefetch is disabled, kill the request.
-    std::string prefetch_experiment =
-        base::FieldTrialList::FindFullName("Prefetch");
-    if (base::StartsWith(prefetch_experiment, "ExperimentDisable",
-                         base::CompareCase::INSENSITIVE_ASCII)) {
-      return false;
-    }
-  }
-
-  return true;
 }
 
 void ChromeResourceDispatcherHostDelegate::RequestBeginning(

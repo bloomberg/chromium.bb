@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/profiles/profile.h"
@@ -40,17 +39,9 @@ class MockNetworkChangeNotifier4G : public NetworkChangeNotifier {
   }
 };
 
-class PrefetchBrowserTestBase : public InProcessBrowserTest {
+class PrefetchBrowserTest : public InProcessBrowserTest {
  public:
-  explicit PrefetchBrowserTestBase(bool disabled_via_field_trial)
-      : disabled_via_field_trial_(disabled_via_field_trial) {}
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (disabled_via_field_trial_) {
-      command_line->AppendSwitchASCII(switches::kForceFieldTrials,
-                                      "Prefetch/ExperimentDisabled/");
-    }
-  }
+  PrefetchBrowserTest() {}
 
   void SetUpOnMainThread() override {
     ASSERT_TRUE(embedded_test_server()->Start());
@@ -72,33 +63,11 @@ class PrefetchBrowserTestBase : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser, url);
     return expected_title == title_watcher.WaitAndGetTitle();
   }
-
- private:
-  bool disabled_via_field_trial_;
 };
-
-class PrefetchBrowserTestPrediction : public PrefetchBrowserTestBase {
- public:
-  PrefetchBrowserTestPrediction() : PrefetchBrowserTestBase(false) {}
-};
-
-class PrefetchBrowserTestPredictionDisabled : public PrefetchBrowserTestBase {
- public:
-  PrefetchBrowserTestPredictionDisabled() : PrefetchBrowserTestBase(true) {}
-};
-
-// Prefetch is disabled via field experiment.  Prefetch should be dropped.
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPredictionDisabled,
-                       ExperimentDisabled) {
-  EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
-  // Should not prefetch even if preference is WIFI_ONLY.
-  SetPreference(NetworkPredictionOptions::NETWORK_PREDICTION_WIFI_ONLY);
-  EXPECT_TRUE(RunPrefetchExperiment(false, browser()));
-}
 
 // When initiated from the renderer, prefetch should be allowed regardless of
 // the network type.
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, PreferenceWorks) {
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTest, PreferenceWorks) {
   // Set real NetworkChangeNotifier singleton aside.
   std::unique_ptr<NetworkChangeNotifier::DisableForTest> disable_for_test(
       new NetworkChangeNotifier::DisableForTest);
@@ -131,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, PreferenceWorks) {
 
 // Bug 339909: When in incognito mode the browser crashed due to an
 // uninitialized preference member. Verify that it no longer does.
-IN_PROC_BROWSER_TEST_F(PrefetchBrowserTestPrediction, IncognitoTest) {
+IN_PROC_BROWSER_TEST_F(PrefetchBrowserTest, IncognitoTest) {
   Profile* incognito_profile = browser()->profile()->GetOffTheRecordProfile();
   Browser* incognito_browser =
       new Browser(Browser::CreateParams(incognito_profile, true));

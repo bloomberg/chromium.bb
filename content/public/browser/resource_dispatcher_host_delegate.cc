@@ -12,14 +12,6 @@ namespace content {
 
 ResourceDispatcherHostDelegate::~ResourceDispatcherHostDelegate() {}
 
-bool ResourceDispatcherHostDelegate::ShouldBeginRequest(
-    const std::string& method,
-    const GURL& url,
-    ResourceType resource_type,
-    ResourceContext* resource_context) {
-  return true;
-}
-
 void ResourceDispatcherHostDelegate::RequestBeginning(
     net::URLRequest* request,
     ResourceContext* resource_context,
