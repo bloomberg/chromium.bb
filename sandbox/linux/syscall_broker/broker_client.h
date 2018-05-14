@@ -10,7 +10,6 @@
 #include <unistd.h>
 
 #include "base/macros.h"
-#include "base/pickle.h"
 #include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 
@@ -33,12 +32,10 @@ class BrokerClient {
   // and save an IPC round trip.
   // |ipc_channel| needs to be a suitable SOCK_SEQPACKET unix socket.
   // |fast_check_in_client| should be set to true and
-  // |quiet_failures_for_tests| to false unless you are writing tests.
   BrokerClient(const BrokerPermissionList& policy,
                BrokerChannel::EndPoint ipc_channel,
                const BrokerCommandSet& allowed_command_set,
-               bool fast_check_in_client,
-               bool quiet_failures_for_tests);
+               bool fast_check_in_client);
   ~BrokerClient();
 
   // Get the file descriptor used for IPC. This is used for tests.
@@ -93,20 +90,12 @@ class BrokerClient {
                         void* result_ptr,
                         size_t expected_result_size) const;
 
-  ssize_t SendRecvRequest(const base::Pickle& request_pickle,
-                          int recvmsg_flags,
-                          uint8_t* reply_buf,
-                          size_t reply_buf_size,
-                          int* returned_fd) const;
-
   const BrokerPermissionList& broker_permission_list_;
   const BrokerChannel::EndPoint ipc_channel_;
   const BrokerCommandSet allowed_command_set_;
   const bool fast_check_in_client_;  // Whether to forward a request that we
                                      // know will be denied to the broker. (Used
                                      // for tests).
-  const bool quiet_failures_for_tests_;  // Disable certain error message when
-                                         // testing for failures.
 
   DISALLOW_COPY_AND_ASSIGN(BrokerClient);
 };

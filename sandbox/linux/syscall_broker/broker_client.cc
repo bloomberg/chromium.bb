@@ -18,6 +18,7 @@
 #include "sandbox/linux/syscall_broker/broker_channel.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_permission_list.h"
+#include "sandbox/linux/syscall_broker/broker_simple_message.h"
 
 #if defined(OS_ANDROID) && !defined(MSG_CMSG_CLOEXEC)
 #define MSG_CMSG_CLOEXEC 0x40000000
@@ -29,13 +30,11 @@ namespace syscall_broker {
 BrokerClient::BrokerClient(const BrokerPermissionList& broker_permission_list,
                            BrokerChannel::EndPoint ipc_channel,
                            const BrokerCommandSet& allowed_command_set,
-                           bool fast_check_in_client,
-                           bool quiet_failures_for_tests)
+                           bool fast_check_in_client)
     : broker_permission_list_(broker_permission_list),
       ipc_channel_(std::move(ipc_channel)),
       allowed_command_set_(allowed_command_set),
-      fast_check_in_client_(fast_check_in_client),
-      quiet_failures_for_tests_(quiet_failures_for_tests) {}
+      fast_check_in_client_(fast_check_in_client) {}
 
 BrokerClient::~BrokerClient() {}
 
@@ -85,31 +84,33 @@ int BrokerClient::Readlink(const char* path, char* buf, size_t bufsize) const {
     return -broker_permission_list_.denied_errno();
   }
 
-  base::Pickle write_pickle;
-  write_pickle.WriteInt(COMMAND_READLINK);
-  write_pickle.WriteString(path);
-  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+  // Message structure:
+  //   int:    syscall_type
+  //   char[]: pathname, including '\0' terminator
+  BrokerSimpleMessage message;
+  RAW_CHECK(message.AddIntToMessage(COMMAND_READLINK));
+  RAW_CHECK(message.AddStringToMessage(path));
 
   int returned_fd = -1;
-  uint8_t reply_buf[kMaxMessageLength];
-  ssize_t msg_len = SendRecvRequest(write_pickle, 0, reply_buf,
-                                    sizeof(reply_buf), &returned_fd);
+  BrokerSimpleMessage reply;
+  ssize_t msg_len =
+      message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
   if (msg_len < 0)
     return msg_len;
 
-  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
-  base::PickleIterator iter(read_pickle);
   int return_value = -1;
-  int return_length = 0;
+  size_t return_length = 0;
   const char* return_data = nullptr;
-  if (!iter.ReadInt(&return_value))
+  if (!reply.ReadInt(&return_value))
     return -ENOMEM;
   if (return_value < 0)
     return return_value;
-  if (!iter.ReadData(&return_data, &return_length))
+
+  if (!reply.ReadData(&return_data, &return_length))
     return -ENOMEM;
   if (return_length < 0)
     return -ENOMEM;
+
   if (static_cast<size_t>(return_length) > bufsize)
     return -ENAMETOOLONG;
   memcpy(buf, return_data, return_length);
@@ -126,23 +127,21 @@ int BrokerClient::Rename(const char* oldpath, const char* newpath) const {
     return -broker_permission_list_.denied_errno();
   }
 
-  base::Pickle write_pickle;
-  write_pickle.WriteInt(COMMAND_RENAME);
-  write_pickle.WriteString(oldpath);
-  write_pickle.WriteString(newpath);
-  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+  BrokerSimpleMessage message;
+  RAW_CHECK(message.AddIntToMessage(COMMAND_RENAME));
+  RAW_CHECK(message.AddStringToMessage(oldpath));
+  RAW_CHECK(message.AddStringToMessage(newpath));
 
   int returned_fd = -1;
-  uint8_t reply_buf[kMaxMessageLength];
-  ssize_t msg_len = SendRecvRequest(write_pickle, 0, reply_buf,
-                                    sizeof(reply_buf), &returned_fd);
+  BrokerSimpleMessage reply;
+  ssize_t msg_len =
+      message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
+
   if (msg_len < 0)
     return msg_len;
 
-  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
-  base::PickleIterator iter(read_pickle);
   int return_value = -1;
-  if (!iter.ReadInt(&return_value))
+  if (!reply.ReadInt(&return_value))
     return -ENOMEM;
 
   return return_value;
@@ -198,23 +197,22 @@ int BrokerClient::Unlink(const char* path) const {
 
 int BrokerClient::PathOnlySyscall(BrokerCommand syscall_type,
                                   const char* pathname) const {
-  base::Pickle write_pickle;
-  write_pickle.WriteInt(syscall_type);
-  write_pickle.WriteString(pathname);
-  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+  BrokerSimpleMessage message;
+  RAW_CHECK(message.AddIntToMessage(syscall_type));
+  RAW_CHECK(message.AddStringToMessage(pathname));
 
   int returned_fd = -1;
-  uint8_t reply_buf[kMaxMessageLength];
-  ssize_t msg_len = SendRecvRequest(write_pickle, 0, reply_buf,
-                                    sizeof(reply_buf), &returned_fd);
+  BrokerSimpleMessage reply;
+  ssize_t msg_len =
+      message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
+
   if (msg_len < 0)
     return msg_len;
 
-  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
-  base::PickleIterator iter(read_pickle);
   int return_value = -1;
-  if (!iter.ReadInt(&return_value))
+  if (!reply.ReadInt(&return_value))
     return -ENOMEM;
+
   return return_value;
 }
 
@@ -225,23 +223,21 @@ int BrokerClient::PathOnlySyscall(BrokerCommand syscall_type,
 int BrokerClient::PathAndFlagsSyscall(BrokerCommand syscall_type,
                                       const char* pathname,
                                       int flags) const {
-  base::Pickle write_pickle;
-  write_pickle.WriteInt(syscall_type);
-  write_pickle.WriteString(pathname);
-  write_pickle.WriteInt(flags);
-  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+  BrokerSimpleMessage message;
+  RAW_CHECK(message.AddIntToMessage(syscall_type));
+  RAW_CHECK(message.AddStringToMessage(pathname));
+  RAW_CHECK(message.AddIntToMessage(flags));
 
   int returned_fd = -1;
-  uint8_t reply_buf[kMaxMessageLength];
-  ssize_t msg_len = SendRecvRequest(write_pickle, 0, reply_buf,
-                                    sizeof(reply_buf), &returned_fd);
-  if (msg_len < 0)
-    return msg_len;
+  BrokerSimpleMessage reply;
+  ssize_t msg_len =
+      message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
 
-  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
-  base::PickleIterator iter(read_pickle);
+  if (msg_len < 0)
+    return -ENOMEM;
+
   int return_value = -1;
-  if (!iter.ReadInt(&return_value))
+  if (!reply.ReadInt(&return_value))
     return -ENOMEM;
 
   return return_value;
@@ -268,23 +264,21 @@ int BrokerClient::PathAndFlagsSyscallReturningFD(BrokerCommand syscall_type,
     flags &= ~kCurrentProcessOpenFlagsMask;
   }
 
-  base::Pickle write_pickle;
-  write_pickle.WriteInt(syscall_type);
-  write_pickle.WriteString(pathname);
-  write_pickle.WriteInt(flags);
-  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+  BrokerSimpleMessage message;
+  RAW_CHECK(message.AddIntToMessage(syscall_type));
+  RAW_CHECK(message.AddStringToMessage(pathname));
+  RAW_CHECK(message.AddIntToMessage(flags));
 
   int returned_fd = -1;
-  uint8_t reply_buf[kMaxMessageLength];
-  ssize_t msg_len = SendRecvRequest(write_pickle, recvmsg_flags, reply_buf,
-                                    sizeof(reply_buf), &returned_fd);
-  if (msg_len < 0)
-    return msg_len;
+  BrokerSimpleMessage reply;
+  ssize_t msg_len = message.SendRecvMsgWithFlags(
+      ipc_channel_.get(), recvmsg_flags, &returned_fd, &reply);
 
-  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
-  base::PickleIterator iter(read_pickle);
+  if (msg_len < 0)
+    return -ENOMEM;
+
   int return_value = -1;
-  if (!iter.ReadInt(&return_value))
+  if (!reply.ReadInt(&return_value))
     return -ENOMEM;
   if (return_value < 0)
     return return_value;
@@ -302,53 +296,32 @@ int BrokerClient::StatFamilySyscall(BrokerCommand syscall_type,
                                     const char* pathname,
                                     void* result_ptr,
                                     size_t expected_result_size) const {
-  base::Pickle write_pickle;
-  write_pickle.WriteInt(syscall_type);
-  write_pickle.WriteString(pathname);
-  RAW_CHECK(write_pickle.size() <= kMaxMessageLength);
+  BrokerSimpleMessage message;
+  RAW_CHECK(message.AddIntToMessage(syscall_type));
+  RAW_CHECK(message.AddStringToMessage(pathname));
 
   int returned_fd = -1;
-  uint8_t reply_buf[kMaxMessageLength];
-  ssize_t msg_len = SendRecvRequest(write_pickle, 0, reply_buf,
-                                    sizeof(reply_buf), &returned_fd);
+  BrokerSimpleMessage reply;
+  ssize_t msg_len =
+      message.SendRecvMsgWithFlags(ipc_channel_.get(), 0, &returned_fd, &reply);
+
   if (msg_len < 0)
     return msg_len;
 
-  base::Pickle read_pickle(reinterpret_cast<char*>(reply_buf), msg_len);
-  base::PickleIterator iter(read_pickle);
   int return_value = -1;
-  int return_length = 0;
+  size_t return_length = 0;
   const char* return_data = nullptr;
-  if (!iter.ReadInt(&return_value))
+
+  if (!reply.ReadInt(&return_value))
     return -ENOMEM;
   if (return_value < 0)
     return return_value;
-  if (!iter.ReadData(&return_data, &return_length))
+  if (!reply.ReadData(&return_data, &return_length))
     return -ENOMEM;
   if (static_cast<size_t>(return_length) != expected_result_size)
     return -ENOMEM;
   memcpy(result_ptr, return_data, expected_result_size);
   return return_value;
-}
-
-// Send a request (in request_pickle) that will include a new temporary
-// socketpair as well (created internally by SendRecvMsg()). Then read the
-// reply on this new socketpair in |reply_buf| and put an eventual attached
-// file descriptor (if any) in |returned_fd|.
-ssize_t BrokerClient::SendRecvRequest(const base::Pickle& request_pickle,
-                                      int recvmsg_flags,
-                                      uint8_t* reply_buf,
-                                      size_t reply_buf_size,
-                                      int* returned_fd) const {
-  ssize_t msg_len = base::UnixDomainSocket::SendRecvMsgWithFlags(
-      ipc_channel_.get(), reply_buf, reply_buf_size, recvmsg_flags, returned_fd,
-      request_pickle);
-  if (msg_len <= 0) {
-    if (!quiet_failures_for_tests_)
-      RAW_LOG(ERROR, "Could not make request to broker process");
-    return -ENOMEM;
-  }
-  return msg_len;
 }
 
 }  // namespace syscall_broker
