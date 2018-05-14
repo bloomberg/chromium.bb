@@ -41,6 +41,7 @@ constexpr base::TimeDelta PowerButtonMenuView::kMenuAnimationDuration;
 PowerButtonMenuView::PowerButtonMenuView(
     PowerButtonPosition power_button_position)
     : power_button_position_(power_button_position) {
+  SetFocusBehavior(FocusBehavior::ALWAYS);
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -202,11 +203,15 @@ bool PowerButtonMenuView::OnKeyPressed(const ui::KeyEvent& event) {
   if (key == ui::VKEY_ESCAPE) {
     RecordMenuActionHistogram(PowerButtonMenuActionType::kDismissByEsc);
     Shell::Get()->power_button_controller()->DismissMenu();
-  } else if (sign_out_item_ && (key == ui::VKEY_TAB || key == ui::VKEY_LEFT ||
-                                key == ui::VKEY_RIGHT || key == ui::VKEY_UP ||
-                                key == ui::VKEY_DOWN)) {
-    sign_out_item_->HasFocus() ? power_off_item_->RequestFocus()
-                               : sign_out_item_->RequestFocus();
+  } else if (key == ui::VKEY_TAB || key == ui::VKEY_LEFT ||
+             key == ui::VKEY_RIGHT || key == ui::VKEY_UP ||
+             key == ui::VKEY_DOWN) {
+    if (sign_out_item_) {
+      power_off_item_->HasFocus() ? sign_out_item_->RequestFocus()
+                                  : power_off_item_->RequestFocus();
+    } else {
+      power_off_item_->RequestFocus();
+    }
   }
 
   return true;
