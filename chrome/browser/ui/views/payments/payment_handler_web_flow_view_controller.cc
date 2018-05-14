@@ -283,6 +283,16 @@ void PaymentHandlerWebFlowViewController::LoadProgressChanged(
   RelayoutPane();
 }
 
+void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(
+    content::WebContents* source) {
+  DCHECK(source == web_contents());
+  // IsSslCertificateValid checks security_state::SecurityInfo.security_level
+  // which reflects security state.
+  if (!SslValidityChecker::IsSslCertificateValid(source)) {
+    AbortPayment();
+  }
+}
+
 void PaymentHandlerWebFlowViewController::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   UpdateHeaderView();
