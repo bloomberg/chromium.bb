@@ -198,6 +198,21 @@ std::string ReadFileToStringWithMaxSize(const base::FilePath& path,
   return contents;
 }
 
+// Determines whether changing the URI in |existing_printer| to the URI in
+// |new_printer| would be valid. Network printers are not allowed to change
+// their protocol to a non-network protocol, but can change anything else.
+// Non-network printers are not allowed to change anything in their URI.
+bool IsValidUriChange(const Printer& existing_printer,
+                      const Printer& new_printer) {
+  if (new_printer.GetProtocol() == Printer::PrinterProtocol::kUnknown) {
+    return false;
+  }
+  if (existing_printer.HasNetworkProtocol()) {
+    return new_printer.HasNetworkProtocol();
+  }
+  return existing_printer.uri() == new_printer.uri();
+}
+
 }  // namespace
 
 CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
@@ -490,9 +505,23 @@ void CupsPrintersHandler::HandleAddCupsPrinter(const base::ListValue* args) {
   if (!optional.has_value()) {
     // If the returned optional does not contain a value then it means that the
     // printer's uri was not able to be parsed successfully.
-    LOG(ERROR) << "Failed to parse printer URI";
+    PRINTER_LOG(ERROR) << "Failed to parse printer URI";
     OnAddPrinterError(PrinterSetupResult::kFatalError);
     return;
+  }
+
+  // If the provided printer already exists, grab the existing printer object
+  // and check that we are not making any changes that will make the printer
+  // unusable.
+  if (!printer->id().empty()) {
+    std::unique_ptr<Printer> existing_printer =
+        printers_manager_->GetPrinter(printer->id());
+    if (existing_printer) {
+      if (!IsValidUriChange(*existing_printer, *printer)) {
+        OnAddPrinterError(PrinterSetupResult::kInvalidPrinterUpdate);
+        return;
+      }
+    }
   }
 
   // Read PPD selection if it was used.
@@ -592,6 +621,10 @@ void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
     case PrinterSetupResult::kNativePrintersNotAllowed:
       PRINTER_LOG(ERROR)
           << "Unable to add or edit printer due to enterprise policy.";
+      break;
+    case PrinterSetupResult::kInvalidPrinterUpdate:
+      PRINTER_LOG(ERROR)
+          << "Requested printer changes would make printer unusable";
       break;
     case PrinterSetupResult::kMaxValue:
       NOTREACHED() << "This is not an expected value";

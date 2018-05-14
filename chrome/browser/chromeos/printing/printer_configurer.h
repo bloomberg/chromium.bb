@@ -23,6 +23,7 @@ enum PrinterSetupResult {
   kPrinterUnreachable = 2,        // Could not reach printer
   kDbusError = 3,                 // Could not contact debugd
   kNativePrintersNotAllowed = 4,  // Tried adding/editing printers policy set
+  kInvalidPrinterUpdate = 5,      // Tried updating printer with invalid values
   // Space left for additional errors
 
   // PPD errors

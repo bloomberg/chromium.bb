@@ -28,7 +28,8 @@
             <div class="label">$i18n{printerAddress}</div>
             <div class="secondary">
               <paper-input no-label-float
-                  value="{{activePrinter.printerAddress}}">
+                  value="{{activePrinter.printerAddress}}"
+                  disabled="[[!networkProtocolActive_]]">
               </paper-input>
             </div>
           </div>
@@ -40,14 +41,32 @@
               <div class="md-select-wrapper">
                 <select class="md-select" aria-labelledby="printerProtocol"
                     value="[[activePrinter.printerProtocol]]"
-                    on-change="onProtocolChange_">
-                  <option value="ipp">$i18n{printerProtocolIpp}</option>
-                  <option value="ipps">$i18n{printerProtocolIpps}</option>
-                  <option value="http">$i18n{printerProtocolHttp}</option>
-                  <option value="https">$i18n{printerProtocolHttps}</option>
-                  <option value="socket">$i18n{printerProtocolAppSocket}
+                    on-change="onProtocolChange_"
+                    disabled="[[!networkProtocolActive_]]">
+                  <option value="ipp" disabled="[[!networkProtocolActive_]]">
+                    $i18n{printerProtocolIpp}
                   </option>
-                  <option value="lpd">$i18n{printerProtocolLpd}</option>
+                  <option value="ipps" disabled="[[!networkProtocolActive_]]">
+                    $i18n{printerProtocolIpps}
+                  </option>
+                  <option value="http" disabled="[[!networkProtocolActive_]]">
+                    $i18n{printerProtocolHttp}
+                  </option>
+                  <option value="https" disabled="[[!networkProtocolActive_]]">
+                    $i18n{printerProtocolHttps}
+                  </option>
+                  <option value="socket" disabled="[[!networkProtocolActive_]]">
+                    $i18n{printerProtocolAppSocket}
+                  </option>
+                  <option value="lpd" disabled="[[!networkProtocolActive_]]">
+                    $i18n{printerProtocolLpd}
+                  </option>
+                  <option value="usb" disabled="[[networkProtocolActive_]]">
+                    $i18n{printerProtocolUsb}
+                  </option>
+                  <option value="ippusb" disabled="[[networkProtocolActive_]]">
+                    $i18n{printerProtocolIppUsb}
+                  </option>
                 </select>
                 <span class="md-select-underline"></span>
               </div>
@@ -59,7 +78,8 @@
             <div class="label">$i18n{printerQueue}</div>
             <div class="secondary">
               <paper-input no-label-float
-                  value="{{activePrinter.printerQueue}}">
+                  value="{{activePrinter.printerQueue}}"
+                  disabled="[[!networkProtocolActive_]]">
               </paper-input>
             </div>
           </div>

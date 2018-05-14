@@ -20,6 +20,11 @@ Polymer({
      * @private {boolean}
      */
     needsReconfigured_: Boolean,
+
+    networkProtocolActive_: {
+      type: Boolean,
+      computed: 'isNetworkProtocol_(activePrinter.printerProtocol)',
+    },
   },
 
   observers: [
@@ -109,5 +114,14 @@ Polymer({
    */
   onGetPrinterPpdManufacturerAndModelFailed_: function() {
     this.needsReconfigured_ = false;
+  },
+
+  /**
+   * @param {string} protocol
+   * @return {boolean} Whether |protocol| is a network protocol
+   * @private
+   */
+  isNetworkProtocol_: function(protocol) {
+    return ['ipp', 'ipps', 'http', 'https', 'socket', 'lpd'].includes(protocol);
   },
 });
