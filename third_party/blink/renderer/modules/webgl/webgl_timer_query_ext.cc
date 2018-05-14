@@ -22,8 +22,8 @@ WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)
       can_update_availability_(false),
       query_result_available_(false),
       query_result_(0),
-      task_runner_(
-          ctx->canvas()->GetDocument().GetTaskRunner(TaskType::kUnthrottled)) {
+      task_runner_(ctx->canvas()->GetDocument().GetTaskRunner(
+          TaskType::kInternalDefault)) {
   Context()->ContextGL()->GenQueriesEXT(1, &query_id_);
 }
 
