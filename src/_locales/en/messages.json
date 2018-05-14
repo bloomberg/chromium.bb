@@ -121,9 +121,9 @@
       }
     }
   },
-  "errorMsgToggleRecordOnFailed": {
-    "message": "Unable to record video.",
-    "description": "Error message shown when switching to record video mode failed."
+  "errorMsgRecordStartFailed": {
+    "message": "Unable to start recording.",
+    "description": "Error message shown when failing to start recording video."
   },
   "errorMsgEmptyRecording": {
     "message": "Nothing recorded.",
