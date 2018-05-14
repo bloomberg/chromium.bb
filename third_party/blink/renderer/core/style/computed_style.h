@@ -2547,7 +2547,6 @@ inline bool ComputedStyle::SetZoom(float f) {
   if (Zoom() == f)
     return false;
   SetZoomInternal(f);
-  SetEffectiveZoom(EffectiveZoom() * Zoom());
   return true;
 }
 

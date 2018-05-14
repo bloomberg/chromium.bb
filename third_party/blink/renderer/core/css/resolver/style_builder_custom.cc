@@ -570,23 +570,13 @@ void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(
   }
 }
 
-static void ResetEffectiveZoom(StyleResolverState& state) {
-  // Reset the zoom in effect. This allows the setZoom method to accurately
-  // compute a new zoom in effect.
-  state.SetEffectiveZoom(state.ParentStyle()
-                             ? state.ParentStyle()->EffectiveZoom()
-                             : ComputedStyleInitialValues::InitialZoom());
-}
-
 void StyleBuilderFunctions::applyInitialCSSPropertyZoom(
     StyleResolverState& state) {
-  ResetEffectiveZoom(state);
   state.SetZoom(ComputedStyleInitialValues::InitialZoom());
 }
 
 void StyleBuilderFunctions::applyInheritCSSPropertyZoom(
     StyleResolverState& state) {
-  ResetEffectiveZoom(state);
   state.SetZoom(state.ParentStyle()->Zoom());
 }
 
@@ -597,19 +587,20 @@ void StyleBuilderFunctions::applyValueCSSPropertyZoom(StyleResolverState& state,
   if (value.IsIdentifierValue()) {
     const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
     if (identifier_value.GetValueID() == CSSValueNormal) {
-      ResetEffectiveZoom(state);
       state.SetZoom(ComputedStyleInitialValues::InitialZoom());
     }
   } else if (value.IsPrimitiveValue()) {
     const CSSPrimitiveValue& primitive_value = ToCSSPrimitiveValue(value);
     if (primitive_value.IsPercentage()) {
-      ResetEffectiveZoom(state);
       if (float percent = primitive_value.GetFloatValue())
         state.SetZoom(percent / 100.0f);
+      else
+        state.SetZoom(1.0f);
     } else if (primitive_value.IsNumber()) {
-      ResetEffectiveZoom(state);
       if (float number = primitive_value.GetFloatValue())
         state.SetZoom(number);
+      else
+        state.SetZoom(1.0f);
     }
   }
 }

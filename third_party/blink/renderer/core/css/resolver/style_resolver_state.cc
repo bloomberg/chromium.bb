@@ -133,7 +133,13 @@ const FontDescription& StyleResolverState::ParentFontDescription() const {
 }
 
 void StyleResolverState::SetZoom(float f) {
-  if (style_->SetZoom(f))
+  float parent_effective_zoom = ParentStyle()
+                                    ? ParentStyle()->EffectiveZoom()
+                                    : ComputedStyleInitialValues::InitialZoom();
+
+  style_->SetZoom(f);
+
+  if (style_->SetEffectiveZoom(parent_effective_zoom * f))
     font_builder_.DidChangeEffectiveZoom();
 }
 
