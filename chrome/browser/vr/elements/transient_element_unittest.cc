@@ -56,7 +56,7 @@ TEST(SimpleTransientElementTest, Visibility) {
   EXPECT_FALSE(DoBeginFrame(&element, 4030));
   element.SetTransitionedProperties({OPACITY});
   element.SetVisible(true);
-  EXPECT_FALSE(DoBeginFrame(&element, 4030));
+  EXPECT_TRUE(DoBeginFrame(&element, 4030));
   EXPECT_NE(element.opacity_when_visible(), element.opacity());
   element.SetVisibleImmediately(true);
   EXPECT_FALSE(DoBeginFrame(&element, 4030));
