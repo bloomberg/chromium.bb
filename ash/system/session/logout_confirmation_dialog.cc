@@ -13,6 +13,7 @@
 #include "base/time/tick_clock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/text_constants.h"
@@ -25,9 +26,11 @@
 namespace ash {
 namespace {
 
-const int kCountdownUpdateIntervalMs = 1000;  // 1 second.
+constexpr int kDefaultWidth = 448;  // Default width of the dialog.
 
-const int kHalfSecondInMs = 500;  // Half a second.
+constexpr int kCountdownUpdateIntervalMs = 1000;  // 1 second.
+
+constexpr int kHalfSecondInMs = 500;  // Half a second.
 
 }  // namespace
 
@@ -79,6 +82,13 @@ bool LogoutConfirmationDialog::Accept() {
   return true;
 }
 
+base::string16 LogoutConfirmationDialog::GetDialogButtonLabel(
+    ui::DialogButton button) const {
+  if (button == ui::DIALOG_BUTTON_OK)
+    return l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON);
+  return views::DialogDelegateView::GetDialogButtonLabel(button);
+}
+
 ui::ModalType LogoutConfirmationDialog::GetModalType() const {
   return ui::MODAL_TYPE_SYSTEM;
 }
@@ -87,17 +97,21 @@ base::string16 LogoutConfirmationDialog::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_TITLE);
 }
 
-base::string16 LogoutConfirmationDialog::GetDialogButtonLabel(
-    ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return l10n_util::GetStringUTF16(IDS_ASH_LOGOUT_CONFIRMATION_BUTTON);
-  return views::DialogDelegateView::GetDialogButtonLabel(button);
+bool LogoutConfirmationDialog::ShouldShowCloseButton() const {
+  // Material UI has no [X] in the corner of this dialog.
+  return !ui::MaterialDesignController::IsSecondaryUiMaterial();
 }
 
 void LogoutConfirmationDialog::WindowClosing() {
   update_timer_.Stop();
   if (controller_)
     controller_->OnDialogClosed();
+}
+
+gfx::Size LogoutConfirmationDialog::CalculatePreferredSize() const {
+  return gfx::Size(
+      kDefaultWidth,
+      GetLayoutManager()->GetPreferredHeightForWidth(this, kDefaultWidth));
 }
 
 void LogoutConfirmationDialog::UpdateLabel() {
