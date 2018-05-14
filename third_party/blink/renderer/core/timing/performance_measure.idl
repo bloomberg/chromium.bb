@@ -26,4 +26,5 @@
 // https://w3c.github.io/user-timing/#performancemeasure
 
 interface PerformanceMeasure : PerformanceEntry {
+  [CallWith=ScriptState, RuntimeEnabled=CustomUserTiming] readonly attribute any detail;
 };

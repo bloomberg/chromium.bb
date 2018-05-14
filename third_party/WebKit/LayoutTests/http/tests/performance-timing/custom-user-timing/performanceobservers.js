@@ -10,7 +10,8 @@ function checkEntries(perfEntriesToCheck, expectedEntries) {
       if (ex.entryType === pe.entryType && ex.name === pe.name &&
           (ex.detail === undefined ||
               JSON.stringify(ex.detail) === JSON.stringify(pe.detail)) &&
-          (ex.startTime === undefined || ex.startTime === pe.startTime)) {
+          (ex.startTime === undefined || ex.startTime === pe.startTime) &&
+          (ex.duration === undefined || ex.duration === pe.duration)) {
         return ex;
       }
     }
@@ -20,7 +21,7 @@ function checkEntries(perfEntriesToCheck, expectedEntries) {
   assert_equals(perfEntriesToCheck.length, expectedEntries.length,
       "performance entries must match");
 
-  perfEntriesToCheck.forEach((pe) => {
-    assert_not_equals(findMatch(pe), null, "Entry matches");
+  perfEntriesToCheck.forEach(function(pe) {
+    assert_not_equals(findMatch(pe), null, "Entry matches. Entry:" + JSON.stringify(pe) + ", All:" + JSON.stringify(expectedEntries));
   });
 }

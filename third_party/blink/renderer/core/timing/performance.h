@@ -34,6 +34,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_resource_timing_info.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
@@ -56,6 +57,7 @@ class ExceptionState;
 class MemoryInfo;
 class PerformanceNavigation;
 class PerformanceObserver;
+class PerformanceMeasure;
 class PerformanceTiming;
 class ResourceResponse;
 class ResourceTimingInfo;
@@ -66,6 +68,7 @@ class ScriptValue;
 class SubTaskAttribution;
 class V8ObjectBuilder;
 class PerformanceEventTiming;
+class StringOrDoubleOrPerformanceMeasureOptions;
 
 using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 
@@ -164,10 +167,23 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
 
   void clearMarks(const String& mark_name);
 
-  void measure(const String& measure_name,
-               const String& start_mark,
-               const String& end_mark,
-               ExceptionState&);
+  PerformanceMeasure* measure(ScriptState*,
+                              const String& measure_name,
+                              ExceptionState&);
+
+  PerformanceMeasure* measure(
+      ScriptState*,
+      const String& measure_name,
+      const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
+      ExceptionState&);
+
+  PerformanceMeasure* measure(
+      ScriptState*,
+      const String& measure_name,
+      const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
+      const StringOrDouble& end,
+      ExceptionState&);
+
   void clearMeasures(const String& measure_name);
 
   void UnregisterPerformanceObserver(PerformanceObserver&);
@@ -193,34 +209,13 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
     kLoadEventStart = 7,
     kLoadEventEnd = 8,
     kOther = 9,
+    kNull = 10,
+    kTimeStamp = 11,
     kPerformanceMeasurePassedInParameterCount
   };
 
-  static PerformanceMeasurePassedInParameterType
-  ToPerformanceMeasurePassedInParameterType(const String& s) {
-    // All passed-in objects will be stringified into this type.
-    if (s == "[object Object]")
-      return kObjectObject;
-    // The following names come from
-    // https://w3c.github.io/navigation-timing/#sec-PerformanceNavigationTiming.
-    if (s == "unloadEventStart")
-      return kUnloadEventStart;
-    if (s == "unloadEventEnd")
-      return kUnloadEventEnd;
-    if (s == "domInteractive")
-      return kDomInteractive;
-    if (s == "domContentLoadedEventStart")
-      return kDomContentLoadedEventStart;
-    if (s == "domContentLoadedEventEnd")
-      return kDomContentLoadedEventEnd;
-    if (s == "domComplete")
-      return kDomComplete;
-    if (s == "loadEventStart")
-      return kLoadEventStart;
-    if (s == "loadEventEnd")
-      return kLoadEventEnd;
-    return kOther;
-  }
+  static Performance::PerformanceMeasurePassedInParameterType
+  ToPerformanceMeasurePassedInParameterType(const StringOrDouble& p);
 
   static bool AllowsTimingRedirect(const Vector<ResourceResponse>&,
                                    const ResourceResponse&,
@@ -239,6 +234,21 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
                                      ExecutionContext*);
 
   void AddPaintTiming(PerformancePaintTiming::PaintType, TimeTicks start_time);
+
+  PerformanceMeasure* measureInternal(
+      ScriptState*,
+      const String& measure_name,
+      const StringOrDoubleOrPerformanceMeasureOptions& start,
+      const StringOrDouble& end,
+      bool end_is_empty,
+      ExceptionState&);
+
+  PerformanceMeasure* measureInternal(ScriptState*,
+                                      const String& measure_name,
+                                      const StringOrDouble& start,
+                                      const StringOrDouble& end,
+                                      const ScriptValue& detail,
+                                      ExceptionState&);
 
  protected:
   Performance(TimeTicks time_origin,

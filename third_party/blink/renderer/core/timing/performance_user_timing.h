@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_USER_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_USER_TIMING_H_
 
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -53,10 +54,12 @@ class UserTiming final : public GarbageCollected<UserTiming> {
                          ExceptionState&);
   void ClearMarks(const String& mark_name);
 
-  PerformanceEntry* Measure(const String& measure_name,
-                            const String& start_mark,
-                            const String& end_mark,
-                            ExceptionState&);
+  PerformanceMeasure* Measure(ScriptState*,
+                              const String& measure_name,
+                              const StringOrDouble& start,
+                              const StringOrDouble& end,
+                              const ScriptValue& detail,
+                              ExceptionState&);
   void ClearMeasures(const String& measure_name);
 
   PerformanceEntryVector GetMarks() const;
@@ -71,6 +74,7 @@ class UserTiming final : public GarbageCollected<UserTiming> {
   explicit UserTiming(Performance&);
 
   double FindExistingMarkStartTime(const String& mark_name, ExceptionState&);
+  double FindStartMarkOrTime(const StringOrDouble& start, ExceptionState&);
 
   Member<Performance> performance_;
   PerformanceEntryMap marks_map_;
