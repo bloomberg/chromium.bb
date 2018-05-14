@@ -110,6 +110,10 @@ TEST_F(ChromeAutocompleteProviderClientTest, TestStrippedURLsAreEqual) {
       {"http://google.com", "https://google.com", "", true},
       // Because we provided scheme, must match in scheme.
       {"http://google.com", "https://google.com", "http://google.com", false},
+      {"https://www.apple.com/", "http://www.apple.com/",
+       "https://www.apple.com/", false},
+      {"https://www.apple.com/", "https://www.apple.com/",
+       "https://www.apple.com/", true},
       // Ignore ref if not in input.
       {"http://drive.google.com/doc/blablabla#page=10",
        "http://drive.google.com/doc/blablabla#page=111", "", true},
