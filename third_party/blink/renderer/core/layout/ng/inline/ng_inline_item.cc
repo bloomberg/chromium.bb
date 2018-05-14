@@ -122,6 +122,13 @@ const char* NGInlineItem::NGInlineItemTypeToString(int val) const {
   return kNGInlineItemTypeStrings[val];
 }
 
+void NGInlineItem::SetBidiLevel(UBiDiLevel level) {
+  // Invalidate ShapeResult because it depends on the resolved direction.
+  if (DirectionFromLevel(level) != DirectionFromLevel(bidi_level_))
+    shape_result_ = nullptr;
+  bidi_level_ = level;
+}
+
 // Set bidi level to a list of NGInlineItem from |index| to the item that ends
 // with |end_offset|.
 // If |end_offset| is mid of an item, the item is split to ensure each item has
@@ -136,14 +143,14 @@ unsigned NGInlineItem::SetBidiLevel(Vector<NGInlineItem>& items,
                                     unsigned end_offset,
                                     UBiDiLevel level) {
   for (; items[index].end_offset_ < end_offset; index++)
-    items[index].bidi_level_ = level;
-  items[index].bidi_level_ = level;
+    items[index].SetBidiLevel(level);
+  items[index].SetBidiLevel(level);
 
   if (items[index].end_offset_ == end_offset) {
     // Let close items have the same bidi-level as the previous item.
     while (index + 1 < items.size() &&
            items[index + 1].Type() == NGInlineItem::kCloseTag) {
-      items[++index].bidi_level_ = level;
+      items[++index].SetBidiLevel(level);
     }
   } else {
     Split(items, index, end_offset);
@@ -175,11 +182,10 @@ void NGInlineItem::Split(Vector<NGInlineItem>& items,
                          unsigned offset) {
   DCHECK_GT(offset, items[index].start_offset_);
   DCHECK_LT(offset, items[index].end_offset_);
+  items[index].shape_result_ = nullptr;
   items.insert(index + 1, items[index]);
   items[index].end_offset_ = offset;
-  items[index].shape_result_ = nullptr;
   items[index + 1].start_offset_ = offset;
-  items[index + 1].shape_result_ = nullptr;
 }
 
 void NGInlineItem::SetOffset(unsigned start, unsigned end) {

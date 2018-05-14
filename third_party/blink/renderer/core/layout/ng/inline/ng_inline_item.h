@@ -132,6 +132,7 @@ class CORE_EXPORT NGInlineItem {
   bool EndMayCollapse() const { return end_may_collapse_; }
 
   static void Split(Vector<NGInlineItem>&, unsigned index, unsigned offset);
+  void SetBidiLevel(UBiDiLevel);
   static unsigned SetBidiLevel(Vector<NGInlineItem>&,
                                unsigned index,
                                unsigned end_offset,
