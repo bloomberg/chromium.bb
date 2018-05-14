@@ -43,6 +43,8 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -269,10 +271,14 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectLoopCookies) {
 // all and this test should be moved into ContentSettingsTest above.
 class ContentSettingsStrictSecureCookiesBrowserTest
     : public ContentSettingsTest {
- protected:
+ public:
+  ContentSettingsStrictSecureCookiesBrowserTest() = default;
+  ~ContentSettingsStrictSecureCookiesBrowserTest() override = default;
+
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
   }
+
   void SetUpOnMainThread() override {
     ContentSettingsTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -340,6 +346,150 @@ IN_PROC_BROWSER_TEST_F(ContentSettingsTest, RedirectCrossOrigin) {
 
   EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)->
       IsContentBlocked(CONTENT_SETTINGS_TYPE_COOKIES));
+}
+
+class ContentSettingsWorkerModulesBrowserTest : public ContentSettingsTest {
+ public:
+  ContentSettingsWorkerModulesBrowserTest() = default;
+  ~ContentSettingsWorkerModulesBrowserTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* cmd) override {
+    // Module scripts on Dedicated Worker is still an experimental feature.
+    // TODO(crbug/680046): Remove this after shipping.
+    cmd->AppendSwitch(switches::kEnableExperimentalWebPlatformFeatures);
+  }
+
+ protected:
+  void RegisterStaticFile(const std::string& relative_url,
+                          const std::string& content,
+                          const std::string& content_type) {
+    embedded_test_server()->RegisterRequestHandler(base::BindRepeating(
+        &ContentSettingsWorkerModulesBrowserTest::StaticRequestHandler,
+        base::Unretained(this), relative_url, content, content_type));
+  }
+
+ private:
+  std::unique_ptr<net::test_server::HttpResponse> StaticRequestHandler(
+      const std::string& relative_url,
+      const std::string& content,
+      const std::string& content_type,
+      const net::test_server::HttpRequest& request) const {
+    if (request.relative_url != relative_url)
+      return std::unique_ptr<net::test_server::HttpResponse>();
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+        std::make_unique<net::test_server::BasicHttpResponse>());
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content(content);
+    http_response->set_content_type(content_type);
+    return std::move(http_response);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ContentSettingsWorkerModulesBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
+                       WorkerImportModule) {
+  // This test uses 2 servers, |https_server_| and |embedded_test_server|.
+  // These 3 files are served from them:
+  //   - "worker_import_module.html" from |embedded_test_server|.
+  //   - "worker_import_module_worker.js" from |embedded_test_server|.
+  //   - "worker_import_module_imported.js" from |https_server_|.
+  // 1. worker_import_module.html starts a dedicated worker which type is
+  //    'module' using worker_import_module_worker.js.
+  //      new Worker('worker_import_module_worker.js', { type: 'module' })
+  // 2. worker_import_module_worker.js imports worker_import_module_imported.js.
+  //    - If succeeded to import, calls postMessage() with the exported |msg|
+  //      constant value which is 'Imported'.
+  //    - If failed, calls postMessage('Failed').
+  // 3. When the page receives the message from the worker, change the title
+  //    to the message string.
+  //      worker.onmessage = (event) => { document.title = event.data; };
+  ASSERT_TRUE(https_server_.Start());
+  GURL module_url = https_server_.GetURL("/worker_import_module_imported.js");
+
+  const std::string script = base::StringPrintf(
+      "import('%s')\n"
+      "  .then(module => postMessage(module.msg), _ => postMessage('Failed'));",
+      module_url.spec().c_str());
+  RegisterStaticFile("/worker_import_module_worker.js", script,
+                     "text/javascript");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL http_url = embedded_test_server()->GetURL("/worker_import_module.html");
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  base::string16 expected_title(base::ASCIIToUTF16("Imported"));
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Failed"));
+
+  ui_test_utils::NavigateToURL(browser(), http_url);
+
+  // The import must be executed successfully.
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_F(ContentSettingsWorkerModulesBrowserTest,
+                       WorkerImportModuleBlocked) {
+  // This test uses 2 servers, |https_server_| and |embedded_test_server|.
+  // These 3 files are served from them:
+  //   - "worker_import_module.html" from |embedded_test_server|.
+  //   - "worker_import_module_worker.js" from |embedded_test_server|.
+  //   - "worker_import_module_imported.js" from |https_server_|.
+  // 1. worker_import_module.html starts a dedicated worker which type is
+  //    'module' using worker_import_module_worker.js.
+  //      new Worker('worker_import_module_worker.js', { type: 'module' })
+  // 2. worker_import_module_worker.js imports worker_import_module_imported.js.
+  //    - If succeeded to import, calls postMessage() with the exported |msg|
+  //      constant value which is 'Imported'.
+  //    - If failed, calls postMessage('Failed').
+  // 3. When the page receives the message from the worker, change the title
+  //    to the message string.
+  //      worker.onmessage = (event) => { document.title = event.data; };
+  ASSERT_TRUE(https_server_.Start());
+  GURL module_url = https_server_.GetURL("/worker_import_module_imported.js");
+
+  const std::string script = base::StringPrintf(
+      "import('%s')\n"
+      "  .then(module => postMessage(module.msg), _ => postMessage('Failed'));",
+      module_url.spec().c_str());
+  RegisterStaticFile("/worker_import_module_worker.js", script,
+                     "text/javascript");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL http_url = embedded_test_server()->GetURL("/worker_import_module.html");
+
+  // Change the settings to blocks the script loading of
+  // worker_import_module_imported.js from worker_import_module.html.
+  HostContentSettingsMap* content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(browser()->profile());
+  content_settings_map->SetWebsiteSettingCustomScope(
+      ContentSettingsPattern::FromURLNoWildcard(http_url),
+      ContentSettingsPattern::FromURLNoWildcard(module_url),
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, std::string(),
+      std::make_unique<base::Value>(CONTENT_SETTING_BLOCK));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  TabSpecificContentSettings* tab_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+
+  content::WindowedNotificationObserver javascript_content_blocked_observer(
+      chrome::NOTIFICATION_WEB_CONTENT_SETTINGS_CHANGED,
+      base::BindRepeating(&TabSpecificContentSettings::IsContentBlocked,
+                          base::Unretained(tab_settings),
+                          CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+
+  base::string16 expected_title(base::ASCIIToUTF16("Failed"));
+  content::TitleWatcher title_watcher(web_contents, expected_title);
+  title_watcher.AlsoWaitForTitle(base::ASCIIToUTF16("Imported"));
+
+  ui_test_utils::NavigateToURL(browser(), http_url);
+
+  // The import must be blocked.
+  javascript_content_blocked_observer.Wait();
+  EXPECT_TRUE(tab_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
