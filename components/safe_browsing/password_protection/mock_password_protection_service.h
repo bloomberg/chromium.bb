@@ -24,6 +24,8 @@ class MockPasswordProtectionService : public PasswordProtectionService {
   MOCK_CONST_METHOD0(GetSyncAccountType,
                      safe_browsing::LoginReputationClientRequest::
                          PasswordReuseEvent::SyncAccountType());
+  MOCK_CONST_METHOD0(GetBrowserPolicyConnector,
+                     const policy::BrowserPolicyConnector*());
   MOCK_CONST_METHOD1(
       GetPasswordProtectionTriggerPref,
       safe_browsing::PasswordProtectionTrigger(const std::string& pref_name));

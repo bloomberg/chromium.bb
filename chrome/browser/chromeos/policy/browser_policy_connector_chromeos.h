@@ -63,6 +63,9 @@ class BrowserPolicyConnectorChromeOS
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) override;
 
+  // Checks whether this devices is under any kind of enterprise management.
+  bool IsEnterpriseManaged() const override;
+
   // Shutdown() is called from BrowserProcessImpl::StartTearDown() but |this|
   // observes some objects that get destroyed earlier. PreShutdown() is called
   // from ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun(), allowing the
@@ -70,9 +73,6 @@ class BrowserPolicyConnectorChromeOS
   void PreShutdown();
 
   void Shutdown() override;
-
-  // Checks whether this devices is under any kind of enterprise management.
-  bool IsEnterpriseManaged() const;
 
   // Checks whether this is a cloud (DM server) managed enterprise device.
   bool IsCloudManaged() const;

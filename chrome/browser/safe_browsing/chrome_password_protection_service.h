@@ -26,6 +26,10 @@ namespace content {
 class WebContents;
 }
 
+namespace policy {
+class BrowserPolicyConnector;
+}
+
 namespace safe_browsing {
 
 class SafeBrowsingService;
@@ -168,6 +172,9 @@ class ChromePasswordProtectionService : public PasswordProtectionService {
 
  protected:
   // PasswordProtectionService overrides.
+
+  const policy::BrowserPolicyConnector* GetBrowserPolicyConnector()
+      const override;
   // Obtains referrer chain of |event_url| and |event_tab_id| and add this
   // info into |frame|.
   void FillReferrerChain(const GURL& event_url,

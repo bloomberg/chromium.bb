@@ -55,6 +55,8 @@ class ChromeBrowserPolicyConnector : public BrowserPolicyConnector {
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) override;
 
+  bool IsEnterpriseManaged() const override;
+
   void Shutdown() override;
 
   ConfigurationPolicyProvider* GetPlatformProvider();

@@ -124,6 +124,11 @@ void ChromeBrowserPolicyConnector::Init(
 #endif
 }
 
+bool ChromeBrowserPolicyConnector::IsEnterpriseManaged() const {
+  NOTREACHED() << "This method is only defined for Chrome OS";
+  return false;
+}
+
 void ChromeBrowserPolicyConnector::Shutdown() {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // Reset the registrar and fetcher before calling base class so that
