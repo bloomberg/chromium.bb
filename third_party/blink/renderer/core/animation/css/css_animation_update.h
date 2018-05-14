@@ -31,13 +31,15 @@ class NewCSSAnimation {
                   size_t name_index,
                   const InertEffect& effect,
                   Timing timing,
-                  StyleRuleKeyframes* style_rule)
+                  StyleRuleKeyframes* style_rule,
+                  const Vector<EAnimPlayState>& play_state_list)
       : name(name),
         name_index(name_index),
         effect(effect),
         timing(timing),
         style_rule(style_rule),
-        style_rule_version(this->style_rule->Version()) {}
+        style_rule_version(this->style_rule->Version()),
+        play_state_list(play_state_list) {}
 
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(effect);
@@ -50,6 +52,7 @@ class NewCSSAnimation {
   Timing timing;
   Member<StyleRuleKeyframes> style_rule;
   unsigned style_rule_version;
+  Vector<EAnimPlayState> play_state_list;
 };
 
 class UpdatedCSSAnimation {
@@ -60,13 +63,15 @@ class UpdatedCSSAnimation {
                       Animation* animation,
                       const InertEffect& effect,
                       Timing specified_timing,
-                      StyleRuleKeyframes* style_rule)
+                      StyleRuleKeyframes* style_rule,
+                      const Vector<EAnimPlayState>& play_state_list)
       : index(index),
         animation(animation),
         effect(&effect),
         specified_timing(specified_timing),
         style_rule(style_rule),
-        style_rule_version(this->style_rule->Version()) {}
+        style_rule_version(this->style_rule->Version()),
+        play_state_list(play_state_list) {}
 
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(animation);
@@ -80,6 +85,7 @@ class UpdatedCSSAnimation {
   Timing specified_timing;
   Member<StyleRuleKeyframes> style_rule;
   unsigned style_rule_version;
+  Vector<EAnimPlayState> play_state_list;
 };
 
 }  // namespace blink
@@ -106,9 +112,11 @@ class CSSAnimationUpdate final {
                       size_t name_index,
                       const InertEffect& effect,
                       const Timing& timing,
-                      StyleRuleKeyframes* style_rule) {
+                      StyleRuleKeyframes* style_rule,
+                      const Vector<EAnimPlayState>& play_state_list) {
     new_animations_.push_back(NewCSSAnimation(animation_name, name_index,
-                                              effect, timing, style_rule));
+                                              effect, timing, style_rule,
+                                              play_state_list));
   }
   void CancelAnimation(size_t index, const Animation& animation) {
     cancelled_animation_indices_.push_back(index);
@@ -121,9 +129,11 @@ class CSSAnimationUpdate final {
                        Animation* animation,
                        const InertEffect& effect,
                        const Timing& specified_timing,
-                       StyleRuleKeyframes* style_rule) {
-    animations_with_updates_.push_back(UpdatedCSSAnimation(
-        index, animation, effect, specified_timing, style_rule));
+                       StyleRuleKeyframes* style_rule,
+                       const Vector<EAnimPlayState>& play_state_list) {
+    animations_with_updates_.push_back(
+        UpdatedCSSAnimation(index, animation, effect, specified_timing,
+                            style_rule, play_state_list));
     suppressed_animations_.insert(animation);
   }
   void UpdateCompositorKeyframes(Animation* animation) {

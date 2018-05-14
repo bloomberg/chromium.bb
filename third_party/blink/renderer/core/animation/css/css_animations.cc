@@ -374,10 +374,15 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
 
         Animation* animation = existing_animation->animation.Get();
 
+        const bool was_paused =
+            CSSTimingData::GetRepeated(existing_animation->play_state_list,
+                                       i) == EAnimPlayState::kPaused;
+
         if (keyframes_rule != existing_animation->style_rule ||
             keyframes_rule->Version() !=
                 existing_animation->style_rule_version ||
-            existing_animation->specified_timing != specified_timing) {
+            existing_animation->specified_timing != specified_timing ||
+            is_paused != was_paused) {
           DCHECK(!is_animation_style_change);
           update.UpdateAnimation(
               existing_animation_index, animation,
@@ -386,12 +391,10 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
                                             element, &style, parent_style, name,
                                             keyframe_timing_function.get(), i),
                   timing, is_paused, animation->UnlimitedCurrentTimeInternal()),
-              specified_timing, keyframes_rule);
-        }
-
-        if (is_paused != animation->Paused()) {
-          DCHECK(!is_animation_style_change);
-          update.ToggleAnimationIndexPaused(existing_animation_index);
+              specified_timing, keyframes_rule,
+              animation_data->PlayStateList());
+          if (is_paused != was_paused)
+            update.ToggleAnimationIndexPaused(existing_animation_index);
         }
       } else {
         DCHECK(!is_animation_style_change);
@@ -402,7 +405,7 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
                                           &style, parent_style, name,
                                           keyframe_timing_function.get(), i),
                 timing, is_paused, 0),
-            specified_timing, keyframes_rule);
+            specified_timing, keyframes_rule, animation_data->PlayStateList());
       }
     }
   }

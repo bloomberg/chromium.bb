@@ -114,12 +114,14 @@ class CSSAnimations final {
           name_index(new_animation.name_index),
           specified_timing(new_animation.timing),
           style_rule(new_animation.style_rule),
-          style_rule_version(new_animation.style_rule_version) {}
+          style_rule_version(new_animation.style_rule_version),
+          play_state_list(new_animation.play_state_list) {}
 
     void Update(UpdatedCSSAnimation update) {
       DCHECK_EQ(update.animation, animation);
       style_rule = update.style_rule;
       style_rule_version = update.style_rule_version;
+      play_state_list = update.play_state_list;
       specified_timing = update.specified_timing;
     }
 
@@ -134,6 +136,7 @@ class CSSAnimations final {
     Timing specified_timing;
     Member<StyleRuleKeyframes> style_rule;
     unsigned style_rule_version;
+    Vector<EAnimPlayState> play_state_list;
   };
 
   struct RunningTransition {
