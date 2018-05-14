@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/win/windows_version.h"
+#include "components/viz/common/features.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 #include "gpu/ipc/service/gpu_vsync_provider_win.h"
@@ -24,6 +25,12 @@ namespace gpu {
 
 namespace {
 bool IsGpuVSyncSignalSupported() {
+  // TODO(crbug.com/787814): D3DVsync needs to be rewritten to work with
+  // OOP-D. It's no longer requires any IPC, just an ExternalBeginFrameSource,
+  // so it should be much simpler.
+  if (base::FeatureList::IsEnabled(features::kVizDisplayCompositor))
+    return false;
+
   // TODO(stanisc): http://crbug.com/467617 Limit to Windows 8.1+ for now
   // because of locking issue caused by waiting for VSync on Win7 and Win 8.0.
   return base::win::GetVersion() >= base::win::VERSION_WIN8_1 &&
