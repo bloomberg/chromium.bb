@@ -19,10 +19,9 @@ PlatformUiElement::~PlatformUiElement() = default;
 void PlatformUiElement::Render(UiElementRenderer* renderer,
                                const CameraModel& model) const {
   if (texture_id_) {
-    gfx::RectF copy_rect(0, 0, 1, 1);
     renderer->DrawTexturedQuad(texture_id_, 0, texture_location_,
                                model.view_proj_matrix * world_space_transform(),
-                               copy_rect, computed_opacity(), size(),
+                               clip_rect(), computed_opacity(), size(),
                                corner_radius(), true);
   }
 }
