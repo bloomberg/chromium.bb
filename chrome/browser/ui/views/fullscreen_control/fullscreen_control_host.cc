@@ -97,13 +97,37 @@ void FullscreenControlHost::OnKeyEvent(ui::KeyEvent* event) {
     return;
   }
 
+  ExclusiveAccessManager* const exclusive_access_manager =
+      bubble_views_context_->GetExclusiveAccessManager();
+
+  // FullscreenControlHost UI is not needed for the keyboard input method in any
+  // fullscreen mode except for tab-initiated fullscreen (and only when the user
+  // is required to press and hold the escape key to exit).
+
+  // If we are not in tab-initiated fullscreen, then we want to make sure the
+  // UI exit bubble is not displayed.  This can occur when:
+  // 1.) The user enters browser fullscreen (F11)
+  // 2.) The website then enters tab-initiated fullscreen
+  // 3.) User performs a press and hold gesture on escape
+  //
+  // In this case, the fullscreen controller will revert back to browser
+  // fullscreen mode but there won't be a fullscreen exit message to trigger
+  // the UI cleanup for the exit bubble.  To handle this case, we need to check
+  // to make sure the UI is in the right fullscreen mode before proceeding.
+  if (!exclusive_access_manager->fullscreen_controller()
+           ->IsWindowFullscreenForTabOrPending()) {
+    key_press_delay_timer_.Stop();
+    if (IsVisible() && input_entry_method_ == InputEntryMethod::KEYBOARD)
+      Hide(true);
+    return;
+  }
+
   // Note: This logic handles the UI feedback element used when holding down the
   // esc key, however the logic for exiting fullscreen is handled by the
   // KeyboardLockController class.
   if (event->type() == ui::ET_KEY_PRESSED &&
       !key_press_delay_timer_.IsRunning() &&
-      bubble_views_context_->GetExclusiveAccessManager()
-          ->keyboard_lock_controller()
+      exclusive_access_manager->keyboard_lock_controller()
           ->RequiresPressAndHoldEscToExit()) {
     key_press_delay_timer_.Start(
         FROM_HERE, kKeyPressPopupDelay,
