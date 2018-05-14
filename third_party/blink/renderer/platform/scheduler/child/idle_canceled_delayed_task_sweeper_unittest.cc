@@ -32,9 +32,10 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
   IdleCanceledDelayedTaskSweeperTest()
       : mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, true)),
         scheduler_helper_(new MainThreadSchedulerHelper(
-            TaskQueueManagerForTest::Create(nullptr,
-                                            mock_task_runner_,
-                                            &clock_),
+            base::sequence_manager::TaskQueueManagerForTest::Create(
+                nullptr,
+                mock_task_runner_,
+                &clock_),
             nullptr)),
         idle_helper_(
             new IdleHelper(scheduler_helper_.get(),
@@ -79,7 +80,7 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
   std::unique_ptr<IdleHelper> idle_helper_;
   std::unique_ptr<IdleCanceledDelayedTaskSweeper>
       idle_canceled_delayed_taks_sweeper_;
-  scoped_refptr<TaskQueue> default_task_queue_;
+  scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue_;
 
   DISALLOW_COPY_AND_ASSIGN(IdleCanceledDelayedTaskSweeperTest);
 };

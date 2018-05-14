@@ -20,7 +20,8 @@ namespace scheduler {
 //
 // TODO(skyostil): Fix the relevant test suites and remove this class
 // (crbug.com/495659).
-class LazyThreadControllerForTest : public internal::ThreadControllerImpl {
+class LazyThreadControllerForTest
+    : public base::sequence_manager::internal::ThreadControllerImpl {
  public:
   LazyThreadControllerForTest();
   ~LazyThreadControllerForTest() override;

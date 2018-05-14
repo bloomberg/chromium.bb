@@ -14,6 +14,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/child/cancelable_closure_holder.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
@@ -51,22 +52,24 @@ class PLATFORM_EXPORT BudgetPoolController {
 
   // To be used by BudgetPool only, use BudgetPool::{Add,Remove}Queue
   // methods instead.
-  virtual void AddQueueToBudgetPool(TaskQueue* queue,
+  virtual void AddQueueToBudgetPool(base::sequence_manager::TaskQueue* queue,
                                     BudgetPool* budget_pool) = 0;
-  virtual void RemoveQueueFromBudgetPool(TaskQueue* queue,
-                                         BudgetPool* budget_pool) = 0;
+  virtual void RemoveQueueFromBudgetPool(
+      base::sequence_manager::TaskQueue* queue,
+      BudgetPool* budget_pool) = 0;
 
   // Deletes the budget pool.
   virtual void UnregisterBudgetPool(BudgetPool* budget_pool) = 0;
 
   // Ensure that an appropriate type of the fence is installed and schedule
   // a pump for this queue when needed.
-  virtual void UpdateQueueThrottlingState(base::TimeTicks now,
-                                          TaskQueue* queue) = 0;
+  virtual void UpdateQueueThrottlingState(
+      base::TimeTicks now,
+      base::sequence_manager::TaskQueue* queue) = 0;
 
   // Returns true if the |queue| is throttled (i.e. added to TaskQueueThrottler
   // and throttling is not disabled).
-  virtual bool IsThrottled(TaskQueue* queue) const = 0;
+  virtual bool IsThrottled(base::sequence_manager::TaskQueue* queue) const = 0;
 };
 
 // The job of the TaskQueueThrottler is to control when tasks posted on
@@ -91,8 +94,9 @@ class PLATFORM_EXPORT BudgetPoolController {
 // See IncreaseThrottleRefCount & DecreaseThrottleRefCount.
 //
 // This class is main-thread only.
-class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
-                                           public BudgetPoolController {
+class PLATFORM_EXPORT TaskQueueThrottler
+    : public base::sequence_manager::TaskQueue::Observer,
+      public BudgetPoolController {
  public:
   // We use tracing controller from MainThreadSchedulerImpl because an instance
   // of this class is always its member, so has the same lifetime.
@@ -102,29 +106,31 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   ~TaskQueueThrottler() override;
 
   // TaskQueue::Observer implementation:
-  void OnQueueNextWakeUpChanged(TaskQueue* queue,
+  void OnQueueNextWakeUpChanged(base::sequence_manager::TaskQueue* queue,
                                 base::TimeTicks wake_up) override;
 
   // BudgetPoolController implementation:
-  void AddQueueToBudgetPool(TaskQueue* queue, BudgetPool* budget_pool) override;
-  void RemoveQueueFromBudgetPool(TaskQueue* queue,
+  void AddQueueToBudgetPool(base::sequence_manager::TaskQueue* queue,
+                            BudgetPool* budget_pool) override;
+  void RemoveQueueFromBudgetPool(base::sequence_manager::TaskQueue* queue,
                                  BudgetPool* budget_pool) override;
   void UnregisterBudgetPool(BudgetPool* budget_pool) override;
-  void UpdateQueueThrottlingState(base::TimeTicks now,
-                                  TaskQueue* queue) override;
-  bool IsThrottled(TaskQueue* queue) const override;
+  void UpdateQueueThrottlingState(
+      base::TimeTicks now,
+      base::sequence_manager::TaskQueue* queue) override;
+  bool IsThrottled(base::sequence_manager::TaskQueue* queue) const override;
 
   // Increments the throttled refcount and causes |task_queue| to be throttled
   // if its not already throttled.
-  void IncreaseThrottleRefCount(TaskQueue* task_queue);
+  void IncreaseThrottleRefCount(base::sequence_manager::TaskQueue* task_queue);
 
   // If the refcouint is non-zero it's decremented.  If the throttled refcount
   // becomes zero then |task_queue| is unthrottled.  If the refcount was already
   // zero this function does nothing.
-  void DecreaseThrottleRefCount(TaskQueue* task_queue);
+  void DecreaseThrottleRefCount(base::sequence_manager::TaskQueue* task_queue);
 
   // Removes |task_queue| from |queue_details| and from appropriate budget pool.
-  void ShutdownTaskQueue(TaskQueue* task_queue);
+  void ShutdownTaskQueue(base::sequence_manager::TaskQueue* task_queue);
 
   // Disable throttling for all queues, this setting takes precedence over
   // all other throttling settings. Designed to be used when a global event
@@ -140,7 +146,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   static base::TimeTicks AlignedThrottledRunTime(
       base::TimeTicks unthrottled_runtime);
 
-  const scoped_refptr<TaskQueue>& task_queue() const {
+  const scoped_refptr<base::sequence_manager::TaskQueue>& task_queue() const {
     return control_task_queue_;
   }
 
@@ -149,7 +155,7 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
   WakeUpBudgetPool* CreateWakeUpBudgetPool(const char* name);
 
   // Accounts for given task for cpu-based throttling needs.
-  void OnTaskRunTimeReported(TaskQueue* task_queue,
+  void OnTaskRunTimeReported(base::sequence_manager::TaskQueue* task_queue,
                              base::TimeTicks start_time,
                              base::TimeTicks end_time);
 
@@ -164,7 +170,8 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
 
     std::unordered_set<BudgetPool*> budget_pools;
   };
-  using TaskQueueMap = std::unordered_map<TaskQueue*, Metadata>;
+  using TaskQueueMap =
+      std::unordered_map<base::sequence_manager::TaskQueue*, Metadata>;
 
   void PumpThrottledTasks();
 
@@ -177,29 +184,35 @@ class PLATFORM_EXPORT TaskQueueThrottler : public TaskQueue::Observer,
 
   // Return next possible time when queue is allowed to run in accordance
   // with throttling policy.
-  base::TimeTicks GetNextAllowedRunTime(TaskQueue* queue,
-                                        base::TimeTicks desired_run_time);
+  base::TimeTicks GetNextAllowedRunTime(
+      base::sequence_manager::TaskQueue* queue,
+      base::TimeTicks desired_run_time);
 
-  bool CanRunTasksAt(TaskQueue* queue, base::TimeTicks moment, bool is_wake_up);
+  bool CanRunTasksAt(base::sequence_manager::TaskQueue* queue,
+                     base::TimeTicks moment,
+                     bool is_wake_up);
 
   base::Optional<base::TimeTicks> GetTimeTasksCanRunUntil(
-      TaskQueue* queue,
+      base::sequence_manager::TaskQueue* queue,
       base::TimeTicks now,
       bool is_wake_up) const;
 
   void MaybeDeleteQueueMetadata(TaskQueueMap::iterator it);
 
-  void UpdateQueueThrottlingStateInternal(base::TimeTicks now,
-                                          TaskQueue* queue,
-                                          bool is_wake_up);
+  void UpdateQueueThrottlingStateInternal(
+      base::TimeTicks now,
+      base::sequence_manager::TaskQueue* queue,
+      bool is_wake_up);
 
-  base::Optional<QueueBlockType> GetQueueBlockType(base::TimeTicks now,
-                                                   TaskQueue* queue);
+  base::Optional<QueueBlockType> GetQueueBlockType(
+      base::TimeTicks now,
+      base::sequence_manager::TaskQueue* queue);
 
   TaskQueueMap queue_details_;
-  base::RepeatingCallback<void(TaskQueue*, base::TimeTicks)>
+  base::RepeatingCallback<void(base::sequence_manager::TaskQueue*,
+                               base::TimeTicks)>
       forward_immediate_work_callback_;
-  scoped_refptr<TaskQueue> control_task_queue_;
+  scoped_refptr<base::sequence_manager::TaskQueue> control_task_queue_;
   MainThreadSchedulerImpl* main_thread_scheduler_;   // NOT OWNED
   TraceableVariableController* tracing_controller_;  // NOT OWNED
   const base::TickClock* tick_clock_;                // NOT OWNED

@@ -40,7 +40,7 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
   // state of the parent document (https://crbug.com/670534).
 
  private:
-  scoped_refptr<TaskQueue> task_queue_;
+  scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
 
 #if DCHECK_IS_ON()
   bool is_disposed_ = false;

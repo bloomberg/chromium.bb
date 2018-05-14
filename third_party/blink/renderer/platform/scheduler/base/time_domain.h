@@ -15,8 +15,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 class TaskQueueImpl;
 }  // internal
@@ -26,7 +26,7 @@ class TaskQueueManager;
 // are due to fire. TaskQueues request a wake up via ScheduleDelayedWork, when
 // the wake up is due the TimeDomain calls TaskQueue::WakeUpForDelayedWork.
 // The TimeDomain communicates with the TaskQueueManager to actually schedule
-// the wake-ups on the underlying base::MessageLoop. Various levels of de-duping
+// the wake-ups on the underlying MessageLoop. Various levels of de-duping
 // are employed to prevent unnecessary posting of TaskQueueManager::DoWork.
 //
 // Note the TimeDomain only knows about the first wake-up per queue, it's the
@@ -43,27 +43,26 @@ class PLATFORM_EXPORT TimeDomain {
   virtual LazyNow CreateLazyNow() const = 0;
 
   // Evaluate this TimeDomain's Now. Can be called from any thread.
-  virtual base::TimeTicks Now() const = 0;
+  virtual TimeTicks Now() const = 0;
 
   // Computes the delay until the next task the TimeDomain is aware of, if any.
-  // Note virtual time domains may return base::TimeDelta() if they have any
+  // Note virtual time domains may return TimeDelta() if they have any
   // delayed tasks they deem eligible to run.  Virtual time domains are allowed
   // to advance their internal clock when this method is called.
-  virtual base::Optional<base::TimeDelta> DelayTillNextTask(
-      LazyNow* lazy_now) = 0;
+  virtual Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) = 0;
 
   // Returns the name of this time domain for tracing.
   virtual const char* GetName() const = 0;
 
   // If there is a scheduled delayed task, |out_time| is set to the scheduled
   // runtime for the next one and it returns true.  Returns false otherwise.
-  bool NextScheduledRunTime(base::TimeTicks* out_time) const;
+  bool NextScheduledRunTime(TimeTicks* out_time) const;
 
  protected:
   friend class internal::TaskQueueImpl;
   friend class TaskQueueManagerImpl;
 
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  void AsValueInto(trace_event::TracedValue* state) const;
 
   // If there is a scheduled delayed task, |out_task_queue| is set to the queue
   // the next task was posted to and it returns true.  Returns false otherwise.
@@ -71,7 +70,7 @@ class PLATFORM_EXPORT TimeDomain {
 
   void ScheduleWakeUpForQueue(
       internal::TaskQueueImpl* queue,
-      base::Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
+      Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
       LazyNow* lazy_now);
 
   // Registers the |queue|.
@@ -89,17 +88,15 @@ class PLATFORM_EXPORT TimeDomain {
   // NOTE this is only called by ScheduleDelayedWork if the scheduled runtime
   // is sooner than any previously sheduled work or if there is no other
   // scheduled work.
-  virtual void RequestWakeUpAt(base::TimeTicks now,
-                               base::TimeTicks run_time) = 0;
+  virtual void RequestWakeUpAt(TimeTicks now, TimeTicks run_time) = 0;
 
   // The implementation will cancel a wake up previously requested by
   // RequestWakeUpAt.  It's expected this will be a NOP for most virtual time
   // domains.
-  virtual void CancelWakeUpAt(base::TimeTicks run_time) = 0;
+  virtual void CancelWakeUpAt(TimeTicks run_time) = 0;
 
   // For implementation specific tracing.
-  virtual void AsValueIntoInternal(
-      base::trace_event::TracedValue* state) const = 0;
+  virtual void AsValueIntoInternal(trace_event::TracedValue* state) const = 0;
 
   // Call TaskQueueImpl::UpdateDelayedWorkQueue for each queue where the delay
   // has elapsed.
@@ -131,12 +128,12 @@ class PLATFORM_EXPORT TimeDomain {
 
   IntrusiveHeap<ScheduledDelayedWakeUp> delayed_wake_up_queue_;
 
-  base::ThreadChecker main_thread_checker_;
+  ThreadChecker main_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(TimeDomain);
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TIME_DOMAIN_H_

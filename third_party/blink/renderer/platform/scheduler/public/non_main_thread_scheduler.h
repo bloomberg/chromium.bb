@@ -42,11 +42,12 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
   // initialization needed such as initializing idle period detection.
   void Init();
 
-  virtual void OnTaskCompleted(WorkerTaskQueue* worker_task_queue,
-                               const TaskQueue::Task& task,
-                               base::TimeTicks start,
-                               base::TimeTicks end,
-                               base::Optional<base::TimeDelta> thread_time) = 0;
+  virtual void OnTaskCompleted(
+      WorkerTaskQueue* worker_task_queue,
+      const base::sequence_manager::TaskQueue::Task& task,
+      base::TimeTicks start,
+      base::TimeTicks end,
+      base::Optional<base::TimeDelta> thread_time) = 0;
 
   // ThreadScheduler implementation.
   // TODO(yutak): Some functions are only meaningful in main thread. Move them

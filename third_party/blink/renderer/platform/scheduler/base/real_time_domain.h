@@ -11,8 +11,8 @@
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 class PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
  public:
@@ -21,17 +21,16 @@ class PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
 
   // TimeDomain implementation:
   LazyNow CreateLazyNow() const override;
-  base::TimeTicks Now() const override;
-  base::Optional<base::TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
+  TimeTicks Now() const override;
+  Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
   const char* GetName() const override;
 
  protected:
   void OnRegisterWithTaskQueueManager(
       TaskQueueManagerImpl* task_queue_manager) override;
-  void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
-  void CancelWakeUpAt(base::TimeTicks run_time) override;
-  void AsValueIntoInternal(
-      base::trace_event::TracedValue* state) const override;
+  void RequestWakeUpAt(TimeTicks now, TimeTicks run_time) override;
+  void CancelWakeUpAt(TimeTicks run_time) override;
+  void AsValueIntoInternal(trace_event::TracedValue* state) const override;
 
  private:
   TaskQueueManagerImpl* task_queue_manager_;  // NOT OWNED
@@ -39,7 +38,7 @@ class PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
   DISALLOW_COPY_AND_ASSIGN(RealTimeDomain);
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_REAL_TIME_DOMAIN_H_

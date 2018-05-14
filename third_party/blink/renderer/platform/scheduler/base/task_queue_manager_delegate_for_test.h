@@ -14,46 +14,46 @@
 #include "base/time/tick_clock.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_delegate.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
  public:
   static scoped_refptr<TaskQueueManagerDelegateForTest> Create(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::TickClock* time_source);
+      scoped_refptr<SingleThreadTaskRunner> task_runner,
+      const TickClock* time_source);
 
   // SingleThreadTaskRunner:
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override;
-  bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay) override;
+  bool PostDelayedTask(const Location& from_here,
+                       OnceClosure task,
+                       TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const Location& from_here,
+                                  OnceClosure task,
+                                  TimeDelta delay) override;
   bool RunsTasksInCurrentSequence() const override;
 
   // TaskQueueManagerDelegate:
   bool IsNested() const override;
-  void AddNestingObserver(base::RunLoop::NestingObserver* observer) override;
-  void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
+  void AddNestingObserver(RunLoop::NestingObserver* observer) override;
+  void RemoveNestingObserver(RunLoop::NestingObserver* observer) override;
 
   // TickClock:
-  base::TimeTicks NowTicks() const override;
+  TimeTicks NowTicks() const override;
 
  protected:
   ~TaskQueueManagerDelegateForTest() override;
   TaskQueueManagerDelegateForTest(
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::TickClock* time_source);
+      scoped_refptr<SingleThreadTaskRunner> task_runner,
+      const TickClock* time_source);
 
  private:
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  const base::TickClock* time_source_;
+  scoped_refptr<SingleThreadTaskRunner> task_runner_;
+  const TickClock* time_source_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskQueueManagerDelegateForTest);
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_DELEGATE_FOR_TEST_H_

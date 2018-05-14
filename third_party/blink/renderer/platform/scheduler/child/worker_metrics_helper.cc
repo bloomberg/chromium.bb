@@ -29,7 +29,7 @@ void WorkerMetricsHelper::SetParentFrameType(FrameOriginType frame_type) {
 
 void WorkerMetricsHelper::RecordTaskMetrics(
     WorkerTaskQueue* queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::TaskQueue::Task& task,
     base::TimeTicks start_time,
     base::TimeTicks end_time,
     base::Optional<base::TimeDelta> thread_time) {

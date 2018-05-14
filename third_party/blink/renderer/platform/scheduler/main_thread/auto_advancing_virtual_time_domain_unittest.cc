@@ -33,9 +33,9 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
     test_task_runner_->AdvanceMockTickClock(
         base::TimeDelta::FromMilliseconds(5));
     scheduler_helper_.reset(new NonMainThreadSchedulerHelper(
-        TaskQueueManagerForTest::Create(nullptr,
-                                        base::ThreadTaskRunnerHandle::Get(),
-                                        test_task_runner_->GetMockTickClock()),
+        base::sequence_manager::TaskQueueManagerForTest::Create(
+            nullptr, base::ThreadTaskRunnerHandle::Get(),
+            test_task_runner_->GetMockTickClock()),
         nullptr));
 
     scheduler_helper_->AddTaskTimeObserver(&test_task_time_observer_);
@@ -58,9 +58,9 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
   base::Time initial_time_;
   base::TimeTicks initial_time_ticks_;
   std::unique_ptr<NonMainThreadSchedulerHelper> scheduler_helper_;
-  scoped_refptr<TaskQueue> task_queue_;
+  scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> auto_advancing_time_domain_;
-  TestTaskTimeObserver test_task_time_observer_;
+  base::sequence_manager::TestTaskTimeObserver test_task_time_observer_;
 };
 
 namespace {
@@ -118,7 +118,7 @@ TEST_F(AutoAdvancingVirtualTimeDomainTest, VirtualTimeDoesNotAdvance) {
 }
 
 namespace {
-void RepostingTask(scoped_refptr<TaskQueue> task_queue,
+void RepostingTask(scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
                    int max_count,
                    int* count) {
   if (++(*count) >= max_count)

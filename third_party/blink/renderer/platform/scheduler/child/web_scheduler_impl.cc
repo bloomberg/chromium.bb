@@ -18,7 +18,7 @@ namespace scheduler {
 WebSchedulerImpl::WebSchedulerImpl(
     WebThreadScheduler* thread_scheduler,
     scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner,
-    scoped_refptr<TaskQueue> v8_task_runner)
+    scoped_refptr<base::sequence_manager::TaskQueue> v8_task_runner)
     : thread_scheduler_(thread_scheduler),
       idle_task_runner_(idle_task_runner),
       v8_task_runner_(TaskRunnerImpl::Create(std::move(v8_task_runner),

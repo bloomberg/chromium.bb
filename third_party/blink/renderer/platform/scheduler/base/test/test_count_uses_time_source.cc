@@ -5,18 +5,18 @@
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_count_uses_time_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 TestCountUsesTimeSource::TestCountUsesTimeSource() : now_calls_count_(0) {}
 
 TestCountUsesTimeSource::~TestCountUsesTimeSource() = default;
 
-base::TimeTicks TestCountUsesTimeSource::NowTicks() const {
+TimeTicks TestCountUsesTimeSource::NowTicks() const {
   now_calls_count_++;
   // Don't return 0, as it triggers some assertions.
-  return base::TimeTicks() + base::TimeDelta::FromSeconds(1);
+  return TimeTicks() + TimeDelta::FromSeconds(1);
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

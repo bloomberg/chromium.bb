@@ -28,7 +28,7 @@ class PLATFORM_EXPORT LongTaskObserver : public GarbageCollectedMixin {
 // TaskTimeObserver.
 class PLATFORM_EXPORT LongTaskDetector final
     : public GarbageCollectedFinalized<LongTaskDetector>,
-      public scheduler::TaskTimeObserver {
+      public base::sequence_manager::TaskTimeObserver {
   WTF_MAKE_NONCOPYABLE(LongTaskDetector);
 
  public:

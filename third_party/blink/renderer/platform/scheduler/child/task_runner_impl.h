@@ -15,14 +15,19 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
+namespace base {
+namespace sequence_manager {
+class TaskQueue;
+}
+}  // namespace base
+
 namespace blink {
 namespace scheduler {
-class TaskQueue;
 
 class PLATFORM_EXPORT TaskRunnerImpl : public base::SingleThreadTaskRunner {
  public:
   static scoped_refptr<TaskRunnerImpl> Create(
-      scoped_refptr<TaskQueue> task_queue,
+      scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
       TaskType task_type);
 
   // base::SingleThreadTaskRunner implementation:
@@ -37,10 +42,11 @@ class PLATFORM_EXPORT TaskRunnerImpl : public base::SingleThreadTaskRunner {
                                   base::TimeDelta) override;
 
  private:
-  TaskRunnerImpl(scoped_refptr<TaskQueue> task_queue, TaskType task_type);
+  TaskRunnerImpl(scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
+                 TaskType task_type);
   ~TaskRunnerImpl() override;
 
-  scoped_refptr<TaskQueue> task_queue_;
+  scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
   TaskType task_type_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskRunnerImpl);

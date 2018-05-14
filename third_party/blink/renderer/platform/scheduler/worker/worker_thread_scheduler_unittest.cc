@@ -52,8 +52,9 @@ void TimelineIdleTestTask(std::vector<std::string>* timeline,
 
 class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
  public:
-  WorkerThreadSchedulerForTest(std::unique_ptr<TaskQueueManager> manager,
-                               base::SimpleTestTickClock* clock_)
+  WorkerThreadSchedulerForTest(
+      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      base::SimpleTestTickClock* clock_)
       : WorkerThreadScheduler(WebThreadType::kTestThread,
                               std::move(manager),
                               nullptr),
@@ -93,9 +94,10 @@ class WorkerThreadSchedulerTest : public testing::Test {
   WorkerThreadSchedulerTest()
       : mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, true)),
         scheduler_(new WorkerThreadSchedulerForTest(
-            TaskQueueManagerForTest::Create(nullptr,
-                                            mock_task_runner_,
-                                            &clock_),
+            base::sequence_manager::TaskQueueManagerForTest::Create(
+                nullptr,
+                mock_task_runner_,
+                &clock_),
             &clock_)),
         timeline_(nullptr) {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));

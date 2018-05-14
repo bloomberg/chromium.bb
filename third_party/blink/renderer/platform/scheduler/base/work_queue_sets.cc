@@ -6,8 +6,8 @@
 
 #include "base/logging.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 WorkQueueSets::WorkQueueSets(size_t num_sets, const char* name)
@@ -168,5 +168,5 @@ bool WorkQueueSets::ContainsWorkQueueForTest(
 #endif
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

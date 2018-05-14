@@ -8,8 +8,8 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 // TaskTimeObserver provides an API for observing completion of renderer tasks.
 class PLATFORM_EXPORT TaskTimeObserver {
@@ -30,7 +30,7 @@ class PLATFORM_EXPORT TaskTimeObserver {
   DISALLOW_COPY_AND_ASSIGN(TaskTimeObserver);
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_TIME_OBSERVER_H_

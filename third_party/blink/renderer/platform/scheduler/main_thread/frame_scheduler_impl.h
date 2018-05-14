@@ -21,6 +21,9 @@
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace base {
+namespace sequence_manager {
+class TaskQueue;
+}  // namespace sequence_manager
 namespace trace_event {
 class BlameContext;
 class TracedValue;
@@ -33,7 +36,6 @@ namespace scheduler {
 class MainThreadSchedulerImpl;
 class MainThreadTaskQueue;
 class PageSchedulerImpl;
-class TaskQueue;
 
 namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplTest;
@@ -85,7 +87,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void AsValueInto(base::trace_event::TracedValue* state) const;
   bool IsExemptFromBudgetBasedThrottling() const override;
 
-  scoped_refptr<TaskQueue> ControlTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> ControlTaskQueue();
   void SetPageVisibility(PageVisibilityState page_visibility);
 
   void UpdatePolicy();
@@ -131,20 +133,21 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   FrameScheduler::ThrottlingState CalculateThrottlingState(
       ObserverType type) const;
   void RemoveThrottlingObserver(Observer* observer);
-  void UpdateQueuePolicy(const scoped_refptr<MainThreadTaskQueue>& queue,
-                         TaskQueue::QueueEnabledVoter* voter);
+  void UpdateQueuePolicy(
+      const scoped_refptr<MainThreadTaskQueue>& queue,
+      base::sequence_manager::TaskQueue::QueueEnabledVoter* voter);
   void UpdateThrottling();
   void NotifyThrottlingObservers();
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
 
-  scoped_refptr<TaskQueue> LoadingTaskQueue();
-  scoped_refptr<TaskQueue> LoadingControlTaskQueue();
-  scoped_refptr<TaskQueue> ThrottleableTaskQueue();
-  scoped_refptr<TaskQueue> DeferrableTaskQueue();
-  scoped_refptr<TaskQueue> PausableTaskQueue();
-  scoped_refptr<TaskQueue> UnpausableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> LoadingTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> LoadingControlTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> ThrottleableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> DeferrableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> PausableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> UnpausableTaskQueue();
 
   base::WeakPtr<FrameSchedulerImpl> GetWeakPtr();
 
@@ -157,13 +160,16 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   scoped_refptr<MainThreadTaskQueue> deferrable_task_queue_;
   scoped_refptr<MainThreadTaskQueue> pausable_task_queue_;
   scoped_refptr<MainThreadTaskQueue> unpausable_task_queue_;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> loading_queue_enabled_voter_;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter>
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      loading_queue_enabled_voter_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
       loading_control_queue_enabled_voter_;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter>
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
       throttleable_queue_enabled_voter_;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> deferrable_queue_enabled_voter_;
-  std::unique_ptr<TaskQueue::QueueEnabledVoter> pausable_queue_enabled_voter_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      deferrable_queue_enabled_voter_;
+  std::unique_ptr<base::sequence_manager::TaskQueue::QueueEnabledVoter>
+      pausable_queue_enabled_voter_;
   MainThreadSchedulerImpl* main_thread_scheduler_;  // NOT OWNED
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED

@@ -13,8 +13,8 @@ namespace base {
 class MessageLoop;
 }
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 class TaskQueueManagerForTest : public TaskQueueManagerImpl {
  public:
@@ -27,9 +27,9 @@ class TaskQueueManagerForTest : public TaskQueueManagerImpl {
   // the given arguments. ThreadControllerImpl is slightly overridden to skip
   // nesting observers registration if message loop is absent.
   static std::unique_ptr<TaskQueueManagerForTest> Create(
-      base::MessageLoop* message_loop,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::TickClock* clock);
+      MessageLoop* message_loop,
+      scoped_refptr<SingleThreadTaskRunner> task_runner,
+      const TickClock* clock);
 
   size_t ActiveQueuesCount() const;
   bool HasImmediateWork() const;
@@ -41,7 +41,7 @@ class TaskQueueManagerForTest : public TaskQueueManagerImpl {
   using TaskQueueManagerImpl::WakeUpReadyDelayedQueues;
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_

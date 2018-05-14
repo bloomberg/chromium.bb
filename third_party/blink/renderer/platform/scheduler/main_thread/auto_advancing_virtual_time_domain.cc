@@ -43,7 +43,8 @@ AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {
 }
 
 base::Optional<base::TimeDelta>
-AutoAdvancingVirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
+AutoAdvancingVirtualTimeDomain::DelayTillNextTask(
+    base::sequence_manager::LazyNow* lazy_now) {
   base::TimeTicks run_time;
   if (!NextScheduledRunTime(&run_time))
     return base::nullopt;

@@ -5,8 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_LOGIC_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_LOGIC_H_
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 // Used to describe the logic trigerred when a task queue is selected to
 // service.
@@ -29,7 +29,7 @@ enum class TaskQueueSelectorLogic {
   kCount = 9,
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif

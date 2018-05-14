@@ -10,7 +10,8 @@ namespace blink {
 namespace scheduler {
 
 IdleTimeEstimator::IdleTimeEstimator(
-    const scoped_refptr<TaskQueue>& compositor_task_runner,
+    const scoped_refptr<base::sequence_manager::TaskQueue>&
+        compositor_task_runner,
     const base::TickClock* time_source,
     int sample_count,
     double estimation_percentile)

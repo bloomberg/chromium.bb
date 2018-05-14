@@ -97,7 +97,7 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
       Delegate* delegate,
       const char* idle_period_tracing_name,
       base::TimeDelta required_quiescence_duration_before_long_idle_period,
-      scoped_refptr<TaskQueue> idle_queue);
+      scoped_refptr<base::sequence_manager::TaskQueue> idle_queue);
   ~IdleHelper() override;
 
   // Prevents any further idle tasks from running.
@@ -157,7 +157,9 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
   friend class idle_helper_unittest::BaseIdleHelperTest;
   friend class idle_helper_unittest::IdleHelperTest;
 
-  const scoped_refptr<TaskQueue>& idle_queue() const { return idle_queue_; }
+  const scoped_refptr<base::sequence_manager::TaskQueue>& idle_queue() const {
+    return idle_queue_;
+  }
 
   class State {
    public:
@@ -225,7 +227,7 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
 
   SchedulerHelper* helper_;  // NOT OWNED
   Delegate* delegate_;       // NOT OWNED
-  scoped_refptr<TaskQueue> idle_queue_;
+  scoped_refptr<base::sequence_manager::TaskQueue> idle_queue_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
 
   CancelableClosureHolder enable_next_long_idle_period_closure_;

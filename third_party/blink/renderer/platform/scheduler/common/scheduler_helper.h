@@ -17,10 +17,12 @@ namespace blink {
 namespace scheduler {
 
 // Common scheduler functionality for default tasks.
-class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
+class PLATFORM_EXPORT SchedulerHelper
+    : public base::sequence_manager::TaskQueueManager::Observer {
  public:
   explicit SchedulerHelper(
-      std::unique_ptr<TaskQueueManager> task_queue_manager);
+      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+          task_queue_manager);
   ~SchedulerHelper() override;
 
   // TaskQueueManager::Observer implementation:
@@ -31,12 +33,14 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   base::TimeTicks NowTicks() const;
 
   // Returns the default task queue.
-  virtual scoped_refptr<TaskQueue> DefaultTaskQueue() = 0;
+  virtual scoped_refptr<base::sequence_manager::TaskQueue>
+  DefaultTaskQueue() = 0;
 
   // Returns the control task queue.  Tasks posted to this queue are executed
   // with the highest priority. Care must be taken to avoid starvation of other
   // task queues.
-  virtual scoped_refptr<TaskQueue> ControlTaskQueue() = 0;
+  virtual scoped_refptr<base::sequence_manager::TaskQueue>
+  ControlTaskQueue() = 0;
 
   // Adds or removes a task observer from the scheduler. The observer will be
   // notified before and after every executed task. These functions can only be
@@ -44,8 +48,10 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
   void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
 
-  void AddTaskTimeObserver(TaskTimeObserver* task_time_observer);
-  void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer);
+  void AddTaskTimeObserver(
+      base::sequence_manager::TaskTimeObserver* task_time_observer);
+  void RemoveTaskTimeObserver(
+      base::sequence_manager::TaskTimeObserver* task_time_observer);
 
   // Shuts down the scheduler by dropping any remaining pending work in the work
   // queues. After this call any work posted to the task queue will be
@@ -79,20 +85,21 @@ class PLATFORM_EXPORT SchedulerHelper : public TaskQueueManager::Observer {
   void SweepCanceledDelayedTasks();
 
   // Accessor methods.
-  RealTimeDomain* real_time_domain() const;
-  void RegisterTimeDomain(TimeDomain* time_domain);
-  void UnregisterTimeDomain(TimeDomain* time_domain);
+  base::sequence_manager::RealTimeDomain* real_time_domain() const;
+  void RegisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
+  void UnregisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
   bool GetAndClearSystemIsQuiescentBit();
 
   // Test helpers.
   void SetWorkBatchSizeForTesting(size_t work_batch_size);
 
  protected:
-  void InitDefaultQueues(scoped_refptr<TaskQueue> default_task_queue,
-                         scoped_refptr<TaskQueue> control_task_queue);
+  void InitDefaultQueues(
+      scoped_refptr<base::sequence_manager::TaskQueue> default_task_queue,
+      scoped_refptr<base::sequence_manager::TaskQueue> control_task_queue);
 
   base::ThreadChecker thread_checker_;
-  std::unique_ptr<TaskQueueManager> task_queue_manager_;
+  std::unique_ptr<base::sequence_manager::TaskQueueManager> task_queue_manager_;
 
  private:
   friend class SchedulerHelperTest;

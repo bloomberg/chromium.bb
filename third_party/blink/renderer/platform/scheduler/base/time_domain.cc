@@ -9,8 +9,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 TimeDomain::TimeDomain() = default;
 
@@ -28,18 +28,18 @@ void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
   DCHECK_EQ(queue->GetTimeDomain(), this);
 
   LazyNow lazy_now = CreateLazyNow();
-  ScheduleWakeUpForQueue(queue, base::nullopt, &lazy_now);
+  ScheduleWakeUpForQueue(queue, nullopt, &lazy_now);
 }
 
 void TimeDomain::ScheduleWakeUpForQueue(
     internal::TaskQueueImpl* queue,
-    base::Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
+    Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
     LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
   DCHECK(queue->IsQueueEnabled() || !wake_up);
 
-  base::Optional<base::TimeTicks> previous_wake_up;
+  Optional<TimeTicks> previous_wake_up;
   if (!delayed_wake_up_queue_.empty())
     previous_wake_up = delayed_wake_up_queue_.Min().wake_up.time;
 
@@ -59,7 +59,7 @@ void TimeDomain::ScheduleWakeUpForQueue(
       delayed_wake_up_queue_.erase(queue->heap_handle());
   }
 
-  base::Optional<base::TimeTicks> new_wake_up;
+  Optional<TimeTicks> new_wake_up;
   if (!delayed_wake_up_queue_.empty())
     new_wake_up = delayed_wake_up_queue_.Min().wake_up.time;
 
@@ -84,7 +84,7 @@ void TimeDomain::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
   }
 }
 
-bool TimeDomain::NextScheduledRunTime(base::TimeTicks* out_time) const {
+bool TimeDomain::NextScheduledRunTime(TimeTicks* out_time) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (delayed_wake_up_queue_.empty())
     return false;
@@ -103,17 +103,17 @@ bool TimeDomain::NextScheduledTaskQueue(
   return true;
 }
 
-void TimeDomain::AsValueInto(base::trace_event::TracedValue* state) const {
+void TimeDomain::AsValueInto(trace_event::TracedValue* state) const {
   state->BeginDictionary();
   state->SetString("name", GetName());
   state->SetInteger("registered_delay_count", delayed_wake_up_queue_.size());
   if (!delayed_wake_up_queue_.empty()) {
-    base::TimeDelta delay = delayed_wake_up_queue_.Min().wake_up.time - Now();
+    TimeDelta delay = delayed_wake_up_queue_.Min().wake_up.time - Now();
     state->SetDouble("next_delay_ms", delay.InMillisecondsF());
   }
   AsValueIntoInternal(state);
   state->EndDictionary();
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

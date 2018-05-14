@@ -9,8 +9,11 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
 MainThreadSchedulerHelper::MainThreadSchedulerHelper(
-    std::unique_ptr<TaskQueueManager> task_queue_manager,
+    std::unique_ptr<base::sequence_manager::TaskQueueManager>
+        task_queue_manager,
     MainThreadSchedulerImpl* main_thread_scheduler)
     : SchedulerHelper(std::move(task_queue_manager)),
       main_thread_scheduler_(main_thread_scheduler),

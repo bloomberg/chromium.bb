@@ -37,8 +37,8 @@ MetricsHelper::MetricsHelper(WebThreadType thread_type)
 MetricsHelper::~MetricsHelper() {}
 
 bool MetricsHelper::ShouldDiscardTask(
-    TaskQueue* queue,
-    const TaskQueue::Task& task,
+    base::sequence_manager::TaskQueue* queue,
+    const base::sequence_manager::TaskQueue::Task& task,
     base::TimeTicks start_time,
     base::TimeTicks end_time,
     base::Optional<base::TimeDelta> thread_time) {
@@ -48,8 +48,8 @@ bool MetricsHelper::ShouldDiscardTask(
 }
 
 void MetricsHelper::RecordCommonTaskMetrics(
-    TaskQueue* queue,
-    const TaskQueue::Task& task,
+    base::sequence_manager::TaskQueue* queue,
+    const base::sequence_manager::TaskQueue::Task& task,
     base::TimeTicks start_time,
     base::TimeTicks end_time,
     base::Optional<base::TimeDelta> thread_time) {

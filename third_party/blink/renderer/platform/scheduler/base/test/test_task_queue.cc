@@ -6,8 +6,8 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 TestTaskQueue::TestTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                              const TaskQueue::Spec& spec)
@@ -15,9 +15,9 @@ TestTaskQueue::TestTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
 
 TestTaskQueue::~TestTaskQueue() = default;
 
-base::WeakPtr<TestTaskQueue> TestTaskQueue::GetWeakPtr() {
+WeakPtr<TestTaskQueue> TestTaskQueue::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

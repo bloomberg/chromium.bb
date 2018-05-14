@@ -14,7 +14,7 @@ namespace blink {
 namespace scheduler {
 
 scoped_refptr<TaskRunnerImpl> TaskRunnerImpl::Create(
-    scoped_refptr<TaskQueue> task_queue,
+    scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
     TaskType task_type) {
   return base::WrapRefCounted(
       new TaskRunnerImpl(std::move(task_queue), task_type));
@@ -24,8 +24,9 @@ bool TaskRunnerImpl::RunsTasksInCurrentSequence() const {
   return task_queue_->RunsTasksInCurrentSequence();
 }
 
-TaskRunnerImpl::TaskRunnerImpl(scoped_refptr<TaskQueue> task_queue,
-                               TaskType task_type)
+TaskRunnerImpl::TaskRunnerImpl(
+    scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
+    TaskType task_type)
     : task_queue_(std::move(task_queue)), task_type_(task_type) {}
 
 TaskRunnerImpl::~TaskRunnerImpl() = default;
@@ -33,17 +34,19 @@ TaskRunnerImpl::~TaskRunnerImpl() = default;
 bool TaskRunnerImpl::PostDelayedTask(const base::Location& location,
                                      base::OnceClosure task,
                                      base::TimeDelta delay) {
-  return task_queue_->PostTaskWithMetadata(TaskQueue::PostedTask(
-      std::move(task), location, delay, base::Nestable::kNestable,
-      static_cast<int>(task_type_)));
+  return task_queue_->PostTaskWithMetadata(
+      base::sequence_manager::TaskQueue::PostedTask(
+          std::move(task), location, delay, base::Nestable::kNestable,
+          static_cast<int>(task_type_)));
 }
 
 bool TaskRunnerImpl::PostNonNestableDelayedTask(const base::Location& location,
                                                 base::OnceClosure task,
                                                 base::TimeDelta delay) {
-  return task_queue_->PostTaskWithMetadata(TaskQueue::PostedTask(
-      std::move(task), location, delay, base::Nestable::kNonNestable,
-      static_cast<int>(task_type_)));
+  return task_queue_->PostTaskWithMetadata(
+      base::sequence_manager::TaskQueue::PostedTask(
+          std::move(task), location, delay, base::Nestable::kNonNestable,
+          static_cast<int>(task_type_)));
 }
 
 }  // namespace scheduler

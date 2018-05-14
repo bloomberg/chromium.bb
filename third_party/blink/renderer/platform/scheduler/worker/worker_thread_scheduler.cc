@@ -21,6 +21,8 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
 namespace {
 // Workers could be short-lived, set a shorter interval than
 // the renderer thread.
@@ -47,7 +49,8 @@ base::TimeTicks MonotonicTimeInSecondsToTimeTicks(
 
 WorkerThreadScheduler::WorkerThreadScheduler(
     WebThreadType thread_type,
-    std::unique_ptr<TaskQueueManager> task_queue_manager,
+    std::unique_ptr<base::sequence_manager::TaskQueueManager>
+        task_queue_manager,
     WorkerSchedulerProxy* proxy)
     : NonMainThreadScheduler(std::make_unique<NonMainThreadSchedulerHelper>(
           std::move(task_queue_manager),

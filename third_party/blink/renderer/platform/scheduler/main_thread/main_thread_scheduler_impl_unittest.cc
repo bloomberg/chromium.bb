@@ -29,6 +29,8 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
+using base::sequence_manager::TaskQueue;
+
 namespace blink {
 namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
@@ -216,7 +218,7 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
   using MainThreadSchedulerImpl::OnPendingTasksChanged;
 
   MainThreadSchedulerImplForTest(
-      std::unique_ptr<TaskQueueManager> manager,
+      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
       base::Optional<base::Time> initial_virtual_time)
       : MainThreadSchedulerImpl(std::move(manager), initial_virtual_time),
         update_policy_count_(0) {}
@@ -291,7 +293,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
           base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
     }
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
-        TaskQueueManagerForTest::Create(
+        base::sequence_manager::TaskQueueManagerForTest::Create(
             message_loop_.get(),
             message_loop_ ? message_loop_->task_runner() : mock_task_runner_,
             &clock_),
@@ -1859,7 +1861,8 @@ class MainThreadSchedulerImplWithMockSchedulerTest
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
     mock_scheduler_ = new MainThreadSchedulerImplForTest(
-        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
+        base::sequence_manager::TaskQueueManagerForTest::Create(
+            nullptr, mock_task_runner_, &clock_),
         base::nullopt);
     Initialize(base::WrapUnique(mock_scheduler_));
   }
@@ -3901,7 +3904,7 @@ class MainThreadSchedulerImplWithInitalVirtualTimeTest
           base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
     }
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
-        TaskQueueManagerForTest::Create(
+        base::sequence_manager::TaskQueueManagerForTest::Create(
             message_loop_.get(),
             message_loop_ ? message_loop_->task_runner() : mock_task_runner_,
             &clock_),

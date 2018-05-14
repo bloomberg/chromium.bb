@@ -68,7 +68,7 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<scheduler::MainThreadSchedulerImpl> scheduler_;
-  scheduler::TaskQueueManagerForTest*
+  base::sequence_manager::TaskQueueManagerForTest*
       task_queue_manager_;  // Owned by scheduler_.
   std::unique_ptr<WebThread> thread_;
 };

@@ -18,6 +18,8 @@
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_page_scheduler.h"
 
+using base::sequence_manager::TaskQueue;
+
 namespace blink {
 namespace scheduler {
 
@@ -25,7 +27,8 @@ namespace {
 class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
  public:
   MainThreadSchedulerImplForTest(
-      std::unique_ptr<TaskQueueManager> task_queue_manager,
+      std::unique_ptr<base::sequence_manager::TaskQueueManager>
+          task_queue_manager,
       base::Optional<base::Time> initial_virtual_time)
       : MainThreadSchedulerImpl(std::move(task_queue_manager),
                                 initial_virtual_time){};
@@ -49,7 +52,8 @@ class MainThreadMetricsHelperTest : public testing::Test {
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true);
     scheduler_ = std::make_unique<MainThreadSchedulerImplForTest>(
-        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_),
+        base::sequence_manager::TaskQueueManagerForTest::Create(
+            nullptr, mock_task_runner_, &clock_),
         base::nullopt);
     metrics_helper_ = &scheduler_->main_thread_only().metrics_helper;
   }

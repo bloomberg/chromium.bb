@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/sequenced_task_source.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 class WorkQueueSets;
@@ -46,8 +46,7 @@ class PLATFORM_EXPORT WorkQueue {
   // Assigns the current set index.
   void AssignSetIndex(size_t work_queue_set_index);
 
-  void AsValueInto(base::TimeTicks now,
-                   base::trace_event::TracedValue* state) const;
+  void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
 
   // Returns true if the |tasks_| is empty. This method ignores any fences.
   bool Empty() const { return tasks_.empty(); }
@@ -150,7 +149,7 @@ class PLATFORM_EXPORT WorkQueue {
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_H_

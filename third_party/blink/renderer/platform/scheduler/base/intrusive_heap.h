@@ -10,8 +10,8 @@
 
 #include "base/logging.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 template <typename T>
 class IntrusiveHeap;
@@ -221,7 +221,7 @@ class IntrusiveHeap {
   size_t size_;
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_INTRUSIVE_HEAP_H_

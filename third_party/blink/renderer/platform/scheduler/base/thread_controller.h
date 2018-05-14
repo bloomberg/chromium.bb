@@ -16,8 +16,8 @@ class TickClock;
 struct PendingTask;
 };
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 class SequencedTaskSource;
@@ -33,7 +33,7 @@ class PLATFORM_EXPORT ThreadController {
   virtual void SetWorkBatchSize(int work_batch_size) = 0;
 
   // Notifies that |pending_task| was enqueued. Needed for tracing purposes.
-  virtual void DidQueueTask(const base::PendingTask& pending_task) = 0;
+  virtual void DidQueueTask(const PendingTask& pending_task) = 0;
 
   // Notify the controller that its associated sequence has immediate work
   // to run. Shortly after this is called, the thread associated with this
@@ -56,12 +56,11 @@ class PLATFORM_EXPORT ThreadController {
   // controller will run tasks returned by sequence->TakeTask() until
   // it returns null or sequence->DidRunTask() returns false" once the
   // code is changed to work that way.
-  virtual void ScheduleDelayedWork(base::TimeTicks now,
-                                   base::TimeTicks run_time) = 0;
+  virtual void ScheduleDelayedWork(TimeTicks now, TimeTicks run_time) = 0;
 
   // Notify thread controller that sequence no longer has delayed work at
   // |run_time| and previously scheduled callbacks should be cancelled.
-  virtual void CancelDelayedWork(base::TimeTicks run_time) = 0;
+  virtual void CancelDelayedWork(TimeTicks run_time) = 0;
 
   // Sets the sequenced task source from which to take tasks after
   // a Schedule*Work() call is made.
@@ -74,21 +73,19 @@ class PLATFORM_EXPORT ThreadController {
 
   virtual bool RunsTasksInCurrentSequence() = 0;
 
-  virtual const base::TickClock* GetClock() = 0;
+  virtual const TickClock* GetClock() = 0;
 
-  virtual void SetDefaultTaskRunner(
-      scoped_refptr<base::SingleThreadTaskRunner>) = 0;
+  virtual void SetDefaultTaskRunner(scoped_refptr<SingleThreadTaskRunner>) = 0;
 
   virtual void RestoreDefaultTaskRunner() = 0;
 
-  virtual void AddNestingObserver(base::RunLoop::NestingObserver* observer) = 0;
+  virtual void AddNestingObserver(RunLoop::NestingObserver* observer) = 0;
 
-  virtual void RemoveNestingObserver(
-      base::RunLoop::NestingObserver* observer) = 0;
+  virtual void RemoveNestingObserver(RunLoop::NestingObserver* observer) = 0;
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_THREAD_CONTROLLER_H_

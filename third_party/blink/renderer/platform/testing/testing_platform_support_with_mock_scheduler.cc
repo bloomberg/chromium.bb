@@ -38,9 +38,10 @@ TestingPlatformSupportWithMockScheduler::
     : mock_task_runner_(
           base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true)) {
   DCHECK(IsMainThread());
-  std::unique_ptr<scheduler::TaskQueueManagerForTest> task_queue_manager =
-      scheduler::TaskQueueManagerForTest::Create(nullptr, mock_task_runner_,
-                                                 &clock_);
+  std::unique_ptr<base::sequence_manager::TaskQueueManagerForTest>
+      task_queue_manager =
+          base::sequence_manager::TaskQueueManagerForTest::Create(
+              nullptr, mock_task_runner_, &clock_);
   task_queue_manager_ = task_queue_manager.get();
   scheduler_ = std::make_unique<scheduler::MainThreadSchedulerImpl>(
       std::move(task_queue_manager), base::nullopt);

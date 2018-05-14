@@ -14,6 +14,9 @@
 #include "third_party/blink/renderer/platform/scheduler/base/lazy_now.h"
 
 namespace base {
+namespace sequence_manager {
+class TaskQueue;
+}
 namespace trace_event {
 class TracedValue;
 }
@@ -22,7 +25,6 @@ class TracedValue;
 namespace blink {
 namespace scheduler {
 
-class TaskQueue;
 class BudgetPoolController;
 enum class QueueBlockType;
 
@@ -36,7 +38,7 @@ class PLATFORM_EXPORT BudgetPool {
   const char* Name() const;
 
   // Report task run time to the budget pool.
-  virtual void RecordTaskRunTime(TaskQueue* queue,
+  virtual void RecordTaskRunTime(base::sequence_manager::TaskQueue* queue,
                                  base::TimeTicks start_time,
                                  base::TimeTicks end_time) = 0;
 
@@ -55,9 +57,10 @@ class PLATFORM_EXPORT BudgetPool {
       bool is_wake_up) const = 0;
 
   // Notifies budget pool that queue has work with desired run time.
-  virtual void OnQueueNextWakeUpChanged(TaskQueue* queue,
-                                        base::TimeTicks now,
-                                        base::TimeTicks desired_run_time) = 0;
+  virtual void OnQueueNextWakeUpChanged(
+      base::sequence_manager::TaskQueue* queue,
+      base::TimeTicks now,
+      base::TimeTicks desired_run_time) = 0;
 
   // Notifies budget pool that wakeup has happened.
   virtual void OnWakeUp(base::TimeTicks now) = 0;
@@ -72,24 +75,25 @@ class PLATFORM_EXPORT BudgetPool {
   // Adds |queue| to given pool. If the pool restriction does not allow
   // a task to be run immediately and |queue| is throttled, |queue| becomes
   // disabled.
-  void AddQueue(base::TimeTicks now, TaskQueue* queue);
+  void AddQueue(base::TimeTicks now, base::sequence_manager::TaskQueue* queue);
 
   // Removes |queue| from given pool. If it is throttled, it does not
   // become enabled immediately, but a wake-up is scheduled if needed.
-  void RemoveQueue(base::TimeTicks now, TaskQueue* queue);
+  void RemoveQueue(base::TimeTicks now,
+                   base::sequence_manager::TaskQueue* queue);
 
   // Unlike RemoveQueue, does not schedule a new wake-up for the queue.
-  void UnregisterQueue(TaskQueue* queue);
+  void UnregisterQueue(base::sequence_manager::TaskQueue* queue);
 
   // Enables this time budget pool. Queues from this pool will be
   // throttled based on their run time.
-  void EnableThrottling(LazyNow* now);
+  void EnableThrottling(base::sequence_manager::LazyNow* now);
 
   // Disables with time budget pool. Queues from this pool will not be
   // throttled based on their run time. A call to |PumpThrottledTasks|
   // will be scheduled to enable this queues back again and respect
   // timer alignment. Internal budget level will not regenerate with time.
-  void DisableThrottling(LazyNow* now);
+  void DisableThrottling(base::sequence_manager::LazyNow* now);
 
   bool IsThrottlingEnabled() const;
 
@@ -106,11 +110,12 @@ class PLATFORM_EXPORT BudgetPool {
 
   BudgetPoolController* budget_pool_controller_;
 
-  std::unordered_set<TaskQueue*> associated_task_queues_;
+  std::unordered_set<base::sequence_manager::TaskQueue*>
+      associated_task_queues_;
   bool is_enabled_;
 
  private:
-  void DissociateQueue(TaskQueue* queue);
+  void DissociateQueue(base::sequence_manager::TaskQueue* queue);
 };
 
 }  // namespace scheduler

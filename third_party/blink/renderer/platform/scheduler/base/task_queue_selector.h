@@ -16,8 +16,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector_logic.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 // TaskQueueSelector is used by the SchedulerHelper to enable prioritization
@@ -54,7 +54,7 @@ class PLATFORM_EXPORT TaskQueueSelector {
   bool SelectWorkQueueToService(WorkQueue** out_work_queue);
 
   // Serialize the selector state for tracing.
-  void AsValueInto(base::trace_event::TracedValue* state) const;
+  void AsValueInto(trace_event::TracedValue* state) const;
 
   class PLATFORM_EXPORT Observer {
    public:
@@ -208,7 +208,7 @@ class PLATFORM_EXPORT TaskQueueSelector {
   // Returns true if there are pending tasks with priority |priority|.
   bool HasTasksWithPriority(TaskQueue::QueuePriority priority);
 
-  base::ThreadChecker main_thread_checker_;
+  ThreadChecker main_thread_checker_;
 
   PrioritizingSelector prioritizing_selector_;
   size_t immediate_starvation_count_;
@@ -221,7 +221,7 @@ class PLATFORM_EXPORT TaskQueueSelector {
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_SELECTOR_H_

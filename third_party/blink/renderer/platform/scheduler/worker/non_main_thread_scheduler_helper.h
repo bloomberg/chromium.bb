@@ -17,18 +17,19 @@ class NonMainThreadScheduler;
 class PLATFORM_EXPORT NonMainThreadSchedulerHelper : public SchedulerHelper {
  public:
   NonMainThreadSchedulerHelper(
-      std::unique_ptr<TaskQueueManager> manager,
+      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
       NonMainThreadScheduler* non_main_thread_scheduler);
   ~NonMainThreadSchedulerHelper() override;
 
-  scoped_refptr<WorkerTaskQueue> NewTaskQueue(const TaskQueue::Spec& spec);
+  scoped_refptr<WorkerTaskQueue> NewTaskQueue(
+      const base::sequence_manager::TaskQueue::Spec& spec);
 
   scoped_refptr<WorkerTaskQueue> DefaultWorkerTaskQueue();
   scoped_refptr<WorkerTaskQueue> ControlWorkerTaskQueue();
 
  protected:
-  scoped_refptr<TaskQueue> DefaultTaskQueue() override;
-  scoped_refptr<TaskQueue> ControlTaskQueue() override;
+  scoped_refptr<base::sequence_manager::TaskQueue> DefaultTaskQueue() override;
+  scoped_refptr<base::sequence_manager::TaskQueue> ControlTaskQueue() override;
 
  private:
   NonMainThreadScheduler* non_main_thread_scheduler_;  // NOT OWNED

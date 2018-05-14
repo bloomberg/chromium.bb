@@ -23,11 +23,9 @@ class BlameContext;
 }
 }  // namespace base
 
-namespace blink {
-namespace scheduler {
-namespace task_queue_throttler_unittest {
-class TaskQueueThrottlerTest;
-}
+namespace base {
+namespace sequence_manager {
+
 namespace internal {
 class TaskQueueImpl;
 }
@@ -35,7 +33,7 @@ class TaskQueueImpl;
 class TimeDomain;
 class TaskQueueManagerImpl;
 
-class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
+class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
  public:
   class PLATFORM_EXPORT Observer {
    public:
@@ -43,33 +41,33 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
     // Notify observer that the time at which this queue wants to run
     // the next task has changed. |next_wakeup| can be in the past
-    // (e.g. base::TimeTicks() can be used to notify about immediate work).
+    // (e.g. TimeTicks() can be used to notify about immediate work).
     // Can be called on any thread
     // All methods but SetObserver, SetTimeDomain and GetTimeDomain can be
     // called on |queue|.
     //
-    // TODO(altimin): Make it base::Optional<base::TimeTicks> to tell
+    // TODO(altimin): Make it Optional<TimeTicks> to tell
     // observer about cancellations.
     virtual void OnQueueNextWakeUpChanged(TaskQueue* queue,
-                                          base::TimeTicks next_wake_up) = 0;
+                                          TimeTicks next_wake_up) = 0;
   };
 
-  // A wrapper around base::OnceClosure with additional metadata to be passed
+  // A wrapper around OnceClosure with additional metadata to be passed
   // to PostTask and plumbed until PendingTask is created.
   struct PLATFORM_EXPORT PostedTask {
-    PostedTask(base::OnceClosure callback,
-               base::Location posted_from,
-               base::TimeDelta delay = base::TimeDelta(),
-               base::Nestable nestable = base::Nestable::kNestable,
+    PostedTask(OnceClosure callback,
+               Location posted_from,
+               TimeDelta delay = TimeDelta(),
+               Nestable nestable = Nestable::kNestable,
                int task_type = 0);
     PostedTask(PostedTask&& move_from);
     PostedTask(const PostedTask& copy_from) = delete;
     ~PostedTask();
 
-    base::OnceClosure callback;
-    base::Location posted_from;
-    base::TimeDelta delay;
-    base::Nestable nestable;
+    OnceClosure callback;
+    Location posted_from;
+    TimeDelta delay;
+    Nestable nestable;
     int task_type;
   };
 
@@ -137,9 +135,9 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   };
 
   // Interface to pass per-task metadata to RendererScheduler.
-  class PLATFORM_EXPORT Task : public base::PendingTask {
+  class PLATFORM_EXPORT Task : public PendingTask {
    public:
-    Task(PostedTask posted_task, base::TimeTicks desired_run_time);
+    Task(PostedTask posted_task, TimeTicks desired_run_time);
 
     int task_type() const { return task_type_; }
 
@@ -186,9 +184,9 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   // Returns requested run time of next scheduled wake-up for a delayed task
   // which is not ready to run. If there are no such tasks or the queue is
-  // disabled (by a QueueEnabledVoter) it returns base::nullopt.
+  // disabled (by a QueueEnabledVoter) it returns nullopt.
   // NOTE: this must be called on the thread this TaskQueue was created by.
-  base::Optional<base::TimeTicks> GetNextScheduledWakeUp();
+  Optional<TimeTicks> GetNextScheduledWakeUp();
 
   // Can be called on any thread.
   virtual const char* GetName() const;
@@ -202,13 +200,13 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   // These functions can only be called on the same thread that the task queue
   // manager executes its tasks on.
-  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
-  void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
+  void AddTaskObserver(MessageLoop::TaskObserver* task_observer);
+  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
 
   // Set the blame context which is entered and left while executing tasks from
   // this task queue. |blame_context| must be null or outlive this task queue.
   // Must be called on the thread this TaskQueue was created by.
-  void SetBlameContext(base::trace_event::BlameContext* blame_context);
+  void SetBlameContext(trace_event::BlameContext* blame_context);
 
   // Removes the task queue from the previous TimeDomain and adds it to
   // |domain|.  This is a moderately expensive operation.
@@ -240,7 +238,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // Only one fence can be scheduled at a time. Inserting a new fence
   // will automatically remove the previous one, regardless of fence type.
   void InsertFence(InsertFencePosition position);
-  void InsertFenceAt(base::TimeTicks time);
+  void InsertFenceAt(TimeTicks time);
 
   // Removes any previously added fence and unblocks execution of any tasks
   // blocked by it.
@@ -253,33 +251,32 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
 
   void SetObserver(Observer* observer);
 
-  // base::SingleThreadTaskRunner implementation
+  // SingleThreadTaskRunner implementation
   bool RunsTasksInCurrentSequence() const override;
-  bool PostDelayedTask(const base::Location& from_here,
-                       base::OnceClosure task,
-                       base::TimeDelta delay) override;
-  bool PostNonNestableDelayedTask(const base::Location& from_here,
-                                  base::OnceClosure task,
-                                  base::TimeDelta delay) override;
+  bool PostDelayedTask(const Location& from_here,
+                       OnceClosure task,
+                       TimeDelta delay) override;
+  bool PostNonNestableDelayedTask(const Location& from_here,
+                                  OnceClosure task,
+                                  TimeDelta delay) override;
 
   bool PostTaskWithMetadata(PostedTask task);
+
+  // TODO(kraynov): Make protected.
+  internal::TaskQueueImpl* GetTaskQueueImpl() const { return impl_.get(); }
 
  protected:
   TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
             const TaskQueue::Spec& spec);
   ~TaskQueue() override;
 
-  internal::TaskQueueImpl* GetTaskQueueImpl() const { return impl_.get(); }
-
  private:
   friend class internal::TaskQueueImpl;
   friend class TaskQueueManagerImpl;
 
-  friend class task_queue_throttler_unittest::TaskQueueThrottlerTest;
-
   bool IsOnMainThread() const;
 
-  base::Optional<MoveableAutoLock> AcquireImplReadLockIfNeeded() const;
+  Optional<MoveableAutoLock> AcquireImplReadLockIfNeeded() const;
 
   // Take |impl_| and untie it from the enclosing task queue.
   std::unique_ptr<internal::TaskQueueImpl> TakeTaskQueueImpl();
@@ -289,12 +286,12 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   // |impl_lock_| must be acquired when writing to |impl_| or when accessing
   // it from non-main thread. Reading from the main thread does not require
   // a lock.
-  mutable base::Lock impl_lock_;
+  mutable Lock impl_lock_;
   std::unique_ptr<internal::TaskQueueImpl> impl_;
 
-  const base::PlatformThreadId thread_id_;
+  const PlatformThreadId thread_id_;
 
-  const base::WeakPtr<TaskQueueManagerImpl> task_queue_manager_;
+  const WeakPtr<TaskQueueManagerImpl> task_queue_manager_;
 
   const scoped_refptr<internal::GracefulQueueShutdownHelper>
       graceful_queue_shutdown_helper_;
@@ -304,7 +301,7 @@ class PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(TaskQueue);
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_H_

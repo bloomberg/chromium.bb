@@ -9,36 +9,35 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
 // static
 scoped_refptr<TaskQueueManagerDelegateForTest>
 TaskQueueManagerDelegateForTest::Create(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::TickClock* time_source) {
-  return base::WrapRefCounted(
+    scoped_refptr<SingleThreadTaskRunner> task_runner,
+    const TickClock* time_source) {
+  return WrapRefCounted(
       new TaskQueueManagerDelegateForTest(task_runner, time_source));
 }
 
 TaskQueueManagerDelegateForTest::TaskQueueManagerDelegateForTest(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    const base::TickClock* time_source)
+    scoped_refptr<SingleThreadTaskRunner> task_runner,
+    const TickClock* time_source)
     : task_runner_(task_runner), time_source_(time_source) {}
 
 TaskQueueManagerDelegateForTest::~TaskQueueManagerDelegateForTest() {}
 
-bool TaskQueueManagerDelegateForTest::PostDelayedTask(
-    const base::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+bool TaskQueueManagerDelegateForTest::PostDelayedTask(const Location& from_here,
+                                                      OnceClosure task,
+                                                      TimeDelta delay) {
   return task_runner_->PostDelayedTask(from_here, std::move(task), delay);
 }
 
 bool TaskQueueManagerDelegateForTest::PostNonNestableDelayedTask(
-    const base::Location& from_here,
-    base::OnceClosure task,
-    base::TimeDelta delay) {
+    const Location& from_here,
+    OnceClosure task,
+    TimeDelta delay) {
   return task_runner_->PostNonNestableDelayedTask(from_here, std::move(task),
                                                   delay);
 }
@@ -52,14 +51,14 @@ bool TaskQueueManagerDelegateForTest::IsNested() const {
 }
 
 void TaskQueueManagerDelegateForTest::AddNestingObserver(
-    base::RunLoop::NestingObserver* observer) {}
+    RunLoop::NestingObserver* observer) {}
 
 void TaskQueueManagerDelegateForTest::RemoveNestingObserver(
-    base::RunLoop::NestingObserver* observer) {}
+    RunLoop::NestingObserver* observer) {}
 
-base::TimeTicks TaskQueueManagerDelegateForTest::NowTicks() const {
+TimeTicks TaskQueueManagerDelegateForTest::NowTicks() const {
   return time_source_->NowTicks();
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

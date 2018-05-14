@@ -12,6 +12,8 @@
 namespace blink {
 namespace scheduler {
 
+using base::sequence_manager::TaskQueue;
+
 WakeUpBudgetPool::WakeUpBudgetPool(const char* name,
                                    BudgetPoolController* budget_pool_controller,
                                    base::TimeTicks now)

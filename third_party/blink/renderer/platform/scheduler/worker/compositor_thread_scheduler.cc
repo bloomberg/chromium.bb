@@ -19,7 +19,8 @@ namespace scheduler {
 
 CompositorThreadScheduler::CompositorThreadScheduler(
     base::Thread* thread,
-    std::unique_ptr<TaskQueueManager> task_queue_manager)
+    std::unique_ptr<base::sequence_manager::TaskQueueManager>
+        task_queue_manager)
     : NonMainThreadScheduler(std::make_unique<NonMainThreadSchedulerHelper>(
           std::move(task_queue_manager),
           this)),
@@ -35,7 +36,7 @@ void CompositorThreadScheduler::InitImpl() {}
 
 void CompositorThreadScheduler::OnTaskCompleted(
     WorkerTaskQueue* worker_task_queue,
-    const TaskQueue::Task& task,
+    const base::sequence_manager::TaskQueue::Task& task,
     base::TimeTicks start,
     base::TimeTicks end,
     base::Optional<base::TimeDelta> thread_time) {

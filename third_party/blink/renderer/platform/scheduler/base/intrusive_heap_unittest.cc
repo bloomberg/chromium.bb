@@ -6,8 +6,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace {
 
 struct TestElement {
@@ -370,5 +370,5 @@ TEST_F(IntrusiveHeapTest, CompareNodes) {
   EXPECT_TRUE(IntrusiveHeapTest::CompareNodes(six, five));
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

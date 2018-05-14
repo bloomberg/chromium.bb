@@ -30,7 +30,7 @@ void ThrottledTimeDomain::SetNextTaskRunTime(base::TimeTicks run_time) {
 }
 
 base::Optional<base::TimeDelta> ThrottledTimeDomain::DelayTillNextTask(
-    LazyNow* lazy_now) {
+    base::sequence_manager::LazyNow* lazy_now) {
   if (next_task_run_time_ && next_task_run_time_ > lazy_now->Now())
     return next_task_run_time_.value() - lazy_now->Now();
 

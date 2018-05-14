@@ -72,7 +72,7 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
       base::RepeatingCallback<void(base::TimeDelta)> reporting_callback);
 
   // BudgetPool implementation:
-  void RecordTaskRunTime(TaskQueue* queue,
+  void RecordTaskRunTime(base::sequence_manager::TaskQueue* queue,
                          base::TimeTicks start_time,
                          base::TimeTicks end_time) final;
   bool CanRunTasksAt(base::TimeTicks moment, bool is_wake_up) const final;
@@ -81,7 +81,7 @@ class PLATFORM_EXPORT CPUTimeBudgetPool : public BudgetPool {
       bool is_wake_up) const final;
   base::TimeTicks GetNextAllowedRunTime(
       base::TimeTicks desired_run_time) const final;
-  void OnQueueNextWakeUpChanged(TaskQueue* queue,
+  void OnQueueNextWakeUpChanged(base::sequence_manager::TaskQueue* queue,
                                 base::TimeTicks now,
                                 base::TimeTicks desired_run_time) final;
   void OnWakeUp(base::TimeTicks now) final;

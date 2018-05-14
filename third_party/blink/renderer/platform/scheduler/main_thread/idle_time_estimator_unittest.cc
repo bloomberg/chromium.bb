@@ -22,7 +22,8 @@ namespace scheduler {
 class IdleTimeEstimatorForTest : public IdleTimeEstimator {
  public:
   IdleTimeEstimatorForTest(
-      const scoped_refptr<TaskQueue>& compositor_task_runner,
+      const scoped_refptr<base::sequence_manager::TaskQueue>&
+          compositor_task_runner,
       const base::TickClock* clock,
       int sample_count,
       double estimation_percentile)
@@ -43,10 +44,11 @@ class IdleTimeEstimatorTest : public testing::Test {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
     mock_task_runner_ =
         base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, false);
-    manager_ =
-        TaskQueueManagerForTest::Create(nullptr, mock_task_runner_, &clock_);
+    manager_ = base::sequence_manager::TaskQueueManagerForTest::Create(
+        nullptr, mock_task_runner_, &clock_);
     compositor_task_queue_ =
-        manager_->CreateTaskQueue<TestTaskQueue>(TaskQueue::Spec("test_tq"));
+        manager_->CreateTaskQueue<base::sequence_manager::TestTaskQueue>(
+            base::sequence_manager::TaskQueue::Spec("test_tq"));
     estimator_.reset(
         new IdleTimeEstimatorForTest(compositor_task_queue_, &clock_, 10, 50));
   }
@@ -85,11 +87,11 @@ class IdleTimeEstimatorTest : public testing::Test {
 
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
-  std::unique_ptr<TaskQueueManager> manager_;
-  scoped_refptr<TaskQueue> compositor_task_queue_;
+  std::unique_ptr<base::sequence_manager::TaskQueueManager> manager_;
+  scoped_refptr<base::sequence_manager::TaskQueue> compositor_task_queue_;
   std::unique_ptr<IdleTimeEstimatorForTest> estimator_;
   const base::TimeDelta frame_length_;
-  TestTaskTimeObserver test_task_time_observer_;
+  base::sequence_manager::TestTaskTimeObserver test_task_time_observer_;
 };
 
 TEST_F(IdleTimeEstimatorTest, InitialTimeEstimateWithNoData) {

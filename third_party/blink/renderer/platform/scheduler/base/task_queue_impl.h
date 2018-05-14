@@ -25,8 +25,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/sequenced_task_source.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 class LazyNow;
 class TimeDomain;
 class TaskQueueManagerImpl;
@@ -72,7 +72,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Represents a time at which a task wants to run. Tasks scheduled for the
   // same point in time will be ordered by their sequence numbers.
   struct DelayedWakeUp {
-    base::TimeTicks time;
+    TimeTicks time;
     int sequence_num;
 
     bool operator!=(const DelayedWakeUp& other) const {
@@ -96,11 +96,11 @@ class PLATFORM_EXPORT TaskQueueImpl {
   class PLATFORM_EXPORT Task : public TaskQueue::Task {
    public:
     Task(TaskQueue::PostedTask task,
-         base::TimeTicks desired_run_time,
+         TimeTicks desired_run_time,
          EnqueueOrder sequence_number);
 
     Task(TaskQueue::PostedTask task,
-         base::TimeTicks desired_run_time,
+         TimeTicks desired_run_time,
          EnqueueOrder sequence_number,
          EnqueueOrder enqueue_order);
 
@@ -155,15 +155,11 @@ class PLATFORM_EXPORT TaskQueueImpl {
     TaskQueue::PostedTask task;
   };
 
-  using OnNextWakeUpChangedCallback =
-      base::RepeatingCallback<void(base::TimeTicks)>;
+  using OnNextWakeUpChangedCallback = RepeatingCallback<void(TimeTicks)>;
   using OnTaskStartedHandler =
-      base::RepeatingCallback<void(const TaskQueue::Task&, base::TimeTicks)>;
-  using OnTaskCompletedHandler =
-      base::RepeatingCallback<void(const TaskQueue::Task&,
-                                   base::TimeTicks,
-                                   base::TimeTicks,
-                                   base::Optional<base::TimeDelta>)>;
+      RepeatingCallback<void(const TaskQueue::Task&, TimeTicks)>;
+  using OnTaskCompletedHandler = RepeatingCallback<
+      void(const TaskQueue::Task&, TimeTicks, TimeTicks, Optional<TimeDelta>)>;
 
   // TaskQueue implementation.
   const char* GetName() const;
@@ -176,17 +172,17 @@ class PLATFORM_EXPORT TaskQueueImpl {
   bool IsEmpty() const;
   size_t GetNumberOfPendingTasks() const;
   bool HasTaskToRunImmediately() const;
-  base::Optional<base::TimeTicks> GetNextScheduledWakeUp();
-  base::Optional<DelayedWakeUp> GetNextScheduledWakeUpImpl();
+  Optional<TimeTicks> GetNextScheduledWakeUp();
+  Optional<DelayedWakeUp> GetNextScheduledWakeUpImpl();
   void SetQueuePriority(TaskQueue::QueuePriority priority);
   TaskQueue::QueuePriority GetQueuePriority() const;
-  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer);
-  void RemoveTaskObserver(base::MessageLoop::TaskObserver* task_observer);
+  void AddTaskObserver(MessageLoop::TaskObserver* task_observer);
+  void RemoveTaskObserver(MessageLoop::TaskObserver* task_observer);
   void SetTimeDomain(TimeDomain* time_domain);
   TimeDomain* GetTimeDomain() const;
-  void SetBlameContext(base::trace_event::BlameContext* blame_context);
+  void SetBlameContext(trace_event::BlameContext* blame_context);
   void InsertFence(TaskQueue::InsertFencePosition position);
-  void InsertFenceAt(base::TimeTicks time);
+  void InsertFenceAt(TimeTicks time);
   void RemoveFence();
   bool HasActiveFence();
   bool BlockedByFence() const;
@@ -203,14 +199,13 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Must only be called from the thread this task queue was created on.
   void ReloadImmediateWorkQueueIfEmpty();
 
-  void AsValueInto(base::TimeTicks now,
-                   base::trace_event::TracedValue* state) const;
+  void AsValueInto(TimeTicks now, trace_event::TracedValue* state) const;
 
   bool GetQuiescenceMonitored() const { return should_monitor_quiescence_; }
   bool GetShouldNotifyObservers() const { return should_notify_observers_; }
 
-  void NotifyWillProcessTask(const base::PendingTask& pending_task);
-  void NotifyDidProcessTask(const base::PendingTask& pending_task);
+  void NotifyWillProcessTask(const PendingTask& pending_task);
+  void NotifyDidProcessTask(const PendingTask& pending_task);
 
   // Check for available tasks in immediate work queues.
   // Used to check if we need to generate notifications about delayed work.
@@ -271,20 +266,20 @@ class PLATFORM_EXPORT TaskQueueImpl {
   };
 
   // Iterates over |delayed_incoming_queue| removing canceled tasks.
-  void SweepCanceledDelayedTasks(base::TimeTicks now);
+  void SweepCanceledDelayedTasks(TimeTicks now);
 
   // Allows wrapping TaskQueue to set a handler to subscribe for notifications
   // about started and completed tasks.
   void SetOnTaskStartedHandler(OnTaskStartedHandler handler);
-  void OnTaskStarted(const TaskQueue::Task& task, base::TimeTicks start);
+  void OnTaskStarted(const TaskQueue::Task& task, TimeTicks start);
   void SetOnTaskCompletedHandler(OnTaskCompletedHandler handler);
   void OnTaskCompleted(const TaskQueue::Task& task,
-                       base::TimeTicks start,
-                       base::TimeTicks end,
-                       base::Optional<base::TimeDelta> thread_time);
+                       TimeTicks start,
+                       TimeTicks end,
+                       Optional<TimeDelta> thread_time);
   bool RequiresTaskTiming() const;
 
-  base::WeakPtr<TaskQueueManagerImpl> GetTaskQueueManagerWeakPtr();
+  WeakPtr<TaskQueueManagerImpl> GetTaskQueueManagerWeakPtr();
 
   scoped_refptr<GracefulQueueShutdownHelper> GetGracefulQueueShutdownHelper();
 
@@ -297,7 +292,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   void SetQueueEnabledForTest(bool enabled);
 
  protected:
-  void SetDelayedWakeUpForTesting(base::Optional<DelayedWakeUp> wake_up);
+  void SetDelayedWakeUpForTesting(Optional<DelayedWakeUp> wake_up);
 
  private:
   friend class WorkQueue;
@@ -335,19 +330,19 @@ class PLATFORM_EXPORT TaskQueueImpl {
     std::unique_ptr<WorkQueue> delayed_work_queue;
     std::unique_ptr<WorkQueue> immediate_work_queue;
     std::priority_queue<Task> delayed_incoming_queue;
-    base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
+    ObserverList<MessageLoop::TaskObserver> task_observers;
     size_t set_index;
     HeapHandle heap_handle;
     int is_enabled_refcount;
     int voter_refcount;
-    base::trace_event::BlameContext* blame_context;  // Not owned.
+    trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
-    base::Optional<base::TimeTicks> delayed_fence;
+    Optional<TimeTicks> delayed_fence;
     OnTaskStartedHandler on_task_started_handler;
     OnTaskCompletedHandler on_task_completed_handler;
     // Last reported wake up, used only in UpdateWakeUp to avoid
     // excessive calls.
-    base::Optional<DelayedWakeUp> scheduled_wake_up;
+    Optional<DelayedWakeUp> scheduled_wake_up;
     // If false, queue will be disabled. Used only for tests.
     bool is_enabled_for_test;
   };
@@ -358,7 +353,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Push the task onto the |delayed_incoming_queue|. Lock-free main thread
   // only fast path.
   void PushOntoDelayedIncomingQueueFromMainThread(Task pending_task,
-                                                  base::TimeTicks now);
+                                                  TimeTicks now);
 
   // Push the task onto the |delayed_incoming_queue|.  Slow path from other
   // threads.
@@ -375,7 +370,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   // We reserve an inline capacity of 8 tasks to try and reduce the load on
   // PartitionAlloc.
-  using TaskDeque = base::circular_deque<Task>;
+  using TaskDeque = circular_deque<Task>;
 
   // Extracts all the tasks from the immediate incoming queue and clears it.
   // Can be called from any thread.
@@ -383,14 +378,14 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   void TraceQueueSize() const;
   static void QueueAsValueInto(const TaskDeque& queue,
-                               base::TimeTicks now,
-                               base::trace_event::TracedValue* state);
+                               TimeTicks now,
+                               trace_event::TracedValue* state);
   static void QueueAsValueInto(const std::priority_queue<Task>& queue,
-                               base::TimeTicks now,
-                               base::trace_event::TracedValue* state);
+                               TimeTicks now,
+                               trace_event::TracedValue* state);
   static void TaskAsValueInto(const Task& task,
-                              base::TimeTicks now,
-                              base::trace_event::TracedValue* state);
+                              TimeTicks now,
+                              trace_event::TracedValue* state);
 
   void RemoveQueueEnabledVoter(const QueueEnabledVoterImpl* voter);
   void OnQueueEnabledVoteChanged(bool enabled);
@@ -399,16 +394,16 @@ class PLATFORM_EXPORT TaskQueueImpl {
   // Schedules delayed work on time domain and calls the observer.
   void UpdateDelayedWakeUp(LazyNow* lazy_now);
   void UpdateDelayedWakeUpImpl(LazyNow* lazy_now,
-                               base::Optional<DelayedWakeUp> wake_up);
+                               Optional<DelayedWakeUp> wake_up);
 
   // Activate a delayed fence if a time has come.
-  void ActivateDelayedFenceIfNeeded(base::TimeTicks now);
+  void ActivateDelayedFenceIfNeeded(TimeTicks now);
 
   const char* name_;
 
-  const base::PlatformThreadId thread_id_;
+  const PlatformThreadId thread_id_;
 
-  mutable base::Lock any_thread_lock_;
+  mutable Lock any_thread_lock_;
   AnyThread any_thread_;
   struct AnyThread& any_thread() {
     any_thread_lock_.AssertAcquired();
@@ -419,7 +414,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
     return any_thread_;
   }
 
-  base::ThreadChecker main_thread_checker_;
+  ThreadChecker main_thread_checker_;
   MainThreadOnly main_thread_only_;
   MainThreadOnly& main_thread_only() {
     DCHECK(main_thread_checker_.CalledOnValidThread());
@@ -430,7 +425,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
     return main_thread_only_;
   }
 
-  mutable base::Lock immediate_incoming_queue_lock_;
+  mutable Lock immediate_incoming_queue_lock_;
   TaskDeque immediate_incoming_queue_;
   TaskDeque& immediate_incoming_queue() {
     immediate_incoming_queue_lock_.AssertAcquired();
@@ -448,7 +443,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_IMPL_H_

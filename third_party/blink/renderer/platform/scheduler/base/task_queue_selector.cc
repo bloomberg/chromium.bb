@@ -10,8 +10,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 namespace {
@@ -359,8 +359,7 @@ void TaskQueueSelector::DidSelectQueueWithPriority(
   }
 }
 
-void TaskQueueSelector::AsValueInto(
-    base::trace_event::TracedValue* state) const {
+void TaskQueueSelector::AsValueInto(trace_event::TracedValue* state) const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   state->SetInteger("high_priority_starvation_score",
                     high_priority_starvation_score_);
@@ -404,5 +403,5 @@ bool TaskQueueSelector::HasTasksWithPriority(
 }
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

@@ -23,7 +23,8 @@ std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
     WebThreadType thread_type,
     WorkerSchedulerProxy* proxy) {
   return std::make_unique<WorkerThreadScheduler>(
-      thread_type, TaskQueueManager::TakeOverCurrentThread(), proxy);
+      thread_type,
+      base::sequence_manager::TaskQueueManager::TakeOverCurrentThread(), proxy);
 }
 
 void NonMainThreadScheduler::Init() {
@@ -39,9 +40,10 @@ void NonMainThreadScheduler::Init() {
 
 scoped_refptr<WorkerTaskQueue> NonMainThreadScheduler::CreateTaskRunner() {
   helper_->CheckOnValidThread();
-  return helper_->NewTaskQueue(TaskQueue::Spec("worker_tq")
-                                   .SetShouldMonitorQuiescence(true)
-                                   .SetTimeDomain(nullptr));
+  return helper_->NewTaskQueue(
+      base::sequence_manager::TaskQueue::Spec("worker_tq")
+          .SetShouldMonitorQuiescence(true)
+          .SetTimeDomain(nullptr));
 }
 
 void NonMainThreadScheduler::RunIdleTask(blink::WebThread::IdleTask task,

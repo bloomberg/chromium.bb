@@ -15,10 +15,15 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_thread.h"
 
+namespace base {
+namespace sequence_manager {
+class TaskTimeObserver;
+}
+}  // namespace base
+
 namespace blink {
 namespace scheduler {
 class SingleThreadIdleTaskRunner;
-class TaskTimeObserver;
 
 // TODO(scheduler-dev): Do not expose this class in Blink public API.
 class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
@@ -41,8 +46,10 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
   void AddTaskObserver(TaskObserver* observer) override;
   void RemoveTaskObserver(TaskObserver* observer) override;
 
-  void AddTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
-  void RemoveTaskTimeObserver(TaskTimeObserver* task_time_observer) override;
+  void AddTaskTimeObserver(
+      base::sequence_manager::TaskTimeObserver* task_time_observer) override;
+  void RemoveTaskTimeObserver(
+      base::sequence_manager::TaskTimeObserver* task_time_observer) override;
 
   // Returns the base::Bind-compatible task runner for posting idle tasks to
   // this thread. Can be called from any thread.
@@ -60,8 +67,10 @@ class BLINK_PLATFORM_EXPORT WebThreadBase : public WebThread {
   virtual void RemoveTaskObserverInternal(
       base::MessageLoop::TaskObserver* observer);
 
-  virtual void AddTaskTimeObserverInternal(TaskTimeObserver*) {}
-  virtual void RemoveTaskTimeObserverInternal(TaskTimeObserver*) {}
+  virtual void AddTaskTimeObserverInternal(
+      base::sequence_manager::TaskTimeObserver*) {}
+  virtual void RemoveTaskTimeObserverInternal(
+      base::sequence_manager::TaskTimeObserver*) {}
 
   static void RunWebThreadIdleTask(WebThread::IdleTask idle_task,
                                    base::TimeTicks deadline);

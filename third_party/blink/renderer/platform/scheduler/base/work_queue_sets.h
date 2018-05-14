@@ -18,8 +18,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 
 // There is a WorkQueueSet for each scheduler priority and each WorkQueueSet
@@ -98,7 +98,7 @@ class PLATFORM_EXPORT WorkQueueSets {
 };
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_SETS_H_

@@ -10,8 +10,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 class TimeDomain;
 
 namespace internal {
@@ -37,25 +37,23 @@ class WorkQueueSetsTest : public testing::Test {
   WorkQueue* NewTaskQueue(const char* queue_name) {
     WorkQueue* queue =
         new WorkQueue(nullptr, "test", WorkQueue::QueueType::kImmediate);
-    work_queues_.push_back(base::WrapUnique(queue));
+    work_queues_.push_back(WrapUnique(queue));
     work_queue_sets_->AddQueue(queue, TaskQueue::kControlPriority);
     return queue;
   }
 
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(base::BindOnce([] {}), FROM_HERE),
-        base::TimeTicks(), 0);
+        TaskQueue::PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(), 0);
     fake_task.set_enqueue_order(enqueue_order);
     return fake_task;
   }
 
   TaskQueueImpl::Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(base::BindOnce([] {}), FROM_HERE),
-        base::TimeTicks(), 0);
+        TaskQueue::PostedTask(BindOnce([] {}), FROM_HERE), TimeTicks(), 0);
     fake_task.set_enqueue_order(enqueue_order);
-    fake_task.nestable = base::Nestable::kNonNestable;
+    fake_task.nestable = Nestable::kNonNestable;
     return fake_task;
   }
 
@@ -325,5 +323,5 @@ TEST_F(WorkQueueSetsTest, PushNonNestableTaskToFront) {
 }
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

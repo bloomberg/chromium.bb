@@ -40,7 +40,7 @@ class SourceLocation;
 // instances (in the local frame tree) in m_webPerformanceObservers.
 class CORE_EXPORT PerformanceMonitor final
     : public GarbageCollectedFinalized<PerformanceMonitor>,
-      public scheduler::TaskTimeObserver {
+      public base::sequence_manager::TaskTimeObserver {
  public:
   enum Violation : size_t {
     kLongTask,
@@ -126,7 +126,7 @@ class CORE_EXPORT PerformanceMonitor final
                                    double time,
                                    std::unique_ptr<SourceLocation>);
 
-  // scheduler::TaskTimeObserver implementation
+  // TaskTimeObserver implementation
   void WillProcessTask(double start_time) override;
   void DidProcessTask(double start_time, double end_time) override;
 

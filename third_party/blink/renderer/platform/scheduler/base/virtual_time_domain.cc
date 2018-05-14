@@ -8,10 +8,10 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
-VirtualTimeDomain::VirtualTimeDomain(base::TimeTicks initial_time_ticks)
+VirtualTimeDomain::VirtualTimeDomain(TimeTicks initial_time_ticks)
     : now_ticks_(initial_time_ticks), task_queue_manager_(nullptr) {}
 
 VirtualTimeDomain::~VirtualTimeDomain() = default;
@@ -23,36 +23,34 @@ void VirtualTimeDomain::OnRegisterWithTaskQueueManager(
 }
 
 LazyNow VirtualTimeDomain::CreateLazyNow() const {
-  base::AutoLock lock(lock_);
+  AutoLock lock(lock_);
   return LazyNow(now_ticks_);
 }
 
-base::TimeTicks VirtualTimeDomain::Now() const {
-  base::AutoLock lock(lock_);
+TimeTicks VirtualTimeDomain::Now() const {
+  AutoLock lock(lock_);
   return now_ticks_;
 }
 
-void VirtualTimeDomain::RequestWakeUpAt(base::TimeTicks now,
-                                        base::TimeTicks run_time) {
+void VirtualTimeDomain::RequestWakeUpAt(TimeTicks now, TimeTicks run_time) {
   // We don't need to do anything here because the caller of AdvanceTo is
   // responsible for calling TaskQueueManagerImpl::MaybeScheduleImmediateWork if
   // needed.
 }
 
-void VirtualTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
+void VirtualTimeDomain::CancelWakeUpAt(TimeTicks run_time) {
   // We ignore this because RequestWakeUpAt is a NOP.
 }
 
-base::Optional<base::TimeDelta> VirtualTimeDomain::DelayTillNextTask(
-    LazyNow* lazy_now) {
-  return base::nullopt;
+Optional<TimeDelta> VirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
+  return nullopt;
 }
 
 void VirtualTimeDomain::AsValueIntoInternal(
-    base::trace_event::TracedValue* state) const {}
+    trace_event::TracedValue* state) const {}
 
-void VirtualTimeDomain::AdvanceNowTo(base::TimeTicks now) {
-  base::AutoLock lock(lock_);
+void VirtualTimeDomain::AdvanceNowTo(TimeTicks now) {
+  AutoLock lock(lock_);
   DCHECK_GE(now, now_ticks_);
   now_ticks_ = now;
 }
@@ -65,5 +63,5 @@ const char* VirtualTimeDomain::GetName() const {
   return "VirtualTimeDomain";
 }
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

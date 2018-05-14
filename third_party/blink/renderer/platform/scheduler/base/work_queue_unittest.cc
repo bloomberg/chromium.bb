@@ -13,8 +13,8 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 namespace internal {
 namespace {
 void NopTask() {}
@@ -24,7 +24,7 @@ struct Cancelable {
 
   void NopTask() {}
 
-  base::WeakPtrFactory<Cancelable> weak_ptr_factory;
+  WeakPtrFactory<Cancelable> weak_ptr_factory;
 };
 }  // namespace
 
@@ -46,29 +46,27 @@ class WorkQueueTest : public testing::Test {
  protected:
   TaskQueueImpl::Task FakeCancelableTaskWithEnqueueOrder(
       int enqueue_order,
-      base::WeakPtr<Cancelable> weak_ptr) {
+      WeakPtr<Cancelable> weak_ptr) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(base::BindOnce(&Cancelable::NopTask, weak_ptr),
+        TaskQueue::PostedTask(BindOnce(&Cancelable::NopTask, weak_ptr),
                               FROM_HERE),
-        base::TimeTicks(), 0);
+        TimeTicks(), 0);
     fake_task.set_enqueue_order(enqueue_order);
     return fake_task;
   }
 
   TaskQueueImpl::Task FakeTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(base::BindOnce(&NopTask), FROM_HERE),
-        base::TimeTicks(), 0);
+        TaskQueue::PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(), 0);
     fake_task.set_enqueue_order(enqueue_order);
     return fake_task;
   }
 
   TaskQueueImpl::Task FakeNonNestableTaskWithEnqueueOrder(int enqueue_order) {
     TaskQueueImpl::Task fake_task(
-        TaskQueue::PostedTask(base::BindOnce(&NopTask), FROM_HERE),
-        base::TimeTicks(), 0);
+        TaskQueue::PostedTask(BindOnce(&NopTask), FROM_HERE), TimeTicks(), 0);
     fake_task.set_enqueue_order(enqueue_order);
-    fake_task.nestable = base::Nestable::kNonNestable;
+    fake_task.nestable = Nestable::kNonNestable;
     return fake_task;
   }
 
@@ -470,5 +468,5 @@ TEST_F(WorkQueueTest, RemoveAllCanceledTasksFromFrontTasksNotCanceled) {
 }
 
 }  // namespace internal
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base

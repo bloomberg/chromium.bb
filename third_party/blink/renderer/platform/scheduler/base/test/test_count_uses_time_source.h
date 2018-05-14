@@ -8,15 +8,15 @@
 #include "base/macros.h"
 #include "base/time/tick_clock.h"
 
-namespace blink {
-namespace scheduler {
+namespace base {
+namespace sequence_manager {
 
-class TestCountUsesTimeSource : public base::TickClock {
+class TestCountUsesTimeSource : public TickClock {
  public:
   explicit TestCountUsesTimeSource();
   ~TestCountUsesTimeSource() override;
 
-  base::TimeTicks NowTicks() const override;
+  TimeTicks NowTicks() const override;
   int now_calls_count() const { return now_calls_count_; }
 
  private:
@@ -25,7 +25,7 @@ class TestCountUsesTimeSource : public base::TickClock {
   mutable int now_calls_count_;
 };
 
-}  // namespace scheduler
-}  // namespace blink
+}  // namespace sequence_manager
+}  // namespace base
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TEST_COUNT_USES_TIME_SOURCE_H_

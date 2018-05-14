@@ -7,6 +7,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::sequence_manager::TaskQueue;
+
 namespace blink {
 namespace scheduler {
 

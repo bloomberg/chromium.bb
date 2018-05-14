@@ -31,6 +31,10 @@ using testing::Return;
 
 namespace blink {
 namespace scheduler {
+
+using base::sequence_manager::TaskQueue;
+using base::sequence_manager::TaskQueueManager;
+
 // To avoid symbol collisions in jumbo builds.
 namespace idle_helper_unittest {
 
@@ -197,7 +201,7 @@ class BaseIdleHelperTest : public testing::Test {
                          : new cc::OrderedSimpleTaskRunner(&clock_, false)),
         message_loop_(message_loop) {
     std::unique_ptr<TaskQueueManager> task_queue_manager =
-        TaskQueueManagerForTest::Create(
+        base::sequence_manager::TaskQueueManagerForTest::Create(
             message_loop,
             message_loop ? message_loop->task_runner() : mock_task_runner_,
             &clock_);
