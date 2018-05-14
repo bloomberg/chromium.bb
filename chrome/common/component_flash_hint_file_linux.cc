@@ -134,7 +134,7 @@ bool RecordFlashUpdate(const base::FilePath& unpacked_plugin,
     return false;
 
   std::string hash(crypto::kSHA256Length, 0);
-  SHA256Hash(mapped_file, base::string_as_array(&hash), hash.size());
+  SHA256Hash(mapped_file, base::data(hash), hash.size());
 
   return WriteToDisk(kCurrentHintFileVersion,
                      crypto::SecureHash::Algorithm::SHA256, hash, moved_plugin,
@@ -212,8 +212,7 @@ bool VerifyAndReturnFlashLocation(base::FilePath* path,
 
   std::vector<uint8_t> file_hash(crypto::kSHA256Length, 0);
   SHA256Hash(plugin_file, &file_hash[0], file_hash.size());
-  if (!crypto::SecureMemEqual(&file_hash[0],
-                              base::string_as_array(&decoded_hash),
+  if (!crypto::SecureMemEqual(base::data(file_hash), base::data(decoded_hash),
                               crypto::kSHA256Length)) {
     LOG(ERROR)
         << "The hash recorded in the component flash hint file does not "

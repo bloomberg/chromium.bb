@@ -42,7 +42,7 @@ void AudioTrackPcmEncoder::EncodeAudio(
   std::unique_ptr<std::string> encoded_data_string(new std::string());
   encoded_data_string->resize(input_bus->frames() * input_bus->channels() *
                               sizeof(float));
-  char* encoded_data_ptr = base::string_as_array(encoded_data_string.get());
+  char* encoded_data_ptr = base::data(*encoded_data_string);
   input_bus->ToInterleaved<media::Float32SampleTypeTraits>(
       input_bus->frames(), reinterpret_cast<float*>(encoded_data_ptr));
 

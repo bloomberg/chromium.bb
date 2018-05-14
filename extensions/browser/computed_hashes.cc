@@ -187,7 +187,7 @@ void ComputedHashes::ComputeHashesForContent(const std::string& contents,
     hashes->push_back(std::string());
     std::string* buffer = &(hashes->back());
     buffer->resize(crypto::kSHA256Length);
-    hash->Finish(base::string_as_array(buffer), buffer->size());
+    hash->Finish(base::data(*buffer), buffer->size());
 
     // If |contents| is empty, then we want to just exit here.
     if (bytes_to_read == 0)

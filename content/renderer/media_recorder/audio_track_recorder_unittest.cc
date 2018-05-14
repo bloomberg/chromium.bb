@@ -193,11 +193,10 @@ class AudioTrackRecorderTest : public TestWithParam<ATRTestParams> {
       // per buffer.
       EXPECT_EQ(
           kDefaultSampleRate * kOpusBufferDurationMs / 1000,
-          opus_decode_float(opus_decoder_,
-                            reinterpret_cast<uint8_t*>(
-                                base::string_as_array(encoded_data.get())),
-                            encoded_data->size(), opus_buffer_.get(),
-                            kFramesPerBuffer, 0));
+          opus_decode_float(
+              opus_decoder_,
+              reinterpret_cast<uint8_t*>(base::data(*encoded_data)),
+              encoded_data->size(), opus_buffer_.get(), kFramesPerBuffer, 0));
     } else if (codec_ == AudioTrackRecorder::CodecId::PCM) {
       // Manually confirm that we're getting the same data out as what we
       // generated from the sine wave.

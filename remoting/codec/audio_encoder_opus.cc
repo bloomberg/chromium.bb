@@ -198,8 +198,7 @@ std::unique_ptr<AudioPacket> AudioEncoderOpus::Encode(
     data->resize(kFrameSamples * kBytesPerSample * channels_);
 
     // Encode.
-    unsigned char* buffer =
-        reinterpret_cast<unsigned char*>(base::string_as_array(data));
+    unsigned char* buffer = reinterpret_cast<unsigned char*>(base::data(*data));
     int result = opus_encode(encoder_, pcm_buffer, kFrameSamples,
                              buffer, data->length());
     if (result < 0) {

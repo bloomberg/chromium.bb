@@ -69,11 +69,10 @@ struct EncodedFrame {
 
   // Convenience accessors to data as an array of uint8_t elements.
   const uint8_t* bytes() const {
-    return reinterpret_cast<uint8_t*>(
-        base::string_as_array(const_cast<std::string*>(&data)));
+    return reinterpret_cast<const uint8_t*>(base::data(data));
   }
   uint8_t* mutable_bytes() {
-    return reinterpret_cast<uint8_t*>(base::string_as_array(&data));
+    return reinterpret_cast<uint8_t*>(base::data(data));
   }
 
   // Copies all data members except |data| to |dest|.

@@ -169,7 +169,7 @@ bool ContentVerifyJob::FinishBlock() {
     current_hash_ = crypto::SecureHash::Create(crypto::SecureHash::SHA256);
   }
   std::string final(crypto::kSHA256Length, 0);
-  current_hash_->Finish(base::string_as_array(& final), final.size());
+  current_hash_->Finish(base::data(final), final.size());
   current_hash_.reset();
   current_hash_byte_count_ = 0;
 
@@ -220,7 +220,7 @@ void ContentVerifyJob::OnHashesReady(
   if (!queue_.empty()) {
     std::string tmp;
     queue_.swap(tmp);
-    BytesReadImpl(tmp.size(), base::string_as_array(&tmp));
+    BytesReadImpl(tmp.size(), base::data(tmp));
     if (failed_)
       return;
   }

@@ -66,17 +66,16 @@ SecurityKeyMessageWriterImplTest::~SecurityKeyMessageWriterImplTest() = default;
 std::string SecurityKeyMessageWriterImplTest::ReadMessage(
     int payload_length_bytes) {
   std::string message_header(SecurityKeyMessage::kHeaderSizeBytes, '\0');
-  read_file_.ReadAtCurrentPos(base::string_as_array(&message_header),
+  read_file_.ReadAtCurrentPos(base::data(message_header),
                               SecurityKeyMessage::kHeaderSizeBytes);
 
   std::string message_type(SecurityKeyMessage::kMessageTypeSizeBytes, '\0');
-  read_file_.ReadAtCurrentPos(base::string_as_array(&message_type),
+  read_file_.ReadAtCurrentPos(base::data(message_type),
                               SecurityKeyMessage::kMessageTypeSizeBytes);
 
   std::string message_data(payload_length_bytes, '\0');
   if (payload_length_bytes) {
-    read_file_.ReadAtCurrentPos(base::string_as_array(&message_data),
-                                payload_length_bytes);
+    read_file_.ReadAtCurrentPos(base::data(message_data), payload_length_bytes);
   }
 
   return message_header + message_type + message_data;
@@ -173,8 +172,8 @@ TEST_F(SecurityKeyMessageWriterImplTest, WriteMultipleMessages) {
 
     // Retrieve and verify the message type.
     std::string message_type(length, '\0');
-    int bytes_read = read_file_.ReadAtCurrentPos(
-        base::string_as_array(&message_type), length);
+    int bytes_read =
+        read_file_.ReadAtCurrentPos(base::data(message_type), length);
     ASSERT_EQ(length, bytes_read);
 
     SecurityKeyMessageType type =

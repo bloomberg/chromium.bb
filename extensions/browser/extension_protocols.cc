@@ -262,7 +262,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
       // proceed; see crbug.com/703888.
       if (verify_job_.get()) {
         std::string tmp;
-        verify_job_->BytesRead(0, base::string_as_array(&tmp));
+        verify_job_->BytesRead(0, base::data(tmp));
         verify_job_->DoneReading();
       }
     }
