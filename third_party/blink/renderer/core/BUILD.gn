@@ -1786,6 +1786,7 @@ jumbo_source_set("unit_tests") {
     "frame/deferred_loading_test.cc",
     "frame/document_loading_rendering_test.cc",
     "frame/dom_timer_test.cc",
+    "frame/find_in_page_test.cc",
     "frame/frame_serializer_test.cc",
     "frame/frame_test.cc",
     "frame/frame_test_helpers.cc",

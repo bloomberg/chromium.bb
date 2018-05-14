@@ -1639,6 +1639,10 @@ WebString WebLocalFrameImpl::GetLayerTreeAsTextForTesting(
       show_debug_info ? kLayerTreeIncludesDebugInfo : kLayerTreeNormal));
 }
 
+FindInPage* WebLocalFrameImpl::GetFindInPageForTesting() const {
+  return find_in_page_.Get();
+}
+
 // WebLocalFrameImpl public --------------------------------------------------
 
 WebLocalFrame* WebLocalFrame::CreateMainFrame(

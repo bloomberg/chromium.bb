@@ -1774,26 +1774,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_HidePopup)
 #endif
 
 #if defined(OS_ANDROID)
-// Response to FrameMsg_FindMatchRects.
-//
-// |version| will contain the current version number of the renderer's find
-// match list (incremented whenever they change), which should be passed in the
-// next call to FrameMsg_FindMatchRects.
-//
-// |rects| will either contain a list of the enclosing rects of all matches
-// found by the most recent Find operation, or will be empty if |version| is not
-// greater than the |current_version| passed to FrameMsg_FindMatchRects (hence
-// your locally cached rects should still be valid). The rect coords will be
-// custom normalized fractions of the document size. The rects will be sorted by
-// frame traversal order starting in the main frame, then by dom order.
-//
-// |active_rect| will contain the bounding box of the active find-in-page match
-// marker, in similarly normalized coords (or an empty rect if there isn't one).
-IPC_MESSAGE_ROUTED3(FrameHostMsg_FindMatchRects_Reply,
-                    int /* version */,
-                    std::vector<gfx::RectF> /* rects */,
-                    gfx::RectF /* active_rect */)
-
 // Response to FrameMsg_GetNearestFindResult. |distance| is the distance to the
 // nearest find result in the sending frame.
 IPC_MESSAGE_ROUTED2(FrameHostMsg_GetNearestFindResult_Reply,

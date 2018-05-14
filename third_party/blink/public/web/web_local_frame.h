@@ -58,7 +58,6 @@ struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
 struct WebFindOptions;
-struct WebFloatRect;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebScriptSource;
@@ -683,21 +682,6 @@ class WebLocalFrame : public WebFrame {
   // of the accumulated total match-count in the frame.  After updating the
   // count it will notify the WebViewClient about the new count.
   virtual void IncreaseMatchCount(int count, int identifier) = 0;
-
-  // Returns a counter that is incremented when the find-in-page markers are
-  // changed on the frame. Switching the active marker doesn't change the
-  // current version.
-  virtual int FindMatchMarkersVersion() const = 0;
-
-  // Returns the bounding box of the active find-in-page match marker or an
-  // empty rect if no such marker exists. The rect is returned in find-in-page
-  // coordinates.
-  virtual WebFloatRect ActiveFindMatchRect() = 0;
-
-  // Swaps the contents of the provided vector with the bounding boxes of the
-  // find-in-page match markers from the frame. The bounding boxes are
-  // returned in find-in-page coordinates.
-  virtual void FindMatchRects(WebVector<WebFloatRect>&) = 0;
 
   // Selects the find-in-page match closest to the provided point in
   // find-in-page coordinates. Returns the ordinal of such match or -1 if none

@@ -14,7 +14,6 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/stop_find_action.h"
-#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/web/web_find_options.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -22,6 +21,7 @@
 namespace content {
 
 class RenderFrameHost;
+class RenderFrameHostImpl;
 class WebContentsImpl;
 
 // FindRequestManager manages all of the find-in-page requests/replies
@@ -48,7 +48,7 @@ class CONTENT_EXPORT FindRequestManager {
 
   // Called when a reply is received from a frame with the results from a
   // find request.
-  void OnFindReply(RenderFrameHost* rfh,
+  void OnFindReply(RenderFrameHostImpl* rfh,
                    int request_id,
                    int number_of_matches,
                    const gfx::Rect& selection_rect,
@@ -290,7 +290,7 @@ class CONTENT_EXPORT FindRequestManager {
   int number_of_matches_;
 
   // The frame containing the active match, if one exists, or nullptr otherwise.
-  RenderFrameHost* active_frame_;
+  RenderFrameHostImpl* active_frame_;
 
   // The active match ordinal relative to the matches found in its own frame.
   int relative_active_match_ordinal_;

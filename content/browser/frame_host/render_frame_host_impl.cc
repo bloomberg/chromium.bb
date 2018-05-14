@@ -3939,6 +3939,13 @@ RenderFrameHostImpl::GetMojoImageDownloader() {
   return mojo_image_downloader_;
 }
 
+const blink::mojom::FindInPageAssociatedPtr&
+RenderFrameHostImpl::GetFindInPage() {
+  if (!find_in_page_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&find_in_page_);
+  return find_in_page_;
+}
+
 resource_coordinator::FrameResourceCoordinator*
 RenderFrameHostImpl::GetFrameResourceCoordinator() {
   if (frame_resource_coordinator_)

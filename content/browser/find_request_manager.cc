@@ -12,6 +12,7 @@
 #include "content/common/associated_interface_provider_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/browser/guest_mode.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 
 namespace content {
 
@@ -284,7 +285,7 @@ void FindRequestManager::StopFinding(StopFindAction action) {
 #endif
 }
 
-void FindRequestManager::OnFindReply(RenderFrameHost* rfh,
+void FindRequestManager::OnFindReply(RenderFrameHostImpl* rfh,
                                      int request_id,
                                      int number_of_matches,
                                      const gfx::Rect& selection_rect,
@@ -436,10 +437,7 @@ void FindRequestManager::RemoveFrame(RenderFrameHost* rfh) {
 }
 
 void FindRequestManager::ClearActiveFindMatch() {
-  blink::mojom::FindInPageAssociatedPtr active_frame_ptr;
-  active_frame_->GetRemoteAssociatedInterfaces()->GetInterface(
-      &active_frame_ptr);
-  active_frame_ptr->ClearActiveFindMatch();
+  active_frame_->GetFindInPage()->ClearActiveFindMatch();
 }
 
 #if defined(OS_ANDROID)
@@ -490,7 +488,7 @@ void FindRequestManager::RequestFindMatchRects(int current_version) {
   // Request the latest find match rects from each frame.
   for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
     for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
-      RenderFrameHost* rfh = node->current_frame_host();
+      RenderFrameHostImpl* rfh = node->current_frame_host();
 
       if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
         continue;
@@ -499,7 +497,9 @@ void FindRequestManager::RequestFindMatchRects(int current_version) {
       auto it = match_rects_.frame_rects.find(rfh);
       int version = (it != match_rects_.frame_rects.end()) ? it->second.version
                                                            : kInvalidId;
-      rfh->Send(new FrameMsg_FindMatchRects(rfh->GetRoutingID(), version));
+      rfh->GetFindInPage()->FindMatchRects(
+          version, base::BindOnce(&FindRequestManager::OnFindMatchRectsReply,
+                                  base::Unretained(this), rfh));
     }
   }
 }
