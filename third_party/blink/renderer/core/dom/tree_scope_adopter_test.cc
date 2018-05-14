@@ -51,7 +51,7 @@ TEST(TreeScopeAdopterTest, AdoptV1ShadowRootToV0Document) {
   html1->AppendChild(div1);
   EXPECT_EQ(doc1->GetShadowCascadeOrder(),
             ShadowCascadeOrder::kShadowCascadeNone);
-  div1->CreateShadowRootInternal();
+  div1->CreateV0ShadowRootForTesting();
   EXPECT_EQ(doc1->GetShadowCascadeOrder(),
             ShadowCascadeOrder::kShadowCascadeV0);
   EXPECT_TRUE(doc1->MayContainV0Shadow());
@@ -96,7 +96,7 @@ TEST(TreeScopeAdopterTest, AdoptV0ShadowRootToV1Document) {
   doc2->AppendChild(html2);
   Element* div2 = doc1->CreateRawElement(HTMLNames::divTag);
   html2->AppendChild(div2);
-  div2->CreateShadowRootInternal();
+  div2->CreateV0ShadowRootForTesting();
 
   EXPECT_EQ(div1->ownerDocument(), doc1);
   EXPECT_EQ(div2->ownerDocument(), doc2);
@@ -123,7 +123,7 @@ TEST(TreeScopeAdopterTest, AdoptV0InV1ToNewDocument) {
       host1->AttachShadowRootInternal(ShadowRootType::kOpen);
   Element* host2 = old_doc->CreateRawElement(HTMLNames::divTag);
   shadow_root_v1.AppendChild(host2);
-  host2->CreateShadowRootInternal();
+  host2->CreateV0ShadowRootForTesting();
 
   // old_doc
   // └── html
