@@ -11,9 +11,9 @@
 #ifndef TestPermissiveDictionary_h
 #define TestPermissiveDictionary_h
 
-#include "bindings/core/v8/idl_dictionary_base.h"
-#include "core/core_export.h"
-#include "platform/heap/handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_dictionary_base.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

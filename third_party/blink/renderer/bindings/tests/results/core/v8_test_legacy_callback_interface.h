@@ -12,9 +12,9 @@
 #ifndef V8TestLegacyCallbackInterface_h
 #define V8TestLegacyCallbackInterface_h
 
-#include "core/core_export.h"
-#include "platform/bindings/callback_interface_base.h"
-#include "platform/bindings/dom_wrapper_world.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/callback_interface_base.h"
+#include "third_party/blink/renderer/platform/bindings/dom_wrapper_world.h"
 
 namespace blink {
 

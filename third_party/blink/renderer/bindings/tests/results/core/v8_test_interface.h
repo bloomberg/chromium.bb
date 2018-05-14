@@ -11,19 +11,19 @@
 #ifndef V8TestInterface_h
 #define V8TestInterface_h
 
-#include "bindings/core/v8/double_or_string.h"
-#include "bindings/core/v8/generated_code_helper.h"
-#include "bindings/core/v8/native_value_traits.h"
-#include "bindings/core/v8/string_or_double.h"
-#include "bindings/core/v8/to_v8_for_core.h"
-#include "bindings/core/v8/v8_binding_for_core.h"
-#include "bindings/core/v8/v8_test_interface_empty.h"
-#include "bindings/tests/idls/core/test_interface_implementation.h"
-#include "core/core_export.h"
-#include "platform/bindings/script_wrappable.h"
-#include "platform/bindings/v8_dom_wrapper.h"
-#include "platform/bindings/wrapper_type_info.h"
-#include "platform/heap/handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_implementation.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/bindings/v8_dom_wrapper.h"
+#include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

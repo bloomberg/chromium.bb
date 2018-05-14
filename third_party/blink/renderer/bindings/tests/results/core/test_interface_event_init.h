@@ -11,10 +11,10 @@
 #ifndef TestInterfaceEventInit_h
 #define TestInterfaceEventInit_h
 
-#include "core/core_export.h"
-#include "core/dom/events/event_init.h"
-#include "platform/heap/handle.h"
-#include "platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/events/event_init.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 

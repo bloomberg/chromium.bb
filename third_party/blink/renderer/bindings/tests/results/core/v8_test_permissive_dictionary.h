@@ -11,12 +11,12 @@
 #ifndef V8TestPermissiveDictionary_h
 #define V8TestPermissiveDictionary_h
 
-#include "bindings/core/v8/native_value_traits.h"
-#include "bindings/core/v8/to_v8_for_core.h"
-#include "bindings/core/v8/v8_binding_for_core.h"
-#include "bindings/tests/idls/core/test_permissive_dictionary.h"
-#include "core/core_export.h"
-#include "platform/heap/handle.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_permissive_dictionary.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

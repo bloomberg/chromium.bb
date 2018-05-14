@@ -10,10 +10,10 @@
 // clang-format off
 #include "double_or_long_or_boolean_sequence.h"
 
-#include "bindings/core/v8/idl_types.h"
-#include "bindings/core/v8/long_or_boolean.h"
-#include "bindings/core/v8/native_value_traits_impl.h"
-#include "bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/long_or_boolean.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 
 namespace blink {
 

@@ -11,12 +11,12 @@
 
 #include "v8_test_callback_interface.h"
 
-#include "bindings/core/v8/generated_code_helper.h"
-#include "bindings/core/v8/idl_types.h"
-#include "bindings/core/v8/native_value_traits_impl.h"
-#include "bindings/core/v8/v8_binding_for_core.h"
-#include "bindings/core/v8/v8_test_interface_empty.h"
-#include "core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 
 namespace blink {
 

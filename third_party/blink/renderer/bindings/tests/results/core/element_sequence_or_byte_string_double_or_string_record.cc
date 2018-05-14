@@ -10,17 +10,17 @@
 // clang-format off
 #include "element_sequence_or_byte_string_double_or_string_record.h"
 
-#include "bindings/core/v8/double_or_string.h"
-#include "bindings/core/v8/idl_types.h"
-#include "bindings/core/v8/native_value_traits_impl.h"
-#include "bindings/core/v8/to_v8_for_core.h"
-#include "bindings/core/v8/v8_element.h"
-#include "core/animation/element_animation.h"
-#include "core/css/cssom/element_computed_style_map.h"
-#include "core/dom/child_node.h"
-#include "core/dom/non_document_type_child_node.h"
-#include "core/dom/parent_node.h"
-#include "core/fullscreen/element_fullscreen.h"
+#include "third_party/blink/renderer/bindings/core/v8/double_or_string.h"
+#include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
+#include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"
+#include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_element.h"
+#include "third_party/blink/renderer/core/animation/element_animation.h"
+#include "third_party/blink/renderer/core/css/cssom/element_computed_style_map.h"
+#include "third_party/blink/renderer/core/dom/child_node.h"
+#include "third_party/blink/renderer/core/dom/non_document_type_child_node.h"
+#include "third_party/blink/renderer/core/dom/parent_node.h"
+#include "third_party/blink/renderer/core/fullscreen/element_fullscreen.h"
 
 namespace blink {
 
