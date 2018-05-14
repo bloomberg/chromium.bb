@@ -50,7 +50,7 @@ inline SpinButtonElement::SpinButtonElement(Document& document,
       capturing_(false),
       up_down_state_(kIndeterminate),
       press_starting_state_(kIndeterminate),
-      repeating_timer_(document.GetTaskRunner(TaskType::kInternalAnimation),
+      repeating_timer_(document.GetTaskRunner(TaskType::kInternalDefault),
                        this,
                        &SpinButtonElement::RepeatingTimerFired) {}
 

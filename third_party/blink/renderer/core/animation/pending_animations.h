@@ -60,7 +60,7 @@ class CORE_EXPORT PendingAnimations final
     : public GarbageCollectedFinalized<PendingAnimations> {
  public:
   explicit PendingAnimations(Document& document)
-      : timer_(document.GetTaskRunner(TaskType::kInternalAnimation),
+      : timer_(document.GetTaskRunner(TaskType::kInternalDefault),
                this,
                &PendingAnimations::TimerFired),
         compositor_group_(1) {}
