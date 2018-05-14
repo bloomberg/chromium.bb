@@ -91,10 +91,6 @@ class CONTENT_EXPORT P2PSocketHostTcpBase : public P2PSocketHost {
   friend class P2PSocketHostTcpTestBase;
   friend class P2PSocketHostTcpServerTest;
 
-  // SSL/TLS connection functions.
-  void StartTls();
-  void ProcessTlsSslConnectDone(int status);
-
   void DidCompleteRead(int result);
   void DoRead();
 

@@ -127,7 +127,7 @@ bool P2PSocketHostTcpBase::Init(const net::IPEndPoint& local_address,
   const net::SSLConfig ssl_config;
   socket_ = proxy_resolving_socket_factory_->CreateSocket(
       ssl_config, GURL("https://" + dest_host_port_pair.ToString()),
-      false /*use_tls*/);
+      IsTlsClientSocket(type_));
 
   if (IsPseudoTlsClientSocket(type_)) {
     socket_ =
@@ -153,7 +153,7 @@ void P2PSocketHostTcpBase::OnError() {
   socket_.reset();
 
   if (state_ == STATE_UNINITIALIZED || state_ == STATE_CONNECTING ||
-      state_ == STATE_TLS_CONNECTING || state_ == STATE_OPEN) {
+      state_ == STATE_OPEN) {
     message_sender_->Send(new P2PMsg_OnError(id_));
   }
 
@@ -170,73 +170,6 @@ void P2PSocketHostTcpBase::OnConnected(int result) {
     return;
   }
 
-  if (IsTlsClientSocket(type_)) {
-    state_ = STATE_TLS_CONNECTING;
-    StartTls();
-  } else {
-    // If we are not doing TLS, we are ready to send data now.
-    // In case of TLS, SignalConnect will be sent only after TLS handshake is
-    // successful. So no buffering will be done at socket handlers if any
-    // packets sent before that by the application.
-    OnOpen();
-  }
-}
-
-void P2PSocketHostTcpBase::StartTls() {
-  DCHECK_EQ(state_, STATE_TLS_CONNECTING);
-  DCHECK(socket_.get());
-
-  std::unique_ptr<net::ClientSocketHandle> socket_handle(
-      new net::ClientSocketHandle());
-  socket_handle->SetSocket(std::move(socket_));
-
-  const net::URLRequestContext* url_request_context =
-      url_context_->GetURLRequestContext();
-  net::SSLClientSocketContext context(
-      url_request_context->cert_verifier(),
-      nullptr, /* TODO(rkn): ChannelIDService is not thread safe. */
-      url_request_context->transport_security_state(),
-      url_request_context->cert_transparency_verifier(),
-      url_request_context->ct_policy_enforcer(),
-      std::string() /* TODO(rsleevi): Ensure a proper unique shard. */);
-
-  // Default ssl config.
-  const net::SSLConfig ssl_config;
-  net::HostPortPair dest_host_port_pair;
-
-  // Calling net::HostPortPair::FromIPEndPoint will crash if the IP address is
-  // empty.
-  if (!remote_address_.ip_address.address().empty()) {
-    net::HostPortPair::FromIPEndPoint(remote_address_.ip_address);
-  } else {
-    dest_host_port_pair.set_port(remote_address_.ip_address.port());
-  }
-  if (!remote_address_.hostname.empty())
-    dest_host_port_pair.set_host(remote_address_.hostname);
-
-  net::ClientSocketFactory* socket_factory =
-      net::ClientSocketFactory::GetDefaultFactory();
-  DCHECK(socket_factory);
-
-  socket_ = socket_factory->CreateSSLClientSocket(
-      std::move(socket_handle), dest_host_port_pair, ssl_config, context);
-  int status = socket_->Connect(
-      base::Bind(&P2PSocketHostTcpBase::ProcessTlsSslConnectDone,
-                 base::Unretained(this)));
-
-  if (status != net::ERR_IO_PENDING) {
-    ProcessTlsSslConnectDone(status);
-  }
-}
-
-void P2PSocketHostTcpBase::ProcessTlsSslConnectDone(int status) {
-  DCHECK_NE(status, net::ERR_IO_PENDING);
-  DCHECK_EQ(state_, STATE_TLS_CONNECTING);
-  if (status != net::OK) {
-    LOG(WARNING) << "Error from connecting TLS socket, status=" << status;
-    OnError();
-    return;
-  }
   OnOpen();
 }
 
