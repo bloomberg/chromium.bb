@@ -74,6 +74,24 @@ class ScrollbarsTest : public testing::WithParamInterface<bool>,
     GetEventHandler().HandleMouseReleaseEvent(event);
   }
 
+  void HandleMouseMiddlePressEvent(int x, int y) {
+    WebMouseEvent event(
+        WebInputEvent::kMouseDown, WebFloatPoint(x, y), WebFloatPoint(x, y),
+        WebPointerProperties::Button::kMiddle, 0,
+        WebInputEvent::Modifiers::kMiddleButtonDown, CurrentTimeTicks());
+    event.SetFrameScale(1);
+    GetEventHandler().HandleMousePressEvent(event);
+  }
+
+  void HandleMouseMiddleReleaseEvent(int x, int y) {
+    WebMouseEvent event(
+        WebInputEvent::kMouseUp, WebFloatPoint(x, y), WebFloatPoint(x, y),
+        WebPointerProperties::Button::kMiddle, 0,
+        WebInputEvent::Modifiers::kMiddleButtonDown, CurrentTimeTicks());
+    event.SetFrameScale(1);
+    GetEventHandler().HandleMouseReleaseEvent(event);
+  }
+
   void HandleMouseLeaveEvent() {
     WebMouseEvent event(
         WebInputEvent::kMouseMove, WebFloatPoint(1, 1), WebFloatPoint(1, 1),
@@ -1966,6 +1984,92 @@ TEST_P(ScrollbarsTest, OverlayScrollbarHitTest) {
   EXPECT_TRUE(hit_test_result.GetScrollbar());
   hit_test_result = HitTest(150, 5);
   EXPECT_FALSE(hit_test_result.GetScrollbar());
+}
+
+TEST_P(ScrollbarsTest, NotAllowMiddleButtonPressOnScrollbar) {
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  WebView().Resize(WebSize(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #big {
+      height: 800px;
+    }
+    </style>
+    <div id='big'>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  ScrollableArea* scrollable_area =
+      WebView().MainFrameImpl()->GetFrameView()->LayoutViewportScrollableArea();
+
+  Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
+  ASSERT_TRUE(scrollbar);
+  ASSERT_TRUE(scrollbar->Enabled());
+
+  // Not allow press scrollbar with middle button.
+  HandleMouseMoveEvent(195, 5);
+  HandleMouseMiddlePressEvent(195, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
+  HandleMouseMiddleReleaseEvent(195, 5);
+}
+
+// Ensure Scrollbar not release press by middle click.
+TEST_P(ScrollbarsTest, MiddleClickShouldNotAffectScrollbarPress) {
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+  WebView().Resize(WebSize(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #big {
+      height: 800px;
+    }
+    </style>
+    <div id='big'>
+    </div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  ScrollableArea* scrollable_area =
+      WebView().MainFrameImpl()->GetFrameView()->LayoutViewportScrollableArea();
+
+  Scrollbar* scrollbar = scrollable_area->VerticalScrollbar();
+  ASSERT_TRUE(scrollbar);
+  ASSERT_TRUE(scrollbar->Enabled());
+
+  // Press on scrollbar then move mouse out of scrollbar and middle click
+  // should not release the press state. Then relase mouse left button should
+  // release the scrollbar press state.
+
+  // Move mouse to thumb.
+  HandleMouseMoveEvent(195, 5);
+  HandleMousePressEvent(195, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
+
+  // Move mouse out of scrollbar with press.
+  WebMouseEvent event(WebInputEvent::kMouseMove, WebFloatPoint(5, 5),
+                      WebFloatPoint(5, 5), WebPointerProperties::Button::kLeft,
+                      0, WebInputEvent::Modifiers::kLeftButtonDown,
+                      CurrentTimeTicks());
+  event.SetFrameScale(1);
+  GetEventHandler().HandleMouseLeaveEvent(event);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
+
+  // Middle click should not release scrollbar press state.
+  HandleMouseMiddlePressEvent(5, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
+
+  HandleMouseMiddleReleaseEvent(5, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kThumbPart);
+
+  // Relase mouse left button should release scrollbar press state.
+  HandleMouseReleaseEvent(5, 5);
+  EXPECT_EQ(scrollbar->PressedPart(), ScrollbarPart::kNoPart);
 }
 
 class ScrollbarTrackMarginsTest : public ScrollbarsTest {

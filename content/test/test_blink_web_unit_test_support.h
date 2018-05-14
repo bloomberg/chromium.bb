@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/test/mock_webblob_registry_impl.h"
+#include "third_party/blink/public/platform/web_scrollbar_behavior.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 
 namespace blink {
@@ -70,6 +71,8 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   service_manager::Connector* GetConnector() override;
   blink::InterfaceProvider* GetInterfaceProvider() override;
 
+  blink::WebScrollbarBehavior* ScrollbarBehavior() override;
+
  private:
   void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
@@ -82,6 +85,7 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<blink::scheduler::WebMainThreadScheduler>
       main_thread_scheduler_;
   std::unique_ptr<blink::WebThread> web_thread_;
+  std::unique_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 
   base::WeakPtrFactory<TestBlinkWebUnitTestSupport> weak_factory_;
 
