@@ -82,3 +82,9 @@
 
 # Uses LatencyInfo for input info https://crbug.com/791557
 -MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
+
+### Mac
+# BrowserSideFlingBrowserTest timing out https://crbug.com/842325
+-BrowserSideFlingBrowserTest.AutoscrollFling
+-BrowserSideFlingBrowserTest.TouchpadFling
+-BrowserSideFlingBrowserTest.TouchscreenFling
