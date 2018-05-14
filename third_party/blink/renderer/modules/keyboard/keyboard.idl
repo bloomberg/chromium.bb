@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// TODO(joedow): Remove RuntimeEnabled flag after the next branch point.
 [
     Exposed=Window,
     RuntimeEnabled=KeyboardLock,
@@ -18,6 +19,7 @@
 
     // Keyboard Map specification: https://wicg.github.io/keyboard-map/
     [CallWith=ScriptState,
+     RuntimeEnabled=KeyboardMap,
      MeasureAs=KeyboardApiGetLayoutMap
     ] Promise<KeyboardLayoutMap> getLayoutMap();
 };

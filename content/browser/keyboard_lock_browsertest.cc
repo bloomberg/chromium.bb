@@ -658,7 +658,18 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest, LockCallWithSomeInvalidKeys) {
 IN_PROC_BROWSER_TEST_F(KeyboardLockDisabledBrowserTest,
                        NoKeyboardLockWhenDisabled) {
   ASSERT_TRUE(NavigateToURL(shell(), https_fullscreen_frame()));
-  ASSERT_FALSE(KeyboardLockApiExists());
+  ASSERT_TRUE(KeyboardLockApiExists());
+
+  // KeyboardLockServiceImpl returns success from the RequestKeyboardLock()
+  // call when the Chrome side of the feature is disabled.  This prevents
+  // problems running the WebKit layout tests.
+  bool result = false;
+  ASSERT_TRUE(ExecuteScriptAndExtractBool(web_contents()->GetMainFrame(),
+                                          kKeyboardLockMethodCallWithAllKeys,
+                                          &result));
+  ASSERT_TRUE(result);
+
+  ASSERT_FALSE(web_contents()->GetKeyboardLockWidget());
 }
 
 IN_PROC_BROWSER_TEST_F(KeyboardLockBrowserTest,
