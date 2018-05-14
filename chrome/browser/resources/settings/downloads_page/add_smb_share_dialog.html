@@ -22,6 +22,15 @@
             value="{{mountUrl_}}"
             autofocus>
         </paper-input>
+        <paper-input always-float-label id="username"
+            label="$i18n{smbShareUsername}"
+            value="{{username_}}">
+        </paper-input>
+        <paper-input always-float-label id="password"
+            type="password"
+            label="$i18n{smbSharePassword}"
+            value="{{password_}}">
+        </paper-input>
       </div>
       <div slot="button-container">
         <paper-button class="cancel-button" on-click="cancel_" id="cancel">

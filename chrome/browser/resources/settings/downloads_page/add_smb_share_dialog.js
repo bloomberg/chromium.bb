@@ -12,6 +12,8 @@ Polymer({
   properties: {
     /** @private {string} */
     mountUrl_: String,
+    username_: String,
+    password_: String,
   },
 
   /** @private {?settings.SmbBrowserProxy} */
