@@ -7,24 +7,20 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/scoped_observer.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/windows_10_caption_button.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserView;
-class TabStrip;
 
 class GlassBrowserFrameView : public BrowserNonClientFrameView,
                               public views::ButtonListener,
-                              public TabIconViewModel,
-                              public TabStripObserver {
+                              public TabIconViewModel {
  public:
   // Alpha to use for features in the titlebar (the window title and caption
   // buttons) when the window is inactive. They are opaque when active.
@@ -42,7 +38,8 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   void UpdateThrobber(bool running) override;
   gfx::Size GetMinimumSize() const override;
   int GetTabStripLeftInset() const override;
-  void OnBrowserViewInitViewsComplete() override;
+  void OnTabRemoved(int index) override;
+  void OnTabsMaxXChanged() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -61,10 +58,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
   // TabIconViewModel:
   bool ShouldTabIconViewAnimate() const override;
   gfx::ImageSkia GetFaviconForTabIconView() override;
-
-  // TabStripObserver:
-  void OnTabRemoved(int index) override;
-  void OnTabsMaxXChanged() override;
 
   bool IsMaximized() const;
 
@@ -199,10 +192,6 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
 
   // The index of the current frame of the throbber animation.
   int throbber_frame_;
-
-  // The window's tabstrip, if any, is observed so we know when to resize any
-  // avatar button.
-  ScopedObserver<TabStrip, GlassBrowserFrameView> tab_strip_observer_;
 
   static const int kThrobberIconCount = 24;
   static HICON throbber_icons_[kThrobberIconCount];

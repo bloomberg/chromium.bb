@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_NON_CLIENT_FRAME_VIEW_H_
 
+#include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/views/frame/avatar_button_manager.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "ui/views/window/non_client_view.h"
 
 class BrowserFrame;
@@ -16,7 +18,8 @@ class BrowserView;
 // A specialization of the NonClientFrameView object that provides additional
 // Browser-specific methods.
 class BrowserNonClientFrameView : public views::NonClientFrameView,
-                                  public ProfileAttributesStorage::Observer {
+                                  public ProfileAttributesStorage::Observer,
+                                  public TabStripObserver {
  public:
   BrowserNonClientFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~BrowserNonClientFrameView() override;
@@ -87,15 +90,22 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // https://crbug.com/820485.
   virtual int GetTabStripLeftInset() const;
 
-  // Overriden from views::View.
+  // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
+
+  // TabStripObserver:
+  void OnTabAdded(int index) override;
+  void OnTabRemoved(int index) override;
 
  protected:
   // Whether the frame should be painted with theming.
   // By default, tabbed browser windows are themed but popup and app windows are
   // not.
   virtual bool ShouldPaintAsThemed() const;
+
+  // Whether the frame should be painted with a special mode for one tab.
+  bool ShouldPaintAsSingleTabMode() const;
 
   // Compute aspects of the frame needed to paint the frame background.
   SkColor GetFrameColor(bool active) const;
@@ -162,6 +172,8 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // On desktop, this is used to show an incognito icon. On CrOS, it's also used
   // for teleported windows (in multi-profile mode).
   ProfileIndicatorIcon* profile_indicator_icon_;
+
+  ScopedObserver<TabStrip, BrowserNonClientFrameView> tab_strip_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserNonClientFrameView);
 };

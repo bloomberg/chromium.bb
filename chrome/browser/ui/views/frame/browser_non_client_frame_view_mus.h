@@ -11,7 +11,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 
 #if !defined(OS_CHROMEOS)
 #include "chrome/browser/ui/views/frame/avatar_button_manager.h"
@@ -20,8 +19,7 @@
 class TabIconView;
 
 class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
-                                     public TabIconViewModel,
-                                     public TabStripObserver {
+                                     public TabIconViewModel {
  public:
   static const char kViewClassName[];
 
@@ -39,6 +37,7 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   void UpdateClientArea() override;
   void UpdateMinimumSize() override;
   int GetTabStripLeftInset() const override;
+  void OnTabsMaxXChanged() override;
 
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
@@ -68,9 +67,6 @@ class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
   AvatarButtonStyle GetAvatarButtonStyle() const override;
 
  private:
-  // TabStripObserver:
-  void OnTabsMaxXChanged() override;
-
   // Distance between the right edge of the NonClientFrameView and the tab
   // strip.
   int GetTabStripRightInset() const;
