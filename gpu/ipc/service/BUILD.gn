@@ -48,6 +48,7 @@ component("service") {
   }
   public_deps = [
     "//base",
+    "//components/viz/common",
     "//ipc",
     "//ui/base",
     "//ui/display",
