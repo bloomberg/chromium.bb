@@ -375,7 +375,9 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      bool enable_blend,
                                      gfx::GpuFence* gpu_fence) {
   DCHECK(buffer_->GetFlags() & GBM_BO_USE_SCANOUT);
-
+  // |framebuffer_id| might be 0 if AddFramebuffer2 failed, in that case we
+  // already logged the error in GbmBuffer ctor. We avoid logging the error
+  // here since this method might be called every pageflip.
   if (buffer_->GetFramebufferId()) {
     surface_manager_->GetSurface(widget)->QueueOverlayPlane(
         OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
