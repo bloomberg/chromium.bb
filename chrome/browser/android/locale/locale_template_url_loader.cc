@@ -1,9 +1,8 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright (c) 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/android/locale/special_locale_handler.h"
-
+#include "chrome/browser/android/locale/locale_template_url_loader.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/jni_weak_ref.h"
@@ -14,7 +13,7 @@
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/util.h"
-#include "jni/SpecialLocaleHandler_jni.h"
+#include "jni/LocaleTemplateUrlLoader_jni.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
@@ -25,27 +24,27 @@ using base::android::ConvertJavaStringToUTF8;
 class PrefService;
 class TemplateURL;
 
-static jlong JNI_SpecialLocaleHandler_Init(
+static jlong JNI_LocaleTemplateUrlLoader_Init(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
     const JavaParamRef<jstring>& jlocale) {
   Profile* profile =
       ProfileManager::GetActiveUserProfile()->GetOriginalProfile();
-  return reinterpret_cast<intptr_t>(new SpecialLocaleHandler(
+  return reinterpret_cast<intptr_t>(new LocaleTemplateUrlLoader(
       ConvertJavaStringToUTF8(env, jlocale),
       TemplateURLServiceFactory::GetForProfile(profile)));
 }
 
-SpecialLocaleHandler::SpecialLocaleHandler(const std::string& locale,
-                                           TemplateURLService* service)
+LocaleTemplateUrlLoader::LocaleTemplateUrlLoader(const std::string& locale,
+                                                 TemplateURLService* service)
     : locale_(locale), template_url_service_(service) {}
 
-void SpecialLocaleHandler::Destroy(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj) {
+void LocaleTemplateUrlLoader::Destroy(JNIEnv* env,
+                                      const JavaParamRef<jobject>& obj) {
   delete this;
 }
 
-jboolean SpecialLocaleHandler::LoadTemplateUrls(
+jboolean LocaleTemplateUrlLoader::LoadTemplateUrls(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DCHECK(locale_.length() == 2);
@@ -97,7 +96,7 @@ jboolean SpecialLocaleHandler::LoadTemplateUrls(
   return true;
 }
 
-void SpecialLocaleHandler::RemoveTemplateUrls(
+void LocaleTemplateUrlLoader::RemoveTemplateUrls(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   while (!prepopulate_ids_.empty()) {
@@ -110,7 +109,7 @@ void SpecialLocaleHandler::RemoveTemplateUrls(
   }
 }
 
-void SpecialLocaleHandler::OverrideDefaultSearchProvider(
+void LocaleTemplateUrlLoader::OverrideDefaultSearchProvider(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   // If the user has changed their default search provider, no-op.
@@ -121,21 +120,22 @@ void SpecialLocaleHandler::OverrideDefaultSearchProvider(
     return;
   }
 
-  TemplateURL* turl = FindURLByPrepopulateID(
-      template_url_service_->GetTemplateURLs(), GetDesignatedSearchEngine());
+  TemplateURL* turl =
+      FindURLByPrepopulateID(template_url_service_->GetTemplateURLs(),
+                             GetDesignatedSearchEngineForChina());
   if (turl) {
     template_url_service_->SetUserSelectedDefaultSearchProvider(turl);
   }
 }
 
-void SpecialLocaleHandler::SetGoogleAsDefaultSearch(
+void LocaleTemplateUrlLoader::SetGoogleAsDefaultSearch(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   // If the user has changed their default search provider, no-op.
   const TemplateURL* current_dsp =
       template_url_service_->GetDefaultSearchProvider();
   if (!current_dsp ||
-      current_dsp->prepopulate_id() != GetDesignatedSearchEngine()) {
+      current_dsp->prepopulate_id() != GetDesignatedSearchEngineForChina()) {
     return;
   }
 
@@ -148,12 +148,12 @@ void SpecialLocaleHandler::SetGoogleAsDefaultSearch(
 }
 
 std::vector<std::unique_ptr<TemplateURLData>>
-SpecialLocaleHandler::GetLocalPrepopulatedEngines() {
+LocaleTemplateUrlLoader::GetLocalPrepopulatedEngines() {
   return TemplateURLPrepopulateData::GetLocalPrepopulatedEngines(locale_);
 }
 
-int SpecialLocaleHandler::GetDesignatedSearchEngine() {
+int LocaleTemplateUrlLoader::GetDesignatedSearchEngineForChina() {
   return TemplateURLPrepopulateData::sogou.id;
 }
 
-SpecialLocaleHandler::~SpecialLocaleHandler() {}
+LocaleTemplateUrlLoader::~LocaleTemplateUrlLoader() {}

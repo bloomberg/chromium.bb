@@ -293,12 +293,21 @@ public class TemplateUrlService {
     }
 
     /**
-     * Finds the URL for the search engine at the given index.
-     * @param index The templateUrl index to look up.
+     * Finds the URL for the search engine for the given keyword.
+     * @param keyword The templateUrl keyword to look up.
      * @return      A {@link String} that contains the url of the specified search engine.
      */
     public String getSearchEngineUrlFromTemplateUrl(String keyword) {
         return nativeGetSearchEngineUrlFromTemplateUrl(mNativeTemplateUrlServiceAndroid, keyword);
+    }
+
+    /**
+     * Finds the search engine type for the given keyword.
+     * @param keyword The templateUrl keyword to look up.
+     * @return      The search engine type of the specified search engine that contains the keyword.
+     */
+    public int getSearchEngineTypeFromTemplateUrl(String keyword) {
+        return nativeGetSearchEngineTypeFromTemplateUrl(mNativeTemplateUrlServiceAndroid, keyword);
     }
 
     /**
@@ -342,6 +351,8 @@ public class TemplateUrlService {
     private native String nativeGetUrlForContextualSearchQuery(long nativeTemplateUrlServiceAndroid,
             String query, String alternateTerm, boolean shouldPrefetch, String protocolVersion);
     private native String nativeGetSearchEngineUrlFromTemplateUrl(
+            long nativeTemplateUrlServiceAndroid, String keyword);
+    private native int nativeGetSearchEngineTypeFromTemplateUrl(
             long nativeTemplateUrlServiceAndroid, String keyword);
     private native String nativeAddSearchEngineForTesting(
             long nativeTemplateUrlServiceAndroid, String keyword, int offset);

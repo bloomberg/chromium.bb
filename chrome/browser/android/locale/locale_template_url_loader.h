@@ -1,9 +1,9 @@
-// Copyright (c) 2016 The Chromium Authors. All rights reserved.
+// Copyright (c) 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_ANDROID_LOCALE_SPECIAL_LOCALE_HANDLER_H_
-#define CHROME_BROWSER_ANDROID_LOCALE_SPECIAL_LOCALE_HANDLER_H_
+#ifndef CHROME_BROWSER_ANDROID_LOCALE_LOCALE_TEMPLATE_URL_LOADER_H_
+#define CHROME_BROWSER_ANDROID_LOCALE_LOCALE_TEMPLATE_URL_LOADER_H_
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
@@ -13,9 +13,10 @@ using base::android::JavaParamRef;
 
 class TemplateURLService;
 
-class SpecialLocaleHandler {
+class LocaleTemplateUrlLoader {
  public:
-  SpecialLocaleHandler(const std::string& locale, TemplateURLService* service);
+  LocaleTemplateUrlLoader(const std::string& locale,
+                          TemplateURLService* service);
   void Destroy(JNIEnv* env, const JavaParamRef<jobject>& obj);
   jboolean LoadTemplateUrls(JNIEnv* env, const JavaParamRef<jobject>& obj);
   void RemoveTemplateUrls(JNIEnv* env, const JavaParamRef<jobject>& obj);
@@ -23,12 +24,12 @@ class SpecialLocaleHandler {
                                      const JavaParamRef<jobject>& obj);
   void SetGoogleAsDefaultSearch(JNIEnv* env, const JavaParamRef<jobject>& obj);
 
-  virtual ~SpecialLocaleHandler();
+  virtual ~LocaleTemplateUrlLoader();
 
  protected:
   virtual std::vector<std::unique_ptr<TemplateURLData>>
   GetLocalPrepopulatedEngines();
-  virtual int GetDesignatedSearchEngine();
+  virtual int GetDesignatedSearchEngineForChina();
 
  private:
   std::string locale_;
@@ -39,7 +40,7 @@ class SpecialLocaleHandler {
   // Pointer to the TemplateUrlService for the main profile.
   TemplateURLService* template_url_service_;
 
-  DISALLOW_COPY_AND_ASSIGN(SpecialLocaleHandler);
+  DISALLOW_COPY_AND_ASSIGN(LocaleTemplateUrlLoader);
 };
 
-#endif  // CHROME_BROWSER_ANDROID_LOCALE_SPECIAL_LOCALE_HANDLER_H_
+#endif  // CHROME_BROWSER_ANDROID_LOCALE_LOCALE_TEMPLATE_URL_LOADER_H_

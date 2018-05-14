@@ -278,6 +278,21 @@ TemplateUrlServiceAndroid::GetSearchEngineUrlFromTemplateUrl(
   return base::android::ConvertUTF8ToJavaString(env, url);
 }
 
+int TemplateUrlServiceAndroid::GetSearchEngineTypeFromTemplateUrl(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& jkeyword) {
+  base::string16 keyword =
+      base::android::ConvertJavaStringToUTF16(env, jkeyword);
+  TemplateURL* template_url =
+      template_url_service_->GetTemplateURLForKeyword(keyword);
+  if (!template_url)
+    return -1;
+  const SearchTermsData& search_terms_data =
+      template_url_service_->search_terms_data();
+  return template_url->GetEngineType(search_terms_data);
+}
+
 base::android::ScopedJavaLocalRef<jstring>
 TemplateUrlServiceAndroid::AddSearchEngineForTesting(
     JNIEnv* env,
@@ -344,7 +359,7 @@ void TemplateUrlServiceAndroid::GetTemplateUrls(
         CreateTemplateUrlAndroid(env, template_url);
     Java_TemplateUrlService_addTemplateUrlToList(env, template_url_list_obj,
                                                  j_template_url);
-  };
+  }
 }
 
 base::android::ScopedJavaLocalRef<jobject>

@@ -27,12 +27,3 @@ std::string LocaleManager::GetMailRUReferralID() {
   return base::android::ConvertJavaStringToUTF8(
       env, Java_LocaleManager_getMailRUReferralId(env, jlocale_manager));
 }
-
-// static
-int JNI_LocaleManager_GetEngineType(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jclass>& clazz,
-    const base::android::JavaParamRef<jstring>& j_url) {
-  GURL url(base::android::ConvertJavaStringToUTF8(env, j_url));
-  return TemplateURLPrepopulateData::GetEngineType(url);
-}
