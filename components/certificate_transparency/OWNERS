@@ -1,5 +1,11 @@
-eranm@chromium.org
+# Primary
 rsleevi@chromium.org
+
+# Secondary
+file://net/OWNERS
+
+# Emeritus
+eranm@chromium.org
 
 # TEAM: net-dev@chromium.org
 # COMPONENT: Internals>Network>CertTrans
