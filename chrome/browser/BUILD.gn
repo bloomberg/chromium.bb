@@ -2392,7 +2392,7 @@ jumbo_split_static_library("browser") {
         "supervised_user/child_accounts/child_account_service_android.h",
       ]
     }
-  } else {
+  } else {  # !is_android
     sources += [
       "accessibility/invert_bubble_prefs.cc",
       "accessibility/invert_bubble_prefs.h",
@@ -2664,8 +2664,6 @@ jumbo_split_static_library("browser") {
       "resource_coordinator/site_characteristics_data_writer.h",
       "resource_coordinator/tab_activity_watcher.cc",
       "resource_coordinator/tab_activity_watcher.h",
-      "resource_coordinator/tab_features.cc",
-      "resource_coordinator/tab_features.h",
       "resource_coordinator/tab_lifecycle_observer.h",
       "resource_coordinator/tab_lifecycle_unit.cc",
       "resource_coordinator/tab_lifecycle_unit.h",
@@ -2830,6 +2828,7 @@ jumbo_split_static_library("browser") {
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/browser/resource_coordinator:site_characteristics_proto",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
+      "//chrome/browser/resource_coordinator/tab_ranker",
       "//chrome/browser/resources:component_extension_resources",
       "//chrome/browser/search:generated",
       "//chrome/common/importer:interfaces",

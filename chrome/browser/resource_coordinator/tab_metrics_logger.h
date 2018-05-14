@@ -20,9 +20,10 @@ namespace content {
 class WebContents;
 }  // namespace content
 
-namespace resource_coordinator {
+namespace tab_ranker {
+struct MRUFeatures;
 struct TabFeatures;
-}  // namespace resource_coordinator
+}  // namespace tab_ranker
 
 // Logs metrics for a tab and its WebContents when requested.
 // Must be used on the UI thread.
@@ -37,6 +38,8 @@ class TabMetricsLogger {
     int mouse_event_count = 0;
     // Number of touch events.
     int touch_event_count = 0;
+    // Number of times this tab has been reactivated.
+    int num_reactivations = 0;
   };
 
   // The state of a tab.
@@ -51,13 +54,6 @@ class TabMetricsLogger {
     PageMetrics page_metrics = {};
   };
 
-  // Index in most-recently-used order and total number of tabs.
-  struct MRUMetrics {
-    int index = 0;  // Zero-based, so this indicates how many of the |total|
-                    // tabs are more recently used than this tab.
-    int total = 0;
-  };
-
   TabMetricsLogger();
   ~TabMetricsLogger();
 
@@ -70,13 +66,13 @@ class TabMetricsLogger {
   // shown after being inactive.
   void LogBackgroundTabShown(ukm::SourceId ukm_source_id,
                              base::TimeDelta inactive_duration,
-                             const MRUMetrics& mru_metrics);
+                             const tab_ranker::MRUFeatures& mru_metrics);
 
   // Logs TabManager.Background.ForegroundedOrClosed UKM for a tab that was
   // closed after being inactive.
   void LogBackgroundTabClosed(ukm::SourceId ukm_source_id,
                               base::TimeDelta inactive_duration,
-                              const MRUMetrics& mru_metrics);
+                              const tab_ranker::MRUFeatures& mru_metrics);
 
   // Logs TabManager.TabLifetime UKM for a closed tab.
   void LogTabLifetime(ukm::SourceId ukm_source_id,
@@ -94,9 +90,10 @@ class TabMetricsLogger {
   // A common function for populating these features ensures that the same
   // values are used for logging training examples to UKM and for locally
   // scoring tabs.
-  static resource_coordinator::TabFeatures GetTabFeatures(
+  static tab_ranker::TabFeatures GetTabFeatures(
       const Browser* browser,
-      const TabMetrics& tab_metrics);
+      const TabMetrics& tab_metrics,
+      base::TimeDelta inactive_duration);
 
  private:
   // A counter to be incremented and logged with each UKM entry, used to

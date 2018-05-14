@@ -44286,6 +44286,17 @@ would be helpful to identify which type is being sent.
   <int value="2" label="Tab is loaded"/>
 </enum>
 
+<enum name="TabManagerTabRankerResult">
+  <int value="0" label="Success">Tab score was calculated successfully.</int>
+  <int value="1" label="Preprocessor initialization failed">
+    The ExamplePreprocessorConfig could not be loaded or parsed.
+  </int>
+  <int value="2" label="Preprocessor other error">
+    The ExamplePreprocessor returned an error other than, or in addition to, the
+    kNoFeatureIndexFound error.
+  </int>
+</enum>
+
 <enum name="TabRendererCrashStatus">
   <int value="0" label="Shown in foreground app"/>
   <int value="1" label="Hidden in foreground app"/>

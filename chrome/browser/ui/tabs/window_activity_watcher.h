@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 
+namespace tab_ranker {
+struct WindowFeatures;
+}  // namespace tab_ranker
+
 // Observes browser window activity in order to log WindowMetrics UKMs for
 // browser events relative to tab activation and discarding.
 // Multiple tabs in the same browser can refer to the same WindowMetrics entry.
@@ -22,6 +26,10 @@ class WindowActivityWatcher : public BrowserListObserver {
 
   // Returns the single instance, creating it if necessary.
   static WindowActivityWatcher* GetInstance();
+
+  // Returns a populated WindowFeatures for the browser.
+  static tab_ranker::WindowFeatures CreateWindowFeatures(
+      const Browser* browser);
 
  private:
   WindowActivityWatcher();
