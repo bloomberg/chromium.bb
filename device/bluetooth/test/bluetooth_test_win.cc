@@ -4,7 +4,12 @@
 
 #include "device/bluetooth/test/bluetooth_test_win.h"
 
+#include <windows.devices.bluetooth.h>
+#include <wrl/client.h>
+#include <wrl/implements.h>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/containers/circular_deque.h"
 #include "base/feature_list.h"
 #include "base/location.h"
@@ -12,14 +17,43 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/test/test_pending_task.h"
 #include "base/time/time.h"
+#include "base/win/windows_version.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_adapter_winrt.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
+#include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
 
 namespace {
+
+using Microsoft::WRL::Make;
+using Microsoft::WRL::ComPtr;
+using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
+using ABI::Windows::Devices::Bluetooth::IBluetoothAdapter;
+
+class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
+ public:
+  TestBluetoothAdapterWinrt(ComPtr<IBluetoothAdapter> adapter,
+                            const InitCallback& init_cb)
+      : adapter_(std::move(adapter)) {
+    Init(init_cb);
+  }
+
+ protected:
+  ~TestBluetoothAdapterWinrt() override = default;
+
+  HRESULT GetBluetoothAdapterStaticsActivationFactory(
+      IBluetoothAdapterStatics** statics) const override {
+    auto adapter_statics =
+        Make<device::FakeBluetoothAdapterStaticsWinrt>(adapter_);
+    return adapter_statics.CopyTo(statics);
+  };
+
+ private:
+  ComPtr<IBluetoothAdapter> adapter_;
+};
 
 BLUETOOTH_ADDRESS CanonicalStringToBLUETOOTH_ADDRESS(
     std::string device_address) {
@@ -70,9 +104,15 @@ BTH_LE_UUID CanonicalStringToBTH_LE_UUID(std::string uuid) {
   return win_uuid;
 }
 
+bool UseNewBLEWinImplementation() {
+  return base::FeatureList::IsEnabled(device::kNewBLEWinImplementation) &&
+         base::win::GetVersion() >= base::win::VERSION_WIN10;
+}
+
 }  // namespace
 
 namespace device {
+
 BluetoothTestWin::BluetoothTestWin()
     : ui_task_runner_(new base::TestSimpleTaskRunner()),
       bluetooth_task_runner_(new base::TestSimpleTaskRunner()),
@@ -90,6 +130,15 @@ bool BluetoothTestWin::PlatformSupportsLowEnergy() {
 void BluetoothTestWin::AdapterInitCallback() {}
 
 void BluetoothTestWin::InitWithDefaultAdapter() {
+  if (UseNewBLEWinImplementation()) {
+    base::RunLoop run_loop;
+    auto* adapter = new BluetoothAdapterWinrt();
+    adapter->Init(run_loop.QuitClosure());
+    adapter_ = base::WrapRefCounted(adapter);
+    run_loop.Run();
+    return;
+  }
+
   adapter_ = new BluetoothAdapterWin(base::Bind(
       &BluetoothTestWin::AdapterInitCallback, base::Unretained(this)));
   adapter_win_ = static_cast<BluetoothAdapterWin*>(adapter_.get());
@@ -97,8 +146,11 @@ void BluetoothTestWin::InitWithDefaultAdapter() {
 }
 
 void BluetoothTestWin::InitWithoutDefaultAdapter() {
-  if (base::FeatureList::IsEnabled(kNewBLEWinImplementation)) {
-    adapter_ = base::WrapRefCounted(new BluetoothAdapterWinrt());
+  if (UseNewBLEWinImplementation()) {
+    base::RunLoop run_loop;
+    adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
+        nullptr, run_loop.QuitClosure());
+    run_loop.Run();
     return;
   }
 
@@ -109,6 +161,15 @@ void BluetoothTestWin::InitWithoutDefaultAdapter() {
 }
 
 void BluetoothTestWin::InitWithFakeAdapter() {
+  if (UseNewBLEWinImplementation()) {
+    base::RunLoop run_loop;
+    adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
+        Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress, kTestAdapterName),
+        run_loop.QuitClosure());
+    run_loop.Run();
+    return;
+  }
+
   fake_bt_classic_wrapper_ = new win::BluetoothClassicWrapperFake();
   fake_bt_le_wrapper_ = new win::BluetoothLowEnergyWrapperFake();
   fake_bt_le_wrapper_->AddObserver(this);
@@ -525,4 +586,18 @@ void BluetoothTestWin::FinishPendingTasks() {
   bluetooth_task_runner_->RunPendingTasks();
   base::RunLoop().RunUntilIdle();
 }
+
+BluetoothTestWinrt::BluetoothTestWinrt() {
+  if (GetParam()) {
+    scoped_feature_list_.InitAndEnableFeature(kNewBLEWinImplementation);
+    if (base::win::GetVersion() >= base::win::VERSION_WIN10) {
+      scoped_winrt_initializer_.emplace();
+    }
+  } else {
+    scoped_feature_list_.InitAndDisableFeature(kNewBLEWinImplementation);
+  }
 }
+
+BluetoothTestWinrt::~BluetoothTestWinrt() = default;
+
+}  // namespace device
