@@ -1119,7 +1119,8 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     if (upload_)
       request.SetReportUploadProgress(true);
 
-    DCHECK(!loader_);
+    // TODO(yhirano): Turn this CHECK into DCHECK: see https://crbug.com/570946.
+    CHECK(!loader_);
     DCHECK(send_flag_);
     loader_ = ThreadableLoader::Create(execution_context, this, options,
                                        resource_loader_options);
@@ -1182,6 +1183,8 @@ void XMLHttpRequest::Dispose() {
   probe::detachClientRequest(GetExecutionContext(), this);
   progress_event_throttle_->Stop();
   InternalAbort();
+  // TODO(yhirano): Remove this CHECK: see https://crbug.com/570946.
+  CHECK(!loader_);
 }
 
 void XMLHttpRequest::ClearVariablesForLoading() {
