@@ -53,7 +53,8 @@ GLSurfacePresentationHelper::~GLSurfacePresentationHelper() {
   // PresentationFeedback.
   bool has_context = gl_context_ && gl_context_->IsCurrent(surface_);
   for (auto& frame : pending_frames_) {
-    frame.timer->Destroy(has_context);
+    if (frame.timer)
+      frame.timer->Destroy(has_context);
     frame.callback.Run(gfx::PresentationFeedback());
   }
   pending_frames_.clear();
@@ -145,6 +146,8 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
     }
     gfx::PresentationFeedback feedback(timestamp, vsync_interval_, flags);
     for (auto& frame : pending_frames_) {
+      if (frame.timer)
+        frame.timer->Destroy(true /* has_context */);
       if (frame.result == gfx::SwapResult::SWAP_ACK)
         frame.callback.Run(feedback);
       else
