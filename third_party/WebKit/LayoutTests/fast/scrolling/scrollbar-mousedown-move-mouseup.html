@@ -19,16 +19,12 @@
         }
 
         function finish() {
-            shouldBe("events['scrollme'].length", "4");
+            shouldBe("events['scrollme'].length", "2");
             shouldBe("events['notscrollme'].length", "0");
             shouldBeEqualToString("events['scrollme'][0].type", "mousedown");
             shouldBe("events['scrollme'][0].which", "1");
             shouldBeEqualToString("events['scrollme'][1].type", "mouseup");
             shouldBe("events['scrollme'][1].which", "1");
-            shouldBeEqualToString("events['scrollme'][2].type", "mousedown");
-            shouldBe("events['scrollme'][2].which", "2");
-            shouldBeEqualToString("events['scrollme'][3].type", "mouseup");
-            shouldBe("events['scrollme'][3].which", "2");
             finishJSTest();
         }
 
@@ -43,10 +39,6 @@
                 eventSender.mouseDown();
                 eventSender.mouseMoveTo(d2.offsetLeft + d2.offsetWidth - 4, d2.offsetTop + 4);
                 eventSender.mouseUp();
-                eventSender.mouseMoveTo(d1.offsetLeft + d1.offsetWidth - 4, d1.offsetTop + 4);
-                eventSender.mouseDown(1);
-                eventSender.mouseMoveTo(d2.offsetLeft + d2.offsetWidth - 4, d2.offsetTop + 4);
-                eventSender.mouseUp(1);
                 finish();
             } else
                 debug('This test requires eventSender. Click the scrollbar to play manually.');

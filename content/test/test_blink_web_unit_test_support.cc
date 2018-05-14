@@ -116,6 +116,26 @@ class WebURLLoaderFactoryWithMock : public blink::WebURLLoaderFactory {
   DISALLOW_COPY_AND_ASSIGN(WebURLLoaderFactoryWithMock);
 };
 
+class MockWebScrollbarBehavior : public blink::WebScrollbarBehavior {
+ public:
+  MockWebScrollbarBehavior() {}
+  ~MockWebScrollbarBehavior() override {}
+
+  bool ShouldCenterOnThumb(blink::WebPointerProperties::Button mouseButton,
+                           bool shiftKeyPressed,
+                           bool altKeyPressed) override {
+    return false;
+  }
+  bool ShouldSnapBackToDragOrigin(const blink::WebPoint& eventPoint,
+                                  const blink::WebRect& scrollbarRect,
+                                  bool isHorizontal) override {
+    return false;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockWebScrollbarBehavior);
+};
+
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(USE_V8_CONTEXT_SNAPSHOT)
 constexpr gin::V8Initializer::V8SnapshotFileType kSnapshotType =
@@ -204,6 +224,8 @@ TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
   // Test shell always exposes the GC.
   std::string flags("--expose-gc");
   v8::V8::SetFlagsFromString(flags.c_str(), static_cast<int>(flags.size()));
+
+  web_scrollbar_behavior_ = std::make_unique<MockWebScrollbarBehavior>();
 }
 
 TestBlinkWebUnitTestSupport::~TestBlinkWebUnitTestSupport() {
@@ -379,6 +401,10 @@ void TestBlinkWebUnitTestSupport::BindClipboardHost(
     mojo::ScopedMessagePipeHandle handle) {
   mock_clipboard_host_->Bind(
       blink::mojom::ClipboardHostRequest(std::move(handle)));
+}
+
+blink::WebScrollbarBehavior* TestBlinkWebUnitTestSupport::ScrollbarBehavior() {
+  return web_scrollbar_behavior_.get();
 }
 
 }  // namespace content
