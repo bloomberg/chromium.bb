@@ -1906,6 +1906,8 @@ enum WebFeature {
   kWebRtcVaapiHWVP8Encoding = 2433,
   kPerformanceResourceTimingInitiatorType = 2434,
   kPaymentRequestInvalidCurrencyCode = 2435,
+  kV8ArraySortNoElementsProtector = 2436,
+  kV8ArrayPrototypeSortJSArrayModifiedPrototype = 2437,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

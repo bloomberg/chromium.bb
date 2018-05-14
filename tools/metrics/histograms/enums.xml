@@ -18655,6 +18655,8 @@ Called by update_net_error_codes.py.-->
   <int value="2433" label="WebRtcVaapiHWVP8Encoding"/>
   <int value="2434" label="PerformanceResourceTimingInitiatorType"/>
   <int value="2435" label="PaymentRequestInvalidCurrencyCode"/>
+  <int value="2436" label="V8ArraySortNoElementsProtector"/>
+  <int value="2437" label="V8ArrayPrototypeSortJSArrayModifiedPrototype"/>
 </enum>
 
 <enum name="FeedbackSource">
