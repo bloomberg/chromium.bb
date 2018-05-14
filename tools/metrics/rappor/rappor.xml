@@ -2426,6 +2426,9 @@ now we are only interested in H264, VP8 and VP9.
 </rappor-metric>
 
 <rappor-metric name="SubresourceFilter.UIShown" type="UMA_RAPPOR_TYPE">
+  <obsolete>
+    Deprecated May 2018 in favor of SubresourceFilter UKM.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     The eTLD+1 that caused the SubresourceFilter UI to show that ads are being
