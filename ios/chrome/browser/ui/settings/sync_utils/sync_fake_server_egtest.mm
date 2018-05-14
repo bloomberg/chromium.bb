@@ -178,7 +178,8 @@ void AssertNumberOfEntitiesWithName(int entity_count,
 }
 
 // Tests that the local cache guid does not change when sync is restarted.
-- (void)testSyncCheckSameCacheGuid_SyncRestarted {
+// TODO(crbug.com/821490): Reenable the test.
+- (void)DISABLED_testSyncCheckSameCacheGuid_SyncRestarted {
   // Sign in the fake identity.
   ChromeIdentity* identity = [SigninEarlGreyUtils fakeIdentity1];
   ios::FakeChromeIdentityService::GetInstanceFromChromeProvider()->AddIdentity(
