@@ -32,7 +32,8 @@ GLSurfaceOverlay::~GLSurfaceOverlay() {}
 bool GLSurfaceOverlay::ScheduleOverlayPlane(
     gfx::AcceleratedWidget widget) const {
   return image_->ScheduleOverlayPlane(widget, z_order_, transform_,
-                                      bounds_rect_, crop_rect_, enable_blend_);
+                                      bounds_rect_, crop_rect_, enable_blend_,
+                                      /* gpu_fence */ nullptr);
 }
 
 void GLSurfaceOverlay::Flush() const {

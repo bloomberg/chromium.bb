@@ -26,6 +26,10 @@ class ProcessMemoryDump;
 }
 }
 
+namespace gfx {
+class GpuFence;
+}
+
 namespace gl {
 
 // Encapsulates an image that can be bound and/or copied to a texture, hiding
@@ -72,7 +76,8 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
                                     gfx::OverlayTransform transform,
                                     const gfx::Rect& bounds_rect,
                                     const gfx::RectF& crop_rect,
-                                    bool enable_blend) = 0;
+                                    bool enable_blend,
+                                    gfx::GpuFence* gpu_fence) = 0;
 
   // Set the color space when image is used as an overlay.
   virtual void SetColorSpace(const gfx::ColorSpace& color_space) = 0;
