@@ -142,34 +142,46 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
 
   // Initial size of the window is always 20% of the display width and height,
   // constrained by the min and max sizes. Only explicitly update this the first
-  // time |current_size_| is being calculated.
-  // Once |current_size_| is calculated at least once, it should stay within the
+  // time |current_size| is being calculated.
+  // Once |current_size| is calculated at least once, it should stay within the
   // bounds of |min_size_| and |max_size_|.
-  if (current_size_.IsEmpty()) {
-    current_size_ = gfx::Size(work_area.width() / 5, work_area.height() / 5);
-    current_size_.set_width(std::min(
-        max_size_.width(), std::max(min_size_.width(), current_size_.width())));
-    current_size_.set_height(
+  gfx::Size current_size;
+  if (!current_bounds_.size().IsEmpty()) {
+    current_size = current_bounds_.size();
+  } else {
+    current_size = gfx::Size(work_area.width() / 5, work_area.height() / 5);
+    current_size.set_width(std::min(
+        max_size_.width(), std::max(min_size_.width(), current_size.width())));
+    current_size.set_height(
         std::min(max_size_.height(),
-                 std::max(min_size_.height(), current_size_.height())));
+                 std::max(min_size_.height(), current_size.height())));
   }
 
   // Determine the window size by fitting |natural_size_| within
-  // |current_size_|, keeping to |natural_size_|'s aspect ratio.
+  // |current_size|, keeping to |natural_size_|'s aspect ratio.
   if (!natural_size_.IsEmpty())
-    UpdateCurrentSizeWithAspectRatio(current_size_);
+    UpdateCurrentSizeWithAspectRatio(current_size);
 
-  // The initial positioning is on the bottom right quadrant
-  // of the primary display work area.
-  int window_diff_width = work_area.width() - current_size_.width();
-  int window_diff_height = work_area.height() - current_size_.height();
+  // The size is only empty the first time the window is shown. gfx::Point
+  // cannot be checked for being unset as the default (0,0) is the valid
+  // origin.
+  if (!current_bounds_.size().IsEmpty()) {
+    current_bounds_.set_size(current_size);
+  } else {
+    // The initial positioning is on the bottom right quadrant
+    // of the primary display work area.
+    int window_diff_width = work_area.width() - current_size.width();
+    int window_diff_height = work_area.height() - current_size.height();
 
-  // Keep a margin distance of 2% the average of the two window size
-  // differences, keeping the margins consistent.
-  int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
-  return gfx::Rect(
-      gfx::Point(window_diff_width - buffer, window_diff_height - buffer),
-      current_size_);
+    // Keep a margin distance of 2% the average of the two window size
+    // differences, keeping the margins consistent.
+    int buffer = (window_diff_width + window_diff_height) / 2 * 0.02;
+    current_bounds_ = gfx::Rect(
+        gfx::Point(window_diff_width - buffer, window_diff_height - buffer),
+        current_size);
+  }
+
+  return current_bounds_;
 }
 
 void OverlayWindowViews::SetUpViews() {
@@ -218,7 +230,7 @@ void OverlayWindowViews::SetUpViews() {
 void OverlayWindowViews::UpdateCurrentSizeWithAspectRatio(gfx::Size new_size) {
   // This function will only be called once when this is true -- when the
   // window is initially created.
-  if (current_size_.IsEmpty())
+  if (current_bounds_.size().IsEmpty())
     return;
 
   // Check whether or not the new size and the video's natural size have the
@@ -235,11 +247,11 @@ void OverlayWindowViews::UpdateCurrentSizeWithAspectRatio(gfx::Size new_size) {
   // adhere to the aspect ratio while in drag motion. http://crbug/829677.
   if (is_new_size_landscape == is_natural_size_landscape) {
     if (natural_size_.GetArea() > new_size.GetArea()) {
-      current_size_ =
-          media::ScaleSizeToEncompassTarget(natural_size_, new_size);
+      current_bounds_.set_size(
+          media::ScaleSizeToEncompassTarget(natural_size_, new_size));
     } else {
-      current_size_ =
-          media::ScaleSizeToFitWithinTarget(natural_size_, new_size);
+      current_bounds_.set_size(
+          media::ScaleSizeToFitWithinTarget(natural_size_, new_size));
     }
   }
 }
@@ -369,6 +381,10 @@ void OverlayWindowViews::OnMouseEvent(ui::MouseEvent* event) {
   }
 }
 
+void OverlayWindowViews::OnNativeWidgetMove() {
+  current_bounds_ = GetBounds();
+}
+
 void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
   // Update the surface layer bounds to stretch / shrink the size of the shown
   // video in the window.
@@ -376,6 +392,6 @@ void OverlayWindowViews::OnNativeWidgetSizeChanged(const gfx::Size& new_size) {
     controller_->UpdateLayerBounds();
 
   UpdateCurrentSizeWithAspectRatio(new_size);
-  SetBounds(gfx::Rect(GetBounds().origin(), current_size_));
-  views::Widget::OnNativeWidgetSizeChanged(current_size_);
+  SetBounds(current_bounds_);
+  views::Widget::OnNativeWidgetSizeChanged(current_bounds_.size());
 }
