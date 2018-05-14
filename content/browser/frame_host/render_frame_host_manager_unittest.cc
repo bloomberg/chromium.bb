@@ -951,8 +951,9 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   ASSERT_TRUE(host);
   EXPECT_TRUE(host->GetSiteInstance()->HasSite());
 
+  ASSERT_TRUE(manager->GetRenderWidgetHostView()->GetBackgroundColor());
   EXPECT_EQ(SK_ColorRED,
-            manager->GetRenderWidgetHostView()->background_color());
+            *manager->GetRenderWidgetHostView()->GetBackgroundColor());
 
   // 3) Cross-site navigate to next site. --------------
   const GURL kUrl3("http://webkit.org/");
@@ -980,8 +981,9 @@ TEST_F(RenderFrameHostManagerTest, Navigate) {
   // We should observe RVH changed event.
   EXPECT_TRUE(change_observer.DidHostChange());
 
+  ASSERT_TRUE(manager->GetRenderWidgetHostView()->GetBackgroundColor());
   EXPECT_EQ(SK_ColorRED,
-            manager->GetRenderWidgetHostView()->background_color());
+            *manager->GetRenderWidgetHostView()->GetBackgroundColor());
 }
 
 // Tests WebUI creation.

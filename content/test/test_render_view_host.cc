@@ -63,12 +63,12 @@ TestRenderWidgetHostView::TestRenderWidgetHostView(RenderWidgetHost* rwh)
     : RenderWidgetHostViewBase(rwh),
       is_showing_(false),
       is_occluded_(false),
-      did_swap_compositor_frame_(false),
-      background_color_(SK_ColorWHITE) {
+      did_swap_compositor_frame_(false) {
 #if defined(OS_ANDROID)
   frame_sink_id_ = AllocateFrameSinkId();
   GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
 #else
+  default_background_color_ = SK_ColorWHITE;
   // Not all tests initialize or need an image transport factory.
   if (ImageTransportFactory::GetInstance()) {
     frame_sink_id_ = AllocateFrameSinkId();
@@ -148,14 +148,6 @@ gfx::Rect TestRenderWidgetHostView::GetViewBounds() const {
   return gfx::Rect();
 }
 
-void TestRenderWidgetHostView::SetBackgroundColor(SkColor color) {
-  background_color_ = color;
-}
-
-SkColor TestRenderWidgetHostView::background_color() const {
-  return background_color_;
-}
-
 #if defined(OS_MACOSX)
 void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
@@ -190,7 +182,9 @@ void TestRenderWidgetHostView::SubmitCompositorFrame(
 
 void TestRenderWidgetHostView::TakeFallbackContentFrom(
     RenderWidgetHostView* view) {
-  SetBackgroundColor(view->background_color());
+  base::Optional<SkColor> color = view->GetBackgroundColor();
+  if (color)
+    SetBackgroundColor(*color);
 }
 
 bool TestRenderWidgetHostView::LockMouse() {
@@ -217,6 +211,8 @@ void TestRenderWidgetHostView::OnFirstSurfaceActivation(
 void TestRenderWidgetHostView::OnFrameTokenChanged(uint32_t frame_token) {
   OnFrameTokenChangedForView(frame_token);
 }
+
+void TestRenderWidgetHostView::UpdateBackgroundColor() {}
 
 TestRenderViewHost::TestRenderViewHost(
     SiteInstance* instance,

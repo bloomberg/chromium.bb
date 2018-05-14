@@ -87,7 +87,7 @@ void ContentsWebView::UpdateBackgroundColor() {
     content::RenderWidgetHostView* rwhv =
         web_contents()->GetRenderWidgetHostView();
     if (rwhv)
-     rwhv->SetBackgroundColor(ntp_background);
+      rwhv->SetBackgroundColor(ntp_background);
   }
 }
 

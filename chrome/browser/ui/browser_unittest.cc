@@ -96,8 +96,9 @@ TEST_F(BrowserUnitTest, MAYBE_SetBackgroundColorForNewTab) {
   WebContentsTester::For(raw_contents2)->TestSetIsLoading(false);
 
   tab_strip_model->ActivateTabAt(1, true);
+  ASSERT_TRUE(raw_contents2->GetMainFrame()->GetView()->GetBackgroundColor());
   EXPECT_EQ(SK_ColorRED,
-            raw_contents2->GetMainFrame()->GetView()->background_color());
+            *raw_contents2->GetMainFrame()->GetView()->GetBackgroundColor());
 }
 
 // Ensure the print command gets disabled when a tab crashes.

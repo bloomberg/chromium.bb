@@ -372,9 +372,9 @@ RenderWidgetHostViewAndroid*
 jint WebContentsAndroid::GetBackgroundColor(JNIEnv* env,
                                             const JavaParamRef<jobject>& obj) {
   RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
-  if (!rwhva)
+  if (!rwhva || !rwhva->GetCachedBackgroundColor())
     return SK_ColorWHITE;
-  return rwhva->GetCachedBackgroundColor();
+  return *rwhva->GetCachedBackgroundColor();
 }
 
 ScopedJavaLocalRef<jstring> WebContentsAndroid::GetLastCommittedURL(

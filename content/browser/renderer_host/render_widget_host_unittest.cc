@@ -1164,11 +1164,11 @@ TEST_F(RenderWidgetHostTest, Background) {
 #endif
   host_->SetView(view.get());
 
-  EXPECT_NE(static_cast<unsigned>(SK_ColorTRANSPARENT),
-            view->background_color());
+  ASSERT_FALSE(view->GetBackgroundColor());
   view->SetBackgroundColor(SK_ColorTRANSPARENT);
+  ASSERT_TRUE(view->GetBackgroundColor());
   EXPECT_EQ(static_cast<unsigned>(SK_ColorTRANSPARENT),
-            view->background_color());
+            *view->GetBackgroundColor());
 
   const IPC::Message* set_background =
       process_->sink().GetUniqueMessageMatching(

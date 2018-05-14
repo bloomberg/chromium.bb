@@ -352,7 +352,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
       popup_child_host_view_(nullptr),
       is_loading_(false),
       has_composition_text_(false),
-      background_color_(SK_ColorWHITE),
       needs_begin_frames_(false),
       added_frame_observer_(false),
       cursor_visibility_state_in_renderer_(UNKNOWN),
@@ -724,26 +723,10 @@ gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
   return window_->GetBoundsInScreen();
 }
 
-void RenderWidgetHostViewAura::SetBackgroundColor(SkColor color) {
-  // The renderer will feed its color back to us with the first CompositorFrame.
-  // We short-cut here to show a sensible color before that happens.
-  UpdateBackgroundColorFromRenderer(color);
+void RenderWidgetHostViewAura::UpdateBackgroundColor() {
+  DCHECK(GetBackgroundColor());
 
-  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
-         SkColorGetA(color) == SK_AlphaTRANSPARENT);
-  host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
-}
-
-SkColor RenderWidgetHostViewAura::background_color() const {
-  return background_color_;
-}
-
-void RenderWidgetHostViewAura::UpdateBackgroundColorFromRenderer(
-    SkColor color) {
-  if (color == background_color())
-    return;
-  background_color_ = color;
-
+  SkColor color = *GetBackgroundColor();
   bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
   window_->layer()->SetFillsBoundsOpaquely(opaque);
   window_->layer()->SetColor(color);
@@ -900,13 +883,6 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
     viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   DCHECK(delegated_frame_host_);
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
-
-  // Override the background color to the current compositor background.
-  // This allows us to, when navigating to a new page, transfer this color to
-  // that page. This allows us to pass this background color to new views on
-  // navigation.
-  // TODO(yiyix): Remove this line when https://crbug.com/830540 is fixed.
-  UpdateBackgroundColorFromRenderer(frame.metadata.root_background_color);
 
   delegated_frame_host_->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
@@ -1851,7 +1827,8 @@ void RenderWidgetHostViewAura::OnRenderFrameMetadataChanged() {
   RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
   const cc::RenderFrameMetadata& metadata =
       host()->render_frame_metadata_provider()->LastRenderFrameMetadata();
-  UpdateBackgroundColorFromRenderer(metadata.root_background_color);
+  content_background_color_ = metadata.root_background_color;
+  UpdateBackgroundColor();
 
   if (metadata.selection.start != selection_start_ ||
       metadata.selection.end != selection_end_) {
@@ -1929,7 +1906,8 @@ void RenderWidgetHostViewAura::CreateAuraWindow(aura::client::WindowType type) {
 
   window_->SetType(type);
   window_->Init(ui::LAYER_SOLID_COLOR);
-  window_->layer()->SetColor(background_color_);
+  window_->layer()->SetColor(GetBackgroundColor() ? *GetBackgroundColor()
+                                                  : SK_ColorWHITE);
   // This needs to happen only after |window_| has been initialized using
   // Init(), because it needs to have the layer.
   if (frame_sink_id_.is_valid())
@@ -2533,7 +2511,10 @@ void RenderWidgetHostViewAura::TakeFallbackContentFrom(
               ->IsRenderWidgetHostViewGuest());
   RenderWidgetHostViewAura* view_aura =
       static_cast<RenderWidgetHostViewAura*>(view);
-  SetBackgroundColor(view_aura->background_color());
+  base::Optional<SkColor> color = view_aura->GetBackgroundColor();
+  if (color)
+    SetBackgroundColor(*color);
+
   if (delegated_frame_host_ && view_aura->delegated_frame_host_) {
     delegated_frame_host_->TakeFallbackContentFrom(
         view_aura->delegated_frame_host_.get());

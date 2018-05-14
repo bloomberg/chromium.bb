@@ -747,7 +747,9 @@ void RenderWidgetHostViewMac::TakeFallbackContentFrom(
   RenderWidgetHostViewMac* view_mac =
       static_cast<RenderWidgetHostViewMac*>(view);
   ScopedCAActionDisabler disabler;
-  SetBackgroundColor(view_mac->background_color());
+  base::Optional<SkColor> color = view_mac->GetBackgroundColor();
+  if (color)
+    SetBackgroundColor(*color);
 
   // Make the NSView for |this| display the same content as is being displayed
   // in the NSView for |view_mac|.
@@ -755,7 +757,6 @@ void RenderWidgetHostViewMac::TakeFallbackContentFrom(
       view_mac->browser_compositor_->GetLastCALayerParams();
   if (ca_layer_params)
     ns_view_bridge_->SetCALayerParams(*ca_layer_params);
-
   browser_compositor_->TakeFallbackContentFrom(
       view_mac->browser_compositor_.get());
 }
@@ -1193,32 +1194,25 @@ void RenderWidgetHostViewMac::ShowDefinitionForSelection() {
   ns_view_bridge_->ShowDictionaryOverlayForSelection();
 }
 
-void RenderWidgetHostViewMac::SetBackgroundColor(SkColor color) {
+void RenderWidgetHostViewMac::UpdateBackgroundColor() {
   // This is called by the embedding code prior to the first frame appearing,
   // to set a reasonable color to show before the web content generates its
   // first frame. This will be overridden by the web contents.
+  DCHECK(RenderWidgetHostViewBase::GetBackgroundColor());
+  SkColor color = *RenderWidgetHostViewBase::GetBackgroundColor();
   SetBackgroundLayerColor(color);
   browser_compositor_->SetBackgroundColor(color);
-
-  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
-         SkColorGetA(color) == SK_AlphaTRANSPARENT);
-  bool opaque = SkColorGetA(color) == SK_AlphaOPAQUE;
-  if (background_is_opaque_ != opaque) {
-    background_is_opaque_ = opaque;
-    if (host())
-      host()->SetBackgroundOpaque(opaque);
-  }
 }
 
-SkColor RenderWidgetHostViewMac::background_color() const {
+base::Optional<SkColor> RenderWidgetHostViewMac::GetBackgroundColor() const {
   // This is used to specify a color to temporarily show while waiting for web
   // content. This should never return transparent, since that will cause bugs
   // where views are initialized as having a transparent background
   // inappropriately.
   // https://crbug.com/735407
-  if (background_layer_color_ == SK_ColorTRANSPARENT)
-    return SK_ColorWHITE;
-  return background_layer_color_;
+  base::Optional<SkColor> color =
+      RenderWidgetHostViewBase::GetBackgroundColor();
+  return (color && *color == SK_ColorTRANSPARENT) ? SK_ColorWHITE : color;
 }
 
 void RenderWidgetHostViewMac::SetBackgroundLayerColor(SkColor color) {

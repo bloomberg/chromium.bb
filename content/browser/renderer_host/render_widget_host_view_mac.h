@@ -107,8 +107,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void SetActive(bool active) override;
   void ShowDefinitionForSelection() override;
   void SpeakSelection() override;
-  void SetBackgroundColor(SkColor color) override;
-  SkColor background_color() const override;
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   void GetScreenInfo(ScreenInfo* screen_info) const override;
   void SetWantsAnimateOnlyBeginFrames() override;
@@ -153,6 +151,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       BrowserAccessibilityDelegate* delegate, bool for_root_frame) override;
   gfx::Point AccessibilityOriginInScreen(const gfx::Rect& bounds) override;
   gfx::AcceleratedWidget AccessibilityGetAcceleratedWidget() override;
+  base::Optional<SkColor> GetBackgroundColor() const override;
 
   bool ShouldContinueToPauseForFrame() override;
   gfx::Vector2d GetOffsetFromRootSurface() override;
@@ -457,6 +456,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       int32_t targetWidgetRoutingId,
       const mac::AttributedStringCoder::EncodedString& encodedString,
       gfx::Point baselinePoint);
+
+  // RenderWidgetHostViewBase:
+  void UpdateBackgroundColor() override;
 
   // Gets a textual view of the page's contents, and passes it to the callback
   // provided.

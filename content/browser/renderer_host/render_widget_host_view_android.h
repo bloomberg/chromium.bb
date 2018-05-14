@@ -134,8 +134,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                          int error_code) override;
   void Destroy() override;
   void SetTooltipText(const base::string16& tooltip_text) override;
-  void SetBackgroundColor(SkColor color) override;
-  SkColor background_color() const override;
   gfx::Vector2d GetOffsetFromRootSurface() override;
   gfx::Rect GetBoundsInRootWindow() override;
   void ProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
@@ -189,6 +187,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnRenderWidgetInit() override;
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void OnSynchronizedDisplayPropertiesChanged() override;
+  base::Optional<SkColor> GetBackgroundColor() const override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
@@ -255,7 +254,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
 
   // Non-virtual methods
   void UpdateNativeViewTree(gfx::NativeView parent_native_view);
-  SkColor GetCachedBackgroundColor() const;
+
+  // Returns the temporary background color of the underlaying document, for
+  // example, returns black during screen rotation.
+  base::Optional<SkColor> GetCachedBackgroundColor() const;
   void SendKeyEvent(const NativeWebKeyboardEvent& event);
   void SendMouseEvent(const ui::MotionEventAndroid&, int action_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
@@ -336,6 +338,10 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void GotFocus();
   void LostFocus();
 
+ protected:
+  // RenderWidgetHostViewBase:
+  void UpdateBackgroundColor() override;
+
  private:
   MouseWheelPhaseHandler* GetMouseWheelPhaseHandler() override;
 
@@ -352,8 +358,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void HideInternal();
   void AttachLayers();
   void RemoveLayers();
-
-  void UpdateBackgroundColor(SkColor color);
 
   void EvictFrameIfNecessary();
 
@@ -429,12 +433,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   SelectionPopupController* selection_popup_controller_;
   TextSuggestionHostAndroid* text_suggestion_host_;
   GestureListenerManager* gesture_listener_manager_;
-
-  // The background color of the widget.
-  SkColor background_color_;
-
-  // Body background color of the underlying document.
-  SkColor cached_background_color_;
 
   mutable ui::ViewAndroid view_;
 

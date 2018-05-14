@@ -171,8 +171,6 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       selection_popup_controller_(nullptr),
       text_suggestion_host_(nullptr),
       gesture_listener_manager_(nullptr),
-      background_color_(SK_ColorWHITE),
-      cached_background_color_(SK_ColorWHITE),
       view_(ui::ViewAndroid::LayoutType::MATCH_PARENT),
       gesture_provider_(ui::GetGestureProviderConfig(
                             ui::GestureProviderConfigType::CURRENT_PLATFORM),
@@ -521,15 +519,6 @@ void RenderWidgetHostViewAndroid::OnTextSelectionChanged(
       base::UTF16ToUTF8(selection.selected_text()));
 }
 
-void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
-  if (cached_background_color_ == color)
-    return;
-
-  cached_background_color_ = color;
-
-  view_.OnBackgroundColorChanged(color);
-}
-
 void RenderWidgetHostViewAndroid::SetNeedsBeginFrames(bool needs_begin_frames) {
   TRACE_EVENT1("cc", "RenderWidgetHostViewAndroid::SetNeedsBeginFrames",
                "needs_begin_frames", needs_begin_frames);
@@ -782,17 +771,11 @@ void RenderWidgetHostViewAndroid::SetTooltipText(
   // Tooltips don't makes sense on Android.
 }
 
-void RenderWidgetHostViewAndroid::SetBackgroundColor(SkColor color) {
-  background_color_ = color;
+void RenderWidgetHostViewAndroid::UpdateBackgroundColor() {
+  DCHECK(RenderWidgetHostViewBase::GetBackgroundColor());
 
-  DCHECK(SkColorGetA(color) == SK_AlphaOPAQUE ||
-         SkColorGetA(color) == SK_AlphaTRANSPARENT);
-  host()->SetBackgroundOpaque(SkColorGetA(color) == SK_AlphaOPAQUE);
-  UpdateBackgroundColor(color);
-}
-
-SkColor RenderWidgetHostViewAndroid::background_color() const {
-  return background_color_;
+  SkColor color = *RenderWidgetHostViewBase::GetBackgroundColor();
+  view_.OnBackgroundColorChanged(color);
 }
 
 void RenderWidgetHostViewAndroid::CopyFromSurface(
@@ -938,7 +921,8 @@ void RenderWidgetHostViewAndroid::EvictFrameIfNecessary() {
       current_surface_size_.width() == view_.GetPhysicalBackingSize().width();
   if (!is_width_same) {
     EvictDelegatedFrame();
-    UpdateBackgroundColor(SK_ColorBLACK);
+    content_background_color_ = SK_ColorBLACK;
+    UpdateBackgroundColor();
   }
 }
 
@@ -1258,8 +1242,10 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     touch_selection_controller_->OnViewportChanged(viewport_rect);
   }
 
-  UpdateBackgroundColor(is_transparent ? SK_ColorTRANSPARENT
-                                       : frame_metadata.root_background_color);
+  content_background_color_ = is_transparent
+                                  ? SK_ColorTRANSPARENT
+                                  : frame_metadata.root_background_color;
+  UpdateBackgroundColor();
 
   // ViewAndroid::content_offset() must be in CSS scale
   float top_content_offset_dip = IsUseZoomForDSFEnabled()
@@ -1827,8 +1813,9 @@ void RenderWidgetHostViewAndroid::SetTextHandlesTemporarilyHidden(
       handles_hidden_by_selection_ui_ || handles_hidden_by_stylus_);
 }
 
-SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
-  return cached_background_color_;
+base::Optional<SkColor> RenderWidgetHostViewAndroid::GetCachedBackgroundColor()
+    const {
+  return RenderWidgetHostViewBase::GetBackgroundColor();
 }
 
 void RenderWidgetHostViewAndroid::SetIsInVR(bool is_in_vr) {
@@ -2278,7 +2265,10 @@ void RenderWidgetHostViewAndroid::TakeFallbackContentFrom(
               ->IsRenderWidgetHostViewChildFrame());
   DCHECK(!static_cast<RenderWidgetHostViewBase*>(view)
               ->IsRenderWidgetHostViewGuest());
-  SetBackgroundColor(view->background_color());
+  base::Optional<SkColor> color = view->GetBackgroundColor();
+  if (color)
+    SetBackgroundColor(*color);
+
   RenderWidgetHostViewAndroid* view_android =
       static_cast<RenderWidgetHostViewAndroid*>(view);
   if (!delegated_frame_host_ || !view_android->delegated_frame_host_)
@@ -2290,6 +2280,11 @@ void RenderWidgetHostViewAndroid::TakeFallbackContentFrom(
 
 void RenderWidgetHostViewAndroid::OnSynchronizedDisplayPropertiesChanged() {
   SynchronizeVisualProperties();
+}
+
+base::Optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor()
+    const {
+  return default_background_color_;
 }
 
 }  // namespace content

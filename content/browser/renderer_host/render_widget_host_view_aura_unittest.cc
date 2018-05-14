@@ -3382,6 +3382,29 @@ TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorMatchesCompositorFrame) {
   EXPECT_EQ(SK_ColorRED, parent_layer->background_color());
 }
 
+// Tests background setting priority.
+TEST_F(RenderWidgetHostViewAuraTest, BackgroundColorOrder) {
+  // If the default background color is not available, then use the theme
+  // background color.
+  view_->InitAsChild(nullptr);
+  view_->SetBackgroundColor(SK_ColorBLUE);
+  ASSERT_TRUE(view_->GetBackgroundColor());
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE), *view_->GetBackgroundColor());
+
+  // If the content background color is available, ignore the default background
+  // color setting.
+  cc::RenderFrameMetadata metadata;
+  metadata.root_background_color = SK_ColorWHITE;
+  view_->SetRenderFrameMetadata(metadata);
+  view_->OnRenderFrameMetadataChanged();
+  ASSERT_TRUE(view_->GetBackgroundColor());
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE), *view_->GetBackgroundColor());
+
+  view_->SetBackgroundColor(SK_ColorRED);
+  ASSERT_TRUE(view_->GetBackgroundColor());
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE), *view_->GetBackgroundColor());
+}
+
 // Resizing is disabled due to flakiness. Commit might come before
 // DrawWaiterForTest looks for compositor frame. crbug.com/759653
 TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {

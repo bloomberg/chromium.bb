@@ -1077,22 +1077,22 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   const IPC::Message* set_background = nullptr;
   std::tuple<bool> sent_background;
 
-  // If no color has been specified then default color of white should be
-  // returned.
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE),
-            rwhv_mac_->background_color());
+  // If no color has been specified then background_color is not set yet.
+  ASSERT_FALSE(rwhv_mac_->GetBackgroundColor());
 
   // Set the color to red. The background is initially assumed to be opaque, so
   // no opacity message change should be sent.
   rwhv_mac_->SetBackgroundColor(SK_ColorRED);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorRED), rwhv_mac_->background_color());
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorRED),
+            *rwhv_mac_->GetBackgroundColor());
   set_background = process_host_->sink().GetUniqueMessageMatching(
       ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_FALSE(set_background);
 
   // Set the color to blue. This should not send an opacity message.
   rwhv_mac_->SetBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE), rwhv_mac_->background_color());
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE),
+            *rwhv_mac_->GetBackgroundColor());
   set_background = process_host_->sink().GetUniqueMessageMatching(
       ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_FALSE(set_background);
@@ -1103,7 +1103,7 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   process_host_->sink().ClearMessages();
   rwhv_mac_->SetBackgroundColor(SK_ColorTRANSPARENT);
   EXPECT_EQ(static_cast<unsigned>(SK_ColorWHITE),
-            rwhv_mac_->background_color());
+            *rwhv_mac_->GetBackgroundColor());
   set_background = process_host_->sink().GetUniqueMessageMatching(
       ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
@@ -1113,7 +1113,8 @@ TEST_F(RenderWidgetHostViewMacTest, Background) {
   // Set the color to red. This should send an opacity message.
   process_host_->sink().ClearMessages();
   rwhv_mac_->SetBackgroundColor(SK_ColorBLUE);
-  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE), rwhv_mac_->background_color());
+  EXPECT_EQ(static_cast<unsigned>(SK_ColorBLUE),
+            *rwhv_mac_->GetBackgroundColor());
   set_background = process_host_->sink().GetUniqueMessageMatching(
       ViewMsg_SetBackgroundOpaque::ID);
   ASSERT_TRUE(set_background);
