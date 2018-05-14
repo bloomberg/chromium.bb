@@ -4,6 +4,7 @@ include_rules = [
   "+chromecast/media",
   "+components/cdm/renderer",
   "+components/network_hints/renderer",
+  "+components/version_info",
   "+content/public/common",
   "+content/public/renderer",
   "+extensions/common",

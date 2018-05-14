@@ -20,6 +20,7 @@
 #include "chromecast/common/extensions_api/automation.h"
 #include "chromecast/common/extensions_api/automation_api_constants.h"
 #include "chromecast/common/extensions_api/automation_internal.h"
+#include "chromecast/common/extensions_api/cast_extension_messages.h"
 #include "content/public/browser/ax_event_notification_details.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_context.h"
@@ -163,18 +164,43 @@ class AutomationWebContentsObserver
   void AccessibilityEventReceived(
       const std::vector<content::AXEventNotificationDetails>& details)
       override {
-    // TODO(rmrossi) Temporary stub.
+    std::vector<ExtensionMsg_AccessibilityEventParams> events;
+    for (const auto& event : details) {
+      events.emplace_back();
+      ExtensionMsg_AccessibilityEventParams& params = events.back();
+      params.tree_id = event.ax_tree_id;
+      params.id = event.id;
+      params.event_type = event.event_type;
+      params.update = event.update;
+      params.event_from = event.event_from;
+      params.action_request_id = event.action_request_id;
+#if defined(USE_AURA)
+      params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
+#endif
+    }
+    AutomationEventRouter* router = AutomationEventRouter::GetInstance();
+    router->DispatchAccessibilityEvents(events);
   }
 
   void AccessibilityLocationChangesReceived(
       const std::vector<content::AXLocationChangeNotificationDetails>& details)
       override {
-    // TODO(rmrossi) Temporary stub.
+    for (const auto& src : details) {
+      ExtensionMsg_AccessibilityLocationChangeParams dst;
+      dst.id = src.id;
+      dst.tree_id = src.ax_tree_id;
+      dst.new_location = src.new_location;
+      AutomationEventRouter* router = AutomationEventRouter::GetInstance();
+      router->DispatchAccessibilityLocationChange(dst);
+    }
   }
 
   void RenderFrameDeleted(
       content::RenderFrameHost* render_frame_host) override {
-    // TODO(rmrossi) Temporary stub.
+    int tree_id = render_frame_host->GetAXTreeID();
+    AutomationEventRouter::GetInstance()->DispatchTreeDestroyedEvent(
+        tree_id,
+        browser_context_);
   }
 
   void MediaStartedPlaying(const MediaPlayerInfo& video_type,

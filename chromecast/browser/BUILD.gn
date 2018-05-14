@@ -258,6 +258,18 @@ cast_source_set("browser") {
       "extensions/cast_prefs.h",
       "extensions/stub_storage_monitor.cc",
     ]
+    if (use_aura) {
+      sources += [
+        "ui/aura/accessibility/automation_manager_aura.cc",
+        "ui/aura/accessibility/automation_manager_aura.h",
+        "ui/aura/accessibility/ax_root_obj_wrapper.cc",
+        "ui/aura/accessibility/ax_root_obj_wrapper.h",
+        "ui/aura/accessibility/ax_tree_source_aura.cc",
+        "ui/aura/accessibility/ax_tree_source_aura.h",
+        "cast_web_view_extension.h",
+        "cast_web_view_extension.h",
+      ]
+    }
 
     deps += [
       "//chromecast/common/extensions_api:api_registration_bundle_generator_registration",
@@ -272,6 +284,7 @@ cast_source_set("browser") {
       "//extensions/common",
       "//extensions/common/api",
       "//google_apis:google_apis",
+      "//ui/views:views",
     ]
   }
 
