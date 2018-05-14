@@ -75,6 +75,7 @@ var CLASSES = {
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
   FADE: 'fade',  // Enables opacity transition on logo and doodle.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
+  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
@@ -638,6 +639,10 @@ function init() {
   var searchboxApiHandle = embeddedSearchApiHandle.searchBox;
 
   if (configData.isGooglePage) {
+    if (configData.isMDUIEnabled) {
+      document.body.classList.add(CLASSES.MATERIAL_DESIGN);
+    }
+
     // Set up the fakebox (which only exists on the Google NTP).
     ntpApiHandle.oninputstart = onInputStart;
     ntpApiHandle.oninputcancel = onInputCancel;

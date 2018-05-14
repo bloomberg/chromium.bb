@@ -288,6 +288,14 @@ body.alternate-logo #logo-non-white {
   transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+.md #fakebox {
+  background-color: rgb(241, 243, 244);
+  border-radius: 22px;
+  box-shadow: none;
+  margin: 0 auto;
+  max-width: 560px;
+}
+
 .non-google-page #fakebox-container {
   display: none;
 }
@@ -295,6 +303,11 @@ body.alternate-logo #logo-non-white {
 #fakebox:hover,
 body.fakebox-focused #fakebox {
   box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.md #fakebox:hover,
+body.md.fakebox-focused #fakebox {
+  box-shadow: none;
 }
 
 #fakebox > input {
@@ -309,10 +322,18 @@ body.fakebox-focused #fakebox {
   width: 100%;
 }
 
+.md #fakebox > input {
+  padding-left: 20px;
+}
+
 html[dir=rtl] #fakebox > input {
   padding-left: 0;
   padding-right: 8px;
   right: 0;
+}
+
+.md html[dir=rtl] #fakebox > input {
+  padding-right: 20px;
 }
 
 #fakebox-text {
@@ -333,6 +354,14 @@ html[dir=rtl] #fakebox > input {
   white-space: nowrap;
 }
 
+.md #fakebox-text {
+  color: rgb(128, 134, 139);
+  font-family: 'Roboto', arial, sans-serif;
+  font-size: 14px;
+  left: 0;
+  padding-left: 20px;
+}
+
 html[dir=rtl] #fakebox-text {
   left: auto;
   right: 13px;
@@ -348,9 +377,17 @@ html[dir=rtl] #fakebox-text {
   width: 1px;
 }
 
+.md #fakebox-cursor {
+  left: 20px;
+}
+
 html[dir=rtl] #fakebox-cursor {
   left: auto;
   right: 13px;
+}
+
+.md html[dir=rtl] #fakebox-cursor {
+  right: 20px;
 }
 
 #fakebox-microphone {
@@ -363,6 +400,12 @@ html[dir=rtl] #fakebox-cursor {
   right: 0;
   top: 0;
   width: 41px;
+}
+
+.md #fakebox-microphone {
+  background-size: 16px 16px;
+  margin-right: 12px;
+  width: 28px;
 }
 
 html[dir=rtl] #fakebox-microphone {
