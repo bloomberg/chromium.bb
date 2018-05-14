@@ -1695,6 +1695,7 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlag3Method(const v8::Func
 
 static void overloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
+
   switch (std::min(1, info.Length())) {
     case 1:
       if (RuntimeEnabledFeatures::FeatureName2Enabled()) {
@@ -1723,7 +1724,6 @@ static void overloadMethodWithExposedAndRuntimeEnabledFlagMethod(const v8::Funct
   }
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "overloadMethodWithExposedAndRuntimeEnabledFlag");
-
   if (isArityError) {
     if (info.Length() < 1) {
       exceptionState.ThrowTypeError(ExceptionMessages::NotEnoughArguments(1, info.Length()));

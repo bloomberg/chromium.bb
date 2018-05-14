@@ -185,6 +185,14 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info) {
         TestInterfaceConstructor2V8Internal::constructor3(info);
         return;
       }
+      if (HasCallableIteratorSymbol(info.GetIsolate(), info[0], exceptionState)) {
+        TestInterfaceConstructor2V8Internal::constructor3(info);
+        return;
+      }
+      if (exceptionState.HadException()) {
+        exceptionState.RethrowV8Exception(exceptionState.GetException());
+        return;
+      }
       if (info[0]->IsObject()) {
         TestInterfaceConstructor2V8Internal::constructor2(info);
         return;

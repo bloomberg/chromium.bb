@@ -95,6 +95,7 @@ static void voidMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
+
   switch (std::min(1, info.Length())) {
     case 0:
       break;
@@ -109,7 +110,6 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
   }
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "voidMethodPartialOverload");
-
   if (isArityError) {
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
@@ -126,6 +126,7 @@ static void staticVoidMethodPartialOverload2Method(const v8::FunctionCallbackInf
 
 static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
+
   switch (std::min(1, info.Length())) {
     case 0:
       break;
@@ -140,7 +141,6 @@ static void staticVoidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo
   }
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "staticVoidMethodPartialOverload");
-
   if (isArityError) {
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
@@ -170,6 +170,7 @@ static void promiseMethodPartialOverload3Method(const v8::FunctionCallbackInfo<v
 
 static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
+
   switch (std::min(1, info.Length())) {
     case 0:
       break;
@@ -185,7 +186,6 @@ static void promiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "promiseMethodPartialOverload");
   ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
-
   if (isArityError) {
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
@@ -205,6 +205,7 @@ static void staticPromiseMethodPartialOverload2Method(const v8::FunctionCallback
 
 static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
+
   switch (std::min(1, info.Length())) {
     case 0:
       break;
@@ -220,7 +221,6 @@ static void staticPromiseMethodPartialOverloadMethod(const v8::FunctionCallbackI
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "staticPromiseMethodPartialOverload");
   ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
-
   if (isArityError) {
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
@@ -252,6 +252,7 @@ static void partial2VoidMethod3Method(const v8::FunctionCallbackInfo<v8::Value>&
 
 static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
+
   switch (std::min(1, info.Length())) {
     case 0:
       break;
@@ -270,7 +271,6 @@ static void partial2VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& 
   }
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2VoidMethod");
-
   if (isArityError) {
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
@@ -312,6 +312,7 @@ static void partial2StaticVoidMethod2Method(const v8::FunctionCallbackInfo<v8::V
 
 static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
+
   switch (std::min(1, info.Length())) {
     case 0:
       break;
@@ -326,7 +327,6 @@ static void partial2StaticVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Va
   }
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "partial2StaticVoidMethod");
-
   if (isArityError) {
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
