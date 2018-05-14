@@ -586,13 +586,11 @@ IndexedDBBackingStore::IndexedDBBackingStore(
       comparator_(std::move(comparator)),
       active_blob_registry_(this),
       committing_transaction_count_(0) {
-  // TODO(838386): Make IndexedDBBackingStore an interface, so that we can
-  // check that |task_runner| is non-null here without breaking tests.
-  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
 IndexedDBBackingStore::~IndexedDBBackingStore() {
-  DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   if (!blob_path_.empty() && !child_process_ids_granted_.empty()) {
     ChildProcessSecurityPolicyImpl* policy =
         ChildProcessSecurityPolicyImpl::GetInstance();
