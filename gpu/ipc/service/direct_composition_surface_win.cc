@@ -108,19 +108,14 @@ gfx::Size g_overlay_monitor_size;
 
 bool g_supports_scaled_overlays = true;
 
-// This is the raw support info, which shouldn't depend on field trial state.
+// This is the raw support info, which shouldn't depend on field trial state, or
+// command line flags.
 bool HardwareSupportsOverlays() {
   if (!gl::GLSurfaceEGL::IsDirectCompositionSupported())
     return false;
 
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
-    return true;
-  if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
-    return false;
-
-  // Before Windows 10 Anniversary Update (Redstone 1), overlay planes
-  // wouldn't be assigned to non-UWP apps.
+  // Before Windows 10 Anniversary Update (Redstone 1), overlay planes wouldn't
+  // be assigned to non-UWP apps.
   if (base::win::GetVersion() < base::win::VERSION_WIN10_RS1)
     return false;
 
@@ -1023,7 +1018,8 @@ void DCLayerTree::CalculateVideoSwapChainParameters(
   // much larger than its area on-screen.
   gfx::Rect bounds_rect = params.rect;
 
-  if (workarounds().disable_larger_than_screen_overlays) {
+  if (workarounds().disable_larger_than_screen_overlays &&
+      !g_overlay_monitor_size.IsEmpty()) {
     // Because of the rounding when converting between pixels and DIPs, a
     // fullscreen video can become slightly larger than the monitor - e.g. on
     // a 3000x2000 monitor with a scale factor of 1.75 a 1920x1079 video can
@@ -1216,20 +1212,24 @@ DirectCompositionSurfaceWin::~DirectCompositionSurfaceWin() {
 
 // static
 bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
-  static bool initialized;
-  static bool overlays_supported;
-  if (initialized)
-    return overlays_supported;
+  static bool initialized = false;
+  static bool overlays_supported = false;
 
-  initialized = true;
+  if (!initialized) {
+    initialized = true;
+    overlays_supported = HardwareSupportsOverlays();
+    UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
+                          overlays_supported);
+  }
 
-  overlays_supported =
-      HardwareSupportsOverlays() &&
-      base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays);
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableDirectCompositionLayers))
+    return false;
+  if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
+    return true;
 
-  UMA_HISTOGRAM_BOOLEAN("GPU.DirectComposition.OverlaysSupported",
-                        overlays_supported);
-  return overlays_supported;
+  return base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays) &&
+         overlays_supported;
 }
 
 void DirectCompositionSurfaceWin::EnableScaledOverlaysForTesting() {
