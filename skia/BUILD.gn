@@ -600,6 +600,11 @@ skia_source_set("skia_core_and_effects") {
   defines = skia_core_defines
   sources = skia_core_sources
   sources += skia_effects_sources
+  if (skia_support_gpu) {
+    deps = [
+      "//gpu/config:workaround_list",
+    ]
+  }
 
   visibility = [ ":skia" ]
 }
