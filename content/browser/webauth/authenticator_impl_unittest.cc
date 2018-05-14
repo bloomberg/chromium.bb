@@ -791,6 +791,42 @@ TEST_F(AuthenticatorImplTest, TestU2fDeviceDoesNotSupportGetAssertion) {
   EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
 }
 
+TEST_F(AuthenticatorImplTest, Ctap2AcceptsEmptyAllowCredentials) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kWebAuthCtap2);
+
+  SimulateNavigation(GURL(kTestOrigin1));
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  options->allow_credentials.clear();
+  TestGetAssertionCallback callback_receiver;
+
+  // Set up service_manager::Connector for tests.
+  auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
+  service_manager::mojom::ConnectorRequest request;
+  auto connector = service_manager::Connector::Create(&request);
+
+  // Set up a timer for testing.
+  auto task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>(
+      base::Time::Now(), base::TimeTicks::Now());
+  auto timer =
+      std::make_unique<base::OneShotTimer>(task_runner->GetMockTickClock());
+  timer->SetTaskRunner(task_runner);
+  AuthenticatorPtr authenticator =
+      ConnectToAuthenticator(connector.get(), std::move(timer));
+
+  device::test::ScopedVirtualFidoDevice virtual_device;
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+
+  // Trigger timer.
+  base::RunLoop().RunUntilIdle();
+  task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
+  callback_receiver.WaitForCallback();
+  // Doesn't error out with EMPTY_ALLOW_CREDENTIALS but continues to a
+  // NOT_ALLOWED_ERROR.
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
+
 TEST_F(AuthenticatorImplTest, GetAssertionWithEmptyAllowCredentials) {
   device::test::ScopedVirtualFidoDevice scoped_virtual_device;
   TestServiceManagerContext service_manager_context;

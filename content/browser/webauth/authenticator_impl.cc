@@ -608,18 +608,19 @@ void AuthenticatorImpl::GetAssertion(
       FilterCredentialList(std::move(options->allow_credentials));
 
   // There are two different descriptions of what should happen when
-  // "allowCredentials" is empty.
+  // "allowCredentials" is empty for U2F.
   // a) WebAuthN 6.2.3 step 6[1] implies "NotAllowedError".
   // b) CTAP step 7.2 step 2[2] says the device should error out with
   // "CTAP2_ERR_OPTION_NOT_SUPPORTED". This also resolves to "NotAllowedError".
   // The behavior in both cases is consistent with the current implementation.
-  // TODO(crbug.com/831712): When CTAP2 authenticators are supported, this check
-  // should be enforced by handlers in fido/device on a per-device basis.
+  // When CTAP2 is enabled, however, this check is done by handlers in
+  // fido/device on a per-device basis.
 
   // [1] https://w3c.github.io/webauthn/#authenticatorgetassertion
   // [2]
   // https://fidoalliance.org/specs/fido-v2.0-ps-20170927/fido-client-to-authenticator-protocol-v2.0-ps-20170927.html
-  if (handles.empty()) {
+  if (!base::FeatureList::IsEnabled(features::kWebAuthCtap2) &&
+      handles.empty()) {
     InvokeCallbackAndCleanup(
         std::move(callback),
         webauth::mojom::AuthenticatorStatus::EMPTY_ALLOW_CREDENTIALS, nullptr);
