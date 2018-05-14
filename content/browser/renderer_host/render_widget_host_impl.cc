@@ -828,8 +828,24 @@ bool RenderWidgetHostImpl::GetVisualProperties(
         (old_visual_properties_->compositor_viewport_pixel_size.IsEmpty() &&
          !visual_properties->compositor_viewport_pixel_size.IsEmpty())));
 
+  viz::LocalSurfaceId old_parent_local_surface_id =
+      old_visual_properties_
+          ? old_visual_properties_->local_surface_id.value_or(
+                viz::LocalSurfaceId())
+          : viz::LocalSurfaceId();
+
+  viz::LocalSurfaceId new_parent_local_surface_id =
+      visual_properties->local_surface_id.value_or(viz::LocalSurfaceId());
+
+  const bool parent_local_surface_id_changed =
+      !old_visual_properties_ ||
+      old_parent_local_surface_id.parent_sequence_number() !=
+          new_parent_local_surface_id.parent_sequence_number() ||
+      old_parent_local_surface_id.embed_token() !=
+          new_parent_local_surface_id.embed_token();
+
   bool dirty =
-      size_changed ||
+      size_changed || parent_local_surface_id_changed ||
       old_visual_properties_->screen_info != visual_properties->screen_info ||
       old_visual_properties_->compositor_viewport_pixel_size !=
           visual_properties->compositor_viewport_pixel_size ||
@@ -844,8 +860,6 @@ bool RenderWidgetHostImpl::GetVisualProperties(
           visual_properties->bottom_controls_height ||
       old_visual_properties_->visible_viewport_size !=
           visual_properties->visible_viewport_size ||
-      old_visual_properties_->local_surface_id !=
-          visual_properties->local_surface_id ||
       old_visual_properties_->capture_sequence_number !=
           visual_properties->capture_sequence_number ||
       (enable_surface_synchronization_ &&

@@ -2853,18 +2853,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
   viz::LocalSurfaceId local_surface_id1(view_->GetLocalSurfaceId());
   EXPECT_TRUE(local_surface_id1.is_valid());
 
-  view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
   sink_->ClearMessages();
-  viz::LocalSurfaceId local_surface_id(
-      local_surface_id1.parent_sequence_number(),
-      local_surface_id1.child_sequence_number() + 1,
-      local_surface_id1.embed_token());
-  {
-    cc::RenderFrameMetadata metadata;
-    metadata.viewport_size_in_pixels = gfx::Size(75, 75);
-    metadata.local_surface_id = local_surface_id;
-    widget_host_->DidUpdateVisualProperties(metadata);
-  }
+  view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
 
   viz::LocalSurfaceId local_surface_id2;
   ASSERT_EQ(1u, sink_->message_count());
@@ -2880,8 +2870,19 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithScale) {
     EXPECT_EQ(1, visual_properties.screen_info.device_scale_factor);
     local_surface_id2 =
         visual_properties.local_surface_id.value_or(viz::LocalSurfaceId());
-    EXPECT_NE(local_surface_id1, local_surface_id2);
+    EXPECT_EQ(local_surface_id1, local_surface_id2);
     EXPECT_TRUE(local_surface_id2.is_valid());
+  }
+
+  viz::LocalSurfaceId local_surface_id(
+      local_surface_id1.parent_sequence_number(),
+      local_surface_id1.child_sequence_number() + 1,
+      local_surface_id1.embed_token());
+  {
+    cc::RenderFrameMetadata metadata;
+    metadata.viewport_size_in_pixels = gfx::Size(75, 75);
+    metadata.local_surface_id = local_surface_id;
+    widget_host_->DidUpdateVisualProperties(metadata);
   }
 
   sink_->ClearMessages();
@@ -2916,18 +2917,8 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
   viz::LocalSurfaceId local_surface_id1(view_->GetLocalSurfaceId());
   EXPECT_TRUE(local_surface_id1.is_valid());
 
-  view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
   sink_->ClearMessages();
-  viz::LocalSurfaceId local_surface_id(
-      local_surface_id1.parent_sequence_number(),
-      local_surface_id1.child_sequence_number() + 1,
-      local_surface_id1.embed_token());
-  {
-    cc::RenderFrameMetadata metadata;
-    metadata.viewport_size_in_pixels = gfx::Size(75, 75);
-    metadata.local_surface_id = local_surface_id;
-    widget_host_->DidUpdateVisualProperties(metadata);
-  }
+  view_->EnableAutoResize(gfx::Size(50, 50), gfx::Size(100, 100));
 
   viz::LocalSurfaceId local_surface_id2;
   ASSERT_EQ(1u, sink_->message_count());
@@ -2944,7 +2935,18 @@ TEST_F(RenderWidgetHostViewAuraTest, AutoResizeWithBrowserInitiatedResize) {
     local_surface_id2 =
         visual_properties.local_surface_id.value_or(viz::LocalSurfaceId());
     EXPECT_TRUE(local_surface_id2.is_valid());
-    EXPECT_NE(local_surface_id1, local_surface_id2);
+    EXPECT_EQ(local_surface_id1, local_surface_id2);
+  }
+
+  viz::LocalSurfaceId local_surface_id(
+      local_surface_id1.parent_sequence_number(),
+      local_surface_id1.child_sequence_number() + 1,
+      local_surface_id1.embed_token());
+  {
+    cc::RenderFrameMetadata metadata;
+    metadata.viewport_size_in_pixels = gfx::Size(75, 75);
+    metadata.local_surface_id = local_surface_id;
+    widget_host_->DidUpdateVisualProperties(metadata);
   }
 
   sink_->ClearMessages();
