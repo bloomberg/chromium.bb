@@ -25,6 +25,8 @@ class SessionAbortedDialog : public views::DialogDelegateView {
 
   // views::WidgetDelegate overrides.
   ui::ModalType GetModalType() const override;
+  base::string16 GetWindowTitle() const override;
+  bool ShouldShowCloseButton() const override;
 
   // views::View overrides.
   gfx::Size CalculatePreferredSize() const override;

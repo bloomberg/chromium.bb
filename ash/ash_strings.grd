@@ -1274,11 +1274,10 @@ This file contains the strings for ash.
 
       <!-- Session aborted dialog -->
       <message name="IDS_ASH_MULTIPROFILES_SESSION_ABORT_HEADLINE" desc="Title for a dialog that describes that the current multi profile session is ending because one user is no longer allowed.">
-        Multiple sign-in has been disallowed for a user in this session
+        Multiple sign-in has been disabled
       </message>
       <message name="IDS_ASH_MULTIPROFILES_SESSION_ABORT_MESSAGE" desc="Body text for a dialog that describes that the current multi profile session is ending because one user is no longer allowed.">
-        An administrator has disallowed multiple sign-in for <ph name="USER_EMAIL">$1<ex>john@google.com</ex></ph>.
-    All users must sign out to continue.
+        An administrator has disallowed multiple sign-in for <ph name="USER_EMAIL">$1<ex>john@google.com</ex></ph>. All users must sign out to continue.
       </message>
       <message name="IDS_ASH_MULTIPROFILES_SESSION_ABORT_BUTTON_LABEL" desc="The label for the one (and only) button on a dialog that describes why the multi profile session is ending.">
         Sign out
