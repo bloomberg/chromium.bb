@@ -45,6 +45,7 @@ bool VulkanImageView::Initialize(VkImage image,
                                  uint32_t num_mips,
                                  uint32_t base_layer_level,
                                  uint32_t num_layers) {
+  format_ = format;
   DCHECK_GT(image_type, IMAGE_TYPE_INVALID);
   DCHECK_LT(image_type, NUM_IMAGE_TYPES);
   VkImageSubresourceRange image_subresource_range = {};
