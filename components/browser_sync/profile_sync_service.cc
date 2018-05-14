@@ -182,13 +182,13 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       channel_(init_params.channel),
       base_directory_(init_params.base_directory),
       debug_identifier_(init_params.debug_identifier),
+      sync_service_url_(
+          syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
+                                    init_params.channel)),
       sync_prefs_(sync_client_->GetPrefService()),
       signin_scoped_device_id_callback_(
           init_params.signin_scoped_device_id_callback),
       last_auth_error_(GoogleServiceAuthError::AuthErrorNone()),
-      sync_service_url_(
-          syncer::GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(),
-                                    init_params.channel)),
       network_time_update_callback_(
           std::move(init_params.network_time_update_callback)),
       url_request_context_(init_params.url_request_context),
@@ -1431,41 +1431,23 @@ void ProfileSyncService::OnConfigureStart() {
   NotifyObservers();
 }
 
-ProfileSyncService::SyncStatusSummary
-ProfileSyncService::QuerySyncStatusSummary() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (HasUnrecoverableError())
-    return UNRECOVERABLE_ERROR;
-  if (!engine_)
-    return NOT_ENABLED;
-  if (engine_ && !IsFirstSetupComplete())
-    return SETUP_INCOMPLETE;
-  if (engine_ && IsFirstSetupComplete() && data_type_manager_ &&
-      data_type_manager_->state() == DataTypeManager::STOPPED) {
-    return DATATYPES_NOT_INITIALIZED;
-  }
-  if (IsSyncActive())
-    return INITIALIZED;
-  return UNKNOWN_ERROR;
-}
-
 std::string ProfileSyncService::QuerySyncStatusSummaryString() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  switch (QuerySyncStatusSummary()) {
-    case UNRECOVERABLE_ERROR:
-      return "Unrecoverable error detected";
-    case NOT_ENABLED:
-      return "Syncing not enabled";
-    case SETUP_INCOMPLETE:
-      return "First time sync setup incomplete";
-    case DATATYPES_NOT_INITIALIZED:
-      return "Datatypes not fully initialized";
-    case INITIALIZED:
-      return "Sync service initialized";
-    default:
-      return "Status unknown: Internal error?";
+  if (HasUnrecoverableError())
+    return "Unrecoverable error detected";
+  if (!engine_)
+    return "Syncing not enabled";
+  if (!IsFirstSetupComplete())
+    return "First time sync setup incomplete";
+  if (data_type_manager_ &&
+      data_type_manager_->state() == DataTypeManager::STOPPED) {
+    return "Datatypes not fully initialized";
   }
+  if (IsSyncActive())
+    return "Sync service initialized";
+
+  return "Status unknown: Internal error?";
 }
 
 std::string ProfileSyncService::GetEngineInitializationStateString() const {

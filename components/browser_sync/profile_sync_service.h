@@ -204,15 +204,6 @@ class ProfileSyncService : public syncer::SyncService,
     MAX_SYNC_EVENT_CODE = 22
   };
 
-  enum SyncStatusSummary {
-    UNRECOVERABLE_ERROR,
-    NOT_ENABLED,
-    SETUP_INCOMPLETE,
-    DATATYPES_NOT_INITIALIZED,
-    INITIALIZED,
-    UNKNOWN_ERROR,
-  };
-
   // If AUTO_START, sync will set IsFirstSetupComplete() automatically and sync
   // will begin syncing without the user needing to confirm sync settings.
   enum StartBehavior {
@@ -337,9 +328,6 @@ class ProfileSyncService : public syncer::SyncService,
   bool HasPreferenceProvider(
       syncer::SyncTypePreferenceProvider* provider) const;
 
-  void RegisterAuthNotifications();
-  void UnregisterAuthNotifications();
-
   // Returns the SyncableService or USS bridge for syncer::SESSIONS.
   virtual syncer::SyncableService* GetSessionsSyncableService();
   virtual syncer::ModelTypeSyncBridge* GetSessionSyncBridge();
@@ -412,9 +400,6 @@ class ProfileSyncService : public syncer::SyncService,
   bool HasCookieJarMismatch(
       const std::vector<gaia::ListedAccount>& cookie_jar_accounts);
 
-  // Get the sync status code.
-  SyncStatusSummary QuerySyncStatusSummary();
-
   // Reconfigures the data type manager with the latest enabled types.
   // Note: Does not initialize the engine if it is not already initialized.
   // This function needs to be called only after sync has been initialized
@@ -467,7 +452,7 @@ class ProfileSyncService : public syncer::SyncService,
   // server.
   void HasUnsyncedItemsForTest(base::OnceCallback<void(bool)> cb) const;
 
-  // Used by ProfileSyncServiceHarness.  May return null.
+  // Used by MigrationWatcher.  May return null.
   syncer::BackendMigrator* GetBackendMigratorForTest();
 
   // Used by tests to inspect interaction with OAuth2TokenService.
@@ -529,7 +514,9 @@ class ProfileSyncService : public syncer::SyncService,
   sync_sessions::FaviconCache* GetFaviconCache();
 
   // Overrides the NetworkResources used for Sync connections.
-  // This function takes ownership of |network_resources|.
+  // TODO(treib): Inject this in the ctor instead. As it is, it's possible that
+  // the real NetworkResources were already used before the test had a chance
+  // to call this.
   void OverrideNetworkResourcesForTest(
       std::unique_ptr<syncer::NetworkResources> network_resources);
 
@@ -567,6 +554,9 @@ class ProfileSyncService : public syncer::SyncService,
   void ClearServerDataForTest(const base::Closure& callback);
 
  private:
+  void RegisterAuthNotifications();
+  void UnregisterAuthNotifications();
+
   syncer::SyncCredentials GetCredentials();
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
   syncer::SyncEngine::HttpPostProviderFactoryGetter
@@ -753,6 +743,9 @@ class ProfileSyncService : public syncer::SyncService,
   // An identifier representing this instance for debugging purposes.
   const std::string debug_identifier_;
 
+  // This specifies where to find the sync server.
+  const GURL sync_service_url_;
+
   // The class that handles getting, setting, and persisting sync preferences.
   syncer::SyncPrefs sync_prefs_;
 
@@ -783,10 +776,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Cache of the last SyncCycleSnapshot received from the sync engine.
   syncer::SyncCycleSnapshot last_snapshot_;
-
-  // TODO(ncarter): Put this in a profile, once there is UI for it.
-  // This specifies where to find the sync server.
-  const GURL sync_service_url_;
 
   // The time that OnConfigureStart is called. This member is zero if
   // OnConfigureStart has not yet been called, and is reset to zero once
