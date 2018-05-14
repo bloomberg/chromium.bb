@@ -1908,6 +1908,18 @@ enum WebFeature {
   kPaymentRequestInvalidCurrencyCode = 2435,
   kV8ArraySortNoElementsProtector = 2436,
   kV8ArrayPrototypeSortJSArrayModifiedPrototype = 2437,
+  kV8Document_PictureInPictureEnabled_AttributeGetter = 2438,
+  kV8Document_PictureInPictureElement_AttributeGetter = 2439,
+  kV8Document_ExitPictureInPicture_Method = 2440,
+  kV8ShadowRoot_PictureInPictureElement_AttributeGetter = 2441,
+  kV8HTMLVideoElement_DisablePictureInPicture_AttributeGetter = 2442,
+  kV8HTMLVideoElement_DisablePictureInPicture_AttributeSetter = 2443,
+  kV8HTMLVideoElement_RequestPictureInPicture_Method = 2444,
+  kEnterPictureInPictureEventListener = 2445,
+  kLeavePictureInPictureEventListener = 2446,
+  kV8PictureInPictureWindow_Height_AttributeGetter = 2447,
+  kV8PictureInPictureWindow_Width_AttributeGetter = 2448,
+  kPictureInPictureWindowResizeEventListener = 2449,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

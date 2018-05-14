@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen_options.h"
 #include "third_party/blink/renderer/core/html/media/media_custom_controls_fullscreen_detector.h"
@@ -572,6 +573,20 @@ WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
   if (is_picture_in_picture_)
     return WebMediaPlayer::DisplayType::kPictureInPicture;
   return HTMLMediaElement::DisplayType();
+}
+
+void HTMLVideoElement::AddedEventListener(
+    const AtomicString& event_type,
+    RegisteredEventListener& registered_listener) {
+  if (event_type == EventTypeNames::enterpictureinpicture) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kEnterPictureInPictureEventListener);
+  } else if (event_type == EventTypeNames::leavepictureinpicture) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kLeavePictureInPictureEventListener);
+  }
+
+  HTMLMediaElement::AddedEventListener(event_type, registered_listener);
 }
 
 bool HTMLVideoElement::IsRemotingInterstitialVisible() const {

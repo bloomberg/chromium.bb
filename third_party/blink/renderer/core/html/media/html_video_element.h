@@ -154,6 +154,11 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   void MediaRemotingStopped(WebLocalizedString::Name error_msg) final;
   WebMediaPlayer::DisplayType DisplayType() const final;
 
+ protected:
+  // EventTarget overrides.
+  void AddedEventListener(const AtomicString& event_type,
+                          RegisteredEventListener&) override;
+
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;
   friend class HTMLMediaElementEventListenersTest;

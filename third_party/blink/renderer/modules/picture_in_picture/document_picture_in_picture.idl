@@ -9,10 +9,10 @@
     OriginTrialEnabled=PictureInPictureAPI
 ]
 partial interface Document {
-    readonly attribute boolean pictureInPictureEnabled;
+    [Measure] readonly attribute boolean pictureInPictureEnabled;
 
-    [CallWith=ScriptState] Promise<void> exitPictureInPicture();
+    [CallWith=ScriptState, Measure] Promise<void> exitPictureInPicture();
 
     // TODO(crbug.com/656517): Define this attribute in DocumentOrShadowRoot.
-    readonly attribute HTMLVideoElement? pictureInPictureElement;
+    [Measure] readonly attribute HTMLVideoElement? pictureInPictureElement;
 };

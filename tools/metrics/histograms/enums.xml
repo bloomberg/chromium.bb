@@ -18657,6 +18657,21 @@ Called by update_net_error_codes.py.-->
   <int value="2435" label="PaymentRequestInvalidCurrencyCode"/>
   <int value="2436" label="V8ArraySortNoElementsProtector"/>
   <int value="2437" label="V8ArrayPrototypeSortJSArrayModifiedPrototype"/>
+  <int value="2438" label="V8Document_PictureInPictureEnabled_AttributeGetter"/>
+  <int value="2439" label="V8Document_PictureInPictureElement_AttributeGetter"/>
+  <int value="2440" label="V8Document_ExitPictureInPicture_Method"/>
+  <int value="2441"
+      label="V8ShadowRoot_PictureInPictureElement_AttributeGetter"/>
+  <int value="2442"
+      label="V8HTMLVideoElement_DisablePictureInPicture_AttributeGetter"/>
+  <int value="2443"
+      label="V8HTMLVideoElement_DisablePictureInPicture_AttributeSetter"/>
+  <int value="2444" label="V8HTMLVideoElement_RequestPictureInPicture_Method"/>
+  <int value="2445" label="EnterPictureInPictureEventListener"/>
+  <int value="2446" label="LeavePictureInPictureEventListener"/>
+  <int value="2447" label="V8PictureInPictureWindow_Height_AttributeGetter"/>
+  <int value="2448" label="V8PictureInPictureWindow_Width_AttributeGetter"/>
+  <int value="2449" label="PictureInPictureWindowResizeEventListener"/>
 </enum>
 
 <enum name="FeedbackSource">
