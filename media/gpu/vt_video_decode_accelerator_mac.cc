@@ -1007,9 +1007,14 @@ void VTVideoDecodeAccelerator::Decode(scoped_refptr<DecoderBuffer> buffer,
   DVLOG(2) << __func__ << "(" << bitstream_id << ")";
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  if (!buffer || bitstream_id < 0) {
+  if (bitstream_id < 0) {
     DLOG(ERROR) << "Invalid bitstream, id: " << bitstream_id;
     NotifyError(INVALID_ARGUMENT, SFT_INVALID_STREAM);
+    return;
+  }
+
+  if (!buffer) {
+    client_->NotifyEndOfBitstreamBuffer(bitstream_id);
     return;
   }
 
