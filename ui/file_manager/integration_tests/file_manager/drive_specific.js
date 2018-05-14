@@ -89,11 +89,11 @@ function getStepsForSearchResultsAutoComplete() {
 
 /**
  * Tests opening the "Offline" on the sidebar navigation by clicking the icon,
- * and checks contenets of the file list. Only the entries "available offline"
- * should be shown. "Available offline" entires are hosted documents and the
+ * and checks contents of the file list. Only the entries "available offline"
+ * should be shown. "Available offline" entries are hosted documents and the
  * entries cached by DriveCache.
  */
-testcase.openSidebarOffline = function() {
+testcase.driveOpenSidebarOffline = function() {
   var appId;
   StepsRunner.run([
     function() {
@@ -126,7 +126,7 @@ testcase.openSidebarOffline = function() {
  * icon, and checks contents of the file list. Only the entries labeled with
  * "shared-with-me" should be shown.
  */
-testcase.openSidebarSharedWithMe = function() {
+testcase.driveOpenSidebarSharedWithMe = function() {
   var appId;
   StepsRunner.run([
     function() {
@@ -157,10 +157,9 @@ testcase.openSidebarSharedWithMe = function() {
 };
 
 /**
- * Tests autocomplete with a query 'hello'. This test is only available for
- * Drive.
+ * Tests autocomplete with a query 'hello'.
  */
-testcase.autocomplete = function() {
+testcase.driveAutoCompleteQuery = function() {
   StepsRunner.run(getStepsForSearchResultsAutoComplete());
 };
 
@@ -168,7 +167,7 @@ testcase.autocomplete = function() {
  * Tests that clicking the first option in the autocomplete box shows all of
  * the results for that query.
  */
-testcase.clickFirstSearchResult = function() {
+testcase.driveClickFirstSearchResult = function() {
   var appId;
   var steps = getStepsForSearchResultsAutoComplete();
   steps.push(
@@ -213,7 +212,7 @@ testcase.clickFirstSearchResult = function() {
  * Tests that pressing enter after typing a search shows all of
  * the results for that query.
  */
-testcase.pressEnterToSearch = function() {
+testcase.drivePressEnterToSearch = function() {
   var appId;
   var steps = getStepsForSearchResultsAutoComplete();
   steps.push(
@@ -246,9 +245,9 @@ testcase.pressEnterToSearch = function() {
 };
 
 /**
- * Tests pinning a file on mobile network.
+ * Tests pinning a file to a mobile network.
  */
-testcase.pinFileOnMobileNetwork = function() {
+testcase.drivePinFileMobileNetwork = function() {
   testPromise(setupAndWaitUntilReady(null, RootPath.DRIVE).then(
       function(results) {
         var windowId = results.windowId;
