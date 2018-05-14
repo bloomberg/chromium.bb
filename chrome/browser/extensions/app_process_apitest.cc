@@ -43,7 +43,7 @@ using content::SiteInstance;
 using content::WebContents;
 using extensions::Extension;
 
-class AppApiTest : public ExtensionApiTest {
+class AppApiTest : public extensions::ExtensionApiTest {
  protected:
   // Gets the base URL for files for a specific test, making sure that it uses
   // "localhost" as the hostname, since that is what the extent is declared
@@ -58,7 +58,7 @@ class AppApiTest : public ExtensionApiTest {
 
   // Pass flags to make testing apps easier.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisablePopupBlocking);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -66,7 +66,7 @@ class AppApiTest : public ExtensionApiTest {
   }
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
   }
@@ -145,7 +145,7 @@ class AppApiTest : public ExtensionApiTest {
 class BlockedAppApiTest : public AppApiTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         extensions::switches::kAllowHTTPBackgroundPage);
   }

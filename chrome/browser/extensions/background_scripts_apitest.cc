@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BackgroundScripts) {
   ASSERT_TRUE(RunExtensionTest("background_scripts")) << message_;
 }
+
+}  // namespace extensions

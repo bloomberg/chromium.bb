@@ -111,7 +111,7 @@ enum class WindowState {
   NORMAL
 };
 
-class NotificationsApiTest : public ExtensionApiTest {
+class NotificationsApiTest : public extensions::ExtensionApiTest {
  public:
   const Extension* LoadExtensionAndWait(
       const std::string& test_name) {
@@ -172,7 +172,7 @@ class NotificationsApiTest : public ExtensionApiTest {
 
  protected:
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
 
     DCHECK(profile());
     display_service_tester_ =
@@ -181,7 +181,7 @@ class NotificationsApiTest : public ExtensionApiTest {
 
   void TearDownOnMainThread() override {
     display_service_tester_.reset();
-    ExtensionApiTest::TearDownOnMainThread();
+    extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
   // Returns the notification that's being displayed for |extension|, or nullptr

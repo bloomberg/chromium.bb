@@ -26,6 +26,8 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManager) {
   // Add managed bookmarks.
   Profile* profile = browser()->profile();
@@ -71,3 +73,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManagerEditDisabled) {
   ASSERT_TRUE(RunComponentExtensionTest("bookmark_manager/edit_disabled"))
       << message_;
 }
+
+}  // namespace extensions

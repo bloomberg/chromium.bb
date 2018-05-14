@@ -9,10 +9,10 @@
 #include "net/base/filename_util.h"
 #include "net/dns/mock_host_resolver.h"
 
-class ExecuteScriptApiTest : public ExtensionApiTest {
+class ExecuteScriptApiTest : public extensions::ExtensionApiTest {
  protected:
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     // We need a.com to be a little bit slow to trigger a race condition.
     host_resolver()->AddRuleWithLatency("a.com", "127.0.0.1", 500);
     host_resolver()->AddRule("*", "127.0.0.1");

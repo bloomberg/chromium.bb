@@ -19,7 +19,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "ui/events/event_utils.h"
 
-typedef ExtensionApiTest BookmarkOverrideTest;
+typedef extensions::ExtensionApiTest BookmarkOverrideTest;
 
 namespace {
 // Bookmark this page keybinding.

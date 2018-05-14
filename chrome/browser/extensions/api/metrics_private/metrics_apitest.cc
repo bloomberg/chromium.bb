@@ -14,6 +14,8 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "components/variations/variations_associated_data.h"
 
+namespace extensions {
+
 namespace {
 
 // The tests that are run by this extension are expected to record the following
@@ -126,7 +128,7 @@ void ValidateHistograms(const RecordedHistogram* recorded,
   }
 }
 
-}  // anonymous namespace
+}  // namespace
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
   base::UserActionTester user_action_tester;
@@ -145,3 +147,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Metrics) {
                       arraysize(g_user_actions));
   ValidateHistograms(g_histograms, arraysize(g_histograms));
 }
+
+}  // namespace extensions

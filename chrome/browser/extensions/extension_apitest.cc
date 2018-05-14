@@ -41,9 +41,9 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 
-namespace {
+namespace extensions {
 
-using extensions::ExtensionBrowserTest;
+namespace {
 
 const char kTestCustomArg[] = "customArg";
 const char kTestDataDirectory[] = "testDataDirectory";
@@ -172,14 +172,13 @@ void ExtensionApiTest::SetUpOnMainThread() {
   }
   test_config_->SetBoolean(
       kNativeCrxBindingsEnabled,
-      base::FeatureList::IsEnabled(extensions::features::kNativeCrxBindings));
-  extensions::TestGetConfigFunction::set_test_config_state(
-      test_config_.get());
+      base::FeatureList::IsEnabled(features::kNativeCrxBindings));
+  TestGetConfigFunction::set_test_config_state(test_config_.get());
 }
 
 void ExtensionApiTest::TearDownOnMainThread() {
   ExtensionBrowserTest::TearDownOnMainThread();
-  extensions::TestGetConfigFunction::set_test_config_state(NULL);
+  TestGetConfigFunction::set_test_config_state(NULL);
   test_config_.reset(NULL);
 }
 
@@ -333,11 +332,11 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
   if (custom_arg && custom_arg[0])
     SetCustomArg(custom_arg);
 
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
   DCHECK(!extension_name.empty() || !page_url.empty()) <<
       "extension_name and page_url cannot both be empty";
 
-  const extensions::Extension* extension = NULL;
+  const Extension* extension = NULL;
   if (!extension_name.empty()) {
     const base::FilePath& root_path =
         use_root_extensions_dir ? shared_test_data_dir_ : test_data_dir_;
@@ -383,9 +382,9 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
     else
       ui_test_utils::NavigateToURL(browser(), url);
   } else if (launch_platform_app) {
-    AppLaunchParams params(
-        browser()->profile(), extension, extensions::LAUNCH_CONTAINER_NONE,
-        WindowOpenDisposition::NEW_WINDOW, extensions::SOURCE_TEST);
+    AppLaunchParams params(browser()->profile(), extension,
+                           LAUNCH_CONTAINER_NONE,
+                           WindowOpenDisposition::NEW_WINDOW, SOURCE_TEST);
     params.command_line = *base::CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }
@@ -399,16 +398,15 @@ bool ExtensionApiTest::RunExtensionTestImpl(const std::string& extension_name,
 }
 
 // Test that exactly one extension is loaded, and return it.
-const extensions::Extension* ExtensionApiTest::GetSingleLoadedExtension() {
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(browser()->profile());
+const Extension* ExtensionApiTest::GetSingleLoadedExtension() {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(browser()->profile());
 
-  const extensions::Extension* result = NULL;
-  for (const scoped_refptr<const extensions::Extension>& extension :
+  const Extension* result = NULL;
+  for (const scoped_refptr<const Extension>& extension :
        registry->enabled_extensions()) {
     // Ignore any component extensions. They are automatically loaded into all
     // profiles and aren't the extension we're looking for here.
-    if (extension->location() == extensions::Manifest::COMPONENT)
+    if (extension->location() == Manifest::COMPONENT)
       continue;
 
     if (result != NULL) {
@@ -496,12 +494,14 @@ void ExtensionApiTest::SetUpCommandLine(base::CommandLine* command_line) {
 
   test_data_dir_ = test_data_dir_.AppendASCII("api_test");
 
-  extensions::RegisterPathProvider();
-  base::PathService::Get(extensions::DIR_TEST_DATA, &shared_test_data_dir_);
+  RegisterPathProvider();
+  base::PathService::Get(DIR_TEST_DATA, &shared_test_data_dir_);
   shared_test_data_dir_ = shared_test_data_dir_.AppendASCII("api_test");
 
   // Backgrounded renderer processes run at a lower priority, causing the
   // tests to take more time to complete. Disable backgrounding so that the
   // tests don't time out.
-  command_line->AppendSwitch(switches::kDisableRendererBackgrounding);
+  command_line->AppendSwitch(::switches::kDisableRendererBackgrounding);
 }
+
+}  // namespace extensions

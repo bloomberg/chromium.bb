@@ -37,14 +37,14 @@ using sync_file_system::SyncFileSystemServiceFactory;
 
 namespace {
 
-class SyncFileSystemApiTest : public ExtensionApiTest {
+class SyncFileSystemApiTest : public extensions::ExtensionApiTest {
  public:
   SyncFileSystemApiTest()
       : mock_remote_service_(NULL),
         real_default_quota_(0) {}
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
     // TODO(calvinlo): Update test code after default quota is made const
     // (http://crbug.com/155488).
@@ -56,7 +56,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
   void TearDownInProcessBrowserTestFixture() override {
     storage::QuotaManager::kSyncableStorageDefaultHostQuota =
         real_default_quota_;
-    ExtensionApiTest::TearDownInProcessBrowserTestFixture();
+    extensions::ExtensionApiTest::TearDownInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {
@@ -66,7 +66,7 @@ class SyncFileSystemApiTest : public ExtensionApiTest {
     mock_remote_service_ = new ::testing::NiceMock<MockRemoteFileSyncService>;
     SyncFileSystemServiceFactory::GetInstance()->set_mock_remote_file_service(
         std::unique_ptr<RemoteFileSyncService>(mock_remote_service_));
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
   }
 
   ::testing::NiceMock<MockRemoteFileSyncService>* mock_remote_service() {

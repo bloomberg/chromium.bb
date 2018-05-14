@@ -22,14 +22,14 @@
 using extensions::PageCaptureSaveAsMHTMLFunction;
 using extensions::ScopedTestDialogAutoConfirm;
 
-class ExtensionPageCaptureApiTest : public ExtensionApiTest {
+class ExtensionPageCaptureApiTest : public extensions::ExtensionApiTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
   }
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 };

@@ -98,14 +98,14 @@ const char kTestDescriptorId1[] = "desc_id1";
 const char kTestDescriptorUuid1[] = "1222";
 const uint8_t kTestDescriptorDefaultValue1[] = {0x04, 0x05};
 
-class BluetoothLowEnergyApiTest : public ExtensionApiTest {
+class BluetoothLowEnergyApiTest : public extensions::ExtensionApiTest {
  public:
   BluetoothLowEnergyApiTest() {}
 
   ~BluetoothLowEnergyApiTest() override {}
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     empty_extension_ = extensions::ExtensionBuilder("Test").Build();
     SetUpMocks();
   }

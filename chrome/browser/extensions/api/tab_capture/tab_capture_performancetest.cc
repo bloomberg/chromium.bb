@@ -49,9 +49,8 @@ enum TestFlags {
   kSmallWindow = 1 << 4,         // Window size: 1 = 800x600, 0 = 2000x1000
 };
 
-class TabCapturePerformanceTest
-    : public ExtensionApiTest,
-      public testing::WithParamInterface<int> {
+class TabCapturePerformanceTest : public extensions::ExtensionApiTest,
+                                  public testing::WithParamInterface<int> {
  public:
   TabCapturePerformanceTest() {}
 
@@ -78,7 +77,7 @@ class TabCapturePerformanceTest
     EnablePixelOutput();
     if (!HasFlag(kUseGpu))
       UseSoftwareCompositing();
-    ExtensionApiTest::SetUp();
+    extensions::ExtensionApiTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -101,7 +100,7 @@ class TabCapturePerformanceTest
         extensions::switches::kWhitelistedExtensionID,
         kExtensionId);
 
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
   void FindEvents(trace_analyzer::TraceAnalyzer* analyzer,

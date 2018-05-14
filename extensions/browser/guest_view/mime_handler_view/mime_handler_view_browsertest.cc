@@ -38,7 +38,7 @@ using guest_view::TestGuestViewManagerFactory;
 // The test extension id is set by the key value in the manifest.
 const char kExtensionId[] = "oickdpebdnfbgkcaoklfcdhjniefkcji";
 
-class MimeHandlerViewTest : public ExtensionApiTest,
+class MimeHandlerViewTest : public extensions::ExtensionApiTest,
                             public testing::WithParamInterface<bool> {
  public:
   MimeHandlerViewTest() {
@@ -48,7 +48,7 @@ class MimeHandlerViewTest : public ExtensionApiTest,
   ~MimeHandlerViewTest() override {}
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
 
     embedded_test_server()->ServeFilesFromDirectory(
         test_data_dir_.AppendASCII("mime_handler_view"));
@@ -63,7 +63,7 @@ class MimeHandlerViewTest : public ExtensionApiTest,
   // MimeHandlerViewGuest will be based on OOPIF and we can remove this comment
   // (https://crbug.com/642826).
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 
     bool use_cross_process_frames_for_guests = GetParam();
     if (use_cross_process_frames_for_guests) {

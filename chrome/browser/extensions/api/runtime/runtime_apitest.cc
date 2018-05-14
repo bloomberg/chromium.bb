@@ -20,6 +20,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/url_constants.h"
 
+namespace extensions {
+
 // Tests the privileged components of chrome.runtime.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimePrivileged) {
   ASSERT_TRUE(RunExtensionTest("runtime/privileged")) << message_;
@@ -47,8 +49,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeRuntimeUninstallURL) {
                                 .AppendASCII("sets_uninstall_url")));
   ASSERT_TRUE(RunExtensionTest("runtime/uninstall_url")) << message_;
 }
-
-namespace extensions {
 
 namespace {
 

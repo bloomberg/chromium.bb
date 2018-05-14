@@ -20,10 +20,10 @@
 #include "ui/aura/window_tree_host.h"
 #endif
 
-class ExtensionApiTabTest : public ExtensionApiTest {
+class ExtensionApiTabTest : public extensions::ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
   }

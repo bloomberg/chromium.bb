@@ -22,10 +22,10 @@
 using content::WebContents;
 using extensions::ResultCatcher;
 
-class IncognitoApiTest : public ExtensionApiTest {
+class IncognitoApiTest : public extensions::ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
   }

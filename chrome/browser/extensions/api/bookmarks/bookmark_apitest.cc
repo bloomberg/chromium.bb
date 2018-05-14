@@ -21,6 +21,8 @@
 
 using bookmarks::BookmarkModel;
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Bookmarks) {
   // Add test managed bookmarks to verify that the bookmarks API can read them
   // and can't modify them.
@@ -44,3 +46,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Bookmarks) {
 
   ASSERT_TRUE(RunExtensionTest("bookmarks")) << message_;
 }
+
+}  // namespace extensions

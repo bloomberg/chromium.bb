@@ -17,10 +17,10 @@
 
 namespace {
 
-class ClipboardApiTest : public ExtensionApiTest {
+class ClipboardApiTest : public extensions::ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 

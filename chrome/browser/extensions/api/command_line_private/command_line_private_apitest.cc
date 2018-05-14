@@ -11,9 +11,9 @@ namespace {
 const char kTestCommandLineSwitch[] = "command-line-private-api-test-foo";
 }  // namespace
 
-class CommandLinePrivateApiTest : public ExtensionApiTest {
+class CommandLinePrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(kTestCommandLineSwitch);
   }
 };

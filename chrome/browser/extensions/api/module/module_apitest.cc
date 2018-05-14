@@ -4,8 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-class ExtensionModuleApiTest : public ExtensionApiTest {
-};
+using ExtensionModuleApiTest = extensions::ExtensionApiTest;
 
 IN_PROC_BROWSER_TEST_F(ExtensionModuleApiTest, CognitoFile) {
   ASSERT_TRUE(RunExtensionTest("extension_module/cognito_file")) << message_;

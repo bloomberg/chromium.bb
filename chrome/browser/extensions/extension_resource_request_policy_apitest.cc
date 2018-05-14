@@ -19,10 +19,10 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
-class ExtensionResourceRequestPolicyTest : public ExtensionApiTest {
+class ExtensionResourceRequestPolicyTest : public extensions::ExtensionApiTest {
  protected:
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
   }

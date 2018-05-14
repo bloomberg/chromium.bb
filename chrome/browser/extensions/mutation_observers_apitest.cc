@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MutationObservers) {
   ASSERT_TRUE(RunExtensionTest("mutation_observers")) << message_;
 }
+
+}  // namespace extensions

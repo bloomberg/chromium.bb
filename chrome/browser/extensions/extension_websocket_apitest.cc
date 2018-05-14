@@ -7,7 +7,11 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/test_data_directory.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, WebSocket) {
   ASSERT_TRUE(StartWebSocketServer(net::GetWebSocketTestDataDirectory()));
   ASSERT_TRUE(RunExtensionTest("websocket")) << message_;
 }
+
+}  // namespace extensions

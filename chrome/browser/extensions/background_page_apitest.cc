@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Canvas2D) {
   ASSERT_TRUE(RunExtensionTest("canvas_2d")) << message_;
 }
+
+}  // namespace extensions

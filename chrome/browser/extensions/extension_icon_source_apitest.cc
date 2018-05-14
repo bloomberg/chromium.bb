@@ -16,7 +16,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
 
-using ExtensionIconSourceTest = ExtensionApiTest;
+using ExtensionIconSourceTest = extensions::ExtensionApiTest;
 
 // Times out on Mac and Win. http://crbug.com/238705
 #if defined(OS_WIN) || defined(OS_MACOSX)

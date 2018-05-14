@@ -143,7 +143,7 @@ void EnterWrongPin(chromeos::CertificateProviderService* service) {
   EXPECT_EQ(SK_ColorRED, view->error_label_for_testing()->enabled_color());
 }
 
-class CertificateProviderApiTest : public ExtensionApiTest {
+class CertificateProviderApiTest : public extensions::ExtensionApiTest {
  public:
   CertificateProviderApiTest() {}
 
@@ -152,11 +152,11 @@ class CertificateProviderApiTest : public ExtensionApiTest {
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     // Set up the AutoSelectCertificateForUrls policy to avoid the client
     // certificate selection dialog.
     const std::string autoselect_pattern =

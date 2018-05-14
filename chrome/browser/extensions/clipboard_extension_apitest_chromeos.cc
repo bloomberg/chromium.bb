@@ -5,11 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 
-namespace {
-
-class ClipboardExtensionApiTest : public ExtensionApiTest {};
-
-}  // namespace
+using ClipboardExtensionApiTest = extensions::ExtensionApiTest;
 
 IN_PROC_BROWSER_TEST_F(ClipboardExtensionApiTest, ClipboardDataChanged) {
   ExtensionTestMessageListener result_listener("success 2", false);

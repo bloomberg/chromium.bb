@@ -551,7 +551,7 @@ FileManagerBrowserTestBase::~FileManagerBrowserTestBase() = default;
 
 void FileManagerBrowserTestBase::SetUp() {
   net::NetworkChangeNotifier::SetTestNotificationsOnly(true);
-  ExtensionApiTest::SetUp();
+  extensions::ExtensionApiTest::SetUp();
 }
 
 void FileManagerBrowserTestBase::SetUpCommandLine(
@@ -573,11 +573,11 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverUnpacker);
   command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverPacker);
 
-  ExtensionApiTest::SetUpCommandLine(command_line);
+  extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 }
 
 void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
-  ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
   local_volume_ = std::make_unique<DownloadsTestVolume>();
 
@@ -592,7 +592,7 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
 }
 
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
-  ExtensionApiTest::SetUpOnMainThread();
+  extensions::ExtensionApiTest::SetUpOnMainThread();
   CHECK(profile());
 
   CHECK(local_volume_->Mount(profile()));

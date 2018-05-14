@@ -114,25 +114,25 @@ class TestShillThirdPartyVpnDriverClient
   std::vector<char> ip_packet_;
 };
 
-class VpnProviderApiTest : public ExtensionApiTest,
+class VpnProviderApiTest : public extensions::ExtensionApiTest,
                            public NetworkConfigurationObserver {
  public:
   VpnProviderApiTest() {}
   ~VpnProviderApiTest() override {}
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     NetworkHandler::Get()->network_configuration_handler()->AddObserver(this);
   }
 
   void TearDownOnMainThread() override {
-    ExtensionApiTest::TearDownOnMainThread();
+    extensions::ExtensionApiTest::TearDownOnMainThread();
     NetworkHandler::Get()->network_configuration_handler()->RemoveObserver(
         this);
   }
 
   void SetUpInProcessBrowserTestFixture() override {
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
     test_client_ = new TestShillThirdPartyVpnDriverClient();
     DBusThreadManager::GetSetterForTesting()->SetShillThirdPartyVpnDriverClient(
         base::WrapUnique(test_client_));

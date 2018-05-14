@@ -8,8 +8,12 @@
 #include "extensions/browser/api/test/test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
+
 #if defined(OS_CHROMEOS)
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, InputImeApiBasic) {
   ASSERT_TRUE(RunExtensionTest("input_ime")) << message_;
 }
 #endif
+
+}  // namespace extensions

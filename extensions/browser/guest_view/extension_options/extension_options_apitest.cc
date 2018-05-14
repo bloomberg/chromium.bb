@@ -18,10 +18,10 @@
 using extensions::Extension;
 using extensions::FeatureSwitch;
 
-class ExtensionOptionsApiTest : public ExtensionApiTest,
+class ExtensionOptionsApiTest : public extensions::ExtensionApiTest,
                                 public testing::WithParamInterface<bool> {
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 
     bool use_cross_process_frames_for_guests = GetParam();
     if (use_cross_process_frames_for_guests) {

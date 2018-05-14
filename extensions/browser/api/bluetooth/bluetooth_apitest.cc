@@ -41,12 +41,12 @@ namespace {
 static const char* kAdapterAddress = "A1:A2:A3:A4:A5:A6";
 static const char* kName = "whatsinaname";
 
-class BluetoothApiTest : public ExtensionApiTest {
+class BluetoothApiTest : public extensions::ExtensionApiTest {
  public:
   BluetoothApiTest() {}
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     empty_extension_ = extensions::ExtensionBuilder("Test").Build();
     SetUpMockAdapter();
   }

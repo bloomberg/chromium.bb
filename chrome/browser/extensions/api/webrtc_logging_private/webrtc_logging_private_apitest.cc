@@ -71,12 +71,12 @@ void InitializeTestMetaData(base::ListValue* parameters) {
   parameters->Append(std::move(meta_data));
 }
 
-class WebrtcLoggingPrivateApiTest : public ExtensionApiTest {
+class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
  protected:
   void SetUp() override {
     auto* cl = scoped_command_line_.GetProcessCommandLine();
     cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "enabled");
-    ExtensionApiTest::SetUp();
+    extensions::ExtensionApiTest::SetUp();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }
 
@@ -347,7 +347,7 @@ class WebrtcLoggingPrivateApiTestDisabledRemoteLogging
   void SetUp() override {
     auto* cl = scoped_command_line_.GetProcessCommandLine();
     cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "disabled");
-    ExtensionApiTest::SetUp();
+    extensions::ExtensionApiTest::SetUp();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }
 };

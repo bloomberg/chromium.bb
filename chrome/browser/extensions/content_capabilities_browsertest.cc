@@ -35,10 +35,10 @@ using extensions::Extension;
 using extensions::ExtensionBuilder;
 using extensions::ListBuilder;
 
-class ContentCapabilitiesTest : public ExtensionApiTest {
+class ContentCapabilitiesTest : public extensions::ExtensionApiTest {
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         crx_file::id_util::GenerateIdForPath(
@@ -46,7 +46,7 @@ class ContentCapabilitiesTest : public ExtensionApiTest {
   }
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     base::FilePath test_data;
     EXPECT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data));
     embedded_test_server()->ServeFilesFromDirectory(

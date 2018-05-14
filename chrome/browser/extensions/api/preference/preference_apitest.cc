@@ -35,7 +35,7 @@
 #include "extensions/test/result_catcher.h"
 #include "media/media_buildflags.h"
 
-class ExtensionPreferenceApiTest : public ExtensionApiTest {
+class ExtensionPreferenceApiTest : public extensions::ExtensionApiTest {
  protected:
   ExtensionPreferenceApiTest() : profile_(NULL) {}
 
@@ -80,7 +80,7 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
   }
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
 
     // The browser might get closed later (and therefore be destroyed), so we
     // save the profile.
@@ -101,7 +101,7 @@ class ExtensionPreferenceApiTest : public ExtensionApiTest {
                                   base::Unretained(&keep_alive_), nullptr));
     content::RunAllPendingInMessageLoop();
 
-    ExtensionApiTest::TearDownOnMainThread();
+    extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
   Profile* profile_;

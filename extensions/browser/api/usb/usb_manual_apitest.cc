@@ -5,11 +5,7 @@
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 
-namespace {
-
-class UsbManualApiTest : public ExtensionApiTest {};
-
-}  // namespace
+using UsbManualApiTest = extensions::ExtensionApiTest;
 
 IN_PROC_BROWSER_TEST_F(UsbManualApiTest, MANUAL_ListInterfaces) {
   extensions::PermissionsRequestFunction::SetIgnoreUserGestureForTests(true);

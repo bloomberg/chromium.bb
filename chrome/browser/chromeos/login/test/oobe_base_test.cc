@@ -85,7 +85,7 @@ void OobeBaseTest::SetUp() {
   // SetUpCommandLine().
   InitHttpsForwarders();
 
-  ExtensionApiTest::SetUp();
+  extensions::ExtensionApiTest::SetUp();
 }
 
 void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
@@ -94,7 +94,7 @@ void OobeBaseTest::SetUpInProcessBrowserTestFixture() {
   network_portal_detector_->SetDefaultNetworkForTesting(
       FakeShillManagerClient::kFakeEthernetNetworkGuid);
 
-  ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 }
 
 void OobeBaseTest::SetUpOnMainThread() {
@@ -128,17 +128,17 @@ void OobeBaseTest::SetUpOnMainThread() {
     run_loop.Run();
   }
 
-  ExtensionApiTest::SetUpOnMainThread();
+  extensions::ExtensionApiTest::SetUpOnMainThread();
 }
 
 void OobeBaseTest::TearDownOnMainThread() {
   EXPECT_TRUE(embedded_test_server()->ShutdownAndWaitUntilComplete());
 
-  ExtensionApiTest::TearDownOnMainThread();
+  extensions::ExtensionApiTest::TearDownOnMainThread();
 }
 
 void OobeBaseTest::SetUpCommandLine(base::CommandLine* command_line) {
-  ExtensionApiTest::SetUpCommandLine(command_line);
+  extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 
   command_line->AppendSwitch(ash::switches::kShowWebUiLogin);
   command_line->AppendSwitch(chromeos::switches::kLoginManager);

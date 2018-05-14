@@ -5,10 +5,10 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/dns/mock_host_resolver.h"
 
-class JavscriptApiTest : public ExtensionApiTest {
+class JavscriptApiTest : public extensions::ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
   }

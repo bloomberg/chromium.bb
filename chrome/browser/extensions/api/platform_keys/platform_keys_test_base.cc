@@ -72,11 +72,11 @@ void PlatformKeysTestBase::SetUp() {
       GaiaUrls::GetInstance()->gaia_url().host(),
       embedded_test_server()->base_url()));
 
-  ExtensionApiTest::SetUp();
+  extensions::ExtensionApiTest::SetUp();
 }
 
 void PlatformKeysTestBase::SetUpCommandLine(base::CommandLine* command_line) {
-  ExtensionApiTest::SetUpCommandLine(command_line);
+  extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 
   policy::affiliation_test_helper::AppendCommandLineSwitchesForLoginManager(
       command_line);
@@ -91,7 +91,7 @@ void PlatformKeysTestBase::SetUpCommandLine(base::CommandLine* command_line) {
 }
 
 void PlatformKeysTestBase::SetUpInProcessBrowserTestFixture() {
-  ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
 
   chromeos::FakeSessionManagerClient* fake_session_manager_client =
       new chromeos::FakeSessionManagerClient;
@@ -162,11 +162,11 @@ void PlatformKeysTestBase::SetUpOnMainThread() {
     loop.Run();
   }
 
-  ExtensionApiTest::SetUpOnMainThread();
+  extensions::ExtensionApiTest::SetUpOnMainThread();
 }
 
 void PlatformKeysTestBase::TearDownOnMainThread() {
-  ExtensionApiTest::TearDownOnMainThread();
+  extensions::ExtensionApiTest::TearDownOnMainThread();
 
   if (system_token_status() == SystemTokenStatus::EXISTS) {
     base::RunLoop loop;
