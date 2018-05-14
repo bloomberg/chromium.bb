@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <map>
+#include <numeric>
 #include <set>
 #include <utility>
 
@@ -39,12 +40,16 @@ namespace content {
 
 namespace {
 
-bool DeleteDir(const base::FilePath& path) {
-  return base::DeleteFile(path, true /* recursive */);
+bool DeleteDirs(const std::vector<base::FilePath>& paths) {
+  return std::accumulate(
+      paths.begin(), paths.end(), true,
+      [](bool result, const base::FilePath& path) {
+        return base::DeleteFile(path, true /* recursive */) && result;
+      });
 }
 
-void DeleteOriginDidDeleteDir(storage::QuotaClient::DeletionCallback callback,
-                              bool rv) {
+void DeleteOriginDidDeleteDirs(storage::QuotaClient::DeletionCallback callback,
+                               bool rv) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -86,6 +91,7 @@ void ListOriginsAndLastModifiedOnTaskRunner(
     base::ReadFileToString(path.AppendASCII(CacheStorage::kIndexFileName),
                            &protobuf);
     proto::CacheStorageIndex index;
+    // TODO(crbug.com/838908): Clarify behavior with multiple cache owners.
     if (index.ParseFromString(protobuf)) {
       if (index.has_origin()) {
         if (base::GetFileInfo(path, &file_info)) {
@@ -177,51 +183,56 @@ CacheStorageManager::~CacheStorageManager() = default;
 
 void CacheStorageManager::OpenCache(
     const url::Origin& origin,
+    CacheStorageOwner owner,
     const std::string& cache_name,
     CacheStorage::CacheAndErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
+  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
 
   cache_storage->OpenCache(cache_name, std::move(callback));
 }
 
 void CacheStorageManager::HasCache(
     const url::Origin& origin,
+    CacheStorageOwner owner,
     const std::string& cache_name,
     CacheStorage::BoolAndErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
+  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
   cache_storage->HasCache(cache_name, std::move(callback));
 }
 
 void CacheStorageManager::DeleteCache(const url::Origin& origin,
+                                      CacheStorageOwner owner,
                                       const std::string& cache_name,
                                       CacheStorage::ErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
+  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
   cache_storage->DoomCache(cache_name, std::move(callback));
 }
 
 void CacheStorageManager::EnumerateCaches(
     const url::Origin& origin,
+    CacheStorageOwner owner,
     CacheStorage::IndexCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
+  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
 
   cache_storage->EnumerateCaches(std::move(callback));
 }
 
 void CacheStorageManager::MatchCache(
     const url::Origin& origin,
+    CacheStorageOwner owner,
     const std::string& cache_name,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCacheQueryParams& match_params,
     CacheStorageCache::ResponseCallback callback) {
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
+  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
 
   cache_storage->MatchCache(cache_name, std::move(request), match_params,
                             std::move(callback));
@@ -229,10 +240,11 @@ void CacheStorageManager::MatchCache(
 
 void CacheStorageManager::MatchAllCaches(
     const url::Origin& origin,
+    CacheStorageOwner owner,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
     const CacheStorageCacheQueryParams& match_params,
     CacheStorageCache::ResponseCallback callback) {
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
+  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
 
   cache_storage->MatchAllCaches(std::move(request), match_params,
                                 std::move(callback));
@@ -281,9 +293,9 @@ void CacheStorageManager::GetAllOriginsUsage(
 
   if (IsMemoryBacked()) {
     for (const auto& origin_details : cache_storage_map_) {
-      usages->push_back(
-          CacheStorageUsageInfo(origin_details.first.GetURL(), 0 /* size */,
-                                base::Time() /* last modified */));
+      usages->push_back(CacheStorageUsageInfo(
+          origin_details.first.first.GetURL(), 0 /* size */,
+          base::Time() /* last modified */));
     }
     GetAllOriginsUsageGetSizes(std::move(usages), std::move(callback));
     return;
@@ -325,8 +337,8 @@ void CacheStorageManager::GetAllOriginsUsageGetSizes(
       base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, barrier_closure);
       continue;
     }
-    CacheStorage* cache_storage =
-        FindOrCreateCacheStorage(url::Origin::Create(usage.origin));
+    CacheStorage* cache_storage = FindOrCreateCacheStorage(
+        url::Origin::Create(usage.origin), CacheStorageOwner::kCacheAPI);
     cache_storage->Size(
         base::BindOnce(&OneOriginSizeReported, barrier_closure, &usage));
   }
@@ -337,7 +349,8 @@ void CacheStorageManager::GetOriginUsage(
     storage::QuotaClient::GetUsageCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  CacheStorage* cache_storage = FindOrCreateCacheStorage(origin);
+  CacheStorage* cache_storage =
+      FindOrCreateCacheStorage(origin, CacheStorageOwner::kCacheAPI);
 
   cache_storage->Size(std::move(callback));
 }
@@ -349,7 +362,7 @@ void CacheStorageManager::GetOrigins(
   if (IsMemoryBacked()) {
     std::set<url::Origin> origins;
     for (const auto& key_value : cache_storage_map_)
-      origins.insert(key_value.first);
+      origins.insert(key_value.first.first);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), origins));
@@ -370,8 +383,8 @@ void CacheStorageManager::GetOriginsForHost(
   if (IsMemoryBacked()) {
     std::set<url::Origin> origins;
     for (const auto& key_value : cache_storage_map_) {
-      if (host == net::GetHostOrSpecFromURL(key_value.first.GetURL()))
-        origins.insert(key_value.first);
+      if (host == net::GetHostOrSpecFromURL(key_value.first.first.GetURL()))
+        origins.insert(key_value.first.first);
     }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), origins));
@@ -390,19 +403,29 @@ void CacheStorageManager::DeleteOriginData(
     storage::QuotaClient::DeletionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  // Create the CacheStorage for the origin if it hasn't been loaded yet.
-  FindOrCreateCacheStorage(origin);
-
-  CacheStorageMap::iterator it = cache_storage_map_.find(origin);
-  DCHECK(it != cache_storage_map_.end());
-
-  CacheStorage* cache_storage = it->second.release();
-  cache_storage->ResetManager();
-  cache_storage_map_.erase(origin);
-  cache_storage->GetSizeThenCloseAllCaches(
+  base::RepeatingClosure barrier_closure = base::BarrierClosure(
+      static_cast<int>(CacheStorageOwner::kMaxValue) + 1,
       base::BindOnce(&CacheStorageManager::DeleteOriginDidClose,
                      weak_ptr_factory_.GetWeakPtr(), origin,
-                     std::move(callback), base::WrapUnique(cache_storage)));
+                     std::move(callback)));
+
+  for (int i = static_cast<int>(CacheStorageOwner::kMinValue);
+       i <= static_cast<int>(CacheStorageOwner::kMaxValue); i++) {
+    CacheStorageOwner owner = static_cast<CacheStorageOwner>(i);
+
+    // Create the CacheStorage for the origin if it hasn't been loaded yet.
+    FindOrCreateCacheStorage(origin, owner);
+
+    // We need another look-up to release the CacheStorage ptr.
+    CacheStorage* cache_storage = cache_storage_map_[{origin, owner}].release();
+
+    cache_storage->ResetManager();
+    cache_storage_map_.erase({origin, owner});
+    cache_storage->GetSizeThenCloseAllCaches(
+        base::BindOnce(&CacheStorageManager::NotifyStorageModified,
+                       weak_ptr_factory_.GetWeakPtr(), origin,
+                       base::WrapUnique(cache_storage), barrier_closure));
+  }
 }
 
 void CacheStorageManager::DeleteOriginData(const url::Origin& origin) {
@@ -410,10 +433,10 @@ void CacheStorageManager::DeleteOriginData(const url::Origin& origin) {
   DeleteOriginData(origin, base::DoNothing());
 }
 
-void CacheStorageManager::DeleteOriginDidClose(
+void CacheStorageManager::NotifyStorageModified(
     const url::Origin& origin,
-    storage::QuotaClient::DeletionCallback callback,
     std::unique_ptr<CacheStorage> cache_storage,
+    base::OnceClosure callback,
     int64_t origin_size) {
   // TODO(jkarlin): Deleting the storage leaves any unfinished operations
   // hanging, resulting in unresolved promises. Fix this by returning early from
@@ -423,6 +446,12 @@ void CacheStorageManager::DeleteOriginDidClose(
   quota_manager_proxy_->NotifyStorageModified(
       storage::QuotaClient::kServiceWorkerCache, origin,
       blink::mojom::StorageType::kTemporary, -1 * origin_size);
+  std::move(callback).Run();
+}
+
+void CacheStorageManager::DeleteOriginDidClose(
+    const url::Origin& origin,
+    storage::QuotaClient::DeletionCallback callback) {
   NotifyCacheListChanged(origin);
 
   if (IsMemoryBacked()) {
@@ -432,10 +461,17 @@ void CacheStorageManager::DeleteOriginDidClose(
     return;
   }
 
+  std::vector<base::FilePath> delete_paths;
+  for (int owner = static_cast<int>(CacheStorageOwner::kMinValue);
+       owner <= static_cast<int>(CacheStorageOwner::kMaxValue); owner++) {
+    delete_paths.push_back(ConstructOriginPath(
+        root_path_, origin, static_cast<CacheStorageOwner>(owner)));
+  }
+
   PostTaskAndReplyWithResult(
       cache_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&DeleteDir, ConstructOriginPath(root_path_, origin)),
-      base::BindOnce(&DeleteOriginDidDeleteDir, std::move(callback)));
+      base::BindOnce(&DeleteDirs, std::move(delete_paths)),
+      base::BindOnce(&DeleteOriginDidDeleteDirs, std::move(callback)));
 }
 
 CacheStorageManager::CacheStorageManager(
@@ -453,17 +489,17 @@ CacheStorageManager::CacheStorageManager(
 }
 
 CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    CacheStorageOwner owner) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(request_context_getter_);
-  CacheStorageMap::const_iterator it = cache_storage_map_.find(origin);
+  CacheStorageMap::const_iterator it = cache_storage_map_.find({origin, owner});
   if (it == cache_storage_map_.end()) {
     CacheStorage* cache_storage = new CacheStorage(
-        ConstructOriginPath(root_path_, origin), IsMemoryBacked(),
+        ConstructOriginPath(root_path_, origin, owner), IsMemoryBacked(),
         cache_task_runner_.get(), request_context_getter_, quota_manager_proxy_,
         blob_context_, this, origin);
-    cache_storage_map_.insert(
-        std::make_pair(origin, base::WrapUnique(cache_storage)));
+    cache_storage_map_[{origin, owner}] = base::WrapUnique(cache_storage);
     return cache_storage;
   }
   return it->second.get();
@@ -472,8 +508,12 @@ CacheStorage* CacheStorageManager::FindOrCreateCacheStorage(
 // static
 base::FilePath CacheStorageManager::ConstructOriginPath(
     const base::FilePath& root_path,
-    const url::Origin& origin) {
-  const std::string identifier = storage::GetIdentifierFromOrigin(origin);
+    const url::Origin& origin,
+    CacheStorageOwner owner) {
+  std::string identifier = storage::GetIdentifierFromOrigin(origin);
+  if (owner != CacheStorageOwner::kCacheAPI) {
+    identifier += "-" + std::to_string(static_cast<int>(owner));
+  }
   const std::string origin_hash = base::SHA1HashString(identifier);
   const std::string origin_hash_hex = base::ToLowerASCII(
       base::HexEncode(origin_hash.c_str(), origin_hash.length()));
