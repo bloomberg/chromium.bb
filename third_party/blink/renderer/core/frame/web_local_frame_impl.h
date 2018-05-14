@@ -247,6 +247,8 @@ class CORE_EXPORT WebLocalFrameImpl final
   WebString GetLayerTreeAsTextForTesting(
       bool show_debug_info = false) const override;
 
+  FindInPage* GetFindInPageForTesting() const;
+
   WebFrameClient* Client() const override { return client_; }
 
   // WebLocalFrame methods:
@@ -314,9 +316,6 @@ class CORE_EXPORT WebLocalFrameImpl final
             bool* active_now = nullptr) override;
   void StopFinding(StopFindAction) override;
   void IncreaseMatchCount(int count, int identifier) override;
-  int FindMatchMarkersVersion() const override;
-  WebFloatRect ActiveFindMatchRect() override;
-  void FindMatchRects(WebVector<WebFloatRect>&) override;
   int SelectNearestFindMatch(const WebFloatPoint&,
                              WebRect* selection_rect) override;
   float DistanceToNearestFindMatch(const WebFloatPoint&) override;

@@ -1155,10 +1155,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                    int active_match_ordinal,
                    bool final_update);
 #if defined(OS_ANDROID)
-  void OnFindMatchRectsReply(RenderFrameHostImpl* source,
-                             int version,
-                             const std::vector<gfx::RectF>& rects,
-                             const gfx::RectF& active_rect);
   void OnGetNearestFindResultReply(RenderFrameHostImpl* source,
                                    int request_id,
                                    float distance);

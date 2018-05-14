@@ -167,32 +167,16 @@ void FindInPage::IncreaseMatchCount(int count, int identifier) {
   EnsureTextFinder().IncreaseMatchCount(identifier, count);
 }
 
-int WebLocalFrameImpl::FindMatchMarkersVersion() const {
-  return find_in_page_->FindMatchMarkersVersion();
-};
-
 int FindInPage::FindMatchMarkersVersion() const {
   if (GetTextFinder())
     return GetTextFinder()->FindMatchMarkersVersion();
   return 0;
 }
 
-WebFloatRect WebLocalFrameImpl::ActiveFindMatchRect() {
-  return find_in_page_->ActiveFindMatchRect();
-}
-
 WebFloatRect FindInPage::ActiveFindMatchRect() {
   if (GetTextFinder())
     return GetTextFinder()->ActiveFindMatchRect();
   return WebFloatRect();
-}
-
-void WebLocalFrameImpl::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
-  find_in_page_->FindMatchRects(output_rects);
-};
-
-void FindInPage::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
-  EnsureTextFinder().FindMatchRects(output_rects);
 }
 
 int WebLocalFrameImpl::SelectNearestFindMatch(const WebFloatPoint& point,
@@ -216,6 +200,21 @@ float FindInPage::DistanceToNearestFindMatch(const WebFloatPoint& point) {
   return nearest_distance;
 }
 
+void FindInPage::FindMatchRects(int current_version,
+                                FindMatchRectsCallback callback) {
+  int rects_version = FindMatchMarkersVersion();
+  Vector<WebFloatRect> rects;
+  if (current_version != rects_version)
+    rects = EnsureTextFinder().FindMatchRects();
+  std::move(callback).Run(rects_version, rects, ActiveFindMatchRect());
+}
+
+void FindInPage::ClearActiveFindMatch() {
+  // TODO(rakina): Do collapse selection as this currently does nothing.
+  frame_->ExecuteCommand(WebString::FromUTF8("CollapseSelection"));
+  EnsureTextFinder().ClearActiveFindMatch();
+}
+
 void WebLocalFrameImpl::SetTickmarks(const WebVector<WebRect>& tickmarks) {
   find_in_page_->SetTickmarks(tickmarks);
 }
@@ -227,12 +226,6 @@ void FindInPage::SetTickmarks(const WebVector<WebRect>& tickmarks) {
       tickmarks_converted[i] = tickmarks[i];
     frame_->GetFrameView()->SetTickmarks(tickmarks_converted);
   }
-}
-
-void FindInPage::ClearActiveFindMatch() {
-  // TODO(rakina): Do collapse selection as this currently does nothing.
-  frame_->ExecuteCommand(WebString::FromUTF8("CollapseSelection"));
-  EnsureTextFinder().ClearActiveFindMatch();
 }
 
 TextFinder* WebLocalFrameImpl::GetTextFinder() const {

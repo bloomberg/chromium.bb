@@ -684,7 +684,7 @@ WebFloatRect TextFinder::ActiveFindMatchRect() {
   return WebFloatRect(FindInPageRectFromRange(EphemeralRange(ActiveMatch())));
 }
 
-void TextFinder::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
+Vector<WebFloatRect> TextFinder::FindMatchRects() {
   UpdateFindMatchRects();
 
   Vector<WebFloatRect> match_rects;
@@ -694,7 +694,7 @@ void TextFinder::FindMatchRects(WebVector<WebFloatRect>& output_rects) {
     match_rects.push_back(match.rect_);
   }
 
-  output_rects = match_rects;
+  return match_rects;
 }
 
 int TextFinder::SelectNearestFindMatch(const WebFloatPoint& point,

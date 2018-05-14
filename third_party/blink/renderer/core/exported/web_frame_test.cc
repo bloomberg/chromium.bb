@@ -104,6 +104,7 @@
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"
 #include "third_party/blink/renderer/core/frame/browser_controls.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
+#include "third_party/blink/renderer/core/frame/find_in_page.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -5131,17 +5132,19 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects) {
   RunPendingTasks();
   EXPECT_TRUE(client.FindResultsAreReady());
 
-  WebVector<WebFloatRect> web_match_rects;
-  main_frame->FindMatchRects(web_match_rects);
+  WebVector<WebFloatRect> web_match_rects =
+      main_frame->EnsureTextFinder().FindMatchRects();
   ASSERT_EQ(static_cast<size_t>(kNumResults), web_match_rects.size());
-  int rects_version = main_frame->FindMatchMarkersVersion();
+  int rects_version =
+      main_frame->GetFindInPageForTesting()->FindMatchMarkersVersion();
 
   for (int result_index = 0; result_index < kNumResults; ++result_index) {
     FloatRect result_rect =
         static_cast<FloatRect>(web_match_rects[result_index]);
 
     // Select the match by the center of its rect.
-    EXPECT_EQ(main_frame->SelectNearestFindMatch(result_rect.Center(), nullptr),
+    EXPECT_EQ(main_frame->GetFindInPageForTesting()->SelectNearestFindMatch(
+                  result_rect.Center(), nullptr),
               result_index + 1);
 
     // Check that the find result ordering matches with our expectations.
@@ -5154,17 +5157,21 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects) {
     // Verify that the expected match rect also matches the currently active
     // match.  Compare the enclosing rects to prevent precision issues caused by
     // CSS transforms.
-    FloatRect active_match = main_frame->ActiveFindMatchRect();
+    FloatRect active_match =
+        main_frame->GetFindInPageForTesting()->ActiveFindMatchRect();
     EXPECT_EQ(EnclosingIntRect(active_match), EnclosingIntRect(result_rect));
 
     // The rects version should not have changed.
-    EXPECT_EQ(main_frame->FindMatchMarkersVersion(), rects_version);
+    EXPECT_EQ(main_frame->GetFindInPageForTesting()->FindMatchMarkersVersion(),
+              rects_version);
   }
 
   // Resizing should update the rects version.
   web_view_helper.Resize(WebSize(800, 600));
   RunPendingTasks();
-  EXPECT_TRUE(main_frame->FindMatchMarkersVersion() != rects_version);
+  EXPECT_TRUE(
+      main_frame->GetFindInPageForTesting()->FindMatchMarkersVersion() !=
+      rects_version);
 }
 
 TEST_P(ParameterizedWebFrameTest, FindInPageActiveIndex) {
@@ -11779,19 +11786,21 @@ TEST_P(WebFrameSimTest, FindInPageSelectNextMatch) {
 
   RunPendingTasks();
 
-  WebVector<WebFloatRect> web_match_rects;
-  frame->FindMatchRects(web_match_rects);
+  WebVector<WebFloatRect> web_match_rects =
+      frame->EnsureTextFinder().FindMatchRects();
   ASSERT_EQ(2ul, web_match_rects.size());
 
   FloatRect result_rect = static_cast<FloatRect>(web_match_rects[0]);
-  frame->SelectNearestFindMatch(result_rect.Center(), nullptr);
+  frame->GetFindInPageForTesting()->SelectNearestFindMatch(result_rect.Center(),
+                                                           nullptr);
 
   LocalFrame* local_frame = ToLocalFrame(WebView().GetPage()->MainFrame());
   VisualViewport& visual_viewport = local_frame->GetPage()->GetVisualViewport();
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(box1_rect));
 
   result_rect = static_cast<FloatRect>(web_match_rects[1]);
-  frame->SelectNearestFindMatch(result_rect.Center(), nullptr);
+  frame->GetFindInPageForTesting()->SelectNearestFindMatch(result_rect.Center(),
+                                                           nullptr);
 
   EXPECT_TRUE(visual_viewport.VisibleRectInDocument().Contains(box2_rect))
       << "Box [" << box2_rect.ToString() << "] is not visible in viewport ["

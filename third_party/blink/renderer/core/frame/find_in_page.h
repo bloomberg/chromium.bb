@@ -10,6 +10,7 @@
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
@@ -20,8 +21,9 @@ class WebString;
 struct WebFindOptions;
 struct WebFloatRect;
 
-class FindInPage final : public GarbageCollectedFinalized<FindInPage>,
-                         public mojom::blink::FindInPage {
+class CORE_EXPORT FindInPage final
+    : public GarbageCollectedFinalized<FindInPage>,
+      public mojom::blink::FindInPage {
   USING_PRE_FINALIZER(FindInPage, Dispose);
 
  public:
@@ -44,20 +46,27 @@ class FindInPage final : public GarbageCollectedFinalized<FindInPage>,
 
   void IncreaseMatchCount(int count, int identifier);
 
-  int FindMatchMarkersVersion() const;
-
-  WebFloatRect ActiveFindMatchRect();
-
-  void FindMatchRects(WebVector<WebFloatRect>&);
-
   int SelectNearestFindMatch(const WebFloatPoint&, WebRect* selection_rect);
 
   float DistanceToNearestFindMatch(const WebFloatPoint&);
 
   void SetTickmarks(const WebVector<WebRect>&);
 
+  int FindMatchMarkersVersion() const;
+
+  // Returns the bounding box of the active find-in-page match marker or an
+  // empty rect if no such marker exists. The rect is returned in find-in-page
+  // coordinates.
+  WebFloatRect ActiveFindMatchRect();
+
+  // mojom::blink::FindInPage overrides
+
+  // Returns the bounding boxes of the find-in-page match markers in the frame,
+  // in find-in-page coordinates.
+  void FindMatchRects(int current_version, FindMatchRectsCallback) final;
+
   // Clears the active find match in the frame, if one exists.
-  void ClearActiveFindMatch() override;
+  void ClearActiveFindMatch() final;
 
   TextFinder* GetTextFinder() const;
 

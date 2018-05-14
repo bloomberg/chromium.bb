@@ -1055,7 +1055,6 @@ class CONTENT_EXPORT RenderFrameImpl
 #if defined(OS_ANDROID)
   void OnActivateNearestFindResult(int request_id, float x, float y);
   void OnGetNearestFindResult(int request_id, float x, float y);
-  void OnFindMatchRects(int current_version);
 #endif
   void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
   void OnNotifyUserActivation();

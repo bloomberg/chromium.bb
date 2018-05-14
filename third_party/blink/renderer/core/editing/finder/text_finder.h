@@ -50,9 +50,6 @@ struct WebFloatPoint;
 struct WebFloatRect;
 struct WebRect;
 
-template <typename T>
-class WebVector;
-
 class CORE_EXPORT TextFinder final
     : public GarbageCollectedFinalized<TextFinder> {
  public:
@@ -69,7 +66,7 @@ class CORE_EXPORT TextFinder final
   void IncreaseMatchCount(int identifier, int count);
   int FindMatchMarkersVersion() const { return find_match_markers_version_; }
   WebFloatRect ActiveFindMatchRect();
-  void FindMatchRects(WebVector<WebFloatRect>&);
+  Vector<WebFloatRect> FindMatchRects();
   int SelectNearestFindMatch(const WebFloatPoint&, WebRect* selection_rect);
 
   // Starts brand new scoping request: resets the scoping state and

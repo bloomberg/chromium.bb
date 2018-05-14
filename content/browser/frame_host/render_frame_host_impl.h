@@ -63,6 +63,7 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
+#include "third_party/blink/public/mojom/frame/find_in_page.mojom.h"
 #include "third_party/blink/public/platform/dedicated_worker_factory.mojom.h"
 #include "third_party/blink/public/platform/modules/bluetooth/web_bluetooth.mojom.h"
 #include "third_party/blink/public/platform/modules/presentation/presentation.mojom.h"
@@ -617,6 +618,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Returns the Mojo ImageDownloader service.
   const content::mojom::ImageDownloaderPtr& GetMojoImageDownloader();
+
+  // Returns pointer to renderer side FindInPage associated with this frame.
+  const blink::mojom::FindInPageAssociatedPtr& GetFindInPage();
 
   resource_coordinator::FrameResourceCoordinator* GetFrameResourceCoordinator()
       override;
@@ -1335,6 +1339,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Holder of Mojo connection with ImageDownloader service in RenderFrame.
   content::mojom::ImageDownloaderPtr mojo_image_downloader_;
+
+  // Holder of Mojo connection with FindInPage service in Blink.
+  blink::mojom::FindInPageAssociatedPtr find_in_page_;
 
   // Holds the interface wrapper to the Global Resource Coordinator service.
   std::unique_ptr<resource_coordinator::FrameResourceCoordinator>

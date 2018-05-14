@@ -837,8 +837,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                                                        message))
 #endif
 #if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_FindMatchRects_Reply,
-                        OnFindMatchRectsReply)
     IPC_MESSAGE_HANDLER(FrameHostMsg_GetNearestFindResult_Reply,
                         OnGetNearestFindResultReply)
 #endif
@@ -4344,15 +4342,6 @@ void WebContentsImpl::OnFindReply(RenderFrameHostImpl* source,
 }
 
 #if defined(OS_ANDROID)
-void WebContentsImpl::OnFindMatchRectsReply(
-    RenderFrameHostImpl* source,
-    int version,
-    const std::vector<gfx::RectF>& rects,
-    const gfx::RectF& active_rect) {
-  GetOrCreateFindRequestManager()->OnFindMatchRectsReply(source, version, rects,
-                                                         active_rect);
-}
-
 void WebContentsImpl::OnGetNearestFindResultReply(RenderFrameHostImpl* source,
                                                   int request_id,
                                                   float distance) {
