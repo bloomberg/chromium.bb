@@ -26,6 +26,7 @@ void TestWindowTreeClientDelegate::OnLostConnection(WindowTreeClient* client) {}
 
 void TestWindowTreeClientDelegate::OnPointerEventObserved(
     const ui::PointerEvent& event,
+    int64_t display_id,
     Window* target) {}
 
 PropertyConverter* TestWindowTreeClientDelegate::GetPropertyConverter() {

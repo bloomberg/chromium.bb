@@ -84,6 +84,7 @@ class TestWM : public service_manager::Service,
     NOTREACHED();
   }
   void OnPointerEventObserved(const ui::PointerEvent& event,
+                              int64_t display_id,
                               aura::Window* target) override {
     // Don't care.
   }

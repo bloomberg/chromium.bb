@@ -275,8 +275,10 @@ void WindowManager::OnLostConnection(aura::WindowTreeClient* client) {
 }
 
 void WindowManager::OnPointerEventObserved(const ui::PointerEvent& event,
+                                           int64_t display_id,
                                            aura::Window* target) {
-  pointer_watcher_event_router_->OnPointerEventObserved(event, target);
+  pointer_watcher_event_router_->OnPointerEventObserved(event, display_id,
+                                                        target);
 }
 
 aura::PropertyConverter* WindowManager::GetPropertyConverter() {

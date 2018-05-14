@@ -7,11 +7,15 @@
 #include "ui/aura/client/capture_client.h"
 #include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/window.h"
+#include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/pointer_watcher.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+
+using display::Display;
+using display::Screen;
 
 namespace views {
 namespace {
@@ -85,6 +89,7 @@ void PointerWatcherEventRouter::RemovePointerWatcher(PointerWatcher* watcher) {
 
 void PointerWatcherEventRouter::OnPointerEventObserved(
     const ui::PointerEvent& event,
+    int64_t display_id,
     aura::Window* target) {
   Widget* target_widget = nullptr;
   ui::PointerEvent updated_event(event);
@@ -113,10 +118,13 @@ void PointerWatcherEventRouter::OnPointerEventObserved(
     }
   }
 
-  // The mojo input events type converter uses the event root_location field
-  // to store screen coordinates. Screen coordinates really should be returned
-  // separately. See http://crbug.com/608547
-  gfx::Point location_in_screen = event.root_location();
+  // Compute screen coordinates via |display_id| because there may not be a
+  // |target| that can be used to find a ScreenPositionClient.
+  gfx::Point location_in_screen = event.location();
+  Display display;
+  if (Screen::GetScreen()->GetDisplayWithDisplayId(display_id, &display))
+    location_in_screen.Offset(display.bounds().x(), display.bounds().y());
+
   for (PointerWatcher& observer : move_watchers_) {
     observer.OnPointerEventObserved(
         updated_event, location_in_screen,
@@ -157,8 +165,7 @@ void PointerWatcherEventRouter::OnCaptureChanged(aura::Window* lost_capture,
   const ui::MouseEvent mouse_event(ui::ET_MOUSE_CAPTURE_CHANGED, gfx::Point(),
                                    gfx::Point(), ui::EventTimeForNow(), 0, 0);
   const ui::PointerEvent event(mouse_event);
-  gfx::Point location_in_screen =
-      display::Screen::GetScreen()->GetCursorScreenPoint();
+  gfx::Point location_in_screen = Screen::GetScreen()->GetCursorScreenPoint();
   for (PointerWatcher& observer : move_watchers_)
     observer.OnPointerEventObserved(event, location_in_screen, nullptr);
   for (PointerWatcher& observer : non_move_watchers_)

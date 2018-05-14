@@ -400,6 +400,7 @@ void SimpleWM::OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) {
 }
 
 void SimpleWM::OnPointerEventObserved(const ui::PointerEvent& event,
+                                      int64_t display_id,
                                       aura::Window* target) {
   // Don't care.
 }

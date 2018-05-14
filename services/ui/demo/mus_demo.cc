@@ -100,6 +100,7 @@ void MusDemo::OnLostConnection(aura::WindowTreeClient* client) {
 }
 
 void MusDemo::OnPointerEventObserved(const PointerEvent& event,
+                                     int64_t display_id,
                                      aura::Window* target) {}
 
 aura::PropertyConverter* MusDemo::GetPropertyConverter() {
