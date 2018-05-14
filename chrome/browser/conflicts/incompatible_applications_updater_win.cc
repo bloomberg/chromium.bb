@@ -269,10 +269,14 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
     const ModuleInfoData& module_data) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  // Only consider loaded modules.
-  // TODO(pmonette): Also consider blocked modules when that becomes possible.
-  if ((module_data.module_types & ModuleInfoData::kTypeLoadedModule) == 0)
+  // Only consider loaded modules that are not shell extensions or IMEs.
+  static constexpr uint32_t kModuleTypesBitmask =
+      ModuleInfoData::kTypeLoadedModule | ModuleInfoData::kTypeShellExtension |
+      ModuleInfoData::kTypeIme;
+  if ((module_data.module_types & kModuleTypesBitmask) !=
+      ModuleInfoData::kTypeLoadedModule) {
     return;
+  }
 
   // Explicitly whitelist modules whose signing cert's Subject field matches the
   // one in the current executable. No attempt is made to check the validity of
