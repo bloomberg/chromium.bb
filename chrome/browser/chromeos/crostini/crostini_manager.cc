@@ -38,12 +38,6 @@ chromeos::ConciergeClient* GetConciergeClient() {
   return chromeos::DBusThreadManager::Get()->GetConciergeClient();
 }
 
-std::string ContainerUserNameForProfile(Profile* profile) {
-  // Get rid of the @domain.name in the profile user name (an email address).
-  std::string container_username = profile->GetProfileUserName();
-  return container_username.substr(0, container_username.find('@'));
-}
-
 class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
  public:
   CrostiniRestarter(std::string vm_name,

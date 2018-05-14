@@ -129,6 +129,12 @@ std::string CryptohomeIdForProfile(Profile* profile) {
   return id.empty() ? "test" : id;
 }
 
+std::string ContainerUserNameForProfile(Profile* profile) {
+  // Get rid of the @domain.name in the profile user name (an email address).
+  std::string container_username = profile->GetProfileUserName();
+  return container_username.substr(0, container_username.find('@'));
+}
+
 std::string AppNameFromCrostiniAppId(const std::string& id) {
   return kCrostiniAppNamePrefix + id;
 }
