@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <utility>
 
 #include "base/allocator/allocator_shim.h"
 #include "base/allocator/buildflags.h"
@@ -336,21 +337,27 @@ void SamplingHeapProfiler::DoRecordAlloc(size_t total_allocated,
     Sample sample(size, total_allocated, ++g_last_sample_ordinal);
     RecordStackTrace(&sample, skip_frames);
 
-    // Close the fast-path as inserting an element into samples_ may cause
-    // rehashing that invalidates iterators affecting all the concurrent
-    // readers.
-    base::subtle::Release_Store(&g_fast_path_is_closed, 1);
-    while (base::subtle::Acquire_Load(&g_operations_in_flight)) {
-      while (base::subtle::NoBarrier_Load(&g_operations_in_flight)) {
+    if (MayRehashOnInsert()) {
+      // Close the fast path as inserting an element into samples_ may cause
+      // rehashing that invalidates iterators affecting all the concurrent
+      // readers.
+      base::subtle::Release_Store(&g_fast_path_is_closed, 1);
+      // Wait until all current readers leave.
+      while (base::subtle::Acquire_Load(&g_operations_in_flight)) {
+        while (base::subtle::NoBarrier_Load(&g_operations_in_flight)) {
+        }
       }
+      samples_.emplace(address, std::move(sample));
+      // Open the fast path.
+      base::subtle::Release_Store(&g_fast_path_is_closed, 0);
+    } else {
+      samples_.emplace(address, std::move(sample));
     }
+
     for (auto* observer : observers_)
       observer->SampleAdded(sample.ordinal, size, total_allocated);
-    // TODO(alph): We can do better by keeping the fast-path open when
-    // we know insert won't cause rehashing.
-    samples_.emplace(address, std::move(sample));
-    base::subtle::Release_Store(&g_fast_path_is_closed, 0);
   }
+
   entered_.Set(false);
 }
 
@@ -383,6 +390,13 @@ void SamplingHeapProfiler::DoRecordFree(void* address) {
     }
   }
   entered_.Set(false);
+}
+
+bool SamplingHeapProfiler::MayRehashOnInsert() {
+  size_t max_items_before_rehash =
+      std::floor(samples_.bucket_count() * samples_.max_load_factor());
+  // Conservatively use 2 instead of 1 to workaround potential rounding errors.
+  return samples_.size() + 2 >= max_items_before_rehash;
 }
 
 // static

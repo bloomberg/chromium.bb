@@ -92,6 +92,7 @@ class BASE_EXPORT SamplingHeapProfiler {
                      uint32_t skip_frames);
   void DoRecordFree(void* address);
   void RecordStackTrace(Sample*, uint32_t skip_frames);
+  bool MayRehashOnInsert();
 
   base::ThreadLocalBoolean entered_;
   base::Lock mutex_;
