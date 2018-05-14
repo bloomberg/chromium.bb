@@ -16,7 +16,7 @@
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/web_callbacks.h"
-#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
+#include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
