@@ -408,12 +408,8 @@ GraphicsLayer* PaintLayerCompositor::ParentForContentLayers(
     return child_frame_parent_candidate;
 
   // If this is a popup, don't hook into the VisualViewport layers.
-  if (!layout_view_.GetDocument()
-           .GetPage()
-           ->GetChromeClient()
-           .IsChromeClientImpl()) {
+  if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
     return nullptr;
-  }
 
   return GetVisualViewport().ScrollLayer();
 }
