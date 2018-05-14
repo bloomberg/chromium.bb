@@ -272,7 +272,7 @@ FYI_WATERFALL = {
     'GPU FYI Linux Builder (dbg)' : {},
     'GPU FYI Linux Ozone Builder' : {},
     'GPU FYI Linux dEQP Builder' : {},
-},
+  },
 
   'testers': {
     'Win7 FYI Release (NVIDIA)': {
@@ -2436,6 +2436,36 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       # to run. Split them into roughly 5-minute shards.
       'shards': 20,
     },
+  },
+  'viz_screenshot_sync': {
+    'target_name': 'screenshot_sync',
+    'args': [
+      '--dont-restore-color-profile-after-test',
+    ],
+    'extra_browser_args': [
+      # This test confirms that GPU compositing is working with OOP-D.
+      '--enable-features=VizDisplayCompositor',
+    ],
+    'tester_configs': [
+      {
+        'predicate': Predicates.DEFAULT,
+        'disabled_instrumentation_types': ['tsan'],
+        'os_types': ['win', 'linux'],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux FYI Ozone (Intel)',
+          # TODO(crbug.com/825906): Enable test on Win7 FYI bots when OOP-D +
+          # passthrough command decoder bug is fixed.
+          'Win7 FYI Release (NVIDIA)',
+          'Win7 FYI Release (AMD)',
+          'Win7 FYI Debug (AMD)',
+          'Win7 FYI x64 Release (NVIDIA)',
+        ],
+      },
+    ],
   },
 }
 
