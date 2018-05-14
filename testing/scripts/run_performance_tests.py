@@ -218,7 +218,7 @@ def main():
     # If the user has supplied a list of benchmark names, execute those instead
     # of the entire suite of benchmarks.
     if args.benchmarks:
-      benchmarks = args.benchmark_names.split(',')
+      benchmarks = args.benchmarks.split(',')
       for benchmark in benchmarks:
         return_code = (execute_benchmark(
             benchmark, isolated_out_dir, args, rest_args, False) or return_code)
