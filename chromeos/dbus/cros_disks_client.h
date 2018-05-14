@@ -36,6 +36,7 @@ enum MountType {
   MOUNT_TYPE_INVALID,
   MOUNT_TYPE_DEVICE,
   MOUNT_TYPE_ARCHIVE,
+  MOUNT_TYPE_NETWORK_STORAGE,
 };
 
 // Type of device.

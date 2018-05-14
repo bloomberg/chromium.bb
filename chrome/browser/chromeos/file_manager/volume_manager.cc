@@ -93,6 +93,10 @@ VolumeType MountTypeToVolumeType(chromeos::MountType type) {
       return VOLUME_TYPE_REMOVABLE_DISK_PARTITION;
     case chromeos::MOUNT_TYPE_ARCHIVE:
       return VOLUME_TYPE_MOUNTED_ARCHIVE_FILE;
+    case chromeos::MOUNT_TYPE_NETWORK_STORAGE:
+      // Network storage mounts are handled by their mounters so
+      // MOUNT_TYPE_NETWORK_STORAGE should never need to be handled here.
+      break;
   }
 
   NOTREACHED();
@@ -620,40 +624,53 @@ void VolumeManager::OnMountEvent(
     chromeos::MountError error_code,
     const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK_NE(chromeos::MOUNT_TYPE_INVALID, mount_info.mount_type);
-
-  if (mount_info.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
-    // If the file is not mounted now, tell it to drive file system so that
-    // it can handle file caching correctly.
-    // Note that drive file system knows if the file is managed by drive file
-    // system or not, so here we report all paths.
-    if ((event == chromeos::disks::DiskMountManager::MOUNTING &&
-         error_code != chromeos::MOUNT_ERROR_NONE) ||
-        (event == chromeos::disks::DiskMountManager::UNMOUNTING &&
-         error_code == chromeos::MOUNT_ERROR_NONE)) {
-      drive::FileSystemInterface* const file_system =
-          drive::util::GetFileSystemByProfile(profile_);
-      if (file_system) {
-        file_system->MarkCacheFileAsUnmounted(
-            base::FilePath(mount_info.source_path), base::DoNothing());
+  switch (mount_info.mount_type) {
+    case chromeos::MOUNT_TYPE_ARCHIVE: {
+      // If the file is not mounted now, tell it to drive file system so that
+      // it can handle file caching correctly.
+      // Note that drive file system knows if the file is managed by drive file
+      // system or not, so here we report all paths.
+      if ((event == chromeos::disks::DiskMountManager::MOUNTING &&
+           error_code != chromeos::MOUNT_ERROR_NONE) ||
+          (event == chromeos::disks::DiskMountManager::UNMOUNTING &&
+           error_code == chromeos::MOUNT_ERROR_NONE)) {
+        drive::FileSystemInterface* const file_system =
+            drive::util::GetFileSystemByProfile(profile_);
+        if (file_system) {
+          file_system->MarkCacheFileAsUnmounted(
+              base::FilePath(mount_info.source_path), base::DoNothing());
+        }
       }
+      FALLTHROUGH;
     }
-  }
+    case chromeos::MOUNT_TYPE_DEVICE: {
+      // Notify a mounting/unmounting event to observers.
+      const chromeos::disks::DiskMountManager::Disk* const disk =
+          disk_mount_manager_->FindDiskBySourcePath(mount_info.source_path);
+      std::unique_ptr<Volume> volume =
+          Volume::CreateForRemovable(mount_info, disk);
+      switch (event) {
+        case chromeos::disks::DiskMountManager::MOUNTING: {
+          DoMountEvent(error_code, std::move(volume));
+          return;
+        }
+        case chromeos::disks::DiskMountManager::UNMOUNTING:
+          DoUnmountEvent(error_code, *volume);
+          return;
+      }
+      NOTREACHED();
+    }
 
-  // Notify a mounting/unmounting event to observers.
-  const chromeos::disks::DiskMountManager::Disk* const disk =
-      disk_mount_manager_->FindDiskBySourcePath(mount_info.source_path);
-  std::unique_ptr<Volume> volume = Volume::CreateForRemovable(mount_info, disk);
-  switch (event) {
-    case chromeos::disks::DiskMountManager::MOUNTING: {
-      DoMountEvent(error_code, std::move(volume));
-      return;
+    // Network storage is responsible for doing its own mounting.
+    case chromeos::MOUNT_TYPE_NETWORK_STORAGE: {
+      break;
     }
-    case chromeos::disks::DiskMountManager::UNMOUNTING:
-      DoUnmountEvent(error_code, *volume);
-      return;
+
+    case chromeos::MOUNT_TYPE_INVALID: {
+      NOTREACHED();
+      break;
+    }
   }
-  NOTREACHED();
 }
 
 void VolumeManager::OnFormatEvent(
@@ -955,19 +972,29 @@ void VolumeManager::OnDiskMountManagerRefreshed(bool success) {
 
   const chromeos::disks::DiskMountManager::MountPointMap& mount_points =
       disk_mount_manager_->mount_points();
-  for (chromeos::disks::DiskMountManager::MountPointMap::const_iterator it =
-           mount_points.begin();
-       it != mount_points.end();
-       ++it) {
-    if (it->second.mount_type == chromeos::MOUNT_TYPE_ARCHIVE) {
-      // Archives are mounted after other types of volume. See below.
-      archives.push_back(Volume::CreateForRemovable(it->second, nullptr));
-      continue;
+  for (const auto& mount_point : mount_points) {
+    switch (mount_point.second.mount_type) {
+      case chromeos::MOUNT_TYPE_ARCHIVE: {
+        // Archives are mounted after other types of volume. See below.
+        archives.push_back(
+            Volume::CreateForRemovable(mount_point.second, nullptr));
+        break;
+      }
+      case chromeos::MOUNT_TYPE_DEVICE: {
+        DoMountEvent(
+            chromeos::MOUNT_ERROR_NONE,
+            Volume::CreateForRemovable(
+                mount_point.second, disk_mount_manager_->FindDiskBySourcePath(
+                                        mount_point.second.source_path)));
+        break;
+      }
+      case chromeos::MOUNT_TYPE_NETWORK_STORAGE: {
+        break;
+      }
+      case chromeos::MOUNT_TYPE_INVALID: {
+        NOTREACHED();
+      }
     }
-    DoMountEvent(chromeos::MOUNT_ERROR_NONE,
-                 Volume::CreateForRemovable(
-                     it->second, disk_mount_manager_->FindDiskBySourcePath(
-                                     it->second.source_path)));
   }
 
   // We mount archives only if they are opened from currently mounted volumes.

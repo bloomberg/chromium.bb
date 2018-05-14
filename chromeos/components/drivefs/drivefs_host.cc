@@ -85,10 +85,8 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
                           .Append(host_->account_id_.GetAccountIdKey())
                           .value()});
 
-    // TODO(sammc): Switch the mount type once a more appropriate mount type
-    // exists.
     chromeos::disks::DiskMountManager::GetInstance()->MountPath(
-        source_path_, "", "", {}, chromeos::MOUNT_TYPE_ARCHIVE,
+        source_path_, "", "", {}, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
         chromeos::MOUNT_ACCESS_MODE_READ_WRITE);
 
     auto bootstrap =
@@ -136,7 +134,8 @@ class DriveFsHost::MountState : public mojom::DriveFsDelegate,
       chromeos::MountError error_code,
       const chromeos::disks::DiskMountManager::MountPointInfo& mount_info) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(host_->sequence_checker_);
-    if (mount_info.source_path != source_path_ ||
+    if (mount_info.mount_type != chromeos::MOUNT_TYPE_NETWORK_STORAGE ||
+        mount_info.source_path != source_path_ ||
         event != chromeos::disks::DiskMountManager::MOUNTING) {
       return true;
     }

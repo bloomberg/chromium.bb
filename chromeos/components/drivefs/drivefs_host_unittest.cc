@@ -275,7 +275,7 @@ class DriveFsHostTest : public ::testing::Test,
                        {base::StrCat({"drivefs://", token,
                                       "@/path/to/profile/GCache/v2/g-ID"}),
                         "/media/drivefsroot/g-ID",
-                        chromeos::MOUNT_TYPE_ARCHIVE,
+                        chromeos::MOUNT_TYPE_NETWORK_STORAGE,
                         {}});
   }
 
@@ -418,7 +418,7 @@ TEST_F(DriveFsHostTest, ObserveOtherMount) {
       chromeos::disks::DiskMountManager::UNMOUNTING, chromeos::MOUNT_ERROR_NONE,
       {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/g-ID"}),
        "/media/drivefsroot/g-ID",
-       chromeos::MOUNT_TYPE_ARCHIVE,
+       chromeos::MOUNT_TYPE_NETWORK_STORAGE,
        {}});
   EXPECT_FALSE(host_->IsMounted());
   host_->Unmount();
@@ -433,7 +433,7 @@ TEST_F(DriveFsHostTest, MountError) {
       chromeos::MOUNT_ERROR_DIRECTORY_CREATION_FAILED,
       {base::StrCat({"drivefs://", token, "@/path/to/profile/GCache/v2/g-ID"}),
        "/media/drivefsroot/g-ID",
-       chromeos::MOUNT_TYPE_ARCHIVE,
+       chromeos::MOUNT_TYPE_NETWORK_STORAGE,
        {}});
   EXPECT_FALSE(host_->IsMounted());
   EXPECT_FALSE(PendingConnectionManager::Get().OpenIpcChannel(token, {}));
