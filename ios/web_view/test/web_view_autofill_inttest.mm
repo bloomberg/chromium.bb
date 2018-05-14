@@ -33,7 +33,8 @@ NSString* const kTestFieldValue = @"FieldValue";
 NSString* const kTestSubmitID = @"SubmitID";
 NSString* const kTestFormHtml =
     [NSString stringWithFormat:
-                  @"<form name='%@' id='%@'>"
+                  // Direct form to about:blank to avoid unnecessary navigation.
+                  @"<form action='about:blank' name='%@' id='%@'>"
                    "<input type='text' name='%@' id='%@'/>"
                    "<input type='submit' id='%@'/>"
                    "</form>",
