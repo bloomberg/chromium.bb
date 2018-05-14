@@ -310,7 +310,6 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
   runs_.reset();
   audio_track_ids_.clear();
   video_track_ids_.clear();
-  is_track_encrypted_.clear();
 
   has_audio_ = false;
   has_video_ = false;
@@ -469,7 +468,6 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
       bool is_track_encrypted = entry.sinf.info.track_encryption.is_encrypted;
-      is_track_encrypted_[audio_track_id] = is_track_encrypted;
       EncryptionScheme scheme = Unencrypted();
       if (is_track_encrypted) {
         scheme = GetEncryptionScheme(entry.sinf);
@@ -538,7 +536,6 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         return false;
       }
       bool is_track_encrypted = entry.sinf.info.track_encryption.is_encrypted;
-      is_track_encrypted_[video_track_id] = is_track_encrypted;
       EncryptionScheme scheme = Unencrypted();
       if (is_track_encrypted) {
         scheme = GetEncryptionScheme(entry.sinf);
