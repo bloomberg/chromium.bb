@@ -5,6 +5,7 @@
 #include "chromecast/renderer/cast_extensions_renderer_client.h"
 
 #include "base/memory/ptr_util.h"
+#include "chromecast/renderer/cast_extensions_dispatcher_delegate.h"
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/dispatcher_delegate.h"
 
@@ -12,7 +13,7 @@ namespace extensions {
 
 CastExtensionsRendererClient::CastExtensionsRendererClient()
     : dispatcher_(std::make_unique<Dispatcher>(
-          std::make_unique<DispatcherDelegate>())) {}
+          std::make_unique<CastExtensionsDispatcherDelegate>())) {}
 
 CastExtensionsRendererClient::~CastExtensionsRendererClient() {}
 
