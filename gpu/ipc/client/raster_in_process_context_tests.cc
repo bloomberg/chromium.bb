@@ -6,6 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/paint/color_space_transfer_cache_entry.h"
 #include "components/viz/common/resources/resource_format.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
@@ -150,6 +151,38 @@ TEST_F(RasterInProcessCommandBufferTest, TexStorage2DImage) {
       /*use_buffer=*/true, supported_format.usage, resource_format);
   ri_->TexStorage2D(texture_id, 1, kBufferSize.width(), kBufferSize.height());
 
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
+}
+
+TEST_F(RasterInProcessCommandBufferTest,
+       WhitelistBetweenBeginEndRasterCHROMIUM) {
+  // Check for GPU and driver support
+  if (!context_->GetCapabilities().supports_oop_raster) {
+    return;
+  }
+
+  // Create texture and allocate storage.
+  GLuint texture_id =
+      ri_->CreateTexture(/*use_buffer=*/false, kBufferUsage, kResourceFormat);
+  ri_->TexStorage2D(texture_id, 1, kBufferSize.width(), kBufferSize.height());
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
+
+  // Call BeginRasterCHROMIUM.
+  cc::RasterColorSpace color_space(gfx::ColorSpace::CreateSRGB(), 0);
+  ri_->BeginRasterCHROMIUM(texture_id, /*sk_color=*/0, /*msaa_sample_count=*/0,
+                           /*can_use_lcd_text=*/false,
+                           viz::ResourceFormatToClosestSkColorType(
+                               /*gpu_compositing=*/true, kResourceFormat),
+                           color_space);
+  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
+
+  // Should flag an error this command is not allowed between a Begin and
+  // EndRasterCHROMIUM.
+  ri_->CreateTexture(/*use_buffer=*/false, kBufferUsage, kResourceFormat);
+  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), ri_->GetError());
+
+  // Confirm that we skip over without error.
+  ri_->EndRasterCHROMIUM();
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), ri_->GetError());
 }
 

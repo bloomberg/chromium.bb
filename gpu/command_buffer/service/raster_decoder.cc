@@ -253,6 +253,22 @@ ScopedPixelUnpackState::~ScopedPixelUnpackState() {
   state_->RestoreUnpackState();
 }
 
+bool AllowedBetweenBeginEndRaster(CommandId command) {
+  switch (command) {
+    case kCreateTransferCacheEntryINTERNAL:
+    case kDeleteTransferCacheEntryINTERNAL:
+    case kEndRasterCHROMIUM:
+    case kFinish:
+    case kFlush:
+    case kGetError:
+    case kRasterCHROMIUM:
+    case kUnlockTransferCacheEntryINTERNAL:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
 class RasterDecoderImpl final : public RasterDecoder,
@@ -1375,12 +1391,12 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
   const volatile CommandBufferEntry* cmd_data =
       static_cast<const volatile CommandBufferEntry*>(buffer);
   int process_pos = 0;
-  unsigned int command = 0;
+  CommandId command = static_cast<CommandId>(0);
 
   while (process_pos < num_entries && result == error::kNoError &&
          commands_to_process_--) {
     const unsigned int size = cmd_data->value_header.size;
-    command = cmd_data->value_header.command;
+    command = static_cast<CommandId>(cmd_data->value_header.command);
 
     if (size == 0) {
       result = error::kInvalidSize;
@@ -1401,6 +1417,17 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
     unsigned int command_index = command - kFirstRasterCommand;
     if (command_index < arraysize(command_info)) {
       const CommandInfo& info = command_info[command_index];
+      if (sk_surface_) {
+        if (!AllowedBetweenBeginEndRaster(command)) {
+          LOCAL_SET_GL_ERROR(
+              GL_INVALID_OPERATION, GetCommandName(command),
+              "Unexpected command between BeginRasterCHROMIUM and "
+              "EndRasterCHROMIUM");
+          process_pos += size;
+          cmd_data += size;
+          continue;
+        }
+      }
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
           (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
