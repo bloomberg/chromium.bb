@@ -5,6 +5,7 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/browser_action_test_util.h"
@@ -77,6 +78,9 @@ void ExtensionBlockedActionsBubbleTest::ShowUi(const std::string& name) {
   const extensions::Extension* extension =
       LoadExtension(test_dir.UnpackedPath());
   ASSERT_TRUE(extension);
+  extensions::ScriptingPermissionsModifier(profile(),
+                                           base::WrapRefCounted(extension))
+      .SetAllowedOnAllUrls(false);
 
   content::WebContents* tab =
       browser()->tab_strip_model()->GetActiveWebContents();
