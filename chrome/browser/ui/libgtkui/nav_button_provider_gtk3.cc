@@ -233,6 +233,7 @@ class NavButtonImageSource : public gfx::ImageSkiaSource {
       ApplyCssToContext(button_context,
                         ".titlebutton { background-size: contain; }");
     }
+    cairo_pattern_destroy(cr_pattern);
 
     // Gtk doesn't support fractional scale factors, but chrome does.
     // Rendering the button background and border at a fractional
