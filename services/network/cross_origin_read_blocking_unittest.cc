@@ -105,18 +105,32 @@ TEST(CrossOriginReadBlockingTest, SniffForHTML) {
   EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!---->\u2028<html>"));
   EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!---->\u2029<html>"));
 
+  // Order of line terminators.
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!-- -->\n<b>\rx"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!-- -->\r<b>\nx"));
+  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- -->\nx\r<b>"));
+  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- -->\rx\n<b>"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!-- -->\n<b>\u2028x"));
+  EXPECT_EQ(SniffingResult::kNo, CORB::SniffForHTML("<!-- -->\u2028<b>\n<b>"));
+
+  // In UTF8 encoding <LS> is 0xE2 0x80 0xA8 and <PS> is 0xE2 0x80 0xA9.
+  // Let's verify that presence of 0xE2 alone doesn't throw
+  // FindFirstJavascriptLineTerminator into an infinite loop.
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!-- --> \xe2 \n<b"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!-- --> \xe2\x80 \n<b"));
+  EXPECT_EQ(SniffingResult::kYes, CORB::SniffForHTML("<!-- --> \x80 \n<b"));
+
   // Commented out html tag followed by non-html (" x").
   StringPiece commented_out_html_tag_data("<!-- <html> <?xml> \n<html>-->\nx");
   EXPECT_EQ(SniffingResult::kNo,
-            CrossOriginReadBlocking::SniffForHTML(commented_out_html_tag_data));
+            CORB::SniffForHTML(commented_out_html_tag_data));
 
   // Prefixes of |commented_out_html_tag_data| should be indeterminate.
   // This covers testing "<!-" as well as "<!-- not terminated yet...".
   StringPiece almost_html = commented_out_html_tag_data;
   while (!almost_html.empty()) {
     almost_html.remove_suffix(1);
-    EXPECT_EQ(SniffingResult::kMaybe,
-              CrossOriginReadBlocking::SniffForHTML(almost_html))
+    EXPECT_EQ(SniffingResult::kMaybe, CORB::SniffForHTML(almost_html))
         << almost_html;
   }
 

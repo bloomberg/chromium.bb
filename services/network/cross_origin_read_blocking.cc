@@ -86,6 +86,36 @@ SniffingResult MatchesSignature(StringPiece* data,
   return CrossOriginReadBlocking::kNo;
 }
 
+size_t FindFirstJavascriptLineTerminator(const base::StringPiece& hay,
+                                         size_t pos) {
+  // https://www.ecma-international.org/ecma-262/8.0/index.html#prod-LineTerminator
+  // defines LineTerminator ::= <LF> | <CR> | <LS> | <PS>.
+  //
+  // https://www.ecma-international.org/ecma-262/8.0/index.html#sec-line-terminators
+  // defines <LF>, <CR>, <LS> ::= "\u2028", <PS> ::= "\u2029".
+  //
+  // In UTF8 encoding <LS> is 0xE2 0x80 0xA8 and <PS> is 0xE2 0x80 0xA9.
+  while (true) {
+    pos = hay.find_first_of("\n\r\xe2", pos);
+    if (pos == base::StringPiece::npos)
+      break;
+
+    if (hay[pos] != '\xe2') {
+      DCHECK(hay[pos] == '\r' || hay[pos] == '\n');
+      break;
+    }
+
+    // TODO(lukasza): Prevent matching 3 bytes that span/straddle 2 UTF8
+    // characters.
+    base::StringPiece substr = hay.substr(pos);
+    if (substr.starts_with("\u2028") || substr.starts_with("\u2029"))
+      break;
+
+    pos++;  // Skip the \xe2 character.
+  }
+  return pos;
+}
+
 // Checks if |data| starts with an HTML comment (i.e. with "<!-- ... -->").
 // - If there is a valid, terminated comment then returns kYes.
 // - If there is a start of a comment, but the comment is not completed (e.g.
@@ -113,19 +143,8 @@ SniffingResult MaybeSkipHtmlComment(StringPiece* data) {
 
   // Skipping until the first line terminating character.  See
   // https://crbug.com/839945 for the motivation behind this.
-  //
-  // https://www.ecma-international.org/ecma-262/8.0/index.html#sec-line-terminators
-  // defines <LF>, <CR>, <LS> ::= "\u2028", <PS> ::= "\u2029".
-  // https://www.ecma-international.org/ecma-262/8.0/index.html#prod-LineTerminator
-  // defines LineTerminator ::= <LF> | <CR> | <LS> | <PS>.
-  DCHECK_LT(data->length(), base::StringPiece::npos);
-  size_t end_of_line = base::StringPiece::npos;
-  end_of_line =
-      std::min(end_of_line, data->find_first_of("\r\n", end_of_html_comment));
-  end_of_line =
-      std::min(end_of_line, data->find("\u2028", end_of_html_comment));
-  end_of_line =
-      std::min(end_of_line, data->find("\u2029", end_of_html_comment));
+  size_t end_of_line =
+      FindFirstJavascriptLineTerminator(*data, end_of_html_comment);
   if (end_of_line == base::StringPiece::npos)
     return CrossOriginReadBlocking::kMaybe;
 
