@@ -77,6 +77,8 @@ class CommonNameMismatchHandler {
   void Cancel();
 
  private:
+  void OnSimpleLoaderHandler(const GURL& final_url,
+                             const network::ResourceResponseHead* head);
   void OnSimpleLoaderRedirect(
       const net::RedirectInfo& redirect_info,
       const network::ResourceResponseHead& response_head);
