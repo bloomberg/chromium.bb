@@ -964,6 +964,9 @@ extern const char kStopLoadingInBackgroundDescription[];
 extern const char kStopNonTimersInBackgroundName[];
 extern const char kStopNonTimersInBackgroundDescription[];
 
+extern const char kSystemKeyboardLockName[];
+extern const char kSystemKeyboardLockDescription[];
+
 extern const char kTLS13VariantName[];
 extern const char kTLS13VariantDescription[];
 extern const char kTLS13VariantDisabled[];

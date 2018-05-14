@@ -5,6 +5,7 @@
 #include "ui/aura/window_tree_host.h"
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -13,6 +14,7 @@
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/scoped_keyboard_hook.h"
+#include "ui/aura/scoped_simple_keyboard_hook.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_port.h"
@@ -21,6 +23,7 @@
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
 #include "ui/base/layout.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/view_prop.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/compositor/dip_util.h"
@@ -274,8 +277,12 @@ void WindowTreeHost::Hide() {
 }
 
 std::unique_ptr<ScopedKeyboardHook> WindowTreeHost::CaptureSystemKeyEvents(
-    base::Optional<base::flat_set<ui::DomCode>> codes) {
-  if (CaptureSystemKeyEventsImpl(std::move(codes)))
+    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
+  // TODO(joedow): Remove the simple hook class/logic once this flag is removed.
+  if (!base::FeatureList::IsEnabled(features::kSystemKeyboardLock))
+    return std::make_unique<ScopedSimpleKeyboardHook>(std::move(dom_codes));
+
+  if (CaptureSystemKeyEventsImpl(std::move(dom_codes)))
     return std::make_unique<ScopedKeyboardHook>(weak_factory_.GetWeakPtr());
   return nullptr;
 }

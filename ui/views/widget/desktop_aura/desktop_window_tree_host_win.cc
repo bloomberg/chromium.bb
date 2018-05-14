@@ -573,6 +573,7 @@ bool DesktopWindowTreeHostWin::CaptureSystemKeyEventsImpl(
       std::move(dom_codes), GetAcceleratedWidget(),
       base::BindRepeating(&DesktopWindowTreeHostWin::HandleKeyEvent,
                           base::Unretained(this)));
+
   return keyboard_hook_ != nullptr;
 }
 

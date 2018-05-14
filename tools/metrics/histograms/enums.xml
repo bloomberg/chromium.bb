@@ -26489,6 +26489,7 @@ from previous Chrome versions.
   <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>
   <int value="-1945524394" label="EnableBackgroundBlur:disabled"/>
   <int value="-1943507605" label="enable-new-video-renderer"/>
+  <int value="-1943313820" label="SystemKeyboardLock:disabled"/>
   <int value="-1941852572" label="floating-virtual-keyboard"/>
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
   <int value="-1940377152" label="MacRTL:enabled"/>
@@ -27775,6 +27776,7 @@ from previous Chrome versions.
   <int value="986796748" label="AccountConsistency:enabled"/>
   <int value="988981463" label="ImageCaptureAPI:enabled"/>
   <int value="989062160" label="ModuleScriptsImportMetaUrl:enabled"/>
+  <int value="996701528" label="SystemKeyboardLock:enabled"/>
   <int value="996797157" label="V8ContextSnapshot:enabled"/>
   <int value="1000587036" label="OfflinePagesDescriptiveFailStatus:disabled"/>
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
