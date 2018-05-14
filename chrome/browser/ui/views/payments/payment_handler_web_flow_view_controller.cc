@@ -83,7 +83,8 @@ class ReadOnlyOriginView : public views::View {
 
     title_origin_layout->StartRow(0, 0);
     views::Label* origin_label =
-        new views::Label(base::UTF8ToUTF16(origin.spec()));
+        new views::Label(base::UTF8ToUTF16(origin.host()));
+    origin_label->SetElideBehavior(gfx::ELIDE_HEAD);
     if (!title_is_valid) {
       // Set the origin as title when the page title is invalid.
       origin_label->set_id(static_cast<int>(DialogViewID::SHEET_TITLE));
