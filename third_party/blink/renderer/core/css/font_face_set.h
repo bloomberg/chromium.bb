@@ -45,11 +45,10 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
         ready_(new ReadyProperty(GetExecutionContext(),
                                  this,
                                  ReadyProperty::kReady)),
-        // TODO(scheduler-dev): Create an internal task type for fonts.
         async_runner_(AsyncMethodRunner<FontFaceSet>::Create(
             this,
             &FontFaceSet::HandlePendingEventsAndPromises,
-            context.GetTaskRunner(TaskType::kUnthrottled))) {}
+            context.GetTaskRunner(TaskType::kInternalDefault))) {}
   ~FontFaceSet() override = default;
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(loading);
