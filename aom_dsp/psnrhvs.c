@@ -121,8 +121,7 @@ static double convert_score_db(double _score, double _weight, int bit_depth) {
 static double calc_psnrhvs(const unsigned char *src, int _systride,
                            const unsigned char *dst, int _dystride, double _par,
                            int _w, int _h, int _step, const double _csf[8][8],
-                           uint32_t bit_depth, uint32_t _shift,
-                           int buf_is_hbd) {
+                           uint32_t _shift, int buf_is_hbd) {
   double ret;
   const uint8_t *_src8 = src;
   const uint8_t *_dst8 = dst;
@@ -180,7 +179,7 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
           if (!buf_is_hbd) {
             dct_s[i * 8 + j] = _src8[(y + i) * _systride + (j + x)];
             dct_d[i * 8 + j] = _dst8[(y + i) * _dystride + (j + x)];
-          } else if (bit_depth == 10 || bit_depth == 12) {
+          } else {
             dct_s[i * 8 + j] = _src16[(y + i) * _systride + (j + x)] >> _shift;
             dct_d[i * 8 + j] = _dst16[(y + i) * _dystride + (j + x)] >> _shift;
           }
@@ -213,13 +212,12 @@ static double calc_psnrhvs(const unsigned char *src, int _systride,
         s_gvar = (s_vars[0] + s_vars[1] + s_vars[2] + s_vars[3]) / s_gvar;
       if (d_gvar > 0)
         d_gvar = (d_vars[0] + d_vars[1] + d_vars[2] + d_vars[3]) / d_gvar;
-      if (bit_depth == 10 || bit_depth == 12) {
-        hbd_od_bin_fdct8x8(dct_s_coef, 8, dct_s, 8);
-        hbd_od_bin_fdct8x8(dct_d_coef, 8, dct_d, 8);
-      }
-      if (bit_depth == 8) {
+      if (!buf_is_hbd) {
         od_bin_fdct8x8(dct_s_coef, 8, dct_s, 8);
         od_bin_fdct8x8(dct_d_coef, 8, dct_d, 8);
+      } else {
+        hbd_od_bin_fdct8x8(dct_s_coef, 8, dct_s, 8);
+        hbd_od_bin_fdct8x8(dct_d_coef, 8, dct_d, 8);
       }
       for (i = 0; i < 8; i++)
         for (j = (i == 0); j < 8; j++)
@@ -258,22 +256,21 @@ double aom_psnrhvs(const YV12_BUFFER_CONFIG *src, const YV12_BUFFER_CONFIG *dst,
   assert(bd == 8 || bd == 10 || bd == 12);
   assert(bd >= in_bd);
   assert(src->flags == dst->flags);
-  int buf_is_hbd = src->flags & YV12_FLAG_HIGHBITDEPTH;
+  const int buf_is_hbd = src->flags & YV12_FLAG_HIGHBITDEPTH;
 
   bd_shift = bd - in_bd;
 
-  *y_psnrhvs =
-      calc_psnrhvs(src->y_buffer, src->y_stride, dst->y_buffer, dst->y_stride,
-                   par, src->y_crop_width, src->y_crop_height, step, csf_y, bd,
-                   bd_shift, buf_is_hbd);
+  *y_psnrhvs = calc_psnrhvs(
+      src->y_buffer, src->y_stride, dst->y_buffer, dst->y_stride, par,
+      src->y_crop_width, src->y_crop_height, step, csf_y, bd_shift, buf_is_hbd);
   *u_psnrhvs =
       calc_psnrhvs(src->u_buffer, src->uv_stride, dst->u_buffer, dst->uv_stride,
                    par, src->uv_crop_width, src->uv_crop_height, step,
-                   csf_cb420, bd, bd_shift, buf_is_hbd);
+                   csf_cb420, bd_shift, buf_is_hbd);
   *v_psnrhvs =
       calc_psnrhvs(src->v_buffer, src->uv_stride, dst->v_buffer, dst->uv_stride,
                    par, src->uv_crop_width, src->uv_crop_height, step,
-                   csf_cr420, bd, bd_shift, buf_is_hbd);
+                   csf_cr420, bd_shift, buf_is_hbd);
   psnrhvs = (*y_psnrhvs) * .8 + .1 * ((*u_psnrhvs) + (*v_psnrhvs));
   return convert_score_db(psnrhvs, 1.0, in_bd);
 }
