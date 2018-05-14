@@ -8,6 +8,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "base/numerics/safe_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sessions/core/tab_restore_service.h"
@@ -310,7 +311,7 @@ const int kRelativeTimeMaxHours = 4;
 
 - (void)addItemsForSession:(synced_sessions::DistantSession const*)session {
   TableViewModel* model = self.tableViewModel;
-  NSInteger numberOfTabs = static_cast<NSInteger>(session->tabs.size());
+  NSInteger numberOfTabs = base::checked_cast<NSInteger>(session->tabs.size());
   for (int i = 0; i < numberOfTabs; i++) {
     synced_sessions::DistantTab const* sessionTab = session->tabs[i].get();
     NSString* title = base::SysUTF16ToNSString(sessionTab->title);
@@ -629,7 +630,8 @@ const int kRelativeTimeMaxHours = 4;
 - (NSInteger)numberOfRecentlyClosedTabs {
   if (!self.tabRestoreService)
     return 0;
-  return static_cast<NSInteger>(self.tabRestoreService->entries().size());
+  return base::checked_cast<NSInteger>(
+      self.tabRestoreService->entries().size());
 }
 
 - (const sessions::TabRestoreService::Entry*)tabRestoreEntryAtIndexPath:
