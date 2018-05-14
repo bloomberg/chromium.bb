@@ -26,7 +26,7 @@ void PerfTestSuite::Initialize() {
       CommandLine::ForCurrentProcess()->GetSwitchValuePath("log-file");
   if (log_path.empty()) {
     PathService::Get(FILE_EXE, &log_path);
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
     base::FilePath tmp_dir;
     PathService::Get(base::DIR_CACHE, &tmp_dir);
     log_path = tmp_dir.Append(log_path.BaseName());
