@@ -112,7 +112,8 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.$.nameInput.focus();
+    // paper-input's focusable element isn't defined until after it's attached.
+    Polymer.RenderStatus.afterNextRender(this, () => this.$.nameInput.focus());
   },
 
   /**
