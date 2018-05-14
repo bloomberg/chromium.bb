@@ -548,7 +548,7 @@ scoped_refptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
   ResourceRequestInfoImpl* resource_request_info =
       ResourceRequestInfoImpl::ForRequest(request);
   DCHECK(resource_request_info);
-  bool is_main_frame =
+  bool is_request_for_main_frame =
       resource_request_info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME;
   GlobalRequestID request_id = resource_request_info->GetGlobalRequestID();
 
@@ -557,7 +557,8 @@ scoped_refptr<LoginDelegate> ResourceDispatcherHostImpl::CreateLoginDelegate(
   scoped_refptr<LoginDelegate> login_delegate =
       GetContentClient()->browser()->CreateLoginDelegate(
           auth_info, resource_request_info->GetWebContentsGetterForRequest(),
-          is_main_frame, url, resource_request_info->first_auth_attempt(),
+          is_request_for_main_frame, url,
+          resource_request_info->first_auth_attempt(),
           base::BindOnce(&ResourceDispatcherHostImpl::RunAuthRequiredCallback,
                          base::Unretained(this), request_id));
 

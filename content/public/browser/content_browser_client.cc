@@ -700,7 +700,7 @@ ContentBrowserClient::CreateClientCertStore(ResourceContext* resource_context) {
 scoped_refptr<LoginDelegate> ContentBrowserClient::CreateLoginDelegate(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    bool is_main_frame,
+    bool is_request_for_main_frame,
     const GURL& url,
     bool first_auth_attempt,
     LoginAuthRequiredCallback auth_required_callback) {

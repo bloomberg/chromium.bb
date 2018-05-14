@@ -597,7 +597,7 @@ void LoginHandler::ShowLoginPrompt(const GURL& request_url,
 void LoginHandler::LoginDialogCallback(const GURL& request_url,
                                        net::AuthChallengeInfo* auth_info,
                                        LoginHandler* handler,
-                                       bool is_main_frame) {
+                                       bool is_request_for_main_frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebContents* parent_contents = handler->GetWebContentsForLogin();
   if (!parent_contents || handler->WasAuthHandled()) {
@@ -637,7 +637,7 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
   const bool is_cross_origin_request =
       parent_contents->GetLastCommittedURL().GetOrigin() !=
       request_url.GetOrigin();
-  if (is_main_frame &&
+  if (is_request_for_main_frame &&
       (is_cross_origin_request || parent_contents->ShowingInterstitialPage() ||
        auth_info->is_proxy) &&
       parent_contents->GetDelegate()->GetDisplayMode(parent_contents) !=
@@ -658,7 +658,7 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
             ->GetWeakPtr());
 
   } else {
-    if (is_main_frame) {
+    if (is_request_for_main_frame) {
       RecordHttpAuthPromptType(AUTH_PROMPT_TYPE_MAIN_FRAME);
     } else {
       RecordHttpAuthPromptType(is_cross_origin_request
@@ -674,7 +674,7 @@ void LoginHandler::LoginDialogCallback(const GURL& request_url,
 scoped_refptr<LoginHandler> CreateLoginPrompt(
     net::AuthChallengeInfo* auth_info,
     content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-    bool is_main_frame,
+    bool is_request_for_main_frame,
     const GURL& url,
     LoginAuthRequiredCallback auth_required_callback) {
   scoped_refptr<LoginHandler> handler = LoginHandler::Create(
@@ -683,6 +683,6 @@ scoped_refptr<LoginHandler> CreateLoginPrompt(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&LoginHandler::LoginDialogCallback, url,
                      base::RetainedRef(auth_info), base::RetainedRef(handler),
-                     is_main_frame));
+                     is_request_for_main_frame));
   return handler;
 }

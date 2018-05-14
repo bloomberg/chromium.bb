@@ -146,7 +146,7 @@ class LoginHandler : public content::LoginDelegate,
   friend scoped_refptr<LoginHandler> CreateLoginPrompt(
       net::AuthChallengeInfo* auth_info,
       content::ResourceRequestInfo::WebContentsGetter web_contents_getter,
-      bool is_main_frame,
+      bool is_request_for_main_frame,
       const GURL& url,
       LoginAuthRequiredCallback auth_required_callback);
   FRIEND_TEST_ALL_PREFIXES(LoginHandlerTest, DialogStringsAndRealm);
