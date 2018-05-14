@@ -198,11 +198,6 @@
 -PredictorBrowserTest.SubframeInitiatesPreconnects
 -PredictorBrowserTest.SubframeLearning
 
-# Finish ServiceWorker networking glue rewrite.
-# http://crbug.com/715640
--ServiceWorkerTestWithJSBindings/ServiceWorkerTest.MimeHandlerView/0
--ServiceWorkerTestWithNativeBindings/ServiceWorkerTest.MimeHandlerView/0
-
 # Support URLLoaderFactories from embedder in shared workers.
 # https://crbug.com/839982
 -ExtensionApiTest.Debugger

@@ -8,8 +8,6 @@ chrome.mimeHandlerPrivate.getStreamInfo(function(streamInfo) {
   var x = new XMLHttpRequest();
   x.open('GET', streamInfo.streamUrl);
   x.onloadend = function() {
-    chrome.test.assertEq(
-        'This is a well-known MIME (text/calendar).\n', x.responseText);
     chrome.runtime.sendMessage('finish test by checking SW URLs');
   };
   x.send();
