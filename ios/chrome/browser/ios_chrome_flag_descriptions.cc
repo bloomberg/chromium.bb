@@ -179,6 +179,13 @@ const char kNewFileDownloadDescription[] =
     "When enabled, uses new Download Manager UI and ios/web Download API as "
     "backend.";
 
+const char kWebErrorPagesName[] =
+    "Present load errors in web contents area, instead of using "
+    "CRWNativeContent";
+const char kWebErrorPagesDescription[] =
+    "When enabled the error pages will load in web contents area, instead of "
+    "presenting CRWNativeContent. Does not have sensible UI changes.";
+
 const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
     "Annotates web forms with Autofill field type predictions as placeholder "
