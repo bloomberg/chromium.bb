@@ -775,7 +775,7 @@ void Layer::SetShowPrimarySurface(const viz::SurfaceId& surface_id,
 
   if (!surface_layer_) {
     scoped_refptr<cc::SurfaceLayer> new_layer = cc::SurfaceLayer::Create();
-    new_layer->SetHitTestable(true);
+    new_layer->SetSurfaceHitTestable(true);
     SwitchToLayer(new_layer);
     surface_layer_ = new_layer;
   }

@@ -73,12 +73,12 @@ TEST(HitTestDataProviderSurfaceLayerTest, HitTestDataRenderer) {
   rotate.Rotate(45);
   surface_child1->test_properties()->transform = rotate;
   surface_child1->SetDrawsContent(true);
-  surface_child1->SetHitTestable(true);
+  surface_child1->SetSurfaceHitTestable(true);
 
   surface_child2->SetPosition(gfx::PointF(450, 300));
   surface_child2->SetBounds(gfx::Size(100, 100));
   surface_child2->SetDrawsContent(true);
-  surface_child2->SetHitTestable(true);
+  surface_child2->SetSurfaceHitTestable(true);
 
   overlapping_layer->SetPosition(gfx::PointF(500, 350));
   overlapping_layer->SetBounds(gfx::Size(200, 200));

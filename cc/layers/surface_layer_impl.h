@@ -50,8 +50,8 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
     return stretch_content_to_fill_bounds_;
   }
 
-  void SetHitTestable(bool hit_testable);
-  bool hit_testable() const { return hit_testable_; }
+  void SetSurfaceHitTestable(bool surface_hit_testable);
+  bool surface_hit_testable() const { return surface_hit_testable_; }
 
   // LayerImpl overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -79,7 +79,7 @@ class CC_EXPORT SurfaceLayerImpl : public LayerImpl {
   base::Optional<uint32_t> deadline_in_frames_;
 
   bool stretch_content_to_fill_bounds_ = false;
-  bool hit_testable_ = false;
+  bool surface_hit_testable_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayerImpl);
 };
