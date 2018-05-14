@@ -403,11 +403,11 @@ class FixedArray {
       const void* top = &right_redzone_ + 1;
       // args: (beg, end, old_mid, new_mid)
       if (creating) {
-        ANNOTATE_CONTIGUOUS_CONTAINER(beg, top, top, end);
-        ANNOTATE_CONTIGUOUS_CONTAINER(bot, beg, beg, bot);
+        ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(beg, top, top, end);
+        ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(bot, beg, beg, bot);
       } else {
-        ANNOTATE_CONTIGUOUS_CONTAINER(beg, top, end, top);
-        ANNOTATE_CONTIGUOUS_CONTAINER(bot, beg, bot, beg);
+        ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(beg, top, end, top);
+        ABSL_ANNOTATE_CONTIGUOUS_CONTAINER(bot, beg, bot, beg);
       }
     }
 #endif  // ADDRESS_SANITIZER
@@ -415,9 +415,9 @@ class FixedArray {
     using Buffer =
         typename std::aligned_storage<sizeof(Holder), alignof(Holder)>::type;
 
-    ADDRESS_SANITIZER_REDZONE(left_redzone_);
+    ABSL_ADDRESS_SANITIZER_REDZONE(left_redzone_);
     std::array<Buffer, N> space_;
-    ADDRESS_SANITIZER_REDZONE(right_redzone_);
+    ABSL_ADDRESS_SANITIZER_REDZONE(right_redzone_);
   };
 
   // specialization when N = 0.

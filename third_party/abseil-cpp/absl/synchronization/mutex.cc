@@ -1781,9 +1781,9 @@ static inline bool EvalConditionIgnored(Mutex *mu, const Condition *cond) {
   // So we "divert" (which un-ignores both memory accesses and synchronization)
   // and then separately turn on ignores of memory accesses.
   ABSL_TSAN_MUTEX_PRE_DIVERT(mu, 0);
-  ANNOTATE_IGNORE_READS_AND_WRITES_BEGIN();
+  ABSL_ANNOTATE_IGNORE_READS_AND_WRITES_BEGIN();
   bool res = cond->Eval();
-  ANNOTATE_IGNORE_READS_AND_WRITES_END();
+  ABSL_ANNOTATE_IGNORE_READS_AND_WRITES_END();
   ABSL_TSAN_MUTEX_POST_DIVERT(mu, 0);
   static_cast<void>(mu);  // Prevent unused param warning in non-TSAN builds.
   return res;
