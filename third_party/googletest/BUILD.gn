@@ -41,6 +41,12 @@ config("gmock_config") {
     "custom",
     "src/googlemock/include",
   ]
+
+  if (is_clang) {
+    # TODO(tikuta): remove this when the issue is fixed.
+    # https://github.com/google/googletest/issues/533
+    cflags = [ "-Wno-inconsistent-missing-override" ]
+  }
 }
 
 # Do NOT depend on this directly. Use //testing/gtest instead.
