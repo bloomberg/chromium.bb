@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
 import org.chromium.chrome.browser.preferences.ChromeBasePreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -461,12 +460,8 @@ public class SavePasswordsPreferences
                 return true;
             }
         });
-        mSavePasswordsSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return PrefServiceBridge.getInstance().isRememberPasswordsManaged();
-            }
-        });
+        mSavePasswordsSwitch.setManagedPreferenceDelegate(
+                preference -> PrefServiceBridge.getInstance().isRememberPasswordsManaged());
         getPreferenceScreen().addPreference(mSavePasswordsSwitch);
 
         // Note: setting the switch state before the preference is added to the screen results in
@@ -494,12 +489,8 @@ public class SavePasswordsPreferences
                 return true;
             }
         });
-        mAutoSignInSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return PrefServiceBridge.getInstance().isPasswordManagerAutoSigninManaged();
-            }
-        });
+        mAutoSignInSwitch.setManagedPreferenceDelegate(
+                preference -> PrefServiceBridge.getInstance().isPasswordManagerAutoSigninManaged());
         getPreferenceScreen().addPreference(mAutoSignInSwitch);
         mAutoSignInSwitch.setChecked(
                 PrefServiceBridge.getInstance().isPasswordManagerAutoSigninEnabled());

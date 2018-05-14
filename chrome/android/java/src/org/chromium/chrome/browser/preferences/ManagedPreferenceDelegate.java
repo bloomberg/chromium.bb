@@ -31,20 +31,20 @@ import org.chromium.chrome.browser.util.ViewUtils;
  *   ChromeSwitchPreference enableRocketsPref = ...;
  *   enableRocketsPref.setManagedPreferenceDelegate(new RocketManagedPreferenceDelegate());
  */
-public abstract class ManagedPreferenceDelegate {
+public interface ManagedPreferenceDelegate {
     /**
      * Returns whether the given Preference is controlled by an enterprise policy.
      * @param preference the {@link Preference} under consideration.
      * @return whether the given Preference is controlled by an enterprise policy.
      */
-    public abstract boolean isPreferenceControlledByPolicy(Preference preference);
+    boolean isPreferenceControlledByPolicy(Preference preference);
 
     /**
      * Returns whether the given Preference is controlled by the supervised user's custodian.
      * @param preference the {@link Preference} under consideration.
      * @return whether the given Preference is controlled by the supervised user's custodian.
      */
-    public boolean isPreferenceControlledByCustodian(Preference preference) {
+    default boolean isPreferenceControlledByCustodian(Preference preference) {
         return false;
     }
 
@@ -55,13 +55,9 @@ public abstract class ManagedPreferenceDelegate {
      * informational subscreen, in which case this method needs a custom implementation.
      */
     // TODO(bauerb): Rename to isPreferenceClickDisabled.
-    public boolean isPreferenceClickDisabledByPolicy(Preference preference) {
-        return !isPreferenceUserModifiable(preference);
-    }
-
-    private boolean isPreferenceUserModifiable(Preference preference) {
-        return !isPreferenceControlledByPolicy(preference)
-                && !isPreferenceControlledByCustodian(preference);
+    default boolean isPreferenceClickDisabledByPolicy(Preference preference) {
+        return isPreferenceControlledByPolicy(preference) ||
+                isPreferenceControlledByCustodian(preference);
     }
 
     /**
@@ -70,7 +66,7 @@ public abstract class ManagedPreferenceDelegate {
      *
      * This should be called once, before the preference is displayed.
      */
-    public void initPreference(Preference preference) {
+    default void initPreference(Preference preference) {
         if (isPreferenceControlledByPolicy(preference)) {
             preference.setIcon(ManagedPreferencesUtils.getManagedByEnterpriseIconId());
         } else if (isPreferenceControlledByCustodian(preference)) {
@@ -99,7 +95,7 @@ public abstract class ManagedPreferenceDelegate {
      * @param preference The Preference that owns the view
      * @param view The View that was bound to the Preference
      */
-    public void onBindViewToPreference(Preference preference, View view) {
+    default void onBindViewToPreference(Preference preference, View view) {
         if (isPreferenceClickDisabledByPolicy(preference)) {
             ViewUtils.setEnabledRecursive(view, false);
         }
@@ -114,7 +110,7 @@ public abstract class ManagedPreferenceDelegate {
      * @return true if the click event was handled by this helper and shouldn't be further
      *         propagated; false otherwise.
      */
-    public boolean onClickPreference(Preference preference) {
+    default boolean onClickPreference(Preference preference) {
         if (!isPreferenceClickDisabledByPolicy(preference)) return false;
 
         if (isPreferenceControlledByPolicy(preference)) {

@@ -18,7 +18,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -55,12 +54,8 @@ public class TranslatePreferences extends PreferenceFragment {
                 return true;
             }
         });
-        translateSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return PrefServiceBridge.getInstance().isTranslateManaged();
-            }
-        });
+        translateSwitch.setManagedPreferenceDelegate(
+                preference -> PrefServiceBridge.getInstance().isTranslateManaged());
 
         ButtonPreference resetTranslateButton = (ButtonPreference)
                 findPreference(PREF_RESET_TRANSLATE_BUTTON);

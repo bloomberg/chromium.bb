@@ -18,7 +18,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
 import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
-import org.chromium.chrome.browser.preferences.ManagedPreferenceDelegate;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
@@ -162,12 +161,9 @@ public class DataReductionPreferences extends PreferenceFragment {
                 return true;
             }
         });
-        dataReductionSwitch.setManagedPreferenceDelegate(new ManagedPreferenceDelegate() {
-            @Override
-            public boolean isPreferenceControlledByPolicy(Preference preference) {
-                return CommandLine.getInstance().hasSwitch(ENABLE_DATA_REDUCTION_PROXY)
-                        || DataReductionProxySettings.getInstance().isDataReductionProxyManaged();
-            }
+        dataReductionSwitch.setManagedPreferenceDelegate(preference -> {
+            return CommandLine.getInstance().hasSwitch(ENABLE_DATA_REDUCTION_PROXY)
+                    || DataReductionProxySettings.getInstance().isDataReductionProxyManaged();
         });
 
         getPreferenceScreen().addPreference(dataReductionSwitch);
