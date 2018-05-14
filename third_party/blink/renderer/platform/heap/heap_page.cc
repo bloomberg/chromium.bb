@@ -270,7 +270,7 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
   {
     ThreadHeapStatsCollector::Scope stats_scope(
         GetThreadState()->Heap().stats_collector(),
-        ThreadHeapStatsCollector::Scope::kLazySweepOnAllocation);
+        ThreadHeapStatsCollector::kLazySweepOnAllocation);
     ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());
     ScriptForbiddenScope script_forbidden;
     result = LazySweepPages(allocation_size, gc_info_index);
