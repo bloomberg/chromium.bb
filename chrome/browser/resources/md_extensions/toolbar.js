@@ -43,8 +43,6 @@ cr.define('extensions', function() {
 
       isSupervised: Boolean,
 
-      isGuest: Boolean,
-
       // <if expr="chromeos">
       kioskEnabled: Boolean,
       // </if>

@@ -75,16 +75,14 @@ cr.define('extensions', function() {
     }
 
     /**
-     * If you're not a guest, going to /configureCommands and /shortcuts should
-     * land you on /shortcuts. These are the only two supported routes, so all
-     * other cases (guest or not) will redirect you to root path if not already
-     * on it.
+     * Going to /configureCommands and /shortcuts should land you on /shortcuts.
+     * These are the only two supported routes, so all other cases will redirect
+     * you to root path if not already on it.
      * @private
      */
     processRoute_() {
-      if (!loadTimeData.getBoolean('isGuest') &&
-          (this.currentPath_ == '/configureCommands' ||
-           this.currentPath_ == '/shortcuts')) {
+      if (this.currentPath_ == '/configureCommands' ||
+          this.currentPath_ == '/shortcuts') {
         window.history.replaceState(
             undefined /* stateObject */, '', '/shortcuts');
       } else if (this.currentPath_ !== '/') {
