@@ -1016,8 +1016,8 @@ TEST_F(InMemoryURLIndexTest, ExpireRow) {
   // delete notification, then ensure that the row has been deleted.
   history::URLRows deleted_rows;
   deleted_rows.push_back(matches[0].url_info);
-  url_index_->OnURLsDeleted(nullptr, false, false, deleted_rows,
-                            std::set<GURL>());
+  url_index_->OnURLsDeleted(
+      nullptr, history::DeletionInfo::ForUrls(deleted_rows, std::set<GURL>()));
   EXPECT_TRUE(url_index_->HistoryItemsForTerms(ASCIIToUTF16("DrudgeReport"),
                                                base::string16::npos,
                                                kMaxMatches).empty());
