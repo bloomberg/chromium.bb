@@ -688,27 +688,8 @@ std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client) {
 
 PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
     : client_(client),
-      current_zoom_(1.0),
-      current_rotation_(0),
-      doc_(nullptr),
-      form_(nullptr),
-      defer_page_unload_(false),
-      selecting_(false),
       mouse_down_state_(PDFiumPage::NONSELECTABLE_AREA,
                         PDFiumPage::LinkTarget()),
-      in_form_text_area_(false),
-      editable_form_text_area_(false),
-      mouse_left_button_down_(false),
-      mouse_middle_button_down_(false),
-      permissions_(0),
-      permissions_handler_revision_(-1),
-      fpdf_availability_(nullptr),
-      last_page_mouse_down_(-1),
-      most_visible_page_(-1),
-      called_do_document_action_(false),
-      render_grayscale_(false),
-      render_annots_(true),
-      edit_mode_(false),
       form_filler_(this),
       print_(this) {
   find_factory_.Initialize(this);
@@ -742,12 +723,8 @@ PDFiumEngine::~PDFiumEngine() {
   for (auto& page : pages_)
     page->Unload();
 
-  if (doc_) {
-    FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_WC);
-    FPDFDOC_ExitFormFillEnvironment(form_);
-    FPDF_CloseDocument(doc_);
-  }
-  FPDFAvail_Destroy(fpdf_availability_);
+  if (doc_)
+    FORM_DoDocumentAAction(form(), FPDFDOC_AACTION_WC);
 }
 
 // static
@@ -942,8 +919,9 @@ void PDFiumEngine::AppendPage(PDFEngine* engine, int index) {
   pages_[index]->Unload();
   pages_[index]->set_calculated_links(false);
   pp::Size curr_page_size = GetPageSize(index);
-  FPDFPage_Delete(doc_, index);
-  FPDF_ImportPages(doc_, static_cast<PDFiumEngine*>(engine)->doc(), "1", index);
+  FPDFPage_Delete(doc(), index);
+  FPDF_ImportPages(doc(), static_cast<PDFiumEngine*>(engine)->doc(), "1",
+                   index);
   pp::Size new_page_size = GetPageSize(index);
   if (curr_page_size != new_page_size)
     LoadPageInfo(true);
@@ -965,18 +943,18 @@ void PDFiumEngine::OnPendingRequestComplete() {
     return;
   if (!fpdf_availability_) {
     file_access_.m_FileLen = doc_loader_->GetDocumentSize();
-    fpdf_availability_ = FPDFAvail_Create(&file_availability_, &file_access_);
+    fpdf_availability_.reset(
+        FPDFAvail_Create(&file_availability_, &file_access_));
     DCHECK(fpdf_availability_);
     // Currently engine does not deal efficiently with some non-linearized
     // files.
     // See http://code.google.com/p/chromium/issues/detail?id=59400
     // To improve user experience we download entire file for non-linearized
     // PDF.
-    if (FPDFAvail_IsLinearized(fpdf_availability_) != PDF_LINEARIZED) {
+    if (FPDFAvail_IsLinearized(fpdf_availability()) != PDF_LINEARIZED) {
       // Wait complete document.
       process_when_pending_request_complete_ = false;
-      FPDFAvail_Destroy(fpdf_availability_);
-      fpdf_availability_ = nullptr;
+      fpdf_availability_.reset();
       return;
     }
   }
@@ -1021,7 +999,8 @@ void PDFiumEngine::OnDocumentComplete() {
 
   file_access_.m_FileLen = doc_loader_->GetDocumentSize();
   if (!fpdf_availability_) {
-    fpdf_availability_ = FPDFAvail_Create(&file_availability_, &file_access_);
+    fpdf_availability_.reset(
+        FPDFAvail_Create(&file_availability_, &file_access_));
     DCHECK(fpdf_availability_);
   }
   LoadDocument();
@@ -1052,7 +1031,7 @@ void PDFiumEngine::FinishLoadingDocument() {
     pages_[i]->set_available(true);
     // We still need to call IsPageAvail() even if the whole document is
     // already downloaded.
-    FPDFAvail_IsPageAvail(fpdf_availability_, i, &download_hints_);
+    FPDFAvail_IsPageAvail(fpdf_availability(), i, &download_hints_);
     need_update = true;
     if (IsPageVisible(i))
       client_->Invalidate(GetPageScreenRect(i));
@@ -1065,21 +1044,22 @@ void PDFiumEngine::FinishLoadingDocument() {
   called_do_document_action_ = true;
 
   // These can only be called now, as the JS might end up needing a page.
-  FORM_DoDocumentJSAction(form_);
-  FORM_DoDocumentOpenAction(form_);
+  FORM_DoDocumentJSAction(form());
+  FORM_DoDocumentOpenAction(form());
   if (most_visible_page_ != -1) {
     FPDF_PAGE new_page = pages_[most_visible_page_]->GetPage();
-    FORM_DoPageAAction(new_page, form_, FPDFPAGE_AACTION_OPEN);
+    FORM_DoPageAAction(new_page, form(), FPDFPAGE_AACTION_OPEN);
   }
 
   if (doc_) {
     DocumentFeatures document_features;
     document_features.page_count = pages_.size();
-    document_features.has_attachments = (FPDFDoc_GetAttachmentCount(doc_) > 0);
+    document_features.has_attachments = (FPDFDoc_GetAttachmentCount(doc()) > 0);
     document_features.is_linearized =
-        (FPDFAvail_IsLinearized(fpdf_availability_) == PDF_LINEARIZED);
-    document_features.is_tagged = FPDFCatalog_IsTagged(doc_);
-    document_features.form_type = static_cast<FormType>(FPDF_GetFormType(doc_));
+        (FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED);
+    document_features.is_tagged = FPDFCatalog_IsTagged(doc());
+    document_features.form_type =
+        static_cast<FormType>(FPDF_GetFormType(doc()));
     client_->DocumentLoadComplete(document_features,
                                   doc_loader_->BytesReceived());
   }
@@ -1208,7 +1188,7 @@ uint32_t PDFiumEngine::QuerySupportedPrintOutputFormats() {
 }
 
 void PDFiumEngine::PrintBegin() {
-  FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_WP);
+  FORM_DoDocumentAAction(form(), FPDFDOC_AACTION_WP);
 }
 
 pp::Resource PDFiumEngine::PrintPages(
@@ -1270,7 +1250,7 @@ pp::Buffer_Dev PDFiumEngine::PrintPagesAsPDF(
 }
 
 void PDFiumEngine::KillFormFocus() {
-  FORM_ForceToKillFocus(form_);
+  FORM_ForceToKillFocus(form());
   SetInFormTextArea(false);
 }
 
@@ -1302,7 +1282,7 @@ void PDFiumEngine::SetFormSelectedText(FPDF_FORMHANDLE form_handle,
 }
 
 void PDFiumEngine::PrintEnd() {
-  FORM_DoDocumentAAction(form_, FPDFDOC_AACTION_DP);
+  FORM_DoDocumentAAction(form(), FPDFDOC_AACTION_DP);
 }
 
 PDFiumPage::Area PDFiumEngine::GetCharIndex(const pp::Point& point,
@@ -1418,7 +1398,7 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
         is_form_text_area &&
         IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
 
-    FORM_OnLButtonDown(form_, page, 0, page_x, page_y);
+    FORM_OnLButtonDown(form(), page, 0, page_x, page_y);
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       // Destroy SelectionChangeInvalidator object before SetInFormTextArea()
       // changes plugin's focus to be in form text area. This way, regular text
@@ -1507,10 +1487,10 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
   // Handle the case when focus starts inside a form text area.
   if (in_form_text_area_) {
     if (is_form_text_area) {
-      FORM_OnFocus(form_, page, 0, page_x, page_y);
+      FORM_OnFocus(form(), page, 0, page_x, page_y);
     } else {
       // Transition out of a form text area.
-      FORM_ForceToKillFocus(form_);
+      FORM_ForceToKillFocus(form());
       SetInFormTextArea(false);
     }
     return true;
@@ -1526,7 +1506,7 @@ bool PDFiumEngine::OnRightMouseDown(const pp::MouseInputEvent& event) {
 
     SetInFormTextArea(true);
     editable_form_text_area_ = is_editable_form_text_area;
-    FORM_OnFocus(form_, page, 0, page_x, page_y);
+    FORM_OnFocus(form(), page, 0, page_x, page_y);
     return true;
   }
 
@@ -1612,7 +1592,7 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
     double page_x;
     double page_y;
     DeviceToPage(page_index, point, &page_x, &page_y);
-    FORM_OnLButtonUp(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
+    FORM_OnLButtonUp(form(), pages_[page_index]->GetPage(), 0, page_x, page_y);
   }
 
   if (!selecting_)
@@ -1643,7 +1623,8 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
       double page_x;
       double page_y;
       DeviceToPage(page_index, point, &page_x, &page_y);
-      FORM_OnMouseMove(form_, pages_[page_index]->GetPage(), 0, page_x, page_y);
+      FORM_OnMouseMove(form(), pages_[page_index]->GetPage(), 0, page_x,
+                       page_y);
     }
 
     std::string url = GetLinkAtPosition(event.GetPosition());
@@ -1656,7 +1637,7 @@ bool PDFiumEngine::OnMouseMove(const pp::MouseInputEvent& event) {
     // text selection needs to be updated.
     if (mouse_left_button_down_ && area == PDFiumPage::FORM_TEXT_AREA &&
         last_page_mouse_down_ != -1) {
-      SetFormSelectedText(form_, pages_[last_page_mouse_down_]->GetPage());
+      SetFormSelectedText(form(), pages_[last_page_mouse_down_]->GetPage());
     }
 
     if (kViewerImplementedPanning && mouse_middle_button_down_) {
@@ -1805,7 +1786,7 @@ bool PDFiumEngine::OnKeyDown(const pp::KeyboardInputEvent& event) {
   if (last_page_mouse_down_ == -1)
     return false;
 
-  bool rv = !!FORM_OnKeyDown(form_, pages_[last_page_mouse_down_]->GetPage(),
+  bool rv = !!FORM_OnKeyDown(form(), pages_[last_page_mouse_down_]->GetPage(),
                              event.GetKeyCode(), event.GetModifiers());
 
   if (event.GetKeyCode() == ui::VKEY_BACK ||
@@ -1831,9 +1812,9 @@ bool PDFiumEngine::OnKeyUp(const pp::KeyboardInputEvent& event) {
   // Check if form text selection needs to be updated.
   FPDF_PAGE page = pages_[last_page_mouse_down_]->GetPage();
   if (in_form_text_area_)
-    SetFormSelectedText(form_, page);
+    SetFormSelectedText(form(), page);
 
-  return !!FORM_OnKeyUp(form_, page, event.GetKeyCode(), event.GetModifiers());
+  return !!FORM_OnKeyUp(form(), page, event.GetKeyCode(), event.GetModifiers());
 }
 
 bool PDFiumEngine::OnChar(const pp::KeyboardInputEvent& event) {
@@ -1841,7 +1822,7 @@ bool PDFiumEngine::OnChar(const pp::KeyboardInputEvent& event) {
     return false;
 
   base::string16 str = base::UTF8ToUTF16(event.GetCharacterText().AsString());
-  return !!FORM_OnChar(form_, pages_[last_page_mouse_down_]->GetPage(), str[0],
+  return !!FORM_OnChar(form(), pages_[last_page_mouse_down_]->GetPage(), str[0],
                        event.GetModifiers());
 }
 
@@ -2203,7 +2184,7 @@ bool PDFiumEngine::HasEditableText() {
     return false;
   FPDF_PAGE page = pages_[last_page_mouse_down_]->GetPage();
   // If the return value is 2, that corresponds to "\0\0".
-  return FORM_GetFocusedText(form_, page, nullptr, 0) > 2;
+  return FORM_GetFocusedText(form(), page, nullptr, 0) > 2;
 }
 
 void PDFiumEngine::ReplaceSelection(const std::string& text) {
@@ -2213,7 +2194,7 @@ void PDFiumEngine::ReplaceSelection(const std::string& text) {
     FPDF_WIDESTRING text_pdf_wide =
         reinterpret_cast<FPDF_WIDESTRING>(text_wide.c_str());
 
-    FORM_ReplaceSelection(form_, pages_[last_page_mouse_down_]->GetPage(),
+    FORM_ReplaceSelection(form(), pages_[last_page_mouse_down_]->GetPage(),
                           text_pdf_wide);
   }
 }
@@ -2221,23 +2202,23 @@ void PDFiumEngine::ReplaceSelection(const std::string& text) {
 bool PDFiumEngine::CanUndo() {
   if (last_page_mouse_down_ == -1)
     return false;
-  return !!FORM_CanUndo(form_, pages_[last_page_mouse_down_]->GetPage());
+  return !!FORM_CanUndo(form(), pages_[last_page_mouse_down_]->GetPage());
 }
 
 bool PDFiumEngine::CanRedo() {
   if (last_page_mouse_down_ == -1)
     return false;
-  return !!FORM_CanRedo(form_, pages_[last_page_mouse_down_]->GetPage());
+  return !!FORM_CanRedo(form(), pages_[last_page_mouse_down_]->GetPage());
 }
 
 void PDFiumEngine::Undo() {
   if (last_page_mouse_down_ != -1)
-    FORM_Undo(form_, pages_[last_page_mouse_down_]->GetPage());
+    FORM_Undo(form(), pages_[last_page_mouse_down_]->GetPage());
 }
 
 void PDFiumEngine::Redo() {
   if (last_page_mouse_down_ != -1)
-    FORM_Redo(form_, pages_[last_page_mouse_down_]->GetPage());
+    FORM_Redo(form(), pages_[last_page_mouse_down_]->GetPage());
 }
 
 std::string PDFiumEngine::GetLinkAtPosition(const pp::Point& point) {
@@ -2321,10 +2302,10 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
   }
   dict.Set(pp::Var("title"), pp::Var(base::UTF16ToUTF8(title)));
 
-  FPDF_DEST dest = FPDFBookmark_GetDest(doc_, bookmark);
+  FPDF_DEST dest = FPDFBookmark_GetDest(doc(), bookmark);
   // Some bookmarks don't have a page to select.
   if (dest) {
-    int page_index = FPDFDest_GetDestPageIndex(doc_, dest);
+    int page_index = FPDFDest_GetDestPageIndex(doc(), dest);
     if (PageIndexInBounds(page_index)) {
       dict.Set(pp::Var("page"), pp::Var(page_index));
 
@@ -2336,13 +2317,13 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
   } else {
     // Extract URI for bookmarks linking to an external page.
     FPDF_ACTION action = FPDFBookmark_GetAction(bookmark);
-    buffer_size = FPDFAction_GetURIPath(doc_, action, nullptr, 0);
+    buffer_size = FPDFAction_GetURIPath(doc(), action, nullptr, 0);
     if (buffer_size > 0) {
       std::string uri;
       PDFiumAPIStringBufferAdapter<std::string> api_string_adapter(
           &uri, buffer_size, true);
       api_string_adapter.Close(FPDFAction_GetURIPath(
-          doc_, action, api_string_adapter.GetData(), buffer_size));
+          doc(), action, api_string_adapter.GetData(), buffer_size));
       dict.Set(pp::Var("uri"), pp::Var(uri));
     }
   }
@@ -2355,9 +2336,9 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
     int child_index = 0;
     std::set<FPDF_BOOKMARK> seen_bookmarks;
     for (FPDF_BOOKMARK child_bookmark =
-             FPDFBookmark_GetFirstChild(doc_, bookmark);
+             FPDFBookmark_GetFirstChild(doc(), bookmark);
          child_bookmark;
-         child_bookmark = FPDFBookmark_GetNextSibling(doc_, child_bookmark)) {
+         child_bookmark = FPDFBookmark_GetNextSibling(doc(), child_bookmark)) {
       if (base::ContainsKey(seen_bookmarks, child_bookmark))
         break;
 
@@ -2373,21 +2354,21 @@ pp::VarDictionary PDFiumEngine::TraverseBookmarks(FPDF_BOOKMARK bookmark,
 base::Optional<PDFEngine::NamedDestination> PDFiumEngine::GetNamedDestination(
     const std::string& destination) {
   // Look for the destination.
-  FPDF_DEST dest = FPDF_GetNamedDestByName(doc_, destination.c_str());
+  FPDF_DEST dest = FPDF_GetNamedDestByName(doc(), destination.c_str());
   if (!dest) {
     // Look for a bookmark with the same name.
     base::string16 destination_wide = base::UTF8ToUTF16(destination);
     FPDF_WIDESTRING destination_pdf_wide =
         reinterpret_cast<FPDF_WIDESTRING>(destination_wide.c_str());
-    FPDF_BOOKMARK bookmark = FPDFBookmark_Find(doc_, destination_pdf_wide);
+    FPDF_BOOKMARK bookmark = FPDFBookmark_Find(doc(), destination_pdf_wide);
     if (bookmark)
-      dest = FPDFBookmark_GetDest(doc_, bookmark);
+      dest = FPDFBookmark_GetDest(doc(), bookmark);
   }
 
   if (!dest)
     return {};
 
-  int page = FPDFDest_GetDestPageIndex(doc_, dest);
+  int page = FPDFDest_GetDestPageIndex(doc(), dest);
   if (page < 0)
     return {};
 
@@ -2502,15 +2483,15 @@ void PDFiumEngine::GetTextRunInfo(int page_index,
 }
 
 bool PDFiumEngine::GetPrintScaling() {
-  return !!FPDF_VIEWERREF_GetPrintScaling(doc_);
+  return !!FPDF_VIEWERREF_GetPrintScaling(doc());
 }
 
 int PDFiumEngine::GetCopiesToPrint() {
-  return FPDF_VIEWERREF_GetNumCopies(doc_);
+  return FPDF_VIEWERREF_GetNumCopies(doc());
 }
 
 int PDFiumEngine::GetDuplexType() {
-  return static_cast<int>(FPDF_VIEWERREF_GetDuplex(doc_));
+  return static_cast<int>(FPDF_VIEWERREF_GetDuplex(doc()));
 }
 
 bool PDFiumEngine::GetPageSizeAndUniformity(pp::Size* size) {
@@ -2543,7 +2524,7 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
   // Delete all pages except the first one.
   while (pages_.size() > 1) {
     pages_.pop_back();
-    FPDFPage_Delete(doc_, pages_.size());
+    FPDFPage_Delete(doc(), pages_.size());
   }
 
   // Calculate document size and all page sizes.
@@ -2577,7 +2558,7 @@ void PDFiumEngine::AppendBlankPages(int num_pages) {
     {
       // Add a new page to the document, but delete the FPDF_PAGE object.
       ScopedFPDFPage temp_page(
-          FPDFPage_New(doc_, i, width_in_points, height_in_points));
+          FPDFPage_New(doc(), i, width_in_points, height_in_points));
     }
     pages_.push_back(std::make_unique<PDFiumPage>(this, i, page_rect, true));
   }
@@ -2591,7 +2572,7 @@ void PDFiumEngine::LoadDocument() {
   // Check if the document is ready for loading. If it isn't just bail for now,
   // we will call LoadDocument() again later.
   if (!doc_ && !doc_loader_->IsDocumentComplete() &&
-      !FPDFAvail_IsDocAvail(fpdf_availability_, &download_hints_)) {
+      !FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints_)) {
     return;
   }
 
@@ -2620,7 +2601,7 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
     // This is probably not necessary, because it should have already been
     // called below in the |doc_| initialization path. However, the previous
     // call may have failed, so call it again for good measure.
-    FPDFAvail_IsDocAvail(fpdf_availability_, &download_hints_);
+    FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints_);
     return true;
   }
 
@@ -2630,10 +2611,10 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
     password_tries_remaining_--;
   }
   if (doc_loader_->IsDocumentComplete() &&
-      !FPDFAvail_IsLinearized(fpdf_availability_)) {
-    doc_ = FPDF_LoadCustomDocument(&file_access_, password_cstr);
+      !FPDFAvail_IsLinearized(fpdf_availability())) {
+    doc_.reset(FPDF_LoadCustomDocument(&file_access_, password_cstr));
   } else {
-    doc_ = FPDFAvail_GetDocument(fpdf_availability_, password_cstr);
+    doc_.reset(FPDFAvail_GetDocument(fpdf_availability(), password_cstr));
   }
   if (!doc_) {
     if (FPDF_GetLastError() == FPDF_ERR_PASSWORD)
@@ -2643,7 +2624,7 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
 
   // Always call FPDFAvail_IsDocAvail() so PDFium initializes internal data
   // structures.
-  FPDFAvail_IsDocAvail(fpdf_availability_, &download_hints_);
+  FPDFAvail_IsDocAvail(fpdf_availability(), &download_hints_);
   return true;
 }
 
@@ -2682,11 +2663,11 @@ void PDFiumEngine::ContinueLoadingDocument(const std::string& password) {
     return;
   }
 
-  if (FPDFDoc_GetPageMode(doc_) == PAGEMODE_USEOUTLINES)
+  if (FPDFDoc_GetPageMode(doc()) == PAGEMODE_USEOUTLINES)
     client_->DocumentHasUnsupportedFeature("Bookmarks");
 
-  permissions_ = FPDF_GetDocPermissions(doc_);
-  permissions_handler_revision_ = FPDF_GetSecurityHandlerRevision(doc_);
+  permissions_ = FPDF_GetDocPermissions(doc());
+  permissions_handler_revision_ = FPDF_GetSecurityHandlerRevision(doc());
 
   LoadBody();
 
@@ -2703,9 +2684,10 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   pp::Size old_document_size = document_size_;
   document_size_ = pp::Size();
   std::vector<pp::Rect> page_rects;
-  int page_count = FPDF_GetPageCount(doc_);
+  int page_count = FPDF_GetPageCount(doc());
   bool doc_complete = doc_loader_->IsDocumentComplete();
-  bool is_linear = FPDFAvail_IsLinearized(fpdf_availability_) == PDF_LINEARIZED;
+  bool is_linear =
+      FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED;
   for (int i = 0; i < page_count; ++i) {
     if (i != 0) {
       // Add space for horizontal separator.
@@ -2721,7 +2703,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
       page_available = pages_[i]->available();
     } else if (is_linear) {
       int linear_page_avail =
-          FPDFAvail_IsPageAvail(fpdf_availability_, i, &download_hints_);
+          FPDFAvail_IsPageAvail(fpdf_availability(), i, &download_hints_);
       page_available = linear_page_avail == PDF_DATA_AVAIL;
     } else {
       page_available = doc_complete;
@@ -2765,8 +2747,8 @@ void PDFiumEngine::LoadBody() {
   DCHECK(fpdf_availability_);
   if (doc_loader_->IsDocumentComplete()) {
     LoadForm();
-  } else if (FPDFAvail_IsLinearized(fpdf_availability_) == PDF_LINEARIZED &&
-             FPDF_GetPageCount(doc_) == 1) {
+  } else if (FPDFAvail_IsLinearized(fpdf_availability()) == PDF_LINEARIZED &&
+             FPDF_GetPageCount(doc()) == 1) {
     // If we have only one page we should load form first, bacause it is may be
     // XFA document. And after loading form the page count and its contents may
     // be changed.
@@ -2783,7 +2765,7 @@ void PDFiumEngine::LoadPages() {
       // Check if the first page is available.  In a linearized PDF, that is not
       // always page 0.  Doing this gives us the default page size, since when
       // the document is available, the first page is available as well.
-      CheckPageAvailable(FPDFAvail_GetFirstPageNum(doc_), &pending_pages_);
+      CheckPageAvailable(FPDFAvail_GetFirstPageNum(doc()), &pending_pages_);
     }
     LoadPageInfo(false);
   }
@@ -2793,16 +2775,16 @@ void PDFiumEngine::LoadForm() {
   if (form_)
     return;
   DCHECK(doc_);
-  form_status_ = FPDFAvail_IsFormAvail(fpdf_availability_, &download_hints_);
+  form_status_ = FPDFAvail_IsFormAvail(fpdf_availability(), &download_hints_);
   if (form_status_ != PDF_FORM_NOTAVAIL || doc_loader_->IsDocumentComplete()) {
-    form_ = FPDFDOC_InitFormFillEnvironment(doc_, &form_filler_);
+    form_.reset(FPDFDOC_InitFormFillEnvironment(doc(), &form_filler_));
 #if defined(PDF_ENABLE_XFA)
-    FPDF_LoadXFA(doc_);
+    FPDF_LoadXFA(doc());
 #endif
 
-    FPDF_SetFormFieldHighlightColor(form_, FPDF_FORMFIELD_UNKNOWN,
+    FPDF_SetFormFieldHighlightColor(form(), FPDF_FORMFIELD_UNKNOWN,
                                     kFormHighlightColor);
-    FPDF_SetFormFieldHighlightAlpha(form_, kFormHighlightAlpha);
+    FPDF_SetFormFieldHighlightAlpha(form(), kFormHighlightAlpha);
   }
 }  // namespace chrome_pdf
 
@@ -2887,7 +2869,7 @@ bool PDFiumEngine::CheckPageAvailable(int index, std::vector<int>* pending) {
   if (index < num_pages && pages_[index]->available())
     return true;
 
-  if (!FPDFAvail_IsPageAvail(fpdf_availability_, index, &download_hints_)) {
+  if (!FPDFAvail_IsPageAvail(fpdf_availability(), index, &download_hints_)) {
     if (!base::ContainsValue(*pending, index))
       pending->push_back(index);
     return false;
@@ -2904,8 +2886,8 @@ pp::Size PDFiumEngine::GetPageSize(int index) {
   pp::Size size;
   double width_in_points = 0;
   double height_in_points = 0;
-  int rv =
-      FPDF_GetPageSizeByIndex(doc_, index, &width_in_points, &height_in_points);
+  int rv = FPDF_GetPageSizeByIndex(doc(), index, &width_in_points,
+                                   &height_in_points);
 
   if (rv) {
     int width_in_pixels = static_cast<int>(
@@ -2985,7 +2967,7 @@ void PDFiumEngine::FinishPaint(int progressive_index,
                 &size_y);
 
   // Draw the forms.
-  FPDF_FFLDraw(form_, bitmap, pages_[page_index]->GetPage(), start_x, start_y,
+  FPDF_FFLDraw(form(), bitmap, pages_[page_index]->GetPage(), start_x, start_y,
                size_x, size_y, current_rotation_, GetRenderingFlags());
 
   FillPageSides(progressive_index);
@@ -3409,7 +3391,7 @@ void PDFiumEngine::SetCurrentPage(int index) {
 
   if (most_visible_page_ != -1 && called_do_document_action_) {
     FPDF_PAGE old_page = pages_[most_visible_page_]->GetPage();
-    FORM_DoPageAAction(old_page, form_, FPDFPAGE_AACTION_CLOSE);
+    FORM_DoPageAAction(old_page, form(), FPDFPAGE_AACTION_CLOSE);
   }
   most_visible_page_ = index;
 #if defined(OS_LINUX)
@@ -3417,7 +3399,7 @@ void PDFiumEngine::SetCurrentPage(int index) {
 #endif
   if (most_visible_page_ != -1 && called_do_document_action_) {
     FPDF_PAGE new_page = pages_[most_visible_page_]->GetPage();
-    FORM_DoPageAAction(new_page, form_, FPDFPAGE_AACTION_OPEN);
+    FORM_DoPageAAction(new_page, form(), FPDFPAGE_AACTION_OPEN);
   }
 }
 
@@ -3579,7 +3561,7 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
 #endif  // defined(PDF_ENABLE_XFA)
 
   ScopedFPDFAnnotation annot(
-      FPDFAnnot_GetFormFieldAtPoint(form_, page, page_x, page_y));
+      FPDFAnnot_GetFormFieldAtPoint(form(), page, page_x, page_y));
   if (!annot)
     return false;
 

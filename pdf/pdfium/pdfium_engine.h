@@ -143,8 +143,9 @@ class PDFiumEngine : public PDFEngine,
   void UnsupportedFeature(int type);
   void FontSubstituted();
 
-  FPDF_DOCUMENT doc() { return doc_; }
-  FPDF_FORMHANDLE form() { return form_; }
+  FPDF_AVAIL fpdf_availability() const { return fpdf_availability_.get(); }
+  FPDF_DOCUMENT doc() const { return doc_.get(); }
+  FPDF_FORMHANDLE form() const { return form_.get(); }
 
  private:
   // This helper class is used to detect the difference in selection between
@@ -495,8 +496,8 @@ class PDFiumEngine : public PDFEngine,
   pp::Point page_offset_;
   // The plugin size in screen coordinates.
   pp::Size plugin_size_;
-  double current_zoom_;
-  unsigned int current_rotation_;
+  double current_zoom_ = 1.0;
+  unsigned int current_rotation_ = 0;
 
   std::unique_ptr<DocumentLoader> doc_loader_;  // Main document's loader.
   std::string url_;
@@ -509,12 +510,25 @@ class PDFiumEngine : public PDFEngine,
   bool getting_password_ = false;
   int password_tries_remaining_ = 0;
 
-  // The PDFium wrapper object for the document.
-  FPDF_DOCUMENT doc_;
+  // Interface structure to provide access to document stream.
+  FPDF_FILEACCESS file_access_;
+
+  // Interface structure to check data availability in the document stream.
+  FileAvail file_availability_;
+
+  // Interface structure to request data chunks from the document stream.
+  DownloadHints download_hints_;
+
+  // Pointer to the document availability interface.
+  ScopedFPDFAvail fpdf_availability_;
+
+  // The PDFium wrapper object for the document. Must come after
+  // |fpdf_availability_| to prevent outliving it.
+  ScopedFPDFDocument doc_;
 
   // The PDFium wrapper for form data.  Used even if there are no form controls
-  // on the page.
-  FPDF_FORMHANDLE form_;
+  // on the page. Must come after |doc_| to prevent outliving it.
+  ScopedFPDFFormHandle form_;
 
   // Current form availability status.
   int form_status_ = PDF_FORM_NOTAVAIL;
@@ -531,14 +545,15 @@ class PDFiumEngine : public PDFEngine,
   // During handling of input events we don't want to unload any pages in
   // callbacks to us from PDFium, since the current page can change while PDFium
   // code still has a pointer to it.
-  bool defer_page_unload_;
+  bool defer_page_unload_ = false;
   std::vector<int> deferred_page_unloads_;
 
   // Used for text selection, but does not include text within form text areas.
   // There could be more than one range if selection spans more than one page.
   std::vector<PDFiumRange> selection_;
+
   // True if we're in the middle of text selection.
-  bool selecting_;
+  bool selecting_ = false;
 
   MouseDownState mouse_down_state_;
 
@@ -546,17 +561,17 @@ class PDFiumEngine : public PDFEngine,
   std::string selected_form_text_;
 
   // True if focus is in form text field or form combobox text field.
-  bool in_form_text_area_;
+  bool in_form_text_area_ = false;
 
   // True if the form text area currently in focus is not read only, and is a
   // form text field or user-editable form combobox text field.
-  bool editable_form_text_area_;
+  bool editable_form_text_area_ = false;
 
   // True if left mouse button is currently being held down.
-  bool mouse_left_button_down_;
+  bool mouse_left_button_down_ = false;
 
   // True if middle mouse button is currently being held down.
-  bool mouse_middle_button_down_;
+  bool mouse_middle_button_down_ = false;
 
   // Last known position while performing middle mouse button pan.
   pp::Point mouse_middle_button_last_position_;
@@ -578,19 +593,10 @@ class PDFiumEngine : public PDFEngine,
   base::Optional<size_t> resume_find_index_;
 
   // Permissions bitfield.
-  unsigned long permissions_;
+  unsigned long permissions_ = 0;
 
   // Permissions security handler revision number. -1 for unknown.
-  int permissions_handler_revision_;
-
-  // Interface structure to provide access to document stream.
-  FPDF_FILEACCESS file_access_;
-  // Interface structure to check data availability in the document stream.
-  FileAvail file_availability_;
-  // Interface structure to request data chunks from the document stream.
-  DownloadHints download_hints_;
-  // Pointer to the document availability interface.
-  FPDF_AVAIL fpdf_availability_;
+  int permissions_handler_revision_ = -1;
 
   pp::Size default_page_size_;
 
@@ -610,11 +616,11 @@ class PDFiumEngine : public PDFEngine,
   int next_touch_timer_id_ = 0;
 
   // Holds the zero-based page index of the last page that the mouse clicked on.
-  int last_page_mouse_down_;
+  int last_page_mouse_down_ = -1;
 
   // Holds the zero-based page index of the most visible page; refreshed by
   // calling CalculateVisiblePages()
-  int most_visible_page_;
+  int most_visible_page_ = -1;
 
   // Holds the page index requested by PDFium while the scroll operation
   // is being handled (asynchronously).
@@ -622,17 +628,17 @@ class PDFiumEngine : public PDFEngine,
 
   // Set to true after FORM_DoDocumentJSAction/FORM_DoDocumentOpenAction have
   // been called. Only after that can we call FORM_DoPageAAction.
-  bool called_do_document_action_;
+  bool called_do_document_action_ = false;
 
   // Records parts of form fields that need to be highlighted at next paint, in
   // screen coordinates.
   std::vector<pp::Rect> form_highlights_;
 
   // Whether to render in grayscale or in color.
-  bool render_grayscale_;
+  bool render_grayscale_ = false;
 
   // Whether to render PDF annotations.
-  bool render_annots_;
+  bool render_annots_ = true;
 
   // The link currently under the cursor.
   std::string link_under_cursor_;
@@ -689,7 +695,7 @@ class PDFiumEngine : public PDFEngine,
 
   pp::Point range_selection_base_;
 
-  bool edit_mode_;
+  bool edit_mode_ = false;
 
   PDFiumFormFiller form_filler_;
   PDFiumPrint print_;
