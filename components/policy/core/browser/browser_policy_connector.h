@@ -38,6 +38,9 @@ class POLICY_EXPORT BrowserPolicyConnector : public BrowserPolicyConnectorBase {
       PrefService* local_state,
       scoped_refptr<net::URLRequestContextGetter> request_context) = 0;
 
+  // Checks whether this device is under any kind of enterprise management.
+  virtual bool IsEnterpriseManaged() const = 0;
+
   // Cleans up the connector before it can be safely deleted.
   void Shutdown() override;
 

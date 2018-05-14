@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
@@ -242,6 +243,11 @@ bool ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
   return service &&
          service->GetPasswordProtectionTriggerPref(
              prefs::kPasswordProtectionWarningTrigger) == PASSWORD_REUSE;
+}
+
+const policy::BrowserPolicyConnector*
+ChromePasswordProtectionService::GetBrowserPolicyConnector() const {
+  return g_browser_process->browser_policy_connector();
 }
 
 void ChromePasswordProtectionService::FillReferrerChain(

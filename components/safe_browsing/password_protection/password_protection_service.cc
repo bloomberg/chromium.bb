@@ -552,7 +552,8 @@ void PasswordProtectionService::FillUserPopulation(
   user_population->set_user_population(
       IsExtendedReporting() ? ChromeUserPopulation::EXTENDED_REPORTING
                             : ChromeUserPopulation::SAFE_BROWSING);
-  user_population->set_profile_management_status(GetProfileManagementStatus());
+  user_population->set_profile_management_status(
+      GetProfileManagementStatus(GetBrowserPolicyConnector()));
   user_population->set_is_history_sync_enabled(IsHistorySyncEnabled());
 }
 

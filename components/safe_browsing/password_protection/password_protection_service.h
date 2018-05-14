@@ -34,6 +34,10 @@ namespace history {
 class HistoryService;
 }
 
+namespace policy {
+class BrowserPolicyConnector;
+}
+
 class GURL;
 class HostContentSettingsMap;
 
@@ -284,6 +288,10 @@ class PasswordProtectionService : public history::HistoryServiceObserver {
   // for this profile. This counts both expired and active verdicts.
   virtual int GetStoredVerdictCount(
       LoginReputationClientRequest::TriggerType trigger_type);
+
+  // Gets an unowned |BrowserPolicyConnector| for the current platform.
+  virtual const policy::BrowserPolicyConnector* GetBrowserPolicyConnector()
+      const = 0;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory() {
     return url_loader_factory_;

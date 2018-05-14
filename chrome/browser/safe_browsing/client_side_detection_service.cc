@@ -20,6 +20,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_service.h"
+#include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/constants.mojom.h"
 #include "chrome/common/pref_names.h"
@@ -297,7 +298,8 @@ void ClientSideDetectionService::StartClientReportPhishingRequest(
   DVLOG(2) << "Starting report for hit on model " << request->model_filename();
 
   request->mutable_population()->set_profile_management_status(
-      GetProfileManagementStatus());
+      GetProfileManagementStatus(
+          g_browser_process->browser_policy_connector()));
 
   std::string request_data;
   if (!request->SerializeToString(&request_data)) {
