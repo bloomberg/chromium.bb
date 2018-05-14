@@ -332,7 +332,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_thread_task_runner_(io_thread_runner),
-      weak_ptr_factory_(this) {
+      weak_factory_on_io_(this) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
@@ -688,6 +688,10 @@ void ResourceDispatcherHostImpl::OnShutdown() {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
 
   is_shutdown_ = true;
+
+  // Explicitly invalidate while on the IO thread, where the associated WeakPtrs
+  // are used.
+  weak_factory_on_io_.InvalidateWeakPtrs();
 
   pending_loaders_.clear();
 
@@ -2117,7 +2121,7 @@ void ResourceDispatcherHostImpl::UpdateLoadInfo() {
       FROM_HERE,
       base::BindOnce(UpdateLoadStateOnUI, loader_delegate_, std::move(infos)),
       base::BindOnce(&ResourceDispatcherHostImpl::AckUpdateLoadInfo,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_factory_on_io_.GetWeakPtr()));
 }
 
 void ResourceDispatcherHostImpl::AckUpdateLoadInfo() {
