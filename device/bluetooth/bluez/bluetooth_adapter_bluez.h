@@ -84,7 +84,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
 
   // Calls |init_callback| after a BluetoothAdapter is fully initialized.
   static base::WeakPtr<BluetoothAdapter> CreateAdapter(
-      const InitCallback& init_callback);
+      InitCallback init_callback);
 
   // BluetoothAdapter:
   void Shutdown() override;
@@ -243,7 +243,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   using RegisterProfileCompletionPair =
       std::pair<base::Closure, ErrorCompletionCallback>;
 
-  explicit BluetoothAdapterBlueZ(const InitCallback& init_callback);
+  explicit BluetoothAdapterBlueZ(InitCallback init_callback);
   ~BluetoothAdapterBlueZ() override;
 
   // Init will get asynchronouly called once we know if Object Manager is

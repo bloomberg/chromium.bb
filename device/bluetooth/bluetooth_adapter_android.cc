@@ -44,7 +44,7 @@ namespace device {
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    const InitCallback& init_callback) {
+    InitCallback init_callback) {
   return BluetoothAdapterAndroid::Create(
       BluetoothAdapterWrapper_CreateWithDefaultAdapter());
 }

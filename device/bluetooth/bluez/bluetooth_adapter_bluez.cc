@@ -104,8 +104,8 @@ namespace device {
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    const InitCallback& init_callback) {
-  return bluez::BluetoothAdapterBlueZ::CreateAdapter(init_callback);
+    InitCallback init_callback) {
+  return bluez::BluetoothAdapterBlueZ::CreateAdapter(std::move(init_callback));
 }
 
 }  // namespace device
@@ -161,8 +161,9 @@ void ResetAdvertisingErrorCallbackConnector(
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapterBlueZ::CreateAdapter(
-    const InitCallback& init_callback) {
-  BluetoothAdapterBlueZ* adapter = new BluetoothAdapterBlueZ(init_callback);
+    InitCallback init_callback) {
+  BluetoothAdapterBlueZ* adapter =
+      new BluetoothAdapterBlueZ(std::move(init_callback));
   return adapter->weak_ptr_factory_.GetWeakPtr();
 }
 
@@ -228,8 +229,8 @@ void BluetoothAdapterBlueZ::Shutdown() {
   dbus_is_shutdown_ = true;
 }
 
-BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(const InitCallback& init_callback)
-    : init_callback_(init_callback),
+BluetoothAdapterBlueZ::BluetoothAdapterBlueZ(InitCallback init_callback)
+    : init_callback_(std::move(init_callback)),
       initialized_(false),
       dbus_is_shutdown_(false),
       num_discovery_sessions_(0),
@@ -257,7 +258,7 @@ void BluetoothAdapterBlueZ::Init() {
   if (dbus_is_shutdown_ ||
       !bluez::BluezDBusManager::Get()->IsObjectManagerSupported()) {
     initialized_ = true;
-    init_callback_.Run();
+    std::move(init_callback_).Run();
     return;
   }
 
@@ -282,7 +283,7 @@ void BluetoothAdapterBlueZ::Init() {
     SetAdapter(object_paths[0]);
   }
   initialized_ = true;
-  init_callback_.Run();
+  std::move(init_callback_).Run();
 }
 
 BluetoothAdapterBlueZ::~BluetoothAdapterBlueZ() {

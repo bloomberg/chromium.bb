@@ -223,20 +223,19 @@ BluetoothAdapterWinrt::BluetoothAdapterWinrt() : weak_ptr_factory_(this) {
 
 BluetoothAdapterWinrt::~BluetoothAdapterWinrt() = default;
 
-void BluetoothAdapterWinrt::Init(const InitCallback& init_cb) {
+void BluetoothAdapterWinrt::Init(InitCallback init_cb) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // We are wrapping |init_cb| in a ScopedClosureRunner to ensure it gets run no
   // matter how the function exits. Furthermore, we set |is_initialized_| to
   // true if adapter is still active when the callback gets run.
   base::ScopedClosureRunner on_init(base::BindOnce(
-      [](base::WeakPtr<BluetoothAdapterWinrt> adapter,
-         const InitCallback& init_cb) {
+      [](base::WeakPtr<BluetoothAdapterWinrt> adapter, InitCallback init_cb) {
         if (adapter)
           adapter->is_initialized_ = true;
-        init_cb.Run();
+        std::move(init_cb).Run();
       },
-      weak_ptr_factory_.GetWeakPtr(), init_cb));
+      weak_ptr_factory_.GetWeakPtr(), std::move(init_cb)));
 
   if (!ResolveCoreWinRT())
     return;

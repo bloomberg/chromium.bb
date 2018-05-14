@@ -26,21 +26,22 @@ namespace device {
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    const InitCallback& init_callback) {
-  return BluetoothAdapterWin::CreateAdapter(init_callback);
+    InitCallback init_callback) {
+  return BluetoothAdapterWin::CreateAdapter(std::move(init_callback));
 }
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapterWin::CreateAdapter(
-    const InitCallback& init_callback) {
-  BluetoothAdapterWin* adapter = new BluetoothAdapterWin(init_callback);
+    InitCallback init_callback) {
+  BluetoothAdapterWin* adapter =
+      new BluetoothAdapterWin(std::move(init_callback));
   adapter->Init();
   return adapter->weak_ptr_factory_.GetWeakPtr();
 }
 
-BluetoothAdapterWin::BluetoothAdapterWin(const InitCallback& init_callback)
+BluetoothAdapterWin::BluetoothAdapterWin(InitCallback init_callback)
     : BluetoothAdapter(),
-      init_callback_(init_callback),
+      init_callback_(std::move(init_callback)),
       initialized_(false),
       powered_(false),
       discovery_status_(NOT_DISCOVERING),
@@ -222,7 +223,7 @@ void BluetoothAdapterWin::AdapterStateChanged(
   }
   if (!initialized_) {
     initialized_ = true;
-    init_callback_.Run();
+    std::move(init_callback_).Run();
   }
 }
 

@@ -28,7 +28,7 @@ BluetoothAdapter::ServiceOptions::~ServiceOptions() = default;
     !defined(OS_WIN) && !defined(OS_LINUX)
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    const InitCallback& init_callback) {
+    InitCallback init_callback) {
   return base::WeakPtr<BluetoothAdapter>();
 }
 #endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN) && !defined(OS_MACOSX)

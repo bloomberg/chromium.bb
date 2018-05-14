@@ -65,7 +65,7 @@ CBCentralManagerState GetCBManagerState(CBCentralManager* manager) {
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    const InitCallback& init_callback) {
+    InitCallback init_callback) {
   return BluetoothAdapterMac::CreateAdapter();
 }
 

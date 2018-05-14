@@ -529,7 +529,7 @@ base::WeakPtr<BluetoothAdapter> BluetoothAdapterCast::Create(
 
 // static
 base::WeakPtr<BluetoothAdapter> BluetoothAdapter::CreateAdapter(
-    const InitCallback& init_callback) {
+    InitCallback init_callback) {
   return BluetoothAdapterCast::Create(std::move(init_callback));
 }
 
