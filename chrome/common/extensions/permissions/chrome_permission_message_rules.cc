@@ -494,11 +494,11 @@ ChromePermissionMessageRule::GetAllRules() {
        {APIPermission::kMediaGalleriesAllGalleriesRead},
        {}},
 
-      // The permission string for "fileSystem" is only shown when
-      // "write" or "directory" is present. Read-only access is only
-      // granted after the user has been shown a file or directory
-      // chooser dialog and selected a file or directory. Selecting
-      // the file or directory is considered consent to read it.
+      // File system permissions. We only have permission strings for directory
+      // access, and show a different message for read-only directory access
+      // versus writable directory access. We don't warn for write-only access,
+      // since the user must select the file and the chooser is considered
+      // sufficient warning.
       {IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_WRITE_DIRECTORY,
        {APIPermission::kFileSystemWrite, APIPermission::kFileSystemDirectory},
        {}},
