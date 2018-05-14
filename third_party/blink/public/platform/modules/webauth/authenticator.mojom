@@ -116,6 +116,33 @@ enum UserVerificationRequirement {
   DISCOURAGED,
 };
 
+// Cloud-assisted BLE extension data for getAssertion.
+struct CableAuthentication {
+  // The caBLE version requested.
+  int32 version;
+
+  // A 16-byte ephemeral identifier that the browser will advertise.
+  array<uint8, 16> client_eid;
+
+  // A 16-byte ephemeral identifier that the browser expects to receive from a
+  // responding authenticator.
+  array<uint8, 16> authenticator_eid;
+
+  // A 32-byte pre-key used to compute a session key to encrypt messages between
+  // a paired client and authenticator following a successful discovery.
+  array<uint8, 32> session_pre_key;
+};
+
+// Cloud-assisted BLE extension data for makeCredential.
+struct CableRegistration {
+  // The requested caBLE version.
+  int32 version;
+
+  // The 65-byte ECDSA ephemeral public key belonging to the relying party
+  // for use in establishing an encrypted caBLE channel with an authenticator.
+  array<uint8, 65> relying_party_public_key;
+};
+
 // Parameters passed into calls to GetAssertion.
 struct PublicKeyCredentialRequestOptions {
   // An indefinite-length blob passed from the the relying party server,
@@ -139,6 +166,14 @@ struct PublicKeyCredentialRequestOptions {
   // The contents of the appid extension, if any. See
   // https://w3c.github.io/webauthn/#sctn-appid-extension
   string? appid;
+
+  // The contents of the cloud assisted BLE extension for getAssertion
+  // requests, if any. This extension permits browsers and authenticator
+  // devices to establish a pairingless BLE connection.
+  // TODO(crbug.com/842371): Add link to spec when available.
+  // There may be multiple sets if multiple caBLE credentials have been
+  // registered with the relying party.
+  array<CableAuthentication> cable_authentication_data;
 };
 
 // See https://w3c.github.io/webauthn/#enumdef-attestationconveyancepreference
@@ -200,6 +235,12 @@ struct PublicKeyCredentialCreationOptions {
   // Specifies whether the RP wants attestation information for the created
   // credential.
   AttestationConveyancePreference attestation;
+
+  // The contents of the cloud assisted BLE extension for makeCredential
+  // requests, if any. This extension permits browsers and authenticator
+  // devices to establish a pairingless BLE connection.
+  // TODO(crbug.com/842371): Add link to spec when available.
+  CableRegistration? cable_registration_data;
 };
 
 enum PublicKeyCredentialType {

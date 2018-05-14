@@ -69,6 +69,17 @@ var CLIENT_DATA_JSON = new TextEncoder("utf-8").encode("clientDataJSON");
 var ATTESTATION_OBJECT = new TextEncoder("utf-8").encode("attestationObject");
 var AUTHENTICATOR_DATA = new TextEncoder("utf-8").encode("authenticatorData");
 var SIGNATURE = new TextEncoder("utf-8").encode("signature");
+var CABLE_REGISTRATION  = {
+    version: 1,
+    rpPublicKey: new TextEncoder("utf-8").encode("SixteenByteRpKey"),
+};
+
+var CABLE_AUTHENTICATION = {
+    version: 1,
+    clientEid: new TextEncoder("utf-8").encode("SixteenByteClEid"),
+    authenticatorEid: new TextEncoder("utf-8").encode("SixteenByteAuEid"),
+    sessionPreKey: new TextEncoder("utf-8").encode('x'.repeat(32)),
+};
 
 var CREATE_CREDENTIALS =
     "navigator.credentials.create({publicKey : MAKE_CREDENTIAL_OPTIONS})"
