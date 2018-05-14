@@ -962,7 +962,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
         GetSocketGroup(), destination_, request_info_.extra_headers,
         request_info_.load_flags, priority_, session_, proxy_info_,
         server_ssl_config_, proxy_ssl_config_, request_info_.privacy_mode,
-        net_log_, num_streams_, request_info_.motivation);
+        net_log_, num_streams_);
   }
 
   // If we can't use a SPDY session, don't bother checking for one after

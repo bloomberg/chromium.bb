@@ -142,8 +142,7 @@ void PreconnectManager::PreconnectUrl(const GURL& url,
   DCHECK(url.GetOrigin() == url);
   DCHECK(url.SchemeIsHTTPOrHTTPS());
   content::PreconnectUrl(context_getter_.get(), url, site_for_cookies,
-                         num_sockets, allow_credentials,
-                         net::HttpRequestInfo::PRECONNECT_MOTIVATED);
+                         num_sockets, allow_credentials);
 }
 
 int PreconnectManager::PreresolveUrl(

@@ -809,31 +809,10 @@ void Predictor::PreconnectUrlOnIOThread(
   if (!getter)
     return;
 
-  // Translate the motivation from UrlRequest motivations to HttpRequest
-  // motivations.
-  net::HttpRequestInfo::RequestMotivation request_motivation =
-      net::HttpRequestInfo::NORMAL_MOTIVATION;
-  switch (motivation) {
-    case UrlInfo::OMNIBOX_MOTIVATED:
-      request_motivation = net::HttpRequestInfo::OMNIBOX_MOTIVATED;
-      break;
-    case UrlInfo::LEARNED_REFERAL_MOTIVATED:
-      request_motivation = net::HttpRequestInfo::PRECONNECT_MOTIVATED;
-      break;
-    case UrlInfo::MOUSE_OVER_MOTIVATED:
-    case UrlInfo::SELF_REFERAL_MOTIVATED:
-    case UrlInfo::EARLY_LOAD_MOTIVATED:
-      request_motivation = net::HttpRequestInfo::EARLY_LOAD_MOTIVATED;
-      break;
-    default:
-      // Other motivations should never happen here.
-      NOTREACHED();
-      break;
-  }
   UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
                             UrlInfo::MAX_MOTIVATED);
   content::PreconnectUrl(getter, url, site_for_cookies, count,
-                         allow_credentials, request_motivation);
+                         allow_credentials);
 }
 
 void Predictor::PredictFrameSubresources(const GURL& url,

@@ -367,7 +367,6 @@ void PreconnectHelperForURL(int num_streams,
   request.method = "GET";
   request.url = url;
   request.load_flags = 0;
-  request.motivation = HttpRequestInfo::PRECONNECT_MOTIVATED;
   request.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
@@ -392,10 +391,6 @@ class CapturePreconnectsSocketPool : public ParentPool {
 
   int last_num_streams() const { return last_num_streams_; }
 
-  base::Optional<HttpRequestInfo::RequestMotivation> last_motivation() const {
-    return last_motivation_;
-  }
-
   // Resets |last_num_streams_| to its default value.
   void reset_last_num_streams() { last_num_streams_ = -1; }
 
@@ -414,10 +409,8 @@ class CapturePreconnectsSocketPool : public ParentPool {
   void RequestSockets(const std::string& group_name,
                       const void* socket_params,
                       int num_sockets,
-                      const NetLogWithSource& net_log,
-                      HttpRequestInfo::RequestMotivation motivation) override {
+                      const NetLogWithSource& net_log) override {
     last_num_streams_ = num_sockets;
-    last_motivation_ = motivation;
   }
 
   void CancelRequest(const std::string& group_name,
@@ -449,7 +442,6 @@ class CapturePreconnectsSocketPool : public ParentPool {
 
  private:
   int last_num_streams_;
-  base::Optional<HttpRequestInfo::RequestMotivation> last_motivation_;
 };
 
 typedef CapturePreconnectsSocketPool<TransportClientSocketPool>
@@ -666,26 +658,6 @@ TEST_F(HttpStreamFactoryTest, PreconnectUnsafePort) {
 
   PreconnectHelperForURL(1, GURL("http://www.google.com:7"), session.get());
   EXPECT_EQ(-1, transport_conn_pool->last_num_streams());
-}
-
-// Verify that preconnects correctly set motivation for the SocketPool.
-TEST_F(HttpStreamFactoryTest, PreconnectSetsMotivation) {
-  SpdySessionDependencies session_deps(ProxyResolutionService::CreateDirect());
-  std::unique_ptr<HttpNetworkSession> session(
-      SpdySessionDependencies::SpdyCreateSession(&session_deps));
-  HttpNetworkSessionPeer peer(session.get());
-  CapturePreconnectsTransportSocketPool* transport_conn_pool =
-      new CapturePreconnectsTransportSocketPool(
-          session_deps.host_resolver.get(), session_deps.cert_verifier.get(),
-          session_deps.transport_security_state.get(),
-          session_deps.cert_transparency_verifier.get(),
-          session_deps.ct_policy_enforcer.get());
-  auto mock_pool_manager = std::make_unique<MockClientSocketPoolManager>();
-  mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
-  peer.SetClientSocketPoolManager(std::move(mock_pool_manager));
-  PreconnectHelperForURL(1, GURL("http://www.google.com"), session.get());
-  EXPECT_EQ(HttpRequestInfo::PRECONNECT_MOTIVATED,
-            transport_conn_pool->last_motivation());
 }
 
 TEST_F(HttpStreamFactoryTest, JobNotifiesProxy) {

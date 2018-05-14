@@ -49,8 +49,7 @@ void PreconnectUrl(net::URLRequestContextGetter* getter,
                    const GURL& url,
                    const GURL& site_for_cookies,
                    int count,
-                   bool allow_credentials,
-                   net::HttpRequestInfo::RequestMotivation motivation) {
+                   bool allow_credentials) {
   DCHECK(ResourceDispatcherHostImpl::Get()
              ->io_thread_task_runner()
              ->BelongsToCurrentThread());
@@ -73,7 +72,6 @@ void PreconnectUrl(net::URLRequestContextGetter* getter,
   request_info.method = "GET";
   request_info.extra_headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
                                        user_agent);
-  request_info.motivation = motivation;
 
   net::NetworkDelegate* delegate = request_context->network_delegate();
   if (delegate->CanEnablePrivacyMode(url, site_for_cookies))

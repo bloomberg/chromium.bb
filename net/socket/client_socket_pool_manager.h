@@ -196,8 +196,7 @@ int PreconnectSocketsForHttpRequest(
     const SSLConfig& ssl_config_for_proxy,
     PrivacyMode privacy_mode,
     const NetLogWithSource& net_log,
-    int num_preconnect_streams,
-    HttpRequestInfo::RequestMotivation motivation);
+    int num_preconnect_streams);
 
 }  // namespace net
 

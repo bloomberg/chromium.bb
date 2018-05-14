@@ -119,15 +119,11 @@ class NET_EXPORT ClientSocketPool : public LowerLayeredPool {
   // ClientSocketPool will assign a priority to the new connections, if any.
   // This priority will probably be lower than all others, since this method
   // is intended to make sure ahead of time that |num_sockets| sockets are
-  // available to talk to a host. The |motivation| is threaded through connect
-  // jobs and passed down to StreamSocket implementations. Note that it is not
-  // passed into already created or idle sockets.
-  virtual void RequestSockets(
-      const std::string& group_name,
-      const void* params,
-      int num_sockets,
-      const NetLogWithSource& net_log,
-      HttpRequestInfo::RequestMotivation motivation) = 0;
+  // available to talk to a host.
+  virtual void RequestSockets(const std::string& group_name,
+                              const void* params,
+                              int num_sockets,
+                              const NetLogWithSource& net_log) = 0;
 
   // Called to change the priority of a RequestSocket call that returned
   // ERR_IO_PENDING and has not yet asynchronously completed.  The same handle
@@ -216,9 +212,8 @@ void RequestSocketsForPool(
     const std::string& group_name,
     const scoped_refptr<typename PoolType::SocketParams>& params,
     int num_sockets,
-    const NetLogWithSource& net_log,
-    HttpRequestInfo::RequestMotivation motivation) {
-  pool->RequestSockets(group_name, &params, num_sockets, net_log, motivation);
+    const NetLogWithSource& net_log) {
+  pool->RequestSockets(group_name, &params, num_sockets, net_log);
 }
 
 }  // namespace net

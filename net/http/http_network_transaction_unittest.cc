@@ -14081,9 +14081,6 @@ TEST_F(HttpNetworkTransactionTest, PreconnectWithExistingSpdySession) {
   request.traffic_annotation =
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
 
-  // This is the important line that marks this as a preconnect.
-  request.motivation = HttpRequestInfo::PRECONNECT_MOTIVATED;
-
   HttpNetworkTransaction trans(DEFAULT_PRIORITY, session.get());
 
   TestCompletionCallback callback;
