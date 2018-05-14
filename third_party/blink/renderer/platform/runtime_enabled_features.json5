@@ -131,6 +131,10 @@
       name: "BlinkRuntimeCallStats",
     },
     {
+      name: "BloatedRendererDetection",
+      status: "experimental",
+    },
+    {
       name: "BlockCredentialedSubresources",
       status: "stable",
     },

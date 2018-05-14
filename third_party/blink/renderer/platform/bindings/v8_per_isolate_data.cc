@@ -71,7 +71,8 @@ V8PerIsolateData::V8PerIsolateData(
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
-      runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
+      runtime_call_stats_(base::DefaultTickClock::GetInstance()),
+      handled_near_v8_heap_limit_(false) {
   // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
   GetIsolate()->Enter();
   GetIsolate()->AddBeforeCallEnteredCallback(&BeforeCallEnteredCallback);
@@ -95,7 +96,8 @@ V8PerIsolateData::V8PerIsolateData()
       use_counter_disabled_(false),
       is_handling_recursion_level_error_(false),
       is_reporting_exception_(false),
-      runtime_call_stats_(base::DefaultTickClock::GetInstance()) {
+      runtime_call_stats_(base::DefaultTickClock::GetInstance()),
+      handled_near_v8_heap_limit_(false) {
   CHECK(IsMainThread());
 
   // SnapshotCreator enters the isolate, so we don't call Isolate::Enter() here.
