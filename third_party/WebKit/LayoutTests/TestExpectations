@@ -145,6 +145,16 @@ crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pas
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pass Timeout Failure ]
 crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Pass Timeout Failure ]
 
+# Flaky virtual/threaded/fast/scrolling tests
+crbug.com/841567 virtual/threaded/fast/scrolling/absolute-position-behind-scrollbar.html [ Failure Pass ]
+crbug.com/841567 virtual/threaded/fast/scrolling/fixed-position-behind-scrollbar.html [ Failure Pass ]
+crbug.com/841567 virtual/threaded/fast/scrolling/hover-during-scroll.html [ Failure Timeout Pass ]
+crbug.com/841567 virtual/threaded/fast/scrolling/listbox-wheel-event.html [ Failure Pass ]
+crbug.com/841567 virtual/threaded/fast/scrolling/overflow-scrollability.html [ Failure Pass ]
+crbug.com/841567 virtual/threaded/fast/scrolling/scrollbar-tickmarks-hittest.html [ Failure Pass ]
+crbug.com/841567 virtual/threaded/fast/scrolling/same-page-navigate.html [ Failure Pass ]
+
+
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
 crbug.com/736052 virtual/disable-spv175/compositing/overflow/composited-scroll-with-fractional-translation.html [ Skip ]
 crbug.com/736052 virtual/prefer_compositing_to_lcd_text/compositing/overflow/composited-scroll-with-fractional-translation.html [ Failure ]
@@ -4223,9 +4233,6 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Skip ]
 
 crbug.com/766129 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
-
-crbug.com/841567 virtual/threaded/fast/scrolling/listbox-wheel-event.html [ Failure ]
-crbug.com/841567 virtual/threaded/fast/scrolling/hover-during-scroll.html [ Timeout ]
 
 # Workaround crbug.com/817175 . Very difficult to fix with old-world compositing. Pass with SPv2.
 crbug.com/817175 compositing/overflow/clip-escaping-reverse-order-should-not-crash.html [ Failure ]
