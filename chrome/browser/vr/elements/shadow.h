@@ -24,7 +24,7 @@ class Shadow : public UiElement {
   void Render(UiElementRenderer* renderer,
               const CameraModel& camera_model) const override;
 
-  void LayOutChildren() override;
+  void LayOutContributingChildren() override;
   void set_intensity(float intensity) { intensity_ = intensity; }
   void set_shadow_caster(UiElement* shadow_caster) {
     shadow_caster_ = shadow_caster;

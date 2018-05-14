@@ -403,17 +403,17 @@ class UiElement : public cc::AnimationTarget {
   // Recursive method that sizes and lays out element subtrees.
   bool SizeAndLayOut();
 
-  // This method may be overridden by elements that have custom layout
-  // requirements.
-  virtual bool SizeAndLayOutChildren();
-
-  void DoLayOutChildren();
-
   // Handles positioning adjustments for children. This will be overridden by
   // UiElements providing custom layout modes. See the documentation of the
-  // override for their particular functionality. The base implementation
-  // applies anchoring.
-  virtual void LayOutChildren();
+  // override for their particular functionality.  This method is specific to
+  // children that contribute to the parent's bounds.  These elements may not
+  // use anchoring or centering attributes, as they themselves determine where
+  // the parent boundaries will be.
+  virtual void LayOutContributingChildren();
+
+  // Similar to LayOutContributingChildren, but runs after the parent's size has
+  // been determined.  The default implementation applies anchoring.
+  virtual void LayOutNonContributingChildren();
 
   // Recursive method that clips element subtrees, given that a parent is
   // clipped.
@@ -486,6 +486,10 @@ class UiElement : public cc::AnimationTarget {
   }
 
  protected:
+  // This method may be overridden by elements that have custom layout
+  // requirements.
+  virtual bool SizeAndLayOutChildren();
+
   Animation& animation() { return animation_; }
 
   virtual const Sounds& GetSounds() const;
@@ -508,6 +512,8 @@ class UiElement : public cc::AnimationTarget {
   // If true, the element is either locally visible (independent of its
   // ancestors), or its animation will cause it to become locally visible.
   bool IsOrWillBeLocallyVisible() const;
+
+  gfx::RectF ComputeContributingChildrenBounds();
 
   // Valid IDs are non-negative.
   int id_ = -1;

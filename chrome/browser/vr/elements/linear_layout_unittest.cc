@@ -35,7 +35,7 @@ TEST(LinearLayout, HorizontalVerticalLayout) {
   layout.AddChild(std::move(element));
 
   // One element should require no position adjustment at all.
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   EXPECT_TRUE(rect_a->LocalTransform().IsIdentity());
 
   // Two elements should be centered and separated by the margin.
@@ -44,7 +44,7 @@ TEST(LinearLayout, HorizontalVerticalLayout) {
   rect_b->SetSize(10, 10);
   rect_b->SetScale(2.0f, 2.0f, 0.0f);
   layout.AddChild(std::move(element));
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
 
   gfx::Point3F position_a;
   rect_a->LocalTransform().TransformPoint(&position_a);
@@ -61,7 +61,7 @@ TEST(LinearLayout, HorizontalVerticalLayout) {
   EXPECT_FLOAT_EQ(0.0f, position_b.z());
 
   rect_a->set_requires_layout(false);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
 
   EXPECT_FLOAT_EQ(20.0f, layout.size().width());
 }
@@ -82,24 +82,24 @@ TEST(LinearLayout, Alignment) {
 
   gfx::Point3F position_a;
   rect_a->set_y_anchoring(TOP);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   rect_a->LocalTransform().TransformPoint(&position_a);
   EXPECT_FLOAT_EQ(9.5f, position_a.y());
   position_a = gfx::Point3F();
   rect_a->set_y_anchoring(BOTTOM);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   rect_a->LocalTransform().TransformPoint(&position_a);
   EXPECT_FLOAT_EQ(-9.5f, position_a.y());
 
   layout.set_direction(LinearLayout::kLeft);
   position_a = gfx::Point3F();
   rect_a->set_y_anchoring(TOP);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   rect_a->LocalTransform().TransformPoint(&position_a);
   EXPECT_FLOAT_EQ(9.5f, position_a.y());
   position_a = gfx::Point3F();
   rect_a->set_y_anchoring(BOTTOM);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   rect_a->LocalTransform().TransformPoint(&position_a);
   EXPECT_FLOAT_EQ(-9.5f, position_a.y());
 
@@ -107,12 +107,12 @@ TEST(LinearLayout, Alignment) {
   position_a = gfx::Point3F();
   rect_a->set_x_anchoring(LEFT);
   rect_a->set_y_anchoring(NONE);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   rect_a->LocalTransform().TransformPoint(&position_a);
   EXPECT_FLOAT_EQ(-9.5f, position_a.x());
   position_a = gfx::Point3F();
   rect_a->set_x_anchoring(RIGHT);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   rect_a->LocalTransform().TransformPoint(&position_a);
   EXPECT_FLOAT_EQ(9.5f, position_a.x());
 
@@ -120,12 +120,12 @@ TEST(LinearLayout, Alignment) {
   position_a = gfx::Point3F();
   rect_a->set_x_anchoring(LEFT);
   rect_a->set_y_anchoring(NONE);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   rect_a->LocalTransform().TransformPoint(&position_a);
   EXPECT_FLOAT_EQ(-9.5f, position_a.x());
   position_a = gfx::Point3F();
   rect_a->set_x_anchoring(RIGHT);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   rect_a->LocalTransform().TransformPoint(&position_a);
   EXPECT_FLOAT_EQ(9.5f, position_a.x());
 }
@@ -142,22 +142,22 @@ TEST(LinearLayout, Orientations) {
   }
 
   layout.set_direction(LinearLayout::kUp);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   EXPECT_FLOAT_EQ(0.0f, rect->local_x());
   EXPECT_FLOAT_EQ(5.0f, rect->local_y());
 
   layout.set_direction(LinearLayout::kDown);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   EXPECT_FLOAT_EQ(0.0f, rect->local_x());
   EXPECT_FLOAT_EQ(-5.0f, rect->local_y());
 
   layout.set_direction(LinearLayout::kLeft);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   EXPECT_FLOAT_EQ(-5.0f, rect->local_x());
   EXPECT_FLOAT_EQ(0.0f, rect->local_y());
 
   layout.set_direction(LinearLayout::kRight);
-  layout.LayOutChildren();
+  layout.SizeAndLayOut();
   EXPECT_FLOAT_EQ(5.0f, rect->local_x());
   EXPECT_FLOAT_EQ(0.0f, rect->local_y());
 }

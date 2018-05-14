@@ -22,7 +22,7 @@ class LinearLayout : public UiElement {
 
   // UiElement overrides.
   bool SizeAndLayOutChildren() override;
-  void LayOutChildren() override;
+  void LayOutContributingChildren() override;
 
  private:
   bool Horizontal() const;

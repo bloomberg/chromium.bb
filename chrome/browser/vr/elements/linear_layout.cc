@@ -43,7 +43,7 @@ bool LinearLayout::SizeAndLayOutChildren() {
   return changed;
 }
 
-void LinearLayout::LayOutChildren() {
+void LinearLayout::LayOutContributingChildren() {
   float x_factor = 0.f;
   float y_factor = 0.f;
   switch (direction_) {

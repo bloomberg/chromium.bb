@@ -63,7 +63,7 @@ class TextInput : public UiElement {
   EditedText edited_text() const { return edited_text_; }
 
  private:
-  void LayOutChildren() final;
+  void LayOutNonContributingChildren() final;
   bool SetCursorBlinkState(const base::TimeTicks& time);
   void ResetCursorBlinkCycle();
 

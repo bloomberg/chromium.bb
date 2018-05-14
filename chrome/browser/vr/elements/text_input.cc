@@ -24,6 +24,7 @@ TextInput::TextInput(float font_height_meters,
   text->SetType(kTypeTextInputHint);
   text->SetDrawPhase(kPhaseForeground);
   text->set_focusable(false);
+  text->set_contributes_to_parent_bounds(false);
   text->set_x_anchoring(LEFT);
   text->set_x_centering(LEFT);
   text->SetSize(1, 1);
@@ -37,6 +38,7 @@ TextInput::TextInput(float font_height_meters,
   text->SetDrawPhase(kPhaseForeground);
   text->set_hit_testable(true);
   text->set_focusable(false);
+  text->set_contributes_to_parent_bounds(false);
   text->set_x_anchoring(LEFT);
   text->set_x_centering(LEFT);
   text->set_bubble_events(true);
@@ -52,6 +54,7 @@ TextInput::TextInput(float font_height_meters,
   cursor->SetType(kTypeTextInputCursor);
   cursor->SetDrawPhase(kPhaseForeground);
   cursor->set_focusable(false);
+  cursor->set_contributes_to_parent_bounds(false);
   cursor->set_x_anchoring(LEFT);
   cursor->set_y_anchoring(BOTTOM);
   cursor->SetColor(SK_ColorBLUE);
@@ -169,7 +172,7 @@ void TextInput::OnSetName() {
   cursor_element_->set_owner_name_for_test(name());
 }
 
-void TextInput::LayOutChildren() {
+void TextInput::LayOutNonContributingChildren() {
   // To avoid re-rendering a texture when the cursor blinks, the texture is a
   // separate element. Once the text has been laid out, we can position the
   // cursor appropriately relative to the text field.
