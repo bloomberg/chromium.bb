@@ -71,6 +71,10 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
+  int GetSearchEngineTypeFromTemplateUrl(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jkeyword);
   base::android::ScopedJavaLocalRef<jstring> ExtractSearchTermsFromUrl(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

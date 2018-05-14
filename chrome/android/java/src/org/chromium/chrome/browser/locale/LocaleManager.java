@@ -86,7 +86,7 @@ public class LocaleManager {
     // LocaleManager is a singleton and it should not have strong reference to UI objects.
     // SnackbarManager is owned by ChromeActivity and is not null as long as the activity is alive.
     private WeakReference<SnackbarManager> mSnackbarManager;
-    private SpecialLocaleHandler mLocaleHandler;
+    private LocaleTemplateUrlLoader mLocaleTemplateUrlLoader;
 
     private SnackbarController mSnackbarController = new SnackbarController() {
         @Override
@@ -170,7 +170,7 @@ public class LocaleManager {
      */
     public void addSpecialSearchEngines() {
         if (!isSpecialLocaleEnabled()) return;
-        getSpecialLocaleHandler().loadTemplateUrls();
+        getLocaleTemplateUrlLoader().loadTemplateUrls();
     }
 
     /**
@@ -178,7 +178,7 @@ public class LocaleManager {
      */
     public void removeSpecialSearchEngines() {
         if (isSpecialLocaleEnabled()) return;
-        getSpecialLocaleHandler().removeTemplateUrls();
+        getLocaleTemplateUrlLoader().removeTemplateUrls();
     }
 
     /**
@@ -187,7 +187,7 @@ public class LocaleManager {
      */
     public void overrideDefaultSearchEngine() {
         if (!isSearchEngineAutoSwitchEnabled() || !isSpecialLocaleEnabled()) return;
-        getSpecialLocaleHandler().overrideDefaultSearchProvider();
+        getLocaleTemplateUrlLoader().overrideDefaultSearchProvider();
         showSnackbar(ContextUtils.getApplicationContext().getString(R.string.using_sogou));
     }
 
@@ -197,7 +197,7 @@ public class LocaleManager {
      */
     public void revertDefaultSearchEngineOverride() {
         if (!isSearchEngineAutoSwitchEnabled() || isSpecialLocaleEnabled()) return;
-        getSpecialLocaleHandler().setGoogleAsDefaultSearch();
+        getLocaleTemplateUrlLoader().setGoogleAsDefaultSearch();
         showSnackbar(ContextUtils.getApplicationContext().getString(R.string.using_google));
     }
 
@@ -415,14 +415,6 @@ public class LocaleManager {
     }
 
     /**
-     * @return The search engine type for the given url if applicable.
-     *         See template_url_prepopulate_data.cc for all values.
-     */
-    protected static int getSearchEngineType(String url) {
-        return nativeGetEngineType(url);
-    }
-
-    /**
      * To be called after the user has made a selection from a search engine promo dialog.
      * @param type The type of search engine promo dialog that was shown.
      * @param keywords The keywords for all search engines listed in the order shown to the user.
@@ -444,9 +436,11 @@ public class LocaleManager {
      */
     protected void onUserLeavePromoDialogWithNoConfirmedChoice(@SearchEnginePromoType int type) {}
 
-    private SpecialLocaleHandler getSpecialLocaleHandler() {
-        if (mLocaleHandler == null) mLocaleHandler = new SpecialLocaleHandler(getSpecialLocaleId());
-        return mLocaleHandler;
+    private LocaleTemplateUrlLoader getLocaleTemplateUrlLoader() {
+        if (mLocaleTemplateUrlLoader == null) {
+            mLocaleTemplateUrlLoader = new LocaleTemplateUrlLoader(getSpecialLocaleId());
+        }
+        return mLocaleTemplateUrlLoader;
     }
 
     /**
@@ -515,6 +509,4 @@ public class LocaleManager {
      */
     public void recordLocaleBasedSearchMetrics(
             boolean isFromSearchWidget, String url, @PageTransition int transition) {}
-
-    private static native int nativeGetEngineType(String url);
 }
