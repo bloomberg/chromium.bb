@@ -197,4 +197,80 @@ TEST_F(WebMeaningfulLayoutsTest,
   main_resource.Finish();
 }
 
+// A pending stylesheet in the head is render-blocking and will be considered
+// a pending stylesheet if a layout is triggered before it loads.
+TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingRenderBlockingStylesheet) {
+  SimRequest main_resource("https://example.com/index.html", "text/html");
+  SimRequest style_resource("https://example.com/style.css", "text/css");
+
+  LoadURL("https://example.com/index.html");
+
+  main_resource.Complete(
+      "<html><head>"
+      "<link rel=\"stylesheet\" href=\"style.css\">"
+      "</head><body></body></html>");
+
+  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  EXPECT_TRUE(GetDocument().DidLayoutWithPendingStylesheets());
+
+  style_resource.Complete("");
+}
+
+// A pending stylesheet in the body is not render-blocking and should not
+// be considered a pending stylesheet if a layout is triggered before it loads.
+TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingScriptBlockingStylesheet) {
+  SimRequest main_resource("https://example.com/index.html", "text/html");
+  SimRequest style_resource("https://example.com/style.css", "text/css");
+
+  LoadURL("https://example.com/index.html");
+
+  main_resource.Complete(
+      "<html><head></head><body>"
+      "<link rel=\"stylesheet\" href=\"style.css\">"
+      "</body></html>");
+
+  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  EXPECT_FALSE(GetDocument().DidLayoutWithPendingStylesheets());
+
+  style_resource.Complete("");
+}
+
+// A pending import in the head is render-blocking and will be treated like
+// a pending stylesheet if a layout is triggered before it loads.
+TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInHead) {
+  SimRequest main_resource("https://example.com/index.html", "text/html");
+  SimRequest import_resource("https://example.com/import.html", "text/html");
+
+  LoadURL("https://example.com/index.html");
+
+  main_resource.Complete(
+      "<html><head>"
+      "<link rel=\"import\" href=\"import.html\">"
+      "</head><body></body></html>");
+
+  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  EXPECT_TRUE(GetDocument().DidLayoutWithPendingStylesheets());
+
+  import_resource.Complete("");
+}
+
+// A pending import in the body is render-blocking and will be treated like
+// a pending stylesheet if a layout is triggered before it loads.
+TEST_F(WebMeaningfulLayoutsTest, LayoutWithPendingImportInBody) {
+  SimRequest main_resource("https://example.com/index.html", "text/html");
+  SimRequest import_resource("https://example.com/import.html", "text/html");
+
+  LoadURL("https://example.com/index.html");
+
+  main_resource.Complete(
+      "<html><head></head><body>"
+      "<link rel=\"import\" href=\"import.html\">"
+      "</body></html>");
+
+  GetDocument().UpdateStyleAndLayoutTreeIgnorePendingStylesheets();
+  EXPECT_TRUE(GetDocument().DidLayoutWithPendingStylesheets());
+
+  import_resource.Complete("");
+}
+
 }  // namespace blink

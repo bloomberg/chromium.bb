@@ -169,10 +169,10 @@ class CORE_EXPORT StyleEngine final
     return pending_render_blocking_stylesheets_ > 0;
   }
   bool HaveScriptBlockingStylesheetsLoaded() const {
-    return !HasPendingScriptBlockingSheets() || ignore_pending_stylesheets_;
+    return !HasPendingScriptBlockingSheets();
   }
   bool HaveRenderBlockingStylesheetsLoaded() const {
-    return !HasPendingRenderBlockingSheets() || ignore_pending_stylesheets_;
+    return !HasPendingRenderBlockingSheets();
   }
   bool IgnoringPendingStylesheets() const {
     return ignore_pending_stylesheets_;
