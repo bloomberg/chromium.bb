@@ -318,7 +318,6 @@ class CORE_EXPORT WebLocalFrameImpl final
   void IncreaseMatchCount(int count, int identifier) override;
   int SelectNearestFindMatch(const WebFloatPoint&,
                              WebRect* selection_rect) override;
-  float DistanceToNearestFindMatch(const WebFloatPoint&) override;
   void SetTickmarks(const WebVector<WebRect>&) override;
   WebNode ContextMenuNode() const override;
   WebFrameWidget* FrameWidget() const override;

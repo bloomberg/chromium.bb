@@ -1766,8 +1766,6 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(FrameMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
-    IPC_MESSAGE_HANDLER(FrameMsg_GetNearestFindResult,
-                        OnGetNearestFindResult)
 #endif
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
@@ -6250,14 +6248,6 @@ void RenderFrameImpl::OnActivateNearestFindResult(int request_id,
 
   SendFindReply(request_id, -1 /* number_of_matches */, ordinal, selection_rect,
                 true /* final_update */);
-}
-
-void RenderFrameImpl::OnGetNearestFindResult(int nfr_request_id,
-                                             float x,
-                                             float y) {
-  float distance = frame_->DistanceToNearestFindMatch(WebFloatPoint(x, y));
-  Send(new FrameHostMsg_GetNearestFindResult_Reply(
-      routing_id_, nfr_request_id, distance));
 }
 #endif
 

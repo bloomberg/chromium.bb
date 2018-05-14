@@ -68,9 +68,9 @@ class CONTENT_EXPORT FindRequestManager {
   void ActivateNearestFindResult(float x, float y);
 
   // Called when a reply is received from a frame in response to the
-  // GetNearestFindResult IPC.
+  // GetNearestFindResult mojo call.
   void OnGetNearestFindResultReply(RenderFrameHost* rfh,
-                                   int nearest_find_result_request_id,
+                                   int request_id,
                                    float distance);
 
   // Requests the rects of the current find matches from the renderer process.

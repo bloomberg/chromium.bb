@@ -12,6 +12,10 @@ interface FindInPage {
   // (and no longer highlight it with special coloring).
   ClearActiveFindMatch();
 
+  // Request the distance to the nearest find result in a frame from |point|
+  // defined in fractions of the content document's width and height.
+  GetNearestFindResult(gfx.mojom.PointF point) => (float distance);
+
   // Returns the bounding boxes of the find-in-page match markers from the
   // frame. The bounding boxes are returned in find-in-page coordinates.
   //
@@ -34,4 +38,3 @@ interface FindInPage {
                 (int32 version, array<gfx.mojom.RectF> rects,
                 gfx.mojom.RectF active_match_rect);
 };
-
