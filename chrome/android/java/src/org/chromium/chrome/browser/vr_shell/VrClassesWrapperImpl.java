@@ -75,7 +75,12 @@ public class VrClassesWrapperImpl implements VrClassesWrapper {
         Context context = ContextUtils.getApplicationContext();
         // The call to isInVrSession crashes when called on a non-Daydream ready device, so we add
         // the device check (b/77268533).
-        return isDaydreamReadyDevice() && DaydreamApi.isInVrSession(context);
+        try {
+          return isDaydreamReadyDevice() && DaydreamApi.isInVrSession(context);
+        } catch (Exception ex) {
+          Log.e(TAG, "Unable to check if in vr session", ex);
+          return false;
+        }
     }
 
     @Override
