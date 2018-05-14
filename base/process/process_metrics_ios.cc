@@ -47,7 +47,7 @@ size_t GetMaxFds() {
   return static_cast<size_t>(max_fds);
 }
 
-void SetFdLimit(unsigned int max_descriptors) {
+void IncreaseFdLimitTo(unsigned int max_descriptors) {
   // Unimplemented.
 }
 

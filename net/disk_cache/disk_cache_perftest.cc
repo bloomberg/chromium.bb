@@ -52,9 +52,9 @@ const int kChunkSize = 32 * 1024;
 // As of 2017-01-12, this is a typical per-tab limit on HTTP connections.
 const int kMaxParallelOperations = 10;
 
-void MaybeSetFdLimit(unsigned int max_descriptors) {
+void MaybeIncreaseFdLimitTo(unsigned int max_descriptors) {
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
-  base::SetFdLimit(max_descriptors);
+  base::IncreaseFdLimitTo(max_descriptors);
 #endif
 }
 
@@ -70,20 +70,11 @@ enum class WhatToRead {
 
 class DiskCachePerfTest : public DiskCacheTestWithCache {
  public:
-  DiskCachePerfTest() : saved_fd_limit_(base::GetMaxFds()) {
-    if (saved_fd_limit_ < kFdLimitForCacheTests)
-      MaybeSetFdLimit(kFdLimitForCacheTests);
-  }
-
-  ~DiskCachePerfTest() override {
-    if (saved_fd_limit_ < kFdLimitForCacheTests)
-      MaybeSetFdLimit(saved_fd_limit_);
-  }
+  DiskCachePerfTest() { MaybeIncreaseFdLimitTo(kFdLimitForCacheTests); }
 
   const std::vector<TestEntry>& entries() const { return entries_; }
 
  protected:
-
   // Helper methods for constructing tests.
   bool TimeWrites();
   bool TimeReads(WhatToRead what_to_read, const char* timer_message);
@@ -104,9 +95,6 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
   const size_t kFdLimitForCacheTests = 8192;
 
   std::vector<TestEntry> entries_;
-
- private:
-  const size_t saved_fd_limit_;
 };
 
 class WriteHandler {
