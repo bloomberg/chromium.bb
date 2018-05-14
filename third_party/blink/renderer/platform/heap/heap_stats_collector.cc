@@ -5,61 +5,8 @@
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 
 #include "base/logging.h"
-#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
-
-ThreadHeapStatsCollector::Scope::Scope(ThreadHeapStatsCollector* tracer,
-                                       ThreadHeapStatsCollector::Scope::Id id)
-    : tracer_(tracer),
-      start_time_(WTF::CurrentTimeTicksInMilliseconds()),
-      id_(id) {
-  TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                     ThreadHeapStatsCollector::Scope::ToString(id_));
-}
-
-ThreadHeapStatsCollector::Scope::~Scope() {
-  TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
-                   ThreadHeapStatsCollector::Scope::ToString(id_));
-  tracer_->IncreaseScopeTime(
-      id_, WTF::CurrentTimeTicksInMilliseconds() - start_time_);
-}
-
-const char* ThreadHeapStatsCollector::Scope::ToString(
-    ThreadHeapStatsCollector::Scope::Id id) {
-  switch (id) {
-    case Scope::kCompleteSweep:
-      return "BlinkGC.CompleteSweep";
-    case Scope::kEagerSweep:
-      return "BlinkGC.EagerSweep";
-    case Scope::kIncrementalMarkingStartMarking:
-      return "BlinkGC.IncrementalMarkingStartMarking";
-    case Scope::kIncrementalMarkingStep:
-      return "BlinkGC.IncrementalMarkingStep";
-    case Scope::kIncrementalMarkingFinalize:
-      return "BlinkGC.IncrementalMarkingFinalize";
-    case Scope::kIncrementalMarkingFinalizeMarking:
-      return "BlinkGC.IncrementalMarkingFinalizeMarking";
-    case Scope::kLazySweepInIdle:
-      return "BlinkGC.LazySweepInIdle";
-    case Scope::kLazySweepOnAllocation:
-      return "BlinkGC.LazySweepOnAllocation";
-    case Scope::kFullGCMarking:
-      return "BlinkGC.FullGCMarking";
-    case Scope::kNumIds:
-      break;
-  }
-  CHECK(false);
-  return nullptr;
-}
-
-void ThreadHeapStatsCollector::IncreaseScopeTime(
-    ThreadHeapStatsCollector::Scope::Id id,
-    double time) {
-  DCHECK(is_started_);
-  current_.scope_data[id] += time;
-}
 
 void ThreadHeapStatsCollector::IncreaseMarkedObjectSize(size_t size) {
   DCHECK(is_started_);
@@ -85,10 +32,10 @@ void ThreadHeapStatsCollector::Event::reset() {
 }
 
 double ThreadHeapStatsCollector::Event::marking_time_in_ms() const {
-  return scope_data[Scope::kIncrementalMarkingStartMarking] +
-         scope_data[Scope::kIncrementalMarkingStep] +
-         scope_data[Scope::kIncrementalMarkingFinalizeMarking] +
-         scope_data[Scope::kFullGCMarking];
+  return scope_data[kIncrementalMarkingStartMarking] +
+         scope_data[kIncrementalMarkingStep] +
+         scope_data[kIncrementalMarkingFinalizeMarking] +
+         scope_data[kAtomicPhaseMarking];
 }
 
 double ThreadHeapStatsCollector::Event::marking_time_per_byte_in_s() const {
@@ -97,9 +44,8 @@ double ThreadHeapStatsCollector::Event::marking_time_per_byte_in_s() const {
 }
 
 double ThreadHeapStatsCollector::Event::sweeping_time_in_ms() const {
-  return scope_data[Scope::kCompleteSweep] + scope_data[Scope::kEagerSweep] +
-         scope_data[Scope::kLazySweepInIdle] +
-         scope_data[Scope::kLazySweepOnAllocation];
+  return scope_data[kCompleteSweep] + scope_data[kEagerSweep] +
+         scope_data[kLazySweepInIdle] + scope_data[kLazySweepOnAllocation];
 }
 
 }  // namespace blink

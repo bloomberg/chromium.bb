@@ -8,7 +8,9 @@
 #include <stddef.h>
 
 #include "third_party/blink/renderer/platform/heap/blink_gc.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -23,34 +25,103 @@ namespace blink {
 //   // Previous event is available using stats_collector.previous().
 class PLATFORM_EXPORT ThreadHeapStatsCollector {
  public:
+  // These ids will form human readable names when used in Scopes.
+  enum Id {
+    kCompleteSweep,
+    kEagerSweep,
+    kIncrementalMarkingStartMarking,
+    kIncrementalMarkingStep,
+    kIncrementalMarkingFinalize,
+    kIncrementalMarkingFinalizeMarking,
+    kInvokePreFinalizers,
+    kLazySweepInIdle,
+    kLazySweepOnAllocation,
+    kAtomicPhaseMarking,
+    kVisitDOMWrappers,
+    kNumScopeIds,
+  };
+
+  static const char* ToString(Id id) {
+    switch (id) {
+      case Id::kAtomicPhaseMarking:
+        return "BlinkGC.AtomicPhaseMarking";
+      case Id::kCompleteSweep:
+        return "BlinkGC.CompleteSweep";
+      case Id::kEagerSweep:
+        return "BlinkGC.EagerSweep";
+      case Id::kIncrementalMarkingStartMarking:
+        return "BlinkGC.IncrementalMarkingStartMarking";
+      case Id::kIncrementalMarkingStep:
+        return "BlinkGC.IncrementalMarkingStep";
+      case Id::kIncrementalMarkingFinalize:
+        return "BlinkGC.IncrementalMarkingFinalize";
+      case Id::kIncrementalMarkingFinalizeMarking:
+        return "BlinkGC.IncrementalMarkingFinalizeMarking";
+      case Id::kInvokePreFinalizers:
+        return "BlinkGC.InvokePreFinalizers";
+      case Id::kLazySweepInIdle:
+        return "BlinkGC.LazySweepInIdle";
+      case Id::kLazySweepOnAllocation:
+        return "BlinkGC.LazySweepOnAllocation";
+      case Id::kVisitDOMWrappers:
+        return "BlinkGC.VisitDOMWrappers";
+      case Id::kNumScopeIds:
+        break;
+    }
+    CHECK(false);
+    return nullptr;
+  }
+
+  enum TraceDefaultBehavior {
+    kEnabled,
+    kDisabled,
+  };
+
   // Trace a particular scope. Will emit a trace event and record the time in
   // the corresponding ThreadHeapStatsCollector.
-  class PLATFORM_EXPORT Scope {
+  template <TraceDefaultBehavior default_behavior = kDisabled>
+  class PLATFORM_EXPORT InternalScope {
    public:
-    // These ids will form human readable names when used in Scopes.
-    enum Id {
-      kCompleteSweep,
-      kEagerSweep,
-      kIncrementalMarkingStartMarking,
-      kIncrementalMarkingStep,
-      kIncrementalMarkingFinalize,
-      kIncrementalMarkingFinalizeMarking,
-      kLazySweepInIdle,
-      kLazySweepOnAllocation,
-      kFullGCMarking,
-      kNumIds,
-    };
+    template <typename... Args>
+    InternalScope(ThreadHeapStatsCollector* tracer, Id id, Args... args)
+        : tracer_(tracer),
+          start_time_(WTF::CurrentTimeTicksInMilliseconds()),
+          id_(id) {
+      StartTrace(args...);
+    }
 
-    static const char* ToString(Id);
-
-    Scope(ThreadHeapStatsCollector*, Id);
-    ~Scope();
+    ~InternalScope() {
+      TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("blink_gc"), ToString(id_));
+      tracer_->IncreaseScopeTime(
+          id_, WTF::CurrentTimeTicksInMilliseconds() - start_time_);
+    }
 
    private:
+    static const char* TraceCategory() {
+      return default_behavior == kEnabled
+                 ? "blink_gc"
+                 : TRACE_DISABLED_BY_DEFAULT("blink_gc");
+    }
+
+    void StartTrace() { TRACE_EVENT_BEGIN0(TraceCategory(), ToString(id_)); }
+
+    template <typename Value1>
+    void StartTrace(const char* k1, Value1 v1) {
+      TRACE_EVENT_BEGIN1(TraceCategory(), ToString(id_), k1, v1);
+    }
+
+    template <typename Value1, typename Value2>
+    void StartTrace(const char* k1, Value1 v1, const char* k2, Value2 v2) {
+      TRACE_EVENT_BEGIN2(TraceCategory(), ToString(id_), k1, v1, k2, v2);
+    }
+
     ThreadHeapStatsCollector* const tracer_;
     const double start_time_;
     const Id id_;
   };
+
+  using Scope = InternalScope<kDisabled>;
+  using EnabledScope = InternalScope<kEnabled>;
 
   struct PLATFORM_EXPORT Event {
     void reset();
@@ -60,14 +131,18 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     double sweeping_time_in_ms() const;
 
     size_t marked_object_size = 0;
-    double scope_data[Scope::kNumIds] = {0};
+    double scope_data[kNumScopeIds] = {0};
     BlinkGC::GCReason reason;
   };
 
   void Start(BlinkGC::GCReason);
   void Stop();
 
-  void IncreaseScopeTime(Scope::Id, double);
+  void IncreaseScopeTime(Id id, double time) {
+    DCHECK(is_started_);
+    current_.scope_data[id] += time;
+  }
+
   void IncreaseMarkedObjectSize(size_t);
 
   bool is_started() const { return is_started_; }
