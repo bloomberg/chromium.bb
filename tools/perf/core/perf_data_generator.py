@@ -370,13 +370,13 @@ def get_waterfall_config():
       {
        'gpu': '1002:6821',
        'os': 'Mac-10.11',
-       'pool': 'Chrome-perf',
+       'pool': 'chrome.tests.perf',
        'device_ids': [
-           'build128-b1', 'build129-b1',
-           'build130-b1', 'build131-b1', 'build132-b1'
+           'build205-b7', 'build206-b7',
+           'build207-b7', 'build208-b7', 'build209-b7'
           ],
        'perf_tests': [
-         ('performance_browser_tests', 'build132-b1')
+         ('performance_browser_tests', 'build209-b7')
        ]
       }
     ])
