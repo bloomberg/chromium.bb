@@ -1486,11 +1486,10 @@ void BrowserView::TabInsertedAt(TabStripModel* tab_strip_model,
   web_contents_close_handler_->TabInserted();
 }
 
-void BrowserView::TabDetachedAt(WebContents* contents, int index) {
-  // We use index here rather than comparing |contents| because by this time
-  // the model has already removed |contents| from its list, so
-  // browser_->GetActiveWebContents() will return null or something else.
-  if (index == browser_->tab_strip_model()->active_index()) {
+void BrowserView::TabDetachedAt(WebContents* contents,
+                                int index,
+                                bool was_active) {
+  if (was_active) {
     // We need to reset the current tab contents to null before it gets
     // freed. This is because the focus manager performs some operations
     // on the selected WebContents when it is removed.

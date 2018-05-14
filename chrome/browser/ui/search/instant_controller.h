@@ -36,7 +36,9 @@ class InstantController : public TabStripModelObserver {
   ~InstantController() override;
 
   // TabStripModelObserver:
-  void TabDetachedAt(content::WebContents* contents, int index) override;
+  void TabDetachedAt(content::WebContents* contents,
+                     int index,
+                     bool was_active) override;
   void TabDeactivated(content::WebContents* contents) override;
   void ActiveTabChanged(content::WebContents* old_contents,
                         content::WebContents* new_contents,

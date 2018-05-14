@@ -126,7 +126,8 @@ ChromeBubbleManager::~ChromeBubbleManager() {
 }
 
 void ChromeBubbleManager::TabDetachedAt(content::WebContents* contents,
-                                        int index) {
+                                        int index,
+                                        bool was_active) {
   CloseAllBubbles(BUBBLE_CLOSE_TABDETACHED);
   // Any bubble that didn't close should update its anchor position.
   UpdateAllBubbleAnchors();

@@ -21,8 +21,8 @@ void TabStripModelObserver::TabClosingAt(TabStripModel* tab_strip_model,
 }
 
 void TabStripModelObserver::TabDetachedAt(WebContents* contents,
-                                          int index) {
-}
+                                          int index,
+                                          bool was_active) {}
 
 void TabStripModelObserver::TabDeactivated(WebContents* contents) {
 }

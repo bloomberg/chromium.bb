@@ -48,7 +48,8 @@ InstantController::InstantController(Profile* profile,
 InstantController::~InstantController() = default;
 
 void InstantController::TabDetachedAt(content::WebContents* contents,
-                                      int index) {
+                                      int index,
+                                      bool was_active) {
   StopWatchingTab(contents);
 }
 

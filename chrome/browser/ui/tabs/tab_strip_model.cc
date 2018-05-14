@@ -385,7 +385,7 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
     closing_all_ = true;
 
   for (auto& observer : observers_)
-    observer.TabDetachedAt(raw_web_contents, index);
+    observer.TabDetachedAt(raw_web_contents, index, index == active_index());
 
   if (empty()) {
     selection_model_.Clear();

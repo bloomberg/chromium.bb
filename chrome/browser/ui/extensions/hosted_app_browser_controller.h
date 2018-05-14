@@ -91,7 +91,9 @@ class HostedAppBrowserController : public SiteEngagementObserver,
                      content::WebContents* contents,
                      int index,
                      bool foreground) override;
-  void TabDetachedAt(content::WebContents* contents, int index) override;
+  void TabDetachedAt(content::WebContents* contents,
+                     int index,
+                     bool was_active) override;
 
  private:
   Browser* const browser_;

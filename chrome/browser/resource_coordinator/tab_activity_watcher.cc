@@ -428,7 +428,8 @@ void TabActivityWatcher::TabInsertedAt(TabStripModel* tab_strip_model,
 }
 
 void TabActivityWatcher::TabDetachedAt(content::WebContents* contents,
-                                       int index) {
+                                       int index,
+                                       bool was_active) {
   WebContentsData::FromWebContents(contents)->TabDetached();
 }
 
