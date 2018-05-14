@@ -22,6 +22,7 @@ blink_core_sources("timing") {
     "performance_long_task_timing.h",
     "performance_mark.cc",
     "performance_mark.h",
+    "performance_measure.cc",
     "performance_measure.h",
     "performance_navigation.cc",
     "performance_navigation.h",

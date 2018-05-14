@@ -151,25 +151,37 @@ double UserTiming::FindExistingMarkStartTime(const String& mark_name,
   return 0.0;
 }
 
-PerformanceEntry* UserTiming::Measure(const String& measure_name,
-                                      const String& start_mark,
-                                      const String& end_mark,
-                                      ExceptionState& exception_state) {
+double UserTiming::FindStartMarkOrTime(const StringOrDouble& start,
+                                       ExceptionState& exception_state) {
+  if (start.IsString())
+    return FindExistingMarkStartTime(start.GetAsString(), exception_state);
+  if (start.IsDouble())
+    return start.GetAsDouble();
+  NOTREACHED();
+  return 0;
+}
+
+PerformanceMeasure* UserTiming::Measure(ScriptState* script_state,
+                                        const String& measure_name,
+                                        const StringOrDouble& start,
+                                        const StringOrDouble& end,
+                                        const ScriptValue& detail,
+                                        ExceptionState& exception_state) {
   double start_time = 0.0;
   double end_time = 0.0;
 
-  if (start_mark.IsNull()) {
+  if (start.IsNull()) {
     end_time = performance_->now();
-  } else if (end_mark.IsNull()) {
+  } else if (end.IsNull()) {
     end_time = performance_->now();
-    start_time = FindExistingMarkStartTime(start_mark, exception_state);
+    start_time = FindStartMarkOrTime(start, exception_state);
     if (exception_state.HadException())
       return nullptr;
   } else {
-    end_time = FindExistingMarkStartTime(end_mark, exception_state);
+    end_time = FindStartMarkOrTime(end, exception_state);
     if (exception_state.HadException())
       return nullptr;
-    start_time = FindExistingMarkStartTime(start_mark, exception_state);
+    start_time = FindStartMarkOrTime(start, exception_state);
     if (exception_state.HadException())
       return nullptr;
   }
@@ -190,8 +202,8 @@ PerformanceEntry* UserTiming::Measure(const String& measure_name,
       WTF::StringHash::GetHash(measure_name),
       TraceEvent::ToTraceTimestamp(end_time_monotonic));
 
-  PerformanceEntry* entry =
-      PerformanceMeasure::Create(measure_name, start_time, end_time);
+  PerformanceMeasure* entry = PerformanceMeasure::Create(
+      script_state, measure_name, start_time, end_time, detail);
   InsertPerformanceEntry(measures_map_, *entry);
   if (end_time >= start_time) {
     DEFINE_THREAD_SAFE_STATIC_LOCAL(

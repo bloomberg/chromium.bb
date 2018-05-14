@@ -33,6 +33,7 @@
 
 #include <algorithm>
 #include "third_party/blink/renderer/bindings/core/v8/double_or_performance_mark_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_object_builder.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_timing.h"
@@ -43,6 +44,8 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
+#include "third_party/blink/renderer/core/timing/performance_measure.h"
+#include "third_party/blink/renderer/core/timing/performance_measure_options.h"
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
@@ -587,27 +590,158 @@ void Performance::clearMarks(const String& mark_name) {
   user_timing_->ClearMarks(mark_name);
 }
 
-void Performance::measure(const String& measure_name,
-                          const String& start_mark,
-                          const String& end_mark,
-                          ExceptionState& exception_state) {
+PerformanceMeasure* Performance::measure(ScriptState* script_state,
+                                         const String& measure_name,
+                                         ExceptionState& exception_state) {
+  return measureInternal(script_state, measure_name,
+                         NativeValueTraits<StringOrDouble>::NullValue(),
+                         NativeValueTraits<StringOrDouble>::NullValue(),
+                         ScriptValue::CreateNull(script_state),
+                         exception_state);
+}
+
+PerformanceMeasure* Performance::measure(
+    ScriptState* script_state,
+    const String& measure_name,
+    const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
+    ExceptionState& exception_state) {
+  return measureInternal(script_state, measure_name, start_or_options,
+                         NativeValueTraits<StringOrDouble>::NullValue(), true,
+                         exception_state);
+}
+
+PerformanceMeasure* Performance::measure(
+    ScriptState* script_state,
+    const String& measure_name,
+    const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
+    const StringOrDouble& end,
+    ExceptionState& exception_state) {
+  return measureInternal(script_state, measure_name, start_or_options, end,
+                         false, exception_state);
+}
+
+// |start_or_options|: while in options type, the value is an object {start,
+// end, detail}, and |end| must be null; while in string or double type, the
+// value is start. So there are two ways we can input the start and end
+// (omitting |script_state| and |measure_name|):
+// 1. measure(start, end)
+// 2. measure({start, end})
+//
+// For simplicity, the method below unifies these ways into a single form -
+// measure(name, start, end, detail). The mapping between two measure methods
+// (using measure_ to denote the measure after tranformation) goes as follows:
+// 1. measure(start, end): measure_(start, end, null)
+// 2. measure({start, end, detail}, null): measure_(start, end, detail)
+// 3. measure({start, end, detail}, end): invalid
+//
+// When |end| is null in C++, we cannot tell whether |end| is null, undefined or
+// empty in JS from StringOrDouble, so we need |end_is_empty| to help
+// distinguish between (null or undefined) and empty.
+PerformanceMeasure* Performance::measureInternal(
+    ScriptState* script_state,
+    const String& measure_name,
+    const StringOrDoubleOrPerformanceMeasureOptions& start_or_options,
+    const StringOrDouble& end,
+    bool end_is_empty,
+    ExceptionState& exception_state) {
+  if (RuntimeEnabledFeatures::CustomUserTimingEnabled()) {
+    if (start_or_options.IsPerformanceMeasureOptions()) {
+      if (!end.IsNull()) {
+        exception_state.ThrowDOMException(
+            kSyntaxError,
+            "If a PerformanceMeasureOptions object was passed, |end| must be "
+            "null.");
+        return nullptr;
+      }
+      const PerformanceMeasureOptions& options =
+          start_or_options.GetAsPerformanceMeasureOptions();
+      return measureInternal(script_state, measure_name, options.startTime(),
+                             options.endTime(), options.detail(),
+                             exception_state);
+    } else {
+      StringOrDouble converted_start;
+      if (start_or_options.IsDouble()) {
+        converted_start =
+            StringOrDouble::FromDouble(start_or_options.GetAsDouble());
+      } else if (start_or_options.IsString()) {
+        converted_start =
+            StringOrDouble::FromString(start_or_options.GetAsString());
+      } else {
+        DCHECK(start_or_options.IsNull());
+        converted_start = NativeValueTraits<StringOrDouble>::NullValue();
+      }
+      // We let |end| behaves the same whether it's empty, undefined or null in
+      // JS, as long as |end| is null in C++.
+      return measureInternal(script_state, measure_name, converted_start, end,
+                             ScriptValue::CreateNull(script_state),
+                             exception_state);
+    }
+  } else {
+    // For consistency with UserTimingL2: the L2 API took |start| as a string,
+    // so any object passed in became a string '[object, object]', null became
+    // string 'null'.
+    StringOrDouble converted_start;
+    if (start_or_options.IsPerformanceMeasureOptions()) {
+      converted_start = StringOrDouble::FromString("[object Object]");
+    } else if (start_or_options.IsDouble()) {
+      converted_start = StringOrDouble::FromString(
+          String::NumberToStringECMAScript(start_or_options.GetAsDouble()));
+    } else if (start_or_options.IsString()) {
+      converted_start =
+          StringOrDouble::FromString(start_or_options.GetAsString());
+    } else {
+      DCHECK(start_or_options.IsNull());
+      converted_start = StringOrDouble::FromString("null");
+    }
+
+    StringOrDouble converted_end;
+    if (end.IsString()) {
+      converted_end = StringOrDouble::FromString(end.GetAsString());
+    } else if (end.IsDouble()) {
+      converted_end = StringOrDouble::FromString(
+          String::NumberToStringECMAScript(end.GetAsDouble()));
+    } else {
+      DCHECK(end.IsNull());
+      if (end_is_empty) {
+        converted_end = NativeValueTraits<StringOrDouble>::NullValue();
+      } else {
+        converted_end = StringOrDouble::FromString("null");
+      }
+    }
+    measureInternal(script_state, measure_name, converted_start, converted_end,
+                    ScriptValue::CreateNull(script_state), exception_state);
+    // Return nullptr to distinguish from L3.
+    return nullptr;
+  }
+}
+
+PerformanceMeasure* Performance::measureInternal(
+    ScriptState* script_state,
+    const String& measure_name,
+    const StringOrDouble& start,
+    const StringOrDouble& end,
+    const ScriptValue& detail,
+    ExceptionState& exception_state) {
+  StringOrDouble original_start = start;
+  StringOrDouble original_end = end;
+
   UMA_HISTOGRAM_ENUMERATION(
       "Performance.PerformanceMeasurePassedInParameter.StartMark",
-      ToPerformanceMeasurePassedInParameterType(start_mark),
+      ToPerformanceMeasurePassedInParameterType(original_start),
       kPerformanceMeasurePassedInParameterCount);
   UMA_HISTOGRAM_ENUMERATION(
       "Performance.PerformanceMeasurePassedInParameter.EndMark",
-      ToPerformanceMeasurePassedInParameterType(end_mark),
+      ToPerformanceMeasurePassedInParameterType(original_end),
       kPerformanceMeasurePassedInParameterCount);
 
   ExecutionContext* execution_context = GetExecutionContext();
   if (execution_context) {
     PerformanceMeasurePassedInParameterType start_type =
-        ToPerformanceMeasurePassedInParameterType(start_mark);
+        ToPerformanceMeasurePassedInParameterType(original_start);
     PerformanceMeasurePassedInParameterType end_type =
-        ToPerformanceMeasurePassedInParameterType(end_mark);
+        ToPerformanceMeasurePassedInParameterType(original_end);
 
-    if (start_type == kObjectObject) {
+    if (!detail.IsEmpty() && detail.IsObject()) {
       UseCounter::Count(execution_context,
                         WebFeature::kPerformanceMeasurePassedInObject);
     }
@@ -622,9 +756,15 @@ void Performance::measure(const String& measure_name,
 
   if (!user_timing_)
     user_timing_ = UserTiming::Create(*this);
-  if (PerformanceEntry* entry = user_timing_->Measure(
-          measure_name, start_mark, end_mark, exception_state))
+  PerformanceMeasure* performance_measure =
+      user_timing_->Measure(script_state, measure_name, original_start,
+                            original_end, detail, exception_state);
+  if (performance_measure) {
+    PerformanceEntry* entry = performance_measure;
     NotifyObserversOfEntry(*entry);
+    return performance_measure;
+  }
+  return nullptr;
 }
 
 void Performance::clearMeasures(const String& measure_name) {
@@ -707,6 +847,42 @@ void Performance::DeliverObservationsTimerFired(TimerBase*) {
     else
       observer->Deliver();
   }
+}
+
+// static
+Performance::PerformanceMeasurePassedInParameterType
+Performance::ToPerformanceMeasurePassedInParameterType(
+    const StringOrDouble& p) {
+  if (p.IsString()) {
+    const String& s = p.GetAsString();
+    // All passed-in objects will be stringified into this type.
+    if (s == "[object Object]")
+      return Performance::kObjectObject;
+    // The following names come from
+    // https://w3c.github.io/navigation-timing/#sec-PerformanceNavigationTiming.
+    if (s == "unloadEventStart")
+      return Performance::kUnloadEventStart;
+    if (s == "unloadEventEnd")
+      return kUnloadEventEnd;
+    if (s == "domInteractive")
+      return Performance::kDomInteractive;
+    if (s == "domContentLoadedEventStart")
+      return Performance::kDomContentLoadedEventStart;
+    if (s == "domContentLoadedEventEnd")
+      return Performance::kDomContentLoadedEventEnd;
+    if (s == "domComplete")
+      return Performance::kDomComplete;
+    if (s == "loadEventStart")
+      return Performance::kLoadEventStart;
+    if (s == "loadEventEnd")
+      return Performance::kLoadEventEnd;
+    return Performance::kOther;
+  }
+  if (p.IsNull()) {
+    return Performance::kNull;
+  }
+  DCHECK(p.IsDouble());
+  return Performance::kTimeStamp;
 }
 
 // static

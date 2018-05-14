@@ -28,29 +28,38 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/timing/performance_entry.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
+
+class SerializedScriptValue;
 
 class PerformanceMeasure final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static PerformanceMeasure* Create(const String& name,
+  static PerformanceMeasure* Create(ScriptState* script_state,
+                                    const String& name,
                                     double start_time,
-                                    double end_time) {
-    return new PerformanceMeasure(name, start_time, end_time);
+                                    double end_time,
+                                    const ScriptValue& detail) {
+    return new PerformanceMeasure(script_state, name, start_time, end_time,
+                                  detail);
   }
+  ScriptValue detail(ScriptState*) const;
 
   void Trace(blink::Visitor* visitor) override {
     PerformanceEntry::Trace(visitor);
   }
 
  private:
-  PerformanceMeasure(const String& name, double start_time, double end_time)
-      : PerformanceEntry(name, "measure", start_time, end_time) {}
+  PerformanceMeasure(ScriptState*,
+                     const String& name,
+                     double start_time,
+                     double end_time,
+                     const ScriptValue& detail);
   ~PerformanceMeasure() override = default;
+  scoped_refptr<SerializedScriptValue> detail_;
 };
 
 }  // namespace blink

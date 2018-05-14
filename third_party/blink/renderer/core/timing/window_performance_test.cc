@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/timing/window_performance.h"
+#include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_double.h"
+#include "third_party/blink/renderer/bindings/core/v8/string_or_double_or_performance_measure_options.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/frame/performance_monitor.h"
@@ -226,14 +228,17 @@ TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
 }
 
 TEST_F(WindowPerformanceTest, ParameterHistogramForMeasure) {
+  V8TestingScope scope;
   HistogramTester histogram_tester;
   DummyExceptionStateForTesting exception_state;
 
   histogram_tester.ExpectTotalCount(kStartMarkForMeasureHistogram, 0);
   histogram_tester.ExpectTotalCount(kEndMarkForMeasureHistogram, 0);
 
-  performance_->measure("testMark", "unloadEventStart", "unloadEventEnd",
-                        exception_state);
+  performance_->measure(
+      scope.GetScriptState(), "testMark",
+      StringOrDoubleOrPerformanceMeasureOptions::FromString("unloadEventStart"),
+      StringOrDouble::FromString("unloadEventEnd"), exception_state);
 
   histogram_tester.ExpectBucketCount(
       kStartMarkForMeasureHistogram,
@@ -242,8 +247,10 @@ TEST_F(WindowPerformanceTest, ParameterHistogramForMeasure) {
       kEndMarkForMeasureHistogram,
       static_cast<int>(Performance::kUnloadEventEnd), 1);
 
-  performance_->measure("testMark", "domInteractive", "[object Object]",
-                        exception_state);
+  performance_->measure(
+      scope.GetScriptState(), "testMark",
+      StringOrDoubleOrPerformanceMeasureOptions::FromString("domInteractive"),
+      StringOrDouble::FromString("[object Object]"), exception_state);
 
   histogram_tester.ExpectBucketCount(
       kStartMarkForMeasureHistogram,
@@ -252,8 +259,10 @@ TEST_F(WindowPerformanceTest, ParameterHistogramForMeasure) {
       kEndMarkForMeasureHistogram, static_cast<int>(Performance::kObjectObject),
       1);
 
-  performance_->measure("testMark", "[object Object]", "[object Object]",
-                        exception_state);
+  performance_->measure(
+      scope.GetScriptState(), "testMark",
+      StringOrDoubleOrPerformanceMeasureOptions::FromString("[object Object]"),
+      StringOrDouble::FromString("[object Object]"), exception_state);
 
   histogram_tester.ExpectBucketCount(
       kStartMarkForMeasureHistogram,
