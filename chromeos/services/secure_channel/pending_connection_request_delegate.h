@@ -30,7 +30,7 @@ class PendingConnectionRequestDelegate {
 
   // Invoked when a PendingConnectionRequest fails to establish a connection.
   // |request_id| corresponds to the ID returned by
-  // PendingConnectionRequest::GetRequestId().
+  // PendingConnectionRequest::request_id().
   virtual void OnRequestFinishedWithoutConnection(
       const std::string& request_id,
       FailedConnectionReason reason) = 0;
