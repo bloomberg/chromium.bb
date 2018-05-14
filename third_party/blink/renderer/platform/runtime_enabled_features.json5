@@ -1072,8 +1072,6 @@
     },
     // Handles frame scrolling via the root PaintLayer instead of the FrameView.
     // The master bug for the root layer scrolling project is crbug.com/417782.
-    // This REF is enabled iff features::kRootLayerScrolling is on or
-    // experimental web platform features are enabled.
     {
       name: "RootLayerScrolling",
       status: "stable",
