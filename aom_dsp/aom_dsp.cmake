@@ -13,264 +13,229 @@ if(AOM_AOM_DSP_AOM_DSP_CMAKE_)
 endif() # AOM_AOM_DSP_AOM_DSP_CMAKE_
 set(AOM_AOM_DSP_AOM_DSP_CMAKE_ 1)
 
-set(AOM_DSP_COMMON_SOURCES
-    "${AOM_ROOT}/aom_dsp/aom_convolve.c"
-    "${AOM_ROOT}/aom_dsp/aom_convolve.h"
-    "${AOM_ROOT}/aom_dsp/aom_dsp_common.h"
-    "${AOM_ROOT}/aom_dsp/aom_filter.h"
-    "${AOM_ROOT}/aom_dsp/aom_simd.h"
-    "${AOM_ROOT}/aom_dsp/aom_simd_inline.h"
-    "${AOM_ROOT}/aom_dsp/blend.h"
-    "${AOM_ROOT}/aom_dsp/blend_a64_hmask.c"
-    "${AOM_ROOT}/aom_dsp/blend_a64_mask.c"
-    "${AOM_ROOT}/aom_dsp/blend_a64_vmask.c"
-    "${AOM_ROOT}/aom_dsp/intrapred.c"
-    "${AOM_ROOT}/aom_dsp/intrapred_common.h"
-    "${AOM_ROOT}/aom_dsp/loopfilter.c"
-    "${AOM_ROOT}/aom_dsp/prob.h"
-    "${AOM_ROOT}/aom_dsp/simd/v128_intrinsics.h"
-    "${AOM_ROOT}/aom_dsp/simd/v128_intrinsics_c.h"
-    "${AOM_ROOT}/aom_dsp/simd/v256_intrinsics.h"
-    "${AOM_ROOT}/aom_dsp/simd/v256_intrinsics_c.h"
-    "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics.h"
-    "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics_c.h"
-    "${AOM_ROOT}/aom_dsp/subtract.c"
-    "${AOM_ROOT}/aom_dsp/txfm_common.h"
-    "${AOM_ROOT}/aom_dsp/x86/convolve_common_intrin.h")
+list(APPEND AOM_DSP_COMMON_SOURCES
+     "${AOM_ROOT}/aom_dsp/aom_convolve.c"
+     "${AOM_ROOT}/aom_dsp/aom_convolve.h"
+     "${AOM_ROOT}/aom_dsp/aom_dsp_common.h"
+     "${AOM_ROOT}/aom_dsp/aom_filter.h"
+     "${AOM_ROOT}/aom_dsp/aom_simd.h"
+     "${AOM_ROOT}/aom_dsp/aom_simd_inline.h"
+     "${AOM_ROOT}/aom_dsp/blend.h"
+     "${AOM_ROOT}/aom_dsp/blend_a64_hmask.c"
+     "${AOM_ROOT}/aom_dsp/blend_a64_mask.c"
+     "${AOM_ROOT}/aom_dsp/blend_a64_vmask.c"
+     "${AOM_ROOT}/aom_dsp/entcode.c"
+     "${AOM_ROOT}/aom_dsp/entcode.h"
+     "${AOM_ROOT}/aom_dsp/intrapred.c"
+     "${AOM_ROOT}/aom_dsp/intrapred_common.h"
+     "${AOM_ROOT}/aom_dsp/inv_txfm.c"
+     "${AOM_ROOT}/aom_dsp/inv_txfm.h"
+     "${AOM_ROOT}/aom_dsp/loopfilter.c"
+     "${AOM_ROOT}/aom_dsp/prob.h"
+     "${AOM_ROOT}/aom_dsp/simd/v128_intrinsics.h"
+     "${AOM_ROOT}/aom_dsp/simd/v128_intrinsics_c.h"
+     "${AOM_ROOT}/aom_dsp/simd/v256_intrinsics.h"
+     "${AOM_ROOT}/aom_dsp/simd/v256_intrinsics_c.h"
+     "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics.h"
+     "${AOM_ROOT}/aom_dsp/simd/v64_intrinsics_c.h"
+     "${AOM_ROOT}/aom_dsp/subtract.c"
+     "${AOM_ROOT}/aom_dsp/txfm_common.h"
+     "${AOM_ROOT}/aom_dsp/x86/convolve_common_intrin.h")
 
-set(AOM_DSP_COMMON_ASM_SSE2
-    "${AOM_ROOT}/aom_dsp/x86/aom_convolve_copy_sse2.asm"
-    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_sse2.asm"
-    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_sse2.asm"
-    "${AOM_ROOT}/aom_dsp/x86/intrapred_sse2.asm")
+list(APPEND AOM_DSP_COMMON_ASM_SSE2
+     "${AOM_ROOT}/aom_dsp/x86/aom_convolve_copy_sse2.asm"
+     "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_8t_sse2.asm"
+     "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_bilinear_sse2.asm"
+     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_sse2.asm"
+     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_sse2.asm"
+     "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.asm"
+     "${AOM_ROOT}/aom_dsp/x86/intrapred_sse2.asm"
+     "${AOM_ROOT}/aom_dsp/x86/inv_wht_sse2.asm")
 
-set(AOM_DSP_COMMON_INTRIN_SSE2 "${AOM_ROOT}/aom_dsp/x86/aom_asm_stubs.c"
-    "${AOM_ROOT}/aom_dsp/x86/convolve.h"
-    "${AOM_ROOT}/aom_dsp/x86/convolve_sse2.h"
-    "${AOM_ROOT}/aom_dsp/x86/intrapred_sse2.c"
-    "${AOM_ROOT}/aom_dsp/x86/loopfilter_sse2.c"
-    "${AOM_ROOT}/aom_dsp/x86/lpf_common_sse2.h"
-    "${AOM_ROOT}/aom_dsp/x86/mem_sse2.h"
-    "${AOM_ROOT}/aom_dsp/x86/transpose_sse2.h"
-    "${AOM_ROOT}/aom_dsp/x86/txfm_common_sse2.h")
+list(APPEND AOM_DSP_COMMON_INTRIN_SSE2
+     "${AOM_ROOT}/aom_dsp/x86/aom_asm_stubs.c"
+     "${AOM_ROOT}/aom_dsp/x86/convolve.h"
+     "${AOM_ROOT}/aom_dsp/x86/convolve_sse2.h"
+     "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.c"
+     "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_sse2.c"
+     "${AOM_ROOT}/aom_dsp/x86/intrapred_sse2.c"
+     "${AOM_ROOT}/aom_dsp/x86/loopfilter_sse2.c"
+     "${AOM_ROOT}/aom_dsp/x86/lpf_common_sse2.h"
+     "${AOM_ROOT}/aom_dsp/x86/mem_sse2.h"
+     "${AOM_ROOT}/aom_dsp/x86/transpose_sse2.h"
+     "${AOM_ROOT}/aom_dsp/x86/txfm_common_sse2.h")
 
-set(AOM_DSP_COMMON_ASM_SSSE3
-    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_ssse3.asm"
-    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_ssse3.asm")
+list(APPEND AOM_DSP_COMMON_ASM_SSSE3
+     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_ssse3.asm"
+     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_bilinear_ssse3.asm")
 
-set(AOM_DSP_COMMON_INTRIN_SSSE3
-    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c"
-    "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.c")
+list(APPEND AOM_DSP_COMMON_INTRIN_SSSE3
+     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_ssse3.c"
+     "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_ssse3.c"
+     "${AOM_ROOT}/aom_dsp/x86/intrapred_ssse3.c")
 
-set(AOM_DSP_COMMON_INTRIN_SSE4_1
-    "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"
-    "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_sse4.c"
-    "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c")
+list(APPEND AOM_DSP_COMMON_INTRIN_SSE4_1
+     "${AOM_ROOT}/aom_dsp/x86/blend_a64_hmask_sse4.c"
+     "${AOM_ROOT}/aom_dsp/x86/blend_a64_mask_sse4.c"
+     "${AOM_ROOT}/aom_dsp/x86/blend_a64_vmask_sse4.c")
 
-set(AOM_DSP_COMMON_INTRIN_AVX2
-    "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
-    "${AOM_ROOT}/aom_dsp/x86/intrapred_avx2.c"
-    "${AOM_ROOT}/aom_dsp/x86/common_avx2.h"
-    "${AOM_ROOT}/aom_dsp/x86/convolve_avx2.h")
+list(APPEND AOM_DSP_COMMON_INTRIN_AVX2
+     "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
+     "${AOM_ROOT}/aom_dsp/x86/common_avx2.h"
+     "${AOM_ROOT}/aom_dsp/x86/convolve_avx2.h"
+     "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c"
+     "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c"
+     "${AOM_ROOT}/aom_dsp/x86/intrapred_avx2.c")
 
-set(AOM_DSP_COMMON_ASM_NEON
-    ${AOM_DSP_COMMON_ASM_NEON}
-    "${AOM_ROOT}/aom_dsp/arm/intrapred_neon_asm.asm"
-    "${AOM_ROOT}/aom_dsp/arm/save_reg_neon.asm")
+list(APPEND AOM_DSP_COMMON_ASM_NEON
+     "${AOM_ROOT}/aom_dsp/arm/intrapred_neon_asm.asm"
+     "${AOM_ROOT}/aom_dsp/arm/save_reg_neon.asm")
 
-set(AOM_DSP_COMMON_INTRIN_NEON ${AOM_DSP_COMMON_INTRIN_NEON}
-    "${AOM_ROOT}/aom_dsp/arm/avg_neon.c"
-    "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
-    "${AOM_ROOT}/aom_dsp/arm/hadamard_neon.c"
-    "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c"
-    "${AOM_ROOT}/aom_dsp/arm/subtract_neon.c")
+list(APPEND AOM_DSP_COMMON_INTRIN_NEON
+     "${AOM_ROOT}/aom_dsp/arm/avg_neon.c"
+     "${AOM_ROOT}/aom_dsp/arm/fwd_txfm_neon.c"
+     "${AOM_ROOT}/aom_dsp/arm/hadamard_neon.c"
+     "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c"
+     "${AOM_ROOT}/aom_dsp/arm/subtract_neon.c")
 
-if("${AOM_TARGET_CPU}" STREQUAL "arm64")
-  set(AOM_DSP_COMMON_INTRIN_NEON
-      ${AOM_DSP_COMMON_INTRIN_NEON}
-      "${AOM_ROOT}/aom_dsp/arm/intrapred_neon.c")
+list(APPEND AOM_DSP_COMMON_INTRIN_DSPR2
+     "${AOM_ROOT}/aom_dsp/mips/common_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/common_dspr2.h"
+     "${AOM_ROOT}/aom_dsp/mips/convolve2_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/convolve2_horiz_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/convolve2_vert_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/convolve8_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/convolve8_horiz_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/convolve8_vert_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/convolve_common_dspr2.h"
+     "${AOM_ROOT}/aom_dsp/mips/intrapred16_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/intrapred4_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/intrapred8_dspr2.c"
+     "${AOM_ROOT}/aom_dsp/mips/inv_txfm_dspr2.h")
 
-endif()
-
-set(AOM_DSP_COMMON_INTRIN_DSPR2
-    "${AOM_ROOT}/aom_dsp/mips/common_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/common_dspr2.h"
-    "${AOM_ROOT}/aom_dsp/mips/convolve2_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve2_horiz_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve2_vert_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve8_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve8_horiz_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve8_vert_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/convolve_common_dspr2.h"
-    "${AOM_ROOT}/aom_dsp/mips/intrapred16_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/intrapred4_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/intrapred8_dspr2.c"
-    "${AOM_ROOT}/aom_dsp/mips/inv_txfm_dspr2.h")
-
-set(AOM_DSP_COMMON_INTRIN_MSA
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_horiz_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_vert_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve_copy_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/aom_convolve_msa.h"
-    "${AOM_ROOT}/aom_dsp/mips/intrapred_msa.c"
-    "${AOM_ROOT}/aom_dsp/mips/macros_msa.h")
-
-set(AOM_DSP_COMMON_ASM_SSE2 ${AOM_DSP_COMMON_ASM_SSE2}
-    "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_8t_sse2.asm"
-    "${AOM_ROOT}/aom_dsp/x86/aom_high_subpixel_bilinear_sse2.asm"
-    "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.asm")
-
-set(AOM_DSP_COMMON_INTRIN_SSE2 ${AOM_DSP_COMMON_INTRIN_SSE2}
-    "${AOM_ROOT}/aom_dsp/x86/highbd_intrapred_sse2.c"
-    "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_sse2.c")
-
-set(AOM_DSP_COMMON_INTRIN_SSSE3 ${AOM_DSP_COMMON_INTRIN_SSSE3}
-    "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_ssse3.c")
-
-set(AOM_DSP_COMMON_INTRIN_AVX2 ${AOM_DSP_COMMON_INTRIN_AVX2}
-    "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c"
-    "${AOM_ROOT}/aom_dsp/x86/highbd_loopfilter_avx2.c")
-
-set(AOM_DSP_COMMON_SOURCES ${AOM_DSP_COMMON_SOURCES}
-    "${AOM_ROOT}/aom_dsp/entcode.c" "${AOM_ROOT}/aom_dsp/entcode.h")
-
-if(CONFIG_AV1)
-  set(AOM_DSP_COMMON_SOURCES ${AOM_DSP_COMMON_SOURCES}
-      "${AOM_ROOT}/aom_dsp/inv_txfm.c" "${AOM_ROOT}/aom_dsp/inv_txfm.h")
-
-  set(AOM_DSP_COMMON_ASM_SSE2 ${AOM_DSP_COMMON_ASM_SSE2}
-      "${AOM_ROOT}/aom_dsp/x86/inv_wht_sse2.asm")
-endif()
+list(APPEND AOM_DSP_COMMON_INTRIN_MSA
+     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_horiz_msa.c"
+     "${AOM_ROOT}/aom_dsp/mips/aom_convolve8_vert_msa.c"
+     "${AOM_ROOT}/aom_dsp/mips/aom_convolve_copy_msa.c"
+     "${AOM_ROOT}/aom_dsp/mips/aom_convolve_msa.h"
+     "${AOM_ROOT}/aom_dsp/mips/intrapred_msa.c"
+     "${AOM_ROOT}/aom_dsp/mips/macros_msa.h")
 
 if(CONFIG_AV1_DECODER)
-  set(AOM_DSP_DECODER_SOURCES "${AOM_ROOT}/aom_dsp/binary_codes_reader.c"
-      "${AOM_ROOT}/aom_dsp/binary_codes_reader.h"
-      "${AOM_ROOT}/aom_dsp/bitreader.h"
-      "${AOM_ROOT}/aom_dsp/bitreader_buffer.c"
-      "${AOM_ROOT}/aom_dsp/bitreader_buffer.h")
-
-  set(AOM_DSP_DECODER_SOURCES ${AOM_DSP_DECODER_SOURCES}
-      "${AOM_ROOT}/aom_dsp/daalaboolreader.c"
-      "${AOM_ROOT}/aom_dsp/daalaboolreader.h" "${AOM_ROOT}/aom_dsp/entdec.c"
-      "${AOM_ROOT}/aom_dsp/entdec.h")
-
-  set(AOM_DSP_DECODER_SOURCES ${AOM_DSP_DECODER_SOURCES}
-      "${AOM_ROOT}/aom_dsp/grain_synthesis.c"
-      "${AOM_ROOT}/aom_dsp/grain_synthesis.h")
-
+  list(APPEND AOM_DSP_DECODER_SOURCES
+       "${AOM_ROOT}/aom_dsp/binary_codes_reader.c"
+       "${AOM_ROOT}/aom_dsp/binary_codes_reader.h"
+       "${AOM_ROOT}/aom_dsp/bitreader.h"
+       "${AOM_ROOT}/aom_dsp/bitreader_buffer.c"
+       "${AOM_ROOT}/aom_dsp/bitreader_buffer.h"
+       "${AOM_ROOT}/aom_dsp/daalaboolreader.c"
+       "${AOM_ROOT}/aom_dsp/daalaboolreader.h"
+       "${AOM_ROOT}/aom_dsp/entdec.c"
+       "${AOM_ROOT}/aom_dsp/entdec.h"
+       "${AOM_ROOT}/aom_dsp/grain_synthesis.c"
+       "${AOM_ROOT}/aom_dsp/grain_synthesis.h")
 endif()
 
 if(CONFIG_AV1_ENCODER)
-  set(AOM_DSP_ENCODER_SOURCES
-      "${AOM_ROOT}/aom_dsp/binary_codes_writer.c"
-      "${AOM_ROOT}/aom_dsp/binary_codes_writer.h"
-      "${AOM_ROOT}/aom_dsp/bitwriter.h"
-      "${AOM_ROOT}/aom_dsp/bitwriter_buffer.c"
-      "${AOM_ROOT}/aom_dsp/bitwriter_buffer.h"
-      "${AOM_ROOT}/aom_dsp/grain_table.c"
-      "${AOM_ROOT}/aom_dsp/grain_table.h"
-      "${AOM_ROOT}/aom_dsp/noise_util.h"
-      "${AOM_ROOT}/aom_dsp/noise_util.c"
-      "${AOM_ROOT}/aom_dsp/noise_model.h"
-      "${AOM_ROOT}/aom_dsp/noise_model.c"
-      "${AOM_ROOT}/aom_dsp/psnr.c"
-      "${AOM_ROOT}/aom_dsp/psnr.h"
-      "${AOM_ROOT}/aom_dsp/sad.c"
-      "${AOM_ROOT}/aom_dsp/sad_av1.c"
-      "${AOM_ROOT}/aom_dsp/variance.c"
-      "${AOM_ROOT}/aom_dsp/variance.h")
+  list(APPEND AOM_DSP_ENCODER_SOURCES
+       "${AOM_ROOT}/aom_dsp/avg.c"
+       "${AOM_ROOT}/aom_dsp/binary_codes_writer.c"
+       "${AOM_ROOT}/aom_dsp/binary_codes_writer.h"
+       "${AOM_ROOT}/aom_dsp/bitwriter.h"
+       "${AOM_ROOT}/aom_dsp/bitwriter_buffer.c"
+       "${AOM_ROOT}/aom_dsp/bitwriter_buffer.h"
+       "${AOM_ROOT}/aom_dsp/daalaboolwriter.c"
+       "${AOM_ROOT}/aom_dsp/daalaboolwriter.h"
+       "${AOM_ROOT}/aom_dsp/entenc.c"
+       "${AOM_ROOT}/aom_dsp/entenc.h"
+       "${AOM_ROOT}/aom_dsp/fwd_txfm.c"
+       "${AOM_ROOT}/aom_dsp/grain_table.c"
+       "${AOM_ROOT}/aom_dsp/grain_table.h"
+       "${AOM_ROOT}/aom_dsp/noise_model.c"
+       "${AOM_ROOT}/aom_dsp/noise_model.h"
+       "${AOM_ROOT}/aom_dsp/noise_util.c"
+       "${AOM_ROOT}/aom_dsp/noise_util.h"
+       "${AOM_ROOT}/aom_dsp/psnr.c"
+       "${AOM_ROOT}/aom_dsp/psnr.h"
+       "${AOM_ROOT}/aom_dsp/quantize.c"
+       "${AOM_ROOT}/aom_dsp/quantize.h"
+       "${AOM_ROOT}/aom_dsp/sad.c"
+       "${AOM_ROOT}/aom_dsp/sad_av1.c"
+       "${AOM_ROOT}/aom_dsp/sum_squares.c"
+       "${AOM_ROOT}/aom_dsp/variance.c"
+       "${AOM_ROOT}/aom_dsp/variance.h")
 
-  set(AOM_DSP_ENCODER_ASM_SSE2 ${AOM_DSP_ENCODER_ASM_SSE2}
-      "${AOM_ROOT}/aom_dsp/x86/halfpix_variance_impl_sse2.asm"
-      "${AOM_ROOT}/aom_dsp/x86/sad4d_sse2.asm"
-      "${AOM_ROOT}/aom_dsp/x86/sad_sse2.asm"
-      "${AOM_ROOT}/aom_dsp/x86/subtract_sse2.asm"
-      "${AOM_ROOT}/aom_dsp/x86/subpel_variance_sse2.asm")
+  list(APPEND AOM_DSP_ENCODER_ASM_SSE2
+       "${AOM_ROOT}/aom_dsp/x86/halfpix_variance_impl_sse2.asm"
+       "${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"
+       "${AOM_ROOT}/aom_dsp/x86/highbd_sad_sse2.asm"
+       "${AOM_ROOT}/aom_dsp/x86/highbd_subpel_variance_impl_sse2.asm"
+       "${AOM_ROOT}/aom_dsp/x86/highbd_variance_impl_sse2.asm"
+       "${AOM_ROOT}/aom_dsp/x86/sad4d_sse2.asm"
+       "${AOM_ROOT}/aom_dsp/x86/sad_sse2.asm"
+       "${AOM_ROOT}/aom_dsp/x86/subpel_variance_sse2.asm"
+       "${AOM_ROOT}/aom_dsp/x86/subtract_sse2.asm")
 
-  set(AOM_DSP_ENCODER_INTRIN_SSE2 "${AOM_ROOT}/aom_dsp/x86/quantize_sse2.c")
+  list(APPEND AOM_DSP_ENCODER_INTRIN_SSE2
+       "${AOM_ROOT}/aom_dsp/x86/avg_intrin_sse2.c"
+       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_impl_sse2.h"
+       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.c"
+       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.h"
+       "${AOM_ROOT}/aom_dsp/x86/halfpix_variance_sse2.c"
+       "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
+       "${AOM_ROOT}/aom_dsp/x86/highbd_subtract_sse2.c"
+       "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse2.c"
+       "${AOM_ROOT}/aom_dsp/x86/quantize_sse2.c"
+       "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.c"
+       "${AOM_ROOT}/aom_dsp/x86/variance_sse2.c")
 
-  set(AOM_DSP_ENCODER_ASM_SSSE3_X86_64
-      "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_ssse3_x86_64.asm"
-      "${AOM_ROOT}/aom_dsp/x86/ssim_opt_x86_64.asm")
+  list(APPEND AOM_DSP_ENCODER_ASM_SSSE3_X86_64
+       "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_ssse3_x86_64.asm"
+       "${AOM_ROOT}/aom_dsp/x86/ssim_opt_x86_64.asm")
 
-  set(AOM_DSP_ENCODER_INTRIN_AVX2
-      "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_avx2.c"
-      "${AOM_ROOT}/aom_dsp/x86/sad4d_avx2.c"
-      "${AOM_ROOT}/aom_dsp/x86/sad_avx2.c"
-      "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c"
-      "${AOM_ROOT}/aom_dsp/x86/variance_avx2.c"
-      "${AOM_ROOT}/aom_dsp/x86/variance_impl_avx2.c")
+  list(APPEND AOM_DSP_ENCODER_INTRIN_AVX2
+       "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_avx2.c"
+       "${AOM_ROOT}/aom_dsp/x86/sad4d_avx2.c"
+       "${AOM_ROOT}/aom_dsp/x86/sad_avx2.c"
+       "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c"
+       "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c"
+       "${AOM_ROOT}/aom_dsp/x86/variance_avx2.c"
+       "${AOM_ROOT}/aom_dsp/x86/variance_impl_avx2.c")
 
-  set(AOM_DSP_ENCODER_SOURCES ${AOM_DSP_ENCODER_SOURCES}
-      "${AOM_ROOT}/aom_dsp/avg.c" "${AOM_ROOT}/aom_dsp/fwd_txfm.c"
-      "${AOM_ROOT}/aom_dsp/quantize.c" "${AOM_ROOT}/aom_dsp/quantize.h"
-      "${AOM_ROOT}/aom_dsp/sum_squares.c")
+  list(APPEND AOM_DSP_ENCODER_ASM_SSSE3_X86_64
+       "${AOM_ROOT}/aom_dsp/x86/avg_ssse3_x86_64.asm"
+       "${AOM_ROOT}/aom_dsp/x86/quantize_ssse3_x86_64.asm")
 
-  set(AOM_DSP_ENCODER_INTRIN_SSE2
-      ${AOM_DSP_ENCODER_INTRIN_SSE2}
-      "${AOM_ROOT}/aom_dsp/x86/avg_intrin_sse2.c"
-      "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_impl_sse2.h"
-      "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.c"
-      "${AOM_ROOT}/aom_dsp/x86/fwd_txfm_sse2.h"
-      "${AOM_ROOT}/aom_dsp/x86/halfpix_variance_sse2.c"
-      "${AOM_ROOT}/aom_dsp/x86/highbd_quantize_intrin_sse2.c"
-      "${AOM_ROOT}/aom_dsp/x86/variance_sse2.c"
-      "${AOM_ROOT}/aom_dsp/x86/sum_squares_sse2.c")
+  list(APPEND AOM_DSP_ENCODER_AVX_ASM_X86_64
+       "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
 
-  set(AOM_DSP_ENCODER_ASM_SSSE3_X86_64 ${AOM_DSP_ENCODER_ASM_SSSE3_X86_64}
-      "${AOM_ROOT}/aom_dsp/x86/avg_ssse3_x86_64.asm"
-      "${AOM_ROOT}/aom_dsp/x86/quantize_ssse3_x86_64.asm")
+  list(APPEND AOM_DSP_ENCODER_INTRIN_SSSE3
+       "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_ssse3.c"
+       "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.h"
+       "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.c"
+       "${AOM_ROOT}/aom_dsp/x86/jnt_variance_ssse3.c"
+       "${AOM_ROOT}/aom_dsp/x86/jnt_sad_ssse3.c")
 
-  set(AOM_DSP_ENCODER_AVX_ASM_X86_64 ${AOM_DSP_ENCODER_AVX_ASM_X86_64}
-      "${AOM_ROOT}/aom_dsp/x86/quantize_avx_x86_64.asm")
+  list(APPEND AOM_DSP_ENCODER_INTRIN_SSE4_1
+       "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse4.c"
+       "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
+       "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
 
-  set(AOM_DSP_ENCODER_INTRIN_SSSE3 ${AOM_DSP_ENCODER_INTRIN_SSSE3}
-      "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_ssse3.c"
-      "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.h"
-      "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.c"
-      "${AOM_ROOT}/aom_dsp/x86/jnt_variance_ssse3.c"
-      "${AOM_ROOT}/aom_dsp/x86/jnt_sad_ssse3.c")
+  list(APPEND AOM_DSP_ENCODER_INTRIN_NEON
+       "${AOM_ROOT}/aom_dsp/arm/sad4d_neon.c"
+       "${AOM_ROOT}/aom_dsp/arm/sad_neon.c"
+       "${AOM_ROOT}/aom_dsp/arm/subpel_variance_neon.c"
+       "${AOM_ROOT}/aom_dsp/arm/variance_neon.c")
 
-  set(AOM_DSP_ENCODER_INTRIN_SSE2 ${AOM_DSP_ENCODER_INTRIN_SSE2}
-      "${AOM_ROOT}/aom_dsp/x86/highbd_subtract_sse2.c")
-
-  set(AOM_DSP_ENCODER_ASM_SSE2 ${AOM_DSP_ENCODER_ASM_SSE2}
-      "${AOM_ROOT}/aom_dsp/x86/highbd_sad4d_sse2.asm"
-      "${AOM_ROOT}/aom_dsp/x86/highbd_sad_sse2.asm"
-      "${AOM_ROOT}/aom_dsp/x86/highbd_subpel_variance_impl_sse2.asm"
-      "${AOM_ROOT}/aom_dsp/x86/highbd_variance_impl_sse2.asm")
-
-  set(AOM_DSP_ENCODER_INTRIN_SSE2 ${AOM_DSP_ENCODER_INTRIN_SSE2}
-      "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse2.c")
-
-  set(AOM_DSP_ENCODER_INTRIN_SSE4_1 ${AOM_DSP_ENCODER_INTRIN_SSE4_1}
-      "${AOM_ROOT}/aom_dsp/x86/highbd_variance_sse4.c"
-      "${AOM_ROOT}/aom_dsp/x86/obmc_sad_sse4.c"
-      "${AOM_ROOT}/aom_dsp/x86/obmc_variance_sse4.c")
-
-  set(AOM_DSP_ENCODER_INTRIN_AVX2 ${AOM_DSP_ENCODER_INTRIN_AVX2}
-      "${AOM_ROOT}/aom_dsp/x86/sad_highbd_avx2.c")
-
-  set(AOM_DSP_ENCODER_INTRIN_NEON ${AOM_DSP_ENCODER_INTRIN_NEON}
-      "${AOM_ROOT}/aom_dsp/arm/sad4d_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/sad_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/subpel_variance_neon.c"
-      "${AOM_ROOT}/aom_dsp/arm/variance_neon.c")
-
-  set(AOM_DSP_ENCODER_INTRIN_MSA "${AOM_ROOT}/aom_dsp/mips/sad_msa.c"
-      "${AOM_ROOT}/aom_dsp/mips/subtract_msa.c"
-      "${AOM_ROOT}/aom_dsp/mips/variance_msa.c"
-      "${AOM_ROOT}/aom_dsp/mips/sub_pixel_variance_msa.c")
-
-  set(AOM_DSP_ENCODER_SOURCES ${AOM_DSP_ENCODER_SOURCES}
-      "${AOM_ROOT}/aom_dsp/daalaboolwriter.c"
-      "${AOM_ROOT}/aom_dsp/daalaboolwriter.h" "${AOM_ROOT}/aom_dsp/entenc.c"
-      "${AOM_ROOT}/aom_dsp/entenc.h")
+  list(APPEND AOM_DSP_ENCODER_INTRIN_MSA "${AOM_ROOT}/aom_dsp/mips/sad_msa.c"
+       "${AOM_ROOT}/aom_dsp/mips/subtract_msa.c"
+       "${AOM_ROOT}/aom_dsp/mips/variance_msa.c"
+       "${AOM_ROOT}/aom_dsp/mips/sub_pixel_variance_msa.c")
 
   if(CONFIG_INTERNAL_STATS)
-    set(AOM_DSP_ENCODER_SOURCES ${AOM_DSP_ENCODER_SOURCES}
-        "${AOM_ROOT}/aom_dsp/fastssim.c" "${AOM_ROOT}/aom_dsp/psnrhvs.c"
-        "${AOM_ROOT}/aom_dsp/ssim.c" "${AOM_ROOT}/aom_dsp/ssim.h")
+    list(APPEND AOM_DSP_ENCODER_SOURCES
+         "${AOM_ROOT}/aom_dsp/fastssim.c" "${AOM_ROOT}/aom_dsp/psnrhvs.c"
+         "${AOM_ROOT}/aom_dsp/ssim.c" "${AOM_ROOT}/aom_dsp/ssim.h")
   endif()
 endif()
 
@@ -290,13 +255,13 @@ function(setup_aom_dsp_targets)
 
   if(CONFIG_AV1_DECODER)
     add_library(aom_dsp_decoder OBJECT ${AOM_DSP_DECODER_SOURCES})
-    set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_decoder)
+    list(APPEND AOM_LIB_TARGETS aom_dsp_decoder)
     target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_dsp_decoder>)
   endif()
 
   if(CONFIG_AV1_ENCODER)
     add_library(aom_dsp_encoder OBJECT ${AOM_DSP_ENCODER_SOURCES})
-    set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} aom_dsp_encoder)
+    list(APPEND AOM_LIB_TARGETS aom_dsp_encoder)
     target_sources(aom PRIVATE $<TARGET_OBJECTS:aom_dsp_encoder>)
   endif()
 
