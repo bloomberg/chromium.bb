@@ -553,17 +553,14 @@ int SSLClientSocketPool::RequestSocket(const std::string& group_name,
                              net_log);
 }
 
-void SSLClientSocketPool::RequestSockets(
-    const std::string& group_name,
-    const void* params,
-    int num_sockets,
-    const NetLogWithSource& net_log,
-    HttpRequestInfo::RequestMotivation motivation) {
+void SSLClientSocketPool::RequestSockets(const std::string& group_name,
+                                         const void* params,
+                                         int num_sockets,
+                                         const NetLogWithSource& net_log) {
   const scoped_refptr<SSLSocketParams>* casted_params =
       static_cast<const scoped_refptr<SSLSocketParams>*>(params);
 
-  base_.RequestSockets(group_name, *casted_params, num_sockets, net_log,
-                       motivation);
+  base_.RequestSockets(group_name, *casted_params, num_sockets, net_log);
 }
 
 void SSLClientSocketPool::SetPriority(const std::string& group_name,

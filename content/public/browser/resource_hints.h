@@ -27,13 +27,11 @@ namespace content {
 // coalesce. |allow_credentials| corresponds to the fetch spec.
 // Note: This should only be called on the IO thread, with a valid
 // URLRequestContextGetter.
-CONTENT_EXPORT void PreconnectUrl(
-    net::URLRequestContextGetter* getter,
-    const GURL& url,
-    const GURL& site_for_cookies,
-    int count,
-    bool allow_credentials,
-    net::HttpRequestInfo::RequestMotivation motivation);
+CONTENT_EXPORT void PreconnectUrl(net::URLRequestContextGetter* getter,
+                                  const GURL& url,
+                                  const GURL& site_for_cookies,
+                                  int count,
+                                  bool allow_credentials);
 
 // Issues a DNS request to |url|. Note that these requests are sent to the host
 // resolver with priority net::IDLE.

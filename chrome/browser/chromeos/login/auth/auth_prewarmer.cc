@@ -91,8 +91,7 @@ void AuthPrewarmer::DoPrewarm() {
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&content::PreconnectUrl,
                      base::RetainedRef(GetRequestContext()), url, url,
-                     kConnectionsNeeded, true,
-                     net::HttpRequestInfo::EARLY_LOAD_MOTIVATED));
+                     kConnectionsNeeded, true));
   if (!completion_callback_.is_null()) {
     content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
                                      std::move(completion_callback_));

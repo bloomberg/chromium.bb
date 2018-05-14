@@ -342,9 +342,6 @@ class HttpStreamFactory::Job {
   // Returns to STATE_INIT_CONNECTION and resets some state.
   void ReturnToStateInitConnection(bool close_connection);
 
-  // Set the motivation for this request onto the underlying socket.
-  void SetSocketMotivation();
-
   // Sets several fields of |ssl_config| based on the proxy info and other
   // factors.
   void InitSSLConfig(SSLConfig* ssl_config, bool is_proxy) const;

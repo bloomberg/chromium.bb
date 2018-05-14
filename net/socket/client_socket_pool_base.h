@@ -104,10 +104,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
   // error.
   std::unique_ptr<StreamSocket> PassSocket();
 
-  void set_motivation(HttpRequestInfo::RequestMotivation motivation) {
-    motivation_ = motivation;
-  }
-
   // Begins connecting the socket.  Returns OK on success, ERR_IO_PENDING if it
   // cannot complete synchronously without blocking, or another net error code
   // on error.  In asynchronous completion, the ConnectJob will notify
@@ -163,7 +159,6 @@ class NET_EXPORT_PRIVATE ConnectJob {
   Delegate* delegate_;
   std::unique_ptr<StreamSocket> socket_;
   NetLogWithSource net_log_;
-  HttpRequestInfo::RequestMotivation motivation_;
   // A ConnectJob is idle until Connect() has been called.
   bool idle_;
 
@@ -281,8 +276,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // See ClientSocketPool::RequestSockets for documentation on this function.
   void RequestSockets(const std::string& group_name,
                       const Request& request,
-                      int num_sockets,
-                      HttpRequestInfo::RequestMotivation motivation);
+                      int num_sockets);
 
   // See ClientSocketPool::SetPriority for documentation on this function.
   void SetPriority(const std::string& group_name,
@@ -608,8 +602,7 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // it does not handle logging into NetLog of the queueing status of
   // |request|.
   int RequestSocketInternal(const std::string& group_name,
-                            const Request& request,
-                            HttpRequestInfo::RequestMotivation motivation);
+                            const Request& request);
 
   // Assigns an idle socket for the group to the request.
   // Returns |true| if an idle socket is available, false otherwise.
@@ -803,13 +796,12 @@ class ClientSocketPoolBase {
   void RequestSockets(const std::string& group_name,
                       const scoped_refptr<SocketParams>& params,
                       int num_sockets,
-                      const NetLogWithSource& net_log,
-                      HttpRequestInfo::RequestMotivation motivation) {
+                      const NetLogWithSource& net_log) {
     const Request request(nullptr /* no handle */, CompletionCallback(), IDLE,
                           SocketTag(), ClientSocketPool::RespectLimits::ENABLED,
                           internal::ClientSocketPoolBaseHelper::NO_IDLE_SOCKETS,
                           params, net_log);
-    helper_.RequestSockets(group_name, request, num_sockets, motivation);
+    helper_.RequestSockets(group_name, request, num_sockets);
   }
 
   void SetPriority(const std::string& group_name,
