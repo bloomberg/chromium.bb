@@ -50,10 +50,7 @@ class WaitForURLsDeletedObserver : public history::HistoryServiceObserver {
  private:
   // history::HistoryServiceObserver:
   void OnURLsDeleted(history::HistoryService* service,
-                     bool all_history,
-                     bool expired,
-                     const history::URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
+                     const history::DeletionInfo& deletion_info) override;
 
   // Weak. Owned by our owner.
   base::RunLoop* runner_;
@@ -70,10 +67,7 @@ WaitForURLsDeletedObserver::~WaitForURLsDeletedObserver() {
 
 void WaitForURLsDeletedObserver::OnURLsDeleted(
     history::HistoryService* service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
+    const history::DeletionInfo& deletion_info) {
   runner_->Quit();
 }
 

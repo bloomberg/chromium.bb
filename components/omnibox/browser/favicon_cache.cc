@@ -154,20 +154,17 @@ base::TimeTicks FaviconCache::GetTimeNow() {
 }
 
 void FaviconCache::OnURLsDeleted(history::HistoryService* history_service,
-                                 bool all_history,
-                                 bool expired,
-                                 const history::URLRows& deleted_rows,
-                                 const std::set<GURL>& favicon_urls) {
+                                 const history::DeletionInfo& deletion_info) {
   // We only care about actual user (or sync) deletions.
-  if (expired)
+  if (deletion_info.is_from_expiration())
     return;
 
-  if (all_history) {
+  if (deletion_info.IsAllHistory()) {
     mru_cache_.Clear();
     return;
   }
 
-  for (const history::URLRow& row : deleted_rows) {
+  for (const history::URLRow& row : deletion_info.deleted_rows()) {
     auto it = mru_cache_.Peek({RequestType::BY_PAGE_URL, row.url()});
     if (it != mru_cache_.end())
       mru_cache_.Erase(it);

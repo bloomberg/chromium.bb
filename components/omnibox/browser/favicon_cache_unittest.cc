@@ -216,8 +216,9 @@ TEST_F(FaviconCacheTest, ClearIconsWithHistoryDeletions) {
 
   // Delete just the entry for kUrlA.
   history::URLRows a_rows = {history::URLRow(kUrlA)};
-  cache_.OnURLsDeleted(nullptr /* history_service */, false /* all_history */,
-                       false /* expired */, a_rows, {} /* favicon_urls */);
+  cache_.OnURLsDeleted(
+      nullptr /* history_service */,
+      history::DeletionInfo::ForUrls(a_rows, {} /* favicon_urls */));
 
   EXPECT_TRUE(
       cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&VerifyFetchedFavicon))
@@ -229,9 +230,8 @@ TEST_F(FaviconCacheTest, ClearIconsWithHistoryDeletions) {
   favicon_service_a_site_response_.Run(GetDummyFaviconResult());
 
   // Delete all history.
-  cache_.OnURLsDeleted(nullptr /* history_service */, true /* all_history */,
-                       false /* expired */, {} /* deleted_rows */,
-                       {} /* favicon_urls */);
+  cache_.OnURLsDeleted(nullptr /* history_service */,
+                       history::DeletionInfo::ForAllHistory());
 
   EXPECT_TRUE(
       cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&VerifyFetchedFavicon))

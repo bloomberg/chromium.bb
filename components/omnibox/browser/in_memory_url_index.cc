@@ -173,16 +173,14 @@ void InMemoryURLIndex::OnURLsModified(history::HistoryService* history_service,
   }
 }
 
-void InMemoryURLIndex::OnURLsDeleted(history::HistoryService* history_service,
-                                     bool all_history,
-                                     bool expired,
-                                     const history::URLRows& deleted_rows,
-                                     const std::set<GURL>& favicon_urls) {
-  if (all_history) {
+void InMemoryURLIndex::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
+  if (deletion_info.IsAllHistory()) {
     ClearPrivateData();
     needs_to_be_cached_ = true;
   } else {
-    for (const auto& row : deleted_rows)
+    for (const auto& row : deletion_info.deleted_rows())
       needs_to_be_cached_ |= private_data_->DeleteURL(row.url());
   }
   // If we made changes, destroy the previous cache.  Otherwise, if we go

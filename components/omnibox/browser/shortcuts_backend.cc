@@ -184,15 +184,13 @@ void ShortcutsBackend::ShutdownOnUIThread() {
   history_service_observer_.RemoveAll();
 }
 
-void ShortcutsBackend::OnURLsDeleted(history::HistoryService* history_service,
-                                     bool all_history,
-                                     bool expired,
-                                     const history::URLRows& deleted_rows,
-                                     const std::set<GURL>& favicon_urls) {
+void ShortcutsBackend::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
   if (!initialized())
     return;
 
-  if (all_history) {
+  if (deletion_info.IsAllHistory()) {
     DeleteAllShortcuts();
     return;
   }
@@ -200,10 +198,11 @@ void ShortcutsBackend::OnURLsDeleted(history::HistoryService* history_service,
   ShortcutsDatabase::ShortcutIDs shortcut_ids;
   for (const auto& guid_pair : guid_map_) {
     if (std::find_if(
-            deleted_rows.begin(), deleted_rows.end(),
+            deletion_info.deleted_rows().begin(),
+            deletion_info.deleted_rows().end(),
             history::URLRow::URLRowHasURL(
                 guid_pair.second->second.match_core.destination_url)) !=
-        deleted_rows.end()) {
+        deletion_info.deleted_rows().end()) {
       shortcut_ids.push_back(guid_pair.first);
     }
   }
