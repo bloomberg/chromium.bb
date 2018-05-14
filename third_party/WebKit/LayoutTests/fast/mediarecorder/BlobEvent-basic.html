@@ -30,14 +30,14 @@ test(function() {
 }, 'BlobEvent creation with timecode');
 
 test(function() {
-  assert_throws(null,
+  assert_throws(new TypeError,
                 function() { var blobEvent = new BlobEvent('BlobEvent'); });
 }, 'BlobEvent needs two constructor parameters, type and BlobEventInit');
 
 test(function() {
   var array = new Uint8Array([0x70, 0x71, 0x72, 0x73]);
   var blob = new Blob([array]);
-  assert_throws(null,
+  assert_throws(new TypeError,
                 function() {
                   var blobEvent = new BlobEvent(blob, {data : "blergh"});
                 });
@@ -46,7 +46,7 @@ test(function() {
 test(function() {
   var array = new Uint8Array([0x70, 0x71, 0x72, 0x73]);
   var blob = new Blob([array]);
-  assert_throws(null,
+  assert_throws(new TypeError,
                 function() {
                   var blobEvent = new BlobEvent(blob, {timecode : 0.0});
                 });

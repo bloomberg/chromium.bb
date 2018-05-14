@@ -12,9 +12,9 @@ function getPropertyDescriptor(name) {
 test(function() {
   assert_true('ServiceWorkerContainer' in window,
               'the constructor should be defined');
-  assert_throws(null, function() { new ServiceWorkerContainer(); },
+  assert_throws(new TypeError, function() { new ServiceWorkerContainer(); },
                 'the constructor should not be callable with "new"');
-  assert_throws(null, function() { ServiceWorkerContainer(); },
+  assert_throws(new TypeError, function() { ServiceWorkerContainer(); },
                 'the constructor should not be callable');
 }, 'ServiceWorkerContainer interface');
 </script>

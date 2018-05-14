@@ -5,12 +5,12 @@
 test(function() {
   assert_true('ServiceWorker' in window,
               'the constructor should be defined');
-  assert_throws(null, function() { new ServiceWorker(); },
+  assert_throws(new TypeError, function() { new ServiceWorker(); },
                 'the constructor should not be callable with "new"');
-  assert_throws(null, function() { ServiceWorker(); },
+  assert_throws(new TypeError, function() { ServiceWorker(); },
                 'the constructor should not be callable');
   assert_equals(Object.getPrototypeOf(ServiceWorker.prototype),
-                Worker.prototype,
-                'ServiceWorker should extend Worker');
+                EventTarget.prototype,
+                'ServiceWorker should extend EventTarget');
 }, 'ServiceWorker interface');
 </script>

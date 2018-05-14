@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<svg width="1" height="1" visibility="hidden">    
+<svg width="1" height="1" visibility="hidden">
 </svg>
 <script>
 var svgElement = document.querySelector("svg");
@@ -33,7 +33,7 @@ test(function() {
     svgElement.setAttribute("width", "10vw");
     assert_approx_equals(svgElement.width.baseVal.value, 10 * viewportWidthPercent(), EPSILON);
     assert_equals(svgElement.width.baseVal.valueInSpecifiedUnits, 10);
-    assert_throws(null, function() {svgElement.width.baseVal.valueAsString = '2vw'});
+    assert_throws(new SyntaxError, function() {svgElement.width.baseVal.valueAsString = '2vw'});
     svgElement.width.baseVal.valueInSpecifiedUnits = 2;
     assert_approx_equals(svgElement.width.baseVal.value, 2 * viewportWidthPercent(), EPSILON);
     assert_equals(svgElement.width.baseVal.unitType, SVGLength.SVG_LENGTHTYPE_UNKNOWN);
@@ -43,7 +43,7 @@ test(function() {
     svgElement.setAttribute("width", "10vh");
     assert_approx_equals(svgElement.width.baseVal.value, 10 * viewportHeightPercent(), EPSILON);
     assert_equals(svgElement.width.baseVal.valueInSpecifiedUnits, 10);
-    assert_throws(null, function() {svgElement.width.baseVal.valueAsString = '2vh'});
+    assert_throws(new SyntaxError, function() {svgElement.width.baseVal.valueAsString = '2vh'});
     svgElement.width.baseVal.valueInSpecifiedUnits = 2;
     assert_approx_equals(svgElement.width.baseVal.value, 2 * viewportHeightPercent(), EPSILON);
     assert_equals(svgElement.width.baseVal.unitType, SVGLength.SVG_LENGTHTYPE_UNKNOWN);
@@ -53,7 +53,7 @@ test(function() {
     svgElement.setAttribute("width", "10vmin");
     assert_approx_equals(svgElement.width.baseVal.value, 10 * viewportMinPercent(), EPSILON);
     assert_equals(svgElement.width.baseVal.valueInSpecifiedUnits, 10);
-    assert_throws(null, function() {svgElement.width.baseVal.valueAsString = '2vmin'});
+    assert_throws(new SyntaxError, function() {svgElement.width.baseVal.valueAsString = '2vmin'});
     svgElement.width.baseVal.valueInSpecifiedUnits = 2;
     assert_approx_equals(svgElement.width.baseVal.value, 2 * viewportMinPercent(), EPSILON);
     assert_equals(svgElement.width.baseVal.unitType, SVGLength.SVG_LENGTHTYPE_UNKNOWN);
@@ -63,7 +63,7 @@ test(function() {
     svgElement.setAttribute("width", "10vmax");
     assert_approx_equals(svgElement.width.baseVal.value, 10 * viewportMaxPercent(), EPSILON);
     assert_equals(svgElement.width.baseVal.valueInSpecifiedUnits, 10);
-    assert_throws(null, function() {svgElement.width.baseVal.valueAsString = '2vmax'});
+    assert_throws(new SyntaxError, function() {svgElement.width.baseVal.valueAsString = '2vmax'});
     svgElement.width.baseVal.valueInSpecifiedUnits = 2;
     assert_approx_equals(svgElement.width.baseVal.value, 2 * viewportMaxPercent(), EPSILON);
     assert_equals(svgElement.width.baseVal.unitType, SVGLength.SVG_LENGTHTYPE_UNKNOWN);

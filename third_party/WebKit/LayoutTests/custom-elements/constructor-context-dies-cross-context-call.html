@@ -22,7 +22,7 @@ if (fork()) {
     return watcher.wait_for('message');
   })).then(t.step_func((event) => {
     assert_equals(event.data, 'PASS child done');
-    assert_throws(null, () => new window.C());
+    assert_throws(new Error, () => new window.C());
     t.done();
   }));
 } else {
