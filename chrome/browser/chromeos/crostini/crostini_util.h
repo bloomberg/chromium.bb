@@ -26,7 +26,12 @@ bool IsCrostiniEnabled(Profile* profile);
 // |app_id| should be a valid Crostini app list id.
 void LaunchCrostiniApp(Profile* profile, const std::string& app_id);
 
+// Retrieves cryptohome_id from profile.
 std::string CryptohomeIdForProfile(Profile* profile);
+
+// Retrieves username from profile.  This is the text until '@' in
+// profile->GetProfileUserName() email address.
+std::string ContainerUserNameForProfile(Profile* profile);
 
 // The Terminal opens Crosh but overrides the Browser's app_name so that we can
 // identify it as the Crostini Terminal. In the future, we will also use these
