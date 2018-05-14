@@ -14,6 +14,7 @@
 #include <string.h>
 
 #include "aom_ports/mem_ops.h"
+#include "aom_ports/sanitizer.h"
 
 #include "./ivfdec.h"
 
@@ -89,11 +90,13 @@ int ivf_read_frame(FILE *infile, uint8_t **buffer, size_t *bytes_read,
   }
 
   if (!feof(infile)) {
+    ASAN_UNPOISON_MEMORY_REGION(*buffer, *buffer_size);
     if (fread(*buffer, 1, frame_size, infile) != frame_size) {
       warn("Failed to read full frame\n");
       return 1;
     }
 
+    ASAN_POISON_MEMORY_REGION(*buffer + frame_size, *buffer_size - frame_size);
     *bytes_read = frame_size;
     return 0;
   }

@@ -17,7 +17,8 @@ set(AOM_PORTS_INCLUDES "${AOM_ROOT}/aom_ports/aom_once.h"
     "${AOM_ROOT}/aom_ports/aom_timer.h" "${AOM_ROOT}/aom_ports/bitops.h"
     "${AOM_ROOT}/aom_ports/emmintrin_compat.h" "${AOM_ROOT}/aom_ports/mem.h"
     "${AOM_ROOT}/aom_ports/mem_ops.h" "${AOM_ROOT}/aom_ports/mem_ops_aligned.h"
-    "${AOM_ROOT}/aom_ports/msvc.h" "${AOM_ROOT}/aom_ports/system_state.h")
+    "${AOM_ROOT}/aom_ports/msvc.h" "${AOM_ROOT}/aom_ports/sanitizer.h"
+    "${AOM_ROOT}/aom_ports/system_state.h")
 
 set(AOM_PORTS_ASM_X86 "${AOM_ROOT}/aom_ports/emms.asm")
 
