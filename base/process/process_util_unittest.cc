@@ -247,7 +247,7 @@ TEST_F(ProcessUtilTest, SelectivelyClonedDir) {
   remove(signal_file.c_str());
 
   LaunchOptions options;
-  options.paths_to_map.push_back("/tmp");
+  options.paths_to_map.push_back(base::FilePath("/tmp"));
   options.clone_flags = LP_CLONE_FDIO_STDIO;
 
   Process process(SpawnChildWithOptions("CheckTmpFileExists", options));
@@ -269,8 +269,8 @@ TEST_F(ProcessUtilTest, CloneAlternateDir) {
   remove(signal_file.c_str());
 
   LaunchOptions options;
-  options.paths_to_map.push_back("/tmp");
-  options.paths_to_map.push_back("/data");
+  options.paths_to_map.push_back(base::FilePath("/tmp"));
+  options.paths_to_map.push_back(base::FilePath("/data"));
   options.clone_flags = LP_CLONE_FDIO_STDIO;
 
   Process process(SpawnChildWithOptions("CheckTmpFileExists", options));

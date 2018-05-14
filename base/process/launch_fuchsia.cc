@@ -62,7 +62,7 @@ bool GetAppOutputInternal(const CommandLine& cmd_line,
   return process.WaitForExit(exit_code);
 }
 
-bool MapPathsToLaunchpad(const std::vector<std::string> paths_to_map,
+bool MapPathsToLaunchpad(const std::vector<FilePath>& paths_to_map,
                          launchpad_t* lp) {
   zx_status_t status;
 
@@ -72,17 +72,14 @@ bool MapPathsToLaunchpad(const std::vector<std::string> paths_to_map,
   paths_c_str.reserve(paths_to_map.size());
 
   for (size_t paths_idx = 0; paths_idx < paths_to_map.size(); ++paths_idx) {
-    const std::string& next_path_str = paths_to_map[paths_idx];
-
-    base::FilePath next_path(next_path_str);
-    if (!DirectoryExists(next_path)) {
-      DLOG(ERROR) << "Directory does not exist: " << next_path;
+    const FilePath& next_path = paths_to_map[paths_idx];
+    if (!PathExists(next_path)) {
+      DLOG(ERROR) << "Path does not exist: " << next_path;
       return false;
     }
 
-    // Get a Zircon handle to the directory |next_path|.
-    base::File dir(next_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-    base::ScopedPlatformFile scoped_fd(dir.TakePlatformFile());
+    File dir(next_path, File::FLAG_OPEN | File::FLAG_READ);
+    ScopedPlatformFile scoped_fd(dir.TakePlatformFile());
     zx_handle_t handles[FDIO_MAX_HANDLES] = {};
     uint32_t types[FDIO_MAX_HANDLES] = {};
     zx_status_t num_handles =
@@ -111,14 +108,14 @@ bool MapPathsToLaunchpad(const std::vector<std::string> paths_to_map,
     // Add the handle to the child's nametable.
     // We use the macro PA_HND(..., <index>) to relate the handle to its
     // position in the nametable, which is stored as an array of path strings
-    // |paths_c_str|.
+    // |paths_str|.
     status = launchpad_add_handle(lp, scoped_handle.release(),
                                   PA_HND(PA_NS_DIR, paths_idx));
     if (status != ZX_OK) {
       ZX_LOG(ERROR, status) << "launchpad_add_handle";
       return false;
     }
-    paths_c_str.push_back(next_path_str.c_str());
+    paths_c_str.push_back(next_path.value().c_str());
   }
 
   if (!paths_c_str.empty()) {
@@ -139,8 +136,7 @@ struct LaunchpadScopedTraits {
   static void Free(launchpad_t* lp) { launchpad_destroy(lp); }
 };
 
-using ScopedLaunchpad =
-    base::ScopedGeneric<launchpad_t*, LaunchpadScopedTraits>;
+using ScopedLaunchpad = ScopedGeneric<launchpad_t*, LaunchpadScopedTraits>;
 
 }  // namespace
 
@@ -197,7 +193,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     environ_modifications["PWD"] = options.current_directory.value();
   } else {
     FilePath cwd;
-    base::GetCurrentDirectory(&cwd);
+    GetCurrentDirectory(&cwd);
     environ_modifications["PWD"] = cwd.value();
   }
 

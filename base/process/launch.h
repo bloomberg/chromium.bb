@@ -207,7 +207,7 @@ struct BASE_EXPORT LaunchOptions {
   // case child process is compromised.
   // Cannot be combined with the clone flag LP_CLONE_FDIO_NAMESPACE, which is
   // equivalent to cloning every path.
-  std::vector<std::string> paths_to_map;
+  std::vector<FilePath> paths_to_map;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
