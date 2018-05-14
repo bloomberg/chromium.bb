@@ -4426,6 +4426,7 @@ crbug.com/783154 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/mod
 # Seen flaky on Linux, suppressing on Windows as well
 crbug.com/831720 [ Win Linux ] media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Win Linux ] virtual/new-remote-playback-pipeline/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
+crbug.com/831720 [ Win Linux ] virtual/video-surface-layer/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Pass Failure ]
 crbug.com/831720 [ Win Linux ] media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 [ Win Linux ] virtual/new-remote-playback-pipeline/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
 crbug.com/831720 virtual/video-surface-layer/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
