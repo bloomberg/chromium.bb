@@ -34,10 +34,16 @@ class LogoutConfirmationDialog : public views::DialogDelegateView {
 
   // views::DialogDelegateView:
   bool Accept() override;
+  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+
+  // views::WidgetDelegate:
   ui::ModalType GetModalType() const override;
   base::string16 GetWindowTitle() const override;
-  base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  bool ShouldShowCloseButton() const override;
   void WindowClosing() override;
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override;
 
  private:
   void UpdateLabel();
