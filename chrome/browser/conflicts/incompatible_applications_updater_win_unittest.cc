@@ -323,3 +323,34 @@ TEST_F(IncompatibleApplicationsUpdaterTest,
       IncompatibleApplicationsUpdater::GetCachedApplications();
   ASSERT_EQ(0u, application_names.size());
 }
+
+// Registered modules are defined as either a shell extension or an IME.
+TEST_F(IncompatibleApplicationsUpdaterTest, IgnoreRegisteredModules) {
+  AddIncompatibleApplication(dll1_, L"Shell Extension",
+                             Option::ADD_REGISTRY_ENTRY);
+  AddIncompatibleApplication(dll2_, L"Input Method Editor",
+                             Option::ADD_REGISTRY_ENTRY);
+
+  auto incompatible_applications_updater =
+      std::make_unique<IncompatibleApplicationsUpdater>(
+          exe_certificate_info(), module_list_filter(),
+          installed_applications());
+
+  // Set the respective bit for registered modules.
+  auto module_data1 = CreateLoadedModuleInfoData();
+  module_data1.module_types |= ModuleInfoData::kTypeShellExtension;
+  auto module_data2 = CreateLoadedModuleInfoData();
+  module_data2.module_types |= ModuleInfoData::kTypeIme;
+
+  // Simulate the modules loading into the process.
+  incompatible_applications_updater->OnNewModuleFound(
+      ModuleInfoKey(dll1_, 0, 0, 0), module_data1);
+  incompatible_applications_updater->OnNewModuleFound(
+      ModuleInfoKey(dll2_, 0, 0, 0), module_data2);
+  incompatible_applications_updater->OnModuleDatabaseIdle();
+
+  EXPECT_FALSE(IncompatibleApplicationsUpdater::HasCachedApplications());
+  auto application_names =
+      IncompatibleApplicationsUpdater::GetCachedApplications();
+  ASSERT_EQ(0u, application_names.size());
+}
