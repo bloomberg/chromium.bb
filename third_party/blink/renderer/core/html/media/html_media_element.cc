@@ -446,20 +446,21 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
                                    Document& document)
     : HTMLElement(tag_name, document),
       PausableObject(&document),
-      load_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
+      load_timer_(document.GetTaskRunner(TaskType::kInternalMedia),
                   this,
                   &HTMLMediaElement::LoadTimerFired),
-      progress_event_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
-                            this,
-                            &HTMLMediaElement::ProgressEventTimerFired),
-      playback_progress_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
+      progress_event_timer_(
+          document.GetTaskRunner(TaskType::kMediaElementEvent),
+          this,
+          &HTMLMediaElement::ProgressEventTimerFired),
+      playback_progress_timer_(document.GetTaskRunner(TaskType::kInternalMedia),
                                this,
                                &HTMLMediaElement::PlaybackProgressTimerFired),
-      audio_tracks_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
+      audio_tracks_timer_(document.GetTaskRunner(TaskType::kInternalMedia),
                           this,
                           &HTMLMediaElement::AudioTracksTimerFired),
       check_viewport_intersection_timer_(
-          document.GetTaskRunner(TaskType::kUnthrottled),
+          document.GetTaskRunner(TaskType::kInternalMedia),
           this,
           &HTMLMediaElement::CheckViewportIntersectionTimerFired),
       played_time_ranges_(),
@@ -478,7 +479,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       default_playback_start_position_(0),
       load_state_(kWaitingForSource),
       deferred_load_state_(kNotDeferred),
-      deferred_load_timer_(document.GetTaskRunner(TaskType::kUnthrottled),
+      deferred_load_timer_(document.GetTaskRunner(TaskType::kInternalMedia),
                            this,
                            &HTMLMediaElement::DeferredLoadTimerFired),
       web_layer_(nullptr),
@@ -551,17 +552,17 @@ void HTMLMediaElement::DidMoveToNewDocument(Document& old_document) {
   BLINK_MEDIA_LOG << "didMoveToNewDocument(" << (void*)this << ")";
 
   load_timer_.MoveToNewTaskRunner(
-      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   progress_event_timer_.MoveToNewTaskRunner(
-      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   playback_progress_timer_.MoveToNewTaskRunner(
-      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   audio_tracks_timer_.MoveToNewTaskRunner(
-      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   check_viewport_intersection_timer_.MoveToNewTaskRunner(
-      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
   deferred_load_timer_.MoveToNewTaskRunner(
-      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
 
   autoplay_policy_->DidMoveToNewDocument(old_document);
 

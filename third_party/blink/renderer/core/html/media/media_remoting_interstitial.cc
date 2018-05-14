@@ -25,7 +25,7 @@ MediaRemotingInterstitial::MediaRemotingInterstitial(
     HTMLVideoElement& videoElement)
     : HTMLDivElement(videoElement.GetDocument()),
       toggle_interstitial_timer_(
-          videoElement.GetDocument().GetTaskRunner(TaskType::kUnthrottled),
+          videoElement.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
           &MediaRemotingInterstitial::ToggleInterstitialTimerFired),
       video_element_(&videoElement) {
@@ -132,7 +132,7 @@ void MediaRemotingInterstitial::ToggleInterstitialTimerFired(TimerBase*) {
 
 void MediaRemotingInterstitial::DidMoveToNewDocument(Document& old_document) {
   toggle_interstitial_timer_.MoveToNewTaskRunner(
-      GetDocument().GetTaskRunner(TaskType::kUnthrottled));
+      GetDocument().GetTaskRunner(TaskType::kInternalMedia));
 
   HTMLDivElement::DidMoveToNewDocument(old_document);
 }

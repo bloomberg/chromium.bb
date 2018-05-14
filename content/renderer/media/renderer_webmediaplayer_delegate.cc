@@ -52,7 +52,7 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
 #endif
 
   idle_cleanup_timer_.SetTaskRunner(
-      render_frame->GetTaskRunner(blink::TaskType::kUnthrottled));
+      render_frame->GetTaskRunner(blink::TaskType::kInternalMedia));
 }
 
 RendererWebMediaPlayerDelegate::~RendererWebMediaPlayerDelegate() {}

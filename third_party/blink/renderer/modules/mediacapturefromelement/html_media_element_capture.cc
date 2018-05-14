@@ -101,7 +101,7 @@ void MediaElementEventListener::handleEvent(ExecutionContext* context,
     Platform::Current()->CreateHTMLVideoElementCapturer(
         &web_stream, media_element_->GetWebMediaPlayer(),
         media_element_->GetExecutionContext()->GetTaskRunner(
-            TaskType::kUnthrottled));
+            TaskType::kInternalMediaRealTime));
   }
   if (media_element_->HasAudio()) {
     Platform::Current()->CreateHTMLAudioElementCapturer(
@@ -193,7 +193,8 @@ MediaStream* HTMLMediaElementCapture::captureStream(
   if (element.HasVideo()) {
     Platform::Current()->CreateHTMLVideoElementCapturer(
         &web_stream, element.GetWebMediaPlayer(),
-        element.GetExecutionContext()->GetTaskRunner(TaskType::kUnthrottled));
+        element.GetExecutionContext()->GetTaskRunner(
+            TaskType::kInternalMediaRealTime));
   }
   if (element.HasAudio()) {
     Platform::Current()->CreateHTMLAudioElementCapturer(
