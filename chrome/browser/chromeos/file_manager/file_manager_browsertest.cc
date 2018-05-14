@@ -102,9 +102,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "fileDisplayDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayDrive"),
                       TestParameter(NOT_IN_GUEST_MODE, "fileDisplayMtp"),
-                      TestParameter(NOT_IN_GUEST_MODE, "searchNormal"),
-                      TestParameter(NOT_IN_GUEST_MODE, "searchCaseInsensitive"),
-                      TestParameter(NOT_IN_GUEST_MODE, "searchNotFound")));
+                      TestParameter(NOT_IN_GUEST_MODE, "fileSearch"),
+                      TestParameter(NOT_IN_GUEST_MODE, "fileSearchCaseInsensitive"),
+                      TestParameter(NOT_IN_GUEST_MODE, "fileSearchNotFound")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     OpenVideoFiles,
