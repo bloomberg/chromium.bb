@@ -12,7 +12,11 @@ Polymer({
   properties: {
     /** @private {string} */
     mountUrl_: String,
+
+    /** @private {string} */
     username_: String,
+
+    /** @private {string} */
     password_: String,
   },
 
@@ -36,7 +40,7 @@ Polymer({
 
   /** @private */
   onAddButtonTap_: function() {
-    this.browserProxy_.smbMount(this.mountUrl_);
+    this.browserProxy_.smbMount(this.mountUrl_, this.username_, this.password_);
     this.$.dialog.close();
   },
 
