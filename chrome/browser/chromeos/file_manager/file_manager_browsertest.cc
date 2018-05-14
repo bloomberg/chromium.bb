@@ -244,12 +244,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     DriveSpecific,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "openSidebarOffline"),
-        TestParameter(NOT_IN_GUEST_MODE, "openSidebarSharedWithMe"),
-        TestParameter(NOT_IN_GUEST_MODE, "autocomplete"),
-        TestParameter(NOT_IN_GUEST_MODE, "pinFileOnMobileNetwork"),
-        TestParameter(NOT_IN_GUEST_MODE, "clickFirstSearchResult"),
-        TestParameter(NOT_IN_GUEST_MODE, "pressEnterToSearch")));
+        TestParameter(NOT_IN_GUEST_MODE, "driveOpenSidebarOffline"),
+        TestParameter(NOT_IN_GUEST_MODE, "driveOpenSidebarSharedWithMe"),
+        TestParameter(NOT_IN_GUEST_MODE, "driveAutoCompleteQuery"),
+        TestParameter(NOT_IN_GUEST_MODE, "drivePinFileMobileNetwork"),
+        TestParameter(NOT_IN_GUEST_MODE, "driveClickFirstSearchResult"),
+        TestParameter(NOT_IN_GUEST_MODE, "drivePressEnterToSearch")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Transfer,
