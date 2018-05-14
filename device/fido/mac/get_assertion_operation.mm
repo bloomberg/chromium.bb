@@ -92,7 +92,7 @@ void GetAssertionOperation::PromptTouchIdDone(bool success, NSError* err) {
   std::set<std::vector<uint8_t>> allowed_credential_ids;
   if (request_.allow_list()) {
     for (const PublicKeyCredentialDescriptor& desc : *request_.allow_list()) {
-      if (desc.credential_type() != "public-key") {
+      if (desc.credential_type() != CredentialType::kPublicKey) {
         continue;
       }
       allowed_credential_ids.insert(desc.id());

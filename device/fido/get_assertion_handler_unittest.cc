@@ -44,7 +44,7 @@ class FidoGetAssertionHandlerTest : public ::testing::Test {
     CtapGetAssertionRequest request_param(
         kRpId, fido_parsing_utils::Materialize(kClientDataHash));
     request_param.SetAllowList(
-        {{to_string(CredentialType::kPublicKey),
+        {{CredentialType::kPublicKey,
           fido_parsing_utils::Materialize(
               test_data::kTestGetAssertionCredentialId)}});
 

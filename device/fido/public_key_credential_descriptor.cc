@@ -26,21 +26,22 @@ PublicKeyCredentialDescriptor::CreateFromCBORValue(
 
   const cbor::CBORValue::MapValue& map = cbor.GetMap();
   auto type = map.find(cbor::CBORValue(kCredentialTypeKey));
-  if (type == map.end() || !type->second.is_string())
+  if (type == map.end() || !type->second.is_string() ||
+      type->second.GetString() != kPublicKey)
     return base::nullopt;
 
   auto id = map.find(cbor::CBORValue(kCredentialIdKey));
   if (id == map.end() || !id->second.is_bytestring())
     return base::nullopt;
 
-  return PublicKeyCredentialDescriptor(type->second.GetString(),
+  return PublicKeyCredentialDescriptor(CredentialType::kPublicKey,
                                        id->second.GetBytestring());
 }
 
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
-    std::string credential_type,
+    CredentialType credential_type,
     std::vector<uint8_t> id)
-    : credential_type_(std::move(credential_type)), id_(std::move(id)) {}
+    : credential_type_(credential_type), id_(std::move(id)) {}
 
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
     const PublicKeyCredentialDescriptor& other) = default;
@@ -60,7 +61,7 @@ cbor::CBORValue PublicKeyCredentialDescriptor::ConvertToCBOR() const {
   cbor::CBORValue::MapValue cbor_descriptor_map;
   cbor_descriptor_map[cbor::CBORValue(kCredentialIdKey)] = cbor::CBORValue(id_);
   cbor_descriptor_map[cbor::CBORValue(kCredentialTypeKey)] =
-      cbor::CBORValue(credential_type_);
+      cbor::CBORValue(to_string(credential_type_));
   return cbor::CBORValue(std::move(cbor_descriptor_map));
 }
 

@@ -119,7 +119,7 @@ TEST(U2fCommandConstructorTest,
      TestConvertCtapMakeCredentialToU2fCheckOnlySign) {
   auto make_credential_param = ConstructMakeCredentialRequest();
   PublicKeyCredentialDescriptor credential_descriptor(
-      kPublicKey,
+      CredentialType::kPublicKey,
       fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle));
   std::vector<PublicKeyCredentialDescriptor> exclude_list;
   exclude_list.push_back(credential_descriptor);
@@ -139,7 +139,8 @@ TEST(U2fCommandConstructorTest,
      TestConvertCtapMakeCredentialToU2fCheckOnlySignWithInvalidCredentialType) {
   auto make_credential_param = ConstructMakeCredentialRequest();
   PublicKeyCredentialDescriptor credential_descriptor(
-      "UnknownCredentialType",
+      // Purposefully construct an invalid CredentialType.
+      static_cast<CredentialType>(-1),
       fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle));
   std::vector<PublicKeyCredentialDescriptor> exclude_list;
   exclude_list.push_back(credential_descriptor);
@@ -205,7 +206,7 @@ TEST(U2fCommandConstructorTest, TestConvertCtapGetAssertionToU2fSignRequest) {
   auto get_assertion_req = ConstructGetAssertionRequest();
   std::vector<PublicKeyCredentialDescriptor> allowed_list;
   allowed_list.push_back(PublicKeyCredentialDescriptor(
-      kPublicKey,
+      CredentialType::kPublicKey,
       fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
   get_assertion_req.SetAllowList(std::move(allowed_list));
 
@@ -228,7 +229,7 @@ TEST(U2fCommandConstructorTest, TestU2fSignUserVerificationRequirement) {
   auto get_assertion_req = ConstructGetAssertionRequest();
   std::vector<PublicKeyCredentialDescriptor> allowed_list;
   allowed_list.push_back(PublicKeyCredentialDescriptor(
-      kPublicKey,
+      CredentialType::kPublicKey,
       fido_parsing_utils::Materialize(test_data::kU2fSignKeyHandle)));
   get_assertion_req.SetAllowList(std::move(allowed_list));
   get_assertion_req.SetUserVerification(UserVerificationRequirement::kRequired);
