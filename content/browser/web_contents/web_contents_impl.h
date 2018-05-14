@@ -1155,9 +1155,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                    int active_match_ordinal,
                    bool final_update);
 #if defined(OS_ANDROID)
-  void OnGetNearestFindResultReply(RenderFrameHostImpl* source,
-                                   int request_id,
-                                   float distance);
   void OnOpenDateTimeDialog(
       RenderViewHostImpl* source,
       const ViewHostMsg_DateTimeDialogValue_Params& value);

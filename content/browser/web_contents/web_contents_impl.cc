@@ -836,10 +836,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                                 OnBrowserPluginMessage(render_frame_host,
                                                        message))
 #endif
-#if defined(OS_ANDROID)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_GetNearestFindResult_Reply,
-                        OnGetNearestFindResultReply)
-#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -4342,13 +4338,6 @@ void WebContentsImpl::OnFindReply(RenderFrameHostImpl* source,
 }
 
 #if defined(OS_ANDROID)
-void WebContentsImpl::OnGetNearestFindResultReply(RenderFrameHostImpl* source,
-                                                  int request_id,
-                                                  float distance) {
-  GetOrCreateFindRequestManager()->OnGetNearestFindResultReply(
-      source, request_id, distance);
-}
-
 void WebContentsImpl::OnOpenDateTimeDialog(
     RenderViewHostImpl* source,
     const ViewHostMsg_DateTimeDialogValue_Params& value) {

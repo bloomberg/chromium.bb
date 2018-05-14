@@ -189,15 +189,11 @@ int FindInPage::SelectNearestFindMatch(const WebFloatPoint& point,
   return EnsureTextFinder().SelectNearestFindMatch(point, selection_rect);
 }
 
-float WebLocalFrameImpl::DistanceToNearestFindMatch(
-    const WebFloatPoint& point) {
-  return find_in_page_->DistanceToNearestFindMatch(point);
-}
-
-float FindInPage::DistanceToNearestFindMatch(const WebFloatPoint& point) {
-  float nearest_distance;
-  EnsureTextFinder().NearestFindMatch(point, &nearest_distance);
-  return nearest_distance;
+void FindInPage::GetNearestFindResult(const WebFloatPoint& point,
+                                      GetNearestFindResultCallback callback) {
+  float distance;
+  EnsureTextFinder().NearestFindMatch(point, &distance);
+  std::move(callback).Run(distance);
 }
 
 void FindInPage::FindMatchRects(int current_version,

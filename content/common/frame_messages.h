@@ -1773,14 +1773,6 @@ IPC_MESSAGE_ROUTED0(FrameHostMsg_HidePopup)
 
 #endif
 
-#if defined(OS_ANDROID)
-// Response to FrameMsg_GetNearestFindResult. |distance| is the distance to the
-// nearest find result in the sending frame.
-IPC_MESSAGE_ROUTED2(FrameHostMsg_GetNearestFindResult_Reply,
-                    int /* nfr_request_id */,
-                    float /* distance */)
-#endif
-
 // Adding a new message? Stick to the sort order above: first platform
 // independent FrameMsg, then ifdefs for platform specific FrameMsg, then
 // platform independent FrameHostMsg, then ifdefs for platform specific

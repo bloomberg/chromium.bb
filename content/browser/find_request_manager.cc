@@ -451,15 +451,18 @@ void FindRequestManager::ActivateNearestFindResult(float x, float y) {
   // frame) from the point (x, y), defined in find-in-page coordinates.
   for (WebContentsImpl* contents : contents_->GetWebContentsAndAllInner()) {
     for (FrameTreeNode* node : contents->GetFrameTree()->Nodes()) {
-      RenderFrameHost* rfh = node->current_frame_host();
+      RenderFrameHostImpl* rfh = node->current_frame_host();
 
       if (!CheckFrame(rfh) || !rfh->IsRenderFrameLive())
         continue;
 
       activate_.pending_replies.insert(rfh);
-      rfh->Send(new FrameMsg_GetNearestFindResult(rfh->GetRoutingID(),
-                                                  activate_.current_request_id,
-                                                  activate_.x, activate_.y));
+      // Lifetime of FindRequestManager > RenderFrameHost > Mojo connection,
+      // so it's safe to bind |this| and |rfh|.
+      rfh->GetFindInPage()->GetNearestFindResult(
+          gfx::PointF(activate_.x, activate_.y),
+          base::BindOnce(&FindRequestManager::OnGetNearestFindResultReply,
+                         base::Unretained(this), rfh, current_session_id_));
     }
   }
 }
