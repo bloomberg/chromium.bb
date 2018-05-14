@@ -31,7 +31,10 @@ struct RequestInfo {
 };
 
 // NetworkScanner discovers SMB hosts in the local network by querying
-// registered HostLocators and aggregating their results.
+// registered HostLocators and aggregating their results. RegisterHostLocator is
+// used to register HostLocators that are responsible for finding hosts.
+// FindHostsInNetwork is called to get a list of discoverable hosts in the
+// network. ResolveHost is used to get the IP address of a given host.
 class NetworkScanner : public base::SupportsWeakPtr<NetworkScanner> {
  public:
   NetworkScanner();
@@ -40,11 +43,18 @@ class NetworkScanner : public base::SupportsWeakPtr<NetworkScanner> {
   // Query the registered HostLocators and return all the hosts found.
   // |callback| is called once all the HostLocators have responded with their
   // results. If there are no locators, the callback is fired immediately with
-  // an empty result and success set to false.
+  // an empty result and success set to false. Once this call has returned, the
+  // hosts found are cached locally and are resolvable individually through
+  // ResolveHost().
   void FindHostsInNetwork(FindHostsCallback callback);
 
   // Registeres a |locator| to be queried when FindHostsInNetwork() is called.
   void RegisterHostLocator(std::unique_ptr<HostLocator> locator);
+
+  // Resolves |host| to an address using the cached results of
+  // FindHostsInNetwork(). FindHostsInNetwork() has to be called beforehand. If
+  // no address is found, this returns an empty string.
+  std::string ResolveHost(const std::string& host) const;
 
  private:
   // Callback handler for HostLocator::FindHosts().
@@ -71,6 +81,14 @@ class NetworkScanner : public base::SupportsWeakPtr<NetworkScanner> {
   std::map<uint32_t, RequestInfo> requests_;
 
   uint32_t next_request_id_ = 0;
+
+  // Hosts that are found from FindHostsInNetwork(). This is cached for name
+  // resolution when calling ResolveHost().
+  HostMap found_hosts_;
+
+  // True if FindHostsInNetwork() has been called and returned results
+  // regardless if any hosts are found.
+  bool find_hosts_returned_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScanner);
 };
