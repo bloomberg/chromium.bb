@@ -181,6 +181,38 @@ bool HardwareSupportsOverlays() {
   return false;
 }
 
+bool CreateSurfaceHandleHelper(HANDLE* handle) {
+  using PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE =
+      HRESULT(WINAPI*)(DWORD, SECURITY_ATTRIBUTES*, HANDLE*);
+  static PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE create_surface_handle_function =
+      nullptr;
+
+  if (!create_surface_handle_function) {
+    HMODULE dcomp = ::GetModuleHandleA("dcomp.dll");
+    if (!dcomp) {
+      DLOG(ERROR) << "Failed to get handle for dcomp.dll";
+      return false;
+    }
+    create_surface_handle_function =
+        reinterpret_cast<PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE>(
+            ::GetProcAddress(dcomp, "DCompositionCreateSurfaceHandle"));
+    if (!create_surface_handle_function) {
+      DLOG(ERROR)
+          << "Failed to get address for DCompositionCreateSurfaceHandle";
+      return false;
+    }
+  }
+
+  HRESULT hr = create_surface_handle_function(COMPOSITIONOBJECT_ALL_ACCESS,
+                                              nullptr, handle);
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "DCompositionCreateSurfaceHandle failed with error "
+                << std::hex << hr;
+    return false;
+  }
+
+  return true;
+}
 }  // namespace
 
 class DCLayerTree {
@@ -291,9 +323,6 @@ class DCLayerTree::SwapChainPresenter {
   }
 
  private:
-  using PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE =
-      HRESULT(WINAPI*)(DWORD, SECURITY_ATTRIBUTES*, HANDLE*);
-
   bool UploadVideoImages(gl::GLImageMemory* y_image_memory,
                          gl::GLImageMemory* uv_image_memory);
   // Returns true if the video processor changed.
@@ -303,7 +332,6 @@ class DCLayerTree::SwapChainPresenter {
   bool ShouldBeYUY2();
 
   DCLayerTree* surface_;
-  PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE create_surface_handle_function_;
 
   gfx::Size swap_chain_size_;
   gfx::Size processor_input_size_;
@@ -423,14 +451,7 @@ DCLayerTree::SwapChainPresenter::SwapChainPresenter(
     : surface_(surface),
       d3d11_device_(d3d11_device),
       video_device_(video_device),
-      video_context_(video_context) {
-  HMODULE dcomp = ::GetModuleHandleA("dcomp.dll");
-  CHECK(dcomp);
-  create_surface_handle_function_ =
-      reinterpret_cast<PFN_DCOMPOSITION_CREATE_SURFACE_HANDLE>(
-          ::GetProcAddress(dcomp, "DCompositionCreateSurfaceHandle"));
-  CHECK(create_surface_handle_function_);
-}
+      video_context_(video_context) {}
 
 DCLayerTree::SwapChainPresenter::~SwapChainPresenter() {}
 
@@ -847,13 +868,9 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
       DXGI_SWAP_CHAIN_FLAG_YUV_VIDEO | DXGI_SWAP_CHAIN_FLAG_FULLSCREEN_VIDEO;
 
   HANDLE handle;
-  HRESULT hr = create_surface_handle_function_(COMPOSITIONOBJECT_ALL_ACCESS,
-                                               nullptr, &handle);
-  if (FAILED(hr)) {
-    DLOG(ERROR) << "DCompositionCreateSurfaceHandle failed with error "
-                << std::hex << hr;
+  if (!CreateSurfaceHandleHelper(&handle))
     return false;
-  }
+
   swap_chain_handle_.Set(handle);
 
   if (is_yuy2_swapchain_ != yuy2) {
@@ -868,7 +885,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   // The composition surface handle isn't actually used, but
   // CreateSwapChainForComposition can't create YUY2 swapchains.
   if (yuy2) {
-    hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
+    HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
     is_yuy2_swapchain_ = SUCCEEDED(hr);
@@ -882,7 +899,7 @@ bool DCLayerTree::SwapChainPresenter::ReallocateSwapChain(bool yuy2) {
   if (!is_yuy2_swapchain_) {
     desc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
     desc.Flags = 0;
-    hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
+    HRESULT hr = media_factory->CreateSwapChainForCompositionSurfaceHandle(
         d3d11_device_.Get(), swap_chain_handle_.Get(), &desc, nullptr,
         swap_chain_.GetAddressOf());
     if (FAILED(hr)) {
@@ -1311,9 +1328,17 @@ bool DirectCompositionSurfaceWin::InitializeNativeWindow() {
 
 bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
   d3d11_device_ = gl::QueryD3D11DeviceObjectFromANGLE();
-  dcomp_device_ = gl::QueryDirectCompositionDevice(d3d11_device_);
-  if (!dcomp_device_)
+  if (!d3d11_device_) {
+    DLOG(ERROR) << "Failed to retrieve D3D11 device from ANGLE";
     return false;
+  }
+
+  dcomp_device_ = gl::QueryDirectCompositionDevice(d3d11_device_);
+  if (!dcomp_device_) {
+    DLOG(ERROR)
+        << "Failed to retrieve direct compostion device from D3D11 device";
+    return false;
+  }
 
   EGLDisplay display = GetDisplay();
   if (!window_) {
