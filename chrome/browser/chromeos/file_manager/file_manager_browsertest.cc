@@ -381,12 +381,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     OpenFileDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
-                                    "openFileDialogOnDownloads"),
-                      TestParameter(IN_GUEST_MODE, "openFileDialogOnDownloads"),
-                      TestParameter(NOT_IN_GUEST_MODE, "openFileDialogOnDrive"),
-                      TestParameter(IN_INCOGNITO, "openFileDialogOnDownloads"),
-                      TestParameter(IN_INCOGNITO, "openFileDialogOnDrive"),
-                      TestParameter(NOT_IN_GUEST_MODE, "unloadFileDialog")));
+                                    "openFileDialogDownloads"),
+                      TestParameter(IN_GUEST_MODE, "openFileDialogDownloads"),
+                      TestParameter(NOT_IN_GUEST_MODE, "openFileDialogDrive"),
+                      TestParameter(IN_INCOGNITO, "openFileDialogDownloads"),
+                      TestParameter(IN_INCOGNITO, "openFileDialogDrive"),
+                      TestParameter(NOT_IN_GUEST_MODE, "openFileDialogUnload")));
 
 #if defined(DISABLE_SLOW_FILESAPP_TESTS)
 #define MAYBE_CopyBetweenWindows DISABLED_CopyBetweenWindows
