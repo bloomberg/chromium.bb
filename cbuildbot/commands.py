@@ -620,7 +620,11 @@ def RunCrosConfigHost(buildroot, board, args, log_output=True):
       'chromeos-config',
       'yaml',
       'config.yaml')
-  if not os.path.isfile(config_fname):
+  ls_result = cros_build_lib.RunCommand(
+      ['ls', config_fname],
+      enter_chroot=True, capture_output=True, log_output=log_output,
+      cwd=buildroot, error_code_ok=True)
+  if ls_result.returncode != 0:
     config_fname = os.path.join(
         cros_build_lib.GetSysroot(board),
         'usr',
