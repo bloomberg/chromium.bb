@@ -1723,6 +1723,22 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ord
 
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 
+crbug.com/776656 virtual/incremental-shadow-dom/media/controls/controls-cast-do-not-fade-out.html [ Pass Timeout ]
+crbug.com/776656 virtual/incremental-shadow-dom/media/controls/overlay-play-button-document-move.html [ Failure Crash ]
+
+# These tests are also failing without the flag
+crbug.com/832447 virtual/incremental-shadow-dom/media/controls/controls-page-zoom-in.html [ Failure Pass ]
+crbug.com/832447 virtual/incremental-shadow-dom/media/controls/controls-page-zoom-out.html [ Failure Pass ]
+crbug.com/783154 virtual/incremental-shadow-dom/media/controls/modern/doubletap-to-jump-forwards-too-short.html [ Skip ]
+crbug.com/783154 virtual/incremental-shadow-dom/media/controls/modern/doubletap-to-jump-backwards.html [ Skip ]
+crbug.com/793771 virtual/incremental-shadow-dom/media/controls/modern/scrubbing.html [ Skip ]
+crbug.com/783154 virtual/incremental-shadow-dom/media/controls/modern/doubletap-to-toggle-fullscreen.html [ Skip ]
+crbug.com/831720 virtual/incremental-shadow-dom/media/controls/modern/tap-to-hide-controls.html [ Pass Failure ]
+crbug.com/789921 virtual/incremental-shadow-dom/media/controls/repaint-on-resize.html [ Failure Pass ]
+crbug.com/824775 virtual/incremental-shadow-dom/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
+crbug.com/722825 virtual/incremental-shadow-dom/media/controls/video-enter-exit-fullscreen-while-hovering-shows-controls.html [ Timeout Pass Failure ]
+crbug.com/746128 virtual/incremental-shadow-dom/media/controls/video-enter-exit-fullscreen-without-hovering-doesnt-show-controls.html [ Failure ]
+
 # ====== IncrementalShadowDOM-only failures until here ======
 
 crbug.com/667560 [ Debug ] http/tests/devtools/elements/styles-3/styles-change-node-while-editing.js [ Pass Failure ]
