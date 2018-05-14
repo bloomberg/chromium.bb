@@ -214,22 +214,22 @@ function defaultTaskDialog(expectedTaskId, windowId) {
   });
 }
 
-testcase.executeDefaultTaskOnDrive = function() {
+testcase.executeDefaultTaskDrive = function() {
   testPromise(setupTaskTest(RootPath.DRIVE, DRIVE_FAKE_TASKS).then(
       executeDefaultTask.bind(null, 'dummytaskid|drive|open-with')));
 };
 
-testcase.executeDefaultTaskOnDownloads = function() {
+testcase.executeDefaultTaskDownloads = function() {
   testPromise(setupTaskTest(RootPath.DOWNLOADS, DOWNLOADS_FAKE_TASKS).then(
       executeDefaultTask.bind(null, 'dummytaskid|open-with')));
 };
 
-testcase.defaultTaskDialogOnDrive = function() {
+testcase.defaultTaskDialogDrive = function() {
   testPromise(setupTaskTest(RootPath.DRIVE, DRIVE_FAKE_TASKS).then(
       defaultTaskDialog.bind(null, 'dummytaskid-2|drive|open-with')));
 };
 
-testcase.defaultTaskDialogOnDownloads = function() {
+testcase.defaultTaskDialogDownloads = function() {
   testPromise(setupTaskTest(RootPath.DOWNLOADS, DOWNLOADS_FAKE_TASKS).then(
       defaultTaskDialog.bind(null, 'dummytaskid-2|open-with')));
 };
@@ -253,7 +253,7 @@ testcase.genericTaskIsNotExecuted = function() {
     }));
 };
 
-testcase.genericAndNonGenericTasksAreMixed = function() {
+testcase.genericTaskAndNonGenericTask = function() {
   var tasks = [
     new FakeTask(false, 'dummytaskid|open-with', 'DummyTask1',
         true /* isGenericFileHandler */),

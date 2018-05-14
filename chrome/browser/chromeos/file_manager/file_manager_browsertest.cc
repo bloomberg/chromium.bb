@@ -277,29 +277,29 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ExecuteDefaultTaskOnDownloads,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskOnDownloads"),
-        TestParameter(IN_GUEST_MODE, "executeDefaultTaskOnDownloads")));
+        TestParameter(NOT_IN_GUEST_MODE, "executeDefaultTaskDownloads"),
+        TestParameter(IN_GUEST_MODE, "executeDefaultTaskDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     ExecuteDefaultTaskOnDrive,
     FileManagerBrowserTest,
     ::testing::Values(TestParameter(NOT_IN_GUEST_MODE,
-                                    "executeDefaultTaskOnDrive")));
+                                    "executeDefaultTaskDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DefaultTaskDialog,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "defaultTaskDialogOnDownloads"),
-        TestParameter(IN_GUEST_MODE, "defaultTaskDialogOnDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "defaultTaskDialogOnDrive")));
+        TestParameter(NOT_IN_GUEST_MODE, "defaultTaskDialogDownloads"),
+        TestParameter(IN_GUEST_MODE, "defaultTaskDialogDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "defaultTaskDialogDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     GenericTask,
     FileManagerBrowserTest,
     ::testing::Values(
         TestParameter(NOT_IN_GUEST_MODE, "genericTaskIsNotExecuted"),
-        TestParameter(NOT_IN_GUEST_MODE, "genericAndNonGenericTasksAreMixed")));
+        TestParameter(NOT_IN_GUEST_MODE, "genericTaskAndNonGenericTask")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FolderShortcuts,
