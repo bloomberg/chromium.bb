@@ -392,8 +392,13 @@ void LockContentsView::OnUsersChanged(
   }
 
   // Build user state list.
-  for (const mojom::LoginUserInfoPtr& user : users)
-    users_.push_back(UserState{user->basic_user_info->account_id});
+  for (const mojom::LoginUserInfoPtr& user : users) {
+    UserState state(user->basic_user_info->account_id);
+    state.fingerprint_state = user->allow_fingerprint_unlock
+                                  ? mojom::FingerprintUnlockState::AVAILABLE
+                                  : mojom::FingerprintUnlockState::UNAVAILABLE;
+    users_.push_back(std::move(state));
+  }
 
   auto box_layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
@@ -641,6 +646,23 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
   // the password without seeing the warning about detachable base change.
   if (GetWidget()->IsActive())
     GetWidget()->GetFocusManager()->ClearFocus();
+}
+
+void LockContentsView::OnFingerprintUnlockStateChanged(
+    const AccountId& account_id,
+    mojom::FingerprintUnlockState state) {
+  UserState* user_state = FindStateForUser(account_id);
+  if (!user_state)
+    return;
+
+  user_state->fingerprint_state = state;
+  LoginBigUserView* big_view =
+      TryToFindBigUser(account_id, true /*require_auth_active*/);
+  if (!big_view || !big_view->auth_user())
+    return;
+
+  big_view->auth_user()->SetFingerprintState(user_state->fingerprint_state);
+  LayoutAuth(big_view, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
 void LockContentsView::SetAvatarForUser(const AccountId& account_id,
@@ -1207,10 +1229,17 @@ void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
           GetKeyboardController();
       const bool keyboard_visible =
           keyboard_controller ? keyboard_controller->keyboard_visible() : false;
-      if (state->show_pin && !keyboard_visible)
+      if (state->show_pin && !keyboard_visible &&
+          state->fingerprint_state ==
+              mojom::FingerprintUnlockState::UNAVAILABLE) {
         to_update_auth |= LoginAuthUserView::AUTH_PIN;
+      }
       if (state->enable_tap_auth)
         to_update_auth |= LoginAuthUserView::AUTH_TAP;
+      if (state->fingerprint_state !=
+          mojom::FingerprintUnlockState::UNAVAILABLE) {
+        to_update_auth |= LoginAuthUserView::AUTH_FINGERPRINT;
+      }
     }
     opt_to_update->SetAuthMethods(to_update_auth);
   }
