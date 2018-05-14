@@ -36,7 +36,8 @@ void TestToolbarActionViewController::SetDelegate(
 
 gfx::Image TestToolbarActionViewController::GetIcon(
     content::WebContents* web_contents,
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    ToolbarActionButtonState state) {
   return gfx::Image();
 }
 

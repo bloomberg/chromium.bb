@@ -73,6 +73,7 @@ class ToolbarActionView : public views::MenuButton,
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  void StateChanged(ButtonState old_state) override;
 
   // ToolbarActionViewDelegateViews:
   content::WebContents* GetCurrentWebContents() const override;
@@ -100,6 +101,8 @@ class ToolbarActionView : public views::MenuButton,
   // views::MenuButton:
   gfx::Size CalculatePreferredSize() const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
+  void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void OnDragDone() override;
   void ViewHierarchyChanged(
@@ -145,6 +148,12 @@ class ToolbarActionView : public views::MenuButton,
   // The cached value of whether or not the action wants to run on the current
   // tab.
   bool wants_to_run_;
+
+  // Whether the mouse is currently pressed. We store this separately, since
+  // the button state doesn't correspond to the mouse pressed state for
+  // draggable menu buttons (i.e., they don't enter a pushed state in
+  // OnMouseDown).
+  bool is_mouse_pressed_;
 
   // Responsible for converting the context menu model into |menu_|.
   std::unique_ptr<views::MenuModelAdapter> menu_adapter_;
