@@ -180,7 +180,6 @@ cr.define('extension_navigation_helper_tests', function() {
             removeEndSlash(newUrl || url));
       }
 
-      loadTimeData.overrideValues({isGuest: false});
       testIfRedirected('chrome://extensions');
       testIfRedirected('chrome://extensions/');
       testIfRedirected('chrome://extensions/shortcuts');
@@ -192,11 +191,6 @@ cr.define('extension_navigation_helper_tests', function() {
       testIfRedirected(
           'chrome://extensions/configureCommands',
           'chrome://extensions/shortcuts');
-
-      loadTimeData.overrideValues({isGuest: true});
-      testIfRedirected('chrome://extensions/');
-      testIfRedirected('chrome://extensions/shortcuts', 'chrome://extensions');
-      testIfRedirected('chrome://extensions/fake-route', 'chrome://extensions');
     });
   });
 

@@ -23,8 +23,6 @@ cr.define('extensions', function() {
         value: false,
       },
 
-      isGuest: Boolean,
-
       filter: {
         type: String,
       },
@@ -81,13 +79,12 @@ cr.define('extensions', function() {
 
     /** @private */
     shouldShowEmptyItemsMessage_: function() {
-      return !this.isGuest && this.apps.length === 0 &&
-          this.extensions.length === 0;
+      return this.apps.length === 0 && this.extensions.length === 0;
     },
 
     /** @private */
     shouldShowEmptySearchMessage_: function() {
-      return !this.isGuest && !this.shouldShowEmptyItemsMessage_() &&
+      return !this.shouldShowEmptyItemsMessage_() &&
           this.shownAppsCount_ === 0 && this.shownExtensionsCount_ === 0;
     },
 

@@ -46,13 +46,6 @@ cr.define('extensions', function() {
         },
       },
 
-      isGuest_: {
-        type: Boolean,
-        value: function() {
-          return loadTimeData.getBoolean('isGuest');
-        },
-      },
-
       inDevMode: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('inDevMode'),
@@ -165,11 +158,6 @@ cr.define('extensions', function() {
 
     /** @override */
     ready: function() {
-      if (loadTimeData.getBoolean('isGuest')) {
-        this.initPage_();
-        return;
-      }
-
       let service = extensions.Service.getInstance();
 
       let onProfileStateChanged = profileInfo => {

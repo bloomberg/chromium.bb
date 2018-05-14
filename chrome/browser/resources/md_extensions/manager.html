@@ -56,8 +56,7 @@
     </style>
     <extensions-drop-overlay drag-enabled="[[inDevMode]]">
     </extensions-drop-overlay>
-    <extensions-toolbar is-guest="[[isGuest_]]"
-        in-dev-mode="[[inDevMode]]"
+    <extensions-toolbar in-dev-mode="[[inDevMode]]"
         can-load-unpacked="[[canLoadUnpacked]]"
         is-supervised="[[isSupervised_]]"
         dev-mode-controlled-by-policy="[[devModeControlledByPolicy]]"
@@ -81,10 +80,10 @@
       </cr-drawer>
     </template>
     <extensions-view-manager id="viewManager" role="main">
-      <extensions-item-list id="items-list" is-guest="[[isGuest_]]"
-          delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
-          filter="[[filter]]" hidden$="[[!didInitPage_]]" slot="view"
-          apps="[[apps_]]" extensions="[[extensions_]]"
+      <extensions-item-list id="items-list" delegate="[[delegate]]"
+          in-dev-mode="[[inDevMode]]" filter="[[filter]]"
+          hidden$="[[!didInitPage_]]" slot="view" apps="[[apps_]]"
+          extensions="[[extensions_]]"
           on-show-install-warnings="onShowInstallWarnings_">
       </extensions-item-list>
       <cr-lazy-render id="details-view">
