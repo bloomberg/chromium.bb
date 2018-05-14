@@ -43,7 +43,7 @@ static INLINE void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
                                                       int width, int height) {
   const __m128i twos = _mm_set1_epi8(2);
   __m128i *pred_buf_m128i = (__m128i *)pred_buf_q3;
-  const __m128i *end = pred_buf_m128i + height * CFL_BUF_LINE_I128;
+  const __m128i *end = pred_buf_m128i + (height >> 1) * CFL_BUF_LINE_I128;
   const int luma_stride = input_stride << 1;
   do {
     if (width == 4) {
