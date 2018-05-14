@@ -275,6 +275,10 @@ bool PageSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
 }
 
 bool PageSchedulerImpl::HasActiveConnectionForTest() const {
+  return HasActiveConnection();
+}
+
+bool PageSchedulerImpl::HasActiveConnection() const {
   return has_active_connection_;
 }
 
@@ -299,6 +303,7 @@ void PageSchedulerImpl::OnConnectionUpdated() {
 
   if (has_active_connection_ != has_active_connection) {
     has_active_connection_ = has_active_connection;
+    UpdateFramePolicies();
     UpdateBackgroundThrottlingState();
   }
 }

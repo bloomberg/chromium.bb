@@ -75,6 +75,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   virtual void ReportIntervention(const std::string& message);
 
   bool IsFrozen() const;
+  // PageSchedulerImpl::HasActiveConnection can be used in non-test code,
+  // while PageScheduler::HasActiveConnectionForTest can't.
+  bool HasActiveConnection() const;
 
   std::unique_ptr<FrameSchedulerImpl> CreateFrameSchedulerImpl(
       base::trace_event::BlameContext*,
