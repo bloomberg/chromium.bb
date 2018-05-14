@@ -20,7 +20,6 @@ from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import metrics
 from chromite.lib import osutils
 
 
@@ -806,12 +805,7 @@ def RunGit(git_repo, cmd, **kwargs):
   kwargs.setdefault('print_cmd', False)
   kwargs.setdefault('cwd', git_repo)
   kwargs.setdefault('capture_output', True)
-  fields = {'git_repo': git_repo, 'cmd': 'git ' + ' '.join(cmd)}
-  m_timer = 'chromeos/cbuildbot/git/command_durations'
-  with metrics.SecondsTimer(m_timer, fields=fields):
-    result = cros_build_lib.RunCommand(['git'] + cmd, **kwargs)
-
-  return result
+  return cros_build_lib.RunCommand(['git'] + cmd, **kwargs)
 
 
 def Init(git_repo):
