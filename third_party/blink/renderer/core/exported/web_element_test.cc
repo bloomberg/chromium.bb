@@ -121,8 +121,9 @@ TEST_F(WebElementTest, HasNonEmptyLayoutSize) {
   EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 
   InsertHTML(kEmptyBlock);
-  ShadowRoot& root =
-      GetDocument().getElementById("testElement")->CreateShadowRootInternal();
+  ShadowRoot& root = GetDocument()
+                         .getElementById("testElement")
+                         ->CreateV0ShadowRootForTesting();
   root.SetInnerHTMLFromString("<div>Hello World</div>");
   EXPECT_TRUE(TestElement().HasNonEmptyLayoutSize());
 

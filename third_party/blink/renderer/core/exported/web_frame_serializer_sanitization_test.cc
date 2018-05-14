@@ -163,7 +163,7 @@ class WebFrameSerializerSanitizationTest : public testing::Test {
     ShadowRoot* shadow_root;
     if (shadow_type == ShadowRootType::V0) {
       DCHECK(!delegates_focus);
-      shadow_root = &host_element->CreateShadowRootInternal();
+      shadow_root = &host_element->CreateV0ShadowRootForTesting();
     } else {
       shadow_root =
           &host_element->AttachShadowRootInternal(shadow_type, delegates_focus);

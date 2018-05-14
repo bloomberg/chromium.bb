@@ -203,7 +203,8 @@ TEST_F(TextFinderTest, FindTextNotFound) {
 
 TEST_F(TextFinderTest, FindTextInShadowDOM) {
   GetDocument().body()->SetInnerHTMLFromString("<b>FOO</b><i>foo</i>");
-  ShadowRoot& shadow_root = GetDocument().body()->CreateShadowRootInternal();
+  ShadowRoot& shadow_root =
+      GetDocument().body()->CreateV0ShadowRootForTesting();
   shadow_root.SetInnerHTMLFromString(
       "<content select=\"i\"></content><u>Foo</u><content></content>");
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();
@@ -363,7 +364,8 @@ TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
 
 TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
   GetDocument().body()->SetInnerHTMLFromString("<b>FOO</b><i>foo</i>");
-  ShadowRoot& shadow_root = GetDocument().body()->CreateShadowRootInternal();
+  ShadowRoot& shadow_root =
+      GetDocument().body()->CreateV0ShadowRootForTesting();
   shadow_root.SetInnerHTMLFromString(
       "<content select=\"i\"></content><u>Foo</u><content></content>");
   Node* text_in_b_element = GetDocument().body()->firstChild()->firstChild();

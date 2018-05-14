@@ -496,7 +496,10 @@ class CORE_EXPORT Element : public ContainerNode {
   ShadowRoot* attachShadow(const ScriptState*,
                            const ShadowRootInit&,
                            ExceptionState&);
-  ShadowRoot& CreateShadowRootInternal();
+
+  ShadowRoot& CreateV0ShadowRootForTesting() {
+    return CreateShadowRootInternal();
+  }
   ShadowRoot& CreateUserAgentShadowRoot();
   ShadowRoot& AttachShadowRootInternal(ShadowRootType,
                                        bool delegates_focus = false);
@@ -946,6 +949,7 @@ class CORE_EXPORT Element : public ContainerNode {
       delete;  // This will catch anyone doing an unnecessary check.
 
   bool CanAttachShadowRoot() const;
+  ShadowRoot& CreateShadowRootInternal();
 
   void StyleAttributeChanged(const AtomicString& new_style_string,
                              AttributeModificationReason);

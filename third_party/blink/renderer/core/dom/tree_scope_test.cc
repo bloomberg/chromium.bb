@@ -17,7 +17,7 @@ TEST(TreeScopeTest, CommonAncestorOfSameTrees) {
 
   Element* html = document->CreateRawElement(HTMLNames::htmlTag);
   document->AppendChild(html);
-  ShadowRoot& shadow_root = html->CreateShadowRootInternal();
+  ShadowRoot& shadow_root = html->CreateV0ShadowRootForTesting();
   EXPECT_EQ(shadow_root, shadow_root.CommonAncestorTreeScope(shadow_root));
 }
 
@@ -29,7 +29,7 @@ TEST(TreeScopeTest, CommonAncestorOfInclusiveTrees) {
   Document* document = Document::CreateForTest();
   Element* html = document->CreateRawElement(HTMLNames::htmlTag);
   document->AppendChild(html);
-  ShadowRoot& shadow_root = html->CreateShadowRootInternal();
+  ShadowRoot& shadow_root = html->CreateV0ShadowRootForTesting();
 
   EXPECT_EQ(document, document->CommonAncestorTreeScope(shadow_root));
   EXPECT_EQ(document, shadow_root.CommonAncestorTreeScope(*document));
@@ -48,8 +48,8 @@ TEST(TreeScopeTest, CommonAncestorOfSiblingTrees) {
   Element* body = document->CreateRawElement(HTMLNames::bodyTag);
   html->AppendChild(body);
 
-  ShadowRoot& shadow_root_a = head->CreateShadowRootInternal();
-  ShadowRoot& shadow_root_b = body->CreateShadowRootInternal();
+  ShadowRoot& shadow_root_a = head->CreateV0ShadowRootForTesting();
+  ShadowRoot& shadow_root_b = body->CreateV0ShadowRootForTesting();
 
   EXPECT_EQ(document, shadow_root_a.CommonAncestorTreeScope(shadow_root_b));
   EXPECT_EQ(document, shadow_root_b.CommonAncestorTreeScope(shadow_root_a));
@@ -70,12 +70,12 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
   Element* body = document->CreateRawElement(HTMLNames::bodyTag);
   html->AppendChild(body);
 
-  ShadowRoot& shadow_root_y = head->CreateShadowRootInternal();
-  ShadowRoot& shadow_root_b = body->CreateShadowRootInternal();
+  ShadowRoot& shadow_root_y = head->CreateV0ShadowRootForTesting();
+  ShadowRoot& shadow_root_b = body->CreateV0ShadowRootForTesting();
 
   Element* div_in_y = document->CreateRawElement(HTMLNames::divTag);
   shadow_root_y.AppendChild(div_in_y);
-  ShadowRoot& shadow_root_a = div_in_y->CreateShadowRootInternal();
+  ShadowRoot& shadow_root_a = div_in_y->CreateV0ShadowRootForTesting();
 
   EXPECT_EQ(document, shadow_root_a.CommonAncestorTreeScope(shadow_root_b));
   EXPECT_EQ(document, shadow_root_b.CommonAncestorTreeScope(shadow_root_a));
