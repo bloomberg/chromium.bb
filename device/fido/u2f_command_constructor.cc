@@ -47,7 +47,7 @@ base::Optional<std::vector<uint8_t>> ConvertToU2fRegisterCommand(
 base::Optional<std::vector<uint8_t>> ConvertToU2fCheckOnlySignCommand(
     const CtapMakeCredentialRequest& request,
     const PublicKeyCredentialDescriptor& key_handle) {
-  if (key_handle.credential_type() != kPublicKey)
+  if (key_handle.credential_type() != CredentialType::kPublicKey)
     return base::nullopt;
 
   return ConstructU2fSignCommand(

@@ -59,7 +59,7 @@ TEST_F(FidoGetAssertionTaskTest, TestGetAssertionSuccess) {
 
   CtapGetAssertionRequest request_param(
       kRpId, fido_parsing_utils::Materialize(kClientDataHash));
-  request_param.SetAllowList({{to_string(CredentialType::kPublicKey),
+  request_param.SetAllowList({{CredentialType::kPublicKey,
                                fido_parsing_utils::Materialize(
                                    test_data::kTestGetAssertionCredentialId)}});
 

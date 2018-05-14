@@ -77,9 +77,7 @@ TypeConverter<std::vector<::device::PublicKeyCredentialDescriptor>,
 
   for (const auto& credential : input) {
     credential_descriptors.emplace_back(::device::PublicKeyCredentialDescriptor(
-        device::to_string(
-            ConvertTo<::device::CredentialType>(credential->type)),
-        credential->id));
+        ConvertTo<::device::CredentialType>(credential->type), credential->id));
   }
   return credential_descriptors;
 }

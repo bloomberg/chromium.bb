@@ -50,8 +50,8 @@ AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
 
   AuthenticatorGetAssertionResponse response(std::move(authenticator_data),
                                              std::move(signature));
-  response.SetCredential(PublicKeyCredentialDescriptor(
-      to_string(CredentialType::kPublicKey), key_handle));
+  response.SetCredential(
+      PublicKeyCredentialDescriptor(CredentialType::kPublicKey, key_handle));
 
   return std::move(response);
 }

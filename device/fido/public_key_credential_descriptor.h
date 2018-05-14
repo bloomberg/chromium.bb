@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/optional.h"
 #include "components/cbor/cbor_values.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -24,7 +25,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialDescriptor {
   static base::Optional<PublicKeyCredentialDescriptor> CreateFromCBORValue(
       const cbor::CBORValue& cbor);
 
-  PublicKeyCredentialDescriptor(std::string credential_type,
+  PublicKeyCredentialDescriptor(CredentialType credential_type,
                                 std::vector<uint8_t> id);
   PublicKeyCredentialDescriptor(const PublicKeyCredentialDescriptor& other);
   PublicKeyCredentialDescriptor(PublicKeyCredentialDescriptor&& other);
@@ -36,11 +37,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialDescriptor {
 
   cbor::CBORValue ConvertToCBOR() const;
 
-  const std::string& credential_type() const { return credential_type_; }
+  CredentialType credential_type() const { return credential_type_; }
   const std::vector<uint8_t>& id() const { return id_; }
 
  private:
-  std::string credential_type_;
+  CredentialType credential_type_;
   std::vector<uint8_t> id_;
 };
 
