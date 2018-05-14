@@ -13,7 +13,7 @@
 </p>
 
 <p>
-  In general, CSP works as a black/whitelisting mechanism for resources loaded
+  In general, CSP works as a block/allowlisting mechanism for resources loaded
   or executed by your extensions. Defining a reasonable policy for your
   extension enables you to carefully consider the resources that your extension
   requires, and to ask the browser to ensure that those are the only resources
@@ -263,7 +263,7 @@ function main() {
 </p>
 
 <p>
-  As of Chrome 46, inline scripts can be whitelisted by specifying the
+  As of Chrome 46, inline scripts can be allowed by specifying the
   base64-encoded hash of the source code in the policy. This hash must be
   prefixed by the used hash algorithm (sha256, sha384 or sha512).
   See
@@ -275,7 +275,7 @@ function main() {
 
 <p>
   If you have a need for some external JavaScript or object
-  resources, you can relax the policy to a limited extent by whitelisting
+  resources, you can relax the policy to a limited extent by allowlisting
   secure origins from which scripts should be accepted. We want to ensure that
   executable resources loaded with an extension's elevated permissions are
   exactly the resources you expect, and haven't been replaced by an active
@@ -286,7 +286,7 @@ function main() {
 </p>
 
 <p>
-  Currently, we allow whitelisting origins with the following schemes:
+  Currently, developers can allowlist origins with the following schemes:
   <code>blob</code>, <code>filesystem</code>, <code>https</code>, and
   <code>chrome-extension</code>.
   The host part of the origin must explicitly be specified for the
@@ -299,12 +299,12 @@ function main() {
   domains, the subdomain must explicitly be listed. For example,
   <code>https://*.cloudfront.net</code> is invalid, but
   <code>https://XXXX.cloudfront.net</code> and
-  <code>https://*.XXXX.cloudfront.net</code> can be whitelisted.
+  <code>https://*.XXXX.cloudfront.net</code> can be allowlisted.
 </p>
 
 <p>
-  To ease development, we're also allowing the whitelisting of resources loaded
-  over HTTP from servers on your local machine. You may whitelist script and
+  For development ease, resources loaded over HTTP from servers on your local
+  machine can be allowlisted. You may allowlist script and
   object sources on any port of either <code>http://127.0.0.1</code> or
   <code>http://localhost</code>.
 </p>

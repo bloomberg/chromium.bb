@@ -110,7 +110,7 @@ followed by more detailed summaries of what these changes mean and why they were
       <li>Consider downloading the library and
         packaging it in your extension,
         then loading it from the local package.</li>
-      <li>Whitelist the HTTPS domain that serves the resource
+      <li>Allowlist the HTTPS domain that serves the resource
         in the "content_security_policy" part of your manifest.</li>
     </ul>
 </ul>
@@ -265,7 +265,7 @@ If your extension embeds resources (like images, script, CSS styles, etc)
 that are used in content scripts that are injected into web pages,
 you need to use the
 <a href="manifest/web_accessible_resources">web_accessible_resources</a> property
-to whitelist these resources so that external Web pages can use them:
+to allowlist these resources so that external Web pages can use them:
 </p>
 
 <pre data-filename="manifest.json">
@@ -292,7 +292,7 @@ There are two ways to do this:
 <ol>
   <li>Download the relevant library locally (like jQuery)
     and package it with your extension.</li>
-    <li>You can relax the CSP in a limited way by whitelisting HTTPS origins
+    <li>You can relax the CSP in a limited way by allowlisting HTTPS origins
       in the “content_security_policy” section of your manifest.
       To include a library like Google Analytics, this is the approach to take:
       <pre data-filename="manifest.json">
