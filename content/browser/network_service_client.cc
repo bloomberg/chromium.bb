@@ -161,7 +161,7 @@ class LoginHandlerDelegate {
       network::mojom::AuthChallengeResponderPtr auth_challenge_responder,
       ResourceRequestInfo::WebContentsGetter web_contents_getter,
       scoped_refptr<net::AuthChallengeInfo> auth_info,
-      bool is_main_frame,
+      bool is_request_for_main_frame,
       uint32_t process_id,
       uint32_t routing_id,
       uint32_t request_id,
@@ -169,7 +169,7 @@ class LoginHandlerDelegate {
       bool first_auth_attempt)
       : auth_challenge_responder_(std::move(auth_challenge_responder)),
         auth_info_(auth_info),
-        is_main_frame_(is_main_frame),
+        is_request_for_main_frame_(is_request_for_main_frame),
         url_(url),
         first_auth_attempt_(first_auth_attempt),
         web_contents_getter_(web_contents_getter) {
@@ -226,8 +226,8 @@ class LoginHandlerDelegate {
   void CreateLoginDelegate() {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     login_delegate_ = GetContentClient()->browser()->CreateLoginDelegate(
-        auth_info_.get(), web_contents_getter_, is_main_frame_, url_,
-        first_auth_attempt_,
+        auth_info_.get(), web_contents_getter_, is_request_for_main_frame_,
+        url_, first_auth_attempt_,
         base::BindOnce(&LoginHandlerDelegate::RunAuthCredentials,
                        base::Unretained(this)));
 
@@ -255,7 +255,7 @@ class LoginHandlerDelegate {
 
   network::mojom::AuthChallengeResponderPtr auth_challenge_responder_;
   scoped_refptr<net::AuthChallengeInfo> auth_info_;
-  bool is_main_frame_;
+  bool is_request_for_main_frame_;
   GURL url_;
   bool first_auth_attempt_;
   ResourceRequestInfo::WebContentsGetter web_contents_getter_;
@@ -297,12 +297,13 @@ void NetworkServiceClient::OnAuthRequired(
     return;
   }
 
-  bool is_main_frame =
+  bool is_request_for_main_frame =
       static_cast<ResourceType>(resource_type) == RESOURCE_TYPE_MAIN_FRAME;
-  new LoginHandlerDelegate(
-      std::move(auth_challenge_responder), std::move(web_contents_getter),
-      auth_info, is_main_frame, process_id, routing_id, request_id, url,
-      first_auth_attempt);  // deletes self
+  new LoginHandlerDelegate(std::move(auth_challenge_responder),
+                           std::move(web_contents_getter), auth_info,
+                           is_request_for_main_frame, process_id, routing_id,
+                           request_id, url,
+                           first_auth_attempt);  // deletes self
 }
 
 void NetworkServiceClient::OnCertificateRequested(
