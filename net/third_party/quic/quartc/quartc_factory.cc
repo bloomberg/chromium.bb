@@ -11,9 +11,96 @@
 
 namespace net {
 
+namespace {
+
+// Implements the QuicAlarm with QuartcTaskRunnerInterface for the Quartc
+//  users other than Chromium. For example, WebRTC will create QuartcAlarm with
+// a QuartcTaskRunner implemented by WebRTC.
+class QuartcAlarm : public QuicAlarm, public QuartcTaskRunnerInterface::Task {
+ public:
+  QuartcAlarm(const QuicClock* clock,
+              QuartcTaskRunnerInterface* task_runner,
+              QuicArenaScopedPtr<QuicAlarm::Delegate> delegate)
+      : QuicAlarm(std::move(delegate)),
+        clock_(clock),
+        task_runner_(task_runner) {}
+
+  ~QuartcAlarm() override {
+    // Cancel the scheduled task before getting deleted.
+    CancelImpl();
+  }
+
+  // QuicAlarm overrides.
+  void SetImpl() override {
+    DCHECK(deadline().IsInitialized());
+    // Cancel it if already set.
+    CancelImpl();
+
+    int64_t delay_ms = (deadline() - (clock_->Now())).ToMilliseconds();
+    if (delay_ms < 0) {
+      delay_ms = 0;
+    }
+
+    DCHECK(task_runner_);
+    DCHECK(!scheduled_task_);
+    scheduled_task_ = task_runner_->Schedule(this, delay_ms);
+  }
+
+  void CancelImpl() override {
+    if (scheduled_task_) {
+      scheduled_task_->Cancel();
+      scheduled_task_.reset();
+    }
+  }
+
+  // QuartcTaskRunner::Task overrides.
+  void Run() override {
+    // The alarm may have been cancelled.
+    if (!deadline().IsInitialized()) {
+      return;
+    }
+
+    // The alarm may have been re-set to a later time.
+    if (clock_->Now() < deadline()) {
+      SetImpl();
+      return;
+    }
+
+    Fire();
+  }
+
+ private:
+  // Not owned by QuartcAlarm. Owned by the QuartcFactory.
+  const QuicClock* clock_;
+  // Not owned by QuartcAlarm. Owned by the QuartcFactory.
+  QuartcTaskRunnerInterface* task_runner_;
+  // Owned by QuartcAlarm.
+  std::unique_ptr<QuartcTaskRunnerInterface::ScheduledTask> scheduled_task_;
+};
+
+// Adapts QuartcClockInterface (provided by the user) to QuicClock
+// (expected by QUIC).
+class QuartcClock : public QuicClock {
+ public:
+  explicit QuartcClock(QuartcClockInterface* clock) : clock_(clock) {}
+  QuicTime ApproximateNow() const override { return Now(); }
+  QuicTime Now() const override {
+    return QuicTime::Zero() +
+           QuicTime::Delta::FromMicroseconds(clock_->NowMicroseconds());
+  }
+  QuicWallTime WallNow() const override {
+    return QuicWallTime::FromUNIXMicroseconds(clock_->NowMicroseconds());
+  }
+
+ private:
+  QuartcClockInterface* clock_;
+};
+
+}  // namespace
+
 QuartcFactory::QuartcFactory(const QuartcFactoryConfig& factory_config)
-    : alarm_factory_(factory_config.alarm_factory),
-      clock_(factory_config.clock) {}
+    : task_runner_(factory_config.task_runner),
+      clock_(new QuartcClock(factory_config.clock)) {}
 
 QuartcFactory::~QuartcFactory() {}
 
@@ -100,7 +187,7 @@ std::unique_ptr<QuartcSessionInterface> QuartcFactory::CreateQuartcSession(
   return QuicMakeUnique<QuartcSession>(
       std::move(quic_connection), quic_config,
       quartc_session_config.unique_remote_server_id, perspective,
-      this /*QuicConnectionHelperInterface*/, clock_, std::move(writer));
+      this /*QuicConnectionHelperInterface*/, clock_.get(), std::move(writer));
 }
 
 std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
@@ -112,12 +199,28 @@ std::unique_ptr<QuicConnection> QuartcFactory::CreateQuicConnection(
   QuicSocketAddress dummy_address(QuicIpAddress::Any4(), 0 /*Port*/);
   return QuicMakeUnique<QuicConnection>(
       dummy_id, dummy_address, this, /*QuicConnectionHelperInterface*/
-      alarm_factory_ /*QuicAlarmFactory*/, packet_writer, /*owns_writer=*/false,
+      this /*QuicAlarmFactory*/, packet_writer, /*owns_writer=*/false,
       perspective, CurrentSupportedVersions());
 }
 
+QuicAlarm* QuartcFactory::CreateAlarm(QuicAlarm::Delegate* delegate) {
+  return new QuartcAlarm(GetClock(), task_runner_,
+                         QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate));
+}
+
+QuicArenaScopedPtr<QuicAlarm> QuartcFactory::CreateAlarm(
+    QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+    QuicConnectionArena* arena) {
+  if (arena != nullptr) {
+    return arena->New<QuartcAlarm>(GetClock(), task_runner_,
+                                   std::move(delegate));
+  }
+  return QuicArenaScopedPtr<QuicAlarm>(
+      new QuartcAlarm(GetClock(), task_runner_, std::move(delegate)));
+}
+
 const QuicClock* QuartcFactory::GetClock() const {
-  return clock_;
+  return clock_.get();
 }
 
 QuicRandom* QuartcFactory::GetRandomGenerator() {

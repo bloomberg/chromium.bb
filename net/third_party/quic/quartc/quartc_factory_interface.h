@@ -11,7 +11,9 @@
 #include <memory>
 
 #include "net/third_party/quic/platform/api/quic_export.h"
+#include "net/third_party/quic/quartc/quartc_clock_interface.h"
 #include "net/third_party/quic/quartc/quartc_session_interface.h"
+#include "net/third_party/quic/quartc/quartc_task_runner_interface.h"
 
 namespace net {
 
@@ -86,14 +88,14 @@ class QUIC_EXPORT_PRIVATE QuartcFactoryInterface {
 
 // The configuration for creating a QuartcFactory.
 struct QuartcFactoryConfig {
-  // Factory for |QuicAlarm|s. Implemented by the Quartc user with different
-  // mechanisms. For example in WebRTC, it is implemented with rtc::Thread.
-  // Owned by the user, and needs to stay alive for as long as the QuartcFactory
-  // exists.
-  QuicAlarmFactory* alarm_factory = nullptr;
-  // The clock used by |QuicAlarm|s. Implemented by the Quartc user. Owned by
+  // The task runner used by the QuartcAlarm. Implemented by the Quartc user
+  // with different mechanism. For example in WebRTC, it is implemented with
+  // rtc::Thread. Owned by the user, and needs to stay alive for as long
+  // as the QuartcFactory exists.
+  QuartcTaskRunnerInterface* task_runner = nullptr;
+  // The clock used by QuartcAlarms. Implemented by the Quartc user. Owned by
   // the user, and needs to stay alive for as long as the QuartcFactory exists.
-  QuicClock* clock = nullptr;
+  QuartcClockInterface* clock = nullptr;
 };
 
 // Creates a new instance of QuartcFactoryInterface.
