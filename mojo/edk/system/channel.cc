@@ -476,14 +476,7 @@ bool Channel::Message::RewriteHandles(
                         &(*handles)[i].get().handle, 0, FALSE,
                         DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
     if (result) {
-      if (to_process == base::GetCurrentProcessHandle()) {
-        (*handles)[i].get().owning_process = to_process;
-      } else {
-        // If this handle is bound for an external process, make sure it owns
-        // its own copy of the target process handle.
-        (*handles)[i].get().owning_process =
-            ScopedProcessHandle::CloneFrom(to_process).release();
-      }
+      (*handles)[i].get().owning_process = to_process;
     } else {
       success = false;
 
