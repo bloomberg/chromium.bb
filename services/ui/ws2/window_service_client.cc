@@ -20,6 +20,7 @@
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/mus/property_converter.h"
+#include "ui/aura/mus/property_utils.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/aura/window_tree_host.h"
@@ -375,10 +376,15 @@ bool WindowServiceClient::NewWindowImpl(
   }
   aura::Window* window = AddClientCreatedWindow(
       client_window_id, std::make_unique<aura::Window>(nullptr));
+
+  SetWindowType(window, aura::GetWindowTypeFromProperties(properties));
+  for (auto& pair : properties) {
+    window_service_->property_converter()->SetPropertyFromTransportValue(
+        window, pair.first, &pair.second);
+  }
   window->Init(LAYER_NOT_DRAWN);
   // Windows created by the client should only be destroyed by the client.
   window->set_owned_by_parent(false);
-  // TODO(crbug.com/837695): Apply |properties|.
   return true;
 }
 
@@ -668,9 +674,9 @@ void WindowServiceClient::NewWindow(
     Id transport_window_id,
     const base::Optional<base::flat_map<std::string, std::vector<uint8_t>>>&
         transport_properties) {
-  // TODO(crbug.com/837695): Map and validate |transport_properties|.
   std::map<std::string, std::vector<uint8_t>> properties;
-
+  if (transport_properties.has_value())
+    properties = mojo::FlatMapToMap(transport_properties.value());
   window_tree_client_->OnChangeCompleted(
       change_id,
       NewWindowImpl(MakeClientWindowId(transport_window_id), properties));

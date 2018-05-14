@@ -153,20 +153,6 @@ bool IsInternalProperty(const void* key) {
   return key == client::kModalKey || key == client::kChildModalParentKey;
 }
 
-void SetWindowTypeFromProperties(
-    Window* window,
-    const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
-  auto type_iter =
-      properties.find(ui::mojom::WindowManager::kWindowType_InitProperty);
-  if (type_iter == properties.end())
-    return;
-
-  // TODO: need to validate type! http://crbug.com/654924.
-  ui::mojom::WindowType window_type = static_cast<ui::mojom::WindowType>(
-      mojo::ConvertTo<int32_t>(type_iter->second));
-  SetWindowType(window, window_type);
-}
-
 // Create and return a MouseEvent or TouchEvent from |event| if |event| is a
 // PointerEvent, otherwise return the copy of |event|.
 std::unique_ptr<ui::Event> MapEvent(const ui::Event& event) {
@@ -752,7 +738,9 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
   window_port_mus_ptr->should_restack_transient_children_ = false;
   Window* window = new Window(nullptr, std::move(window_port_mus));
   WindowMus* window_mus = window_port_mus_ptr;
-  SetWindowTypeFromProperties(window, window_data.properties);
+  std::map<std::string, std::vector<uint8_t>> properties =
+      mojo::FlatMapToMap(window_data.properties);
+  SetWindowType(window, GetWindowTypeFromProperties(properties));
   window->Init(ui::LAYER_NOT_DRAWN);
   SetLocalPropertiesFromServerProperties(window_mus, window_data);
   window_mus->SetBoundsFromServer(
@@ -2011,14 +1999,7 @@ void WindowTreeClient::WmCreateTopLevelWindow(
   DCHECK(frame_sink_id.is_valid());
   std::map<std::string, std::vector<uint8_t>> properties =
       mojo::FlatMapToMap(transport_properties);
-  ui::mojom::WindowType window_type = ui::mojom::WindowType::UNKNOWN;
-  auto type_iter =
-      properties.find(ui::mojom::WindowManager::kWindowType_InitProperty);
-  if (type_iter != properties.end()) {
-    // TODO: validation! http://crbug.com/654924.
-    window_type = static_cast<ui::mojom::WindowType>(
-        mojo::ConvertTo<int32_t>(type_iter->second));
-  }
+  ui::mojom::WindowType window_type = GetWindowTypeFromProperties(properties);
   Window* window = window_manager_delegate_->OnWmCreateTopLevelWindow(
       window_type, &properties);
   if (!window) {

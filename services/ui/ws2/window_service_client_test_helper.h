@@ -41,6 +41,9 @@ class WindowServiceClientTestHelper {
 
   mojom::WindowTree* window_tree();
 
+  aura::Window* NewWindow(
+      Id transport_window_id,
+      base::flat_map<std::string, std::vector<uint8_t>> properties = {});
   aura::Window* NewTopLevelWindow(
       Id transport_window_id,
       base::flat_map<std::string, std::vector<uint8_t>> properties = {});

@@ -115,7 +115,31 @@ class TestLayoutManager : public aura::LayoutManager {
   DISALLOW_COPY_AND_ASSIGN(TestLayoutManager);
 };
 
-TEST(WindowServiceClientTest, CreateTopLevel) {
+TEST(WindowServiceClientTest, NewWindow) {
+  WindowServiceTestHelper helper;
+  EXPECT_TRUE(helper.changes()->empty());
+  aura::Window* top_level = helper.helper()->NewWindow(1);
+  ASSERT_TRUE(top_level);
+  EXPECT_EQ("ChangeCompleted id=1 sucess=true",
+            SingleChangeToDescription(*helper.changes()));
+  helper.changes()->clear();
+}
+
+TEST(WindowServiceClientTest, NewWindowWithProperties) {
+  WindowServiceTestHelper helper;
+  EXPECT_TRUE(helper.changes()->empty());
+  aura::PropertyConverter::PrimitiveType value = true;
+  std::vector<uint8_t> transport = mojo::ConvertTo<std::vector<uint8_t>>(value);
+  aura::Window* top_level = helper.helper()->NewWindow(
+      1, {{ui::mojom::WindowManager::kAlwaysOnTop_Property, transport}});
+  ASSERT_TRUE(top_level);
+  EXPECT_EQ("ChangeCompleted id=1 sucess=true",
+            SingleChangeToDescription(*helper.changes()));
+  EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
+  helper.changes()->clear();
+}
+
+TEST(WindowServiceClientTest, NewTopLevelWindow) {
   WindowServiceTestHelper helper;
   EXPECT_TRUE(helper.changes()->empty());
   aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
@@ -125,7 +149,7 @@ TEST(WindowServiceClientTest, CreateTopLevel) {
   helper.changes()->clear();
 }
 
-TEST(WindowServiceClientTest, CreateTopLevelWithProperties) {
+TEST(WindowServiceClientTest, NewTopLevelWindowWithProperties) {
   WindowServiceTestHelper helper;
   EXPECT_TRUE(helper.changes()->empty());
   aura::PropertyConverter::PrimitiveType value = true;
@@ -139,7 +163,7 @@ TEST(WindowServiceClientTest, CreateTopLevelWithProperties) {
   helper.changes()->clear();
 }
 
-TEST(WindowServiceClientTest, SetBounds) {
+TEST(WindowServiceClientTest, SetWindowBounds) {
   WindowServiceTestHelper helper;
   aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
   helper.changes()->clear();
@@ -179,7 +203,7 @@ TEST(WindowServiceClientTest, SetBounds) {
   helper.changes()->clear();
 }
 
-TEST(WindowServiceClientTest, SetProperty) {
+TEST(WindowServiceClientTest, SetWindowProperty) {
   WindowServiceTestHelper helper;
   aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
   helper.changes()->clear();

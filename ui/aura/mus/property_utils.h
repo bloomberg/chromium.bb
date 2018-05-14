@@ -6,6 +6,9 @@
 #define UI_AURA_MUS_PROPERTY_UTILS_H_
 
 #include <stdint.h>
+#include <map>
+#include <string>
+#include <vector>
 
 #include "ui/aura/aura_export.h"
 
@@ -21,9 +24,13 @@ class Window;
 
 // Configures the two window type properties on |window|. Specifically this
 // sets the property client::kWindowTypeKey as well as calling SetType().
-// This *must* be called before Init().
+// This *must* be called before Init(). No-op for WindowType::UNKNOWN.
 AURA_EXPORT void SetWindowType(Window* window,
                                ui::mojom::WindowType window_type);
+
+// Returns the window type specified in |properties|, or WindowType::UNKNOWN.
+AURA_EXPORT ui::mojom::WindowType GetWindowTypeFromProperties(
+    const std::map<std::string, std::vector<uint8_t>>& properties);
 
 }  // namespace aura
 
