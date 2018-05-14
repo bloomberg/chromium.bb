@@ -28,7 +28,6 @@
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"
-#include "mojo/edk/system/scoped_process_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace base {
@@ -160,7 +159,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   };
 
   void SendBrokerClientInvitationOnIOThread(
-      ScopedProcessHandle target_process,
+      base::ProcessHandle target_process,
       ConnectionParams connection_params,
       ports::NodeName token,
       const ProcessErrorCallback& process_error_callback);
