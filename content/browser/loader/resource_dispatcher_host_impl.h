@@ -762,7 +762,9 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Task runner for the IO thead.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
-  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_ptr_factory_;
+  // Used on the IO thread to allow PostTaskAndReply replies to the IO thread
+  // to be abandoned if they run after OnShutdown().
+  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_factory_on_io_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };
