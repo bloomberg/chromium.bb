@@ -603,11 +603,7 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['mac', ('nvidia', 0xfe9)], bug=795052)
 
     # When these fail on this configuration, they fail multiple times in a row.
-    self.Fail('deqp/functional/gles3/shaderoperator/binary_operator_01.html',
-        ['mac', 'nvidia'], bug=756537)
-    self.Fail('deqp/functional/gles3/shaderoperator/common_functions.html',
-        ['mac', 'nvidia'], bug=756537)
-    self.Fail('deqp/functional/gles3/shaderoperator/unary_operator_01.html',
+    self.Fail('deqp/functional/gles3/shaderoperator/*',
         ['mac', 'nvidia'], bug=756537)
 
     # Mac AMD
