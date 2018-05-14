@@ -93,9 +93,9 @@ void CrashReporterClient::GetProductNameAndVersion(const char** product_name,
                                                    const char** version) {
 }
 
-void CrashReporterClient::GetProductNameAndVersion(const char** product_name,
-                                                   const char** version,
-                                                   const char** channel) {}
+void CrashReporterClient::GetProductNameAndVersion(std::string* product_name,
+                                                   std::string* version,
+                                                   std::string* channel) {}
 
 base::FilePath CrashReporterClient::GetReporterLogFilename() {
   return base::FilePath();

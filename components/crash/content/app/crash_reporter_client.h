@@ -98,9 +98,9 @@ class CrashReporterClient {
   // Linux-ish breakpad clients have transitioned to crashpad.
   virtual void GetProductNameAndVersion(const char** product_name,
                                         const char** version);
-  virtual void GetProductNameAndVersion(const char** product_name,
-                                        const char** version,
-                                        const char** channel);
+  virtual void GetProductNameAndVersion(std::string* product_name,
+                                        std::string* version,
+                                        std::string* channel);
 
   virtual base::FilePath GetReporterLogFilename();
 
