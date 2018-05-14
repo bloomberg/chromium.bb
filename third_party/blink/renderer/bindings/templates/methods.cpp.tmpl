@@ -380,26 +380,32 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
   {% if not fall_through_to_partial_overloads %}
   bool isArityError = false;
   {% endif %}
-  {# 2. Initialize argcount to be min(maxarg, n). #}
+
+  {# This follows the overload resolution algorithm. #}
+  {# https://heycam.github.io/webidl/#dfn-overload-resolution-algorithm #}
+  {# 3. Initialize argcount to be min(maxarg, n). #}
   switch (std::min({{overloads.maxarg}}, info.Length())) {
-    {# 3. Remove from S all entries whose type list is not of length argcount. #}
+    {# 4. Remove from S all entries whose type list is not of length argcount. #}
     {% for length, tests_methods in overloads.length_tests_methods %}
-    {# 10. If i = d, then: #}
+    {# 12. If i = d, then: #}
     case {{length}}:
       {# Then resolve by testing argument #}
       {% for test, method in tests_methods %}
       {% if method.visible %}
       {% filter runtime_enabled(not overloads.runtime_enabled_all and method.runtime_enabled_feature_name) %}
-      if ({{test}}) {
-        {% if method.measure_as and not overloads.measure_all_as %}
-        UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.measure_as('Method')}});
-        {% endif %}
-        {% if method.deprecate_as and not overloads.deprecate_all_as %}
-        Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.deprecate_as}});
-        {% endif %}
-        {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
-        return;
+      {% if "exceptionState" in test %}
+      {
+        ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext,
+                                      "{{interface_name}}", "{{overloads.name}}");
+        {{ test_and_call_overloaded_method(test, method, overloads, world_suffix) | trim | indent(8) }}
+        if (exceptionState.HadException()) {
+          exceptionState.RethrowV8Exception(exceptionState.GetException());
+          return;
+        }
       }
+      {% else %}{# exceptionState #}
+      {{ test_and_call_overloaded_method(test, method, overloads, world_suffix) | trim | indent(6) }}
+      {% endif %}{# exceptionState #}
       {% endfilter %}
       {% endif %}
       {% endfor %}
@@ -407,23 +413,19 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {% endfor %}{# length, tests_methods #}
     {% if not fall_through_to_partial_overloads %}
     default:
-      {# 4. If S is empty, then throw a TypeError. #}
+      {# 12.19. Otherwise: throw a TypeError. #}
       isArityError = true;
     {% endif %}
   }
 
   {% if fall_through_to_partial_overloads %}
-
   DCHECK({{overloads.name}}MethodForPartialInterface);
   ({{overloads.name}}MethodForPartialInterface)(info);
-
   {% else %}{# fall_through_to_partial_overloads #}
-
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{overloads.name}}");
   {% if overloads.returns_promise_all %}
   ExceptionToRejectPromiseScope rejectPromiseScope(info, exceptionState);
   {% endif %}
-
   if (isArityError) {
     {% if overloads.length != 0 %}
     if (info.Length() < {{overloads.length}}) {
@@ -439,8 +441,20 @@ static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackI
     {% endif %}
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
-
   {% endif %}{# fall_through_to_partial_overloads #}
+}
+{% endmacro %}
+
+{% macro test_and_call_overloaded_method(test, method, overloads, world_suffix) %}
+if ({{test}}) {
+  {% if method.measure_as and not overloads.measure_all_as %}
+  UseCounter::Count(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.measure_as('Method')}});
+  {% endif %}
+  {% if method.deprecate_as and not overloads.deprecate_all_as %}
+  Deprecation::CountDeprecation(CurrentExecutionContext(info.GetIsolate()), WebFeature::k{{method.deprecate_as}});
+  {% endif %}
+  {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
+  return;
 }
 {% endmacro %}
 

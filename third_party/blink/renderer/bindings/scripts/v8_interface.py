@@ -1092,7 +1092,7 @@ def resolution_tests_methods(effective_overloads):
     """Yields resolution test and associated method, in resolution order, for effective overloads of a given length.
 
     This is the heart of the resolution algorithm.
-    http://heycam.github.io/webidl/#dfn-overload-resolution-algorithm
+    https://heycam.github.io/webidl/#dfn-overload-resolution-algorithm
 
     Note that a given method can be listed multiple times, with different tests!
     This is to handle implicit type conversion.
@@ -1107,17 +1107,16 @@ def resolution_tests_methods(effective_overloads):
         yield 'true', methods[0]
         return
 
-    # 6. If there is more than one entry in S, then set d to be the
+    # 8. If there is more than one entry in S, then set d to be the
     # distinguishing argument index for the entries of S.
     index = distinguishing_argument_index(effective_overloads)
-    # (7-9 are for handling |undefined| values for optional arguments before
-    # the distinguishing argument (as “missing”), so you can specify only some
-    # optional arguments. We don’t support this, so we skip these steps.)
-    # 10. If i = d, then:
-    # (d is the distinguishing argument index)
-    # 1. Let V be argi.
-    #     Note: This is the argument that will be used to resolve which
-    #           overload is selected.
+
+    # (11. is for handling |undefined| values for optional arguments
+    #  before the distinguishing argument (as “missing”).)
+    # TODO(peria): We have to handle this step. Also in 15.4.2.
+
+    # 12. If i = d, then:
+    # 12.1. Let V be args[i].
     cpp_value = 'info[%s]' % index
 
     # Extract argument and IDL type to simplify accessing these in each loop.
@@ -1133,8 +1132,13 @@ def resolution_tests_methods(effective_overloads):
     # Instead, we need to go through all methods at each step, either finding
     # first match (if only one test is allowed) or filtering to matches (if
     # multiple tests are allowed), and generating an appropriate tests.
+    #
+    # In listing types, we put ellipsis (...) for shorthand nullable type(s),
+    # annotated type(s), and a (nullable/annotated) union type, which extend
+    # listed types.
+    # TODO(peria): Support handling general union types. https://crbug.com/838787
 
-    # 2. If V is undefined, and there is an entry in S whose list of
+    # 12.2. If V is undefined, and there is an entry in S whose list of
     # optionality values has “optional” at index i, then remove from S all
     # other entries.
     try:
@@ -1145,112 +1149,144 @@ def resolution_tests_methods(effective_overloads):
     except StopIteration:
         pass
 
-    # 3. Otherwise: if V is null or undefined, and there is an entry in S that
+    # 12.3. Otherwise: if V is null or undefined, and there is an entry in S that
     # has one of the following types at position i of its type list,
     # • a nullable type
+    # • a dictionary type
+    # ...
     try:
         method = next(method for idl_type, method in idl_types_methods
-                      if idl_type.is_nullable)
+                      if idl_type.is_nullable or idl_type.is_dictionary)
         test = 'IsUndefinedOrNull(%s)' % cpp_value
         yield test, method
     except StopIteration:
         pass
 
-    # 4. Otherwise: if V is a platform object – but not a platform array
-    # object – and there is an entry in S that has one of the following
-    # types at position i of its type list,
+    # 12.4. Otherwise: if V is a platform object, and there is an entry in S that
+    # has one of the following types at position i of its type list,
     # • an interface type that V implements
-    # (Unlike most of these tests, this can return multiple methods, since we
-    #  test if it implements an interface. Thus we need a for loop, not a next.)
-    # (We distinguish wrapper types from built-in interface types.)
-    for idl_type, method in ((idl_type, method)
-                             for idl_type, method in idl_types_methods
-                             if idl_type.is_wrapper_type):
-        if idl_type.is_array_buffer_or_view:
-            test = '{cpp_value}->Is{idl_type}()'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
-        else:
-            test = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(idl_type=idl_type.base_type, cpp_value=cpp_value)
-        yield test, method
+    # ...
+    for idl_type, method in idl_types_methods:
+        if idl_type.is_wrapper_type and not idl_type.is_array_buffer_or_view:
+            test = 'V8{idl_type}::hasInstance({cpp_value}, info.GetIsolate())'.format(
+                idl_type=idl_type.base_type, cpp_value=cpp_value)
+            yield test, method
 
-    # 13. Otherwise: if IsCallable(V) is true, and there is an entry in S that
+    # 12.5. Otherwise: if V is a DOMException platform object and there is an entry
+    # in S that has one of the following types at position i of its type list,
+    # • DOMException
+    # • Error
+    # ...
+    # (DOMException is handled in 12.4, and we don't support Error type.)
+
+    # 12.6. Otherwise: if Type(V) is Object, V has an [[ErrorData]] internal slot,
+    # and there is an entry in S that has one of the following types at position
+    # i of its type list,
+    # • Error
+    # ...
+    # (We don't support Error type.)
+
+    # 12.7. Otherwise: if Type(V) is Object, V has an [[ArrayBufferData]] internal
+    # slot, and there is an entry in S that has one of the following types at
+    # position i of its type list,
+    # • ArrayBuffer
+    # ...
+    for idl_type, method in idl_types_methods:
+        if idl_type.is_array_buffer_or_view or idl_type.is_typed_array:
+            test = '{cpp_value}->Is{idl_type}()'.format(
+                idl_type=idl_type.base_type, cpp_value=cpp_value)
+            yield test, method
+
+    # 12.8. Otherwise: if Type(V) is Object, V has a [[DataView]] internal slot,
+    # and there is an entry in S that has one of the following types at position
+    # i of its type list,
+    # • DataView
+    # ...
+    # (DataView is included in 12.7.)
+
+    # 12.9. Otherwise: if Type(V) is Object, V has a [[TypedArrayName]] internal
+    # slot, and there is an entry in S that has one of the following types at
+    # position i of its type list,
+    # • a typed array type whose name is equal to the value of V’s
+    #   [[TypedArrayName]] internal slot
+    # ...
+    # (TypedArrays are included in 12.7.)
+
+    # 12.10. Otherwise: if IsCallable(V) is true, and there is an entry in S that
     # has one of the following types at position i of its type list,
     # • a callback function type
     # ...
-    #
-    # FIXME:
-    # We test for functions rather than callability, which isn't strictly the
-    # same thing.
     try:
         method = next(method for idl_type, method in idl_types_methods
-                      if idl_type.is_custom_callback_function)
+                      if idl_type.is_callback_function)
         test = '%s->IsFunction()' % cpp_value
         yield test, method
     except StopIteration:
         pass
 
-    # 14. Otherwise: if V is any kind of object except for a native Date object,
-    # a native RegExp object, and there is an entry in S that has one of the
-    # following types at position i of its type list,
+    # 12.11. Otherwise: if Type(V) is Object and there is an entry in S that has
+    # one of the following types at position i of its type list,
     # • a sequence type
+    # • a frozen array type
     # ...
-    #
-    # 15. Otherwise: if V is any kind of object except for a native Date object,
-    # a native RegExp object, and there is an entry in S that has one of the
-    # following types at position i of its type list,
-    # • an array type
+    # and after performing the following steps,
+    # 12.11.1. Let method be ? GetMethod(V, @@iterator).
+    # method is not undefined, then remove from S all other entries.
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.native_array_element_type)
+        # Either condition should be fulfilled to call this |method|.
+        test = '%s->IsArray()' % cpp_value
+        yield test, method
+        test = 'HasCallableIteratorSymbol(info.GetIsolate(), %s, exceptionState)' % cpp_value
+        yield test, method
+    except StopIteration:
+        pass
+
+    # 12.12. Otherwise: if Type(V) is Object and there is an entry in S that has
+    # one of the following types at position i of its type list,
+    # • a callback interface type
+    # • a dictionary type
+    # • a record type
     # ...
-    # • a dictionary
-    #
-    # FIXME:
-    # We don't strictly follow the algorithm here. The algorithm says "remove
-    # all other entries" if there is "one entry" matching, but we yield all
-    # entries to support following constructors:
-    # [constructor(sequence<DOMString> arg), constructor(Dictionary arg)]
-    # interface I { ... }
-    # (Need to check array types before objects because an array is an object)
-    for idl_type, method in idl_types_methods:
-        if idl_type.native_array_element_type:
-            # (We test for Array instead of generic Object to type-check.)
-            # FIXME: test for Object during resolution, then have type check for
-            # Array in overloaded method: http://crbug.com/262383
-            yield '%s->IsArray()' % cpp_value, method
-    for idl_type, method in idl_types_methods:
-        if idl_type.is_dictionary or idl_type.name == 'Dictionary' or \
-           idl_type.is_callback_interface or idl_type.is_record_type:
-            # FIXME: should be '{1}->IsObject() && !{1}->IsRegExp()'.format(cpp_value)
-            # FIXME: the IsRegExp checks can be skipped if we've
-            # already generated tests for them.
-            yield '%s->IsObject()' % cpp_value, method
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.is_callback_interface or
+                      idl_type.is_dictionary or idl_type.name == 'Dictionary' or
+                      idl_type.is_record_type)
+        test = '%s->IsObject()' % cpp_value
+        yield test, method
+    except StopIteration:
+        pass
 
-    # (Check for exact type matches before performing automatic type conversion;
-    # only needed if distinguishing between primitive types.)
-    if len([idl_type.is_primitive_type for idl_type in idl_types]) > 1:
-        # (Only needed if match in step 11, otherwise redundant.)
-        if any(idl_type.is_string_type or idl_type.is_enum
-               for idl_type in idl_types):
-            # 10. Otherwise: if V is a Number value, and there is an entry in S
-            # that has one of the following types at position i of its type
-            # list,
-            # • a numeric type
-            try:
-                method = next(method for idl_type, method in idl_types_methods
-                              if idl_type.is_numeric_type)
-                test = '%s->IsNumber()' % cpp_value
-                yield test, method
-            except StopIteration:
-                pass
+    # 12.13. Otherwise: if Type(V) is Boolean and there is an entry in S that has
+    # one of the following types at position i of its type list,
+    # • boolean
+    # ...
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.name == 'Boolean')
+        test = '%s->IsBoolean()' % cpp_value
+        yield test, method
+    except StopIteration:
+        pass
 
-    # (Perform automatic type conversion, in order. If any of these match,
-    # that’s the end, and no other tests are needed.) To keep this code simple,
-    # we rely on the C++ compiler's dead code elimination to deal with the
-    # redundancy if both cases below trigger.
+    # 12.14. Otherwise: if Type(V) is Number and there is an entry in S that has
+    # one of the following types at position i of its type list,
+    # • a numeric type
+    # ...
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.is_numeric_type)
+        test = '%s->IsNumber()' % cpp_value
+        yield test, method
+    except StopIteration:
+        pass
 
-    # 11. Otherwise: if there is an entry in S that has one of the following
+    # 12.15. Otherwise: if there is an entry in S that has one of the following
     # types at position i of its type list,
-    # • DOMString
-    # • ByteString
-    # • USVString
-    # • an enumeration type
+    # • a string type
+    # ...
     try:
         method = next(method for idl_type, method in idl_types_methods
                       if idl_type.is_string_type or idl_type.is_enum)
@@ -1258,12 +1294,24 @@ def resolution_tests_methods(effective_overloads):
     except StopIteration:
         pass
 
-    # 12. Otherwise: if there is an entry in S that has one of the following
+    # 12.16. Otherwise: if there is an entry in S that has one of the following
     # types at position i of its type list,
     # • a numeric type
+    # ...
     try:
         method = next(method for idl_type, method in idl_types_methods
                       if idl_type.is_numeric_type)
+        yield 'true', method
+    except StopIteration:
+        pass
+
+    # 12.17. Otherwise: if there is an entry in S that has one of the following
+    # types at position i of its type list,
+    # • boolean
+    # ...
+    try:
+        method = next(method for idl_type, method in idl_types_methods
+                      if idl_type.name == 'Boolean')
         yield 'true', method
     except StopIteration:
         pass

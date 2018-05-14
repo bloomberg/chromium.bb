@@ -192,6 +192,7 @@ static void voidMethodPartialOverload2Method(const v8::FunctionCallbackInfo<v8::
 
 static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   bool isArityError = false;
+
   switch (std::min(1, info.Length())) {
     case 0:
       if (true) {
@@ -210,7 +211,6 @@ static void voidMethodPartialOverloadMethod(const v8::FunctionCallbackInfo<v8::V
   }
 
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterfaceOriginTrialEnabled", "voidMethodPartialOverload");
-
   if (isArityError) {
   }
   exceptionState.ThrowTypeError("No function was found that matched the signature provided.");
