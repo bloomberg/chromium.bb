@@ -12,6 +12,9 @@
   <structure name="IDR_WEBUI_HTML_I18N_BEHAVIOR"
              file="html/i18n_behavior.html" type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_WEBUI_HTML_LIST_PROPERTY_UPDATE_BEHAVIOR"
+             file="html/list_property_update_behavior.html" type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_WEBUI_HTML_MD_SELECT_CSS_HTML"
              file="html/md_select_css.html" type="chrome_html"
              compress="gzip" flattenhtml="true" />
@@ -34,6 +37,9 @@
              compress="gzip" />
   <structure name="IDR_WEBUI_JS_CR_UI_FOCUS_WITHOUT_INK"
              file="js/cr/ui/focus_without_ink.js" type="chrome_html"
+             compress="gzip" />
+  <structure name="IDR_WEBUI_JS_LIST_PROPERTY_UPDATE_BEHAVIOR"
+             file="js/list_property_update_behavior.js" type="chrome_html"
              compress="gzip" />
   <structure name="IDR_WEBUI_JS_POLYMER_CONFIG"
              file="js/polymer_config.js" type="chrome_html"
