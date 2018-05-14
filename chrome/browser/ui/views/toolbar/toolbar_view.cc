@@ -687,6 +687,10 @@ BrowserActionsContainer* ToolbarView::GetBrowserActionsContainer() {
   return browser_actions_;
 }
 
+PageActionIconContainerView* ToolbarView::GetPageActionIconContainerView() {
+  return location_bar_->page_action_icon_container_view();
+}
+
 AppMenuButton* ToolbarView::GetAppMenuButton() {
   return app_menu_button_;
 }

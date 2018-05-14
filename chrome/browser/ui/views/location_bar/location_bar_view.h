@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
+#include "chrome/browser/ui/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
@@ -50,6 +51,7 @@ class SelectedKeywordView;
 class StarView;
 class TranslateIconView;
 class ZoomView;
+class PageActionIconContainerView;
 
 namespace autofill {
 class SaveCardIconView;
@@ -172,6 +174,10 @@ class LocationBarView : public LocationBar,
 
   // The translate icon. It may not be visible.
   TranslateIconView* translate_icon_view() { return translate_icon_view_; }
+
+  PageActionIconContainerView* page_action_icon_container_view() {
+    return page_action_icon_container_view_;
+  }
 
   // Returns the screen coordinates of the omnibox (where the URL text appears,
   // not where the icons are shown).
@@ -476,6 +482,8 @@ class LocationBarView : public LocationBar,
 
   // A list of all bubble descendants ordered by focus.
   std::vector<BubbleIconView*> bubble_icons_;
+
+  PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
 
   // The security level when the location bar was last updated. Used to decide
   // whether to animate security level transitions.

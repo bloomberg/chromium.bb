@@ -81,6 +81,7 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
 
   // ToolbarButtonProvider:
   BrowserActionsContainer* GetBrowserActionsContainer() override;
+  PageActionIconContainerView* GetPageActionIconContainerView() override;
   AppMenuButton* GetAppMenuButton() override;
   void FocusToolbar() override;
   views::AccessiblePaneView* GetAsAccessiblePaneView() override;
@@ -99,9 +100,10 @@ class HostedAppButtonContainer : public views::AccessiblePaneView,
   base::OneShotTimer fade_in_content_setting_buttons_timer_;
 
   // Owned by the views hierarchy.
-  HostedAppMenuButton* app_menu_button_;
-  ContentSettingsContainer* content_settings_container_;
-  BrowserActionsContainer* browser_actions_container_;
+  HostedAppMenuButton* app_menu_button_ = nullptr;
+  ContentSettingsContainer* content_settings_container_ = nullptr;
+  PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
+  BrowserActionsContainer* browser_actions_container_ = nullptr;
 
   base::OneShotTimer opening_animation_timer_;
 

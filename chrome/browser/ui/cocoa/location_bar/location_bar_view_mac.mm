@@ -515,6 +515,12 @@ WebContents* LocationBarViewMac::GetWebContents() {
   return browser_->tab_strip_model()->GetActiveWebContents();
 }
 
+void LocationBarViewMac::UpdatePageActionIcon(PageActionIconType) {
+  // TODO(https://crbug.com/788051): Return page action icons for updating here
+  // as update methods are migrated out of LocationBar to the
+  // PageActionIconContainer interface.
+}
+
 PageInfoVerboseType LocationBarViewMac::GetPageInfoVerboseType() const {
   if (omnibox_view_->IsEditingOrEmpty() ||
       omnibox_view_->model()->is_keyword_hint()) {

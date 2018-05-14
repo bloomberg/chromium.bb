@@ -10,6 +10,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_actions_container.h"
 #include "ui/compositor/layer_animation_element.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -192,6 +193,9 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
   content_settings_container_ = content_settings_container.get();
   AddChildView(content_settings_container.release());
 
+  page_action_icon_container_view_ = new PageActionIconContainerView();
+  AddChildView(page_action_icon_container_view_);
+
   AddChildView(browser_actions_container_);
 
   app_menu_button_->SetIconColor(active_icon_color);
@@ -293,6 +297,11 @@ HostedAppButtonContainer::CreateToolbarActionsBar(
 BrowserActionsContainer*
 HostedAppButtonContainer::GetBrowserActionsContainer() {
   return browser_actions_container_;
+}
+
+PageActionIconContainerView*
+HostedAppButtonContainer::GetPageActionIconContainerView() {
+  return page_action_icon_container_view_;
 }
 
 AppMenuButton* HostedAppButtonContainer::GetAppMenuButton() {
