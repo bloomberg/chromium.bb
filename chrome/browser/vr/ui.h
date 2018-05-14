@@ -105,6 +105,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version) override;
   void OnAssetsUnavailable() override;
+  void WaitForAssets() override;
   void SetOverlayTextureEmpty(bool empty) override;
   void ShowSoftInput(bool show) override;
   void UpdateWebInputIndices(int selection_start,

@@ -375,6 +375,7 @@ class VrShell : device::GvrGamepadDataProvider,
   gl::SurfaceTexture* ui_surface_texture_ = nullptr;
 
   base::Timer waiting_for_assets_component_timer_;
+  bool can_load_new_assets_ = false;
 
   base::WeakPtrFactory<VrShell> weak_ptr_factory_;
 
