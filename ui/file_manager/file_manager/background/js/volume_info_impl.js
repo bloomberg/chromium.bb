@@ -242,9 +242,15 @@ VolumeInfoImpl.prototype.resolveTeamDrivesRoot_ = function() {
         .resolveFileSystemUrl_(
             this.fileSystem_.root.toURL() +
             VolumeManagerCommon.TEAM_DRIVES_DIRECTORY_NAME)
-        .then(teamDrivesRoot => {
-          this.teamDriveDisplayRoot_ = teamDrivesRoot;
-        });
+        .then(
+            teamDrivesRoot => {
+              this.teamDriveDisplayRoot_ = teamDrivesRoot;
+            },
+            error => {
+              if (error.name != 'NotFoundError') {
+                throw error;
+              }
+            });
   });
 };
 
