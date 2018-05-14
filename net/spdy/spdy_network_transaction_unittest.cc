@@ -13,6 +13,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/string_piece.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/auth.h"
@@ -2804,6 +2805,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushServerAborted) {
 // Verify that we don't leak streams and that we properly send a reset
 // if the server pushes the same stream twice.
 TEST_F(SpdyNetworkTransactionTest, ServerPushDuplicate) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame stream2_priority(
@@ -2852,6 +2855,14 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushDuplicate) {
   // Verify the pushed stream.
   EXPECT_TRUE(response2.headers);
   EXPECT_EQ("HTTP/1.1 200", response2.headers->GetStatusLine());
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kAcceptedNoVary), 1);
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kDuplicateUrl), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 2);
 }
 
 TEST_F(SpdyNetworkTransactionTest, ServerPushMultipleDataFrame) {
@@ -2960,6 +2971,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushMultipleDataFrameInterrupted) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidUrl) {
+  base::HistogramTester histogram_tester;
+
   // Coverage on how a non-empty invalid GURL in a PUSH_PROMISE is handled.
   SpdyHeaderBlock headers(spdy_util_.ConstructGetHeaderBlock(kDefaultUrl));
   SpdySerializedFrame req(
@@ -2986,6 +2999,11 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidUrl) {
   };
   SequencedSocketData data(reads, writes);
   RunBrokenPushTest(&data, ERR_CONNECTION_CLOSED);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kInvalidUrl), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
@@ -3009,6 +3027,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID0) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -3030,9 +3050,16 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushInvalidAssociatedStreamID9) {
 
   SequencedSocketData data(reads, writes);
   RunBrokenPushTest(&data, OK);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kInactiveAssociatedStream), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 TEST_F(SpdyNetworkTransactionTest, ServerPushNoURL) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame stream1_body(spdy_util_.ConstructSpdyDataFrame(1, true));
@@ -3057,10 +3084,17 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushNoURL) {
 
   SequencedSocketData data(reads, writes);
   RunBrokenPushTest(&data, OK);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kInvalidUrl), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 // PUSH_PROMISE on a server-initiated stream should trigger GOAWAY.
 TEST_F(SpdyNetworkTransactionTest, ServerPushOnPushedStream) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame stream2_priority(
@@ -3087,10 +3121,18 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnPushedStream) {
   SequencedSocketData data(reads, writes);
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kAssociatedStreamIdParityError),
+      1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 // PUSH_PROMISE on a closed client-initiated stream should trigger RST_STREAM.
 TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedStream) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame rst(
@@ -3131,11 +3173,18 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedStream) {
   EXPECT_TRUE(data.AllReadDataConsumed());
   EXPECT_TRUE(data.AllWriteDataConsumed());
   VerifyStreamsClosed(helper);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kInactiveAssociatedStream), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 // PUSH_PROMISE on a server-initiated stream should trigger GOAWAY even if
 // stream is closed.
 TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame stream1_syn(
       spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame stream2_priority(
@@ -3195,6 +3244,15 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
 
   EXPECT_TRUE(data.AllReadDataConsumed());
   EXPECT_TRUE(data.AllWriteDataConsumed());
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kAssociatedStreamIdParityError),
+      1);
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kAcceptedNoVary), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 2);
 }
 
 TEST_F(SpdyNetworkTransactionTest, ServerCancelsPush) {
@@ -3410,6 +3468,8 @@ TEST_F(SpdyNetworkTransactionTest, ServerCancelsCrossOriginPush) {
 
 // Regression test for https://crbug.com/727653.
 TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithNoMethod) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_REFUSED_STREAM));
@@ -3430,10 +3490,17 @@ TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithNoMethod) {
   SequencedSocketData data(reads, writes);
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kInvalidUrl), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 // Regression test for https://crbug.com/727653.
 TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithInvalidMethod) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame req(spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST));
   SpdySerializedFrame rst(
       spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_REFUSED_STREAM));
@@ -3455,6 +3522,11 @@ TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithInvalidMethod) {
   SequencedSocketData data(reads, writes);
   NormalSpdyTransactionHelper helper(request_, DEFAULT_PRIORITY, log_, nullptr);
   helper.RunToCompletion(&data);
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kInvalidUrl), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 // Verify that various response headers parse correctly through the HTTP layer.
@@ -4970,37 +5042,63 @@ struct PushHeaderTestParams {
       extra_pushed_response_headers;
   base::StringPiece pushed_status_code;
   bool push_accepted;
+  SpdyPushedStreamFate expected_fate;
 } push_header_test_cases[] = {
     // Base case: no extra headers.
-    {{}, {}, {}, "200", true},
+    {{}, {}, {}, "200", true, SpdyPushedStreamFate::kAcceptedNoVary},
     // Cookie headers match.
     {{{"cookie", "value=foo"}},
      {{"cookie", "value=foo"}},
      {{"vary", "Cookie"}},
      "200",
-     true},
+     true,
+     SpdyPushedStreamFate::kAcceptedMatchingVary},
     // Cookie headers mismatch.
     {{{"cookie", "value=foo"}},
      {{"cookie", "value=bar"}},
      {{"vary", "Cookie"}},
      "200",
-     false},
+     false,
+     SpdyPushedStreamFate::kVaryMismatch},
     // Partial Content response, no Range headers.
-    {{}, {}, {}, "206", false},
+    {{}, {}, {}, "206", false, SpdyPushedStreamFate::kClientRequestNotRange},
     // Partial Content response, no Range headers in pushed request.
-    {{{"range", "0-42"}}, {}, {}, "206", false},
+    {{{"range", "0-42"}},
+     {},
+     {},
+     "206",
+     false,
+     SpdyPushedStreamFate::kPushedRequestNotRange},
     // Partial Content response, no Range headers in client request.
-    {{}, {{"range", "0-42"}}, {}, "206", false},
+    {{},
+     {{"range", "0-42"}},
+     {},
+     "206",
+     false,
+     SpdyPushedStreamFate::kClientRequestNotRange},
     // Partial Content response, mismatching Range headers.
-    {{{"range", "0-42"}}, {{"range", "10-42"}}, {}, "206", false},
+    {{{"range", "0-42"}},
+     {{"range", "10-42"}},
+     {},
+     "206",
+     false,
+     SpdyPushedStreamFate::kRangeMismatch},
     // Partial Content response, matching Range headers.
-    {{{"range", "0-42"}}, {{"range", "0-42"}}, {}, "206", true}};
+    {{{"range", "0-42"}},
+     {{"range", "0-42"}},
+     {},
+     "206",
+     true,
+     SpdyPushedStreamFate::kAcceptedNoVary},
+};
 
 class SpdyNetworkTransactionPushHeaderTest
     : public SpdyNetworkTransactionTest,
       public ::testing::WithParamInterface<PushHeaderTestParams> {
  protected:
   void RunTest(bool pushed_response_headers_received_before_request) {
+    base::HistogramTester histogram_tester;
+
     int seq = 0;
     std::vector<MockWrite> writes;
     std::vector<MockRead> reads;
@@ -5133,6 +5231,11 @@ class SpdyNetworkTransactionPushHeaderTest
     data.Resume();
     base::RunLoop().RunUntilIdle();
     helper.VerifyDataConsumed();
+
+    histogram_tester.ExpectBucketCount(
+        "Net.SpdyPushedStreamFate", static_cast<int>(GetParam().expected_fate),
+        1);
+    histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
   }
 };
 
@@ -5214,15 +5317,20 @@ TEST_F(SpdyNetworkTransactionTest, SyncReplyDataAfterTrailers) {
 struct PushUrlTestParams {
   const char* url_to_fetch;
   const char* url_to_push;
+  SpdyPushedStreamFate expected_fate;
 } push_url_test_cases[] = {
     // http scheme cannot be pushed (except by trusted proxy).
-    {"https://www.example.org/foo.html", "http://www.example.org/foo.js"},
+    {"https://www.example.org/foo.html", "http://www.example.org/foo.js",
+     SpdyPushedStreamFate::kNonHttpsPushedScheme},
     // ftp scheme cannot be pushed.
-    {"https://www.example.org/foo.html", "ftp://www.example.org/foo.js"},
+    {"https://www.example.org/foo.html", "ftp://www.example.org/foo.js",
+     SpdyPushedStreamFate::kInvalidUrl},
     // Cross subdomain, certificate not valid.
-    {"https://www.example.org/foo.html", "https://blat.www.example.org/foo.js"},
+    {"https://www.example.org/foo.html", "https://blat.www.example.org/foo.js",
+     SpdyPushedStreamFate::kCertificateMismatch},
     // Cross domain, certificate not valid.
-    {"https://www.example.org/foo.html", "https://www.foo.com/foo.js"}};
+    {"https://www.example.org/foo.html", "https://www.foo.com/foo.js",
+     SpdyPushedStreamFate::kCertificateMismatch}};
 
 class SpdyNetworkTransactionPushUrlTest
     : public SpdyNetworkTransactionTest,
@@ -5234,6 +5342,8 @@ class SpdyNetworkTransactionPushUrlTest
   //   - if we're requesting http://www.foo.com/barbaz
   //   - the browser has made a connection to "www.foo.com".
   void RunTest() {
+    base::HistogramTester histogram_tester;
+
     SpdyTestUtil spdy_test_util;
     SpdySerializedFrame stream1_syn(
         spdy_test_util.ConstructSpdyGet(GetParam().url_to_fetch, 1, LOWEST));
@@ -5310,6 +5420,11 @@ class SpdyNetworkTransactionPushUrlTest
     // Verify the response headers.
     EXPECT_TRUE(response.headers);
     EXPECT_EQ("HTTP/1.1 200", response.headers->GetStatusLine());
+
+    histogram_tester.ExpectBucketCount(
+        "Net.SpdyPushedStreamFate", static_cast<int>(GetParam().expected_fate),
+        1);
+    histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
   }
 };
 
@@ -6524,6 +6639,8 @@ TEST_F(SpdyNetworkTransactionTest, FlowControlNegativeSendWindowSize) {
 }
 
 TEST_F(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
+  base::HistogramTester histogram_tester;
+
   SpdyHeaderBlock push_headers;
   spdy_util_.AddUrlToHeaderBlock("http://www.example.org/a.dat", &push_headers);
   SpdySerializedFrame push(
@@ -6543,10 +6660,17 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayOnOddPushStreamId) {
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kPromisedStreamIdParityError), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 TEST_F(SpdyNetworkTransactionTest,
        GoAwayOnPushStreamIdLesserOrEqualThanLastAccepted) {
+  base::HistogramTester histogram_tester;
+
   SpdySerializedFrame push_a(spdy_util_.ConstructSpdyPush(
       nullptr, 0, 4, 1, "https://www.example.org/a.dat"));
   SpdyHeaderBlock push_b_headers;
@@ -6574,6 +6698,11 @@ TEST_F(SpdyNetworkTransactionTest,
   helper.RunToCompletion(&data);
   TransactionHelperResult out = helper.output();
   EXPECT_THAT(out.rv, IsError(ERR_SPDY_PROTOCOL_ERROR));
+
+  histogram_tester.ExpectBucketCount(
+      "Net.SpdyPushedStreamFate",
+      static_cast<int>(SpdyPushedStreamFate::kStreamIdOutOfOrder), 1);
+  histogram_tester.ExpectTotalCount("Net.SpdyPushedStreamFate", 1);
 }
 
 // Regression test for https://crbug.com/493348: request header exceeds 16 kB

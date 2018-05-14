@@ -13,6 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
@@ -33,7 +34,6 @@ namespace net {
 
 namespace {
 
-// TODO(https://crbug.com/831536): Add histogram to record each case.
 bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
                            const SpdyHeaderBlock& pushed_request_headers,
                            const SpdyHeaderBlock& pushed_response_headers,
@@ -48,16 +48,22 @@ bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
     if (!request_info.extra_headers.GetHeader(HttpRequestHeaders::kRange,
                                               &client_request_range)) {
       // Client initiated request is not a range request.
+      UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                                SpdyPushedStreamFate::kClientRequestNotRange);
       return false;
     }
     SpdyHeaderBlock::const_iterator pushed_request_range_it =
         pushed_request_headers.find("range");
     if (pushed_request_range_it == pushed_request_headers.end()) {
       // Pushed request is not a range request.
+      UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                                SpdyPushedStreamFate::kPushedRequestNotRange);
       return false;
     }
     if (client_request_range != pushed_request_range_it->second) {
       // Client and pushed request ranges do not match.
+      UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                                SpdyPushedStreamFate::kRangeMismatch);
       return false;
     }
   }
@@ -69,11 +75,21 @@ bool ValidatePushedHeaders(const HttpRequestInfo& request_info,
   if (!vary_data.Init(pushed_request_info,
                       *pushed_response_info.headers.get())) {
     // Pushed response did not contain non-empty Vary header.
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                              SpdyPushedStreamFate::kAcceptedNoVary);
     return true;
   }
 
-  return vary_data.MatchesRequest(request_info,
-                                  *pushed_response_info.headers.get());
+  if (vary_data.MatchesRequest(request_info,
+                               *pushed_response_info.headers.get())) {
+    UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                              SpdyPushedStreamFate::kAcceptedMatchingVary);
+    return true;
+  }
+
+  UMA_HISTOGRAM_ENUMERATION("Net.SpdyPushedStreamFate",
+                            SpdyPushedStreamFate::kVaryMismatch);
+  return false;
 }
 
 }  // anonymous namespace
