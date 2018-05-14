@@ -147,6 +147,9 @@ JavaScriptDialogTabHelper::JavaScriptDialogTabHelper(
 }
 
 JavaScriptDialogTabHelper::~JavaScriptDialogTabHelper() {
+#if !defined(OS_ANDROID)
+  DCHECK(!tab_strip_model_being_observed_);
+#endif
   CloseDialog(DismissalCause::TAB_HELPER_DESTROYED, false, base::string16());
 }
 
@@ -413,6 +416,25 @@ void JavaScriptDialogTabHelper::TabReplacedAt(
     CloseDialog(DismissalCause::TAB_SWITCHED_OUT, false, base::string16());
   }
 }
+
+void JavaScriptDialogTabHelper::TabDetachedAt(content::WebContents* contents,
+                                              int index,
+                                              bool was_active) {
+  if (contents == WebContentsObserver::web_contents()) {
+    // We don't call TabStripModel::SetTabNeedsAttention because it causes
+    // re-entrancy into TabStripModel and correctness of the |index| parameter
+    // is dependent on observer ordering.
+    // This is okay in the short term because the tab in question is being
+    // removed.
+    // TODO(erikchen): Clean up TabStripModel observer API so that this doesn't
+    // require re-entrancy and/or works correctly. https://crbug.com/842194.
+    DCHECK(tab_strip_model_being_observed_);
+    tab_strip_model_being_observed_->RemoveObserver(this);
+    tab_strip_model_being_observed_ = nullptr;
+    CloseDialog(DismissalCause::TAB_HELPER_DESTROYED, false, base::string16());
+  }
+}
+
 #endif
 
 void JavaScriptDialogTabHelper::LogDialogDismissalCause(
@@ -480,10 +502,12 @@ void JavaScriptDialogTabHelper::CloseDialog(DismissalCause cause,
 
   // If there's a pending dialog, then the tab is still in the "needs attention"
   // state; clear it out. However, if the tab was switched out, the turning off
-  // of the "needs attention" state was done in TabReplacedAt() because
-  // SetTabNeedsAttention won't work, so don't call it.
-  if (pending_dialog_ && cause != DismissalCause::TAB_SWITCHED_OUT)
+  // of the "needs attention" state was done in TabReplacedAt() or
+  // TabDetachedAt() because SetTabNeedsAttention won't work, so don't call it.
+  if (pending_dialog_ && cause != DismissalCause::TAB_SWITCHED_OUT &&
+      cause != DismissalCause::TAB_HELPER_DESTROYED) {
     SetTabNeedsAttention(false);
+  }
 
   dialog_.reset();
   pending_dialog_.Reset();
@@ -517,9 +541,13 @@ void JavaScriptDialogTabHelper::SetTabNeedsAttentionImpl(
     TabStripModel* tab_strip_model,
     int index) {
   tab_strip_model->SetTabNeedsAttentionAt(index, attention);
-  if (attention)
+  if (attention) {
     tab_strip_model->AddObserver(this);
-  else
-    tab_strip_model->RemoveObserver(this);
+    tab_strip_model_being_observed_ = tab_strip_model;
+  } else {
+    DCHECK_EQ(tab_strip_model_being_observed_, tab_strip_model);
+    tab_strip_model_being_observed_->RemoveObserver(this);
+    tab_strip_model_being_observed_ = nullptr;
+  }
 }
 #endif
