@@ -59,11 +59,12 @@ class TabUnderBlockerBrowserTest : public extensions::ExtensionBrowserTest {
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void UpdatePolicy(bool allow_tab_under) {
+  void UpdatePopupPolicy(ContentSetting popup_setting) {
     policy::PolicyMap policy;
-    policy.Set(policy::key::kTabUnderAllowed, policy::POLICY_LEVEL_MANDATORY,
-               policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-               std::make_unique<base::Value>(allow_tab_under),
+    policy.Set(policy::key::kDefaultPopupsSetting,
+               policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+               policy::POLICY_SOURCE_CLOUD,
+               std::make_unique<base::Value>(popup_setting),
                nullptr /* external_data_fetcher */);
     provider_.UpdateChromePolicy(policy);
   }
@@ -203,7 +204,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
 IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
                        ControlledByEnterprisePolicy) {
   // Allow tab-unders via enterprise policy, should disable tab-under blocking.
-  UpdatePolicy(true /* allow_tab_under */);
+  UpdatePopupPolicy(CONTENT_SETTING_ALLOW);
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
   content::WebContents* opener =
@@ -231,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   // Disallow tab-unders via policy and try to tab-under again in the background
   // tab. Should fail to navigate.
   {
-    UpdatePolicy(false /* allow_tab_under */);
+    UpdatePopupPolicy(CONTENT_SETTING_BLOCK);
     content::TestNavigationObserver tab_under_observer(opener, 1);
     const GURL cross_origin_url =
         embedded_test_server()->GetURL("b.com", "/title1.html");

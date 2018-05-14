@@ -11767,16 +11767,17 @@
       'name': 'TabUnderAllowed',
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.*:67-', 'chrome_os:67-'],
+      'supported_on': ['chrome.*:67-67', 'chrome_os:67-67'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
       },
       'example_value': True,
+      'deprecated': True,
       'id': 432,
       'caption': '''Allow sites to simultaneously navigate and open pop-ups''',
       'tags': [],
-      'desc': '''Allows sites to simultaneously navigate and open pop-ups.
+      'desc': '''Deprecated in M68. Use DefaultPopupsSetting instead.
 
       For a full explanation, see https://www.chromestatus.com/features/5675755719622656.
       If this policy is enabled, sites will be allowed to simultaneously navigate and open new windows/tabs.

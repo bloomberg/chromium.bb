@@ -27,11 +27,9 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/prefs/pref_service.h"
 #include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
@@ -731,23 +729,6 @@ TEST_F(BlockTabUnderTest, SiteEngagementNoThreshold_Blocks) {
   histogram_tester()->ExpectTotalCount(kEngagementScore, 1);
   auto samples = histogram_tester()->GetAllSamples(kEngagementScore);
   EXPECT_LT(0, samples[0].min);
-}
-
-TEST_F(BlockTabUnderTest, ControlledByPrefs) {
-  // Turn feature off via prefs, via allowing tab-unders.
-  PrefService* prefs =
-      user_prefs::UserPrefs::Get(web_contents()->GetBrowserContext());
-  prefs->SetBoolean(prefs::kTabUnderAllowed, true);
-  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
-  SimulatePopup();
-
-  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://example.test1/")));
-  ExpectUIShown(false);
-
-  // Turn feature back on.
-  prefs->SetBoolean(prefs::kTabUnderAllowed, false);
-  EXPECT_FALSE(NavigateAndCommitWithoutGesture(GURL("https://example.test2/")));
-  ExpectUIShown(true);
 }
 
 // Ensure that even though the *redirect* occurred in the background, if the

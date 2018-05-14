@@ -772,10 +772,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     prefs::kAbusiveExperienceInterventionEnforce,
     base::Value::Type::BOOLEAN },
 
-  { key::kTabUnderAllowed,
-    prefs::kTabUnderAllowed,
-    base::Value::Type::BOOLEAN },
-
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   { key::kThirdPartyBlockingEnabled,
     prefs::kThirdPartyBlockingEnabled,
