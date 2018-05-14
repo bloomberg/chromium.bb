@@ -965,6 +965,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
+          'extra_args': ['--run-ref-build'],
           'num_shards': 26
         },
         {
@@ -991,7 +992,8 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'tests': [
         {
           'isolate': 'telemetry_perf_tests_without_chrome',
-          'extra_args': ['--xvfb'],
+          'extra_args': ['--xvfb',
+                         '--run-ref-build'],
           'num_shards': 3
         },
         {
@@ -1015,6 +1017,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'name': 'performance_test_suite',
           'isolate': 'performance_test_suite',
+          'extra_args': ['--run-ref-build'],
           'num_shards': 14
         }
       ],
@@ -1049,6 +1052,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
+          'extra_args': ['--run-ref-build'],
           'num_shards': 7
         }
       ],
@@ -1072,6 +1076,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
+          'extra_args': ['--run-ref-build'],
         },
         {
           'isolate': 'load_library_perf_tests',
@@ -1101,6 +1106,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         # Add views_perftests, crbug.com/811766
         {
           'isolate': 'performance_test_suite',
+          'extra_args': ['--run-ref-build'],
         },
         {
           'isolate': 'load_library_perf_tests',

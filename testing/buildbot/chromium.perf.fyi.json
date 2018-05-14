@@ -5,7 +5,8 @@
         "args": [
           "-v",
           "--browser=android-chromium",
-          "--upload-results"
+          "--upload-results",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -494,7 +495,8 @@
         "args": [
           "-v",
           "--browser=release",
-          "--upload-results"
+          "--upload-results",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -656,7 +658,8 @@
           "--browser=reference",
           "--upload-results",
           "--testing=true",
-          "--xvfb"
+          "--xvfb",
+          "--run-ref-build"
         ],
         "isolate_name": "telemetry_perf_tests_without_chrome",
         "merge": {
@@ -702,7 +705,8 @@
         "args": [
           "-v",
           "--browser=android-chromium",
-          "--upload-results"
+          "--upload-results",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
