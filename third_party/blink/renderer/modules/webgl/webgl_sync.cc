@@ -20,7 +20,7 @@ WebGLSync::WebGLSync(WebGL2RenderingContextBase* ctx,
       object_type_(object_type) {
   if (ctx->canvas()) {
     task_runner_ =
-        ctx->canvas()->GetDocument().GetTaskRunner(TaskType::kUnthrottled);
+        ctx->canvas()->GetDocument().GetTaskRunner(TaskType::kInternalDefault);
   } else {
     // Fallback for OffscreenCanvas (no frame scheduler)
     task_runner_ = Platform::Current()->CurrentThread()->GetTaskRunner();
