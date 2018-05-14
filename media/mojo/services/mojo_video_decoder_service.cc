@@ -173,7 +173,7 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
                  base::Passed(&callback)),
       base::BindRepeating(&MojoVideoDecoderService::OnDecoderOutput,
                           weak_this_),
-      media::VideoDecoder::WaitingForDecryptionKeyCB());
+      base::NullCallback());
 }
 
 void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,

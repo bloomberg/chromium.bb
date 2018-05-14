@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "media/gpu/android/media_codec_video_decoder.h"
+
 #include "base/android/jni_android.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_task_environment.h"
@@ -174,7 +176,7 @@ class MediaCodecVideoDecoderTest : public testing::Test {
     auto init_cb = [](bool* result_out, bool result) { *result_out = result; };
     mcvd_->Initialize(config, false, cdm_.get(), base::Bind(init_cb, &result),
                       base::BindRepeating(&OutputCb, &most_recent_frame_),
-                      VideoDecoder::WaitingForDecryptionKeyCB());
+                      base::NullCallback());
     base::RunLoop().RunUntilIdle();
 
     if (config.is_encrypted() && cdm_) {

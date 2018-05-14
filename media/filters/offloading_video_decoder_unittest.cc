@@ -5,6 +5,7 @@
 #include "media/filters/offloading_video_decoder.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/base/decoder_buffer.h"
@@ -105,8 +106,7 @@ class OffloadingVideoDecoderTest : public testing::Test {
         .WillOnce(DoAll(VerifyOn(task_env_.GetMainThreadTaskRunner()),
                         RunCallback<3>(true), SaveArg<4>(&output_cb)));
     offloading_decoder_->Initialize(config, false, nullptr, ExpectInitCB(true),
-                                    ExpectOutputCB(),
-                                    VideoDecoder::WaitingForDecryptionKeyCB());
+                                    ExpectOutputCB(), base::NullCallback());
     task_env_.RunUntilIdle();
 
     // Verify decode works and is called on the right thread.
@@ -142,8 +142,7 @@ class OffloadingVideoDecoderTest : public testing::Test {
           .WillOnce(VerifyOn(task_env_.GetMainThreadTaskRunner()));
     }
     offloading_decoder_->Initialize(config, false, nullptr, ExpectInitCB(true),
-                                    ExpectOutputCB(),
-                                    VideoDecoder::WaitingForDecryptionKeyCB());
+                                    ExpectOutputCB(), base::NullCallback());
     EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
         .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
                         RunCallback<3>(true), SaveArg<4>(&output_cb)));
@@ -225,7 +224,7 @@ TEST_F(OffloadingVideoDecoderTest, OffloadingAfterNoOffloading) {
       TestVideoConfig::Normal(kCodecVP9), false, nullptr, ExpectInitCB(true),
       base::Bind(&OffloadingVideoDecoderTest::OutputDone,
                  base::Unretained(this)),
-      VideoDecoder::WaitingForDecryptionKeyCB());
+      base::NullCallback());
   EXPECT_CALL(*decoder_, Detach())
       .WillOnce(VerifyNotOn(task_env_.GetMainThreadTaskRunner()));
   EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
@@ -254,7 +253,7 @@ TEST_F(OffloadingVideoDecoderTest, ParallelizedOffloading) {
       offload_config, false, nullptr, ExpectInitCB(true),
       base::BindRepeating(&OffloadingVideoDecoderTest::OutputDone,
                           base::Unretained(this)),
-      VideoDecoder::WaitingForDecryptionKeyCB());
+      base::NullCallback());
   EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
       .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
                       RunCallback<3>(true), SaveArg<4>(&output_cb)));
@@ -301,7 +300,7 @@ TEST_F(OffloadingVideoDecoderTest, ParallelizedOffloadingResetAbortsDecodes) {
       offload_config, false, nullptr, ExpectInitCB(true),
       base::BindRepeating(&OffloadingVideoDecoderTest::OutputDone,
                           base::Unretained(this)),
-      VideoDecoder::WaitingForDecryptionKeyCB());
+      base::NullCallback());
   EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
       .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
                       RunCallback<3>(true), SaveArg<4>(&output_cb)));

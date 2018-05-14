@@ -210,8 +210,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     EXPECT_CALL(init_cb, Run(_)).WillOnce(SaveArg<0>(&result));
 
     client_->Initialize(TestVideoConfig::NormalH264(), false, nullptr,
-                        init_cb.Get(), output_cb_.Get(),
-                        VideoDecoder::WaitingForDecryptionKeyCB());
+                        init_cb.Get(), output_cb_.Get(), base::NullCallback());
     RunUntilIdle();
 
     return result;

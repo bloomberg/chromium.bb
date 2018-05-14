@@ -9,6 +9,7 @@
 #include <initguid.h>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
@@ -91,8 +92,7 @@ class D3D11VideoDecoderTest : public ::testing::Test {
     decoder_->Initialize(config, low_delay, cdm_context,
                          base::BindRepeating(&D3D11VideoDecoderTest::MockInitCB,
                                              base::Unretained(this)),
-                         VideoDecoder::OutputCB(),
-                         VideoDecoder::WaitingForDecryptionKeyCB());
+                         VideoDecoder::OutputCB(), base::NullCallback());
     base::RunLoop().RunUntilIdle();
   }
 

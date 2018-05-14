@@ -57,7 +57,7 @@ void MojoAudioDecoderService::Initialize(const AudioDecoderConfig& config,
       base::Bind(&MojoAudioDecoderService::OnInitialized, weak_this_,
                  base::Passed(&callback)),
       base::Bind(&MojoAudioDecoderService::OnAudioBufferReady, weak_this_),
-      media::AudioDecoder::WaitingForDecryptionKeyCB());
+      base::NullCallback());
 }
 
 void MojoAudioDecoderService::SetDataSource(
