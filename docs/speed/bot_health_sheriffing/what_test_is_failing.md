@@ -1,4 +1,4 @@
-# What story is failing?
+# How to determine what story is failing
 
 The first step in addressing a test failure is to identify what stories are failing.
 
