@@ -589,10 +589,18 @@ void FrameSchedulerImpl::NotifyThrottlingObservers() {
 
 FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState(
     ObserverType type) const {
+  // Detached frames are not throttled.
+  if (!parent_page_scheduler_)
+    return FrameScheduler::ThrottlingState::kNotThrottled;
+
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
       page_frozen_ && !keep_active_) {
     DCHECK(page_visibility_ == PageVisibilityState::kHidden);
     return FrameScheduler::ThrottlingState::kStopped;
+  }
+  if (type == ObserverType::kLoader &&
+      parent_page_scheduler_->HasActiveConnection()) {
+    return FrameScheduler::ThrottlingState::kNotThrottled;
   }
   if (page_visibility_ == PageVisibilityState::kHidden)
     return FrameScheduler::ThrottlingState::kThrottled;
