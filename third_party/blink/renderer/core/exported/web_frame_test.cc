@@ -4866,9 +4866,8 @@ TEST_P(ParameterizedWebFrameTest, ContextNotificationsIsolatedWorlds) {
 
   int isolated_world_id = 42;
   WebScriptSource script_source("hi!");
-  int num_sources = 1;
   web_view_helper.LocalMainFrame()->ExecuteScriptInIsolatedWorld(
-      isolated_world_id, &script_source, num_sources);
+      isolated_world_id, script_source);
 
   // We should now have a new create notification.
   ASSERT_EQ(1u, create_notifications.size());

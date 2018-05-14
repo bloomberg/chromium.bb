@@ -369,17 +369,14 @@ class WebLocalFrame : public WebFrame {
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < EmbedderWorldIdLimit, high number used internally.
   virtual void ExecuteScriptInIsolatedWorld(int world_id,
-                                            const WebScriptSource* sources,
-                                            unsigned num_sources) = 0;
+                                            const WebScriptSource&) = 0;
 
   // worldID must be > 0 (as 0 represents the main world).
   // worldID must be < EmbedderWorldIdLimit, high number used internally.
   // DEPRECATED: Use WebLocalFrame::requestExecuteScriptInIsolatedWorld.
-  virtual void ExecuteScriptInIsolatedWorld(
-      int world_id,
-      const WebScriptSource* sources_in,
-      unsigned num_sources,
-      WebVector<v8::Local<v8::Value>>* results) = 0;
+  WARN_UNUSED_RESULT virtual v8::Local<v8::Value>
+  ExecuteScriptInIsolatedWorldAndReturnValue(int world_id,
+                                             const WebScriptSource&) = 0;
 
   // Associates an isolated world (see above for description) with a security
   // origin. XMLHttpRequest instances used in that world will be considered
