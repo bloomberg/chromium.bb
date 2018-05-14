@@ -6,7 +6,7 @@
 // Verify that the given member exists, and returns an actual value
 // (i.e. not undefined).
 expect_member = (member_name, get_value_func) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
   assert_idl_attribute(testObject, member_name);
   assert_true(get_value_func(testObject),
     'Member should return boolean value');
@@ -15,7 +15,7 @@ expect_member = (member_name, get_value_func) => {
 // Verify that the given member exists on the returned dictionary, and returns
 // an actual value (i.e. not undefined).
 expect_dictionary_member = (dictionary_member_name) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
   var dictionary = testObject.getDictionaryMethod();
   assert_exists(dictionary, dictionary_member_name);
   assert_true(dictionary[dictionary_member_name],
@@ -25,7 +25,7 @@ expect_dictionary_member = (dictionary_member_name) => {
 // Verify that the given member is accessed as part of dictionary input to a
 // method
 expect_input_dictionary_member = (dictionary_member_name) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
 
   // Test via a getter in the object to see if the member is accessed
   var memberAccessed = false;
@@ -45,7 +45,7 @@ expect_input_dictionary_member = (dictionary_member_name) => {
 // Verify that the given static member exists, and returns an actual value
 // (i.e. not undefined).
 expect_static_member = (member_name, get_value_func) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
   var testInterface = testObject.constructor;
   assert_exists(testInterface, member_name);
   assert_true(get_value_func(testInterface),
@@ -55,7 +55,7 @@ expect_static_member = (member_name, get_value_func) => {
 // Verify that the given constant exists, and returns the expected value, and
 // is not modifiable.
 expect_constant = (constant_name, constant_value, get_value_func) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
   var testInterface = testObject.constructor;
   assert_exists(testInterface, constant_name);
   assert_equals(get_value_func(testInterface), constant_value,
@@ -68,7 +68,7 @@ expect_constant = (constant_name, constant_value, get_value_func) => {
 // Verify that given member does not exist, and does not provide a value
 // (i.e. is undefined).
 expect_member_fails = (member_name) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
   assert_false(member_name in testObject);
   assert_not_exists(testObject, member_name);
   assert_equals(testObject[member_name], undefined);
@@ -77,7 +77,7 @@ expect_member_fails = (member_name) => {
 // Verify that the given member does not exist on the returned dictionary, and
 // does not provide a value (i.e. is undefined).
 expect_dictionary_member_fails = (dictionary_member_name) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
   var dictionary = testObject.getDictionaryMethod();
   assert_false(dictionary_member_name in dictionary);
   assert_not_exists(dictionary, dictionary_member_name);
@@ -88,7 +88,7 @@ expect_dictionary_member_fails = (dictionary_member_name) => {
 // Verify that the given member is not accessed as part of dictionary input to a
 // method
 expect_input_dictionary_member_fails = (dictionary_member_name) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
 
   // Test via a getter in the object to see if the member is accessed
   var memberAccessed = false;
@@ -108,7 +108,7 @@ expect_input_dictionary_member_fails = (dictionary_member_name) => {
 // Verify that given static member does not exist, and does not provide a value
 // (i.e. is undefined).
 expect_static_member_fails = (member_name) => {
-  var testObject = window.internals.originTrialsTest();
+  var testObject = internals.originTrialsTest();
   var testInterface = testObject.constructor;
   assert_false(member_name in testInterface);
   assert_not_exists(testInterface, member_name);
@@ -119,7 +119,7 @@ expect_static_member_fails = (member_name) => {
 expect_failure = (skip_worker) => {
 
   test(() => {
-      var testObject = window.internals.originTrialsTest();
+      var testObject = internals.originTrialsTest();
       assert_idl_attribute(testObject, 'throwingAttribute');
       assert_throws("NotSupportedError", () => { testObject.throwingAttribute; },
           'Accessing attribute should throw error');

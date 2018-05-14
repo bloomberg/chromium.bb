@@ -129,7 +129,7 @@ function runTest()
                 'inner div to an outer div when the inner div has no ' +
                 'remaining scroll offset when the preventPropagation flag is set for ' +
                 'the GestureScrollUpdate event type.');
-        if (checkTestDependencies() && window.eventSender.gestureScrollUpdate)
+        if (checkTestDependencies() && eventSender.gestureScrollUpdate)
             firstGestureScroll();
         else
             exitIfNecessary();

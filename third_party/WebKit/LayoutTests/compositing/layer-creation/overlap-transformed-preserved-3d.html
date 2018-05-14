@@ -88,14 +88,14 @@
       var layerTrees = "";
 
       if (window.testRunner)
-        layerTrees = "Before:\n" + window.internals.layerTreeAsText(document);
+        layerTrees = "Before:\n" + internals.layerTreeAsText(document);
 
       // Rotate the first green box, so that it overlaps the first gray box in the container.
       // That should force the creation of composited layers for all the other green boxes.
       document.getElementById("camera").classList.add("rotate-3d-end");
 
       if (window.testRunner) {
-        layerTrees += "\nAfter:\n" + window.internals.layerTreeAsText(document);
+        layerTrees += "\nAfter:\n" + internals.layerTreeAsText(document);
         document.getElementById('layers').innerText = layerTrees;
         testRunner.notifyDone();
       }

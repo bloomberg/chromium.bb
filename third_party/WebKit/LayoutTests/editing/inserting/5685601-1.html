@@ -7,7 +7,7 @@ div.focus();
 document.execCommand("InsertParagraph");
 document.execCommand("InsertText", false, "x");
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
     document.body.innerText = div.innerHTML;
 }
 </script>

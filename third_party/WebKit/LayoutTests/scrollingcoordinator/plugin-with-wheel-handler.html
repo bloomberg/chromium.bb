@@ -12,7 +12,7 @@ onload = function() {
     if (window.internals) {
         shouldBe('internals.nonFastScrollableRects(document).length', '1');
     } else {
-        debug('This test requires access to window.internals.nonFastScrollableRects.');
+        debug('This test requires access to internals.nonFastScrollableRects.');
     }
 
     finishJSTest();

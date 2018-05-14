@@ -3,6 +3,6 @@ Test passes if password field includes caps lock icon on right edge on Mac platf
 <input id="password" type="password">
 <script>
     if (window.internals)
-        window.internals.setCapsLockState(true);
+        internals.setCapsLockState(true);
     password.focus();
 </script>

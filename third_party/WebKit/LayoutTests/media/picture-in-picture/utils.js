@@ -27,7 +27,7 @@ function pictureInPictureInterstitial(video)
 {
   var elementId = '-internal-media-interstitial';
   var interstitial = mediaControlsElement(
-      window.internals.shadowRoot(video).firstChild,
+      internals.shadowRoot(video).firstChild,
       elementId);
   if (!interstitial)
     throw 'Failed to find picture in picture interstitial.';

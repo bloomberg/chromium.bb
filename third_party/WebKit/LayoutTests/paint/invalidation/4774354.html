@@ -3,7 +3,7 @@
 
 function step1() {
     if (window.testRunner)
-        window.testRunner.waitUntilDone();
+        testRunner.waitUntilDone();
     // Wait for the frame to load.
     window.setTimeout(step2, 100);
 }
@@ -30,7 +30,7 @@ function repaintTest() {
     var sel = frame.getSelection();
     sel.setBaseAndExtent(text, 5, text, text.length);
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 </script>
 

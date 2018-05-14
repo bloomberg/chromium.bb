@@ -20,7 +20,7 @@
         function doTest() {
             document.getElementById("caption").style.visibility = "hidden";
             if (window.testRunner && window.internals)
-                document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
+                document.getElementById('layertree').innerText = internals.layerTreeAsText(document);
         }
         window.addEventListener('load', doTest, false);
     </script>

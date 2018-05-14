@@ -15,7 +15,7 @@ function test()
     textarea.addEventListener("input", function(evt) {
         toRemove.parentNode.removeChild(toRemove);
         if (window.testRunner)
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
     });
 
     var selection = childDocument.getSelection();

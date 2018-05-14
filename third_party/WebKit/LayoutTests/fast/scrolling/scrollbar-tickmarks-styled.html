@@ -24,7 +24,7 @@ function highlight()
     var elt = document.getElementById('elt');
     range.selectNodeContents(elt);
     if (window.internals) {
-        window.internals.addTextMatchMarker(range, 'kActive');
+        internals.addTextMatchMarker(range, 'kActive');
     }
     if (window.testRunner)
         testRunner.dumpAsTextWithPixelResults();

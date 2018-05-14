@@ -11,8 +11,8 @@ requestAnimationFrame(() => {
   var context = canvas.getContext("2d");
   context.fillStyle = "red";
   context.fillRect(0, 0, 200, 200);
-  window.internals.setPageScaleFactor(2);
-  window.internals.setVisualViewportOffset(200, 200);
+  internals.setPageScaleFactor(2);
+  internals.setVisualViewportOffset(200, 200);
   requestAnimationFrame(() => {
     testRunner.copyImageAtAndCapturePixelsAsyncThen(0, 0, (width, height, snapshot) => {
       try {

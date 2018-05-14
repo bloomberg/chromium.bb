@@ -60,7 +60,7 @@ function scrollChildHasNoScrollClip(layers) {
 onload = function() {
   if (!window.internals)
     return;
-  documentLayerTree = JSON.parse(window.internals.layerTreeAsText(
+  documentLayerTree = JSON.parse(internals.layerTreeAsText(
       document, window.internals.LAYER_TREE_INCLUDES_CLIP_AND_SCROLL_PARENTS));
   shouldBe('scrollChildHasNoScrollClip(documentLayerTree)', 'true');
 };

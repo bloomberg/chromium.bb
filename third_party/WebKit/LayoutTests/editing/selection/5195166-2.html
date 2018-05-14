@@ -10,7 +10,7 @@ function log(str) {
     li.appendChild(text);
 }
 if (window.testRunner) {
-    window.testRunner.dumpEditingCallbacks();
+    testRunner.dumpEditingCallbacks();
     var text = document.getElementById("div").firstChild;
     var selection = window.getSelection();
     selection.setBaseAndExtent(text, 0, text, 0);

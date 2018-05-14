@@ -28,12 +28,12 @@
 
   onload = function() {
     if (window.internals)
-      window.internals.setPageScaleFactor(2);
+      internals.setPageScaleFactor(2);
     else
-      testFailed('This test requires window.internals.setPageScaleFactor to be available.');
+      testFailed('This test requires internals.setPageScaleFactor to be available.');
 
     runAfterLayoutAndPaint(function(){
-      nonFastScrollableRects = window.internals.nonFastScrollableRects(document);
+      nonFastScrollableRects = internals.nonFastScrollableRects(document);
       shouldBe('nonFastScrollableRects.length', '1');
       shouldBeEqualToString('rectToString(nonFastScrollableRects[0])', '[110, 110, 120, 120]');
 

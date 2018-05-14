@@ -60,18 +60,18 @@ function iframeLoaded() {
 
     testEvents(0, "Unscaled", "click(10, 10)");
 
-    window.internals.setPageScaleFactorLimits(0.5, 0.5);
-    window.internals.setPageScaleFactor(0.5);
+    internals.setPageScaleFactorLimits(0.5, 0.5);
+    internals.setPageScaleFactor(0.5);
     testEvents(0, "setPageScale(0.5)", "click(20, 20)");
 
-    window.internals.setPageScaleFactorLimits(1, 1);
-    window.internals.setPageScaleFactor(1.0);
+    internals.setPageScaleFactorLimits(1, 1);
+    internals.setPageScaleFactor(1.0);
     html.style["-webkit-transform"] = "scale(0.5, 2.0)";
     html.style["-webkit-transform-origin"] = "0 0";
     testEvents(0, "CSS scale(0.5, 2.0)", "click(20, 5)");
 
-    window.internals.setPageScaleFactorLimits(0.5, 0.5);
-    window.internals.setPageScaleFactor(0.5);
+    internals.setPageScaleFactorLimits(0.5, 0.5);
+    internals.setPageScaleFactor(0.5);
     testEvents(0, "setPageScale(0.5), CSS scale(0.5, 2.0)", "click(40, 10)");
   }
 

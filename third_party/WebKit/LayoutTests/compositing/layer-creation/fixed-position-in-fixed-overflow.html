@@ -36,6 +36,6 @@ if (window.testRunner && window.internals) {
 
 runAfterLayoutAndPaint(function() {
   if (window.testRunner)
-    document.querySelector('pre').textContent = window.internals.layerTreeAsText(document);
+    document.querySelector('pre').textContent = internals.layerTreeAsText(document);
 }, true);
 </script>

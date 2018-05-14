@@ -19,7 +19,7 @@ if (window.internals)
     internals.settings.setEditingBehavior('mac');
 function editingTest() {
     if (window.testRunner)
-        window.testRunner.dumpSelectionRect();
+        testRunner.dumpSelectionRect();
 
     var selection = window.getSelection();
     var testNode = document.getElementById('test');

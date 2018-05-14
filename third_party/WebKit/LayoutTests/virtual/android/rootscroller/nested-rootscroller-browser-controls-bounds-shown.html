@@ -6,7 +6,7 @@
   // NOTE: It is important that this test be run with the Android viewport
   // flags turned on.
   if (window.internals)
-    window.internals.setBrowserControlsState(100, 0, false);
+    internals.setBrowserControlsState(100, 0, false);
 
   addEventListener("load", function() {
     var iframe = document.getElementById("iframe");
@@ -14,7 +14,7 @@
     iframe.contentDocument.rootScroller = iframe.contentDocument.getElementById("scroller");
 
     if (window.internals)
-      window.internals.setBrowserControlsShownRatio(1);
+      internals.setBrowserControlsShownRatio(1);
 
     runAfterLayoutAndPaint(() => { testRunner.notifyDone(); }, true);
   });

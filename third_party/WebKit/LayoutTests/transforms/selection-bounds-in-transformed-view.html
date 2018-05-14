@@ -22,15 +22,15 @@
 <script>
     function resetScroll() {
         window.scrollTo(1000, 1000);
-        window.internals.setVisualViewportOffset(400, 300);
+        internals.setVisualViewportOffset(400, 300);
     }
 
     if (window.internals) {
-        window.internals.setPageScaleFactor(2);
+        internals.setPageScaleFactor(2);
 
         test(() => {
             resetScroll();
-            window.internals.settings.setPreferCompositingToLCDTextEnabled(
+            internals.settings.setPreferCompositingToLCDTextEnabled(
                 true);
             document.execCommand("FindString", false, "target");
             assert_equals(internals.visualViewportScrollX(), 167);
@@ -40,7 +40,7 @@
 
         test(() => {
             resetScroll();
-            window.internals.settings.setPreferCompositingToLCDTextEnabled(
+            internals.settings.setPreferCompositingToLCDTextEnabled(
                 false);
             document.execCommand("FindString", false, "target");
             assert_equals(internals.visualViewportScrollX(), 167);

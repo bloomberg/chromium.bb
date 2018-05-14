@@ -6,12 +6,12 @@
         document.getElementById('sel1').style.display = '';
 
         if (window.testRunner)
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
       }
 
       function main() {
         if (window.testRunner)
-            window.testRunner.waitUntilDone();
+            testRunner.waitUntilDone();
         setTimeout(go, 0);
       }
     </script>

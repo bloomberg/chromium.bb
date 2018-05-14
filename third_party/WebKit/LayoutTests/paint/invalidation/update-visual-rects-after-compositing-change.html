@@ -28,7 +28,7 @@ function runTest() {
 }
 
 function checkResult() {
-  var clientRect = window.internals.visualRect(myspan.firstChild);
+  var clientRect = internals.visualRect(myspan.firstChild);
   // Check that the visual rect for the child has been initialized
   // to a non-zero (and hence presumably correct) size.
   assert_true(clientRect.width > 0);

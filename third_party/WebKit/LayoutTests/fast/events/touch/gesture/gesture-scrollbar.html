@@ -100,7 +100,7 @@ function runTest()
     internals.settings.setMockScrollbarsEnabled(true);
 
     if (window.testRunner)
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
 
     if (window.eventSender) {
         description('This tests scroll gesture events on a scroll bar. ' +

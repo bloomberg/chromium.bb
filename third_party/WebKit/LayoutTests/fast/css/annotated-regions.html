@@ -42,11 +42,11 @@ function getBoundsFromClientRectList(rects) {
 }
 
 function draggableRegions() {
-    return getBoundsFromClientRectList(window.internals.draggableRegions(document));
+    return getBoundsFromClientRectList(internals.draggableRegions(document));
 }
 
 function nonDraggableRegions() {
-    return getBoundsFromClientRectList(window.internals.nonDraggableRegions(document));
+    return getBoundsFromClientRectList(internals.nonDraggableRegions(document));
 }
 
 function startTest() {

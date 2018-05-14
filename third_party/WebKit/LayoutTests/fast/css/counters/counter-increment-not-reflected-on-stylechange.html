@@ -31,6 +31,6 @@
     outerDiv.offsetTop;
     outerDiv.className = "active";
 
-    shouldBeEqualToString("window.internals.counterValue(document.getElementById('inner1'))", "1");
-    shouldBeEqualToString("window.internals.counterValue(document.getElementById('inner2'))", "2");
+    shouldBeEqualToString("internals.counterValue(document.getElementById('inner1'))", "1");
+    shouldBeEqualToString("internals.counterValue(document.getElementById('inner2'))", "2");
 </script>

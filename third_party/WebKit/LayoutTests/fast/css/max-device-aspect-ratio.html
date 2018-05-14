@@ -4,7 +4,7 @@
 <script src="../../resources/js-test.js"></script>
 <script>
 if (window.testRunner) {
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 }
 
 var count = 0;
@@ -43,7 +43,7 @@ function waitForStylesheetLoad()
         shouldBe("document.defaultView.getComputedStyle(document.getElementById('description'), null).color", "'rgb(0, 128, 0)'");
         isSuccessfullyParsed();
         if (window.testRunner) {
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
         }
         return;
     }

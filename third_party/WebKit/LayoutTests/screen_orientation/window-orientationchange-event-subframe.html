@@ -34,7 +34,7 @@ if (window.internals && internals.runtimeFlags.orientationEventEnabled) {
   }
 
   function changeOrientation() {
-    window.testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
+    testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
     currentIndex = getNextIndex();
     ++numOrientationChanges;
   }

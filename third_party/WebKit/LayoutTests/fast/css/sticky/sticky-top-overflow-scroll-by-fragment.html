@@ -5,12 +5,12 @@
     function done()
     {
       if (window.testRunner)
-          window.testRunner.notifyDone();
+          testRunner.notifyDone();
     }
 
     if (window.location.hash == '') {
         if (window.testRunner)
-            window.testRunner.waitUntilDone();
+            testRunner.waitUntilDone();
         window.onhashchange = done;
         location = '#hash';
     }

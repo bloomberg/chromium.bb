@@ -29,8 +29,8 @@ divElement.onfocus = divElement.onblur = window.onfocus = window.onblur =
 };
 
 if (window.testRunner) {
-    window.testRunner.setWindowIsKey(false);
-    window.testRunner.setWindowIsKey(true);
+    testRunner.setWindowIsKey(false);
+    testRunner.setWindowIsKey(true);
     
     innerDiv.focus();
     divElement.focus();

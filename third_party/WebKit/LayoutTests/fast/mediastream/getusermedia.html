@@ -88,8 +88,8 @@ var GetUserMediaLegacy = 1401;
 var GetUserMediaPromise = 1402;
 
 if (window.internals) {
-  shouldBeFalse('window.internals.isUseCounted(document, GetUserMediaPrefixed)');
-  shouldBeFalse('window.internals.isUseCounted(document, GetUserMediaLegacy)');
+  shouldBeFalse('internals.isUseCounted(document, GetUserMediaPrefixed)');
+  shouldBeFalse('internals.isUseCounted(document, GetUserMediaLegacy)');
 }
 
 // Prefixed version
@@ -100,9 +100,9 @@ shouldThrow("navigator.getUserMedia({audio:false, video:false}, error, error);")
 shouldNotThrow("navigator.getUserMedia({audio:true}, gotStream1, error);");
 
 if (window.internals) {
-  shouldBeTrue('window.internals.isUseCounted(document, GetUserMediaPrefixed)');
-  shouldBeTrue('window.internals.isUseCounted(document, GetUserMediaLegacy)');
-  shouldBeFalse('window.internals.isUseCounted(document, GetUserMediaPromise)');
+  shouldBeTrue('internals.isUseCounted(document, GetUserMediaPrefixed)');
+  shouldBeTrue('internals.isUseCounted(document, GetUserMediaLegacy)');
+  shouldBeFalse('internals.isUseCounted(document, GetUserMediaPromise)');
 }
 
 window.jsTestIsAsync = true;

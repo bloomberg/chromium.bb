@@ -17,7 +17,7 @@ async_test(t => {
   });
 
   video.onloadeddata = t.step_func(() => {
-    const currentClass = window.internals.shadowRoot(video).firstChild.className;
+    const currentClass = internals.shadowRoot(video).firstChild.className;
     assert_true(currentClass == "phase-ready state-buffering"
         || currentClass == "phase-ready state-playing");
   });

@@ -13,8 +13,8 @@
 <script>
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 var NUMBER_OF_INTERRUPTIONS = 30;
@@ -35,7 +35,7 @@ function finishTest() {
     results.innerText = "The transition completed successfully.";
     
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 window.addEventListener("load", function () {

@@ -8,14 +8,14 @@
     </style>
     <script>
         if (window.testRunner) {
-            window.testRunner.waitUntilDone();
+            testRunner.waitUntilDone();
         }
         function repaintTest() {
             var testCell = document.getElementById("testcell");
             var offset = document.body.offsetTop;
             testCell.style.backgroundColor = "green";
             if (window.testRunner) {
-                window.testRunner.notifyDone();
+                testRunner.notifyDone();
             }
         }
     </script>

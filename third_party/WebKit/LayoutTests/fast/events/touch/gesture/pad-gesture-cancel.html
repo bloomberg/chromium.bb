@@ -33,7 +33,7 @@
             testRunner.notifyDone();
     }
 
-    if (window.testRunner && window.eventSender && window.eventSender.gestureFlingStart) {
+    if (window.testRunner && window.eventSender && eventSender.gestureFlingStart) {
         eventSender.gestureFlingStart(10, 11, 1000, 1000, "touchpad");
         eventSender.gestureFlingCancel();
         document.addEventListener("mousewheel", recordWheelEvent);

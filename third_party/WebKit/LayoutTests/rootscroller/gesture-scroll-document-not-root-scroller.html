@@ -92,7 +92,7 @@
         .then(waitForScroll)
         .then(() => {
           if (window.internals) {
-            assert_equals(window.internals.effectiveRootScroller(document),
+            assert_equals(internals.effectiveRootScroller(document),
                           rootscroller,
                           "Failed to set root scroller");
           }

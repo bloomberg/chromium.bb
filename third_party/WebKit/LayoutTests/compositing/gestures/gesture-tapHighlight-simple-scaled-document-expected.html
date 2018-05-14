@@ -20,7 +20,7 @@ This test is successful if "Target Link" above is covered in a green rectangle w
 <script>
 function runTest() {
     if (window.internals) {
-        window.internals.setPageScaleFactor(2);
+        internals.setPageScaleFactor(2);
     }else{
         debug("This test requires DumpRenderTree.");
     }

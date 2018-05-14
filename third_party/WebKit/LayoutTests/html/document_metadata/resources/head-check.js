@@ -3,7 +3,7 @@ var currentTest = 1;
 var iframe;
 
 if (window.testRunner) {
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 }
 
 function testAndLoadNext() {
@@ -24,7 +24,7 @@ function testAndLoadNext() {
         iframe.style.display = "none";
         debug('<span class="pass">TEST COMPLETE</span>');
         if (window.testRunner) {
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
         }
     }
 }

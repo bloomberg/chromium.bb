@@ -34,7 +34,7 @@ function runEventVisibleTest() {
     });
 
     if (window.testRunner)
-        window.testRunner.setMockScreenOrientation("landscape-primary");
+        testRunner.setMockScreenOrientation("landscape-primary");
 
     orientationChangeEventContinuation = function() {
         eventVisibleTest.step(function() {
@@ -56,7 +56,7 @@ function runNoEventHiddenTest() {
     });
 
     if (window.testRunner)
-        window.testRunner.setMockScreenOrientation("portrait-primary");
+        testRunner.setMockScreenOrientation("portrait-primary");
 
     noEventHiddenTest.step(function() {
         assert_equals(orientationChangeEventListenerCalls, 1);

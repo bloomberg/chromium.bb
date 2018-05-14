@@ -12,7 +12,7 @@ blockquote {
 line two</pre></blockquote></div>
 <script>
 if (window.testRunner)
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 text = document.getElementById("pre").firstChild;
 window.getSelection().collapse(text, 8);
 document.execCommand("InsertNewlineInQuotedContent");

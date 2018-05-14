@@ -79,7 +79,7 @@ function createDOM(tagName, attributes)
         if (child.isShadowRoot) {
             var shadowRoot;
             if (child.isUserAgentShadowRoot) {
-                shadowRoot = window.internals.createUserAgentShadowRoot(element);
+                shadowRoot = internals.createUserAgentShadowRoot(element);
             } else {
                 if (child.parameter && Object.keys(child.parameter).length > 0)
                     shadowRoot = element.attachShadow(child.parameter);
@@ -102,7 +102,7 @@ function createDOM(tagName, attributes)
 
 function isShadowHost(node)
 {
-    return window.internals.shadowRoot(node);
+    return internals.shadowRoot(node);
 }
 
 function isShadowRoot(node)
@@ -172,7 +172,7 @@ function innermostActiveElement(element)
         return element;
     }
     if (isShadowHost(element)) {
-        var shadowRoot = window.internals.shadowRoot(element);
+        var shadowRoot = internals.shadowRoot(element);
         if (shadowRoot) {
             if (shadowRoot.activeElement)
                 return innermostActiveElement(shadowRoot.activeElement);

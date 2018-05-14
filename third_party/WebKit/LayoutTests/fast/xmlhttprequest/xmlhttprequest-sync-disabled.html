@@ -4,7 +4,7 @@
     <script src="../../resources/js-test.js"></script>
     <script>
         if ('internals' in window) {
-            window.internals.settings.setSyncXHRInDocumentsEnabled(false);
+            internals.settings.setSyncXHRInDocumentsEnabled(false);
         } else {
             document.write('This test depends on the syncXHRInDocumentsEnabled setting being false, so run in DumpRenderTree or manually enable it');
         }

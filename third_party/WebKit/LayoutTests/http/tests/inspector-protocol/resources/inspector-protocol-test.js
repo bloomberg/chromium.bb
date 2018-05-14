@@ -472,7 +472,7 @@ DevToolsAPI._log = function(text) {
 };
 
 DevToolsAPI._completeTest = function() {
-  window.testRunner.notifyDone();
+  testRunner.notifyDone();
 };
 
 DevToolsAPI._die = function(message, error) {
@@ -538,9 +538,9 @@ DevToolsAPI._fetch = function(url) {
   });
 };
 
-window.testRunner.dumpAsText();
-window.testRunner.waitUntilDone();
-window.testRunner.setCanOpenWindows(true);
+testRunner.dumpAsText();
+testRunner.waitUntilDone();
+testRunner.setCanOpenWindows(true);
 
 window.addEventListener('load', () => {
   var params = new URLSearchParams(window.location.search);

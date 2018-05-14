@@ -85,8 +85,8 @@ function init(tests)
         testRunner.dumpAsText();
         testRunner.waitUntilDone();
         if (window.internals) {
-            window.internals.settings.setPasswordEchoEnabled(true);
-            window.internals.settings.setPasswordEchoDurationInSeconds(0.1);
+            internals.settings.setPasswordEchoEnabled(true);
+            internals.settings.setPasswordEchoDurationInSeconds(0.1);
             testnode = document.getElementById('testnode');
             run(tests, -1);
         }

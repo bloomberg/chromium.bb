@@ -24,7 +24,7 @@ if (window.internals) {
         // because a rendering mode was fixed.
         verifyContextLost(false);
 
-        window.internals.loseSharedGraphicsContext3D();
+        internals.loseSharedGraphicsContext3D();
         // for the canvas to realize its Graphics context was lost we must try to
         // use the contents of the canvas -- that is, we must either try to present
         // the canvas or read from it (e.g. by calling getImageData)

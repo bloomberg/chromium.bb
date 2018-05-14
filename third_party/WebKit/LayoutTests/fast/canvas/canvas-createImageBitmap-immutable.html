@@ -2,7 +2,7 @@
 <body>
 <script>
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 
 function shouldNotBeCalled() {
     testFailed("Promise was rejected.");
@@ -130,7 +130,7 @@ function callback(name) {
 var checkNum = 0;
 function checkIfDone() {
     if (++checkNum == 8 && window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 </script>

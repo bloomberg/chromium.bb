@@ -6,7 +6,7 @@
 window.testIsAsync = true;
 onload = runRepaintTest;
 if (window.internals)
-  window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+  internals.settings.setPreferCompositingToLCDTextEnabled(false);
 
 function repaintTest() {
   root.focus();

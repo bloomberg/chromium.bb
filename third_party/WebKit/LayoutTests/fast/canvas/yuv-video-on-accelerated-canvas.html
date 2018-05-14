@@ -36,7 +36,7 @@
     testRunner.waitUntilDone();
   }
   if (window.internals)
-    window.internals.settings.setMinimumAccelerated2dCanvasSize(257*256);
+    internals.settings.setMinimumAccelerated2dCanvasSize(257*256);
 
   var hw_canvas = document.getElementById("hw-canvas");
   var hw_ctx = hw_canvas.getContext("2d");

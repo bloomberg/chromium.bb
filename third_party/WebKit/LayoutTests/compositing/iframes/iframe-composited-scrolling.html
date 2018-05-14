@@ -16,7 +16,7 @@
       if (window.testRunner) {
         testRunner.dumpAsText();
         if (window.internals)
-          document.getElementById("result").innerText = window.internals.nonFastScrollableRects(document).length ? "FAIL" : "PASS";
+          document.getElementById("result").innerText = internals.nonFastScrollableRects(document).length ? "FAIL" : "PASS";
       }
     }
     window.addEventListener("load", doTest, false);

@@ -25,7 +25,7 @@ paste = document.getElementById("paste");
 paste.focus();
 document.execCommand("paste");
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
     document.body.innerText = document.getElementById("description").innerText + "\n\n" + copy.innerHTML;
 }
 </script>

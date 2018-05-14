@@ -2,20 +2,20 @@
 <head>
 <script>
   if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
   }
 
   function done() {
     if (window.testRunner)
-      window.testRunner.notifyDone();
+      testRunner.notifyDone();
   }
 
   function dumpTreeAsText() {
     if (!window.internals)
       return;
     document.getElementById('layers').textContent =
-        window.internals.layerTreeAsText(document);
+        internals.layerTreeAsText(document);
     document.getElementById('test').style.display = 'none';
     done();
   }

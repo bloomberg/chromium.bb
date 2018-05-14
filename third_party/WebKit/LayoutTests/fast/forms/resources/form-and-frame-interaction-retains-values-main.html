@@ -3,9 +3,9 @@
 <head>
   <script>
     if (window.testRunner) {
-        window.testRunner.dumpAsText();
-        window.testRunner.dumpChildFramesAsText();
-        window.testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+        testRunner.dumpChildFramesAsText();
+        testRunner.waitUntilDone();
     }
 
   function performTest() {
@@ -14,7 +14,7 @@
       if(document.getElementById("text").value == "Correct Value")
         document.getElementById("result").innerHTML = "PASS";
       if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
     } else {
       document.getElementById("text").value = "Old Value";
       window.frames[0].location = "form-and-frame-interaction-retains-values-submit.html";

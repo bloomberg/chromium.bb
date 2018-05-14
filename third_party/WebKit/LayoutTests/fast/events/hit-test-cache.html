@@ -38,8 +38,8 @@ html {
 
 setPrintTestResultsLazily();
 if (window.internals) {
-    window.internals.settings.setViewportEnabled(true);
-    window.internals.settings.setMockScrollbarsEnabled(true);
+    internals.settings.setViewportEnabled(true);
+    internals.settings.setMockScrollbarsEnabled(true);
 }
 
 description("Ensure hit test cache works in correct scenarios of scrolling, dom and style changes.");

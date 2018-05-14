@@ -6,14 +6,14 @@
 
 test(function() {
 	assert_true(!!window.internals
-		&& !!window.internals.runtimeFlags,
+		&& !!internals.runtimeFlags,
 		"This test only works when run as a layout test!");
 }, "Prerequisites to running the rest of the tests");
 
-window.internals.runtimeFlags.automationControlledEnabled = true;
+internals.runtimeFlags.automationControlledEnabled = true;
 
 test(function() {
-  assert_true(window.internals.runtimeFlags.automationControlledEnabled);
+  assert_true(internals.runtimeFlags.automationControlledEnabled);
   assert_true("webdriver" in window.navigator);
   assert_true(navigator.webdriver);
 }, "Test if Navigator implements NavigatorAutomationInformation interface");

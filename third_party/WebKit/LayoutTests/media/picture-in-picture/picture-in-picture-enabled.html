@@ -10,7 +10,7 @@
 promise_test(t => {
   assert_true(document.pictureInPictureEnabled);
 
-  window.internals.settings.setPictureInPictureEnabled(false);
+  internals.settings.setPictureInPictureEnabled(false);
   assert_false(document.pictureInPictureEnabled);
 
   return promise_rejects(t, 'NotSupportedError',

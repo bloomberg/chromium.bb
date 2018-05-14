@@ -8,7 +8,7 @@ function moveMouseOver(element)
     var rect = element.getBoundingClientRect();
     var x = rect.left + rect.width / 2;
     var y;
-    if (element.hasChildNodes() || window.internals.shadowRoot(element))
+    if (element.hasChildNodes() || internals.shadowRoot(element))
         y = rect.top + defaultPaddingSize / 2;
     else
         y = rect.top + rect.height / 2;

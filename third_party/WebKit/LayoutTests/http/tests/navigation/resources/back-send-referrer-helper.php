@@ -24,7 +24,7 @@ window.name: <script>document.write(window.name)</script>
         history.go(-1);
     } else {
         if (window.testRunner)
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
     }
 </script>
 

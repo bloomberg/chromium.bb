@@ -21,7 +21,7 @@ function openPickerErrorCallback() {
 openPicker(menu, test1, openPickerErrorCallback);
 
 function test1() {
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
 
     menuElement.style.color = 'rgb(123, 0, 0)';
 

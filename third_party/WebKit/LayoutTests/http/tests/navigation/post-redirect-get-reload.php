@@ -23,7 +23,7 @@ if (window.testRunner) {
     } else {
         window.sessionStorage.clear();
         testRunner.waitForPolicyDelegate();
-        window.internals.forceReload(false);
+        internals.forceReload(false);
     }
 }
 </script>

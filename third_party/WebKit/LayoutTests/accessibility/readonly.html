@@ -41,7 +41,7 @@
 description("This tests which elements expose themselves as readonly. Readonly here refers to whether the item is not editable, not whether a control value can be changed vs if it's unavailable.");
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     function check(id, expected_readonly) {
         debug(id);

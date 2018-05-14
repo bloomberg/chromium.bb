@@ -9,7 +9,7 @@
 
 <script>
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 // Passes if the output is a black square.
 var img = new Image();
 // Use a cross-origin URL.
@@ -20,6 +20,6 @@ img.onload = function () {
   // Fill rect will force resolving of the filter before drawImage.
   ctx.fillRect(-10, -10, 1, 1);
   ctx.drawImage(img, 0, 0);
-  window.testRunner.notifyDone();
+  testRunner.notifyDone();
 }
 </script>

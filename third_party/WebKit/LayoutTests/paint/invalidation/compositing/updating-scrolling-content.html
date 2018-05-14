@@ -28,7 +28,7 @@ https://bugs.webkit.org/show_bug.cgi?id=100524.
   <script src="../resources/text-based-repaint.js"></script>
   <script type="text/javascript">
       if (window.internals)
-          window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+          internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
       window.addEventListener('load', function() {
           var scroller = document.getElementById('scroller');

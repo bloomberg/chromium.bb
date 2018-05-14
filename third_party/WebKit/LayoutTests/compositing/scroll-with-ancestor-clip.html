@@ -28,11 +28,11 @@ function runTest() {
     window.requestAnimationFrame(function() {
         window.scrollBy(0, 300);
         if (window.testRunner)
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
     });
 }
 
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 onload = runTest;
 </script>

@@ -29,7 +29,7 @@ function runRepaintTest()
         testRunner.dumpAsText();
 
     testRunner.layoutAndPaintAsyncThen(function() {
-        window.internals.startTrackingRepaints(document);
+        internals.startTrackingRepaints(document);
         repaintTest();
         if (!window.testIsAsync)
             finishRepaintTest();
@@ -84,7 +84,7 @@ function finishRepaintTest()
     if (window.layerTreeAsTextAdditionalFlags)
         flags |= window.layerTreeAsTextAdditionalFlags;
 
-    var layersWithInvalidationsText = window.internals.layerTreeAsText(document, flags);
+    var layersWithInvalidationsText = internals.layerTreeAsText(document, flags);
 
     checkObjectPaintInvalidations(layersWithInvalidationsText);
 

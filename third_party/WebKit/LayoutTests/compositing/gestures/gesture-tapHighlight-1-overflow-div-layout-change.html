@@ -37,7 +37,7 @@ function runTest() {
         newLink.innerHTML = 'Link 3';
         targetLink.parentNode.insertBefore(newLink, targetLink);
         targetLink.parentNode.insertBefore(document.createElement('br'), targetLink)
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        window.setTimeout(function() { testRunner.notifyDone(); }, 0);
     } else {
         debug("This test requires DumpRenderTree.");
     }

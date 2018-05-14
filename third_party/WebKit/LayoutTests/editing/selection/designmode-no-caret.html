@@ -12,9 +12,9 @@ This tests to see that a caret is placed inside an editable document that is ent
 <script>
 document.designMode = "on";
 if (window.testRunner) {
-    window.testRunner.waitUntilDone();
-    window.testRunner.setMainFrameIsFirstResponder(false);
-    window.testRunner.setMainFrameIsFirstResponder(true);
+    testRunner.waitUntilDone();
+    testRunner.setMainFrameIsFirstResponder(false);
+    testRunner.setMainFrameIsFirstResponder(true);
 
     var sel = window.getSelection();
     if (sel.anchorNode && sel.anchorNode == sel.focusNode && sel.anchorOffset == sel.focusOffset)
@@ -22,6 +22,6 @@ if (window.testRunner) {
     else
         log("Test Failed - there should be a caret\n");
 
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 </script>

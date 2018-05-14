@@ -46,12 +46,12 @@ body {
 <script>
 if (window.testRunner) {
     testRunner.dumpAsText();
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
 } else {
     alert('This test requires testRunner');
 }
 
-window.internals.forceCompositingUpdate(document);
+internals.forceCompositingUpdate(document);
 document.getElementById("layer-A").style.position = "absolute";
-document.querySelector('pre').textContent = window.internals.layerTreeAsText(document);
+document.querySelector('pre').textContent = internals.layerTreeAsText(document);
 </script>

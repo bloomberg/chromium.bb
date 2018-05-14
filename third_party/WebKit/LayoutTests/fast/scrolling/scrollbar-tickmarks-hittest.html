@@ -6,7 +6,7 @@
 <script>
 description('Checks that clicking on scrollbar works when tickmarks are added.');
 if (window.internals) {
-    window.internals.runtimeFlags.overlayScrollbarsEnabled = true;
+    internals.runtimeFlags.overlayScrollbarsEnabled = true;
 }
 
 onload = function()
@@ -17,7 +17,7 @@ onload = function()
     var elt = document.getElementById('elt');
     range.selectNodeContents(elt);
     if (window.internals) {
-        window.internals.addTextMatchMarker(range, 'kActive');
+        internals.addTextMatchMarker(range, 'kActive');
     }
     if (window.eventSender) {
         eventSender.mouseMoveTo(window.innerWidth - 1, 10);

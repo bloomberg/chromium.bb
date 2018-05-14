@@ -11,12 +11,12 @@ function setImg() {
 
 function init() {
     if (window.testRunner) {
-        window.testRunner.waitUntilDone();
+        testRunner.waitUntilDone();
     }
     getImg();
     document.getElementById("right").contentWindow.location.href = "about:blank";
     if (window.testRunner) {
-        setTimeout("setImg(); window.testRunner.notifyDone();",100);
+        setTimeout("setImg(); testRunner.notifyDone();",100);
     }
     else {
         setTimeout("setImg();",100);

@@ -1,9 +1,9 @@
 <script>
 if (window.testRunner)
-     window.testRunner.dumpAsText();
+     testRunner.dumpAsText();
 
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 
 function foo() {
     var frame = frames[0];
@@ -19,7 +19,7 @@ function foo() {
     log(document.getElementById("pastehere").innerHTML);
 
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 function log(str) {

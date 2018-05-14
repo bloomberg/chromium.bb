@@ -1,7 +1,7 @@
 <script>
 if (window.testRunner) {
      testRunner.dumpEditingCallbacks();
-     window.testRunner.waitUntilDone();
+     testRunner.waitUntilDone();
 }
     
 function runTest() {
@@ -11,7 +11,7 @@ function runTest() {
     var sel = frame.getSelection();
     sel.collapse(body, 0);
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 </script>
 <p>This tests for a caret painting bug.  You should not see a caret in the editable subframe below.</p>

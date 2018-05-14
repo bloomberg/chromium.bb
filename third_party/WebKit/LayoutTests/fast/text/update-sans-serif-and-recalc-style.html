@@ -4,12 +4,12 @@ body { font-family: sans-serif; }
 </style>
 <script>
 if (window.internals)
-    window.internals.settings.setSansSerifFontFamily("Times", "zyyy");
+    internals.settings.setSansSerifFontFamily("Times", "zyyy");
 
 onload = function() {
     document.body.offsetLeft;
     if (window.internals)
-        window.internals.settings.setSansSerifFontFamily("Arial", "zyyy");
+        internals.settings.setSansSerifFontFamily("Arial", "zyyy");
 }
 </script>
 <body>

@@ -8,7 +8,7 @@
 
 description('Tests that listeners in closed frames are collected.');
 
-shouldBe('typeof window.internals.observeGC', '"function"',
+shouldBe('typeof internals.observeGC', '"function"',
 'this test requires window.internals');
 
 var childFrame;

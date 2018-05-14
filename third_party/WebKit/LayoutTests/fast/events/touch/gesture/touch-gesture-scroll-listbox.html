@@ -162,7 +162,7 @@
             if (window.eventSender) {
                 description('This tests that an input text field can be properly scrolled with touch gestures');
 
-                if (checkTestDependencies() && window.eventSender.gestureScrollUpdate) {
+                if (checkTestDependencies() && eventSender.gestureScrollUpdate) {
                     testFlingGestures();
                     testGestureScroll();
                     testHorizontalScroll();

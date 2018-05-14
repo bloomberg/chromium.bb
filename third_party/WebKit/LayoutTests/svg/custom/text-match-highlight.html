@@ -7,8 +7,8 @@
       var elem = document.getElementById(id).firstChild;
       range.setStart(elem, start);
       range.setEnd(elem, end);
-      window.internals.addTextMatchMarker(range, active);
-      window.internals.setMarkedTextMatchesAreHighlighted(document, true);
+      internals.addTextMatchMarker(range, active);
+      internals.setMarkedTextMatchesAreHighlighted(document, true);
     }
     function highlightTest() {
       highlightRange('1', 0, 6, 'kInactive');

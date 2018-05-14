@@ -6,8 +6,8 @@
 var actionitems;
 
 if (window.testRunner) {
-     window.testRunner.dumpAsText();
-     window.testRunner.waitUntilDone();
+     testRunner.dumpAsText();
+     testRunner.waitUntilDone();
 }
 
 function doClick() {
@@ -28,7 +28,7 @@ function doClick() {
 
     document.body.innerHTML = "PASS";
 
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 
 function hideDiv() {

@@ -3,6 +3,6 @@ Test passes if password field does not include caps lock icon on right edge on a
 <input id="password" type="password">
 <script>
     if (window.internals)
-        window.internals.setCapsLockState(false);
+        internals.setCapsLockState(false);
     password.focus();
 </script>

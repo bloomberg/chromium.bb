@@ -36,7 +36,7 @@ test(function() {
     var orientationAngle = screen.orientation.angle;
 
     if (window.testRunner)
-        window.testRunner.setMockScreenOrientation('landscape-primary');
+        testRunner.setMockScreenOrientation('landscape-primary');
 
     assert_equals(screen.orientation, orientation);
     assert_equals(screen.orientation.type, orientation.type);

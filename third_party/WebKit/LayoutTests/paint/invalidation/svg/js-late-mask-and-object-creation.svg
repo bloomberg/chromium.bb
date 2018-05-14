@@ -10,7 +10,7 @@
     var content = document.getElementById("content");
 
     function repaintTest() {
-        window.testRunner.layoutAndPaintAsyncThen(createObject);
+        testRunner.layoutAndPaintAsyncThen(createObject);
     }
 
     function createObject()
@@ -23,7 +23,7 @@
         rect.setAttribute("mask", "url(#dynMask)");
 
         content.appendChild(rect);
-        window.testRunner.layoutAndPaintAsyncThen(createMask);
+        testRunner.layoutAndPaintAsyncThen(createMask);
     }
 
     function createMask()

@@ -39,7 +39,7 @@ if (!window.testRunner) {
     container.focus();
     window.getSelection().collapse(container.firstChild.firstChild, 0); // First <span>.
 
-    window.testRunner.execCommand('SelectParagraph');
+    testRunner.execCommand('SelectParagraph');
     document.execCommand('InsertText', false, 'a');
 
     check();

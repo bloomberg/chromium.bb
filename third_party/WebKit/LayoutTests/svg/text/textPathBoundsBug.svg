@@ -7,7 +7,7 @@
 
 <script>
 if (window.testRunner)
-    window.testRunner.dumpSelectionRect();
+    testRunner.dumpSelectionRect();
 var range = document.createRange();
 range.selectNode(window.document.documentElement);
 var selection = window.getSelection();

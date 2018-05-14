@@ -8,9 +8,9 @@
   }
   if (window.internals) {
     var default_poster = 'content/greenbox.png';
-    window.internals.settings.setDefaultVideoPosterURL(default_poster);
+    internals.settings.setDefaultVideoPosterURL(default_poster);
     addEventListener("load", function() {
-      var poster = window.internals.getImageSourceURL(document.getElementById("video-no-poster"));
+      var poster = internals.getImageSourceURL(document.getElementById("video-no-poster"));
       if (poster) {
         if (poster == default_poster)
           document.getElementById("result-no-poster").innerText = "PASS";
@@ -19,7 +19,7 @@
       } else
         document.getElementById("result-no-poster").innerText = "FAIL: image source is null";
 
-      poster =  window.internals.getImageSourceURL(document.getElementById("video-has-poster"));
+      poster =  internals.getImageSourceURL(document.getElementById("video-has-poster"));
       if (poster) {
         if (poster == "content/abe.png")
           document.getElementById("result-has-poster").innerText = "PASS";
@@ -28,7 +28,7 @@
       } else
         document.getElementById("result-has-poster").innerText = "FAIL: image source is null";
 
-      poster =  window.internals.getImageSourceURL(document.getElementById("video-has-empty-poster"));
+      poster =  internals.getImageSourceURL(document.getElementById("video-has-empty-poster"));
       if (poster) {
         if (poster == default_poster)
           document.getElementById("result-has-empty-poster").innerText = "PASS";

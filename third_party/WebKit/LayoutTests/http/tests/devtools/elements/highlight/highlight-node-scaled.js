@@ -27,7 +27,7 @@
     `);
   await TestRunner.evaluateInPagePromise(`
       if (window.internals)
-          window.internals.setPageScaleFactor(2);
+          internals.setPageScaleFactor(2);
   `);
 
   ElementsTestRunner.dumpInspectorHighlightJSON('div', TestRunner.completeTest.bind(TestRunner));

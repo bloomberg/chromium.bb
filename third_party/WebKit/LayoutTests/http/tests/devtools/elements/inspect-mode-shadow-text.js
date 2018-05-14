@@ -21,9 +21,9 @@
           var rect = target.getBoundingClientRect();
           // Simulate the mouse click over the target to trigger an event dispatch.
           if (window.eventSender) {
-              window.eventSender.mouseMoveTo(rect.left + 10, rect.top + 10);
-              window.eventSender.mouseDown();
-              window.eventSender.mouseUp();
+              eventSender.mouseMoveTo(rect.left + 10, rect.top + 10);
+              eventSender.mouseDown();
+              eventSender.mouseUp();
           }
       }
   `);

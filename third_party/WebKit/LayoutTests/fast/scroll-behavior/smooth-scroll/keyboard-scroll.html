@@ -23,7 +23,7 @@
         works as intended (tested via virtual suite virtual/threaded/).");
 
     function runTestCase(testCase) {
-        window.eventSender.keyDown(testCase.key);
+        eventSender.keyDown(testCase.key);
         if (window.scrollX == testCase.expectedX && window.scrollY == testCase.expectedY) {
             testPassed(testCase.key + ' reached target');
             startNextTestCase();

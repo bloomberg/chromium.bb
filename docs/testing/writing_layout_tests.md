@@ -228,15 +228,24 @@ implemented in
 and
 [content/shell/test_runner/test_runner.cc](../../content/shell/test_runner/test_runner.cc).
 By skimming the `TestRunnerBindings::Install` method, we learn that the
-testRunner API is presented by the `window.testRunner` and
-`window.layoutTestsController` objects, which are synonyms. Reading the
+testRunner API is presented by the `.testRunner` etc. objects. Reading the
 `TestRunnerBindings::GetObjectTemplateBuilder` method tells us what properties
-are available on the `window.testRunner` object.
+are available on the `testRunner` object.
 
-*** aside
-`window.testRunner` is the preferred way to access the `testRunner` APIs.
-`window.layoutTestsController` is still supported because it is used by
-3rd-party tests.
+Another popular Blink-specific API 'internals' defined in
+[third_party/blink/renderer/core/testing/internals.idl](../../third_party/blink/renderer/core/testing/internals.idl)
+contains more direct access to blink internals.
+
+*** note
+If possible, a test using blink-specific testing APIs should be written not to
+depend on the APIs, so that it can also work directly in a browser. If the test
+does need the APIs to work, it should still check if the API is available before
+using the API. Note that though we omit the `window.` prefix when using the
+APIs, we should use the qualified name in the `if` statement:
+```javascript
+  if (window.testRunner)
+    testRunner.waitUntilDone();
+```
 ***
 
 *** note
@@ -250,7 +259,7 @@ and uses the `testRunner` API.
 
 See the [content/shell/test_runner/](../../content/shell/test_runner/) directory and
 [WebKit's LayoutTests guide](https://trac.webkit.org/wiki/Writing%20Layout%20Tests%20for%20DumpRenderTree)
-for other useful APIs. For example, `window.eventSender`
+for other useful APIs. For example, `eventSender`
 ([content/shell/test_runner/event_sender.h](../../content/shell/test_runner/event_sender.h)
 and
 [content/shell/test_runner/event_sender.cc](../../content/shell/test_runner/event_sender.cc))
@@ -415,8 +424,8 @@ being discussed on
 
 ## Pixel Tests
 
-`testRunner` APIs such as `window.testRunner.dumpAsTextWithPixelResults()` and
-`window.testRunner.dumpDragImage()` create an image result that is associated
+`testRunner` APIs such as `testRunner.dumpAsTextWithPixelResults()` and
+`testRunner.dumpDragImage()` create an image result that is associated
 with the test. The image result is compared against an image baseline, which is
 an `-expected.png` file associated with the test, and the test passes if the
 image result is identical to the baseline, according to a pixel-by-pixel
@@ -444,7 +453,7 @@ TODO: Document how to opt out of generating a layout tree when generating
 pixel results.
 
 *** promo
-When using `window.testRunner.dumpAsTextWithPixelResults()`, the image result
+When using `testRunner.dumpAsTextWithPixelResults()`, the image result
 will always be 800x600px, because test pages are rendered in an 800x600px
 viewport. Pixel tests that do not specifically cover scrolling should fit in an
 800x600px viewport without creating scrollbars.
@@ -475,11 +484,12 @@ to use a relative path to
 ### Tests that need to paint, raster, or draw a frame of intermediate output
 
 A layout test does not actually draw frames of output until the test exits.
-Tests that need to generate a painted frame can use
-`window.testRunner.displayAsyncThen`, which will run the machinery to put up a
-frame, then call the passed callback. There is also a library at
-`fast/repaint/resources/text-based-repaint.js` to help with writing paint
-invalidation and repaint tests.
+Tests that need to generate a painted frame can use `runAfterLayoutAndPaint()`
+defined in [third_party/WebKit/LayoutTests/resources/run-after-layout-and-paint.js](../../third_party/WebKit/LayoutTests/resources/run-after-layout-and-paint.js)
+which will run the machinery to put up a frame, then call the passed callback.
+There is also a library at
+[third_party/WebKit/LayoutTests/paint/invalidation/resources/text-based-repaint.js](../../third_party/WebKit/LayoutTests/paint/invalidation/resources/text-based-repaint.js)
+to help with writing paint invalidation and repaint tests.
 
 ## Layout tree tests
 

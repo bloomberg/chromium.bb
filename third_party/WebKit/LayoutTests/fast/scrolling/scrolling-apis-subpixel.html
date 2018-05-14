@@ -74,13 +74,13 @@ function testPageZoom(zoom) {
 
 // By default we don't yet get fractional scroll offsets with more
 // granularity than the page zoom factor.
-window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+internals.settings.setPreferCompositingToLCDTextEnabled(false);
 testScroll(4.2, 4);
 testPageZoom(2);
 
-if (window.internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
+if (internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
     debug("Full fractional scroll offsets enabled");
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
     testScroll(4.2, 4.2);
     testPageZoom(2);
 }

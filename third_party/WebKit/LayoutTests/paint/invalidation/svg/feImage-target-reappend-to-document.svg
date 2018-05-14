@@ -20,7 +20,7 @@
             var greenImage = document.getElementById("feimage-green");
             document.getElementById("filter").removeChild(greenImage);
 
-            window.testRunner.layoutAndPaintAsyncThen(function() {
+            testRunner.layoutAndPaintAsyncThen(function() {
                 document.getElementById("filter").appendChild(greenImage);
                 finishRepaintTest();
             });

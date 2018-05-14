@@ -53,7 +53,7 @@
 
     window.addEventListener('load', function() {
         if (window.testRunner) {
-            document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document);
+            document.getElementById("layertree").innerText = internals.layerTreeAsText(document);
             testRunner.notifyDone();
         }
     }, false);

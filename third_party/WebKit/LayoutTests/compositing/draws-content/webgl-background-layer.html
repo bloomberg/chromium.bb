@@ -51,7 +51,7 @@
             drawCanvas('canvas-transparent-background');
 
             if (window.testRunner && window.internals)
-                document.getElementById('layer-tree').innerText = window.internals.layerTreeAsText(document);
+                document.getElementById('layer-tree').innerText = internals.layerTreeAsText(document);
         };
         window.addEventListener('load', doTest, false);
     </script>

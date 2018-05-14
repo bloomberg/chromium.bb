@@ -1,6 +1,6 @@
 function grant_permission(feature_name, url) {
   if (window.testRunner) {
-    window.testRunner.setPermission(
+    testRunner.setPermission(
         feature_name, 'granted', url, location.origin);
   }
 }

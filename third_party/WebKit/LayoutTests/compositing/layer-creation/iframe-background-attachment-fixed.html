@@ -15,7 +15,7 @@ if (window.testRunner)
     testRunner.dumpAsText(true);
 
 window.addEventListener('load', function() {
-    reasons = window.internals.mainThreadScrollingReasons(document);
+    reasons = internals.mainThreadScrollingReasons(document);
     text = "Main frame " + scrollingLocationAndReasons(reasons);
     text += "\nThe iFrame scrolls on main thread, reasons: " + document.getElementById("iframe").contentDocument.getElementById("mainThreadScrollingReasons").innerText;
     document.getElementById("mainThreadScrollingReasons").innerText = text;

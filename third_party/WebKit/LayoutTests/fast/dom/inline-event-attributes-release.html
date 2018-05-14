@@ -7,7 +7,7 @@ description('Tests that we do not hold on to any nodes');
 jsTestIsAsync = true;
 
 function numberOfLiveNodes() {
-    return window.internals && window.internals.numberOfLiveNodes && window.internals.numberOfLiveNodes();
+    return window.internals && internals.numberOfLiveNodes && internals.numberOfLiveNodes();
 }
 
 var afterCount;

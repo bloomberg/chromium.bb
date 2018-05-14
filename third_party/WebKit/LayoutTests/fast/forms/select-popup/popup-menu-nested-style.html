@@ -26,7 +26,7 @@ function openPickerErrorCallback() {
 }
 openPicker(menu, test1, openPickerErrorCallback);
 function test1() {
-    params = window.internals.pagePopupWindow.global.params;
+    params = internals.pagePopupWindow.global.params;
     shouldBeEqualToString('params.children[1].type', 'optgroup');
     shouldBeUndefined('params.children[1].children[0].type');
     shouldBeEqualToString('params.children[1].children[0].style.color', '#000000');

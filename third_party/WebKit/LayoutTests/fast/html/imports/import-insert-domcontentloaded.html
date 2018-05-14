@@ -3,8 +3,8 @@
 <head>
 <script>
 if (window.testRunner) {
-    window.testRunner.waitUntilDone();
-    window.testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    testRunner.dumpAsText();
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
     link.setAttribute('href', 'resources/hello.html');
     document.head.appendChild(link);
     window.onload = function() {
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
     };
 });
 

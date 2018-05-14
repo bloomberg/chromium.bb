@@ -15,7 +15,7 @@ if (window.testRunner) {
     testRunner.layoutAndPaintAsyncThen(function(){
         if (window.eventSender);
             eventSender.mouseMoveTo(anchor.offsetLeft + 10, anchor.offsetTop + 10);
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
     });
 }
 </script>

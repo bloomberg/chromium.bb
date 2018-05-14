@@ -105,7 +105,7 @@ function runTest()
         description('This tests that a fling gesture sent to an iframe with no remaining scroll offset ' +
                     'is correctly targeting the parent container.');
         
-        if (checkTestDependencies() && window.eventSender.gestureScrollUpdate)
+        if (checkTestDependencies() && eventSender.gestureScrollUpdate)
             firstGestureScroll();
         else
             exitIfNecessary();

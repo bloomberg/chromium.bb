@@ -38,15 +38,15 @@ window.onmessage = function(event) {
 function startTest()
 {
     gc();
-    if (window.internals && window.internals.numberOfLiveDocuments) {
-        numLiveAtStart = window.internals.numberOfLiveDocuments();
+    if (window.internals && internals.numberOfLiveDocuments) {
+        numLiveAtStart = internals.numberOfLiveDocuments();
         // Depending on which tests ran before this one in DumpRenderTree,
         // their Document instances may not have been fully cleaned up yet.
         // When this test is run in isolation, there should be only one
         // live document at this point.
         runOneIteration();
     } else {
-        debug("window.internals.numberOfLiveDocuments not available -- no point in running test");
+        debug("internals.numberOfLiveDocuments not available -- no point in running test");
         finishTest();
     }
 }
@@ -72,8 +72,8 @@ function finishTest()
 {
     gc();
 
-    if (window.internals && window.internals.numberOfLiveDocuments) {
-        numLiveAtEnd = window.internals.numberOfLiveDocuments();
+    if (window.internals && internals.numberOfLiveDocuments) {
+        numLiveAtEnd = internals.numberOfLiveDocuments();
         // Under no circumstances should the number of live documents
         // at the end be more than 1 greater than the number at the
         // beginning (because of the iframe).

@@ -27,7 +27,7 @@
     function runTest() {
       if (window.internals) {
         var pre = document.createElement('pre');
-        pre.innerHTML = window.internals.layerTreeAsText(document);
+        pre.innerHTML = internals.layerTreeAsText(document);
         document.body.appendChild(pre);
       }
     }

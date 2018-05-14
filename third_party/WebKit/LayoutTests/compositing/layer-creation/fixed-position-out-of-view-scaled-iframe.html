@@ -7,15 +7,15 @@
     testRunner.waitUntilDone();
   }
   if (window.internals && window.eventSender) {
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-    window.internals.setPageScaleFactorLimits(0.5, 4);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.setPageScaleFactorLimits(0.5, 4);
 
     addEventListener("load", function() {
-      window.internals.setPageScaleFactor(0.5);
+      internals.setPageScaleFactor(0.5);
       setTimeout(function() {
         var layerTreeScaledDown = internals.layerTreeAsText(document.getElementById("iframe").contentDocument);
 
-        window.internals.setPageScaleFactor(1.5);
+        internals.setPageScaleFactor(1.5);
         setTimeout(function() {
           var layerTreeScaledUp = internals.layerTreeAsText(document.getElementById("iframe").contentDocument);
           // Because logical size of the frame is unchanged, the layer tree in the frame should not be affected by the page scale.

@@ -26,7 +26,7 @@
   {
       if (!window.testRunner)
           return;
-      shouldBe("window.internals.counterValue(document.getElementById('div1'))", "'0'");
+      shouldBe("internals.counterValue(document.getElementById('div1'))", "'0'");
 
       debug('');
       debug('TEST COMPLETE');

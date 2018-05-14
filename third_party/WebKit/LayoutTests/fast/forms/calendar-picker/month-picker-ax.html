@@ -11,7 +11,7 @@
 <script>
 description('Tests if typing an arrow key dispatches |Focus| and |ActiveDescendantChanged| a11y events.');
 
-window.accessibilityController.setNotificationListener(function(axnode, type) {
+accessibilityController.setNotificationListener(function(axnode, type) {
     if (type == 'Focus') {
         debug('Focused');
     } else if (type == 'ActiveDescendantChanged') {

@@ -47,9 +47,9 @@
             targetdiv2.onmousedown = eventNotExpected;
             document.body.onmousedown = eventExpected;
             if (window.eventSender) {
-                window.eventSender.leapForward(1000);
-                window.eventSender.mouseDown();
-                window.eventSender.mouseUp();
+                eventSender.leapForward(1000);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
             }
             doNextStepWithUserGesture();
         },
@@ -64,9 +64,9 @@
             targetdiv2.onmousedown = eventExpected;
             document.body.onmousedown = eventExpected;
             if (window.eventSender) {
-                window.eventSender.leapForward(1000);
-                window.eventSender.mouseDown();
-                window.eventSender.mouseUp();
+                eventSender.leapForward(1000);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
             }
             doNextStepWithUserGesture();
         },
@@ -80,18 +80,18 @@
             targetdiv2.ondblclick = eventExpected;
             debug("     Creating a click and dblclick.");
             if (window.eventSender) {
-                window.eventSender.leapForward(1000);
-                window.eventSender.mouseDown();
-                window.eventSender.mouseUp();
-                window.eventSender.mouseDown();
-                window.eventSender.mouseUp();
+                eventSender.leapForward(1000);
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+                eventSender.mouseDown();
+                eventSender.mouseUp();
             }
             debug("     Ensuring no false dblclicks if we continue.");
             if (window.eventSender) {
-                window.eventSender.mouseDown();
-                window.eventSender.mouseUp();
-                window.eventSender.mouseDown();
-                window.eventSender.mouseUp();
+                eventSender.mouseDown();
+                eventSender.mouseUp();
+                eventSender.mouseDown();
+                eventSender.mouseUp();
             }
             doNextStepWithUserGesture();
         },

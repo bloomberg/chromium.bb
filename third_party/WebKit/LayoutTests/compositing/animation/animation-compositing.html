@@ -29,7 +29,7 @@
       var box = document.getElementById('box');
       box.addEventListener('animationstart', function() {
         if (window.testRunner) {
-            var layers = window.internals.layerTreeAsText(document);
+            var layers = internals.layerTreeAsText(document);
             var result;
             if (layers != "")
               result = "PASS: created compositing layers when animating transform.";

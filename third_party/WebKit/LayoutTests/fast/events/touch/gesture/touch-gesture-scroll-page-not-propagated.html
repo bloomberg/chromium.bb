@@ -140,7 +140,7 @@ function runTest()
         description('This tests that a gesture scroll is not propagated from a div ' + 
                 'to the page when the div has no remaining scroll offset when ' +
                 'the preventPropagation flag is set for the GestureScrollUpdate event.');
-        if (checkTestDependencies() && window.eventSender.gestureScrollUpdate)
+        if (checkTestDependencies() && eventSender.gestureScrollUpdate)
             firstGestureScroll();
         else
             exitIfNecessary();

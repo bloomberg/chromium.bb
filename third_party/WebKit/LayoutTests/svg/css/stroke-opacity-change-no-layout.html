@@ -7,12 +7,12 @@ if (window.testRunner)
 onload = function() {
   document.body.offsetTop;
   if (window.internals)
-    shouldBe("window.internals.needsLayoutCount()", "0", true);
+    shouldBe("internals.needsLayoutCount()", "0", true);
 
   document.getElementById('rect').style.strokeOpacity = '0.5';
   if (window.internals) {
-    shouldBe("window.internals.updateStyleAndReturnAffectedElementCount()", "1", true);
-    shouldBe("window.internals.needsLayoutCount()", "0");
+    shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1", true);
+    shouldBe("internals.needsLayoutCount()", "0");
   }
 };
 </script>

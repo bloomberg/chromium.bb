@@ -2,13 +2,13 @@
 <script>
 window.onload = function() {
     if (window.testRunner)
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
 
     document.documentElement.style.display = "none";
 
     // Zoom so that the window becomes scrollable.
     if (window.internals)
-        window.internals.setPageScaleFactor(2.0);
+        internals.setPageScaleFactor(2.0);
 
     window.scrollBy(0, 1);
 

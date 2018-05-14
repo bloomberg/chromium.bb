@@ -49,11 +49,11 @@ if (window.testRunner) {
   alert('This test require window.testRunner.')
 }
 
-window.internals.forceCompositingUpdate(document);
+internals.forceCompositingUpdate(document);
 document.querySelector('#clipper').className = 'clipping';
-window.internals.forceCompositingUpdate(document);
+internals.forceCompositingUpdate(document);
 document.querySelector('#clipper').className = '';
-window.internals.forceCompositingUpdate(document);
+internals.forceCompositingUpdate(document);
 
 document.querySelector('#clipper').className = 'clipping';
 document.querySelector('pre').textContent = internals.layerTreeAsText(document);

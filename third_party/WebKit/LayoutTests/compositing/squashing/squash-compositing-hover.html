@@ -57,19 +57,19 @@ div:hover {
         if (!window.internals)
             return;
 
-        document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document);
+        document.getElementById('Case1').textContent = internals.layerTreeAsText(document);
 
         hoverOverMiddleDiv();
-        document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document);
+        document.getElementById('Case2').textContent = internals.layerTreeAsText(document);
 
         hoverOverMiddle2Div();
-        document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document);
+        document.getElementById('Case3').textContent = internals.layerTreeAsText(document);
 
         hoverOverTopDiv();
-        document.getElementById('Case4').textContent = window.internals.layerTreeAsText(document);
+        document.getElementById('Case4').textContent = internals.layerTreeAsText(document);
 
         hoverAtZero();
-        document.getElementById('Case5').textContent = window.internals.layerTreeAsText(document);
+        document.getElementById('Case5').textContent = internals.layerTreeAsText(document);
 
         document.getElementById('testTitle').style.display = '';
         document.getElementById('testResults').style.display = '';

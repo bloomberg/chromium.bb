@@ -22,7 +22,7 @@ html {
     // Verify we actually have a hit rect in the document.
     if (window.internals) {
       internals.forceCompositingUpdate(document);
-      rects = window.internals.touchEventTargetLayerRects(document);
+      rects = internals.touchEventTargetLayerRects(document);
       shouldBe("rects.length", "1");
       shouldBeEqualToString("rects[0].layerAssociatedNode.nodeName", "#document");
     }

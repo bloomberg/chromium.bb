@@ -15,7 +15,7 @@ async_test(function(t) {
   document.onwebkitfullscreenerror = t.unreached_func("fullscreen is not accepted when orientation is changed");
   document.onwebkitfullscreenchange = t.step_func_done();
 
-  window.testRunner.setMockScreenOrientation('landscape-primary');
+  testRunner.setMockScreenOrientation('landscape-primary');
 });
 
 </script>

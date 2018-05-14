@@ -16,7 +16,7 @@
 
 <script>
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 
 function clickLinkNow() {
     if (window.eventSender) {

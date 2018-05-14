@@ -18,8 +18,8 @@
 
 
     if (window.testRunner) {
-        window.testRunner.dumpAsText();
-        window.testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
     }
 
     function clearHitArray() {
@@ -82,7 +82,7 @@
       }
       document.body.innerHTML =(failed ? "FAIL!!!<br/>" : "SUCCESS!!!<br/>") +logMsg;
       if (window.testRunner) {
-          window.testRunner.notifyDone();
+          testRunner.notifyDone();
       }
     }
 </script>

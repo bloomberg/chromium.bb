@@ -5,7 +5,7 @@ function testShouldNotCrash()
 {
     if (!window.testRunner)
         return;
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     var host = document.createElement("blockquote");
     var shadow = host.createShadowRoot();

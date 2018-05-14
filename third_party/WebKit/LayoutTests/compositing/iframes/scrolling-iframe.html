@@ -34,7 +34,7 @@
         runAfterLayoutAndPaint(function() {
             document.getElementById('parent-iframe').contentWindow.scrollTo(80, 80);
             if (window.testRunner) {
-                document.getElementById('layers').innerHTML = window.internals.layerTreeAsText(document);
+                document.getElementById('layers').innerHTML = internals.layerTreeAsText(document);
                 testRunner.notifyDone();
             }
         });

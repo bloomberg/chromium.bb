@@ -36,7 +36,7 @@ for (var i = 0; i < 5; i++) {
 function get_list_counters() {
   var counters = [];
   for (var i = 0; i < items.length; i++) {
-    counters.push(parseInt(window.internals.counterValue(items[i])));
+    counters.push(parseInt(internals.counterValue(items[i])));
   }
   return counters;
 }

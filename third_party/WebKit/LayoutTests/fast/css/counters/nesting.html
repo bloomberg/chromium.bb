@@ -29,7 +29,7 @@
                 for (i = 0; i < spanList.length; ++i ) {
                     newSpanElement = document.createElement("span");
                     newSpanElement.innerText =
-                    window.internals.counterValue(document.getElementById(spanList.item(i).getAttribute("id")));
+                    internals.counterValue(document.getElementById(spanList.item(i).getAttribute("id")));
                     if (newSpanElement.innerText.length)
                         newSpanElement.innerText = newSpanElement.innerText + "- ";
                     console.appendChild(newSpanElement);

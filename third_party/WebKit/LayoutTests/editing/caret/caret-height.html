@@ -9,9 +9,9 @@
     var input1 = document.getElementById('line1');
     var input2 = document.getElementById('line2');
     input1.focus();
-    var cursorLine1 = window.internals.absoluteCaretBounds(input1).height;
+    var cursorLine1 = internals.absoluteCaretBounds(input1).height;
     input2.focus();
-    var cursorLine2 = window.internals.absoluteCaretBounds(input2).height;
+    var cursorLine2 = internals.absoluteCaretBounds(input2).height;
     shouldBe('cursorLine1', 'cursorLine2');
 </script>
 </body>

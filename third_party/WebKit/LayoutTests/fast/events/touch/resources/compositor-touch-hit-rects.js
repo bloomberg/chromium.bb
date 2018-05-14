@@ -52,7 +52,7 @@ function logRects(testName, opt_noOverlay) {
         return;
     }
 
-    var rects = window.internals.touchEventTargetLayerRects(document);
+    var rects = internals.touchEventTargetLayerRects(document);
     if (rects.length == 0)
         log(testName + ': no rects');
 
@@ -118,9 +118,9 @@ var visualize = false;
 
 if (window.testRunner) {
     if (visualize)
-        window.testRunner.dumpAsTextWithPixelResults();
+        testRunner.dumpAsTextWithPixelResults();
     else
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
     document.documentElement.setAttribute('dumpRenderTree', 'true');
 } else {
     // Note, this test can be run interactively in content-shell with
@@ -130,7 +130,7 @@ if (window.testRunner) {
 }
 
 if (window.internals) {
-    window.internals.settings.setMockScrollbarsEnabled(true);
+    internals.settings.setMockScrollbarsEnabled(true);
 }
 
 window.onload = function() {
@@ -147,7 +147,7 @@ window.onload = function() {
         // any subsequent touch rect updates are actually done because of
         // the event handler changes in the test itself.
         if (window.internals)
-            window.internals.forceCompositingUpdate(document);
+            internals.forceCompositingUpdate(document);
         testElement(tests[i]);
     }
 

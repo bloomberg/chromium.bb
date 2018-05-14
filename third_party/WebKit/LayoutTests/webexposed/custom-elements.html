@@ -30,7 +30,7 @@ class A extends HTMLButtonElement {
 
 if (shouldNotThrow('window.customElements.define("a-a", A, {extends: "b"})')) {
   if (window.internals) {
-    shouldBeTrue(window.internals.runtimeFlags.customElementsBuiltinEnabled);
+    shouldBeTrue(internals.runtimeFlags.customElementsBuiltinEnabled);
   }
 }
 

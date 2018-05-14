@@ -37,7 +37,7 @@ function drawImageToCanvas(image) {
   canvas.getContext('2d').drawImage(image, 0, 0);
 
   if (window.testRunner)
-    setTimeout(function() { window.testRunner.notifyDone() }, 0);
+    setTimeout(function() { testRunner.notifyDone() }, 0);
 }
 
 if (window.testRunner) {

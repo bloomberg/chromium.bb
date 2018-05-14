@@ -18,7 +18,7 @@ function touchcancelHandler() {
 }
     
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 
 window.onload = function() {
     if (window.eventSender) {

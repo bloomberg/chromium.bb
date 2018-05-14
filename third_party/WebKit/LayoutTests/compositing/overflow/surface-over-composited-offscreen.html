@@ -33,7 +33,7 @@ should appear on top of the green box.
         window.addEventListener('load', () => {
           // Force a compositing update so it happens while the boxes are off
           // screen.
-          window.internals.forceCompositingUpdate(document);
+          internals.forceCompositingUpdate(document);
 
           // Bring them into view, the z-index order should be correct.
           window.scrollTo(0, 1500);

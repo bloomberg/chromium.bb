@@ -21,7 +21,7 @@ function runTest() {
         return;
     }
     var video = document.getElementById('v');
-    var videoShadow = window.internals.shadowRoot(video);
+    var videoShadow = internals.shadowRoot(video);
     traverse(videoShadow);
 
     document.body.removeChild(video);
@@ -36,7 +36,7 @@ function traverse(node) {
     if (node.childNodes)
         Array.prototype.forEach.call(node.childNodes, traverse);
     if (node.localName == 'input')
-        traverse(window.internals.shadowRoot(node));
+        traverse(internals.shadowRoot(node));
 }
 window.onload = runTest;
 </script>

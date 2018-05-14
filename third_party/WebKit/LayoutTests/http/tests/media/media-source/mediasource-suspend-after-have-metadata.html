@@ -12,7 +12,7 @@ mediasource_testafterdataloaded(function(
     // Upgrade the stale flag to a higher state now to wakeup the element. In
     // a normal flow the stale flag can not be set prior to have future data.
     completeTestUponPlayback(test, mediaElement);
-    window.internals.forceStaleStateForMediaElement(
+    internals.forceStaleStateForMediaElement(
         mediaElement, HTMLMediaElement.HAVE_ENOUGH_DATA);
   });
 

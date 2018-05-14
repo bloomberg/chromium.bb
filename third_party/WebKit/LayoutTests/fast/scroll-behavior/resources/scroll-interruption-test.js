@@ -164,9 +164,9 @@ function verifyScrollInterruptedBySmoothScroll(smoothScrollTest, verificationCom
 
 function interruptWithTouchScroll(smoothScrollTest) {
     if (window.eventSender) {
-        window.eventSender.gestureScrollBegin(smoothScrollTest.innerPoint.x, smoothScrollTest.innerPoint.y);
-        window.eventSender.gestureScrollUpdate(0, -10);
-        window.eventSender.gestureScrollEnd(0, 0);
+        eventSender.gestureScrollBegin(smoothScrollTest.innerPoint.x, smoothScrollTest.innerPoint.y);
+        eventSender.gestureScrollUpdate(0, -10);
+        eventSender.gestureScrollEnd(0, 0);
     } else {
         document.write("This test does not work in manual mode.");
     }
@@ -198,8 +198,8 @@ function verifyScrollInterruptedByInputDrivenScroll(smoothScrollTest, verificati
 
 function interruptWithWheelScroll(smoothScrollTest) {
     if (window.eventSender) {
-        window.eventSender.mouseMoveTo(smoothScrollTest.innerPoint.x, smoothScrollTest.innerPoint.y);
-        window.eventSender.mouseScrollBy(0, -10);
+        eventSender.mouseMoveTo(smoothScrollTest.innerPoint.x, smoothScrollTest.innerPoint.y);
+        eventSender.mouseScrollBy(0, -10);
     } else {
         document.write("This test does not work in manual mode.");
     }

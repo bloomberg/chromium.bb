@@ -67,21 +67,21 @@ div:hover {
 
     function executeTestCases()
     {
-        window.internals.startTrackingRepaints(document);
-        document.getElementById('Case1').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-        window.internals.stopTrackingRepaints(document);
+        internals.startTrackingRepaints(document);
+        document.getElementById('Case1').textContent = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+        internals.stopTrackingRepaints(document);
 
         eventSender.mouseMoveTo(0, 0);
-        window.internals.startTrackingRepaints(document);
+        internals.startTrackingRepaints(document);
         hoverOverOuterDiv();
-        document.getElementById('Case2').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-        window.internals.stopTrackingRepaints(document);
+        document.getElementById('Case2').textContent = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+        internals.stopTrackingRepaints(document);
 
         eventSender.mouseMoveTo(0, 0);
-        window.internals.startTrackingRepaints(document);
+        internals.startTrackingRepaints(document);
         hoverOverInnerDiv();
-        document.getElementById('Case3').textContent = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-        window.internals.stopTrackingRepaints(document);
+        document.getElementById('Case3').textContent = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+        internals.stopTrackingRepaints(document);
 
         // Display the test results only after test is done so that it does not affect repaint rect results.
         document.getElementById('testResults').style.display = "block";

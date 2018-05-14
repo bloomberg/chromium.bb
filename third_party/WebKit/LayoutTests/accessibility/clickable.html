@@ -54,7 +54,7 @@
 description("This tests the clickable property of various elements, and tests that a role of an anchor element changes to link when it has a click listener.");
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     function isAXElementClickable(id) {
         return accessibilityController.accessibleElementById(id).isClickable;

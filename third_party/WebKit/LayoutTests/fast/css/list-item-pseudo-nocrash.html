@@ -20,9 +20,9 @@ function run() {
     if (!window.testRunner)
         return;
 
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
-    window.eventSender.mouseMoveTo(0, 0);
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+    eventSender.mouseMoveTo(0, 0);
     window.setTimeout(hover, 100);
 }
 
@@ -30,12 +30,12 @@ function hover() {
     var element = document.getElementById('text');
     var x = element.offsetLeft + element.offsetWidth / 2;
     var y = element.offsetTop + element.offsetHeight / 2;
-    window.eventSender.mouseMoveTo(x, y);
+    eventSender.mouseMoveTo(x, y);
     window.setTimeout(finalize, 100);
 }
 
 function finalize() {
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 }
 
 window.addEventListener('load', run, false);

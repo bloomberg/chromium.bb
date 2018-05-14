@@ -35,7 +35,7 @@ window.onload = function() {
         } else {
             if (window.internals) {
                 var layerTree = internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
-                window.internals.stopTrackingRepaints(document);
+                internals.stopTrackingRepaints(document);
                 document.getElementById("result").textContent = "Tested locations: " + testedLocations + '\n' + layerTree;
             }
             if (window.testRunner)

@@ -50,7 +50,7 @@ div {
         if (!window.internals)
             return;
         var layers = document.createElement('pre');
-        layers.innerHTML = window.internals.layerTreeAsText(document);
+        layers.innerHTML = internals.layerTreeAsText(document);
         document.body.appendChild(layers);
     }
 

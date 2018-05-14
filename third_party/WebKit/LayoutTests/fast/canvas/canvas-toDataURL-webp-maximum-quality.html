@@ -5,8 +5,8 @@
 
 <script>
 if (window.testRunner) {
-    window.testRunner.dumpAsTextWithPixelResults();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsTextWithPixelResults();
+    testRunner.waitUntilDone();
 }
 
 var image = new Image();
@@ -25,7 +25,7 @@ image.onload = function() {
         result.src = dataURL;
 
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 };
 
 image.src = "resources/letters.png";

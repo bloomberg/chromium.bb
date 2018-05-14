@@ -42,9 +42,9 @@ function test()
     testRunner.dumpAsText();
     log("This test compares a shadow-based render tree with one for a reference DOM tree.");
     setupTargetTree();
-    var targetContainerLayoutTree = window.internals.elementLayoutTreeAsText(document.getElementById("targetContainer"));
+    var targetContainerLayoutTree = internals.elementLayoutTreeAsText(document.getElementById("targetContainer"));
     var targetLayoutTree = removeContainerLines(targetContainerLayoutTree);
-    var refContainerLayoutTree = window.internals.elementLayoutTreeAsText(document.getElementById("refContainer"));
+    var refContainerLayoutTree = internals.elementLayoutTreeAsText(document.getElementById("refContainer"));
     var refLayoutTree = removeContainerLines(refContainerLayoutTree);
     if (targetLayoutTree == refLayoutTree)
         log("PASS");

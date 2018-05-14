@@ -405,7 +405,7 @@ class MockVRPresentationProvider {
 
     // Convert current document time to monotonic time.
     var now = window.performance.now() / 1000.0;
-    var diff = now - window.internals.monotonicTimeToZeroBasedDocumentTime(now);
+    var diff = now - internals.monotonicTimeToZeroBasedDocumentTime(now);
     now += diff;
     now *= 1000000;
 

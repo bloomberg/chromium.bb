@@ -13,7 +13,7 @@
     var layerText = '';
 
     function layerTreeText(message) {
-      return message + '\n\n' + window.internals.layerTreeAsText(document) + '\n';
+      return message + '\n\n' + internals.layerTreeAsText(document) + '\n';
     }
 
     function load(element) {

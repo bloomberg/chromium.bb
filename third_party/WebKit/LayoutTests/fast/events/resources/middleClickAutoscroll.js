@@ -50,7 +50,7 @@ function testPanScroll(param)
             return;
         scrolled = true;
         testPassed('autoscroll started');
-        var cursorInfo = window.internals.getCurrentCursorInfo();
+        var cursorInfo = internals.getCurrentCursorInfo();
         debug("Mouse cursor shape: " + cursorInfo);
 
         if (window.eventSender) {
@@ -66,7 +66,7 @@ function testPanScroll(param)
         noMoreScroll = true;
         window.setTimeout(function() {
             testPassed('autoscroll stopped');
-            var cursorInfo = window.internals.getCurrentCursorInfo();
+            var cursorInfo = internals.getCurrentCursorInfo();
             if (cursorInfo == "type=Pointer hotSpot=0,0" || cursorInfo == "type=IBeam hotSpot=0,0")
                  testPassed('Mouse cursor cleared');
             else

@@ -63,7 +63,7 @@
 
       function scaleWithEventSender(scaleFactor) {
           if (window.internals) {
-             window.internals.setPageScaleFactor(scaleFactor);
+             internals.setPageScaleFactor(scaleFactor);
           }
       }
 
@@ -88,8 +88,8 @@
          if (window.eventSender && window.internals) {
             description('This tests that a div scrolled by gesture touch while the page is scaled still scrolls at the rate of the touch');
 
-            if (window.internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
-                window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+            if (internals.runtimeFlags.fractionalScrollOffsetsEnabled) {
+                internals.settings.setPreferCompositingToLCDTextEnabled(true);
                 integerScrollOffset = false;
             }
             test();

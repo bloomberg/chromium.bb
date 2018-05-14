@@ -40,7 +40,7 @@ window.screen.orientation.addEventListener('change', function() {
 });
 
 function runNoChangeTest() {
-  window.testRunner.setMockScreenOrientation(orientations[currentIndex]);
+  testRunner.setMockScreenOrientation(orientations[currentIndex]);
 
   noChangeTest.step(function() {
     assert_equals(screen.orientation.type, orientations[currentIndex]);
@@ -53,7 +53,7 @@ function runNoChangeTest() {
 
 var i = 0;
 function runChangeTest() {
-  window.testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
+  testRunner.setMockScreenOrientation(orientations[getNextIndex()]);
   currentIndex = getNextIndex();
 
   orientationChangeEventContinuation = function() {

@@ -11,8 +11,8 @@ Test passes if it does not CRASH.
 <div class="box">
 <script>
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 document.designMode = 'on';
@@ -26,6 +26,6 @@ document.execCommand("selectAll");
 document.execCommand("forwardDelete");
 
 window.requestAnimationFrame(function() {
-    window.testRunner.notifyDone();
+    testRunner.notifyDone();
 });
 </script>

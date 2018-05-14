@@ -25,8 +25,8 @@
 
           // Simulate the mouse down over the target to trigger an EventDispatch
           if (window.eventSender) {
-              window.eventSender.mouseMoveTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
-              window.eventSender.mouseDown();
+              eventSender.mouseMoveTo(rect.left + rect.width / 2, rect.top + rect.height / 2);
+              eventSender.mouseDown();
           }
       }
   `);

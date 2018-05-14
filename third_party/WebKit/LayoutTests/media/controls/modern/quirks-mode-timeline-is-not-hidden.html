@@ -12,7 +12,7 @@ async_test(t => {
 
   video.onloadedmetadata = t.step_func_done(() => {
     const timelineContainer = timelineElement(video);
-    const timeline = window.internals.shadowRoot(timelineContainer).firstChild;
+    const timeline = internals.shadowRoot(timelineContainer).firstChild;
     const timelineHeight = getComputedStyle(timeline).getPropertyValue("height");
     assert_not_equals(timelineHeight, "0px");
   });

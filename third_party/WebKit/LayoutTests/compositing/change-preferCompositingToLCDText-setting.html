@@ -21,7 +21,7 @@
 var t = async_test("Check that the preferCompositingToLCDText flag results in compositing");
 
 function isUsingCompositedScrolling() {
-    var layers = JSON.parse(window.internals.layerTreeAsText(document));
+    var layers = JSON.parse(internals.layerTreeAsText(document));
     var found = false;
     layers["layers"].forEach(function(layer) {
         if (layer.bounds[1] == 1000)
@@ -34,9 +34,9 @@ window.onload = function() {
   t.step(function() {
     assert_not_equals(window.internals, null, 'This test requires window.internals');
 
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
+    internals.settings.setPreferCompositingToLCDTextEnabled(false);
     var stateBefore = isUsingCompositedScrolling();
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
     var stateAfter = isUsingCompositedScrolling();
 
     assert_false(stateBefore, 'Composited scrolling began disabled');

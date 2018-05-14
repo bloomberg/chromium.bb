@@ -59,9 +59,9 @@ if (window.testRunner) {
     alert('This test require window.testRunner.')
 }
 
-window.internals.forceCompositingUpdate(document);
+internals.forceCompositingUpdate(document);
 document.querySelector('#clipper').className = 'clipping';
-window.internals.forceCompositingUpdate(document);
+internals.forceCompositingUpdate(document);
 document.querySelector('#composited').remove();
-window.internals.forceCompositingUpdate(document);
+internals.forceCompositingUpdate(document);
 </script>

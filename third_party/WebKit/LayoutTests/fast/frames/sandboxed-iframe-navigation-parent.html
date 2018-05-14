@@ -3,8 +3,8 @@
 <script>
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 var navigatedFrames = 0;
@@ -21,7 +21,7 @@ function checkResults()
         testStatus.innerHTML = 'FAIL: frames not navigated properly';
 
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 function countFrame()

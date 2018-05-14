@@ -36,7 +36,7 @@ function testMain()
         shouldBe("document.getElementById('ref" + testId + "').offsetWidth", "document.getElementById('test" + testId + "').offsetWidth");
     }
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 var trialCount = 0;
@@ -54,7 +54,7 @@ function warmUpAndTest()
 }
 
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 </script>
 </body>
 </html>

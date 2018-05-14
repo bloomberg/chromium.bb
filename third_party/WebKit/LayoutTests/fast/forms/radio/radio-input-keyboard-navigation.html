@@ -29,7 +29,7 @@
 		document.querySelector("input").focus();
 		assert_exists(window, "eventSender");
 		for (var i = 0; i < 5; i++) {
-			window.eventSender.keyDown("ArrowDown");
+			eventSender.keyDown("ArrowDown");
 		}
 		assert_greater_than(document.getElementById("test1").scrollTop, 0);
 	}, "Parent container should be scrolled while navigating through radio inputs");

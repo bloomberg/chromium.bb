@@ -8,7 +8,7 @@
     description("This test verifies behavior of the ReportScreenSizeInPhysicalPixelsQuirk setting.");
 
     if (window.testRunner)
-        window.testRunner.setBackingScaleFactor(2, function() {});
+        testRunner.setBackingScaleFactor(2, function() {});
     else
         debug("WARN: This test depends on availability of window.testRunner.");
 
@@ -19,7 +19,7 @@
     shouldBeTrue("deviceHeightIsSameAsScreenHeight");
 
     if (window.internals)
-        window.internals.settings.setReportScreenSizeInPhysicalPixelsQuirk(true);
+        internals.settings.setReportScreenSizeInPhysicalPixelsQuirk(true);
     else
         debug("WARN: This test depends on the ReportScreenSizeInPhysicalPixelsQuirk setting to be true.");
 

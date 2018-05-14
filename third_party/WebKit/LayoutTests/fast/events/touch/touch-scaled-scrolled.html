@@ -9,14 +9,14 @@
 function touched(e) {
     document.getElementById("result").innerText = e.targetTouches[0].clientX + ', ' + e.targetTouches[0].clientY;
     if (window.testRunner)
-        window.testRunner.notifyDone()
+        testRunner.notifyDone()
 }
 
 function runTest() {
     // Scroll before scaling so we scroll the layout viewport rather than the visual.
     window.scrollTo(100,100);
     if (window.internals)
-        window.internals.setPageScaleFactor(2);
+        internals.setPageScaleFactor(2);
 
     if (window.testRunner) {
         testRunner.dumpAsText();

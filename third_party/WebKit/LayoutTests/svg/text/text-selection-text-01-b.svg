@@ -209,7 +209,7 @@
 	<rect id="test-frame" x="1" y="1" width="158" height="118" fill="none" stroke="#000000"/>
 <script>
 if (window.testRunner)
-    window.testRunner.dumpSelectionRect();
+    testRunner.dumpSelectionRect();
 var range = document.createRange();
 range.selectNode(window.document.documentElement);
 var selection = window.getSelection();

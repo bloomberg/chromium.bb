@@ -35,13 +35,13 @@ function test() {
     shouldBe('foregroundOf(textarea1)', 'originalForeground');
     shouldBe('backgroundOf(textarea1)', 'originalBackground');
 
-    window.internals.setAutofilled(field, true);
-    window.internals.setAutofilled(search, true);
-    window.internals.setAutofilled(textarea1, true);
-    window.internals.setAutofilled(textarea2, true);
-    window.internals.setAutofilled(select1, true);
-    window.internals.setAutofilled(select2, true);
-    window.internals.setAutofilled(select3, true);
+    internals.setAutofilled(field, true);
+    internals.setAutofilled(search, true);
+    internals.setAutofilled(textarea1, true);
+    internals.setAutofilled(textarea2, true);
+    internals.setAutofilled(select1, true);
+    internals.setAutofilled(select2, true);
+    internals.setAutofilled(select3, true);
 
     shouldBeEqualToString('search.value', 'Search value');
 
@@ -70,9 +70,9 @@ function test() {
     shouldBe('foregroundOf(select2)', 'autofilledSelectForeground');
     shouldBe('backgroundOf(select2)', 'autofilledSelectBackground');
 
-    window.internals.setAutofilled(field, false);
-    window.internals.setAutofilled(textarea1, false);
-    window.internals.setAutofilled(select1, false);
+    internals.setAutofilled(field, false);
+    internals.setAutofilled(textarea1, false);
+    internals.setAutofilled(select1, false);
 
     // Cancel search by pressing cancel button
     var cancelPos = searchCancelButtonPosition(search);

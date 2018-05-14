@@ -41,7 +41,7 @@
             if (!window.testRunner || !window.internals)
                 return;
 
-            var layerTreeText = window.internals.layerTreeAsText(document);
+            var layerTreeText = internals.layerTreeAsText(document);
             document.getElementById("console").appendChild(document.createTextNode(layerTreeText));
         }
 

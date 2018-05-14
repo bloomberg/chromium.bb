@@ -10,13 +10,13 @@
         if (!window.internals)
             return;
 
-        window.internals.setPageScaleFactor(2);
+        internals.setPageScaleFactor(2);
 
         setTimeout(increasePageScale, 0);
     }
 
     function increasePageScale() {
-        window.internals.setPageScaleFactor(4);
+        internals.setPageScaleFactor(4);
 
         if (window.testRunner)
             testRunner.notifyDone();

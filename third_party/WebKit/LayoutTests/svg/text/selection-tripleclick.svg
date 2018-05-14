@@ -22,6 +22,6 @@ if (eventSender) {
 }
 
 if (window.testRunner)
-    window.testRunner.dumpSelectionRect();
+    testRunner.dumpSelectionRect();
 </script>
 </svg>

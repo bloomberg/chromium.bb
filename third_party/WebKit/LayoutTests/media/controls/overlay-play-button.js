@@ -19,7 +19,7 @@ function assertOverlayPlayButtonNotVisible(videoElement) {
 function overlayPlayButton(videoElement) {
   var controlID = '-webkit-media-controls-overlay-play-button';
   var button = mediaControlsElement(
-      window.internals.shadowRoot(videoElement).firstChild,
+      internals.shadowRoot(videoElement).firstChild,
       controlID);
   if (!button)
     throw 'Failed to find overlay play button';

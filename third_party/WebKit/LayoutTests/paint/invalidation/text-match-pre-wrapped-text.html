@@ -10,8 +10,8 @@ function highlightRange(id, start, end, active) {
     range.setStart(elem, start);
     range.setEnd(elem, end);
     if (window.internals) {
-        window.internals.addTextMatchMarker(range, active);
-        window.internals.setMarkedTextMatchesAreHighlighted(document, true);
+        internals.addTextMatchMarker(range, active);
+        internals.setMarkedTextMatchesAreHighlighted(document, true);
     }
 }
 

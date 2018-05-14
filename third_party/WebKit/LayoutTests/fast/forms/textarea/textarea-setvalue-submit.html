@@ -13,8 +13,8 @@
 if (document.URL.indexOf('?') == -1) {
 
     if (window.testRunner) {
-        window.testRunner.dumpAsText();
-        window.testRunner.waitUntilDone();
+        testRunner.dumpAsText();
+        testRunner.waitUntilDone();
     }
     
     var textarea1 = document.getElementById("textarea1");
@@ -33,7 +33,7 @@ if (document.URL.indexOf('?') == -1) {
         document.write("Failure.  The value set in the textarea via javascript wasn't sent when the form was submitted.  Expected: " + expected + ", Found: " + formData);
     
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 </script>

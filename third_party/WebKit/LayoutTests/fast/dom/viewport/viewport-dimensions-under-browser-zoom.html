@@ -43,7 +43,7 @@
       assert_equals(viewport().scale, 2);
 
       // Apply browser zoom.
-      window.internals.setZoomFactor(browserZoomFactor);
+      internals.setZoomFactor(browserZoomFactor);
 
       requestAnimationFrame(function() {
         t.step(function() {

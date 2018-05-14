@@ -37,7 +37,7 @@
 
       if (window.testRunner) {
         runAfterLayoutAndPaint(function() {
-          document.getElementById('layers').innerText = window.internals.layerTreeAsText(document);
+          document.getElementById('layers').innerText = internals.layerTreeAsText(document);
           testRunner.notifyDone();
         });
       }

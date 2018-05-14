@@ -5,7 +5,7 @@ is not supported as laid out in section 4 of the
 standard</div>
 <script src="full-screen-test.js"></script>
 <script>
-    window.internals.settings.setFullscreenSupported(false);
+    internals.settings.setFullscreenSupported(false);
     
     testExpected('document.webkitFullscreenEnabled', false);
 

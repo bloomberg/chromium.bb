@@ -11,11 +11,11 @@
         function zoomBy(zoomFactor)
         {
             while (zoomFactor > 0) {
-                window.eventSender.zoomPageIn();
+                eventSender.zoomPageIn();
                 zoomFactor--;
             }
             while (zoomFactor < 0) {
-                window.eventSender.zoomPageOut();
+                eventSender.zoomPageOut();
                 zoomFactor++;
             }
         }

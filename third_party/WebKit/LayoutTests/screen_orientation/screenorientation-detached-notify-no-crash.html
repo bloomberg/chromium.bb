@@ -10,7 +10,7 @@ var notifyTest = async_test("Test that async event dispatch to detached frame is
 function changeOrientationAndDetach() {
     // Dispatch an orientationchange event; this is handled asynchronously,
     // queueing a task/timer to do the actual dispatch.
-    window.testRunner.setMockScreenOrientation('portrait-secondary');
+    testRunner.setMockScreenOrientation('portrait-secondary');
 
     // Detach the iframe while the event dispatch is in-flight. If
     // the screen orientation controller is finalized during the

@@ -41,8 +41,8 @@ async_test((test) => {
         // 'FullscreenUnprefixed' runtime flag dynamically.  Until the
         // flag is turned on, document.webkitFullscreenElement leaks the
         // fullscreen element under shadow roots.
-        window.internals.runtimeFlags.fullscreenUnprefixedEnabled = false;
-        assert_false(window.internals.runtimeFlags.fullscreenUnprefixedEnabled);
+        internals.runtimeFlags.fullscreenUnprefixedEnabled = false;
+        assert_false(internals.runtimeFlags.fullscreenUnprefixedEnabled);
         assert_equals(document.webkitFullscreenElement, canvas);
         assert_equals(document.webkitCurrentFullScreenElement, canvas);
 

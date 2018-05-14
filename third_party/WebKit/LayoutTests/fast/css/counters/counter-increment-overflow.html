@@ -18,7 +18,7 @@
         function doTest()
         {
             if (window.testRunner)
-                document.getElementById('counted').innerText = window.internals.counterValue(document.getElementById('counted'));
+                document.getElementById('counted').innerText = internals.counterValue(document.getElementById('counted'));
         }
 
         window.addEventListener('load', doTest, false);

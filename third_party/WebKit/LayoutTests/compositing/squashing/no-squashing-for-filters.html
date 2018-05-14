@@ -12,8 +12,8 @@
 <script>
 // Tests that layers with filters are not squashed.
 if (window.testRunner)
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 var layersResult = document.getElementById('layers');
 if (window.internals)
-    layersResult.innerText = window.internals.layerTreeAsText(document);
+    layersResult.innerText = internals.layerTreeAsText(document);
 </script>

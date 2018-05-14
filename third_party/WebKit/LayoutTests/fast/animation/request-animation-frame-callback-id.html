@@ -1,7 +1,7 @@
 <script>
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 function runTest() {
@@ -14,7 +14,7 @@ function runTest() {
         results.innerText = "FAILED: Callback id was <= 0";
 
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 
 window.addEventListener("load", runTest, false);

@@ -13,13 +13,13 @@
 description("This tests that when AXPress is used DOMActivate will be handled by the input file type.")
 
 if (window.testRunner && window.accessibilityController) {
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
     
     var inputFile = document.getElementById("filetype");
 
     inputFile.addEventListener("DOMActivate", function() { 
         debug("DOMActivate was called"); 
-        window.testRunner.notifyDone(); 
+        testRunner.notifyDone(); 
     });
 
     accessibilityController.accessibleElementById("filetype").press();

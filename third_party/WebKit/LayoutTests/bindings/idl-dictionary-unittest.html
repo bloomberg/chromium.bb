@@ -7,7 +7,7 @@ var testObject1 = { foo: 'x' };
 var testObject2 = { bar: 'y' };
 
 if (window.internals && internals.dictionaryTest) {
-    var dictionaryTest = window.internals.dictionaryTest();
+    var dictionaryTest = internals.dictionaryTest();
 
     debug('Test for setting an empty dictionary');
     dictionaryTest.set({});

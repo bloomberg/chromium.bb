@@ -5,18 +5,18 @@
 <script>
 if (window.testRunner) {
 
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     function crash() {
         var div = document.createElement('div');
         div.ontouchstart = function() { };
         document.body.appendChild(div);
-        window.internals.touchStartOrMoveEventHandlerCount(document);
+        internals.touchStartOrMoveEventHandlerCount(document);
         div.parentNode.removeChild(div);
         div = 0;
         if (window.GCController)
             GCController.collect();
-        window.internals.touchStartOrMoveEventHandlerCount(document);
+        internals.touchStartOrMoveEventHandlerCount(document);
     }
 
     crash();

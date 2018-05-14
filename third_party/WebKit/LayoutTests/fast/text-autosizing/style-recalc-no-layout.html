@@ -20,14 +20,14 @@
     document.body.offsetTop;
 
     if (window.internals)
-        shouldBe("window.internals.needsLayoutCount()", "0", true);
+        shouldBe("internals.needsLayoutCount()", "0", true);
 
     // Should cause a repaint but no layout.
     document.querySelector('#autosize').style.color = 'green';
 
     if (window.internals) {
-        shouldBe("window.internals.updateStyleAndReturnAffectedElementCount()", "1", true);
-        shouldBe("window.internals.needsLayoutCount()", "0", true);
+        shouldBe("internals.updateStyleAndReturnAffectedElementCount()", "1", true);
+        shouldBe("internals.needsLayoutCount()", "0", true);
     }
   </script>
 </body>

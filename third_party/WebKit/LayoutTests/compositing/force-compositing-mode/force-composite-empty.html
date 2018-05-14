@@ -2,11 +2,11 @@
   <head>
     <script>
       if (window.internals) {
-        window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+        internals.settings.setPreferCompositingToLCDTextEnabled(true);
       }
       function doTest() {
         if (window.testRunner) {
-          document.getElementById("layertree").innerText = window.internals.layerTreeAsText(document);
+          document.getElementById("layertree").innerText = internals.layerTreeAsText(document);
           testRunner.dumpAsText();
         }
       }

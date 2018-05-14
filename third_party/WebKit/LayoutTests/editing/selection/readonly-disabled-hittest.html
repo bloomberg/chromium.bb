@@ -11,7 +11,7 @@ function test() {
     if (!window.eventSender)
         return;
 
-    if (!window.eventSender.gestureLongPress) {
+    if (!eventSender.gestureLongPress) {
         debug("gestureLongPress not implemented by this platform.");
         debug("Manullay long press on every element in the page and check whether Paste Popup is appearing or not");
         debug("If Paste popup is appearing for readonly or disabled input/textarea, then it's a failure.");
@@ -51,7 +51,7 @@ function doLongPressOnElement(elementId) {
     var middleX = (bounds.left + bounds.right) / 2;
     var middleY = (bounds.top + bounds.bottom) / 2;
     // Touch directly in the center of the element.
-    window.eventSender.gestureLongPress(middleX, middleY);
+    eventSender.gestureLongPress(middleX, middleY);
     var touchNode = document.elementFromPoint(middleX, middleY);
     shouldBe(touchNode.id, elementId);
 }

@@ -11,8 +11,8 @@ Bug 9537 REGRESSION: Reproducible crash in WebCore::LayoutTextField::textWithHar
 </form>
 <script>
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
-    window.testRunner.waitUntilDone();
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
 }
 
 if (document.URL.indexOf('?') == -1) {
@@ -25,7 +25,7 @@ if (document.URL.indexOf('?') == -1) {
         document.write("<div>Failure.</div><div>Expected: textarea=</div><div>Actual: " + formData + "</div>");
 
     if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
 }
 </script>
 </body>

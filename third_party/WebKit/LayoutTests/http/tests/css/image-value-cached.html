@@ -12,7 +12,7 @@ async_test(function(t) {
   window.addEventListener('load', t.step_func(function() {
     if (window.internals) {
       // Check that the image is in the Resource::Cached state.
-      assert_true(window.internals.isLoadingFromMemoryCache(
+      assert_true(internals.isLoadingFromMemoryCache(
           'https://localhost:8443/css/resources/abe.png'))
     }
 

@@ -30,8 +30,8 @@
 <script>
 function runTest() {
     if (window.internals && window.eventSender) {
-        window.internals.setPageScaleFactorLimits(0.5, 4);
-        window.internals.setPageScaleFactor(0.5);
+        internals.setPageScaleFactorLimits(0.5, 4);
+        internals.setPageScaleFactor(0.5);
 
         // Force scrollbar to hide and re-layout immediately.
         var spacer = document.getElementById('spacer');

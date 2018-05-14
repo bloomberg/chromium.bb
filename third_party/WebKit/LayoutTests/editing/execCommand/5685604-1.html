@@ -33,7 +33,7 @@ else
     log("Failure. Expected: " + expectedHTML);
 
 if (window.testRunner) {
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
     document.body.innerText = document.getElementById("console").innerText;
 }
 </script>

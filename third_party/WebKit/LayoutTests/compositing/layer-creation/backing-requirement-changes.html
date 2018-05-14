@@ -32,7 +32,7 @@
     function doTest()
     {
       if (window.internals) {
-        window.internals.forceCompositingUpdate(document);
+        internals.forceCompositingUpdate(document);
       }
       // Move green div so that it overlaps the yellow div, and hence
       // needs its own backing.

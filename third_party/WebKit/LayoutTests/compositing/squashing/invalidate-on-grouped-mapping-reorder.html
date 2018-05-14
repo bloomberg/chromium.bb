@@ -6,12 +6,12 @@ onload = requestAnimationFrame(function() {
     requestAnimationFrame(function() {
         document.getElementById('badlayer').style.zIndex = "1"
         if (window.testRunner)
-            window.testRunner.notifyDone();
+            testRunner.notifyDone();
     });
 });
 
 if (window.testRunner)
-    window.testRunner.waitUntilDone();
+    testRunner.waitUntilDone();
 
 </script>
 <!-- Tests an obscure invalidaiton situation in which changing the z-index of a element results in a reshuffle of squashed content,

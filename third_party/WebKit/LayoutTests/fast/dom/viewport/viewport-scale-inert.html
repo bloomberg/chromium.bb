@@ -22,7 +22,7 @@
         var initialHeight = window.innerHeight;
 
         // Zoom into the page, innerWidth and innerHeight shouldn't be affected.
-        window.internals.setPageScaleFactor(2);
+        internals.setPageScaleFactor(2);
 
         test(function() {
               assert_equals(window.innerWidth, initialWidth);
@@ -31,7 +31,7 @@
 
         // Pan just the visual viepwort. scrollX and scrollY shouldn't be
         // affected.
-        window.internals.setVisualViewportOffset(10, 20);
+        internals.setVisualViewportOffset(10, 20);
 
         test(function() {
               assert_equals(window.scrollX, 0);

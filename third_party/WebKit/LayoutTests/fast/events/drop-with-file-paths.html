@@ -6,7 +6,7 @@ function runTest() {
     if (!window.testRunner)
         return;
 
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
     eventSender.beginDragWithFiles(['resources/file-for-drop-with-file-paths.html']);
     eventSender.mouseMoveTo(10, 10);

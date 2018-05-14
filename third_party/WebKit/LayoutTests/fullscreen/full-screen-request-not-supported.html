@@ -5,7 +5,7 @@
 in those platforms where fullscreen is not supported.
 <script>
     if (window.internals) {
-        window.internals.settings.setFullscreenSupported(false);
+        internals.settings.setFullscreenSupported(false);
 
         waitForEvent(document, 'webkitfullscreenchange', function() {
             logResult(false, 'Entered fullscreen.');

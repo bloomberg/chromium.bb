@@ -18,12 +18,12 @@
 document.body.offsetTop;
 
 if (window.internals)
-    shouldBe("window.internals.needsLayoutCount()", "0", true);
+    shouldBe("internals.needsLayoutCount()", "0", true);
 
 // Changing border-image-outset will cause a repaint but no layout.
 document.getElementById("test").style['border-image-outset'] = '5';
 
 if (window.internals) {
-    shouldBe("window.internals.needsLayoutCount()", "0", true);
+    shouldBe("internals.needsLayoutCount()", "0", true);
 }
 </script>

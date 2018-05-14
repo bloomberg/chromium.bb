@@ -10,8 +10,8 @@ window.onload = function() {
   if (!window.testRunner)
     return;
   // Force a pixel dump to cover raterization issues if any.
-  window.testRunner.capturePixelsAsyncThen(function() {
-    window.testRunner.notifyDone();
+  testRunner.capturePixelsAsyncThen(function() {
+    testRunner.notifyDone();
   });
 };
 </script>

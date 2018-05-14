@@ -4,7 +4,7 @@
 if (window.testRunner)
     testRunner.dumpAsText();
 if (window.internals)
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+    internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
 onload = function() {
     var layerTreePreStyleUpdate = "";
@@ -12,11 +12,11 @@ onload = function() {
       
     document.getElementById("frame").contentDocument.getElementById("input").value =
         "This is a very long string that will cause overflow";
-    layerTreePreStyleUpdate = window.internals.layerTreeAsText(document);
+    layerTreePreStyleUpdate = internals.layerTreeAsText(document);
 
     // Force a style recalc.
     document.body.offsetTop;
-    layerTreePostStyleUpdate = window.internals.layerTreeAsText(document);
+    layerTreePostStyleUpdate = internals.layerTreeAsText(document);
 
     var pre = document.createElement('pre');
     if (layerTreePreStyleUpdate === layerTreePostStyleUpdate)

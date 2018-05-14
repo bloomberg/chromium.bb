@@ -8,7 +8,7 @@ if (window.testRunner) {
     testRunner.setCloseRemainingWindowsWhenComplete(true);
     testRunner.waitUntilDone();
     // Record current window count.
-    window.windowCount = window.testRunner.windowCount();
+    window.windowCount = testRunner.windowCount();
 }
 
 function eventfire()

@@ -25,17 +25,17 @@
   </style>
   <script type="text/javascript" charset="utf-8">
     if (window.testRunner)
-      window.testRunner.dumpAsTextWithPixelResults();
+      testRunner.dumpAsTextWithPixelResults();
 
     if (window.internals)
-      window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
+      internals.settings.setPreferCompositingToLCDTextEnabled(true);
 
     function endTest()
     {
       var textarea = document.getElementById('container');
       textarea.scrollTop = 40;
       if (window.testRunner)
-        window.testRunner.notifyDone();
+        testRunner.notifyDone();
     }
 
     function doTest()

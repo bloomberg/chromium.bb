@@ -22,7 +22,7 @@
         iframe.contentDocument.body.offsetWidth; // See bug 41999
         if (window.testRunner) {
           testRunner.dumpAsText();
-          document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
+          document.getElementById('layertree').innerText = internals.layerTreeAsText(document);
           testRunner.notifyDone();
         }
       });

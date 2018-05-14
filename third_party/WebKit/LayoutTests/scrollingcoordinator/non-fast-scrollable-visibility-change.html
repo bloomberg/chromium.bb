@@ -90,7 +90,7 @@
   // Execute tests for given non-fast scrollable type.
   function runTest(type, elemToShowExpected, elemToHideExpected) {
     // Hide all sections that are not relevant to this test to ensure
-    // |window.internals.nonFastScrollableRects| returns only the relevant non-
+    // |internals.nonFastScrollableRects| returns only the relevant non-
     // fast scrollable regions.
     showSectionIf(function(section){return section.id == type;});
 
@@ -111,7 +111,7 @@
         // Change visibility (hidden -> visible), which should not cause any layout,
         // and verify that non-fast scrollable areas are correctly updated.
         elemToShow.style.visibility = 'visible';
-        shouldBe('window.internals.needsLayoutCount()', '0');
+        shouldBe('internals.needsLayoutCount()', '0');
 
         runAfterLayoutAndPaint(function() {
           nonFastScrollableRects = internals.nonFastScrollableRects(document);
@@ -121,7 +121,7 @@
 
           // Change visibility (visible -> hidden)
           elemToHide.style.visibility = 'hidden';
-          shouldBe('window.internals.needsLayoutCount()', '0');
+          shouldBe('internals.needsLayoutCount()', '0');
 
           runAfterLayoutAndPaint(function() {
             nonFastScrollableRects = internals.nonFastScrollableRects(document);

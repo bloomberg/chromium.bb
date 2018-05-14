@@ -15,7 +15,7 @@
     description("CSS3 media query test: -webkit-device-pixel-ratio combined with print.")
 
     if (window.testRunner && window.internals) {
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
 
         function resolutionFromStyle() {
             var width = getComputedStyle(document.getElementById("detector")).width;
@@ -41,7 +41,7 @@
 
         // Test printing.
 
-        window.internals.settings.setMediaTypeOverride("print");
+        internals.settings.setMediaTypeOverride("print");
         shouldBe("matchMedia('(-webkit-min-device-pixel-ratio: 3)').matches", "true");
 
         // Should match the one requiring 'print' media type.

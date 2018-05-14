@@ -20,11 +20,11 @@ function openPickerErrorCallback() {
 openPicker(menu, testPartiallyVisible, openPickerErrorCallback);
 
 function testPartiallyVisible() {
-  picker = window.internals.pagePopupWindow.global.picker;
+  picker = internals.pagePopupWindow.global.picker;
 
   function onUpdate() {
     setTimeout(function() {
-      shouldBeFalse('window.internals.pagePopupWindow.isWindowHidden()');
+      shouldBeFalse('internals.pagePopupWindow.isWindowHidden()');
       picker.removeListener('didUpdate', onUpdate);
       finishJSTest();
     });

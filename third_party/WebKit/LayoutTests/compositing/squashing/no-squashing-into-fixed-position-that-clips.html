@@ -38,8 +38,8 @@
 <script>
 // Tests that not squashing into an element with a different clip works correctly with fixed-position layers.
 if (window.testRunner)
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
 if (window.internals)
-    output.textContent = window.internals.layerTreeAsText(document);
+    output.textContent = internals.layerTreeAsText(document);
 </script>

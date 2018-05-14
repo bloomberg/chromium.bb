@@ -7,7 +7,7 @@ test(function(t) {
     // The reason this is implemented as a layout test instead of a unit test (see CanvasFontCacheTest.cpp)
     // is to exercise interactions with animation frames.    
     var cacheLimit = 0;
-    cacheLimit = window.internals.canvasFontCacheMaxFonts();
+    cacheLimit = internals.canvasFontCacheMaxFonts();
     requestAnimationFrame(step1);
     
     var ctx = document.getElementById('c').getContext('2d');

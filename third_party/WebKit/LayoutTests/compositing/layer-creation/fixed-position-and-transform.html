@@ -29,7 +29,7 @@
     function doTest() {
         window.scrollTo(0, 1000);
         if (window.testRunner) {
-            document.getElementById('layertree').innerText = window.internals.layerTreeAsText(document);
+            document.getElementById('layertree').innerText = internals.layerTreeAsText(document);
             testRunner.dumpAsTextWithPixelResults();
         }
     }

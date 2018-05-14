@@ -9,8 +9,8 @@ if (window.internals)
 
 window.addEventListener("message", function() {
         if (window.internals) {
-            shouldBeFalse('window.internals.isLoadingFromMemoryCache("resources/image-set-4x.png")');
-            shouldBeTrue('window.internals.isLoadingFromMemoryCache("resources/blue_rect.jpg")');
+            shouldBeFalse('internals.isLoadingFromMemoryCache("resources/image-set-4x.png")');
+            shouldBeTrue('internals.isLoadingFromMemoryCache("resources/blue_rect.jpg")');
         }
         finishJSTest();
     });

@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <script>
   if (window.internals) {
-    window.internals.runtimeFlags.overlayScrollbarsEnabled = true;
-    window.internals.settings.setMockScrollbarsEnabled(true);
+    internals.runtimeFlags.overlayScrollbarsEnabled = true;
+    internals.settings.setMockScrollbarsEnabled(true);
 
     window.onload = function() {
       var div = document.getElementById('iframe')
                         .contentDocument
                         .getElementById('target');
-      window.internals.setScrollbarVisibilityInScrollableArea(div, false);
+      internals.setScrollbarVisibilityInScrollableArea(div, false);
     }
   }
 </script>

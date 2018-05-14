@@ -22,7 +22,7 @@ function runTest() {
     useMockHighlight();
 
     if (window.internals) {
-        window.internals.setPageScaleFactor(2);
+        internals.setPageScaleFactor(2);
     }
 
     var clientRect = document.getElementById('targetLink').getBoundingClientRect();
@@ -33,7 +33,7 @@ function runTest() {
 
     if (window.eventSender) {
         eventSender.gestureShowPress(x, y);
-        window.setTimeout(function() { window.testRunner.notifyDone(); }, 0);
+        window.setTimeout(function() { testRunner.notifyDone(); }, 0);
     } else {
         debug("This test requires DumpRenderTree.");
     }

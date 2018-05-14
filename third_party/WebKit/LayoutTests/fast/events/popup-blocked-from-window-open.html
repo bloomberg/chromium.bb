@@ -8,11 +8,11 @@ if (window.testRunner) {
   testRunner.setCloseRemainingWindowsWhenComplete(true);
   testRunner.waitUntilDone();
     // Record current window count.
-    window.windowCount = window.testRunner.windowCount();
+    window.windowCount = testRunner.windowCount();
 }
 
 function test() {
-    if (window.testRunner && window.testRunner.windowCount() == window.windowCount)
+    if (window.testRunner && testRunner.windowCount() == window.windowCount)
         document.getElementById("console").innerText = "PASSED";
     // Close the test.
     testRunner.notifyDone();

@@ -2,7 +2,7 @@
 // |callback| will be called once the suspend is detected.
 function suspendMediaElement(video, expectedState, callback) {
   var pollSuspendState = function() {
-    if (!window.internals.isMediaElementSuspended(video)) {
+    if (!internals.isMediaElementSuspended(video)) {
       window.requestAnimationFrame(pollSuspendState);
       return;
     }
@@ -11,14 +11,14 @@ function suspendMediaElement(video, expectedState, callback) {
   };
 
   window.requestAnimationFrame(pollSuspendState);
-  window.internals.forceStaleStateForMediaElement(video, expectedState);
+  internals.forceStaleStateForMediaElement(video, expectedState);
 }
 
 // Calls play() on |video| and executes t.done() when currentTime > 0.
 function completeTestUponPlayback(t, video) {
   var timeWatcher = t.step_func(function() {
     if (video.currentTime > 0) {
-      assert_false(window.internals.isMediaElementSuspended(video));
+      assert_false(internals.isMediaElementSuspended(video));
       t.done();
     } else {
       window.requestAnimationFrame(timeWatcher);
@@ -35,7 +35,7 @@ function preloadMetadataSuspendTest(t, video, src, expectSuspend) {
 
   var eventListener = t.step_func(function() {
     assert_equals(expectSuspend,
-                  window.internals.isMediaElementSuspended(video));
+                  internals.isMediaElementSuspended(video));
     if (!expectSuspend) {
       t.done();
       return;
@@ -55,7 +55,7 @@ function suspendTest(t, video, src, expectedState) {
   // We can't force a suspend state until loading has started.
   video.addEventListener('loadstart', t.step_func(function() {
     suspendMediaElement(video, expectedState, t.step_func(function() {
-      assert_true(window.internals.isMediaElementSuspended(video));
+      assert_true(internals.isMediaElementSuspended(video));
       completeTestUponPlayback(t, video);
     }));
   }), false);

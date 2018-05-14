@@ -18,7 +18,7 @@
     description("CSS3 media query test: resolution query with dppx. Using style element, @media css rule.")
 
     if (window.testRunner && window.internals) {
-        window.testRunner.dumpAsText();
+        testRunner.dumpAsText();
 
         function resolutionFromStyle() {
             var width = getComputedStyle(document.getElementById("detector")).width;
@@ -49,19 +49,19 @@
         shouldBe("matchMedia('(min-resolution: 0dpi)').matches", "false");
         shouldBe("matchMedia('(max-resolution: 0dpi)').matches", "false");
 
-        window.testRunner.setBackingScaleFactor(1.5, function() {});
+        testRunner.setBackingScaleFactor(1.5, function() {});
         shouldBe("matchMedia('(resolution: 1.5dppx)').matches", "true");
         shouldBe("resolutionFromStyle()", "1.5");
 
-        window.testRunner.setBackingScaleFactor(2, function() {});
+        testRunner.setBackingScaleFactor(2, function() {});
         shouldBe("matchMedia('(resolution: 2dppx)').matches", "true");
         shouldBe("resolutionFromStyle()", "2");
 
-        window.testRunner.setBackingScaleFactor(1, function() {});
+        testRunner.setBackingScaleFactor(1, function() {});
         shouldBe("matchMedia('(resolution: 1dppx)').matches", "true");
         shouldBe("resolutionFromStyle()", "1");
 
-        window.testRunner.setBackingScaleFactor(2.25, function() {});
+        testRunner.setBackingScaleFactor(2.25, function() {});
         shouldBe("matchMedia('(resolution: 2.25dppx)').matches", "true");
         shouldBe("resolutionFromStyle()", "2.25");
         shouldBe("matchMedia('(resolution)').matches", "true");
@@ -75,7 +75,7 @@
 
         // Test printing.
 
-        window.internals.settings.setMediaTypeOverride("print");
+        internals.settings.setMediaTypeOverride("print");
         shouldBe("matchMedia('(min-resolution: 300dpi)').matches", "true");
         shouldBe("matchMedia('(min-resolution: 118dpcm)').matches", "true");
 

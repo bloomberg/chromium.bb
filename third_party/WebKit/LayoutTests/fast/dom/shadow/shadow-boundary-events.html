@@ -19,7 +19,7 @@ function moveMouseOver(element)
     var defaultPaddingSize = 20;
     var x = element.offsetLeft + element.offsetWidth / 2;
     var y;
-    if (element.hasChildNodes() || window.internals.shadowRoot(element))
+    if (element.hasChildNodes() || internals.shadowRoot(element))
         y = element.offsetTop + defaultPaddingSize;
     else
         y = element.offsetTop + element.offsetHeight / 2;

@@ -22,7 +22,7 @@ document.getElementById('option1').title = 'bar\nbaz';
 openPicker(menu, test1, openPickerErrorCallback);
 
 function test1() {
-    picker = window.internals.pagePopupWindow.global.picker;
+    picker = internals.pagePopupWindow.global.picker;
     shouldBeEqualToString('picker._selectElement.options[0].title', 'bar\nbaz');
     finishJSTest();
 }

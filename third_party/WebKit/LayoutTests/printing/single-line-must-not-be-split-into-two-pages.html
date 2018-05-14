@@ -31,7 +31,7 @@ for (var i = 0; i < 400; i++) {
 }
 document.getElementById("renderingArea1").innerHTML = str;
 if (window.internals)
-    document.getElementById("nonOverflowedLines").innerText = window.internals.elementLayoutTreeAsText(document.getElementById("renderingArea1"));
+    document.getElementById("nonOverflowedLines").innerText = internals.elementLayoutTreeAsText(document.getElementById("renderingArea1"));
 
 str = "";
 for (var i = 0; i < 400; i++) {
@@ -39,7 +39,7 @@ for (var i = 0; i < 400; i++) {
 }
 document.getElementById("renderingArea2").innerHTML = str;
 if (window.internals)
-    document.getElementById("overflowedLines").innerText = window.internals.elementLayoutTreeAsText(document.getElementById("renderingArea2"));
+    document.getElementById("overflowedLines").innerText = internals.elementLayoutTreeAsText(document.getElementById("renderingArea2"));
 
 // To test manually, comment out the following two lines,
 // print this page, and check if no lines are split across two pages.

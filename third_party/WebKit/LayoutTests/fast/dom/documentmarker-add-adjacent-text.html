@@ -20,10 +20,10 @@ rangeRight.setEnd(elt, 4);
 if (!window.internals) {
     alert('This test requires window.interals to run!');
 } else {
-    window.internals.addTextMatchMarker(rangeLeft, 'kActive');
-    window.internals.addTextMatchMarker(rangeRight, 'kActive');
+    internals.addTextMatchMarker(rangeLeft, 'kActive');
+    internals.addTextMatchMarker(rangeRight, 'kActive');
 
-    shouldBe('window.internals.markerCountForNode(elt, "textmatch")', '2');
+    shouldBe('internals.markerCountForNode(elt, "textmatch")', '2');
 }
 
 var successfullyParsed = true;

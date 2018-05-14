@@ -27,7 +27,7 @@
     `);
   await TestRunner.evaluateInPagePromise(`
       if (window.internals)
-          window.internals.setPageScaleFactor(2);
+          internals.setPageScaleFactor(2);
       // Fully scroll the visual viewport.
       internals.setVisualViewportOffset(1000, 1000);
   `);

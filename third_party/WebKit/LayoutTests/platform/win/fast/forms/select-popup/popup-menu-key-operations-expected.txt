@@ -18,7 +18,7 @@ PASS internals.selectMenuListText(menu) is "foo"
 PASS picker._selectElement.value is "0"
 PASS menu.value is "bar"
 PASS internals.selectMenuListText(menu) is "foo"
-PASS window.internals.pagePopupWindow is null
+PASS internals.pagePopupWindow is null
 PASS menu.value is "foo"
 PASS internals.selectMenuListText(menu) is "foo"
 ==> Arrow keys + ESC
@@ -27,7 +27,7 @@ PASS internals.selectMenuListText(menu) is "foo"
 PASS picker._selectElement.value is "1"
 PASS menu.value is "foo"
 PASS internals.selectMenuListText(menu) is "bar"
-PASS window.internals.pagePopupWindow is null
+PASS internals.pagePopupWindow is null
 PASS menu.value is "bar"
 PASS internals.selectMenuListText(menu) is "bar"
 ==> Arrow keys + blur
@@ -36,7 +36,7 @@ PASS internals.selectMenuListText(menu) is "foo"
 PASS picker._selectElement.value is "1"
 PASS menu.value is "foo"
 PASS internals.selectMenuListText(menu) is "bar"
-PASS window.internals.pagePopupWindow is null
+PASS internals.pagePopupWindow is null
 PASS menu.value is "bar"
 PASS internals.selectMenuListText(menu) is "bar"
 ==> Typeahead + ESC
@@ -45,7 +45,7 @@ PASS internals.selectMenuListText(menu) is "bar"
 PASS picker._selectElement.value is "4"
 PASS menu.value is "bar"
 PASS internals.selectMenuListText(menu) is "garply"
-PASS window.internals.pagePopupWindow is null
+PASS internals.pagePopupWindow is null
 PASS menu.value is "garply"
 PASS internals.selectMenuListText(menu) is "garply"
 ==> Hover + ESC
@@ -54,7 +54,7 @@ PASS internals.selectMenuListText(menu) is "garply"
 PASS picker._selectElement.value is "0"
 PASS menu.value is "garply"
 PASS internals.selectMenuListText(menu) is "garply"
-PASS window.internals.pagePopupWindow is null
+PASS internals.pagePopupWindow is null
 PASS menu.value is "garply"
 PASS internals.selectMenuListText(menu) is "garply"
 ==> Hover + Invalid arrow + ESC
@@ -66,7 +66,7 @@ PASS internals.selectMenuListText(menu) is "garply"
 PASS picker._selectElement.value is "0"
 PASS menu.value is "garply"
 PASS internals.selectMenuListText(menu) is "garply"
-PASS window.internals.pagePopupWindow is null
+PASS internals.pagePopupWindow is null
 PASS menu.value is "garply"
 PASS internals.selectMenuListText(menu) is "garply"
 ==> Arrow key + Click
@@ -75,12 +75,12 @@ PASS internals.selectMenuListText(menu) is "foo"
 PASS picker._selectElement.value is "1"
 PASS menu.value is "foo"
 PASS internals.selectMenuListText(menu) is "bar"
-PASS window.internals.pagePopupWindow is null
+PASS internals.pagePopupWindow is null
 PASS menu.value is "foo"
 PASS internals.selectMenuListText(menu) is "foo"
 ==> Enter with no selected OPTION
 PASS picker._selectElement.value is ""
-PASS window.internals.pagePopupWindow is null
+PASS internals.pagePopupWindow is null
 PASS menu2.value is ""
 PASS successfullyParsed is true
 

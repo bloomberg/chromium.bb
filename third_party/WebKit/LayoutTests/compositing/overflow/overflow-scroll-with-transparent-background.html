@@ -2,7 +2,7 @@
 <script src="resources/composited-scroll.js"></script>
 <script>
 if (window.testRunner)
-    window.testRunner.dumpAsText();
+    testRunner.dumpAsText();
 
 onload = function() {
     if (!window.testRunner || !window.internals)
@@ -14,7 +14,7 @@ onload = function() {
         result += "Pass.\n";
     else
         result += "Fail.\n";
-    window.testRunner.setCustomTextOutput(result);
+    testRunner.setCustomTextOutput(result);
 }
 </script>
 <style>

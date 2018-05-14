@@ -11,7 +11,7 @@ var frame = null;
 function receiveMessage(e) {
   frame.style.visibility = "visible";
   if (window.internals)
-    window.internals.forceCompositingUpdate(document);
+    internals.forceCompositingUpdate(document);
   async_handle.done();
 }
 

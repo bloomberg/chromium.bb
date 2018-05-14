@@ -30,8 +30,8 @@
   var rects;
   if (window.internals) {
     // Ensure we've done a layout, updated compositing, and we have a hit rect on this composited layer.
-    window.internals.forceCompositingUpdate(document);
-    rects = window.internals.touchEventTargetLayerRects(document);
+    internals.forceCompositingUpdate(document);
+    rects = internals.touchEventTargetLayerRects(document);
     shouldBe("rects.length", "1");
     shouldBeEqualToString("rects[0].layerAssociatedNode.id", "layer");
   }
@@ -42,7 +42,7 @@
   // Verify we now have a hit rect on the document after layout and paint.
   runAfterLayoutAndPaint(function() {
     if (window.internals) {
-      rects = window.internals.touchEventTargetLayerRects(document);
+      rects = internals.touchEventTargetLayerRects(document);
       shouldBe("rects.length", "1");
       shouldBeEqualToString("rects[0].layerAssociatedNode.nodeName", "#document");
     }
