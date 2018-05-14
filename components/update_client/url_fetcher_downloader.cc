@@ -142,6 +142,7 @@ void UrlFetcherDownloader::StartURLFetch(const GURL& url) {
                              net::LOAD_DO_NOT_SAVE_COOKIES |
                              net::LOAD_DISABLE_CACHE);
   url_fetcher_->SetAutomaticallyRetryOn5xx(false);
+  url_fetcher_->SetAutomaticallyRetryOnNetworkChanges(3);
   url_fetcher_->SaveResponseToFileAtPath(
       response, base::CreateSequencedTaskRunnerWithTraits(kTaskTraits));
   data_use_measurement::DataUseUserData::AttachToFetcher(
