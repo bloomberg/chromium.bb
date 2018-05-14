@@ -239,6 +239,9 @@ Example Usage:
 ``` bash
 tools/binary_size/supersize html_report chrome.size --report-dir size-report -v
 xdg-open size-report/index.html
+
+# Report showing Dex method counts rather than binary size:
+tools/binary_size/supersize html_report chrome.size --report-dir size-report -v --method-count
 ```
 
 ### Usage: diff
