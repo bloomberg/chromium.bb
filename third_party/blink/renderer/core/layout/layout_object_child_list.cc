@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
 
 namespace blink {
@@ -167,9 +168,16 @@ void LayoutObjectChildList::InsertChildNode(LayoutObject* owner,
     last_child_ = new_child;
   }
 
-  if (!owner->DocumentBeingDestroyed() && notify_layout_object) {
-    new_child->InsertedIntoTree();
-    LayoutCounter::LayoutObjectSubtreeAttached(new_child);
+  if (!owner->DocumentBeingDestroyed()) {
+    if (notify_layout_object) {
+      new_child->InsertedIntoTree();
+      LayoutCounter::LayoutObjectSubtreeAttached(new_child);
+    } else if (new_child->IsLayoutNGText()) {
+      // |notify_layout_object| is an optimization to skip notifications when
+      // moving within the same tree. Inline items need to be invalidated even
+      // when moving.
+      ToLayoutNGText(new_child)->InvalidateInlineItems();
+    }
   }
 
   // Propagate the need to notify ancestors down into any

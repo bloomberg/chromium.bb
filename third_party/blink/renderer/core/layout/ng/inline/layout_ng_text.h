@@ -32,6 +32,10 @@ class CORE_EXPORT LayoutNGText : public LayoutText {
     return inline_items_;
   }
 
+  // Inline items depends on context. It needs to be invalidated not only when
+  // it was inserted/changed but also it was moved.
+  void InvalidateInlineItems() { valid_ng_items_ = false; }
+
   void ClearInlineItems() {
     inline_items_.clear();
     valid_ng_items_ = false;
@@ -40,6 +44,12 @@ class CORE_EXPORT LayoutNGText : public LayoutText {
   void AddInlineItem(NGInlineItem* item) {
     inline_items_.push_back(item);
     valid_ng_items_ = true;
+  }
+
+ protected:
+  void InsertedIntoTree() override {
+    valid_ng_items_ = false;
+    LayoutText::InsertedIntoTree();
   }
 
  private:
