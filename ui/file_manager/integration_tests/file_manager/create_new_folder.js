@@ -161,7 +161,7 @@ function expandRoot(windowId, selector) {
   });
 }
 
-testcase.createNewFolderAfterSelectFile = function() {
+testcase.selectCreateFolderDownloads = function() {
   var PATH = RootPath.DOWNLOADS;
   var windowId = null;
   var promise = new Promise(function(callback) {
@@ -180,7 +180,7 @@ testcase.createNewFolderAfterSelectFile = function() {
   testPromise(promise);
 };
 
-testcase.createNewFolderDownloads = function() {
+testcase.createFolderDownloads = function() {
   var PATH = RootPath.DOWNLOADS;
   var windowId = null;
   var promise = new Promise(function(callback) {
@@ -197,7 +197,7 @@ testcase.createNewFolderDownloads = function() {
   testPromise(promise);
 };
 
-testcase.createNewFolderDrive = function() {
+testcase.createFolderDrive = function() {
   var PATH = RootPath.DRIVE;
   var windowId = null;
   var promise = new Promise(function(callback) {

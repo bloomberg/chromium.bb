@@ -146,10 +146,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "createNewFolderAfterSelectFile"),
-        TestParameter(IN_GUEST_MODE, "createNewFolderDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "createNewFolderDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "createNewFolderDrive")));
+        TestParameter(NOT_IN_GUEST_MODE, "selectCreateFolderDownloads"),
+        TestParameter(IN_GUEST_MODE, "createFolderDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "createFolderDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "createFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
