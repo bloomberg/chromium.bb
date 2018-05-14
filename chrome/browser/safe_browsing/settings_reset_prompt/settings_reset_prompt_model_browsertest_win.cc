@@ -97,7 +97,8 @@ const char kManifestToOverrideStartupUrls[] =
     "  }"
     "}";
 
-class SettingsResetPromptModelBrowserTest : public extensions::ExtensionBrowserTest {
+class SettingsResetPromptModelBrowserTest
+    : public extensions::ExtensionBrowserTest {
  public:
   virtual void OnResetDone() { ++reset_callbacks_; }
 

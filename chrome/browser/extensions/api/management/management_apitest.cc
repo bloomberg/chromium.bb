@@ -42,7 +42,7 @@ Browser* FindOtherBrowser(Browser* browser) {
 
 }  // namespace
 
-class ExtensionManagementApiTest : public ExtensionApiTest {
+class ExtensionManagementApiTest : public extensions::ExtensionApiTest {
  public:
   virtual void LoadExtensions() {
     base::FilePath basedir = test_data_dir_.AppendASCII("management");

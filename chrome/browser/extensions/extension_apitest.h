@@ -19,7 +19,6 @@ class FilePath;
 
 namespace extensions {
 class Extension;
-}
 
 // The general flow of these API tests should work like this:
 // (1) Setup initial browser state (e.g. create some bookmarks for the
@@ -29,7 +28,7 @@ class Extension;
 //     chrome.test.fail
 // (4) Verify expected browser state.
 // TODO(erikkay): There should also be a way to drive events in these tests.
-class ExtensionApiTest : public extensions::ExtensionBrowserTest {
+class ExtensionApiTest : public ExtensionBrowserTest {
  public:
   // Flags used to configure how the tests are run.
   // TODO(aa): Many of these are dupes of ExtensionBrowserTest::Flags. Combine
@@ -207,7 +206,7 @@ class ExtensionApiTest : public extensions::ExtensionBrowserTest {
 
   // Test that exactly one extension loaded.  If so, return a pointer to
   // the extension.  If not, return NULL and set message_.
-  const extensions::Extension* GetSingleLoadedExtension();
+  const Extension* GetSingleLoadedExtension();
 
   // All extensions tested by ExtensionApiTest are in the "api_test" dir.
   void SetUpCommandLine(base::CommandLine* command_line) override;
@@ -238,5 +237,7 @@ class ExtensionApiTest : public extensions::ExtensionBrowserTest {
   // Test data directory shared with //extensions.
   base::FilePath shared_test_data_dir_;
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_APITEST_H_

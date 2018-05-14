@@ -8,6 +8,8 @@
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        ExtensionFullscreenAccessFail) {
   // Test that fullscreen cannot be accessed from an extension without
@@ -69,3 +71,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
                        MAYBE_DisplayModeWindowIsInFullscreen) {
   ASSERT_TRUE(RunPlatformAppTest("fullscreen/mq_display_mode")) << message_;
 }
+
+}  // namespace extensions

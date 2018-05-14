@@ -10,6 +10,8 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "url/gurl.h"
 
+namespace extensions {
+
 // Tests that we throw errors when you try using extension APIs that aren't
 // supported in content scripts.
 // Timey-outy on mac. http://crbug.com/89116
@@ -28,7 +30,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_Stubs) {
   GURL url(embedded_test_server()->GetURL("/extensions/test_file.html"));
   ui_test_utils::NavigateToURL(browser(), url);
 
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
   ASSERT_TRUE(catcher.GetNextResult());
 }
 
@@ -40,3 +42,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, StubsApp) {
       "stubs_app", static_cast<int>(kFlagIgnoreManifestWarnings)))
       << message_;
 }
+
+}  // namespace extensions

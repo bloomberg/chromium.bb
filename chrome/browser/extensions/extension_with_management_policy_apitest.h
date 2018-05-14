@@ -20,7 +20,8 @@ struct ManagementPolicyRequestLog {
 // The ExtensionSettings policy affects host permissions which impacts several
 // API integration tests. This class enables easy declaration of
 // ExtensionSettings policies and functions commonly used during these tests.
-class ExtensionApiTestWithManagementPolicy : public ExtensionApiTest {
+class ExtensionApiTestWithManagementPolicy
+    : public extensions::ExtensionApiTest {
  public:
   ExtensionApiTestWithManagementPolicy();
   ~ExtensionApiTestWithManagementPolicy() override;

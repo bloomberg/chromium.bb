@@ -24,7 +24,7 @@
 
 class AutocompleteController;
 
-class OmniboxApiTest : public ExtensionApiTest {
+class OmniboxApiTest : public extensions::ExtensionApiTest {
  protected:
   LocationBar* GetLocationBar(Browser* browser) const {
     return browser->window()->GetLocationBar();

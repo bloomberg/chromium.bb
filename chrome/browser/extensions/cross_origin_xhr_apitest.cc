@@ -8,10 +8,10 @@
 const base::FilePath::CharType kFtpDocRoot[] =
     FILE_PATH_LITERAL("chrome/test/data");
 
-class CrossOriginXHR : public ExtensionApiTest {
+class CrossOriginXHR : public extensions::ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("*.com", "127.0.0.1");
     ASSERT_TRUE(StartEmbeddedTestServer());
   }

@@ -131,7 +131,7 @@ std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
 // The test extension expects the resources that should be handed to the
 // extension to have MIME type 'application/msword' and the resources that
 // should be downloaded by the browser to have MIME type 'text/plain'.
-class StreamsPrivateApiTest : public ExtensionApiTest {
+class StreamsPrivateApiTest : public extensions::ExtensionApiTest {
  public:
   StreamsPrivateApiTest() {}
 
@@ -143,14 +143,14 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
     test_server_->RegisterRequestHandler(base::Bind(&HandleRequest));
     ASSERT_TRUE(test_server_->Start());
     host_resolver()->AddRule("*", "127.0.0.1");
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
     // Tear down the test server.
     EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();
-    ExtensionApiTest::TearDownOnMainThread();
+    extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
   void InitializeDownloadSettings() {

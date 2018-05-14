@@ -25,7 +25,7 @@ namespace {
 const char kHostname[] = "127.0.0.1";
 const int kPort = 8888;
 
-class SocketApiTest : public ExtensionApiTest {
+class SocketApiTest : public extensions::ExtensionApiTest {
  public:
   SocketApiTest()
       : resolver_event_(base::WaitableEvent::ResetPolicy::MANUAL,
@@ -33,7 +33,7 @@ class SocketApiTest : public ExtensionApiTest {
         resolver_creator_(new extensions::MockHostResolverCreator()) {}
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     extensions::HostResolverWrapper::GetInstance()->SetHostResolverForTesting(
         resolver_creator_->CreateMockHostResolver());
   }

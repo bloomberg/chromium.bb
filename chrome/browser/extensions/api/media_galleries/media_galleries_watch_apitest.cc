@@ -69,7 +69,7 @@ const char kGalleryChangedEventReceived[] = "gallery_changed_event_received";
 //                 MediaGalleriesGalleryWatchApiTest                         //
 ///////////////////////////////////////////////////////////////////////////////
 
-class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
+class MediaGalleriesGalleryWatchApiTest : public extensions::ExtensionApiTest {
  public:
   MediaGalleriesGalleryWatchApiTest()
       : extension_(NULL), background_host_(NULL) {}
@@ -78,12 +78,12 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
  protected:
   // ExtensionApiTest overrides.
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID, kTestExtensionId);
   }
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     ensure_media_directories_exists_.reset(new EnsureMediaDirectoriesExists);
     extension_ = LoadExtension(test_data_dir_.AppendASCII(kTestExtensionPath));
     GetBackgroundHostForTestExtension();
@@ -94,7 +94,7 @@ class MediaGalleriesGalleryWatchApiTest : public ExtensionApiTest {
     extension_ = NULL;
     background_host_ = NULL;
     ensure_media_directories_exists_.reset();
-    ExtensionApiTest::TearDownOnMainThread();
+    extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
   bool GalleryWatchesSupported() {

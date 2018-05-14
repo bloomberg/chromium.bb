@@ -23,7 +23,7 @@ class ScopedTestSystemNSSKeySlot;
 // availability, device enrollment status, user affiliation and user policy.
 // Every test case is supposed to have a PRE_ test case which must call
 // PlatformKeysTestBase::RunPreTest.
-class PlatformKeysTestBase : public ExtensionApiTest {
+class PlatformKeysTestBase : public extensions::ExtensionApiTest {
  public:
   enum class SystemTokenStatus { EXISTS, DOES_NOT_EXIST };
 

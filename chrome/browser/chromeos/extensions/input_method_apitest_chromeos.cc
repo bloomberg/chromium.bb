@@ -76,7 +76,7 @@ class TestListener : public content::NotificationObserver {
   content::NotificationRegistrar registrar_;
 };
 
-class ExtensionInputMethodApiTest : public ExtensionApiTest {
+class ExtensionInputMethodApiTest : public extensions::ExtensionApiTest {
  public:
   ExtensionInputMethodApiTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kOptInImeMenu);
@@ -85,7 +85,7 @@ class ExtensionInputMethodApiTest : public ExtensionApiTest {
   ~ExtensionInputMethodApiTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         "ilanclmaeigfpnmdlgelmhkpkegdioip");

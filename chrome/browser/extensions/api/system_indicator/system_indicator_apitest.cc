@@ -13,6 +13,8 @@
 #include "extensions/common/extension.h"
 #include "extensions/test/result_catcher.h"
 
+namespace extensions {
+
 class SystemIndicatorApiTest : public ExtensionApiTest {
  public:
   void SetUpOnMainThread() override {
@@ -65,3 +67,5 @@ IN_PROC_BROWSER_TEST_F(SystemIndicatorApiTest, DISABLED_SystemIndicator) {
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
 }
+
+}  // namespace extensions

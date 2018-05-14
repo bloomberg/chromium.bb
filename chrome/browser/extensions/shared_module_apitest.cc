@@ -5,7 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "extensions/test/extension_test_message_listener.h"
 
-using extensions::Extension;
+namespace extensions {
 
 // NB: We use LoadExtension instead of InstallExtension for shared modules so
 // the public-keys in their manifests are used to generate the extension ID, so
@@ -55,3 +55,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SharedModuleLocale) {
 
   EXPECT_TRUE(RunExtensionTest("shared_module/import_locales"));
 }
+
+}  // namespace extensions

@@ -163,7 +163,7 @@ class MockFileSelectorFactory : public file_manager::FileSelectorFactory {
 };
 
 // Extension api test for the fileBrowserHandler extension API.
-class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
+class FileBrowserHandlerExtensionTest : public extensions::ExtensionApiTest {
  protected:
   void SetUp() override {
     // Create mount point directory that will be used in the test.
@@ -173,7 +173,7 @@ class FileBrowserHandlerExtensionTest : public ExtensionApiTest {
     tmp_mount_point_ = scoped_tmp_dir_.GetPath().Append("tmp");
     base::CreateDirectory(tmp_mount_point_);
 
-    ExtensionApiTest::SetUp();
+    extensions::ExtensionApiTest::SetUp();
   }
 
   // Creates new, test mount point.

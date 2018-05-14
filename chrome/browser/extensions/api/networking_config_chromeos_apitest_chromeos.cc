@@ -46,14 +46,14 @@ const char kWifi1ServiceGUID[] = "wifi1_guid";
 }  // namespace
 
 class NetworkingConfigTest
-    : public ExtensionApiTest,
+    : public extensions::ExtensionApiTest,
       public captive_portal::CaptivePortalDetectorTestBase {
  public:
   NetworkingConfigTest() : network_portal_detector_(nullptr) {}
   ~NetworkingConfigTest() override = default;
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
 
     display_service_ = std::make_unique<NotificationDisplayServiceTester>(

@@ -6,12 +6,12 @@
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "net/dns/mock_host_resolver.h"
 
-class WallPaperApiTest : public ExtensionApiTest {
+class WallPaperApiTest : public extensions::ExtensionApiTest {
  public:
   ~WallPaperApiTest() override = default;
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     host_resolver()->AddRule("a.com", "127.0.0.1");
   }
 };

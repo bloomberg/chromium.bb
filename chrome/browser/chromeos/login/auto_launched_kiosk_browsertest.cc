@@ -282,7 +282,7 @@ class TerminationObserver : public content::NotificationObserver {
 
 }  // namespace
 
-class AutoLaunchedKioskTest : public ExtensionApiTest {
+class AutoLaunchedKioskTest : public extensions::ExtensionApiTest {
  public:
   AutoLaunchedKioskTest()
       : install_attributes_(
@@ -305,7 +305,7 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
     ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
     AppLaunchController::SkipSplashWaitForTesting();
 
-    ExtensionApiTest::SetUp();
+    extensions::ExtensionApiTest::SetUp();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -314,7 +314,7 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
     std::vector<std::string> secondary_apps = GetTestSecondaryAppIds();
     for (const auto& secondary_app : secondary_apps)
       fake_cws_->SetUpdateCrx(secondary_app, secondary_app + ".crx", "1.0.0");
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
   }
 
   bool SetUpUserDataDirectory() override {
@@ -352,7 +352,7 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
     DBusThreadManager::GetSetterForTesting()->SetSessionManagerClient(
         std::move(fake_session_manager_));
 
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
   void PreRunTestOnMainThread() override {
@@ -365,13 +365,13 @@ class AutoLaunchedKioskTest : public ExtensionApiTest {
 
     embedded_test_server()->StartAcceptingConnections();
 
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
     termination_observer_.reset();
 
-    ExtensionApiTest::TearDownOnMainThread();
+    extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
   void InitDevicePolicy() {

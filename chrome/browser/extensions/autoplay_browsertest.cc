@@ -13,10 +13,10 @@
 #include "extensions/test/test_extension_dir.h"
 #include "media/base/media_switches.h"
 
-class AutoplayExtensionBrowserTest : public ExtensionApiTest {
+class AutoplayExtensionBrowserTest : public extensions::ExtensionApiTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionBrowserTest::SetUpCommandLine(command_line);
+    extensions::ExtensionBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kDocumentUserActivationRequiredPolicy);

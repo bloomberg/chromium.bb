@@ -19,6 +19,8 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 
+namespace extensions {
+
 namespace {
 
 void GetNextDialog(app_modal::NativeAppModalDialog** native_dialog) {
@@ -72,10 +74,9 @@ void CheckConfirmResult(const std::string& dialog_name,
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
   ASSERT_TRUE(RunExtensionTest("alert")) << message_;
 
-  const extensions::Extension* extension = GetSingleLoadedExtension();
-  extensions::ExtensionHost* host =
-      extensions::ProcessManager::Get(browser()->profile())
-          ->GetBackgroundHostForExtension(extension->id());
+  const Extension* extension = GetSingleLoadedExtension();
+  ExtensionHost* host = ProcessManager::Get(browser()->profile())
+                            ->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(host);
   host->host_contents()->GetMainFrame()->ExecuteJavaScriptForTests(
       base::ASCIIToUTF16("alert('This should not crash.');"));
@@ -86,10 +87,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertQueue) {
   ASSERT_TRUE(RunExtensionTest("alert")) << message_;
 
-  const extensions::Extension* extension = GetSingleLoadedExtension();
-  extensions::ExtensionHost* host =
-      extensions::ProcessManager::Get(browser()->profile())
-          ->GetBackgroundHostForExtension(extension->id());
+  const Extension* extension = GetSingleLoadedExtension();
+  ExtensionHost* host = ProcessManager::Get(browser()->profile())
+                            ->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(host);
 
   // Creates several dialogs at the same time.
@@ -121,10 +121,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertQueue) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ConfirmQueue) {
   ASSERT_TRUE(RunExtensionTest("alert")) << message_;
 
-  const extensions::Extension* extension = GetSingleLoadedExtension();
-  extensions::ExtensionHost* host =
-      extensions::ProcessManager::Get(browser()->profile())
-          ->GetBackgroundHostForExtension(extension->id());
+  const Extension* extension = GetSingleLoadedExtension();
+  ExtensionHost* host = ProcessManager::Get(browser()->profile())
+                            ->GetBackgroundHostForExtension(extension->id());
   ASSERT_TRUE(host);
 
   // Creates several dialogs at the same time.
@@ -163,3 +162,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ConfirmQueue) {
   while (call_count < num_accepted_dialogs + num_cancelled_dialogs)
     ASSERT_NO_FATAL_FAILURE(content::RunAllPendingInMessageLoop());
 }
+
+}  // namespace extensions

@@ -22,7 +22,7 @@ const char kTestAppId[] = "ljoammodoonkhnehlncldjelhidljdpi";
 
 }  // namespace
 
-class ChromeOSInfoPrivateTest : public ExtensionApiTest {
+class ChromeOSInfoPrivateTest : public extensions::ExtensionApiTest {
  public:
   ChromeOSInfoPrivateTest() {}
   ~ChromeOSInfoPrivateTest() override {}
@@ -133,7 +133,7 @@ class ChromeOSArcInfoPrivateTest : public ChromeOSInfoPrivateTest {
   ~ChromeOSArcInfoPrivateTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     // Make ARC enabled for ArcAvailable/ArcEnabled tests.
     arc::SetArcAvailableCommandLineForTesting(command_line);
   }

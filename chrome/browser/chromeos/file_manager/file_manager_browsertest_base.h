@@ -33,7 +33,7 @@ class DriveTestVolume;
 class FakeTestVolume;
 class LocalTestVolume;
 
-class FileManagerBrowserTestBase : public ExtensionApiTest {
+class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
  protected:
   FileManagerBrowserTestBase();
   ~FileManagerBrowserTestBase() override;

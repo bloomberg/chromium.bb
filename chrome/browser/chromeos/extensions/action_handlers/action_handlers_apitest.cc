@@ -11,7 +11,7 @@
 
 namespace app_runtime = extensions::api::app_runtime;
 
-using ActionHandlersBrowserTest = ExtensionApiTest;
+using ActionHandlersBrowserTest = extensions::ExtensionApiTest;
 
 IN_PROC_BROWSER_TEST_F(ActionHandlersBrowserTest, LaunchAppWithNewNote) {
   // Load the app. Make sure to wait until it is done loading.

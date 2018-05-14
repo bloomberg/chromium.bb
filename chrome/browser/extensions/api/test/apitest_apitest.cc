@@ -4,6 +4,10 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ApiTest) {
   ASSERT_TRUE(RunExtensionTest("apitest")) << message_;
 }
+
+}  // namespace extensions

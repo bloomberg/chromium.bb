@@ -11,6 +11,8 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 
+namespace extensions {
+
 // Test of extension API on a standard profile.
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettings) {
   PrefService* prefs = browser()->profile()->GetPrefs();
@@ -36,3 +38,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FontSettingsIncognito) {
                                   "launch.html",
                                   flags));
 }
+
+}  // namespace extensions

@@ -13,7 +13,7 @@
 #include "extensions/common/switches.h"
 #include "extensions/test/extension_test_message_listener.h"
 
-class ProcessesApiTest : public ExtensionApiTest {
+class ProcessesApiTest : public extensions::ExtensionApiTest {
  public:
   ProcessesApiTest() {}
   ~ProcessesApiTest() override {}

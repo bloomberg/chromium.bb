@@ -14,6 +14,8 @@
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18N) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("i18n")) << message_;
@@ -35,10 +37,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
       test_data_dir_.AppendASCII("i18nUpdate").AppendASCII("_locales"),
       extension_dir.GetPath().AppendASCII("_locales"), true);
 
-  const extensions::Extension* extension =
-      LoadExtension(extension_dir.GetPath());
+  const Extension* extension = LoadExtension(extension_dir.GetPath());
 
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   // Test that the messages.json file is loaded and the i18n message is loaded.
   ui_test_utils::NavigateToURL(
@@ -65,3 +66,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
   ui_test_utils::GetCurrentTabTitle(browser(), &title);
   EXPECT_EQ(std::string("SECONDMESSAGE"), base::UTF16ToUTF8(title));
 }
+
+}  // namespace extensions

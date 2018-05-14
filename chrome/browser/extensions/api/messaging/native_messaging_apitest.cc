@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/messaging/native_messaging_test_util.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, NativeMessagingBasic) {
   extensions::ScopedTestNativeMessagingHost test_host;
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(false));
@@ -16,3 +18,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, UserLevelNativeMessaging) {
   ASSERT_NO_FATAL_FAILURE(test_host.RegisterTestHost(true));
   ASSERT_TRUE(RunExtensionTest("native_messaging")) << message_;
 }
+
+}  // namespace extensions

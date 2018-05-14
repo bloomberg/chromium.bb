@@ -187,7 +187,7 @@ class TestListener : public content::NotificationObserver {
   DISALLOW_COPY_AND_ASSIGN(TestListener);
 };
 
-class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
+class NetworkingPrivateChromeOSApiTest : public extensions::ExtensionApiTest {
  public:
   NetworkingPrivateChromeOSApiTest()
       : detector_(nullptr),
@@ -208,11 +208,11 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
         .WillRepeatedly(Return(true));
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 
-    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
@@ -345,14 +345,14 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(
         &networking_cast_delegate_factory_);
 
-    ExtensionApiTest::SetUp();
+    extensions::ExtensionApiTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
     detector_ = new NetworkPortalDetectorTestImpl();
     chromeos::network_portal_detector::InitializeForTesting(detector_);
 
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
 
     NetworkingPrivateDelegateFactory::GetInstance()->SetTestingFactory(
@@ -485,7 +485,7 @@ class NetworkingPrivateChromeOSApiTest : public ExtensionApiTest {
   }
 
   void TearDown() override {
-    ExtensionApiTest::TearDown();
+    extensions::ExtensionApiTest::TearDown();
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(nullptr);
   }
 

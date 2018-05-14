@@ -26,6 +26,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace extensions {
+
 namespace {
 
 // The test extension has a certificate referencing this private key which will
@@ -191,8 +193,7 @@ class EnterprisePlatformKeysTest
                policy::POLICY_SOURCE_CLOUD, std::move(forcelist), nullptr);
 
     // Set the policy and wait until the extension is installed.
-    extensions::TestExtensionRegistryObserver observer(
-        extensions::ExtensionRegistry::Get(profile()));
+    TestExtensionRegistryObserver observer(ExtensionRegistry::Get(profile()));
     mock_policy_provider()->UpdateChromePolicy(policy);
     observer.WaitForExtensionWillBeInstalled();
   }
@@ -269,9 +270,6 @@ INSTANTIATE_TEST_CASE_P(
                PlatformKeysTestBase::EnrollmentStatus::ENROLLED,
                PlatformKeysTestBase::UserStatus::MANAGED_AFFILIATED_DOMAIN)));
 
-class EnterprisePlatformKeysTestNonPolicyInstalledExtension
-    : public EnterprisePlatformKeysTest {};
-
 // Ensure that extensions that are not pre-installed by policy throw an install
 // warning if they request the enterprise.platformKeys permission in the
 // manifest and that such extensions don't see the
@@ -284,9 +282,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
 
   base::FilePath extension_path =
       test_data_dir_.AppendASCII("enterprise_platform_keys");
-  extensions::ExtensionRegistry* registry =
-      extensions::ExtensionRegistry::Get(profile());
-  const extensions::Extension* extension =
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  const Extension* extension =
       GetExtensionByPath(registry->enabled_extensions(), extension_path);
   ASSERT_FALSE(extension->install_warnings().empty());
   EXPECT_EQ(
@@ -294,3 +291,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest,
       "location.",
       extension->install_warnings()[0].message);
 }
+
+}  // namespace extensions

@@ -6,9 +6,9 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "extensions/common/switches.h"
 
-class ExtensionTerminalPrivateApiTest : public ExtensionApiTest {
+class ExtensionTerminalPrivateApiTest : public extensions::ExtensionApiTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         "kidcpjlbjdmcnmccjhjdckhbngnhnepk");

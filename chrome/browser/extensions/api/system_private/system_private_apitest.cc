@@ -17,6 +17,8 @@
 using chromeos::UpdateEngineClient;
 #endif
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, GetIncognitoModeAvailability) {
   PrefService* pref_service = browser()->profile()->GetPrefs();
   pref_service->SetInteger(prefs::kIncognitoModeAvailability, 1);
@@ -69,3 +71,5 @@ IN_PROC_BROWSER_TEST_F(GetUpdateStatusApiTest, Progress) {
 }
 
 #endif
+
+}  // namespace extensions

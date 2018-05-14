@@ -91,7 +91,8 @@ class TestNetworkingCastPrivateDelegate
   DISALLOW_COPY_AND_ASSIGN(TestNetworkingCastPrivateDelegate);
 };
 
-class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
+class NetworkingPrivateServiceClientApiTest
+    : public extensions::ExtensionApiTest {
  public:
   NetworkingPrivateServiceClientApiTest() {}
 
@@ -102,7 +103,7 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     // Whitelist the extension ID of the test extension.
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
@@ -124,11 +125,11 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
                    base::Unretained(this));
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(
         &networking_cast_delegate_factory_);
-    ExtensionApiTest::SetUp();
+    extensions::ExtensionApiTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
     NetworkingPrivateDelegateFactory::GetInstance()->SetTestingFactory(
         profile(), &CreateNetworkingPrivateServiceClient);
@@ -136,11 +137,11 @@ class NetworkingPrivateServiceClientApiTest : public ExtensionApiTest {
 
   void TearDownOnMainThread() override {
     content::RunAllPendingInMessageLoop();
-    ExtensionApiTest::TearDownOnMainThread();
+    extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
   void TearDown() override {
-    ExtensionApiTest::TearDown();
+    extensions::ExtensionApiTest::TearDown();
     ChromeNetworkingCastPrivateDelegate::SetFactoryCallbackForTest(nullptr);
   }
 

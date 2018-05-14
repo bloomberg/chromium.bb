@@ -273,7 +273,7 @@ class BackgroundObserver {
 };
 
 // Base class for FileSystemExtensionApi tests.
-class FileSystemExtensionApiTestBase : public ExtensionApiTest {
+class FileSystemExtensionApiTestBase : public extensions::ExtensionApiTest {
  public:
   enum Flags {
     FLAGS_NONE = 0,
@@ -286,7 +286,7 @@ class FileSystemExtensionApiTestBase : public ExtensionApiTest {
 
   void SetUp() override {
     InitTestFileSystem();
-    ExtensionApiTest::SetUp();
+    extensions::ExtensionApiTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -299,12 +299,12 @@ class FileSystemExtensionApiTestBase : public ExtensionApiTest {
         .WillByDefault(testing::Return(true));
     CastConfigClientMediaRouter::SetMediaRouterForTest(&media_router_);
 
-    ExtensionApiTest::SetUpOnMainThread();
+    extensions::ExtensionApiTest::SetUpOnMainThread();
   }
 
   void TearDownOnMainThread() override {
     CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
-    ExtensionApiTest::TearDownOnMainThread();
+    extensions::ExtensionApiTest::TearDownOnMainThread();
   }
 
   // Runs a file system extension API test.

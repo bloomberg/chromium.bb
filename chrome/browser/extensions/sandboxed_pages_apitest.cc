@@ -4,6 +4,8 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+namespace extensions {
+
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SandboxedPages) {
   EXPECT_TRUE(RunExtensionSubtest("sandboxed_pages", "main.html")) << message_;
 }
@@ -18,3 +20,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, SandboxedPagesCSP) {
                                   kFlagIgnoreManifestWarnings))
       << message_;
 }
+
+}  // namespace extensions

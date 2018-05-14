@@ -21,9 +21,9 @@ class ExtensionAction;
 class Profile;
 class StatusTray;
 
+namespace extensions {
 FORWARD_DECLARE_TEST(SystemIndicatorApiTest, SystemIndicator);
 
-namespace extensions {
 class ExtensionIndicatorIcon;
 class ExtensionRegistry;
 
@@ -41,7 +41,7 @@ class SystemIndicatorManager : public ExtensionRegistryObserver,
   void Shutdown() override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(::SystemIndicatorApiTest, SystemIndicator);
+  FRIEND_TEST_ALL_PREFIXES(SystemIndicatorApiTest, SystemIndicator);
 
   // ExtensionRegistryObserver implementation.
   void OnExtensionUnloaded(content::BrowserContext* browser_context,

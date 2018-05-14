@@ -22,7 +22,7 @@ namespace utils = extension_function_test_utils;
 
 namespace chromeos {
 
-class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
+class ExtensionEchoPrivateApiTest : public extensions::ExtensionApiTest {
  public:
   enum DialogTestAction {
     DIALOG_TEST_ACTION_NONE,
@@ -39,7 +39,7 @@ class ExtensionEchoPrivateApiTest : public ExtensionApiTest {
   ~ExtensionEchoPrivateApiTest() override {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 
     // Force usage of stub cros settings provider instead of device settings
     // provider.

@@ -23,12 +23,12 @@ namespace api = extensions::api;
 
 namespace {
 
-class MDnsAPITest : public ExtensionApiTest {
+class MDnsAPITest : public extensions::ExtensionApiTest {
  public:
   MDnsAPITest() {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    ExtensionApiTest::SetUpCommandLine(command_line);
+    extensions::ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         extensions::switches::kWhitelistedExtensionID,
         "ddchlicdkolnonkihahngkmmmjnjlkkf");

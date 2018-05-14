@@ -7,8 +7,7 @@
 #include "base/path_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 
-class LibLouisWrapperTest : public ExtensionApiTest {
-};
+using LibLouisWrapperTest = extensions::ExtensionApiTest;
 
 IN_PROC_BROWSER_TEST_F(LibLouisWrapperTest, LibLouisLoad) {
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &test_data_dir_));
