@@ -31,16 +31,18 @@
     </tr>
     {% endfor %}
   </tbody>
-  <tfoot>
-    <tr class="light-row-bold">
-      <td>
-        <pre>Totals</pre>
-      </td>
-      {% for feature in ("lines", "functions", "regions") %}
-      <td class='column-entry-{{ total_entry[feature]["color_class"] }}'>
-        <pre>{{ total_entry[feature]["percentage"] }}% ({{ total_entry[feature]["covered"] }}/{{ total_entry[feature]["total"] }})</pre>
-      </td>
-      {% endfor %}
-    </tr>
-  </tfoot>
+  {% if total_entry %}
+    <tfoot>
+      <tr class="light-row-bold">
+        <td>
+          <pre>Totals</pre>
+        </td>
+        {% for feature in ("lines", "functions", "regions") %}
+        <td class='column-entry-{{ total_entry[feature]["color_class"] }}'>
+          <pre>{{ total_entry[feature]["percentage"] }}% ({{ total_entry[feature]["covered"] }}/{{ total_entry[feature]["total"] }})</pre>
+        </td>
+        {% endfor %}
+      </tr>
+    </tfoot>
+  {% endif %}
 </table>

@@ -742,17 +742,15 @@ def _GenerateComponentViewHtmlIndexFile(per_component_coverage_summary,
                 component_view_index_file_path)
   html_generator = _CoverageReportHtmlGenerator(component_view_index_file_path,
                                                 'Component')
-  totals_coverage_summary = _CoverageSummary()
-
   for component in per_component_coverage_summary:
-    totals_coverage_summary.AddSummary(
-        per_component_coverage_summary[component])
-
     html_generator.AddLinkToAnotherReport(
         _GetCoverageHtmlReportPathForComponent(component), component,
         per_component_coverage_summary[component])
 
-  html_generator.CreateTotalsEntry(totals_coverage_summary)
+  # Do not create a totals row for the component view as the value is incorrect
+  # due to failure to account for UNKNOWN component and some paths belonging to
+  # multiple components.
+
   html_generator.WriteHtmlCoverageReport(no_file_view)
   logging.debug('Finished generating component view html index file.')
 
