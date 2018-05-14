@@ -504,6 +504,10 @@ void Ui::OnAssetsUnavailable() {
   model_->waiting_for_background = false;
 }
 
+void Ui::WaitForAssets() {
+  model_->waiting_for_background = true;
+}
+
 void Ui::SetOverlayTextureEmpty(bool empty) {
   model_->content_overlay_texture_non_empty = !empty;
 }

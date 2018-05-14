@@ -179,9 +179,8 @@ VrShell::VrShell(JNIEnv* env,
                           ui_initial_state.web_vr_autopresentation_expected);
   }
 
-  if (AssetsLoader::GetInstance()->ComponentReady()) {
-    LoadAssets();
-  } else {
+  can_load_new_assets_ = AssetsLoader::GetInstance()->ComponentReady();
+  if (!can_load_new_assets_) {
     waiting_for_assets_component_timer_.Start(
         FROM_HERE, kAssetsComponentWaitDelay,
         base::BindRepeating(&VrShell::OnAssetsComponentWaitTimeout,
@@ -518,6 +517,13 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  // Calling WaitForAssets before VrShellGl::OnResume so that the UI won't
+  // accidentally produce an initial frame with UI.
+  if (can_load_new_assets_) {
+    ui_->WaitForAssets();
+    LoadAssets();
+  }
+
   PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::OnResume,
                                            gl_thread_->GetVrShellGl()));
 
@@ -1207,11 +1213,13 @@ void VrShell::OnAssetsLoaded(AssetsLoadStatus status,
 }
 
 void VrShell::LoadAssets() {
+  can_load_new_assets_ = false;
   AssetsLoader::GetInstance()->Load(
       base::BindOnce(&VrShell::OnAssetsLoaded, base::Unretained(this)));
 }
 
 void VrShell::OnAssetsComponentReady() {
+  can_load_new_assets_ = true;
   // We don't apply updates after the timer expires because that would lead to
   // replacing the user's environment. New updates will be applied when
   // re-entering VR.

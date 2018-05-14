@@ -506,6 +506,13 @@ void VrGLThread::OnAssetsUnavailable() {
                                 weak_browser_ui_));
 }
 
+void VrGLThread::WaitForAssets() {
+  DCHECK(OnMainThread());
+  task_runner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&BrowserUiInterface::WaitForAssets, weak_browser_ui_));
+}
+
 void VrGLThread::SetOverlayTextureEmpty(bool empty) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(

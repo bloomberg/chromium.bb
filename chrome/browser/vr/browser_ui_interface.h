@@ -45,6 +45,7 @@ class BrowserUiInterface {
                               std::unique_ptr<Assets> assets,
                               const base::Version& component_version) = 0;
   virtual void OnAssetsUnavailable() = 0;
+  virtual void WaitForAssets() = 0;
   virtual void SetOverlayTextureEmpty(bool empty) = 0;
   virtual void ShowSoftInput(bool show) = 0;
   virtual void UpdateWebInputIndices(int selection_start,
