@@ -5,6 +5,7 @@
 #ifndef ASH_ASSISTANT_MODEL_ASSISTANT_INTERACTION_MODEL_OBSERVER_H_
 #define ASH_ASSISTANT_MODEL_ASSISTANT_INTERACTION_MODEL_OBSERVER_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -54,9 +55,11 @@ class AssistantInteractionModelObserver {
   virtual void OnQueryCleared() {}
 
   // Invoked when the specified |suggestions| are added to the associated
-  // interaction.
+  // interaction. The key for the map is the unique identifier by which the
+  // interaction model identifies each suggestion before the next
+  // |OnSuggestionsCleared| call.
   virtual void OnSuggestionsAdded(
-      const std::vector<AssistantSuggestion*>& suggestions) {}
+      const std::map<int, AssistantSuggestion*>& suggestions) {}
 
   // Invoked when all suggestions associated with the interaction are cleared.
   virtual void OnSuggestionsCleared() {}

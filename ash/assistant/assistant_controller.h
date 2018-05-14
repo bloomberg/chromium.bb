@@ -33,6 +33,7 @@ class AssistantController
       public AssistantInteractionModelObserver,
       public HighlighterController::Observer {
  public:
+  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
       chromeos::assistant::mojom::AssistantSuggestionPtr;
   using AssistantInteractionResolution =
@@ -82,7 +83,7 @@ class AssistantController
   void OnDialogPlateContentsCommitted(const std::string& text);
 
   // Invoked on suggestion chip pressed event.
-  void OnSuggestionChipPressed(const std::string& text);
+  void OnSuggestionChipPressed(int id);
 
   // AssistantInteractionModelObserver:
   void OnInteractionStateChanged(InteractionState interaction_state) override;

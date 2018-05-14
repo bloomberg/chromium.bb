@@ -193,7 +193,22 @@ void AssistantController::OnHtmlResponse(const std::string& response) {
       std::make_unique<AssistantCardElement>(response));
 }
 
-void AssistantController::OnSuggestionChipPressed(const std::string& text) {
+void AssistantController::OnSuggestionChipPressed(int id) {
+  const AssistantSuggestion* suggestion =
+      assistant_interaction_model_.GetSuggestionById(id);
+
+  DCHECK(suggestion);
+
+  // If the suggestion contains a non-empty action url, we will handle the
+  // suggestion chip pressed event by launching the action url in the browser.
+  if (!suggestion->action_url.is_empty()) {
+    OnOpenUrlResponse(suggestion->action_url);
+    return;
+  }
+
+  // Otherwise, we will submit a simple text query using the suggestion text.
+  const std::string text = suggestion->text;
+
   assistant_interaction_model_.ClearInteraction();
   assistant_interaction_model_.SetQuery(
       std::make_unique<AssistantTextQuery>(text));

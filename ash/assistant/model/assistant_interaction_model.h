@@ -97,6 +97,10 @@ class AssistantInteractionModel {
   // interaction.
   void AddSuggestions(std::vector<AssistantSuggestionPtr> suggestions);
 
+  // Returns the suggestion uniquely identified by the specified |id|, or
+  // |nullptr| if no matching suggestion is found.
+  const AssistantSuggestion* GetSuggestionById(int id) const;
+
   // Clears all suggestions for the interaction.
   void ClearSuggestions();
 
@@ -109,14 +113,14 @@ class AssistantInteractionModel {
   void NotifyQueryChanged();
   void NotifyQueryCleared();
   void NotifySuggestionsAdded(
-      const std::vector<AssistantSuggestion*> suggestions);
+      const std::map<int, AssistantSuggestion*>& suggestions);
   void NotifySuggestionsCleared();
 
   InteractionState interaction_state_ = InteractionState::kInactive;
   InputModality input_modality_;
   MicState mic_state_ = MicState::kClosed;
   std::unique_ptr<AssistantQuery> query_;
-  std::vector<AssistantSuggestionPtr> suggestions_list_;
+  std::vector<AssistantSuggestionPtr> suggestions_;
   std::vector<std::unique_ptr<AssistantUiElement>> ui_element_list_;
 
   base::ObserverList<AssistantInteractionModelObserver> observers_;

@@ -85,18 +85,29 @@ void AssistantInteractionModel::ClearQuery() {
 
 void AssistantInteractionModel::AddSuggestions(
     std::vector<AssistantSuggestionPtr> suggestions) {
-  std::vector<AssistantSuggestion*> ptrs;
+  std::map<int, AssistantSuggestion*> ptrs;
 
+  // We use vector index to uniquely identify a given suggestion. This means
+  // that suggestion ids will reset with each call to |ClearSuggestions|, but
+  // that is acceptable.
   for (AssistantSuggestionPtr& suggestion : suggestions) {
-    suggestions_list_.push_back(std::move(suggestion));
-    ptrs.push_back(suggestions_list_.back().get());
+    int id = suggestions_.size();
+    suggestions_.push_back(std::move(suggestion));
+    ptrs[id] = suggestions_.back().get();
   }
 
   NotifySuggestionsAdded(ptrs);
 }
 
+const AssistantInteractionModel::AssistantSuggestion*
+AssistantInteractionModel::GetSuggestionById(int id) const {
+  return id >= 0 && id < static_cast<int>(suggestions_.size())
+             ? suggestions_.at(id).get()
+             : nullptr;
+}
+
 void AssistantInteractionModel::ClearSuggestions() {
-  suggestions_list_.clear();
+  suggestions_.clear();
   NotifySuggestionsCleared();
 }
 
@@ -137,7 +148,7 @@ void AssistantInteractionModel::NotifyQueryCleared() {
 }
 
 void AssistantInteractionModel::NotifySuggestionsAdded(
-    const std::vector<AssistantSuggestion*> suggestions) {
+    const std::map<int, AssistantSuggestion*>& suggestions) {
   for (AssistantInteractionModelObserver& observer : observers_)
     observer.OnSuggestionsAdded(suggestions);
 }
