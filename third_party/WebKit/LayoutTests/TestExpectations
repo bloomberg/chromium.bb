@@ -1724,7 +1724,6 @@ crbug.com/591099 virtual/layout_ng_experimental/external/wpt/css/css-flexbox/ord
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 
 crbug.com/776656 virtual/incremental-shadow-dom/media/controls/controls-cast-do-not-fade-out.html [ Pass Timeout ]
-crbug.com/776656 virtual/incremental-shadow-dom/media/controls/overlay-play-button-document-move.html [ Failure Crash ]
 
 # These tests are also failing without the flag
 crbug.com/832447 virtual/incremental-shadow-dom/media/controls/controls-page-zoom-in.html [ Failure Pass ]

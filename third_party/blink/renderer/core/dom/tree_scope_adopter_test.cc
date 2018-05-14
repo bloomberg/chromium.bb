@@ -11,6 +11,8 @@
 
 namespace blink {
 
+// TODO(hayato): It's hard to see what's happening in these tests.
+// It would be better to refactor these tests.
 TEST(TreeScopeAdopterTest, SimpleMove) {
   Document* doc1 = Document::CreateForTest();
   Document* doc2 = Document::CreateForTest();
@@ -109,6 +111,37 @@ TEST(TreeScopeAdopterTest, AdoptV0ShadowRootToV1Document) {
             ShadowCascadeOrder::kShadowCascadeV1);
   EXPECT_TRUE(doc1->MayContainV0Shadow());
   EXPECT_TRUE(doc2->MayContainV0Shadow());
+}
+
+TEST(TreeScopeAdopterTest, AdoptV0InV1ToNewDocument) {
+  Document* old_doc = Document::CreateForTest();
+  Element* html = old_doc->CreateRawElement(HTMLNames::htmlTag);
+  old_doc->AppendChild(html);
+  Element* host1 = old_doc->CreateRawElement(HTMLNames::divTag);
+  html->AppendChild(host1);
+  ShadowRoot& shadow_root_v1 =
+      host1->AttachShadowRootInternal(ShadowRootType::kOpen);
+  Element* host2 = old_doc->CreateRawElement(HTMLNames::divTag);
+  shadow_root_v1.AppendChild(host2);
+  host2->CreateShadowRootInternal();
+
+  // old_doc
+  // └── html
+  //     └── host1
+  //         └──/shadow-root-v1
+  //             └── host2
+  //                 └──/shadow-root-v0
+  EXPECT_TRUE(old_doc->MayContainV0Shadow());
+
+  Document* new_doc = Document::CreateForTest();
+  EXPECT_FALSE(new_doc->MayContainV0Shadow());
+
+  TreeScopeAdopter adopter(*host1, *new_doc);
+  ASSERT_TRUE(adopter.NeedsScopeChange());
+  adopter.Execute();
+
+  EXPECT_TRUE(old_doc->MayContainV0Shadow());
+  EXPECT_TRUE(new_doc->MayContainV0Shadow());
 }
 
 }  // namespace blink

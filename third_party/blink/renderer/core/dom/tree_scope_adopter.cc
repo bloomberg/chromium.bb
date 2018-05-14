@@ -82,18 +82,23 @@ void TreeScopeAdopter::MoveTreeToNewScope(Node& root) const {
 
     if (ShadowRoot* shadow = element.GetShadowRoot()) {
       shadow->SetParentTreeScope(NewScope());
-      if (will_move_to_new_document) {
-        if (shadow->GetType() == ShadowRootType::V0) {
-          new_document.SetShadowCascadeOrder(
-              ShadowCascadeOrder::kShadowCascadeV0);
-        } else if (shadow->IsV1() && !shadow->IsUserAgent()) {
-          new_document.SetShadowCascadeOrder(
-              ShadowCascadeOrder::kShadowCascadeV1);
-        }
-        MoveTreeToNewDocument(*shadow, old_document, new_document);
-      }
+      if (will_move_to_new_document)
+        MoveShadowTreeToNewDocument(*shadow, old_document, new_document);
     }
   }
+}
+
+void TreeScopeAdopter::MoveShadowTreeToNewDocument(
+    ShadowRoot& shadow_root,
+    Document& old_document,
+    Document& new_document) const {
+  DCHECK_NE(old_document, new_document);
+  if (shadow_root.GetType() == ShadowRootType::V0) {
+    new_document.SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV0);
+  } else if (shadow_root.IsV1() && !shadow_root.IsUserAgent()) {
+    new_document.SetShadowCascadeOrder(ShadowCascadeOrder::kShadowCascadeV1);
+  }
+  MoveTreeToNewDocument(shadow_root, old_document, new_document);
 }
 
 void TreeScopeAdopter::MoveTreeToNewDocument(Node& root,
@@ -113,8 +118,8 @@ void TreeScopeAdopter::MoveTreeToNewDocument(Node& root,
         MoveTreeToNewDocument(*attr, old_document, new_document);
     }
 
-    if (ShadowRoot* shadow = element.GetShadowRoot())
-      MoveTreeToNewDocument(*shadow, old_document, new_document);
+    if (ShadowRoot* shadow_root = element.GetShadowRoot())
+      MoveShadowTreeToNewDocument(*shadow_root, old_document, new_document);
   }
 }
 

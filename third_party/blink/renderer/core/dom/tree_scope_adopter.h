@@ -54,6 +54,9 @@ class CORE_EXPORT TreeScopeAdopter {
   void MoveTreeToNewDocument(Node&,
                              Document& old_document,
                              Document& new_document) const;
+  void MoveShadowTreeToNewDocument(ShadowRoot&,
+                                   Document& old_document,
+                                   Document& new_document) const;
   void MoveNodeToNewDocument(Node&,
                              Document& old_document,
                              Document& new_document) const;
