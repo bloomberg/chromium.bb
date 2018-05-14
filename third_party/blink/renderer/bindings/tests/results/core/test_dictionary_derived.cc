@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "test_dictionary_derived_implemented_as.h"
+#include "test_dictionary_derived.h"
 
 namespace blink {
 

@@ -282,8 +282,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
             template_context['header_includes'].add(self.info_provider.include_path_for_export)
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
-        header_path, cpp_path = self.output_paths(
-            cpp_name(dictionary), interface_info)
+        header_path, cpp_path = self.output_paths(definition_name, interface_info)
         template_context['this_include_header_path'] = posixpath.basename(header_path)
         header_text, cpp_text = self.render_template(
             include_paths, header_template, cpp_template, template_context)
