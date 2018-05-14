@@ -11,6 +11,8 @@
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_contents_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "components/omnibox/browser/vector_icons.h"
+#include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -28,7 +30,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
            gfx::CreateVectorIcon(omnibox::kSwitchIcon,
                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                                  SK_ColorBLACK));
-  SetText(base::ASCIIToUTF16("Switch to open tab"));
+  SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
   set_corner_radius(CalculatePreferredSize().height() / 2.f);
 }
 
