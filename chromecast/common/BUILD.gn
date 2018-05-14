@@ -11,7 +11,12 @@ cast_source_set("common") {
     "cast_content_client.h",
     "cast_resource_delegate.cc",
     "cast_resource_delegate.h",
+    "common_message_generator.cc",
+    "common_message_generator.h",
     "global_descriptors.h",
+    "tts_messages.h",
+    "tts_utterance_request.cc",
+    "tts_utterance_request.h",
   ]
 
   deps = [
@@ -36,6 +41,8 @@ cast_source_set("common") {
       "extensions_api/cast_api_permissions.h",
       "extensions_api/cast_extension_messages.cc",
       "extensions_api/cast_extension_messages.h",
+      "extensions_api/tts/tts_engine_manifest_handler.cc",
+      "extensions_api/tts/tts_engine_manifest_handler.h",
     ]
 
     deps += [

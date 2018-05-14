@@ -85,5 +85,9 @@
     "matches": [
       "chrome://bookmarks/*"
     ]
-  }]
+  }],
+  "tts": {
+    "dependencies": ["permission:tts"],
+    "contexts": ["blessed_extension"]
+  }
 }

@@ -16,6 +16,7 @@
 #include "chromecast/renderer/cast_render_frame_action_deferrer.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
+#include "chromecast/renderer/tts_dispatcher.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -306,6 +307,12 @@ void CastContentRendererClient::
 void CastContentRendererClient::OnSupportedBitstreamAudioCodecsChanged(
     int codecs) {
   supported_bitstream_audio_codecs_ = codecs;
+}
+
+std::unique_ptr<blink::WebSpeechSynthesizer>
+CastContentRendererClient::OverrideSpeechSynthesizer(
+    blink::WebSpeechSynthesizerClient* client) {
+  return std::make_unique<TtsDispatcher>(client);
 }
 
 }  // namespace shell

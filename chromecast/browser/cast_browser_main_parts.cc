@@ -95,6 +95,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+#include "chromecast/browser/extensions/api/tts/tts_extension_api.h"
 #include "chromecast/browser/extensions/cast_extension_system.h"
 #include "chromecast/browser/extensions/cast_extensions_browser_client.h"
 #include "chromecast/browser/extensions/cast_prefs.h"
@@ -563,6 +564,11 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   extension_system->Init();
 
   extensions::ExtensionPrefs::Get(cast_browser_process_->browser_context());
+
+  // Force TTS to be available. It's lazy and this makes it eager.
+  // TODO(rdaum): There has to be a better way.
+  extensions::TtsAPI::GetFactoryInstance()->Get(
+      cast_browser_process_->browser_context());
 #endif
 
   // Initializing metrics service and network delegates must happen after cast
