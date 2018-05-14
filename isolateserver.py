@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.8.2'
+__version__ = '0.8.3'
 
 import errno
 import functools
@@ -1790,7 +1790,11 @@ def fetch_isolated(isolated_hash, storage, cache, outdir, use_symlinks):
                           'Path(%r) is nonfile (%s), skipped',
                           ti.name, ti.type)
                       continue
-                    fp = os.path.normpath(os.path.join(basedir, ti.name))
+                    # Handle files created on Windows fetched on POSIX and the
+                    # reverse.
+                    other_sep = '/' if os.path.sep == '\\' else '\\'
+                    name = ti.name.replace(other_sep, os.path.sep)
+                    fp = os.path.normpath(os.path.join(basedir, name))
                     if not fp.startswith(basedir):
                       logging.error(
                           'Path(%r) is outside root directory',
