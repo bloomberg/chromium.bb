@@ -93,12 +93,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       bool is_script_streaming,
       mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
       mojom::ControllerServiceWorkerRequest controller_request,
-      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~ServiceWorkerContextClient() override;
 
   // Called on the main thread.
@@ -273,7 +271,11 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void Send(IPC::Message* message);
   void SendWorkerStarted();
 
-  // mojom::ServiceWorkerEventDispatcher
+  // Implements mojom::ServiceWorkerEventDispatcher.
+  void InitializeGlobalScope(
+      blink::mojom::ServiceWorkerHostAssociatedPtrInfo service_worker_host,
+      blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info)
+      override;
   void DispatchInstallEvent(
       DispatchInstallEventCallback callback) override;
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
@@ -394,7 +396,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   const GURL script_url_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
   scoped_refptr<base::TaskRunner> worker_task_runner_;
 
   scoped_refptr<ServiceWorkerProviderContext> provider_context_;
@@ -405,7 +406,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // These Mojo objects are bound on the worker thread.
   mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
   mojom::ControllerServiceWorkerRequest pending_controller_request_;
-  blink::mojom::ServiceWorkerHostAssociatedPtrInfo pending_service_worker_host_;
 
   // This is bound on the main thread.
   scoped_refptr<mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr>

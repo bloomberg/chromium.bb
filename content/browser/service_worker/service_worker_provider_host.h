@@ -337,6 +337,21 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
       scoped_refptr<network::ResourceRequestBody> body,
       bool skip_service_worker);
 
+  // Returns an object info representing |registration|. The object info holds a
+  // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
+  // |registration| to ensure the host stays alive while the object info is
+  // alive. A new ServiceWorkerRegistrationObjectHost instance is created if one
+  // can not be found in |registration_object_hosts_|.
+  //
+  // NOTE: The registration object info should be sent over Mojo in the same
+  // task with calling this method. Otherwise, some Mojo calls to
+  // blink::mojom::ServiceWorkerRegistrationObject or
+  // blink::mojom::ServiceWorkerObject may happen before establishing the
+  // connections, and they'll end up with crashes.
+  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
+  CreateServiceWorkerRegistrationObjectInfo(
+      scoped_refptr<ServiceWorkerRegistration> registration);
+
   // Returns a ServiceWorkerHandle instance for |version| for this provider
   // host. A new instance is created if one does not already exist.
   // TODO(leonhsl): Make |version| be a scoped_refptr because we'll take its
@@ -543,21 +558,6 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker execution contexts.
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
-
-  // Returns an object info representing |registration|. The object info holds a
-  // Mojo connection to the ServiceWorkerRegistrationObjectHost for the
-  // |registration| to ensure the host stays alive while the object info is
-  // alive. A new ServiceWorkerRegistrationObjectHost instance is created if one
-  // can not be found in |registration_object_hosts_|.
-  //
-  // NOTE: The registration object info should be sent over Mojo in the same
-  // task with calling this method. Otherwise, some Mojo calls to
-  // blink::mojom::ServiceWorkerRegistrationObject or
-  // blink::mojom::ServiceWorkerObject may happen before establishing the
-  // connections, and they'll end up with crashes.
-  blink::mojom::ServiceWorkerRegistrationObjectInfoPtr
-  CreateServiceWorkerRegistrationObjectInfo(
-      scoped_refptr<ServiceWorkerRegistration> registration);
 
   // Perform common checks that need to run before ContainerHost methods that
   // come from a child process are handled.
