@@ -7,6 +7,7 @@
 
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "sandbox/sandbox_export.h"
 
 namespace sandbox {
 
@@ -15,7 +16,7 @@ namespace syscall_broker {
 // A small class to create a pipe-like communication channel. It is based on a
 // SOCK_SEQPACKET unix socket, which is connection-based and guaranteed to
 // preserve message boundaries.
-class BrokerChannel {
+class SANDBOX_EXPORT BrokerChannel {
  public:
   typedef base::ScopedFD EndPoint;
   static void CreatePair(EndPoint* reader, EndPoint* writer);

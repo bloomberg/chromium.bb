@@ -78,7 +78,7 @@ bool BrokerProcess::Init(
     broker_pid_ = child_pid;
     broker_client_ = std::make_unique<BrokerClient>(
         broker_permission_list_, std::move(ipc_writer), allowed_command_set_,
-        fast_check_in_client_, quiet_failures_for_tests_);
+        fast_check_in_client_);
     initialized_ = true;
     return true;
   }

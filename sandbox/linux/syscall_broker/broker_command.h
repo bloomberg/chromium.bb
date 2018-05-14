@@ -17,8 +17,6 @@ namespace syscall_broker {
 
 class BrokerPermissionList;
 
-constexpr size_t kMaxMessageLength = 4096;
-
 // Some flags are local to the current process and cannot be sent over a Unix
 // socket. They need special treatment from the client.
 // O_CLOEXEC is tricky because in theory another thread could call execve()
