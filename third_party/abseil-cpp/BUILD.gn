@@ -19,7 +19,18 @@ group("default") {
 }
 
 config("absl_include_config") {
-  include_dirs = ["."]
+  # Using -isystem instead of include_dirs (-I), so we don't need to suppress
+  # warnings coming from Abseil. Doing so would mask warnings in our own code.
+  if (!is_clang && is_win) {
+    # MSVC doesn't have -isystem, in that case we fallback to include_dirs and
+    # we use the warning suppression flags defined in :absl_default_cflags_cc.
+    include_dirs = [ "." ]
+  } else {
+    cflags = [
+      "-isystem",
+      rebase_path(".", root_build_dir),
+    ]
+  }
 }
 
 config("absl_define_config") {
