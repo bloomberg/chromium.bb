@@ -7,50 +7,23 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
-import android.view.ViewStub;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Tab;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryModel.PropertyKey;
-import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
+import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
+import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.ui.widget.ButtonCompat;
-
-import javax.annotation.Nullable;
 
 /**
  * Observes {@link KeyboardAccessoryModel} changes (like a newly available tab) and triggers the
  * {@link KeyboardAccessoryViewBinder} which will modify the view accordingly.
  */
 class KeyboardAccessoryViewBinder
-        implements PropertyModelChangeProcessor.ViewBinder<KeyboardAccessoryModel,
-                KeyboardAccessoryViewBinder.AccessoryViewHolder, PropertyKey> {
-    public static class AccessoryViewHolder {
-        @Nullable
-        private KeyboardAccessoryView mView; // Remains null until |mViewStub| is inflated.
-        private final ViewStub mViewStub;
-        private final RecyclerViewAdapter<KeyboardAccessoryModel.SimpleListObservable<Action>,
-                ActionViewBinder.ViewHolder> mActionsAdapter;
-
-        AccessoryViewHolder(ViewStub viewStub,
-                RecyclerViewAdapter<KeyboardAccessoryModel.SimpleListObservable<Action>,
-                        ActionViewBinder.ViewHolder> actionsAdapter) {
-            mViewStub = viewStub;
-            mActionsAdapter = actionsAdapter;
-            mActionsAdapter.setViewBinder(new ActionViewBinder());
-        }
-
-        @Nullable
-        public KeyboardAccessoryView getView() {
-            return mView;
-        }
-
-        public void initializeView() {
-            mView = (KeyboardAccessoryView) mViewStub.inflate();
-            mView.setActionsAdapter(mActionsAdapter);
-        }
-    }
-
+        implements LazyViewBinderAdapter.SimpleViewBinder<KeyboardAccessoryModel,
+                KeyboardAccessoryView, PropertyKey> {
     static class ActionViewBinder implements RecyclerViewAdapter.ViewBinder<
             KeyboardAccessoryModel.SimpleListObservable<Action>, ActionViewBinder.ViewHolder> {
         static class ViewHolder extends RecyclerView.ViewHolder {
@@ -80,26 +53,69 @@ class KeyboardAccessoryViewBinder
         }
     }
 
-    @Override
-    public void bind(
-            KeyboardAccessoryModel model, AccessoryViewHolder viewHolder, PropertyKey propertyKey) {
-        KeyboardAccessoryView view = viewHolder.getView();
-        if (view != null) { // If the view was previously inflated, update it and return.
-            updateViewByProperty(model, view, propertyKey);
-            return;
-        }
-        if (propertyKey != PropertyKey.VISIBLE || !model.isVisible()) {
-            return; // Ignore model changes before the view is shown for the first time.
+    static class TabViewBinder implements ListModelChangeProcessor.ViewBinder<
+            KeyboardAccessoryModel.SimpleListObservable<Tab>, KeyboardAccessoryView> {
+        @Override
+        public void onItemsInserted(KeyboardAccessoryModel.SimpleListObservable<Tab> model,
+                KeyboardAccessoryView view, int index, int count) {
+            assert count > 0 : "Tried to insert invalid amount of tabs - must be at least one.";
+            while (count-- > 0) {
+                Tab tab = model.get(index);
+                view.addTabAt(index, tab.getIcon(), tab.getContentDescription());
+                ++index;
+            }
         }
 
-        // If the view is visible for the first time, update ALL its properties.
-        viewHolder.initializeView();
-        for (PropertyKey key : PropertyKey.ALL_PROPERTIES) {
-            updateViewByProperty(model, viewHolder.getView(), key);
+        @Override
+        public void onItemsRemoved(KeyboardAccessoryModel.SimpleListObservable<Tab> model,
+                KeyboardAccessoryView view, int index, int count) {
+            assert count > 0 : "Tried to remove invalid amount of tabs - must be at least one.";
+            while (count-- > 0) {
+                view.removeTabAt(index++);
+            }
+        }
+
+        @Override
+        public void onItemsChanged(KeyboardAccessoryModel.SimpleListObservable<Tab> model,
+                KeyboardAccessoryView view, int index, int count) {
+            // TODO(fhorschig): Implement fine-grained, ranged changes should the need arise.
+            updateAllTabs(view, model);
+        }
+
+        void updateAllTabs(KeyboardAccessoryView view,
+                KeyboardAccessoryModel.SimpleListObservable<Tab> model) {
+            view.clearTabs();
+            for (int i = 0; i < model.getItemCount(); ++i) {
+                Tab tab = model.get(i);
+                view.addTabAt(i, tab.getIcon(), tab.getContentDescription());
+            }
         }
     }
 
-    private void updateViewByProperty(
+    @Override
+    public PropertyKey getVisibilityProperty() {
+        return PropertyKey.VISIBLE;
+    }
+
+    @Override
+    public boolean isVisible(KeyboardAccessoryModel model) {
+        return model.isVisible();
+    }
+
+    @Override
+    public void onInitialInflation(
+            KeyboardAccessoryModel model, KeyboardAccessoryView inflatedView) {
+        for (PropertyKey key : PropertyKey.ALL_PROPERTIES) {
+            bind(model, inflatedView, key);
+        }
+
+        inflatedView.setActionsAdapter(KeyboardAccessoryCoordinator.createActionsAdapter(model));
+        KeyboardAccessoryCoordinator.createTabViewBinder(model, inflatedView)
+                .updateAllTabs(inflatedView, model.getTabList());
+    }
+
+    @Override
+    public void bind(
             KeyboardAccessoryModel model, KeyboardAccessoryView view, PropertyKey propertyKey) {
         if (propertyKey == PropertyKey.VISIBLE) {
             view.setVisible(model.isVisible());

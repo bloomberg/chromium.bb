@@ -14,7 +14,7 @@ import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
  * {@link AccessorySheetViewBinder} which will modify the view accordingly.
  */
 class AccessorySheetViewBinder
-        implements LazyViewBinderAdapter.SimpleViewBinder<PropertyKey, AccessorySheetModel> {
+        implements LazyViewBinderAdapter.SimpleViewBinder<AccessorySheetModel, View, PropertyKey> {
     @Override
     public PropertyKey getVisibilityProperty() {
         return PropertyKey.VISIBLE;
@@ -24,6 +24,9 @@ class AccessorySheetViewBinder
     public boolean isVisible(AccessorySheetModel model) {
         return model.isVisible();
     }
+
+    @Override
+    public void onInitialInflation(AccessorySheetModel model, View inflatedView) {}
 
     @Override
     public void bind(AccessorySheetModel model, View inflatedView, PropertyKey propertyKey) {

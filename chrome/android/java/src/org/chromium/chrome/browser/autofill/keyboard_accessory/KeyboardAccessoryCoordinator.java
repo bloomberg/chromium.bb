@@ -8,8 +8,11 @@ import android.view.ViewStub;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
-import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.AccessoryViewHolder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Action;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.ActionViewBinder;
+import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryViewBinder.TabViewBinder;
+import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
+import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
@@ -23,7 +26,7 @@ import org.chromium.ui.base.WindowAndroid;
  */
 public class KeyboardAccessoryCoordinator {
     private final KeyboardAccessoryMediator mMediator;
-    private AccessoryViewHolder mViewHolder;
+    private LazyViewBinderAdapter.StubHolder<KeyboardAccessoryView> mViewHolder;
 
     /**
      * Initializes the component as soon as the native library is loaded by e.g. starting to listen
@@ -34,22 +37,41 @@ public class KeyboardAccessoryCoordinator {
     public KeyboardAccessoryCoordinator(WindowAndroid windowAndroid, ViewStub viewStub) {
         KeyboardAccessoryModel model = new KeyboardAccessoryModel();
         mMediator = new KeyboardAccessoryMediator(model, windowAndroid);
+        mViewHolder = new LazyViewBinderAdapter.StubHolder<>(viewStub);
 
-        RecyclerViewAdapter<
-                KeyboardAccessoryModel.SimpleListObservable<KeyboardAccessoryData.Action>,
+        model.addObserver(new PropertyModelChangeProcessor<>(model, mViewHolder,
+                new LazyViewBinderAdapter<>(new KeyboardAccessoryViewBinder())));
+    }
+
+    /**
+     * Creates an adapter to an {@link ActionViewBinder} that is wired
+     * up to the model change processor which listens to the given {@link KeyboardAccessoryModel}.
+     * @param model the {@link KeyboardAccessoryModel} the adapter gets its data from.
+     * @return Returns a fully initialized and wired adapter to an ActionViewBinder.
+     */
+    static RecyclerViewAdapter<KeyboardAccessoryModel.SimpleListObservable<Action>,
+            ActionViewBinder.ViewHolder>
+    createActionsAdapter(KeyboardAccessoryModel model) {
+        RecyclerViewAdapter<KeyboardAccessoryModel.SimpleListObservable<Action>,
                 ActionViewBinder.ViewHolder> actionsAdapter =
                 new RecyclerViewAdapter<>(model.getActionList(), new ActionViewBinder());
-
-        mViewHolder = new AccessoryViewHolder(viewStub, actionsAdapter);
-        PropertyModelChangeProcessor<KeyboardAccessoryModel, AccessoryViewHolder,
-                KeyboardAccessoryModel.PropertyKey> modelChangeProcessor =
-                new PropertyModelChangeProcessor<>(
-                        model, mViewHolder, new KeyboardAccessoryViewBinder());
-
-        model.addObserver(modelChangeProcessor);
-        model.addTabListObserver(new RecyclerViewModelChangeProcessor<>(
-                new RecyclerViewAdapter<>(model.getTabList(), null)));
         model.addActionListObserver(new RecyclerViewModelChangeProcessor<>(actionsAdapter));
+        return actionsAdapter;
+    }
+
+    /**
+     * Creates the {@link TabViewBinder} that is linked to the {@link ListModelChangeProcessor} that
+     * connects the given {@link KeyboardAccessoryView} to the given {@link KeyboardAccessoryModel}.
+     * @param model the {@link KeyboardAccessoryModel} whose data is used by the TabViewBinder.
+     * @param inflatedView the {@link KeyboardAccessoryView} to which the TabViewBinder binds data.
+     * @return Returns a fully initialized and wired {@link TabViewBinder}.
+     */
+    static TabViewBinder createTabViewBinder(
+            KeyboardAccessoryModel model, KeyboardAccessoryView inflatedView) {
+        TabViewBinder tabViewBinder = new TabViewBinder();
+        model.addTabListObserver(
+                new ListModelChangeProcessor<>(model.getTabList(), inflatedView, tabViewBinder));
+        return tabViewBinder;
     }
 
     /**

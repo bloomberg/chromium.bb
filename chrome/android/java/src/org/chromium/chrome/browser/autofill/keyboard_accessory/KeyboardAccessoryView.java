@@ -8,6 +8,8 @@ import static org.chromium.ui.base.LocalizationUtils.isLayoutRtl;
 
 import android.content.Context;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
+import android.support.design.widget.TabLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -30,6 +32,7 @@ import javax.annotation.Nullable;
 class KeyboardAccessoryView extends LinearLayout {
     private HorizontalScrollView mSuggestionsView;
     private RecyclerView mActionsView;
+    private TabLayout mTabLayout;
 
     private static class HorizontalDividerItemDecoration extends RecyclerView.ItemDecoration {
         private final int mHorizontalMargin;
@@ -58,6 +61,8 @@ class KeyboardAccessoryView extends LinearLayout {
         mActionsView = findViewById(R.id.actions_view);
         initializeHorizontalRecyclerView(mActionsView);
 
+        mTabLayout = findViewById(R.id.tabs);
+
         mSuggestionsView = findViewById(R.id.suggestions_view);
 
         // Apply RTL layout changes to the views childen:
@@ -82,6 +87,29 @@ class KeyboardAccessoryView extends LinearLayout {
 
     void setActionsAdapter(RecyclerView.Adapter adapter) {
         mActionsView.setAdapter(adapter);
+    }
+
+    /**
+     * Creates a new tab and appends it to the end of the tab layout at the start of the bar.
+     * @param icon The icon to be displayed in the tab bar.
+     * @param contentDescription The contentDescription to be used for the tab icon.
+     */
+    void addTabAt(int position, Drawable icon, CharSequence contentDescription) {
+        TabLayout.Tab tab = mTabLayout.newTab();
+        tab.setIcon(icon); // TODO(fhorschig): Call .mutate() when changing the active tint.
+        tab.setContentDescription(contentDescription);
+        mTabLayout.addTab(tab, position);
+    }
+
+    void removeTabAt(int position) {
+        mTabLayout.removeTabAt(position);
+    }
+
+    /**
+     * Removes all tabs.
+     */
+    void clearTabs() {
+        mTabLayout.removeAllTabs();
     }
 
     // TODO(crbug/722897): Check to handle RTL.

@@ -34,7 +34,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AccessorySheetViewTest {
     private AccessorySheetModel mModel;
-    private LazyViewBinderAdapter.StubHolder mStubHolder;
+    private LazyViewBinderAdapter.StubHolder<View> mStubHolder;
 
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
@@ -43,7 +43,7 @@ public class AccessorySheetViewTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mStubHolder = new LazyViewBinderAdapter.StubHolder(
+        mStubHolder = new LazyViewBinderAdapter.StubHolder<>(
                 mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_sheet_stub));
         mModel = new AccessorySheetModel();
         mModel.addObserver(new PropertyModelChangeProcessor<>(
