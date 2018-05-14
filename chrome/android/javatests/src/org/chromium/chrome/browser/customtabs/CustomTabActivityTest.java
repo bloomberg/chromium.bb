@@ -1326,77 +1326,22 @@ public class CustomTabActivityTest {
     }
 
     /**
-     * Tests that Time To First Contentful Paint and Load Event Start timings are sent.
+     * Tests that page load metrice are sent.
      */
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testPageLoadMetricIsSent() throws Exception {
-        final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
-        final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
-        final AtomicReference<Long> loadEventStartMs = new AtomicReference<>(-1L);
-        final AtomicReference<Boolean> sawNetworkQualityEstimates = new AtomicReference<>(false);
+    public void testPageLoadMetricsAreSent() throws Exception {
+        checkPageLoadMetrics(true);
+    }
 
-        CustomTabsCallback cb = new CustomTabsCallback() {
-            @Override
-            public void extraCallback(String callbackName, Bundle args) {
-                Assert.assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
-
-                if (-1 != args.getLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, -1)) {
-                    sawNetworkQualityEstimates.set(true);
-                }
-
-                long navigationStart = args.getLong(PageLoadMetrics.NAVIGATION_START, -1);
-                if (navigationStart == -1) {
-                    // Untested metric callback.
-                    return;
-                }
-                long current = SystemClock.uptimeMillis();
-                Assert.assertTrue(navigationStart <= current);
-                Assert.assertTrue(navigationStart >= activityStartTimeMs.get());
-
-                long firstContentfulPaint =
-                        args.getLong(PageLoadMetrics.FIRST_CONTENTFUL_PAINT, -1);
-                if (firstContentfulPaint > 0) {
-                    Assert.assertTrue(firstContentfulPaint <= (current - navigationStart));
-                    firstContentfulPaintMs.set(firstContentfulPaint);
-                }
-
-                long loadEventStart = args.getLong(PageLoadMetrics.LOAD_EVENT_START, -1);
-                if (loadEventStart > 0) {
-                    Assert.assertTrue(loadEventStart <= (current - navigationStart));
-                    loadEventStartMs.set(loadEventStart);
-                }
-            }
-        };
-
-        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(cb);
-        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
-        intent.setData(Uri.parse(mTestPage));
-        intent.setComponent(new ComponentName(
-                InstrumentationRegistry.getTargetContext(), ChromeLauncherActivity.class));
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
-        activityStartTimeMs.set(SystemClock.uptimeMillis());
-        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return firstContentfulPaintMs.get() > 0;
-            }
-        });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return loadEventStartMs.get() > 0;
-            }
-        });
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                return sawNetworkQualityEstimates.get();
-            }
-        });
+    /**
+     * Tests that page load metrics are not sent when the client is not whitelisted.
+     */
+    @Test
+    @SmallTest
+    public void testPageLoadMetricsAreNotSentByDefault() throws Exception {
+        checkPageLoadMetrics(false);
     }
 
     private static void assertSuffixedHistogramTotalCount(long expected, String histogramPrefix) {
@@ -2635,6 +2580,77 @@ public class CustomTabActivityTest {
             Assert.assertFalse(observers.next() instanceof CustomTabObserver);
         }
         return newActivity;
+    }
+
+    private void checkPageLoadMetrics(boolean allowMetrics)
+            throws InterruptedException, TimeoutException {
+        final AtomicReference<Long> firstContentfulPaintMs = new AtomicReference<>(-1L);
+        final AtomicReference<Long> activityStartTimeMs = new AtomicReference<>(-1L);
+        final AtomicReference<Long> loadEventStartMs = new AtomicReference<>(-1L);
+        final AtomicReference<Boolean> sawNetworkQualityEstimates = new AtomicReference<>(false);
+
+        CustomTabsCallback cb = new CustomTabsCallback() {
+            @Override
+            public void extraCallback(String callbackName, Bundle args) {
+                if (callbackName.equals(CustomTabsConnection.ON_WARMUP_COMPLETED)) return;
+
+                Assert.assertEquals(CustomTabsConnection.PAGE_LOAD_METRICS_CALLBACK, callbackName);
+                if (-1 != args.getLong(PageLoadMetrics.EFFECTIVE_CONNECTION_TYPE, -1)) {
+                    sawNetworkQualityEstimates.set(true);
+                }
+
+                long navigationStart = args.getLong(PageLoadMetrics.NAVIGATION_START, -1);
+                if (navigationStart == -1) {
+                    // Untested metric callback.
+                    return;
+                }
+                long current = SystemClock.uptimeMillis();
+                Assert.assertTrue(navigationStart <= current);
+                Assert.assertTrue(navigationStart >= activityStartTimeMs.get());
+
+                long firstContentfulPaint =
+                        args.getLong(PageLoadMetrics.FIRST_CONTENTFUL_PAINT, -1);
+                if (firstContentfulPaint > 0) {
+                    Assert.assertTrue(firstContentfulPaint <= (current - navigationStart));
+                    firstContentfulPaintMs.set(firstContentfulPaint);
+                }
+
+                long loadEventStart = args.getLong(PageLoadMetrics.LOAD_EVENT_START, -1);
+                if (loadEventStart > 0) {
+                    Assert.assertTrue(loadEventStart <= (current - navigationStart));
+                    loadEventStartMs.set(loadEventStart);
+                }
+            }
+        };
+
+        CustomTabsSession session = CustomTabsTestUtils.bindWithCallback(cb);
+        Intent intent = new CustomTabsIntent.Builder(session).build().intent;
+
+        if (allowMetrics) {
+            CustomTabsSessionToken token = CustomTabsSessionToken.getSessionTokenFromIntent(intent);
+            CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
+            connection.mClientManager.setShouldGetPageLoadMetricsForSession(token, true);
+        }
+
+        intent.setData(Uri.parse(mTestPage));
+        intent.setComponent(new ComponentName(
+                InstrumentationRegistry.getTargetContext(), ChromeLauncherActivity.class));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        activityStartTimeMs.set(SystemClock.uptimeMillis());
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        if (allowMetrics) {
+            CriteriaHelper.pollInstrumentationThread(() -> firstContentfulPaintMs.get() > 0);
+            CriteriaHelper.pollInstrumentationThread(() -> loadEventStartMs.get() > 0);
+            CriteriaHelper.pollInstrumentationThread(() -> sawNetworkQualityEstimates.get());
+        } else {
+            try {
+                CriteriaHelper.pollInstrumentationThread(() -> firstContentfulPaintMs.get() > 0);
+            } catch (AssertionError e) {
+                // Expected.
+            }
+            Assert.assertEquals(-1L, (long) firstContentfulPaintMs.get());
+        }
     }
 
     private CustomTabsSessionToken warmUpAndLaunchUrlWithSession(Intent intentWithSession)
