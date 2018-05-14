@@ -189,12 +189,18 @@ bool HeadlessBrowserTest::WaitForLoad(HeadlessWebContents* web_contents) {
   return observer.last_navigation_succeeded();
 }
 
-void HeadlessBrowserTest::WaitForFocus(HeadlessWebContents* web_contents) {
-  HeadlessWebContentsImpl* web_contents_impl =
-      HeadlessWebContentsImpl::From(web_contents);
-  content::FrameFocusedObserver observer(
-      web_contents_impl->web_contents()->GetMainFrame());
-  observer.Wait();
+void HeadlessBrowserTest::WaitForLoadAndGainFocus(
+    HeadlessWebContents* web_contents) {
+  content::WebContents* content =
+      HeadlessWebContentsImpl::From(web_contents)->web_contents();
+
+  // To finish loading and to gain focus are two independent events. Which one
+  // is issued first is undefined. The following code is waiting on both, in any
+  // order.
+  content::TestNavigationObserver load_observer(content, 1);
+  content::FrameFocusedObserver focus_observer(content->GetMainFrame());
+  load_observer.Wait();
+  focus_observer.Wait();
 }
 
 std::unique_ptr<runtime::EvaluateResult> HeadlessBrowserTest::EvaluateScript(

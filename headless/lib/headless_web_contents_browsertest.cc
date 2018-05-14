@@ -334,8 +334,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest,
       browser_context->CreateWebContentsBuilder()
           .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
           .Build();
-  EXPECT_TRUE(WaitForLoad(web_contents));
-  WaitForFocus(web_contents);
+  WaitForLoadAndGainFocus(web_contents);
 
   std::unique_ptr<runtime::EvaluateResult> has_focus =
       EvaluateScript(web_contents, "document.hasFocus()");
@@ -345,8 +344,7 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest,
       browser_context->CreateWebContentsBuilder()
           .SetInitialURL(embedded_test_server()->GetURL("/hello.html"))
           .Build();
-  EXPECT_TRUE(WaitForLoad(web_contents2));
-  WaitForFocus(web_contents2);
+  WaitForLoadAndGainFocus(web_contents2);
 
   // Focus of different WebContents is independent.
   has_focus = EvaluateScript(web_contents, "document.hasFocus()");
