@@ -905,16 +905,16 @@ TEST_F(LayerWithDelegateTest, SurfaceLayerCloneAndMirror) {
                                cc::DeadlinePolicy::UseDefaultDeadline(), false);
   EXPECT_FALSE(layer->StretchContentToFillBounds());
   EXPECT_TRUE(static_cast<cc::SurfaceLayer*>(layer->cc_layer_for_testing())
-                  ->hit_testable());
+                  ->surface_hit_testable());
 
   auto clone = layer->Clone();
   EXPECT_FALSE(clone->StretchContentToFillBounds());
   EXPECT_TRUE(static_cast<cc::SurfaceLayer*>(clone->cc_layer_for_testing())
-                  ->hit_testable());
+                  ->surface_hit_testable());
   auto mirror = layer->Mirror();
   EXPECT_FALSE(mirror->StretchContentToFillBounds());
   EXPECT_TRUE(static_cast<cc::SurfaceLayer*>(mirror->cc_layer_for_testing())
-                  ->hit_testable());
+                  ->surface_hit_testable());
 
   local_surface_id = allocator.GenerateId();
   viz::SurfaceId surface_id_two(arbitrary_frame_sink, local_surface_id);
@@ -922,16 +922,16 @@ TEST_F(LayerWithDelegateTest, SurfaceLayerCloneAndMirror) {
                                cc::DeadlinePolicy::UseDefaultDeadline(), true);
   EXPECT_TRUE(layer->StretchContentToFillBounds());
   EXPECT_TRUE(static_cast<cc::SurfaceLayer*>(layer->cc_layer_for_testing())
-                  ->hit_testable());
+                  ->surface_hit_testable());
 
   clone = layer->Clone();
   EXPECT_TRUE(clone->StretchContentToFillBounds());
   EXPECT_TRUE(static_cast<cc::SurfaceLayer*>(clone->cc_layer_for_testing())
-                  ->hit_testable());
+                  ->surface_hit_testable());
   mirror = layer->Mirror();
   EXPECT_TRUE(mirror->StretchContentToFillBounds());
   EXPECT_TRUE(static_cast<cc::SurfaceLayer*>(mirror->cc_layer_for_testing())
-                  ->hit_testable());
+                  ->surface_hit_testable());
 }
 
 class LayerWithNullDelegateTest : public LayerWithDelegateTest {

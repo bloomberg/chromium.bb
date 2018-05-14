@@ -59,10 +59,10 @@ void SurfaceLayer::SetStretchContentToFillBounds(
   SetNeedsPushProperties();
 }
 
-void SurfaceLayer::SetHitTestable(bool hit_testable) {
-  if (hit_testable_ == hit_testable)
+void SurfaceLayer::SetSurfaceHitTestable(bool surface_hit_testable) {
+  if (surface_hit_testable_ == surface_hit_testable)
     return;
-  hit_testable_ = hit_testable;
+  surface_hit_testable_ = surface_hit_testable;
   SetNeedsPushProperties();
 }
 
@@ -100,7 +100,7 @@ void SurfaceLayer::PushPropertiesTo(LayerImpl* layer) {
   deadline_in_frames_ = 0u;
   layer_impl->SetFallbackSurfaceId(fallback_surface_id_);
   layer_impl->SetStretchContentToFillBounds(stretch_content_to_fill_bounds_);
-  layer_impl->SetHitTestable(hit_testable_);
+  layer_impl->SetSurfaceHitTestable(surface_hit_testable_);
 }
 
 }  // namespace cc

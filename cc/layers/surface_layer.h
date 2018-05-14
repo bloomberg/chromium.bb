@@ -32,8 +32,8 @@ class CC_EXPORT SurfaceLayer : public Layer {
     return stretch_content_to_fill_bounds_;
   }
 
-  void SetHitTestable(bool hit_testable);
-  bool hit_testable() const { return hit_testable_; }
+  void SetSurfaceHitTestable(bool surface_hit_testable);
+  bool surface_hit_testable() const { return surface_hit_testable_; }
 
   // Layer overrides.
   std::unique_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl) override;
@@ -64,7 +64,14 @@ class CC_EXPORT SurfaceLayer : public Layer {
   base::Optional<uint32_t> deadline_in_frames_ = 0u;
 
   bool stretch_content_to_fill_bounds_ = false;
-  bool hit_testable_ = false;
+
+  // Whether or not the surface should submit hit test data when submitting
+  // compositor frame. The bit represents that the surface layer may be
+  // associated with an out-of-process iframe and viz hit testing needs to know
+  // the hit test information of that iframe. This bit is different from a layer
+  // being hit testable in the renderer, a hit testable surface layer may not
+  // be surface hit testable (e.g., a surface layer created by video).
+  bool surface_hit_testable_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceLayer);
 };

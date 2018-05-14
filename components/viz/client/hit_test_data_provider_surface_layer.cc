@@ -75,7 +75,7 @@ mojom::HitTestRegionListPtr HitTestDataProviderSurfaceLayer::GetHitTestData(
       const auto* surface_layer =
           static_cast<const cc::SurfaceLayerImpl*>(layer);
 
-      if (!surface_layer->hit_testable()) {
+      if (!surface_layer->surface_hit_testable()) {
         overlapping_region.Union(cc::MathUtil::MapEnclosingClippedRect(
             layer->ScreenSpaceTransform(), gfx::Rect(surface_layer->bounds())));
         continue;
