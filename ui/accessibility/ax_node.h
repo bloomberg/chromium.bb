@@ -130,8 +130,6 @@ class AX_EXPORT AXNode final {
                             base::string16* value) const {
     return data().GetString16Attribute(attribute, value);
   }
-  // Cannot be constexpr because |base::string16| doesn't have a constexpr
-  // constructor.
   base::string16 GetString16Attribute(
       ax::mojom::StringAttribute attribute) const {
     return data().GetString16Attribute(attribute);
