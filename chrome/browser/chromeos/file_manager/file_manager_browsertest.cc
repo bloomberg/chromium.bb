@@ -164,9 +164,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestParameter(IN_GUEST_MODE, "renameFileDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "renameFileDownloads"),
         TestParameter(NOT_IN_GUEST_MODE, "renameFileDrive"),
-        TestParameter(IN_GUEST_MODE, "renameNewDirectoryDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "renameNewDirectoryDrive")));
+        TestParameter(IN_GUEST_MODE, "renameNewFolderDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "renameNewFolderDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "renameNewFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete,
