@@ -82,6 +82,10 @@ class CONTENT_EXPORT MouseWheelEventQueue {
                        bool synthetic);
   void RecordLatchingUmaMetric(bool latched);
 
+  // True if gesture scroll events can be generated for the wheel event sent for
+  // ack.
+  bool CanGenerateGestureScroll(InputEventAckState ack_result) const;
+
   MouseWheelEventQueueClient* client_;
 
   base::circular_deque<std::unique_ptr<QueuedWebMouseWheelEvent>> wheel_queue_;
