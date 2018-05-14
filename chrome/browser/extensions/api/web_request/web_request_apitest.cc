@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/net/profile_network_context_service.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_loader.h"
 #include "chrome/browser/search/one_google_bar/one_google_bar_service.h"
@@ -77,13 +79,10 @@
 #include "net/http/http_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "services/network/public/cpp/features.h"
@@ -183,56 +182,6 @@ int GetWebRequestCountFromBackgroundPage(const Extension* extension,
   return GetCountFromBackgroundPage(extension, context,
                                     "window.webRequestCount");
 }
-
-// A test delegate to wait allow waiting for responses to complete with an
-// expected status and given content.
-// TODO(devlin): Other similar classes exist elsewhere. Pull this into a common
-// test class.
-class TestURLFetcherDelegate : public net::URLFetcherDelegate {
- public:
-  // Creating the TestURLFetcherDelegate automatically creates and starts a
-  // URLFetcher.
-  TestURLFetcherDelegate(
-      scoped_refptr<net::URLRequestContextGetter> context_getter,
-      const GURL& url,
-      net::URLRequestStatus expected_request_status)
-      : expected_request_status_(expected_request_status),
-        fetcher_(net::URLFetcher::Create(url,
-                                         net::URLFetcher::GET,
-                                         this,
-                                         TRAFFIC_ANNOTATION_FOR_TESTS)) {
-    fetcher_->SetRequestContext(context_getter.get());
-    fetcher_->Start();
-  }
-  ~TestURLFetcherDelegate() override {}
-
-  void SetExpectedResponse(const std::string& expected_response) {
-    expected_response_ = expected_response;
-  }
-
-  void WaitForCompletion() { run_loop_.Run(); }
-
-  // net::URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override {
-    EXPECT_EQ(expected_request_status_.status(), source->GetStatus().status());
-    EXPECT_EQ(expected_request_status_.error(), source->GetStatus().error());
-    if (expected_response_) {
-      std::string response;
-      ASSERT_TRUE(fetcher_->GetResponseAsString(&response));
-      EXPECT_EQ(*expected_response_, response);
-    }
-
-    run_loop_.Quit();
-  }
-
- private:
-  const net::URLRequestStatus expected_request_status_;
-  base::Optional<std::string> expected_response_;
-  std::unique_ptr<net::URLFetcher> fetcher_;
-  base::RunLoop run_loop_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestURLFetcherDelegate);
-};
 
 // The DevTool's remote front-end is hardcoded to a URL with a fixed port.
 // Redirect all responses to a URL with port.
@@ -1189,7 +1138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
 // Test behavior when intercepting requests from a browser-initiated url fetch.
 IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
-                       WebRequestURLFetcherInterception) {
+                       WebRequestURLLoaderInterception) {
   // Create an extension that intercepts (and blocks) requests to example.com.
   TestExtensionDir test_dir;
   test_dir.WriteManifest(
@@ -1210,7 +1159,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
              ["blocking"]);
          chrome.test.sendMessage('ready');)");
 
-  ASSERT_TRUE(StartEmbeddedTestServer());
   const Extension* extension = nullptr;
   {
     ExtensionTestMessageListener listener("ready", false);
@@ -1219,11 +1167,35 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
     EXPECT_TRUE(listener.WaitUntilSatisfied());
   }
 
-  GURL google_url =
-      embedded_test_server()->GetURL("google.com", "/extensions/body1.html");
   // Taken from test/data/extensions/body1.html.
   const char kGoogleBodyContent[] = "dog";
   const char kGoogleFullContent[] = "<html>\n<body>dog</body>\n</html>\n";
+
+  // Taken from test/data/extensions/body2.html.
+  const char kExampleBodyContent[] = "cat";
+  const char kExampleFullContent[] = "<html>\n<body>cat</body>\n</html>\n";
+
+  embedded_test_server()->RegisterRequestHandler(base::BindLambdaForTesting(
+      [&](const net::test_server::HttpRequest& request)
+          -> std::unique_ptr<net::test_server::HttpResponse> {
+        std::unique_ptr<net::test_server::BasicHttpResponse> response(
+            new net::test_server::BasicHttpResponse);
+        if (request.relative_url == "/extensions/body1.html") {
+          response->set_code(net::HTTP_OK);
+          response->set_content(kGoogleFullContent);
+          return std::move(response);
+        } else if (request.relative_url == "/extensions/body2.html") {
+          response->set_code(net::HTTP_OK);
+          response->set_content(kExampleFullContent);
+          return std::move(response);
+        }
+
+        return nullptr;
+      }));
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  GURL google_url =
+      embedded_test_server()->GetURL("google.com", "/extensions/body1.html");
 
   // First, check normal requets (e.g., navigations) to verify the extension
   // is working correctly.
@@ -1243,9 +1215,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 
   GURL example_url =
       embedded_test_server()->GetURL("example.com", "/extensions/body2.html");
-  // Taken from test/data/extensions/body2.html.
-  const char kExampleBodyContent[] = "cat";
-  const char kExampleFullContent[] = "<html>\n<body>cat</body>\n</html>\n";
 
   ui_test_utils::NavigateToURL(browser(), example_url);
   {
@@ -1262,47 +1231,74 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
     EXPECT_NE(kExampleBodyContent, content);
   }
 
+  // A callback allow waiting for responses to complete with an expected status
+  // and given content.
+  auto make_browser_request =
+      [this](network::mojom::URLLoaderFactory* url_loader_factory,
+             const GURL& url,
+             const base::Optional<std::string>& expected_response,
+             int expected_net_code) {
+        auto request = std::make_unique<network::ResourceRequest>();
+        request->url = url;
+
+        content::SimpleURLLoaderTestHelper simple_loader_helper;
+        auto simple_loader = network::SimpleURLLoader::Create(
+            std::move(request), TRAFFIC_ANNOTATION_FOR_TESTS);
+        simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+            url_loader_factory, simple_loader_helper.GetCallback());
+
+        simple_loader_helper.WaitForCallback();
+
+        if (expected_response.has_value()) {
+          EXPECT_TRUE(!!simple_loader_helper.response_body());
+          EXPECT_EQ(*simple_loader_helper.response_body(), *expected_response);
+          EXPECT_EQ(200,
+                    simple_loader->ResponseInfo()->headers->response_code());
+        } else {
+          EXPECT_FALSE(!!simple_loader_helper.response_body());
+          EXPECT_EQ(simple_loader->NetError(), expected_net_code);
+        }
+      };
+
   // Next, try a series of requests through URLRequestFetchers (rather than a
   // renderer).
-  net::URLRequestContextGetter* profile_context =
-      browser()->profile()->GetRequestContext();
+  auto* url_loader_factory =
+      content::BrowserContext::GetDefaultStoragePartition(profile())
+          ->GetURLLoaderFactoryForBrowserProcess()
+          .get();
+
   {
     // google.com should be unaffected by the extension and should succeed.
-    SCOPED_TRACE("google.com with Profile's request context");
-    TestURLFetcherDelegate url_fetcher(profile_context, google_url,
-                                       net::URLRequestStatus());
-    url_fetcher.SetExpectedResponse(kGoogleFullContent);
-    url_fetcher.WaitForCompletion();
-  }
-  {
-    // example.com should fail.
-    SCOPED_TRACE("example.com with Profile's request context");
-    TestURLFetcherDelegate url_fetcher(
-        profile_context, example_url,
-        net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                              net::ERR_BLOCKED_BY_CLIENT));
-    url_fetcher.WaitForCompletion();
+    SCOPED_TRACE("google.com with Profile's url loader");
+    make_browser_request(url_loader_factory, google_url, kGoogleFullContent,
+                         net::OK);
   }
 
-  // Requests going through the system request context should always succeed.
-  net::URLRequestContextGetter* system_context =
-      g_browser_process->system_request_context();
+  {
+    // example.com should fail.
+    SCOPED_TRACE("example.com with Profile's url loader");
+    make_browser_request(url_loader_factory, example_url, base::nullopt,
+                         net::ERR_BLOCKED_BY_CLIENT);
+  }
+
+  // Requests going through the system network context manager should always
+  // succeed.
+  SystemNetworkContextManager* system_network_context_manager =
+      g_browser_process->system_network_context_manager();
+  network::mojom::URLLoaderFactory* system_url_loader_factory =
+      system_network_context_manager->GetURLLoaderFactory();
   {
     // google.com should succeed (again).
-    SCOPED_TRACE("google.com with System's request context");
-    TestURLFetcherDelegate url_fetcher(system_context, google_url,
-                                       net::URLRequestStatus());
-    url_fetcher.SetExpectedResponse(kGoogleFullContent);
-    url_fetcher.WaitForCompletion();
+    SCOPED_TRACE("google.com with System's network context manager");
+    make_browser_request(system_url_loader_factory, google_url,
+                         kGoogleFullContent, net::OK);
   }
   {
     // example.com should also succeed, since it's not through the profile's
     // request context.
-    SCOPED_TRACE("example.com with System's request context");
-    TestURLFetcherDelegate url_fetcher(system_context, example_url,
-                                       net::URLRequestStatus());
-    url_fetcher.SetExpectedResponse(kExampleFullContent);
-    url_fetcher.WaitForCompletion();
+    SCOPED_TRACE("example.com with System's network context manager");
+    make_browser_request(system_url_loader_factory, example_url,
+                         kExampleFullContent, net::OK);
   }
 }
 
