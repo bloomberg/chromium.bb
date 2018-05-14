@@ -140,7 +140,6 @@ class MEDIA_EXPORT MP4StreamParser : public StreamParser {
   const std::set<int> audio_object_types_;
   const bool has_sbr_;
   const bool has_flac_;
-  std::map<uint32_t, bool> is_track_encrypted_;
 
   // Tracks the number of MEDIA_LOGS for skipping empty trun samples.
   int num_empty_samples_skipped_;
