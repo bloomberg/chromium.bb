@@ -623,6 +623,15 @@ camera.views.Camera.prototype.onInactivate = function() {
  * @private
  */
 camera.views.Camera.prototype.onTakePictureClicked_ = function(event) {
+  if (this.is_recording_mode_ && this.mediaRecorder_ == null) {
+    // Create a media recorder before proceeding to record video.
+    this.mediaRecorder_ = this.createMediaRecorder_(this.stream_);
+    if (this.mediaRecorder_ == null) {
+        this.showToastMessage_(chrome.i18n.getMessage(
+            'errorMsgRecordStartFailed'));
+        return;
+    }
+  }
   this.takePicture_();
 };
 
@@ -1351,17 +1360,9 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
      function(constraints, onSuccess, onFailure, onDisconnected) {
   navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
     if (this.is_recording_mode_) {
-      // Create MediaRecorder for video-recording mode and try next constraints
-      // if it fails.
-      this.mediaRecorder_ = this.createMediaRecorder_(stream);
-      if (this.mediaRecorder_ == null) {
-        onFailure();
-        return;
-      }
       // Disable audio stream until video recording is started.
       this.enableAudio_(false);
     }
-
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
     this.video_.srcObject = stream;
@@ -1375,11 +1376,15 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
         // Check if video stream is ended (audio stream may still be live).
         if (!stream.getVideoTracks().length ||
             stream.getVideoTracks()[0].readyState == 'ended') {
-          this.capturing_ = false;
-          this.endTakePicture_();
-          onDisconnected();
           clearInterval(this.watchdog_);
           this.watchdog_ = null;
+          this.endTakePicture_();
+          if (this.mediaRecorder_) {
+            this.mediaRecorder_ = null;
+          }
+          this.capturing_ = false;
+          this.stream_ = null;
+          onDisconnected();
         }
       }.bind(this), 100);
 
@@ -1640,18 +1645,7 @@ camera.views.Camera.prototype.start_ = function() {
       return;
     }
     if (index >= constraintsCandidates.length) {
-      if (this.is_recording_mode_) {
-        // The recording mode can't be started because none of the
-        // constraints is supported. Force to fall back to photo mode.
-        this.showToastMessage_(chrome.i18n.getMessage(
-            'errorMsgToggleRecordOnFailed'));
-        setTimeout(function() {
-          this.onToggleRecordClicked_();
-          scheduleRetry();
-        }.bind(this), 250);
-      } else {
-        onFailure();
-      }
+      onFailure();
       return;
     }
     this.startWithConstraints_(
