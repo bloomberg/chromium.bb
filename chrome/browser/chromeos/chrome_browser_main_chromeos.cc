@@ -309,9 +309,7 @@ class DBusPreEarlyInit {
   DISALLOW_COPY_AND_ASSIGN(DBusPreEarlyInit);
 };
 
-// Wrapper class for initializing dbus related services and shutting them
-// down. This gets instantiated in a scoped_ptr so that shutdown methods in the
-// destructor will get called if and only if this has been instantiated.
+// Wrapper class for initializing D-Bus services and shutting them down.
 class DBusServices {
  public:
   explicit DBusServices(const content::MainFunctionParams& parameters) {
@@ -324,25 +322,6 @@ class DBusServices {
       PowerPolicyController::Initialize(
           DBusThreadManager::Get()->GetPowerManagerClient());
     }
-
-    CrosDBusService::ServiceProviderList service_providers;
-
-    // TODO(derat): Remove this provider once all callers are using
-    // |liveness_service_| instead: https://crbug.com/644322
-    service_providers.push_back(
-        std::make_unique<LivenessServiceProvider>(kLibCrosServiceInterface));
-    // TODO(derat): Remove this provider once session_manager is using
-    // |screen_lock_service_| instead: https://crbug.com/827680
-    service_providers.push_back(std::make_unique<ScreenLockServiceProvider>(
-        kLibCrosServiceInterface, kLockScreen));
-
-    // TODO(derat): Remove this provider once all callers are using
-    // |kiosk_info_service_| instead: https://crbug.com/703229
-    service_providers.push_back(std::make_unique<KioskInfoService>(
-        kLibCrosServiceInterface, kGetKioskAppRequiredPlatforVersion));
-    cros_dbus_service_ = CrosDBusService::Create(
-        kLibCrosServiceName, dbus::ObjectPath(kLibCrosServicePath),
-        std::move(service_providers));
 
     proxy_resolution_service_ = CrosDBusService::Create(
         kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),
@@ -444,7 +423,6 @@ class DBusServices {
     LoginState::Shutdown();
     CertLoader::Shutdown();
     TPMTokenLoader::Shutdown();
-    cros_dbus_service_.reset();
     proxy_resolution_service_.reset();
     kiosk_info_service_.reset();
     liveness_service_.reset();
@@ -461,13 +439,6 @@ class DBusServices {
   }
 
  private:
-  // Hosts providers for the "org.chromium.LibCrosService" D-Bus service owned
-  // by Chrome. The name of this service was chosen for historical reasons that
-  // are irrelevant now.
-  // TODO(derat): Move these providers into more-specific services that are
-  // split between different processes: http://crbug.com/692246
-  std::unique_ptr<CrosDBusService> cros_dbus_service_;
-
   std::unique_ptr<CrosDBusService> proxy_resolution_service_;
   std::unique_ptr<CrosDBusService> kiosk_info_service_;
   std::unique_ptr<CrosDBusService> liveness_service_;
