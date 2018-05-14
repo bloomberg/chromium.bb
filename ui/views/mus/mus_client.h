@@ -16,6 +16,7 @@
 #include "services/ui/public/interfaces/event_injector.mojom.h"
 #include "services/ui/public/interfaces/window_server_test.mojom.h"
 #include "ui/aura/client/capture_client.h"
+#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/views/mus/mus_export.h"
 #include "ui/views/mus/screen_mus_delegate.h"
@@ -75,7 +76,9 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
       const service_manager::Identity& identity,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
       bool create_wm_state = true,
-      MusClientTestingState testing_state = MusClientTestingState::NO_TESTING);
+      MusClientTestingState testing_state = MusClientTestingState::NO_TESTING,
+      aura::WindowTreeClient::Config config =
+          aura::WindowTreeClient::Config::kMash);
   ~MusClient() override;
 
   static MusClient* Get() { return instance_; }

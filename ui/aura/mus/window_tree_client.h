@@ -105,6 +105,18 @@ class AURA_EXPORT WindowTreeClient
       public WindowTreeHostMusDelegate,
       public client::TransientWindowClientObserver {
  public:
+  // TODO(sky): remove Config. https://crbug.com/842365.
+  enum class Config {
+    // kMash is deprecated.
+    kMash,
+
+    // kMus2 targets ws2. services/ui/Service and services/ui/ws2/WindowService
+    // provide an implementation of the same mojom interfaces, but differ in a
+    // few key areas (such as whether pixels vs dips are used). The Config
+    // parameter controls which server is being used.
+    kMus2,
+  };
+
   // Creates a WindowTreeClient to act as the window manager. See mojom for
   // details on |automatically_create_display_roots|.
   // TODO(sky): move |create_discardable_memory| out of this class.
@@ -127,7 +139,8 @@ class AURA_EXPORT WindowTreeClient
       service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
       bool create_discardable_memory = true,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr);
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
+      Config config = Config::kMash);
 
   // Creates a WindowTreeClient such that the Window Service creates a single
   // WindowTreeHost. This is useful for testing and examples.
@@ -137,6 +150,12 @@ class AURA_EXPORT WindowTreeClient
       bool create_discardable_memory = true);
 
   ~WindowTreeClient() override;
+
+  // Returns true if the server coordinate system is in pixels. If false, the
+  // coordinate system is DIPs.
+  bool is_using_pixels() const { return config_ != Config::kMus2; }
+
+  Config config() const { return config_; }
 
   void DisableDragDropClient() { install_drag_drop_client_ = false; }
 
@@ -243,7 +262,8 @@ class AURA_EXPORT WindowTreeClient
       WindowManagerDelegate* window_manager_delegate = nullptr,
       ui::mojom::WindowTreeClientRequest request = nullptr,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner = nullptr,
-      bool create_discardable_memory = true);
+      bool create_discardable_memory = true,
+      Config config = Config::kMash);
 
   // Creates a PlatformEventSourceMus if not created yet.
   void CreatePlatformEventSourceIfNecessary();
@@ -357,7 +377,7 @@ class AURA_EXPORT WindowTreeClient
   // server, or the server failing to accept a change.
   void SetWindowBoundsFromServer(
       WindowMus* window,
-      const gfx::Rect& revert_bounds_in_pixels,
+      const gfx::Rect& revert_bounds,
       const base::Optional<viz::LocalSurfaceId>& local_surface_id);
   void SetWindowTransformFromServer(WindowMus* window,
                                     const gfx::Transform& transform);
@@ -592,8 +612,9 @@ class AURA_EXPORT WindowTreeClient
                         WindowTreeHostMus* window_tree_host2) override;
 
   // Overriden from WindowTreeHostMusDelegate:
-  void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,
-                                        const gfx::Rect& bounds) override;
+  void OnWindowTreeHostBoundsWillChange(
+      WindowTreeHostMus* window_tree_host,
+      const gfx::Rect& bounds_in_pixels) override;
   void OnWindowTreeHostClientAreaWillChange(
       WindowTreeHostMus* window_tree_host,
       const gfx::Insets& client_area,
@@ -644,6 +665,8 @@ class AURA_EXPORT WindowTreeClient
     return reinterpret_cast<base::subtle::Atomic32*>(
         cursor_location_mapping_.get());
   }
+
+  const Config config_;
 
   // This may be null in tests.
   service_manager::Connector* connector_;

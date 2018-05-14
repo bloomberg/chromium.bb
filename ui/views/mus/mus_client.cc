@@ -19,7 +19,6 @@
 #include "ui/aura/mus/capture_synchronizer.h"
 #include "ui/aura/mus/mus_context_factory.h"
 #include "ui/aura/mus/property_converter.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
@@ -68,7 +67,8 @@ MusClient::MusClient(service_manager::Connector* connector,
                      const service_manager::Identity& identity,
                      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
                      bool create_wm_state,
-                     MusClientTestingState testing_state)
+                     MusClientTestingState testing_state,
+                     aura::WindowTreeClient::Config config)
     : identity_(identity) {
   DCHECK(!instance_);
   DCHECK(aura::Env::GetInstance());
@@ -107,7 +107,7 @@ MusClient::MusClient(service_manager::Connector* connector,
   }
 
   window_tree_client_ = aura::WindowTreeClient::CreateForWindowTreeFactory(
-      connector, this, true, std::move(io_task_runner));
+      connector, this, true, std::move(io_task_runner), config);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
 
   pointer_watcher_event_router_ =

@@ -8,7 +8,6 @@
 #include "ui/aura/mus/embed_root.h"
 #include "ui/aura/mus/in_flight_change.h"
 #include "ui/aura/mus/window_port_mus.h"
-#include "ui/aura/mus/window_tree_client.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -34,9 +33,11 @@ WindowTreeClientPrivate::~WindowTreeClientPrivate() {}
 std::unique_ptr<WindowTreeClient>
 WindowTreeClientPrivate::CreateWindowTreeClient(
     WindowTreeClientDelegate* window_tree_delegate,
-    WindowManagerDelegate* window_manager_delegate) {
+    WindowManagerDelegate* window_manager_delegate,
+    WindowTreeClient::Config config) {
   std::unique_ptr<WindowTreeClient> wtc(new WindowTreeClient(
-      nullptr, window_tree_delegate, window_manager_delegate));
+      nullptr, window_tree_delegate, window_manager_delegate, nullptr, nullptr,
+      false, config));
   return wtc;
 }
 

@@ -188,7 +188,6 @@ ui::Id GetServerIdForWindow(Window* window) {
   return window ? WindowMus::Get(window)->server_id() : kInvalidServerId;
 }
 
-// The server operates in pixels. Adjust translations for device scale factors.
 gfx::Transform ConvertTransformFromServer(WindowMus* window,
                                           const gfx::Transform& transform) {
   const float scale = window->GetDeviceScaleFactor();
@@ -225,6 +224,8 @@ std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForWindowManager(
     WindowManagerDelegate* window_manager_delegate,
     bool automatically_create_display_roots,
     bool create_discardable_memory) {
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
   std::unique_ptr<WindowTreeClient> wtc(
       new WindowTreeClient(connector, delegate, window_manager_delegate,
                            nullptr, nullptr, create_discardable_memory));
@@ -258,10 +259,11 @@ std::unique_ptr<WindowTreeClient> WindowTreeClient::CreateForWindowTreeFactory(
     service_manager::Connector* connector,
     WindowTreeClientDelegate* delegate,
     bool create_discardable_memory,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
+    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
+    Config config) {
   std::unique_ptr<WindowTreeClient> wtc(
       new WindowTreeClient(connector, delegate, nullptr, nullptr, nullptr,
-                           create_discardable_memory));
+                           create_discardable_memory, config));
   ui::mojom::WindowTreeFactoryPtr factory;
   connector->BindInterface(ui::mojom::kServiceName, &factory);
   ui::mojom::WindowTreePtr window_tree;
@@ -377,8 +379,12 @@ void WindowTreeClient::SetHitTestMask(
     const base::Optional<gfx::Rect>& mask_rect) {
   base::Optional<gfx::Rect> out_rect = base::nullopt;
   if (mask_rect) {
-    out_rect = gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(),
-                                       mask_rect.value());
+    if (is_using_pixels()) {
+      out_rect = gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(),
+                                         mask_rect.value());
+    } else {
+      out_rect = mask_rect.value();
+    }
   }
 
   tree_->SetHitTestMask(window->server_id(), out_rect);
@@ -454,8 +460,10 @@ WindowTreeClient::WindowTreeClient(
     WindowManagerDelegate* window_manager_delegate,
     mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    bool create_discardable_memory)
-    : connector_(connector),
+    bool create_discardable_memory,
+    Config config)
+    : config_(config),
+      connector_(connector),
       next_window_id_(1),
       next_change_id_(1),
       delegate_(delegate),
@@ -535,6 +543,11 @@ void WindowTreeClient::ConvertPointerEventLocationToDip(
     int64_t display_id,
     WindowMus* window,
     ui::LocatedEvent* event) const {
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
+  if (!is_using_pixels())
+    return;
+
   // PointerEvents shouldn't have the target set.
   DCHECK(!event->target());
   if (window_manager_delegate_) {
@@ -568,6 +581,8 @@ void WindowTreeClient::ConvertPointerEventLocationToDipInWindowManager(
     int64_t display_id,
     WindowMus* window,
     ui::LocatedEvent* event) const {
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
   const WindowTreeHostMus* window_tree_host =
       GetWindowTreeHostForDisplayId(display_id);
   if (!window_tree_host)
@@ -744,8 +759,10 @@ WindowMus* WindowTreeClient::NewWindowFromWindowData(
   window->Init(ui::LAYER_NOT_DRAWN);
   SetLocalPropertiesFromServerProperties(window_mus, window_data);
   window_mus->SetBoundsFromServer(
-      gfx::ConvertRectToDIP(window_mus->GetDeviceScaleFactor(),
-                            window_data.bounds),
+      is_using_pixels()
+          ? gfx::ConvertRectToDIP(window_mus->GetDeviceScaleFactor(),
+                                  window_data.bounds)
+          : window_data.bounds,
       base::nullopt);
   if (parent)
     parent->AddChildFromServer(window_port_mus_ptr);
@@ -847,6 +864,8 @@ WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
     ui::mojom::WindowDataPtr root_data,
     bool parent_drawn,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
   DCHECK(window_manager_delegate_);
 
   got_initial_displays_ = true;
@@ -877,26 +896,35 @@ void WindowTreeClient::OnReceivedCursorLocationMemory(
 
 void WindowTreeClient::SetWindowBoundsFromServer(
     WindowMus* window,
-    const gfx::Rect& revert_bounds_in_pixels,
+    const gfx::Rect& revert_bounds,
     const base::Optional<viz::LocalSurfaceId>& local_surface_id) {
   if (IsRoot(window)) {
-    // WindowTreeHost expects bounds to be in pixels.
-    GetWindowTreeHostMus(window)->SetBoundsFromServer(
-        revert_bounds_in_pixels,
+    GetWindowTreeHostMus(window)->SetBoundsFromServerInPixels(
+        is_using_pixels() ? revert_bounds
+                          : gfx::ConvertRectToPixel(
+                                window->GetDeviceScaleFactor(), revert_bounds),
         local_surface_id ? *local_surface_id : viz::LocalSurfaceId());
     return;
   }
 
+  // NOTE: |revert_bounds| is pixels for kMash, and DIPs for kMus2.
+  // Window::SetBoundsFromServer() expects DIPs.
   window->SetBoundsFromServer(
-      gfx::ConvertRectToDIP(window->GetDeviceScaleFactor(),
-                            revert_bounds_in_pixels),
+      is_using_pixels()
+          ? gfx::ConvertRectToDIP(window->GetDeviceScaleFactor(), revert_bounds)
+          : revert_bounds,
       local_surface_id);
 }
 
 void WindowTreeClient::SetWindowTransformFromServer(
     WindowMus* window,
     const gfx::Transform& transform) {
-  window->SetTransformFromServer(ConvertTransformFromServer(window, transform));
+  if (is_using_pixels()) {
+    window->SetTransformFromServer(
+        ConvertTransformFromServer(window, transform));
+  } else {
+    window->SetTransformFromServer(transform);
+  }
 }
 
 void WindowTreeClient::SetWindowVisibleFromServer(WindowMus* window,
@@ -915,6 +943,8 @@ void WindowTreeClient::SetWindowVisibleFromServer(WindowMus* window,
     window_tree_host->Hide();
 }
 
+// NOTE: this function takes pixels if is_using_pixels() is true, otherwise
+// DIPs. Eventually this will only take DIPs (https://crbug.com/842365).
 void WindowTreeClient::ScheduleInFlightBoundsChange(
     WindowMus* window,
     const gfx::Rect& old_bounds,
@@ -927,7 +957,11 @@ void WindowTreeClient::ScheduleInFlightBoundsChange(
       window->window_mus_type() == WindowMusType::EMBED_IN_OWNER ||
       window->window_mus_type() == WindowMusType::DISPLAY_MANUALLY_CREATED ||
       window->HasLocalLayerTreeFrameSink()) {
-    local_surface_id = window->GetOrAllocateLocalSurfaceId(new_bounds.size());
+    local_surface_id = window->GetOrAllocateLocalSurfaceId(
+        is_using_pixels() ? new_bounds.size()
+                          : gfx::ConvertRectToPixel(
+                                window->GetDeviceScaleFactor(), new_bounds)
+                                .size());
     // |window_tree_host| may be null if this is called during creation of
     // the window associated with the WindowTreeHostMus.
     WindowTreeHost* window_tree_host = window->GetWindow()->GetHost();
@@ -1055,8 +1089,13 @@ void WindowTreeClient::OnWindowMusBoundsChanged(WindowMus* window,
   }
   const float device_scale_factor = window->GetDeviceScaleFactor();
   ScheduleInFlightBoundsChange(
-      window, gfx::ConvertRectToPixel(device_scale_factor, old_bounds),
-      gfx::ConvertRectToPixel(device_scale_factor, new_bounds));
+      window,
+      is_using_pixels()
+          ? gfx::ConvertRectToPixel(device_scale_factor, old_bounds)
+          : old_bounds,
+      is_using_pixels()
+          ? gfx::ConvertRectToPixel(device_scale_factor, new_bounds)
+          : new_bounds);
 }
 
 void WindowTreeClient::OnWindowMusTransformChanged(
@@ -1065,8 +1104,10 @@ void WindowTreeClient::OnWindowMusTransformChanged(
     const gfx::Transform& new_transform) {
   const uint32_t change_id = ScheduleInFlightChange(
       std::make_unique<InFlightTransformChange>(this, window, old_transform));
-  tree_->SetWindowTransform(change_id, window->server_id(),
-                            ConvertTransformToServer(window, new_transform));
+  tree_->SetWindowTransform(
+      change_id, window->server_id(),
+      is_using_pixels() ? ConvertTransformToServer(window, new_transform)
+                        : new_transform);
 }
 
 void WindowTreeClient::OnWindowMusAddChild(WindowMus* parent,
@@ -1167,6 +1208,9 @@ void WindowTreeClient::OnWindowMusDeviceScaleFactorChanged(
     WindowMus* window,
     float old_scale_factor,
     float new_scale_factor) {
+  if (!is_using_pixels())
+    return;  // device-scale factor doesn't impact DIP bounds.
+
   // Root changes are handled else where.
   if (IsRoot(window))
     return;
@@ -1204,9 +1248,8 @@ bool WindowTreeClient::WasCreatedByThisClient(const WindowMus* window) const {
 }
 
 gfx::Point WindowTreeClient::GetCursorScreenPoint() {
-  // We raced initialization. Return (0, 0).
   if (!cursor_location_memory())
-    return gfx::Point();
+    return gfx::Point();  // We raced initialization. Return (0, 0).
 
   base::subtle::Atomic32 location =
       base::subtle::NoBarrier_Load(cursor_location_memory());
@@ -1386,10 +1429,14 @@ void WindowTreeClient::OnTopLevelCreated(
         GetOldestInFlightChangeMatching(bounds_change);
     if (current_change) {
       current_change->SetRevertValueFrom(bounds_change);
-    } else if (gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(),
-                                       window->GetWindow()->bounds()) !=
-               bounds) {
-      SetWindowBoundsFromServer(window, bounds, local_surface_id);
+    } else {
+      const gfx::Rect window_bounds =
+          is_using_pixels()
+              ? gfx::ConvertRectToPixel(window->GetDeviceScaleFactor(),
+                                        window->GetWindow()->bounds())
+              : window->GetWindow()->bounds();
+      if (window_bounds != bounds)
+        SetWindowBoundsFromServer(window, bounds, local_surface_id);
     }
   }
 
@@ -1448,6 +1495,11 @@ void WindowTreeClient::OnClientAreaChanged(
     ui::Id window_id,
     const gfx::Insets& new_client_area,
     const std::vector<gfx::Rect>& new_additional_client_areas) {
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
+  if (!is_using_pixels())
+    return;
+
   WindowMus* window = GetWindowByServerId(window_id);
   if (!window)
     return;
@@ -1611,12 +1663,17 @@ void WindowTreeClient::OnWindowInputEvent(
 
   if (matches_pointer_watcher && has_pointer_watcher_) {
     DCHECK(event->IsPointerEvent());
-    std::unique_ptr<ui::Event> event_in_dip(ui::Event::Clone(*event));
-    ConvertPointerEventLocationToDip(display_id, window,
-                                     event_in_dip->AsLocatedEvent());
-    delegate_->OnPointerEventObserved(*event_in_dip->AsPointerEvent(),
-                                      display_id,
-                                      window ? window->GetWindow() : nullptr);
+    if (is_using_pixels()) {
+      std::unique_ptr<ui::Event> event_in_dip(ui::Event::Clone(*event));
+      ConvertPointerEventLocationToDip(display_id, window,
+                                       event_in_dip->AsLocatedEvent());
+      delegate_->OnPointerEventObserved(*event_in_dip->AsPointerEvent(),
+                                        display_id,
+                                        window ? window->GetWindow() : nullptr);
+    } else {
+      delegate_->OnPointerEventObserved(*event->AsPointerEvent(), display_id,
+                                        window ? window->GetWindow() : nullptr);
+    }
   }
 
   // If the window has already been deleted, use |event| to update event states
@@ -1655,19 +1712,24 @@ void WindowTreeClient::OnWindowInputEvent(
 // TODO: this should really be covered by |root_location|. See 608547 for
 // details.
 #if defined(USE_OZONE)
+  // TODO(sky): remove conditional. This code was only necessary when ash used
+  // this code. Now that ash does not use it, it can be removed once --mash is
+  // removed. https://crbug.com/842365.
   std::unique_ptr<ui::MouseEvent> mapped_event_with_native;
-  if (mapped_event->type() == ui::ET_MOUSE_MOVED ||
-      mapped_event->type() == ui::ET_MOUSE_DRAGGED) {
-    mapped_event_with_native = std::make_unique<ui::MouseEvent>(
-        static_cast<const ui::PlatformEvent&>(mapped_event.get()));
-    // MouseEvent(NativeEvent) sets the root_location to location.
-    mapped_event_with_native->set_root_location_f(
-        event_location_in_screen_pixel_layout);
-    // |mapped_event| is now the NativeEvent. It's expected the location of the
-    // NativeEvent is the same as root_location.
-    mapped_event->AsMouseEvent()->set_location_f(
-        event_location_in_screen_pixel_layout);
-    event_to_dispatch = mapped_event_with_native.get();
+  if (config_ == Config::kMash) {
+    if (mapped_event->type() == ui::ET_MOUSE_MOVED ||
+        mapped_event->type() == ui::ET_MOUSE_DRAGGED) {
+      mapped_event_with_native = std::make_unique<ui::MouseEvent>(
+          static_cast<const ui::PlatformEvent&>(mapped_event.get()));
+      // MouseEvent(NativeEvent) sets the root_location to location.
+      mapped_event_with_native->set_root_location_f(
+          event_location_in_screen_pixel_layout);
+      // |mapped_event| is now the NativeEvent. It's expected the location of
+      // the NativeEvent is the same as root_location.
+      mapped_event->AsMouseEvent()->set_location_f(
+          event_location_in_screen_pixel_layout);
+      event_to_dispatch = mapped_event_with_native.get();
+    }
   }
 #endif
   // |ack_handler| may use |event_to_dispatch| from its destructor, so it needs
@@ -1679,7 +1741,10 @@ void WindowTreeClient::OnWindowInputEvent(
 #endif
 
   WindowMus* display_root_window = GetWindowByServerId(display_root_window_id);
-  if (display_root_window && event->IsLocatedEvent() &&
+  // TODO(sky): simplify conditional. See comment in USE_OZONE above for why
+  // this isn't necessary with kMus2. https://crbug.com/842365.
+  if (config_ == Config::kMash && display_root_window &&
+      event->IsLocatedEvent() &&
       display::Screen::GetScreen()->GetPrimaryDisplay().id() ==
           display::kUnifiedDisplayId) {
     // In Ash's unified desktop mode, each physical display mirrors part of a
@@ -1941,6 +2006,8 @@ void WindowTreeClient::WmDisplayModified(const display::Display& display) {
 void WindowTreeClient::WmSetBounds(uint32_t change_id,
                                    ui::Id window_id,
                                    const gfx::Rect& transit_bounds_in_pixels) {
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
   WindowMus* window = GetWindowByServerId(window_id);
   if (window) {
     float device_scale_factor = window->GetDeviceScaleFactor();
@@ -2247,6 +2314,8 @@ void WindowTreeClient::SetExtendedHitRegionForChildren(
   if (!window_manager_client_)
     return;
 
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
   WindowMus* window_mus = WindowMus::Get(window);
   const float device_scale_factor = window_mus->GetDeviceScaleFactor();
   window_manager_client_->SetExtendedHitRegionForChildren(
@@ -2316,6 +2385,8 @@ void WindowTreeClient::SetDisplayConfiguration(
     std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
     int64_t primary_display_id,
     const std::vector<display::Display>& mirrors) {
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
   DCHECK_EQ(displays.size() + mirrors.size(), viewport_metrics.size());
   if (window_manager_client_) {
     const int64_t internal_display_id =
@@ -2333,6 +2404,8 @@ void WindowTreeClient::AddDisplayReusingWindowTreeHost(
     WindowTreeHostMus* window_tree_host,
     const display::Display& display,
     ui::mojom::WmViewportMetricsPtr viewport_metrics) {
+  // TODO(sky): this function should be removed when --mash goes away.
+  // https://crbug.com/842365.
   DCHECK_NE(display.id(), window_tree_host->display_id());
   window_tree_host->set_display_id(display.id());
   if (window_manager_client_) {
@@ -2374,9 +2447,14 @@ void WindowTreeClient::SwapDisplayRoots(WindowTreeHostMus* window_tree_host1,
 
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(
     WindowTreeHostMus* window_tree_host,
-    const gfx::Rect& bounds) {
+    const gfx::Rect& bounds_in_pixels) {
   gfx::Rect old_bounds = window_tree_host->GetBoundsInPixels();
-  gfx::Rect new_bounds = bounds;
+  gfx::Rect new_bounds = bounds_in_pixels;
+  if (!is_using_pixels()) {
+    const float device_scale_factor = window_tree_host->device_scale_factor();
+    old_bounds = gfx::ConvertRectToDIP(device_scale_factor, old_bounds);
+    new_bounds = gfx::ConvertRectToDIP(device_scale_factor, new_bounds);
+  }
   if (window_manager_delegate_) {
     // The window manager origins should always be 0x0. The real origin is
     // communicated by way of SetDisplayConfiguration().
@@ -2393,16 +2471,21 @@ void WindowTreeClient::OnWindowTreeHostClientAreaWillChange(
     const std::vector<gfx::Rect>& additional_client_areas) {
   DCHECK(tree_);
   WindowMus* window = WindowMus::Get(window_tree_host->window());
-  float device_scale_factor = window->GetDeviceScaleFactor();
-  std::vector<gfx::Rect> additional_client_areas_in_pixel;
-  for (const gfx::Rect& area : additional_client_areas) {
-    additional_client_areas_in_pixel.push_back(
-        gfx::ConvertRectToPixel(device_scale_factor, area));
+  if (is_using_pixels()) {
+    const float device_scale_factor = window->GetDeviceScaleFactor();
+    std::vector<gfx::Rect> additional_client_areas_in_pixels;
+    for (const gfx::Rect& area : additional_client_areas) {
+      additional_client_areas_in_pixels.push_back(
+          gfx::ConvertRectToPixel(device_scale_factor, area));
+    }
+    tree_->SetClientArea(
+        window->server_id(),
+        gfx::ConvertInsetsToPixel(device_scale_factor, client_area),
+        additional_client_areas_in_pixels);
+  } else {
+    tree_->SetClientArea(window->server_id(), client_area,
+                         additional_client_areas);
   }
-  tree_->SetClientArea(
-      window->server_id(),
-      gfx::ConvertInsetsToPixel(device_scale_factor, client_area),
-      additional_client_areas_in_pixel);
 }
 
 void WindowTreeClient::OnWindowTreeHostSetOpacity(

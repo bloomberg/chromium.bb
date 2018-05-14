@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/mus_types.h"
+#include "ui/aura/mus/window_tree_client.h"
 
 namespace display {
 class Display;
@@ -47,9 +48,11 @@ class WindowTreeClientPrivate {
   explicit WindowTreeClientPrivate(Window* window);
   ~WindowTreeClientPrivate();
 
+  // TODO(sky): remove |config|. https://crbug.com/842365
   static std::unique_ptr<WindowTreeClient> CreateWindowTreeClient(
       WindowTreeClientDelegate* window_tree_delegate,
-      WindowManagerDelegate* window_manager_delegate);
+      WindowManagerDelegate* window_manager_delegate,
+      WindowTreeClient::Config config = WindowTreeClient::Config::kMash);
 
   // Calls OnEmbed() on the WindowTreeClient.
   void OnEmbed(ui::mojom::WindowTree* window_tree);

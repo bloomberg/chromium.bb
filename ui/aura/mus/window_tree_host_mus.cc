@@ -116,7 +116,7 @@ WindowTreeHostMus* WindowTreeHostMus::ForWindow(aura::Window* window) {
   return root->GetProperty(kWindowTreeHostMusKey);
 }
 
-void WindowTreeHostMus::SetBoundsFromServer(
+void WindowTreeHostMus::SetBoundsFromServerInPixels(
     const gfx::Rect& bounds_in_pixels,
     const viz::LocalSurfaceId& local_surface_id) {
   base::AutoReset<bool> resetter(&in_set_bounds_from_server_, true);
