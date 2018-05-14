@@ -159,9 +159,12 @@ NavigationModelSFTPMountItem.prototype = /** @struct */ {
    * Start crostini container and mount it.
    */
   mount: function() {
-    chrome.fileManagerPrivate.mountCrostiniContainer((success) => {
+    chrome.fileManagerPrivate.mountCrostiniContainer(() => {
       // TODO(crbug.com/834103): implement crostini error handling.
-      console.debug('mountCrostiniContainer success: ', success);
+      if (chrome.runtime.lastError) {
+        console.error(
+            'mountCrostiniContainer error: ', chrome.runtime.lastError.message);
+      }
     });
   },
 };
