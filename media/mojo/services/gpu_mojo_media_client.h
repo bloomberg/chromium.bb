@@ -44,7 +44,8 @@ class GpuMojoMediaClient : public MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
-      RequestOverlayInfoCB request_overlay_info_cb) final;
+      RequestOverlayInfoCB request_overlay_info_cb,
+      const gfx::ColorSpace& target_color_space) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
       service_manager::mojom::InterfaceProvider* interface_provider) final;
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)

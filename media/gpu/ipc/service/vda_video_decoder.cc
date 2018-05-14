@@ -105,6 +105,7 @@ VdaVideoDecoder::Create(
     scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     MediaLog* media_log,
+    const gfx::ColorSpace& target_color_space,
     const gpu::GpuPreferences& gpu_preferences,
     const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
     GetStubCB get_stub_cb) {
@@ -114,7 +115,7 @@ VdaVideoDecoder::Create(
   std::unique_ptr<VdaVideoDecoder, std::default_delete<VideoDecoder>> ptr(
       new VdaVideoDecoder(
           std::move(parent_task_runner), std::move(gpu_task_runner), media_log,
-          base::BindOnce(&PictureBufferManager::Create),
+          target_color_space, base::BindOnce(&PictureBufferManager::Create),
           base::BindOnce(&CreateCommandBufferHelper, std::move(get_stub_cb)),
           base::BindOnce(&CreateAndInitializeVda, gpu_preferences,
                          gpu_workarounds),
@@ -124,12 +125,11 @@ VdaVideoDecoder::Create(
   return ptr;
 }
 
-// TODO(sandersd): Take and use a MediaLog. This will require making
-// MojoMediaLog threadsafe.
 VdaVideoDecoder::VdaVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
     MediaLog* media_log,
+    const gfx::ColorSpace& target_color_space,
     CreatePictureBufferManagerCB create_picture_buffer_manager_cb,
     CreateCommandBufferHelperCB create_command_buffer_helper_cb,
     CreateAndInitializeVdaCB create_and_initialize_vda_cb,
@@ -137,6 +137,7 @@ VdaVideoDecoder::VdaVideoDecoder(
     : parent_task_runner_(std::move(parent_task_runner)),
       gpu_task_runner_(std::move(gpu_task_runner)),
       media_log_(media_log),
+      target_color_space_(target_color_space),
       create_command_buffer_helper_cb_(
           std::move(create_command_buffer_helper_cb)),
       create_and_initialize_vda_cb_(std::move(create_and_initialize_vda_cb)),
@@ -298,8 +299,7 @@ void VdaVideoDecoder::InitializeOnGpuThread() {
   vda_config.is_deferred_initialization_allowed = false;
   vda_config.initial_expected_coded_size = config_.coded_size();
   vda_config.container_color_space = config_.color_space_info();
-  // TODO(sandersd): Plumb |target_color_space| from DefaultRenderFactory.
-  // vda_config.target_color_space = [...];
+  vda_config.target_color_space = target_color_space_;
   vda_config.hdr_metadata = config_.hdr_metadata();
   // vda_config.sps = [Only used by AVDA]
   // vda_config.pps = [Only used by AVDA]

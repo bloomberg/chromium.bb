@@ -23,6 +23,7 @@
 #include "media/gpu/command_buffer_helper.h"
 #include "media/gpu/ipc/service/picture_buffer_manager.h"
 #include "media/video/video_decode_accelerator.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
@@ -69,6 +70,7 @@ class VdaVideoDecoder : public VideoDecoder,
   Create(scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
          scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
          MediaLog* media_log,
+         const gfx::ColorSpace& target_color_space,
          const gpu::GpuPreferences& gpu_preferences,
          const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
          GetStubCB get_stub_cb);
@@ -80,6 +82,7 @@ class VdaVideoDecoder : public VideoDecoder,
   //     called on (should be the GPU main thread).
   // |media_log|: MediaLog object to log to; must live at least until
   //     Destroy() returns.
+  // |target_color_space|: Color space of the output device.
   // |create_picture_buffer_manager_cb|: PictureBufferManager factory.
   // |create_command_buffer_helper_cb|: CommandBufferHelper factory.
   // |create_and_initialize_vda_cb|: VideoDecodeAccelerator factory.
@@ -89,6 +92,7 @@ class VdaVideoDecoder : public VideoDecoder,
       scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner,
       MediaLog* media_log,
+      const gfx::ColorSpace& target_color_space,
       CreatePictureBufferManagerCB create_picture_buffer_manager_cb,
       CreateCommandBufferHelperCB create_command_buffer_helper_cb,
       CreateAndInitializeVdaCB create_and_initialize_vda_cb,
@@ -166,6 +170,7 @@ class VdaVideoDecoder : public VideoDecoder,
   scoped_refptr<base::SingleThreadTaskRunner> parent_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> gpu_task_runner_;
   MediaLog* media_log_;
+  gfx::ColorSpace target_color_space_;
   scoped_refptr<PictureBufferManager> picture_buffer_manager_;
   CreateCommandBufferHelperCB create_command_buffer_helper_cb_;
   CreateAndInitializeVdaCB create_and_initialize_vda_cb_;

@@ -27,6 +27,7 @@
 #include "media/video/mock_video_decode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -109,7 +110,7 @@ class VdaVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*vda_, Destroy());
 
     vdavd_.reset(new VdaVideoDecoder(
-        task_runner, task_runner, &media_log_,
+        task_runner, task_runner, &media_log_, gfx::ColorSpace(),
         base::BindOnce(&VdaVideoDecoderTest::CreatePictureBufferManager,
                        base::Unretained(this)),
         base::BindOnce(&VdaVideoDecoderTest::CreateCommandBufferHelper,

@@ -18,13 +18,17 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-}
+}  // namespace base
+
+namespace gfx {
+class ColorSpace;
+}  // namespace gfx
 
 namespace service_manager {
 class Connector;
 namespace mojom {
 class InterfaceProvider;
-}
+}  // namespace mojom
 }  // namespace service_manager
 
 namespace media {
@@ -54,7 +58,8 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       MediaLog* media_log,
       mojom::CommandBufferIdPtr command_buffer_id,
-      RequestOverlayInfoCB request_overlay_info_cb);
+      RequestOverlayInfoCB request_overlay_info_cb,
+      const gfx::ColorSpace& target_color_space);
 
   // Returns the Renderer to be used by MojoRendererService.
   // TODO(hubbe): Find out whether we should pass in |target_color_space| here.
