@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
 #include "chrome/browser/chromeos/smb_client/smb_service_factory.h"
+#include "chrome/browser/chromeos/smb_client/smb_service_helper.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -69,10 +70,19 @@ void SmbService::InitTempFileManagerAndMount(
 void SmbService::CallMount(const file_system_provider::MountOptions& options,
                            const base::FilePath& share_path,
                            MountResponse callback) {
+  std::string workgroup;
+  std::string username;
+
+  user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+  if (user && user->IsActiveDirectoryUser()) {
+    ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
+  }
+
   // TODO(allenvic): Implement passing of credentials. This currently passes
-  // empty credentials to SmbProvider.
+  // empty credentials to SmbProvider for non-ChromAD users.
   GetSmbProviderClient()->Mount(
-      share_path, "" /* workgroup */, "" /* username */,
+      share_path, workgroup, username,
       temp_file_manager_->WritePasswordToFile("" /* password */),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path));
