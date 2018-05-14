@@ -238,6 +238,8 @@ cast_source_set("browser") {
       "extensions/api/braille_display_private/braille_display_private_api.h",
       "extensions/api/history/history_api.cc",
       "extensions/api/history/history_api.h",
+      "extensions/api/i18n/i18n_api.cc",
+      "extensions/api/i18n/i18n_api.h",
       "extensions/api/identity/identity_api.cc",
       "extensions/api/identity/identity_api.h",
       "extensions/cast_display_info_provider.cc",

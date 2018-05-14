@@ -17,6 +17,7 @@ schema_sources = [
   "braille_display_private.idl",
   "history.json",
   "identity.idl",
+  "i18n.json",
 ]
 root_namespace = "extensions::cast::api::%(namespace)s"
 
