@@ -41,12 +41,20 @@ class AssistantControllerTest : public AshTestBase {
 TEST_F(AssistantControllerTest, HighlighterEnabledStatus) {
   HighlighterController* highlighter_controller =
       Shell::Get()->highlighter_controller();
-  highlighter_controller->SetEnabled(true);
+  highlighter_controller->UpdateEnabledState(HighlighterEnabledState::kEnabled);
   EXPECT_EQ(InputModality::kStylus, interaction_model()->input_modality());
   EXPECT_EQ(InteractionState::kActive,
             interaction_model()->interaction_state());
 
-  highlighter_controller->SetEnabled(false);
+  // Metalayer mode session end should keep interaction state active.
+  highlighter_controller->UpdateEnabledState(
+      HighlighterEnabledState::kDisabledBySessionEnd);
+  EXPECT_EQ(InteractionState::kActive,
+            interaction_model()->interaction_state());
+
+  // Disabling directly by user action should make interaction state inactive.
+  highlighter_controller->UpdateEnabledState(
+      HighlighterEnabledState::kDisabledByUser);
   EXPECT_EQ(InteractionState::kInactive,
             interaction_model()->interaction_state());
 }

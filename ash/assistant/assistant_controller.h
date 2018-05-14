@@ -89,7 +89,7 @@ class AssistantController
   void OnInteractionStateChanged(InteractionState interaction_state) override;
 
   // HighlighterController::Observer:
-  void OnHighlighterEnabledChanged(bool enabled) override;
+  void OnHighlighterEnabledChanged(HighlighterEnabledState state) override;
 
   // chromeos::assistant::mojom::AssistantEventSubscriber:
   void OnInteractionStarted() override;
