@@ -5,6 +5,8 @@
 #ifndef UI_AURA_MUS_WINDOW_TREE_CLIENT_DELEGATE_H_
 #define UI_AURA_MUS_WINDOW_TREE_CLIENT_DELEGATE_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 
@@ -56,6 +58,7 @@ class AURA_EXPORT WindowTreeClientDelegate {
   // StartPointerWatcher(). |target| may be null for events that were sent to
   // windows owned by other processes.
   virtual void OnPointerEventObserved(const ui::PointerEvent& event,
+                                      int64_t display_id,
                                       Window* target) = 0;
 
   virtual PropertyConverter* GetPropertyConverter() = 0;

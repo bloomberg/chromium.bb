@@ -406,6 +406,8 @@ bool StructTraits<ui::mojom::EventDataView, EventUniquePtr>::Read(
                                 pointer_data->location->y);
       const gfx::Point screen_location(pointer_data->location->screen_x,
                                        pointer_data->location->screen_y);
+      // This uses the event root_location field to store screen pixel
+      // coordinates. See http://crbug.com/608547
       *out = std::make_unique<ui::PointerEvent>(
           MojoPointerEventTypeToUIEvent(event.action()), location,
           screen_location, event.flags(), pointer_data->changed_button_flags,

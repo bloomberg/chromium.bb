@@ -5,7 +5,8 @@
 #ifndef UI_VIEWS_MUS_POINTER_WATCHER_EVENT_ROUTER_H_
 #define UI_VIEWS_MUS_POINTER_WATCHER_EVENT_ROUTER_H_
 
-#include "base/compiler_specific.h"
+#include <stdint.h>
+
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/capture_client_observer.h"
@@ -58,6 +59,7 @@ class VIEWS_MUS_EXPORT PointerWatcherEventRouter
 
   // Called by WindowTreeClientDelegate to notify PointerWatchers appropriately.
   void OnPointerEventObserved(const ui::PointerEvent& event,
+                              int64_t display_id,
                               aura::Window* target);
 
   // Called when the |capture_client| has been set or will be unset.

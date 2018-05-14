@@ -109,6 +109,7 @@ class AuraTestBase : public testing::Test,
   void OnEmbedRootDestroyed(WindowTreeHostMus* window_tree_host) override;
   void OnLostConnection(WindowTreeClient* client) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
+                              int64_t display_id,
                               Window* target) override;
 
   // WindowManagerDelegate:

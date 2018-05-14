@@ -99,6 +99,9 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     return pointer_watcher_event_router_.get();
   }
 
+  // Getter for type safety. Most code can use display::Screen::GetScreen().
+  ScreenMus* screen() { return screen_.get(); }
+
   // Creates DesktopNativeWidgetAura with DesktopWindowTreeHostMus. This is
   // set as the factory function used for creating NativeWidgets when a
   //  NativeWidget has not been explicitly set.
@@ -149,6 +152,7 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   void OnLostConnection(aura::WindowTreeClient* client) override;
   void OnEmbedRootDestroyed(aura::WindowTreeHostMus* window_tree_host) override;
   void OnPointerEventObserved(const ui::PointerEvent& event,
+                              int64_t display_id,
                               aura::Window* target) override;
   aura::PropertyConverter* GetPropertyConverter() override;
 

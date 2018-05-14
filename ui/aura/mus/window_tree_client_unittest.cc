@@ -245,6 +245,7 @@ class WindowTreeClientClientTestHighDPI : public WindowTreeClientClientTest {
     WindowTreeClientClientTest::SetUp();
   }
   void OnPointerEventObserved(const ui::PointerEvent& event,
+                              int64_t display_id,
                               Window* target) override {
     last_event_observed_.reset(new ui::PointerEvent(event));
   }
@@ -1492,15 +1493,19 @@ class WindowTreeClientPointerObserverTest : public WindowTreeClientClientTest {
   const ui::PointerEvent* last_event_observed() const {
     return last_event_observed_.get();
   }
+  int64_t last_display_id() const { return last_display_id_; }
 
   // WindowTreeClientClientTest:
   void OnPointerEventObserved(const ui::PointerEvent& event,
+                              int64_t display_id,
                               Window* target) override {
     last_event_observed_.reset(new ui::PointerEvent(event));
+    last_display_id_ = display_id;
   }
 
  private:
   std::unique_ptr<ui::PointerEvent> last_event_observed_;
+  int64_t last_display_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(WindowTreeClientPointerObserverTest);
 };
@@ -1518,18 +1523,20 @@ TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
   window_tree_client_impl()->StartPointerWatcher(false /* want_moves */);
 
   // Simulate the server sending an observed event.
+  const int64_t kDisplayId = 111;
   std::unique_ptr<ui::PointerEvent> pointer_event_down(new ui::PointerEvent(
       ui::ET_POINTER_DOWN, gfx::Point(), gfx::Point(), ui::EF_CONTROL_DOWN, 0,
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
       base::TimeTicks()));
   window_tree_client()->OnPointerEventObserved(std::move(pointer_event_down),
-                                               0u, 0);
+                                               0u, kDisplayId);
 
   // Delegate sensed the event.
   const ui::PointerEvent* last_event = last_event_observed();
   ASSERT_TRUE(last_event);
   EXPECT_EQ(ui::ET_POINTER_DOWN, last_event->type());
   EXPECT_EQ(ui::EF_CONTROL_DOWN, last_event->flags());
+  EXPECT_EQ(kDisplayId, last_display_id());
   DeleteLastEventObserved();
 
   // Stop the pointer watcher.
@@ -1541,7 +1548,7 @@ TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 1),
       base::TimeTicks()));
   window_tree_client()->OnPointerEventObserved(std::move(pointer_event_up), 0u,
-                                               0);
+                                               kDisplayId);
 
   // No event was sensed.
   EXPECT_FALSE(last_event_observed());

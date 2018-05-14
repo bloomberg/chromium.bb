@@ -180,6 +180,7 @@ void AuraTestBase::OnEmbedRootDestroyed(WindowTreeHostMus* window_tree_host) {}
 void AuraTestBase::OnLostConnection(WindowTreeClient* client) {}
 
 void AuraTestBase::OnPointerEventObserved(const ui::PointerEvent& event,
+                                          int64_t display_id,
                                           Window* target) {
   observed_pointer_events_.push_back(std::unique_ptr<ui::PointerEvent>(
       static_cast<ui::PointerEvent*>(ui::Event::Clone(event).release())));

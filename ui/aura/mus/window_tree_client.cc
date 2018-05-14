@@ -1615,6 +1615,7 @@ void WindowTreeClient::OnWindowInputEvent(
     ConvertPointerEventLocationToDip(display_id, window,
                                      event_in_dip->AsLocatedEvent());
     delegate_->OnPointerEventObserved(*event_in_dip->AsPointerEvent(),
+                                      display_id,
                                       window ? window->GetWindow() : nullptr);
   }
 
@@ -1717,7 +1718,7 @@ void WindowTreeClient::OnPointerEventObserved(std::unique_ptr<ui::Event> event,
   ConvertPointerEventLocationToDip(display_id, target_window,
                                    event->AsLocatedEvent());
   delegate_->OnPointerEventObserved(
-      *event->AsPointerEvent(),
+      *event->AsPointerEvent(), display_id,
       target_window ? target_window->GetWindow() : nullptr);
 }
 
