@@ -34,15 +34,11 @@ namespace chromeos {
 
 namespace {
 
-const char* kDefaultMountOptions[] = {
-    "nodev", "noexec", "nosuid",
-};
-const char kReadOnlyOption[] = "ro";
-const char kReadWriteOption[] = "rw";
-const char kRemountOption[] = "remount";
-const char kMountLabelOption[] = "mountlabel";
-
-const char kLazyUnmountOption[] = "lazy";
+constexpr char kReadOnlyOption[] = "ro";
+constexpr char kReadWriteOption[] = "rw";
+constexpr char kRemountOption[] = "remount";
+constexpr char kMountLabelOption[] = "mountlabel";
+constexpr char kLazyUnmountOption[] = "lazy";
 
 // Checks if retrieved media type is in boundaries of DeviceMediaType.
 bool IsValidMediaType(uint32_t type) {
@@ -680,8 +676,6 @@ std::vector<std::string> CrosDisksClient::ComposeMountOptions(
     MountAccessMode access_mode,
     RemountOption remount) {
   std::vector<std::string> mount_options = options;
-  mount_options.insert(mount_options.end(), kDefaultMountOptions,
-                       kDefaultMountOptions + base::size(kDefaultMountOptions));
   switch (access_mode) {
     case MOUNT_ACCESS_MODE_READ_ONLY:
       mount_options.push_back(kReadOnlyOption);
