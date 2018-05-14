@@ -86,6 +86,7 @@ std::unique_ptr<net::URLFetcher> SendProtocolRequest(
                             net::LOAD_DO_NOT_SAVE_COOKIES |
                             net::LOAD_DISABLE_CACHE);
   url_fetcher->SetAutomaticallyRetryOn5xx(false);
+  url_fetcher->SetAutomaticallyRetryOnNetworkChanges(3);
   for (const auto& header : protocol_request_extra_headers)
     url_fetcher->AddExtraRequestHeader(base::StringPrintf(
         "%s: %s", header.first.c_str(), header.second.c_str()));
