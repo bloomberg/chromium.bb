@@ -314,6 +314,23 @@ for (testCase of readOnlyParameters) {
   }).bind(undefined, testCase.name, testCase.transform, testCase.check),
   'audio setParameters() check for ' + testCase.name);
 }
+
+promise_test(async function() {
+  let pc1 = new RTCPeerConnection();
+  let pc2 = new RTCPeerConnection();
+
+  let stream = await navigator.mediaDevices.getUserMedia({video:true});
+  let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
+
+  await doSignalingHandshake(pc1, pc2);
+  let videoParameters = videoSender.getParameters();
+  videoParameters.encodings[0].maxBitrate = 50;
+  await videoSender.setParameters(videoParameters);
+
+  videoParameters = videoSender.getParameters();
+  assert_equals(videoParameters.encodings[0].maxBitrate, 50);
+}, 'setParameters() set low maxBitrate value');
+
 /**
   * Helper functions to tests.
   */

@@ -69,5 +69,6 @@ PASS audio setParameters() check for headerExtensions.encrypted removed
 PASS audio setParameters() check for rtcp removed
 PASS audio setParameters() check for rtcp.cname modification
 PASS audio setParameters() check for rtcp.reducedSize modification
+PASS setParameters() set low maxBitrate value
 Harness: the test ran to completion.
 
