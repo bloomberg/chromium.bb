@@ -205,7 +205,7 @@ class CallbackAnimationObserver : public ui::ImplicitAnimationObserver {
 };
 
 // static
-KeyboardController* KeyboardController::instance_ = NULL;
+KeyboardController* KeyboardController::instance_ = nullptr;
 
 KeyboardController::KeyboardController(std::unique_ptr<KeyboardUI> ui,
                                        KeyboardLayoutDelegate* delegate)
