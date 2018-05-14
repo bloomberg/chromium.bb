@@ -202,10 +202,7 @@ class BrowsingHistoryService : public HistoryServiceObserver,
 
   // HistoryServiceObserver implementation.
   void OnURLsDeleted(HistoryService* history_service,
-                     bool all_history,
-                     bool expired,
-                     const URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
+                     const DeletionInfo& deletion_info) override;
 
   // WebHistoryServiceObserver implementation.
   void OnWebHistoryDeleted() override;

@@ -268,10 +268,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // history::HistoryServiceObserver:
   void OnURLsDeleted(HistoryService* history_service,
-                     bool all_history,
-                     bool expired,
-                     const URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
+                     const DeletionInfo& deletion_info) override;
 
   // Ensures that non thread-safe methods are called on the correct thread.
   base::ThreadChecker thread_checker_;

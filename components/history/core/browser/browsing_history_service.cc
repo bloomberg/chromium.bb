@@ -742,11 +742,9 @@ static bool DeletionsDiffer(const URLRows& deleted_rows,
 }
 
 void BrowsingHistoryService::OnURLsDeleted(HistoryService* history_service,
-                                           bool all_history,
-                                           bool expired,
-                                           const URLRows& deleted_rows,
-                                           const std::set<GURL>& favicon_urls) {
-  if (all_history || DeletionsDiffer(deleted_rows, urls_to_be_deleted_))
+                                           const DeletionInfo& deletion_info) {
+  if (deletion_info.IsAllHistory() ||
+      DeletionsDiffer(deletion_info.deleted_rows(), urls_to_be_deleted_))
     driver_->HistoryDeleted();
 }
 

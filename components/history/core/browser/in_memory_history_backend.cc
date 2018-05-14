@@ -58,13 +58,10 @@ void InMemoryHistoryBackend::OnURLsModified(HistoryService* history_service,
 }
 
 void InMemoryHistoryBackend::OnURLsDeleted(HistoryService* history_service,
-                                           bool all_history,
-                                           bool expired,
-                                           const URLRows& deleted_rows,
-                                           const std::set<GURL>& favicon_urls) {
+                                           const DeletionInfo& deletion_info) {
   DCHECK(db_);
 
-  if (all_history) {
+  if (deletion_info.IsAllHistory()) {
     // When all history is deleted, the individual URLs won't be listed. Just
     // create a new database to quickly clear everything out.
     db_.reset(new InMemoryDatabase);
@@ -74,7 +71,7 @@ void InMemoryHistoryBackend::OnURLsDeleted(HistoryService* history_service,
   }
 
   // Delete all matching URLs in our database.
-  for (const auto& row : deleted_rows) {
+  for (const auto& row : deletion_info.deleted_rows()) {
     // This will also delete the corresponding keyword search term.
     // Ignore errors, as we typically only cache a subset of URLRows.
     db_->DeleteURLRow(row.id());
