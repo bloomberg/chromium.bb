@@ -12,6 +12,7 @@
 #include "base/strings/string16.h"
 #include "pdf/pdf_engine.h"
 #include "ppapi/cpp/rect.h"
+#include "third_party/pdfium/public/cpp/fpdf_scopers.h"
 #include "third_party/pdfium/public/fpdf_doc.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/pdfium/public/fpdf_text.h"
@@ -25,7 +26,7 @@ class PDFiumEngine;
 class PDFiumPage {
  public:
   PDFiumPage(PDFiumEngine* engine, int i, const pp::Rect& r, bool available);
-  PDFiumPage(const PDFiumPage& that);
+  PDFiumPage(PDFiumPage&& that);
   ~PDFiumPage();
 
   // Unloads the PDFium data for this page from memory.
@@ -122,6 +123,9 @@ class PDFiumPage {
     calculated_links_ = calculated_links;
   }
 
+  FPDF_PAGE page() const { return page_.get(); }
+  FPDF_TEXTPAGE text_page() const { return text_page_.get(); }
+
  private:
   // Returns a link index if the given character index is over a link, or -1
   // otherwise.
@@ -162,15 +166,17 @@ class PDFiumPage {
   };
 
   PDFiumEngine* engine_;
-  FPDF_PAGE page_;
-  FPDF_TEXTPAGE text_page_;
+  ScopedFPDFPage page_;
+  ScopedFPDFTextPage text_page_;
   int index_;
-  int loading_count_;
+  int loading_count_ = 0;
   pp::Rect rect_;
-  bool calculated_links_;
+  bool calculated_links_ = false;
   std::vector<Link> links_;
   bool available_;
   PDFEngine::PageFeatures page_features_;
+
+  DISALLOW_COPY_AND_ASSIGN(PDFiumPage);
 };
 
 }  // namespace chrome_pdf

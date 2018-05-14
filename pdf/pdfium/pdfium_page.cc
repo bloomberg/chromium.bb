@@ -90,15 +90,11 @@ PDFiumPage::PDFiumPage(PDFiumEngine* engine,
                        const pp::Rect& r,
                        bool available)
     : engine_(engine),
-      page_(nullptr),
-      text_page_(nullptr),
       index_(i),
-      loading_count_(0),
       rect_(r),
-      calculated_links_(false),
       available_(available) {}
 
-PDFiumPage::PDFiumPage(const PDFiumPage& that) = default;
+PDFiumPage::PDFiumPage(PDFiumPage&& that) = default;
 
 PDFiumPage::~PDFiumPage() {
   DCHECK_EQ(0, loading_count_);
@@ -109,17 +105,13 @@ void PDFiumPage::Unload() {
   if (loading_count_)
     return;
 
-  if (text_page_) {
-    FPDFText_ClosePage(text_page_);
-    text_page_ = nullptr;
-  }
+  text_page_.reset();
 
   if (page_) {
     if (engine_->form()) {
-      FORM_OnBeforeClosePage(page_, engine_->form());
+      FORM_OnBeforeClosePage(page(), engine_->form());
     }
-    FPDF_ClosePage(page_);
-    page_ = nullptr;
+    page_.reset();
   }
 }
 
@@ -130,12 +122,12 @@ FPDF_PAGE PDFiumPage::GetPage() {
     return nullptr;
   if (!page_) {
     ScopedLoadCounter scoped_load(this);
-    page_ = FPDF_LoadPage(engine_->doc(), index_);
+    page_.reset(FPDF_LoadPage(engine_->doc(), index_));
     if (page_ && engine_->form()) {
-      FORM_OnAfterLoadPage(page_, engine_->form());
+      FORM_OnAfterLoadPage(page(), engine_->form());
     }
   }
-  return page_;
+  return page();
 }
 
 FPDF_PAGE PDFiumPage::GetPrintPage() {
@@ -145,9 +137,9 @@ FPDF_PAGE PDFiumPage::GetPrintPage() {
     return nullptr;
   if (!page_) {
     ScopedLoadCounter scoped_load(this);
-    page_ = FPDF_LoadPage(engine_->doc(), index_);
+    page_.reset(FPDF_LoadPage(engine_->doc(), index_));
   }
-  return page_;
+  return page();
 }
 
 void PDFiumPage::ClosePrintPage() {
@@ -155,10 +147,7 @@ void PDFiumPage::ClosePrintPage() {
   if (loading_count_)
     return;
 
-  if (page_) {
-    FPDF_ClosePage(page_);
-    page_ = nullptr;
-  }
+  page_.reset();
 }
 
 FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
@@ -166,9 +155,9 @@ FPDF_TEXTPAGE PDFiumPage::GetTextPage() {
     return nullptr;
   if (!text_page_) {
     ScopedLoadCounter scoped_load(this);
-    text_page_ = FPDFText_LoadPage(GetPage());
+    text_page_.reset(FPDFText_LoadPage(GetPage()));
   }
-  return text_page_;
+  return text_page();
 }
 
 void PDFiumPage::GetTextRunInfo(int start_char_index,
@@ -559,12 +548,12 @@ pp::Rect PDFiumPage::PageToScreen(const pp::Point& offset,
   int new_right;
   int new_bottom;
   FPDF_BOOL ret = FPDF_PageToDevice(
-      page_, static_cast<int>(start_x), static_cast<int>(start_y),
+      page(), static_cast<int>(start_x), static_cast<int>(start_y),
       static_cast<int>(ceil(size_x)), static_cast<int>(ceil(size_y)), rotation,
       left, top, &new_left, &new_top);
   DCHECK(ret);
   ret = FPDF_PageToDevice(
-      page_, static_cast<int>(start_x), static_cast<int>(start_y),
+      page(), static_cast<int>(start_x), static_cast<int>(start_y),
       static_cast<int>(ceil(size_x)), static_cast<int>(ceil(size_y)), rotation,
       right, bottom, &new_right, &new_bottom);
   DCHECK(ret);
