@@ -10,8 +10,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_application_cache_host.h"
 #include "third_party/blink/public/platform/web_document_subresource_filter.h"
-#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
 #include "third_party/blink/public/platform/web_url.h"
+#include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 
 namespace base {
 class WaitableEvent;

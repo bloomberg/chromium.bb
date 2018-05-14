@@ -10,7 +10,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_thread.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/web_socket_handshake_throttle.h"
+#include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 
 WebSocketHandshakeThrottleProviderImpl::
     WebSocketHandshakeThrottleProviderImpl() {

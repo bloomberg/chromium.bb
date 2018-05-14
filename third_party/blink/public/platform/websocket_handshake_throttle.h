@@ -12,8 +12,8 @@
 // handshake succeeds then Blink will wait for the throttle result before
 // reporting the connection is open to Javascript.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOCKET_HANDSHAKE_THROTTLE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOCKET_HANDSHAKE_THROTTLE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEBSOCKET_HANDSHAKE_THROTTLE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEBSOCKET_HANDSHAKE_THROTTLE_H_
 
 #include "third_party/blink/public/platform/web_callbacks.h"
 
@@ -41,4 +41,4 @@ class WebSocketHandshakeThrottle {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_SOCKET_HANDSHAKE_THROTTLE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEBSOCKET_HANDSHAKE_THROTTLE_H_
