@@ -199,7 +199,7 @@ struct TabStripModel::DetachNotifications {
 
   // The WebContents that were recently detached. Observers need to be notified
   // about these. These must be updated after construction.
-  std::vector<DetachedWebContents> detached_web_contents;
+  std::vector<std::unique_ptr<DetachedWebContents>> detached_web_contents;
 
   // The selection model prior to any tabs being detached.
   const ui::ListSelectionModel selection_model;
@@ -346,13 +346,14 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsAt(
 
   DetachNotifications notifications(initially_active_web_contents,
                                     selection_model_, /*will_delete=*/false);
-  DetachedWebContents dwc(
-      index, index,
-      DetachWebContentsImpl(index, /*create_historical_tab=*/false,
-                            /*will_delete=*/false));
+  std::unique_ptr<DetachedWebContents> dwc =
+      std::make_unique<DetachedWebContents>(
+          index, index,
+          DetachWebContentsImpl(index, /*create_historical_tab=*/false,
+                                /*will_delete=*/false));
   notifications.detached_web_contents.push_back(std::move(dwc));
   SendDetachWebContentsNotifications(&notifications);
-  return std::move(notifications.detached_web_contents[0].contents);
+  return std::move(notifications.detached_web_contents[0]->contents);
 }
 
 std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
@@ -376,18 +377,8 @@ std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsImpl(
   std::unique_ptr<WebContentsData> old_data = std::move(contents_data_[index]);
   contents_data_.erase(contents_data_.begin() + index);
 
-  if (will_delete) {
-    for (auto& observer : observers_)
-      observer.TabClosingAt(this, raw_web_contents, index);
-  }
-
-  if (empty())
-    closing_all_ = true;
-
-  for (auto& observer : observers_)
-    observer.TabDetachedAt(raw_web_contents, index, index == active_index());
-
   if (empty()) {
+    closing_all_ = true;
     selection_model_.Clear();
   } else {
     int old_active = active_index();
@@ -414,14 +405,45 @@ void TabStripModel::SendDetachWebContentsNotifications(
     DetachNotifications* notifications) {
   bool was_any_tab_selected = false;
 
+  // Sort the DetachedWebContents in decreasing order of
+  // |index_before_any_removals|. This is because |index_before_any_removals| is
+  // used by observers to update their own copy of TabStripModel state, and each
+  // removal affects subsequent removals of higher index.
+  std::sort(notifications->detached_web_contents.begin(),
+            notifications->detached_web_contents.end(),
+            [](const std::unique_ptr<DetachedWebContents>& dwc1,
+               const std::unique_ptr<DetachedWebContents>& dwc2) {
+              return dwc1->index_before_any_removals >
+                     dwc2->index_before_any_removals;
+            });
+  for (auto& dwc : notifications->detached_web_contents) {
+    // TabClosingAt() must be sent before TabDetachedAt(), since some observers
+    // use the former to change the behavior of the latter.
+    // TODO(erikchen): Combine these notifications. https://crbug.com/842194.
+    if (notifications->will_delete) {
+      for (auto& observer : observers_) {
+        observer.TabClosingAt(this, dwc->contents.get(),
+                              dwc->index_before_any_removals);
+      }
+    }
+
+    // TabDetachedAt() allows observers that keep their own model of
+    // |contents_data_| to keep that model in sync.
+    for (auto& observer : observers_) {
+      observer.TabDetachedAt(
+          dwc->contents.get(), dwc->index_before_any_removals,
+          notifications->initially_active_web_contents == dwc->contents.get());
+    }
+  }
+
   for (auto& dwc : notifications->detached_web_contents) {
     if (notifications->selection_model.IsSelected(
-            dwc.index_before_any_removals)) {
+            dwc->index_before_any_removals)) {
       was_any_tab_selected = true;
     }
 
     if (notifications->initially_active_web_contents &&
-        dwc.contents.get() == notifications->initially_active_web_contents) {
+        dwc->contents.get() == notifications->initially_active_web_contents) {
       for (auto& observer : observers_)
         observer.TabDeactivated(notifications->initially_active_web_contents);
 
@@ -435,7 +457,7 @@ void TabStripModel::SendDetachWebContentsNotifications(
     if (notifications->will_delete) {
       // This destroys the WebContents, which will also send
       // WebContentsDestroyed notifications.
-      dwc.contents.reset();
+      dwc->contents.reset();
     }
   }
 
@@ -1332,11 +1354,12 @@ bool TabStripModel::CloseWebContentses(
       continue;
     }
 
-    DetachedWebContents dwc(
-        original_indices[i], current_index,
-        DetachWebContentsImpl(current_index,
-                              close_types & CLOSE_CREATE_HISTORICAL_TAB,
-                              /*will_delete=*/true));
+    std::unique_ptr<DetachedWebContents> dwc =
+        std::make_unique<DetachedWebContents>(
+            original_indices[i], current_index,
+            DetachWebContentsImpl(current_index,
+                                  close_types & CLOSE_CREATE_HISTORICAL_TAB,
+                                  /*will_delete=*/true));
     notifications.detached_web_contents.push_back(std::move(dwc));
   }
 

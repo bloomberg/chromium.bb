@@ -384,6 +384,10 @@ class SessionService : public sessions::BaseSessionServiceDelegate,
   // Force session commands to be rebuild before next save event.
   bool rebuild_on_next_save_;
 
+  // Don't send duplicate SetSelectedTabInWindow commands when the selected
+  // tab's index hasn't changed.
+  std::map<SessionID, int> last_selected_tab_in_window_;
+
   base::WeakPtrFactory<SessionService> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionService);

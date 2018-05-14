@@ -292,6 +292,7 @@ void SessionService::WindowClosed(const SessionID& window_id) {
   }
 
   windows_tracking_.erase(window_id);
+  last_selected_tab_in_window_.erase(window_id);
 
   if (window_closing_ids_.find(window_id) != window_closing_ids_.end()) {
     window_closing_ids_.erase(window_id);
@@ -468,6 +469,11 @@ void SessionService::SetSelectedTabInWindow(const SessionID& window_id,
                                             int index) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
+
+  auto it = last_selected_tab_in_window_.find(window_id);
+  if (it != last_selected_tab_in_window_.end() && it->second == index)
+    return;
+  last_selected_tab_in_window_[window_id] = index;
 
   ScheduleCommand(
       sessions::CreateSetSelectedTabInWindowCommand(window_id, index));
@@ -757,6 +763,7 @@ void SessionService::ScheduleResetCommands() {
   base_session_service_->ClearPendingCommands();
   tab_to_available_range_.clear();
   windows_tracking_.clear();
+  last_selected_tab_in_window_.clear();
   rebuild_on_next_save_ = false;
   BuildCommandsFromBrowsers(&tab_to_available_range_,
                             &windows_tracking_);
