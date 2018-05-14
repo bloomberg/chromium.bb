@@ -56,7 +56,6 @@ extern const char kSupervisedUserSecondCustodianProfileImageURL[];
 extern const char kSupervisedUserSecondCustodianProfileURL[];
 extern const char kSupervisedUserSharedSettings[];
 extern const char kSupervisedUserWhitelists[];
-extern const char kTabUnderAllowed[];
 extern const char kURLsToRestoreOnStartup[];
 
 #if BUILDFLAG(ENABLE_RLZ)

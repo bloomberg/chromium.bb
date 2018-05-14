@@ -16,10 +16,6 @@ namespace content {
 class NavigationHandle;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-};
-
 constexpr char kBlockTabUnderFormatMessage[] =
     "Chrome stopped this site from navigating to %s, see "
     "https://www.chromestatus.com/feature/5675755719622656 for more details.";
@@ -73,8 +69,6 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
 
     kCount
   };
-
-  static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   static std::unique_ptr<content::NavigationThrottle> MaybeCreate(
       content::NavigationHandle* handle);

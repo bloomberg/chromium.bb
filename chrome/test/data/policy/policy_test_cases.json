@@ -3711,13 +3711,7 @@
   },
 
   "TabUnderAllowed": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": {
-      "TabUnderAllowed": false
-    },
-    "pref_mappings": [
-      { "pref": "tab_under_allowed"}
-    ]
+    "note": "This policy is deprecated and removed since Chrome 68."
   },
 
   "----- Chrome Frame policies -------------------------------------------": {},
