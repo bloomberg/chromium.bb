@@ -20,7 +20,9 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
   ~MockIdleDeadlineScheduler() override = default;
 
   // ThreadScheduler implementation:
-  base::SingleThreadTaskRunner* V8TaskRunner() override { return nullptr; }
+  scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override {
+    return nullptr;
+  }
   void Shutdown() override {}
   bool ShouldYieldForHighPriorityWork() override { return true; }
   bool CanExceedIdleDeadlineIfRequired() const override { return false; }
@@ -31,7 +33,7 @@ class MockIdleDeadlineScheduler final : public ThreadScheduler {
       PageScheduler::Delegate*) override {
     return nullptr;
   }
-  base::SingleThreadTaskRunner* CompositorTaskRunner() override {
+  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override {
     return nullptr;
   }
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override {

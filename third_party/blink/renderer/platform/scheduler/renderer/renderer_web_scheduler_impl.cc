@@ -29,8 +29,9 @@ RendererWebSchedulerImpl::RendererWebSchedulerImpl(
 
 RendererWebSchedulerImpl::~RendererWebSchedulerImpl() = default;
 
-base::SingleThreadTaskRunner* RendererWebSchedulerImpl::CompositorTaskRunner() {
-  return compositor_task_runner_.get();
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererWebSchedulerImpl::CompositorTaskRunner() {
+  return compositor_task_runner_;
 }
 
 std::unique_ptr<RendererWebSchedulerImpl::RendererPauseHandle>

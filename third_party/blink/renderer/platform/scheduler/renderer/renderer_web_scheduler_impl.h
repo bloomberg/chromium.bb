@@ -20,7 +20,7 @@ class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
   ~RendererWebSchedulerImpl() override;
 
   // ThreadScheduler implementation:
-  base::SingleThreadTaskRunner* CompositorTaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   std::unique_ptr<RendererPauseHandle> PauseScheduler() override
       WARN_UNUSED_RESULT;
   std::unique_ptr<PageScheduler> CreatePageScheduler(
