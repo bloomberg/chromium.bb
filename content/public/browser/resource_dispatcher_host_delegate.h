@@ -37,12 +37,6 @@ class CONTENT_EXPORT ResourceDispatcherHostDelegate {
  public:
   virtual ~ResourceDispatcherHostDelegate();
 
-  // Called when a request begins. Return false to abort the request.
-  virtual bool ShouldBeginRequest(const std::string& method,
-                                  const GURL& url,
-                                  ResourceType resource_type,
-                                  ResourceContext* resource_context);
-
   // Called after ShouldBeginRequest to allow the embedder to add resource
   // throttles.
   virtual void RequestBeginning(

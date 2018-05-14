@@ -49,10 +49,6 @@ class ChromeResourceDispatcherHostDelegate
   ~ChromeResourceDispatcherHostDelegate() override;
 
   // ResourceDispatcherHostDelegate implementation.
-  bool ShouldBeginRequest(const std::string& method,
-                          const GURL& url,
-                          content::ResourceType resource_type,
-                          content::ResourceContext* resource_context) override;
   void RequestBeginning(net::URLRequest* request,
                         content::ResourceContext* resource_context,
                         content::AppCacheService* appcache_service,

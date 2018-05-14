@@ -105,14 +105,6 @@ class TestResourceDispatcherHostDelegate final
   TestResourceDispatcherHostDelegate() = default;
   ~TestResourceDispatcherHostDelegate() override = default;
 
-  bool ShouldBeginRequest(const std::string& method,
-                          const GURL& url,
-                          ResourceType resource_type,
-                          ResourceContext* resource_context) override {
-    ADD_FAILURE() << "ShouldBeginRequest should not be called.";
-    return false;
-  }
-
   void RequestBeginning(
       net::URLRequest* request,
       ResourceContext* resource_context,

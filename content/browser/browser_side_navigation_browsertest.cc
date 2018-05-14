@@ -18,7 +18,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_features.h"
@@ -43,22 +42,6 @@
 #include "url/gurl.h"
 
 namespace content {
-
-namespace {
-
-class RequestBlockingResourceDispatcherHostDelegate
-    : public ResourceDispatcherHostDelegate {
- public:
-  // ResourceDispatcherHostDelegate implementation:
-  bool ShouldBeginRequest(const std::string& method,
-                          const GURL& url,
-                          ResourceType resource_type,
-                          ResourceContext* resource_context) override {
-    return false;
-  }
-};
-
-}  // namespace
 
 // Test with BrowserSideNavigation enabled (aka PlzNavigate).
 // If you don't need a custom embedded test server, please use the next class
@@ -717,43 +700,6 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
     EXPECT_TRUE(ExecuteScript(shell()->web_contents(), "history.back();"));
     navigation_observer.Wait();
   }
-}
-
-// Requests not allowed by a ResourceDispatcherHostDelegate must be aborted.
-IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserTest,
-                       RequestBlockedByResourceDispatcherHostDelegate) {
-  // The Network Service doesn't use a ResourceDispatcherHost. A request can't
-  // be canceled by a ResourceDispatcherHostDelegate.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  // Add a ResourceDispatcherHost blocking every requests.
-  RequestBlockingResourceDispatcherHostDelegate delegate;
-  base::RunLoop loop;
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(
-          [](base::OnceClosure resume,
-             ResourceDispatcherHostDelegate* delegate) {
-            ResourceDispatcherHost::Get()->SetDelegate(delegate);
-            std::move(resume).Run();
-          },
-          loop.QuitClosure(), &delegate));
-  loop.Run();
-
-  // Navigate somewhere. The navigation will be aborted.
-  GURL simple_url(embedded_test_server()->GetURL("/simple_page.html"));
-  TestNavigationManager manager(shell()->web_contents(), simple_url);
-  NavigationHandleObserver handle_observer(shell()->web_contents(), simple_url);
-  shell()->LoadURL(simple_url);
-
-  EXPECT_TRUE(manager.WaitForRequestStart());
-  EXPECT_FALSE(manager.WaitForResponse());
-  manager.WaitForNavigationFinished();
-
-  EXPECT_FALSE(handle_observer.has_committed());
-  EXPECT_TRUE(handle_observer.is_error());
-  EXPECT_EQ(net::ERR_ABORTED, handle_observer.net_error_code());
 }
 
 }  // namespace content

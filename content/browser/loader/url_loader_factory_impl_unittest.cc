@@ -60,20 +60,6 @@ namespace {
 
 constexpr int kChildId = 99;
 
-class RejectingResourceDispatcherHostDelegate final
-    : public ResourceDispatcherHostDelegate {
- public:
-  RejectingResourceDispatcherHostDelegate() {}
-  bool ShouldBeginRequest(const std::string& method,
-                          const GURL& url,
-                          ResourceType resource_type,
-                          ResourceContext* resource_context) override {
-    return false;
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(RejectingResourceDispatcherHostDelegate);
-};
-
 // The test parameter is the number of bytes allocated for the buffer in the
 // data pipe, for testing the case where the allocated size is smaller than the
 // size the mime sniffer *implicitly* requires.
@@ -309,11 +295,13 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
 // This test tests a case where resource loading is cancelled before started.
 TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   network::mojom::URLLoaderPtr loader;
-  RejectingResourceDispatcherHostDelegate rdh_delegate;
-  rdh_.SetDelegate(&rdh_delegate);
   network::ResourceRequest request;
   network::TestURLLoaderClient client;
-  request.url = GURL("http://localhost/");
+
+  // Child processes cannot request URLs with pseudo schemes like "about",
+  // except for about:blank. See ChildProcessSecurityPolicyImpl::CanRequestURL
+  // for details.
+  request.url = GURL("about:version");
   request.method = "GET";
   // |resource_type| can't be a frame type. It is because when PlzNavigate is
   // enabled, the url scheme of frame type requests from the renderer process
@@ -327,7 +315,6 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
   client.RunUntilComplete();
-  rdh_.SetDelegate(nullptr);
 
   ASSERT_FALSE(client.has_received_response());
   ASSERT_FALSE(client.response_body().is_valid());
