@@ -223,7 +223,7 @@ methods. Here's an example of each:
 // For simple requests:
 chrome.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
-    if (sender.id == blacklistedExtension)
+    if (sender.id == blocklistedExtension)
       return;  // don't allow this extension access
     else if (request.getTargetData)
       sendResponse({targetData: targetData});
@@ -312,7 +312,7 @@ Here is an example:
 <pre>
 chrome.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
-    if (sender.url == blacklistedWebsite)
+    if (sender.url == blocklistedWebsite)
       return;  // don't allow this web page access
     if (request.openUrlInEditor)
       openUrl(request.openUrlInEditor);
