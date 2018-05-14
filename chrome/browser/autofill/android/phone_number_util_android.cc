@@ -22,12 +22,12 @@ using ::base::android::ScopedJavaLocalRef;
 std::string FormatPhoneNumberWithCountryCode(
     const std::string& phone_number,
     const std::string& country_code,
-    i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat format) {
-  i18n::phonenumbers::PhoneNumber parsed_number;
-  i18n::phonenumbers::PhoneNumberUtil* phone_number_util =
-      i18n::phonenumbers::PhoneNumberUtil::GetInstance();
+    ::i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat format) {
+  ::i18n::phonenumbers::PhoneNumber parsed_number;
+  ::i18n::phonenumbers::PhoneNumberUtil* phone_number_util =
+      ::i18n::phonenumbers::PhoneNumberUtil::GetInstance();
   if (phone_number_util->Parse(phone_number, country_code, &parsed_number) !=
-      i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
+      ::i18n::phonenumbers::PhoneNumberUtil::NO_PARSING_ERROR) {
     return phone_number;
   }
 
@@ -41,7 +41,7 @@ std::string FormatPhoneNumberWithCountryCode(
 // not possible.
 std::string FormatPhoneNumber(
     const std::string& phone_number,
-    i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat format) {
+    ::i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat format) {
   return FormatPhoneNumberWithCountryCode(
       phone_number,
       autofill::AutofillCountry::CountryCodeForLocale(
@@ -63,12 +63,12 @@ ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForDisplay(
   return ConvertUTF8ToJavaString(
       env, jcountry_code.is_null()
                ? FormatPhoneNumber(ConvertJavaStringToUTF8(env, jphone_number),
-                                   i18n::phonenumbers::PhoneNumberUtil::
+                                   ::i18n::phonenumbers::PhoneNumberUtil::
                                        PhoneNumberFormat::INTERNATIONAL)
                : FormatPhoneNumberWithCountryCode(
                      ConvertJavaStringToUTF8(env, jphone_number),
                      ConvertJavaStringToUTF8(env, jcountry_code),
-                     i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::
+                     ::i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::
                          INTERNATIONAL));
 }
 
@@ -84,7 +84,7 @@ ScopedJavaLocalRef<jstring> JNI_PhoneNumberUtil_FormatForResponse(
   return ConvertUTF8ToJavaString(
       env, FormatPhoneNumber(
                ConvertJavaStringToUTF8(env, jphone_number),
-               i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::E164));
+               ::i18n::phonenumbers::PhoneNumberUtil::PhoneNumberFormat::E164));
 }
 
 // Checks whether the given number |jphone_number| is a possible number for a
@@ -101,7 +101,7 @@ jboolean JNI_PhoneNumberUtil_IsPossibleNumber(
                                     g_browser_process->GetApplicationLocale())
                               : ConvertJavaStringToUTF8(env, jcountry_code);
 
-  return i18n::phonenumbers::PhoneNumberUtil::GetInstance()
+  return ::i18n::phonenumbers::PhoneNumberUtil::GetInstance()
       ->IsPossibleNumberForString(phone_number, country_code);
 }
 
