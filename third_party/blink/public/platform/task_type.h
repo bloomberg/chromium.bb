@@ -147,7 +147,9 @@ enum class TaskType : unsigned {
   // * //media
   kInternalMedia = 29,
 
-  // Tasks to execute things for real-time media processing like recording.
+  // Tasks to execute things for real-time media processing like recording. If a
+  // task touches MediaStreamTracks, associated sources and sinks, this task
+  // type should be used.
   // Tasks with this type are mainly posted by:
   // * //content/renderer/media
   // * //media

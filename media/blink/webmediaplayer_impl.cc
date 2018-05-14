@@ -285,7 +285,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
     observer_->SetClient(this);
 
   memory_usage_reporting_timer_.SetTaskRunner(
-      frame_->GetTaskRunner(blink::TaskType::kUnthrottled));
+      frame_->GetTaskRunner(blink::TaskType::kInternalMedia));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
@@ -1674,7 +1674,7 @@ void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
       base::Bind(&WebMediaPlayerImpl::GetPipelineStatistics,
                  base::Unretained(this)),
       pipeline_metadata_.video_decoder_config,
-      frame_->GetTaskRunner(blink::TaskType::kUnthrottled)));
+      frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
 
   if (delegate_->IsFrameHidden())
     video_decode_stats_reporter_->OnHidden();
@@ -2845,7 +2845,7 @@ void WebMediaPlayerImpl::CreateWatchTimeReporter() {
       base::BindRepeating(&WebMediaPlayerImpl::GetCurrentTimeInternal,
                           base::Unretained(this)),
       media_metrics_provider_.get(),
-      frame_->GetTaskRunner(blink::TaskType::kUnthrottled)));
+      frame_->GetTaskRunner(blink::TaskType::kInternalMedia)));
   watch_time_reporter_->OnVolumeChange(volume_);
 
   if (delegate_->IsFrameHidden())

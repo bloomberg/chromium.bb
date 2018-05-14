@@ -17,7 +17,7 @@ TimedCanvasDrawListener::TimedCanvasDrawListener(
     ExecutionContext* context)
     : CanvasDrawListener(std::move(handler)),
       frame_interval_(TimeDelta::FromSecondsD(1 / frame_rate)),
-      request_frame_timer_(context->GetTaskRunner(TaskType::kUnthrottled),
+      request_frame_timer_(context->GetTaskRunner(TaskType::kInternalMedia),
                            this,
                            &TimedCanvasDrawListener::RequestFrameTimerFired) {}
 

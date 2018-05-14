@@ -27,7 +27,7 @@ MediaCustomControlsFullscreenDetector::MediaCustomControlsFullscreenDetector(
     : EventListener(kCPPEventListenerType),
       video_element_(video),
       check_viewport_intersection_timer_(
-          video.GetDocument().GetTaskRunner(TaskType::kUnthrottled),
+          video.GetDocument().GetTaskRunner(TaskType::kInternalMedia),
           this,
           &MediaCustomControlsFullscreenDetector::
               OnCheckViewportIntersectionTimerFired) {
