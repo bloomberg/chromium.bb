@@ -59,6 +59,7 @@ class ContentElement : public PlatformUiElement {
   gfx::Transform projection_matrix_;
   bool focused_ = false;
   bool uses_quad_layer_ = false;
+  ContentInputDelegate* content_delegate_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ContentElement);
 };

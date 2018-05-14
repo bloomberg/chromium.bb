@@ -7,10 +7,10 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/keyboard.h"
 #include "chrome/browser/vr/model/model.h"
+#include "chrome/browser/vr/platform_input_handler.h"
 #include "chrome/browser/vr/test/mock_keyboard_delegate.h"
 #include "chrome/browser/vr/test/mock_text_input_delegate.h"
 #include "chrome/browser/vr/test/ui_test.h"
@@ -48,13 +48,15 @@ class TestContentInputDelegate : public MockContentInputDelegate {
   TextInputInfo info_;
 };
 
-class TestContentInputForwarder : public ContentInputForwarder {
+class TestPlatformInputHandler : public PlatformInputHandler {
  public:
-  TestContentInputForwarder() {}
-  ~TestContentInputForwarder() override {}
+  TestPlatformInputHandler() {}
+  ~TestPlatformInputHandler() override {}
 
-  void ForwardEvent(std::unique_ptr<blink::WebInputEvent>, int) override {}
-  void ForwardDialogEvent(std::unique_ptr<blink::WebInputEvent>) override {}
+  void ForwardEventToPlatformUi(
+      std::unique_ptr<blink::WebInputEvent>) override {}
+  void ForwardEventToContent(std::unique_ptr<blink::WebInputEvent>,
+                             int) override {}
 
   void ClearFocusedElement() override { clear_focus_called_ = true; }
   void OnWebInputEdited(const TextEdits& edits) override { edits_ = edits; }
@@ -78,7 +80,7 @@ class TestContentInputForwarder : public ContentInputForwarder {
   bool text_state_requested_ = false;
   bool clear_focus_called_ = false;
 
-  DISALLOW_COPY_AND_ASSIGN(TestContentInputForwarder);
+  DISALLOW_COPY_AND_ASSIGN(TestPlatformInputHandler);
 };
 
 class ContentElementSceneTest : public UiTest {
@@ -97,8 +99,8 @@ class ContentElementSceneTest : public UiTest {
     text_input_delegate_ =
         std::make_unique<StrictMock<MockTextInputDelegate>>();
 
-    input_forwarder_ = std::make_unique<TestContentInputForwarder>();
-    ui_->GetContentInputDelegateForTest()->SetContentInputForwarderForTest(
+    input_forwarder_ = std::make_unique<TestPlatformInputHandler>();
+    ui_->GetContentInputDelegateForTest()->SetPlatformInputHandlerForTest(
         input_forwarder_.get());
 
     auto* content =
@@ -109,7 +111,7 @@ class ContentElementSceneTest : public UiTest {
 
  protected:
   std::unique_ptr<StrictMock<MockTextInputDelegate>> text_input_delegate_;
-  std::unique_ptr<TestContentInputForwarder> input_forwarder_;
+  std::unique_ptr<TestPlatformInputHandler> input_forwarder_;
   testing::InSequence in_sequence_;
 };
 
@@ -205,9 +207,9 @@ class ContentElementInputEditingTest : public UiTest {
 
     text_input_delegate_ =
         std::make_unique<StrictMock<MockTextInputDelegate>>();
-    input_forwarder_ = std::make_unique<TestContentInputForwarder>();
+    input_forwarder_ = std::make_unique<TestPlatformInputHandler>();
     content_delegate_ = ui_->GetContentInputDelegateForTest();
-    content_delegate_->SetContentInputForwarderForTest(input_forwarder_.get());
+    content_delegate_->SetPlatformInputHandlerForTest(input_forwarder_.get());
 
     content_ =
         static_cast<ContentElement*>(scene_->GetUiElementByName(kContentQuad));
@@ -239,7 +241,7 @@ class ContentElementInputEditingTest : public UiTest {
   }
 
   std::unique_ptr<StrictMock<MockTextInputDelegate>> text_input_delegate_;
-  std::unique_ptr<TestContentInputForwarder> input_forwarder_;
+  std::unique_ptr<TestPlatformInputHandler> input_forwarder_;
   ContentInputDelegate* content_delegate_;
   ContentElement* content_;
 };

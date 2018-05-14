@@ -4,15 +4,13 @@
 
 #include "chrome/browser/vr/elements/content_element.h"
 
-#include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/platform_ui_input_delegate.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace vr {
 
-PlatformUiElement::PlatformUiElement(ContentInputDelegate* delegate)
-    : delegate_(delegate) {
-  DCHECK(delegate);
+PlatformUiElement::PlatformUiElement() {
   set_scrollable(true);
 }
 
@@ -31,55 +29,55 @@ void PlatformUiElement::Render(UiElementRenderer* renderer,
 
 void PlatformUiElement::OnHoverEnter(const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnContentEnter(position);
+    delegate_->OnHoverEnter(position);
 }
 
 void PlatformUiElement::OnHoverLeave() {
   if (delegate_)
-    delegate_->OnContentLeave();
+    delegate_->OnHoverLeave();
 }
 
 void PlatformUiElement::OnMove(const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnContentMove(position);
+    delegate_->OnMove(position);
 }
 
 void PlatformUiElement::OnButtonDown(const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnContentDown(position);
+    delegate_->OnButtonDown(position);
 }
 
 void PlatformUiElement::OnButtonUp(const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnContentUp(position);
+    delegate_->OnButtonUp(position);
 }
 
 void PlatformUiElement::OnFlingCancel(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnContentFlingCancel(std::move(gesture), position);
+    delegate_->OnFlingCancel(std::move(gesture), position);
 }
 
 void PlatformUiElement::OnScrollBegin(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnContentScrollBegin(std::move(gesture), position);
+    delegate_->OnScrollBegin(std::move(gesture), position);
 }
 
 void PlatformUiElement::OnScrollUpdate(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnContentScrollUpdate(std::move(gesture), position);
+    delegate_->OnScrollUpdate(std::move(gesture), position);
 }
 
 void PlatformUiElement::OnScrollEnd(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
   if (delegate_)
-    delegate_->OnContentScrollEnd(std::move(gesture), position);
+    delegate_->OnScrollEnd(std::move(gesture), position);
 }
 
 void PlatformUiElement::SetTextureId(unsigned int texture_id) {
@@ -91,7 +89,7 @@ void PlatformUiElement::SetTextureLocation(
   texture_location_ = location;
 }
 
-void PlatformUiElement::SetDelegate(ContentInputDelegate* delegate) {
+void PlatformUiElement::SetDelegate(PlatformUiInputDelegate* delegate) {
   delegate_ = delegate;
 }
 

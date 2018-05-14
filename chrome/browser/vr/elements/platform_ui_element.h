@@ -11,7 +11,7 @@
 
 namespace vr {
 
-class ContentInputDelegate;
+class PlatformUiInputDelegate;
 
 // This element hosts the texture of a platform UI and surfaces all frames of
 // the UI to VR. For example, on Android, any views UI can be drawn to a texture
@@ -19,7 +19,7 @@ class ContentInputDelegate;
 // It also dispatches events to the platform UI.
 class PlatformUiElement : public UiElement {
  public:
-  explicit PlatformUiElement(ContentInputDelegate* delegate);
+  PlatformUiElement();
   ~PlatformUiElement() override;
 
   void OnHoverEnter(const gfx::PointF& position) override;
@@ -42,17 +42,17 @@ class PlatformUiElement : public UiElement {
   void SetTextureId(unsigned int texture_id);
   void SetTextureLocation(UiElementRenderer::TextureLocation location);
 
-  void SetDelegate(ContentInputDelegate* delegate);
+  void SetDelegate(PlatformUiInputDelegate* delegate);
 
  protected:
-  ContentInputDelegate* delegate() const { return delegate_; }
+  PlatformUiInputDelegate* delegate() const { return delegate_; }
   unsigned int texture_id() const { return texture_id_; }
   UiElementRenderer::TextureLocation texture_location() const {
     return texture_location_;
   }
 
  private:
-  ContentInputDelegate* delegate_ = nullptr;
+  PlatformUiInputDelegate* delegate_ = nullptr;
   unsigned int texture_id_ = 0;
   UiElementRenderer::TextureLocation texture_location_ =
       UiElementRenderer::kTextureLocationExternal;

@@ -17,7 +17,6 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/browser/android/vr/android_vsync_helper.h"
 #include "chrome/browser/android/vr/vr_controller.h"
-#include "chrome/browser/android/vr/vr_dialog.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/fps_meter.h"
 #include "chrome/browser/vr/model/controller_model.h"
@@ -308,7 +307,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void OnSwapContents(int new_content_id);
 
-  void EnableAlertDialog(ContentInputForwarder* input_forwarder,
+  void EnableAlertDialog(PlatformInputHandler* input_handler,
                          float width,
                          float height);
   void DisableAlertDialog();
@@ -601,7 +600,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   ControllerModel controller_model_;
 
-  std::unique_ptr<VrDialog> vr_dialog_;
+  std::unique_ptr<PlatformUiInputDelegate> vr_dialog_input_delegate_;
   bool showing_vr_dialog_ = false;
   std::unique_ptr<UiTestState> ui_test_state_;
 

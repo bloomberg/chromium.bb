@@ -149,8 +149,9 @@ void VrGLThread::UpdateGamepadData(device::GvrGamepadData pad) {
       base::BindOnce(&VrShell::UpdateGamepadData, weak_vr_shell_, pad));
 }
 
-void VrGLThread::ForwardEvent(std::unique_ptr<blink::WebInputEvent> event,
-                              int content_id) {
+void VrGLThread::ForwardEventToContent(
+    std::unique_ptr<blink::WebInputEvent> event,
+    int content_id) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&VrShell::ProcessContentGesture, weak_vr_shell_,
@@ -181,7 +182,7 @@ void VrGLThread::RequestWebInputText(TextStateUpdateCallback callback) {
   input_connection_->RequestTextState(std::move(callback));
 }
 
-void VrGLThread::ForwardDialogEvent(
+void VrGLThread::ForwardEventToPlatformUi(
     std::unique_ptr<blink::WebInputEvent> event) {
   DCHECK(OnGlThread());
   main_thread_task_runner_->PostTask(
