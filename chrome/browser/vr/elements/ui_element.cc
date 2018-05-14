@@ -24,7 +24,6 @@ namespace vr {
 
 namespace {
 
-constexpr bool kEnableOptimizedTreeWalks = true;
 constexpr float kHitTestResolutionInMeter = 0.000001f;
 
 int AllocateId() {
@@ -253,12 +252,14 @@ bool UiElement::DoBeginFrame(const gfx::Transform& head_pose) {
   set_update_phase(kUpdatedAnimations);
   bool begin_frame_updated = OnBeginFrame(head_pose);
   UpdateComputedOpacity();
-  bool was_visible_at_any_point = IsVisible() || updated_visibility_this_frame_;
+  bool was_visible_at_any_point = IsVisible() ||
+                                  updated_visibility_this_frame_ ||
+                                  IsOrWillBeLocallyVisible();
   bool dirty = (begin_frame_updated || keyframe_models_updated ||
                 updated_bindings_this_frame_) &&
                was_visible_at_any_point;
 
-  if (!kEnableOptimizedTreeWalks || was_visible_at_any_point) {
+  if (was_visible_at_any_point) {
     for (auto& child : children_)
       dirty |= child->DoBeginFrame(head_pose);
   }
@@ -699,7 +700,7 @@ void UiElement::UpdateBindings() {
   should_recur |= IsOrWillBeLocallyVisible();
 
   set_update_phase(kUpdatedBindings);
-  if (!should_recur && kEnableOptimizedTreeWalks)
+  if (!should_recur)
     return;
 
   for (auto& child : children_)
@@ -803,7 +804,7 @@ bool UiElement::IsAnimatingProperty(TargetProperty property) const {
 }
 
 bool UiElement::SizeAndLayOut() {
-  if (!IsVisible() && kEnableOptimizedTreeWalks)
+  if (!IsVisible())
     return false;
 
   // May be overridden by layout elements.
@@ -961,8 +962,7 @@ void UiElement::UpdateComputedOpacity() {
 }
 
 void UiElement::UpdateWorldSpaceTransform(bool parent_changed) {
-  if (!IsVisible() && !updated_visibility_this_frame_ &&
-      kEnableOptimizedTreeWalks)
+  if (!IsVisible() && !updated_visibility_this_frame_)
     return;
 
   bool changed = false;

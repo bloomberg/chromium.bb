@@ -11,6 +11,7 @@
 #include "cc/animation/keyframe_model.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/test/geometry_test_utils.h"
+#include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/ui_scene.h"
@@ -424,6 +425,55 @@ class ElementEventHandlers {
 
   DISALLOW_COPY_AND_ASSIGN(ElementEventHandlers);
 };
+
+TEST(UiElement, CoordinatedVisibilityTransitions) {
+  UiScene scene;
+  bool value = false;
+
+  auto parent = std::make_unique<UiElement>();
+  auto* parent_ptr = parent.get();
+  parent->SetVisible(false);
+  parent->SetTransitionedProperties({OPACITY});
+  parent->AddBinding(std::make_unique<Binding<bool>>(
+      base::BindRepeating([](bool* value) { return *value; },
+                          base::Unretained(&value)),
+      base::BindRepeating(
+          [](UiElement* e, const bool& value) { e->SetVisible(value); },
+          parent_ptr)));
+
+  auto child = std::make_unique<UiElement>();
+  auto* child_ptr = child.get();
+  child->SetVisible(false);
+  child->SetTransitionedProperties({OPACITY});
+  child->AddBinding(std::make_unique<Binding<bool>>(
+      base::BindRepeating([](bool* value) { return *value; },
+                          base::Unretained(&value)),
+      base::BindRepeating(
+          [](UiElement* e, const bool& value) { e->SetVisible(value); },
+          child_ptr)));
+
+  parent->AddChild(std::move(child));
+  scene.AddUiElement(kRoot, std::move(parent));
+
+  scene.OnBeginFrame(MsToTicks(0), kStartHeadPose);
+
+  value = true;
+
+  scene.OnBeginFrame(MsToTicks(16), kStartHeadPose);
+
+  // We should have started animating both, and they should both be at opacity
+  // zero given that this is the first frame. This does not guarantee that
+  // they've started animating together, however. Even if the animation was
+  // unticked, we would still be at opacity zero. We must tick a second time to
+  // reach a non-zero value.
+  EXPECT_TRUE(parent_ptr->IsAnimatingProperty(OPACITY));
+  EXPECT_TRUE(child_ptr->IsAnimatingProperty(OPACITY));
+  EXPECT_EQ(child_ptr->opacity(), parent_ptr->opacity());
+
+  scene.OnBeginFrame(MsToTicks(32), kStartHeadPose);
+  EXPECT_EQ(child_ptr->opacity(), parent_ptr->opacity());
+  EXPECT_LT(0.0f, child_ptr->opacity());
+}
 
 TEST(UiElement, EventBubbling) {
   auto element = std::make_unique<UiElement>();
