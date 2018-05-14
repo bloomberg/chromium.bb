@@ -29,7 +29,6 @@
     Constructor(DOMString type, optional AnimationEventInit eventInitDict)
 ] interface AnimationEvent : Event {
     readonly attribute DOMString animationName;
-    // TODO(foolip): elapsedTime should be float.
     readonly attribute double elapsedTime;
     readonly attribute DOMString pseudoElement;
 };
