@@ -16,12 +16,6 @@ namespace base {
 
 namespace {
 
-void CallWithTranslatedParameter(FileUtilProxy::StatusCallback callback,
-                                 bool value) {
-  DCHECK(!callback.is_null());
-  std::move(callback).Run(value ? File::FILE_OK : File::FILE_ERROR_FAILED);
-}
-
 class GetFileInfoHelper {
  public:
   GetFileInfoHelper()
@@ -61,18 +55,6 @@ bool FileUtilProxy::GetFileInfo(TaskRunner* task_runner,
       BindOnce(&GetFileInfoHelper::RunWorkForFilePath, Unretained(helper),
                file_path),
       BindOnce(&GetFileInfoHelper::Reply, Owned(helper), std::move(callback)));
-}
-
-// static
-bool FileUtilProxy::Touch(TaskRunner* task_runner,
-                          const FilePath& file_path,
-                          const Time& last_access_time,
-                          const Time& last_modified_time,
-                          StatusCallback callback) {
-  return base::PostTaskAndReplyWithResult(
-      task_runner, FROM_HERE,
-      BindOnce(&TouchFile, file_path, last_access_time, last_modified_time),
-      BindOnce(&CallWithTranslatedParameter, std::move(callback)));
 }
 
 }  // namespace base

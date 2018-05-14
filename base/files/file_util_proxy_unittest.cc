@@ -101,26 +101,4 @@ TEST_F(FileUtilProxyTest, GetFileInfo_Directory) {
   EXPECT_EQ(expected_info.creation_time, file_info_.creation_time);
 }
 
-TEST_F(FileUtilProxyTest, Touch) {
-  ASSERT_EQ(4, WriteFile(TestPath(), "test", 4));
-  Time last_accessed_time = Time::Now() - TimeDelta::FromDays(12345);
-  Time last_modified_time = Time::Now() - TimeDelta::FromHours(98765);
-
-  FileUtilProxy::Touch(
-      file_task_runner(), TestPath(), last_accessed_time, last_modified_time,
-      BindOnce(&FileUtilProxyTest::DidFinish, weak_factory_.GetWeakPtr()));
-  RunLoop().Run();
-  EXPECT_EQ(File::FILE_OK, error_);
-
-  File::Info info;
-  GetFileInfo(TestPath(), &info);
-
-  // The returned values may only have the seconds precision, so we cast
-  // the double values to int here.
-  EXPECT_EQ(static_cast<int>(last_modified_time.ToDoubleT()),
-            static_cast<int>(info.last_modified.ToDoubleT()));
-  EXPECT_EQ(static_cast<int>(last_accessed_time.ToDoubleT()),
-            static_cast<int>(info.last_accessed.ToDoubleT()));
-}
-
 }  // namespace base

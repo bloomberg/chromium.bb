@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include "base/files/file_path.h"
+#include "base/files/file_util.h"
 #include "base/files/file_util_proxy.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -19,6 +20,18 @@
 #include "ppapi/shared_impl/time_conversion.h"
 
 namespace content {
+
+namespace {
+
+base::File::Error CallTouchFile(const base::FilePath& path,
+                                PP_Time last_access_time,
+                                PP_Time last_modified_time) {
+  bool result = base::TouchFile(path, ppapi::PPTimeToTime(last_access_time),
+                                ppapi::PPTimeToTime(last_modified_time));
+  return result ? base::File::FILE_OK : base::File::FILE_ERROR_FAILED;
+}
+
+}  // namespace
 
 PepperExternalFileRefBackend::PepperExternalFileRefBackend(
     ppapi::host::PpapiHost* host,
@@ -46,9 +59,9 @@ int32_t PepperExternalFileRefBackend::Touch(
     PP_Time last_access_time,
     PP_Time last_modified_time) {
   IPC::Message reply_msg = PpapiPluginMsg_FileRef_TouchReply();
-  base::FileUtilProxy::Touch(
-      task_runner_.get(), path_, ppapi::PPTimeToTime(last_access_time),
-      ppapi::PPTimeToTime(last_modified_time),
+  base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE,
+      BindOnce(&CallTouchFile, path_, last_access_time, last_modified_time),
       base::BindOnce(&PepperExternalFileRefBackend::DidFinish,
                      weak_factory_.GetWeakPtr(), reply_context, reply_msg));
   return PP_OK_COMPLETIONPENDING;

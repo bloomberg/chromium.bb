@@ -14,16 +14,10 @@
 namespace base {
 
 class TaskRunner;
-class Time;
 
 // This class provides asynchronous access to common file routines.
 class BASE_EXPORT FileUtilProxy {
  public:
-  // This callback is used by methods that report only an error code.  It is
-  // valid to pass a null callback to any function that takes a StatusCallback,
-  // in which case the operation will complete silently.
-  using StatusCallback = OnceCallback<void(File::Error)>;
-
   using GetFileInfoCallback =
       OnceCallback<void(File::Error, const File::Info&)>;
 
@@ -33,14 +27,6 @@ class BASE_EXPORT FileUtilProxy {
   static bool GetFileInfo(TaskRunner* task_runner,
                           const FilePath& file_path,
                           GetFileInfoCallback callback);
-
-  // Touches a file. The callback can be null.
-  // This returns false if task posting to |task_runner| has failed.
-  static bool Touch(TaskRunner* task_runner,
-                    const FilePath& file_path,
-                    const Time& last_access_time,
-                    const Time& last_modified_time,
-                    StatusCallback callback);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(FileUtilProxy);
