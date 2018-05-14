@@ -441,26 +441,23 @@ bool TrafficAnnotationAuditor::ParseClangToolRawOutput() {
     if (block_type == "ANNOTATION") {
       AnnotationInstance new_annotation;
       result = new_annotation.Deserialize(lines, current, end_line);
-      result.set_file_path(
-          MakeRelativePath(absolute_source_path_, result.file_path()));
-      if (IsSafeListed(result.file_path(),
-                       AuditorException::ExceptionType::ALL)) {
+      std::string file_path = result.IsOK()
+                                  ? new_annotation.proto.source().file()
+                                  : result.file_path();
+      file_path = MakeRelativePath(absolute_source_path_, file_path);
+      if (IsSafeListed(file_path, AuditorException::ExceptionType::ALL))
         result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
-      }
       switch (result.type()) {
         case AuditorResult::Type::RESULT_OK:
-          new_annotation.proto.mutable_source()->set_file(MakeRelativePath(
-              absolute_source_path_, new_annotation.proto.source().file()));
+          new_annotation.proto.mutable_source()->set_file(file_path);
           extracted_annotations_.push_back(new_annotation);
           break;
         case AuditorResult::Type::ERROR_MISSING_TAG_USED:
-          if (IsSafeListed(result.file_path(),
-                           AuditorException::ExceptionType::MISSING)) {
+          if (IsSafeListed(file_path, AuditorException::ExceptionType::MISSING))
             result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
-          }
           break;
         case AuditorResult::Type::ERROR_TEST_ANNOTATION:
-          if (IsSafeListed(result.file_path(),
+          if (IsSafeListed(file_path,
                            AuditorException::ExceptionType::TEST_ANNOTATION)) {
             result = AuditorResult(AuditorResult::Type::RESULT_IGNORE);
           }
