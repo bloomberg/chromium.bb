@@ -73,8 +73,4 @@ android_library("audio_track_java") {
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/android_tools:android_support_v13_java",
   ]
-
-  if (enable_volume_tables_access) {
-    deps += [ "//chromecast/internal/android/prebuilt/things:support_lib_java" ]
-  }
 }
