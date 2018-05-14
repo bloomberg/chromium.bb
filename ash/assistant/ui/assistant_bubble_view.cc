@@ -363,10 +363,16 @@ class SuggestionsContainer : public views::View {
     }
   }
 
-  void AddSuggestions(const std::vector<AssistantSuggestion*>& suggestions) {
-    for (const AssistantSuggestion* suggestion : suggestions) {
-      AddChildView(new app_list::SuggestionChipView(
-          base::UTF8ToUTF16(suggestion->text), suggestion_chip_listener_));
+  void AddSuggestions(const std::map<int, AssistantSuggestion*>& suggestions) {
+    // When adding a SuggestionChipView, we give the view the same id by which
+    // the interaction model identifies the corresponding suggestion. This
+    // allows us to look up the suggestion for the view during event handling.
+    for (const std::pair<int, AssistantSuggestion*>& suggestion : suggestions) {
+      views::View* suggestion_chip_view = new app_list::SuggestionChipView(
+          base::UTF8ToUTF16(suggestion.second->text),
+          suggestion_chip_listener_);
+      suggestion_chip_view->set_id(suggestion.first);
+      AddChildView(suggestion_chip_view);
     }
     PreferredSizeChanged();
   }
@@ -580,7 +586,7 @@ void AssistantBubbleView::OnQueryCleared() {
 }
 
 void AssistantBubbleView::OnSuggestionsAdded(
-    const std::vector<AssistantSuggestion*>& suggestions) {
+    const std::map<int, AssistantSuggestion*>& suggestions) {
   suggestions_container_->AddSuggestions(suggestions);
   suggestions_container_->SetVisible(true);
 }
@@ -592,8 +598,7 @@ void AssistantBubbleView::OnSuggestionsCleared() {
 
 void AssistantBubbleView::OnSuggestionChipPressed(
     app_list::SuggestionChipView* suggestion_chip_view) {
-  assistant_controller_->OnSuggestionChipPressed(
-      base::UTF16ToUTF8(suggestion_chip_view->GetText()));
+  assistant_controller_->OnSuggestionChipPressed(suggestion_chip_view->id());
 }
 
 void AssistantBubbleView::OnTextAdded(

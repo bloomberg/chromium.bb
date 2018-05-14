@@ -55,7 +55,7 @@ class AssistantBubbleView : public views::View,
   void OnQueryChanged(const AssistantQuery& query) override;
   void OnQueryCleared() override;
   void OnSuggestionsAdded(
-      const std::vector<AssistantSuggestion*>& suggestions) override;
+      const std::map<int, AssistantSuggestion*>& suggestions) override;
   void OnSuggestionsCleared() override;
 
   // app_list::SuggestionChipListener:
