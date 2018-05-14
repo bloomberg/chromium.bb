@@ -156,7 +156,7 @@ void TraceEvent::Initialize(
   if (alloc_size) {
     parameter_copy_storage_.reset(new std::string);
     parameter_copy_storage_->resize(alloc_size);
-    char* ptr = string_as_array(parameter_copy_storage_.get());
+    char* ptr = base::data(*parameter_copy_storage_);
     const char* end = ptr + alloc_size;
     if (copy) {
       CopyTraceEventParameter(&ptr, &name_, end);

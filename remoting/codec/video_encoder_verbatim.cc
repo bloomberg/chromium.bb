@@ -19,8 +19,7 @@ namespace remoting {
 
 static uint8_t* GetPacketOutputBuffer(VideoPacket* packet, size_t size) {
   packet->mutable_data()->resize(size);
-  return reinterpret_cast<uint8_t*>(
-      base::string_as_array(packet->mutable_data()));
+  return reinterpret_cast<uint8_t*>(base::data(*packet->mutable_data()));
 }
 
 VideoEncoderVerbatim::VideoEncoderVerbatim() = default;

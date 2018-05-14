@@ -321,8 +321,8 @@ It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
     }
 
     std::string message_json(length, '\0');
-    read_result = output_read_file_.ReadAtCurrentPos(
-        base::string_as_array(&message_json), length);
+    read_result =
+        output_read_file_.ReadAtCurrentPos(base::data(message_json), length);
     if (read_result != static_cast<int>(length)) {
       LOG(ERROR) << "Message size (" << read_result
                  << ") doesn't match the header (" << length << ").";

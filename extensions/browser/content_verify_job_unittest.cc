@@ -97,7 +97,7 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
                                     std::string* resource_contents) {
       // Simulate serving |resource_contents| from |resource_path|.
       verify_job->BytesRead(resource_contents->size(),
-                            base::string_as_array(resource_contents));
+                            base::data(*resource_contents));
       verify_job->DoneReading();
     };
 

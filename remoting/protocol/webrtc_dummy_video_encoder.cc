@@ -138,8 +138,8 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
     base::TimeTicks encode_started_time,
     base::TimeTicks encode_finished_time) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
-  uint8_t* buffer = reinterpret_cast<uint8_t*>(
-      base::string_as_array(const_cast<std::string*>(&frame.data)));
+  uint8_t* buffer = const_cast<uint8_t*>(
+      reinterpret_cast<const uint8_t*>(base::data(frame.data)));
   size_t buffer_size = frame.data.size();
   base::AutoLock lock(lock_);
   if (state_ == kUninitialized) {

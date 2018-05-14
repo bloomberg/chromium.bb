@@ -87,8 +87,8 @@ void SecurityKeyMessageReader::ReadMessage() {
     }
 
     std::string message_data(total_message_size_bytes, '\0');
-    read_result = read_stream_.ReadAtCurrentPos(
-        base::string_as_array(&message_data), total_message_size_bytes);
+    read_result = read_stream_.ReadAtCurrentPos(base::data(message_data),
+                                                total_message_size_bytes);
     // The static cast is safe as we know the value is smaller than max int.
     if (read_result != static_cast<int>(total_message_size_bytes)) {
       LOG(ERROR) << "Failed to read message: " << read_result;

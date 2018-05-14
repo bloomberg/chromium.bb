@@ -154,8 +154,8 @@ void AudioPipeReader::DoCapture() {
   data.resize(pos + bytes_to_read);
 
   while (pos < data.size()) {
-    int read_result = pipe_.ReadAtCurrentPos(base::string_as_array(&data) + pos,
-                                             data.size() - pos);
+    int read_result =
+        pipe_.ReadAtCurrentPos(base::data(data) + pos, data.size() - pos);
     if (read_result > 0) {
       pos += read_result;
     } else {

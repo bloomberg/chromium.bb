@@ -112,8 +112,8 @@ void NativeMessagingReader::Core::ReadMessage() {
     }
 
     std::string message_json(message_length, '\0');
-    read_result = read_stream_.ReadAtCurrentPos(
-        base::string_as_array(&message_json), message_length);
+    read_result =
+        read_stream_.ReadAtCurrentPos(base::data(message_json), message_length);
     if (read_result != static_cast<int>(message_length)) {
       LOG(ERROR) << "Failed to read message body, read returned "
                  << read_result;

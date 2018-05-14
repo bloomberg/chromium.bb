@@ -887,8 +887,7 @@ bool IndexedDBBackingStore::ReadCorruptionInfo(const FilePath& path_base,
   bool success = false;
   if (file.IsValid()) {
     std::string input_js(file_size, '\0');
-    if (file_size ==
-        file.Read(0, base::string_as_array(&input_js), file_size)) {
+    if (file_size == file.Read(0, base::data(input_js), file_size)) {
       base::JSONReader reader;
       std::unique_ptr<base::DictionaryValue> val(
           base::DictionaryValue::From(reader.ReadToValue(input_js)));

@@ -124,25 +124,6 @@ STLCount(const Container& container, const T& val) {
   return std::count(container.begin(), container.end(), val);
 }
 
-// Return a mutable char* pointing to a string's internal buffer,
-// which may not be null-terminated. Writing through this pointer will
-// modify the string.
-//
-// string_as_array(&str)[i] is valid for 0 <= i < str.size() until the
-// next call to a string method that invalidates iterators.
-//
-// As of 2006-04, there is no standard-blessed way of getting a
-// mutable reference to a string's internal buffer. However, issue 530
-// (http://www.open-std.org/JTC1/SC22/WG21/docs/lwg-active.html#530)
-// proposes this as the method. According to Matt Austern, this should
-// already work on all current implementations.
-//
-// DEPRECATED(https://crbug.com/831499), use base::data(std::string&) instead.
-inline char* string_as_array(std::string* str) {
-  // DO NOT USE const_cast<char*>(str->data())
-  return str->empty() ? NULL : &*str->begin();
-}
-
 // Test to see if a set or map contains a particular key.
 // Returns true if the key is in the collection.
 template <typename Collection, typename Key>
