@@ -139,7 +139,7 @@ class CrashHandlerHost : public base::MessagePumpForIO::FdWatcher,
 
   // Get the file descriptor which processes should be given in order to signal
   // crashes to the browser.
-  int GetDeathSignalSocket() const { return process_socket_.get(); }
+  int GetDeathSignalSocket();
 
  protected:
   ~CrashHandlerHost() override;

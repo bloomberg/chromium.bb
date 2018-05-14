@@ -11,6 +11,7 @@
 
 #include <algorithm>
 
+#include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -124,6 +125,26 @@ class SandboxedHandler {
 namespace crash_reporter {
 namespace internal {
 
+bool SetLdLibraryPath(const base::FilePath& lib_path) {
+#if defined(OS_ANDROID) && defined(COMPONENT_BUILD)
+  std::string library_path(lib_path.value());
+
+  static constexpr char kLibraryPathVar[] = "LD_LIBRARY_PATH";
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string old_path;
+  if (env->GetVar(kLibraryPathVar, &old_path)) {
+    library_path.push_back(':');
+    library_path.append(old_path);
+  }
+
+  if (!env->SetVar(kLibraryPathVar, library_path)) {
+    return false;
+  }
+#endif
+
+  return true;
+}
+
 bool BuildHandlerArgs(base::FilePath* handler_path,
                       base::FilePath* database_path,
                       base::FilePath* metrics_path,
@@ -139,25 +160,40 @@ bool BuildHandlerArgs(base::FilePath* handler_path,
     DCHECK(false);
     return false;
   }
+#if defined(OS_ANDROID)
+  // There is not any normal way to package native executables in an Android
+  // APK. The Crashpad handler is packaged like a loadable module, which
+  // Android's APK installer expects to be named like a shared library, but it
+  // is in fact a standalone executable.
+  *handler_path = exe_dir.Append("libcrashpad_handler.so");
+#else
   *handler_path = exe_dir.Append("crashpad_handler");
+#endif
+
+  static bool env_setup = SetLdLibraryPath(exe_dir);
+  if (!env_setup) {
+    return false;
+  }
 
   CrashReporterClient* crash_reporter_client = GetCrashReporterClient();
   crash_reporter_client->GetCrashDumpLocation(database_path);
   crash_reporter_client->GetCrashMetricsLocation(metrics_path);
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD)
+// TODO(jperaza): Set URL for Android when Crashpad takes over report upload.
+#if defined(GOOGLE_CHROME_BUILD) && defined(OFFICIAL_BUILD) && \
+    !defined(OS_ANDROID)
   *url = "https://clients2.google.com/cr/report";
 #else
   *url = std::string();
 #endif
 
-  const char* product_name;
-  const char* product_version;
-  const char* channel;
+  std::string product_name;
+  std::string product_version;
+  std::string channel;
   crash_reporter_client->GetProductNameAndVersion(&product_name,
                                                   &product_version, &channel);
-  (*process_annotations)["prod"] = std::string(product_name);
-  (*process_annotations)["ver"] = std::string(product_version);
+  (*process_annotations)["prod"] = product_name;
+  (*process_annotations)["ver"] = product_version;
 
 #if defined(GOOGLE_CHROME_BUILD)
   // Empty means stable.
@@ -165,9 +201,8 @@ bool BuildHandlerArgs(base::FilePath* handler_path,
 #else
   const bool allow_empty_channel = false;
 #endif
-  std::string channel_string(channel);
-  if (allow_empty_channel || !channel_string.empty()) {
-    (*process_annotations)["channel"] = channel_string;
+  if (allow_empty_channel || !channel.empty()) {
+    (*process_annotations)["channel"] = channel;
   }
 
 #if defined(OS_ANDROID)

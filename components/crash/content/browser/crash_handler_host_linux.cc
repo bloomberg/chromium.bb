@@ -516,6 +516,15 @@ CrashHandlerHost* CrashHandlerHost::Get() {
   return instance;
 }
 
+int CrashHandlerHost::GetDeathSignalSocket() {
+  static bool initialized = BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&CrashHandlerHost::Init, base::Unretained(this)));
+  DCHECK(initialized);
+
+  return process_socket_.get();
+}
+
 CrashHandlerHost::~CrashHandlerHost() = default;
 
 CrashHandlerHost::CrashHandlerHost()
@@ -538,10 +547,6 @@ CrashHandlerHost::CrashHandlerHost()
   static const int on = 1;
   CHECK_EQ(0, setsockopt(browser_socket_.get(), SOL_SOCKET, SO_PASSCRED, &on,
                          sizeof(on)));
-
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&CrashHandlerHost::Init, base::Unretained(this)));
 }
 
 void CrashHandlerHost::Init() {
