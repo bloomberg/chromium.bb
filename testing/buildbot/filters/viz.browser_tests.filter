@@ -48,5 +48,9 @@
 -UserInitiatedRunsEnabled*
 -WithVaryingSeeds/ChromeCleanerPromptUserTest.*
 
-# Mac shutdown error. https://crbug.com/823276
+# Mac
+# Shutdown error. https://crbug.com/823276
 -PluginPowerSaverBrowserTest.SmallerThanPlayIcon
+
+# Flaking with missing browser. https://crbug.com/842664
+-IndependentOTRProfileManagerTest.DeleteImmediatelyWhenBrowsersAlreadyClosed
