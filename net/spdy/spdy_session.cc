@@ -1637,12 +1637,9 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
     return;
   }
 
-  if (IsStreamActive(stream_id)) {
-    // We should not get here, we'll start going away earlier on
-    // |last_seen_push_stream_id_| check.
-    LOG(WARNING) << "Received push for active stream " << stream_id;
-    return;
-  }
+  // |last_accepted_push_stream_id_| check above guarantees that this stream has
+  // not been activated yet.
+  DCHECK(!IsStreamActive(stream_id));
 
   last_accepted_push_stream_id_ = stream_id;
 
@@ -1658,16 +1655,6 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
 
   streams_pushed_count_++;
 
-  // "Promised requests MUST be cacheable and MUST be safe [...]" (RFC7540
-  // Section 8.2).  Only cacheable safe request methods are GET and HEAD.
-  SpdyHeaderBlock::const_iterator it = headers.find(kHttp2MethodHeader);
-  if (it == headers.end() || (it->second != "GET" && it->second != "HEAD")) {
-    EnqueueResetStreamFrame(stream_id, request_priority,
-                            ERROR_CODE_REFUSED_STREAM,
-                            "Inadequate request method.");
-    return;
-  }
-
   // Verify that the response had a URL for us.
   GURL gurl(SpdyUtils::GetPromisedUrlFromHeaders(headers));
   if (!gurl.is_valid()) {
@@ -1677,6 +1664,15 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
     return;
   }
 
+  // GetPromisedUrlFromHeaders() guarantees that the scheme is http or https.
+  DCHECK(gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme));
+
+  // "Promised requests MUST be cacheable and MUST be safe [...]" (RFC7540
+  // Section 8.2).  Only cacheable safe request methods are GET and HEAD.
+  // GetPromisedUrlFromHeaders() guarantees that the method is GET or HEAD.
+  SpdyHeaderBlock::const_iterator it = headers.find(kHttp2MethodHeader);
+  DCHECK(it != headers.end() && (it->second == "GET" || it->second == "HEAD"));
+
   // Verify we have a valid stream association.
   ActiveStreamMap::iterator associated_it =
       active_streams_.find(associated_stream_id);
@@ -1684,14 +1680,6 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
     EnqueueResetStreamFrame(stream_id, request_priority,
                             ERROR_CODE_STREAM_CLOSED,
                             "Inactive associated stream.");
-    return;
-  }
-
-  DCHECK(gurl.is_valid());
-  if (!gurl.SchemeIs(url::kHttpScheme) && !gurl.SchemeIs(url::kHttpsScheme)) {
-    EnqueueResetStreamFrame(stream_id, request_priority,
-                            ERROR_CODE_REFUSED_STREAM,
-                            "Only http and https resources can be pushed.");
     return;
   }
 
@@ -1785,10 +1773,7 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
   InsertActivatedStream(std::move(stream));
 
   ActiveStreamMap::iterator active_it = active_streams_.find(stream_id);
-  if (active_it == active_streams_.end()) {
-    NOTREACHED();
-    return;
-  }
+  DCHECK(active_it != active_streams_.end());
 
   // Notify the push_delegate that a push promise has been received.
   if (push_delegate_) {
