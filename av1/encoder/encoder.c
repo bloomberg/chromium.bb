@@ -293,8 +293,7 @@ static void setup_frame(AV1_COMP *cpi) {
     cm->fb_of_context_type[REGULAR_FRAME] =
         get_ref_frame_map_idx(cpi, GOLDEN_FRAME);
     cm->frame_context_idx = REGULAR_FRAME;
-  } else if (!cm->large_scale_tile) {
-    // for large scale tile we leave the default PRIMARY_REF_NONE
+  } else {
     const GF_GROUP *gf_group = &cpi->twopass.gf_group;
     if (gf_group->update_type[gf_group->index] == INTNL_ARF_UPDATE)
       cm->frame_context_idx = EXT_ARF_FRAME;
