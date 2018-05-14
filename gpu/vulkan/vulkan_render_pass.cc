@@ -297,7 +297,7 @@ bool VulkanRenderPass::Initialize(const VulkanSwapChain* swap_chain,
 
       switch (attachment_data.attachment_type) {
         case AttachmentType::ATTACHMENT_TYPE_SWAP_IMAGE:
-          image_view = swap_chain->GetImageView(n);
+          image_view = swap_chain->GetImageView(i);
           break;
         case AttachmentType::ATTACHMENT_TYPE_ATTACHMENT_VIEW:
           image_view = attachment_data.image_view;
