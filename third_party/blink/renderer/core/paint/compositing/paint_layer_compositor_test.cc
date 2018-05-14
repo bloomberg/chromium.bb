@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/animation/animation.h"
 #include "third_party/blink/renderer/core/animation/element_animation.h"
+#include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 
@@ -86,4 +87,27 @@ TEST_F(PaintLayerCompositorTest,
   EXPECT_EQ(boxAnimations.front()->CompositorGroup(),
             otherBoxAnimations.front()->CompositorGroup());
 }
+
+TEST_F(PaintLayerCompositorTest, UpdateDoesNotOrphanMainGraphicsLayer) {
+  SetHtmlInnerHTML(R"HTML(
+    <style> * { margin: 0 } </style>
+    <div id='box'></div>
+  )HTML");
+
+  auto* main_graphics_layer = GetDocument()
+                                  .GetLayoutView()
+                                  ->Layer()
+                                  ->GetCompositedLayerMapping()
+                                  ->MainGraphicsLayer();
+  auto* main_graphics_layer_parent = main_graphics_layer->Parent();
+  EXPECT_NE(nullptr, main_graphics_layer_parent);
+
+  // Force CompositedLayerMapping to update the internal layer hierarchy.
+  auto* box = GetDocument().getElementById("box");
+  box->setAttribute(HTMLNames::styleAttr, "height: 1000px;");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(main_graphics_layer_parent, main_graphics_layer->Parent());
+}
+
 }  // namespace blink
