@@ -557,6 +557,10 @@ component("skia") {
   sources += [ "//third_party/skia/src/core/SkColorSpaceXform_skcms.cpp" ]
 }
 
+config("chromium_specific_config_for_skcms") {
+  defines = [ "SKCMS_LEGACY_POWF" ]
+}
+
 # Template for things that are logically part of :skia, but need to be split out
 # so custom compile flags can be applied.
 #
