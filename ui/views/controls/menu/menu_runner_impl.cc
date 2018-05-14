@@ -204,6 +204,8 @@ bool MenuRunnerImpl::ShouldShowMnemonics(MenuButton* button) {
   show_mnemonics |= ui::win::IsAltPressed();
 #elif defined(USE_X11)
   show_mnemonics |= ui::IsAltPressed();
+#elif defined(OS_MACOSX)
+  show_mnemonics = false;
 #endif
   return show_mnemonics;
 }
