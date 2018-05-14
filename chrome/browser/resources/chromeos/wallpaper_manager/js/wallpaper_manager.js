@@ -315,6 +315,13 @@ WallpaperManager.prototype.placeWallpaperPicker_ = function() {
   if (!this.useNewWallpaperPicker_)
     return;
 
+  // Wallpaper preview must always be in full screen. Exit preview if the
+  // window is not in full screen for any reason (e.g. when device locks).
+  if (!chrome.app.window.current().isFullscreen() &&
+      this.document_.body.classList.contains('preview-mode')) {
+    $('cancel-preview-wallpaper').click();
+  }
+
   var totalWidth = this.document_.body.offsetWidth;
   centerElement($('set-successfully-message'), totalWidth, null);
   centerElement($('top-header'), totalWidth, null);
@@ -419,11 +426,6 @@ WallpaperManager.prototype.toggleSurpriseMe = function() {
       WallpaperUtil.saveToLocalStorage(
           Constants.AccessLocalSurpriseMeEnabledKey, shouldEnable, onSuccess);
   });
-
-  // Show a success message and quit after the user enables surprime me on
-  // the new picker.
-  if (shouldEnable && this.useNewWallpaperPicker_)
-    this.showSuccessMessageAndQuit_();
 };
 
 /**
@@ -655,9 +657,23 @@ WallpaperManager.prototype.presetCategory_ = function() {
   // custom wallpaper file name.
   this.currentWallpaper_ = str('currentWallpaper');
   if (this.useNewWallpaperPicker_) {
-    // TODO(crbug.com/812725): Implement preset category for the new picker. For
-    // now, autoselect the first category.
-    this.categoriesList_.selectionModel.selectedIndex = 0;
+    // The default category is the last one (the custom category).
+    var categoryIndex = this.categoriesList_.dataModel.length - 1;
+    Object.entries(this.imagesInfoMap_).forEach(([
+                                                  collectionId, imagesInfo
+                                                ]) => {
+      for (var i = 0; i < imagesInfo.length; ++i) {
+        if (this.currentWallpaper_.includes(imagesInfo.item(i).baseURL)) {
+          for (var index = 0; index < this.collectionsInfo_.length; ++index) {
+            // Find the index of the category which the current wallpaper
+            // belongs to based on the collection id.
+            if (this.collectionsInfo_[index]['collectionId'] == collectionId)
+              categoryIndex = index;
+          }
+        }
+      }
+    });
+    this.categoriesList_.selectionModel.selectedIndex = categoryIndex;
     return;
   }
 
@@ -789,10 +805,15 @@ WallpaperManager.prototype.decorateCurrentWallpaperInfoBar_ = function() {
     $('current-wallpaper-title').textContent =
         currentWallpaperInfo.displayText[0];
     $('current-wallpaper-description').innerHTML = '';
+    $('current-wallpaper-description')
+        .classList.toggle(
+            'small-font', currentWallpaperInfo.displayText.length > 2);
     for (var i = 1; i < currentWallpaperInfo.displayText.length; ++i) {
       $('current-wallpaper-description')
           .appendChild(
               document.createTextNode(currentWallpaperInfo.displayText[i]));
+      $('current-wallpaper-description')
+          .appendChild(document.createElement('br'));
     }
   } else {
     // Request the thumbnail of the current wallpaper as fallback, since the
@@ -1127,10 +1148,13 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
   if (this.document_.body.classList.contains('preview-mode'))
     return;
 
-  this.document_.body.classList.add('preview-mode');
-  this.document_.body.classList.toggle(
-      'custom-wallpaper', source == Constants.WallpaperSourceEnum.Custom);
-  chrome.app.window.current().fullscreen();
+  this.document_.body.classList.add('preview-animation');
+  window.setTimeout(() => {
+    chrome.app.window.current().fullscreen();
+    this.document_.body.classList.add('preview-mode');
+    this.document_.body.classList.toggle(
+        'custom-wallpaper', source == Constants.WallpaperSourceEnum.Custom);
+  }, 800);
 
   var onConfirmClicked = () => {
     chrome.wallpaperPrivate.confirmPreviewWallpaper(() => {
@@ -1148,8 +1172,12 @@ WallpaperManager.prototype.onPreviewModeStarted_ = function(
       // Deselect the image.
       this.wallpaperGrid_.selectedItem = null;
       this.document_.body.classList.remove('preview-mode');
-      // Exit full screen.
-      chrome.app.window.current().restore();
+      this.document_.body.classList.remove('preview-animation');
+      // Exit full screen, but the window should still be maximized.
+      chrome.app.window.current().maximize();
+      // TODO(crbug.com/841968): This is a workaround until the issue is fixed.
+      if (this.wallpaperGrid_.scrollTop == 0)
+        this.wallpaperGrid_.scrollTop = 1;
     });
   };
   $('cancel-preview-wallpaper').addEventListener('click', onCancelClicked);
@@ -1254,10 +1282,12 @@ WallpaperManager.prototype.onSelectedItemChanged_ = function() {
  */
 WallpaperManager.prototype.setWallpaperAttribution = function(selectedItem) {
   if (this.useNewWallpaperPicker_) {
-    // The first element in |displayText| is used as title.
-    if (selectedItem.displayText)
-      $('image-title').textContent = selectedItem.displayText[0];
-    $('collection-name').textContent = selectedItem.collectionName;
+    if (selectedItem) {
+      $('collection-name').textContent = selectedItem.collectionName;
+      // The first element in |displayText| is used as title.
+      if (selectedItem.displayText)
+        $('image-title').textContent = selectedItem.displayText[0];
+    }
     return;
   }
 

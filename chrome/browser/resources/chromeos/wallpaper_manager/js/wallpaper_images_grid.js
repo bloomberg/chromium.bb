@@ -372,7 +372,9 @@ cr.define('wallpapers', function() {
      * @type {Array<Object>}
      */
     get dailyRefreshImages() {
-      return this.dailyRefreshItem.querySelectorAll('.slide-show');
+      return this.dailyRefreshItem ?
+          this.dailyRefreshItem.querySelectorAll('.slide-show') :
+          {};
     },
 
     /**
@@ -702,7 +704,7 @@ cr.define('wallpapers', function() {
      */
     showNextImage_: function(index) {
       var images = this.dailyRefreshImages;
-      if (images.length == 0)
+      if (images.length <= index)
         return;
       images[index].style.opacity = 1;
 
