@@ -32,7 +32,7 @@ MediaControlLoadingPanelElement::MediaControlLoadingPanelElement(
     MediaControlsImpl& media_controls)
     : MediaControlDivElement(media_controls, kMediaControlsPanel) {
   SetShadowPseudoId(AtomicString("-internal-media-controls-loading-panel"));
-  CreateShadowRootInternal();
+  CreateUserAgentShadowRoot();
 
   // The loading panel should always start hidden.
   SetIsWanted(false);
