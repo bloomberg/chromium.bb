@@ -100,14 +100,6 @@ const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 // Red: Overdrawn four or more times.
 const char kShowOverdrawFeedback[] = "show-overdraw-feedback";
 
-// Use Skia Deferred Display List, with this option, SkiaRenderer will record
-// frames to Skia DDLs and play them back on the GPU thread. This flag is only
-// be effective with --use-skia-renderer.
-const char kUseSkiaDeferredDisplayList[] = "use-skia-deferred-display-list";
-
-// Use SkiaRenderer instead of GLRenderer for direct rendering.
-const char kUseSkiaRenderer[] = "use-skia-renderer";
-
 // Disable re-use of non-exact resources to fulfill ResourcePool requests.
 // Intended only for use in layout or pixel tests to reduce noise.
 const char kDisallowNonExactResourceReuse[] =
