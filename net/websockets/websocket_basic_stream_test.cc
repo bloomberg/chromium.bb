@@ -79,13 +79,6 @@ WebSocketMaskingKey GenerateNulMaskingKey() { return kNulMaskingKey; }
 // nul characters.
 WebSocketMaskingKey GenerateNonNulMaskingKey() { return kNonNulMaskingKey; }
 
-// Base class for WebSocketBasicStream test fixtures.
-class WebSocketBasicStreamTest : public ::testing::Test {
- protected:
-  std::unique_ptr<WebSocketBasicStream> stream_;
-  TestNetLog net_log_;
-};
-
 // A subclass of StaticSocketDataProvider modified to require that all data
 // expected to be read or written actually is.
 class StrictStaticSocketDataProvider : public StaticSocketDataProvider {
@@ -107,8 +100,7 @@ class StrictStaticSocketDataProvider : public StaticSocketDataProvider {
 };
 
 // A fixture for tests which only perform normal socket operations.
-class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest,
-                                       public WithScopedTaskEnvironment {
+class WebSocketBasicStreamSocketTest : public TestWithScopedTaskEnvironment {
  protected:
   WebSocketBasicStreamSocketTest()
       : pool_(1, 1, &factory_),
@@ -133,7 +125,7 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest,
     scoped_refptr<MockTransportSocketParams> params;
     transport_socket->Init("a", params, MEDIUM, SocketTag(),
                            ClientSocketPool::RespectLimits::ENABLED,
-                           CompletionCallback(), &pool_, net_log_.bound());
+                           CompletionCallback(), &pool_, NetLogWithSource());
     return transport_socket;
   }
 
@@ -154,7 +146,6 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest,
   std::unique_ptr<SocketDataProvider> socket_data_;
   MockClientSocketFactory factory_;
   MockTransportClientSocketPool pool_;
-  BoundTestNetLog(net_log_);
   std::vector<std::unique_ptr<WebSocketFrame>> frames_;
   TestCompletionCallback cb_;
   scoped_refptr<GrowableIOBuffer> http_read_buffer_;
@@ -162,6 +153,7 @@ class WebSocketBasicStreamSocketTest : public WebSocketBasicStreamTest,
   std::string extensions_;
   WebSocketBasicStream::WebSocketMaskingKeyGeneratorFunction generator_;
   bool expect_all_io_to_complete_;
+  std::unique_ptr<WebSocketBasicStream> stream_;
 };
 
 // A test fixture for the common case of tests that only perform a single read.
