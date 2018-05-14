@@ -150,12 +150,6 @@ public class CastWebContentsComponentTest {
         Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
         Assume.assumeFalse(BuildConfig.ENABLE_CAST_FRAGMENT);
 
-        BroadcastReceiver receiver = Mockito.mock(BroadcastReceiver.class);
-        IntentFilter intentFilter =
-                new IntentFilter(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
-        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
-                .registerReceiver(receiver, intentFilter);
-
         CastWebContentsComponent component =
                 new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
         component.enableTouchInput(true);
@@ -165,21 +159,12 @@ public class CastWebContentsComponentTest {
         Intent intent = mShadowActivity.getNextStartedActivity();
 
         Assert.assertTrue(CastWebContentsIntentUtils.isTouchable(intent));
-
-        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
-                .unregisterReceiver(receiver);
     }
 
     @Test
     public void testDisableTouchInputBeforeStartedSendsEnableTouchToActivity() {
         Assume.assumeFalse(BuildConfig.DISPLAY_WEB_CONTENTS_IN_SERVICE);
         Assume.assumeFalse(BuildConfig.ENABLE_CAST_FRAGMENT);
-
-        BroadcastReceiver receiver = Mockito.mock(BroadcastReceiver.class);
-        IntentFilter intentFilter =
-                new IntentFilter(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
-        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
-                .registerReceiver(receiver, intentFilter);
 
         CastWebContentsComponent component =
                 new CastWebContentsComponent(INSTANCE_ID, null, null, null, false, false);
@@ -190,9 +175,6 @@ public class CastWebContentsComponentTest {
         Intent intent = mShadowActivity.getNextStartedActivity();
 
         Assert.assertFalse(CastWebContentsIntentUtils.isTouchable(intent));
-
-        LocalBroadcastManager.getInstance(ContextUtils.getApplicationContext())
-                .unregisterReceiver(receiver);
     }
 
     @Test
