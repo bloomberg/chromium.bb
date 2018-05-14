@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 
 #include "base/logging.h"
+#import "base/numerics/safe_conversions.h"
 #import "ios/chrome/browser/ui/list_model/list_item.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -41,7 +42,7 @@ typedef NSMutableArray<ListItem*> SectionItems;
 
 - (void)addSectionWithIdentifier:(NSInteger)sectionIdentifier {
   DCHECK_GE(sectionIdentifier, kSectionIdentifierEnumZero);
-  DCHECK_EQ(static_cast<NSUInteger>(NSNotFound),
+  DCHECK_EQ(base::checked_cast<NSUInteger>(NSNotFound),
             [self internalSectionForIdentifier:sectionIdentifier]);
   [_sectionIdentifiers addObject:@(sectionIdentifier)];
 
@@ -52,7 +53,7 @@ typedef NSMutableArray<ListItem*> SectionItems;
 - (void)insertSectionWithIdentifier:(NSInteger)sectionIdentifier
                             atIndex:(NSUInteger)index {
   DCHECK_GE(sectionIdentifier, kSectionIdentifierEnumZero);
-  DCHECK_EQ(static_cast<NSUInteger>(NSNotFound),
+  DCHECK_EQ(base::checked_cast<NSUInteger>(NSNotFound),
             [self internalSectionForIdentifier:sectionIdentifier]);
   DCHECK_LE(index, [_sections count]);
 
@@ -127,7 +128,8 @@ typedef NSMutableArray<ListItem*> SectionItems;
 #pragma mark Query model coordinates from index paths
 
 - (NSInteger)sectionIdentifierForSection:(NSInteger)section {
-  DCHECK_LT(static_cast<NSUInteger>(section), [_sectionIdentifiers count]);
+  DCHECK_LT(base::checked_cast<NSUInteger>(section),
+            [_sectionIdentifiers count]);
   return [[_sectionIdentifiers objectAtIndex:section] integerValue];
 }
 
@@ -136,7 +138,8 @@ typedef NSMutableArray<ListItem*> SectionItems;
 }
 
 - (NSUInteger)indexInItemTypeForIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_LT(static_cast<NSUInteger>(indexPath.section), [_sections count]);
+  DCHECK_LT(base::checked_cast<NSUInteger>(indexPath.section),
+            [_sections count]);
   SectionItems* items = [_sections objectAtIndex:indexPath.section];
 
   ListItem* item = [self itemAtIndexPath:indexPath];
@@ -151,19 +154,20 @@ typedef NSMutableArray<ListItem*> SectionItems;
   if (!indexPath)
     return NO;
 
-  if (static_cast<NSUInteger>(indexPath.section) < [_sections count]) {
+  if (base::checked_cast<NSUInteger>(indexPath.section) < [_sections count]) {
     SectionItems* items = [_sections objectAtIndex:indexPath.section];
-    return static_cast<NSUInteger>(indexPath.item) < [items count];
+    return base::checked_cast<NSUInteger>(indexPath.item) < [items count];
   }
   return NO;
 }
 
 - (ListItem*)itemAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK(indexPath);
-  DCHECK_LT(static_cast<NSUInteger>(indexPath.section), [_sections count]);
+  DCHECK_LT(base::checked_cast<NSUInteger>(indexPath.section),
+            [_sections count]);
   SectionItems* items = [_sections objectAtIndex:indexPath.section];
 
-  DCHECK_LT(static_cast<NSUInteger>(indexPath.item), [items count]);
+  DCHECK_LT(base::checked_cast<NSUInteger>(indexPath.item), [items count]);
   return [items objectAtIndex:indexPath.item];
 }
 
@@ -182,7 +186,7 @@ typedef NSMutableArray<ListItem*> SectionItems;
 - (NSArray<ListItem*>*)itemsInSectionWithIdentifier:
     (NSInteger)sectionIdentifier {
   NSInteger section = [self sectionForSectionIdentifier:sectionIdentifier];
-  DCHECK_LT(static_cast<NSUInteger>(section), [_sections count]);
+  DCHECK_LT(base::checked_cast<NSUInteger>(section), [_sections count]);
   return [_sections objectAtIndex:section];
 }
 
@@ -200,12 +204,12 @@ typedef NSMutableArray<ListItem*> SectionItems;
 
 - (BOOL)hasSectionForSectionIdentifier:(NSInteger)sectionIdentifier {
   NSUInteger section = [self internalSectionForIdentifier:sectionIdentifier];
-  return section != static_cast<NSUInteger>(NSNotFound);
+  return section != base::checked_cast<NSUInteger>(NSNotFound);
 }
 
 - (NSInteger)sectionForSectionIdentifier:(NSInteger)sectionIdentifier {
   NSUInteger section = [self internalSectionForIdentifier:sectionIdentifier];
-  DCHECK_NE(static_cast<NSUInteger>(NSNotFound), section);
+  DCHECK_NE(base::checked_cast<NSUInteger>(NSNotFound), section);
   return section;
 }
 
@@ -280,7 +284,7 @@ typedef NSMutableArray<ListItem*> SectionItems;
 }
 
 - (NSInteger)numberOfItemsInSection:(NSInteger)section {
-  DCHECK_LT(static_cast<NSUInteger>(section), [_sections count]);
+  DCHECK_LT(base::checked_cast<NSUInteger>(section), [_sections count]);
   SectionItems* items = [_sections objectAtIndex:section];
   return items.count;
 }
