@@ -46718,7 +46718,8 @@
         "args": [
           "-v",
           "--browser=release",
-          "--upload-results"
+          "--upload-results",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -46852,7 +46853,8 @@
         "args": [
           "-v",
           "--browser=release",
-          "--upload-results"
+          "--upload-results",
+          "--run-ref-build"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
