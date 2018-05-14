@@ -466,6 +466,7 @@ body.v2 {
 
 .v2 .image-picker [role=listitem] {
   -webkit-margin-end: 8px;
+  background-color: rgb(241, 243, 244);
   border-radius: 4px;
   height: 160px;
   margin-bottom: 8px;
@@ -488,6 +489,10 @@ body.v2 {
   height: unset;
   position: absolute;
   width: unset;
+}
+
+.v2 .image-picker img:not(.slide-show) {
+  animation: fade-in 250ms;
 }
 
 .v2 .image-picker .check {
@@ -745,14 +750,19 @@ body.v2 {
   height: 128px;
   opacity: 0;
   position: absolute;
-  transition: opacity 800ms;
+  transition: opacity 250ms;
   width: 704px;
   z-index: -1;
 }
 
-.v2 #current-wallpaper-info-bar.show-info-bar {
+.v2:not(.preview-animation):not(.preview-mode) #current-wallpaper-info-bar.show-info-bar {
   opacity: 1;
   z-index: 4;
+}
+
+.v2.preview-animation {
+  animation: fade-in 800ms;
+  animation-direction: reverse;
 }
 
 .v2 #current-wallpaper-image {
@@ -781,6 +791,10 @@ body.v2 {
   font-weight: 400;
   padding-top: 14px;
   width: 320px;
+}
+
+.v2 #current-wallpaper-description.small-font {
+  font-size: 11px;
 }
 
 .v2 #current-wallpaper-more-options {
@@ -846,4 +860,13 @@ body.v2 {
 .v2 .progress-bar {
   bottom: 0;
   top: unset;
+}
+
+@keyframes fade-in {
+  from { filter: blur(15px);
+         opacity: 0;
+       }
+  to { filter: none;
+       opacity: 1;
+     }
 }

@@ -323,10 +323,10 @@ chrome.app.runtime.onLaunched.addListener(function() {
     return;
   }
 
-  chrome.commandLinePrivate.hasSwitch('new-wallpaper-picker', (result) => {
+  chrome.commandLinePrivate.hasSwitch('new-wallpaper-picker', result => {
     var options = result ? {
       frame: 'none',
-      innerBounds: {width: 768, height: 512},
+      innerBounds: {width: 768, height: 512, minWidth: 480, minHeight: 480},
       resizable: true,
       alphaEnabled: true
     } :
@@ -416,6 +416,17 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
         if (!wallpaperPickerWindow)
           return;
         var wpDocument = wallpaperPickerWindow.contentWindow.document;
+        var hideCheckMarkIfNeeded = () => {
+          chrome.commandLinePrivate.hasSwitch(
+              'new-wallpaper-picker', result => {
+                // Do not hide the check mark on the new picker.
+                if (!result && wpDocument.querySelector('.check')) {
+                  wpDocument.querySelector('.check').style.visibility =
+                      'hidden';
+                }
+              });
+        };
+
         if (!!appName) {
           chrome.wallpaperPrivate.getStrings(function(strings) {
             var message =
@@ -423,8 +434,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
             wpDocument.querySelector('#wallpaper-set-by-message').textContent =
                 message;
             wpDocument.querySelector('#wallpaper-grid').classList.add('small');
-            if (wpDocument.querySelector('.check'))
-              wpDocument.querySelector('.check').style.visibility = 'hidden';
+            hideCheckMarkIfNeeded();
             wpDocument.querySelector('#checkbox').classList.remove('checked');
             wpDocument.querySelector('#categories-list').disabled = false;
             wpDocument.querySelector('#wallpaper-grid').disabled = false;
@@ -442,9 +452,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                 if (enable) {
                   wpDocument.querySelector('#checkbox')
                       .classList.add('checked');
-                  if (wpDocument.querySelector('.check'))
-                    wpDocument.querySelector('.check').style.visibility =
-                        'hidden';
+                  hideCheckMarkIfNeeded();
                 } else {
                   wpDocument.querySelector('#checkbox')
                       .classList.remove('checked');
