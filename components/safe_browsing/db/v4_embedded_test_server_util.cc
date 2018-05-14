@@ -59,6 +59,7 @@ std::vector<HashPrefix> GetPrefixesForRequest(const GURL& url) {
 // predetermined responses.
 std::unique_ptr<net::test_server::HttpResponse> HandleFullHashRequest(
     const std::map<GURL, ThreatMatch>& response_map,
+    const std::map<GURL, base::TimeDelta>& delay_map,
     const net::test_server::HttpRequest& request) {
   if (!(net::test_server::ShouldHandle(request, "/v4/fullHashes:find")))
     return nullptr;
@@ -72,12 +73,17 @@ std::unique_ptr<net::test_server::HttpResponse> HandleFullHashRequest(
   // that match the prefix.
   std::vector<HashPrefix> request_prefixes =
       GetPrefixesForRequest(request.GetURL());
+  const base::TimeDelta* delay = nullptr;
   for (const HashPrefix& prefix : request_prefixes) {
     for (const auto& response : response_map) {
       FullHash full_hash = GetFullHash(response.first);
       if (V4ProtocolManagerUtil::FullHashMatchesHashPrefix(full_hash, prefix)) {
         ThreatMatch* match = find_full_hashes_response.add_matches();
         *match = response.second;
+        auto it = delay_map.find(response.first);
+        if (it != delay_map.end()) {
+          delay = &(it->second);
+        }
       }
     }
   }
@@ -85,7 +91,9 @@ std::unique_ptr<net::test_server::HttpResponse> HandleFullHashRequest(
   std::string serialized_response;
   find_full_hashes_response.SerializeToString(&serialized_response);
 
-  auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
+  auto http_response =
+      (delay ? std::make_unique<net::test_server::DelayedHttpResponse>(*delay)
+             : std::make_unique<net::test_server::BasicHttpResponse>());
   http_response->set_content(serialized_response);
   return http_response;
 }
@@ -94,13 +102,14 @@ std::unique_ptr<net::test_server::HttpResponse> HandleFullHashRequest(
 
 void StartRedirectingV4RequestsForTesting(
     const std::map<GURL, ThreatMatch>& response_map,
-    net::test_server::EmbeddedTestServer* embedded_test_server) {
+    net::test_server::EmbeddedTestServer* embedded_test_server,
+    const std::map<GURL, base::TimeDelta>& delay_map) {
   // Static so accessing the underlying buffer won't cause use-after-free.
   static std::string url_prefix;
   url_prefix = embedded_test_server->GetURL("/v4").spec();
   SetSbV4UrlPrefixForTesting(url_prefix.c_str());
   embedded_test_server->RegisterRequestHandler(
-      base::Bind(&HandleFullHashRequest, response_map));
+      base::BindRepeating(&HandleFullHashRequest, response_map, delay_map));
 }
 
 }  // namespace safe_browsing

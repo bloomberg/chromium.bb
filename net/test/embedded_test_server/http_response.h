@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string_split.h"
+#include "base/time/time.h"
 #include "net/http/http_status_code.h"
 
 namespace net {
@@ -77,6 +78,22 @@ class BasicHttpResponse : public HttpResponse {
   base::StringPairs custom_headers_;
 
   DISALLOW_COPY_AND_ASSIGN(BasicHttpResponse);
+};
+
+class DelayedHttpResponse : public BasicHttpResponse {
+ public:
+  DelayedHttpResponse(const base::TimeDelta delay);
+  ~DelayedHttpResponse() override;
+
+  // Issues a delayed send to the to the task runner.
+  void SendResponse(const SendBytesCallback& send,
+                    const SendCompleteCallback& done) override;
+
+ private:
+  // The delay time for the response.
+  const base::TimeDelta delay_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayedHttpResponse);
 };
 
 class RawHttpResponse : public HttpResponse {

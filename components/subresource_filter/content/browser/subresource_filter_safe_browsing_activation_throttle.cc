@@ -115,7 +115,7 @@ content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillProcessResponse() {
   DCHECK(!database_client_ || !check_results_.empty());
   // No need to defer the navigation if the check already happened.
-  if (!database_client_ || check_results_.back().finished) {
+  if (!database_client_ || HasFinishedAllSafeBrowsingChecks()) {
     NotifyResult();
     return PROCEED;
   }
@@ -143,7 +143,7 @@ void SubresourceFilterSafeBrowsingActivationThrottle::OnCheckUrlResultOnUI(
 
   UMA_HISTOGRAM_TIMES("SubresourceFilter.SafeBrowsing.TotalCheckTime",
                       base::TimeTicks::Now() - check_start_times_[request_id]);
-  if (deferring_ && request_id == check_results_.size() - 1) {
+  if (deferring_ && HasFinishedAllSafeBrowsingChecks()) {
     NotifyResult();
 
     deferring_ = false;
@@ -237,6 +237,16 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   UMA_HISTOGRAM_TIMES(
       "SubresourceFilter.PageLoad.SafeBrowsingDelay.NoRedirectSpeculation",
       no_redirect_speculation_delay);
+}
+
+bool SubresourceFilterSafeBrowsingActivationThrottle::
+    HasFinishedAllSafeBrowsingChecks() {
+  for (const auto& check_result : check_results_) {
+    if (!check_result.finished) {
+      return false;
+    }
+  }
+  return true;
 }
 
 ActivationDecision
