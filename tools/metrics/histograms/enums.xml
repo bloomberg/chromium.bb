@@ -38959,6 +38959,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="16" label="V8"/>
   <int value="17" label="IPC"/>
   <int value="18" label="Input"/>
+  <int value="19" label="Detached"/>
 </enum>
 
 <enum name="RendererSchedulerTaskType">
