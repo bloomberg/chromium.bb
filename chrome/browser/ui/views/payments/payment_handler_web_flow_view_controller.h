@@ -53,6 +53,7 @@ class PaymentHandlerWebFlowViewController
   // content::WebContentsDelegate:
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
+  void VisibleSecurityStateChanged(content::WebContents* source) override;
 
   // content::WebContentsObserver:
   void DidStartNavigation(
