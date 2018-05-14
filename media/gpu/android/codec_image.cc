@@ -91,7 +91,8 @@ bool CodecImage::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                       gfx::OverlayTransform transform,
                                       const gfx::Rect& bounds_rect,
                                       const gfx::RectF& crop_rect,
-                                      bool enable_blend) {
+                                      bool enable_blend,
+                                      gfx::GpuFence* gpu_fence) {
   if (texture_owner_) {
     DVLOG(1) << "Invalid call to ScheduleOverlayPlane; this image is "
                 "TextureOwner backed.";

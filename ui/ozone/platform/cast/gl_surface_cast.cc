@@ -104,7 +104,8 @@ bool GLSurfaceCast::ScheduleOverlayPlane(int z_order,
                                          const gfx::RectF& crop_rect,
                                          bool enable_blend) {
   return image->ScheduleOverlayPlane(widget_, z_order, transform, bounds_rect,
-                                     crop_rect, enable_blend);
+                                     crop_rect, enable_blend,
+                                     /* gpu_fence */ nullptr);
 }
 
 EGLConfig GLSurfaceCast::GetConfig() {

@@ -36,7 +36,8 @@ class TextureImage : public gl::GLImage {
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect,
-                            bool enable_blend) override {
+                            bool enable_blend,
+                            gfx::GpuFence* gpu_fence) override {
     return false;
   }
   void SetColorSpace(const gfx::ColorSpace& color_space) override {}
