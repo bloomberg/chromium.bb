@@ -3,9 +3,9 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
 test(function() {
-  assert_throws(null, function() { new NFC(); },
+  assert_throws(new TypeError, function() { new NFC(); },
                 'the constructor should not be callable with "new"');
-  assert_throws(null, function() { NFC(); },
+  assert_throws(new TypeError, function() { NFC(); },
                 'the constructor should not be callable');
 
   // Test that navigator.nfc.push exists

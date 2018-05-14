@@ -91,14 +91,14 @@ test(function() {
 
 test(function() {
     // Note that we do not care about the exception code - it's pass through.
-    assert_throws(null, () => createPushMessageData('\\o/').json());
+    assert_throws(new SyntaxError, () => createPushMessageData('\\o/').json());
 
 }, 'PushMessageData handling of invalid JSON content.');
 
 test(function() {
-    assert_throws(null, () => new PushMessageData());
-    assert_throws(null, () => new PushMessageData('Hello, world!'));
-    assert_throws(null, () => new PushMessageData(new ArrayBuffer(8)));
+    assert_throws(new TypeError, () => new PushMessageData());
+    assert_throws(new TypeError, () => new PushMessageData('Hello, world!'));
+    assert_throws(new TypeError, () => new PushMessageData(new ArrayBuffer(8)));
 
 }, 'PushMessageData should not be constructable.');
 

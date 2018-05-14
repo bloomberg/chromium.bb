@@ -1,4 +1,4 @@
-<!doctype html> 
+<!doctype html>
 <title>SVGlength tests</title>
 <script src=../../resources/testharness.js></script>
 <script src=../../resources/testharnessreport.js></script>
@@ -11,10 +11,10 @@ var svg = document.querySelector("svg");
 
 var EPSILON = Math.pow(2, -8);
 var lengths = [10, 0, 360, 500, 90, 180, 45, 25.9];
-var validUnits = { 
-    "" : 1, 
-    "%": 2, 
-    "em": 3, 
+var validUnits = {
+    "" : 1,
+    "%": 2,
+    "em": 3,
     "ex": 4,
     "px": 5,
     "cm": 6,
@@ -102,7 +102,7 @@ test(function() {
     "ch": 2
   };
   for (var unit in invalidUnits) {
-    assert_throws(null, function() { createLength(10 + unit) });
+    assert_throws(new SyntaxError, function() { createLength(10 + unit) });
   }
 }, "Test invalid unit types are not accepted in valueAsString");
 
