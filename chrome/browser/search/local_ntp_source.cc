@@ -174,6 +174,9 @@ std::string GetConfigData(bool is_google, const GURL& google_base_url) {
       base::FeatureList::IsEnabled(features::kVoiceSearchOnLocalNtp);
   config_data.SetBoolean("isVoiceSearchEnabled", is_voice_search_enabled);
 
+  bool is_md_ui_enabled = base::FeatureList::IsEnabled(features::kNtpUIMd);
+  config_data.SetBoolean("isMDUIEnabled", is_md_ui_enabled);
+
   // Serialize the dictionary.
   std::string js_text;
   JSONStringValueSerializer serializer(&js_text);
