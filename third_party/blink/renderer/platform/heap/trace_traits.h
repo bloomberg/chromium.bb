@@ -499,41 +499,6 @@ struct TraceInCollectionTrait<kWeakHandling, T, Traits> {
   }
 };
 
-// Specialization for vector backings of Member<T> that immediately  bails out
-// on unused slots avoiding any unnecessary dispatch on visitors for unused
-// slots.
-template <typename T, typename Traits>
-struct TraceInCollectionTrait<
-    kNoWeakHandling,
-    blink::HeapVectorBacking<blink::Member<T>, Traits>,
-    void> {
-  static bool Trace(blink::Visitor* visitor, void* self) {
-    static_assert(!std::is_polymorphic<blink::Member<T>>::value,
-                  "blink::Member<T> should not be polymorphic");
-    static_assert(Traits::kCanClearUnusedSlotsWithMemset,
-                  "blink::Member<T> should allow clearing with memset");
-    DCHECK(IsTraceableInCollectionTrait<Traits>::value);
-    blink::Member<T>* array = reinterpret_cast<blink::Member<T>*>(self);
-    blink::HeapObjectHeader* header =
-        blink::HeapObjectHeader::FromPayload(self);
-    size_t length = header->PayloadSize() / sizeof(blink::Member<T>);
-#ifdef ANNOTATE_CONTIGUOUS_CONTAINER
-    // As commented above, HeapVectorBacking can trace unused slots
-    // (which are already zeroed out).
-    ANNOTATE_CHANGE_SIZE(array, length, 0, length);
-#endif
-    for (size_t i = 0; i < length; ++i) {
-      if (array[i]) {
-        blink::TraceIfEnabled<
-            blink::Member<T>,
-            IsTraceableInCollectionTrait<Traits>::value>::Trace(visitor,
-                                                                array[i]);
-      }
-    }
-    return false;
-  }
-};
-
 // This trace method is used only for on-stack HeapVectors found in
 // conservative scanning. On-heap HeapVectors are traced by Vector::trace.
 template <typename T, typename Traits>
