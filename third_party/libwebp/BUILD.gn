@@ -22,9 +22,8 @@ config("libwebp_config_internal") {
   }
 }
 
-set_opt_level =
-    !is_debug && (is_posix || is_fuchsia) &&
-    (current_cpu == "arm" || current_cpu == "arm64")
+set_opt_level = !is_debug && (is_posix || is_fuchsia) &&
+                (current_cpu == "arm" || current_cpu == "arm64")
 
 # webp's dsp code can be built for all configurations. Skipping it when both
 # arm_use_neon and arm_optionally_use_neon are false will result in link errors
@@ -111,6 +110,7 @@ static_library("libwebp_mux") {
   configs -= [ "//build/config/compiler:chromium_code" ]
   configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
+    ":libwebp_dec",
     ":libwebp_utils",
     ":libwebp_webp",
   ]
@@ -374,6 +374,10 @@ static_library("libwebp_utils") {
   all_dependent_configs = [ ":libwebp_config" ]
 
   public_configs = [ ":libwebp_utils_warnings" ]
+
+  deps = [
+    ":libwebp_webp",
+  ]
 }
 
 group("libwebp") {
@@ -408,6 +412,7 @@ if (current_toolchain == host_toolchain) {
     }
 
     deps = [
+      ":imageio_util",
       ":libwebp_webp",
     ]
     configs += [ ":libwebp_config" ]
