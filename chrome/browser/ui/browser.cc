@@ -1027,15 +1027,12 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
 }
 
 void Browser::TabDetachedAt(WebContents* contents, int index, bool was_active) {
-  // TabDetachedAt is called before TabStripModel has updated the
-  // active index.
-  int old_active_index = tab_strip_model_->active_index();
-  if (index < old_active_index && !tab_strip_model_->closing_all()) {
+  if (!tab_strip_model_->closing_all()) {
     SessionService* session_service =
         SessionServiceFactory::GetForProfileIfExisting(profile_);
     if (session_service) {
       session_service->SetSelectedTabInWindow(session_id(),
-                                              old_active_index - 1);
+                                              tab_strip_model_->active_index());
     }
   }
 
