@@ -35,8 +35,8 @@ void SmbHandler::RegisterMessages() {
 void SmbHandler::HandleSmbMount(const base::ListValue* args) {
   CHECK_EQ(1U, args->GetSize());
   std::string mountUrl;
-  CHECK(args->GetString(0, &mountUrl));
 
+  CHECK(args->GetString(0, &mountUrl));
   chromeos::smb_client::SmbService* const service =
       chromeos::smb_client::SmbService::Get(profile_);
 
@@ -44,8 +44,8 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
   mo.display_name = mountUrl;
   mo.writable = true;
 
-  service->Mount(mo, base::FilePath(mountUrl),
-                 base::BindOnce(&DoNothingCallback));
+  service->Mount(mo, base::FilePath(mountUrl), "" /* username */,
+                 "" /* password */, base::BindOnce(&DoNothingCallback));
 }
 
 }  // namespace settings

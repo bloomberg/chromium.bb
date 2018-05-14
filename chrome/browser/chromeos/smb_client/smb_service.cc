@@ -23,6 +23,14 @@ using chromeos::file_system_provider::Service;
 namespace chromeos {
 namespace smb_client {
 
+namespace {
+
+bool ContainsAt(const std::string& username) {
+  return username.find('@') != std::string::npos;
+}
+
+}  // namespace
+
 SmbService::SmbService(Profile* profile)
     : provider_id_(ProviderId::CreateFromNativeId("smb")), profile_(profile) {
   if (base::FeatureList::IsEnabled(features::kNativeSmb)) {
@@ -39,18 +47,23 @@ SmbService* SmbService::Get(content::BrowserContext* context) {
 
 void SmbService::Mount(const file_system_provider::MountOptions& options,
                        const base::FilePath& share_path,
+                       const std::string& username,
+                       const std::string& password,
                        MountResponse callback) {
   if (!temp_file_manager_) {
-    InitTempFileManagerAndMount(options, share_path, std::move(callback));
+    InitTempFileManagerAndMount(options, share_path, username, password,
+                                std::move(callback));
     return;
   }
 
-  CallMount(options, share_path, std::move(callback));
+  CallMount(options, share_path, username, password, std::move(callback));
 }
 
 void SmbService::InitTempFileManagerAndMount(
     const file_system_provider::MountOptions& options,
     const base::FilePath& share_path,
+    const std::string& username,
+    const std::string& password,
     MountResponse callback) {
   // InitTempFileManager() has to be called on a separate thread since it
   // contains a call that requires a blockable thread.
@@ -61,7 +74,7 @@ void SmbService::InitTempFileManagerAndMount(
       base::BindOnce(&SmbService::InitTempFileManager, base::Unretained(this));
   base::OnceClosure reply =
       base::BindOnce(&SmbService::CallMount, base::Unretained(this), options,
-                     share_path, base::Passed(&callback));
+                     share_path, username, password, base::Passed(&callback));
 
   base::PostTaskWithTraitsAndReply(FROM_HERE, task_traits, std::move(task),
                                    std::move(reply));
@@ -69,21 +82,35 @@ void SmbService::InitTempFileManagerAndMount(
 
 void SmbService::CallMount(const file_system_provider::MountOptions& options,
                            const base::FilePath& share_path,
+                           const std::string& username_input,
+                           const std::string& password_input,
                            MountResponse callback) {
-  std::string workgroup;
   std::string username;
+  std::string password;
+  std::string workgroup;
 
-  user_manager::User* user =
-      chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
-  if (user && user->IsActiveDirectoryUser()) {
-    ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
+  if (username_input.empty()) {
+    // If no credentials were provided and the user is ChromAD, pass the users
+    // username and workgroup for their email address to be used for Kerberos
+    // authentication.
+    user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+    if (user && user->IsActiveDirectoryUser()) {
+      ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
+    }
+  } else {
+    // Credentials were provided so use them and parse the username into
+    // username and workgroup if neccessary.
+    username = username_input;
+    password = password_input;
+    if (ContainsAt(username)) {
+      ParseUserPrincipalName(username_input, &username, &workgroup);
+    }
   }
 
-  // TODO(allenvic): Implement passing of credentials. This currently passes
-  // empty credentials to SmbProvider for non-ChromAD users.
   GetSmbProviderClient()->Mount(
       share_path, workgroup, username,
-      temp_file_manager_->WritePasswordToFile("" /* password */),
+      temp_file_manager_->WritePasswordToFile(password),
       base::BindOnce(&SmbService::OnMountResponse, AsWeakPtr(),
                      base::Passed(&callback), options, share_path));
 }
