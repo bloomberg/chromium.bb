@@ -8,6 +8,8 @@ static_library("secure_channel") {
   sources = [
     "connect_to_device_operation.h",
     "connect_to_device_operation_base.h",
+    "connect_to_device_operation_factory.h",
+    "connect_to_device_operation_factory_base.h",
     "pending_connection_request.h",
     "pending_connection_request_base.h",
     "pending_connection_request_delegate.cc",
@@ -28,6 +30,8 @@ static_library("test_support") {
   sources = [
     "fake_connect_to_device_operation.cc",
     "fake_connect_to_device_operation.h",
+    "fake_connect_to_device_operation_factory.cc",
+    "fake_connect_to_device_operation_factory.h",
     "fake_connection_delegate.cc",
     "fake_connection_delegate.h",
     "fake_pending_connection_request.cc",
@@ -48,6 +52,7 @@ source_set("unit_tests") {
 
   sources = [
     "connect_to_device_operation_base_unittest.cc",
+    "connect_to_device_operation_factory_base_unittest.cc",
     "pending_connection_request_base_unittest.cc",
   ]
 
