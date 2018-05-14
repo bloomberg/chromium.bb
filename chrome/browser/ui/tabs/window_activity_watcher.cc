@@ -4,14 +4,15 @@
 
 #include "chrome/browser/ui/tabs/window_activity_watcher.h"
 
+#include "base/logging.h"
 #include "base/optional.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_event.pb.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/window_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/tabs/window_features.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -22,6 +23,7 @@
 #endif
 
 using metrics::WindowMetricsEvent;
+using tab_ranker::WindowFeatures;
 
 namespace {
 
@@ -45,6 +47,9 @@ void UpdateWindowFeatures(const Browser* browser,
   window_features->tab_count = browser->tab_strip_model()->count();
 }
 
+// Returns a populated WindowFeatures for the browser.
+// |is_active| is provided because IsActive() may be incorrect while browser
+// activation is changing (namely, when deactivating a window on Windows).
 WindowFeatures CreateWindowFeatures(const Browser* browser, bool is_active) {
   WindowMetricsEvent::Type window_type = WindowMetricsEvent::TYPE_UNKNOWN;
   switch (browser->type()) {
@@ -118,7 +123,8 @@ class WindowActivityWatcher::BrowserWatcher : public TabStripModelObserver {
     }
 
     if (!last_window_features_) {
-      last_window_features_.emplace(CreateWindowFeatures(browser_, is_active));
+      last_window_features_.emplace(
+          ::CreateWindowFeatures(browser_, is_active));
       LogWindowMetricsUkmEntry(last_window_features_.value());
       return;
     }
@@ -162,6 +168,13 @@ class WindowActivityWatcher::BrowserWatcher : public TabStripModelObserver {
 WindowActivityWatcher* WindowActivityWatcher::GetInstance() {
   CR_DEFINE_STATIC_LOCAL(WindowActivityWatcher, instance, ());
   return &instance;
+}
+
+// static
+WindowFeatures WindowActivityWatcher::CreateWindowFeatures(
+    const Browser* browser) {
+  DCHECK(browser->window());
+  return ::CreateWindowFeatures(browser, browser->window()->IsActive());
 }
 
 WindowActivityWatcher::WindowActivityWatcher() {

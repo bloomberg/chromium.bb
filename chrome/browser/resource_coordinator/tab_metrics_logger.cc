@@ -12,7 +12,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/resource_coordinator/tab_features.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -30,7 +31,7 @@ using metrics::TabMetricsEvent;
 namespace {
 
 // Populates navigation-related metrics.
-void PopulatePageTransitionFeatures(resource_coordinator::TabFeatures* tab,
+void PopulatePageTransitionFeatures(tab_ranker::TabFeatures* tab,
                                     ui::PageTransition page_transition) {
   // We only report the following core types.
   // Note: Redirects unrelated to clicking a link still get the "link" type.
@@ -55,16 +56,16 @@ void PopulatePageTransitionFeatures(resource_coordinator::TabFeatures* tab,
 void LogBackgroundTabForegroundedOrClosed(
     ukm::SourceId ukm_source_id,
     base::TimeDelta inactive_duration,
-    const TabMetricsLogger::MRUMetrics& mru_metrics,
+    const tab_ranker::MRUFeatures& mru_features,
     bool is_foregrounded) {
   if (!ukm_source_id)
     return;
 
   ukm::builders::TabManager_Background_ForegroundedOrClosed(ukm_source_id)
       .SetIsForegrounded(is_foregrounded)
-      .SetMRUIndex(mru_metrics.index)
+      .SetMRUIndex(mru_features.index)
       .SetTimeFromBackgrounded(inactive_duration.InMilliseconds())
-      .SetTotalTabCount(mru_metrics.total)
+      .SetTotalTabCount(mru_features.total)
       .Record(ukm::UkmRecorder::Get());
 }
 
@@ -114,20 +115,22 @@ int TabMetricsLogger::GetSiteEngagementScore(
 }
 
 // static
-resource_coordinator::TabFeatures TabMetricsLogger::GetTabFeatures(
+tab_ranker::TabFeatures TabMetricsLogger::GetTabFeatures(
     const Browser* browser,
-    const TabMetricsLogger::TabMetrics& tab_metrics) {
+    const TabMetrics& tab_metrics,
+    base::TimeDelta inactive_duration) {
   DCHECK(browser);
   const TabStripModel* tab_strip_model = browser->tab_strip_model();
   content::WebContents* web_contents = tab_metrics.web_contents;
 
-  resource_coordinator::TabFeatures tab;
+  tab_ranker::TabFeatures tab;
 
   tab.has_before_unload_handler =
       web_contents->GetMainFrame()->GetSuddenTerminationDisablerState(
           blink::kBeforeUnloadHandler);
   tab.has_form_entry =
       web_contents->GetPageImportanceSignals().had_form_interaction;
+  tab.host = web_contents->GetLastCommittedURL().host();
 
   int index = tab_strip_model->GetIndexOfWebContents(web_contents);
   DCHECK_NE(index, TabStripModel::kNoTab);
@@ -136,13 +139,14 @@ resource_coordinator::TabFeatures TabMetricsLogger::GetTabFeatures(
   tab.key_event_count = tab_metrics.page_metrics.key_event_count;
   tab.mouse_event_count = tab_metrics.page_metrics.mouse_event_count;
   tab.navigation_entry_count = web_contents->GetController().GetEntryCount();
+  tab.num_reactivations = tab_metrics.page_metrics.num_reactivations;
 
   PopulatePageTransitionFeatures(&tab, tab_metrics.page_transition);
 
-  if (SiteEngagementService::IsEnabled()) {
+  if (SiteEngagementService::IsEnabled())
     tab.site_engagement_score = GetSiteEngagementScore(web_contents);
-  }
 
+  tab.time_from_backgrounded = inactive_duration.InMilliseconds();
   tab.touch_event_count = tab_metrics.page_metrics.touch_event_count;
 
   // This checks if the tab was audible within the past two seconds, same as the
@@ -177,13 +181,13 @@ void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
   int index = tab_strip_model->GetIndexOfWebContents(web_contents);
   DCHECK_NE(index, TabStripModel::kNoTab);
 
-  ukm::builders::TabManager_TabMetrics entry(ukm_source_id);
-  resource_coordinator::TabFeatures tab = GetTabFeatures(browser, tab_metrics);
+  // inactive_duration isn't used when logging a tab that gets backgrounded.
+  tab_ranker::TabFeatures tab = GetTabFeatures(
+      browser, tab_metrics, base::TimeDelta() /*inactive_duration*/);
 
   // Keep these Set functions in alphabetical order so they're easy to check
   // against the list of metrics in the UKM event.
-  // TODO(michaelpg): Add PluginType field if mime type matches "application/*"
-  // using PluginUMAReporter.
+  ukm::builders::TabManager_TabMetrics entry(ukm_source_id);
   entry.SetHasBeforeUnloadHandler(tab.has_before_unload_handler);
   entry.SetHasFormEntry(tab.has_form_entry);
   entry.SetIsPinned(tab.is_pinned);
@@ -206,18 +210,20 @@ void TabMetricsLogger::LogBackgroundTab(ukm::SourceId ukm_source_id,
   entry.Record(ukm::UkmRecorder::Get());
 }
 
-void TabMetricsLogger::LogBackgroundTabShown(ukm::SourceId ukm_source_id,
-                                             base::TimeDelta inactive_duration,
-                                             const MRUMetrics& mru_metrics) {
+void TabMetricsLogger::LogBackgroundTabShown(
+    ukm::SourceId ukm_source_id,
+    base::TimeDelta inactive_duration,
+    const tab_ranker::MRUFeatures& mru_features) {
   LogBackgroundTabForegroundedOrClosed(ukm_source_id, inactive_duration,
-                                       mru_metrics, true /* is_shown */);
+                                       mru_features, true /* is_shown */);
 }
 
-void TabMetricsLogger::LogBackgroundTabClosed(ukm::SourceId ukm_source_id,
-                                              base::TimeDelta inactive_duration,
-                                              const MRUMetrics& mru_metrics) {
+void TabMetricsLogger::LogBackgroundTabClosed(
+    ukm::SourceId ukm_source_id,
+    base::TimeDelta inactive_duration,
+    const tab_ranker::MRUFeatures& mru_features) {
   LogBackgroundTabForegroundedOrClosed(ukm_source_id, inactive_duration,
-                                       mru_metrics, false /* is_shown */);
+                                       mru_features, false /* is_shown */);
 }
 
 void TabMetricsLogger::LogTabLifetime(ukm::SourceId ukm_source_id,

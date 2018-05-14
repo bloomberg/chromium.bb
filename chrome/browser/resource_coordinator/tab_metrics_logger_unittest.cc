@@ -6,7 +6,7 @@
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
-#include "chrome/browser/resource_coordinator/tab_features.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_activity_simulator.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -48,14 +48,18 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
     bg_metrics.web_contents = bg_contents;
     bg_metrics.page_transition = ui::PAGE_TRANSITION_FORM_SUBMIT;
 
-    resource_coordinator::TabFeatures bg_features =
-        TabMetricsLogger::GetTabFeatures(browser.get(), bg_metrics);
+    base::TimeDelta inactive_duration = base::TimeDelta::FromSeconds(10);
+
+    tab_ranker::TabFeatures bg_features = TabMetricsLogger::GetTabFeatures(
+        browser.get(), bg_metrics, inactive_duration);
     EXPECT_EQ(bg_features.has_before_unload_handler, false);
     EXPECT_EQ(bg_features.has_form_entry, false);
+    EXPECT_EQ(bg_features.host, "example.com");
     EXPECT_EQ(bg_features.is_pinned, false);
     EXPECT_EQ(bg_features.key_event_count, 0);
     EXPECT_EQ(bg_features.mouse_event_count, 0);
     EXPECT_EQ(bg_features.navigation_entry_count, 1);
+    EXPECT_EQ(bg_features.num_reactivations, 0);
     ASSERT_TRUE(bg_features.page_transition_core_type.has_value());
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         ui::PAGE_TRANSITION_FORM_SUBMIT,
@@ -64,6 +68,8 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
     EXPECT_EQ(bg_features.page_transition_is_redirect, false);
     ASSERT_TRUE(bg_features.site_engagement_score.has_value());
     EXPECT_EQ(bg_features.site_engagement_score.value(), 0);
+    EXPECT_EQ(bg_features.time_from_backgrounded,
+              inactive_duration.InMilliseconds());
     EXPECT_EQ(bg_features.touch_event_count, 0);
     EXPECT_EQ(bg_features.was_recently_audible, false);
   }
@@ -83,16 +89,21 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
     bg_metrics.page_transition = page_transition;
     bg_metrics.page_metrics.key_event_count = 3;
     bg_metrics.page_metrics.mouse_event_count = 42;
+    bg_metrics.page_metrics.num_reactivations = 5;
     bg_metrics.page_metrics.touch_event_count = 10;
 
-    resource_coordinator::TabFeatures bg_features =
-        TabMetricsLogger::GetTabFeatures(browser.get(), bg_metrics);
+    base::TimeDelta inactive_duration = base::TimeDelta::FromSeconds(5);
+
+    tab_ranker::TabFeatures bg_features = TabMetricsLogger::GetTabFeatures(
+        browser.get(), bg_metrics, inactive_duration);
     EXPECT_EQ(bg_features.has_before_unload_handler, false);
     EXPECT_EQ(bg_features.has_form_entry, false);
+    EXPECT_EQ(bg_features.host, "www.chromium.org");
     EXPECT_EQ(bg_features.is_pinned, true);
     EXPECT_EQ(bg_features.key_event_count, 3);
     EXPECT_EQ(bg_features.mouse_event_count, 42);
     EXPECT_EQ(bg_features.navigation_entry_count, 2);
+    EXPECT_EQ(bg_features.num_reactivations, 5);
     ASSERT_TRUE(bg_features.page_transition_core_type.has_value());
     EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
         ui::PAGE_TRANSITION_LINK,
@@ -102,6 +113,8 @@ TEST_F(TabMetricsLoggerTest, TabFeatures) {
     ASSERT_TRUE(bg_features.site_engagement_score.has_value());
     // Site engagement score should round down to the nearest 10.
     EXPECT_EQ(bg_features.site_engagement_score.value(), 90);
+    EXPECT_EQ(bg_features.time_from_backgrounded,
+              inactive_duration.InMilliseconds());
     EXPECT_EQ(bg_features.touch_event_count, 10);
     EXPECT_EQ(bg_features.was_recently_audible, false);
   }

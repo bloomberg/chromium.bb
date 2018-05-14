@@ -7,6 +7,9 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/tab_metrics_logger.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/mru_features.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/tab_features.h"
+#include "chrome/browser/resource_coordinator/tab_ranker/window_features.h"
 #include "chrome/browser/resource_coordinator/time.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -47,6 +50,31 @@ class TabActivityWatcher::WebContentsData
       public content::RenderWidgetHost::InputEventObserver {
  public:
   ~WebContentsData() override = default;
+
+  // Calculates the tab reactivation score for a background tab. Returns false
+  // if the score could not be calculated, e.g. because the tab is in the
+  // foreground.
+  base::Optional<float> CalculateReactivationScore() {
+    if (web_contents()->IsBeingDestroyed() || backgrounded_time_.is_null())
+      return base::nullopt;
+
+    const Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
+    if (!browser)
+      return base::nullopt;
+
+    tab_ranker::TabFeatures tab = TabMetricsLogger::GetTabFeatures(
+        browser, tab_metrics_, NowTicks() - backgrounded_time_);
+    tab_ranker::WindowFeatures window =
+        WindowActivityWatcher::CreateWindowFeatures(browser);
+
+    float score;
+    tab_ranker::TabRankerResult result =
+        TabActivityWatcher::GetInstance()->predictor_.ScoreTab(
+            tab, window, GetMRUFeatures(), &score);
+    if (result == tab_ranker::TabRankerResult::kSuccess)
+      return score;
+    return base::nullopt;
+  }
 
   // Call when the associated WebContents has been replaced.
   void WasReplaced() { was_replaced_ = true; }
@@ -157,11 +185,13 @@ class TabActivityWatcher::WebContentsData
     // Log the event before updating times.
     TabActivityWatcher::GetInstance()
         ->tab_metrics_logger_->LogBackgroundTabShown(
-            ukm_source_id_, NowTicks() - backgrounded_time_, GetMRUMetrics());
+            ukm_source_id_, NowTicks() - backgrounded_time_, GetMRUFeatures());
 
     backgrounded_time_ = base::TimeTicks();
     foregrounded_time_ = NowTicks();
     creation_time_ = NowTicks();
+
+    tab_metrics_.page_metrics.num_reactivations++;
   }
 
   // content::WebContentsObserver:
@@ -265,7 +295,8 @@ class TabActivityWatcher::WebContentsData
       // See https://crbug.com/817174.
       TabActivityWatcher::GetInstance()
           ->tab_metrics_logger_->LogBackgroundTabClosed(
-              ukm_source_id_, NowTicks() - backgrounded_time_, GetMRUMetrics());
+              ukm_source_id_, NowTicks() - backgrounded_time_,
+              GetMRUFeatures());
     }
   }
 
@@ -282,15 +313,15 @@ class TabActivityWatcher::WebContentsData
   // Iterates through tabstrips to determine the index of |contents| in
   // most-recently-used order out of all non-incognito tabs.
   // Linear in the number of tabs (most users have <10 tabs open).
-  TabMetricsLogger::MRUMetrics GetMRUMetrics() {
-    TabMetricsLogger::MRUMetrics mru_metrics;
+  tab_ranker::MRUFeatures GetMRUFeatures() {
+    tab_ranker::MRUFeatures mru_features;
     for (Browser* browser : *BrowserList::GetInstance()) {
       // Ignore incognito browsers.
       if (browser->profile()->IsOffTheRecord())
         continue;
 
       int count = browser->tab_strip_model()->count();
-      mru_metrics.total += count;
+      mru_features.total += count;
 
       // Increment the MRU index for each WebContents that was foregrounded more
       // recently than this one.
@@ -305,11 +336,11 @@ class TabActivityWatcher::WebContentsData
         if (foregrounded_time_ < other->foregrounded_time_ ||
             (foregrounded_time_ == other->foregrounded_time_ &&
              creation_time_ < other->creation_time_)) {
-          mru_metrics.index++;
+          mru_features.index++;
         }
       }
     }
-    return mru_metrics;
+    return mru_features;
   }
 
   // Updated when a navigation is finished.
@@ -359,6 +390,15 @@ TabActivityWatcher::TabActivityWatcher()
 }
 
 TabActivityWatcher::~TabActivityWatcher() = default;
+
+base::Optional<float> TabActivityWatcher::CalculateReactivationScore(
+    content::WebContents* web_contents) {
+  WebContentsData* web_contents_data =
+      WebContentsData::FromWebContents(web_contents);
+  if (!web_contents_data)
+    return base::nullopt;
+  return web_contents_data->CalculateReactivationScore();
+}
 
 void TabActivityWatcher::OnBrowserSetLastActive(Browser* browser) {
   if (browser->tab_strip_model()->closing_all())
@@ -416,6 +456,9 @@ void TabActivityWatcher::TabPinnedStateChanged(TabStripModel* tab_strip_model,
 
 bool TabActivityWatcher::ShouldTrackBrowser(Browser* browser) {
   // Don't track incognito browsers. This is also enforced by UKM.
+  // TODO(michaelpg): Keep counters for incognito browsers so we can score them
+  // using the TabScorePredictor. We should be able to do this without logging
+  // these values.
   return !browser->profile()->IsOffTheRecord();
 }
 

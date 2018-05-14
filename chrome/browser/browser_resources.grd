@@ -651,6 +651,9 @@
         <include name="IDR_RESET_PASSWORD_JS" file="resources\reset_password\reset_password.js" type="BINDATA" compress="gzip" />
         <include name="IDR_RESET_PASSWORD_MOJO_JS" file="${root_gen_dir}\chrome\browser\ui\webui\reset_password\reset_password.mojom.js" use_base_dir="false" type="BINDATA" compress="gzip" />
       </if>
+      <if expr="not is_android">
+        <include name="IDR_TAB_RANKER_EXAMPLE_PREPROCESSOR_CONFIG_PB" file="resource_coordinator\tab_ranker\example_preprocessor_config.pb" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
