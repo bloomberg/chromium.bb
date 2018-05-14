@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/storage_monitor/storage_monitor.h"
+
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/storage_monitor/mock_removable_storage_observer.h"
-#include "components/storage_monitor/storage_monitor.h"
 #include "components/storage_monitor/test_storage_monitor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -22,6 +24,7 @@ void SetLatch(bool* called) {
 namespace storage_monitor {
 
 TEST(StorageMonitorTest, TestInitialize) {
+  base::MessageLoop message_loop;
   TestStorageMonitor::Destroy();
   TestStorageMonitor monitor;
   EXPECT_FALSE(monitor.init_called());

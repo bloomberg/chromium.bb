@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -38,7 +40,7 @@
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "services/device/public/mojom/mtp_manager.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 
 namespace file_manager {
@@ -895,7 +897,7 @@ void VolumeManager::OnRemovableStorageAttached(
 
 void VolumeManager::DoAttachMtpStorage(
     const storage_monitor::StorageInfo& info,
-    const device::mojom::MtpStorageInfo* mtp_storage_info) {
+    device::mojom::MtpStorageInfoPtr mtp_storage_info) {
   if (!mtp_storage_info) {
     // |mtp_storage_info| can be null. e.g. As OnRemovableStorageAttached and
     // DoAttachMtpStorage are called asynchronously, there can be a race

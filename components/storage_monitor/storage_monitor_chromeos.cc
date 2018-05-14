@@ -20,11 +20,9 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/storage_monitor/media_storage_util.h"
-#include "components/storage_monitor/media_transfer_protocol_device_observer_chromeos.h"
 #include "components/storage_monitor/mtp_manager_client_chromeos.h"
 #include "components/storage_monitor/removable_device_constants.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -117,20 +115,14 @@ void StorageMonitorCros::Init() {
   CheckExistingMountPoints();
 
   // Tests may have already set a MTP manager.
-  if (!media_transfer_protocol_manager_) {
-    media_transfer_protocol_manager_ =
-        device::MediaTransferProtocolManager::Initialize();
-
+  if (!mtp_device_manager_) {
     // Set up the connection with mojofied MtpManager.
     DCHECK(GetConnector());
     GetConnector()->BindInterface(device::mojom::kServiceName,
                                   mojo::MakeRequest(&mtp_device_manager_));
-    mtp_manager_client_ =
-        std::make_unique<MtpManagerClientChromeOS>(mtp_device_manager_.get());
   }
-  media_transfer_protocol_device_observer_ =
-      std::make_unique<MediaTransferProtocolDeviceObserverChromeOS>(
-          receiver(), media_transfer_protocol_manager_.get());
+  mtp_manager_client_ = std::make_unique<MtpManagerClientChromeOS>(
+      receiver(), mtp_device_manager_.get());
 }
 
 void StorageMonitorCros::CheckExistingMountPoints() {
@@ -250,9 +242,9 @@ void StorageMonitorCros::OnRenameEvent(DiskMountManager::RenameEvent event,
                                        const std::string& device_path) {}
 
 void StorageMonitorCros::SetMediaTransferProtocolManagerForTest(
-    device::MediaTransferProtocolManager* test_manager) {
-  DCHECK(!media_transfer_protocol_manager_);
-  media_transfer_protocol_manager_.reset(test_manager);
+    device::mojom::MtpManagerPtr test_manager) {
+  DCHECK(!mtp_device_manager_);
+  mtp_device_manager_ = std::move(test_manager);
 }
 
 bool StorageMonitorCros::GetStorageInfoForPath(
@@ -260,8 +252,7 @@ bool StorageMonitorCros::GetStorageInfoForPath(
     StorageInfo* device_info) const {
   DCHECK(device_info);
 
-  if (media_transfer_protocol_device_observer_->GetStorageInfoForPath(
-          path, device_info)) {
+  if (mtp_manager_client_->GetStorageInfoForPath(path, device_info)) {
     return true;
   }
 
@@ -303,7 +294,7 @@ void StorageMonitorCros::EjectDevice(
   }
 
   if (type == StorageInfo::MTP_OR_PTP) {
-    media_transfer_protocol_device_observer_->EjectDevice(device_id, callback);
+    mtp_manager_client_->EjectDevice(device_id, callback);
     return;
   }
 
@@ -329,9 +320,9 @@ void StorageMonitorCros::EjectDevice(
                        base::Bind(NotifyUnmountResult, callback));
 }
 
-device::MediaTransferProtocolManager*
+device::mojom::MtpManager*
 StorageMonitorCros::media_transfer_protocol_manager() {
-  return media_transfer_protocol_manager_.get();
+  return mtp_device_manager_.get();
 }
 
 void StorageMonitorCros::AddMountedPath(

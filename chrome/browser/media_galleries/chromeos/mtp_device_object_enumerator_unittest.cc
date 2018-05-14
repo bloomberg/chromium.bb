@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/macros.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_object_enumerator.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +39,8 @@ void TestNextEntryIsEmpty(MTPDeviceObjectEnumerator* enumerator) {
 typedef testing::Test MTPDeviceObjectEnumeratorTest;
 
 TEST_F(MTPDeviceObjectEnumeratorTest, Empty) {
-  std::vector<device::mojom::MtpFileEntry> entries;
-  MTPDeviceObjectEnumerator enumerator(entries);
+  std::vector<device::mojom::MtpFileEntryPtr> entries;
+  MTPDeviceObjectEnumerator enumerator(std::move(entries));
   TestEnumeratorIsEmpty(&enumerator);
   TestNextEntryIsEmpty(&enumerator);
   TestNextEntryIsEmpty(&enumerator);
@@ -46,18 +48,19 @@ TEST_F(MTPDeviceObjectEnumeratorTest, Empty) {
 }
 
 TEST_F(MTPDeviceObjectEnumeratorTest, Traversal) {
-  std::vector<device::mojom::MtpFileEntry> entries;
+  std::vector<device::mojom::MtpFileEntryPtr> entries;
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {
-    device::mojom::MtpFileEntry entry;
-    entry.file_name = kTestCases[i].name;
-    entry.file_size = kTestCases[i].size;
-    entry.file_type = kTestCases[i].is_directory
-        ? device::mojom::MtpFileEntry::FileType::FILE_TYPE_FOLDER
-        : device::mojom::MtpFileEntry::FileType::FILE_TYPE_OTHER;
-    entry.modification_time = kTestCases[i].modification_time;
-    entries.push_back(entry);
+    auto entry = device::mojom::MtpFileEntry::New();
+    entry->file_name = kTestCases[i].name;
+    entry->file_size = kTestCases[i].size;
+    entry->file_type =
+        kTestCases[i].is_directory
+            ? device::mojom::MtpFileEntry::FileType::FILE_TYPE_FOLDER
+            : device::mojom::MtpFileEntry::FileType::FILE_TYPE_OTHER;
+    entry->modification_time = kTestCases[i].modification_time;
+    entries.push_back(std::move(entry));
   }
-  MTPDeviceObjectEnumerator enumerator(entries);
+  MTPDeviceObjectEnumerator enumerator(std::move(entries));
   TestEnumeratorIsEmpty(&enumerator);
   TestEnumeratorIsEmpty(&enumerator);
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {

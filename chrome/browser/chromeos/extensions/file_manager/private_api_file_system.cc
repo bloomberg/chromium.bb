@@ -43,9 +43,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/url_constants.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "extensions/browser/extension_util.h"
 #include "net/base/escape.h"
+#include "services/device/public/mojom/mtp_manager.mojom.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
@@ -484,8 +484,7 @@ bool FileManagerPrivateGetSizeStatsFunction::RunAsync() {
     DCHECK(!storage_name.empty());
 
     // Get MTP StorageInfo.
-    device::MediaTransferProtocolManager* manager =
-        storage_monitor->media_transfer_protocol_manager();
+    auto* manager = storage_monitor->media_transfer_protocol_manager();
     manager->GetStorageInfoFromDevice(
         storage_name,
         base::Bind(
@@ -522,7 +521,7 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace(
 }
 
 void FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace(
-    const device::mojom::MtpStorageInfo& mtp_storage_info,
+    device::mojom::MtpStorageInfoPtr mtp_storage_info,
     const bool error) {
   if (error) {
     // If stats couldn't be gotten from MTP volume, result should be left
@@ -531,8 +530,8 @@ void FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace(
     return;
   }
 
-  const uint64_t max_capacity = mtp_storage_info.max_capacity;
-  const uint64_t free_space_in_bytes = mtp_storage_info.free_space_in_bytes;
+  const uint64_t max_capacity = mtp_storage_info->max_capacity;
+  const uint64_t free_space_in_bytes = mtp_storage_info->free_space_in_bytes;
   OnGetSizeStats(&max_capacity, &free_space_in_bytes);
 }
 

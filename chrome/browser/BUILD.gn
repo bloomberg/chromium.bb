@@ -3278,7 +3278,9 @@ jumbo_split_static_library("browser") {
       "media_galleries/fileapi/mtp_file_stream_reader.h",
     ]
     if (is_chromeos && use_dbus) {
-      deps += [ "//device/media_transfer_protocol" ]
+      # TODO(donna.wu@intel.com): push this into chrome/browser/chromeos
+      # and chrome/browser/media_galleries/chromeos
+      deps += [ "//services/device/public/mojom" ]
     }
   }
 

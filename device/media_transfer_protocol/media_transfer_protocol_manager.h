@@ -26,7 +26,7 @@ namespace device {
 
 // This class handles the interaction with mtpd.
 // Other classes can add themselves as observers.
-class COMPONENT_EXPORT(DEVICE_MTP) MediaTransferProtocolManager {
+class MediaTransferProtocolManager {
  public:
   // A callback to handle the result of AddObserverAndEnumerateStorages().
   // The argument is the returned vector of available MTP storages info.
@@ -190,9 +190,6 @@ class COMPONENT_EXPORT(DEVICE_MTP) MediaTransferProtocolManager {
 
   // Creates and returns the global MediaTransferProtocolManager instance.
   static std::unique_ptr<MediaTransferProtocolManager> Initialize();
-
-  // Returns the global MediaTransferProtocolManager instance.
-  static MediaTransferProtocolManager* GetInstance();
 };
 
 }  // namespace device

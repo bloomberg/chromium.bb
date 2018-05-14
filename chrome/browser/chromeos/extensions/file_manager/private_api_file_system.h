@@ -185,9 +185,8 @@ class FileManagerPrivateGetSizeStatsFunction
                                 int64_t bytes_total,
                                 int64_t bytes_used);
 
-  void OnGetMtpAvailableSpace(
-      const device::mojom::MtpStorageInfo& mtp_storage_info,
-      const bool error);
+  void OnGetMtpAvailableSpace(device::mojom::MtpStorageInfoPtr mtp_storage_info,
+                              const bool error);
 
   void OnGetSizeStats(const uint64_t* total_size,
                       const uint64_t* remaining_size);

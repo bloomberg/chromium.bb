@@ -8,63 +8,69 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/device/public/mojom/mtp_manager.mojom.h"
 
 namespace storage_monitor {
 
 // A dummy MediaTransferProtocolManager implementation.
 class TestMediaTransferProtocolManagerChromeOS
-    : public device::MediaTransferProtocolManager {
+    : public device::mojom::MtpManager {
  public:
+  static TestMediaTransferProtocolManagerChromeOS* GetFakeMtpManager();
   TestMediaTransferProtocolManagerChromeOS();
   ~TestMediaTransferProtocolManagerChromeOS() override;
 
+  void AddBinding(device::mojom::MtpManagerRequest request);
+
  private:
-  // device::MediaTransferProtocolManager implementation.
-  void AddObserverAndEnumerateStorages(
-      Observer* observer,
-      EnumerateStoragesCallback callback) override;
-  void RemoveObserver(Observer* observer) override;
-  void GetStorages(GetStoragesCallback callback) const override;
+  // device::mojom::MtpManager implementation.
+  void EnumerateStoragesAndSetClient(
+      device::mojom::MtpManagerClientAssociatedPtrInfo client,
+      EnumerateStoragesAndSetClientCallback callback) override;
   void GetStorageInfo(const std::string& storage_name,
-                      GetStorageInfoCallback callback) const override;
+                      GetStorageInfoCallback callback) override;
   void GetStorageInfoFromDevice(
       const std::string& storage_name,
-      const GetStorageInfoFromDeviceCallback& callback) override;
+      GetStorageInfoFromDeviceCallback callback) override;
   void OpenStorage(const std::string& storage_name,
                    const std::string& mode,
-                   const OpenStorageCallback& callback) override;
+                   OpenStorageCallback callback) override;
   void CloseStorage(const std::string& storage_handle,
-                    const CloseStorageCallback& callback) override;
+                    CloseStorageCallback callback) override;
   void CreateDirectory(const std::string& storage_handle,
-                       const uint32_t parent_id,
+                       uint32_t parent_id,
                        const std::string& directory_name,
-                       const CreateDirectoryCallback& callback) override;
+                       CreateDirectoryCallback callback) override;
   void ReadDirectory(const std::string& storage_handle,
-                     const uint32_t file_id,
-                     const size_t max_size,
-                     const ReadDirectoryCallback& callback) override;
+                     uint32_t file_id,
+                     uint64_t max_size,
+                     ReadDirectoryCallback callback) override;
   void ReadFileChunk(const std::string& storage_handle,
                      uint32_t file_id,
                      uint32_t offset,
                      uint32_t count,
-                     const ReadFileCallback& callback) override;
+                     ReadFileChunkCallback callback) override;
   void GetFileInfo(const std::string& storage_handle,
                    uint32_t file_id,
-                   const GetFileInfoCallback& callback) override;
+                   GetFileInfoCallback callback) override;
   void RenameObject(const std::string& storage_handle,
-                    const uint32_t object_id,
+                    uint32_t object_id,
                     const std::string& new_name,
-                    const RenameObjectCallback& callback) override;
+                    RenameObjectCallback callback) override;
   void CopyFileFromLocal(const std::string& storage_handle,
-                         const int source_file_descriptor,
-                         const uint32_t parent_id,
+                         int64_t source_file_descriptor,
+                         uint32_t parent_id,
                          const std::string& file_name,
-                         const CopyFileFromLocalCallback& callback) override;
+                         CopyFileFromLocalCallback callback) override;
   void DeleteObject(const std::string& storage_handle,
-                    const uint32_t object_id,
-                    const DeleteObjectCallback& callback) override;
+                    uint32_t object_id,
+                    DeleteObjectCallback callback) override;
+
+  mojo::BindingSet<device::mojom::MtpManager> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(TestMediaTransferProtocolManagerChromeOS);
 };

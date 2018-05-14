@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <utility>
 
 #include "base/logging.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_object_enumerator.h"
@@ -13,8 +14,8 @@
 #include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/media_transfer_protocol/media_transfer_protocol_manager.h"
 #include "net/base/io_buffer.h"
+#include "services/device/public/mojom/mtp_manager.mojom.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
@@ -23,20 +24,20 @@ using storage_monitor::StorageMonitor;
 
 namespace {
 
-device::MediaTransferProtocolManager* GetMediaTransferProtocolManager() {
+device::mojom::MtpManager* GetMediaTransferProtocolManager() {
   return StorageMonitor::GetInstance()->media_transfer_protocol_manager();
 }
 
 base::File::Info FileInfoFromMTPFileEntry(
-    const device::mojom::MtpFileEntry& file_entry) {
+    device::mojom::MtpFileEntryPtr file_entry) {
   base::File::Info file_entry_info;
-  file_entry_info.size = file_entry.file_size;
+  file_entry_info.size = file_entry->file_size;
   file_entry_info.is_directory =
-      file_entry.file_type ==
+      file_entry->file_type ==
       device::mojom::MtpFileEntry::FileType::FILE_TYPE_FOLDER;
   file_entry_info.is_symbolic_link = false;
   file_entry_info.last_modified =
-      base::Time::FromTimeT(file_entry.modification_time);
+      base::Time::FromTimeT(file_entry->modification_time);
   file_entry_info.last_accessed = file_entry_info.last_modified;
   file_entry_info.creation_time = base::Time();
   return file_entry_info;
@@ -217,7 +218,7 @@ void MTPDeviceTaskHelper::OnDidOpenStorage(
 void MTPDeviceTaskHelper::OnGetFileInfo(
     const GetFileInfoSuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    const device::mojom::MtpFileEntry& file_entry,
+    device::mojom::MtpFileEntryPtr file_entry,
     bool error) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (error) {
@@ -226,9 +227,9 @@ void MTPDeviceTaskHelper::OnGetFileInfo(
   }
 
   content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(success_callback, FileInfoFromMTPFileEntry(file_entry)));
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(success_callback,
+                 FileInfoFromMTPFileEntry(std::move(file_entry))));
 }
 
 void MTPDeviceTaskHelper::OnCreateDirectory(
@@ -250,7 +251,7 @@ void MTPDeviceTaskHelper::OnCreateDirectory(
 void MTPDeviceTaskHelper::OnDidReadDirectory(
     const ReadDirectorySuccessCallback& success_callback,
     const ErrorCallback& error_callback,
-    const std::vector<device::mojom::MtpFileEntry>& file_entries,
+    std::vector<device::mojom::MtpFileEntryPtr> file_entries,
     bool has_more,
     bool error) const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -259,7 +260,7 @@ void MTPDeviceTaskHelper::OnDidReadDirectory(
 
   MTPEntries entries;
   base::FilePath current;
-  MTPDeviceObjectEnumerator file_enum(file_entries);
+  MTPDeviceObjectEnumerator file_enum(std::move(file_entries));
   while (!(current = file_enum.Next()).empty()) {
     MTPEntry entry;
     entry.name = storage::VirtualPath::BaseName(current).value();
@@ -278,7 +279,7 @@ void MTPDeviceTaskHelper::OnDidReadDirectory(
 
 void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
     const MTPDeviceAsyncDelegate::ReadBytesRequest& request,
-    const device::mojom::MtpFileEntry& file_entry,
+    device::mojom::MtpFileEntryPtr file_entry,
     bool error) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(request.buf.get());
@@ -289,7 +290,7 @@ void MTPDeviceTaskHelper::OnGetFileInfoToReadBytes(
                              base::File::FILE_ERROR_FAILED);
   }
 
-  base::File::Info file_info = FileInfoFromMTPFileEntry(file_entry);
+  base::File::Info file_info = FileInfoFromMTPFileEntry(std::move(file_entry));
   if (file_info.is_directory) {
     return HandleDeviceError(request.error_callback,
                              base::File::FILE_ERROR_NOT_A_FILE);

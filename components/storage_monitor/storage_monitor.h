@@ -20,14 +20,14 @@
 #include "components/storage_monitor/storage_info.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+#if defined(OS_CHROMEOS)
+#include "services/device/public/mojom/mtp_manager.mojom.h"
+#endif
+
 class MediaFileSystemRegistryTest;
 class MediaGalleriesPlatformAppBrowserTest;
 class SystemStorageApiTest;
 class SystemStorageEjectApiTest;
-
-namespace device {
-class MediaTransferProtocolManager;
-}
 
 namespace storage_monitor {
 
@@ -122,8 +122,7 @@ class StorageMonitor {
 #endif
 
 #if defined(OS_CHROMEOS)
-  virtual device::MediaTransferProtocolManager*
-      media_transfer_protocol_manager() = 0;
+  virtual device::mojom::MtpManager* media_transfer_protocol_manager() = 0;
 #endif
 
   // Returns information for all known storages on the system,
