@@ -299,7 +299,7 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
      * @param focusable True if the popup is focusable, false otherwise.
      */
     public void setFocusable(boolean focusable) {
-        mPopupWindow.setFocusable(true);
+        mPopupWindow.setFocusable(focusable);
     }
 
     /**
