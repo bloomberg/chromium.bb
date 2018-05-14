@@ -149,7 +149,7 @@ function getTestCaseStepsForHiddenFiles(basicSet, hiddenEntrySet) {
 /**
  * Test to toggle the show hidden files option on Downloads
  */
-testcase.showHiddenFilesOnDownloads = function() {
+testcase.showHiddenFilesDownloads = function() {
   var appId;
   var steps = [
     function() {
@@ -181,7 +181,7 @@ testcase.showHiddenFilesOnDownloads = function() {
 /**
  * Test to toggle the show hidden files option on Drive
  */
-testcase.showHiddenFilesOnDrive = function() {
+testcase.showHiddenFilesDrive = function() {
   var appId;
   var steps = [
     function() {
@@ -212,7 +212,7 @@ testcase.showHiddenFilesOnDrive = function() {
 /**
  * Test to toggle the Show Google Docs option on Drive
  */
-testcase.hideGoogleDocs = function() {
+testcase.toogleGoogleDocsDrive = function() {
   var appId;
   StepsRunner.run([
     function() {
@@ -282,7 +282,7 @@ testcase.hideGoogleDocs = function() {
 /**
  * Test for the "paste-into-current-folder" menu item
  */
-testcase.showPasteInGearMenu = function() {
+testcase.showPasteIntoCurrentFolder = function() {
   const entrySet = [ENTRIES.hello, ENTRIES.world];
   var appId;
   StepsRunner.run([

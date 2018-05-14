@@ -425,10 +425,10 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     GearMenu,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestParameter(NOT_IN_GUEST_MODE, "showHiddenFilesOnDownloads"),
-        TestParameter(NOT_IN_GUEST_MODE, "showHiddenFilesOnDrive"),
-        TestParameter(NOT_IN_GUEST_MODE, "hideGoogleDocs"),
-        TestParameter(NOT_IN_GUEST_MODE, "showPasteInGearMenu")));
+        TestParameter(NOT_IN_GUEST_MODE, "showHiddenFilesDownloads"),
+        TestParameter(NOT_IN_GUEST_MODE, "showHiddenFilesDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "toogleGoogleDocsDrive"),
+        TestParameter(NOT_IN_GUEST_MODE, "showPasteIntoCurrentFolder")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {
