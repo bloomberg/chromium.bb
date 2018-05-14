@@ -26,6 +26,15 @@ class MODULES_EXPORT BackgroundFetchSettledEvent : public BackgroundFetchEvent {
     return new BackgroundFetchSettledEvent(type, initializer);
   }
 
+  static BackgroundFetchSettledEvent* Create(
+      const AtomicString& type,
+      const BackgroundFetchSettledEventInit& initializer,
+      const String& unique_id,
+      WaitUntilObserver* observer = nullptr) {
+    return new BackgroundFetchSettledEvent(type, initializer, unique_id,
+                                           observer);
+  }
+
   ~BackgroundFetchSettledEvent() override;
 
   // Web Exposed attribute defined in the IDL file.
@@ -37,7 +46,17 @@ class MODULES_EXPORT BackgroundFetchSettledEvent : public BackgroundFetchEvent {
   BackgroundFetchSettledEvent(
       const AtomicString& type,
       const BackgroundFetchSettledEventInit& initializer,
+      const String& unique_id,
       WaitUntilObserver* observer = nullptr);
+
+  BackgroundFetchSettledEvent(
+      const AtomicString& type,
+      const BackgroundFetchSettledEventInit& initializer);
+
+  // Globally unique ID for the registration, generated in content/. Used to
+  // distinguish registrations in case a developer re-uses |developer_id_|s. Not
+  // exposed to JavaScript.
+  String unique_id_;
 
  private:
   Member<BackgroundFetchSettledFetches> fetches_;

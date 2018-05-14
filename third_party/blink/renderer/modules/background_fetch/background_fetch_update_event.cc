@@ -29,9 +29,8 @@ BackgroundFetchUpdateEvent::BackgroundFetchUpdateEvent(
     ScriptState* script_state,
     WaitUntilObserver* observer,
     ServiceWorkerRegistration* registration)
-    : BackgroundFetchSettledEvent(type, initializer, observer),
-      registration_(registration),
-      unique_id_(unique_id) {}
+    : BackgroundFetchSettledEvent(type, initializer, unique_id, observer),
+      registration_(registration) {}
 
 BackgroundFetchUpdateEvent::~BackgroundFetchUpdateEvent() = default;
 

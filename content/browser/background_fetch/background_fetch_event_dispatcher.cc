@@ -76,6 +76,7 @@ BackgroundFetchEventDispatcher::~BackgroundFetchEventDispatcher() {
 
 void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
     const BackgroundFetchRegistrationId& registration_id,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
     base::OnceClosure finished_closure) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   LoadServiceWorkerRegistrationForDispatch(
@@ -83,16 +84,19 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchAbortEvent(
       std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent,
-          registration_id.developer_id()));
+          registration_id.developer_id(), registration_id.unique_id(),
+          fetches));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchAbortEvent(
     const std::string& developer_id,
+    const std::string& unique_id,
+    const std::vector<BackgroundFetchSettledFetch>& fetches,
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
   service_worker_version->event_dispatcher()->DispatchBackgroundFetchAbortEvent(
-      developer_id,
+      developer_id, unique_id, fetches,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
 
@@ -130,17 +134,19 @@ void BackgroundFetchEventDispatcher::DispatchBackgroundFetchFailEvent(
       std::move(finished_closure),
       base::Bind(
           &BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent,
-          registration_id.developer_id(), fetches));
+          registration_id.developer_id(), registration_id.unique_id(),
+          fetches));
 }
 
 void BackgroundFetchEventDispatcher::DoDispatchBackgroundFetchFailEvent(
     const std::string& developer_id,
+    const std::string& unique_id,
     const std::vector<BackgroundFetchSettledFetch>& fetches,
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
     int request_id) {
   DCHECK(service_worker_version);
   service_worker_version->event_dispatcher()->DispatchBackgroundFetchFailEvent(
-      developer_id, fetches,
+      developer_id, unique_id, fetches,
       service_worker_version->CreateSimpleEventCallback(request_id));
 }
 

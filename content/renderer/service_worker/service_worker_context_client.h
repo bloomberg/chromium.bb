@@ -281,6 +281,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void DispatchActivateEvent(DispatchActivateEventCallback callback) override;
   void DispatchBackgroundFetchAbortEvent(
       const std::string& developer_id,
+      const std::string& unique_id,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchAbortEventCallback callback) override;
   void DispatchBackgroundFetchClickEvent(
       const std::string& developer_id,
@@ -288,6 +290,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       DispatchBackgroundFetchClickEventCallback callback) override;
   void DispatchBackgroundFetchFailEvent(
       const std::string& developer_id,
+      const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       DispatchBackgroundFetchFailEventCallback callback) override;
   void DispatchBackgroundFetchedEvent(

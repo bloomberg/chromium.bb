@@ -139,16 +139,22 @@ void ServiceWorkerGlobalScopeProxy::SetRegistration(
 
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchAbortEvent(
     int event_id,
-    const WebString& developer_id) {
+    const WebString& developer_id,
+    const WebString& unique_id,
+    const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchAbort, event_id);
 
-  BackgroundFetchClickEventInit init;
-  init.setId(developer_id);
+  ScriptState* script_state =
+      WorkerGlobalScope()->ScriptController()->GetScriptState();
 
-  BackgroundFetchEvent* event = BackgroundFetchEvent::Create(
-      EventTypeNames::backgroundfetchabort, init, observer);
+  BackgroundFetchSettledEventInit init;
+  init.setId(developer_id);
+  init.setFetches(BackgroundFetchSettledFetches::Create(script_state, fetches));
+
+  BackgroundFetchSettledEvent* event = BackgroundFetchSettledEvent::Create(
+      EventTypeNames::backgroundfetchabort, init, unique_id, observer);
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
@@ -185,21 +191,22 @@ void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchClickEvent(
 void ServiceWorkerGlobalScopeProxy::DispatchBackgroundFetchFailEvent(
     int event_id,
     const WebString& developer_id,
+    const WebString& unique_id,
     const WebVector<WebBackgroundFetchSettledFetch>& fetches) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   WaitUntilObserver* observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kBackgroundFetchFail, event_id);
 
-  BackgroundFetchFailEventInit init;
-  init.setId(developer_id);
-
   ScriptState* script_state =
       WorkerGlobalScope()->ScriptController()->GetScriptState();
-  ScriptState::Scope scope(script_state);
 
-  BackgroundFetchFailEvent* event =
-      BackgroundFetchFailEvent::Create(EventTypeNames::backgroundfetchfail,
-                                       init, fetches, script_state, observer);
+  BackgroundFetchSettledEventInit init;
+  init.setId(developer_id);
+  init.setFetches(BackgroundFetchSettledFetches::Create(script_state, fetches));
+
+  BackgroundFetchUpdateEvent* event = BackgroundFetchUpdateEvent::Create(
+      EventTypeNames::backgroundfetched, init, unique_id, script_state,
+      observer, worker_global_scope_->registration());
 
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }

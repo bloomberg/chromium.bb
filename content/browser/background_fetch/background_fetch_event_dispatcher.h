@@ -45,6 +45,7 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   // background fetch was aborted by the user or another external event.
   void DispatchBackgroundFetchAbortEvent(
       const BackgroundFetchRegistrationId& registration_id,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
       base::OnceClosure finished_closure);
 
   // Dispatches the `backgroundfetchclick` event, which indicates that the user
@@ -113,6 +114,8 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
   // Methods that actually invoke the event on an activated Service Worker.
   static void DoDispatchBackgroundFetchAbortEvent(
       const std::string& developer_id,
+      const std::string& unique_id,
+      const std::vector<BackgroundFetchSettledFetch>& fetches,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
   static void DoDispatchBackgroundFetchClickEvent(
@@ -122,6 +125,7 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       int request_id);
   static void DoDispatchBackgroundFetchFailEvent(
       const std::string& developer_id,
+      const std::string& unique_id,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
       int request_id);
