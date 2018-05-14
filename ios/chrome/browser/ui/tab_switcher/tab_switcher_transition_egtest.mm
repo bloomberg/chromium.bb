@@ -21,6 +21,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/wait_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -472,9 +473,28 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
 
   ShowTabSwitcher();
   switch (GetTabSwitcherMode()) {
-    case TabSwitcherMode::STACK:
+    case TabSwitcherMode::STACK: {
       // In the stack view, get to the normal card stack by swiping right on the
       // current incognito card.
+
+      // Make sure the incognito card is interactable before swiping it.
+      ConditionBlock condition = ^{
+        NSError* error = nil;
+        [[EarlGrey
+            selectElementWithMatcher:grey_allOf(
+                                         grey_accessibilityLabel(
+                                             incognito_title),
+                                         grey_accessibilityTrait(
+                                             UIAccessibilityTraitStaticText),
+                                         grey_interactable(), nil)]
+            assertWithMatcher:grey_sufficientlyVisible()
+                        error:&error];
+        return error == nil;
+      };
+
+      GREYAssertTrue(testing::WaitUntilConditionOrTimeout(
+                         testing::kWaitForUIElementTimeout, condition),
+                     @"Incognito card wasn't interactable.");
       [[EarlGrey
           selectElementWithMatcher:grey_allOf(
                                        grey_accessibilityLabel(incognito_title),
@@ -483,6 +503,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleQueryTitle(
                                        nil)]
           performAction:grey_swipeFastInDirection(kGREYDirectionRight)];
       break;
+    }
     case TabSwitcherMode::TABLET_SWITCHER:
       // In the tablet tab switcher, switch to the normal panel and select the
       // one tab that is there.
