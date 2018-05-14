@@ -1,8 +1,5 @@
-michaeln@chromium.org
 mek@chromium.org
-jsbell@chromium.org
-
-# Please include michaeln@ or mek@ if you make any functional/runtime changes.
+dmurph@chromium.org
 
 # TEAM: storage-dev@chromium.org
 # COMPONENT: Blink>Storage>DOMStorage

@@ -1,8 +1,8 @@
-# Primary
+# Primary:
 pwnall@chromium.org
 
-# Secondary
-michaeln@chromium.org
+# Secondary:
+cmumford@chromium.org
 
 # TEAM: storage-dev@chromium.org
-# COMPONENT: Blink>Storage
+# COMPONENT: Internals>Storage

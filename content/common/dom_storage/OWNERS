@@ -1,9 +1,6 @@
 dmurph@chromium.org
 mek@chromium.org
 
-# OOO until this comment is removed.
-michaeln@chromium.org
-
 per-file *_messages*.h=set noparent
 per-file *_messages*.h=file://ipc/SECURITY_OWNERS
 

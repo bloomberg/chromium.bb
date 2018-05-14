@@ -1,9 +1,8 @@
 # Primary
-michaeln@chromium.org
-
-# Seconday
 pwnall@chromium.org
+
+# Secondary
 jsbell@chromium.org
 
 # TEAM: storage-dev@chromium.org
-# COMPONENT: Blink>Storage
+# COMPONENT: Blink>Storage>WebSQL
