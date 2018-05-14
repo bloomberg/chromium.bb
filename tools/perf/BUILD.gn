@@ -28,19 +28,9 @@ group("perf") {
     # For image_decoding.measurement
     "//chrome/test/data/image_decoding/",
 
-    # For ad tagging ruleset
-    "$root_gen_dir/components/subresource_filter/tools/",
-
     # For Pylib used by VR tests
     "//build/android/pylib/",
   ]
-
-  # Runs a script which generates the ad tagging ruleset.
-  if (!is_ios) {
-    data_deps = [
-      "//components/subresource_filter/tools:index_ruleset",
-    ]
-  }
 }
 
 if (is_android) {
@@ -79,17 +69,7 @@ group("perf_without_chrome") {
     # For image_decoding.measurement
     "//chrome/test/data/image_decoding/",
 
-    # For ad tagging ruleset
-    "$root_gen_dir/components/subresource_filter/tools/",
-
     # For Pylib used by VR tests
     "//build/android/pylib/",
   ]
-
-  # Runs a script which generates the ad tagging ruleset.
-  if (!is_ios) {
-    data_deps = [
-      "//components/subresource_filter/tools:index_ruleset",
-    ]
-  }
 }
