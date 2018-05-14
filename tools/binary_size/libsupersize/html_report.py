@@ -18,6 +18,7 @@ import path_util
 # Node dictionary keys. These are output in json read by the webapp so
 # keep them short to save file size.
 # Note: If these change, the webapp must also change.
+_METHOD_COUNT_MODE_KEY = 'methodCountMode'
 _NODE_TYPE_KEY = 'k'
 _NODE_TYPE_BUCKET = 'b'
 _NODE_TYPE_PATH = 'p'
@@ -91,6 +92,21 @@ def _MakeChildrenDictsIntoLists(node):
                       len(children))
 
 
+def _CombineSingleChildNodes(node):
+  """Collapse "java"->"com"->"google" into ."java/com/google"."""
+  children = node.get(_NODE_CHILDREN_KEY)
+  if children:
+    child = children[0]
+    if len(children) == 1 and node[_NODE_TYPE_KEY] == child[_NODE_TYPE_KEY]:
+      node[_NODE_NAME_KEY] = '{}/{}'.format(
+          node[_NODE_NAME_KEY], child[_NODE_NAME_KEY])
+      node[_NODE_CHILDREN_KEY] = child[_NODE_CHILDREN_KEY]
+      _CombineSingleChildNodes(node)
+    else:
+      for child in children:
+        _CombineSingleChildNodes(child)
+
+
 def _AddSymbolIntoFileNode(node, symbol_type, symbol_name, symbol_size,
                            min_symbol_size):
   """Puts symbol into the file path node |node|."""
@@ -112,12 +128,16 @@ def _AddSymbolIntoFileNode(node, symbol_type, symbol_name, symbol_size,
   node[_NODE_SYMBOL_TYPE_KEY] = symbol_type
 
 
-def _MakeCompactTree(symbols, min_symbol_size):
+def _MakeCompactTree(symbols, min_symbol_size, method_count_mode):
+  if method_count_mode:
+    # Include all symbols and avoid bucket nodes.
+    min_symbol_size = -1
   result = {
       _NODE_NAME_KEY: '/',
       _NODE_CHILDREN_KEY: {},
       _NODE_TYPE_KEY: 'p',
       _NODE_MAX_DEPTH_KEY: 0,
+      _METHOD_COUNT_MODE_KEY: bool(method_count_mode),
   }
   for symbol in symbols:
     file_path = symbol.source_path or symbol.object_path or _NAME_NO_PATH_BUCKET
@@ -134,7 +154,8 @@ def _MakeCompactTree(symbols, min_symbol_size):
       symbol_type = _NODE_SYMBOL_TYPE_VTABLE
     elif symbol.name.endswith(']'):
       symbol_type = _NODE_SYMBOL_TYPE_GENERATED
-    _AddSymbolIntoFileNode(node, symbol_type, symbol.template_name, symbol.pss,
+    symbol_size = 1 if method_count_mode else symbol.pss
+    _AddSymbolIntoFileNode(node, symbol_type, symbol.template_name, symbol_size,
                            min_symbol_size)
     depth += 2
     result[_NODE_MAX_DEPTH_KEY] = max(result[_NODE_MAX_DEPTH_KEY], depth)
@@ -146,6 +167,7 @@ def _MakeCompactTree(symbols, min_symbol_size):
     _SplitLargeBucket(no_path_bucket)
 
   _MakeChildrenDictsIntoLists(result)
+  _CombineSingleChildNodes(result)
 
   return result
 
@@ -174,6 +196,8 @@ def AddArguments(parser):
   parser.add_argument('--min-symbol-size', type=float, default=1024,
                       help='Minimum size (PSS) for a symbol to be included as '
                            'an independent node.')
+  parser.add_argument('--method-count', action='store_true',
+                      help='Show dex method count rather than size')
 
 
 def Run(args, parser):
@@ -183,9 +207,10 @@ def Run(args, parser):
   logging.info('Reading .size file')
   size_info = archive.LoadAndPostProcessSizeInfo(args.input_file)
   symbols = size_info.raw_symbols
-  if not args.include_bss:
+  if args.method_count:
+    symbols = symbols.WhereInSection('m')
+  elif not args.include_bss:
     symbols = symbols.WhereInSection('b').Inverted()
-  symbols = symbols.WherePssBiggerThan(0)
 
   # Copy report boilerplate into output directory. This also proves that the
   # output directory is safe for writing, so there should be no problems writing
@@ -193,7 +218,7 @@ def Run(args, parser):
   _CopyTemplateFiles(args.report_dir)
 
   logging.info('Creating JSON objects')
-  tree_root = _MakeCompactTree(symbols, args.min_symbol_size)
+  tree_root = _MakeCompactTree(symbols, args.min_symbol_size, args.method_count)
 
   logging.info('Serializing JSON')
   with open(os.path.join(args.report_dir, 'data.js'), 'w') as out_file:

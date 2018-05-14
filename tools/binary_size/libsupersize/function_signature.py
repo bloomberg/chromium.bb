@@ -135,6 +135,7 @@ def ParseJava(name):
   if '(' in name:
     package, method_sig = name.split(' ', 1)
     class_name = package.split('.')[-1]
+    # E.g. <init>()  <-- no return type
     if method_sig.startswith('<'):
       method_name = method_sig
     else:

@@ -12,6 +12,7 @@ function D3SymbolTreeMap(mapWidth, mapHeight, levelsToShow) {
   this._mapHeight = mapHeight;
   this.boxPadding = {'l': 5, 'r': 5, 't': 20, 'b': 5};
   this.infobox = undefined;
+  this.methodCountMode = false;
   this._maskContainer = undefined;
   this._highlightContainer = undefined;
   // Transition in this order:
@@ -53,7 +54,10 @@ D3SymbolTreeMap._pretty = function(num) {
  * Express a number in terms of KiB, MiB, GiB, etc.
  * Note that these are powers of 2, not of 10.
  */
-D3SymbolTreeMap._byteify = function(num) {
+D3SymbolTreeMap.prototype._byteify = function(num) {
+  if (this.methodCountMode) {
+    return num + ' methods';
+  }
   var suffix;
   if (num >= 1024) {
     if (num >= 1024 * 1024 * 1024) {
@@ -145,6 +149,7 @@ D3SymbolTreeMap.prototype.init = function() {
       .style('margin', 0)
       .style('box-shadow', '5px 5px 5px #888');
   this._layout = this._createTreeMapLayout();
+  this.methodCountMode = tree_data['methodCountMode'];
   this._setData(tree_data); // TODO: Don't use global 'tree_data'
 }
 
@@ -446,7 +451,7 @@ D3SymbolTreeMap.prototype._handleInodes = function() {
         return (datum.dx < 15 || datum.dy < 15) ? 'hidden' : 'visible';
       })
       .text(function(datum) {
-        var sizeish = ' [' + D3SymbolTreeMap._byteify(datum.value) + ']'
+        var sizeish = ' [' + thisTreeMap._byteify(datum.value) + ']'
         var text;
         if (datum.k === 'b') { // bucket
           if (datum === thisTreeMap._currentRoot) {
@@ -515,7 +520,7 @@ D3SymbolTreeMap.prototype._handleInodes = function() {
       .style('width', function(datum) { return datum.dx; })
       .style('height', function(datum) { return thisTreeMap.boxPadding.t; })
       .text(function(datum) {
-        var sizeish = ' [' + D3SymbolTreeMap._byteify(datum.value) + ']'
+        var sizeish = ' [' + thisTreeMap._byteify(datum.value) + ']'
         var text;
         if (datum.k === 'b') {
           if (datum === thisTreeMap._currentRoot) {
@@ -758,8 +763,10 @@ D3SymbolTreeMap.prototype._createInfoBox = function() {
 D3SymbolTreeMap.prototype._showInfoBox = function(datum) {
   this.infobox.text('');
   var numSymbols = 0;
-  var sizeish = D3SymbolTreeMap._pretty(datum.value) + ' bytes (' +
-      D3SymbolTreeMap._byteify(datum.value) + ')';
+  var sizeish = this._byteify(datum.value);
+  if (!this.methodCountMode) {
+    sizeish = D3SymbolTreeMap._pretty(datum.value) + ' bytes (' + sizeish + ')'
+  }
   if (datum.k === 'p' || datum.k === 'b') { // path or bucket
     if (datum.symbol_stats) { // can be empty if filters are applied
       for (var x = 0; x < D3SymbolTreeMap._NM_SYMBOL_TYPES.length; x++) {
@@ -793,10 +800,11 @@ D3SymbolTreeMap.prototype._showInfoBox = function(datum) {
       this.infobox.append('div').text('Location: ' + this.pathFor(datum))
     }
   }
-  if (datum.k === 'p') {
+  if (datum.k === 'p' && !this.methodCountMode) {
     this.infobox.append('div')
         .text('Number of symbols: ' + D3SymbolTreeMap._pretty(numSymbols));
-    if (datum.symbol_stats) { // can be empty if filters are applied
+    // can be empty if filters are applied
+    if (datum.symbol_stats) {
       var table = this.infobox.append('table')
           .attr('border', 1).append('tbody');
       var header = table.append('tr');
