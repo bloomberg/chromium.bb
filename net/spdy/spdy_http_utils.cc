@@ -168,23 +168,4 @@ NET_EXPORT_PRIVATE void ConvertHeaderBlockToHttpRequestHeaders(
   }
 }
 
-GURL GetUrlFromHeaderBlock(const SpdyHeaderBlock& headers) {
-  SpdyHeaderBlock::const_iterator it = headers.find(kHttp2SchemeHeader);
-  if (it == headers.end())
-    return GURL();
-  std::string url = it->second.as_string();
-  url.append("://");
-
-  it = headers.find(kHttp2AuthorityHeader);
-  if (it == headers.end())
-    return GURL();
-  url.append(it->second.as_string());
-
-  it = headers.find(kHttp2PathHeader);
-  if (it == headers.end())
-    return GURL();
-  url.append(it->second.as_string());
-  return GURL(url);
-}
-
 }  // namespace net

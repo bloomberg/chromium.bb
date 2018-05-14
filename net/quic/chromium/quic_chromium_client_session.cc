@@ -2775,9 +2775,9 @@ bool QuicChromiumClientSession::HandlePromised(QuicStreamId id,
     // The push promise is accepted, notify the push_delegate that a push
     // promise has been received.
     if (push_delegate_) {
-      GURL pushed_url = GetUrlFromHeaderBlock(headers);
+      std::string pushed_url = SpdyUtils::GetPromisedUrlFromHeaders(headers);
       push_delegate_->OnPush(std::make_unique<QuicServerPushHelper>(
-                                 weak_factory_.GetWeakPtr(), pushed_url),
+                                 weak_factory_.GetWeakPtr(), GURL(pushed_url)),
                              net_log_);
     }
     if (headers_include_h2_stream_dependency_) {
