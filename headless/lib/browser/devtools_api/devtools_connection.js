@@ -4,8 +4,7 @@
 
 /**
  * @fileoverview Contains a class which marshals DevTools protocol messages over
- * a provided low level message transport. This transport might be a headless
- * TabSocket, or a WebSocket or a mock for testing.
+ * a provided low level message transport.
  */
 
 'use strict';
