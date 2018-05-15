@@ -324,7 +324,10 @@ interface NetworkContext {
   // Updates the Accept-Language header to be used for requests.
   SetAcceptLanguage(string new_accept_language);
 
-  // Updates the CT policy to be used for requests.
+  // Updates the CT policy to be used for requests. Only applies if the
+  // NetworkContextParams set enforce_chrome_ct_policy to true.
+  // TODO(rsleevi): Remove this once Chrome-specific policies are moved out
+  // of the network service.
   SetCTPolicy(array<string> required_hosts,
               array<string> excluded_hosts,
               array<string> excluded_spkis,

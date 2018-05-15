@@ -528,6 +528,22 @@ CA_NAME="req_ca_dn" \
     -out ../certificates/dec_2017.pem \
     -config ca.cnf
 
+# Issued on 1 May 2018 (after the 30 Apr 2018 CT Requirement date)
+openssl req \
+  -config ../scripts/ee.cnf \
+  -newkey rsa:2048 \
+  -text \
+  -out out/may_2018.req
+CA_NAME="req_ca_dn" \
+  openssl ca \
+    -batch \
+    -extensions user_cert \
+    -startdate 180501000000Z \
+    -enddate   200803000000Z \
+    -in out/may_2018.req \
+    -out ../certificates/may_2018.pem \
+    -config ca.cnf
+
 # Regenerate CRLSets
 ## Block a leaf cert directly by SPKI
 python crlsetutil.py -o ../certificates/crlset_by_leaf_spki.raw \

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/certificate_transparency/ct_policy_manager.h"
+#include "components/certificate_transparency/chrome_require_ct_delegate.h"
 
 #include <algorithm>
 #include <iterator>
@@ -161,111 +161,67 @@ bool AreCertsSameOrganization(const net::RDNSequence& leaf_rdn_sequence,
 
 }  // namespace
 
-class CTPolicyManager::CTDelegate
-    : public net::TransportSecurityState::RequireCTDelegate {
- public:
-  explicit CTDelegate();
-  ~CTDelegate() override = default;
+ChromeRequireCTDelegate::ChromeRequireCTDelegate()
+    : url_matcher_(std::make_unique<url_matcher::URLMatcher>()), next_id_(0) {}
 
-  // Updates the CTDelegate to require CT
-  // for |required_hosts|, and exclude |excluded_hosts| from CT policies.
-  void UpdateCTPolicies(const std::vector<std::string>& required_hosts,
-                        const std::vector<std::string>& excluded_hosts,
-                        const std::vector<std::string>& excluded_spkis,
-                        const std::vector<std::string>& excluded_legacy_spkis);
-
-  // RequireCTDelegate implementation
-  // Called on the network task runner.
-  CTRequirementLevel IsCTRequiredForHost(
-      const std::string& hostname,
-      const net::X509Certificate* chain,
-      const net::HashValueVector& hashes) override;
-
- private:
-  struct Filter {
-    bool ct_required = false;
-    bool match_subdomains = false;
-    size_t host_length = 0;
-  };
-
-  // Returns true if a policy for |hostname| is found, setting
-  // |*ct_required| to indicate whether or not Certificate Transparency is
-  // required for the host.
-  bool MatchHostname(const std::string& hostname, bool* ct_required) const;
-
-  // Returns true if a policy for |chain|, which contains the SPKI hashes
-  // |hashes|, is found, setting |*ct_required| to indicate whether or not
-  // Certificate Transparency is required for the certificate.
-  bool MatchSPKI(const net::X509Certificate* chain,
-                 const net::HashValueVector& hashes,
-                 bool* ct_required) const;
-
-  // Updates the |url_matcher_| to
-  // require CT for |required_hosts| and exclude |excluded_hosts|, both
-  // of which are Lists of Strings which are URLBlacklist filters, and
-  // updates |excluded_spkis| and |excluded_legacy_spkis| to exclude CT for
-  // those SPKIs, which are encoded as strings using net::HashValue::ToString.
-  void Update(const std::vector<std::string>& required_hosts,
-              const std::vector<std::string>& excluded_hosts,
-              const std::vector<std::string>& excluded_spkis,
-              const std::vector<std::string>& excluded_legacy_spkis);
-
-  // Parses the filters from |host_patterns|, adding them as filters to
-  // |filters_| (with |ct_required| indicating whether or not CT is required
-  // for that host), and updating |*conditions| with the corresponding
-  // URLMatcher::Conditions to match the host.
-  void AddFilters(bool ct_required,
-                  const std::vector<std::string>& host_patterns,
-                  url_matcher::URLMatcherConditionSet::Vector* conditions);
-
-  // Parses the SPKIs from |list|, setting |*hashes| to the sorted set of all
-  // valid SPKIs.
-  void ParseSpkiHashes(const std::vector<std::string> list,
-                       net::HashValueVector* hashes) const;
-
-  // Returns true if |lhs| has greater precedence than |rhs|.
-  bool FilterTakesPrecedence(const Filter& lhs, const Filter& rhs) const;
-
-  std::unique_ptr<url_matcher::URLMatcher> url_matcher_;
-  url_matcher::URLMatcherConditionSet::ID next_id_;
-  std::map<url_matcher::URLMatcherConditionSet::ID, Filter> filters_;
-
-  // Both SPKI lists are sorted.
-  net::HashValueVector spkis_;
-  net::HashValueVector legacy_spkis_;
-
-  DISALLOW_COPY_AND_ASSIGN(CTDelegate);
-};
-
-CTPolicyManager::CTDelegate::CTDelegate()
-    : url_matcher_(new url_matcher::URLMatcher), next_id_(0) {}
-
-void CTPolicyManager::CTDelegate::UpdateCTPolicies(
-    const std::vector<std::string>& required_hosts,
-    const std::vector<std::string>& excluded_hosts,
-    const std::vector<std::string>& excluded_spkis,
-    const std::vector<std::string>& excluded_legacy_spkis) {
-  Update(required_hosts, excluded_hosts, excluded_spkis, excluded_legacy_spkis);
-}
+ChromeRequireCTDelegate::~ChromeRequireCTDelegate() {}
 
 net::TransportSecurityState::RequireCTDelegate::CTRequirementLevel
-CTPolicyManager::CTDelegate::IsCTRequiredForHost(
+ChromeRequireCTDelegate::IsCTRequiredForHost(
     const std::string& hostname,
     const net::X509Certificate* chain,
-    const net::HashValueVector& hashes) {
-
+    const net::HashValueVector& spki_hashes) {
   bool ct_required = false;
   if (MatchHostname(hostname, &ct_required) ||
-      MatchSPKI(chain, hashes, &ct_required)) {
+      MatchSPKI(chain, spki_hashes, &ct_required)) {
     return ct_required ? CTRequirementLevel::REQUIRED
                        : CTRequirementLevel::NOT_REQUIRED;
   }
 
+  // Compute >= 2018-05-01, rather than deal with possible fractional
+  // seconds.
+  const base::Time kMay_1_2018 =
+      base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(1525132800);
+  if (chain->valid_start() >= kMay_1_2018)
+    return CTRequirementLevel::REQUIRED;
+
   return CTRequirementLevel::DEFAULT;
 }
 
-bool CTPolicyManager::CTDelegate::MatchHostname(const std::string& hostname,
-                                                bool* ct_required) const {
+void ChromeRequireCTDelegate::UpdateCTPolicies(
+    const std::vector<std::string>& required_hosts,
+    const std::vector<std::string>& excluded_hosts,
+    const std::vector<std::string>& excluded_spkis,
+    const std::vector<std::string>& excluded_legacy_spkis) {
+  url_matcher_ = std::make_unique<url_matcher::URLMatcher>();
+  filters_.clear();
+  next_id_ = 0;
+
+  url_matcher::URLMatcherConditionSet::Vector all_conditions;
+  AddFilters(true, required_hosts, &all_conditions);
+  AddFilters(false, excluded_hosts, &all_conditions);
+
+  url_matcher_->AddConditionSets(all_conditions);
+
+  ParseSpkiHashes(excluded_spkis, &spkis_);
+  ParseSpkiHashes(excluded_legacy_spkis, &legacy_spkis_);
+
+  // Filter out SPKIs that aren't for legacy CAs.
+  legacy_spkis_.erase(
+      std::remove_if(legacy_spkis_.begin(), legacy_spkis_.end(),
+                     [](const net::HashValue& hash) {
+                       if (!net::IsLegacyPubliclyTrustedCA(hash)) {
+                         LOG(ERROR) << "Non-legacy SPKI configured "
+                                    << hash.ToString();
+                         return true;
+                       }
+                       return false;
+                     }),
+      legacy_spkis_.end());
+}
+
+bool ChromeRequireCTDelegate::MatchHostname(const std::string& hostname,
+                                            bool* ct_required) const {
   if (url_matcher_->IsEmpty())
     return false;
 
@@ -301,9 +257,9 @@ bool CTPolicyManager::CTDelegate::MatchHostname(const std::string& hostname,
   return true;
 }
 
-bool CTPolicyManager::CTDelegate::MatchSPKI(const net::X509Certificate* chain,
-                                            const net::HashValueVector& hashes,
-                                            bool* ct_required) const {
+bool ChromeRequireCTDelegate::MatchSPKI(const net::X509Certificate* chain,
+                                        const net::HashValueVector& hashes,
+                                        bool* ct_required) const {
   // Try to scan legacy SPKIs first, if any, since they will only require
   // comparing hash values.
   if (!legacy_spkis_.empty()) {
@@ -379,39 +335,7 @@ bool CTPolicyManager::CTDelegate::MatchSPKI(const net::X509Certificate* chain,
   return false;
 }
 
-void CTPolicyManager::CTDelegate::Update(
-    const std::vector<std::string>& required_hosts,
-    const std::vector<std::string>& excluded_hosts,
-    const std::vector<std::string>& excluded_spkis,
-    const std::vector<std::string>& excluded_legacy_spkis) {
-  url_matcher_.reset(new url_matcher::URLMatcher);
-  filters_.clear();
-  next_id_ = 0;
-
-  url_matcher::URLMatcherConditionSet::Vector all_conditions;
-  AddFilters(true, required_hosts, &all_conditions);
-  AddFilters(false, excluded_hosts, &all_conditions);
-
-  url_matcher_->AddConditionSets(all_conditions);
-
-  ParseSpkiHashes(excluded_spkis, &spkis_);
-  ParseSpkiHashes(excluded_legacy_spkis, &legacy_spkis_);
-
-  // Filter out SPKIs that aren't for legacy CAs.
-  legacy_spkis_.erase(
-      std::remove_if(legacy_spkis_.begin(), legacy_spkis_.end(),
-                     [](const net::HashValue& hash) {
-                       if (!net::IsLegacyPubliclyTrustedCA(hash)) {
-                         LOG(ERROR) << "Non-legacy SPKI configured "
-                                    << hash.ToString();
-                         return true;
-                       }
-                       return false;
-                     }),
-      legacy_spkis_.end());
-}
-
-void CTPolicyManager::CTDelegate::AddFilters(
+void ChromeRequireCTDelegate::AddFilters(
     bool ct_required,
     const std::vector<std::string>& hosts,
     url_matcher::URLMatcherConditionSet::Vector* conditions) {
@@ -472,11 +396,11 @@ void CTPolicyManager::CTDelegate::AddFilters(
   }
 }
 
-void CTPolicyManager::CTDelegate::ParseSpkiHashes(
-    const std::vector<std::string> list,
+void ChromeRequireCTDelegate::ParseSpkiHashes(
+    const std::vector<std::string> spki_list,
     net::HashValueVector* hashes) const {
   hashes->clear();
-  for (const auto& value : list) {
+  for (const auto& value : spki_list) {
     net::HashValue hash;
     if (!hash.FromString(value)) {
       continue;
@@ -486,9 +410,8 @@ void CTPolicyManager::CTDelegate::ParseSpkiHashes(
   std::sort(hashes->begin(), hashes->end());
 }
 
-bool CTPolicyManager::CTDelegate::FilterTakesPrecedence(
-    const Filter& lhs,
-    const Filter& rhs) const {
+bool ChromeRequireCTDelegate::FilterTakesPrecedence(const Filter& lhs,
+                                                    const Filter& rhs) const {
   if (lhs.match_subdomains != rhs.match_subdomains)
     return !lhs.match_subdomains;  // Prefer the more explicit policy.
 
@@ -499,23 +422,6 @@ bool CTPolicyManager::CTDelegate::FilterTakesPrecedence(
     return lhs.ct_required;  // Prefer the policy that requires CT.
 
   return false;
-}
-
-CTPolicyManager::CTPolicyManager() : delegate_(new CTDelegate()) {}
-
-CTPolicyManager::~CTPolicyManager() {}
-
-void CTPolicyManager::UpdateCTPolicies(
-    const std::vector<std::string>& required_hosts,
-    const std::vector<std::string>& excluded_hosts,
-    const std::vector<std::string>& excluded_spkis,
-    const std::vector<std::string>& excluded_legacy_spkis) {
-  delegate_->UpdateCTPolicies(required_hosts, excluded_hosts, excluded_spkis,
-                              excluded_legacy_spkis);
-}
-
-net::TransportSecurityState::RequireCTDelegate* CTPolicyManager::GetDelegate() {
-  return delegate_.get();
 }
 
 }  // namespace certificate_transparency

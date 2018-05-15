@@ -6,10 +6,10 @@ static_library("certificate_transparency") {
   sources = [
     "chrome_ct_policy_enforcer.cc",
     "chrome_ct_policy_enforcer.h",
+    "chrome_require_ct_delegate.cc",
+    "chrome_require_ct_delegate.h",
     "ct_known_logs.cc",
     "ct_known_logs.h",
-    "ct_policy_manager.cc",
-    "ct_policy_manager.h",
     "features.cc",
     "features.h",
     "log_dns_client.cc",
@@ -42,8 +42,8 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "chrome_ct_policy_enforcer_unittest.cc",
+    "chrome_require_ct_delegate_unittest.cc",
     "ct_known_logs_unittest.cc",
-    "ct_policy_manager_unittest.cc",
     "log_dns_client_unittest.cc",
     "mock_log_dns_traffic.cc",
     "mock_log_dns_traffic.h",

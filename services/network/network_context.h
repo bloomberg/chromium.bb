@@ -40,7 +40,7 @@ class URLRequestContext;
 }  // namespace net
 
 namespace certificate_transparency {
-class CTPolicyManager;
+class ChromeRequireCTDelegate;
 class TreeStateTracker;
 class STHReporter;
 }  // namespace certificate_transparency
@@ -200,6 +200,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       certificate_transparency::STHReporter* sth_reporter,
       std::unique_ptr<certificate_transparency::TreeStateTracker>*
           out_tree_state_tracker,
+      std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>*
+          out_require_ct_delegate,
       net::StaticHttpUserAgentSettings** out_http_user_agent_settings);
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
@@ -254,7 +256,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // TODO(yhirano): Consult with switches::kDisableResourceScheduler.
   constexpr static bool enable_resource_scheduler_ = true;
 
-  std::unique_ptr<certificate_transparency::CTPolicyManager> ct_policy_manager_;
+  std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>
+      require_ct_delegate_;
   std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkContext);
