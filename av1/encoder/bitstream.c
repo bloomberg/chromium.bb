@@ -3584,6 +3584,8 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
       aom_wb_write_literal(&wb, cm->seq_params.operating_point_idc[i],
                            OP_POINTS_IDC_BITS);
       write_bitstream_level(cm->seq_params.level[i], &wb);
+      if (cm->seq_params.level[i].major > 3)
+        aom_wb_write_bit(&wb, cm->seq_params.tier[i]);
 #if !CONFIG_BUFFER_MODEL
       aom_wb_write_literal(&wb, 0, 1);  // decoder_rate_model_present_flag[i]
 #endif

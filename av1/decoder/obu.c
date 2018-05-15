@@ -170,6 +170,10 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
           aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
       if (!read_bitstream_level(&seq_params->level[i], rb))
         return AOM_CODEC_UNSUP_BITSTREAM;
+      if (seq_params->level[i].major > 3)
+        seq_params->tier[i] = aom_rb_read_bit(rb);
+      else
+        seq_params->tier[i] = 0;
 #if !CONFIG_BUFFER_MODEL
       seq_params->decoder_rate_model_param_present_flag[i] =
           aom_rb_read_literal(rb, 1);

@@ -908,8 +908,8 @@ static INLINE int does_level_match(int width, int height, double fps,
          height <= lvl_height * lvl_dim_mult;
 }
 
-static void set_bitstream_level(SequenceHeader *seq,
-                                const AV1EncoderConfig *oxcf) {
+static void set_bitstream_level_tier(SequenceHeader *seq,
+                                     const AV1EncoderConfig *oxcf) {
   // TODO(any): This is a placeholder function that only addresses dimensions
   // and max display sample rates.
   // Need to add checks for max bit rate, max decoded luma sample rate, header
@@ -979,6 +979,7 @@ static void set_bitstream_level(SequenceHeader *seq,
   }
   for (int i = 0; i < MAX_NUM_OPERATING_POINTS; ++i) {
     seq->level[i] = bl;
+    seq->tier[i] = 0;  // setting main tier by default
   }
 }
 
@@ -1013,7 +1014,7 @@ void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
   seq->enable_intra_edge_filter = 1;
   seq->enable_filter_intra = 1;
 
-  set_bitstream_level(seq, oxcf);
+  set_bitstream_level_tier(seq, oxcf);
 }
 
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {

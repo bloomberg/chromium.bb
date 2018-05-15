@@ -168,7 +168,8 @@ static void parse_operating_points(struct aom_read_bit_buffer *rb,
       int operating_point_idc;
       operating_point_idc = aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
       if (i == 0) operating_point_idc0 = operating_point_idc;
-      aom_rb_read_literal(rb, LEVEL_BITS);  // level
+      int seq_level_idx = aom_rb_read_literal(rb, LEVEL_BITS);  // level
+      if (seq_level_idx > 7) aom_rb_read_bit(rb);               // tier
 #if !CONFIG_BUFFER_MODEL
       if (aom_rb_read_literal(rb,
                               1)) {   // decoder_rate_model_param_present_flag

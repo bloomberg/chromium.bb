@@ -232,6 +232,7 @@ typedef struct SequenceHeader {
   int enable_restoration;  // To turn on/off loop restoration
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
   BitstreamLevel level[MAX_NUM_OPERATING_POINTS];
+  int tier[MAX_NUM_OPERATING_POINTS];
   int decoder_rate_model_param_present_flag[MAX_NUM_OPERATING_POINTS];
 #if !CONFIG_BUFFER_MODEL
   int decode_to_display_rate_ratio[MAX_NUM_OPERATING_POINTS];
