@@ -1896,10 +1896,33 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
   metadata.device_scale_factor = active_tree_->painted_device_scale_factor() *
                                  active_tree_->device_scale_factor();
   metadata.viewport_size_in_pixels = device_viewport_size();
-  const viz::LocalSurfaceId& local_surface_id =
+  metadata.top_controls_height =
+      browser_controls_offset_manager_->TopControlsHeight();
+  metadata.top_controls_shown_ratio =
+      browser_controls_offset_manager_->TopControlsShownRatio();
+  metadata.bottom_controls_height =
+      browser_controls_offset_manager_->BottomControlsHeight();
+  metadata.bottom_controls_shown_ratio =
+      browser_controls_offset_manager_->BottomControlsShownRatio();
+
+  bool allocate_new_local_surface_id =
+      last_draw_render_frame_metadata_ &&
+      (last_draw_render_frame_metadata_->top_controls_height !=
+           metadata.top_controls_height ||
+       last_draw_render_frame_metadata_->top_controls_shown_ratio !=
+           metadata.top_controls_shown_ratio ||
+       last_draw_render_frame_metadata_->bottom_controls_height !=
+           metadata.bottom_controls_height ||
+       last_draw_render_frame_metadata_->bottom_controls_shown_ratio !=
+           metadata.bottom_controls_shown_ratio);
+
+  viz::LocalSurfaceId local_surface_id =
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
-  if (local_surface_id.is_valid())
+  if (local_surface_id.is_valid()) {
+    if (allocate_new_local_surface_id)
+      local_surface_id = child_local_surface_id_allocator_.GenerateId();
     metadata.local_surface_id = local_surface_id;
+  }
 
   active_tree_->GetViewportSelection(&metadata.selection);
   metadata.is_mobile_optimized = IsMobileOptimized(active_tree_.get());
@@ -1980,9 +2003,9 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   active_tree()->FinishSwapPromises(&metadata, &frame_token_allocator_);
 
   if (render_frame_metadata_observer_) {
-    RenderFrameMetadata render_frame_metadata = MakeRenderFrameMetadata();
+    last_draw_render_frame_metadata_ = MakeRenderFrameMetadata();
     render_frame_metadata_observer_->OnRenderFrameSubmission(
-        std::move(render_frame_metadata));
+        *last_draw_render_frame_metadata_);
   }
 
   metadata.latency_info.emplace_back(ui::SourceEventType::FRAME);

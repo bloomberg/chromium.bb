@@ -42,6 +42,16 @@ struct RenderFrameMetadata {
 
   // The last viz::LocalSurfaceId used to submit a CompositorFrame.
   viz.mojom.LocalSurfaceId? local_surface_id;
+
+  // Used to position the Android location top bar and page content, whose
+  // precise position is computed by the renderer compositor.
+  float top_controls_height;
+  float top_controls_shown_ratio;
+
+  // Used to position Android bottom bar, whose position is computed by the
+  // renderer compositor.
+  float bottom_controls_height;
+  float bottom_controls_shown_ratio;
 };
 
 // This interface is provided by the renderer. It can optionally enable

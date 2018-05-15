@@ -19,6 +19,10 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
   out->is_scroll_offset_at_top = data.is_scroll_offset_at_top();
   out->is_mobile_optimized = data.is_mobile_optimized();
   out->device_scale_factor = data.device_scale_factor();
+  out->top_controls_height = data.top_controls_height();
+  out->top_controls_shown_ratio = data.top_controls_shown_ratio();
+  out->bottom_controls_height = data.bottom_controls_height();
+  out->bottom_controls_shown_ratio = data.bottom_controls_shown_ratio();
   return data.ReadRootScrollOffset(&out->root_scroll_offset) &&
          data.ReadSelection(&out->selection) &&
          data.ReadViewportSizeInPixels(&out->viewport_size_in_pixels) &&
