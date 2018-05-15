@@ -3814,6 +3814,8 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
         return -EINVAL;
 
     subsystem_type = drmParseSubsystemType(maj, min);
+    if (subsystem_type < 0)
+        return subsystem_type;
 
     local_devices = calloc(max_count, sizeof(drmDevicePtr));
     if (local_devices == NULL)
