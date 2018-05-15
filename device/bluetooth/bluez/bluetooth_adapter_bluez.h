@@ -164,6 +164,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterBlueZ
   void NotifyDeviceAddressChanged(BluetoothDeviceBlueZ* device,
                                   const std::string& old_address);
 
+  // Announce to observers MTU change in ATT communication to |device|.
+  void NotifyDeviceMTUChanged(BluetoothDeviceBlueZ* device, uint16_t mtu);
+
   // Returns the object path of the adapter.
   const dbus::ObjectPath& object_path() const { return object_path_; }
 

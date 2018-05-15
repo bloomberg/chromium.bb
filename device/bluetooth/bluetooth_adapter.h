@@ -130,6 +130,14 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapter
     virtual void DevicePairedChanged(BluetoothAdapter* adapter,
                                      BluetoothDevice* device,
                                      bool new_paired_status) {}
+
+    // This function is implemented for ChromeOS only.
+    // Called when the MTU |mtu| (Bluetooth Spec Vol 3, Part F, 3.4.2) used in
+    // ATT communication with device |device| known to the adapter |adapter|
+    // changed.
+    virtual void DeviceMTUChanged(BluetoothAdapter* adapter,
+                                  BluetoothDevice* device,
+                                  uint16_t mtu) {}
 #endif
 
     // Called when the device |device| is removed from the adapter |adapter|,

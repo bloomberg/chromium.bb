@@ -208,6 +208,7 @@ BluetoothDeviceClient::Properties::Properties(
                    &services_resolved);
   RegisterProperty(bluetooth_device::kAdvertisingDataFlagsProperty,
                    &advertising_data_flags);
+  RegisterProperty(bluetooth_device::kMTUProperty, &mtu);
 }
 
 BluetoothDeviceClient::Properties::~Properties() = default;

@@ -42,6 +42,9 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
   void DevicePairedChanged(device::BluetoothAdapter* adapter,
                            device::BluetoothDevice* device,
                            bool new_paired_status) override;
+  void DeviceMTUChanged(device::BluetoothAdapter* adapter,
+                        device::BluetoothDevice* device,
+                        uint16_t mtu) override;
 #endif
   void DeviceRemoved(BluetoothAdapter* adapter,
                      BluetoothDevice* device) override;
@@ -97,6 +100,8 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
     return device_paired_changed_count_;
   }
   bool device_new_paired_status() const { return device_new_paired_status_; }
+  int device_mtu_changed_count() const { return device_mtu_changed_count_; }
+  uint16_t last_mtu_value() const { return device_mtu_; }
 #endif
   int device_removed_count() const { return device_removed_count_; }
   BluetoothDevice* last_device() const { return last_device_; }
@@ -180,6 +185,8 @@ class TestBluetoothAdapterObserver : public BluetoothAdapter::Observer {
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   int device_paired_changed_count_;
   bool device_new_paired_status_;
+  int device_mtu_changed_count_;
+  uint16_t device_mtu_;
 #endif
   int device_removed_count_;
   BluetoothDevice* last_device_;
