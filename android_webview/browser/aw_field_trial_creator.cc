@@ -23,6 +23,7 @@
 #include "components/variations/entropy_provider.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/safe_seed_manager.h"
+#include "components/variations/service/variations_service.h"
 
 namespace android_webview {
 namespace {
@@ -76,7 +77,7 @@ std::unique_ptr<PrefService> AwFieldTrialCreator::CreateLocalState() {
       variations::prefs::kVariationsPermanentConsistencyCountry,
       std::make_unique<base::ListValue>());
 
-  variations::SafeSeedManager::RegisterPrefs(pref_registry.get());
+  variations::VariationsService::RegisterPrefs(pref_registry.get());
 
   pref_service_factory_.set_user_prefs(
       base::MakeRefCounted<InMemoryPrefStore>());
