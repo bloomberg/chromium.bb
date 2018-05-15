@@ -349,7 +349,10 @@ bool AutoplayPolicy::IsGestureNeededForPlaybackIfPendingUserGestureIsLocked()
   if (element_->IsHTMLVideoElement() && element_->muted() &&
       RuntimeEnabledFeatures::AutoplayMutedVideosEnabled() &&
       !(element_->GetDocument().GetSettings() &&
-        GetNetworkStateNotifier().SaveDataEnabled()) &&
+        GetNetworkStateNotifier().SaveDataEnabled() &&
+        !element_->GetDocument()
+             .GetSettings()
+             ->GetDataSaverHoldbackMediaApi()) &&
       !(element_->GetDocument().GetSettings() &&
         element_->GetDocument()
             .GetSettings()

@@ -625,6 +625,14 @@ void WebSettingsImpl::SetPictureInPictureEnabled(bool enabled) {
   settings_->SetPictureInPictureEnabled(enabled);
 }
 
+void WebSettingsImpl::SetDataSaverHoldbackWebApi(bool enabled) {
+  settings_->SetDataSaverHoldbackWebApi(enabled);
+}
+
+void WebSettingsImpl::SetDataSaverHoldbackMediaApi(bool enabled) {
+  settings_->SetDataSaverHoldbackMediaApi(enabled);
+}
+
 void WebSettingsImpl::SetMediaPlaybackGestureWhitelistScope(
     const WebString& scope) {
   settings_->SetMediaPlaybackGestureWhitelistScope(scope);

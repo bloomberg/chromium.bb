@@ -722,9 +722,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::EnableXSLT(prefs.xslt_enabled);
   settings->SetXSSAuditorEnabled(prefs.xss_auditor_enabled);
   settings->SetDNSPrefetchingEnabled(prefs.dns_prefetching_enabled);
-  blink::WebNetworkStateNotifier::SetSaveDataEnabled(
-      prefs.data_saver_enabled &&
-      !base::FeatureList::IsEnabled(features::kDataSaverHoldback));
+  blink::WebNetworkStateNotifier::SetSaveDataEnabled(prefs.data_saver_enabled);
   settings->SetLocalStorageEnabled(prefs.local_storage_enabled);
   settings->SetSyncXHRInDocumentsEnabled(prefs.sync_xhr_in_documents_enabled);
   WebRuntimeFeatures::EnableDatabase(prefs.databases_enabled);
@@ -974,6 +972,11 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   } else {
     settings->SetPictureInPictureEnabled(prefs.picture_in_picture_enabled);
   }
+
+  settings->SetDataSaverHoldbackWebApi(
+      prefs.data_saver_holdback_web_api_enabled);
+  settings->SetDataSaverHoldbackMediaApi(
+      prefs.data_saver_holdback_media_api_enabled);
 
 #if defined(OS_MACOSX)
   settings->SetDoubleTapToZoomEnabled(true);

@@ -4,6 +4,7 @@
 
 #include <string>
 
+#include "base/metrics/field_trial_param_associator.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -17,10 +18,13 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 // Tests if the save data header holdback works as expected.
-class DataSaverHoldbackBrowserTest : public InProcessBrowserTest {
+class DataSaverHoldbackBrowserTest : public InProcessBrowserTest,
+                                     public testing::WithParamInterface<bool> {
  protected:
+  DataSaverHoldbackBrowserTest() { ConfigureHoldbackExperiment(); }
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kDataSaverHoldback);
+    test_server_.ServeFilesFromSourceDirectory("content/test/data");
+    ASSERT_TRUE(test_server_.Start());
     InProcessBrowserTest::SetUp();
   }
 
@@ -41,13 +45,58 @@ class DataSaverHoldbackBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(expected_header_value, header_value);
   }
 
+  void VerifySaveDataAPI(bool expected_header_set) {
+    ui_test_utils::NavigateToURL(browser(),
+                                 test_server_.GetURL("/net_info.html"));
+    EXPECT_EQ(expected_header_set, RunScriptExtractBool("getSaveData()"));
+  }
+
+  void ConfigureHoldbackExperiment() {
+    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
+    const std::string kTrialName = "TrialFoo";
+    const std::string kGroupName = "GroupFoo";  // Value not used
+
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
+
+    std::map<std::string, std::string> params;
+    params["holdback_web"] = GetParam() ? "true" : "false";
+    ASSERT_TRUE(
+        base::FieldTrialParamAssociator::GetInstance()
+            ->AssociateFieldTrialParams(kTrialName, kGroupName, params));
+
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    feature_list->RegisterFieldTrialOverride(
+        features::kDataSaverHoldback.name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
+    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+  }
+
  private:
+  bool RunScriptExtractBool(const std::string& script) {
+    bool data;
+    EXPECT_TRUE(ExecuteScriptAndExtractBool(
+        browser()->tab_strip_model()->GetActiveWebContents(), script, &data));
+    return data;
+  }
+
+  net::EmbeddedTestServer test_server_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-IN_PROC_BROWSER_TEST_F(DataSaverHoldbackBrowserTest,
+// The data saver holdback is enabled only if the first param is true.
+INSTANTIATE_TEST_CASE_P(, DataSaverHoldbackBrowserTest, testing::Bool());
+
+IN_PROC_BROWSER_TEST_P(DataSaverHoldbackBrowserTest,
                        DataSaverEnabledWithHoldbackEnabled) {
   ASSERT_TRUE(embedded_test_server()->Start());
   EnableDataSaver(true);
-  VerifySaveDataHeader("None");
+
+  // If holdback is enabled, then the save-data header should not be set.
+  if (GetParam()) {
+    VerifySaveDataHeader("None");
+  } else {
+    VerifySaveDataHeader("on");
+  }
+  VerifySaveDataAPI(!GetParam());
 }

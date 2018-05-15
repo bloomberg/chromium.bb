@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -175,14 +176,17 @@ void AutoplayUmaHelper::OnAutoplayInitiated(AutoplaySource source) {
   // Record if it will be blocked by Data Saver or Autoplay setting.
   if (element_->IsHTMLVideoElement() && element_->muted() &&
       RuntimeEnabledFeatures::AutoplayMutedVideosEnabled()) {
-    bool data_saver_enabled = GetNetworkStateNotifier().SaveDataEnabled();
+    bool data_saver_enabled_for_autoplay =
+        GetNetworkStateNotifier().SaveDataEnabled() &&
+        element_->GetDocument().GetSettings() &&
+        !element_->GetDocument().GetSettings()->GetDataSaverHoldbackMediaApi();
     bool blocked_by_setting =
         !element_->GetAutoplayPolicy().IsAutoplayAllowedPerSettings();
 
-    if (data_saver_enabled && blocked_by_setting) {
+    if (data_saver_enabled_for_autoplay && blocked_by_setting) {
       blocked_muted_video_histogram.Count(
           kAutoplayBlockedReasonDataSaverAndSetting);
-    } else if (data_saver_enabled) {
+    } else if (data_saver_enabled_for_autoplay) {
       blocked_muted_video_histogram.Count(kAutoplayBlockedReasonDataSaver);
     } else if (blocked_by_setting) {
       blocked_muted_video_histogram.Count(kAutoplayBlockedReasonSetting);

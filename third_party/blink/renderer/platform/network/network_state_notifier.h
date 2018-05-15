@@ -158,6 +158,9 @@ class PLATFORM_EXPORT NetworkStateNotifier {
     return state.downlink_throughput_mbps;
   }
 
+  // Returns if the save data functionality has been enabled by the user.
+  // The returned value does not account for any holdback experiments that may
+  // be enabled.
   bool SaveDataEnabled() const {
     MutexLocker locker(mutex_);
     const NetworkState& state = has_override_ ? override_ : state_;

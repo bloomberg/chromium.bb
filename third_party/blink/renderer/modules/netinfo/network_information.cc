@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -16,6 +17,13 @@
 namespace blink {
 
 namespace {
+
+Settings* GetSettings(ExecutionContext* execution_context) {
+  DCHECK(execution_context);
+
+  Document* document = ToDocument(execution_context);
+  return document->GetSettings();
+}
 
 String ConnectionTypeToString(WebConnectionType type) {
   switch (type) {
@@ -105,7 +113,9 @@ double NetworkInformation::downlink() const {
 
 bool NetworkInformation::saveData() const {
   return IsObserving() ? save_data_
-                       : GetNetworkStateNotifier().SaveDataEnabled();
+                       : GetNetworkStateNotifier().SaveDataEnabled() &&
+                             !GetSettings(GetExecutionContext())
+                                  ->GetDataSaverHoldbackWebApi();
 }
 
 void NetworkInformation::ConnectionChange(
@@ -228,7 +238,9 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
       downlink_mbps_(GetNetworkStateNotifier().RoundMbps(
           Host(),
           GetNetworkStateNotifier().DownlinkThroughputMbps())),
-      save_data_(GetNetworkStateNotifier().SaveDataEnabled()),
+      save_data_(
+          GetNetworkStateNotifier().SaveDataEnabled() &&
+          !GetSettings(GetExecutionContext())->GetDataSaverHoldbackWebApi()),
       context_stopped_(false) {
   DCHECK_LE(1u, GetNetworkStateNotifier().RandomizationSalt());
   DCHECK_GE(20u, GetNetworkStateNotifier().RandomizationSalt());

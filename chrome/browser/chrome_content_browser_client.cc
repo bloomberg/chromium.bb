@@ -2887,6 +2887,13 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
 
   web_prefs->data_saver_enabled = GetDataSaverEnabledPref(prefs);
 
+  web_prefs->data_saver_holdback_web_api_enabled =
+      base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
+                                              "holdback_web", false);
+  web_prefs->data_saver_holdback_media_api_enabled =
+      base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
+                                              "holdback_media", false);
+
   content::WebContents* contents =
       content::WebContents::FromRenderViewHost(rvh);
   if (contents) {
