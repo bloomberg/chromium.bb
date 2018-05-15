@@ -71,7 +71,7 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   void CreateLoopbackStream(
       RenderFrameHost* frame,
-      WebContents* source_contents,
+      RenderFrameHost* frame_of_source_web_contents,
       const media::AudioParameters& params,
       uint32_t shared_memory_count,
       bool mute_source,

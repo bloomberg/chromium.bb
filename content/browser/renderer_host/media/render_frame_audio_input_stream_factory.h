@@ -12,6 +12,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/common/media_stream_request.h"
 #include "mojo/public/cpp/bindings/binding.h"
 

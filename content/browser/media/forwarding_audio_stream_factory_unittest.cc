@@ -272,8 +272,8 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 
   EXPECT_CALL(*broker, CreateStream(NotNull()));
   mojo::MakeRequest(&client);
-  factory.CreateLoopbackStream(main_rfh(), source_contents.get(), kParams,
-                               kSharedMemoryCount, kMuteSource,
+  factory.CreateLoopbackStream(main_rfh(), source_contents->GetMainFrame(),
+                               kParams, kSharedMemoryCount, kMuteSource,
                                std::move(client));
 }
 
@@ -340,16 +340,16 @@ TEST_F(ForwardingAudioStreamFactoryTest,
   {
     EXPECT_CALL(*main_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateLoopbackStream(main_rfh(), source_contents.get(), kParams,
-                                 kSharedMemoryCount, kMuteSource,
+    factory.CreateLoopbackStream(main_rfh(), source_contents->GetMainFrame(),
+                                 kParams, kSharedMemoryCount, kMuteSource,
                                  std::move(client));
     testing::Mock::VerifyAndClear(&*main_rfh_broker);
   }
   {
     EXPECT_CALL(*other_rfh_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&client);
-    factory.CreateLoopbackStream(other_rfh(), source_contents.get(), kParams,
-                                 kSharedMemoryCount, kMuteSource,
+    factory.CreateLoopbackStream(other_rfh(), source_contents->GetMainFrame(),
+                                 kParams, kSharedMemoryCount, kMuteSource,
                                  std::move(client));
     testing::Mock::VerifyAndClear(&*other_rfh_broker);
   }
@@ -435,16 +435,16 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
   {
     EXPECT_CALL(*main_rfh_loopback_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
-    factory.CreateLoopbackStream(main_rfh(), source_contents.get(), kParams,
-                                 kSharedMemoryCount, kMuteSource,
+    factory.CreateLoopbackStream(main_rfh(), source_contents->GetMainFrame(),
+                                 kParams, kSharedMemoryCount, kMuteSource,
                                  std::move(input_client));
     testing::Mock::VerifyAndClear(&*main_rfh_loopback_broker);
   }
   {
     EXPECT_CALL(*other_rfh_loopback_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&input_client);
-    factory.CreateLoopbackStream(other_rfh(), source_contents.get(), kParams,
-                                 kSharedMemoryCount, kMuteSource,
+    factory.CreateLoopbackStream(other_rfh(), source_contents->GetMainFrame(),
+                                 kParams, kSharedMemoryCount, kMuteSource,
                                  std::move(input_client));
     testing::Mock::VerifyAndClear(&*other_rfh_loopback_broker);
   }

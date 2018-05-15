@@ -15,7 +15,10 @@
 #include "content/browser/media/forwarding_audio_stream_factory.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_media_capture_id.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
@@ -101,7 +104,19 @@ class RenderFrameAudioInputStreamFactoryTest
       last_created_callback = std::move(created_callback);
     }
 
+    void CreateLoopbackStream(
+        media::mojom::AudioInputStreamRequest stream_request,
+        media::mojom::AudioInputStreamClientPtr client,
+        media::mojom::AudioInputStreamObserverPtr observer,
+        const media::AudioParameters& params,
+        uint32_t shared_memory_count,
+        const base::UnguessableToken& group_id,
+        CreateLoopbackStreamCallback created_callback) override {
+      last_created_loopback_callback = std::move(created_callback);
+    }
+
     CreateInputStreamCallback last_created_callback;
+    CreateLoopbackStreamCallback last_created_loopback_callback;
 
     mojo::Binding<audio::mojom::StreamFactory> binding_;
   };
@@ -187,6 +202,57 @@ TEST_F(RenderFrameAudioInputStreamFactoryTest,
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(!!audio_service_stream_factory_.last_created_callback);
+}
+
+TEST_F(RenderFrameAudioInputStreamFactoryTest,
+       CreateWebContentsCapture_ForwardsCall) {
+  std::unique_ptr<WebContents> source_contents = CreateTestWebContents();
+  mojom::RendererAudioInputStreamFactoryPtr factory_ptr;
+  RenderFrameAudioInputStreamFactory factory(mojo::MakeRequest(&factory_ptr),
+                                             audio_input_device_manager(),
+                                             main_rfh());
+
+  RenderFrameHost* main_frame = source_contents->GetMainFrame();
+  WebContentsMediaCaptureId capture_id(main_frame->GetProcess()->GetID(),
+                                       main_frame->GetRoutingID());
+  int session_id = audio_input_device_manager()->Open(MediaStreamDevice(
+      MEDIA_TAB_AUDIO_CAPTURE, capture_id.ToString(), kDeviceName));
+  base::RunLoop().RunUntilIdle();
+
+  mojom::RendererAudioInputStreamFactoryClientPtr client;
+  mojo::MakeRequest(&client);
+  factory_ptr->CreateStream(std::move(client), session_id, kParams, kAGC,
+                            kSharedMemoryCount);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(!!audio_service_stream_factory_.last_created_loopback_callback);
+}
+
+TEST_F(RenderFrameAudioInputStreamFactoryTest,
+       CreateWebContentsCaptureAfterCaptureSourceDestructed_Fails) {
+  std::unique_ptr<WebContents> source_contents = CreateTestWebContents();
+  mojom::RendererAudioInputStreamFactoryPtr factory_ptr;
+  RenderFrameAudioInputStreamFactory factory(mojo::MakeRequest(&factory_ptr),
+                                             audio_input_device_manager(),
+                                             main_rfh());
+
+  RenderFrameHost* main_frame = source_contents->GetMainFrame();
+  WebContentsMediaCaptureId capture_id(main_frame->GetProcess()->GetID(),
+                                       main_frame->GetRoutingID());
+  int session_id = audio_input_device_manager()->Open(MediaStreamDevice(
+      MEDIA_TAB_AUDIO_CAPTURE, capture_id.ToString(), kDeviceName));
+  base::RunLoop().RunUntilIdle();
+
+  source_contents.reset();
+  mojom::RendererAudioInputStreamFactoryClientPtr client;
+  mojo::MakeRequest(&client);
+  factory_ptr->CreateStream(std::move(client), session_id, kParams, kAGC,
+                            kSharedMemoryCount);
+
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(!!audio_service_stream_factory_.last_created_loopback_callback);
 }
 
 TEST_F(RenderFrameAudioInputStreamFactoryTest,
