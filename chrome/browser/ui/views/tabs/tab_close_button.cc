@@ -146,10 +146,10 @@ bool TabCloseButton::GetHitTestMask(gfx::Path* mask) const {
 }
 
 SkAlpha TabCloseButton::GetOpacity() {
-  if (!MD::IsRefreshUi() && !IsMouseHovered())
+  Tab* tab = static_cast<Tab*>(parent());
+  if (!MD::IsRefreshUi() || IsMouseHovered() || tab->IsActive())
     return SK_AlphaOPAQUE;
-  const double animation_value =
-      static_cast<Tab*>(parent())->hover_controller()->GetAnimationValue();
+  const double animation_value = tab->hover_controller()->GetAnimationValue();
   return gfx::Tween::IntValueBetween(animation_value, 0, 255);
 }
 
