@@ -1,6 +1,9 @@
-# Code coverage in Chromium
+# Code Coverage in Chromium
+
+### Coverage Dashboard: [https://chromium-coverage.appspot.com/]
 
 Table of contents:
+
 - [Coverage Script](#coverage-script)
 - [Workflow](#workflow)
   * [Step 0 Download Tooling](#step-0-download-tooling)
@@ -199,17 +202,71 @@ involved:
 
 For more information, please see [crbug.com/834781].
 
+### Why do we see significantly different coverage reported on different revisions?
+
+There can be two possible scenarios:
+
+* It can be a one time flakiness due to a broken build or failing tests.
+* It can be caused by extension of the test suite used for generating code
+coverage reports. When we add new tests to the suite, the aggregate coverage
+reported usually grows after that.
+
+### How can I improve [coverage dashboard]?
+
+Source code of the dashboard is not open sourced at the moment, but if you are a
+Googler, you should have access to the code-coverage repository. There is a
+documentation and scripts for running it locally. To get access and report
+issues, ping chrome-code-coverage@ list.
+
+### Why is coverage for X not reported or unreasonably low, even though there is a test for X?
+
+There are several reasons why coverage reports can be incomplete or incorrect:
+
+* A particular test is not used for code coverage report generation. Please
+check the [test suite], and if the test is missing, upload a CL to add it.
+* A test may have a build failure or a runtime crash. Please check [the logs]
+for that particular test target (rightmost column on the [coverage dashboard]).
+If there is any failure, please upload a CL with the fix. If you can't fix it,
+feel free to [file a bug].
+* A particular test may not be available on a particular platform. As of now,
+only reports generated on Linux are available on the [coverage dashboard].
+
+### Why is coverage for X_fuzzer.cc file not reported, even though there are no errors in the log?
+
+There was an issue with merging coverage data for multiple definitions of the
+same symbol ([crbug.com/821617]). Given that every fuzz target defines its own
+`LLVMFuzzerTestOneInput` function, most of those functions are not presented in
+the report as of now. Please note that this issue does not affect coverage of
+the functions that are called from a fuzz target, i.e. the code that is actually
+being fuzzed. We have landed the fix upstream. In Chromium the issue will get
+resolved after the next [clang roll].
+
+### Is coverage reported for the code executed inside the sandbox?
+
+Not at the moment until [crbug.com/842424] is resolved. We do not disable the
+sandbox when running the tests. However, if there are any other non-sandbox'ed
+tests for the same code, the coverage should be reported from those. For more
+information, see [crbug.com/842424].
+
 
 [chrome-code-coverage group]: https://groups.google.com/a/google.com/forum/#!forum/chrome-code-coverage
+[code-coverage repository]: https://chrome-internal.googlesource.com/chrome/tools/code-coverage
+[coverage dashboard]: https://chromium-coverage.appspot.com/
 [coverage script]: https://cs.chromium.org/chromium/src/tools/code_coverage/coverage.py
 [code coverage report directory view]: images/code_coverage_directory_view.png
 [code coverage report component view]: images/code_coverage_component_view.png
 [code coverage source view]: images/code_coverage_source_view.png
+[crbug.com/821617]: https://crbug.com/821617
 [crbug.com/831939]: https://crbug.com/831939
 [crbug.com/834781]: https://crbug.com/834781
+[crbug.com/842424]: https://crbug.com/842424
+[clang roll]: https://crbug.com/841908
 [documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [file a new issue]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [guide]: http://llvm.org/docs/CommandGuide/llvm-cov.html
+[https://chromium-coverage.appspot.com/]: https://chromium-coverage.appspot.com/
 [known issues]: https://bugs.chromium.org/p/chromium/issues/list?q=component:Tools%3ECodeCoverage
 [link]: https://storage.googleapis.com/chromium-browser-clang-staging/
+[test suite]: https://cs.chromium.org/chromium/src/tools/code_coverage/test_suite.txt
+[the logs]: https://chromium-coverage.appspot.com/reports/latest/linux/metadata/index.html
