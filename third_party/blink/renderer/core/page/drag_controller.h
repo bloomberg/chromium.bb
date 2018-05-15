@@ -41,7 +41,6 @@ class DataTransfer;
 class Document;
 class DragData;
 class DragImage;
-struct DragSession;
 class DragState;
 class LocalFrame;
 class FloatRect;
@@ -56,7 +55,7 @@ class CORE_EXPORT DragController final
  public:
   static DragController* Create(Page*);
 
-  DragSession DragEnteredOrUpdated(DragData*, LocalFrame& local_root);
+  DragOperation DragEnteredOrUpdated(DragData*, LocalFrame& local_root);
   void DragExited(DragData*, LocalFrame& local_root);
   void PerformDrag(DragData*, LocalFrame& local_root);
 
@@ -99,7 +98,7 @@ class CORE_EXPORT DragController final
   DragOperation OperationForLoad(DragData*, LocalFrame& local_root);
   bool TryDocumentDrag(DragData*,
                        DragDestinationAction,
-                       DragSession&,
+                       DragOperation&,
                        LocalFrame& local_root);
   bool TryDHTMLDrag(DragData*, DragOperation&, LocalFrame& local_root);
   DragOperation GetDragOperation(DragData*);

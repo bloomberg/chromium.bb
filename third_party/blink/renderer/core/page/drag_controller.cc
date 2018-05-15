@@ -76,7 +76,6 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource_content.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
-#include "third_party/blink/renderer/core/page/drag_session.h"
 #include "third_party/blink/renderer/core/page/drag_state.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image_for_container.h"
@@ -319,8 +318,8 @@ void DragController::MouseMovedIntoDocument(Document* new_document) {
   document_under_mouse_ = new_document;
 }
 
-DragSession DragController::DragEnteredOrUpdated(DragData* drag_data,
-                                                 LocalFrame& local_root) {
+DragOperation DragController::DragEnteredOrUpdated(DragData* drag_data,
+                                                   LocalFrame& local_root) {
   DCHECK(drag_data);
 
   MouseMovedIntoDocument(
@@ -333,13 +332,13 @@ DragSession DragController::DragEnteredOrUpdated(DragData* drag_data,
           : static_cast<DragDestinationAction>(kDragDestinationActionDHTML |
                                                kDragDestinationActionEdit);
 
-  DragSession drag_session;
+  DragOperation drag_operation = kDragOperationNone;
   document_is_handling_drag_ = TryDocumentDrag(
-      drag_data, drag_destination_action_, drag_session, local_root);
+      drag_data, drag_destination_action_, drag_operation, local_root);
   if (!document_is_handling_drag_ &&
       (drag_destination_action_ & kDragDestinationActionLoad))
-    drag_session.operation = OperationForLoad(drag_data, local_root);
-  return drag_session;
+    drag_operation = OperationForLoad(drag_data, local_root);
+  return drag_operation;
 }
 
 static HTMLInputElement* AsFileInput(Node* node) {
@@ -370,7 +369,7 @@ static Element* ElementUnderMouse(Document* document_under_mouse,
 
 bool DragController::TryDocumentDrag(DragData* drag_data,
                                      DragDestinationAction action_mask,
-                                     DragSession& drag_session,
+                                     DragOperation& drag_operation,
                                      LocalFrame& local_root) {
   DCHECK(drag_data);
 
@@ -383,8 +382,7 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
 
   bool is_handling_drag = false;
   if (action_mask & kDragDestinationActionDHTML) {
-    is_handling_drag =
-        TryDHTMLDrag(drag_data, drag_session.operation, local_root);
+    is_handling_drag = TryDHTMLDrag(drag_data, drag_operation, local_root);
     // Do not continue if m_documentUnderMouse has been reset by tryDHTMLDrag.
     // tryDHTMLDrag fires dragenter event. The event listener that listens
     // to this event may create a nested run loop (open a modal dialog),
@@ -426,32 +424,20 @@ bool DragController::TryDocumentDrag(DragData* drag_data,
     }
 
     LocalFrame* inner_frame = element->GetDocument().GetFrame();
-    drag_session.operation = DragIsMove(inner_frame->Selection(), drag_data)
-                                 ? kDragOperationMove
-                                 : kDragOperationCopy;
-    drag_session.mouse_is_over_file_input = file_input_element_under_mouse_;
-    drag_session.number_of_items_to_be_accepted = 0;
-
-    const unsigned number_of_files = drag_data->NumberOfFiles();
+    drag_operation = DragIsMove(inner_frame->Selection(), drag_data)
+                         ? kDragOperationMove
+                         : kDragOperationCopy;
     if (file_input_element_under_mouse_) {
-      if (file_input_element_under_mouse_->IsDisabledFormControl())
-        drag_session.number_of_items_to_be_accepted = 0;
-      else if (file_input_element_under_mouse_->Multiple())
-        drag_session.number_of_items_to_be_accepted = number_of_files;
-      else if (number_of_files == 1)
-        drag_session.number_of_items_to_be_accepted = 1;
-      else
-        drag_session.number_of_items_to_be_accepted = 0;
-
-      if (!drag_session.number_of_items_to_be_accepted)
-        drag_session.operation = kDragOperationNone;
+      bool can_receive_dropped_files = false;
+      if (!file_input_element_under_mouse_->IsDisabledFormControl()) {
+        can_receive_dropped_files = file_input_element_under_mouse_->Multiple()
+                                        ? drag_data->NumberOfFiles() > 0
+                                        : drag_data->NumberOfFiles() == 1;
+      }
+      if (!can_receive_dropped_files)
+        drag_operation = kDragOperationNone;
       file_input_element_under_mouse_->SetCanReceiveDroppedFiles(
-          drag_session.number_of_items_to_be_accepted);
-    } else {
-      // We are not over a file input element. The dragged item(s) will only
-      // be loaded into the view the number of dragged items is 1.
-      drag_session.number_of_items_to_be_accepted =
-          number_of_files != 1 ? 0 : 1;
+          can_receive_dropped_files);
     }
 
     return true;

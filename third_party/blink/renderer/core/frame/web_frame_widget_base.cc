@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/page/drag_actions.h"
 #include "third_party/blink/renderer/core/page/drag_controller.h"
 #include "third_party/blink/renderer/core/page/drag_data.h"
-#include "third_party/blink/renderer/core/page/drag_session.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/pointer_lock_controller.h"
@@ -238,18 +237,16 @@ WebDragOperation WebFrameWidgetBase::DragTargetDragEnterOrOver(
                      screen_point,
                      static_cast<DragOperation>(operations_allowed_));
 
-  DragSession drag_session;
-  drag_session = GetPage()->GetDragController().DragEnteredOrUpdated(
-      &drag_data, *local_root_->GetFrame());
+  DragOperation drag_operation =
+      GetPage()->GetDragController().DragEnteredOrUpdated(
+          &drag_data, *local_root_->GetFrame());
 
-  DragOperation drop_effect = drag_session.operation;
-
-  // Mask the drop effect operation against the drag source's allowed
+  // Mask the drag operation against the drag source's allowed
   // operations.
-  if (!(drop_effect & drag_data.DraggingSourceOperationMask()))
-    drop_effect = kDragOperationNone;
+  if (!(drag_operation & drag_data.DraggingSourceOperationMask()))
+    drag_operation = kDragOperationNone;
 
-  drag_operation_ = static_cast<WebDragOperation>(drop_effect);
+  drag_operation_ = static_cast<WebDragOperation>(drag_operation);
 
   return drag_operation_;
 }
