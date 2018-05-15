@@ -139,15 +139,31 @@ void PlaceholderImageSource::Draw(gfx::Canvas* canvas) {
                                      kRichImageCornerRadius, flags);
 }
 
-}  // namespace
-
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxImageView:
 
 class OmniboxImageView : public views::ImageView {
  public:
+  OmniboxImageView() = default;
+
   bool CanProcessEventsWithinSubtree() const override { return false; }
+
+ private:
+  // views::ImageView:
+  void OnPaint(gfx::Canvas* canvas) override;
+
+  DISALLOW_COPY_AND_ASSIGN(OmniboxImageView);
 };
+
+void OmniboxImageView::OnPaint(gfx::Canvas* canvas) {
+  gfx::Path mask;
+  mask.addRoundRect(gfx::RectToSkRect(GetImageBounds()), kRichImageCornerRadius,
+                    kRichImageCornerRadius);
+  canvas->ClipPath(mask, true);
+  ImageView::OnPaint(canvas);
+}
+
+}  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxMatchCellView:
