@@ -128,9 +128,12 @@ class FakeBluetoothInstance : public mojom::BluetoothInstance {
 
   void OnGetSdpRecords(
       mojom::BluetoothStatus status,
-      mojom::BluetoothAddressPtr remove_addr,
+      mojom::BluetoothAddressPtr remote_addr,
       const device::BluetoothUUID& target_uuid,
       std::vector<mojom::BluetoothSdpRecordPtr> records) override;
+
+  void OnMTUReceived(mojom::BluetoothAddressPtr remote_addr,
+                     uint16_t mtu) override;
 
   const std::vector<std::vector<mojom::BluetoothPropertyPtr>>&
   device_found_data() const {
