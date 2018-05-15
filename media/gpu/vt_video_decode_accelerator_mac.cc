@@ -23,7 +23,9 @@
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/memory_allocator_dump.h"
 #include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/process_memory_dump.h"
 #include "base/version.h"
 #include "media/base/limits.h"
 #include "media/gpu/shared_memory_region.h"
@@ -68,11 +70,24 @@ const VideoCodecProfile kSupportedProfiles[] = {
 // Size to use for NALU length headers in AVC format (can be 1, 2, or 4).
 const int kNALUHeaderLength = 4;
 
-// We request 8 picture buffers from the client, each of which has a texture ID
-// that we can bind decoded frames to. We need enough to satisfy preroll and
-// to avoid unnecessary stalling. The resource requirements are low, as we don't
-// need the textures to be backed by storage.
-const int kNumPictureBuffers = limits::kMaxVideoFrames * 2;
+// We request 16 picture buffers from the client, each of which has a texture ID
+// that we can bind decoded frames to. The resource requirements are low, as we
+// don't need the textures to be backed by storage.
+//
+// The lower limit is |limits::kMaxVideoFrames + 1|, enough to have one
+// composited frame plus |limits::kMaxVideoFrames| frames to satisfy preroll.
+//
+// However, there can be pathological behavior where VideoRendererImpl will
+// continue to call Decode() as long as it is willing to queue more output
+// frames, which is variable but starts at |limits::kMaxVideoFrames +
+// GetMaxDecodeRequests()|. If we don't have enough picture buffers, it will
+// continue to call Decode() until we stop calling NotifyEndOfBistreamBuffer(),
+// which for VTVDA is when the reorder queue is full. In testing this results in
+// ~20 extra frames held by VTVDA.
+//
+// Allocating more picture buffers than VideoRendererImpl is willing to queue
+// counterintuitively reduces memory usage in this case.
+const int kNumPictureBuffers = limits::kMaxVideoFrames * 4;
 
 // Maximum number of frames to queue for reordering. (Also controls the maximum
 // number of in-flight frames, since NotifyEndOfBitstreamBuffer() is called when
@@ -81,6 +96,16 @@ const int kNumPictureBuffers = limits::kMaxVideoFrames * 2;
 // Since the maximum possible |reorder_window| is 16 for H.264, 17 is the
 // minimum safe (static) size of the reorder queue.
 const int kMaxReorderQueueSize = 17;
+
+// Returns reference to the underlying container of a container adapter.
+// Works for std::stack, std::queue and std::priority_queue.
+template <class A>
+const typename A::container_type& GetUnderlyingContainer(const A& adapter) {
+  struct ExposedAdapter : A {
+    using A::c;
+  };
+  return adapter.*&ExposedAdapter::c;
+}
 
 // Build an |image_config| dictionary for VideoToolbox initialization.
 base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
@@ -404,7 +429,8 @@ VTVideoDecodeAccelerator::Frame::~Frame() {}
 
 VTVideoDecodeAccelerator::PictureInfo::PictureInfo(uint32_t client_texture_id,
                                                    uint32_t service_texture_id)
-    : client_texture_id(client_texture_id),
+    : bitstream_id(0),
+      client_texture_id(client_texture_id),
       service_texture_id(service_texture_id) {}
 
 VTVideoDecodeAccelerator::PictureInfo::~PictureInfo() {}
@@ -450,16 +476,70 @@ VTVideoDecodeAccelerator::~VTVideoDecodeAccelerator() {
 bool VTVideoDecodeAccelerator::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
+  DCHECK(gpu_task_runner_->BelongsToCurrentThread());
+
+  // Dump output pictures (decoded frames for which PictureReady() has been
+  // called already).
   for (const auto& it : picture_info_map_) {
-    int32_t picture_id = it.first;
     PictureInfo* picture_info = it.second.get();
     if (picture_info->gl_image) {
       std::string dump_name =
           base::StringPrintf("media/vt_video_decode_accelerator_%d/picture_%d",
-                             memory_dump_id_, picture_id);
+                             memory_dump_id_, picture_info->bitstream_id);
       picture_info->gl_image->OnMemoryDump(pmd, 0, dump_name);
     }
   }
+
+  // Dump the output queue (decoded frames for which
+  // NotifyEndOfBitstreamBuffer() has not been called yet).
+  {
+    uint64_t total_count = 0;
+    uint64_t total_size = 0;
+    for (const auto& it : GetUnderlyingContainer(task_queue_)) {
+      if (it.frame.get() && it.frame->image) {
+        IOSurfaceRef io_surface = CVPixelBufferGetIOSurface(it.frame->image);
+        if (io_surface) {
+          ++total_count;
+          total_size += IOSurfaceGetAllocSize(io_surface);
+        }
+      }
+    }
+    base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+        base::StringPrintf("media/vt_video_decode_accelerator_%d/output_queue",
+                           memory_dump_id_));
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+                    base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                    total_count);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    total_size);
+  }
+
+  // Dump the reorder queue (decoded frames for which
+  // NotifyEndOfBitstreamBuffer() has been called already).
+  {
+    uint64_t total_count = 0;
+    uint64_t total_size = 0;
+    for (const auto& it : GetUnderlyingContainer(reorder_queue_)) {
+      if (it.get() && it->image) {
+        IOSurfaceRef io_surface = CVPixelBufferGetIOSurface(it->image);
+        if (io_surface) {
+          ++total_count;
+          total_size += IOSurfaceGetAllocSize(io_surface);
+        }
+      }
+    }
+    base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
+        base::StringPrintf("media/vt_video_decode_accelerator_%d/reorder_queue",
+                           memory_dump_id_));
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+                    base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                    total_count);
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                    base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                    total_size);
+  }
+
   return true;
 }
 
@@ -1058,20 +1138,24 @@ void VTVideoDecodeAccelerator::ReusePictureBuffer(int32_t picture_id) {
   DVLOG(2) << __func__ << "(" << picture_id << ")";
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
-  auto it = picture_info_map_.find(picture_id);
-  if (it != picture_info_map_.end()) {
-    PictureInfo* picture_info = it->second.get();
-    picture_info->cv_image.reset();
-    picture_info->gl_image = nullptr;
-  }
-
   // It's possible there was a ReusePictureBuffer() request in flight when we
   // called DismissPictureBuffer(), in which case we won't find it. In that case
   // we should just drop the ReusePictureBuffer() request.
-  if (assigned_picture_ids_.count(picture_id)) {
-    available_picture_ids_.push_back(picture_id);
-    ProcessWorkQueues();
-  }
+  auto it = picture_info_map_.find(picture_id);
+  if (it == picture_info_map_.end())
+    return;
+
+  // Drop references to allow the underlying buffer to be released.
+  PictureInfo* picture_info = it->second.get();
+  bind_image_cb_.Run(picture_info->client_texture_id, GL_TEXTURE_RECTANGLE_ARB,
+                     nullptr, false);
+  picture_info->gl_image = nullptr;
+  picture_info->bitstream_id = 0;
+
+  // Mark the picture as available and try to complete pending output work.
+  DCHECK(assigned_picture_ids_.count(picture_id));
+  available_picture_ids_.push_back(picture_id);
+  ProcessWorkQueues();
 }
 
 void VTVideoDecodeAccelerator::ProcessWorkQueues() {
@@ -1212,6 +1296,7 @@ bool VTVideoDecodeAccelerator::ProcessFrame(const Frame& frame) {
         client_->DismissPictureBuffer(picture_id);
       }
       assigned_picture_ids_.clear();
+      picture_info_map_.clear();
       available_picture_ids_.clear();
 
       // Request new pictures.
@@ -1243,7 +1328,6 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
   auto it = picture_info_map_.find(picture_id);
   DCHECK(it != picture_info_map_.end());
   PictureInfo* picture_info = it->second.get();
-  DCHECK(!picture_info->cv_image);
   DCHECK(!picture_info->gl_image);
 
   scoped_refptr<gl::GLImageIOSurface> gl_image(
@@ -1255,6 +1339,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     NOTIFY_STATUS("Failed to initialize GLImageIOSurface", PLATFORM_FAILURE,
                   SFT_PLATFORM_ERROR);
   }
+  gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
+  gl_image->SetColorSpaceForYUVToRGBConversion(color_space);
 
   if (!bind_image_cb_.Run(picture_info->client_texture_id,
                           GL_TEXTURE_RECTANGLE_ARB, gl_image, false)) {
@@ -1262,12 +1348,8 @@ bool VTVideoDecodeAccelerator::SendFrame(const Frame& frame) {
     NotifyError(PLATFORM_FAILURE, SFT_PLATFORM_ERROR);
     return false;
   }
-  gfx::ColorSpace color_space = GetImageBufferColorSpace(frame.image);
-  gl_image->SetColorSpaceForYUVToRGBConversion(color_space);
-
-  // Assign the new image(s) to the the picture info.
   picture_info->gl_image = gl_image;
-  picture_info->cv_image = frame.image;
+  picture_info->bitstream_id = frame.bitstream_id;
   available_picture_ids_.pop_back();
 
   DVLOG(3) << "PictureReady(picture_id=" << picture_id << ", "
