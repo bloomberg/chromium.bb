@@ -1,0 +1,48 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_DELEGATE_H_
+#define CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_DELEGATE_H_
+
+#include <string>
+#include <vector>
+
+#include "base/macros.h"
+
+namespace cryptauth {
+class SecureChannel;
+}  // namespace cryptauth
+
+namespace chromeos {
+
+namespace secure_channel {
+
+class ConnectionAttemptDelegate {
+ public:
+  ConnectionAttemptDelegate() = default;
+  virtual ~ConnectionAttemptDelegate() = default;
+
+  // Invoked when a ConnectionAttempt has successfully resulted in a connection.
+  // |attempt_id| corresponds to the ID returned by
+  // ConnectionAttempt::attempt_id().
+  virtual void OnConnectionAttemptSucceeded(
+      const std::string& attempt_id,
+      std::unique_ptr<cryptauth::SecureChannel> secure_channel) = 0;
+
+  // Invoked when a ConnectionAttempt has finished without achieving a
+  // connection to the remote device (due to cancellation by the client or
+  // connection failures). |attempt_id| corresponds to the ID returned by
+  // ConnectionAttempt::attempt_id().
+  virtual void OnConnectionAttemptFinishedWithoutConnection(
+      const std::string& attempt_id) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ConnectionAttemptDelegate);
+};
+
+}  // namespace secure_channel
+
+}  // namespace chromeos
+
+#endif  // CHROMEOS_SERVICES_SECURE_CHANNEL_CONNECTION_ATTEMPT_DELEGATE_H_
