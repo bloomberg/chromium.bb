@@ -8329,7 +8329,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (search_jnt_comp) {
       // if 1/2 model rd is larger than best_rd in jnt_comp mode,
       // use jnt_comp mode, save additional search
-      if (comp_idx && (rd >> 1) > best_rd) {
+      if ((rd >> 1) > best_rd) {
         restore_dst_buf(xd, orig_dst, num_planes);
         continue;
       }
