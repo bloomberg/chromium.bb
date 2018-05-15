@@ -134,94 +134,6 @@ gfx::Size CrostiniInstallerView::CalculatePreferredSize() const {
   return gfx::Size(kDialogWidth, height);
 }
 
-// static
-CrostiniInstallerView* CrostiniInstallerView::GetActiveViewForTesting() {
-  return g_crostini_installer_view;
-}
-
-CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
-    : app_name_(base::ASCIIToUTF16(kCrostiniTerminalAppName)),
-      profile_(profile),
-      weak_ptr_factory_(this) {
-
-  views::LayoutProvider* provider = views::LayoutProvider::Get();
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical,
-      provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
-      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
-  set_margins(provider->GetDialogInsetsForContentType(
-      views::DialogContentType::TEXT, views::DialogContentType::TEXT));
-
-  // TODO(timloh): Descenders in the message appear to be clipped, re-visit once
-  // the UI has been fleshed out more.
-  const base::string16 device_type = ui::GetChromeOSDeviceName();
-  const base::string16 message = l10n_util::GetStringFUTF16(
-      IDS_CROSTINI_INSTALLER_BODY, device_type, app_name_,
-      ui::FormatBytesWithUnits(kDownloadSizeInBytes, ui::DATA_UNITS_MEBIBYTE,
-                               /*show_units=*/true));
-  message_label_ = new views::Label(message);
-  message_label_->SetMultiLine(true);
-  message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  AddChildView(message_label_);
-
-  chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_INSTALLER);
-}
-
-CrostiniInstallerView::~CrostiniInstallerView() {
-  g_crostini_installer_view = nullptr;
-}
-
-void CrostiniInstallerView::StepProgress() {
-  if (State::INSTALL_START <= state_ && state_ < State::INSTALL_END) {
-    // Setting value to -1 makes the progress bar play the
-    // "indeterminate animation".
-    progress_bar_->SetValue(-1);
-  }
-  SetMessageLabel();
-  DialogModelChanged();
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
-}
-
-void CrostiniInstallerView::HandleError(const base::string16& error_message,
-                                        SetupResult result) {
-  // Only ever set the error once. This check is necessary as the
-  // CrostiniManager can give multiple error callbacks. Only the first should be
-  // shown to the user.
-  if (state_ == State::ERROR)
-    return;
-
-  RecordSetupResultHistogram(result);
-  state_ = State::ERROR;
-  message_label_->SetVisible(true);
-  message_label_->SetText(error_message);
-  progress_bar_->SetVisible(false);
-  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
-  GetWidget()->UpdateWindowTitle();
-}
-
-void CrostiniInstallerView::SetMessageLabel() {
-  int message_id = 0;
-  // The States below refer to stages that have completed.
-  // The messages selected refer to the next stage, now underway.
-  if (state_ == State::INSTALL_START) {
-    message_id = IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE;
-  } else if (state_ == State::INSTALL_IMAGE_LOADER) {
-    message_id = IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE;
-  } else if (state_ == State::START_CONCIERGE) {
-    message_id = IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_MESSAGE;
-  } else if (state_ == State::CREATE_DISK_IMAGE) {
-    message_id = IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE;
-  } else if (state_ == State::START_TERMINA_VM) {
-    message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
-  }
-  if (message_id != 0) {
-    message_label_->SetText(l10n_util::GetStringUTF16(message_id));
-    message_label_->SetVisible(true);
-  } else {
-    message_label_->SetVisible(false);
-  }
-}
-
 void CrostiniInstallerView::OnComponentLoaded(ConciergeClientResult result) {
   DCHECK_EQ(state_, State::INSTALL_START);
   state_ = State::INSTALL_IMAGE_LOADER;
@@ -281,6 +193,59 @@ void CrostiniInstallerView::OnVmStarted(ConciergeClientResult result) {
   StepProgress();
 }
 
+// static
+CrostiniInstallerView* CrostiniInstallerView::GetActiveViewForTesting() {
+  return g_crostini_installer_view;
+}
+
+CrostiniInstallerView::CrostiniInstallerView(Profile* profile)
+    : app_name_(base::ASCIIToUTF16(kCrostiniTerminalAppName)),
+      profile_(profile),
+      weak_ptr_factory_(this) {
+  views::LayoutProvider* provider = views::LayoutProvider::Get();
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::kVertical,
+      provider->GetInsetsMetric(views::InsetsMetric::INSETS_DIALOG),
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
+  set_margins(provider->GetDialogInsetsForContentType(
+      views::DialogContentType::TEXT, views::DialogContentType::TEXT));
+
+  // TODO(timloh): Descenders in the message appear to be clipped, re-visit once
+  // the UI has been fleshed out more.
+  const base::string16 device_type = ui::GetChromeOSDeviceName();
+  const base::string16 message = l10n_util::GetStringFUTF16(
+      IDS_CROSTINI_INSTALLER_BODY, device_type, app_name_,
+      ui::FormatBytesWithUnits(kDownloadSizeInBytes, ui::DATA_UNITS_MEBIBYTE,
+                               /*show_units=*/true));
+  message_label_ = new views::Label(message);
+  message_label_->SetMultiLine(true);
+  message_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  AddChildView(message_label_);
+
+  chrome::RecordDialogCreation(chrome::DialogIdentifier::CROSTINI_INSTALLER);
+}
+
+CrostiniInstallerView::~CrostiniInstallerView() {
+  g_crostini_installer_view = nullptr;
+}
+
+void CrostiniInstallerView::HandleError(const base::string16& error_message,
+                                        SetupResult result) {
+  // Only ever set the error once. This check is necessary as the
+  // CrostiniManager can give multiple error callbacks. Only the first should be
+  // shown to the user.
+  if (state_ == State::ERROR)
+    return;
+
+  RecordSetupResultHistogram(result);
+  state_ = State::ERROR;
+  message_label_->SetVisible(true);
+  message_label_->SetText(error_message);
+  progress_bar_->SetVisible(false);
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+  GetWidget()->UpdateWindowTitle();
+}
+
 void CrostiniInstallerView::StartContainerFinished(
     ConciergeClientResult result) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -307,6 +272,40 @@ void CrostiniInstallerView::ShowLoginShell() {
   StepProgress();
   RecordSetupResultHistogram(SetupResult::kSuccess);
   GetWidget()->Close();
+}
+
+void CrostiniInstallerView::StepProgress() {
+  if (State::INSTALL_START <= state_ && state_ < State::INSTALL_END) {
+    // Setting value to -1 makes the progress bar play the
+    // "indeterminate animation".
+    progress_bar_->SetValue(-1);
+  }
+  SetMessageLabel();
+  DialogModelChanged();
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+}
+
+void CrostiniInstallerView::SetMessageLabel() {
+  int message_id = 0;
+  // The States below refer to stages that have completed.
+  // The messages selected refer to the next stage, now underway.
+  if (state_ == State::INSTALL_START) {
+    message_id = IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE;
+  } else if (state_ == State::INSTALL_IMAGE_LOADER) {
+    message_id = IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE;
+  } else if (state_ == State::START_CONCIERGE) {
+    message_id = IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_MESSAGE;
+  } else if (state_ == State::CREATE_DISK_IMAGE) {
+    message_id = IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE;
+  } else if (state_ == State::START_TERMINA_VM) {
+    message_id = IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE;
+  }
+  if (message_id != 0) {
+    message_label_->SetText(l10n_util::GetStringUTF16(message_id));
+    message_label_->SetVisible(true);
+  } else {
+    message_label_->SetVisible(false);
+  }
 }
 
 void CrostiniInstallerView::RecordSetupResultHistogram(SetupResult result) {
