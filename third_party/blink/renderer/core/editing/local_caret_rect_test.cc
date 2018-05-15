@@ -934,4 +934,24 @@ TEST_P(ParameterizedLocalCaretRectTest, NextLineWithoutLeafChild) {
           .rect);
 }
 
+TEST_P(ParameterizedLocalCaretRectTest, BidiTextWithImage) {
+  LoadAhem();
+  InsertStyleElement(
+      "div { font: 10px/10px Ahem; width: 30px }"
+      "img { width: 10px; height: 10px; vertical-align: bottom }");
+  SetBodyContent("<div dir=rtl>X<img id=image>Y</div>");
+  const Element& image = *GetElementById("image");
+  const LayoutObject* image_layout = image.GetLayoutObject();
+  const LayoutObject* text_before = image.previousSibling()->GetLayoutObject();
+  // TODO(xiaochengh): Should return the same result for legacy and NG
+  EXPECT_EQ(LayoutNGEnabled()
+                ? LocalCaretRect(text_before, LayoutRect(10, 0, 1, 10))
+                : LocalCaretRect(image_layout, LayoutRect(0, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                PositionWithAffinity(Position::BeforeNode(image))));
+  EXPECT_EQ(LocalCaretRect(image_layout, LayoutRect(9, 0, 1, 10)),
+            LocalCaretRectOfPosition(
+                PositionWithAffinity(Position::AfterNode(image))));
+}
+
 }  // namespace blink

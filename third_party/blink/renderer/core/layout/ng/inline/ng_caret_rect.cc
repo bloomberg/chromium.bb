@@ -35,7 +35,7 @@ NGPhysicalOffsetRect ComputeLocalCaretRectByBoxSide(
       fragment.GetLayoutObject()->GetDocument().View();
   LayoutUnit caret_width = frame_view->CaretWidth();
 
-  const bool is_ltr = fragment.Style().Direction() == TextDirection::kLtr;
+  const bool is_ltr = IsLtr(fragment.PhysicalFragment().ResolvedDirection());
   LayoutUnit caret_left;
   if (is_ltr != (position_type == NGCaretPositionType::kBeforeBox)) {
     if (is_horizontal)
