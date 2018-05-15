@@ -68,18 +68,26 @@ bool IsButtonDown(const PlatformEvent& native_event) {
           native_event.wParam) != 0;
 }
 
+bool IsClientMouseMessage(UINT message) {
+  return message == WM_MOUSELEAVE || message == WM_MOUSEHOVER ||
+         (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST);
+}
+
 bool IsClientMouseEvent(const PlatformEvent& native_event) {
-  return native_event.message == WM_MOUSELEAVE ||
-         native_event.message == WM_MOUSEHOVER ||
-        (native_event.message >= WM_MOUSEFIRST &&
-         native_event.message <= WM_MOUSELAST);
+  return IsClientMouseMessage(native_event.message);
+}
+
+bool IsNonClientMouseMessage(UINT message) {
+  return message == WM_NCMOUSELEAVE || message == WM_NCMOUSEHOVER ||
+         (message >= WM_NCMOUSEMOVE && message <= WM_NCXBUTTONDBLCLK);
 }
 
 bool IsNonClientMouseEvent(const PlatformEvent& native_event) {
-  return native_event.message == WM_NCMOUSELEAVE ||
-         native_event.message == WM_NCMOUSEHOVER ||
-        (native_event.message >= WM_NCMOUSEMOVE &&
-         native_event.message <= WM_NCXBUTTONDBLCLK);
+  return IsNonClientMouseMessage(native_event.message);
+}
+
+bool IsMouseMessage(UINT message) {
+  return IsClientMouseMessage(message) || IsNonClientMouseMessage(message);
 }
 
 bool IsMouseEvent(const PlatformEvent& native_event) {
@@ -390,9 +398,9 @@ int GetModifiersFromKeyState() {
 
 // Windows emulates mouse messages for touch events.
 bool IsMouseEventFromTouch(UINT message) {
-  return (message >= WM_MOUSEFIRST) && (message <= WM_MOUSELAST) &&
-      (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
-      MOUSEEVENTF_FROMTOUCH;
+  return IsMouseMessage(message) &&
+         (GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) ==
+             MOUSEEVENTF_FROMTOUCH;
 }
 
 // Conversion scan_code and LParam each other.
