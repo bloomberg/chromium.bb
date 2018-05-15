@@ -42,6 +42,7 @@
 #include "media/gpu/android/device_info.h"
 #include "media/gpu/android/promotion_hint_aggregator_impl.h"
 #include "media/gpu/shared_memory_region.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/buildflags.h"
 #include "media/video/picture.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -73,6 +74,7 @@ enum { kMaxBitstreamsNotifiedInAdvance = 32 };
 // support others. Advertise support for all H264 profiles and let the
 // MediaCodec fail when decoding if it's not actually supported. It's assumed
 // that consumers won't have software fallback for H264 on Android anyway.
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 constexpr VideoCodecProfile kSupportedH264Profiles[] = {
     H264PROFILE_BASELINE,
     H264PROFILE_MAIN,
@@ -89,6 +91,7 @@ constexpr VideoCodecProfile kSupportedH264Profiles[] = {
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 constexpr VideoCodecProfile kSupportedHevcProfiles[] = {HEVCPROFILE_MAIN,
                                                         HEVCPROFILE_MAIN10};
+#endif
 #endif
 
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
@@ -304,22 +307,28 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   codec_config_->initial_expected_coded_size =
       config.initial_expected_coded_size;
 
-  if (codec_config_->codec != kCodecVP8 && codec_config_->codec != kCodecVP9 &&
+  switch (codec_config_->codec) {
+    case kCodecVP8:
+    case kCodecVP9:
+      break;
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+    case kCodecH264:
+      codec_config_->csd0 = config.sps;
+      codec_config_->csd1 = config.pps;
+      break;
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-      codec_config_->codec != kCodecHEVC &&
+    case kCodecHEVC:
+      break;
 #endif
-      codec_config_->codec != kCodecH264) {
-    DLOG(ERROR) << "Unsupported profile: " << GetProfileName(config.profile);
-    return false;
+#endif
+    default:
+      DLOG(ERROR) << "Unsupported profile: " << GetProfileName(config.profile);
+      return false;
   }
 
   codec_config_->software_codec_forbidden =
       IsMediaCodecSoftwareDecodingForbidden();
-
-  if (codec_config_->codec == kCodecH264) {
-    codec_config_->csd0 = config.sps;
-    codec_config_->csd1 = config.pps;
-  }
 
   codec_config_->container_color_space = config.container_color_space;
   codec_config_->hdr_metadata = config.hdr_metadata;
@@ -1689,6 +1698,7 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     }
   }
 
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   for (const auto& supported_profile : kSupportedH264Profiles) {
     SupportedProfile profile;
     profile.profile = supported_profile;
@@ -1699,6 +1709,17 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     profile.max_resolution.SetSize(3840, 2160);
     profiles.push_back(profile);
   }
+
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+  for (const auto& supported_profile : kSupportedHevcProfiles) {
+    SupportedProfile profile;
+    profile.profile = supported_profile;
+    profile.min_resolution.SetSize(0, 0);
+    profile.max_resolution.SetSize(3840, 2160);
+    profiles.push_back(profile);
+  }
+#endif
+#endif
 
   capabilities.flags = Capabilities::SUPPORTS_DEFERRED_INITIALIZATION |
                        Capabilities::NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE |
@@ -1714,16 +1735,6 @@ AndroidVideoDecodeAccelerator::GetCapabilities(
     if (MediaCodecUtil::IsSetOutputSurfaceSupported())
       capabilities.flags |= Capabilities::SUPPORTS_SET_EXTERNAL_OUTPUT_SURFACE;
   }
-
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  for (const auto& supported_profile : kSupportedHevcProfiles) {
-    SupportedProfile profile;
-    profile.profile = supported_profile;
-    profile.min_resolution.SetSize(0, 0);
-    profile.max_resolution.SetSize(3840, 2160);
-    profiles.push_back(profile);
-  }
-#endif
 
   return capabilities;
 }

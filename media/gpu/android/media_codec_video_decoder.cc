@@ -24,6 +24,7 @@
 #include "media/base/video_util.h"
 #include "media/gpu/android/android_video_surface_chooser.h"
 #include "media/gpu/android/avda_codec_allocator.h"
+#include "media/media_buildflags.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 #include "media/base/android/extract_sps_and_pps.h"
@@ -75,11 +76,13 @@ bool ConfigSupported(const VideoDecoderConfig& config,
 
       return true;
     }
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     case kCodecH264:
       return true;
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     case kCodecHEVC:
       return true;
+#endif
 #endif
     default:
       return false;
