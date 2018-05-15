@@ -48,7 +48,8 @@ bool ExtensionMustBeAllowedOnAllUrls(const Extension& extension) {
   return !extension.ShouldDisplayInExtensionSettings() ||
          Manifest::IsPolicyLocation(extension.location()) ||
          Manifest::IsComponentLocation(extension.location()) ||
-         PermissionsData::CanExecuteScriptEverywhere(&extension);
+         PermissionsData::CanExecuteScriptEverywhere(extension.id(),
+                                                     extension.location());
 }
 
 // Sets the preference for whether the extension with |id| is allowed to execute

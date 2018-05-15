@@ -137,6 +137,13 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
         errors::kInvalidMatchCount, base::IntToString(definition_index));
     return nullptr;
   }
+
+  const bool can_execute_script_everywhere =
+      PermissionsData::CanExecuteScriptEverywhere(extension->id(),
+                                                  extension->location());
+  const int valid_schemes =
+      UserScript::ValidUserScriptSchemes(can_execute_script_everywhere);
+
   for (size_t j = 0; j < matches->GetSize(); ++j) {
     std::string match_str;
     if (!matches->GetString(j, &match_str)) {
@@ -146,8 +153,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
       return nullptr;
     }
 
-    URLPattern pattern(UserScript::ValidUserScriptSchemes(
-        PermissionsData::CanExecuteScriptEverywhere(extension)));
+    URLPattern pattern(valid_schemes);
 
     URLPattern::ParseResult parse_result = pattern.Parse(match_str);
     if (parse_result != URLPattern::PARSE_SUCCESS) {
@@ -159,7 +165,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     }
 
     // TODO(aboxhall): check for webstore
-    if (!PermissionsData::CanExecuteScriptEverywhere(extension) &&
+    if (!can_execute_script_everywhere &&
         pattern.scheme() != content::kChromeUIScheme) {
       // Exclude SCHEME_CHROMEUI unless it's been explicitly requested.
       // If the --extensions-on-chrome-urls flag has not been passed, requesting
@@ -170,7 +176,7 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
     }
 
     if (pattern.MatchesScheme(url::kFileScheme) &&
-        !PermissionsData::CanExecuteScriptEverywhere(extension)) {
+        !can_execute_script_everywhere) {
       extension->set_wants_file_access(true);
       if (!(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS)) {
         pattern.SetValidSchemes(pattern.valid_schemes() &
@@ -199,8 +205,6 @@ std::unique_ptr<UserScript> LoadUserScriptFromDictionary(
         return nullptr;
       }
 
-      int valid_schemes = UserScript::ValidUserScriptSchemes(
-          PermissionsData::CanExecuteScriptEverywhere(extension));
       URLPattern pattern(valid_schemes);
 
       URLPattern::ParseResult parse_result = pattern.Parse(match_str);

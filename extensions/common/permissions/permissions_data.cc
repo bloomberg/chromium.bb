@@ -77,14 +77,16 @@ void PermissionsData::SetPolicyDelegate(PolicyDelegate* delegate) {
 }
 
 // static
-bool PermissionsData::CanExecuteScriptEverywhere(const Extension* extension) {
-  if (extension->location() == Manifest::COMPONENT)
+bool PermissionsData::CanExecuteScriptEverywhere(
+    const ExtensionId& extension_id,
+    Manifest::Location location) {
+  if (location == Manifest::COMPONENT)
     return true;
 
   const ExtensionsClient::ScriptingWhitelist& whitelist =
       ExtensionsClient::Get()->GetScriptingWhitelist();
 
-  return base::ContainsValue(whitelist, extension->id());
+  return base::ContainsValue(whitelist, extension_id);
 }
 
 // static
@@ -98,8 +100,10 @@ bool PermissionsData::ShouldSkipPermissionWarnings(
 bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
                                       const Extension* extension,
                                       std::string* error) {
-  if (extension && CanExecuteScriptEverywhere(extension))
+  if (extension &&
+      CanExecuteScriptEverywhere(extension->id(), extension->location())) {
     return false;
+  }
 
   if (g_policy_delegate &&
       g_policy_delegate->IsRestrictedUrl(document_url, error)) {
