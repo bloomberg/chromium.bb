@@ -5,7 +5,7 @@
      found in the LICENSE file.
 -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="@android:color/white" >
+    android:color="@color/google_grey_400" >
 
     <item
         android:drawable="@drawable/modern_toolbar_background"/>

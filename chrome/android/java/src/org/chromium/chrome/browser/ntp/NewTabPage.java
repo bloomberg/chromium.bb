@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.ntp;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
@@ -415,6 +416,15 @@ public class NewTabPage
      */
     public void setSearchProviderLogoAlpha(float alpha) {
         mNewTabPageView.setSearchProviderLogoAlpha(alpha);
+    }
+
+    /**
+     * Set the search box background drawable.
+     *
+     * @param drawable The search box background.
+     */
+    public void setSearchBoxBackground(Drawable drawable) {
+        mNewTabPageView.setSearchBoxBackground(drawable);
     }
 
     /**

@@ -28,6 +28,7 @@ import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
+import android.support.v7.graphics.drawable.DrawableWrapper;
 import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.Property;
@@ -191,6 +192,8 @@ public class ToolbarPhone extends ToolbarLayout
      * focused or the NTP search box is being scrolled up. Note that in the latter case, the actual
      * width of the omnibox is not interpolated linearly from this value. The value will be the
      * maximum of {@link #mUrlFocusChangePercent} and {@link #mNtpSearchBoxScrollPercent}.
+     *
+     * 0.0 == no expansion, 1.0 == fully expanded.
      */
     @ViewDebug.ExportedProperty(category = "chrome")
     protected float mUrlExpansionPercent;
@@ -212,7 +215,8 @@ public class ToolbarPhone extends ToolbarLayout
     protected ColorDrawable mToolbarBackground;
 
     /** The omnibox background (white with a shadow). */
-    protected Drawable mLocationBarBackground;
+    private Drawable mLocationBarBackground;
+    private Drawable mActiveLocationBarBackground;
 
     protected boolean mForceDrawLocationBarBackground;
     private TabSwitcherDrawable mTabSwitcherButtonDrawable;
@@ -407,6 +411,7 @@ public class ToolbarPhone extends ToolbarLayout
                     mLocationBarBackgroundPadding.top, mLocationBarBackgroundPadding.right,
                     mLocationBarBackgroundPadding.bottom);
         }
+        mActiveLocationBarBackground = mLocationBarBackground;
     }
 
     /**
@@ -913,6 +918,11 @@ public class ToolbarPhone extends ToolbarLayout
         }
     }
 
+    @Override
+    protected boolean verifyDrawable(Drawable who) {
+        return super.verifyDrawable(who) || who == mActiveLocationBarBackground;
+    }
+
     // NewTabPage.OnSearchBoxScrollListener
     @Override
     public void onNtpScrollChanged(float scrollPercentage) {
@@ -1162,6 +1172,7 @@ public class ToolbarPhone extends ToolbarLayout
      */
     protected void resetNtpAnimationValues() {
         mLocationBarBackgroundNtpOffset.setEmpty();
+        mActiveLocationBarBackground = mLocationBarBackground;
         mNtpSearchBoxTranslation.set(0, 0);
         mLocationBar.setTranslationY(0);
         if (!mUrlFocusChangeInProgress) {
@@ -1197,12 +1208,12 @@ public class ToolbarPhone extends ToolbarLayout
         // Skip if in or entering tab switcher mode.
         if (mTabSwitcherState == TAB_SWITCHER || mTabSwitcherState == ENTERING_TAB_SWITCHER) return;
 
-        setAncestorsShouldClipChildren(mUrlExpansionPercent == 0f);
-        if (!mToolbarShadowPermanentlyHidden
-                && !(mLocationBar.useModernDesign() && mUrlFocusChangeInProgress)) {
+        boolean isExpanded = mUrlExpansionPercent > 0f;
+        boolean useModern = mLocationBar.useModernDesign();
+        setAncestorsShouldClipChildren(!isExpanded);
+        if (!mToolbarShadowPermanentlyHidden && !(useModern && mUrlFocusChangeInProgress)) {
             float alpha = 0.f;
-            if (mLocationBar.useModernDesign() && !mUrlBar.hasFocus()
-                    && mNtpSearchBoxScrollPercent == 1.f) {
+            if (useModern && !mUrlBar.hasFocus() && mNtpSearchBoxScrollPercent == 1.f) {
                 alpha = 1.f;
             }
             mToolbarShadow.setAlpha(alpha);
@@ -1225,7 +1236,7 @@ public class ToolbarPhone extends ToolbarLayout
         int leftBoundDifference = mNtpSearchBoxBounds.left - mLocationBarBackgroundBounds.left;
         int rightBoundDifference = mNtpSearchBoxBounds.right - mLocationBarBackgroundBounds.right;
         int verticalInset = 0;
-        if (mLocationBar.useModernDesign()) {
+        if (useModern) {
             verticalInset = (int) (getResources().getDimensionPixelSize(
                                            R.dimen.ntp_search_box_bounds_vertical_inset_modern)
                     * (1.f - mUrlExpansionPercent));
@@ -1245,13 +1256,18 @@ public class ToolbarPhone extends ToolbarLayout
         mLocationBarNtpOffsetRight =
                 (rightBoundDifference + mLocationBarBackgroundCornerRadius) * shrinkage;
 
-        mLocationBarBackgroundAlpha = mUrlExpansionPercent > 0f ? 255 : 0;
+        mLocationBarBackgroundAlpha = isExpanded ? 255 : 0;
         mForceDrawLocationBarBackground = mLocationBarBackgroundAlpha > 0;
         float relativeAlpha = mLocationBarBackgroundAlpha / 255f;
         mLocationBar.setAlpha(relativeAlpha);
 
         // The search box on the NTP is visible if our omnibox is invisible, and vice-versa.
         ntp.setSearchBoxAlpha(1f - relativeAlpha);
+        if (!mForceDrawLocationBarBackground) {
+            if (mActiveLocationBarBackground instanceof NtpSearchBoxDrawable) {
+                ((NtpSearchBoxDrawable) mActiveLocationBarBackground).resetBoundsToLastNonToolbar();
+            }
+        }
 
         updateToolbarBackground(mVisualState);
     }
@@ -1494,7 +1510,11 @@ public class ToolbarPhone extends ToolbarLayout
             mLocationBarBackground.setAlpha(backgroundAlpha);
 
             if (shouldDrawLocationBarBackground()) {
-                mLocationBarBackground.setBounds(
+                if (mActiveLocationBarBackground instanceof NtpSearchBoxDrawable) {
+                    ((NtpSearchBoxDrawable) mActiveLocationBarBackground)
+                            .markPendingBoundsUpdateFromToolbar();
+                }
+                mActiveLocationBarBackground.setBounds(
                         mLocationBarBackgroundBounds.left + mLocationBarBackgroundNtpOffset.left
                                 - mLocationBarBackgroundPadding.left,
                         mLocationBarBackgroundBounds.top + mLocationBarBackgroundNtpOffset.top
@@ -1503,7 +1523,7 @@ public class ToolbarPhone extends ToolbarLayout
                                 + mLocationBarBackgroundPadding.right,
                         mLocationBarBackgroundBounds.bottom + mLocationBarBackgroundNtpOffset.bottom
                                 + mLocationBarBackgroundPadding.bottom);
-                mLocationBarBackground.draw(canvas);
+                mActiveLocationBarBackground.draw(canvas);
             }
 
             float locationBarClipLeft =
@@ -2338,6 +2358,11 @@ public class ToolbarPhone extends ToolbarLayout
         mVisibleNewTabPage = getToolbarDataProvider().getNewTabPageForCurrentTab();
         if (mVisibleNewTabPage != null && mVisibleNewTabPage.isLocationBarShownInNTP()) {
             mVisibleNewTabPage.setSearchBoxScrollListener(this);
+            if (mLocationBar.useModernDesign()) {
+                NtpSearchBoxDrawable ntpSearchBox = new NtpSearchBoxDrawable(getContext(), this);
+                mVisibleNewTabPage.setSearchBoxBackground(ntpSearchBox);
+                mActiveLocationBarBackground = ntpSearchBox;
+            }
             requestLayout();
         } else if (wasShowingNtp) {
             // Convert the previous NTP scroll percentage to URL focus percentage because that
@@ -2706,6 +2731,75 @@ public class ToolbarPhone extends ToolbarLayout
             mFullscreenCalloutToken =
                     mControlsVisibilityDelegate.showControlsPersistentAndClearOldToken(
                             mFullscreenCalloutToken);
+        }
+    }
+
+    /**
+     * Custom drawable that allows sharing the NTP search box drawable between the toolbar and the
+     * NTP.  This allows animations to continue as the drawable is switched between the two owning
+     * views.
+     */
+    private static class NtpSearchBoxDrawable extends DrawableWrapper {
+        private final Drawable.Callback mCallback;
+
+        private int mBoundsLeft, mBoundsTop, mBoundsRight, mBoundsBottom;
+        private boolean mPendingBoundsUpdateFromToolbar;
+        private boolean mDrawnByNtp;
+
+        /**
+         * Constructs the NTP search box drawable.
+         *
+         * @param context The context used to inflate the drawable.
+         * @param callback The callback to be notified on changes ot the drawable.
+         */
+        public NtpSearchBoxDrawable(Context context, Drawable.Callback callback) {
+            super(ApiCompatibilityUtils.getDrawable(
+                    context.getResources(), R.drawable.ntp_search_box));
+            mCallback = callback;
+            setCallback(mCallback);
+        }
+
+        /**
+         * Mark that the pending bounds update is coming from the toolbar.
+         */
+        void markPendingBoundsUpdateFromToolbar() {
+            mPendingBoundsUpdateFromToolbar = true;
+        }
+
+        /**
+         * Reset the bounds of the drawable to the last bounds received that was not marked from
+         * the toolbar.
+         */
+        void resetBoundsToLastNonToolbar() {
+            setBounds(mBoundsLeft, mBoundsTop, mBoundsRight, mBoundsBottom);
+        }
+
+        @Override
+        public void setBounds(int left, int top, int right, int bottom) {
+            super.setBounds(left, top, right, bottom);
+            if (!mPendingBoundsUpdateFromToolbar) {
+                mBoundsLeft = left;
+                mBoundsTop = top;
+                mBoundsRight = right;
+                mBoundsBottom = bottom;
+                mDrawnByNtp = true;
+            } else {
+                mDrawnByNtp = false;
+            }
+            mPendingBoundsUpdateFromToolbar = false;
+        }
+
+        @Override
+        public boolean setVisible(boolean visible, boolean restart) {
+            // Ignore visibility changes.  The NTP can toggle the visibility based on the scroll
+            // position of the page, so we simply ignore all of this as we expect the drawable to
+            // be visible at all times of the NTP.
+            return false;
+        }
+
+        @Override
+        public Callback getCallback() {
+            return mDrawnByNtp ? super.getCallback() : mCallback;
         }
     }
 }
