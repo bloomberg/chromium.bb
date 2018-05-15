@@ -128,6 +128,10 @@ class PLATFORM_EXPORT HeapAllocator {
   static void FreeHashTableBacking(void* address, bool is_weak_table);
   static bool ExpandHashTableBacking(void*, size_t);
 
+  static void TraceMarkedBackingStore(void* address) {
+    MarkingVisitor::TraceMarkedBackingStore(address);
+  }
+
   static void BackingWriteBarrier(void* address) {
     MarkingVisitor::WriteBarrier(address);
   }

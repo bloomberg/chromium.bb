@@ -534,8 +534,7 @@ struct Mover {
   STATIC_ONLY(Mover);
   static void Move(T&& from, T& to) {
     to.~T();
-    ConstructTraits<T, Traits, Allocator>::ConstructAndNotifyElement(
-        &to, std::move(from));
+    new (NotNull, &to) T(std::move(from));
   }
 };
 
@@ -543,10 +542,9 @@ template <typename T, typename Allocator, typename Traits>
 struct Mover<T, Allocator, Traits, true> {
   STATIC_ONLY(Mover);
   static void Move(T&& from, T& to) {
-    to.~T();
     Allocator::EnterGCForbiddenScope();
-    ConstructTraits<T, Traits, Allocator>::ConstructAndNotifyElement(
-        &to, std::move(from));
+    to.~T();
+    new (NotNull, &to) T(std::move(from));
     Allocator::LeaveGCForbiddenScope();
   }
 };
@@ -1758,6 +1756,10 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
       new_entry = reinserted_entry;
     }
   }
+  // Rescan the contents of the backing store as no write barriers were emitted
+  // during re-insertion. Traits::NeedsToForbidGCOnMove ensures that no
+  // garbage collection is triggered during moving.
+  Allocator::TraceMarkedBackingStore(table_);
 
   deleted_count_ = 0;
 
