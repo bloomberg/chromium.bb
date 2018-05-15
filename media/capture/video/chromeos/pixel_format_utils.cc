@@ -31,9 +31,6 @@ struct SupportedFormat {
     // support YUV flexbile format video streams.
     {cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888,
      {PIXEL_FORMAT_NV12, gfx::BufferFormat::YUV_420_BIPLANAR}},
-    // FIXME(jcliang): MJPEG is not accurate; we should have BLOB or JPEG
-    {cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB,
-     {PIXEL_FORMAT_MJPEG, gfx::BufferFormat::R_8}},
     // Add more mappings when we have more devices.
 };
 
@@ -54,8 +51,6 @@ uint32_t PixFormatVideoToDrm(VideoPixelFormat from) {
   switch (from) {
     case PIXEL_FORMAT_NV12:
       return DRM_FORMAT_NV12;
-    case PIXEL_FORMAT_MJPEG:
-      return DRM_FORMAT_R8;
     default:
       // Unsupported format.
       return 0;
