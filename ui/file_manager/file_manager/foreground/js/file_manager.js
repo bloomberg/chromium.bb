@@ -1168,7 +1168,7 @@ FileManager.prototype = /** @struct */ {
         assert(this.volumeManager_), assert(this.folderShortcutsModel_),
         fakeEntriesVisible &&
                 !DialogType.isFolderDialog(this.launchParams_.type) ?
-            new NavigationModelRecentItem(str('RECENT_ROOT_LABEL'), {
+            new NavigationModelFakeItem(str('RECENT_ROOT_LABEL'), {
               isDirectory: true,
               rootType: VolumeManagerCommon.RootType.RECENT,
               toURL: function() {
@@ -1182,6 +1182,20 @@ FileManager.prototype = /** @struct */ {
                 str('ADD_NEW_SERVICES_BUTTON_LABEL'), '#add-new-services-menu',
                 'add-new-services') :
             null);
+    // Check if crostini is enabled to create linuxFilesItem.
+    chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
+      if (!enabled)
+        return;
+      this.directoryTree.dataModel.linuxFilesItem =
+          new NavigationModelFakeItem(str('LINUX_FILES_ROOT_LABEL'), {
+            isDirectory: true,
+            rootType: VolumeManagerCommon.RootType.CROSTINI,
+            toURL: function() {
+              return 'fake-entry://linux-files';
+            },
+          });
+      this.directoryTree.redraw(false);
+    });
     this.ui_.initDirectoryTree(directoryTree);
   };
 

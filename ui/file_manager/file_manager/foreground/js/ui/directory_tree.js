@@ -1116,21 +1116,24 @@ MenuItem.prototype.activate = function() {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-// RecentItem
+// FakeItem
 
 /**
- * @param {!NavigationModelRecentItem} modelItem
+ * FakeItem is used by Recent and Linux Files.
+ * @param {!VolumeManagerCommon.RootType} rootType root type.
+ * @param {!NavigationModelFakeItem} modelItem
  * @param {!DirectoryTree} tree Current tree, which contains this item.
  * @extends {cr.ui.TreeItem}
  * @constructor
  */
-function RecentItem(modelItem, tree) {
+function FakeItem(rootType, modelItem, tree) {
   var item = new cr.ui.TreeItem();
   // Get the original label id defined by TreeItem, before overwriting
   // prototype.
   var labelId = item.labelElement.id;
-  item.__proto__ = RecentItem.prototype;
+  item.__proto__ = FakeItem.prototype;
 
+  item.rootType_ = rootType;
   item.parentTree_ = tree;
   item.modelItem_ = modelItem;
   item.dirEntry_ = modelItem.entry;
@@ -1140,12 +1143,12 @@ function RecentItem(modelItem, tree) {
 
   var icon = queryRequiredElement('.icon', item);
   icon.classList.add('item-icon');
-  icon.setAttribute('root-type-icon', 'recent');
+  icon.setAttribute('root-type-icon', rootType);
 
   return item;
 }
 
-RecentItem.prototype = {
+FakeItem.prototype = {
   __proto__: cr.ui.TreeItem.prototype,
   get entry() {
     return this.dirEntry_;
@@ -1162,24 +1165,24 @@ RecentItem.prototype = {
  * @param {!DirectoryEntry|!FakeEntry} entry
  * @return {boolean} True if the parent item is found.
  */
-RecentItem.prototype.searchAndSelectByEntry = function(entry) {
+FakeItem.prototype.searchAndSelectByEntry = function(entry) {
   return false;
 };
 
 /**
  * @override
  */
-RecentItem.prototype.handleClick = function(e) {
+FakeItem.prototype.handleClick = function(e) {
   this.activate();
 
   DirectoryItemTreeBaseMethods.recordUMASelectedEntry.call(
-      this, e, VolumeManagerCommon.RootType.RECENT, true);
+      this, e, this.rootType_, true);
 };
 
 /**
  * @param {!DirectoryEntry} entry
  */
-RecentItem.prototype.selectByEntry = function(entry) {
+FakeItem.prototype.selectByEntry = function(entry) {
   if (util.isSameEntry(entry, this.entry))
     this.selected = true;
 };
@@ -1187,58 +1190,9 @@ RecentItem.prototype.selectByEntry = function(entry) {
 /**
  * Executes the command.
  */
-RecentItem.prototype.activate = function() {
+FakeItem.prototype.activate = function() {
   this.parentTree_.directoryModel.activateDirectoryEntry(this.entry);
 };
-
-////////////////////////////////////////////////////////////////////////////////
-// SFTPMountItem
-
-/**
- * A TreeItem which represents a directory to be mounted using SFTP.
- *
- * @param {!NavigationModelSFTPMountItem} modelItem
- * @param {!DirectoryTree} tree Current tree, which contains this item.
- * @extends {cr.ui.TreeItem}
- * @constructor
- */
-function SFTPMountItem(modelItem, tree) {
-  var item = new cr.ui.TreeItem();
-  item.__proto__ = SFTPMountItem.prototype;
-
-  item.parentTree_ = tree;
-  item.modelItem_ = modelItem;
-  item.innerHTML = TREE_ITEM_INNER_HTML;
-  item.label = modelItem.label;
-
-  var icon = queryRequiredElement('.icon', item);
-  icon.classList.add('item-icon');
-  icon.setAttribute('sftp-mount-icon', item.modelItem_.icon);
-
-  return item;
-}
-
-SFTPMountItem.prototype = {
-  __proto__: cr.ui.TreeItem.prototype,
-  get entry() {
-    return null;
-  },
-  get modelItem() {
-    return this.modelItem_;
-  },
-  get labelElement() {
-    return this.firstElementChild.querySelector('.label');
-  }
-};
-
-/**
- * @override
- */
-SFTPMountItem.prototype.handleClick = function(e) {
-  this.selected = true;
-  this.modelItem_.mount();
-};
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // DirectoryTree
@@ -1426,10 +1380,16 @@ DirectoryTree.prototype.updateSubElementsFromList = function(recursive) {
           this.addAt(new MenuItem(modelItem, this), itemIndex);
           break;
         case NavigationModelItemType.RECENT:
-          this.addAt(new RecentItem(modelItem, this), itemIndex);
+          this.addAt(
+              new FakeItem(
+                  VolumeManagerCommon.RootType.RECENT, modelItem, this),
+              itemIndex);
           break;
-        case NavigationModelItemType.SFTP_MOUNT:
-          this.addAt(new SFTPMountItem(modelItem, this), itemIndex);
+        case NavigationModelItemType.CROSTINI:
+          this.addAt(
+              new FakeItem(
+                  VolumeManagerCommon.RootType.CROSTINI, modelItem, this),
+              itemIndex);
           break;
       }
     }
