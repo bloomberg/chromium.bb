@@ -59,11 +59,12 @@ class NavigationObserver : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(NavigationObserver);
 };
 
-// Observes the save password prompt for a specified WebContents, keeps track of
-// whether or not it is currently shown, and allows accepting saving passwords
-// through it.
+// Checks the save password prompt for a specified WebContents and allows
+// accepting saving passwords through it.
 class BubbleObserver {
  public:
+  // The constructor doesn't start tracking |web_contents|. To check the status
+  // of the prompt one can even construct a temporary BubbleObserver.
   explicit BubbleObserver(content::WebContents* web_contents);
 
   // Checks if the save prompt is being currently available due to either manual
@@ -146,14 +147,6 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
   // return immediately.
   void NavigateToFile(const std::string& path);
 
-  // Navigates to |filename| and runs |submission_script| to submit. Navigates
-  // back to |filename| and then verifies that |expected_element| has
-  // |expected_value|.
-  void VerifyPasswordIsSavedAndFilled(const std::string& filename,
-                                      const std::string& submission_script,
-                                      const std::string& expected_element,
-                                      const std::string& expected_value);
-
   // Waits until the "value" attribute of the HTML element with |element_id| is
   // equal to |expected_value|. If the current value is not as expected, this
   // waits until the "change" event is fired for the element. This also
@@ -198,8 +191,8 @@ class PasswordManagerBrowserTestBase : public CertVerifierBrowserTest {
 
   // Checks that |password_store| stores only one credential with |username| and
   // |password|.
-  void CheckThatCredentialsStored(const base::string16& username,
-                                  const base::string16& password);
+  void CheckThatCredentialsStored(const std::string& username,
+                                  const std::string& password);
 
   // Accessors
   // Return the first created tab with a custom ManagePasswordsUIController.
