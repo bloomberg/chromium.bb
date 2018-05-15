@@ -9,7 +9,6 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/metrics/field_trial_params.h"
@@ -25,14 +24,18 @@ const base::FieldTrial::Probability k100PercentProbability = 100;
 // The name of the default group to use for Cast DCS features.
 const char kDefaultDCSFeaturesGroup[] = "default_dcs_features_group";
 
-base::LazyInstance<std::unordered_set<int32_t>>::Leaky g_experiment_ids =
-    LAZY_INSTANCE_INITIALIZER;
+std::unordered_set<int32_t>& GetExperimentIds() {
+  static base::NoDestructor<std::unordered_set<int32_t>> g_experiment_ids;
+  return *g_experiment_ids;
+}
+
 bool g_experiment_ids_initialized = false;
 
 // The collection of features that have been registered by unit tests
 std::vector<const base::Feature*>& GetTestFeatures() {
-  static base::NoDestructor<std::vector<const base::Feature*>> g_features_for_test;
-  return *g_features_for_test;
+  static base::NoDestructor<std::vector<const base::Feature*>>
+      features_for_test;
+  return *features_for_test;
 }
 
 void SetExperimentIds(const base::ListValue& list) {
@@ -46,7 +49,7 @@ void SetExperimentIds(const base::ListValue& list) {
       LOG(ERROR) << "Non-integer value found in experiment id list!";
     }
   }
-  g_experiment_ids.Get().swap(ids);
+  GetExperimentIds().swap(ids);
   g_experiment_ids_initialized = true;
 }
 
@@ -318,7 +321,7 @@ base::DictionaryValue GetOverriddenFeaturesForStorage(
 
 const std::unordered_set<int32_t>& GetDCSExperimentIds() {
   DCHECK(g_experiment_ids_initialized);
-  return g_experiment_ids.Get();
+  return GetExperimentIds();
 }
 
 void ResetCastFeaturesForTesting() {

@@ -14,7 +14,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -175,9 +175,6 @@ void UseHighPriority() {
 #endif
 }
 
-base::LazyInstance<StreamMixer>::DestructorAtExit g_mixer_instance =
-    LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 float StreamMixer::VolumeInfo::GetEffectiveVolume() {
@@ -186,7 +183,8 @@ float StreamMixer::VolumeInfo::GetEffectiveVolume() {
 
 // static
 StreamMixer* StreamMixer::Get() {
-  return g_mixer_instance.Pointer();
+  static base::NoDestructor<StreamMixer> mixer_instance;
+  return mixer_instance.get();
 }
 
 StreamMixer::StreamMixer()

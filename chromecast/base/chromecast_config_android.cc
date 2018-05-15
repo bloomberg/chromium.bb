@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/android/jni_android.h"
-#include "base/lazy_instance.h"
 #include "jni/ChromecastConfigAndroid_jni.h"
 
 using base::android::JavaParamRef;
@@ -15,14 +14,10 @@ using base::android::JavaParamRef;
 namespace chromecast {
 namespace android {
 
-namespace {
-base::LazyInstance<ChromecastConfigAndroid>::DestructorAtExit g_instance =
-    LAZY_INSTANCE_INITIALIZER;
-}  // namespace
-
 // static
 ChromecastConfigAndroid* ChromecastConfigAndroid::GetInstance() {
-  return g_instance.Pointer();
+  static base::NoDestructor<ChromecastConfigAndroid> instance;
+  return instance.get();
 }
 
 ChromecastConfigAndroid::ChromecastConfigAndroid() {

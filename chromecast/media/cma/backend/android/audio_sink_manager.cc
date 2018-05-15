@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "chromecast/media/cma/backend/android/audio_sink_android.h"
 
 namespace chromecast {
@@ -23,14 +23,12 @@ class AudioSinkManagerInstance : public AudioSinkManager {
   DISALLOW_COPY_AND_ASSIGN(AudioSinkManagerInstance);
 };
 
-base::LazyInstance<AudioSinkManagerInstance>::DestructorAtExit
-    g_sink_manager_instance = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 // static
 AudioSinkManager* AudioSinkManager::Get() {
-  return g_sink_manager_instance.Pointer();
+  base::NoDestructor<AudioSinkManagerInstance> sink_manager_instance;
+  return sink_manager_instance.get();
 }
 
 // static
