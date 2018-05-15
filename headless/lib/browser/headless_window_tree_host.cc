@@ -90,6 +90,12 @@ bool HeadlessWindowTreeHost::IsKeyLocked(ui::DomCode dom_code) {
   return false;
 }
 
+base::flat_map<std::string, std::string>
+HeadlessWindowTreeHost::GetKeyboardLayoutMap() {
+  NOTIMPLEMENTED();
+  return {};
+}
+
 void HeadlessWindowTreeHost::SetCursorNative(gfx::NativeCursor cursor_type) {}
 
 void HeadlessWindowTreeHost::MoveCursorToScreenLocationInPixels(

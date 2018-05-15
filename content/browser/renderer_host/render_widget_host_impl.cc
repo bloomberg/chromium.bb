@@ -2355,6 +2355,13 @@ void RenderWidgetHostImpl::CancelKeyboardLock() {
   keyboard_keys_to_lock_.reset();
 }
 
+base::flat_map<std::string, std::string>
+RenderWidgetHostImpl::GetKeyboardLayoutMap() {
+  if (!view_)
+    return {};
+  return view_->GetKeyboardLayoutMap();
+}
+
 void RenderWidgetHostImpl::OnShowDisambiguationPopup(
     const gfx::Rect& rect_pixels,
     const gfx::Size& size,

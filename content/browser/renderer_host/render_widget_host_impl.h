@@ -703,6 +703,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Indicates whether keyboard lock is active.
   bool IsKeyboardLocked() const;
 
+  // Returns the keyboard layout mapping.
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap();
+
   void DidStopFlinging() override;
 
   void GetContentRenderingTimeoutFrom(RenderWidgetHostImpl* other);

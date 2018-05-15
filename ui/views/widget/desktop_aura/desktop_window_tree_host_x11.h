@@ -88,6 +88,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // Disables event listening to make |dialog| modal.
   std::unique_ptr<base::Closure> DisableEventListening();
 
+  // Returns a map of KeyboardEvent code to KeyboardEvent key values.
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
+
  protected:
   // Overridden from DesktopWindowTreeHost:
   void Init(const Widget::InitParams& params) override;

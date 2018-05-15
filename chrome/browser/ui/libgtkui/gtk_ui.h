@@ -112,6 +112,7 @@ class GtkUi : public views::LinuxUI {
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   std::unique_ptr<views::NavButtonProvider> CreateNavButtonProvider() override;
 #endif
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
 
   // ui::TextEditKeybindingDelegate:
   bool MatchEvent(const ui::Event& event,

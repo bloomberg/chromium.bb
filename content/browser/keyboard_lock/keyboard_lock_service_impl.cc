@@ -113,18 +113,9 @@ void KeyboardLockServiceImpl::CancelKeyboardLock() {
 void KeyboardLockServiceImpl::GetKeyboardLayoutMap(
     GetKeyboardLayoutMapCallback callback) {
   auto response = GetKeyboardLayoutMapResult::New();
-
   response->status = blink::mojom::GetKeyboardLayoutMapStatus::kSuccess;
-
-  // TODO(garykac): Call platform specific APIs to populate the layout map
-  // correctly.
-  // E.g., render_frame_host_->GetRenderWidgetHost()->GetKeyboardLayoutMap()
-  response->layout_map.emplace("KeyC", "c");
-  response->layout_map.emplace("KeyH", "h");
-  response->layout_map.emplace("KeyR", "r");
-  response->layout_map.emplace("KeyO", "o");
-  response->layout_map.emplace("KeyM", "m");
-  response->layout_map.emplace("KeyE", "e");
+  response->layout_map =
+      render_frame_host_->GetRenderWidgetHost()->GetKeyboardLayoutMap();
 
   std::move(callback).Run(std::move(response));
 }

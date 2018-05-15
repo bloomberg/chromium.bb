@@ -82,6 +82,7 @@ class AURA_EXPORT WindowTreeHostPlatform : public WindowTreeHost,
       base::Optional<base::flat_set<ui::DomCode>> dom_codes) override;
   void ReleaseSystemKeyEventCapture() override;
   bool IsKeyLocked(ui::DomCode dom_code) override;
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
 
  private:
   gfx::AcceleratedWidget widget_;

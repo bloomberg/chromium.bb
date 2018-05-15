@@ -196,6 +196,9 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // toolkit does not support drawing client-side navigation buttons.
   virtual std::unique_ptr<NavButtonProvider> CreateNavButtonProvider() = 0;
 #endif
+
+  // Returns a map of KeyboardEvent code to KeyboardEvent key values.
+  virtual base::flat_map<std::string, std::string> GetKeyboardLayoutMap() = 0;
 };
 
 }  // namespace views

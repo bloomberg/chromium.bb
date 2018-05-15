@@ -1157,6 +1157,14 @@ bool RenderWidgetHostViewAura::IsKeyboardLocked() {
   return event_handler_->IsKeyboardLocked();
 }
 
+base::flat_map<std::string, std::string>
+RenderWidgetHostViewAura::GetKeyboardLayoutMap() {
+  aura::WindowTreeHost* host = window_->GetHost();
+  if (host)
+    return host->GetKeyboardLayoutMap();
+  return {};
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, ui::TextInputClient implementation:
 void RenderWidgetHostViewAura::SetCompositionText(
