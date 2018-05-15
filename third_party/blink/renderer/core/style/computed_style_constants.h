@@ -63,8 +63,8 @@ enum StyleRecalcChange {
 // Static pseudo styles. Dynamic ones are produced on the fly.
 enum PseudoId {
   // The order must be NOP ID, public IDs, and then internal IDs.
-  // If you add or remove a public ID, you must update _pseudoBits in
-  // ComputedStyle.
+  // If you add or remove a public ID, you must update the field_size of
+  // "PseudoBits" in ComputedStyleExtraFields.json5.
   kPseudoIdNone,
   kPseudoIdFirstLine,
   kPseudoIdFirstLetter,
@@ -72,9 +72,9 @@ enum PseudoId {
   kPseudoIdAfter,
   kPseudoIdBackdrop,
   kPseudoIdSelection,
-  kPseudoIdFirstLineInherited,
   kPseudoIdScrollbar,
   // Internal IDs follow:
+  kPseudoIdFirstLineInherited,
   kPseudoIdScrollbarThumb,
   kPseudoIdScrollbarButton,
   kPseudoIdScrollbarTrack,
@@ -85,7 +85,7 @@ enum PseudoId {
   // Special values follow:
   kAfterLastInternalPseudoId,
   kFirstPublicPseudoId = kPseudoIdFirstLine,
-  kFirstInternalPseudoId = kPseudoIdScrollbarThumb,
+  kFirstInternalPseudoId = kPseudoIdFirstLineInherited,
   kElementPseudoIdMask = (1 << (kPseudoIdBefore - kFirstPublicPseudoId)) |
                          (1 << (kPseudoIdAfter - kFirstPublicPseudoId)) |
                          (1 << (kPseudoIdBackdrop - kFirstPublicPseudoId))

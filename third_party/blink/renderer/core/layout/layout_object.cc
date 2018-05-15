@@ -3400,8 +3400,6 @@ static scoped_refptr<ComputedStyle> FirstLineStyleForCachedUncachedType(
       if (type == kCached) {
         // A first-line style is in effect. Cache a first-line style for
         // ourselves.
-        layout_object_for_first_line_style->MutableStyleRef().SetHasPseudoStyle(
-            kPseudoIdFirstLineInherited);
         return layout_object_for_first_line_style->GetCachedPseudoStyle(
             kPseudoIdFirstLineInherited, parent_style);
       }
