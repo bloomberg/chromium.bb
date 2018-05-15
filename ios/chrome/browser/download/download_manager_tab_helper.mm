@@ -118,6 +118,8 @@ NSString* DownloadManagerTabHelper::GetNetworkActivityKey() const {
 void DownloadManagerTabHelper::DidCreateDownload(
     std::unique_ptr<web::DownloadTask> task) {
   if (task_) {
+    [[NetworkActivityIndicatorManager sharedInstance]
+        clearNetworkTasksForGroup:GetNetworkActivityKey()];
     task_->RemoveObserver(this);
   }
   task_ = std::move(task);
