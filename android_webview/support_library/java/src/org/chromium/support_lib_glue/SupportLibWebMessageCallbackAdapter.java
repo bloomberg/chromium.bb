@@ -8,6 +8,7 @@ import org.chromium.support_lib_boundary.WebMessageBoundaryInterface;
 import org.chromium.support_lib_boundary.WebMessageCallbackBoundaryInterface;
 import org.chromium.support_lib_boundary.WebMessagePortBoundaryInterface;
 import org.chromium.support_lib_boundary.util.BoundaryInterfaceReflectionUtil;
+import org.chromium.support_lib_boundary.util.Features;
 
 /**
  * Adapter working on top of WebMessageCallbackBoundaryInterface to provide methods using boundary
@@ -22,7 +23,13 @@ class SupportLibWebMessageCallbackAdapter {
 
     public void onMessage(
             WebMessagePortBoundaryInterface port, WebMessageBoundaryInterface message) {
-        mImpl.onMessage(BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(port),
-                BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(message));
+        // Ensure WebMessageCallbackCompat.onMessage() is supported by the support library before
+        // calling it.
+        String[] supportedFeatures = mImpl.getSupportedFeatures();
+        if (BoundaryInterfaceReflectionUtil.containsFeature(
+                    supportedFeatures, Features.WEB_MESSAGE_CALLBACK_ON_MESSAGE)) {
+            mImpl.onMessage(BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(port),
+                    BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(message));
+        }
     }
 }

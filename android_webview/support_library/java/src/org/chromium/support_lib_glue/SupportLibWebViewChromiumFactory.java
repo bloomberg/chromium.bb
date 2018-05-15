@@ -54,7 +54,13 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
                     Features.WEB_RESOURCE_ERROR_GET_CODE,
                     Features.SAFE_BROWSING_RESPONSE_BACK_TO_SAFETY,
                     Features.SAFE_BROWSING_RESPONSE_PROCEED,
-                    Features.SAFE_BROWSING_RESPONSE_SHOW_INTERSTITIAL
+                    Features.SAFE_BROWSING_RESPONSE_SHOW_INTERSTITIAL,
+                    Features.WEB_MESSAGE_PORT_POST_MESSAGE,
+                    Features.WEB_MESSAGE_PORT_CLOSE,
+                    Features.WEB_MESSAGE_PORT_SET_MESSAGE_CALLBACK,
+                    Features.CREATE_WEB_MESSAGE_CHANNEL,
+                    Features.POST_WEB_MESSAGE,
+                    Features.WEB_MESSAGE_CALLBACK_ON_MESSAGE
             };
     // clang-format on
 
