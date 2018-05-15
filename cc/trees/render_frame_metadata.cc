@@ -34,7 +34,7 @@ RenderFrameMetadata& RenderFrameMetadata::operator=(
 RenderFrameMetadata& RenderFrameMetadata::operator=(
     RenderFrameMetadata&& other) = default;
 
-bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) {
+bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) const {
   return root_scroll_offset == other.root_scroll_offset &&
          root_background_color == other.root_background_color &&
          is_scroll_offset_at_top == other.is_scroll_offset_at_top &&
@@ -45,7 +45,7 @@ bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) {
          local_surface_id == other.local_surface_id;
 }
 
-bool RenderFrameMetadata::operator!=(const RenderFrameMetadata& other) {
+bool RenderFrameMetadata::operator!=(const RenderFrameMetadata& other) const {
   return !operator==(other);
 }
 

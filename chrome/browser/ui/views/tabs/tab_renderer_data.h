@@ -22,7 +22,7 @@ struct CHROME_VIEWS_EXPORT TabRendererData {
   TabRendererData& operator=(const TabRendererData& other);
   TabRendererData& operator=(TabRendererData&& other);
 
-  bool operator==(const TabRendererData& other);
+  bool operator==(const TabRendererData& other) const;
 
   // This interprets the crashed status to decide whether or not this
   // render data represents a tab that is "crashed" (i.e. the render

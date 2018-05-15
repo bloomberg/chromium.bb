@@ -33,7 +33,7 @@ AXRelativeBounds& AXRelativeBounds::operator=(AXRelativeBounds other) {
   return *this;
 }
 
-bool AXRelativeBounds::operator==(const AXRelativeBounds& other) {
+bool AXRelativeBounds::operator==(const AXRelativeBounds& other) const {
   if (offset_container_id != other.offset_container_id)
     return false;
   if (bounds != other.bounds)
@@ -45,7 +45,7 @@ bool AXRelativeBounds::operator==(const AXRelativeBounds& other) {
   return *transform == *other.transform;
 }
 
-bool AXRelativeBounds::operator!=(const AXRelativeBounds& other) {
+bool AXRelativeBounds::operator!=(const AXRelativeBounds& other) const {
   return !operator==(other);
 }
 

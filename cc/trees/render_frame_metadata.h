@@ -31,8 +31,8 @@ class CC_EXPORT RenderFrameMetadata {
 
   RenderFrameMetadata& operator=(const RenderFrameMetadata&);
   RenderFrameMetadata& operator=(RenderFrameMetadata&& other);
-  bool operator==(const RenderFrameMetadata& other);
-  bool operator!=(const RenderFrameMetadata& other);
+  bool operator==(const RenderFrameMetadata& other) const;
+  bool operator!=(const RenderFrameMetadata& other) const;
 
   // Indicates whether the scroll offset of the root layer is at top, i.e.,
   // whether scroll_offset.y() == 0.

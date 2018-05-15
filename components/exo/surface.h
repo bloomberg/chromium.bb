@@ -248,8 +248,8 @@ class Surface final : public ui::PropertyHandler {
     State();
     ~State();
 
-    bool operator==(const State& other);
-    bool operator!=(const State& other) { return !(*this == other); }
+    bool operator==(const State& other) const;
+    bool operator!=(const State& other) const { return !(*this == other); }
 
     cc::Region opaque_region;
     base::Optional<cc::Region> input_region;

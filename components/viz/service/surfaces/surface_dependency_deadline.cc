@@ -59,7 +59,7 @@ void SurfaceDependencyDeadline::InheritFrom(
 }
 
 bool SurfaceDependencyDeadline::operator==(
-    const SurfaceDependencyDeadline& other) {
+    const SurfaceDependencyDeadline& other) const {
   return begin_frame_source_ == other.begin_frame_source_ &&
          deadline_ == other.deadline_;
 }

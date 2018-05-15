@@ -17,7 +17,7 @@ TabRendererData& TabRendererData::operator=(TabRendererData&& other) = default;
 
 TabRendererData::~TabRendererData() = default;
 
-bool TabRendererData::operator==(const TabRendererData& other) {
+bool TabRendererData::operator==(const TabRendererData& other) const {
   return favicon.BackedBySameObjectAs(other.favicon) &&
          network_state == other.network_state && title == other.title &&
          url == other.url && crashed_status == other.crashed_status &&
