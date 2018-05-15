@@ -30,6 +30,7 @@ TextfieldExample::TextfieldExample()
       disabled_(nullptr),
       read_only_(nullptr),
       invalid_(nullptr),
+      rtl_(nullptr),
       show_password_(nullptr),
       clear_all_(nullptr),
       append_(nullptr),
@@ -51,6 +52,8 @@ void TextfieldExample::CreateExampleView(View* container) {
   read_only_->SetText(ASCIIToUTF16("read only"));
   invalid_ = new Textfield();
   invalid_->SetInvalid(true);
+  rtl_ = new Textfield();
+  rtl_->ChangeTextDirectionAndLayoutAlignment(base::i18n::RIGHT_TO_LEFT);
   show_password_ = new LabelButton(this, ASCIIToUTF16("Show password"));
   set_background_ =
       new LabelButton(this, ASCIIToUTF16("Set non-default background"));
@@ -81,6 +84,7 @@ void TextfieldExample::CreateExampleView(View* container) {
   MakeRow(new Label(ASCIIToUTF16("Disabled:")), disabled_);
   MakeRow(new Label(ASCIIToUTF16("Read Only:")), read_only_);
   MakeRow(new Label(ASCIIToUTF16("Invalid:")), invalid_);
+  MakeRow(new Label(ASCIIToUTF16("RTL:")), rtl_);
   MakeRow(new Label(ASCIIToUTF16("Name:")), nullptr);
   MakeRow(show_password_, nullptr);
   MakeRow(set_background_, nullptr);
@@ -124,18 +128,21 @@ void TextfieldExample::ButtonPressed(Button* sender, const ui::Event& event) {
     disabled_->SetText(empty);
     read_only_->SetText(empty);
     invalid_->SetText(empty);
+    rtl_->SetText(empty);
   } else if (sender == append_) {
     name_->AppendText(ASCIIToUTF16("[append]"));
     password_->AppendText(ASCIIToUTF16("[append]"));
     disabled_->SetText(ASCIIToUTF16("[append]"));
     read_only_->AppendText(ASCIIToUTF16("[append]"));
     invalid_->AppendText(ASCIIToUTF16("[append]"));
+    rtl_->AppendText(ASCIIToUTF16("[append]"));
   } else if (sender == set_) {
     name_->SetText(ASCIIToUTF16("[set]"));
     password_->SetText(ASCIIToUTF16("[set]"));
     disabled_->SetText(ASCIIToUTF16("[set]"));
     read_only_->SetText(ASCIIToUTF16("[set]"));
     invalid_->SetText(ASCIIToUTF16("[set]"));
+    rtl_->SetText(ASCIIToUTF16("[set]"));
   } else if (sender == set_style_) {
     if (!name_->text().empty()) {
       name_->SetColor(SK_ColorGREEN);

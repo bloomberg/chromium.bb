@@ -47,6 +47,7 @@ class VIEWS_EXAMPLES_EXPORT TextfieldExample : public ExampleBase,
   Textfield* disabled_;
   Textfield* read_only_;
   Textfield* invalid_;
+  Textfield* rtl_;
 
   // Various buttons to control textfield.
   LabelButton* show_password_;
