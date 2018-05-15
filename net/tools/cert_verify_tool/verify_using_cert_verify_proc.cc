@@ -115,7 +115,7 @@ bool VerifyUsingCertVerifyProc(
     const std::vector<CertInput>& intermediate_der_certs,
     const std::vector<CertInput>& root_der_certs,
     net::CRLSet* crl_set,
-    const base::FilePath& dump_prefix_path) {
+    const base::FilePath& dump_path) {
   std::cout
       << "NOTE: CertVerifyProc always uses OS trust settings (--roots are in "
          "addition).\n";
@@ -165,10 +165,8 @@ bool VerifyUsingCertVerifyProc(
 
   std::cout << "CertVerifyProc result: " << net::ErrorToShortString(rv) << "\n";
   PrintCertVerifyResult(result);
-  if (!dump_prefix_path.empty() && result.verified_cert) {
-    if (!DumpX509CertificateChain(dump_prefix_path.AddExtension(
-                                      FILE_PATH_LITERAL(".CertVerifyProc.pem")),
-                                  result.verified_cert.get())) {
+  if (!dump_path.empty() && result.verified_cert) {
+    if (!DumpX509CertificateChain(dump_path, result.verified_cert.get())) {
       return false;
     }
   }
