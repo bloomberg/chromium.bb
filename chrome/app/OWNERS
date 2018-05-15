@@ -16,7 +16,6 @@ per-file generated_resources.grd=*
 per-file google_chrome_strings.grd=*
 per-file md_extensions_strings.grdp=*
 
-per-file media_router_strings.grdp*=apacible@chromium.org
 per-file media_router_strings.grdp*=imcheng@chromium.org
 per-file media_router_strings.grdp*=mfoltz@chromium.org
 
