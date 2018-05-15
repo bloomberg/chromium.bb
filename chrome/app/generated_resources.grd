@@ -3272,6 +3272,11 @@ are declared in build/common.gypi.
           Media File Checker
         </message>
       </if>
+      <if expr="enable_printing">
+        <message name="IDS_UTILITY_PROCESS_PDF_COMPOSITOR_SERVICE_NAME" desc="The name of the utility process used for PDF compositing.">
+          PDF Compositor Service
+        </message>
+      </if>
       <if expr="enable_print_preview or (enable_printing and is_win)">
         <message name="IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME" desc="The name of the utility process used for printing conversions.">
           Printing Service
@@ -3279,6 +3284,9 @@ are declared in build/common.gypi.
       </if>
       <message name="IDS_UTILITY_PROCESS_PATCH_NAME" desc="The name of the utility process used for patching file operations.">
         Patch Service
+      </message>
+      <message name="IDS_UTILITY_PROCESS_PROFILING_SERVICE_NAME" desc="The name of the utility process used for heap profiling.">
+        Profiling Service
       </message>
       <message name="IDS_UTILITY_PROCESS_UNZIP_NAME" desc="The name of the utility process used for unzipping files.">
         Unzip Service
