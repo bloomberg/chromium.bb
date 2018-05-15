@@ -157,8 +157,7 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/tokenize.h"
     "${AOM_ROOT}/av1/encoder/timing.c")
 
-set(AOM_AV1_COMMON_INTRIN_SSE2
-    "${AOM_ROOT}/av1/common/x86/av1_txfm_sse2.h")
+set(AOM_AV1_COMMON_INTRIN_SSE2 "${AOM_ROOT}/av1/common/x86/av1_txfm_sse2.h")
 
 set(AOM_AV1_COMMON_INTRIN_SSSE3
     "${AOM_ROOT}/av1/common/x86/av1_inv_txfm_ssse3.h"

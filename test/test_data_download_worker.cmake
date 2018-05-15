@@ -20,7 +20,6 @@ if (NOT AOM_ROOT OR NOT AOM_CONFIG_DIR OR NOT AOM_TEST_FILE
 endif ()
 # cmake-format: on
 
-
 set(AOM_TEST_DATA_URL "http://storage.googleapis.com/aom-test-data")
 
 if(NOT AOM_TEST_DATA_PATH)
