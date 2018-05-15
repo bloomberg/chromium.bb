@@ -141,15 +141,12 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   }
 
 #if defined(OS_MACOSX)
-  bool enable_canvas_2d_image_chromium = command_line.HasSwitch(
-      switches::kEnableGpuMemoryBufferCompositorResources) &&
+  const bool enable_canvas_2d_image_chromium =
+      command_line.HasSwitch(
+          switches::kEnableGpuMemoryBufferCompositorResources) &&
       !command_line.HasSwitch(switches::kDisable2dCanvasImageChromium) &&
-      !command_line.HasSwitch(switches::kDisableGpu);
-
-  if (enable_canvas_2d_image_chromium) {
-    enable_canvas_2d_image_chromium =
-        base::FeatureList::IsEnabled(features::kCanvas2DImageChromium);
-  }
+      !command_line.HasSwitch(switches::kDisableGpu) &&
+      base::FeatureList::IsEnabled(features::kCanvas2DImageChromium);
 #else
   bool enable_canvas_2d_image_chromium = false;
 #endif
