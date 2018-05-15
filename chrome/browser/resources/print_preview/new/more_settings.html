@@ -4,18 +4,22 @@
 <link rel="import" href="chrome://resources/html/action_link.html">
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="settings_section_behavior.html">
+<link rel="import" href="../metrics.html">
 <link rel="import" href="strings.html">
 
 <dom-module id="print-preview-more-settings">
   <template>
     <style include="action-link cr-hidden-style">
-      :host([available]) {
+      :host {
         align-items: center;
         display: flex;
         margin-top: 4px;
         min-height: 38px;
         padding: 5px 20px;
+      }
+
+      :host([hidden]) {
+        display: none;
       }
 
       :host #label {
@@ -39,9 +43,9 @@
             url(../images/2x/plus.png) 2x);
       }
     </style>
-    <div id="icon" class$="[[getIconClass_(settingsExpanded)]]"></div>
+    <div id="icon" class$="[[getIconClass_(settingsExpandedByUser)]]"></div>
     <a id="label" is="action-link" disabled="[[disabled]]">
-      [[getLabelText_(settingsExpanded)]]
+      [[getLabelText_(settingsExpandedByUser)]]
     </a>
   </template>
   <script src="more_settings.js"></script>

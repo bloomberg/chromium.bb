@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-pages-per-sheet-settings',
 
-  behaviors: [SettingsBehavior, print_preview_new.SettingsSectionBehavior],
+  behaviors: [SettingsBehavior],
 
   properties: {
     disabled: Boolean,

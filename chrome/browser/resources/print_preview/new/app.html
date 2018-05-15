@@ -3,7 +3,9 @@
 <link rel="import" href="chrome://resources/html/event_tracker.html">
 <link rel="import" href="chrome://resources/html/util.html">
 <link rel="import" href="chrome://resources/html/webui_listener_tracker.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="../cloud_print_interface.html">
+<link rel="import" href="../metrics.html">
 <link rel="import" href="../native_layer.html">
 <link rel="import" href="../data/destination.html">
 <link rel="import" href="../data/destination_store.html">
@@ -67,8 +69,7 @@
     <print-preview-model id="model" settings="{{settings}}"
         destination="{{destination_}}" document-info="{{documentInfo_}}"
         recent-destinations="{{recentDestinations_}}"
-        on-save-sticky-settings="onSaveStickySettings_"
-        on-settings-availability-updated="updateSettingsVisibility_">
+        on-save-sticky-settings="onSaveStickySettings_">
     </print-preview-model>
     <div id="sidebar" on-setting-valid-changed="onSettingValidChanged_">
       <print-preview-header destination="[[destination_]]" state="[[state]]"
@@ -80,67 +81,69 @@
         <print-preview-destination-settings id="destinationSettings"
             destination="[[destination_]]"
             destination-store="[[destinationStore_]]"
-            invitation-store="[[invitationStore_]]" class="settings-section"
+            invitation-store="[[invitationStore_]]"
             disabled="[[controlsDisabled_]]" state="[[state]]"
             recent-destinations="[[recentDestinations_]]"
             user-info="{{userInfo_}}" available>
         </print-preview-destination-settings>
         <print-preview-pages-settings settings="{{settings}}"
             document-info="[[documentInfo_]]"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[settings.pages.available]]">
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.pages.available]]">
         </print-preview-pages-settings>
         <print-preview-copies-settings settings="{{settings}}"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[settings.copies.available]]">
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.copies.available]]">
         </print-preview-copies-settings>
         <print-preview-layout-settings settings="{{settings}}"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[settings.layout.available]]">
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!settings.layout.available]]">
         </print-preview-layout-settings>
         <print-preview-color-settings settings="{{settings}}"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[settings.color.available]]">
-        </print-preview-color-settings>
-        <print-preview-more-settings settings-expanded="{{settingsExpanded_}}"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[shouldShowMoreSettings_]]">
-        </print-preview-more-settings>
-        <print-preview-media-size-settings settings="{{settings}}"
-            capability="[[destination_.capabilities.printer.media_size]]"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[settings.mediaSize.available]]" collapsible>
-        </print-preview-media-size-settings>
-        <print-preview-margins-settings settings="{{settings}}"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[settings.margins.available]]" collapsible>
-        </print-preview-margins-settings>
-        <print-preview-dpi-settings settings="{{settings}}"
-            capability="[[destination_.capabilities.printer.dpi]]"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[settings.dpi.available]]" collapsible>
-        </print-preview-dpi-settings>
-        <template is="dom-if" if="[[showPagesPerSheet_]]">
-          <print-preview-pages-per-sheet-settings settings="{{settings}}"
-              class="settings-section" disabled="[[controlsDisabled_]]"
-              available="[[settings.pagesPerSheet.available]]"
-              collapsible hidden>
-          </print-preview-pages-per-sheet-settings>
-        </template>
-        <print-preview-scaling-settings settings="{{settings}}"
-            document-info="[[documentInfo_]]" class="settings-section"
             disabled="[[controlsDisabled_]]"
-            available="[[settings.scaling.available]]" collapsible>
-        </print-preview-scaling-settings>
-        <print-preview-other-options-settings settings="{{settings}}"
-            class="settings-section" disabled="[[controlsDisabled_]]"
-            available="[[settings.otherOptions.available]]" collapsible>
-        </print-preview-other-options-settings>
-        <print-preview-advanced-options-settings settings="{{settings}}"
-            class="settings-section"
-            destination="[[destination_]]" disabled="[[controlsDisabled_]]"
-            available="[[settings.vendorItems.available]]" collapsible>
-        </print-preview-advanced-options-settings>
+            hidden$="[[!settings.color.available]]">
+        </print-preview-color-settings>
+        <print-preview-more-settings
+            settings-expanded-by-user="{{settingsExpandedByUser_}}"
+            disabled="[[controlsDisabled_]]"
+            hidden$="[[!shouldShowMoreSettings_]]">
+        </print-preview-more-settings>
+        <iron-collapse id="moreSettings"
+            opened="[[shouldExpandSettings_(
+                settingsExpandedByUser_, shouldShowMoreSettings_)]]">
+          <print-preview-media-size-settings settings="{{settings}}"
+              capability="[[destination_.capabilities.printer.media_size]]"
+              disabled="[[controlsDisabled_]]"
+              hidden$="[[!settings.mediaSize.available]]">
+          </print-preview-media-size-settings>
+          <print-preview-margins-settings settings="{{settings}}"
+              disabled="[[controlsDisabled_]]"
+              hidden$="[[!settings.margins.available]]">
+          </print-preview-margins-settings>
+          <print-preview-dpi-settings settings="{{settings}}"
+              capability="[[destination_.capabilities.printer.dpi]]"
+              disabled="[[controlsDisabled_]]"
+              hidden$="[[!settings.dpi.available]]">
+          </print-preview-dpi-settings>
+          <template is="dom-if" if="[[showPagesPerSheet_]]">
+            <print-preview-pages-per-sheet-settings settings="{{settings}}"
+                disabled="[[controlsDisabled_]]"
+                hidden$="[[!settings.pagesPerSheet.available]]">
+            </print-preview-pages-per-sheet-settings>
+          </template>
+          <print-preview-scaling-settings settings="{{settings}}"
+              document-info="[[documentInfo_]]" disabled="[[controlsDisabled_]]"
+              hidden$="[[!settings.scaling.available]]">
+          </print-preview-scaling-settings>
+          <print-preview-other-options-settings settings="{{settings}}"
+              disabled="[[controlsDisabled_]]"
+              hidden$="[[!settings.otherOptions.available]]">
+          </print-preview-other-options-settings>
+          <print-preview-advanced-options-settings settings="{{settings}}"
+              destination="[[destination_]]" disabled="[[controlsDisabled_]]"
+              hidden$="[[!settings.vendorItems.available]]">
+          </print-preview-advanced-options-settings>
+        </iron-collapse>
 <if expr="not chromeos">
         <print-preview-link-container destination="[[destination_]]"
             app-kiosk-mode="[[isInAppKioskMode_]]"

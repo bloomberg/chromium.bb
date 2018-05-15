@@ -15,10 +15,7 @@ const PagesInputErrorState = {
 Polymer({
   is: 'print-preview-pages-settings',
 
-  behaviors: [
-    SettingsBehavior, print_preview_new.SettingsSectionBehavior,
-    print_preview_new.InputBehavior
-  ],
+  behaviors: [SettingsBehavior, print_preview_new.InputBehavior],
 
   properties: {
     /** @type {!print_preview.DocumentInfo} */

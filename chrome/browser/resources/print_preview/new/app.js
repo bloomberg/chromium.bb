@@ -107,11 +107,10 @@ Polymer({
     },
 
     /** @private {boolean} */
-    settingsExpanded_: {
+    settingsExpandedByUser_: {
       type: Boolean,
       notify: true,
       value: false,
-      observer: 'updateSettingsVisibility_',
     },
 
     /** @private {boolean} */
@@ -366,6 +365,14 @@ Polymer({
     } else if (this.state == print_preview_new.State.HIDDEN) {
       this.nativeLayer_.hidePreview();
     } else if (this.state == print_preview_new.State.PRINTING) {
+      if (this.shouldShowMoreSettings_) {
+        new print_preview.PrintSettingsUiMetricsContext().record(
+            this.settingsExpandedByUser_ ?
+                print_preview.Metrics.PrintSettingsUiBucket
+                    .PRINT_WITH_SETTINGS_EXPANDED :
+                print_preview.Metrics.PrintSettingsUiBucket
+                    .PRINT_WITH_SETTINGS_COLLAPSED);
+      }
       const destination = assert(this.destinationStore_.selectedDestination);
       const whenPrintDone =
           this.nativeLayer_.print(this.$.model.createPrintTicket(
@@ -552,18 +559,14 @@ Polymer({
     }, 1) > MAX_SECTIONS_TO_SHOW;
   },
 
-  /** Changes the visibility of settings sections. */
-  updateSettingsVisibility_: function() {
-    Array.from(this.shadowRoot.querySelectorAll('.settings-section'))
-        .forEach(section => {
-          if (!section.available ||
-              (section.collapsible && this.shouldShowMoreSettings_ &&
-               !this.settingsExpanded_)) {
-            section.hide();
-            return;
-          }
-          section.show();
-        });
+  /**
+   * @return {boolean} Whether the "more settings" collapse should be expanded.
+   * @private
+   */
+  shouldExpandSettings_: function() {
+    // Expand the settings if the user has requested them expanded or if more
+    // settings is not displayed (i.e. less than 6 total settings available).
+    return this.settingsExpandedByUser_ || !this.shouldShowMoreSettings_;
   },
 
   /** @private */
