@@ -11,7 +11,6 @@
 #include "chrome/browser/vr/elements/ui_texture.h"
 #include "chrome/browser/vr/test/animation_utils.h"
 #include "chrome/browser/vr/test/constants.h"
-#include "chrome/browser/vr/test/fake_ui_element_renderer.h"
 #include "chrome/browser/vr/ui_scene.h"
 
 namespace vr {
