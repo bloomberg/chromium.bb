@@ -90,10 +90,14 @@ struct CONTENT_EXPORT ServiceWorkerFetchRequest {
   ServiceWorkerFetchRequest& operator=(const ServiceWorkerFetchRequest& other);
   ~ServiceWorkerFetchRequest();
   size_t EstimatedStructSize();
+  std::string Serialize();
 
   static blink::mojom::FetchCacheMode GetCacheModeFromLoadFlags(int load_flags);
+  static ServiceWorkerFetchRequest ParseFromString(
+      const std::string& serialized);
 
-  // Be sure to update EstimatedStructSize() when adding members.
+  // Be sure to update EstimatedStructSize(), Serialize(), and ParseFromString()
+  // when adding members.
   network::mojom::FetchRequestMode mode =
       network::mojom::FetchRequestMode::kNoCORS;
   bool is_main_resource_load = false;

@@ -87,6 +87,29 @@ TEST(ServiceWorkerResponseTest, StructTraits) {
   EXPECT_EQ(input.side_data_blob, output.side_data_blob);
 }
 
+TEST(ServiceWorkerRequestTest, SerialiazeDeserializeRoundTrip) {
+  ServiceWorkerFetchRequest request(
+      GURL("foo.com"), "GET", {{"User-Agent", "Chrome"}},
+      Referrer(
+          GURL("bar.com"),
+          blink::WebReferrerPolicy::kWebReferrerPolicyNoReferrerWhenDowngrade),
+      true);
+  request.mode = network::mojom::FetchRequestMode::kSameOrigin;
+  request.is_main_resource_load = true;
+  request.request_context_type =
+      RequestContextType::REQUEST_CONTEXT_TYPE_IFRAME;
+  request.credentials_mode = network::mojom::FetchCredentialsMode::kSameOrigin;
+  request.cache_mode = blink::mojom::FetchCacheMode::kForceCache;
+  request.redirect_mode = network::mojom::FetchRedirectMode::kManual;
+  request.integrity = "integrity";
+  request.keepalive = true;
+  request.client_id = "42";
+
+  EXPECT_EQ(request.Serialize(),
+            ServiceWorkerFetchRequest::ParseFromString(request.Serialize())
+                .Serialize());
+}
+
 }  // namespace
 
 }  // namespace content
