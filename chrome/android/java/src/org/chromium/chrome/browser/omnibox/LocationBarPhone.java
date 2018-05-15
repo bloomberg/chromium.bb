@@ -200,6 +200,9 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     private void updateGoogleG() {
+        // Inflation might not be finished yet during startup.
+        if (mGoogleGContainer == null) return;
+
         // The toolbar data provider can be null during startup, before the ToolbarManager has been
         // initialized.
         ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
