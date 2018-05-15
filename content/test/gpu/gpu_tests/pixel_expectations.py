@@ -94,8 +94,9 @@ class PixelExpectations(GpuTestExpectations):
     self.Fail('Pixel_CSS3DBlueBox_NoGpuProcess',
               ['linux', 'mac', 'win'], bug=744658)
 
-    # TODO(rjkroege): temporarily suppress this test.
+    # TODO(fserb): temporarily suppress this test.
     self.Flaky('Pixel_OffscreenCanvas2DResizeOnWorker', ['mac'], bug=840394)
+    self.Flaky('Pixel_WorkerRAF_OOPD', ['android', 'nvidia'], bug=840394)
 
     # TODO(kbr): temporary suppression for new test.
     self.Flaky('Pixel_WebGLSadCanvas', ['mac'], bug=575305)
