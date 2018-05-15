@@ -90,6 +90,8 @@ if (is_android) {
         "src/src/crazy_linker_shared_library.h",
         "src/src/crazy_linker_system.cpp",
         "src/src/crazy_linker_system.h",
+        "src/src/crazy_linker_system_linker.cpp",
+        "src/src/crazy_linker_system_linker.h",
         "src/src/crazy_linker_thread.cpp",
         "src/src/crazy_linker_thread.h",
         "src/src/crazy_linker_util.cpp",

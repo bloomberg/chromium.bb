@@ -6,7 +6,6 @@
 
 #include <assert.h>
 #include <crazy_linker.h>
-#include <dlfcn.h>
 
 #include "crazy_linker_debug.h"
 #include "crazy_linker_globals.h"
@@ -15,6 +14,7 @@
 #include "crazy_linker_rdebug.h"
 #include "crazy_linker_shared_library.h"
 #include "crazy_linker_system.h"
+#include "crazy_linker_system_linker.h"
 #include "crazy_linker_util.h"
 #include "crazy_linker_zip.h"
 
@@ -349,8 +349,7 @@ LibraryView* LibraryList::LoadLibrary(const char* lib_name,
   // crazily.
   if (is_dependency_or_preload) {
     LOG("Loading system library '%s'", lib_name);
-    ::dlerror();
-    void* system_lib = dlopen(lib_name, dlopen_mode);
+    void* system_lib = SystemLinker::Open(lib_name, dlopen_mode);
     if (!system_lib) {
       error->Format("Can't load system library %s: %s", lib_name, ::dlerror());
       return NULL;

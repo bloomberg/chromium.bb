@@ -4,7 +4,6 @@
 
 #include "crazy_linker_shared_library.h"
 
-#include <dlfcn.h>
 #include <stdlib.h>
 #include <sys/mman.h>
 #include <elf.h>
@@ -13,10 +12,11 @@
 #include "crazy_linker_debug.h"
 #include "crazy_linker_elf_loader.h"
 #include "crazy_linker_elf_relocations.h"
+#include "crazy_linker_globals.h"
 #include "crazy_linker_library_list.h"
 #include "crazy_linker_library_view.h"
-#include "crazy_linker_globals.h"
 #include "crazy_linker_memory_mapping.h"
+#include "crazy_linker_system_linker.h"
 #include "crazy_linker_thread.h"
 #include "crazy_linker_util.h"
 #include "crazy_linker_wrappers.h"
@@ -96,8 +96,10 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
                         LibraryList* lib_list,
                         Vector<LibraryView*>* preloads,
                         Vector<LibraryView*>* dependencies)
-      : main_program_handle_(::dlopen(NULL, RTLD_NOW)),
-        lib_(lib), preloads_(preloads), dependencies_(dependencies) {}
+      : main_program_handle_(SystemLinker::Open(NULL, RTLD_NOW)),
+        lib_(lib),
+        preloads_(preloads),
+        dependencies_(dependencies) {}
 
   virtual void* Lookup(const char* symbol_name) {
     // First, look inside the current library.
@@ -132,7 +134,7 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
     }
 
     // Then lookup inside the main executable.
-    address = ::dlsym(main_program_handle_, symbol_name);
+    address = SystemLinker::Resolve(main_program_handle_, symbol_name);
     if (address)
       return address;
 
@@ -153,7 +155,7 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
  private:
   virtual void* LookupInWrap(const char* symbol_name, LibraryView* wrap) {
     if (wrap->IsSystem()) {
-      void* address = ::dlsym(wrap->GetSystem(), symbol_name);
+      void* address = SystemLinker::Resolve(wrap->GetSystem(), symbol_name);
       // Android libm.so defines isnanf as weak. This means that its
       // address cannot be found by dlsym(), which returns NULL for weak
       // symbols prior to Android 5.0. However, libm.so contains the real
@@ -167,7 +169,7 @@ class SharedLibraryResolver : public ElfRelocations::SymbolResolver {
       // http://code.google.com/p/chromium/issues/detail?id=376828
       if (!address && !strcmp(symbol_name, "isnanf") &&
           !strcmp(wrap->GetName(), "libm.so")) {
-        address = ::dlsym(wrap->GetSystem(), "__isnanf");
+        address = SystemLinker::Resolve(wrap->GetSystem(), "__isnanf");
         if (!address) {
           // __isnanf only exists on Android 21+, so use a local fallback
           // if that doesn't exist either.

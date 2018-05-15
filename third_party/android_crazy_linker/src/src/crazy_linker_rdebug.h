@@ -202,7 +202,9 @@ class RDebug {
     post_for_later_execution_context_ = context;
   }
 
-  r_debug* GetAddress() { return r_debug_; }
+  // Return address of current global _r_debug variable, or nullptr if not
+  // available.
+  r_debug* GetAddress();
 
  private:
   // Try to find the address of the global _r_debug variable, even

@@ -4,10 +4,10 @@
 
 #include "crazy_linker_library_view.h"
 
-#include <dlfcn.h>
 #include "crazy_linker_debug.h"
 #include "crazy_linker_globals.h"
 #include "crazy_linker_shared_library.h"
+#include "crazy_linker_system_linker.h"
 
 namespace crazy {
 
@@ -17,7 +17,7 @@ LibraryView::LibraryView(SharedLibrary* crazy_lib)
 LibraryView::~LibraryView() {
   LOG("Destroying %s", name_.c_str());
   if (type_ == TYPE_SYSTEM) {
-    ::dlclose(system_);
+    SystemLinker::Close(system_);
     system_ = NULL;
   }
   if (type_ == TYPE_CRAZY) {
@@ -28,8 +28,9 @@ LibraryView::~LibraryView() {
 }
 
 void* LibraryView::LookupSymbol(const char* symbol_name) {
-  if (type_ == TYPE_SYSTEM)
-    return ::dlsym(system_, symbol_name);
+  if (type_ == TYPE_SYSTEM) {
+    return SystemLinker::Resolve(system_, symbol_name);
+  }
 
   if (type_ == TYPE_CRAZY) {
     LibraryList* lib_list = Globals::Get()->libraries();
