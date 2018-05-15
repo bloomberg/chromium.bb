@@ -157,21 +157,16 @@ interface CloseEvent : Event
     getter reason
     getter wasClean
     method constructor
-interface CookieChangeEvent : Event
-    attribute @@toStringTag
-    getter changed
-    getter deleted
-    method constructor
 interface CookieStore : EventTarget
     attribute @@toStringTag
-    getter onchange
     method constructor
     method delete
     method get
     method getAll
+    method getChangeSubscriptions
     method has
     method set
-    setter onchange
+    method subscribeToChanges
 interface CountQueuingStrategy
     method constructor
     method size
@@ -439,6 +434,11 @@ interface EventTarget
     method constructor
     method dispatchEvent
     method removeEventListener
+interface ExtendableCookieChangeEvent : ExtendableEvent
+    attribute @@toStringTag
+    getter changed
+    getter deleted
+    method constructor
 interface ExtendableEvent : Event
     attribute @@toStringTag
     method constructor

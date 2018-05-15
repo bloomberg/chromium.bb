@@ -175,6 +175,11 @@ class WebServiceWorkerContextClient {
                                                mojom::ServiceWorkerEventStatus,
                                                double event_dispatch_time) {}
 
+  // Called after 'cookiechange' events are handled by the service worker.
+  virtual void DidHandleCookieChangeEvent(int event_id,
+                                          mojom::ServiceWorkerEventStatus,
+                                          double event_dispatch_time) {}
+
   // Called after ExtendableMessageEvent was handled by the service worker.
   virtual void DidHandleExtendableMessageEvent(int event_id,
                                                mojom::ServiceWorkerEventStatus,

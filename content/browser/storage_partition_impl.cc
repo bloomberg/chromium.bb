@@ -24,6 +24,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -667,6 +668,14 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
       base::MakeRefCounted<PrefetchURLLoaderService>(
           partition->url_loader_factory_getter_);
 
+  partition->cookie_store_context_ = base::MakeRefCounted<CookieStoreContext>();
+  // Unit tests use the Initialize() callback to crash early if restoring the
+  // CookieManagerStore's state from ServiceWorkerStorage fails. Production and
+  // browser tests rely on CookieStoreManager's well-defined behavior when
+  // restoring the state fails.
+  partition->cookie_store_context_->Initialize(
+      partition->service_worker_context_, base::DoNothing());
+
   return partition;
 }
 
@@ -825,6 +834,10 @@ BlobRegistryWrapper* StoragePartitionImpl::GetBlobRegistry() {
 
 PrefetchURLLoaderService* StoragePartitionImpl::GetPrefetchURLLoaderService() {
   return prefetch_url_loader_service_.get();
+}
+
+CookieStoreContext* StoragePartitionImpl::GetCookieStoreContext() {
+  return cookie_store_context_.get();
 }
 
 void StoragePartitionImpl::OpenLocalStorage(

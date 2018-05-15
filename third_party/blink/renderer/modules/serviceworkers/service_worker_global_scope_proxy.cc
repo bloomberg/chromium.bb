@@ -61,6 +61,7 @@
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_settled_event_init.h"
 #include "third_party/blink/renderer/modules/background_fetch/background_fetch_update_event.h"
 #include "third_party/blink/renderer/modules/background_sync/sync_event.h"
+#include "third_party/blink/renderer/modules/cookie_store/extendable_cookie_change_event.h"
 #include "third_party/blink/renderer/modules/exported/web_embedded_worker_impl.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/notification_event.h"
@@ -243,6 +244,30 @@ void ServiceWorkerGlobalScopeProxy::DispatchActivateEvent(int event_id) {
       WorkerGlobalScope(), WaitUntilObserver::kActivate, event_id);
   Event* event = ExtendableEvent::Create(EventTypeNames::activate,
                                          ExtendableEventInit(), observer);
+  WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::DispatchCookieChangeEvent(
+    int event_id,
+    const WebString& cookie_name,
+    const WebString& cookie_value,
+    bool is_cookie_delete) {
+  DCHECK(WorkerGlobalScope()->IsContextThread());
+  WaitUntilObserver* observer = WaitUntilObserver::Create(
+      WorkerGlobalScope(), WaitUntilObserver::kCookieChange, event_id);
+
+  HeapVector<CookieListItem> changed;
+  HeapVector<CookieListItem> deleted;
+  ExtendableCookieChangeEvent::ToCookieChangeListItem(
+      cookie_name, cookie_value, is_cookie_delete, changed, deleted);
+  Event* event = ExtendableCookieChangeEvent::Create(
+      EventTypeNames::cookiechange, std::move(changed), std::move(deleted),
+      observer);
+
+  // TODO(pwnall): When switching to blink::CanonicalCookie, handle the case
+  //               when (changed.IsEmpty() && deleted.IsEmpty()).
+
+  // TODO(pwnall): Investigate dispatching this on cookieStore.
   WorkerGlobalScope()->DispatchExtendableEvent(event, observer);
 }
 

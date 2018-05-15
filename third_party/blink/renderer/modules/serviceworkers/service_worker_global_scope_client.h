@@ -95,6 +95,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   void DidHandleBackgroundFetchedEvent(int event_id,
                                        mojom::ServiceWorkerEventStatus,
                                        double event_dispatch_time);
+  void DidHandleCookieChangeEvent(int event_id,
+                                  mojom::ServiceWorkerEventStatus,
+                                  double event_dispatch_time);
   void DidHandleExtendableMessageEvent(int event_id,
                                        mojom::ServiceWorkerEventStatus,
                                        double event_dispatch_time);

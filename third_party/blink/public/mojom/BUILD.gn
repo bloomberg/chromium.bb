@@ -17,6 +17,7 @@ mojom("mojom_platform") {
     "blob/serialized_blob.mojom",
     "clipboard/clipboard.mojom",
     "color_chooser/color_chooser.mojom",
+    "cookie_store/cookie_store.mojom",
     "feature_policy/feature_policy.mojom",
     "file/file_utilities.mojom",
     "frame/find_in_page.mojom",

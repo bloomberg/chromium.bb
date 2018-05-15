@@ -259,6 +259,10 @@ void WaitUntilObserver::MaybeCompleteEvent() {
       client->DidHandleCanMakePaymentEvent(event_id_, status,
                                            event_dispatch_time_);
       break;
+    case kCookieChange:
+      client->DidHandleCookieChangeEvent(event_id_, status,
+                                         event_dispatch_time_);
+      break;
     case kFetch:
       client->DidHandleFetchEvent(event_id_, status, event_dispatch_time_);
       break;

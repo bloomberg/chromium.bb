@@ -128,6 +128,7 @@ class ServiceWorkerMetrics {
     NAVIGATION_HINT = 27,
     CAN_MAKE_PAYMENT = 28,
     ABORT_PAYMENT = 29,
+    COOKIE_CHANGE = 30,
     // Add new events to record here.
     NUM_TYPES
   };

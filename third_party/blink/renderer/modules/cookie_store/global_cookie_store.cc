@@ -43,17 +43,17 @@ class GlobalCookieStoreImpl final
     if (!cookie_store_) {
       ExecutionContext* execution_context = scope.GetExecutionContext();
 
-      network::mojom::blink::RestrictedCookieManagerPtr cookie_manager_ptr;
       service_manager::InterfaceProvider* interface_provider =
           execution_context->GetInterfaceProvider();
       if (!interface_provider)
         return nullptr;
-      interface_provider->GetInterface(mojo::MakeRequest(&cookie_manager_ptr));
-      cookie_store_ =
-          CookieStore::Create(execution_context, std::move(cookie_manager_ptr));
+      cookie_store_ = BuildCookieStore(execution_context, interface_provider);
     }
     return cookie_store_;
   }
+
+  CookieStore* BuildCookieStore(ExecutionContext*,
+                                service_manager::InterfaceProvider*);
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(cookie_store_);
@@ -66,6 +66,31 @@ class GlobalCookieStoreImpl final
 
   Member<CookieStore> cookie_store_;
 };
+
+template <>
+CookieStore* GlobalCookieStoreImpl<LocalDOMWindow>::BuildCookieStore(
+    ExecutionContext* execution_context,
+    service_manager::InterfaceProvider* interface_provider) {
+  network::mojom::blink::RestrictedCookieManagerPtr cookie_manager_ptr;
+  interface_provider->GetInterface(mojo::MakeRequest(&cookie_manager_ptr));
+
+  return CookieStore::Create(execution_context, std::move(cookie_manager_ptr),
+                             blink::mojom::blink::CookieStorePtr());
+}
+
+template <>
+CookieStore* GlobalCookieStoreImpl<WorkerGlobalScope>::BuildCookieStore(
+    ExecutionContext* execution_context,
+    service_manager::InterfaceProvider* interface_provider) {
+  network::mojom::blink::RestrictedCookieManagerPtr cookie_manager_ptr;
+  interface_provider->GetInterface(mojo::MakeRequest(&cookie_manager_ptr));
+
+  blink::mojom::blink::CookieStorePtr cookie_store_ptr;
+  interface_provider->GetInterface(mojo::MakeRequest(&cookie_store_ptr));
+
+  return CookieStore::Create(execution_context, std::move(cookie_manager_ptr),
+                             std::move(cookie_store_ptr));
+}
 
 // static
 template <typename T>

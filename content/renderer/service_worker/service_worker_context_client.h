@@ -163,6 +163,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
       double dispatch_event_time) override;
+  void DidHandleCookieChangeEvent(int request_id,
+                                  blink::mojom::ServiceWorkerEventStatus status,
+                                  double dispatch_event_time) override;
   void DidHandleExtendableMessageEvent(
       int request_id,
       blink::mojom::ServiceWorkerEventStatus status,
@@ -335,6 +338,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       payments::mojom::PaymentRequestEventDataPtr event_data,
       payments::mojom::PaymentHandlerResponseCallbackPtr response_callback,
       DispatchPaymentRequestEventCallback callback) override;
+  void DispatchCookieChangeEvent(
+      const net::CanonicalCookie& cookie,
+      ::network::mojom::CookieChangeCause cause,
+      DispatchCookieChangeEventCallback callback) override;
   void Ping(PingCallback callback) override;
   void SetIdleTimerDelayToZero() override;
 

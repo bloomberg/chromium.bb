@@ -25,6 +25,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
+#include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/devtools/devtools_url_request_interceptor.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -435,10 +436,12 @@ StoragePartitionImpl* StoragePartitionImplMap::Get(
       browser_context_->CreateMediaRequestContext() :
       browser_context_->CreateMediaRequestContextForStoragePartition(
           partition->GetPath(), in_memory));
+  partition->GetCookieStoreContext()->ListenToCookieChanges(
+      partition->GetNetworkContext(), base::DoNothing());
 
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     // This needs to happen after SetURLRequestContext() since we need this
-    // code path only for non-NetworkService case where NetworkContext needs to
+    // code path only for non-NetworkService cases where NetworkContext needs to
     // be initialized using |url_request_context_|, which is initialized by
     // SetURLRequestContext().
     DCHECK(partition->url_loader_factory_getter());

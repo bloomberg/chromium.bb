@@ -94,6 +94,8 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_CAN_MAKE_PAYMENT";
     case ServiceWorkerMetrics::EventType::ABORT_PAYMENT:
       return "_ABORT_PAYMENT";
+    case ServiceWorkerMetrics::EventType::COOKIE_CHANGE:
+      return "_COOKIE_CHANGE";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -339,8 +341,10 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Navigation Hint";
     case EventType::CAN_MAKE_PAYMENT:
       return "Can Make Payment";
-    case ServiceWorkerMetrics::EventType::ABORT_PAYMENT:
+    case EventType::ABORT_PAYMENT:
       return "Abort Payment";
+    case EventType::COOKIE_CHANGE:
+      return "Cookie Change";
     case EventType::NUM_TYPES:
       break;
   }
@@ -716,6 +720,9 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
       break;
     case EventType::ABORT_PAYMENT:
       UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.AbortPaymentEvent.Time", time);
+      break;
+    case EventType::COOKIE_CHANGE:
+      UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.CookieChangeEvent.Time", time);
       break;
 
     case EventType::NAVIGATION_HINT:

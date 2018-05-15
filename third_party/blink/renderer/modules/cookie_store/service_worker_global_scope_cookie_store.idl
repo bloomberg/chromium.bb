@@ -8,5 +8,5 @@
     RuntimeEnabled=AsyncCookies,
     ImplementedAs=GlobalCookieStore
 ] partial interface ServiceWorkerGlobalScope {
-    [Replaceable, SameObject] readonly attribute CookieStore cookieStore;
+  [Replaceable, SameObject] readonly attribute CookieStore cookieStore;
 };

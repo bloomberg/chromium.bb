@@ -29,6 +29,7 @@ class MODULES_EXPORT WaitUntilObserver final
     kAbortPayment,
     kActivate,
     kCanMakePayment,
+    kCookieChange,
     kFetch,
     kInstall,
     kMessage,
