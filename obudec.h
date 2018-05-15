@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 // Assign this value to last_layer_id when the application wants full
-// temporal units regardless of the presence enhancement layers.
+// temporal units regardless of the presence of enhancement layers.
 #define IGNORE_ENHANCEMENT_LAYERS 8
 
 struct ObuDecInputContext {
