@@ -265,14 +265,6 @@ void HeadlessContentBrowserClient::AppendExtraCommandLineSwitches(
           HeadlessBrowserContextImpl::From(
               render_process_host->GetBrowserContext());
 
-      if (headless_browser_context_impl->options()->initial_virtual_time()) {
-        command_line->AppendSwitchASCII(
-            ::switches::kInitialVirtualTime,
-            base::NumberToString(headless_browser_context_impl->options()
-                                     ->initial_virtual_time()
-                                     ->ToDoubleT()));
-      }
-
       std::vector<base::StringPiece> languages = base::SplitStringPiece(
           headless_browser_context_impl->options()->accept_language(), ",",
           base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);

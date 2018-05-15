@@ -182,11 +182,6 @@ Builder& Builder::SetBlockNewWebContents(bool block_new_web_contents) {
   return *this;
 }
 
-Builder& Builder::SetInitialVirtualTime(base::Time initial_virtual_time) {
-  options_.initial_virtual_time = initial_virtual_time;
-  return *this;
-}
-
 Builder& Builder::SetOverrideWebPreferencesCallback(
     base::RepeatingCallback<void(WebPreferences*)> callback) {
   options_.override_web_preferences_callback = std::move(callback);
