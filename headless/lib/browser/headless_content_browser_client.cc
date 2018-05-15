@@ -53,8 +53,6 @@
 namespace headless {
 
 namespace {
-const char kCapabilityPath[] =
-    "interface_provider_specs.navigation:frame.provides.renderer";
 
 #if defined(HEADLESS_USE_BREAKPAD)
 breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
@@ -174,21 +172,7 @@ HeadlessContentBrowserClient::GetBrowserServiceManifestOverlay() {
   base::StringPiece manifest_template =
       ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_HEADLESS_BROWSER_MANIFEST_OVERLAY);
-  std::unique_ptr<base::Value> manifest =
-      base::JSONReader::Read(manifest_template);
-
-  // Add mojo_service_names to renderer capability specified in options.
-  base::DictionaryValue* manifest_dictionary = nullptr;
-  CHECK(manifest->GetAsDictionary(&manifest_dictionary));
-
-  base::ListValue* capability_list = nullptr;
-  CHECK(manifest_dictionary->GetList(kCapabilityPath, &capability_list));
-
-  for (std::string service_name : browser_->options()->mojo_service_names) {
-    capability_list->AppendString(service_name);
-  }
-
-  return manifest;
+  return base::JSONReader::Read(manifest_template);
 }
 
 std::unique_ptr<base::Value>
