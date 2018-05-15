@@ -1645,7 +1645,14 @@ class Port(object):
             for test in suite.tests:
                 if any(test.startswith(p) for p in paths):
                     tests.append(test)
+
+        if any(self._path_has_wildcard(path) for path in paths):
+            _log.warning('WARNING: Wildcards in paths are not supported for virtual test suites.')
+
         return tests
+
+    def _path_has_wildcard(self, path):
+        return '*' in path
 
     def _wpt_test_urls_matching_paths(self, paths):
         tests = []
