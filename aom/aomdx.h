@@ -152,10 +152,8 @@ enum aom_dec_control_id {
   /** control function to indicate which operating point to use. A scalable
    *  stream may define multiple operating points, each of which defines a
    *  set of temporal and spatial layers to be processed. The operating point
-   *  index may take a value between 0 and
-   * aom_codec_stream_info_t::enhancement_layers_cnt. The
-   * aom_codec_stream_info_t data structure may be retrieved using a call to
-   * aom_codec_peek_stream_info()
+   *  index may take a value between 0 and operating_points_cnt_minus_1 (which
+   *  is at most 31).
    */
   AV1D_SET_OPERATING_POINT,
 
