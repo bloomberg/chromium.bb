@@ -72,11 +72,11 @@ async_test(t => {
   }
 
   function expectScrubbing() {
-    checkControlsClassName(video, 'phase-ready state-scrubbing');
+    checkControlsHasClass(video, 'state-scrubbing');
   }
 
   function expectNotScrubbing() {
-    checkControlsClassName(video, 'phase-ready state-stopped');
+    checkControlsDoesNotHaveClass(video, 'state-scrubbing');
   }
 });
 </script>

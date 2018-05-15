@@ -10,16 +10,17 @@ async_test(t => {
   const video = document.querySelector('video');
   let was_paused = false;
 
-  checkControlsClassName(video, "phase-pre-ready state-no-source use-default-poster");
+  checkControlsHasClasses(video, ["phase-pre-ready", "state-no-source", "use-default-poster"]);
 
   video.onstalled = t.step_func(() => {
-    checkControlsClassName(video, "state-loading-metadata");
+    checkControlsHasClass(video, "state-loading-metadata");
   });
 
   video.onloadeddata = t.step_func(() => {
-    const currentClass = internals.shadowRoot(video).firstChild.className;
-    assert_true(currentClass == "phase-ready state-buffering"
-        || currentClass == "phase-ready state-playing");
+    const currentClasses = internals.shadowRoot(video).firstChild.classList;
+    assert_true(currentClasses.contains("phase-ready") &&
+        (currentClasses.contains("state-buffering") || currentClasses.contains("state-playing")),
+        "Controls should have 'phase-ready' class and either 'state-buffering' or 'state-playing' classes.");
   });
 
   video.onplaying = t.step_func(() => {
@@ -32,7 +33,7 @@ async_test(t => {
   });
 
   video.onpause = t.step_func(() => {
-    checkControlsClassName(video, "phase-ready state-stopped");
+    checkControlsHasClasses(video, ["phase-ready", "state-stopped"]);
     video.play();
   });
 

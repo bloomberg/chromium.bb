@@ -379,6 +379,28 @@ function checkControlsClassName(videoElement, className) {
   assert_equals(internals.shadowRoot(videoElement).firstChild.className, className);
 }
 
+function checkControlsHasClass(videoElement, className) {
+  assert_true(mediaControls(videoElement).classList.contains(className),
+      'Controls should have class: ' + className);
+}
+
+function checkControlsDoesNotHaveClass(videoElement, className) {
+  assert_false(mediaControls(videoElement).classList.contains(className),
+      'Controls should not have class: ' + className);
+}
+
+function checkControlsHasClasses(videoElement, classes) {
+  classes.forEach(className => {
+    checkControlsHasClass(videoElement, className);
+  });
+}
+
+function checkControlsDoesNotHaveClasses(videoElement, classes) {
+  classes.forEach(className => {
+    checkControlsDoesNotHaveClass(videoElement, className);
+  });
+}
+
 function mediaControlsOverlayPlayButton(videoElement) {
   return mediaControlsButton(videoElement, 'overlay-play-button');
 }

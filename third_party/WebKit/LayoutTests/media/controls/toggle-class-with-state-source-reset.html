@@ -10,10 +10,10 @@ async_test(t => {
   const video = document.querySelector('video');
   let count = 0;
 
-  checkControlsClassName(video, "phase-pre-ready state-no-source use-default-poster");
+  checkControlsHasClasses(video, ['phase-pre-ready', 'state-no-source', 'use-default-poster']);
 
   video.onplaying = t.step_func(() => {
-    checkControlsClassName(video, "phase-ready state-playing");
+    checkControlsHasClasses(video, ['phase-ready', 'state-playing']);
 
     count++;
     if (count == 2)
@@ -23,7 +23,7 @@ async_test(t => {
   });
 
   video.onpause = t.step_func(() => {
-    checkControlsClassName(video, "phase-ready state-stopped");
+    checkControlsHasClasses(video, ['phase-ready', 'state-stopped']);
     video.src = "../content/test.ogv";
     video.play();
   });
