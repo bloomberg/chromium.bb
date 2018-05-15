@@ -6,11 +6,11 @@
 
 #include <string.h>
 
+#include <limits>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
-
-template class std::basic_string<uint8_t>;
 
 namespace net {
 namespace ntlm {
@@ -21,13 +21,13 @@ NtlmBufferWriter::NtlmBufferWriter(size_t buffer_len)
 NtlmBufferWriter::~NtlmBufferWriter() = default;
 
 bool NtlmBufferWriter::CanWrite(size_t len) const {
+  if (len == 0)
+    return true;
+
   if (!GetBufferPtr())
     return false;
 
   DCHECK_LE(GetCursor(), GetLength());
-
-  if (len == 0)
-    return true;
 
   return (len <= GetLength()) && (GetCursor() <= GetLength() - len);
 }
@@ -49,6 +49,9 @@ bool NtlmBufferWriter::WriteFlags(NegotiateFlags flags) {
 }
 
 bool NtlmBufferWriter::WriteBytes(base::span<const uint8_t> bytes) {
+  if (bytes.size() == 0)
+    return true;
+
   if (!CanWrite(bytes.size()))
     return false;
 
@@ -58,6 +61,9 @@ bool NtlmBufferWriter::WriteBytes(base::span<const uint8_t> bytes) {
 }
 
 bool NtlmBufferWriter::WriteZeros(size_t count) {
+  if (count == 0)
+    return true;
+
   if (!CanWrite(count))
     return false;
 
@@ -113,7 +119,13 @@ bool NtlmBufferWriter::WriteUtf8AsUtf16String(const std::string& str) {
 }
 
 bool NtlmBufferWriter::WriteUtf16String(const base::string16& str) {
+  if (str.size() > std::numeric_limits<size_t>::max() / 2)
+    return false;
+
   size_t num_bytes = str.size() * 2;
+  if (num_bytes == 0)
+    return true;
+
   if (!CanWrite(num_bytes))
     return false;
 
