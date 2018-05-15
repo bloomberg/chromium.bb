@@ -60,6 +60,7 @@ verify_package() {
   local ACTUAL_DEPENDS="${TMPFILEDIR}/actual_rpm_depends"
   local ADDITIONAL_RPM_DEPENDS="/bin/sh, \
   rpmlib(CompressedFileNames) <= 3.0.4-1, \
+  rpmlib(FileDigests) <= 4.6.0-1, \
   rpmlib(PayloadFilesHavePrefix) <= 4.0-1, \
   /usr/sbin/update-alternatives"
   if [ ${IS_OFFICIAL_BUILD} -ne 0 ]; then
@@ -67,7 +68,7 @@ verify_package() {
       rpmlib(PayloadIsXz) <= 5.2-1"
   fi
   echo "${DEPENDS}" "${ADDITIONAL_RPM_DEPENDS}" | sed 's/,/\n/g' | \
-      sed 's/^ *//' | LANG=C sort > "${EXPECTED_DEPENDS}"
+      sed 's/^ *//' | LANG=C sort | uniq > "${EXPECTED_DEPENDS}"
   rpm -qpR "${OUTPUTDIR}/${PKGNAME}.${ARCHITECTURE}.rpm" | LANG=C sort | uniq \
       > "${ACTUAL_DEPENDS}"
   BAD_DIFF=0
