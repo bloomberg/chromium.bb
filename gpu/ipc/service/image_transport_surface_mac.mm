@@ -5,6 +5,7 @@
 #include "gpu/ipc/service/image_transport_surface.h"
 
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "gpu/ipc/service/image_transport_surface_overlay_mac.h"
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
 #include "ui/gfx/native_widget_types.h"
@@ -27,6 +28,7 @@ class DRTSurfaceOSMesa : public gl::GLSurfaceOSMesa {
 
   // Implement a subset of GLSurface.
   gfx::SwapResult SwapBuffers(const PresentationCallback& callback) override;
+  bool SupportsPresentationCallback() override;
 
  private:
   ~DRTSurfaceOSMesa() override {}
@@ -35,7 +37,15 @@ class DRTSurfaceOSMesa : public gl::GLSurfaceOSMesa {
 
 gfx::SwapResult DRTSurfaceOSMesa::SwapBuffers(
     const PresentationCallback& callback) {
+  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), base::TimeDelta(),
+                                     0 /* flags */);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, std::move(feedback)));
   return gfx::SwapResult::SWAP_ACK;
+}
+
+bool DRTSurfaceOSMesa::SupportsPresentationCallback() {
+  return true;
 }
 
 bool g_allow_os_mesa = false;
