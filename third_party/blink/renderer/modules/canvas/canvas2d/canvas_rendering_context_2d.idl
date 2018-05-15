@@ -60,6 +60,8 @@ interface CanvasRenderingContext2D {
     void translate(unrestricted double x, unrestricted double y);
     void transform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
     void setTransform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
+    [RaisesException] void setTransform(optional DOMMatrix2DInit transform);
+    DOMMatrix getTransform();
     void resetTransform();
 
     // compositing
@@ -128,7 +130,7 @@ interface CanvasRenderingContext2D {
     [RaisesException] ImageData getImageData(long sx, long sy, long sw, long sh);
     [RaisesException] void putImageData(ImageData imagedata, long dx, long dy);
     [RaisesException] void putImageData(ImageData imagedata, long dx, long dy, long dirtyX, long dirtyY, long dirtyWidth, long dirtyHeight);
-    
+
     // https://github.com/WICG/canvas-color-space/blob/master/CanvasColorSpaceProposal.md
     [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData(unsigned long sw, unsigned long sh, ImageDataColorSettings imageDataColorSettings);
     [RuntimeEnabled=CanvasColorManagement, RaisesException] ImageData createImageData(ImageDataArray data, unsigned long sw, unsigned long sh, optional ImageDataColorSettings imageDataColorSettings);

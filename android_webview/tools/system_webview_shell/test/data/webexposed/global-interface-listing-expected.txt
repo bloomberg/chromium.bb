@@ -386,6 +386,7 @@ interface CanvasRenderingContext2D
     method getContextAttributes
     method getImageData
     method getLineDash
+    method getTransform
     method isPointInPath
     method isPointInStroke
     method lineTo
