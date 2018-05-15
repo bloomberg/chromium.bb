@@ -34,6 +34,7 @@
 <translation id="1047726139967079566">Bladwijzer instellen voor deze pagina...</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> items verwijderen...</translation>
 <translation id="1048286738600630630">Schermen</translation>
+<translation id="1049743911850919806">Incognito</translation>
 <translation id="1049795001945932310">&amp;Taalinstellingen</translation>
 <translation id="1049926623896334335">Word-document</translation>
 <translation id="1054153489933238809">Oorspronkelijke &amp;afbeelding openen op nieuw tabblad</translation>
@@ -529,7 +530,6 @@
 <translation id="1782924894173027610">De synchronisatieserver is bezet. Probeer het later opnieuw.</translation>
 <translation id="1784849162047402014">Weinig schijfruimte beschikbaar op het apparaat</translation>
 <translation id="1786636458339910689">Drives van mijn team</translation>
-<translation id="1789575671122666129">Pop-ups</translation>
 <translation id="1792619191750875668">Uitgebreid scherm</translation>
 <translation id="1793119619663054394">Weet je zeker dat je '<ph name="PROFILE_NAME" />' en alle gekoppelde Chrome-gegevens van deze computer wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.</translation>
 <translation id="1794791083288629568">Feedback verzenden om ons te helpen dit probleem op te lossen.</translation>
@@ -652,12 +652,14 @@
 <translation id="1983959805486816857">Nadat je een nieuwe gebruiker met beperkte rechten hebt gemaakt, kun je de instellingen op elk moment en vanaf elk apparaat beheren op <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Venster rechts koppelen</translation>
 <translation id="1987139229093034863">Schakel over naar een andere gebruiker.</translation>
+<translation id="1987317783729300807">Accounts</translation>
 <translation id="1989112275319619282">Browsen</translation>
 <translation id="1992397118740194946">Niet ingesteld</translation>
 <translation id="1994173015038366702">Site-URL</translation>
 <translation id="1997484222658892567"><ph name="URL" /> vraagt toestemming om permanent grote gegevens op je lokale computer op te slaan</translation>
 <translation id="1997616988432401742">Je certificaten</translation>
 <translation id="1999115740519098545">Bij opstarten</translation>
+<translation id="2001796770603320721">Beheren in Drive</translation>
 <translation id="2006638907958895361">Link openen in <ph name="APP" /></translation>
 <translation id="2007404777272201486">Een probleem melden...</translation>
 <translation id="2016430552235416146">Traditioneel</translation>
@@ -753,7 +755,6 @@
 <translation id="2151576029659734873">Ongeldige tabbladindex opgegeven.</translation>
 <translation id="2154484045852737596">Kaart bewerken</translation>
 <translation id="2154710561487035718">URL kopiëren</translation>
-<translation id="2155931291251286316">Pop-ups van <ph name="HOST" /> altijd toestaan</translation>
 <translation id="215753907730220065">Volledig scherm sluiten</translation>
 <translation id="2157875535253991059">Deze pagina wordt nu op volledig scherm weergegeven.</translation>
 <translation id="216169395504480358">Wifi toevoegen...</translation>
@@ -1183,7 +1184,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2799223571221894425">Opnieuw starten</translation>
 <translation id="2803375539583399270">Pincode opgeven</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
-<translation id="2805707493867224476">Alle sites toestaan pop-ups weer te geven</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2807517655263062534">Bestanden die je downloadt, worden hier weergegeven</translation>
 <translation id="2809586584051668049">en <ph name="NUMBER_ADDITIONAL_DISABLED" /> meer</translation>
@@ -1617,7 +1617,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="347919930506963698">Haal nog meer uit Chrome</translation>
 <translation id="3479552764303398839">Niet nu</translation>
 <translation id="3480892288821151001">Venster links koppelen</translation>
-<translation id="3481915276125965083">De volgende pop-ups zijn op deze pagina geblokkeerd:</translation>
 <translation id="3484273680291419129">Schadelijke software verwijderen...</translation>
 <translation id="3484869148456018791">Nieuw certificaat ophalen</translation>
 <translation id="3487007233252413104">anonieme functie</translation>
@@ -1723,7 +1722,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3637682276779847508">Je simkaart wordt permanent uitgeschakeld als je geen correcte pukcode kunt opgeven.</translation>
 <translation id="363903084947548957">Volgende invoermethode</translation>
 <translation id="3640214691812501263">'<ph name="EXTENSION_NAME" />' toevoegen voor <ph name="USER_NAME" />?</translation>
-<translation id="3643225892037417978">Extensiebeheer is niet beschikbaar voor gastgebruikers. Log in om extensies te beheren.</translation>
 <translation id="3644896802912593514">Breedte</translation>
 <translation id="3646789916214779970">Terugzetten naar standaardthema</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> gedetecteerd</translation>
@@ -2065,7 +2063,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4172051516777682613">Altijd weergeven</translation>
 <translation id="4175737294868205930">Permanente opslag</translation>
 <translation id="4176463684765177261">Uitgeschakeld</translation>
-<translation id="4180684688621252156">Afdrukservice</translation>
 <translation id="4180788401304023883">Certificaat '<ph name="CERTIFICATE_NAME" />' van certificeringsinstantie verwijderen?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Talen</translation>
@@ -2091,6 +2088,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="42137655013211669">De toegang tot deze bron is verboden door de server.</translation>
 <translation id="4215350869199060536">Er staan niet-toegestane gegevens in de naam.</translation>
 <translation id="4215448920900139318">Back-up van <ph name="FILE_COUNT" /> maken</translation>
+<translation id="4217571870635786043">Dicteren</translation>
 <translation id="4225397296022057997">Op alle sites</translation>
 <translation id="4235200303672858594">Volledig scherm</translation>
 <translation id="4235813040357936597">Account toevoegen voor <ph name="PROFILE_NAME" /></translation>
@@ -2203,6 +2201,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4425149324548788773">Mijn Drive</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4430369329743628066">Bladwijzer toegevoegd</translation>
+<translation id="4434045419905280838">Pop-ups en omleidingen</translation>
 <translation id="443454694385851356">Verouderd (onveilig)</translation>
 <translation id="443464694732789311">Doorgaan</translation>
 <translation id="443475966875174318">Ongeschikte apps updaten en verwijderen</translation>
@@ -3274,6 +3273,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="6075907793831890935">Gegevens uitwisselen met het apparaat met de naam <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Dit screenshot opnemen</translation>
 <translation id="6077131872140550515">Verwijderen uit voorkeursnetwerken</translation>
+<translation id="6078323886959318429">Snelle link toevoegen</translation>
 <translation id="6078752646384677957">Controleer je microfoon en audioniveaus</translation>
 <translation id="6080515710685820702">Gebruik je een gedeelde computer? Open een incognitovenster.</translation>
 <translation id="6080689532560039067">De systeemtijd controleren</translation>
@@ -3482,7 +3482,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="6406303162637086258">Opnieuw starten van browser simuleren</translation>
 <translation id="6406506848690869874">Synchronisatie</translation>
 <translation id="6408118934673775994">Je gegevens lezen en wijzigen op <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> en <ph name="WEBSITE_3" /></translation>
-<translation id="6409731863280057959">Pop-ups</translation>
 <translation id="6410257289063177456">Afbeeldingsbestanden</translation>
 <translation id="6410328738210026208">Kanaal wijzigen en Powerwash uitvoeren</translation>
 <translation id="6410668567036790476">Zoekmachine toevoegen</translation>
@@ -3690,7 +3689,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="6708242697268981054">Oorspronkelijke locatie:</translation>
 <translation id="6709357832553498500">Verbinding maken via <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Vorige</translation>
-<translation id="6716704051134091292">Pdf-omzetter</translation>
 <translation id="6718273304615422081">Inpakken...</translation>
 <translation id="671928215901716392">Scherm vergrendelen</translation>
 <translation id="67211069045302358">Instellingen voor deze site resetten?</translation>
@@ -3815,7 +3813,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="6920989436227028121">Openen als normaal tabblad</translation>
 <translation id="6922128026973287222">Sla gegevens op en surf sneller met Databesparing van Google. Klik voor meer informatie.</translation>
 <translation id="6923132443355966645">Scroll/klik</translation>
-<translation id="6929555043669117778">Pop-ups blijven blokkeren</translation>
 <translation id="6929835486583850209">Fout bij de installatie van <ph name="APP_NAME" />…</translation>
 <translation id="6930242544192836755">Duur</translation>
 <translation id="6934241953272494177">Je media-apparaat scannen...
@@ -3899,6 +3896,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="7052237160939977163">Gegevens over het bijhouden van prestaties verzenden</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
+<translation id="7055152154916055070">Omleiding geblokkeerd:</translation>
 <translation id="7056526158851679338">Apparaten &amp;inspecteren</translation>
 <translation id="7059858479264779982">Instellen op automatisch starten</translation>
 <translation id="7059893117020417984">Als je privé wilt browsen, klik je op het menupictogram met de stippen om een incognitovenster te openen</translation>
@@ -3925,10 +3923,9 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="7088434364990739311">Het starten van de updatecontrole is mislukt (foutcode <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver: zip-bestanden openen en inpakken in de Bestanden-app.</translation>
 <translation id="7088674813905715446">Dit apparaat is uit bedrijf genomen door de beheerder. Vraag je beheerder om het apparaat op 'in behandeling' in te stellen, zodat het kan worden aangemeld.</translation>
-<translation id="7092106376816104">Uitzonderingen voor pop-ups</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Gegevens uitwisselen met de apparaten met de naam: <ph name="HOSTNAMES" /></translation>
-<translation id="7096406577040705016">"Volledig scherm vergroten' in-/uitschakelen</translation>
+<translation id="7096406577040705016">'Volledig scherm vergroten' in-/uitschakelen</translation>
 <translation id="7098447629416471489">Andere opgeslagen zoekmachines worden hier weergegeven</translation>
 <translation id="7099337801055912064">Grote PPD kan niet worden geladen. Maximum grootte is 250 KB.</translation>
 <translation id="7100897339030255923"><ph name="COUNT" /> items geselecteerd</translation>
@@ -4145,7 +4142,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="744341768939279100">Een nieuw profiel maken</translation>
 <translation id="7444726222535375658">Doorgaan naar Hangouts Meet</translation>
 <translation id="7444983668544353857"><ph name="NETWORKDEVICE" /> uitschakelen</translation>
-<translation id="7445682342344043969">Pop-ups geblokkeerd</translation>
 <translation id="7453008956351770337">Door het selecteren van deze printer geef je de volgende extensie toegang tot je printer:</translation>
 <translation id="7453467225369441013">Hiermee word je uitgelogd van de meeste sites. Je wordt niet uitgelogd van je Google-account.</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4264,6 +4260,7 @@ Als je <ph name="APP_NAME" /> installeert, wordt er <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7617366389578322136">Verbinding maken met '<ph name="DEVICE_NAME" />'</translation>
 <translation id="7622114377921274169">Opladen.</translation>
 <translation id="7624337243375417909">Caps Lock uit</translation>
+<translation id="7625568159987162309">Rechten en op sites opgeslagen gegevens bekijken</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> bestaat al. Geef een nieuwe naam op en probeer het opnieuw.</translation>
 <translation id="7628127343934101653">Pdf-bestanden openen in de standaard pdf-viewer-app.</translation>
 <translation id="7629827748548208700">Tabblad: <ph name="TAB_NAME" /></translation>
@@ -4585,10 +4582,12 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="806812017500012252">Sorteren op titel</translation>
 <translation id="8068253693380742035">Tik om in te loggen</translation>
 <translation id="8069615408251337349">Google Cloudprinter</translation>
+<translation id="806972267388474605">Linux-bestanden</translation>
 <translation id="8071432093239591881">Afdrukken als afbeelding</translation>
 <translation id="8072988827236813198">Tabbladen vastzetten</translation>
 <translation id="8074127646604999664">Toestaan dat onlangs gesloten sites het verzenden en ontvangen van gegevens voltooien</translation>
 <translation id="8075191520954018715">Geheugenstatus</translation>
+<translation id="8076492880354921740">Tabbladen</translation>
 <translation id="8076835018653442223">Toegang tot lokale bestanden op je apparaat is door je beheerder uitgeschakeld</translation>
 <translation id="8077684120002777443">Gebruikersnaam (bijvoorbeeld gebruiker@example.com)</translation>
 <translation id="8077816382010018681">Titel voor melding over de functie voor snel ontgrendelen komt hier</translation>
@@ -4873,7 +4872,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8569682776816196752">Geen bestemmingen gevonden</translation>
 <translation id="8569764466147087991">Selecteer een bestand om te openen</translation>
 <translation id="8571213806525832805">Afgelopen 4 weken</translation>
-<translation id="8571613743082299268">Omleiding naar site geblokkeerd</translation>
 <translation id="8574990355410201600">Geluid altijd toegestaan op <ph name="HOST" /></translation>
 <translation id="8578639784464423491">Mag niet langer zijn dan 99 letters</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> items synchroniseren...</translation>
@@ -5206,7 +5204,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="9065203028668620118">Bewerken</translation>
 <translation id="9066782832737749352">Tekst-naar-spraak</translation>
 <translation id="9070219033670098627">Van persoon wisselen</translation>
-<translation id="907148966137935206">Sites niet toestaan pop-ups weer te geven (aanbevolen)</translation>
 <translation id="9071637495340542136"><ph name="APP_NAME" /> installeren...</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> logt je automatisch in bij geschikte sites en apps met wachtwoorden die je hebt opgeslagen.</translation>
 <translation id="9073281213608662541">PAP</translation>

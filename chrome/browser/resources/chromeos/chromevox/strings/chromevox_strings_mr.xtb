@@ -54,6 +54,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, पासवर्ड मजकूर बॉक्स</translation>
 <translation id="1467432559032391204">डावे</translation>
 <translation id="1474557363159888097">मागील अँकर नाही.</translation>
+<translation id="1480046233931937785">क्रेडिट</translation>
 <translation id="1487494366197411587">Chromebook वर, शोध की डाव्या Shift की वर असते.</translation>
 <translation id="1499041187027566160">आवाज वाढवा</translation>
 <translation id="1502086903961450562">मागील ग्राफिक्स</translation>
@@ -548,14 +549,6 @@
 <translation id="5682113568322255809">महत्त्वाची खुण</translation>
 <translation id="5683155931978483559">मागील चेकबॉक्स</translation>
 <translation id="5684277895745049190">सूची</translation>
-<translation id="5695831708991916435">पुढील काही शॉर्टकट हे ChromeVox आदेश नाहीत परंतु तरीही Chrome मधून सर्वोत्कृष्ट मिळविण्यासाठी ते खूप उपयुक्त आहेत.
-बटणे आणि दुवे यासारख्या क्रिया करण्यायोग्य आयटम मधून पुढे नेव्हिगेट करण्यासाठी, टॅब की दाबा.
-मागे नेव्हिगेट करण्यासाठी,  Shift+टॅब दाबा. 
-Chrome ब्राउझरच्या ओम्निबॉक्स देखील म्हणविल्या जाणार्‍या, अॅड्रेस बॉक्समध्ये प्रवेश करण्यासाठी Control + L दाबा. 
-नवीन टॅब उघडण्यासाठी आणि त्यामध्ये स्वयंचलितपणे जाण्यासाठी, Control+T दाबा. आपला कर्सर ओम्निबॉक्स मध्ये असेल. 
-टॅब बंद करण्यासाठी, Control+W दाबा. 
-खुल्या टॅबमध्ये पुढे जाण्यासाठी, Control+टॅब वापरा.
-Chrome ब्राउझर मेनू उघडण्यासाठी, Alt+F दाबा.</translation>
 <translation id="5700650669149824506">मागील स्‍तर 4 मथळा नाही.</translation>
 <translation id="5703716265115423771">आवाज कमी करा</translation>
 <translation id="5709192780268610569">कोणतेही मोठे वर्णन नाही</translation>
@@ -669,7 +662,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="6877435256196695200">पुढील ग्राफिक नाही.</translation>
 <translation id="6897341342232909480">डावीकडे हलवा</translation>
 <translation id="6901540140423170855">तारीख</translation>
-<translation id="6910211073230771657">हटविला</translation>
+<translation id="6910211073230771657">हटवला</translation>
 <translation id="6910969481785184048">चालू करा, बंद करा आणि थांबा</translation>
 <translation id="6911965441508464308">वर सेल नाही.</translation>
 <translation id="6919104639734799681">सारणी सू‍ची दर्शवा</translation>

@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Podświetlenie nocne: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Karta SIM jest zablokowana</translation>
 <translation id="2653659639078652383">Prześlij</translation>
-<translation id="2675319268637823299">Administrator nie zezwolił na wielokrotne logowanie użytkownika <ph name="USER_EMAIL" />.
-    Aby kontynuować, wszyscy użytkownicy muszą się wylogować.</translation>
 <translation id="2696763960464195425">Gdy się wylogujesz, Twoje dane zostaną usunięte. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Ustaw klawiaturę</translation>
 <translation id="2718395828230677721">Podświetlenie nocne</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Podświetlaj wskaźnik myszy</translation>
 <translation id="3513798432020909783">Kontem zarządza <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmień z powrotem na „<ph name="FROM_LOCALE" />” (wymaga ponownego uruchomienia)</translation>
-<translation id="3582792037806681688">Wielokrotne logowanie użytkownika w tej sesji zostało zabronione</translation>
 <translation id="3595596368722241419">Bateria naładowana</translation>
 <translation id="3606978283550408104">Podłączono monitor brajlowski.</translation>
 <translation id="3621202678540785336">Urządzenie wejściowe</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">Urządzenie USB-C (tylny port na prawym boku)</translation>
 <translation id="4017989525502048489">Wskaźnik laserowy</translation>
 <translation id="4072264167173457037">średni sygnał</translation>
+<translation id="4217571870635786043">Dyktowanie</translation>
 <translation id="4279490309300973883">Odbicie lustrzane</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -171,6 +169,7 @@
 <translation id="4527045527269911712">Urządzenie Bluetooth „<ph name="DEVICE_NAME" />” chce się sparować.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do pełnego naładowania</translation>
 <translation id="4544944664594876241">Zmieniliśmy skrót, który blokuje ekran. Zamiast <ph name="OLD_SHORTCUT" /> używaj teraz <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Przycisk Przeczytaj na głos</translation>
 <translation id="4659419629803378708">Włączono ChromeVox</translation>
 <translation id="4776917500594043016">Hasło dla <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
@@ -291,6 +290,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (właściciel)</translation>
 <translation id="7647488630410863958">Odblokuj urządzenie, by zobaczyć swoje powiadomienia</translation>
 <translation id="7649070708921625228">Pomoc</translation>
+<translation id="7654687942625752712">Naciśnij i przytrzymaj przez pięć sekund oba klawisze głośności, by wyłączyć komunikaty głosowe.</translation>
 <translation id="7658239707568436148">Anuluj</translation>
 <translation id="7692480393933218409">Ładowanie urządzeń podłączonych do portu USB-C</translation>
 <translation id="776344839111254542">Kliknij, by wyświetlić szczegóły aktualizacji</translation>

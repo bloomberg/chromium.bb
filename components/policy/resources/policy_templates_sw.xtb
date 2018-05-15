@@ -661,13 +661,6 @@ Sera hii ikiondolewa, chaguo-msingi zitatumika kwa mipangilio yote.</translation
 
       Ikiwa sera hii inatumiwa, printa zenye vitambulisho vinavyolingana na thamani iliyo katika sera ndizo pekee zitakazopatikana kwa watumiaji. Ni lazima vitambulisho vilingane na sehemu za "kitambulisho" au "mwongozo" kwenye faili iliyobainishwa katika <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Huwasha kipengele cha Gusa ili Utafute katika mwonekano wa maudhui ya <ph name="PRODUCT_NAME" />.
-
-      Ukiwasha mipangilio hii, kipengele cha Gusa ili Utafute kitapatikana kwa mtumiaji na anaweza kuamua kukiwasha au kukizima.
-
-     Ukizima mipangilio hii, kipengele cha Gusa ili Utafute kitazimwa kabisa.
-
-      Sera hii ikiachwa bila kuwekwa, ni sawa na kuwashwa, angalia maelezo yaliyo hapo juu.</translation>
 <translation id="285480231336205327">Wezesha modi ya juu ya kulinganua</translation>
 <translation id="2854919890879212089">Mipangilio hii husababisha <ph name="PRODUCT_NAME" /> kutumia printa chaguo-msingi ya mfumo kama uteuzi chaguo-msingi katika Onyesho la Kuchungulia la Printa badala ya printa iliyotumika hivi majuzi.
 
@@ -1641,7 +1634,6 @@ Iwapo sera hii haijawekwa, kiteuzi kikubwa kitazimwa mwanzoni lakini kitawashwa 
         Ukiweka sera hii, watumiaji wanaweza kuipuuza kwa muda kwa kuwasha au kuzima maoni yaliyotamkwa. Hata hivyo, uchaguzi wa mtumiaji sio wa kuendelea na chaguo-msingi hurejeshwa tena wakati wowote skrini ya kuingia katika akaunti inapoonekana upya au mtumiaji anaposalia kama hafanyi kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja.
          Iwapo sera hii itawachwa bila kuwekwa, maoni yaliyotamkwa yatazimwa skrini ya kuingia katika akaunti itakapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima maoni yaliyosemwa wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti itakatalia kati ya watumiaji.</translation>
 <translation id="5868414965372171132">Usanidi mtandao wa kiwango cha mtumiaji</translation>
-<translation id="588135807064822874">Washa kipengee cha Gusa ili Utafute</translation>
 <translation id="5883015257301027298">Mpangilio wa vidakuzi chaguo-msingi</translation>
 <translation id="5887414688706570295">Inasanidi kiambishi awali cha TalkGadget ambacho kitatumiwa na mpangishaji wa ufikivu wa mbali na huzuia watumiaji kukibadilisha.
 
@@ -1910,11 +1902,6 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
 <translation id="6689792153960219308">Ripoti hali ya maunzi</translation>
 <translation id="6698071416141001300">Hali ya kuripoti hatari kwa ulinzi wa nenosiri la akaunti husababishwa na hatua ya kutumia tena nenosiri lile lile</translation>
 <translation id="6699880231565102694">Wezesha uthibitishaji wa vipengee viwili kwa wapangishaji wa ufikivu wa mbali</translation>
-<translation id="6702257826895463228">Huruhusu tovuti zivinjari kwa wakati mmoja na zifungue madirisha ibukizi.
-
-      Kwa ufafanuzi kamili, angalia https://www.chromestatus.com/features/5675755719622656.
-      Sera hii ikiwashwa, tovuti zitaruhusiwa zivinjari kwa wakati mmoja na zifungue vichupo au madirisha mapya.
-      Sera hii ikizimwa au isipowekwa, tovuti hazitaruhusiwa zivinjari kwa wakati mmoja wala kufungua kichupo au dirisha jipya.</translation>
 <translation id="6724842112053619797">Ukiiwasha mipangilio hii, mipangilio iliyohifadhiwa kwenye wasifu wa <ph name="PRODUCT_NAME" /> kama vile alamisho, data ya kujaza kiotomatiki, manenosiri, n.k. pia vitaandikwa kwenye faili iliyohifadhiwa kwenye folda ya wasifu wa mtumiaji mwingine au kwenye eneo lililobainishwa na Msimamizi kupitia sera ya <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Ukiiwasha sera hii, usawazishaji kwenye wingu utazimwa.
 
       Ukiizima sera hii au usipoweka mipangilio, wasifu wa kawaida kwenye kifaa chako ndio utakaotumika pekee.

@@ -129,7 +129,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Experimente executar o Diagnóstico de rede do Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Atualize a frase de acesso de sincronização.</translation>
 <translation id="1787142507584202372">Os separadores abertos aparecem aqui</translation>
-<translation id="1789575671122666129">Pop-ups</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Nome do titular do cartão</translation>
 <translation id="1806541873155184440">Adicionado a <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
@@ -462,6 +461,7 @@
 <translation id="4171400957073367226">Assinatura de verificação incorreta</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{Mais <ph name="ITEM_COUNT" /> item}other{Mais <ph name="ITEM_COUNT" /> itens}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">O Chrome recomenda a reposição da palavra-passe do serviço <ph name="ORG_NAME" /> se a tiver reutilizado noutros sites.</translation>
 <translation id="4196861286325780578">&amp;Refazer movimentação</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Verificar as configurações da firewall e de antivírus<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Erros</translation>
@@ -694,13 +694,13 @@
 <translation id="5869405914158311789">Não é possível aceder a este site</translation>
 <translation id="5869522115854928033">Palavras-passe guardadas</translation>
 <translation id="5893752035575986141">Os cartões de crédito são admitidos.</translation>
+<translation id="5898382028489516745">O Chromium recomenda a reposição da palavra-passe do serviço <ph name="ORG_NAME" /> se a tiver reutilizado noutros sites.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (sincronizados)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 em utilização}other{# em utilização}}</translation>
 <translation id="5939518447894949180">Repor</translation>
 <translation id="5959728338436674663">Enviar automaticamente algumas <ph name="BEGIN_WHITEPAPER_LINK" />informações do sistema e conteúdos de páginas<ph name="END_WHITEPAPER_LINK" /> para a Google de modo a ajudar a detetar aplicações e sites perigosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967592137238574583">Editar informações de contacto</translation>
 <translation id="5967867314010545767">Remover do histórico</translation>
-<translation id="5972020793760134803">Mudar para o separador</translation>
 <translation id="5975083100439434680">Reduzir</translation>
 <translation id="598637245381783098">Não é possível abrir a aplicação de pagamento</translation>
 <translation id="5989320800837274978">Não foram especificados servidores proxy fixos nem um URL de script .pac.</translation>
@@ -1035,7 +1035,6 @@
 <translation id="8553075262323480129">A tradução falhou porque não foi possível determinar o idioma da página.</translation>
 <translation id="8557066899867184262">O Código de Segurança/CVC está localizado no verso do cartão.</translation>
 <translation id="8559762987265718583">Não é possível estabelecer uma ligação privada a <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />, porque a data e a hora do seu dispositivo (<ph name="DATE_AND_TIME" />) estão incorretas.</translation>
-<translation id="8564985650692024650">O Chromium recomenda a reposição da palavra-passe da <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> se a tiver reutilizado noutros sites.</translation>
 <translation id="8571890674111243710">A traduzir a página para <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Adic. n.º telef.
 </translation>
@@ -1063,7 +1062,6 @@
 <translation id="884264119367021077">Endereço para envio</translation>
 <translation id="884923133447025588">Não foi encontrado qualquer mecanismo de revogação.</translation>
 <translation id="885730110891505394">Partilha com a Google</translation>
-<translation id="8858065207712248076">O Chrome recomenda a reposição da palavra-passe da <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> se a tiver reutilizado noutros sites.</translation>
 <translation id="8866481888320382733">Erro ao analisar as definições da política</translation>
 <translation id="8870413625673593573">Fechadas recentemente</translation>
 <translation id="8874824191258364635">Introduza um número de cartão válido</translation>

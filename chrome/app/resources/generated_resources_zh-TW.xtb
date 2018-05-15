@@ -34,6 +34,7 @@
 <translation id="1047726139967079566">把此頁加入書籤...</translation>
 <translation id="1047956942837015229">正在刪除 <ph name="COUNT" /> 個項目...</translation>
 <translation id="1048286738600630630">顯示</translation>
+<translation id="1049743911850919806">無痕模式</translation>
 <translation id="1049795001945932310">語言設定(&amp;L)</translation>
 <translation id="1049926623896334335">Word 文件</translation>
 <translation id="1054153489933238809">在新分頁中開啟原始圖片(&amp;I)</translation>
@@ -529,7 +530,6 @@
 <translation id="1782924894173027610">同步伺服器忙碌中，請稍後再試。</translation>
 <translation id="1784849162047402014">裝置磁碟空間即將用盡</translation>
 <translation id="1786636458339910689">小組雲端硬碟</translation>
-<translation id="1789575671122666129">彈出式視窗</translation>
 <translation id="1792619191750875668">擴充顯示畫面</translation>
 <translation id="1793119619663054394">你確定要將「<ph name="PROFILE_NAME" />」和所有相關聯的 Chrome 資料從這台電腦移除嗎？這項操作執行後無法復原。</translation>
 <translation id="1794791083288629568">提供意見，協助我們修正這個問題。</translation>
@@ -652,6 +652,7 @@
 <translation id="1983959805486816857">建立新的受監管使用者之後，你隨時都可以透過位於 <ph name="MANAGEMENT_URL" /> 的裝置來管理設定。</translation>
 <translation id="1984642098429648350">靠右固定視窗</translation>
 <translation id="1987139229093034863">切換至其他使用者。</translation>
+<translation id="1987317783729300807">帳戶</translation>
 <translation id="1989112275319619282">瀏覽</translation>
 <translation id="1992397118740194946">尚未設定</translation>
 <translation id="1994173015038366702">網站網址</translation>
@@ -753,7 +754,6 @@
 <translation id="2151576029659734873">輸入的分頁索引無效。</translation>
 <translation id="2154484045852737596">編輯卡片資訊</translation>
 <translation id="2154710561487035718">複製網址</translation>
-<translation id="2155931291251286316">一律顯示 <ph name="HOST" /> 的彈出式視窗</translation>
 <translation id="215753907730220065">結束全螢幕</translation>
 <translation id="2157875535253991059">這個頁面已顯示為全螢幕。</translation>
 <translation id="216169395504480358">新增 WiFi...</translation>
@@ -1183,7 +1183,6 @@
 <translation id="2799223571221894425">重新啟動</translation>
 <translation id="2803375539583399270">輸入 PIN</translation>
 <translation id="2805646850212350655">Microsoft 加密檔案系統</translation>
-<translation id="2805707493867224476">允許所有網站顯示彈出式視窗</translation>
 <translation id="2805756323405976993">應用程式</translation>
 <translation id="2807517655263062534">你下載的檔案會顯示在這裡</translation>
 <translation id="2809586584051668049">和另外 <ph name="NUMBER_ADDITIONAL_DISABLED" /> 個</translation>
@@ -1617,7 +1616,6 @@
 <translation id="347919930506963698">讓 Chrome 發揮更大的效益</translation>
 <translation id="3479552764303398839">現在不要</translation>
 <translation id="3480892288821151001">靠左固定視窗</translation>
-<translation id="3481915276125965083">系統已封鎖此網頁的下列彈出式視窗：</translation>
 <translation id="3484273680291419129">正在移除有害軟體...</translation>
 <translation id="3484869148456018791">取得新憑證</translation>
 <translation id="3487007233252413104">匿名函式</translation>
@@ -1723,7 +1721,6 @@
 <translation id="3637682276779847508">如果無法輸入正確的 PIN 解鎖金鑰，SIM 卡會遭到永久停用。</translation>
 <translation id="363903084947548957">下一個輸入法</translation>
 <translation id="3640214691812501263">為<ph name="USER_NAME" />新增「<ph name="EXTENSION_NAME" />」？</translation>
-<translation id="3643225892037417978">訪客使用者無法使用擴充功能管理功能。如要管理擴充功能，請登入帳戶。</translation>
 <translation id="3644896802912593514">寬度</translation>
 <translation id="3646789916214779970">重設為預設主題</translation>
 <translation id="3648348069317717750">偵測到 <ph name="USB_DEVICE_NAME" /></translation>
@@ -2064,7 +2061,6 @@
 <translation id="4172051516777682613">一律顯示</translation>
 <translation id="4175737294868205930">永久儲存空間</translation>
 <translation id="4176463684765177261">已停用</translation>
-<translation id="4180684688621252156">列印服務</translation>
 <translation id="4180788401304023883">刪除憑證授權單位(CA) 的「<ph name="CERTIFICATE_NAME" />」憑證？</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">語言</translation>
@@ -3271,6 +3267,7 @@
 <translation id="6075907793831890935">與名稱為 <ph name="HOSTNAME" /> 的裝置交換資料</translation>
 <translation id="6076448957780543068">包含這個螢幕擷取畫面</translation>
 <translation id="6077131872140550515">從慣用網路移除</translation>
+<translation id="6078323886959318429">新增捷徑</translation>
 <translation id="6078752646384677957">請檢查麥克風和音量。</translation>
 <translation id="6080515710685820702">你是與其他人共用電腦嗎？試試使用無痕式視窗。</translation>
 <translation id="6080689532560039067">請檢查你的系統時間</translation>
@@ -3479,7 +3476,6 @@
 <translation id="6406303162637086258">模擬瀏覽器重新啟動</translation>
 <translation id="6406506848690869874">同步</translation>
 <translation id="6408118934673775994">讀取及變更你在 <ph name="WEBSITE_1" />、<ph name="WEBSITE_2" /> 和 <ph name="WEBSITE_3" /> 網站上的資料</translation>
-<translation id="6409731863280057959">彈出式視窗</translation>
 <translation id="6410257289063177456">圖片檔</translation>
 <translation id="6410328738210026208">變更版本並執行 Powerwash</translation>
 <translation id="6410668567036790476">新增搜尋引擎</translation>
@@ -3686,7 +3682,6 @@
 <translation id="6708242697268981054">來源：</translation>
 <translation id="6709357832553498500">使用「<ph name="EXTENSIONNAME" />」連線</translation>
 <translation id="6710213216561001401">返回</translation>
-<translation id="6716704051134091292">PDF 轉換工具</translation>
 <translation id="6718273304615422081">壓縮中...</translation>
 <translation id="671928215901716392">鎖定螢幕</translation>
 <translation id="67211069045302358">確定要重設這個網站的設定嗎？</translation>
@@ -3811,7 +3806,6 @@
 <translation id="6920989436227028121">在一般分頁中開啟</translation>
 <translation id="6922128026973287222">使用 Google Data Saver 不僅能節約數據流量，還可讓您享有更快速的瀏覽體驗。按一下即可瞭解詳情。</translation>
 <translation id="6923132443355966645">捲動/點選</translation>
-<translation id="6929555043669117778">繼續封鎖彈出式視窗</translation>
 <translation id="6929835486583850209">安裝「<ph name="APP_NAME" />」時發生錯誤...</translation>
 <translation id="6930242544192836755">持續時間</translation>
 <translation id="6934241953272494177">正在掃描你的媒體裝置...
@@ -3921,7 +3915,6 @@
 <translation id="7088434364990739311">無法啟動更新檢查 (錯誤代碼 <ph name="ERROR" />)。</translation>
 <translation id="7088561041432335295">Zip 封存工具 - 在「檔案」應用程式中開啟及封裝 ZIP 檔案。</translation>
 <translation id="7088674813905715446">管理員已將這個裝置設為取消佈建狀態。如要讓裝置符合註冊資格，請要求你的管理員將裝置設為待處理狀態。</translation>
-<translation id="7092106376816104">彈出式視窗例外</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">與下列名稱的裝置交換資料：<ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">切換全螢幕放大鏡</translation>
@@ -4139,7 +4132,6 @@
 <translation id="744341768939279100">建立新的設定檔</translation>
 <translation id="7444726222535375658">繼續使用 Hangouts Meet</translation>
 <translation id="7444983668544353857">停用 <ph name="NETWORKDEVICE" /></translation>
-<translation id="7445682342344043969">已封鎖彈出式視窗</translation>
 <translation id="7453008956351770337">選取這部印表機，即表示您同意授權下列擴充功能存取您的印表機：</translation>
 <translation id="7453467225369441013">你會從大多數網站登出，但不會因此登出 Google 帳戶。</translation>
 <translation id="7456142309650173560">開發人員版</translation>
@@ -4583,6 +4575,7 @@
 <translation id="8072988827236813198">固定分頁</translation>
 <translation id="8074127646604999664">允許最近關閉的網站完成資料收發作業</translation>
 <translation id="8075191520954018715">記憶體狀態</translation>
+<translation id="8076492880354921740">分頁</translation>
 <translation id="8076835018653442223">管理員停用了裝置本機檔案的存取權</translation>
 <translation id="8077684120002777443">使用者名稱 (例如：&lt;使用者&gt;@example.com)</translation>
 <translation id="8077816382010018681">在這裡顯示 QU 功能通知標題</translation>
@@ -4867,7 +4860,6 @@
 <translation id="8569682776816196752">找不到目的地</translation>
 <translation id="8569764466147087991">選取要開啟的檔案</translation>
 <translation id="8571213806525832805">過去 4 週</translation>
-<translation id="8571613743082299268">已禁止重新導向至下列網站</translation>
 <translation id="8574990355410201600">一律允許 <ph name="HOST" /> 播放聲音</translation>
 <translation id="8578639784464423491">不可超過 99 個英文字母</translation>
 <translation id="8579285237314169903">正在同步處理 <ph name="NUMBER_OF_FILES" /> 個項目...</translation>
@@ -5199,7 +5191,6 @@
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9066782832737749352">文字轉語音</translation>
 <translation id="9070219033670098627">切換使用者</translation>
-<translation id="907148966137935206">不允許任何網站顯示彈出式視窗 (建議)</translation>
 <translation id="9071637495340542136">正在安裝「<ph name="APP_NAME" />」...</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> 會使用您儲存的密碼，讓您自動登入符合資格的網站和應用程式。</translation>
 <translation id="9073281213608662541">PAP</translation>

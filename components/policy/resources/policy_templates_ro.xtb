@@ -656,13 +656,6 @@
 
       Dacă această politică este folosită, utilizatorilor le sunt disponibile numai imprimantele ale căror ID-uri se potrivesc cu valorile din politică. ID-urile trebuie să corespundă câmpurilor „id” sau „guid” din fișierul specificat în <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Activează disponibilitatea funcției Atinge pentru a căuta în timpul afișării conținutului din <ph name="PRODUCT_NAME" />.
-
-      Dacă activezi această setare, funcția Atinge pentru a căuta va fi disponibilă utilizatorului și acesta va putea activa sau dezactiva funcția.
-
-      Dacă dezactivezi această setare, funcția Atinge pentru a căuta va fi dezactivată complet.
-
-      Dacă politica nu este configurată, va fi considerată ca fiind activată. Vezi descrierea de mai sus.</translation>
 <translation id="285480231336205327">Activați modul de contrast ridicat</translation>
 <translation id="2854919890879212089">Determină <ph name="PRODUCT_NAME" /> să folosească imprimanta prestabilită pentru sistem ca opțiune prestabilită în funcția Previzualizare înainte de printare, în locul imprimantei folosite cel mai recent.
 
@@ -1601,7 +1594,6 @@
 
           Dacă această politică nu este configurată, feedbackul vocal este dezactivat la afișarea inițială a ecranului de conectare. Utilizatorii pot oricând să activeze sau să dezactiveze feedbackul vocal, iar starea sa pe ecranul de conectare persistă de la un utilizator la altul.</translation>
 <translation id="5868414965372171132">Configurație de rețea la nivel de utilizator</translation>
-<translation id="588135807064822874">Activează Atinge pentru a căuta</translation>
 <translation id="5883015257301027298">Setări prestabilite cu privire la cookie-uri</translation>
 <translation id="5887414688706570295">Configurează prefixul TalkGadget care va fi utilizat de gazdele de acces la distanță și nu le permite utilizatorilor să-l modifice.
 
@@ -1862,11 +1854,6 @@
 <translation id="6689792153960219308">Raportează starea hardware-ului</translation>
 <translation id="6698071416141001300">Declanșarea semnalării unui cont protejat prin parolă care prezintă un risc este activată de refolosirea parolei</translation>
 <translation id="6699880231565102694">Activați autentificarea cu doi factori pentru gazdele de acces la distanță</translation>
-<translation id="6702257826895463228">Permite site-urilor să navigheze și să deschidă ferestre pop-up în același timp.
-
-      Pentru o explicație completă, consultă https://www.chromestatus.com/features/5675755719622656.
-      Dacă această politică este activată, site-urile vor avea permisiunea să navigheze și să deschidă ferestre/file noi în același timp.
-      Dacă această politică este dezactivată sau nu este configurată, site-urile nu vor avea permisiunea să navigheze și să deschidă o fereastră/filă nouă în același timp.</translation>
 <translation id="6724842112053619797">Dacă activezi această setare, setările stocate în profilurile <ph name="PRODUCT_NAME" />, cum ar fi marcajele, datele de completare automată, parolele etc. vor fi scrise și într-un fișier stocat în dosarul profilului de utilizator pentru Roaming sau într-o locație specificată de administrator prin politica <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Dacă activezi această politică, se dezactivează sincronizarea în cloud.
 
       Dacă această politică este dezactivată sau nu este configurată, se vor folosi numai profilurile locale obișnuite.
@@ -2725,7 +2712,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="915194831143859291">Dacă această politică este dezactivată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> îi va permite utilizatorului să oprească dispozitivul.
       Dacă această politică este activată, <ph name="PRODUCT_OS_NAME" /> va declanșa o repornire când utilizatorul închide dispozitivul. <ph name="PRODUCT_OS_NAME" /> înlocuiește toate aparițiile butoanelor de închidere din interfața de utilizare cu butoane de repornire. Dacă utilizatorul închide dispozitivul folosind butonul de pornire, acesta nu va reporni automat, chiar dacă politica este activată.</translation>
 <translation id="9158929520101169054">Permite conectarea multiplă în browser</translation>
-<translation id="9165792353046089850">Îți permite să setezi dacă site-urile primesc acces la dispozitivele USB conectate. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele USB conectate.
+<translation id="9165792353046089850">Îți permite să stabilești dacă site-urile primesc acces la dispozitivele USB conectate. Accesul poate fi blocat complet sau utilizatorul poate fi întrebat de fiecare dată când un site dorește să primească acces la dispozitivele USB conectate.
 
           Această politică poate fi înlocuită pentru anumite șabloane de adrese URL prin aplicarea politicilor „WebUsbAskForUrls” și „WebUsbBlockedForUrls”.
 

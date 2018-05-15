@@ -54,6 +54,7 @@
 <translation id="1452236308086741652">Polje z besedilom za geslo z vrednostjo <ph name="VALUE" /></translation>
 <translation id="1467432559032391204">V levo</translation>
 <translation id="1474557363159888097">Ni prejšnjega sidra.</translation>
+<translation id="1480046233931937785">Seznam sodelujočih</translation>
 <translation id="1487494366197411587">Pri Chromebookih je tipka za iskanje prva tipka nad levo tipko Shift.</translation>
 <translation id="1499041187027566160">povečanje glasnosti</translation>
 <translation id="1502086903961450562">Prejšnja grafika</translation>
@@ -556,13 +557,6 @@
 <translation id="5682113568322255809">Mejnik</translation>
 <translation id="5683155931978483559">Prejšnje potrditveno polje</translation>
 <translation id="5684277895745049190">Seznam</translation>
-<translation id="5695831708991916435">Naslednje bližnjične tipke niso ukazi za ChromeVox, ampak so kljub temu zelo uporabne, če želite najbolje izkoristiti Chrome.
-Če se želite pomikati naprej med elementi, ki omogočajo dejanja, na primer med gumbi in povezavami, pritisnite tabulatorko. Če se želite pomikati nazaj, pritisnite tipko Shift in tabulatorko.
-Če želite izbrati Chromovo naslovno vrstico, pritisnite tipko Control in črko L.
-Če želite odpreti in samodejno izbrati novi zavihek, pritisnite tipko Control in črko T. Kazalec se bo pomaknil v naslovno vrstico.
-Če želite zapreti zavihek, pritisnite tipko Control in črko W.
-Če se želite pomikati med odprtimi zavihki, uporabite kombinacijo tipke Control in tabulatorke.
-Če želite odpreti meni brskalnika Chrome, pritisnite tipko Alt in črko F.</translation>
 <translation id="5700650669149824506">Ni prejšnjega naslova na ravni 4.</translation>
 <translation id="5703716265115423771">zmanjšanje glasnosti</translation>
 <translation id="5709192780268610569">Ni dolgega opisa</translation>

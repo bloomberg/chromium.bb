@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">夜间模式：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 卡已被锁定</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2675319268637823299">管理员已禁止 <ph name="USER_EMAIL" /> 使用多帐号登录功能。
-    所有用户都必须先退出帐号才能继续。</translation>
 <translation id="2696763960464195425">当您退出后，系统即会移除您的信息。<ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">设置键盘</translation>
 <translation id="2718395828230677721">夜间模式</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">突出显示鼠标光标</translation>
 <translation id="3513798432020909783">该帐号由 <ph name="MANAGER_EMAIL" /> 管理</translation>
 <translation id="3573179567135747900">重新更改为“<ph name="FROM_LOCALE" />”（需要重启）</translation>
-<translation id="3582792037806681688">由于有用户退出了此次会话，多帐号登录已被禁止</translation>
 <translation id="3595596368722241419">电池已充满</translation>
 <translation id="3606978283550408104">已连接盲文显示屏。</translation>
 <translation id="3621202678540785336">输入</translation>

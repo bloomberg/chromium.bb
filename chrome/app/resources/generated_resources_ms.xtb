@@ -34,6 +34,7 @@
 <translation id="1047726139967079566">Tanda Halaman Ini...</translation>
 <translation id="1047956942837015229">Memadamkan <ph name="COUNT" /> item...</translation>
 <translation id="1048286738600630630">Paparan</translation>
+<translation id="1049743911850919806">Inkognito</translation>
 <translation id="1049795001945932310">&amp;Tetapan bahasa</translation>
 <translation id="1049926623896334335">Dokumen Word</translation>
 <translation id="1054153489933238809">Buka &amp;Imej Asal dalam Tab Baharu</translation>
@@ -529,7 +530,6 @@
 <translation id="1782924894173027610">Pelayan segerak sibuk, sila cuba semula kemudian.</translation>
 <translation id="1784849162047402014">Peranti kekurangan ruang cakera</translation>
 <translation id="1786636458339910689">Drive Pasukan</translation>
-<translation id="1789575671122666129">Pop timbul</translation>
 <translation id="1792619191750875668">Paparan lanjutan</translation>
 <translation id="1793119619663054394">Adakah anda pasti mahu mengalih keluar "<ph name="PROFILE_NAME" />" dan semua data Chrome yang berkaitan dari komputer ini? Tindakan ini tidak boleh dibuat asal.</translation>
 <translation id="1794791083288629568">Hantar maklum balas untuk membantu kami menyelesaikan isu ini.</translation>
@@ -652,12 +652,14 @@
 <translation id="1983959805486816857">Selepas anda membuat pengguna diselia baharu, anda boleh mengurus tetapan pada bila-bila masa dari mana-mana peranti di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Letakkan tetingkap di kanan</translation>
 <translation id="1987139229093034863">Tukar kepada pengguna yang lain.</translation>
+<translation id="1987317783729300807">Akaun</translation>
 <translation id="1989112275319619282">Semak Imbas</translation>
 <translation id="1992397118740194946">Tidak ditetapkan</translation>
 <translation id="1994173015038366702">URL tapak</translation>
 <translation id="1997484222658892567"><ph name="URL" /> mahu menyimpan data bersaiz besar pada komputer setempat anda secara kekal</translation>
 <translation id="1997616988432401742">Sijil anda</translation>
 <translation id="1999115740519098545">Pada permulaan</translation>
+<translation id="2001796770603320721">Urus dalam Drive</translation>
 <translation id="2006638907958895361">Buka Pautan dalam <ph name="APP" /></translation>
 <translation id="2007404777272201486">Laporkan Isu...</translation>
 <translation id="2016430552235416146">Tradisional</translation>
@@ -753,7 +755,6 @@
 <translation id="2151576029659734873">Indeks tab tidak sah dimasukkan.</translation>
 <translation id="2154484045852737596">Edit kad</translation>
 <translation id="2154710561487035718">Salin URL</translation>
-<translation id="2155931291251286316">Sentiasa benarkan pop muncul daripada <ph name="HOST" /></translation>
 <translation id="215753907730220065">Keluar Daripada Skrin Penuh</translation>
 <translation id="2157875535253991059">Halaman ini kini dalam skrin penuh.</translation>
 <translation id="216169395504480358">Tambah Wi-Fi...</translation>
@@ -1184,7 +1185,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2799223571221894425">Lancarkan semula</translation>
 <translation id="2803375539583399270">Masukkan PIN</translation>
 <translation id="2805646850212350655">Sistem Fail Penyulitan Microsoft</translation>
-<translation id="2805707493867224476">Membenarkan semua tapak untuk memaparkan pop muncul</translation>
 <translation id="2805756323405976993">Apl</translation>
 <translation id="2807517655263062534">Fail yang anda muat turun dipaparkan di sini</translation>
 <translation id="2809586584051668049">dan <ph name="NUMBER_ADDITIONAL_DISABLED" /> lagi</translation>
@@ -1618,7 +1618,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="347919930506963698">Dapatkan lebih banyak lagi daripada Chrome</translation>
 <translation id="3479552764303398839">Bukan sekarang</translation>
 <translation id="3480892288821151001">Letakkan tetingkap di kiri</translation>
-<translation id="3481915276125965083">Pop muncul berikut disekat pada halaman ini:</translation>
 <translation id="3484273680291419129">Mengalih keluar perisian berbahaya...</translation>
 <translation id="3484869148456018791">Dapatkan sijil baharu</translation>
 <translation id="3487007233252413104">fungsi awanama</translation>
@@ -1724,7 +1723,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="3637682276779847508">Kad SIM anda akan dilumpuhkan secara kekal jika anda tidak dapat memasukkan Kunci Buka Kunci PIN yang betul.</translation>
 <translation id="363903084947548957">Kaedah input seterusnya</translation>
 <translation id="3640214691812501263">Tambahkan "<ph name="EXTENSION_NAME" />" untuk <ph name="USER_NAME" />?</translation>
-<translation id="3643225892037417978">Pengurusan sambungan tidak tersedia untuk pengguna Tetamu. Sila log masuk untuk mengurus sambungan.</translation>
 <translation id="3644896802912593514">Lebar</translation>
 <translation id="3646789916214779970">Tetapkan semula ke tema lalai</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> dikesan</translation>
@@ -2066,7 +2064,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="4172051516777682613">Sentiasa paparkan</translation>
 <translation id="4175737294868205930">Storan berterusan</translation>
 <translation id="4176463684765177261">Dilumpuhkan</translation>
-<translation id="4180684688621252156">Perkhidmatan mencetak</translation>
 <translation id="4180788401304023883">Padamkan sijil CA "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Bahasa</translation>
@@ -2092,6 +2089,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="42137655013211669">Akses kepada sumber ini dilarang oleh pelayan.</translation>
 <translation id="4215350869199060536">Alamak, simbol tidak sah terdapat dalam nama!</translation>
 <translation id="4215448920900139318">Menyandarkan <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">Pengimlakan</translation>
 <translation id="4225397296022057997">Di semua tapak</translation>
 <translation id="4235200303672858594">Keseluruhan skrin</translation>
 <translation id="4235813040357936597">Tambah akaun untuk <ph name="PROFILE_NAME" /></translation>
@@ -2204,6 +2202,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="4425149324548788773">Drive Saya</translation>
 <translation id="4430019312045809116">Kelantangan</translation>
 <translation id="4430369329743628066">Penanda halaman ditambahkan</translation>
+<translation id="4434045419905280838">Tetingkap timbul dan ubah hala</translation>
 <translation id="443454694385851356">Lama (tidak selamat)</translation>
 <translation id="443464694732789311">Teruskan</translation>
 <translation id="443475966875174318">Kemas kini atau alih keluar aplikasi yang tidak serasi</translation>
@@ -2944,7 +2943,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="555746285996217175">Kunci / kuasa</translation>
 <translation id="5557991081552967863">Pastikan Wi-Fi hidup semasa tidur</translation>
 <translation id="5558129378926964177">Zum &amp;Masuk</translation>
-<translation id="5558446705802335921">Semak tapak yang anda lawati dan fail yang dimuat turun untuk mengesan gelagat atau kandungan yang berbahaya, seperti pancingan data atau perisian hasad</translation>
+<translation id="5558446705802335921">Menyemak tapak yang anda lawati dan fail yang dimuat turun untuk mengesan gelagat atau kandungan yang berbahaya, seperti pancingan data atau perisian hasad</translation>
 <translation id="5559719557406102971">Memulakan Termina VM.</translation>
 <translation id="55601339223879446">Laraskan sempadan desktop anda dalam lingkungan paparan</translation>
 <translation id="5562781907504170924">Tab ini disambungkan ke Peranti Bluetooth.</translation>
@@ -3274,6 +3273,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="6075907793831890935">Bertukar data dengan peranti yang bernama <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Sertakan tangkapan skrin ini</translation>
 <translation id="6077131872140550515">Alih keluar daripada pilihan</translation>
+<translation id="6078323886959318429">Tambahkan pintasan</translation>
 <translation id="6078752646384677957">Sila periksa mikrofon dan tahap audio anda.</translation>
 <translation id="6080515710685820702">Menggunakan komputer yang dikongsi? Cuba buka tetingkap inkognito.</translation>
 <translation id="6080689532560039067">Semak masa sistem anda</translation>
@@ -3482,7 +3482,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="6406303162637086258">Rangsang mula semula penyemak imbas</translation>
 <translation id="6406506848690869874">Segerak</translation>
 <translation id="6408118934673775994">Baca dan tukar data anda di <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> dan <ph name="WEBSITE_3" /></translation>
-<translation id="6409731863280057959">Pop muncul</translation>
 <translation id="6410257289063177456">Fail Imej</translation>
 <translation id="6410328738210026208">Tukar saluran dan Powerwash</translation>
 <translation id="6410668567036790476">Tambah enjin carian</translation>
@@ -3690,7 +3689,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="6708242697268981054">Asal:</translation>
 <translation id="6709357832553498500">Sambung menggunakan <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
-<translation id="6716704051134091292">Penukar PDF</translation>
 <translation id="6718273304615422081">Mengezip...</translation>
 <translation id="671928215901716392">Kunci skrin</translation>
 <translation id="67211069045302358">Tetapkan semula tetapan untuk tapak ini?</translation>
@@ -3815,7 +3813,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="6920989436227028121">Buka seperti tab biasa</translation>
 <translation id="6922128026973287222">Simpan data dan semak imbas dengan lebih pantas menggunakan Penjimat Data Google. Klik untuk mengetahui lebih lanjut.</translation>
 <translation id="6923132443355966645">Tatal / Klik</translation>
-<translation id="6929555043669117778">Teruskan menyekat pop timbul</translation>
 <translation id="6929835486583850209">Ralat semasa memasang <ph name="APP_NAME" />...</translation>
 <translation id="6930242544192836755">Tempoh</translation>
 <translation id="6934241953272494177">Mengimbas peranti media anda...
@@ -3899,6 +3896,7 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="7052237160939977163">Hantar data surih prestasi</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Sekat</translation>
+<translation id="7055152154916055070">Ubah hala disekat:</translation>
 <translation id="7056526158851679338">&amp;Periksa Peranti</translation>
 <translation id="7059858479264779982">Tetapkan kepada autolancar</translation>
 <translation id="7059893117020417984">Untuk menyemak imbas secara tertutup, klik menu ikon titik untuk membuka tetingkap inkognito</translation>
@@ -3925,7 +3923,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="7088434364990739311">Semakan kemas kini gagal dimulakan (kod ralat <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver - Buka dan muatkan fail ZIP dalam apl Fail.</translation>
 <translation id="7088674813905715446">Peranti ini telah diletakkan dalam keadaan nyahperuntukkan oleh pentadbir. Untuk mendayakannya agar dapat didaftarkan, minta pentadbir meletakkan peranti dalam keadaan belum selesai.</translation>
-<translation id="7092106376816104">Pengecualian pop timbul</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Bertukar data dengan peranti yang bernama: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Togo Penggadang Skrin Penuh</translation>
@@ -4144,7 +4141,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="744341768939279100">Buat profil baharu</translation>
 <translation id="7444726222535375658">Teruskan ke Hangout Meet</translation>
 <translation id="7444983668544353857">Lumpuhkan <ph name="NETWORKDEVICE" /></translation>
-<translation id="7445682342344043969">Tetingkap timbul disekat</translation>
 <translation id="7453008956351770337">Dengan memilih pencetak ini, anda memberi sambungan berikut kebenaran untuk mengakses pencetak anda:</translation>
 <translation id="7453467225369441013">Mengelog anda keluar daripada kebanyakan tapak. Anda tidak akan dilog keluar daripada Akaun Google anda.</translation>
 <translation id="7456142309650173560">Pembangunan</translation>
@@ -4263,6 +4259,7 @@ Langkah memasang <ph name="APP_NAME" /> akan memuat turun <ph name="DOWNLOAD_SIZ
 <translation id="7617366389578322136">Menyambung ke "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7622114377921274169">Mengecas.</translation>
 <translation id="7624337243375417909">kunci huruf besar dimatikan</translation>
+<translation id="7625568159987162309">Lihat kebenaran dan data yang disimpan pada semua tapak</translation>
 <translation id="7627790789328695202">Op, <ph name="FILE_NAME" /> telah pun wujud. Namakan semula dan cuba lagi.</translation>
 <translation id="7628127343934101653">Buka fail PDF dalam aplikasi pemapar PDF lalai.</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
@@ -4585,10 +4582,12 @@ Simpan fail kunci anda di tempat selamat. Anda akan memerlukannya untuk mencipta
 <translation id="806812017500012252">Aturkan semula mengikut tajuk</translation>
 <translation id="8068253693380742035">Sentuh untuk mengelog masuk</translation>
 <translation id="8069615408251337349">Cetakan Awan Google</translation>
+<translation id="806972267388474605">Fail Linux</translation>
 <translation id="8071432093239591881">Cetak sebagai imej</translation>
 <translation id="8072988827236813198">Pin Tab</translation>
 <translation id="8074127646604999664">Benarkan tapak yang baru sahaja ditutup untuk menyelesaikan penghantaran dan penerimaan data</translation>
 <translation id="8075191520954018715">Status memori</translation>
+<translation id="8076492880354921740">Tab</translation>
 <translation id="8076835018653442223">Akses kepada fail setempat pada peranti anda dilumpuhkan oleh pentadbir anda</translation>
 <translation id="8077684120002777443">Nama pengguna (contohnya user@example.com)</translation>
 <translation id="8077816382010018681">Tajuk pemberitahuan Ciri QU di sini</translation>
@@ -4874,7 +4873,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="8569682776816196752">Tiada destinasi dijumpai</translation>
 <translation id="8569764466147087991">Pilih fail untuk dibuka</translation>
 <translation id="8571213806525832805">4 minggu terakhir</translation>
-<translation id="8571613743082299268">Ubah hala disekat ke tapak</translation>
 <translation id="8574990355410201600">Sentiasa benarkan bunyi pada <ph name="HOST" /></translation>
 <translation id="8578639784464423491">Tidak boleh melebihi 99 huruf</translation>
 <translation id="8579285237314169903">Menyegerakkan <ph name="NUMBER_OF_FILES" /> item...</translation>
@@ -5206,7 +5204,6 @@ perubahan ini berlaku, anda mungkin tidak mahukannya.</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9066782832737749352">Teks kepada Pertuturan</translation>
 <translation id="9070219033670098627">Tukar orang</translation>
-<translation id="907148966137935206">Jangan benarkan mana-mana tapak untuk memaparkan pop muncul (disyorkan)</translation>
 <translation id="9071637495340542136">Memasang <ph name="APP_NAME" />...</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> melog masuk anda secara automatik ke tapak web dan apl yang layak menggunakan kata laluan yang disimpan.</translation>
 <translation id="9073281213608662541">PAP</translation>

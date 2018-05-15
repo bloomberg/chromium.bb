@@ -54,6 +54,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="1452236308086741652"><ph name="VALUE" />, textové pole pro heslo</translation>
 <translation id="1467432559032391204">Doleva</translation>
 <translation id="1474557363159888097">Žádné předchozí ukotvení.</translation>
+<translation id="1480046233931937785">Poděkování</translation>
 <translation id="1487494366197411587">Klávesa Hledat se na Chromebooku nachází ihned nad levou klávesou Shift.</translation>
 <translation id="1499041187027566160">zvýšit hlasitost</translation>
 <translation id="1502086903961450562">Předchozí obrázek</translation>
@@ -555,13 +556,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="5682113568322255809">Orientační bod</translation>
 <translation id="5683155931978483559">Předchozí zaškrtávací políčko</translation>
 <translation id="5684277895745049190">Seznam</translation>
-<translation id="5695831708991916435">Následující klávesové zkratky nejsou příkazy nástroje ChromeVox, ale přesto jsou velmi užitečné pro maximální využití Chromu. 
-Chcete-li přejít na další položku, která umožňuje provedení akce (například tlačítko nebo odkaz), stiskněte tabulátor. Zpět přejdete stisknutím kláves Shift + Tabulátor. 
-Chcete-li přejít do adresního řádku prohlížeče Chrome (omniboxu), stiskněte Control + L. 
-Chcete-li otevřít novou kartu a automaticky na ni přejít, stiskněte Control + T. Kurzor bude v omniboxu. 
-Chcete-li zavřít kartu, stiskněte Control + W. 
-Chcete-li přejít na další otevřenou kartu, stiskněte Control + Tabulátor. 
-Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translation>
 <translation id="5700650669149824506">Žádný předchozí nadpis 4. úrovně.</translation>
 <translation id="5703716265115423771">snížit hlasitost</translation>
 <translation id="5709192780268610569">Žádný dlouhý popis</translation>

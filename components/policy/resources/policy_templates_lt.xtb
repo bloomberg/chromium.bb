@@ -679,13 +679,6 @@
 
       Jei ši politika naudojama, naudotojui pasiekiami tik spausdintuvai, kurių ID atitinka šioje politikoje nurodytas vertes. ID turi atitikti laukus „id“ arba „guid“ faile, kuris nurodytas „<ph name="DEVICE_PRINTERS_POLICY" />“.
       </translation>
-<translation id="2844404652289407061">Įgalinamas paieškos palietus pasiekiamumas „<ph name="PRODUCT_NAME" />“ turinio rodinyje.
-
-      Jei įgalinsite šį nustatymą, naudotojui bus pasiekiama paieška palietus ir jis galės pasirinkti įjungti arba išjungti funkciją.
-
-      Jei šį nustatymą išjungsite, paieška palietus bus visiškai išjungta.
-
-      Jei ši politika nenustatyta, ji bus tarsi įgalinta. Žr. anksčiau pateiktą aprašą.</translation>
 <translation id="285480231336205327">Įgalinti didelio kontrasto būseną</translation>
 <translation id="2854919890879212089">Kaip numatytoji funkcijos „Spaudinio peržiūra“ parinktis „<ph name="PRODUCT_NAME" />“ naudojamas sistemos numatytasis spausdintuvas, o ne pastarasis naudotas spausdintuvas.
 
@@ -1672,7 +1665,6 @@
 
           Jei ši politika nenustatyta, ekrano skaitymas balsu bus išjungtas, kai pirmą kartą bus rodomas prisijungimo ekranas. Naudotojai galės bet kada įgalinti arba išjungti ekrano skaitymą balsu, o jų būsena prisijungimo ekrane bus vienoda skirtingiems naudotojams.</translation>
 <translation id="5868414965372171132">Naudotojo lygio tinklo konfigūracija</translation>
-<translation id="588135807064822874">Paieškos palietus įgalinimas</translation>
 <translation id="5883015257301027298">Numatytasis slapukų nustatymas</translation>
 <translation id="5887414688706570295">Konfigūruojamas „TalkGadget“ (Pokalbių programėlės) kodas, kuris bus naudojamas nuotolinės prieigos prieglobų, ir neleidžiama naudotojams jo keisti.
 
@@ -1944,11 +1936,6 @@
 <translation id="6689792153960219308">Aparatinės įrangos būsenos ataskaitos pateikimas</translation>
 <translation id="6698071416141001300">Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas pakartotinai naudojant slaptažodį</translation>
 <translation id="6699880231565102694">Įgalinti nuotolinės prieigos prieglobų autentifikavimą dviem veiksniais</translation>
-<translation id="6702257826895463228">Svetainėms leidžiama vienu metu naršyti ir atidaryti iššokančiuosius langus.
-
-      Visas paaiškinimas pateikiamas adresu https://www.chromestatus.com/features/5675755719622656.
-      Jei ši politika įgalinta, svetainėms bus leidžiama vienu metu naršyti ir atidaryti naujus langus / skirtukus.
-      Jei ši politika išjungta arba nenustatyta, svetainėms nebus leidžiama vienu metu naršyti ir atidaryti naujų langų / skirtukų.</translation>
 <translation id="6724842112053619797">Jei įgalinsite šį nustatymą, saugomą „<ph name="PRODUCT_NAME" />“ profiliuose, pvz., žymėse, automatinio pildymo duomenyse, slaptažodžiuose ir kt., išsaugoti nustatymai taip pat bus įrašyti į failą, saugomą tarptinklinio ryšio naudotojo profilio aplanke arba administratoriaus nurodytoje vietoje pagal „<ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />“ politiką. Sinchronizavimas debesyje automatiškai išjungiamas, kai įgalinama ši politika.
 
       Jei ši politika išjungta ar nenustatyta, bus naudojami tik įprasti vietiniai profiliai.

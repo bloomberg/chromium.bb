@@ -667,13 +667,6 @@
 
       Hvis denne regelen brukes, blir bare skriverne med ID-er som samsvarer med verdiene i denne regelen, tilgjengelige for brukeren. ID-ene må samsvare med «id»- eller «quid»-feltene i filen spesifisert i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Gjør «Trykk for å søke» tilgjengelig i innholdsvisningen i <ph name="PRODUCT_NAME" />.
-
-      Hvis du slår på denne innstillingen, blir «Trykk for å søke»-funksjonen tilgjengelig for brukerne, og de kan velge om de vil slå den på eller av.
-
-      Hvis du slår av denne innstillingen, slås «Trykk for å søke» helt av.
-
-      Hvis du ikke denne regelen ikke spesifiseres, er effekten den samme som om den var slått på. Se beskrivelsen ovenfor.</translation>
 <translation id="285480231336205327">Aktiver modus for høy kontrast</translation>
 <translation id="2854919890879212089">Gjør at <ph name="PRODUCT_NAME" /> bruker skriveren som er standard for systemet, i stedet for skriveren som ble brukt sist, som standardvalg i forhåndsvisning av utskrift.
 
@@ -1634,7 +1627,6 @@
 
           Hvis innstillingen ikke angis, deaktiveres muntlig tilbakemelding når påloggingssiden vises for første gang. Brukere kan aktivere eller deaktivere muntlig tilbakemelding når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
 <translation id="5868414965372171132">Nettverkskonfigurasjon på brukernivå</translation>
-<translation id="588135807064822874">Slå på «trykk for å søke»</translation>
 <translation id="5883015257301027298">Standardinnstilling for informasjonskapsler</translation>
 <translation id="5887414688706570295">Konfigurerer TalkGadget-prefikset som skal brukes av verter med ekstern adgang, og forhindrer brukere fra å endre det.
 
@@ -1908,11 +1900,6 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6689792153960219308">Rapportér maskinvarestatus</translation>
 <translation id="6698071416141001300">Rapportering av kontoer der passordbeskyttelsen kan være kompromittert, utløses ved gjenbruk av passord</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
-<translation id="6702257826895463228">Tillater at nettsteder navigerer og åpner forgrunnsvinduer samtidig.
-
-      Du kan se en fullstendig forklaring ved å gå til https://www.chromestatus.com/features/5675755719622656.
-      Hvis denne regelen er aktivert, kan nettsteder navigere og åpne nye vinduer eller faner samtidig.
-      Hvis denne regelen er deaktivert eller ikke er angitt, kan ikke nettsteder navigere og åpne nye vinduer eller faner samtidig.</translation>
 <translation id="6724842112053619797">Hvis du slår på denne innstillingen, blir innstillingene som er lagret i <ph name="PRODUCT_NAME" />-profiler (for eksempel bokmerker, autofylldata, passord også videre), også skrevet til en fil som lagres i mappen for roaming-brukerprofilen, eller på et sted som bestemmes av administratoren via regelen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Når du slår på denne regelen, deaktiveres skysynkronisering.
 
       Hvis denne regelen er slått av eller ikke er angitt, blir bare de vanlige, lokale profilene brukt.

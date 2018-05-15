@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Nakties šviesa: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kortelė užrakinta</translation>
 <translation id="2653659639078652383">Pateikti</translation>
-<translation id="2675319268637823299">Administratorius neleido <ph name="USER_EMAIL" /> prisijungti prie kelių paskyrų.
-    Kad būtų galima tęsti, visi naudotojai turi atsijungti.</translation>
 <translation id="2696763960464195425">Jūsų informacija bus pašalinta, kai atsijungsite. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Klaviatūros nustatymas</translation>
 <translation id="2718395828230677721">Nakties šviesa</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Paryškinti pelės žymeklį</translation>
 <translation id="3513798432020909783">Paskyrą tvarko: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Pakeisti atgal į „<ph name="FROM_LOCALE" />“ (reikia paleisti iš naujo)</translation>
-<translation id="3582792037806681688">Šioje sesijoje naudotojui neleidžiama prisijungti prie kelių paskyrų</translation>
 <translation id="3595596368722241419">Akumuliatorius įkrautas</translation>
 <translation id="3606978283550408104">Brailio ekranas prijungtas.</translation>
 <translation id="3621202678540785336">Įvestis</translation>

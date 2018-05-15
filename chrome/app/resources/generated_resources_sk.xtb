@@ -34,6 +34,7 @@
 <translation id="1047726139967079566">Pridať stránku medzi záložky…</translation>
 <translation id="1047956942837015229">Prebieha odstraňovanie <ph name="COUNT" /> položiek...</translation>
 <translation id="1048286738600630630">Zobrazenie</translation>
+<translation id="1049743911850919806">Inkognito</translation>
 <translation id="1049795001945932310">&amp;Nastavenia jazyka</translation>
 <translation id="1049926623896334335">Dokument aplikácie Word</translation>
 <translation id="1054153489933238809">Otvoriť pôvodný &amp;obrázok na novej karte</translation>
@@ -529,7 +530,6 @@
 <translation id="1782924894173027610">Server pre synchronizáciu je zaneprázdnený. Skúste to znova neskôr.</translation>
 <translation id="1784849162047402014">V zariadení je málo miesta na disku</translation>
 <translation id="1786636458339910689">Tímové disky</translation>
-<translation id="1789575671122666129">Kontextové okná</translation>
 <translation id="1792619191750875668">Rozšírená obrazovka</translation>
 <translation id="1793119619663054394">Naozaj chcete z tohto počítača odstrániť profil <ph name="PROFILE_NAME" /> a všetky priradené údaje prehliadača Chrome? Túto akciu nie je možné vrátiť späť.</translation>
 <translation id="1794791083288629568">Odoslať spätnú väzbu, ktorá nám pomôže pri riešení tohto problému</translation>
@@ -652,12 +652,14 @@
 <translation id="1983959805486816857">Po vytvorení nového kontrolovaného používateľa môžete kedykoľvek spravovať nastavenia z akéhokoľvek zariadenia na adrese <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Prichytiť okno vpravo</translation>
 <translation id="1987139229093034863">Prepnúť na iného používateľa.</translation>
+<translation id="1987317783729300807">Účty</translation>
 <translation id="1989112275319619282">Prehliadať</translation>
 <translation id="1992397118740194946">Nie je nastavené</translation>
 <translation id="1994173015038366702">Webová adresa stránok</translation>
 <translation id="1997484222658892567"><ph name="URL" /> chce natrvalo ukladať veľké množstvo dát vo vašom počítači</translation>
 <translation id="1997616988432401742">Vaše certifikáty</translation>
 <translation id="1999115740519098545">Pri spustení</translation>
+<translation id="2001796770603320721">Spravovať na Disku</translation>
 <translation id="2006638907958895361">Otvoriť odkaz v aplikácii <ph name="APP" /></translation>
 <translation id="2007404777272201486">Nahlásiť problém...</translation>
 <translation id="2016430552235416146">Tradičné</translation>
@@ -754,7 +756,6 @@ dotyku</translation>
 <translation id="2151576029659734873">Zadali ste neplatný index kariet.</translation>
 <translation id="2154484045852737596">Úprava karty</translation>
 <translation id="2154710561487035718">Kopírovať webovú adresu</translation>
-<translation id="2155931291251286316">Vždy povoliť zobrazovanie kontextových okien zo stránok <ph name="HOST" /></translation>
 <translation id="215753907730220065">Ukončiť zobrazenie na celú obrazovku</translation>
 <translation id="2157875535253991059">Táto stránka je teraz zobrazená na celú obrazovku.</translation>
 <translation id="216169395504480358">Pridať Wi‑Fi…</translation>
@@ -804,7 +805,7 @@ dotyku</translation>
 <translation id="2230062665678605299">Priečinok <ph name="FOLDER_NAME" /> sa nepodarilo vytvoriť. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">Kliknutím zobrazíte dnešný doodle</translation>
 <translation id="2231238007119540260">Ak odstránite certifikát servera, obnovíte zvyčajné bezpečnostné kontroly servera a server bude musieť používať platný certifikát.</translation>
-<translation id="2232379019872353004">Odosielať niektoré informácie o systéme a obsah stránok do Googlu</translation>
+<translation id="2232379019872353004">Odosielať niektoré informácie o systéme a obsah stránok Googlu</translation>
 <translation id="2232876851878324699">Súbor obsahoval jeden certifikát, ktorý nebol importovaný:</translation>
 <translation id="2233502537820838181">Ďalšie &amp;informácie</translation>
 <translation id="2238379619048995541">Údaje stavu frekvencie</translation>
@@ -1183,7 +1184,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2799223571221894425">Znova spustiť</translation>
 <translation id="2803375539583399270">Zadajte kód PIN</translation>
 <translation id="2805646850212350655">Systém šifrovania súborov spoločnosti Microsoft</translation>
-<translation id="2805707493867224476">Povoliť všetkým webovým stránkam zobrazovať kontextové okná</translation>
 <translation id="2805756323405976993">Aplikácie</translation>
 <translation id="2807517655263062534">Tu sa zobrazia súbory, ktoré stiahnete</translation>
 <translation id="2809586584051668049">a ďalšie (počet: <ph name="NUMBER_ADDITIONAL_DISABLED" />)</translation>
@@ -1617,7 +1617,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="347919930506963698">Vyťažte z Chromu ešte viac</translation>
 <translation id="3479552764303398839">Teraz nie</translation>
 <translation id="3480892288821151001">Prichytiť okno vľavo</translation>
-<translation id="3481915276125965083">Na tejto stránke boli zablokované nasledujúce kontextové okná:</translation>
 <translation id="3484273680291419129">Odstraňujte sa škodlivý softvér…</translation>
 <translation id="3484869148456018791">Získať nový certifikát</translation>
 <translation id="3487007233252413104">anonymná funkcia</translation>
@@ -1723,7 +1722,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="3637682276779847508">Ak nezadáte správny kód PIN na odomknutie, vaša SIM karta bude natrvalo deaktivovaná.</translation>
 <translation id="363903084947548957">Nasledujúca metóda vstupu</translation>
 <translation id="3640214691812501263">Pridať rozšírenie <ph name="EXTENSION_NAME" /> pre používateľa <ph name="USER_NAME" />?</translation>
-<translation id="3643225892037417978">Správa rozšírení nie je k dispozícii pre hostí. Ak ich chcete spravovať, prihláste sa.</translation>
 <translation id="3644896802912593514">Šírka</translation>
 <translation id="3646789916214779970">Obnoviť predvolený motív</translation>
 <translation id="3648348069317717750">Rozpoznané zariadenie: <ph name="USB_DEVICE_NAME" /></translation>
@@ -2036,7 +2034,7 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="4109135793348361820">Presunúť okno k používateľovi <ph name="USER_NAME" /> (<ph name="USER_EMAIL" />)</translation>
 <translation id="4110559665646603267">Zameranie na poličku</translation>
 <translation id="4110895898888439383">Prehliadajte web v režime vysokého kontrastu</translation>
-<translation id="4112774766611964959">Odinštaluje sa tým aplikácia <ph name="APP_NAME" /> a odstránia všetky údaje a aplikácie Linux zo zariadenia <ph name="DEVICE_TYPE" />. Naozaj chcete pokračovať?</translation>
+<translation id="4112774766611964959">Odinštaluje sa tým aplikácia <ph name="APP_NAME" /> a odstránia sa všetky údaje a aplikácie Linux zo zariadenia <ph name="DEVICE_TYPE" />. Naozaj chcete pokračovať?</translation>
 <translation id="4114360727879906392">Predchádzajúce okno</translation>
 <translation id="4115002065223188701">Sieť je mimo dosahu</translation>
 <translation id="4115080753528843955">Niektoré obsahové služby používajú jedinečné identifikátory na autorizáciu prístupu ku chránenému obsahu</translation>
@@ -2065,7 +2063,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="4172051516777682613">Vždy zobraziť</translation>
 <translation id="4175737294868205930">Trvalé úložisko</translation>
 <translation id="4176463684765177261">Deaktivované</translation>
-<translation id="4180684688621252156">Tlačová služba</translation>
 <translation id="4180788401304023883">Odstrániť certifikát CA „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Jazyky</translation>
@@ -2091,6 +2088,7 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="42137655013211669">Server zakázal prístup k tomuto zdroju</translation>
 <translation id="4215350869199060536">Hops, v mene sú nepovolené symboly!</translation>
 <translation id="4215448920900139318">Zálohujú sa fotky (<ph name="FILE_COUNT" />)</translation>
+<translation id="4217571870635786043">Diktovanie</translation>
 <translation id="4225397296022057997">Na všetkých weboch</translation>
 <translation id="4235200303672858594">Celá obrazovka</translation>
 <translation id="4235813040357936597">Pridať účet k profilu <ph name="PROFILE_NAME" /></translation>
@@ -2203,6 +2201,7 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="4425149324548788773">Môj disk</translation>
 <translation id="4430019312045809116">Hlasitosť</translation>
 <translation id="4430369329743628066">Záložka bola pridaná</translation>
+<translation id="4434045419905280838">Kontextové okná a presmerovania</translation>
 <translation id="443454694385851356">Staré (nezabezpečené)</translation>
 <translation id="443464694732789311">Pokračovať</translation>
 <translation id="443475966875174318">Aktualizácia a odstránenie nekompatibilných aplikácií</translation>
@@ -2943,7 +2942,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="555746285996217175">Zámka / napájanie</translation>
 <translation id="5557991081552967863">Počas spánku ponechať zapnutú sieť Wi‑Fi</translation>
 <translation id="5558129378926964177">Priblíž&amp;iť</translation>
-<translation id="5558446705802335921">Skontrolujte navštívené weby a stiahnuté súbory, či nezahŕňajú škodlivé správanie alebo obsah, napríklad phishing alebo malvér</translation>
+<translation id="5558446705802335921">Skontroluje navštívené weby a stiahnuté súbory, či nezahŕňajú škodlivé správanie alebo obsah, napríklad phishing alebo malvér</translation>
 <translation id="5559719557406102971">Spúšťa sa Termina VM.</translation>
 <translation id="55601339223879446">Úprava ohraničenia pracovnej plochy obrazovky</translation>
 <translation id="5562781907504170924">Táto karta je prepojená so zariadením Bluetooth.</translation>
@@ -3273,6 +3272,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6075907793831890935">Vymieňať údaje so zariadením s názvom <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Zahrnúť túto snímku obrazovky</translation>
 <translation id="6077131872140550515">Odstrániť z preferovaných</translation>
+<translation id="6078323886959318429">Pridať odkaz</translation>
 <translation id="6078752646384677957">Skontrolujte mikrofón a úrovne zvuku.</translation>
 <translation id="6080515710685820702">Používate zdieľaný počítač? Skúste otvoriť okno inkognito.</translation>
 <translation id="6080689532560039067">Kontrola času systému</translation>
@@ -3481,7 +3481,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6406303162637086258">Simulovať reštartovanie prehliadača</translation>
 <translation id="6406506848690869874">Synchronizácia</translation>
 <translation id="6408118934673775994">Čítať a meniť údaje na weboch <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> a <ph name="WEBSITE_3" /></translation>
-<translation id="6409731863280057959">Kontextové okná</translation>
 <translation id="6410257289063177456">Súbory obrázkov</translation>
 <translation id="6410328738210026208">Zmeniť kanál a použiť funkciu Powerwash</translation>
 <translation id="6410668567036790476">Pridať vyhľadávač</translation>
@@ -3689,7 +3688,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6708242697268981054">Pôvod:</translation>
 <translation id="6709357832553498500">Pripojiť sa pomocou rozšírenia <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Dozadu</translation>
-<translation id="6716704051134091292">Konvertor PDF</translation>
 <translation id="6718273304615422081">Prebieha komprimovanie...</translation>
 <translation id="671928215901716392">Uzamknúť obrazovku</translation>
 <translation id="67211069045302358">Chcete resetovať nastavenia tohto webu?</translation>
@@ -3812,7 +3810,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6920989436227028121">Otvoriť ako bežnú kartu</translation>
 <translation id="6922128026973287222">Ukladajte údaje a prehliadajte rýchlejšie pomocou funkcie Šetrič Dát Google. Kliknutím získate ďalšie informácie.</translation>
 <translation id="6923132443355966645">Posunúť/kliknúť</translation>
-<translation id="6929555043669117778">Pokračovať v blokovaní kontextových okien</translation>
 <translation id="6929835486583850209">Chyba pri inštalovaní aplikácie <ph name="APP_NAME" />…</translation>
 <translation id="6930242544192836755">Trvanie</translation>
 <translation id="6934241953272494177">Prehľadáva sa vaše mediálne zariadenie...
@@ -3896,6 +3893,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7052237160939977163">Odosielať údaje sledovania výkonnosti</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Blokovať</translation>
+<translation id="7055152154916055070">Presmerovanie bolo zablokované:</translation>
 <translation id="7056526158851679338">&amp;Preskúmať zariadenia</translation>
 <translation id="7059858479264779982">Nastaviť na automatické spúšťanie</translation>
 <translation id="7059893117020417984">Ak chcete prehliadať v súkromí, otvorte okno inkognito klepnutím na ponuku s ikonou bodiek</translation>
@@ -3922,7 +3920,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="7088434364990739311">Kontrolu aktualizácií sa nepodarilo spustiť (kód chyby: <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – Otvárajte a komprimujte súbory ZIP v aplikácii Súbory.</translation>
 <translation id="7088674813905715446">Toto zariadenie bolo správcom uvedené do stavu odstránenia. Ak chcete povoliť jeho registráciu, požiadajte svojho správcu, aby zariadenie uviedol do stavu čakania.</translation>
-<translation id="7092106376816104">Výnimky kontextových okien</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Vymieňať údaje so zariadeniami s nasledujúcimi názvami: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Prepnúť lupu na celú obrazovku</translation>
@@ -4142,7 +4139,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="744341768939279100">Vytvoriť nový profil</translation>
 <translation id="7444726222535375658">Pokračovať do služby Hangouts Meet</translation>
 <translation id="7444983668544353857">Zakázať zariadenie <ph name="NETWORKDEVICE" /></translation>
-<translation id="7445682342344043969">Boli zablokované kontextové okná</translation>
 <translation id="7453008956351770337">Výberom tejto tlačiarne udeľujete nasledujúcemu rozšíreniu povolenie k tlačiarni pristupovať:</translation>
 <translation id="7453467225369441013">Odhlási vás z väčšiny webov, ale nie z účtu Google.</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4261,6 +4257,7 @@ Inštaláciou aplikácie <ph name="APP_NAME" /> stiahnete <ph name="DOWNLOAD_SIZ
 <translation id="7617366389578322136">Pripája sa k zariadeniu „<ph name="DEVICE_NAME" />“</translation>
 <translation id="7622114377921274169">Nabíja sa.</translation>
 <translation id="7624337243375417909">Funkcia Caps Lock je vypnutá</translation>
+<translation id="7625568159987162309">Zobraziť povolenia a dáta uložené na weboch</translation>
 <translation id="7627790789328695202">Hops, súbor <ph name="FILE_NAME" /> už existuje. Premenujte ho a skúste to znova.</translation>
 <translation id="7628127343934101653">Otvárať súbory PDF v predvolenej aplikácii na zobrazovanie súborov PDF</translation>
 <translation id="7629827748548208700">Karta: <ph name="TAB_NAME" /></translation>
@@ -4394,7 +4391,7 @@ Inštaláciou aplikácie <ph name="APP_NAME" /> stiahnete <ph name="DOWNLOAD_SIZ
       <ph name="LIST_ITEM" />odstrániť overenie rootfs, aby ste mohli upravovať súbory operačného systému;
       <ph name="LIST_ITEM" />povoliť prístup SSH do zariadenia pomocou štandardných testovacích kľúčov, aby ste mohli na prístup do zariadenia používať nástroje, ako napríklad <ph name="BEGIN_CODE" />cros flash<ph name="END_CODE" />;
       <ph name="LIST_ITEM" />povoliť spúšťanie cez rozhranie USB, aby ste mohli nainštalovať obraz operačného systému z disku USB;
-      <ph name="LIST_ITEM" />nastaviť prihlasovacie heslo používateľa dev a root na vlastnú hodnotu, aby ste mohli ručne pristúpiť do zariadenia prostredníctvom protokolu SSH.
+      <ph name="LIST_ITEM" />nastaviť prihlasovacie heslo používateľa dev a root na vlastnú hodnotu, aby ste mali prístup do zariadenia prostredníctvom protokolu SSH.
     <ph name="END_LIST" />
     <ph name="BR" />
     Väčšina funkcií ladenia zostane po aktivácii povolená aj po vymazaní zariadenia prostredníctvom funkcie Powerwash alebo vymazaní údajov na zariadení spravovanom podnikom. Ak chcete funkcie ladenia úplne deaktivovať, dokončite proces obnovenia systému OS Chrome (https://support.google.com/chromebook/answer/1080595).
@@ -4583,10 +4580,12 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="806812017500012252">Zoradiť podľa názvu</translation>
 <translation id="8068253693380742035">Dotykom sa prihlásite</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="806972267388474605">Súbory systému Linux</translation>
 <translation id="8071432093239591881">Vytlačiť ako obrázok</translation>
 <translation id="8072988827236813198">Pripnúť karty</translation>
 <translation id="8074127646604999664">Povoliť nedávno zatvoreným webom dokončiť posielanie a prijímanie údajov</translation>
 <translation id="8075191520954018715">Stav pamäte</translation>
+<translation id="8076492880354921740">Karty</translation>
 <translation id="8076835018653442223">Prístup k miestnym súborom vo vašom zariadení zakázal správca</translation>
 <translation id="8077684120002777443">Používateľské meno (napr. pouzivatel@example.com)</translation>
 <translation id="8077816382010018681">Tu má byť nadpis upozornenia funkcie rýchleho odomknutia</translation>
@@ -4871,7 +4870,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="8569682776816196752">Nenašli sa žiadne ciele</translation>
 <translation id="8569764466147087991">Vyberte súbor, ktorý chcete otvoriť</translation>
 <translation id="8571213806525832805">Posledné 4 týždne</translation>
-<translation id="8571613743082299268">Presmerovanie bolo zablokované a upravené na web</translation>
 <translation id="8574990355410201600">Vždy povoliť zvuk na webe <ph name="HOST" /></translation>
 <translation id="8578639784464423491">Nemôže presiahnuť 99 znakov</translation>
 <translation id="8579285237314169903">Synchronizujú sa položky (počet: <ph name="NUMBER_OF_FILES" />)...</translation>
@@ -5185,7 +5183,7 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9042893549633094279">Ochrana súkromia a zabezpečenie</translation>
 <translation id="904451693890288097">Zadajte prístupový kľúč pre zariadenie „<ph name="DEVICE_NAME" />“:</translation>
 <translation id="9044646465488564462">Nepodarilo sa pripojiť k sieti: <ph name="DETAILS" /></translation>
-<translation id="9045430190527754450">Odošle Google webovú adresu stránky, na ktorú sa pokúšate prejsť</translation>
+<translation id="9045430190527754450">Odošle Googlu webovú adresu stránky, na ktorú sa pokúšate prejsť</translation>
 <translation id="9046895021617826162">Zlyhanie pripojenia</translation>
 <translation id="9050666287014529139">Prístupová fráza</translation>
 <translation id="9052208328806230490">Tlačiarne ste zaregistrovali v službe <ph name="CLOUD_PRINT_NAME" /> prostredníctvom účtu <ph name="EMAIL" /></translation>
@@ -5203,7 +5201,6 @@ Súbor kľúča uložte na bezpečné miesto. Budete ho potrebovať na vytvoreni
 <translation id="9065203028668620118">Upraviť</translation>
 <translation id="9066782832737749352">Prevod textu na reč</translation>
 <translation id="9070219033670098627">Prepnúť osobu</translation>
-<translation id="907148966137935206">Nepovoliť žiadnym webovým stránkam zobrazovať kontextové okná (odporúča sa)</translation>
 <translation id="9071637495340542136">Inštaluje sa <ph name="APP_NAME" />...</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> vás automaticky prihlási na vhodných weboch a v aplikáciách pomocou hesiel, ktoré ste si uložili.</translation>
 <translation id="9073281213608662541">PAP</translation>

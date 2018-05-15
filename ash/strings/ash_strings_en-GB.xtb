@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM card is locked</translation>
 <translation id="2653659639078652383">Submit</translation>
-<translation id="2675319268637823299">An administrator has dismissed multiple sign-ins for <ph name="USER_EMAIL" />.
-    All users must sign out to continue.</translation>
 <translation id="2696763960464195425">Your information will be removed when you sign out. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Set your keyboard</translation>
 <translation id="2718395828230677721">Night Light</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Highlight mouse cursor</translation>
 <translation id="3513798432020909783">Account managed by <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Change back to "<ph name="FROM_LOCALE" />" (requires restart)</translation>
-<translation id="3582792037806681688">Multiple sign-in has been disallowed for a user in this session</translation>
 <translation id="3595596368722241419">Battery full</translation>
 <translation id="3606978283550408104">Braille display connected.</translation>
 <translation id="3621202678540785336">Input</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">USB-C device (right-hand-side back port)</translation>
 <translation id="4017989525502048489">Laser pointer</translation>
 <translation id="4072264167173457037">Medium signal</translation>
+<translation id="4217571870635786043">Dictation</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">Bluetooth device "<ph name="DEVICE_NAME" />" would like permission to pair.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> until full</translation>
 <translation id="4544944664594876241">The shortcut to lock the screen has changed. Please use <ph name="NEW_SHORTCUT" /> instead of <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Select-to-Speak button</translation>
 <translation id="4659419629803378708">ChromeVox enabled</translation>
 <translation id="4776917500594043016">Password for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
@@ -290,6 +289,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (owner)</translation>
 <translation id="7647488630410863958">Unlock device to view your notifications</translation>
 <translation id="7649070708921625228">Help</translation>
+<translation id="7654687942625752712">Press and hold both volume keys for five seconds to disable spoken feedback.</translation>
 <translation id="7658239707568436148">Cancel</translation>
 <translation id="7692480393933218409">Charging connected USB-C devices</translation>
 <translation id="776344839111254542">Click to view update details</translation>

@@ -34,6 +34,7 @@
 <translation id="1047726139967079566">为此页添加书签...</translation>
 <translation id="1047956942837015229">正在删除<ph name="COUNT" />项内容…</translation>
 <translation id="1048286738600630630">显示</translation>
+<translation id="1049743911850919806">隐身</translation>
 <translation id="1049795001945932310">语言设置(&amp;L)</translation>
 <translation id="1049926623896334335">Word 文档</translation>
 <translation id="1054153489933238809">在新标签页中打开原始图片(&amp;I)</translation>
@@ -526,7 +527,6 @@
 <translation id="1782924894173027610">同步服务器正忙，请稍后重试。</translation>
 <translation id="1784849162047402014">设备磁盘空间不足</translation>
 <translation id="1786636458339910689">团队云端硬盘</translation>
-<translation id="1789575671122666129">弹出式窗口</translation>
 <translation id="1792619191750875668">扩展显示屏</translation>
 <translation id="1793119619663054394">确定要从此计算机中移除“<ph name="PROFILE_NAME" />”以及所有关联的Chrome数据吗？此操作无法撤消。</translation>
 <translation id="1794791083288629568">发送反馈，以协助我们解决此问题。</translation>
@@ -649,6 +649,7 @@
 <translation id="1983959805486816857">创建新的受监管用户后，您随时可以通过任意设备转到 <ph name="MANAGEMENT_URL" /> 管理这些设置。</translation>
 <translation id="1984642098429648350">将窗口固定到右侧</translation>
 <translation id="1987139229093034863">切换到其他用户。</translation>
+<translation id="1987317783729300807">帐号</translation>
 <translation id="1989112275319619282">浏览</translation>
 <translation id="1992397118740194946">未设置</translation>
 <translation id="1994173015038366702">网站网址</translation>
@@ -750,7 +751,6 @@
 <translation id="2151576029659734873">输入的标签页索引无效。</translation>
 <translation id="2154484045852737596">修改支付卡</translation>
 <translation id="2154710561487035718">复制网址</translation>
-<translation id="2155931291251286316">始终允许显示 <ph name="HOST" /> 的弹出式窗口</translation>
 <translation id="215753907730220065">退出全屏模式</translation>
 <translation id="2157875535253991059">此网页现处于全屏模式。</translation>
 <translation id="216169395504480358">添加 Wi-Fi...</translation>
@@ -1179,7 +1179,6 @@
 <translation id="2799223571221894425">重新启动</translation>
 <translation id="2803375539583399270">输入 PIN 码</translation>
 <translation id="2805646850212350655">Microsoft 加密文件系统</translation>
-<translation id="2805707493867224476">允许所有网站显示弹出式窗口</translation>
 <translation id="2805756323405976993">应用</translation>
 <translation id="2807517655263062534">您下载的文件会显示在此处</translation>
 <translation id="2809586584051668049">及另外<ph name="NUMBER_ADDITIONAL_DISABLED" />个扩展程序</translation>
@@ -1611,7 +1610,6 @@
 <translation id="347919930506963698">更充分地利用 Chrome</translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="3480892288821151001">将窗口固定到左侧</translation>
-<translation id="3481915276125965083">已拦截此网页上的下列弹出式窗口：</translation>
 <translation id="3484273680291419129">正在移除有害软件…</translation>
 <translation id="3484869148456018791">获取新的证书</translation>
 <translation id="3487007233252413104">匿名函数</translation>
@@ -1717,7 +1715,6 @@
 <translation id="3637682276779847508">如果您无法输入正确的 PIN 码解锁密钥，您的 SIM 卡将被永久停用。</translation>
 <translation id="363903084947548957">下一种输入法</translation>
 <translation id="3640214691812501263">要为<ph name="USER_NAME" />添加“<ph name="EXTENSION_NAME" />”吗？</translation>
-<translation id="3643225892037417978">访客用户无法使用“扩展程序管理”功能。请登录以管理扩展程序。</translation>
 <translation id="3644896802912593514">宽度</translation>
 <translation id="3646789916214779970">重置为默认主题背景</translation>
 <translation id="3648348069317717750">检测到<ph name="USB_DEVICE_NAME" /></translation>
@@ -1816,7 +1813,7 @@
 <translation id="3786301125658655746">您处于离线状态</translation>
 <translation id="3788401245189148511">该扩展程序想要：</translation>
 <translation id="3789841737615482174">安装</translation>
-<translation id="379082410132524484">您的卡片已过期</translation>
+<translation id="379082410132524484">您的卡已过期</translation>
 <translation id="3792890930871100565">断开打印机连接</translation>
 <translation id="379422718204375917">使用 Smart Lock 登录您的帐号</translation>
 <translation id="3796648294839530037">收藏的网络：</translation>
@@ -2058,7 +2055,6 @@
 <translation id="4172051516777682613">一律显示</translation>
 <translation id="4175737294868205930">永久存储</translation>
 <translation id="4176463684765177261">已停用</translation>
-<translation id="4180684688621252156">打印服务</translation>
 <translation id="4180788401304023883">要删除 CA 证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="4181602000363099176">20 倍</translation>
 <translation id="4181841719683918333">语言</translation>
@@ -2672,7 +2668,7 @@
 <translation id="5186650237607254032">更新配对手机的屏幕锁定设置，以便您在附近时系统即停用该功能。这样一来，您不仅能够更快速地为手机解锁，还能在 <ph name="DEVICE_TYPE" /> 上畅享更好的 Smart Lock 体验。</translation>
 <translation id="5187295959347858724">您现在已登录 <ph name="SHORT_PRODUCT_NAME" />。系统正在将您的书签、浏览记录和其他设置与您的 Google 帐号同步。</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5196721203029902230">与 Google 通信，以便改进浏览服务和 Chrome</translation>
+<translation id="5196721203029902230">与 Google 通信，以便改进浏览功能和 Chrome</translation>
 <translation id="5204967432542742771">输入密码</translation>
 <translation id="5206215183583316675">要删除“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="520621735928254154">导入证书时出现错误</translation>
@@ -3260,6 +3256,7 @@
 <translation id="6075907793831890935">与名为“<ph name="HOSTNAME" />”的设备交换数据</translation>
 <translation id="6076448957780543068">包括此屏幕截图</translation>
 <translation id="6077131872140550515">从首选网络列表中移除</translation>
+<translation id="6078323886959318429">添加快捷方式</translation>
 <translation id="6078752646384677957">请检查您的麦克风和音量。</translation>
 <translation id="6080515710685820702">使用的是共用计算机？请尝试打开一个无痕式窗口。</translation>
 <translation id="6080689532560039067">检查系统时间</translation>
@@ -3468,7 +3465,6 @@
 <translation id="6406303162637086258">模拟浏览器重启</translation>
 <translation id="6406506848690869874">同步</translation>
 <translation id="6408118934673775994">读取和更改您在<ph name="WEBSITE_1" />、<ph name="WEBSITE_2" />和<ph name="WEBSITE_3" />上的数据</translation>
-<translation id="6409731863280057959">弹出式窗口</translation>
 <translation id="6410257289063177456">图片文件</translation>
 <translation id="6410328738210026208">变更版本并执行 Powerwash</translation>
 <translation id="6410668567036790476">添加搜索引擎</translation>
@@ -3675,7 +3671,6 @@
 <translation id="6708242697268981054">来源：</translation>
 <translation id="6709357832553498500">使用“<ph name="EXTENSIONNAME" />”连接</translation>
 <translation id="6710213216561001401">上一个</translation>
-<translation id="6716704051134091292">PDF 转换器</translation>
 <translation id="6718273304615422081">正在压缩…</translation>
 <translation id="671928215901716392">锁定屏幕</translation>
 <translation id="67211069045302358">为此网站重置设置？</translation>
@@ -3800,7 +3795,6 @@
 <translation id="6920989436227028121">在常规标签页中打开</translation>
 <translation id="6922128026973287222">使用 Google 流量节省程序可以节省流量并加速浏览。点击此处即可了解详情。</translation>
 <translation id="6923132443355966645">滚动/点击</translation>
-<translation id="6929555043669117778">继续拦截弹出式窗口</translation>
 <translation id="6929835486583850209">安装“<ph name="APP_NAME" />”时出错…</translation>
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6934241953272494177">正在扫描您的媒体设备…
@@ -3910,7 +3904,6 @@
 <translation id="7088434364990739311">无法启动更新检查（错误代码为 <ph name="ERROR" />）。</translation>
 <translation id="7088561041432335295">Zip Archiver - 在“文件”应用中打开和打包 ZIP 文件。</translation>
 <translation id="7088674813905715446">管理员已将该设备设置为已取消配置的状态。要让该设备能够注册，请让管理员将其设置为待处理状态。</translation>
-<translation id="7092106376816104">弹出式窗口例外情况</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">与具有下列名称的设备交换数据：<ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">开启/关闭全屏放大镜</translation>
@@ -4123,7 +4116,6 @@
 <translation id="744341768939279100">创建新的个人资料</translation>
 <translation id="7444726222535375658">开始使用 Hangouts Meet</translation>
 <translation id="7444983668544353857">停用<ph name="NETWORKDEVICE" /></translation>
-<translation id="7445682342344043969">已拦截弹出式窗口</translation>
 <translation id="7453008956351770337">选择此打印机即表示您允许以下扩展程序访问您的打印机：</translation>
 <translation id="7453467225369441013">您会从大多数网站退出，但不会退出自己的 Google 帐号。</translation>
 <translation id="7456142309650173560">开发者版本</translation>
@@ -4566,6 +4558,7 @@
 <translation id="8072988827236813198">固定标签页</translation>
 <translation id="8074127646604999664">允许最近关闭的网站完成数据收发操作</translation>
 <translation id="8075191520954018715">内存状态</translation>
+<translation id="8076492880354921740">标签页</translation>
 <translation id="8076835018653442223">您的管理员已禁止访问您设备上的本地文件</translation>
 <translation id="8077684120002777443">用户名（例如 user@example.com）</translation>
 <translation id="8077816382010018681">此处为快速解锁功能通知标题</translation>
@@ -4850,7 +4843,6 @@
 <translation id="8569682776816196752">未找到任何目标</translation>
 <translation id="8569764466147087991">选择要打开的文件</translation>
 <translation id="8571213806525832805">近 4 周</translation>
-<translation id="8571613743082299268">已被阻止重定向到以下网站</translation>
 <translation id="8574990355410201600">始终允许 <ph name="HOST" /> 播放声音</translation>
 <translation id="8578639784464423491">不能超过 99 个字母</translation>
 <translation id="8579285237314169903">正在同步 <ph name="NUMBER_OF_FILES" /> 个文件…</translation>
@@ -5119,7 +5111,7 @@
 <translation id="8978154919215542464">开启 - 同步所有内容</translation>
 <translation id="897939795688207351">在 <ph name="ORIGIN" /> 上</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已崩溃</translation>
-<translation id="8983677657449185470">帮助我们改进安全浏览服务</translation>
+<translation id="8983677657449185470">帮助我们改进安全浏览功能</translation>
 <translation id="8986362086234534611">不保存</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
 <translation id="8987927404178983737">月</translation>
@@ -5182,7 +5174,6 @@
 <translation id="9065203028668620118">修改</translation>
 <translation id="9066782832737749352">文字转语音</translation>
 <translation id="9070219033670098627">切换用户</translation>
-<translation id="907148966137935206">不允许任何网站显示弹出式窗口（推荐）</translation>
 <translation id="9071637495340542136">正在安装“<ph name="APP_NAME" />”…</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> 会使用您保存的密码让您自动登录到符合条件的网站和应用。</translation>
 <translation id="9073281213608662541">PAP</translation>

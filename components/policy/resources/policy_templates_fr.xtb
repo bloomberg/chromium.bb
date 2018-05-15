@@ -687,13 +687,6 @@ Si cette règle est définie sur "False", les utilisateurs ne pourront pas jouer
 
       Si cette règle est appliquée, seules les imprimantes dont l'ID correspond aux valeurs de la règle sont à la disposition de l'utilisateur. Les ID doivent correspondre aux champs "id" ou "guid" du fichier spécifié dans <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Active la fonctionnalité Appuyer pour rechercher dans l'affichage du contenu de <ph name="PRODUCT_NAME" />.
-
-      Si vous activez ce paramètre, l'utilisateur sera en mesure d'activer ou de désactiver la fonctionnalité Appuyer pour rechercher.
-
-      Si vous désactivez ce paramètre, l'utilisateur n'aura pas accès à la fonctionnalité Appuyer pour rechercher.
-
-      Si cette règle n'est pas configurée, la fonctionnalité sera activée, conformément à la description ci-dessus.</translation>
 <translation id="285480231336205327">Activer le mode Contraste élevé</translation>
 <translation id="2854919890879212089">Avec cette option, <ph name="PRODUCT_NAME" /> utilise l'imprimante par défaut du système dans l'aperçu avant impression, plutôt que l'imprimante qui a servi le plus récemment.
 
@@ -1681,7 +1674,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 
           Si vous ne définissez pas cette règle, les commentaires audio sont désactivés au premier affichage de l'écran de connexion. Les utilisateurs peuvent les activer ou les désactiver à tout moment, et leur état sur l'écran de connexion est appliqué à tous les utilisateurs.</translation>
 <translation id="5868414965372171132">Configuration réseau au niveau de l'utilisateur</translation>
-<translation id="588135807064822874">Activer la fonctionnalité Appuyer pour rechercher</translation>
 <translation id="5883015257301027298">Paramètre de cookies par défaut</translation>
 <translation id="5887414688706570295">Configure le préfixe TalkGadget utilisé par les hôtes d'accès à distance et empêche les utilisateurs de le modifier.
 
@@ -1955,11 +1947,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="6689792153960219308">Envoyer des rapports sur l'état du matériel</translation>
 <translation id="6698071416141001300">Le signalement d'un compte à risque au niveau de la protection par mot de passe est déclenché par la réutilisation d'un mot de passe</translation>
 <translation id="6699880231565102694">Activer l'authentification forte pour les hôtes d'accès à distance</translation>
-<translation id="6702257826895463228">Autorise les sites à parcourir et à ouvrir les pop-up simultanément.
-
-      Pour obtenir une explication complète, consultez la page https://www.chromestatus.com/features/5675755719622656.
-      Si cette règle est activée, les sites sont autorisés à parcourir et à ouvrir de nouvelles fenêtres ou de nouveaux onglets simultanément.
-      Si cette règle est désactivée ou n'est pas définie, les sites ne sont pas autorisés à parcourir et à ouvrir une nouvelle fenêtre ou un nouvel onglet simultanément.</translation>
 <translation id="6724842112053619797">Si vous activez cette option, les paramètres stockés dans les profils <ph name="PRODUCT_NAME" />, comme les favoris, les données de saisie automatique et les mots de passe, sont également enregistrés dans un fichier stocké dans le dossier des profils utilisateur itinérants ou à un emplacement défini par l'administrateur tel que spécifié dans la règle <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. L'activation de cette règle entraîne la désactivation de la synchronisation cloud.
 
       Si cette règle est désactivée ou si elle n'est pas configurée, seuls les profils locaux standards sont utilisés.

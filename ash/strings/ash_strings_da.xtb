@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Nattelys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2653659639078652383">Indsend</translation>
-<translation id="2675319268637823299">En administrator har afvist samlet login fra flere konti for <ph name="USER_EMAIL" />.
-    Alle brugere skal logge ud for at fortsætte.</translation>
 <translation id="2696763960464195425">Dine oplysninger fjernes, når du logger ud. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Angiv dit tastatur</translation>
 <translation id="2718395828230677721">Nattelys</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Fremhæv musemarkør</translation>
 <translation id="3513798432020909783">Kontoen administreres af <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Skift tilbage til "<ph name="FROM_LOCALE" />" (kræver genstart)</translation>
-<translation id="3582792037806681688">Samlet login fra flere konti er blevet deaktiveret for en bruger i denne session</translation>
 <translation id="3595596368722241419">Batteri helt opladet</translation>
 <translation id="3606978283550408104">Der er tilsluttet en brailleskærm.</translation>
 <translation id="3621202678540785336">Input</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">USB-C-enhed (porten bagpå i højre side)</translation>
 <translation id="4017989525502048489">Laserpegepind</translation>
 <translation id="4072264167173457037">Middel signal</translation>
+<translation id="4217571870635786043">Diktering</translation>
 <translation id="4279490309300973883">Spejling</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">Bluetooth-enheden "<ph name="DEVICE_NAME" />" vil gerne have parringstilladelse.</translation>
 <translation id="453661520163887813">Fuldt opladet om <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Genvejen til at låse skærmen er ændret. Brug <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Knap for Tekstoplæsning</translation>
 <translation id="4659419629803378708">ChromeVox er aktiveret</translation>
 <translation id="4776917500594043016">Adgangskode for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">søg</translation>
@@ -291,6 +290,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ejer)</translation>
 <translation id="7647488630410863958">Lås enheden op for at se dine underretninger</translation>
 <translation id="7649070708921625228">Hjælp</translation>
+<translation id="7654687942625752712">Tryk på begge lydstyrketaster, og hold dem nede i fem sekunder for at deaktivere oplæsning.</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="7692480393933218409">Oplader tilsluttede USB-C-enheder</translation>
 <translation id="776344839111254542">Klik for at se opdateringsoplysninger</translation>

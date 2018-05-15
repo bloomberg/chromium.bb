@@ -129,7 +129,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Windows നെറ്റ്‌വർക്ക് ഡയഗണോസ്‌റ്റിക്‌സ് റൺ ചെയ്‌തുനോക്കൂ<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">നിങ്ങളുടെ സമന്വയ പാസ്‌ഫ്രേസ് ദയവായി അപ്‌ഡേറ്റ് ചെയ്യുക.</translation>
 <translation id="1787142507584202372">നിങ്ങൾ നിലവിൽ തുറന്നിട്ടുള്ള ടാബുകൾ ഇവിടെ ദൃശ്യമാകും</translation>
-<translation id="1789575671122666129">പോപ്പ്അപ്പുകൾ</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">കാർഡ് ഉടമയുടെ പേര്</translation>
 <translation id="1806541873155184440"><ph name="ADDED_TO_AUTOFILL_MONTH" />-ന് ചേർത്തു</translation>
@@ -461,6 +460,7 @@
 <translation id="4171400957073367226">മോശം പരിശോധിച്ചുറപ്പിക്കൽ സിഗ്‌നേച്ചർ</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ഇനം കൂടി}other{<ph name="ITEM_COUNT" /> ഇനങ്ങൾ കൂടി}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">മറ്റ് സൈറ്റുകളിൽ നിങ്ങളുടെ <ph name="ORG_NAME" /> പാസ്‌വേഡ് വീണ്ടും ഉപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് റീസെറ്റ് ചെയ്യാൻ Chrome ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="4196861286325780578">&amp;നീക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />ഫയർവാളും ആന്റിവൈറസ് കോൺഫിഗറേഷനുകളും പരിശോധിക്കുന്നു<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">ക്രാഷുകള്‍</translation>
@@ -693,13 +693,13 @@
 <translation id="5869405914158311789">ഈ സൈറ്റ് ലഭ്യമാക്കാനാകുന്നില്ല</translation>
 <translation id="5869522115854928033">സംരക്ഷിച്ച പാസ്‌വേഡുകള്‍</translation>
 <translation id="5893752035575986141">ക്രെഡിറ്റ് കാർഡുകൾ സ്വീകരിക്കുന്നു.</translation>
+<translation id="5898382028489516745">മറ്റ് സൈറ്റുകളിൽ നിങ്ങളുടെ <ph name="ORG_NAME" /> പാസ്‌വേഡ് വീണ്ടും ഉപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് റീസെറ്റ് ചെയ്യാൻ Chromium ശുപാർശ ചെയ്യുന്നു.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (സമന്വയിപ്പിച്ചത്)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{ഒരെണ്ണം ഉപയോഗത്തിലുണ്ട്}other{# എണ്ണം ഉപയോഗത്തിലുണ്ട്}}</translation>
 <translation id="5939518447894949180">വീണ്ടും സജ്ജീകരിക്കുക</translation>
 <translation id="5959728338436674663">അപകടകരമായ ആപ്‌സുകളും സൈറ്റുകളും കണ്ടെത്താൻ സഹായിക്കുന്നതിന്‌ ചില <ph name="BEGIN_WHITEPAPER_LINK" />സിസ്‌റ്റം വിവരങ്ങളും പേജ്‌ ഉള്ളടക്കവും<ph name="END_WHITEPAPER_LINK" /> Google-ന്‌ സ്വയമേവ അയയ്‌ക്കുക. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967592137238574583">കോൺടാക്‌റ്റ് വിവരം എഡിറ്റുചെയ്യുക</translation>
 <translation id="5967867314010545767">ചരിത്രത്തിൽ നിന്നും നീക്കംചെയ്യുക</translation>
-<translation id="5972020793760134803">ടാബിലേക്ക് മാറുക</translation>
 <translation id="5975083100439434680">സൂം ഔട്ട്</translation>
 <translation id="598637245381783098">പേയ്‌മെന്റ്  ആപ്പ് തുറക്കാനായില്ല</translation>
 <translation id="5989320800837274978">ഒരു സ്ഥിരമായ പ്രോക്സി സെർവർ അല്ലെങ്കിൽ ഒരു .pac സ്‌ക്രിപ്റ്റ് URL വ്യക്തമാക്കിയിട്ടില്ല.</translation>
@@ -716,6 +716,7 @@
 <translation id="6047927260846328439">സോഫ്‌റ്റ്‌വെയർ ഇൻസ്‌റ്റാൾ ചെയ്യുന്നതിലേക്കോ വ്യക്തിഗത വിവരങ്ങൾ വെളിപ്പെടുത്തുന്നതിലേക്കോ നിങ്ങളെ തന്ത്രപൂർവ്വം നയിച്ചുകൊണ്ട്, ഈ ഉള്ളടക്കം നിങ്ങളെ കബളിപ്പിക്കാൻ ശ്രമിച്ചേക്കാം. <ph name="BEGIN_LINK" />എന്തായാലും കാണിക്കുക<ph name="END_LINK" /></translation>
 <translation id="6051221802930200923"><ph name="SITE" /> എന്ന വെബ്‌സൈറ്റ് സർട്ടിഫിക്കറ്റ് പിന്നിംഗ് ഉപയോഗിക്കുന്നതിനാൽ നിങ്ങൾക്കിപ്പോൾ അത് സന്ദർശിക്കാനാകില്ല. നെറ്റ്‌വർക്ക് പിശകുകളും ആക്രമണങ്ങളും സാധാരണയായി താൽക്കാലികമായിരിക്കും, അതിനാൽ ഈ പേജ് മിക്കവാറും പിന്നീട് പ്രവർത്തിക്കും.</translation>
 <translation id="6059925163896151826">USB ഉപകരണങ്ങൾ</translation>
+<translation id="6071091556643036997">സാധുതയില്ലാത്ത നയ തരം.</translation>
 <translation id="6080696365213338172">അഡ്‌മിനിസ്‌ട്രേറ്റർ നൽകിയ സർട്ടിഫിക്കറ്റ് ഉപയോഗിച്ച് നിങ്ങൾ ഉള്ളടക്കം ആക്‌സസ്സുചെയ്‌തു. നിങ്ങൾ <ph name="DOMAIN" /> എന്നതിലേക്ക് നൽകുന്ന ഡാറ്റ അഡ്‌മിനിസ്‌ട്രേറ്റർക്ക് തടയാനാവും.</translation>
 <translation id="610911394827799129">നിങ്ങളുടെ Google അക്കൗണ്ടിന് <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> എന്നതിൽ മറ്റ് തരത്തിലുള്ള ബ്രൗസിംഗ് ചരിത്രമുണ്ടായിരിക്കാം.</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{ഒന്നുമില്ല}=1{ഒരു പാസ്‌വേഡ് (സമന്വയിപ്പിച്ചത്)}other{# പാസ്‌വേഡുകൾ (സമന്വയിപ്പിച്ചത്)}}</translation>
@@ -1032,7 +1033,6 @@
 <translation id="8553075262323480129">പേജിന്‍റെ ഭാഷ നിര്‍‌ണ്ണയിക്കാന്‍‌ കഴിയാത്തതിനാല്‍‌ വിവര്‍‌ത്തനം പരാജയപ്പെട്ടു.</translation>
 <translation id="8557066899867184262">കാർഡിന് പിന്നിലാണ് CVC രേഖപ്പെടുത്തിയിരിക്കുന്നത്.</translation>
 <translation id="8559762987265718583">നിങ്ങളുടെ ഉപകരണത്തിന്റെ തീയതിയും സമയവും (<ph name="DATE_AND_TIME" />) തെറ്റായതിനാൽ <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> എന്നതിലേക്കുള്ള സ്വകാര്യ കണക്ഷൻ സ്ഥാപിക്കാനാവില്ല.</translation>
-<translation id="8564985650692024650">മറ്റ് സൈറ്റുകളിൽ നിങ്ങൾ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> പാസ്‌വേഡ് പുനരുപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് റീസെറ്റ് ചെയ്യാൻ Chromium ശുപാർ‌ശ ചെയ്യുന്നു.</translation>
 <translation id="8571890674111243710"><ph name="LANGUAGE" /> ലേക്ക് പേജ് വിവര്‍‌ത്തനം ചെയ്യുന്നു...</translation>
 <translation id="858637041960032120">ഫോൺ നം. ചേർക്കൂ
 </translation>
@@ -1060,7 +1060,6 @@
 <translation id="884264119367021077">ഷിപ്പിംഗ് വിലാസം</translation>
 <translation id="884923133447025588">അസാധുവാക്കല്‍ പ്രവര്‍ത്തനം കണ്ടെത്തിയിട്ടില്ല.</translation>
 <translation id="885730110891505394">Google-മായി പങ്കിടുന്നു</translation>
-<translation id="8858065207712248076">മറ്റ് സൈറ്റുകളിൽ നിങ്ങൾ <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> പാസ്‌വേഡ് പുനരുപയോഗിച്ചിട്ടുണ്ടെങ്കിൽ, അത് പുനഃസജ്ജീകരിക്കാൻ Chrome ശുപാർ‌ശ ചെയ്യുന്നു.</translation>
 <translation id="8866481888320382733">നയ ക്രമീകരണങ്ങൾ പാഴ്‌സുചെയ്യുന്നതിൽ പിശക്</translation>
 <translation id="8870413625673593573">സമീപകാലത്ത് അടച്ചവ</translation>
 <translation id="8874824191258364635">ശരിയായ കാർഡ് നമ്പർ നൽകുക</translation>

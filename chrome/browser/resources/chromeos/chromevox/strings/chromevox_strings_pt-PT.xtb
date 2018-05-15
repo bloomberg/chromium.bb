@@ -54,6 +54,7 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="1452236308086741652"><ph name="VALUE" />, caixa de texto da palavra-passe</translation>
 <translation id="1467432559032391204">Esquerda</translation>
 <translation id="1474557363159888097">Não existe nenhuma âncora anterior.</translation>
+<translation id="1480046233931937785">Créditos</translation>
 <translation id="1487494366197411587">No Chromebook, a tecla Pesquisar está imediatamente acima da tecla Shift esquerda.</translation>
 <translation id="1499041187027566160">aumentar o volume</translation>
 <translation id="1502086903961450562">Gráfico anterior</translation>
@@ -556,13 +557,6 @@ Se concluiu o tutorial, utilize o ChromeVox para navegar para o botão Fechar e 
 <translation id="5682113568322255809">Ponto de referência</translation>
 <translation id="5683155931978483559">Caixa de verificação anterior</translation>
 <translation id="5684277895745049190">Lista</translation>
-<translation id="5695831708991916435">Os próximos atalhos não são comandos do ChromeVox, mas continuam a ser úteis para tirar o máximo partido do Chrome.
-Para avançar em itens acionáveis, como botões e links, prima a tecla Tab. Para recuar, prima Shift + Tab. 
-Para entrar na caixa de endereço do navegador Chrome, também denominada caixa geral, prima Control + L. 
-Para abrir e aceder a um novo separador automaticamente, prima Control + T. O cursor está na caixa geral. 
-Para fechar um separador, prima Control + W. 
-Para avançar entre separadores abertos, utilize Control + Tab. 
-Para abrir o menu do navegador Chrome, prima Alt + F.</translation>
 <translation id="5700650669149824506">Não existe nenhum título de nível 4 anterior.</translation>
 <translation id="5703716265115423771">diminuir o volume</translation>
 <translation id="5709192780268610569">Sem descrição longa</translation>

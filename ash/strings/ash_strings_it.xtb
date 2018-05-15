@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Luminosità notturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La scheda SIM è bloccata</translation>
 <translation id="2653659639078652383">Invia</translation>
-<translation id="2675319268637823299">Un amministratore ha vietato l'accesso simultaneo per <ph name="USER_EMAIL" />.
-    Per continuare, devono disconnettersi tutti gli utenti.</translation>
 <translation id="2696763960464195425">Le tue informazioni verranno rimosse all'uscita dall'account. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Imposta la tastiera</translation>
 <translation id="2718395828230677721">Luminosità notturna</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Evidenzia il puntatore del mouse</translation>
 <translation id="3513798432020909783">Account gestito da <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a "<ph name="FROM_LOCALE" />" (è necessario riavviare)</translation>
-<translation id="3582792037806681688">L'accesso simultaneo è stato vietato per un utente di questa sessione</translation>
 <translation id="3595596368722241419">Batteria carica</translation>
 <translation id="3606978283550408104">Display Braille collegato.</translation>
 <translation id="3621202678540785336">Ingresso</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">Dispositivo USB-C (porta posteriore destra)</translation>
 <translation id="4017989525502048489">Puntatore laser</translation>
 <translation id="4072264167173457037">Segnale medio</translation>
+<translation id="4217571870635786043">Dettatura</translation>
 <translation id="4279490309300973883">Mirroring</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">Il dispositivo Bluetooth "<ph name="DEVICE_NAME" />" chiede l'autorizzazione per essere accoppiato.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> alla ricarica completa</translation>
 <translation id="4544944664594876241">La scorciatoia per bloccare lo schermo è cambiata. Utilizza <ph name="NEW_SHORTCUT" /> invece di <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Pulsante Seleziona per ascoltare</translation>
 <translation id="4659419629803378708">ChromeVox attivato</translation>
 <translation id="4776917500594043016">Password per <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">ricerca</translation>
@@ -290,6 +289,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (proprietario)</translation>
 <translation id="7647488630410863958">Sblocca il dispositivo per visualizzare le notifiche</translation>
 <translation id="7649070708921625228">Guida</translation>
+<translation id="7654687942625752712">Tieni premuti entrambi i tasti del volume per cinque secondi per disattivare la funzione di lettura vocale.</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="7692480393933218409">Dispositivi USB-C collegati in carica</translation>
 <translation id="776344839111254542">Fai clic per visualizzare i dettagli dell'aggiornamento</translation>

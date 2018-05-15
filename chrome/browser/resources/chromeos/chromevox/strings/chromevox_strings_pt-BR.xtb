@@ -54,6 +54,7 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="1452236308086741652">Caixa de texto de senha <ph name="VALUE" /></translation>
 <translation id="1467432559032391204">Para a esquerda</translation>
 <translation id="1474557363159888097">Nenhuma âncora anterior.</translation>
+<translation id="1480046233931937785">Créditos</translation>
 <translation id="1487494366197411587">No Chromebook, a tecla Pesquisa fica imediatamente acima da tecla Shift do lado esquerdo.</translation>
 <translation id="1499041187027566160">aumentar o volume</translation>
 <translation id="1502086903961450562">Gráfico anterior</translation>
@@ -556,13 +557,6 @@ Se você não quer mais ver o tutorial, use o ChromeVox para navegar até o bot�
 <translation id="5682113568322255809">Ponto de referência</translation>
 <translation id="5683155931978483559">Caixa de seleção anterior</translation>
 <translation id="5684277895745049190">Lista</translation>
-<translation id="5695831708991916435">Os próximos atalhos não são comandos do ChromeVox, mas ainda são muito úteis para aproveitar ao máximo o Chrome.
-Para avançar por itens acionáveis, como botões e links, pressione a tecla Tab. Para retroceder, pressione Shift+Tab. 
-Para digitar na caixa de endereço do navegador Chrome, também chamada de omnibox, pressione Control + L. 
-Para abrir e acessar uma nova guia automaticamente, pressione Control+T. O cursor estará na omnibox. 
-Para fechar uma guia, pressione Ctrl+W. 
-Para avançar entre as guias abertas, use Control+Tab. 
-Para abrir o menu do navegador Chrome, pressione Alt+F.</translation>
 <translation id="5700650669149824506">Nenhum cabeçalho anterior de nível 4.</translation>
 <translation id="5703716265115423771">diminuir o volume</translation>
 <translation id="5709192780268610569">Nenhuma descrição longa</translation>

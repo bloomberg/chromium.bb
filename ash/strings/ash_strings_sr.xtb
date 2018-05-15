@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Ноћно светло: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM картица је закључана</translation>
 <translation id="2653659639078652383">Пошаљи</translation>
-<translation id="2675319268637823299">Администратор је забранио вишеструко пријављивање за <ph name="USER_EMAIL" />.
-    Сви корисници морају да се одјаве да бисмо наставили са сесијом.</translation>
 <translation id="2696763960464195425">Информације ће бити уклоњене када се одјавите. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Подесите тастатуру</translation>
 <translation id="2718395828230677721">Ноћно светло</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Истакни курсор миша</translation>
 <translation id="3513798432020909783">Налогом управља <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Врати на „<ph name="FROM_LOCALE" />“ (потребно је поновно покретање)</translation>
-<translation id="3582792037806681688">Вишеструко пријављивање је забрањено за корисника у овој сесији</translation>
 <translation id="3595596368722241419">Батерија је пуна</translation>
 <translation id="3606978283550408104">Повезан је екран са Брајевом азбуком.</translation>
 <translation id="3621202678540785336">Улаз</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">Уређај са USB прикључком типа C (десни задњи порт)</translation>
 <translation id="4017989525502048489">Ласерски показивач</translation>
 <translation id="4072264167173457037">Сигнал средње јачине</translation>
+<translation id="4217571870635786043">Диктирање</translation>
 <translation id="4279490309300973883">Пресликавање</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome ОС</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">Bluetooth уређај „<ph name="DEVICE_NAME" />“ жели дозволу за упаривање.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> док се не напуни</translation>
 <translation id="4544944664594876241">Пречица за закључавање екрана је промењена. Користите <ph name="NEW_SHORTCUT" /> уместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Дугме Изаберите за говор</translation>
 <translation id="4659419629803378708">ChromeVox је омогућен</translation>
 <translation id="4776917500594043016">Лозинка за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
@@ -290,6 +289,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (власник)</translation>
 <translation id="7647488630410863958">Откључајте уређај да бисте прегледали обавештења</translation>
 <translation id="7649070708921625228">Помоћ</translation>
+<translation id="7654687942625752712">Притисните оба тастера за јачину звука и задржите их пет секунди да бисте онемогућили говорне повратне информације.</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="7692480393933218409">Пуњење повезаних уређаја са USB прикључком типа C</translation>
 <translation id="776344839111254542">Кликните за приказ детаља ажурирања</translation>

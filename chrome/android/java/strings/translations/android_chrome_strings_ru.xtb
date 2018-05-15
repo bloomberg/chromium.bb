@@ -115,6 +115,7 @@
 <translation id="2021896219286479412">Настройки полноэкранного режима</translation>
 <translation id="2038563949887743358">Включить полную версию сайта</translation>
 <translation id="2045104531052923016">Другие приложения: <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="2063713494490388661">Нажмите для поиска</translation>
 <translation id="2079545284768500474">Отмена</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" />, всего <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Чтобы мы могли рекомендовать вам интересный контент, войдите в свой аккаунт в Chrome.</translation>
@@ -271,9 +272,6 @@
 <translation id="3599863153486145794">Удаление истории со всех устройств, на которых выполнен вход в аккаунт. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Отключить звуки на сайтах</translation>
 <translation id="360207483134687714">Помогите улучшить VR-режим в Chrome</translation>
-<translation id="360480449234699036">Ищите картинки, определения и другую информацию, не покидая выбранную страницу. Просто выберите слово, и оно будет отправлено в Google Поиск вместе с контекстом.
-
-Чтобы задать новый поисковый запрос, нажмите на нужное слово и не отпускайте палец. Чтобы уточнить запрос, прокрутите панель вверх и коснитесь поисковой строки.</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3620176948598597475">Будет удалена информация о сэкономленном трафике, в том числе список просмотренных сайтов.</translation>
 <translation id="3632295766818638029">Показать пароль</translation>
@@ -285,7 +283,6 @@
 <translation id="3712575778697986964">Сбросить статистику?</translation>
 <translation id="3714981814255182093">Открыть панель поиска</translation>
 <translation id="3716182511346448902">Эта страница расходовала слишком много памяти, поэтому работа ее скриптов была приостановлена.</translation>
-<translation id="3738139272394829648">Быстрый поиск</translation>
 <translation id="3739899004075612870"><ph name="PRODUCT_NAME" />: добавлена закладка</translation>
 <translation id="3744111309925758534">Другие приложения: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="3744111561329211289">Фоновая синхронизация</translation>
@@ -352,6 +349,7 @@
 <translation id="4409723563706114196">Загружать страницы предварительно</translation>
 <translation id="4412992751769744546">Разрешить сторонним сайтам сохранять файлы cookie</translation>
 <translation id="4432792777822557199">Страницы на этом языке (<ph name="SOURCE_LANGUAGE" />) будут автоматически переводиться на <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">Всплывающие окна и переадресация</translation>
 <translation id="4445444302979002552">Включить рекомендации поисковых запросов и веб-сайтов.</translation>
 <translation id="4452411734226507615">Закрыть вкладку "<ph name="TAB_TITLE" />"</translation>
 <translation id="4452548195519783679">Закладка добавлена в папку "<ph name="FOLDER_NAME" />"</translation>
@@ -519,6 +517,7 @@
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5777170031995031090">Укажите, как Google может использовать историю просмотров для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="5779929835642192302">Доступны подходящие варианты</translation>
+<translation id="5793665092639000975">Использовано <ph name="SPACE_USED" /> из <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# час назад}one{# час назад}few{# часа назад}many{# часов назад}other{# часа назад}}</translation>
 <translation id="5817918615728894473">Подключить</translation>
@@ -603,6 +602,7 @@
 <translation id="6556716549745717622">Блокировать, если на сайте много навязчивой рекламы (рекомендуется)</translation>
 <translation id="6560414384669816528">Поиск в Sogou</translation>
 <translation id="6566259936974865419">Благодаря Chrome вы сэкономили <ph name="GIGABYTES" /> ГБ свободного места</translation>
+<translation id="6573096386450695060">Разрешать всегда</translation>
 <translation id="6573431926118603307">Здесь появятся вкладки, открытые в Chrome на других устройствах.</translation>
 <translation id="6575643671698722332">Ошибка сброса. Подключитесь к Интернету и повторите попытку.</translation>
 <translation id="6583199322650523874">Добавить страницу в закладки</translation>
@@ -662,6 +662,7 @@
 <translation id="7031882061095297553">Выберите аккаунт</translation>
 <translation id="7034608350006174882">Банковские карты и адреса из Google Pay</translation>
 <translation id="7053983685419859001">Блокировать</translation>
+<translation id="7055152154916055070">Заблокирована попытка переадресации:</translation>
 <translation id="7062545763355031412">Принять и переключиться</translation>
 <translation id="7063006564040364415">Не удалось связаться с сервером синхронизации</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Выбран 1 объект}one{Выбран # объект}few{Выбрано # объекта}many{Выбрано # объектов}other{Выбрано # объекта}}</translation>
@@ -670,6 +671,7 @@
 <translation id="7121362699166175603">Удаление истории и вариантов автозаполнения в адресной строке. Информация о других ваших действиях в Интернете может также храниться на странице <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Открыть доступ текущей поисковой системе</translation>
 <translation id="7138678301420049075">Другое</translation>
+<translation id="7141896414559753902">Блокировать всплывающие окна и переадресацию на сайтах (рекомендуется)</translation>
 <translation id="7144878232160441200">Повторить попытку</translation>
 <translation id="7149893636342594995">Последние 24 часа</translation>
 <translation id="7177466738963138057">Вы всегда можете изменить свой выбор в настройках</translation>
@@ -779,7 +781,6 @@
 <translation id="8105951947646329362">Предлагать похожие страницы</translation>
 <translation id="8116925261070264013">Сайты с отключенным звуком</translation>
 <translation id="813082847718468539">Сведения о сайте</translation>
-<translation id="8137558756159375272">Функция "Нажмите для поиска" отправляет в Google выбранное слово, а также текущую страницу в качестве контекста. Включить или отключить эту функцию можно в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Контент</translation>
 <translation id="8186512483418048923">Осталось файлов: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Остался 1 день</translation>
@@ -887,6 +888,7 @@
 <translation id="932327136139879170">Главная страница</translation>
 <translation id="932599481871055447">Просматривайте веб-страницы быстрее и экономьте трафик</translation>
 <translation id="938850635132480979">Ошибка <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">Недостаточно места на SD-карте.</translation>
 <translation id="945522503751344254">Отправить отзыв</translation>
 <translation id="945632385593298557">Доступ к микрофону</translation>
 <translation id="951339005376969845">Удалить сохраненные данные. Чтобы снова получить к ним доступ, переключитесь на аккаунт <ph name="FROM_ACCOUNT" />.</translation>

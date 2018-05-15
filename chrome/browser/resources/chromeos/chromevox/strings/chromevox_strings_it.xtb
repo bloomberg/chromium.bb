@@ -54,6 +54,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="1452236308086741652"><ph name="VALUE" />, casella di testo della password</translation>
 <translation id="1467432559032391204">Sinistra</translation>
 <translation id="1474557363159888097">Nessun ancoraggio precedente.</translation>
+<translation id="1480046233931937785">Riconoscimenti</translation>
 <translation id="1487494366197411587">Sul Chromebook il tasto per la ricerca è subito sopra il tasto MAIUSC di sinistra.</translation>
 <translation id="1499041187027566160">alza volume</translation>
 <translation id="1502086903961450562">Immagine precedente</translation>
@@ -423,7 +424,7 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="461613135510474570">Frase</translation>
 <translation id="463135993322337640">Premi i tasti O e N con ChromeVox per scoprire le novità</translation>
 <translation id="4647836961514597010">Selettore colori</translation>
-<translation id="4652110509054054146">Utilizza il tasto per la ricerca con le frecce destra e sinistra per aprire la home page oppure Fine, comando per la ricerca, frecce destra e sinistra per esplorare la Home page oppure Fine, tasto per la ricerca e freccia verso l'alto o verso il basso per muoverti verso l'alto o verso il basso nella pagina.</translation>
+<translation id="4652110509054054146">Utilizza il tasto per la ricerca con le frecce destra e sinistra per HOME oppure FINE, il tasto per la ricerca, Control, frecce destra e sinistra per Control HOME oppure FINE, il tasto per la ricerca e freccia verso l'alto o verso il basso per muoverti verso l'alto o verso il basso nella pagina.</translation>
 <translation id="4660783501463101648">Rimozione di Classic. La funzione di attivazione/disattivazione della tastiera per passare nuovamente a ChromeVox Classic è stata rimossa.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
@@ -555,13 +556,6 @@ Se hai finito di seguire il tutorial, utilizza ChromeVox per arrivare al pulsant
 <translation id="5682113568322255809">Punto di riferimento</translation>
 <translation id="5683155931978483559">Casella di controllo precedente</translation>
 <translation id="5684277895745049190">Elenco</translation>
-<translation id="5695831708991916435">Le scorciatoie riportate di seguito non sono comandi di ChromeVox, ma sono comunque molto utili per utilizzare al meglio Chrome.
-Per avanzare tra gli elementi su cui è possibile eseguire azioni, come pulsanti e link, premi il tasto TAB. Per tornare indietro premi MAIUSC + TAB. 
-Per andare alla casella dell'indirizzo del browser Chrome, chiamata anche omnibox, premi CTRL+ L.
-Per aprire e andare automaticamente a una nuova scheda premi CTRL + T. Il puntatore verrà posizionato nella ominibox. 
-Per chiudere una scheda, premi CTRL + W. 
-Per passare alla scheda successiva in una serie di schede aperte, utilizza CTRL + TAB. 
-Per aprire il menu del browser Chrome premi ALT + F.</translation>
 <translation id="5700650669149824506">Nessuna intestazione livello 4 precedente.</translation>
 <translation id="5703716265115423771">abbassa volume</translation>
 <translation id="5709192780268610569">Nessuna descrizione lunga</translation>

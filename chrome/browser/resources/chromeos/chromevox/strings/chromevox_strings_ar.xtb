@@ -54,6 +54,7 @@
 <translation id="1452236308086741652">مربع نص كلمة المرور بالقيمة <ph name="VALUE" /></translation>
 <translation id="1467432559032391204">اليسار</translation>
 <translation id="1474557363159888097">ليس هناك إرساء سابق.</translation>
+<translation id="1480046233931937785">أسماء المشاركين</translation>
 <translation id="1487494366197411587">‏على جهاز Chromebook، يكون مفتاح البحث أعلى مفتاح Shift الأيسر مباشرةً.</translation>
 <translation id="1499041187027566160">الصوت مرتفع</translation>
 <translation id="1502086903961450562">الرسم السابق</translation>
@@ -424,7 +425,7 @@
 <translation id="461613135510474570">جملة</translation>
 <translation id="463135993322337640">‏اضغط على "ChromeVox o، n" للاطلاع على الميزات الجديدة.</translation>
 <translation id="4647836961514597010">علبة الألوان</translation>
-<translation id="4652110509054054146">‏يمكنك استخدام الزر Search مع السهم الأيسر أو الأيمن كبديل عن Home أو End، وSearch مع Control والسهم الأيسر أو الأيمن كبديل عن Control Home أو End، وكذلك Search مع السهم لأعلى أو لأسفل لتحريك الصفحة لأعلى أو لأسفل.</translation>
+<translation id="4652110509054054146">‏يمكنك استخدام الزر Search مع السهم الأيسر أو الأيمن كبديل عن Home أو End، وSearch مع Control والسهم الأيسر أو الأيمن كبديل عن Control Home أوControl End، وكذلك Search مع السهم المتجه للأعلى أو للأسفل لتحريك الصفحة للأعلى أو للأسفل.</translation>
 <translation id="4660783501463101648">‏تمت إزالة الإصدار الكلاسيكي. وتمت إزالة مفتاح تبديل لوحة المفاتيح للعودة إلى الإصدار الكلاسيكي من ChromeVox.</translation>
 <translation id="4661075872484491155">متفرع</translation>
 <translation id="4668929960204016307">،</translation>
@@ -556,13 +557,6 @@
 <translation id="5682113568322255809">مَعلم</translation>
 <translation id="5683155931978483559">مربع الاختيار السابق</translation>
 <translation id="5684277895745049190">القائمة</translation>
-<translation id="5695831708991916435">‏الاختصارات التالية القليلة ليست أوامر في ChromeVox، ولكنها ما زالت مفيدة جدًا لتحقيق أقصى استفادة من Chrome.
-للتنقل للأمام خلال العناصر القابلة للتنفيذ مثل الأزرار والروابط، اضغط على مفتاح Tab. وللتنقل للخلف، اضغط على Shift+Tab. 
-للدخول إلى مربع عناوين متصفح Chrome، يُسمى أيضًا المربّع متعدد الاستخدامات، اضغط على Control + L. 
-لفتح علامة تبويب جديدة والانتقال إليها تلقائيًا، اضغط على Control+T. وسيكون مؤشر الماوس في المربّع متعدد الاستخدمات.
-لإغلاق علامة تبويب، اضغط على Control+W. 
-للانتقال للأمام بين علامات التبويب المفتوحة، استخدم Control+Tab. 
-لفتح قائمة متصفح Chrome، اضغط على Alt+F.</translation>
 <translation id="5700650669149824506">ليس هناك عنوان سابق من المستوى الرابع.</translation>
 <translation id="5703716265115423771">صوت منخفض</translation>
 <translation id="5709192780268610569">ليس هناك وصف مطول</translation>

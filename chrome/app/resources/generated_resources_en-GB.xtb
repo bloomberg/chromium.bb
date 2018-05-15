@@ -34,6 +34,7 @@
 <translation id="1047726139967079566">Bookmark This Page...</translation>
 <translation id="1047956942837015229">Deleting <ph name="COUNT" /> items...</translation>
 <translation id="1048286738600630630">Displays</translation>
+<translation id="1049743911850919806">Incognito</translation>
 <translation id="1049795001945932310">&amp;Language settings</translation>
 <translation id="1049926623896334335">Word document</translation>
 <translation id="1054153489933238809">Open Original Image in New Tab</translation>
@@ -530,7 +531,6 @@
 <translation id="1782924894173027610">The sync server is busy. Please try again later.</translation>
 <translation id="1784849162047402014">Device is low on disk space</translation>
 <translation id="1786636458339910689">Team Drives</translation>
-<translation id="1789575671122666129">Popups</translation>
 <translation id="1792619191750875668">Extended display</translation>
 <translation id="1793119619663054394">Are you sure that you want to remove "<ph name="PROFILE_NAME" />" and all associated Chrome data from this computer? This cannot be undone.</translation>
 <translation id="1794791083288629568">Send feedback to help us fix this issue.</translation>
@@ -653,12 +653,14 @@
 <translation id="1983959805486816857">After you create a new supervised user, you can manage the settings at any time from any device at <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Dock window right</translation>
 <translation id="1987139229093034863">Change to a different user.</translation>
+<translation id="1987317783729300807">Accounts</translation>
 <translation id="1989112275319619282">Browse</translation>
 <translation id="1992397118740194946">Not set</translation>
 <translation id="1994173015038366702">Site URL</translation>
 <translation id="1997484222658892567"><ph name="URL" /> wants to permanently store large data on your local computer</translation>
 <translation id="1997616988432401742">Your certificates</translation>
 <translation id="1999115740519098545">On start-up</translation>
+<translation id="2001796770603320721">Manage in Drive</translation>
 <translation id="2006638907958895361">Open Link in <ph name="APP" /></translation>
 <translation id="2007404777272201486">Report an Issue...</translation>
 <translation id="2016430552235416146">Traditional</translation>
@@ -754,7 +756,6 @@
 <translation id="2151576029659734873">Invalid tab index entered.</translation>
 <translation id="2154484045852737596">Edit card</translation>
 <translation id="2154710561487035718">Copy URL</translation>
-<translation id="2155931291251286316">Always allow pop-ups from <ph name="HOST" /></translation>
 <translation id="215753907730220065">Exit Full Screen</translation>
 <translation id="2157875535253991059">This page is now full screen.</translation>
 <translation id="216169395504480358">Add Wi-Fi ...</translation>
@@ -1183,7 +1184,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2799223571221894425">Relaunch</translation>
 <translation id="2803375539583399270">Enter PIN</translation>
 <translation id="2805646850212350655">Microsoft Encrypting File System</translation>
-<translation id="2805707493867224476">Allow all sites to show pop-ups</translation>
 <translation id="2805756323405976993">Apps</translation>
 <translation id="2807517655263062534">Files you download appear here</translation>
 <translation id="2809586584051668049">and <ph name="NUMBER_ADDITIONAL_DISABLED" /> more</translation>
@@ -1617,7 +1617,6 @@ I don't think this site should be blocked!</translation>
 <translation id="347919930506963698">Get even more from Chrome</translation>
 <translation id="3479552764303398839">Not now</translation>
 <translation id="3480892288821151001">Dock window left</translation>
-<translation id="3481915276125965083">The following pop-ups were blocked on this page:</translation>
 <translation id="3484273680291419129">Removing harmful software...</translation>
 <translation id="3484869148456018791">Get new certificate</translation>
 <translation id="3487007233252413104">anonymous function</translation>
@@ -1723,7 +1722,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3637682276779847508">Your SIM card will be permanently disabled if you cannot enter the correct PIN Unlock Key.</translation>
 <translation id="363903084947548957">Next input method</translation>
 <translation id="3640214691812501263">Add "<ph name="EXTENSION_NAME" />" for <ph name="USER_NAME" />?</translation>
-<translation id="3643225892037417978">Extension management is not available to Guest users. Please sign in to manage extensions.</translation>
 <translation id="3644896802912593514">Width</translation>
 <translation id="3646789916214779970">Reset to default theme</translation>
 <translation id="3648348069317717750"><ph name="USB_DEVICE_NAME" /> detected</translation>
@@ -2065,7 +2063,6 @@ I don't think this site should be blocked!</translation>
 <translation id="4172051516777682613">Always show</translation>
 <translation id="4175737294868205930">Persistent storage</translation>
 <translation id="4176463684765177261">Disabled</translation>
-<translation id="4180684688621252156">Printing service</translation>
 <translation id="4180788401304023883">Delete CA certificate "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Languages</translation>
@@ -2091,6 +2088,7 @@ I don't think this site should be blocked!</translation>
 <translation id="42137655013211669">Access to this resource was forbidden by the server.</translation>
 <translation id="4215350869199060536">Oops, illegal symbols in name!</translation>
 <translation id="4215448920900139318">Backing up <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">Dictation</translation>
 <translation id="4225397296022057997">On all sites</translation>
 <translation id="4235200303672858594">Entire screen</translation>
 <translation id="4235813040357936597">Add Account for <ph name="PROFILE_NAME" /></translation>
@@ -2203,6 +2201,7 @@ I don't think this site should be blocked!</translation>
 <translation id="4425149324548788773">My Drive</translation>
 <translation id="4430019312045809116">volume</translation>
 <translation id="4430369329743628066">Bookmark added</translation>
+<translation id="4434045419905280838">Pop-ups and redirects</translation>
 <translation id="443454694385851356">Legacy (insecure)</translation>
 <translation id="443464694732789311">Continue</translation>
 <translation id="443475966875174318">Update or remove incompatible applications</translation>
@@ -3273,6 +3272,7 @@ I don't think this site should be blocked!</translation>
 <translation id="6075907793831890935">Exchange data with the device named <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Include this screenshot</translation>
 <translation id="6077131872140550515">Remove from preferred</translation>
+<translation id="6078323886959318429">Add shortcut</translation>
 <translation id="6078752646384677957">Please check your microphone and audio levels.</translation>
 <translation id="6080515710685820702">Using a shared computer? Try opening an incognito window.</translation>
 <translation id="6080689532560039067">Check your system time</translation>
@@ -3481,7 +3481,6 @@ I don't think this site should be blocked!</translation>
 <translation id="6406303162637086258">Simulate browser restart</translation>
 <translation id="6406506848690869874">Sync</translation>
 <translation id="6408118934673775994">Read and change your data on <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> and <ph name="WEBSITE_3" /></translation>
-<translation id="6409731863280057959">Pop-ups</translation>
 <translation id="6410257289063177456">Image Files</translation>
 <translation id="6410328738210026208">Change channel and Powerwash</translation>
 <translation id="6410668567036790476">Add search engine</translation>
@@ -3689,7 +3688,6 @@ I don't think this site should be blocked!</translation>
 <translation id="6708242697268981054">Origin:</translation>
 <translation id="6709357832553498500">Connect using <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Previous</translation>
-<translation id="6716704051134091292">PDF Converter</translation>
 <translation id="6718273304615422081">Zipping...</translation>
 <translation id="671928215901716392">Lock screen</translation>
 <translation id="67211069045302358">Reset settings for this site?</translation>
@@ -3814,7 +3812,6 @@ I don't think this site should be blocked!</translation>
 <translation id="6920989436227028121">Open as standard tab</translation>
 <translation id="6922128026973287222">Save data and browse faster using Google Data Saver. Click to learn more.</translation>
 <translation id="6923132443355966645">Scroll/Click</translation>
-<translation id="6929555043669117778">Continue blocking pop-ups</translation>
 <translation id="6929835486583850209">Error installing <ph name="APP_NAME" />…</translation>
 <translation id="6930242544192836755">Duration</translation>
 <translation id="6934241953272494177">Scanning your media device…
@@ -3898,6 +3895,7 @@ I don't think this site should be blocked!</translation>
 <translation id="7052237160939977163">Send performance trace data</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Block</translation>
+<translation id="7055152154916055070">Redirect blocked:</translation>
 <translation id="7056526158851679338">&amp;Inspect Devices</translation>
 <translation id="7059858479264779982">Set to auto-launch</translation>
 <translation id="7059893117020417984">To browse privately, click the dots icon menu to open an incognito window</translation>
@@ -3924,7 +3922,6 @@ I don't think this site should be blocked!</translation>
 <translation id="7088434364990739311">Update check failed to start (error code <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – Open and pack ZIP files in Files app.</translation>
 <translation id="7088674813905715446">This device has been placed into a deprovisioned state by the administrator. To enable it for enrolment, please have your administrator place the device into a pending state.</translation>
-<translation id="7092106376816104">Pop-up exceptions</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Exchange data with the devices named: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Toggle Fullscreen Magnifier</translation>
@@ -4144,7 +4141,6 @@ I don't think this site should be blocked!</translation>
 <translation id="744341768939279100">Create a new profile</translation>
 <translation id="7444726222535375658">Continue to Hangouts Meet</translation>
 <translation id="7444983668544353857">Disable <ph name="NETWORKDEVICE" /></translation>
-<translation id="7445682342344043969">Pop-ups blocked</translation>
 <translation id="7453008956351770337">By selecting this printer, you are giving the following extension the permission to access your printer:</translation>
 <translation id="7453467225369441013">Signs you out of most sites. You won't be signed out of your Google Account.</translation>
 <translation id="7456142309650173560">dev</translation>
@@ -4263,6 +4259,7 @@ Installing the <ph name="APP_NAME" /> will download <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7617366389578322136">Connecting to '<ph name="DEVICE_NAME" />'</translation>
 <translation id="7622114377921274169">Charging.</translation>
 <translation id="7624337243375417909">caps lock off</translation>
+<translation id="7625568159987162309">View permissions and data stored across sites</translation>
 <translation id="7627790789328695202">Whoops, <ph name="FILE_NAME" /> already exists. Rename it and try again.</translation>
 <translation id="7628127343934101653">Open PDF files in the default PDF viewer application.</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME" /></translation>
@@ -4585,10 +4582,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="806812017500012252">Reorder by title</translation>
 <translation id="8068253693380742035">Touch to sign in</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="806972267388474605">Linux Files</translation>
 <translation id="8071432093239591881">Print as image</translation>
 <translation id="8072988827236813198">Pin Tabs</translation>
 <translation id="8074127646604999664">Allow recently closed sites to finish sending and receiving data</translation>
 <translation id="8075191520954018715">Memory state</translation>
+<translation id="8076492880354921740">Tabs</translation>
 <translation id="8076835018653442223">Access to local files on your device is disabled by your administrator</translation>
 <translation id="8077684120002777443">Username (e.g. user@example.com)</translation>
 <translation id="8077816382010018681">QU Feature notification title here</translation>
@@ -4873,7 +4872,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8569682776816196752">No destinations found</translation>
 <translation id="8569764466147087991">Select a file to open</translation>
 <translation id="8571213806525832805">Last 4 weeks</translation>
-<translation id="8571613743082299268">Redirect blocked to site</translation>
 <translation id="8574990355410201600">Always allow sound on <ph name="HOST" /></translation>
 <translation id="8578639784464423491">Cannot exceed 99 letters</translation>
 <translation id="8579285237314169903">Syncing <ph name="NUMBER_OF_FILES" /> items...</translation>
@@ -5205,7 +5203,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9066782832737749352">Text-to-Speech</translation>
 <translation id="9070219033670098627">Switch person</translation>
-<translation id="907148966137935206">Do not allow any site to show pop-ups (recommended)</translation>
 <translation id="9071637495340542136">Installing <ph name="APP_NAME" />…</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> automatically signs you in to eligible sites and apps with passwords that you saved.</translation>
 <translation id="9073281213608662541">PAP</translation>

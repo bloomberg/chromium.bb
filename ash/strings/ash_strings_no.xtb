@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Nattlys: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet er låst</translation>
 <translation id="2653659639078652383">Send</translation>
-<translation id="2675319268637823299">En administrator har deaktivert multipålogging for <ph name="USER_EMAIL" />.
-    Alle brukere må logge av for å fortsette.</translation>
 <translation id="2696763960464195425">Informasjonen din fjernes når du logger av. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Velg tastatur</translation>
 <translation id="2718395828230677721">Nattlys</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Fremhev musemarkøren</translation>
 <translation id="3513798432020909783">Kontoen er administrert av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Endre tilbake til <ph name="FROM_LOCALE" /> (krever omstart)</translation>
-<translation id="3582792037806681688">Multipålogging har blitt deaktivert for en bruker i denne økten.</translation>
 <translation id="3595596368722241419">Batteriet er fullt</translation>
 <translation id="3606978283550408104">En leselist er tilkoblet.</translation>
 <translation id="3621202678540785336">Inndata</translation>

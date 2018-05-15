@@ -115,6 +115,7 @@
 <translation id="2021896219286479412">Контроли за сайтове на цял екран</translation>
 <translation id="2038563949887743358">Включване на функцията за заявяване на настолни сайтове</translation>
 <translation id="2045104531052923016">Други приложения: <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="2063713494490388661">Търсене с докосване</translation>
 <translation id="2079545284768500474">Отмяна</translation>
 <translation id="2082238445998314030">Резултат <ph name="RESULT_NUMBER" /> от <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">За да получавате персонализирано съдържание, предлагано от Google, влезте в Chrome.</translation>
@@ -271,9 +272,6 @@
 <translation id="3599863153486145794">Изчиства историята от всички устройства, на които сте влезли в профила си в Google. В него може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="3600792891314830896">Спиране на звука, възпроизвеждан от сайтовете</translation>
 <translation id="360207483134687714">Помогнете да подобрим сърфирането във VR с Chrome</translation>
-<translation id="360480449234699036">Научавайте за темите в уебсайтовете, без да напускате страницата. Функцията за търсене с докосване изпраща до Google Търсене определени думи и заобикалящия ги текст и така извежда определения, снимки, резултати и други подробности.
-
-За да коригирате думата си за търсене, натиснете продължително за избор. За да прецизирате заявката, плъзнете панела нагоре докрай и докоснете полето за търсене.</translation>
 <translation id="3616113530831147358">Аудио</translation>
 <translation id="3620176948598597475">Така ще изтриете историята на разширението, включително списъка с посетени сайтове.</translation>
 <translation id="3632295766818638029">Показване на паролата</translation>
@@ -285,7 +283,6 @@
 <translation id="3712575778697986964">Да се нулира ли статистиката от Икономия на данни?</translation>
 <translation id="3714981814255182093">Отваряне на лентата за търсене</translation>
 <translation id="3716182511346448902">Тази страница използва твърде много памет, така че Chrome я постави на пауза.</translation>
-<translation id="3738139272394829648">Търсене чрез докосване</translation>
 <translation id="3739899004075612870">Отметката бе запазена в/ъв <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534">Други приложения: <ph name="MEGABYTES" /> МБ</translation>
 <translation id="3744111561329211289">Синхронизиране на заден план</translation>
@@ -352,6 +349,7 @@
 <translation id="4409723563706114196">Използване на предвижданията за страници</translation>
 <translation id="4412992751769744546">Разрешаване на „бисквитките“ на трети страни</translation>
 <translation id="4432792777822557199">От сега нататък страниците на <ph name="SOURCE_LANGUAGE" /> ще се превеждат на <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">Изскач. прозорци и пренасочвания</translation>
 <translation id="4445444302979002552">Използвайте услугите за предвиждане, за да получавате предложения за думи за търсене и уебсайтове</translation>
 <translation id="4452411734226507615">Затваряне на раздела „<ph name="TAB_TITLE" />“</translation>
 <translation id="4452548195519783679">Отметката бе запазена в/ъв „<ph name="FOLDER_NAME" />“</translation>
@@ -519,6 +517,7 @@
 <translation id="5765780083710877561">Описание:</translation>
 <translation id="5777170031995031090">Контролирайте начина, по който използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google.</translation>
 <translation id="5779929835642192302">Налице са предложения</translation>
+<translation id="5793665092639000975">Използвано място: <ph name="SPACE_USED" /> от <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Разрешения</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{преди # час}other{преди # часа}}</translation>
 <translation id="5817918615728894473">Сдвояване</translation>
@@ -603,6 +602,7 @@
 <translation id="6556716549745717622">Блокиране, ако на сайта обикновено се показват натрапчиви реклами (препоръчително)</translation>
 <translation id="6560414384669816528">Търсене със Sogou</translation>
 <translation id="6566259936974865419">Chrome ви спести <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="6573096386450695060">Разрешаване винаги</translation>
 <translation id="6573431926118603307">Тук ще се показват разделите, които сте отворили в Chrome на другите си устройства.</translation>
 <translation id="6575643671698722332">Нулирането не бе успешно. Уверете се, че устройството е онлайн, и опитайте пак.</translation>
 <translation id="6583199322650523874">Запазване на отметка към текущата страница</translation>
@@ -662,6 +662,7 @@
 <translation id="7031882061095297553">Синхронизиране със</translation>
 <translation id="7034608350006174882">Карти и адреси посредством Google Pay</translation>
 <translation id="7053983685419859001">Блокиране</translation>
+<translation id="7055152154916055070">Блокирано бе пренасочване:</translation>
 <translation id="7062545763355031412">Приемане и превключване на профилите</translation>
 <translation id="7063006564040364415">Не можа да се установи връзка със синхронизиращия сървър.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Избран е 1 елемент}other{Избрани са # елемента}}</translation>
@@ -670,6 +671,7 @@
 <translation id="7121362699166175603">Изчиства историята и автоматичните довършвания в адресната лента. В профила ви в Google може да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Разрешаване за текущата търсеща машина</translation>
 <translation id="7138678301420049075">Друго</translation>
+<translation id="7141896414559753902">Блокиране на показването на изскачащи прозорци и пренасочвания от сайтовете (препоръчително)</translation>
 <translation id="7144878232160441200">Нов опит</translation>
 <translation id="7149893636342594995">Последните 24 часа</translation>
 <translation id="7177466738963138057">Можете да промените това по-късно от настройките</translation>
@@ -779,7 +781,6 @@
 <translation id="8105951947646329362">Предложения за сродни страници</translation>
 <translation id="8116925261070264013">Заглушени</translation>
 <translation id="813082847718468539">Преглед на информацията за сайта</translation>
-<translation id="8137558756159375272">При търсене с докосване избраната дума и текущата страница се изпращат като контекст до Google Търсене. Можете да изключите функцията от <ph name="BEGIN_LINK" />Настройки<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Съдържание</translation>
 <translation id="8186512483418048923">Остават <ph name="FILES" /> файла</translation>
 <translation id="8190358571722158785">Остава 1 ден</translation>
@@ -887,6 +888,7 @@
 <translation id="932327136139879170">Начална страница</translation>
 <translation id="932599481871055447">Пестете данни и сърфирайте по-бързо</translation>
 <translation id="938850635132480979">Грешка: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">Няма достатъчно място на SD картата</translation>
 <translation id="945522503751344254">Изпращане на отзиви</translation>
 <translation id="945632385593298557">Достъп до микрофона</translation>
 <translation id="951339005376969845">Изтриване на съществуващите данни. Можете да ги извлечете, като превключите обратно към <ph name="FROM_ACCOUNT" />.</translation>

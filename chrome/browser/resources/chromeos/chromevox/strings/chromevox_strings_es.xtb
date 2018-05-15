@@ -54,6 +54,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="1452236308086741652"><ph name="VALUE" />, cuadro de texto de contraseña</translation>
 <translation id="1467432559032391204">Izquierda</translation>
 <translation id="1474557363159888097">No hay ningún anclaje anterior.</translation>
+<translation id="1480046233931937785">Créditos</translation>
 <translation id="1487494366197411587">En el Chromebook, la tecla de búsqueda está justamente encima de la tecla Mayús.</translation>
 <translation id="1499041187027566160">subir el volumen</translation>
 <translation id="1502086903961450562">Gráfico anterior</translation>
@@ -400,7 +401,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4372705107434148843">Detiene la voz</translation>
 <translation id="4373197658375206385">No hay ningún elemento anterior que no sea un enlace.</translation>
 <translation id="4376316291247992553">Muestra los gráficos en braille</translation>
-<translation id="4378308539633073595">Desplazarse hacia delante.</translation>
+<translation id="4378308539633073595">Desplazarse hacia delante</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">restablecer</translation>
 <translation id="4457472090507035117">Selecciona la voz actual:</translation>
@@ -424,7 +425,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="461613135510474570">Oración</translation>
 <translation id="463135993322337640">Pulsa las teclas O y N en ChromeVox para descubrir las novedades</translation>
 <translation id="4647836961514597010">Selector de color</translation>
-<translation id="4652110509054054146">Usa la tecla de búsqueda + flecha hacia la izquierda o hacia la derecha para Inicio o Fin; la tecla de búsqueda + Control + flecha hacia la izquierda o hacia la derecha para Control + Inicio o Fin; y la tecla de búsqueda + flecha hacia arriba o hacia abajo para Re Pág o Av Pág</translation>
+<translation id="4652110509054054146">Usa la tecla de búsqueda + flecha izquierda o derecha para Inicio o Fin; la tecla de búsqueda + Control + flecha izquierda o derecha para Control , Inicio o Fin; y la tecla de búsqueda + flecha hacia arriba o hacia abajo para Re Pág o Av Pág</translation>
 <translation id="4660783501463101648">Versión clásica de ChromeVox eliminada. Se ha quitado la combinación de teclas para volver a la versión anterior.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
@@ -556,13 +557,6 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5682113568322255809">Punto de referencia</translation>
 <translation id="5683155931978483559">Casilla de verificación anterior</translation>
 <translation id="5684277895745049190">Lista</translation>
-<translation id="5695831708991916435">Aunque las siguientes combinaciones de teclas no son comandos de ChromeVox, siguen resultando muy útiles para sacar el máximo partido a Chrome.
-Para desplazarte hacia adelante por los elementos accionables, como botones y enlaces, pulsa el tabulador. Para retroceder, pulsa Mayús+Tabulador. 
-Para acceder al cuadro de direcciones del navegador Chrome, también denominado omnibox, pulsa Control+L. 
-Para abrir una nueva pestaña y acceder automáticamente a ella, pulsa Control+T. El cursor se situará en el omnibox. 
-Para cerrar una pestaña, pulsa Control+W. 
-Para desplazarte hacia adelante por las pestañas abiertas, utiliza Control+Tabulador. 
-Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="5700650669149824506">No hay ningún título de nivel 4 anterior.</translation>
 <translation id="5703716265115423771">bajar el volumen</translation>
 <translation id="5709192780268610569">No hay descripción larga.</translation>

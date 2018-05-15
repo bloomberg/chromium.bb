@@ -27,6 +27,7 @@
       När principen har ställts in visas inloggningsskärmen alltid på det språk som har angetts först i principen (definitionen ges i form av en lista så att principen ska vara kompatibel med framtida versioner). Om principen inte har ställts in eller om en tom lista har angetts visas inloggningsskärmen på det språk som användes vid den senaste användarsessionen. Om principen har ställts in på ett ogiltigt värde används reservspråkkoden (för närvarande en-US) för inloggningsskärmen.</translation>
 <translation id="1062011392452772310">Aktivera fjärrattestering för enheten</translation>
 <translation id="1062407476771304334">Ersätt</translation>
+<translation id="1079801999187584280">Tillåt inte använding av Utvecklarverktyg</translation>
 <translation id="109166998561583554">Lösenordsskyddets utlösare för när en varning om att kontot är utsatt för risk ska visas</translation>
 <translation id="1093082332347834239">Om inställningen är aktiverad körs fjärrhjälpsvärden i en process med behörigheter för <ph name="UIACCESS_PERMISSION_NAME" />. Det innebär att fjärranvändare kan interagera med fönster som öppnats med högre behörighet på den lokala användarens dator.
 
@@ -79,6 +80,7 @@
 
           Skalningsfaktorn måste vara 100 % eller mer.</translation>
 <translation id="131353325527891113">Visa användarnamn på inloggningsskärmen</translation>
+<translation id="1325295456374328159">Konfigurera de tillåtna språkkoderna i en användarsession</translation>
 <translation id="1327466551276625742">Aktivera uppmaning att konfigurera nätverk om enheten är offline</translation>
 <translation id="1330145147221172764">Aktivera skärmtangentbordet</translation>
 <translation id="13356285923490863">Policynamn</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">Om Symantec Corporations äldre PKI-infrastruktur ska vara betrodd eller inte</translation>
 <translation id="1393485621820363363">Aktiverade skrivare för företagsenheter</translation>
 <translation id="1397855852561539316">Standardsökleverantörens förslagsadress</translation>
+<translation id="1424081297104898791">Gör det möjligt att styra om utvecklarverktyg kan användas.
+
+      Om DeveloperToolsDisallowedForForceInstalledExtensions (värde 0, som är standardinställningen för företagsanvändare) anges för principen beviljas allmän åtkomst till utveckarverktygen och JavaScript-konsolen, men åtkomst för tillägg som har installerats via en företagsprincip beviljas inte.
+      Om DeveloperToolsAllowed (värde 1, som är standardinställningen för ohanterade användare) anges för principen beviljas åtkomst till Utvecklarverktygen och JavaScript-konsolen i alla sammanhang, inklusive tillägg som har installerats via en företagsprincip.
+      Om DeveloperToolsDisallowed (värde 2) anges för principen beviljas inte åtkomst till utvecklarverktygen och webbplatselement kan inte längre kontrolleras. Alla kortkommandon och meny- eller snabbmenyalternativ som försöker öppna utvecklarverktygen eller JavaScript-konsolen inaktiveras.
+      Om den äldre principen DeveloperToolsDisabled är inställd på sant ignoreras principens värde och utvecklarverktygen inaktiveras.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Proxyserverns adress eller webbadress</translation>
 <translation id="1435659902881071157">Nätverkskonfiguration på enhetsnivå</translation>
@@ -207,6 +215,7 @@
 <translation id="1803646570632580723">Lista över fasta appar som ska visas i startfönstret</translation>
 <translation id="1808715480127969042">Blockera cookies på dessa webbplatser</translation>
 <translation id="1810261428246410396">Tillåt att direktinternetdelning används.</translation>
+<translation id="1826282708349731794">Styr hur Chrome Cleanup rapporterar data till Google</translation>
 <translation id="1827523283178827583">Använd fasta proxyservrar</translation>
 <translation id="1843117931376765605">Uppdateringsfrekvens för användarpolicy</translation>
 <translation id="1844620919405873871">Konfigurerar principer som är relaterade till snabb upplåsning.</translation>
@@ -610,6 +619,7 @@
       Principen påverkar inte om användarna får konfigurera skrivare på enskilda enheter. Den är tänkt som ett komplement till enskilda användares skrivarkonfigurationer.
       </translation>
 <translation id="2633084400146331575">Aktivera talad feedback.</translation>
+<translation id="2640843331263301324">Aktiverar Chrome Cleanup i Windows</translation>
 <translation id="2646290749315461919">Policyn gör att du kan ställa in om webbplatser får spåra användarnas fysiska plats. Att spåra användarnas fysiska plats kan vara tillåtet som standard, inte tillåtet som standard eller användaren kan bli tillfrågad varje gång en webbplats efterfrågar den fysiska platsen.
 
           Om policyn inte har angetts används AskGeolocation och användaren kan ändra inställningen.</translation>
@@ -679,13 +689,6 @@
 
       Om principen används är bara de skrivare vars id matchar något av principens värden tillgängliga för användaren. Id:na måste svara mot id- eller guid-fälten i den fil som angetts i <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Aktiverar tillgången till Tryck för att söka i innehållsvyn i <ph name="PRODUCT_NAME" />.
-
-      Om inställningen aktiveras blir Tryck för att söka tillgängligt för användaren som sedan kan välja att aktivera eller inaktivera funktionen.
-
-      Om du inaktiverar inställningen inaktiveras Tryck för att söka helt och hållet.
-
-      Om principen inte ges något värde innebär det att den är aktiverad (se beskrivningen ovan).</translation>
 <translation id="285480231336205327">Aktivera läge för hög kontrast</translation>
 <translation id="2854919890879212089">Gör att datorns standardskrivare används som standardval för Förhandsgranskning i <ph name="PRODUCT_NAME" /> i stället för den senast använda skrivaren.
 
@@ -1268,12 +1271,14 @@
 <translation id="4554651132977135445">Behandlingsläge för användarprincip-loopback</translation>
 <translation id="4555850956567117258">Aktivera fjärrattestering för användaren</translation>
 <translation id="4557134566541205630">Webbadress för standardsökleverantören av ny fliksida</translation>
+<translation id="4567137030726189378">Tillåt användning av utvecklarverktygen</translation>
 <translation id="4600786265870346112">Aktivera den stora markören</translation>
 <translation id="4604931264910482931">Konfigurera svarta listan för Native Messaging</translation>
 <translation id="4613508646038788144">Om principen är inställd på falskt är det tillåtet för programvara från tredje part att injicera körbar kod i Chrome-processer. Om principen har lämnats utan inställning eller ställts in på sant blockeras injicering av körbar kod i Chome-processer från tredjepartsprogram.</translation>
 <translation id="4617338332148204752">Hoppa över kontroll av metataggar i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurera vitlista för tilläggsinstallation</translation>
 <translation id="4632343302005518762">Tillåt att <ph name="PRODUCT_FRAME_NAME" /> hanterar innehållstyperna som anges</translation>
+<translation id="4632566332417930481">Tillåt inte användning av utvecklarverktygen i tillägg som har installerats via en företagsprincip. Tillåt användning av utvecklarverktygen i andra sammanhang.</translation>
 <translation id="4633786464238689684">Ändrar standardbeteendet för tangenter på den översta raden till funktionstangenter.
 
           Om principen anges som true fungerar tangentbordets översta tangentrad som tangenter med funktionskommandon som standard. Tryck på söktangenten för att ändra tillbaka funktionen till medieknappar.
@@ -1548,10 +1553,14 @@
 
       Om policyn inte är inställd kan användaren tillfrågas om importen ska göras eller inte, eller så kan importen göras automatiskt.</translation>
 <translation id="5423197884968724595">Begränsningsnamn för Android WebView:</translation>
+<translation id="5442026853063570579">Den här principen styr även åtkomsten till Androids utvecklaralternativ. Om DeveloperToolsDisallowed (värde 2) anges för principen kan användarna inte öppna utvecklaralternativen. Om ett annat värde anges eller värdet lämnas tomt kan användarna öppna utvecklaralternativen genom att trycka sju gånger på versionsnumret i appen Inställningar i Android.</translation>
 <translation id="5447306928176905178">Aktivera minnesrapportering (heap-storlek för JavaScript) på sidan (föråldrad)</translation>
 <translation id="5457065417344056871">Använda gästläget i webbläsaren</translation>
 <translation id="5457924070961220141">Policyn gör att du kan konfigurera standardrenderare för HTML när <ph name="PRODUCT_FRAME_NAME" /> installeras.
           Standardinställningen som används om policyn inte ställs in är att tillåta att värdwebbläsaren utför renderingen, men du kan åsidosätta detta och låta <ph name="PRODUCT_FRAME_NAME" /> rendera HTML-sidor som standard.</translation>
+<translation id="5459155981813668716">Konfigurerar de språkkoder som <ph name="PRODUCT_OS_NAME" /> kan visas i.
+
+      Om principen används kan användare endast ställa in <ph name="PRODUCT_OS_NAME" /> på att visas i någon av de språkkoder som anges i denna princip. Om principen inte används eller om en tom lista anges för principen kan <ph name="PRODUCT_OS_NAME" /> visas i alla språkkoder som stöds. Om en lista med ogiltiga värden anges för principen ignoreras alla värden. Om en användare tidigare har ställt in <ph name="PRODUCT_OS_NAME" /> på att visas i en språkkod som inte tillåts i denna princip byts den visade språkkoden ut mot en tillåten språkkoden nästa gång användaren loggar in. Om användaren har konfigurerat föredragna språkkoder och en av de föredragna språkkoderna tillåts i denna princip ändras <ph name="PRODUCT_OS_NAME" /> till denna språkkod. I annat fall ändras <ph name="PRODUCT_OS_NAME" /> till det första giltiga värdet i denna princip eller till en alternativ språkkod (för närvarande en-US) om principen endast innehåller ogiltiga värden.</translation>
 <translation id="5464816904705580310">Konfigurera inställningar för hanterade användare.</translation>
 <translation id="546726650689747237">Skärmdämpningstid när enheten är ansluten till elnätet</translation>
 <translation id="5469484020713359236">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får spara cookies.
@@ -1673,7 +1682,6 @@
 
           Om den här principen inte anges är talad feedback inaktiverad första gången som inloggningsskärmen visas. Användarna kan aktivera eller inaktivera talad feedback när som helst och funktionens status på inloggningsskärmen sparas.</translation>
 <translation id="5868414965372171132">Nätverkskonfiguration på användarnivå</translation>
-<translation id="588135807064822874">Aktivera Tryck för att söka</translation>
 <translation id="5883015257301027298">Standardinställning för cookies</translation>
 <translation id="5887414688706570295">Konfigurerar prefixet TalkGadget som kommer att användas av fjärråtkomstvärdar och förhindrar att användare ändrar det.
 
@@ -1778,6 +1786,7 @@
 <translation id="6036523166753287175">Aktivera brandväggspassage från fjärråtkomstsvärd</translation>
 <translation id="6070667616071269965">Tangentbordslayouter för enhetens inloggningsskärm</translation>
 <translation id="6074963268421707432">Tillåt inte att någon webbplats visar aviseringar på skrivbordet</translation>
+<translation id="6074964551275531965">Ange tidsperiod för aviseringar om uppdatering</translation>
 <translation id="6076099373507468537">Definierar vilka USB-enheter som får kopplas bort från sina kärndrivrutiner så att de kan användas direkt i en webbapp med API:et chrome.usb. Posterna i listan består av id-par för USB, leverantörs-id och produkt-id, som tillsammans identifierar maskinvaran.
 
       Om principen inte har konfigurerats är listan med frånkopplingsbara USB-enheter tom.</translation>
@@ -1860,6 +1869,11 @@
       Om du aktiverar inställningen eller inte anger något värde kan användarna styra autofyll. De kan konfigurera autofyllprofiler och aktivera och inaktivera autofyllfunktionen när de vill.</translation>
 <translation id="6394350458541421998">Den här principen finns inte med i <ph name="PRODUCT_OS_NAME" /> version 29 och senare. Använd principen PresentationScreenDimDelayScale i stället.</translation>
 <translation id="6401669939808766804">Logga ut användaren</translation>
+<translation id="6412477120967771054">Om principen är inställd på falskt förhindras Chrome Cleanup från att genomsöka systemet efter oönskad programvara och genomföra rensning. Att starta Chrome Cleanup manuellt via chrome://settings/cleanup har inaktiverats.
+
+      Om den är inställd på sant eller inte inställd alls genomsöker Chrome Cleanup systemet efter oönskad programvara regelbundet. Om något upptäcks blir användaren tillfrågad om de vill ta bort det. Att starta Chrome Cleanup manuellt via chrome://settings har aktiverats.
+
+      Denna princip är inte tillgänglig på Windows-instanser som inte är kopplade till en <ph name="MS_AD_NAME" /> domän.</translation>
 <translation id="6417861582779909667">Policyn gör att du kan ställa in en lista med webbadressmönster som inte får spara cookies.
 
           Om policyn inte anges används det globala standardvärdet för alla webbplatser, antingen från policyn DefaultCookiesSetting om den används eller användarens personliga konfiguration.</translation>
@@ -1882,6 +1896,13 @@
       Du styr vilka webbplatser som Flash får köras på med principerna DefaultPluginsSetting, PluginsAllowedForUrls och PluginsBlockedForUrls.
 
       Om den här inställningen har inaktiverats eller lämnats orörd kan Flash-innehåll från andra domäner eller småskaligt innehåll blockeras.</translation>
+<translation id="6535639183431116351">Den här principen har fasats ut i M68. Använd DeveloperToolsAvailability i stället.
+
+      Principen inaktiverar utvecklarverktygen och JavaScript-konsolen.
+
+      Om du aktiverar inställningen går det inte att använda utvecklarverktygen och det går inte att inspektera webbplatselement. Kortkommandon och alternativ för att öppna utvecklarverktygen eller JavaScript-konsolen på menyer och snabbmenyer inaktiveras.
+
+      Om det här alternativet inaktiveras eller inte anges kan utvecklarverktygen och JavaScript-konsolen användas.</translation>
 <translation id="653608967792832033">Anger efter hur lång tid utan indata från användaren som skärmen ska låsas när enheten går på batteri.
 
           Om policyns värde är större än noll anger det hur länge användaren kan vara inaktiv innan <ph name="PRODUCT_OS_NAME" /> låser skärmen.
@@ -1947,11 +1968,6 @@
 <translation id="6689792153960219308">Rapportera maskinvarustatus</translation>
 <translation id="6698071416141001300">Lösenordsskyddets varningar om att kontot är utsatt för risk utlöses av att lösenordet återanvänds</translation>
 <translation id="6699880231565102694">Aktivera tvåfaktorsautentisering för fjärråtkomstvärdar</translation>
-<translation id="6702257826895463228">Tillåter att webbplatser navigerar och öppnar popup-fönster samtidigt.
-
-      En fullständig förklaring finns på https://www.chromestatus.com/features/5675755719622656.
-      Om den här policyn är aktiverad kan webbplatser samtidigt navigera och öppna nya fönster eller flikar.
-      Om den här policyn är inaktiverad eller inte anges kan webbplatser inte navigera och öppna nya fönster eller flikar samtidigt.</translation>
 <translation id="6724842112053619797">Om du aktiverar den här inställningen skrivs även inställningar för <ph name="PRODUCT_NAME" />-profiler (exempelvis bokmärken, autofylluppgifter och lösenord) till en fil som lagras i användarprofilmappen för roaming eller en plats som anges av administratören i principen <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Molnsynkronisering inaktiveras när principen aktiveras.
 
       Om den här principen är inaktiverad eller utan värde används endast vanliga lokala profiler.
@@ -2317,6 +2333,7 @@
       Mer information om Säker webbläsning finns på https://developers.google.com/safe-browsing.</translation>
 <translation id="7643883929273267746">Begränsa vilka konton som är synliga i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Avgör om dataroaming ska vara tillåtet för enheten. Om värdet är sant är dataroaming tillåten. Om policyn inte är konfigurerad eller om värdet är falskt är dataroaming inte tillåten.</translation>
+<translation id="7673194325208122247">Tidsperiod (millisekunder)</translation>
 <translation id="7683777542468165012">Dynamisk policyuppdatering</translation>
 <translation id="7694807474048279351">Schemalägg en automatisk omstart efter uppdatering av <ph name="PRODUCT_OS_NAME" />.
 
@@ -2449,6 +2466,13 @@
 
           Om inställningen är inaktiverad och utgående UDP-anslutningar filtreras av brandväggen kan den här datorn bara ansluta till värddatorer inom det lokala nätverket.</translation>
 <translation id="7976157349247117979">Namn på <ph name="PRODUCT_NAME" />-mål</translation>
+<translation id="7977445800390854860">Om principen inte anges och Chrome Cleanup upptäcker oönskad programvara kan metadata om genomsökningen rapporteras till Google i enlighet med principer som anges i SafeBrowsingExtendedReportingEnabled. Chrome Cleanup frågar sedan om användaren vill rensa den oönskade programvaran. Användaren kan välja att dela resultaten från rensningen med Google för att förbättra framtida genomsökning. Resultaten innehåller metadata från filer och registernycklar i enlighet med dokumentationen om sekretess i Google Chrome.
+
+      Om principen är inställd på falskt och Chrome Cleanup upptäcker oönskad programvara rapporteras metadata om genomsökningen till Google, och principer som anges i SafeBrowsingExtendedReportingEnabled åsidosätts. Chrome Cleanup frågar om användaren vill rensa den oönskade programvaran. Resultaten från rensningen rapporteras inte till Google och användaren får inte alternativet att göra det.
+
+      Om principen är inställd på sant och Chrome Cleanup upptäcker oönskad programvara rapporteras inte metadata om genomsökningen till Google i enlighet med principer som anges i SafeBrowsingExtendedReportingEnabled. Chrome Cleanup frågar om användaren vill rensa den oönskade programvaran. Resultaten från rensningen rapporteras till Google och användaren får inte alternativet att förhindra det.
+
+      Principen är inte tillgänglig på Windows-instanser som inte är kopplade till en <ph name="MS_AD_NAME" /> domän.</translation>
 <translation id="7978060394348264922">
       Ta gärna en titt på principen IsolateOrigins också: du kan få det bästa av två
       världar, isolering och begränsad inverkan på användarna, genom att ange en
@@ -2571,6 +2595,7 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8300455783946254851">När inställningen här är Sant inaktiveras Google Drive-synkronisering i appen Filer i <ph name="PRODUCT_OS_NAME" /> när en mobilanslutning används. Data synkroniseras då med Google Drive endast vid anslutning via Wi-Fi eller Ethernet.
 
           Om ingen inställning görs eller om Falskt anges, kan användaren föra över filer till Google Drive via mobilanslutningar.</translation>
+<translation id="8300992833374611099">Styr var Utvecklarverktyg kan användas</translation>
 <translation id="8312129124898414409">Gör att du kan ange om webbplatser får använda nyckelgenerering. Du kan antingen tillåta eller blockera användning av nyckelgenerering på alla webbplatser.
 
           Om du inte anger policyn används BlockKeygen och inställningen kan ändras av användaren.</translation>
@@ -2808,6 +2833,11 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
+<translation id="9085839450090699752">Gör det möjlighet att ange en tidsperiod i millisekunder under vilken användare meddelas att <ph name="PRODUCT_NAME" /> eller <ph name="PRODUCT_OS_NAME" />-enheten måste startas om för att en vilande uppdatering ska börja gälla.
+
+      Under den tiden visas upprepade uppmaningar om uppdatering. På <ph name="PRODUCT_OS_NAME" />-enheter visas en avisering om omstart i systemfältet när en uppgradering upptäcks. Aviseringen ändrar färg när halva aviseringsperioden har passerat och sedan en gång till när hela aviseringsperioden har passerat. I webbläsaren <ph name="PRODUCT_NAME" /> ändras appmenyn för att markera att en omstart behövs när en tredjedel av aviseringsperioden har passerat. Denna avisering ändrar färg när två tredjedelar av aviseringsperioden har passerat och sedan igen när hela aviseringsperioden har passerat. De ytterligare aviseringar som aktiveras via principen <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> för webbläsare följer samma schema.
+
+      Om inget värde anges används standardperioden 345600000 millisekunder (fyra dagar) för <ph name="PRODUCT_OS_NAME" />-enheter och 604800000 millisekunder (en vecka) för webbläsare.</translation>
 <translation id="9088433379343318874">Aktiverar den kontrollerade användarens innehållsleverantör</translation>
 <translation id="9088444059179765143">Konfigurera metod för automatisk tidszonsangivelse</translation>
 <translation id="9096086085182305205">Vitlista för autentiseringsserver</translation>

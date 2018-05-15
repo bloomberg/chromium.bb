@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">夜燈功能：<ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 卡已鎖定</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2675319268637823299">管理員已禁止 <ph name="USER_EMAIL" /> 的多重登入功能。
-    所有使用者都必須登出，才能繼續操作。</translation>
 <translation id="2696763960464195425">登出帳戶後，系統將移除你的資訊。<ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">設定鍵盤</translation>
 <translation id="2718395828230677721">夜燈</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">醒目顯示滑鼠游標</translation>
 <translation id="3513798432020909783">這個帳戶是由 <ph name="MANAGER_EMAIL" /> 管理</translation>
 <translation id="3573179567135747900">改回「<ph name="FROM_LOCALE" />」(需要重新啟動)</translation>
-<translation id="3582792037806681688">這個工作階段的使用者已遭禁用多重登入</translation>
 <translation id="3595596368722241419">電池已充滿</translation>
 <translation id="3606978283550408104">已連接點字顯示器。</translation>
 <translation id="3621202678540785336">輸入</translation>

@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Nočný režim: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM karta je uzamknutá</translation>
 <translation id="2653659639078652383">Odoslať</translation>
-<translation id="2675319268637823299">Správca zakázal viacnásobné prihlásenie pre používateľa <ph name="USER_EMAIL" />.
-Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</translation>
 <translation id="2696763960464195425">Vaše informácie sa po odhlásení odstránia. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Nastavenie klávesnice</translation>
 <translation id="2718395828230677721">Nočný režim</translation>
@@ -129,7 +127,6 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="3510164367642747937">Zvýrazniť ukazovateľ myši</translation>
 <translation id="3513798432020909783">Správca účtu: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Zmeniť späť na miestne nastavenie „<ph name="FROM_LOCALE" />“ (vyžaduje sa reštart)</translation>
-<translation id="3582792037806681688">Pre používateľa v tejto relácii bolo viacnásobné prihlásenie zakázané</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
 <translation id="3606978283550408104">Bola pripojená Braillova obrazovka.</translation>
 <translation id="3621202678540785336">Vstup</translation>
@@ -154,6 +151,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="3995138139523574647">zariadenia USB-C (port vpravo vzadu)</translation>
 <translation id="4017989525502048489">Laserový ukazovateľ</translation>
 <translation id="4072264167173457037">Stredne silný signál</translation>
+<translation id="4217571870635786043">Diktovanie</translation>
 <translation id="4279490309300973883">Zrkadlenie</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="4527045527269911712">Zariadenie Bluetooth s názvom <ph name="DEVICE_NAME" /> žiada o povolenie párovania.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> do úplného nabitia</translation>
 <translation id="4544944664594876241">Skratka uzamknutia obrazovky bola zmenená. Namiesto skratky <ph name="OLD_SHORTCUT" /> používajte kombináciu klávesov <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Tlačidlo počúvania vybraného textu</translation>
 <translation id="4659419629803378708">Funkcia ChromeVox je povolená</translation>
 <translation id="4776917500594043016">Heslo pre účet <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
@@ -290,6 +289,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (vlastník)</translation>
 <translation id="7647488630410863958">Ak si chcete zobraziť upozornenia, odomknite zariadenie</translation>
 <translation id="7649070708921625228">Pomocník</translation>
+<translation id="7654687942625752712">Ak chcete deaktivovať hovorenú spätnú väzbu, pridržte päť sekúnd obidva klávesy hlasitosti.</translation>
 <translation id="7658239707568436148">Zrušiť</translation>
 <translation id="7692480393933218409">Nabíjajú sa pripojené zariadenia USB-C</translation>
 <translation id="776344839111254542">Kliknutím zobrazíte podrobnosti o aktualizácii</translation>
@@ -297,7 +297,7 @@ Všetci používatelia sa musia odhlásiť a až potom môžu pokračovať.</tr
 <translation id="7798302898096527229">Ak to chcete zrušiť, stlačte kláves Hľadať alebo Shift.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> a <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Silný signál</translation>
-<translation id="7842569679327885685">Upozornenie: experimentálna funkcia</translation>
+<translation id="7842569679327885685">Upozornenie: Experimentálna funkcia</translation>
 <translation id="7904094684485781019">Správca tohto účtu zakázal viacnásobné prihlásenie.</translation>
 <translation id="7933084174919150729">Asistent Google je k dispozícii iba pre primárny profil.</translation>
 <translation id="79341161159229895">Správcovia účtu: <ph name="FIRST_PARENT_EMAIL" /> a <ph name="SECOND_PARENT_EMAIL" /></translation>

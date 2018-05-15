@@ -54,6 +54,7 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="1452236308086741652"><ph name="VALUE" />, parooli tekstikast</translation>
 <translation id="1467432559032391204">Vasakule</translation>
 <translation id="1474557363159888097">Eelmist ankrut ei ole.</translation>
+<translation id="1480046233931937785">Tiitrid</translation>
 <translation id="1487494366197411587">Chromebooki otsinguklahv asub otse tõstuklahvi kohal.</translation>
 <translation id="1499041187027566160">suurendab helitugevust</translation>
 <translation id="1502086903961450562">Eelmine graafik</translation>
@@ -556,13 +557,6 @@ Kui olete õpetusega lõpetanud, navigeerige ChromeVoxi abil sulgemisnupuni ja k
 <translation id="5682113568322255809">Maamärk</translation>
 <translation id="5683155931978483559">Eelmine märkeruut</translation>
 <translation id="5684277895745049190">Loend</translation>
-<translation id="5695831708991916435">Järgmised otseteed ei ole ChromeVoxi käsud, ent need on siiski väga kasulikud ja võimaldavad Chrome'i parimal moel kasutada.
-Interaktiivsete üksuste, näiteks nuppude ja linkide hulgas navigeerimiseks kasutage tabeldusklahvi. Tagasisuunas navigeerimiseks vajutage tõstuklahvi ja tabeldusklahvi. 
-Chrome'i brauseri aadressiriba ehk omnikastikese valimiseks vajutage klahvikombinatsiooni Control + L.
-Uue vahelehe avamiseks ja automaatselt aktiveerimiseks vajutage klahvikombinatsiooni Control + T. Teie kursor asub uuel vahelehel omnikastikeses. 
-Vahelehe sulgemiseks vajutage klahvikombinatsiooni Control + W. 
-Avatud vahelehtede hulgas edasiliikumiseks vajutage klahvi Control ja tabeldusklahvi. 
-Chrome'i brauseri menüü avamiseks vajutage klahvikombinatsiooni Alt + F.</translation>
 <translation id="5700650669149824506">Eelmist 4. taseme pealkirja ei ole.</translation>
 <translation id="5703716265115423771">vähendab helitugevust</translation>
 <translation id="5709192780268610569">Pikk kirjeldus puudub</translation>

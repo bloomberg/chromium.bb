@@ -54,6 +54,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="1452236308086741652"><ph name="VALUE" />, tekstfelt for passord</translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1474557363159888097">Det finnes ingen tidligere ankere.</translation>
+<translation id="1480046233931937785">Medvirkende</translation>
 <translation id="1487494366197411587">Søketasten på Chromebook er plassert rett over den venstre Shift-tasten.</translation>
 <translation id="1499041187027566160">volum opp</translation>
 <translation id="1502086903961450562">Forrige illustrasjon</translation>
@@ -121,7 +122,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="2179452035581866348">ChromeVox bruker lyder for å gi deg viktig informasjon og tilleggsinformasjon. Hvis du lærer hva hver lyd betyr, kan du bruke dem til å navigere raskere. Når du er mer komfortabel, kan du slå av de omfattende beskrivelsene i tale og bruke dem for å få viktig informasjon om siden. Her er en komplett liste over lyder og hva de betyr.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{høyreparentes}other{# høyreparenteser}}</translation>
 <translation id="2199994615414171367">Forrige matteuttrykk</translation>
-<translation id="2203046366315513658">Reduser verdi</translation>
+<translation id="2203046366315513658">Reduser verdien</translation>
 <translation id="2220529011494928058">Rapportér et problem</translation>
 <translation id="2223693656926968778">Gjør noe med det aktuelle elementet</translation>
 <translation id="225732394367814946">Øk talehastigheten</translation>
@@ -408,7 +409,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4476183483923481720">ny linje</translation>
 <translation id="4482330759234983253">Forrige tabell</translation>
 <translation id="4491109536499578614">Bilde</translation>
-<translation id="4517854969512651305">Øk verdi</translation>
+<translation id="4517854969512651305">Øk verdien</translation>
 <translation id="4529987814483543472">Klassisk tastaturoppsett</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{skråstrek}other{# skråstreker}}</translation>
 <translation id="4547556996012970016">Neste overskrift på nivå 5</translation>
@@ -556,13 +557,6 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5682113568322255809">Landemerke</translation>
 <translation id="5683155931978483559">Forrige avmerkingsrute</translation>
 <translation id="5684277895745049190">Liste</translation>
-<translation id="5695831708991916435">De neste hurtigtastene er ikke ChromeVox-spesifikke kommandoer, men er likevel nyttige for å få mest mulig ut av Chrome.
-For å navigere fremover gjennom elementer som knapper og linker, trykk på Tab-tasten. For å navigere bakover, trykk på Shift+Tab.
-For å skrive i adressefeltet i Chrome-nettleseren (også kalt multifunksjonsfeltet), trykk på Control+L.
-For å åpne og automatisk gå til nye faner, trykk på Control+T. Markøren er da i multifunksjonsfeltet.
-For å lukke en fane, trykk på Control+W.
-For å navigere mellom åpne faner, trykk på Control+Tab.
-For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5700650669149824506">Det finnes ikke tidligere overskrifter på nivå 4.</translation>
 <translation id="5703716265115423771">volum ned</translation>
 <translation id="5709192780268610569">Ingen lang beskrivelse</translation>

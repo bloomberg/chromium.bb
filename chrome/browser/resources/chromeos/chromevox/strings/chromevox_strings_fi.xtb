@@ -54,6 +54,7 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="1452236308086741652"><ph name="VALUE" />, salasanan tekstikenttä</translation>
 <translation id="1467432559032391204">Vasemmalle</translation>
 <translation id="1474557363159888097">Ei edellisiä ankkureita.</translation>
+<translation id="1480046233931937785">Tekijät</translation>
 <translation id="1487494366197411587">Hakunäppäin on Chromebookissa heti vasemman vaihtonäppäimen yläpuolella.</translation>
 <translation id="1499041187027566160">Lisää äänenvoimakkuutta.</translation>
 <translation id="1502086903961450562">Edellinen grafiikka</translation>
@@ -556,13 +557,6 @@ Jos haluat sulkea ohjeen, siirry ChromeVox-komennoilla Sulje-painikkeeseen ja kl
 <translation id="5682113568322255809">Maamerkki</translation>
 <translation id="5683155931978483559">Edellinen valintaruutu</translation>
 <translation id="5684277895745049190">Luettelo</translation>
-<translation id="5695831708991916435">Seuraavat pikanäppäimet eivät ole ChromeVox-komentoja, mutta ne auttavat silti käyttämään Chromea tehokkaasti.
-Siirry seuraavaan interaktiiviseen kohteeseen, esim. painikkeeseen tai linkkiin, sarkainnäppäimellä. Siirry edelliseen kohteeseen painamalla vaihto + sarkain.
-Siirry Chrome-selaimen osoitekenttään eli omniboxiin painamalla Control + L.
-Avaa uusi välilehti ja siirry sille automaattisesti painamalla Control + T. Osoitin siirtyy automaattisesti omniboxiin.
-Sulje välilehti painamalla Control + W.
-Siirry avoimelta välilehdeltä toiselle painamalla Control + sarkain.
-Avaa Chrome-selaimen valikko painamalla Alt + F.</translation>
 <translation id="5700650669149824506">Ei edellisiä tason 4 otsikoita.</translation>
 <translation id="5703716265115423771">Vähennä äänenvoimakkuutta.</translation>
 <translation id="5709192780268610569">Ei pitkää kuvausta</translation>

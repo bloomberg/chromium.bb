@@ -54,6 +54,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />，密碼文字方塊</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1474557363159888097">沒有上一個錨點。</translation>
+<translation id="1480046233931937785">製作人員名單</translation>
 <translation id="1487494366197411587">Chromebook 的搜尋鍵位於左側 Shift 鍵的正上方。</translation>
 <translation id="1499041187027566160">調高音量</translation>
 <translation id="1502086903961450562">上一個圖形</translation>
@@ -556,13 +557,6 @@
 <translation id="5682113568322255809">地標</translation>
 <translation id="5683155931978483559">上一個核取方塊</translation>
 <translation id="5684277895745049190">清單</translation>
-<translation id="5695831708991916435">以下這些快速鍵並非 ChromeVox 指令，但仍然很實用，可協助您善用 Chrome。
-如要前往下一個操作項目 (例如按鈕和連結)，請按下 Tab 鍵；如要返回上一個操作項目，請按下 Shift + Tab 鍵。
-如要進入 Chrome 瀏覽器的網址方塊 (又稱為網址列)，請按下 Control + L 鍵。
-如要自動開啟並前往新分頁，請按下 Control + T 鍵 (游標會移至網址列)。
-如要關閉分頁，請按下 Control + W 鍵。
-如要移至下一個開啟的分頁，請使用 Control + Tab 鍵。
-如要開啟 Chrome 瀏覽器選單，請按下 Alt + F 鍵。</translation>
 <translation id="5700650669149824506">沒有上一個第 4 階標題。</translation>
 <translation id="5703716265115423771">調低音量</translation>
 <translation id="5709192780268610569">無詳細說明</translation>

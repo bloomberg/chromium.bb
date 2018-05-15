@@ -54,6 +54,7 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="1452236308086741652"><ph name="VALUE" />, jelszómező</translation>
 <translation id="1467432559032391204">Balra</translation>
 <translation id="1474557363159888097">Nincs előző horgony.</translation>
+<translation id="1480046233931937785">Készítők</translation>
 <translation id="1487494366197411587">A Chromebookon a keresőbillentyű közvetlenül a Shift billentyű felett található.</translation>
 <translation id="1499041187027566160">hangerő növelése</translation>
 <translation id="1502086903961450562">Előző grafika</translation>
@@ -556,13 +557,6 @@ Ha végzett az útmutatóval, navigáljon a ChromeVox segítségével a Bezárá
 <translation id="5682113568322255809">Határjel</translation>
 <translation id="5683155931978483559">Előző jelölőnégyzet</translation>
 <translation id="5684277895745049190">Lista</translation>
-<translation id="5695831708991916435">A következő néhány billentyűparancs nem ChromeVox-parancs, de nagyon hasznosak, ha a lehető legtöbbet szeretné kihozni a Chrome-ból.
-A kattintható elemek (például a gombok és linkek) közötti előre történő navigációhoz nyomja le a Tab billentyűt. A visszafelé történő navigáláshoz nyomja le a Shift + Tab billentyűkombinációt.
-A Chrome böngésző címsávjába vagy más néven cím- és keresősávjába lépéshez nyomja le a Control + L billentyűkombinációt.
-A megnyitáshoz és egy új lap automatikus megnyitásához nyomja le a Control + T billentyűkombinációt. A kurzor a cím- és keresősávba kerül.
-Az adott lap bezárásához nyomja le a Control + W billentyűkombinációt.
-A megnyitott lapok közötti előrelépéshez használja a Control + Tab billentyűkombinációt.
-A Chrome böngésző menüjének megnyitásához nyomja le az Alt + F billentyűkombinációt.</translation>
 <translation id="5700650669149824506">Nincs előző 4-es szintű címsor.</translation>
 <translation id="5703716265115423771">hangerő csökkentése</translation>
 <translation id="5709192780268610569">Nincs hosszú leírás</translation>

@@ -34,6 +34,7 @@
 <translation id="1047726139967079566">Додати цю сторінку до закладок...</translation>
 <translation id="1047956942837015229">Видалення елементів (<ph name="COUNT" />)…</translation>
 <translation id="1048286738600630630">Дисплеї</translation>
+<translation id="1049743911850919806">Анонімний перегляд</translation>
 <translation id="1049795001945932310">&amp;Налаштування мови</translation>
 <translation id="1049926623896334335">Документ Word</translation>
 <translation id="1054153489933238809">Відкрити оригінальне зображення в новій вкладці</translation>
@@ -529,7 +530,6 @@
 <translation id="1782924894173027610">Сервер синхронізації зайнятий. Спробуйте ще раз пізніше.</translation>
 <translation id="1784849162047402014">На диску пристрою мало вільного місця</translation>
 <translation id="1786636458339910689">Спільні Диски</translation>
-<translation id="1789575671122666129">Спливаючі вікна</translation>
 <translation id="1792619191750875668">Розширений дисплей</translation>
 <translation id="1793119619663054394">Видалити профіль "<ph name="PROFILE_NAME" />" і всі пов’язані з ним дані Chrome із цього комп’ютера? Цю дію не можна відмінити.</translation>
 <translation id="1794791083288629568">Надіслати відгук, щоб допомогти нам вирішити цю проблему.</translation>
@@ -652,12 +652,14 @@
 <translation id="1983959805486816857">Створивши нового контрольованого користувача, ви можете будь-коли керувати його налаштуваннями з будь-якого пристрою на сторінці <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Закріпити вікно праворуч</translation>
 <translation id="1987139229093034863">Змінити користувача.</translation>
+<translation id="1987317783729300807">Облікові записи</translation>
 <translation id="1989112275319619282">Переглянути</translation>
 <translation id="1992397118740194946">Не налаштовано</translation>
 <translation id="1994173015038366702">URL-адреса сайту</translation>
 <translation id="1997484222658892567">Сайт <ph name="URL" /> хоче постійно зберігати великий обсяг даних на вашому локальному комп’ютері</translation>
 <translation id="1997616988432401742">Ваші сертифікати</translation>
 <translation id="1999115740519098545">Після запуску</translation>
+<translation id="2001796770603320721">Керувати на Диску</translation>
 <translation id="2006638907958895361">Відкрити посилання в додатку <ph name="APP" /></translation>
 <translation id="2007404777272201486">Повідомити про проблему...</translation>
 <translation id="2016430552235416146">Традиційне</translation>
@@ -753,7 +755,6 @@
 <translation id="2151576029659734873">Введено недійсний індекс вкладки.</translation>
 <translation id="2154484045852737596">Редагувати картку</translation>
 <translation id="2154710561487035718">Копіювати URL-адресу</translation>
-<translation id="2155931291251286316">Завжди дозволяти спливаючі вікна з хосту <ph name="HOST" /></translation>
 <translation id="215753907730220065">Вийти з повноекранного режиму</translation>
 <translation id="2157875535253991059">Ця сторінка зараз у повноекранному режимі.</translation>
 <translation id="216169395504480358">Додати Wi-Fi...</translation>
@@ -1183,7 +1184,6 @@
 <translation id="2799223571221894425">Перезапустити</translation>
 <translation id="2803375539583399270">Введіть PIN-код</translation>
 <translation id="2805646850212350655">Система шифрування файлів Microsoft</translation>
-<translation id="2805707493867224476">Дозволяти всім сайтам показувати спливаючі вікна</translation>
 <translation id="2805756323405976993">Додатки</translation>
 <translation id="2807517655263062534">Тут відображаються завантажені файли</translation>
 <translation id="2809586584051668049">і ще <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
@@ -1617,7 +1617,6 @@
 <translation id="347919930506963698">Отримайте ще більше від Chrome</translation>
 <translation id="3479552764303398839">Не зараз</translation>
 <translation id="3480892288821151001">Закріпити вікно ліворуч</translation>
-<translation id="3481915276125965083">На цій сторінці заблоковано такі спливаючі вікна:</translation>
 <translation id="3484273680291419129">Вилучення зловмисного програмного забезпечення…</translation>
 <translation id="3484869148456018791">Отримати новий сертифікат</translation>
 <translation id="3487007233252413104">анонімна функція</translation>
@@ -1723,7 +1722,6 @@
 <translation id="3637682276779847508">Вашу SIM-карту буде назавжди заблоковано, якщо ви не введете правильний ключ для розблокування PIN-коду.</translation>
 <translation id="363903084947548957">Наступний спосіб введення</translation>
 <translation id="3640214691812501263">Додати розширення <ph name="EXTENSION_NAME" /> для користувача <ph name="USER_NAME" />?</translation>
-<translation id="3643225892037417978">Гості не можуть керувати розширеннями. Увійдіть, щоб керувати розширеннями.</translation>
 <translation id="3644896802912593514">Ширина</translation>
 <translation id="3646789916214779970">Установити тему за умовчанням</translation>
 <translation id="3648348069317717750">Виявлено пристрій <ph name="USB_DEVICE_NAME" /></translation>
@@ -2065,7 +2063,6 @@
 <translation id="4172051516777682613">Завжди показувати</translation>
 <translation id="4175737294868205930">Постійна пам’ять</translation>
 <translation id="4176463684765177261">Вимкнено</translation>
-<translation id="4180684688621252156">Служба друку</translation>
 <translation id="4180788401304023883">Видалити сертифікат Центру сертифікації "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Мови</translation>
@@ -2091,6 +2088,7 @@
 <translation id="42137655013211669">Сервер заборонив доступ до цього ресурсу.</translation>
 <translation id="4215350869199060536">Помилка. Заборонені символи в імені.</translation>
 <translation id="4215448920900139318">Створюється резервна копія: <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">Диктування</translation>
 <translation id="4225397296022057997">На всіх сайтах</translation>
 <translation id="4235200303672858594">Увесь екран</translation>
 <translation id="4235813040357936597">Додати обліковий запис у профіль <ph name="PROFILE_NAME" /></translation>
@@ -2203,6 +2201,7 @@
 <translation id="4425149324548788773">Мій диск</translation>
 <translation id="4430019312045809116">Гучність</translation>
 <translation id="4430369329743628066">Закладку додано</translation>
+<translation id="4434045419905280838">Спливаючі вікна й переспрямуван.</translation>
 <translation id="443454694385851356">Застарілий (небезпечно)</translation>
 <translation id="443464694732789311">Продовжити</translation>
 <translation id="443475966875174318">Оновити або видалити несумісні додатки</translation>
@@ -3273,6 +3272,7 @@
 <translation id="6075907793831890935">Обмінюватися даними з пристроєм із назвою <ph name="HOSTNAME" /></translation>
 <translation id="6076448957780543068">Додати цей знімок екрана</translation>
 <translation id="6077131872140550515">Вилучити з рекомендованих</translation>
+<translation id="6078323886959318429">Додати ярлик</translation>
 <translation id="6078752646384677957">Перевірте рівень мікрофона та звуку.</translation>
 <translation id="6080515710685820702">Користуєтеся комп’ютером спільно з іншими? Відкрийте вікно в режимі анонімного перегляду.</translation>
 <translation id="6080689532560039067">Перевірте час системи</translation>
@@ -3481,7 +3481,6 @@
 <translation id="6406303162637086258">Імітувати перезапуск веб-переглядача</translation>
 <translation id="6406506848690869874">Синхронізація</translation>
 <translation id="6408118934673775994">Читати та змінювати свої дані на веб-сайтах <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> і <ph name="WEBSITE_3" /></translation>
-<translation id="6409731863280057959">Спливаючі вікна</translation>
 <translation id="6410257289063177456">Файли зображень</translation>
 <translation id="6410328738210026208">Змінити версію й виконати Powerwash</translation>
 <translation id="6410668567036790476">Додати пошукову систему</translation>
@@ -3689,7 +3688,6 @@
 <translation id="6708242697268981054">Джерело:</translation>
 <translation id="6709357832553498500">Під’єднатися за допомогою розширення <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Попереднє</translation>
-<translation id="6716704051134091292">Конвертер файлів PDF</translation>
 <translation id="6718273304615422081">Архівування…</translation>
 <translation id="671928215901716392">Блокування екрана</translation>
 <translation id="67211069045302358">Скинути налаштування цього сайту?</translation>
@@ -3814,7 +3812,6 @@
 <translation id="6920989436227028121">Відкрити як звичайну вкладку</translation>
 <translation id="6922128026973287222">Зменшіть обсяг завантажених даних і відкривайте веб-сторінки швидше з Google Заощадження трафіку. Натисніть, щоб дізнатися більше.</translation>
 <translation id="6923132443355966645">Прокрутіть або натисніть</translation>
-<translation id="6929555043669117778">Продовжити блокування спливаючих вікон</translation>
 <translation id="6929835486583850209">Не вдалося встановити додаток <ph name="APP_NAME" />…</translation>
 <translation id="6930242544192836755">Тривалість</translation>
 <translation id="6934241953272494177">Сканування носія…
@@ -3898,6 +3895,7 @@
 <translation id="7052237160939977163">Надсилати дані відстеження ефективності</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Блокувати</translation>
+<translation id="7055152154916055070">Переспрямування заблоковано:</translation>
 <translation id="7056526158851679338">&amp;Перевірити пристрої</translation>
 <translation id="7059858479264779982">Увімкнути автозапуск</translation>
 <translation id="7059893117020417984">Щоб переглядати веб-сторінки конфіденційно, натисніть значок меню з трьома крапками й відкрийте вікно в режимі анонімного перегляду</translation>
@@ -3924,7 +3922,6 @@
 <translation id="7088434364990739311">Не вдалося запустити перевірку наявності оновлень (код помилки: <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – відкривайте та пакуйте ZIP-файли в додатку Файли.</translation>
 <translation id="7088674813905715446">Адміністратор активував на цьому пристрої стан деініціалізації. Щоб увімкнути його для реєстрації, попросіть адміністратора перевести пристрій у стан очікування.</translation>
-<translation id="7092106376816104">Винятки для спливаючих вікон</translation>
 <translation id="7093434536568905704">Тема GTK+</translation>
 <translation id="7093866338626856921">Обмінюватися даними з пристроями з назвами: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Перемикає лупу для всього екрана</translation>
@@ -4144,7 +4141,6 @@
 <translation id="744341768939279100">Створити новий профіль</translation>
 <translation id="7444726222535375658">Перейти в Hangouts Meet</translation>
 <translation id="7444983668544353857">Вимкнути <ph name="NETWORKDEVICE" /></translation>
-<translation id="7445682342344043969">Спливаючі вікна заблоковано</translation>
 <translation id="7453008956351770337">Вибираючи цей принтер, ви надаєте доступ до свого принтера такому розширенню:</translation>
 <translation id="7453467225369441013">Ви вийдете з більшості сайтів, але не вийдете з облікового запису Google.</translation>
 <translation id="7456142309650173560">версія для розробників</translation>
@@ -4263,6 +4259,7 @@
 <translation id="7617366389578322136">Під’єднання до пристрою <ph name="DEVICE_NAME" /></translation>
 <translation id="7622114377921274169">Заряджається.</translation>
 <translation id="7624337243375417909">Caps Lock вимкнено</translation>
+<translation id="7625568159987162309">Переглянути дозволи й дані, збережені на сайтах</translation>
 <translation id="7627790789328695202">Файл "<ph name="FILE_NAME" />" вже існує. Перейменуйте його та повторіть спробу.</translation>
 <translation id="7628127343934101653">Відкривати файли PDF в додатку для перегляду файлів PDF за умовчанням.</translation>
 <translation id="7629827748548208700">Вкладка: <ph name="TAB_NAME" /></translation>
@@ -4585,10 +4582,12 @@
 <translation id="806812017500012252">Переупорядкувати за назвою</translation>
 <translation id="8068253693380742035">Торкніться, щоб увійти</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="806972267388474605">Файли Linux</translation>
 <translation id="8071432093239591881">Друкувати як зображення</translation>
 <translation id="8072988827236813198">Закріпити вкладки</translation>
 <translation id="8074127646604999664">Дозволити нещодавно закритим сайтам завершувати надсилання й отримання даних</translation>
 <translation id="8075191520954018715">Стан пам’яті</translation>
+<translation id="8076492880354921740">Вкладки</translation>
 <translation id="8076835018653442223">Адміністратор вимкнув доступ до локальних файлів на вашому пристрої</translation>
 <translation id="8077684120002777443">Ім’я користувача (наприклад, imyakorystuvacha@pryklad.com)</translation>
 <translation id="8077816382010018681">Заголовок сповіщення функції швидкого розблокування</translation>
@@ -4873,7 +4872,6 @@
 <translation id="8569682776816196752">Не знайдено жодного місця призначення</translation>
 <translation id="8569764466147087991">Виберіть файл, який потрібно відкрити</translation>
 <translation id="8571213806525832805">Останні 4 тижні</translation>
-<translation id="8571613743082299268">Заблоковано переспрямування на сайт</translation>
 <translation id="8574990355410201600">Завжди дозволяти звук на сторінці <ph name="HOST" /></translation>
 <translation id="8578639784464423491">Не може перевищувати 99 літер</translation>
 <translation id="8579285237314169903">Синхронізація стількох елементів: <ph name="NUMBER_OF_FILES" />…</translation>
@@ -5205,7 +5203,6 @@
 <translation id="9065203028668620118">Редагувати</translation>
 <translation id="9066782832737749352">Синтез мовлення</translation>
 <translation id="9070219033670098627">Змінити користувача</translation>
-<translation id="907148966137935206">Заборонити всім сайтам відображати спливаючі вікна (рекомендовано)</translation>
 <translation id="9071637495340542136">Встановлюється <ph name="APP_NAME" />…</translation>
 <translation id="9072550133391925347"><ph name="PASSWORD_MANAGER_BRAND" /> зберігає ваші паролі й автоматично входить в облікові записи на сайтах і в додатках.</translation>
 <translation id="9073281213608662541">PAP</translation>

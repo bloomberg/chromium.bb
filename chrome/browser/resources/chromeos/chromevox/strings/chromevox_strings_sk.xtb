@@ -54,6 +54,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="1452236308086741652"><ph name="VALUE" />, textové pole pre heslo</translation>
 <translation id="1467432559032391204">Doľava</translation>
 <translation id="1474557363159888097">Žiadne predchádzajúce ukotvenie</translation>
+<translation id="1480046233931937785">Poďakovanie</translation>
 <translation id="1487494366197411587">Kláves Hľadať sa na Chromebooku nachádza priamo nad ľavým klávesom Shift.</translation>
 <translation id="1499041187027566160">zvýšenie hlasitosti</translation>
 <translation id="1502086903961450562">Predchádzajúci obrázok</translation>
@@ -423,7 +424,7 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="461613135510474570">Veta</translation>
 <translation id="463135993322337640">Ak chcete získať ďalšie informácie o novinkách, stlačte tlačidlá ChromeVox + O + N</translation>
 <translation id="4647836961514597010">Výber farieb</translation>
-<translation id="4652110509054054146">Pomocou kombinácie klávesov Hľadať + šípka doľava alebo doprava prejdete na začiatok alebo na koniec, pomocou kombinácie Hľadať + Ctrl + šípka doľava alebo doprava prejdete na začiatok alebo na koniec pomocou klávesa Ctrl a pomocou kombinácie klávesov Hľadať + šípka nahor alebo nadol prejdete hore alebo dole.</translation>
+<translation id="4652110509054054146">Kombinácia klávesov Hľadať + šípka doľava alebo doprava slúži ako Home alebo End, kombinácia Hľadať + Ctrl + šípka doľava alebo doprava funguje ako Ctrl Home alebo Ctrl End, kombinácia klávesov Hľadať + šípka nahor alebo nadol slúži ako Page Up alebo Page Down.</translation>
 <translation id="4660783501463101648">Klasická verzia bola odstránená. Prepínač na klávesnici umožňujúci prepnúť späť na verziu ChromeVox Classic bol odstránený.</translation>
 <translation id="4661075872484491155">strom</translation>
 <translation id="4668929960204016307">,</translation>
@@ -555,13 +556,6 @@ Ak ste už s návodom skončili, prejdite pomocou čítačky ChromeVox na tlač
 <translation id="5682113568322255809">Orientačný bod</translation>
 <translation id="5683155931978483559">Predchádzajúce začiarkavacie políčko</translation>
 <translation id="5684277895745049190">Zoznam</translation>
-<translation id="5695831708991916435">Nasledujúce skratky nie sú príkazy čítačky ChromeVox, ale sú stále veľmi užitočné a pomôžu vám získať z Chromu maximum.
-Ak chcete prechádzať dopredu medzi klikateľnými položkami, ako sú tlačidlá a odkazy, stláčajte kláves Tab. Ak chcete prechádzať dozadu, stláčajte klávesy Shift + Tab. 
-Ak chcete aktivovať panel s adresou prehliadača Chrome (nazývaný tiež všeobecné pole), stlačte klávesy Control + L. 
-Ak chcete otvoriť novú kartu a automaticky na ňu prejsť, stlačte klávesy Ctrl + T. Kurzor sa presunie do všeobecného poľa. 
-Ak chcete zavrieť kartu, stlačte kombináciu klávesov Ctrl + W. 
-Ak chcete prechádzať dopredu medzi otvorenými kartami, stlačte kombináciu klávesov Ctrl + Tab. 
-Ak chcete otvoriť ponuku prehliadača Chrome, stlačte kombináciu klávesov Alt + F.</translation>
 <translation id="5700650669149824506">Žiaden predchádzajúci nadpis 4. úrovne</translation>
 <translation id="5703716265115423771">zníženie hlasitosti</translation>
 <translation id="5709192780268610569">Žiadny dlhý popis</translation>

@@ -115,6 +115,7 @@
 <translation id="2021896219286479412">Керування повноекранним режимом</translation>
 <translation id="2038563949887743358">Увімкнути опцію "Запитувати версію сайту для комп’ютера"</translation>
 <translation id="2045104531052923016"><ph name="GIGABYTES" /> ГБ використовується іншими додатками</translation>
+<translation id="2063713494490388661">Торкніться, щоб шукати</translation>
 <translation id="2079545284768500474">Відмінити</translation>
 <translation id="2082238445998314030">Результат <ph name="RESULT_NUMBER" /> з <ph name="TOTAL_RESULTS" /></translation>
 <translation id="2086652334978798447">Щоб отримувати персоналізовані пропозиції від Google, увійдіть в обліковий запис Chrome.</translation>
@@ -271,9 +272,6 @@
 <translation id="3599863153486145794">Очищує історію на всіх пристроях, на яких ви ввійшли в обліковий запис. У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
 <translation id="3600792891314830896">Вимкнути звук на сайтах, які відтворюють його</translation>
 <translation id="360207483134687714">Допоможіть покращити віртуальну реальність у Chrome</translation>
-<translation id="360480449234699036">Дізнавайтеся більше про теми на веб-сайтах, не залишаючи сторінку. Функція пошуку дотиком надсилає слово та його контекст у Пошук Google і повертає визначення, зображення, результати пошуку й інші дані.
-
-Щоб змінити пошуковий термін, натисніть і утримуйте його. Щоб уточнити пошуковий запит, пересуньте панель угору та торкніться вікна пошуку.</translation>
 <translation id="3616113530831147358">Звук</translation>
 <translation id="3620176948598597475">Буде скинуто історію функції Заощадження трафіку, зокрема список відвіданих сайтів.</translation>
 <translation id="3632295766818638029">Показати пароль</translation>
@@ -285,7 +283,6 @@
 <translation id="3712575778697986964">Скинути дані Заощадження трафіку?</translation>
 <translation id="3714981814255182093">Відкрити рядок пошуку</translation>
 <translation id="3716182511346448902">Ця сторінка займає велику кількість пам’яті, тому Chrome призупинив її роботу.</translation>
-<translation id="3738139272394829648">Пошук дотиком</translation>
 <translation id="3739899004075612870">Створено закладку в продукті <ph name="PRODUCT_NAME" /></translation>
 <translation id="3744111309925758534"><ph name="MEGABYTES" /> МБ використовується іншими додатками</translation>
 <translation id="3744111561329211289">Фонова синхронізація</translation>
@@ -352,6 +349,7 @@
 <translation id="4409723563706114196">Використання передбачень сторінки</translation>
 <translation id="4412992751769744546">Дозволити сторонні файли cookie</translation>
 <translation id="4432792777822557199">Надалі сторінки цією мовою (<ph name="SOURCE_LANGUAGE" />) перекладатимуться такою мовою: <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">Спливаючі вікна й переспрямуван.</translation>
 <translation id="4445444302979002552">Пропонувати пошукові терміни та веб-сайти за допомогою служб для показу пропозицій</translation>
 <translation id="4452411734226507615">Закрити вкладку <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Закладку збережено в папці "<ph name="FOLDER_NAME" />"</translation>
@@ -519,6 +517,7 @@
 <translation id="5765780083710877561">Опис:</translation>
 <translation id="5777170031995031090">Укажіть, як Google має використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук, оголошення й інші служби Google.</translation>
 <translation id="5779929835642192302">Є пропозиції</translation>
+<translation id="5793665092639000975">Використано <ph name="SPACE_USED" /> з <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Дозволи</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# годину тому}one{# годину тому}few{# години тому}many{# годин тому}other{# години тому}}</translation>
 <translation id="5817918615728894473">Підключити</translation>
@@ -603,6 +602,7 @@
 <translation id="6556716549745717622">Блокувати, якщо сайт часто показує нав’язливі оголошення (рекомендовано)</translation>
 <translation id="6560414384669816528">Шукати за допомогою Sogou</translation>
 <translation id="6566259936974865419">Chrome заощадив <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="6573096386450695060">Завжди дозволяти</translation>
 <translation id="6573431926118603307">Тут відображатимуться вкладки, відкриті в Chrome на інших ваших пристроях.</translation>
 <translation id="6575643671698722332">Помилка скидання. Перевірте, чи пристрій онлайн і спробуйте ще.</translation>
 <translation id="6583199322650523874">Зробити закладку поточної сторінки</translation>
@@ -662,6 +662,7 @@
 <translation id="7031882061095297553">Синхронізувати</translation>
 <translation id="7034608350006174882">Картки й адреси, пов’язані з Google Pay</translation>
 <translation id="7053983685419859001">Блокувати</translation>
+<translation id="7055152154916055070">Переспрямування заблоковано:</translation>
 <translation id="7062545763355031412">Прийняти та перейти в інший обліковий запис</translation>
 <translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Вибрано 1}one{Вибрано #}few{Вибрано #}many{Вибрано #}other{Вибрано #}}</translation>
@@ -670,6 +671,7 @@
 <translation id="7121362699166175603">Очищує історію й автозавершення в адресному рядку. У вашому обліковому записі Google на сторінці <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> можуть бути інші форми історії веб-перегляду.</translation>
 <translation id="7128222689758636196">Дозволити поточній пошуковій системі</translation>
 <translation id="7138678301420049075">Інше</translation>
+<translation id="7141896414559753902">Блокувати спливаючі вікна та переспрямування на сайтах (рекомендовано)</translation>
 <translation id="7144878232160441200">Повторити спробу</translation>
 <translation id="7149893636342594995">Останні 24 години</translation>
 <translation id="7177466738963138057">Це можна змінити пізніше в налаштуваннях</translation>
@@ -779,7 +781,6 @@
 <translation id="8105951947646329362">Пропонувати схожі сторінки</translation>
 <translation id="8116925261070264013">Звук вимкнено</translation>
 <translation id="813082847718468539">Перегляд інформації про сайт</translation>
-<translation id="8137558756159375272">Функція пошуку дотиком надсилає слово та поточну сторінку як додаткові дані в Пошук Google. Її можна вимкнути в <ph name="BEGIN_LINK" />налаштуваннях<ph name="END_LINK" />.</translation>
 <translation id="8168435359814927499">Вміст</translation>
 <translation id="8186512483418048923">Залишилося файлів: <ph name="FILES" /></translation>
 <translation id="8190358571722158785">Залишився 1 день</translation>
@@ -887,6 +888,7 @@
 <translation id="932327136139879170">Домашня сторінка</translation>
 <translation id="932599481871055447">Заощаджуйте трафік і відкривайте веб-сторінки швидше</translation>
 <translation id="938850635132480979">Помилка: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">На карті SD недостатньо місця</translation>
 <translation id="945522503751344254">Надіслати відгук</translation>
 <translation id="945632385593298557">Доступ до мікрофона</translation>
 <translation id="951339005376969845">Видалити наявні дані. Щоб відновити їх, поверніться в обліковий запис <ph name="FROM_ACCOUNT" />.</translation>

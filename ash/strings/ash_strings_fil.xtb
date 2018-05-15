@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Night Light: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Naka-lock ang SIM card</translation>
 <translation id="2653659639078652383">Isumite</translation>
-<translation id="2675319268637823299">Hindi pinayagan ng administrator ang maraming pag-sign in para sa <ph name="USER_EMAIL" />.
-Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="2696763960464195425">Aalisin ang iyong impormasyon kapag nag-sign out ka. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Itakda ang iyong keyboard</translation>
 <translation id="2718395828230677721">Night Light</translation>
@@ -129,7 +127,6 @@ Dapat mag-sign out ang lahat ng user upang magpatuloy.</translation>
 <translation id="3510164367642747937">I-highlight ang cursor ng mouse</translation>
 <translation id="3513798432020909783">Pinamamahalaan ni <ph name="MANAGER_EMAIL" /> ang account</translation>
 <translation id="3573179567135747900">Palitan pabalik sa "<ph name="FROM_LOCALE" />" (kailangang i-restart)</translation>
-<translation id="3582792037806681688">Hindi pinayagan ang multiple na pag-sign in para sa isang user sa session na ito</translation>
 <translation id="3595596368722241419">Puno na ang baterya</translation>
 <translation id="3606978283550408104">Nagkonekta ng braille display.</translation>
 <translation id="3621202678540785336">Input</translation>

@@ -675,13 +675,6 @@
 
       Kung gagamitin ang patakarang ito, ang mga printer lang na may mga id na tumutugma sa mga value sa patakarang ito ang available sa user. Dapat tumugma ang mga id sa mga field na "id" o "guid" sa file na natukoy sa <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Ine-enable ang availability ng Pindutin upang Hanapin sa view ng content ng <ph name="PRODUCT_NAME" />.
-
-      Kung ie-enable mo ang setting na ito, magagamit ng user ang Pindutin upang Hanapin at magagawa niyang i-on o i-off ang feature.
-
-      Kung idi-disable mo ang setting na ito, ganap na madi-disable ang Pindutin upang Hanapin.
-
-      Kung hindi itatakda ang patakarang ito, parang naka-enable na rin ito, tingnan ang paglalarawan sa itaas.</translation>
 <translation id="285480231336205327">Paganahin ang mataas na contrast mode</translation>
 <translation id="2854919890879212089">Nagiging dahilan upang gamitin ng <ph name="PRODUCT_NAME" /> ang default na printer ng system bilang default na pagpipilian sa Preview ng Pag-print sa halip na ang pinakahuling ginamit na printer.
 
@@ -1658,7 +1651,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang sinasalitang feedback kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang sinasalitang feedback anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
 <translation id="5868414965372171132">Configuration ng network sa antas ng user</translation>
-<translation id="588135807064822874">I-enable ang Pindutin upang Hanapin</translation>
 <translation id="5883015257301027298">Default na setting ng cookies</translation>
 <translation id="5887414688706570295">Kino-configure ang prefix ng TalkGadget na gagamitin ng mga host ng malayuang pag-access at pinipigilan ang mga user na baguhin ito.
 
@@ -1931,11 +1923,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6689792153960219308">Iulat ang status ng hardware</translation>
 <translation id="6698071416141001300">Ang pag-flag ng account na may nakompromisong proteksyon sa password ay nati-trigger ng muling paggamit ng password</translation>
 <translation id="6699880231565102694">Paganahin ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access</translation>
-<translation id="6702257826895463228">Pinapayagan ang mga site na sabay na mag-navigate at magbukas ng mga pop-up.
-
-      Para sa kumpletong pagpapaliwanag, tingnan sa https://www.chromestatus.com/features/5675755719622656.
-      Kung naka-enable ang patakarang ito, papayagan ang mga site na sabay na mag-navigate at magbukas ng mga bagong window/tab.
-      Kung naka-disable o hindi nakatakda ang patakarang ito, hindi papayagan ang mga site na sabay na mag-navigate at magbukas ng bagong window/tab.</translation>
 <translation id="6724842112053619797">Kung ie-enable mo ang setting na ito, ang mga setting na naka-store sa mga profile sa <ph name="PRODUCT_NAME" /> tulad ng mga bookmark, data ng autofill, mga password, atbp. ay ira-write din sa isang file na naka-store sa folder ng profile ng user ng Roaming o sa isang lokasyong tinukoy ng Administrator sa pamamagitan ng patakarang <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Madi-disable ang pag-sync sa cloud kapag na-enable ang patakarang ito.
 
       Kung idi-disable ang patakarang ito o kaya ay hahayaang hindi nakatakda, ang mga regular na lokal na profile lang ang gagamitin.

@@ -6,7 +6,7 @@
 <translation id="1013742170491673792">srched</translation>
 <translation id="1022586497894531524">És el primer cop que fas servir els comentaris de veu de l'extensió ChromeVox? En aquest tutorial ràpid s'expliquen els aspectes bàsics per començar a utilitzar-la.</translation>
 <translation id="1023866615269196768">Amb abast.</translation>
-<translation id="1025074108959230262">S'ha desactivat el mode atractiu.</translation>
+<translation id="1025074108959230262">S'ha desactivat el mode persistent.</translation>
 <translation id="1031961866430398710">i, a continuació,</translation>
 <translation id="1038643060055067718">Línies:</translation>
 <translation id="1038795173450935438">Per avançar pels elements d'una pàgina, prem Cerca+fletxa dreta i per tornar enrere, Cerca+fletxa esquerra. Per anar a la línia següent, prem Cerca+fletxa avall i, per anar a la línia anterior, fes servir Cerca+fletxa amunt. Si vols fer clic a l'element en el qual et trobes, prem Cerca+espai.</translation>
@@ -54,6 +54,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="1452236308086741652"><ph name="VALUE" />, quadre de text de contrasenya</translation>
 <translation id="1467432559032391204">A l'esquerra</translation>
 <translation id="1474557363159888097">No hi ha cap ancoratge anterior.</translation>
+<translation id="1480046233931937785">Crèdits</translation>
 <translation id="1487494366197411587">A Chromebook, la tecla Cerca es troba just a sobre de la tecla Maj de l'esquerra.</translation>
 <translation id="1499041187027566160">apuja el volum</translation>
 <translation id="1502086903961450562">Gràfic anterior</translation>
@@ -501,7 +502,7 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5291783959063340370">Objecte</translation>
 <translation id="5304943142864553931"><ph name="TITLE" />, pestanya</translation>
 <translation id="5310788376443009632">s'ha suprimit:</translation>
-<translation id="5320727453979144100">S'ha activat el mode atractiu.</translation>
+<translation id="5320727453979144100">S'ha activat el mode persistent.</translation>
 <translation id="5321085947096604457">{COUNT,plural, =1{coma}other{# comes}}</translation>
 <translation id="532371086589123547"><ph name="VALUE" />, quadre de text</translation>
 <translation id="5330443287809544590"><ph name="NAME" />, enllaç</translation>
@@ -555,13 +556,6 @@ Si has acabat el tutorial, fes servir ChromeVox per desplaçar-te fins al botó 
 <translation id="5682113568322255809">Punt de referència</translation>
 <translation id="5683155931978483559">Casella de selecció anterior</translation>
 <translation id="5684277895745049190">Llista</translation>
-<translation id="5695831708991916435">Les dreceres següents no són ordres de ChromeVox, però són molt útils per treure tot el profit de Chrome.
-Per desplaçar-te endavant per diversos elements clicables, com ara botons i enllaços, prem la tecla Tab. Per desplaçar-te enrere, prem Maj+Tab. 
-Per entrar al quadre d'adreces de Chrome, que també s'anomena omnibox, prem Control+L. 
-Per obrir una pestanya nova i anar-hi automàticament, prem Control+T. El cursor se situarà a l'omnibox. 
-Per tancar una pestanya, prem Control+W. 
-Per avançar per diverses pestanyes obertes, prem Control+Tab. 
-Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="5700650669149824506">No hi ha cap capçalera anterior del nivell 4.</translation>
 <translation id="5703716265115423771">abaixa el volum</translation>
 <translation id="5709192780268610569">No hi ha cap descripció llarga.</translation>
@@ -898,7 +892,7 @@ Per obrir el menú de Chrome, prem Alt+F.</translation>
 <translation id="930275611743429116">Inicia o finalitza la selecció.</translation>
 <translation id="948171205378458592">Disminueix la velocitat de la veu.</translation>
 <translation id="962913030769097253">Capçalera del nivell 1 següent</translation>
-<translation id="973955474346881951">Activa/desactiva el mode atractiu</translation>
+<translation id="973955474346881951">Activa o desactiva el mode persistent</translation>
 <translation id="976849232629612000">No hi ha elements.</translation>
 <translation id="995852680044449248">Inici del ratllat</translation>
 </translationbundle>

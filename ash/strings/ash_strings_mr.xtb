@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">रात्रीचा प्रकाश: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">सिम कार्ड लॉक केले आहे</translation>
 <translation id="2653659639078652383">सबमिट करा</translation>
-<translation id="2675319268637823299">अॅडमिनिस्ट्रेटरने <ph name="USER_EMAIL" /> साठी एकाधिक साइन इनची अनुमती दिली नाही.
-सुरू ठेवण्यासाठी सर्व वापरकर्त्यांनी साइन आउट करणे आवश्यक आहे.</translation>
 <translation id="2696763960464195425">तुम्ही साइन आउट करता तेव्हा तुमची माहिती काढली जाईल. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">तुमचा कीबोर्ड सेट करा</translation>
 <translation id="2718395828230677721">रात्रीचा प्रकाश</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">माउसचा कर्सर हायलाइट करा</translation>
 <translation id="3513798432020909783">खाते <ph name="MANAGER_EMAIL" /> ने व्‍यवस्‍थापित केले आहे</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" मध्ये परत बदला (रीस्टार्ट करणे आवश्यक)</translation>
-<translation id="3582792037806681688">या सत्रात वापरकर्त्यासाठी एकाधिक साइन इनची अनुमती रद्द केली गेली आहे</translation>
 <translation id="3595596368722241419">बॅटरी पूर्ण चार्ज</translation>
 <translation id="3606978283550408104">ब्रेल प्रदर्शन कनेक्ट केले.</translation>
 <translation id="3621202678540785336">इनपुट</translation>
@@ -228,7 +225,7 @@
 <translation id="607652042414456612">आपला कॉंप्युटर जवळपासच्या Bluetooth डिव्हाइसेसवर शोधण्यायोग्य आहे आणि <ph name="ADDRESS" /> पत्त्यासह "<ph name="NAME" />" म्हणून दिसेल</translation>
 <translation id="6106745654298855237"><ph name="POWER_SOURCE" /> चार्ज करीत आहे</translation>
 <translation id="615957422585914272">ऑन-स्‍क्रीन कीबोर्ड दर्शवा</translation>
-<translation id="6164005077879661055">एकदा हा पर्यवेक्षी वापरकर्ता काढल्यानंतर पर्यवेक्षी वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटविला जाईल. या पर्यवेक्षी वापरकर्त्यासाठी भेट दिलेल्या वेबसाइट आणि सेटिंग्ज तरीही <ph name="MANAGEMENT_URL" /> वर व्यवस्थापकाद्वारे दृश्यमान असू शकतात.</translation>
+<translation id="6164005077879661055">एकदा हा पर्यवेक्षी वापरकर्ता काढल्यानंतर पर्यवेक्षी वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल. या पर्यवेक्षी वापरकर्त्यासाठी भेट दिलेल्या वेबसाइट आणि सेटिंग्ज तरीही <ph name="MANAGEMENT_URL" /> वर व्यवस्थापकाद्वारे दृश्यमान असू शकतात.</translation>
 <translation id="6165508094623778733">अधिक जाणून घ्या</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: सक्रिय करत आहे...</translation>
 <translation id="6284232397434400372">रीझोल्युशन बदलले</translation>
@@ -261,7 +258,7 @@
 <translation id="6857811139397017780">सक्रिय करा<ph name="NETWORKSERVICE" /></translation>
 <translation id="6911468394164995108">दुसरीकडे सामील व्हा...</translation>
 <translation id="6981982820502123353">प्रवेशयोग्यता</translation>
-<translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटविला जाईल.</translation>
+<translation id="698231206551913481">एकदा हा वापरकर्ता काढल्यानंतर या वापरकर्त्याशी संबद्ध सर्व फायली आणि स्थानिक डेटा कायमचा हटवला जाईल.</translation>
 <translation id="7029814467594812963">सत्र निर्गमन करा</translation>
 <translation id="7034339000180558234"><ph name="RECEIVER_NAME" /> वर <ph name="TAB_NAME" /> कास्ट करीत आहे</translation>
 <translation id="7066646422045619941">हे नेटवर्क आपल्या प्रशासकाने अक्षम केले आहे.</translation>
