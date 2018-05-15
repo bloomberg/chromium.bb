@@ -7,6 +7,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/autofill/core/browser/credit_card.h"
 #include "ios/web_view/internal/app/application_context.h"
+#include "ui/base/resource/resource_bundle.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -53,6 +54,14 @@
 
 - (NSString*)networkName {
   return [self valueForType:autofill::CREDIT_CARD_TYPE];
+}
+
+- (UIImage*)networkIcon {
+  int resourceID =
+      autofill::CreditCard::IconResourceId(_internalCard.network());
+  return ui::ResourceBundle::GetSharedInstance()
+      .GetNativeImageNamed(resourceID)
+      .ToUIImage();
 }
 
 - (NSString*)expirationMonth {

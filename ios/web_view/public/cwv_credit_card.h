@@ -5,7 +5,7 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_CREDIT_CARD_H_
 #define IOS_WEB_VIEW_PUBLIC_CWV_CREDIT_CARD_H_
 
-#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #import "cwv_export.h"
 
@@ -22,6 +22,8 @@ CWV_EXPORT
 // The network this card belongs to. e.g. "Visa", "Amex", "MasterCard".
 // Inferred from |cardNumber|.
 @property(nonatomic, copy, nullable, readonly) NSString* networkName;
+// The image that represents the |networkName|.
+@property(nonatomic, readonly) UIImage* networkIcon;
 // The month this card expires on. e.g. "08".
 @property(nonatomic, copy, nullable) NSString* expirationMonth;
 // The year this card expires on. e.g. "2020".
