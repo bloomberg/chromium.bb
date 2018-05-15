@@ -16,12 +16,16 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/run_loop.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "components/bookmarks/browser/bookmark_undo_delegate.h"
@@ -1219,6 +1223,39 @@ TEST_F(BookmarkModelTest, RenamedFolderNodeExcludedFromIndex) {
                                query_parser::MatchingAlgorithm::DEFAULT,
                                &matches);
   EXPECT_TRUE(matches.empty());
+}
+
+// Verifies the TitledUrlIndex is probably loaded.
+TEST(BookmarkModelLoadTest, TitledUrlIndexPopulatedOnLoad) {
+  // Create a model with a single url.
+  base::ScopedTempDir tmp_dir;
+  ASSERT_TRUE(tmp_dir.CreateUniqueTempDir());
+  base::test::ScopedTaskEnvironment scoped_task_environment;
+  std::unique_ptr<BookmarkModel> model =
+      std::make_unique<BookmarkModel>(std::make_unique<TestBookmarkClient>());
+  model->Load(nullptr, tmp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get(),
+              base::ThreadTaskRunnerHandle::Get());
+  test::WaitForBookmarkModelToLoad(model.get());
+  const GURL node_url("http://google.com");
+  model->AddURL(model->bookmark_bar_node(), 0, base::ASCIIToUTF16("User"),
+                node_url);
+  // This is necessary to ensure the save completes.
+  base::RunLoop().RunUntilIdle();
+
+  // Recreate the model and ensure GetBookmarksMatching() returns the url that
+  // was added.
+  model =
+      std::make_unique<BookmarkModel>(std::make_unique<TestBookmarkClient>());
+  model->Load(nullptr, tmp_dir.GetPath(), base::ThreadTaskRunnerHandle::Get(),
+              base::ThreadTaskRunnerHandle::Get());
+  test::WaitForBookmarkModelToLoad(model.get());
+
+  std::vector<TitledUrlMatch> matches;
+  model->GetBookmarksMatching(base::ASCIIToUTF16("user"), 1,
+                              query_parser::MatchingAlgorithm::DEFAULT,
+                              &matches);
+  ASSERT_EQ(1u, matches.size());
+  EXPECT_EQ(node_url, matches[0].node->GetTitledUrlNodeUrl());
 }
 
 TEST(BookmarkNodeTest, NodeMetaInfo) {

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -42,6 +43,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
   void SetUp() override {
     RegisterManagedBookmarksPrefs(prefs_.registry());
+    ASSERT_TRUE(scoped_temp_dir_.CreateUniqueTempDir());
   }
 
   void TearDown() override {
@@ -68,7 +70,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
 
     model_->AddObserver(&observer_);
     EXPECT_CALL(observer_, BookmarkModelLoaded(model_.get(), _));
-    model_->Load(&prefs_, base::FilePath(),
+    model_->Load(&prefs_, scoped_temp_dir_.GetPath(),
                  base::ThreadTaskRunnerHandle::Get(),
                  base::ThreadTaskRunnerHandle::Get());
     test::WaitForBookmarkModelToLoad(model_.get());
@@ -168,6 +170,7 @@ class ManagedBookmarksTrackerTest : public testing::Test {
     return true;
   }
 
+  base::ScopedTempDir scoped_temp_dir_;
   base::MessageLoop loop_;
   TestingPrefServiceSimple prefs_;
   std::unique_ptr<BookmarkModel> model_;

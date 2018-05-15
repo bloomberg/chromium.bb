@@ -100,9 +100,12 @@ void LoadBookmarks(const base::FilePath& path, BookmarkLoadDetails* details) {
     }
   }
 
+  if (details->LoadExtraNodes())
+    load_index = true;
+
   // Load any extra root nodes now, after the IDs have been potentially
   // reassigned.
-  if (details->LoadExtraNodes()) {
+  if (load_index) {
     TimeTicks start_time = TimeTicks::Now();
     AddBookmarksToIndex(details, details->root_node());
     UMA_HISTOGRAM_TIMES("Bookmarks.CreateBookmarkIndexTime",
