@@ -147,6 +147,10 @@ constexpr int kShadowElevation = 16;
 constexpr int kBackdropRoundingDp = 4;
 constexpr SkColor kBackdropColor = SkColorSetARGB(0x24, 0xFF, 0xFF, 0xFF);
 
+// The amount of translation an item animates by when it is closed by using
+// swipe to close.
+constexpr int kSwipeToCloseCloseTranslationDp = 96;
+
 // Windows in tablet have different animations. Overview headers do not
 // translate when entering or exiting overview mode. Title bars also do not
 // animate in, as tablet mode windows have no title bars. Exceptions are windows
@@ -838,6 +842,31 @@ void WindowSelectorItem::SendAccessibleSelectionEvent() {
       ax::mojom::Event::kSelection, true);
 }
 
+void WindowSelectorItem::AnimateAndCloseWindow(bool up) {
+  window_selector_->PositionWindows(/*animate=*/true, /*ignored_item=*/this);
+  caption_container_view_->listener_button()->ResetListener();
+  close_button_->ResetListener();
+
+  int translation_y = kSwipeToCloseCloseTranslationDp * (up ? -1 : 1);
+  gfx::Transform transform;
+  transform.Translate(gfx::Vector2d(0, translation_y));
+
+  auto animate_window = [this](aura::Window* window,
+                               const gfx::Transform& transform, bool observe) {
+    ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_RESTORE_WINDOW,
+                                             window);
+    gfx::Transform original_transform = window->transform();
+    original_transform.ConcatTransform(transform);
+    window->SetTransform(original_transform);
+    if (observe)
+      settings.AddObserver(this);
+  };
+
+  AnimateOpacity(0.0, OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW);
+  animate_window(item_widget_->GetNativeWindow(), transform, false);
+  animate_window(GetWindowForStacking(), transform, true);
+}
+
 void WindowSelectorItem::CloseWindow() {
   gfx::Rect inset_bounds(target_bounds_);
   inset_bounds.Inset(target_bounds_.width() * kPreCloseScale,
@@ -977,6 +1006,10 @@ void WindowSelectorItem::OnWindowTitleChanged(aura::Window* window) {
   // filter any of the titles the window had while in the overview session.
   label_view_->SetText(window->GetTitle());
   UpdateAccessibilityName();
+}
+
+void WindowSelectorItem::OnImplicitAnimationsCompleted() {
+  transform_window_.Close();
 }
 
 float WindowSelectorItem::GetItemScale(const gfx::Size& size) {

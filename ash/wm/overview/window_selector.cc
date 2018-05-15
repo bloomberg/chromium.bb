@@ -657,9 +657,10 @@ void WindowSelector::ResetDraggedWindowGesture() {
   window_drag_controller_->ResetGesture();
 }
 
-void WindowSelector::PositionWindows(bool animate) {
+void WindowSelector::PositionWindows(bool animate,
+                                     WindowSelectorItem* ignored_item) {
   for (std::unique_ptr<WindowGrid>& grid : grid_list_)
-    grid->PositionWindows(animate);
+    grid->PositionWindows(animate, ignored_item);
 }
 
 bool WindowSelector::IsShuttingDown() const {

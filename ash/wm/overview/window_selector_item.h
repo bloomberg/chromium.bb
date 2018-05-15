@@ -11,6 +11,7 @@
 #include "ash/wm/overview/scoped_transform_overview_window.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/button/button.h"
@@ -37,7 +38,8 @@ class WindowGrid;
 
 // This class represents an item in overview mode.
 class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
-                                      public aura::WindowObserver {
+                                      public aura::WindowObserver,
+                                      public ui::ImplicitAnimationObserver {
  public:
   // An image button with a close window icon.
   class OverviewCloseButton : public views::ImageButton {
@@ -127,6 +129,10 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // enabled.
   void SendAccessibleSelectionEvent();
 
+  // Slides the item up or down and then closes the associated window. Used by
+  // overview swipe to close.
+  void AnimateAndCloseWindow(bool up);
+
   // Closes |transform_window_|.
   void CloseWindow();
 
@@ -178,6 +184,9 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
   void OnWindowTitleChanged(aura::Window* window) override;
+
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
 
   // Handle the mouse/gesture event and facilitate dragging the item.
   void HandlePressEvent(const gfx::Point& location_in_screen);
