@@ -1039,6 +1039,7 @@
   It is recommended you put inputs to your script in the "sources" variable,
   and stuff like other Python files required to run your script in the "inputs"
   variable.
+
   The "deps" and "public_deps" for an action will always be
   completed before any part of the action is run so it can depend on
   the output of previous steps. The "data_deps" will be built if the
@@ -1052,6 +1053,7 @@
 ```
   You should specify files created by your script by specifying them in the
   "outputs".
+
   The script will be executed with the given arguments with the current
   directory being that of the root build directory. If you pass files
   to your script, see "gn help rebase_path" for how to convert
@@ -1061,6 +1063,7 @@
 ```
 
 #### **File name handling**
+
 ```
   All output files must be inside the output directory of the build.
   You would generally use |$target_out_dir| or |$target_gen_dir| to
@@ -1120,6 +1123,7 @@
   You can dynamically write input dependencies (for incremental rebuilds if an
   input file changes) by writing a depfile when the script is run (see "gn help
   depfile"). This is more flexible than "inputs".
+
   The "deps" and "public_deps" for an action will always be
   completed before any part of the action is run so it can depend on
   the output of previous steps. The "data_deps" will be built if the
@@ -1129,6 +1133,7 @@
 ```
 
 #### **Outputs**
+
 ```
   The script will be executed with the given arguments with the current
   directory being that of the root build directory. If you pass files
@@ -1139,6 +1144,7 @@
 ```
 
 #### **File name handling**
+
 ```
   All output files must be inside the output directory of the build.
   You would generally use |$target_out_dir| or |$target_gen_dir| to
