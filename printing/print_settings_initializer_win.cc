@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include "printing/backend/win_helper.h"
 #include "printing/print_settings.h"
 
 namespace printing {
@@ -141,6 +142,8 @@ void PrintSettingsInitializerWin::InitPrintSettings(
   print_settings->SetPrinterPrintableArea(physical_size_device_units,
                                           printable_area_device_units,
                                           false);
+
+  print_settings->set_color(IsDevModeWithColor(&dev_mode) ? COLOR : GRAY);
 
   // Check for postscript first so that we can change the mode with the
   // first command.

@@ -142,18 +142,33 @@ class MockPrintingContextWin : public PrintingContextSystemDialogWin {
 };
 
 TEST_F(PrintingContextTest, PrintAll) {
-  base::MessageLoop message_loop;
   if (IsTestCaseDisabled())
     return;
 
+  base::MessageLoop message_loop;
   MockPrintingContextWin context(this);
   context.AskUserForSettings(
       123, false, false,
       base::BindOnce(&PrintingContextTest::PrintSettingsCallback,
                      base::Unretained(this)));
   EXPECT_EQ(PrintingContext::OK, result());
-  PrintSettings settings = context.settings();
+  const PrintSettings& settings = context.settings();
   EXPECT_EQ(0u, settings.ranges().size());
+}
+
+TEST_F(PrintingContextTest, Color) {
+  if (IsTestCaseDisabled())
+    return;
+
+  base::MessageLoop message_loop;
+  MockPrintingContextWin context(this);
+  context.AskUserForSettings(
+      123, false, false,
+      base::BindOnce(&PrintingContextTest::PrintSettingsCallback,
+                     base::Unretained(this)));
+  EXPECT_EQ(PrintingContext::OK, result());
+  const PrintSettings& settings = context.settings();
+  EXPECT_NE(settings.color(), UNKNOWN_COLOR_MODEL);
 }
 
 TEST_F(PrintingContextTest, Base) {
