@@ -177,7 +177,6 @@ class ProfileSyncService : public syncer::SyncService,
                            public identity::IdentityManager::Observer,
                            public GaiaCookieManagerService::Observer {
  public:
-  using Status = syncer::SyncStatus;
   using PlatformSyncAllowedProvider = base::RepeatingCallback<bool()>;
   using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
 

@@ -524,7 +524,7 @@ std::string ProfileSyncServiceHarness::GetClientInfoString(
   os << profile_debug_name_ << ": " << message << ": ";
   if (service()) {
     const SyncCycleSnapshot& snap = GetLastCycleSnapshot();
-    ProfileSyncService::Status status;
+    syncer::SyncStatus status;
     service()->QueryDetailedSyncStatus(&status);
     // Capture select info from the sync session snapshot and syncer status.
     os << ", has_unsynced_items: " << snap.has_remaining_local_changes()
