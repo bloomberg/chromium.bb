@@ -27,7 +27,7 @@
 #include "SkMorphologyImageFilter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -103,8 +103,8 @@ sk_sp<PaintFilter> FEMorphology::CreateImageFilter() {
                                            std::move(input), &rect);
 }
 
-static TextStream& operator<<(TextStream& ts,
-                              const MorphologyOperatorType& type) {
+static WTF::TextStream& operator<<(WTF::TextStream& ts,
+                                   const MorphologyOperatorType& type) {
   switch (type) {
     case FEMORPHOLOGY_OPERATOR_UNKNOWN:
       ts << "UNKNOWN";
@@ -119,8 +119,8 @@ static TextStream& operator<<(TextStream& ts,
   return ts;
 }
 
-TextStream& FEMorphology::ExternalRepresentation(TextStream& ts,
-                                                 int indent) const {
+WTF::TextStream& FEMorphology::ExternalRepresentation(WTF::TextStream& ts,
+                                                      int indent) const {
   WriteIndent(ts, indent);
   ts << "[feMorphology";
   FilterEffect::ExternalRepresentation(ts);

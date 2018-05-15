@@ -24,8 +24,8 @@
 
 #include <algorithm>
 #include "third_party/blink/renderer/platform/graphics/filters/light_source.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -113,8 +113,8 @@ void FESpecularLighting::SetLightSource(
   light_source_ = std::move(light_source);
 }
 
-TextStream& FESpecularLighting::ExternalRepresentation(TextStream& ts,
-                                                       int indent) const {
+WTF::TextStream& FESpecularLighting::ExternalRepresentation(WTF::TextStream& ts,
+                                                            int indent) const {
   WriteIndent(ts, indent);
   ts << "[feSpecularLighting";
   FilterEffect::ExternalRepresentation(ts);

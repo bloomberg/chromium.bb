@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/filters/distant_light_source.h"
 
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -48,7 +48,8 @@ bool DistantLightSource::SetElevation(float elevation) {
   return true;
 }
 
-TextStream& DistantLightSource::ExternalRepresentation(TextStream& ts) const {
+WTF::TextStream& DistantLightSource::ExternalRepresentation(
+    WTF::TextStream& ts) const {
   ts << "[type=DISTANT-LIGHT] ";
   ts << "[azimuth=\"" << Azimuth() << "\"]";
   ts << "[elevation=\"" << Elevation() << "\"]";

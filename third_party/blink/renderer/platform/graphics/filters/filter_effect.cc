@@ -108,7 +108,8 @@ Color FilterEffect::AdaptColorToOperatingInterpolationSpace(
       device_color, OperatingInterpolationSpace());
 }
 
-TextStream& FilterEffect::ExternalRepresentation(TextStream& ts, int) const {
+WTF::TextStream& FilterEffect::ExternalRepresentation(WTF::TextStream& ts,
+                                                      int) const {
   // FIXME: We should dump the subRegions of the filter primitives here later.
   // This isn't possible at the moment, because we need more detailed
   // information from the target object.

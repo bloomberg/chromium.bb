@@ -58,7 +58,8 @@ class PLATFORM_EXPORT FETurbulence final : public FilterEffect {
   bool StitchTiles() const;
   bool SetStitchTiles(bool);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);

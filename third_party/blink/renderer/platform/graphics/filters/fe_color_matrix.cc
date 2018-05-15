@@ -26,7 +26,7 @@
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -161,7 +161,8 @@ sk_sp<PaintFilter> FEColorMatrix::CreateImageFilter() {
                                             &rect);
 }
 
-static TextStream& operator<<(TextStream& ts, const ColorMatrixType& type) {
+static WTF::TextStream& operator<<(WTF::TextStream& ts,
+                                   const ColorMatrixType& type) {
   switch (type) {
     case FECOLORMATRIX_TYPE_UNKNOWN:
       ts << "UNKNOWN";
@@ -199,8 +200,8 @@ static bool ValuesIsValidForType(ColorMatrixType type,
   return false;
 }
 
-TextStream& FEColorMatrix::ExternalRepresentation(TextStream& ts,
-                                                  int indent) const {
+WTF::TextStream& FEColorMatrix::ExternalRepresentation(WTF::TextStream& ts,
+                                                       int indent) const {
   WriteIndent(ts, indent);
   ts << "[feColorMatrix";
   FilterEffect::ExternalRepresentation(ts);

@@ -27,8 +27,8 @@
 #include <algorithm>
 #include "SkTableColorFilter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -167,8 +167,8 @@ void FEComponentTransfer::GetValues(unsigned char r_values[256],
   }
 }
 
-static TextStream& operator<<(TextStream& ts,
-                              const ComponentTransferType& type) {
+static WTF::TextStream& operator<<(WTF::TextStream& ts,
+                                   const ComponentTransferType& type) {
   switch (type) {
     case FECOMPONENTTRANSFER_TYPE_UNKNOWN:
       ts << "UNKNOWN";
@@ -192,8 +192,8 @@ static TextStream& operator<<(TextStream& ts,
   return ts;
 }
 
-static TextStream& operator<<(TextStream& ts,
-                              const ComponentTransferFunction& function) {
+static WTF::TextStream& operator<<(WTF::TextStream& ts,
+                                   const ComponentTransferFunction& function) {
   ts << "type=\"" << function.type << "\" slope=\"" << function.slope
      << "\" intercept=\"" << function.intercept << "\" amplitude=\""
      << function.amplitude << "\" exponent=\"" << function.exponent
@@ -201,8 +201,9 @@ static TextStream& operator<<(TextStream& ts,
   return ts;
 }
 
-TextStream& FEComponentTransfer::ExternalRepresentation(TextStream& ts,
-                                                        int indent) const {
+WTF::TextStream& FEComponentTransfer::ExternalRepresentation(
+    WTF::TextStream& ts,
+    int indent) const {
   WriteIndent(ts, indent);
   ts << "[feComponentTransfer";
   FilterEffect::ExternalRepresentation(ts);

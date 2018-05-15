@@ -56,7 +56,8 @@ class PLATFORM_EXPORT FEConvolveMatrix final : public FilterEffect {
   bool SetEdgeMode(EdgeModeType);
   bool SetPreserveAlpha(bool);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEConvolveMatrix(Filter*,

@@ -35,7 +35,8 @@ class PLATFORM_EXPORT FEBlend final : public FilterEffect {
   BlendMode GetBlendMode() const { return mode_; }
   bool SetBlendMode(BlendMode);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEBlend(Filter*, BlendMode);

@@ -212,6 +212,8 @@ inline LayoutPoint FlooredLayoutPoint(const FloatSize& s) {
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutPoint&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&,
+                                            const LayoutPoint&);
 
 }  // namespace blink
 

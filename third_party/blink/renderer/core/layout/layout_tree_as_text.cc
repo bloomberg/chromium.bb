@@ -67,7 +67,8 @@ namespace blink {
 
 using namespace HTMLNames;
 
-static void PrintBorderStyle(TextStream& ts, const EBorderStyle border_style) {
+static void PrintBorderStyle(WTF::TextStream& ts,
+                             const EBorderStyle border_style) {
   switch (border_style) {
     case EBorderStyle::kNone:
       ts << "none";
@@ -141,11 +142,11 @@ String QuoteAndEscapeNonPrintables(const String& s) {
   return result.ToString();
 }
 
-TextStream& operator<<(TextStream& ts, const Color& c) {
+WTF::TextStream& operator<<(WTF::TextStream& ts, const Color& c) {
   return ts << c.NameForLayoutTreeAsText();
 }
 
-void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
+void LayoutTreeAsText::WriteLayoutObject(WTF::TextStream& ts,
                                          const LayoutObject& o,
                                          LayoutAsTextBehavior behavior) {
   ts << o.DecoratedName();
@@ -363,7 +364,9 @@ void LayoutTreeAsText::WriteLayoutObject(TextStream& ts,
   }
 }
 
-static void WriteInlineBox(TextStream& ts, const InlineBox& box, int indent) {
+static void WriteInlineBox(WTF::TextStream& ts,
+                           const InlineBox& box,
+                           int indent) {
   WriteIndent(ts, indent);
   ts << "+ ";
   ts << box.BoxName() << " {" << box.GetLineLayoutItem().DebugName() << "}"
@@ -373,7 +376,7 @@ static void WriteInlineBox(TextStream& ts, const InlineBox& box, int indent) {
      << box.BaselinePosition(kIdeographicBaseline);
 }
 
-static void WriteInlineTextBox(TextStream& ts,
+static void WriteInlineTextBox(WTF::TextStream& ts,
                                const InlineTextBox& text_box,
                                int indent) {
   WriteInlineBox(ts, text_box, indent);
@@ -386,7 +389,7 @@ static void WriteInlineTextBox(TextStream& ts,
      << " \"" << value << "\"";
 }
 
-static void WriteInlineFlowBox(TextStream& ts,
+static void WriteInlineFlowBox(WTF::TextStream& ts,
                                const InlineFlowBox& root_box,
                                int indent) {
   WriteInlineBox(ts, root_box, indent);
@@ -407,7 +410,7 @@ static void WriteInlineFlowBox(TextStream& ts,
   }
 }
 
-void LayoutTreeAsText::WriteLineBoxTree(TextStream& ts,
+void LayoutTreeAsText::WriteLineBoxTree(WTF::TextStream& ts,
                                         const LayoutBlockFlow& o,
                                         int indent) {
   for (const InlineFlowBox* root_box : o.LineBoxes()) {
@@ -415,7 +418,7 @@ void LayoutTreeAsText::WriteLineBoxTree(TextStream& ts,
   }
 }
 
-static void WriteTextRun(TextStream& ts,
+static void WriteTextRun(WTF::TextStream& ts,
                          const LayoutText& o,
                          const InlineTextBox& run) {
   // FIXME: For now use an "enclosingIntRect" model for x, y and logicalWidth,
@@ -444,7 +447,7 @@ static void WriteTextRun(TextStream& ts,
   ts << "\n";
 }
 
-static void WriteTextFragment(TextStream& ts,
+static void WriteTextFragment(WTF::TextStream& ts,
                               const NGPhysicalFragment& physical_fragment,
                               NGPhysicalOffset offset_to_container_box) {
   if (!physical_fragment.IsText())
@@ -464,7 +467,7 @@ static void WriteTextFragment(TextStream& ts,
   ts << "\n";
 }
 
-static void WritePaintProperties(TextStream& ts,
+static void WritePaintProperties(WTF::TextStream& ts,
                                  const LayoutObject& o,
                                  int indent) {
   bool has_fragments = o.FirstFragment().NextFragment();
@@ -490,7 +493,7 @@ static void WritePaintProperties(TextStream& ts,
   }
 }
 
-void Write(TextStream& ts,
+void Write(WTF::TextStream& ts,
            const LayoutObject& o,
            int indent,
            LayoutAsTextBehavior behavior) {
@@ -585,7 +588,7 @@ enum LayerPaintPhase {
   kLayerPaintPhaseForeground = 1
 };
 
-static void Write(TextStream& ts,
+static void Write(WTF::TextStream& ts,
                   PaintLayer& layer,
                   const LayoutRect& layer_bounds,
                   const LayoutRect& background_clip_rect,
@@ -704,7 +707,7 @@ static Vector<PaintLayerStackingNode*> NormalFlowListFor(
   return vector;
 }
 
-void LayoutTreeAsText::WriteLayers(TextStream& ts,
+void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
                                    const PaintLayer* root_layer,
                                    PaintLayer* layer,
                                    const LayoutRect& paint_rect,
@@ -830,7 +833,7 @@ static String NodePosition(Node* node) {
   return result.ToString();
 }
 
-static void WriteSelection(TextStream& ts, const LayoutObject* o) {
+static void WriteSelection(WTF::TextStream& ts, const LayoutObject* o) {
   Node* n = o->GetNode();
   if (!n || !n->IsDocumentNode())
     return;
@@ -860,7 +863,7 @@ static void WriteSelection(TextStream& ts, const LayoutObject* o) {
 static String ExternalRepresentation(LayoutBox* layout_object,
                                      LayoutAsTextBehavior behavior,
                                      const PaintLayer* marked_layer = nullptr) {
-  TextStream ts;
+  WTF::TextStream ts;
   if (!layout_object->HasLayer())
     return ts.Release();
 
@@ -918,7 +921,7 @@ String ExternalRepresentation(Element* element, LayoutAsTextBehavior behavior) {
                                 behavior | kLayoutAsTextShowAllLayers);
 }
 
-static void WriteCounterValuesFromChildren(TextStream& stream,
+static void WriteCounterValuesFromChildren(WTF::TextStream& stream,
                                            LayoutObject* parent,
                                            bool& is_first_counter) {
   for (LayoutObject* child = parent->SlowFirstChild(); child;
@@ -935,7 +938,7 @@ static void WriteCounterValuesFromChildren(TextStream& stream,
 
 String CounterValueForElement(Element* element) {
   element->GetDocument().UpdateStyleAndLayout();
-  TextStream stream;
+  WTF::TextStream stream;
   bool is_first_counter = true;
   // The counter layoutObjects should be children of :before or :after
   // pseudo-elements.

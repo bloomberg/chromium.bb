@@ -23,28 +23,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_STREAM_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_TEXT_TEXT_STREAM_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_STREAM_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_WTF_TEXT_TEXT_STREAM_H_
 
-#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/unicode.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
-namespace blink {
+namespace WTF {
 
-class IntPoint;
-class IntRect;
-class FloatPoint;
-class FloatRect;
-class FloatSize;
-class LayoutUnit;
-class LayoutPoint;
-class LayoutRect;
-class LayoutSize;
-
-class PLATFORM_EXPORT TextStream final {
+class WTF_EXPORT TextStream final {
   STACK_ALLOCATED();
 
  public:
@@ -73,17 +63,7 @@ class PLATFORM_EXPORT TextStream final {
   StringBuilder text_;
 };
 
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const IntPoint&);
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const IntRect&);
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const FloatPoint&);
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const FloatSize&);
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const FloatRect&);
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const LayoutUnit&);
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const LayoutPoint&);
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const LayoutRect&);
-PLATFORM_EXPORT TextStream& operator<<(TextStream&, const LayoutSize&);
-
-PLATFORM_EXPORT void WriteIndent(TextStream&, int indent);
+WTF_EXPORT void WriteIndent(TextStream&, int indent);
 
 template <typename Item>
 TextStream& operator<<(TextStream& ts, const Vector<Item>& vector) {
@@ -100,6 +80,6 @@ TextStream& operator<<(TextStream& ts, const Vector<Item>& vector) {
   return ts;
 }
 
-}  // namespace blink
+}  // namespace WTF
 
 #endif

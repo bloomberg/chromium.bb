@@ -19,7 +19,8 @@ class PLATFORM_EXPORT PaintFilterEffect : public FilterEffect {
     return kFilterEffectTypeSourceInput;
   }
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
   sk_sp<PaintFilter> CreateImageFilter() override;
 
  private:

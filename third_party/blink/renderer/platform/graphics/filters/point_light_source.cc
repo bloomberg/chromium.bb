@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/filters/point_light_source.h"
 
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -41,7 +41,8 @@ bool PointLightSource::SetPosition(const FloatPoint3D& position) {
   return true;
 }
 
-TextStream& PointLightSource::ExternalRepresentation(TextStream& ts) const {
+WTF::TextStream& PointLightSource::ExternalRepresentation(
+    WTF::TextStream& ts) const {
   ts << "[type=POINT-LIGHT] ";
   ts << "[position=\"" << GetPosition() << "\"]";
   return ts;

@@ -193,6 +193,8 @@ jumbo_component("wtf") {
     "text/text_encoding_registry.h",
     "text/text_position.cc",
     "text/text_position.h",
+    "text/text_stream.cc",
+    "text/text_stream.h",
     "text/unicode.h",
     "text/utf8.cc",
     "text/utf8.h",

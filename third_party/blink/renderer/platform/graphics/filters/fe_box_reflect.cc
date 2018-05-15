@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -19,8 +20,8 @@ FloatRect FEBoxReflect::MapEffect(const FloatRect& rect) const {
   return reflection_.MapRect(rect);
 }
 
-TextStream& FEBoxReflect::ExternalRepresentation(TextStream& ts,
-                                                 int indent) const {
+WTF::TextStream& FEBoxReflect::ExternalRepresentation(WTF::TextStream& ts,
+                                                      int indent) const {
   // Only called for SVG layout tree printing.
   NOTREACHED();
   return ts;

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/layout_unit.h"
 
 #include <ostream>
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -23,6 +24,10 @@ String LayoutUnit::ToString() const {
 
 std::ostream& operator<<(std::ostream& stream, const LayoutUnit& value) {
   return stream << value.ToString();
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const LayoutUnit& unit) {
+  return ts << WTF::TextStream::FormatNumberRespectingIntegers(unit.ToDouble());
 }
 
 }  // namespace blink

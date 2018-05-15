@@ -43,7 +43,8 @@ class PLATFORM_EXPORT FEFlood final : public FilterEffect {
   // color-interpolation-filters.
   void SetOperatingInterpolationSpace(InterpolationSpace) override {}
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEFlood(Filter*, const Color&, float);

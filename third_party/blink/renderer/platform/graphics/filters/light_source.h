@@ -27,14 +27,13 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
 
 namespace blink {
 
 enum LightType { LS_DISTANT, LS_POINT, LS_SPOT };
-
-class TextStream;
 
 class PLATFORM_EXPORT LightSource : public RefCounted<LightSource> {
   WTF_MAKE_NONCOPYABLE(LightSource);
@@ -45,7 +44,7 @@ class PLATFORM_EXPORT LightSource : public RefCounted<LightSource> {
   virtual ~LightSource();
 
   LightType GetType() const { return type_; }
-  virtual TextStream& ExternalRepresentation(TextStream&) const = 0;
+  virtual WTF::TextStream& ExternalRepresentation(WTF::TextStream&) const = 0;
 
   virtual bool SetAzimuth(float) { return false; }
   virtual bool SetElevation(float) { return false; }

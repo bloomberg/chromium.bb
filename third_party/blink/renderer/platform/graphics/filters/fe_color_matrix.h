@@ -46,7 +46,8 @@ class PLATFORM_EXPORT FEColorMatrix final : public FilterEffect {
   const Vector<float>& Values() const;
   bool SetValues(const Vector<float>&);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
   static inline void CalculateSaturateComponents(float* components,
                                                  float value);

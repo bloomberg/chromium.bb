@@ -25,7 +25,7 @@
 
 #include "SkColorFilter.h"
 #include "SkColorFilterImageFilter.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -72,7 +72,8 @@ sk_sp<PaintFilter> FEFlood::CreateImageFilter() {
       &rect);
 }
 
-TextStream& FEFlood::ExternalRepresentation(TextStream& ts, int indent) const {
+WTF::TextStream& FEFlood::ExternalRepresentation(WTF::TextStream& ts,
+                                                 int indent) const {
   WriteIndent(ts, indent);
   ts << "[feFlood";
   FilterEffect::ExternalRepresentation(ts);

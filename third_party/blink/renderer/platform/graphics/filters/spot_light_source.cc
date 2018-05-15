@@ -31,8 +31,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/filters/spot_light_source.h"
 
-#include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -65,7 +65,8 @@ bool SpotLightSource::SetLimitingConeAngle(float limiting_cone_angle) {
   return true;
 }
 
-TextStream& SpotLightSource::ExternalRepresentation(TextStream& ts) const {
+WTF::TextStream& SpotLightSource::ExternalRepresentation(
+    WTF::TextStream& ts) const {
   ts << "[type=SPOT-LIGHT] ";
   ts << "[position=\"" << GetPosition() << "\"]";
   ts << "[direction=\"" << Direction() << "\"]";

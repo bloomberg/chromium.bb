@@ -40,7 +40,8 @@ class PLATFORM_EXPORT FEDropShadow final : public FilterEffect {
   void SetShadowColor(const Color& color) { shadow_color_ = color; }
   void SetShadowOpacity(float opacity) { shadow_opacity_ = opacity; }
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEDropShadow(Filter*, float, float, float, float, const Color&, float);

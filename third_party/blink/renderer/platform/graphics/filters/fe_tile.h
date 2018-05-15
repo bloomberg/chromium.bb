@@ -31,7 +31,8 @@ class PLATFORM_EXPORT FETile final : public FilterEffect {
  public:
   static FETile* Create(Filter*);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FETile(Filter*);

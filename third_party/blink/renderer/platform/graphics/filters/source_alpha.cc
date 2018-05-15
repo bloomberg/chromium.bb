@@ -22,7 +22,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/effects/SkColorFilterImageFilter.h"
 #include "third_party/skia/include/effects/SkColorMatrixFilter.h"
@@ -50,8 +50,8 @@ sk_sp<PaintFilter> SourceAlpha::CreateImageFilter() {
                                             std::move(source_graphic));
 }
 
-TextStream& SourceAlpha::ExternalRepresentation(TextStream& ts,
-                                                int indent) const {
+WTF::TextStream& SourceAlpha::ExternalRepresentation(WTF::TextStream& ts,
+                                                     int indent) const {
   WriteIndent(ts, indent);
   ts << "[SourceAlpha]\n";
   return ts;

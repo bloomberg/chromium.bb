@@ -49,7 +49,7 @@ class PLATFORM_EXPORT SpotLightSource final : public LightSource {
   bool SetSpecularExponent(float) override;
   bool SetLimitingConeAngle(float) override;
 
-  TextStream& ExternalRepresentation(TextStream&) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&) const override;
 
  private:
   SpotLightSource(const FloatPoint3D& position,

@@ -48,7 +48,8 @@ class PLATFORM_EXPORT FEMorphology final : public FilterEffect {
   float RadiusY() const;
   bool SetRadiusY(float);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEMorphology(Filter*, MorphologyOperatorType, float radius_x, float radius_y);

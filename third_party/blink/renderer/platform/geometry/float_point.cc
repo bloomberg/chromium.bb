@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkPoint.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -131,6 +132,13 @@ std::ostream& operator<<(std::ostream& ostream, const FloatPoint& point) {
 
 String FloatPoint::ToString() const {
   return String::Format("%lg,%lg", X(), Y());
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const FloatPoint& p) {
+  ts << "(" << WTF::TextStream::FormatNumberRespectingIntegers(p.X());
+  ts << "," << WTF::TextStream::FormatNumberRespectingIntegers(p.Y());
+  ts << ")";
+  return ts;
 }
 
 }  // namespace blink

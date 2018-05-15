@@ -34,8 +34,8 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -139,7 +139,8 @@ LayoutObject* FEImage::ReferencedLayoutObject() const {
   return href_element->GetLayoutObject();
 }
 
-TextStream& FEImage::ExternalRepresentation(TextStream& ts, int indent) const {
+WTF::TextStream& FEImage::ExternalRepresentation(WTF::TextStream& ts,
+                                                 int indent) const {
   IntSize image_size;
   if (image_) {
     image_size = image_->Size();
