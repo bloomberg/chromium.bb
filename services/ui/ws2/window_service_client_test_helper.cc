@@ -19,6 +19,11 @@ mojom::WindowTree* WindowServiceClientTestHelper::window_tree() {
   return static_cast<mojom::WindowTree*>(window_service_client_);
 }
 
+mojom::WindowDataPtr WindowServiceClientTestHelper::WindowToWindowData(
+    aura::Window* window) {
+  return window_service_client_->WindowToWindowData(window);
+}
+
 aura::Window* WindowServiceClientTestHelper::NewWindow(
     Id transport_window_id,
     base::flat_map<std::string, std::vector<uint8_t>> properties) {
@@ -47,13 +52,6 @@ void WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
       local_surface_id);
 }
 
-void WindowServiceClientTestHelper::SetEventTargetingPolicy(
-    aura::Window* window,
-    mojom::EventTargetingPolicy policy) {
-  window_service_client_->SetEventTargetingPolicy(
-      window_service_client_->TransportIdForWindow(window), policy);
-}
-
 void WindowServiceClientTestHelper::SetWindowProperty(
     aura::Window* window,
     const std::string& name,
@@ -62,6 +60,13 @@ void WindowServiceClientTestHelper::SetWindowProperty(
   window_service_client_->SetWindowProperty(
       change_id, window_service_client_->TransportIdForWindow(window), name,
       value);
+}
+
+void WindowServiceClientTestHelper::SetEventTargetingPolicy(
+    aura::Window* window,
+    mojom::EventTargetingPolicy policy) {
+  window_service_client_->SetEventTargetingPolicy(
+      window_service_client_->TransportIdForWindow(window), policy);
 }
 
 }  // namespace ws2

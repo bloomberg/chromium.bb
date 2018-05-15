@@ -347,4 +347,16 @@ void PropertyConverter::RegisterString16Property(
   transport_names_.insert(transport_name);
 }
 
+base::flat_map<std::string, std::vector<uint8_t>>
+PropertyConverter::GetTransportProperties(Window* window) {
+  base::flat_map<std::string, std::vector<uint8_t>> properties;
+  std::string name;
+  std::unique_ptr<std::vector<uint8_t>> value;
+  for (const void* key : window->GetAllPropertyKeys()) {
+    if (ConvertPropertyForTransport(window, key, &name, &value))
+      properties[name] = value ? std::move(*value) : std::vector<uint8_t>();
+  }
+  return properties;
+}
+
 }  // namespace aura

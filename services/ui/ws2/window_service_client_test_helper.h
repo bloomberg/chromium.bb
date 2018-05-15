@@ -10,6 +10,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws2/ids.h"
 
 namespace aura {
@@ -41,6 +42,8 @@ class WindowServiceClientTestHelper {
 
   mojom::WindowTree* window_tree();
 
+  mojom::WindowDataPtr WindowToWindowData(aura::Window* window);
+
   aura::Window* NewWindow(
       Id transport_window_id,
       base::flat_map<std::string, std::vector<uint8_t>> properties = {});
@@ -50,12 +53,12 @@ class WindowServiceClientTestHelper {
   void SetWindowBounds(aura::Window* window,
                        const gfx::Rect& bounds,
                        uint32_t change_id = 1);
-  void SetEventTargetingPolicy(aura::Window* window,
-                               mojom::EventTargetingPolicy policy);
   void SetWindowProperty(aura::Window* window,
                          const std::string& name,
                          const std::vector<uint8_t>& value,
                          uint32_t change_id = 1);
+  void SetEventTargetingPolicy(aura::Window* window,
+                               mojom::EventTargetingPolicy policy);
 
  private:
   WindowServiceClient* window_service_client_;
