@@ -128,8 +128,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
 
-  // Positions all of the windows in the overview.
-  void PositionWindows(bool animate);
+  // Positions all of the windows in the overview, except |ignored_item|.
+  void PositionWindows(bool animate,
+                       WindowSelectorItem* ignored_item = nullptr);
 
   // If we are in middle of ending overview mode.
   bool IsShuttingDown() const;

@@ -137,7 +137,8 @@ void OverviewWindowDragController::CompleteDrag(
     // value.
     if (std::abs((location_in_screen - initial_event_location_).y()) >
         kDragToCloseDistanceThresholdDp) {
-      item_->CloseWindow();
+      item_->AnimateAndCloseWindow(
+          (location_in_screen - initial_event_location_).y() < 0);
     } else {
       item_->SetOpacity(original_opacity_);
       window_selector_->PositionWindows(/*animate=*/true);
@@ -183,7 +184,8 @@ void OverviewWindowDragController::Fling(const gfx::Point& location_in_screen,
   if (current_drag_behavior_ == DragBehavior::kDragToClose ||
       current_drag_behavior_ == DragBehavior::kUndefined) {
     if (std::abs(velocity_y) > kFlingToCloseVelocityThreshold) {
-      item_->CloseWindow();
+      item_->AnimateAndCloseWindow(
+          (location_in_screen - initial_event_location_).y() < 0);
       return;
     }
   }
