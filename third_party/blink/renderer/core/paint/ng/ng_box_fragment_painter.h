@@ -34,7 +34,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   NGBoxFragmentPainter(const NGPaintFragment&);
 
   void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
-  void PaintInlineBox(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintObject(const PaintInfo&,
+                   const LayoutPoint&,
+                   bool suppress_box_decoration_background = false);
 
   // TODO(eae): Change to take a HitTestResult pointer instead as it mutates.
   bool NodeAtPoint(HitTestResult&,
@@ -51,7 +53,8 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   void PaintTextClipMask(GraphicsContext&,
                          const IntRect& mask_rect,
-                         const LayoutPoint& paint_offset) override;
+                         const LayoutPoint& paint_offset,
+                         bool flow_box_has_multiple_fragments) override;
   LayoutRect AdjustForScrolledContent(const PaintInfo&,
                                       const BoxPainterBase::FillLayerInfo&,
                                       const LayoutRect&) override;
@@ -81,9 +84,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
       const PaintInfo&,
       const LayoutPoint& paint_offset,
       const LayoutPoint& legacy_paint_offset);
-  void PaintObject(const PaintInfo&,
-                   const LayoutPoint&,
-                   bool suppress_box_decoration_background = false);
   void PaintBlockFlowContents(const PaintInfo&, const LayoutPoint&);
   void PaintInlineChild(const NGPaintFragment&,
                         const PaintInfo&,

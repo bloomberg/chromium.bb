@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_clipper.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_fragment_painter.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_text_fragment_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
@@ -91,16 +92,6 @@ void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                           adjustment.AdjustedPaintOffset());
 }
 
-void NGBoxFragmentPainter::PaintInlineBox(const PaintInfo& paint_info,
-                                          const LayoutPoint& paint_offset) {
-  const LayoutPoint adjusted_paint_offset =
-      paint_offset + box_fragment_.Offset().ToLayoutPoint();
-  if (paint_info.phase == PaintPhase::kForeground)
-    PaintBoxDecorationBackground(paint_info, adjusted_paint_offset);
-
-  PaintObject(paint_info, adjusted_paint_offset, true);
-}
-
 void NGBoxFragmentPainter::PaintWithAdjustedOffset(
     PaintInfo& info,
     const LayoutPoint& paint_offset) {
@@ -151,7 +142,7 @@ void NGBoxFragmentPainter::PaintObject(
     // TODO(eae): style.HasBoxDecorationBackground isn't good enough, it needs
     // to check the object as some objects may have box decoration background
     // other than from their own style.
-    // TODO(eae): This should not be needed both here and in PaintInlineBox.
+    // TODO(eae): We can probably get rid of suppress_box_decoration_background.
     if (!suppress_box_decoration_background && is_visible &&
         style.HasBoxDecorationBackground())
       PaintBoxDecorationBackground(paint_info, paint_offset);
@@ -293,7 +284,7 @@ void NGBoxFragmentPainter::PaintInlineChild(const NGPaintFragment& child,
   } else if (fragment.Type() == NGPhysicalFragment::kFragmentBox) {
     if (child.HasSelfPaintingLayer())
       return;
-    NGBoxFragmentPainter(child).PaintInlineBox(descendants_info, paint_offset);
+    NGInlineBoxFragmentPainter(child).Paint(descendants_info, paint_offset);
   } else {
     NOTREACHED();
   }
@@ -407,7 +398,6 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
     NGPhysicalSize size = box_fragment_.Size();
     paint_rect = LayoutRect(LayoutPoint(), LayoutSize(size.width, size.height));
   }
-
   paint_rect.MoveBy(paint_offset);
 
   bool painting_overflow_contents =
@@ -703,20 +693,28 @@ bool NGBoxFragmentPainter::IntersectsPaintRect(
   return paint_info.GetCullRect().IntersectsCullRect(overflow_rect);
 }
 
-void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
-                                             const IntRect& mask_rect,
-                                             const LayoutPoint& paint_offset) {
+void NGBoxFragmentPainter::PaintTextClipMask(
+    GraphicsContext& context,
+    const IntRect& mask_rect,
+    const LayoutPoint& paint_offset,
+    bool flow_box_has_multiple_fragments) {
   PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
-  const LayoutSize local_offset = box_fragment_.Offset().ToLayoutSize();
-  if (PhysicalFragment().IsBlockFlow()) {
-    // TODO(layout-dev): Add support for box-decoration-break: slice
-    // See BoxModelObjectPainter::LogicalOffsetOnLine
-    // if (box_fragment_.Style().BoxDecorationBreak() ==
-    //    EBoxDecorationBreak::kSlice) {
-    //  local_offset -= LogicalOffsetOnLine(*flow_box_);
-    //}
-    PaintBlockFlowContents(paint_info, paint_offset - local_offset);
+  LayoutSize local_offset = box_fragment_.Offset().ToLayoutSize();
+  if (flow_box_has_multiple_fragments) {
+    NGInlineBoxFragmentPainter inline_box_painter(box_fragment_);
+    if (box_fragment_.Style().BoxDecorationBreak() ==
+        EBoxDecorationBreak::kSlice) {
+      LayoutUnit offset_on_line;
+      LayoutUnit total_width;
+      inline_box_painter.ComputeFragmentOffsetOnLine(
+          box_fragment_.Style().Direction(), &offset_on_line, &total_width);
+      LayoutSize line_offset(offset_on_line, LayoutUnit());
+      local_offset -= box_fragment_.Style().IsHorizontalWritingMode()
+                          ? line_offset
+                          : line_offset.TransposedSize();
+    }
+    inline_box_painter.Paint(paint_info, paint_offset - local_offset);
   } else {
     PaintObject(paint_info, paint_offset - local_offset);
   }

@@ -5,6 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_INLINE_FLOW_BOX_PAINTER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_INLINE_FLOW_BOX_PAINTER_H_
 
+#include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
+#include "third_party/blink/renderer/core/paint/inline_box_painter_base.h"
 #include "third_party/blink/renderer/core/style/shadow_data.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -12,23 +14,19 @@
 
 namespace blink {
 
-class Color;
-class FillLayer;
 class InlineFlowBox;
 class IntRect;
 class LayoutPoint;
 class LayoutRect;
-class LayoutSize;
 class LayoutUnit;
 struct PaintInfo;
-class ComputedStyle;
 
-class InlineFlowBoxPainter {
+class InlineFlowBoxPainter : public InlineBoxPainterBase {
   STACK_ALLOCATED();
 
  public:
-  InlineFlowBoxPainter(const InlineFlowBox& inline_flow_box)
-      : inline_flow_box_(inline_flow_box) {}
+  InlineFlowBoxPainter(const InlineFlowBox&);
+
   void Paint(const PaintInfo&,
              const LayoutPoint& paint_offset,
              const LayoutUnit line_top,
@@ -36,42 +34,26 @@ class InlineFlowBoxPainter {
 
   LayoutRect FrameRectClampedToLineTopAndBottomIfNeeded() const;
 
- private:
-  void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint& paint_offset);
-  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
-  void PaintFillLayers(const PaintInfo&,
-                       const Color&,
-                       const FillLayer&,
-                       const LayoutRect&,
-                       SkBlendMode op = SkBlendMode::kSrcOver);
-  void PaintFillLayer(const PaintInfo&,
-                      const Color&,
-                      const FillLayer&,
-                      const LayoutRect&,
-                      SkBlendMode op);
-  inline bool ShouldForceIncludeLogicalEdges() const;
-  inline bool IncludeLogicalLeftEdgeForBoxShadow() const;
-  inline bool IncludeLogicalRightEdgeForBoxShadow() const;
-  void PaintNormalBoxShadow(const PaintInfo&,
-                            const ComputedStyle&,
-                            const LayoutRect& paint_rect);
-  void PaintInsetBoxShadow(const PaintInfo&,
-                           const ComputedStyle&,
-                           const LayoutRect& paint_rect);
-  LayoutRect PaintRectForImageStrip(const LayoutPoint& paint_offset,
-                                    const LayoutSize& frame_size,
-                                    TextDirection) const;
+ protected:
+  LayoutRect PaintRectForImageStrip(const LayoutRect&,
+                                    TextDirection) const override;
+  bool InlineBoxHasMultipleFragments() const override;
+  BoxPainterBase& BoxPainter() override { return box_painter_; }
 
-  enum BorderPaintingType {
-    kDontPaintBorders,
-    kPaintBordersWithoutClip,
-    kPaintBordersWithClip
-  };
-  BorderPaintingType GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
-                                        IntRect& adjusted_clip_rect) const;
+ private:
+  void PaintBackgroundBorderShadow(const PaintInfo&,
+                                   const LayoutPoint& paint_offset);
+  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
+  inline bool ShouldForceIncludeLogicalEdges() const;
+  bool IncludeLogicalLeftEdgeForBoxShadow() const override;
+  bool IncludeLogicalRightEdgeForBoxShadow() const override;
+
+  BorderPaintingType GetBorderPaintType(
+      const LayoutRect& adjusted_frame_rect,
+      IntRect& adjusted_clip_rect) const override;
 
   const InlineFlowBox& inline_flow_box_;
+  BoxModelObjectPainter box_painter_;
 };
 
 }  // namespace blink

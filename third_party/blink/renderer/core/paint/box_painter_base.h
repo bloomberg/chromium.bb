@@ -64,6 +64,7 @@ class BoxPainterBase {
                       BackgroundBleedAvoidance,
                       BackgroundImageGeometry&,
                       SkBlendMode = SkBlendMode::kSrcOver,
+                      bool flow_box_has_multiple_fragments = false,
                       const LayoutSize flow_box_size = LayoutSize());
 
   void PaintMaskImages(const PaintInfo&,
@@ -144,14 +145,16 @@ class BoxPainterBase {
  protected:
   FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
       const LayoutRect& border_rect,
+      bool flow_box_has_multiple_fragments,
       const LayoutSize& flow_box_size,
-      BackgroundBleedAvoidance,
       bool include_logical_left_edge,
-      bool include_logical_right_edge) const;
+      bool include_logical_right_edge,
+      FloatRoundedRect background_rounded_rect) const;
   FloatRoundedRect RoundedBorderRectForClip(
       const FillLayerInfo&,
       const FillLayer&,
       const LayoutRect&,
+      bool flow_box_has_multiple_fragments,
       const LayoutSize& flow_box_size,
       BackgroundBleedAvoidance,
       LayoutRectOutsets border_padding_insets) const;
@@ -171,18 +174,21 @@ class BoxPainterBase {
                                  SkBlendMode composite_op,
                                  const BackgroundImageGeometry&,
                                  const LayoutRect&,
-                                 const LayoutRect& scrolled_paint_rect);
+                                 const LayoutRect& scrolled_paint_rect,
+                                 bool flow_box_has_multiple_fragments);
   virtual void PaintTextClipMask(GraphicsContext&,
                                  const IntRect& mask_rect,
-                                 const LayoutPoint& paint_offset) = 0;
+                                 const LayoutPoint& paint_offset,
+                                 bool flow_box_has_multiple_fragments) = 0;
   virtual LayoutRect AdjustForScrolledContent(const PaintInfo&,
                                               const FillLayerInfo&,
                                               const LayoutRect&) = 0;
   virtual FillLayerInfo GetFillLayerInfo(const Color&,
                                          const FillLayer&,
                                          BackgroundBleedAvoidance) const = 0;
-  virtual FloatRoundedRect GetBackgroundRoundedRect(
+  FloatRoundedRect GetBackgroundRoundedRect(
       const LayoutRect& border_rect,
+      bool flow_box_has_multiple_fragments,
       const LayoutSize& flow_box_size,
       bool include_logical_left_edge,
       bool include_logical_right_edge) const;
