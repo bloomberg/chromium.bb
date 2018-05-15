@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-destination-settings',
 
-  behaviors: [I18nBehavior, print_preview_new.SettingsSectionBehavior],
+  behaviors: [I18nBehavior],
 
   properties: {
     /** @type {!print_preview.Destination} */

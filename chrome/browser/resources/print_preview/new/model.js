@@ -307,14 +307,15 @@ Polymer({
         this.destination.capabilities.printer :
         null;
 
-    if (!caps)
-      return;
-
     if (this.destination.capabilities == this.lastDestinationCapabilities_)
       return;
 
     this.lastDestinationCapabilities_ = this.destination.capabilities;
     this.updateSettingsAvailabilityFromDestination_(caps);
+
+    if (!caps)
+      return;
+
     this.updateSettingsValues_(caps);
   },
 
@@ -337,8 +338,6 @@ Polymer({
 
     if (this.documentInfo)
       this.updateSettingsAvailabilityFromDestinationAndDocumentInfo_();
-
-    this.fire('settings-availability-updated');
   },
 
   /** @private */
@@ -385,15 +384,12 @@ Polymer({
 
     if (this.destination)
       this.updateSettingsAvailabilityFromDestinationAndDocumentInfo_();
-
-    this.fire('settings-availability-updated');
   },
 
   /** @private */
   updateHeaderFooterAvailable_: function() {
     this.set(
         'settings.headerFooter.available', this.isHeaderFooterAvailable_());
-    this.fire('settings-availability-updated');
   },
 
   /**

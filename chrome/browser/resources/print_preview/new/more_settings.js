@@ -5,10 +5,10 @@
 Polymer({
   is: 'print-preview-more-settings',
 
-  behaviors: [I18nBehavior, print_preview_new.SettingsSectionBehavior],
+  behaviors: [I18nBehavior],
 
   properties: {
-    settingsExpanded: {
+    settingsExpandedByUser: {
       type: Boolean,
       notify: true,
     },
@@ -20,13 +20,16 @@ Polymer({
     'click': 'onMoreSettingsClick_',
   },
 
+  /** @private {!print_preview.PrintSettingsUiMetricsContext} */
+  metrics_: new print_preview.PrintSettingsUiMetricsContext(),
+
   /**
    * @return {string} 'plus-icon' if settings are collapsed, 'minus-icon' if
    *     they are expanded.
    * @private
    */
   getIconClass_: function() {
-    return this.settingsExpanded ? 'minus-icon' : 'plus-icon';
+    return this.settingsExpandedByUser ? 'minus-icon' : 'plus-icon';
   },
 
   /**
@@ -35,11 +38,15 @@ Polymer({
    */
   getLabelText_: function() {
     return this.i18n(
-        this.settingsExpanded ? 'lessOptionsLabel' : 'moreOptionsLabel');
+        this.settingsExpandedByUser ? 'lessOptionsLabel' : 'moreOptionsLabel');
   },
 
   /** @private */
   onMoreSettingsClick_: function() {
-    this.settingsExpanded = !this.settingsExpanded;
+    this.settingsExpandedByUser = !this.settingsExpandedByUser;
+    this.metrics_.record(
+        this.settingsExpandedByUser ?
+            print_preview.Metrics.PrintSettingsUiBucket.MORE_SETTINGS_CLICKED :
+            print_preview.Metrics.PrintSettingsUiBucket.LESS_SETTINGS_CLICKED);
   },
 });

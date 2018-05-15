@@ -169,12 +169,6 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_BEHAVIOR_JS"
                  file="new/settings_behavior.js"
                  type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_SECTION_BEHAVIOR_HTML"
-                 file="new/settings_section_behavior.html"
-                 type="chrome_html" />
-      <structure name="IDR_PRINT_PREVIEW_NEW_SETTINGS_SECTION_BEHAVIOR_JS"
-                 file="new/settings_section_behavior.js"
-                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_INPUT_BEHAVIOR_HTML"
                  file="new/input_behavior.html"
                  type="chrome_html" />

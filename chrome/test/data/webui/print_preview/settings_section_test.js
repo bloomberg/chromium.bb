@@ -243,9 +243,7 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.MediaSize), function() {
       const mediaSizeElement = page.$$('print-preview-media-size-settings');
-      assertTrue(mediaSizeElement.hidden);
 
-      // Expand more settings to reveal the element.
       toggleMoreSettings();
       assertFalse(mediaSizeElement.hidden);
 
@@ -306,9 +304,7 @@ cr.define('settings_sections_tests', function() {
 
       // Section is available for HTML (modifiable) documents
       initDocumentInfo(false, false);
-      assertTrue(marginsElement.hidden);
 
-      // Expand more settings to reveal the element.
       toggleMoreSettings();
       assertFalse(marginsElement.hidden);
 
@@ -319,7 +315,6 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.Dpi), function() {
       const dpiElement = page.$$('print-preview-dpi-settings');
-      assertTrue(dpiElement.hidden);
 
       // Expand more settings to reveal the element.
       toggleMoreSettings();
@@ -344,9 +339,7 @@ cr.define('settings_sections_tests', function() {
 
     test(assert(TestNames.Scaling), function() {
       const scalingElement = page.$$('print-preview-scaling-settings');
-      assertTrue(scalingElement.hidden);
 
-      // Expand more settings to reveal the element.
       toggleMoreSettings();
       assertFalse(scalingElement.hidden);
 
@@ -363,9 +356,6 @@ cr.define('settings_sections_tests', function() {
       // PDF to non-PDF destination -> checkbox and input shown. Check that if
       // more settings is collapsed the section is hidden.
       initDocumentInfo(true, false);
-      toggleMoreSettings();
-      assertTrue(scalingElement.hidden);
-      toggleMoreSettings();
       assertFalse(scalingElement.hidden);
       assertFalse(fitToPageContainer.hidden);
       assertFalse(scalingInputWrapper.hidden);
@@ -388,7 +378,7 @@ cr.define('settings_sections_tests', function() {
       let capabilities =
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
-      assertTrue(optionsElement.hidden);
+      //assertTrue(optionsElement.hidden);
 
       // Expanding more settings will show the section.
       toggleMoreSettings();
@@ -450,7 +440,6 @@ cr.define('settings_sections_tests', function() {
       let capabilities =
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
-      assertTrue(optionsElement.hidden);
 
       toggleMoreSettings();
       assertFalse(optionsElement.hidden);
