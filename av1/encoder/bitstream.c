@@ -2899,8 +2899,8 @@ static void write_global_motion(AV1_COMP *cpi,
   }
 }
 
-void check_frame_refs_short_signaling(AV1_COMP *const cpi, int lst_map_idx,
-                                      int gld_map_idx) {
+static void check_frame_refs_short_signaling(AV1_COMP *const cpi,
+                                             int lst_map_idx, int gld_map_idx) {
   AV1_COMMON *const cm = &cpi->common;
   if (!cm->frame_refs_short_signaling) return;
 
