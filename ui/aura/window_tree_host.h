@@ -8,7 +8,9 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
+#include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -210,6 +212,9 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   // system key events when destroyed.
   std::unique_ptr<ScopedKeyboardHook> CaptureSystemKeyEvents(
       base::Optional<base::flat_set<ui::DomCode>> codes);
+
+  // Returns a map of KeyboardEvent code to KeyboardEvent key values.
+  virtual base::flat_map<std::string, std::string> GetKeyboardLayoutMap() = 0;
 
  protected:
   friend class ScopedKeyboardHook;

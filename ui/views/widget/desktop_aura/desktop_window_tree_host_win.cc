@@ -585,6 +585,12 @@ bool DesktopWindowTreeHostWin::IsKeyLocked(ui::DomCode dom_code) {
   return keyboard_hook_ && keyboard_hook_->IsKeyLocked(dom_code);
 }
 
+base::flat_map<std::string, std::string>
+DesktopWindowTreeHostWin::GetKeyboardLayoutMap() {
+  NOTIMPLEMENTED();
+  return {};
+}
+
 void DesktopWindowTreeHostWin::SetCursorNative(gfx::NativeCursor cursor) {
   ui::CursorLoaderWin cursor_loader;
   cursor_loader.SetPlatformCursor(&cursor);

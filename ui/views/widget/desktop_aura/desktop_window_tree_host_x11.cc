@@ -2369,6 +2369,13 @@ aura::Window* DesktopWindowTreeHostX11::content_window() {
   return desktop_native_widget_aura_->content_window();
 }
 
+base::flat_map<std::string, std::string>
+DesktopWindowTreeHostX11::GetKeyboardLayoutMap() {
+  if (views::LinuxUI::instance())
+    return views::LinuxUI::instance()->GetKeyboardLayoutMap();
+  return {};
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHost, public:
 

@@ -169,6 +169,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   void DidCreateNewRendererCompositorFrameSink(
       viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink)
       override;

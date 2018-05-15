@@ -55,6 +55,7 @@ class HeadlessWindowTreeHost : public aura::WindowTreeHost,
       base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void ReleaseSystemKeyEventCapture() override;
   bool IsKeyLocked(ui::DomCode dom_code) override;
+  base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
   void SetCursorNative(gfx::NativeCursor cursor_type) override;
   void MoveCursorToScreenLocationInPixels(const gfx::Point& location) override;
   void OnCursorVisibilityChangedNative(bool show) override;

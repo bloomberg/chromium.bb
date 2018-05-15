@@ -110,6 +110,7 @@ template("libgtkui") {
              "//ui/base/ime",
              "//ui/display",
              "//ui/events",
+             "//ui/events:dom_keycode_converter",
              "//ui/events:events_base",
              "//ui/events/platform/x11",
              "//ui/gfx",

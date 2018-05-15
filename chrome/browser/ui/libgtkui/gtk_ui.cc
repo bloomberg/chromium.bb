@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 
 #include <dlfcn.h>
+#include <gdk/gdk.h>
 #include <math.h>
 #include <pango/pango.h>
 
@@ -45,6 +46,8 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
+#include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
@@ -837,6 +840,47 @@ std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
   return nullptr;
 }
 #endif
+
+base::flat_map<std::string, std::string> GtkUi::GetKeyboardLayoutMap() {
+  GdkDisplay* display = gdk_display_get_default();
+  GdkKeymap* keymap = gdk_keymap_get_for_display(display);
+
+  auto map = base::flat_map<std::string, std::string>();
+  if (!keymap)
+    return map;
+
+  for (unsigned int i = 0; i < ui::kWritingSystemKeyDomCodeEntries; ++i) {
+    ui::DomCode domcode = ui::writing_system_key_domcodes[i];
+    guint16 keycode = ui::KeycodeConverter::DomCodeToNativeKeycode(domcode);
+    GdkKeymapKey* keys = nullptr;
+    guint* keyvals = nullptr;
+    gint n_entries = 0;
+
+    // The order of the layouts is based on the system default ordering in
+    // Keyboard Settings. The currently active layout does not affect this
+    // order.
+    if (gdk_keymap_get_entries_for_keycode(keymap, keycode, &keys, &keyvals,
+                                           &n_entries)) {
+      for (gint i = 0; i < n_entries; ++i) {
+        // There are 4 entries per layout, one each for shift level 0..3.
+        // We only care about the unshifted values (level = 0).
+        if (keys[i].level != 0 || keyvals[i] >= 255)
+          continue;
+        char keystring[2];
+        keystring[0] = keyvals[i];
+        keystring[1] = '\0';
+        map.emplace(ui::KeycodeConverter::DomCodeToCodeString(domcode),
+                    keystring);
+        break;
+      }
+    }
+    g_free(keys);
+    keys = nullptr;
+    g_free(keyvals);
+    keyvals = nullptr;
+  }
+  return map;
+}
 
 bool GtkUi::MatchEvent(const ui::Event& event,
                        std::vector<ui::TextEditCommandAuraLinux>* commands) {
