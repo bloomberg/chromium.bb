@@ -261,6 +261,9 @@ Consider the following when choosing between them:
   related to the feature, but they don't scale to flags that make deep
   architectural changes that potentially impact all of the tests.
 
+* Note that using wildcards in virtual test path names (e.g.
+  `virtual/blocking_repaint/fast/repaint/*`) is not supported.
+
 ## Tracking Test Failures
 
 All bugs, associated with layout test failures must have the

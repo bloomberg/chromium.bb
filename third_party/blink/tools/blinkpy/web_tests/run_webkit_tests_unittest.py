@@ -906,6 +906,20 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertTrue(passing_run(['--order', 'natural', 'passes/text.html', 'passes/args.html',
                                      'virtual/passes/text.html', 'virtual/passes/args.html']))
 
+    def test_virtual_warns_when_wildcard_used(self):
+        virtual_test_warning_msg = ('WARNING: Wildcards in paths are not supported for '
+                                    'virtual test suites.')
+
+        run_details, err, _ = logging_run(['passes/args.html', 'virtual/passes/'],
+                                          tests_included=True)
+        self.assertEqual(len(run_details.summarized_full_results['tests']['passes'].keys()), 1)
+        self.assertFalse(virtual_test_warning_msg in err.getvalue())
+
+        run_details, err, _ = logging_run(['passes/args.html', 'virtual/passes/*'],
+                                          tests_included=True)
+        self.assertEqual(len(run_details.summarized_full_results['tests']['passes'].keys()), 1)
+        self.assertTrue(virtual_test_warning_msg in err.getvalue())
+
     def test_reftest_run(self):
         tests_run = get_tests_run(['passes/reftest.html'])
         self.assertEqual(['passes/reftest.html'], tests_run)
