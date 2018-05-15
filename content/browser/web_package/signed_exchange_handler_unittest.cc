@@ -60,13 +60,13 @@ class MockSignedExchangeCertFetcherFactory
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& cert_url,
       bool force_fetch,
+      SignedExchangeVersion version,
       SignedExchangeCertFetcher::CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy) override {
     EXPECT_EQ(cert_url, expected_cert_url_);
 
     auto cert_chain = SignedExchangeCertificateChain::Parse(
-        SignedExchangeVersion::kB0, base::as_bytes(base::make_span(cert_str_)),
-        devtools_proxy);
+        version, base::as_bytes(base::make_span(cert_str_)), devtools_proxy);
     EXPECT_TRUE(cert_chain);
 
     base::SequencedTaskRunnerHandle::Get()->PostTask(

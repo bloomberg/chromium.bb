@@ -286,7 +286,7 @@ SignedExchangeHeaderParser::ParseSignature(
 // static
 bool SignedExchangeHeaderParser::GetVersionParamFromContentType(
     base::StringPiece content_type,
-    base::Optional<std::string>* version_param) {
+    base::Optional<SignedExchangeVersion>* version_param) {
   DCHECK(version_param);
   StructuredHeaderParser parser(content_type);
   ParameterisedLabel parameterised_label;
@@ -297,7 +297,12 @@ bool SignedExchangeHeaderParser::GetVersionParamFromContentType(
   if (it == parameterised_label.params.end()) {
     *version_param = base::nullopt;
   } else {
-    *version_param = it->second;
+    if (it->second == "b0")
+      *version_param = SignedExchangeVersion::kB0;
+    else if (it->second == "b1")
+      *version_param = SignedExchangeVersion::kB1;
+    else
+      return false;
   }
   return true;
 }

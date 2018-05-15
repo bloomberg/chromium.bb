@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -96,6 +97,7 @@ class CONTENT_EXPORT SignedExchangeHandler {
   void OnCertVerifyComplete(int result);
 
   ExchangeHeadersCallback headers_callback_;
+  base::Optional<SignedExchangeVersion> version_;
   std::unique_ptr<net::SourceStream> source_;
 
   State state_ = State::kReadingHeadersLength;
