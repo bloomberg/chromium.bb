@@ -158,9 +158,6 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
   v8::HandleScope scope(isolate);
   switch (type) {
     case v8::kGCTypeScavenge:
-      if (ThreadState::Current())
-        ThreadState::Current()->WillStartV8GC(BlinkGC::kV8MinorGC);
-
       TRACE_EVENT_BEGIN1("devtools.timeline,v8", "MinorGC",
                          "usedHeapSizeBefore", UsedHeapSize(isolate));
       VisitWeakHandlesForMinorGC(isolate);
@@ -211,10 +208,6 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
     case v8::kGCTypeScavenge:
       TRACE_EVENT_END1("devtools.timeline,v8", "MinorGC", "usedHeapSizeAfter",
                        UsedHeapSize(isolate));
-      // TODO(haraken): Remove this. See the comment in gcPrologue.
-      if (ThreadState::Current())
-        ThreadState::Current()->ScheduleV8FollowupGCIfNeeded(
-            BlinkGC::kV8MinorGC);
       break;
     case v8::kGCTypeMarkSweepCompact:
       TRACE_EVENT_END1("devtools.timeline,v8", "MajorGC", "usedHeapSizeAfter",

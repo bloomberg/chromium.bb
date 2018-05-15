@@ -478,6 +478,7 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   VLOG(2) << "[state:" << this << "] ScheduleV8FollowupGCIfNeeded: v8_gc_type="
           << ((gc_type == BlinkGC::kV8MajorGC) ? "MajorGC" : "MinorGC");
   DCHECK(CheckThread());
+  DCHECK_EQ(BlinkGC::kV8MajorGC, gc_type);
   ThreadHeap::ReportMemoryUsageForTracing();
 
   if (IsGCForbidden())
@@ -489,14 +490,13 @@ void ThreadState::ScheduleV8FollowupGCIfNeeded(BlinkGC::V8GCType gc_type) {
   DCHECK(!IsSweepingInProgress());
   DCHECK(!SweepForbidden());
 
-  if ((gc_type == BlinkGC::kV8MajorGC && ShouldForceMemoryPressureGC()) ||
-      ShouldScheduleV8FollowupGC()) {
+  if (ShouldForceMemoryPressureGC() || ShouldScheduleV8FollowupGC()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleV8FollowupGCIfNeeded: Scheduled precise GC";
     SchedulePreciseGC();
     return;
   }
-  if (gc_type == BlinkGC::kV8MajorGC && ShouldScheduleIdleGC()) {
+  if (ShouldScheduleIdleGC()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleV8FollowupGCIfNeeded: Scheduled idle GC";
     ScheduleIdleGC();
@@ -512,8 +512,8 @@ void ThreadState::WillStartV8GC(BlinkGC::V8GCType gc_type) {
   // completeSweep() here, because gcPrologue for a major GC is called
   // not at the point where the major GC started but at the point where
   // the major GC requests object grouping.
-  if (gc_type == BlinkGC::kV8MajorGC)
-    CompleteSweep();
+  DCHECK_EQ(BlinkGC::kV8MajorGC, gc_type);
+  CompleteSweep();
 }
 
 void ThreadState::SchedulePageNavigationGCIfNeeded(
