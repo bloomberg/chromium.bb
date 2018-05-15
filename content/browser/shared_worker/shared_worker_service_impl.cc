@@ -57,7 +57,7 @@ void CreateScriptLoaderOnIO(
   mojo::MakeStrongAssociatedBinding(
       std::make_unique<SharedWorkerScriptLoaderFactory>(
           context.get(), host->AsWeakPtr(), context->resource_context(),
-          std::move(loader_factory_getter)),
+          loader_factory_getter->GetNetworkFactory()),
       mojo::MakeRequest(&script_loader_factory));
 
   BrowserThread::PostTask(

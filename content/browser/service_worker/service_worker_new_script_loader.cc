@@ -35,8 +35,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
     const network::ResourceRequest& original_request,
     network::mojom::URLLoaderClientPtr client,
     scoped_refptr<ServiceWorkerVersion> version,
-    scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
-    network::mojom::URLLoaderFactoryPtr non_network_loader_factory,
+    scoped_refptr<network::SharedURLLoaderFactory> network_factory,
+    network::mojom::URLLoaderFactoryPtr non_network_factory,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation)
     : request_url_(original_request.url),
       resource_type_(static_cast<ResourceType>(original_request.resource_type)),
@@ -46,7 +46,8 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
       network_watcher_(FROM_HERE,
                        mojo::SimpleWatcher::ArmingPolicy::MANUAL,
                        base::SequencedTaskRunnerHandle::Get()),
-      non_network_loader_factory_(std::move(non_network_loader_factory)),
+      network_factory_(std::move(network_factory)),
+      non_network_factory_(std::move(non_network_factory)),
       client_(std::move(client)),
       weak_factory_(this) {
   // ServiceWorkerNewScriptLoader is used for fetching the service worker main
@@ -113,13 +114,13 @@ ServiceWorkerNewScriptLoader::ServiceWorkerNewScriptLoader(
 
   network::mojom::URLLoaderClientPtr network_client;
   network_client_binding_.Bind(mojo::MakeRequest(&network_client));
-  if (non_network_loader_factory_) {
-    non_network_loader_factory_->CreateLoaderAndStart(
+  if (non_network_factory_) {
+    non_network_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
         *resource_request_.get(), std::move(network_client),
         traffic_annotation);
   } else {
-    loader_factory_getter->GetNetworkFactory()->CreateLoaderAndStart(
+    network_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&network_loader_), routing_id, request_id, options,
         *resource_request_.get(), std::move(network_client),
         traffic_annotation);

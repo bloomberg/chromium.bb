@@ -19,7 +19,6 @@ namespace content {
 
 class ServiceWorkerCacheWriter;
 class ServiceWorkerVersion;
-class URLLoaderFactoryGetter;
 struct HttpResponseInfoIOBuffer;
 
 // S13nServiceWorker:
@@ -45,7 +44,7 @@ struct HttpResponseInfoIOBuffer;
 // worker. If the script is identical, the load succeeds but no script is
 // written, and ServiceWorkerVersion is told to terminate startup.
 //
-// NOTE: To load a script, this class uses |non_network_loader_factory| when the
+// NOTE: To load a script, this class uses |non_network_factory| when the
 // URL has a non-http(s) scheme, e.g., a chrome-extension:// URL. Regardless,
 // that is still called a "network" request in comments and naming. "network" is
 // meant to distinguish from the load this URLLoader does for its client:
@@ -55,10 +54,9 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
     : public network::mojom::URLLoader,
       public network::mojom::URLLoaderClient {
  public:
-  // |loader_factory_getter| is used to get the network factory when the script
-  // URL has an http(s) scheme.
+  // |network_factory| is used when the script URL has an http(s) scheme.
   //
-  // |non_network_loader_factory| is non-null when the script URL has a
+  // |non_network_factory| is non-null when the script URL has a
   // non-http(s) scheme (e.g., a chrome-extension:// URL). It is used in that
   // case since the network factory can't be used.
   ServiceWorkerNewScriptLoader(
@@ -68,8 +66,8 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
       const network::ResourceRequest& original_request,
       network::mojom::URLLoaderClientPtr client,
       scoped_refptr<ServiceWorkerVersion> version,
-      scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
-      network::mojom::URLLoaderFactoryPtr non_network_loader_factory,
+      scoped_refptr<network::SharedURLLoaderFactory> network_factory,
+      network::mojom::URLLoaderFactoryPtr non_network_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~ServiceWorkerNewScriptLoader() override;
 
@@ -154,10 +152,11 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   mojo::ScopedDataPipeConsumerHandle network_consumer_;
   mojo::SimpleWatcher network_watcher_;
   bool network_load_completed_ = false;
-  // |non_network_loader_factory_| is non-null when the script URL is
+  scoped_refptr<network::SharedURLLoaderFactory> network_factory_;
+  // |non_network_factory_| is non-null when the script URL is
   // non-http(s). It is used to make the "network" request because the usual
   // network factory can't be used in that case. See class comments.
-  network::mojom::URLLoaderFactoryPtr non_network_loader_factory_;
+  network::mojom::URLLoaderFactoryPtr non_network_factory_;
 
   // Used for responding with the fetched script to this loader's client.
   network::mojom::URLLoaderClientPtr client_;
