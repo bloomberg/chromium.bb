@@ -32,6 +32,7 @@
 #include "base/test/test_timeouts.h"
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/install_worker.h"
 #include "chrome/installer/util/install_util.h"
@@ -240,7 +241,14 @@ class NotificationHelperLaunchesChrome : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NotificationHelperLaunchesChrome);
 };
 
-TEST_F(NotificationHelperLaunchesChrome, ChromeLaunchTest) {
+// TODO(https://crbug.com/841475): Test is flaky on Win10.  Re-enable after
+// unflaking.
+#if defined(OS_WIN)
+#define MAYBE_ChromeLaunchTest DISABLED_ChromeLaunchTest
+#else
+#define MAYBE_ChromeLaunchTest ChromeLaunchTest
+#endif
+TEST_F(NotificationHelperLaunchesChrome, MAYBE_ChromeLaunchTest) {
   // This test requires WinRT core functions, which are not available in
   // older versions of Windows.
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
