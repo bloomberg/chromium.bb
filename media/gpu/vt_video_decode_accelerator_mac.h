@@ -132,13 +132,9 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
     PictureInfo(uint32_t client_texture_id, uint32_t service_texture_id);
     ~PictureInfo();
 
-    // Image buffer, kept alive while they are bound to pictures.
-    base::ScopedCFTypeRef<CVImageBufferRef> cv_image;
-
-    // The GLImage representation of |cv_image|. This is kept around to ensure
-    // that Destroy is called on it before it hits its destructor (there is a
-    // DCHECK that requires this).
+    // Information about the currently bound image, for OnMemoryDump().
     scoped_refptr<gl::GLImageIOSurface> gl_image;
+    int32_t bitstream_id;
 
     // Texture IDs for the image buffer.
     const uint32_t client_texture_id;

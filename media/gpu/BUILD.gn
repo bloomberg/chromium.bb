@@ -140,6 +140,7 @@ component("gpu") {
       "CoreFoundation.framework",
       "CoreMedia.framework",
       "Foundation.framework",
+      "IOSurface.framework",
       "QuartzCore.framework",
       "VideoToolbox.framework",
     ]
