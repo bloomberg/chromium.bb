@@ -1888,14 +1888,48 @@ class ValidationPool(object):
         status.
     """
     retry = not sanity or lab_fail or change not in suspects.keys()
-    msg = cl_messages.CreateValidationFailureMessage(
-        self.pre_cq_trybot, change, suspects, messages,
-        sanity, infra_fail, lab_fail, no_stat, retry)
-    self.SendNotification(change, '%(details)s', details=msg)
+    if self._ShouldSendFailureNotification(change, retry):
+      cl_status_url = self._GetCLStatusURL(change)
+      msg = cl_messages.CreateValidationFailureMessage(
+          self.pre_cq_trybot, change, suspects, messages,
+          sanity, infra_fail, lab_fail, no_stat, retry, cl_status_url)
+      self.SendNotification(change, '%(details)s', details=msg)
     if retry:
       self.MarkForgiven(change)
     else:
       self.RemoveReady(change, reason=suspects.get(change))
+
+  def _ShouldSendFailureNotification(self, change, retry):
+    """Decides if we should send a failure notification.
+
+    Args:
+      change: The change to mark as failed.
+      retry: Whether the change will be retried soon.
+
+    Returns:
+      True if we should send a failure notification. False otherwise.
+    """
+    # If we are on CQ, always send a notification.
+    if not self.pre_cq_trybot:
+      return True
+
+    # We are on pre-CQ. Its notable difference from CQ is that
+    # HandleValidationFailure() is called on individual pre-CQ bots, not on
+    # a single master bot. Therefore we have to be careful not to send spammy
+    # notifications.
+
+    # If we will retry soon, skip sending a notification.
+    if retry:
+      return False
+
+    # This is a real pre-CQ failure. Send a notification only if this is the
+    # first failure.
+    # This has race conditions among bots, but sending several notifications is
+    # still acceptable.
+    _, db = self._run.GetCIDBHandle()
+    action_history = db.GetActionsForChanges([change])
+    pre_cq_status = clactions.GetCLPreCQStatus(change, action_history)
+    return pre_cq_status != constants.CL_STATUS_FAILED
 
   def HandleValidationFailure(self, messages, changes=None, sanity=True,
                               no_stat=None, failed_hwtests=None):

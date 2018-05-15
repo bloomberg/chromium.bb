@@ -16,7 +16,7 @@ from chromite.lib import patch as cros_patch
 def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
                                    sanity=True, infra_fail=False,
                                    lab_fail=False, no_stat=None,
-                                   retry=False):
+                                   retry=False, cl_status_url=None):
   """Create a message explaining why a validation failure occurred.
 
   Args:
@@ -33,6 +33,7 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
     no_stat: A list of builders which failed prematurely without reporting
       status.
     retry: Whether we should retry automatically.
+    cl_status_url: URL of the CL status viewer for the change.
 
   Returns:
     A string that communicates what happened.
@@ -96,6 +97,11 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
                    % other_suspects_str)
 
       assert retry
+
+  if pre_cq_trybot and cl_status_url:
+    msg.append(
+        'We notify the first failure only. Please find the full status at %s.'
+        % cl_status_url)
 
   if retry:
     bot = 'The Pre-Commit Queue' if pre_cq_trybot else 'The Commit Queue'

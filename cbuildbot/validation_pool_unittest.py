@@ -287,8 +287,9 @@ class ValidationFailureOrTimeout(_Base):
     self.PatchObject(
         triage_lib.CalculateSuspects, 'FindSuspects',
         return_value=suspects)
-    self.PatchObject(validation_pool.ValidationPool, 'SendNotification')
-    self.remove = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
+    self._send_notification = self.PatchObject(
+        validation_pool.ValidationPool, 'SendNotification')
+    self._remove_ready = self.PatchObject(gerrit.GerritHelper, 'RemoveReady')
     self.PatchObject(gerrit, 'GetGerritPatchInfoWithPatchQueries',
                      lambda x: x)
     self.PatchObject(triage_lib.CalculateSuspects, 'OnlyLabFailures',
@@ -316,18 +317,21 @@ class ValidationFailureOrTimeout(_Base):
   def testPatchesWereRejectedByFailure(self):
     """Tests that all patches are rejected by failure."""
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(len(self._patches), self.remove.call_count)
+    self.assertEqual(len(self._patches), self._send_notification.call_count)
+    self.assertEqual(len(self._patches), self._remove_ready.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_KICKED_OUT])
 
   def testPatchesWereRejectedByTimeout(self):
     self._pool.HandleValidationTimeout()
-    self.assertEqual(len(self._patches), self.remove.call_count)
+    self.assertEqual(len(self._patches), self._send_notification.call_count)
+    self.assertEqual(len(self._patches), self._remove_ready.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_KICKED_OUT])
 
   def testOnlyChromitePatchesWereRejectedByTimeout(self):
     self._patches[-1].project = 'chromiumos/tacos'
     self._pool.HandleValidationTimeout()
-    self.assertEqual(len(self._patches) - 1, self.remove.call_count)
+    self.assertEqual(len(self._patches) - 1, self._remove_ready.call_count)
+    self.assertEqual(len(self._patches), self._send_notification.call_count)
     self._AssertActions(self._patches[:-1], [constants.CL_ACTION_KICKED_OUT])
     self._AssertActions(self._patches[-1:], [constants.CL_ACTION_FORGIVEN])
 
@@ -336,7 +340,8 @@ class ValidationFailureOrTimeout(_Base):
     self.PatchObject(triage_lib.CalculateSuspects, 'FindSuspects',
                      return_value=triage_lib.SuspectChanges())
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(0, self.remove.call_count)
+    self.assertEqual(0, self._remove_ready.call_count)
+    self.assertEqual(len(self._patches), self._send_notification.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_FORGIVEN])
 
   def testPassedPreCQ(self):
@@ -345,7 +350,8 @@ class ValidationFailureOrTimeout(_Base):
       self._pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_PASSED)
     self._pool.pre_cq_trybot = True
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(0, self.remove.call_count)
+    self.assertEqual(0, self._remove_ready.call_count)
+    self.assertEqual(0, self._send_notification.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_PRE_CQ_PASSED])
 
   def testCancelledPreCQ(self):
@@ -359,13 +365,53 @@ class ValidationFailureOrTimeout(_Base):
 
     self._pool.pre_cq_trybot = True
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
-    self.assertEqual(0, self.remove.call_count)
+    self.assertEqual(0, self._remove_ready.call_count)
+    self.assertEqual(0, self._send_notification.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_TRYBOT_CANCELLED])
 
   def testPatchesWereNotRejectedByInsaneFailure(self):
     self._pool.HandleValidationFailure([self._BUILD_MESSAGE], sanity=False)
-    self.assertEqual(0, self.remove.call_count)
+    self.assertEqual(0, self._remove_ready.call_count)
+    self.assertEqual(len(self._patches), self._send_notification.call_count)
     self._AssertActions(self._patches, [constants.CL_ACTION_FORGIVEN])
+
+  def testFirstFailureInPreCQ(self):
+    """Tests that the first failure in pre-CQ is notified."""
+    build_id, _ = self._pool._run.GetCIDBHandle()
+    for change in self._patches:
+      self.fake_db.InsertCLActions(
+          build_id,
+          [clactions.CLAction.FromGerritPatchAndAction(
+              change, constants.CL_ACTION_VERIFIED)])
+
+    self._pool.pre_cq_trybot = True
+    self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
+    self.assertEqual(len(self._patches), self._send_notification.call_count)
+    self.assertEqual(len(self._patches), self._remove_ready.call_count)
+    self._AssertActions(
+        self._patches,
+        [constants.CL_ACTION_VERIFIED,
+         constants.CL_ACTION_KICKED_OUT,
+         constants.CL_ACTION_PRE_CQ_FAILED])
+
+  def testSecondFailureInPreCQ(self):
+    """Tests that the second failure in pre-CQ is NOT notified."""
+    build_id, _ = self._pool._run.GetCIDBHandle()
+    for change in self._patches:
+      self.fake_db.InsertCLActions(
+          build_id,
+          [clactions.CLAction.FromGerritPatchAndAction(
+              change, constants.CL_ACTION_PRE_CQ_FAILED)])
+
+    self._pool.pre_cq_trybot = True
+    self._pool.HandleValidationFailure([self._BUILD_MESSAGE])
+    self.assertEqual(0, self._send_notification.call_count)
+    self.assertEqual(len(self._patches), self._remove_ready.call_count)
+    self._AssertActions(
+        self._patches,
+        [constants.CL_ACTION_PRE_CQ_FAILED,
+         constants.CL_ACTION_KICKED_OUT,
+         constants.CL_ACTION_PRE_CQ_FAILED])
 
 
 class TestCoreLogic(_Base, cros_test_lib.MoxTestCase):
