@@ -331,7 +331,7 @@ void WindowGrid::PositionWindows(bool animate,
     overview_bounds.set_width(right_bound - total_bounds.x());
     bool windows_fit = FitWindowRectsInBounds(
         overview_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
-        &rects, &max_bottom, &min_right, &max_right);
+        ignored_item, &rects, &max_bottom, &min_right, &max_right);
 
     if (height_fixed) {
       if (!windows_fit) {
@@ -376,25 +376,21 @@ void WindowGrid::PositionWindows(bool animate,
   if (make_last_adjustment) {
     gfx::Rect overview_bounds(total_bounds);
     overview_bounds.set_width(right_bound - total_bounds.x());
-    FitWindowRectsInBounds(overview_bounds,
-                           std::min(kMaxHeight + 2 * kWindowMargin, height),
-                           &rects, &max_bottom, &min_right, &max_right);
+    FitWindowRectsInBounds(
+        overview_bounds, std::min(kMaxHeight + 2 * kWindowMargin, height),
+        ignored_item, &rects, &max_bottom, &min_right, &max_right);
   }
   // Position the windows centering the left-aligned rows vertically. Do not
   // position |ignored_item| if it is not nullptr and matches a item in
   // |window_list_|.
   gfx::Vector2d offset(0, (total_bounds.bottom() - max_bottom) / 2);
-  for (size_t i = 0, j = 0; i < window_list_.size(); ++i, ++j) {
-    if (ignored_item != nullptr && window_list_[i].get() == ignored_item) {
-      // Decrement the |rects| index so that after repositioning there will not
-      // be a gap where the ignored item was supposed to be.
-      --j;
+  for (size_t i = 0; i < window_list_.size(); ++i) {
+    if (ignored_item != nullptr && window_list_[i].get() == ignored_item)
       continue;
-    }
 
     const bool should_animate = window_list_[i]->ShouldAnimateWhenEntering();
     window_list_[i]->SetBounds(
-        rects[j] + offset,
+        rects[i] + offset,
         animate && should_animate
             ? OverviewAnimationType::OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS
             : OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
@@ -911,11 +907,12 @@ void WindowGrid::MoveSelectionWidgetToTarget(bool animate) {
 
 bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
                                         int height,
-                                        std::vector<gfx::Rect>* rects,
-                                        int* max_bottom,
-                                        int* min_right,
-                                        int* max_right) {
-  rects->resize(window_list_.size());
+                                        WindowSelectorItem* ignored_item,
+                                        std::vector<gfx::Rect>* out_rects,
+                                        int* out_max_bottom,
+                                        int* out_min_right,
+                                        int* out_max_right) {
+  out_rects->resize(window_list_.size());
   bool windows_fit = true;
 
   // Start in the top-left corner of |bounds|.
@@ -923,18 +920,25 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
   int top = bounds.y();
 
   // Keep track of the lowest coordinate.
-  *max_bottom = bounds.y();
+  *out_max_bottom = bounds.y();
 
   // Right bound of the narrowest row.
-  *min_right = bounds.right();
+  *out_min_right = bounds.right();
   // Right bound of the widest row.
-  *max_right = bounds.x();
+  *out_max_right = bounds.x();
 
   // All elements are of same height and only the height is necessary to
   // determine each item's scale.
   const gfx::Size item_size(0, height);
   size_t i = 0;
   for (const auto& window : window_list_) {
+    if (ignored_item && ignored_item == window.get()) {
+      // Increment the index anyways. PositionWindows will handle skipping this
+      // entry.
+      ++i;
+      continue;
+    }
+
     const gfx::Rect target_bounds = window->GetTargetBoundsInScreen();
     int width = std::max(1, gfx::ToFlooredInt(target_bounds.width() *
                                               window->GetItemScale(item_size)) +
@@ -954,10 +958,10 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
 
     if (left + width > bounds.right()) {
       // Move to the next row if possible.
-      if (*min_right > left)
-        *min_right = left;
-      if (*max_right < left)
-        *max_right = left;
+      if (*out_min_right > left)
+        *out_min_right = left;
+      if (*out_max_right < left)
+        *out_max_right = left;
       top += height;
 
       // Check if the new row reaches the bottom or if the first item in the new
@@ -971,19 +975,19 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
     }
 
     // Position the current rect.
-    (*rects)[i].SetRect(left, top, width, height);
+    (*out_rects)[i].SetRect(left, top, width, height);
 
     // Increment horizontal position using sanitized positive |width()|.
-    left += (*rects)[i].width();
+    left += (*out_rects)[i].width();
 
-    if (++i == window_list_.size()) {
+    if (++i == out_rects->size()) {
       // Update the narrowest and widest row width for the last row.
-      if (*min_right > left)
-        *min_right = left;
-      if (*max_right < left)
-        *max_right = left;
+      if (*out_min_right > left)
+        *out_min_right = left;
+      if (*out_max_right < left)
+        *out_max_right = left;
     }
-    *max_bottom = top + height;
+    *out_max_bottom = top + height;
   }
   return windows_fit;
 }

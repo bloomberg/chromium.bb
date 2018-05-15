@@ -3042,6 +3042,35 @@ TEST_F(WindowSelectorTest, ShadowDisappearsInOverview) {
   EXPECT_TRUE(shadow_controller->IsShadowVisibleForWindow(window.get()));
 }
 
+// Tests the PositionWindows function works as expected.
+TEST_F(WindowSelectorTest, PositionWindows) {
+  const gfx::Rect bounds(200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+
+  ToggleOverview();
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
+  WindowSelectorItem* item2 = GetWindowItemForWindow(0, window2.get());
+  WindowSelectorItem* item3 = GetWindowItemForWindow(0, window3.get());
+  const gfx::Rect bounds1 = item1->target_bounds();
+  const gfx::Rect bounds2 = item2->target_bounds();
+  const gfx::Rect bounds3 = item3->target_bounds();
+
+  // Verify that the bounds remain the same when calling PositionWindows again.
+  window_selector()->PositionWindows(/*animate=*/false);
+  EXPECT_EQ(bounds1, item1->target_bounds());
+  EXPECT_EQ(bounds2, item2->target_bounds());
+  EXPECT_EQ(bounds3, item3->target_bounds());
+
+  // Verify that |item2| and |item3| change bounds when calling PositionWindows
+  // while ignoring |item1|.
+  window_selector()->PositionWindows(/*animate=*/false, item1);
+  EXPECT_EQ(bounds1, item1->target_bounds());
+  EXPECT_NE(bounds2, item2->target_bounds());
+  EXPECT_NE(bounds3, item3->target_bounds());
+}
+
 class SplitViewWindowSelectorTest : public WindowSelectorTest {
  public:
   SplitViewWindowSelectorTest() = default;
