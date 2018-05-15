@@ -29,6 +29,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       public mojom::URLLoaderClient {
  public:
   // Assumes network_loader_factory outlives this loader.
+  // TODO(yhirano): Remove |preflight_finalizer| when the network service is
+  // fully enabled.
   CORSURLLoader(
       int32_t routing_id,
       int32_t request_id,
@@ -36,7 +38,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoader
       const ResourceRequest& resource_request,
       mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-      mojom::URLLoaderFactory* network_loader_factory);
+      mojom::URLLoaderFactory* network_loader_factory,
+      const base::RepeatingCallback<void(int)>& preflight_finalizer);
 
   ~CORSURLLoader() override;
 

@@ -15,6 +15,12 @@ CORSURLLoaderFactory::CORSURLLoaderFactory(
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory)
     : network_loader_factory_(std::move(network_loader_factory)) {}
 
+CORSURLLoaderFactory::CORSURLLoaderFactory(
+    std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
+    const base::RepeatingCallback<void(int)>& preflight_finalizer)
+    : network_loader_factory_(std::move(network_loader_factory)),
+      preflight_finalizer_(preflight_finalizer) {}
+
 CORSURLLoaderFactory::~CORSURLLoaderFactory() = default;
 
 void CORSURLLoaderFactory::CreateLoaderAndStart(
@@ -27,10 +33,10 @@ void CORSURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   if (base::FeatureList::IsEnabled(features::kOutOfBlinkCORS)) {
     loader_bindings_.AddBinding(
-        std::make_unique<CORSURLLoader>(routing_id, request_id, options,
-                                        resource_request, std::move(client),
-                                        traffic_annotation,
-                                        network_loader_factory_.get()),
+        std::make_unique<CORSURLLoader>(
+            routing_id, request_id, options, resource_request,
+            std::move(client), traffic_annotation,
+            network_loader_factory_.get(), preflight_finalizer_),
         std::move(request));
   } else {
     network_loader_factory_->CreateLoaderAndStart(

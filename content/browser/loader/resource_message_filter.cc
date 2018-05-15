@@ -179,7 +179,10 @@ void ResourceMessageFilter::InitializeOnIOThread() {
 
   if (base::FeatureList::IsEnabled(network::features::kOutOfBlinkCORS)) {
     url_loader_factory_ = std::make_unique<network::cors::CORSURLLoaderFactory>(
-        std::move(url_loader_factory_));
+        std::move(url_loader_factory_),
+        base::BindRepeating(&ResourceDispatcherHostImpl::CancelRequest,
+                            base::Unretained(ResourceDispatcherHostImpl::Get()),
+                            requester_info_->child_id()));
   }
 }
 

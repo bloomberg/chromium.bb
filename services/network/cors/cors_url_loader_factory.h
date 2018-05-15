@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -27,6 +28,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
  public:
   explicit CORSURLLoaderFactory(
       std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory);
+  // TODO(yhirano): Remove |preflight_finalizer| when the network service is
+  // fully enabled.
+  CORSURLLoaderFactory(
+      std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory,
+      const base::RepeatingCallback<void(int)>& preflight_finalizer);
   ~CORSURLLoaderFactory() override;
 
  private:
@@ -44,6 +50,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) CORSURLLoaderFactory final
   mojo::BindingSet<mojom::URLLoaderFactory> bindings_;
 
   std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_;
+
+  base::RepeatingCallback<void(int)> preflight_finalizer_;
 
   // The factory owns the CORSURLLoader it creates.
   mojo::StrongBindingSet<mojom::URLLoader> loader_bindings_;

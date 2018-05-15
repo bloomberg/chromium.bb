@@ -81,7 +81,8 @@ CORSURLLoader::CORSURLLoader(
     const ResourceRequest& resource_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    mojom::URLLoaderFactory* network_loader_factory)
+    mojom::URLLoaderFactory* network_loader_factory,
+    const base::RepeatingCallback<void(int)>& preflight_finalizer)
     : network_loader_factory_(network_loader_factory),
       network_client_binding_(this),
       request_(resource_request),
@@ -123,13 +124,19 @@ CORSURLLoader::CORSURLLoader(
     return;
   }
 
+  base::OnceCallback<void()> preflight_finalizer_for_request;
+  if (preflight_finalizer) {
+    preflight_finalizer_for_request =
+        base::BindOnce(preflight_finalizer, request_id);
+  }
+
   PreflightController::GetDefaultController()->PerformPreflightCheck(
       base::BindOnce(&CORSURLLoader::StartNetworkRequest,
                      weak_factory_.GetWeakPtr(), routing_id, request_id,
                      options, traffic_annotation),
       request_id, request_,
       net::NetworkTrafficAnnotationTag(traffic_annotation),
-      network_loader_factory);
+      network_loader_factory, std::move(preflight_finalizer_for_request));
 }
 
 CORSURLLoader::~CORSURLLoader() {}
