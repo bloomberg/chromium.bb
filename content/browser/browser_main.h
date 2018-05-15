@@ -5,18 +5,13 @@
 #ifndef CONTENT_BROWSER_BROWSER_MAIN_H_
 #define CONTENT_BROWSER_BROWSER_MAIN_H_
 
-#include <memory>
-
 #include "content/common/content_export.h"
 
 namespace content {
 
-class BrowserProcessSubThread;
 struct MainFunctionParams;
 
-CONTENT_EXPORT int BrowserMain(
-    const content::MainFunctionParams& parameters,
-    std::unique_ptr<BrowserProcessSubThread> service_manager_thread);
+CONTENT_EXPORT int BrowserMain(const content::MainFunctionParams& parameters);
 
 }  // namespace content
 
