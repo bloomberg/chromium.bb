@@ -661,8 +661,6 @@ void Predictor::FinalizeInitializationOnIOThread(
     DnsPrefetchMotivatedList(startup_urls, UrlInfo::STARTUP_LIST_MOTIVATED);
 
   DeserializeReferrers(*referral_list);
-
-  LogStartupMetrics();
 }
 
 //-----------------------------------------------------------------------------
@@ -809,8 +807,6 @@ void Predictor::PreconnectUrlOnIOThread(
   if (!getter)
     return;
 
-  UMA_HISTOGRAM_ENUMERATION("Net.PreconnectMotivation", motivation,
-                            UrlInfo::MAX_MOTIVATED);
   content::PreconnectUrl(getter, url, site_for_cookies, count,
                          allow_credentials);
 }
@@ -893,14 +889,9 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
       UrlInfo::LEARNED_REFERAL_MOTIVATED;
   for (std::map<GURL, ReferrerValue>::iterator future_url = referrer->begin();
        future_url != referrer->end();) {
-    SubresourceValue evalution(TOO_NEW);
     double connection_expectation = future_url->second.subresource_use_rate();
-    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.PreconnectSubresourceExpectation",
-                                static_cast<int>(connection_expectation * 100),
-                                10, 5000, 50);
     future_url->second.ReferrerWasObserved();
     if (connection_expectation > kPreconnectWorthyExpectedValue) {
-      evalution = PRECONNECTION;
       future_url->second.IncrementPreconnectionCount();
       int count = static_cast<int>(std::ceil(connection_expectation));
       if (url.host_piece() == future_url->first.host_piece())
@@ -908,7 +899,6 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
       PreconnectUrlOnIOThread(future_url->first, site_for_cookies, motivation,
                               kAllowCredentialsOnPreconnectByDefault, count);
     } else if (connection_expectation > kDNSPreresolutionWorthyExpectedValue) {
-      evalution = PRERESOLUTION;
       future_url->second.preresolution_increment();
       AppendToResolutionQueue(future_url->first, motivation);
     }
@@ -920,8 +910,6 @@ void Predictor::PrepareFrameSubresources(const GURL& original_url,
     } else {
       ++future_url;
     }
-    UMA_HISTOGRAM_ENUMERATION("Net.PreconnectSubresourceEval", evalution,
-                              SUBRESOURCE_VALUE_MAX);
   }
   // If the Referrer has no URLs associated with it, remove it from the map.
   if (referrer->empty())
@@ -1065,21 +1053,6 @@ GURL Predictor::GetHSTSRedirectOnIOThread(const GURL& url) {
   replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
   return url.ReplaceComponents(replacements);
 }
-
-void Predictor::LogStartupMetrics() {
-  size_t total_bytes = 0;
-  for (const auto& referrer : referrers_) {
-    total_bytes += referrer.first.spec().size();
-    total_bytes += sizeof(Referrer);
-    for (const auto& subresource : referrer.second) {
-      total_bytes += subresource.first.spec().size();
-      total_bytes += sizeof(ReferrerValue);
-    }
-  }
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.Predictor.Startup.DBSize", total_bytes, 1,
-                              10 * 1000 * 1000, 50);
-}
-
 
 // ---------------------- End IO methods. -------------------------------------
 
