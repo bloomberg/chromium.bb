@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.RecyclerView;
@@ -772,6 +773,15 @@ public class NewTabPageView
      */
     public void setSearchProviderLogoAlpha(float alpha) {
         mSearchProviderLogoView.setAlpha(alpha);
+    }
+
+    /**
+     * Set the search box background drawable.
+     *
+     * @param drawable The search box background.
+     */
+    public void setSearchBoxBackground(Drawable drawable) {
+        mSearchBoxView.setBackground(drawable);
     }
 
     /**
