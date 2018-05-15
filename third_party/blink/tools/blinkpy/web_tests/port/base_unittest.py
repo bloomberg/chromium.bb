@@ -577,23 +577,15 @@ class PortTest(unittest.TestCase):
         # With the --no-pixel-tests flag, no tests should run as pixel tests.
         options = optparse.Values({'pixel_tests': False})
         port = self.make_port(options=options)
-        self.assertFalse(port.should_run_as_pixel_test(TestInput('fast/css/001.html')))
-
-    def test_should_run_as_pixel_test_with_pixel_test_directories(self):
-        # When --pixel-test-directory is supplied, only tests in those
-        # directories are allowed to run as pixel tests.
-        options = optparse.Values({'pixel_tests': True, 'pixel_test_directories': ['foo']})
-        port = self.make_port(options=options)
-        self.assertTrue(port.should_run_as_pixel_test(TestInput('foo/bar.html')))
-        self.assertFalse(port.should_run_as_pixel_test(TestInput('bar/baz.html')))
+        self.assertFalse(port.should_run_as_pixel_test('fast/css/001.html'))
 
     def test_should_run_as_pixel_test_default(self):
-        options = optparse.Values({'pixel_tests': True, 'pixel_test_directories': None})
+        options = optparse.Values({'pixel_tests': True})
         port = self.make_port(options=options)
-        self.assertFalse(port.should_run_as_pixel_test(TestInput('external/wpt/dom/interfaces.html')))
-        self.assertFalse(port.should_run_as_pixel_test(TestInput('virtual/a-name/external/wpt/dom/interfaces.html')))
-        self.assertFalse(port.should_run_as_pixel_test(TestInput('harness-tests/wpt/console_logging.html')))
-        self.assertTrue(port.should_run_as_pixel_test(TestInput('fast/css/001.html')))
+        self.assertFalse(port.should_run_as_pixel_test('external/wpt/dom/interfaces.html'))
+        self.assertFalse(port.should_run_as_pixel_test('virtual/a-name/external/wpt/dom/interfaces.html'))
+        self.assertFalse(port.should_run_as_pixel_test('harness-tests/wpt/console_logging.html'))
+        self.assertTrue(port.should_run_as_pixel_test('fast/css/001.html'))
 
     def test_is_slow_wpt_test(self):
         port = self.make_port(with_tests=True)

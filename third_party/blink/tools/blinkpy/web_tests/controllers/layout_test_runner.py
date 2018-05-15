@@ -94,7 +94,7 @@ class LayoutTestRunner(object):
             test_inputs,
             int(self._options.child_processes),
             self._options.fully_parallel,
-            self._options.run_singly or (self._options.batch_size == 1))
+            self._options.batch_size == 1)
 
         # We don't have a good way to coordinate the workers so that they don't
         # try to run the shards that need a lock. The easiest solution is to
@@ -271,7 +271,8 @@ class Worker(object):
         if test_input.reference_files:
             test_input.should_run_pixel_test = True
         else:
-            test_input.should_run_pixel_test = self._port.should_run_as_pixel_test(test_input)
+            test_input.should_run_pixel_test = self._port.should_run_as_pixel_test(
+                test_input.test_name)
         test_input.should_run_pixel_test_first = (
             self._port.should_run_pixel_test_first(test_input.test_name))
 

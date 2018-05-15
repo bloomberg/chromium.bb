@@ -460,11 +460,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
             tests_included=True, host=host)
         self.assert_contains(err, "All 16 tests ran as expected (8 passed, 8 didn't).\n")
 
-    def test_run_singly(self):
-        batch_tests_run = get_test_batches(['--run-singly'])
-        for batch in batch_tests_run:
-            self.assertEqual(len(batch), 1, '%s had too many tests' % ', '.join(batch))
-
     def test_skip_failing_tests(self):
         # This tests that we skip both known failing and known flaky tests. Because there are
         # no known flaky tests in the default test_expectations, we add additional expectations.
@@ -651,20 +646,6 @@ class RunTest(unittest.TestCase, StreamTestingMixin):
         self.assertEqual(details.exit_code, 0)
         self.assertEqual(details.summarized_failing_results['tests']['failures']['expected']['crash_then_text.html']['actual'],
                          'CRASH TEXT')
-
-    def test_pixel_test_directories(self):
-        host = MockHost()
-
-        # Both tests have failing checksum. We include only the first in pixel tests so only that should fail.
-        args = ['--pixel-test-directory', 'failures/unexpected/pixeldir',
-                'failures/unexpected/pixeldir/image_in_pixeldir.html',
-                'failures/unexpected/image_not_in_pixeldir.html']
-        details, _, _ = logging_run(extra_args=args, host=host, tests_included=True)
-
-        self.assertEqual(details.exit_code, 1)
-        expected_token = '"pixeldir":{"image_in_pixeldir.html":{"expected":"PASS","actual":"IMAGE","is_unexpected":true'
-        json_string = host.filesystem.read_text_file('/tmp/layout-test-results/full_results.json')
-        self.assertTrue(json_string.find(expected_token) != -1)
 
     def test_watch(self):
         host = MockHost()

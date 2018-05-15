@@ -79,6 +79,15 @@ def main(argv, stdout, stderr):
 
 
 def deprecate(option, opt_str, _, parser):
+    """
+    Prints a error message for a deprecated option.
+    Usage:
+        optparse.make_option(
+            '--some-option',
+            action='callback',
+            callback=deprecate,
+            help='....')
+    """
     parser.error('%s: %s' % (opt_str, option.help))
 
 
@@ -131,11 +140,6 @@ def parse_args(args):
 
     option_group_definitions.append(
         ('Results Options', [
-            optparse.make_option(
-                '--add-platform-exceptions',
-                action='callback',
-                callback=deprecate,
-                help=('Deprecated. Use "blink_tool.py rebaseline*" instead.')),
             optparse.make_option(
                 '--additional-driver-flag',
                 '--additional-drt-flag',
@@ -194,21 +198,6 @@ def parse_args(args):
                 '--json-failing-test-results',
                 help='Path to write the JSON test results for only *failing* tests.'),
             optparse.make_option(
-                '--new-baseline',
-                action='callback',
-                callback=deprecate,
-                help=('Deprecated. Use "blink_tool.py rebaseline*" instead.')),
-            optparse.make_option(
-                '--new-flag-specific-baseline',
-                action='callback',
-                callback=deprecate,
-                help='Deprecated. Use --copy-baselines --reset-results instead.'),
-            optparse.make_option(
-                '--new-test-results',
-                action='callback',
-                callback=deprecate,
-                help='Deprecated. Use --reset-results instead.'),
-            optparse.make_option(
                 '--no-show-results',
                 dest='show_results',
                 action='store_false',
@@ -229,19 +218,6 @@ def parse_args(args):
                 action='store_false',
                 default=True,
                 help='Disable pixel-to-pixel PNG comparisons'),
-            # FIXME: we should support a comma separated list with
-            # --pixel-test-directory as well.
-            optparse.make_option(
-                '--pixel-test-directory',
-                dest='pixel_test_directories',
-                action='append',
-                default=[],
-                help=('A directory where it is allowed to execute tests as pixel tests. Specify '
-                      'multiple times to add multiple directories. This option implies '
-                      '--pixel-tests. If specified, only those tests will be executed as pixel '
-                      'tests that are located in one of the' ' directories enumerated with the '
-                      'option. Some ports may ignore this option while others can have a default '
-                      'value that can be overridden here.')),
             optparse.make_option(
                 '--reset-results',
                 action='store_true',
@@ -411,11 +387,6 @@ def parse_args(args):
                 help=('Shard index [0..total_shards) of this test run. '
                       'Must be used with --total-shards.')),
             optparse.make_option(
-                '--run-singly',
-                action='store_true',
-                default=False,
-                help='DEPRECATED, same as --batch-size=1 --verbose'),
-            optparse.make_option(
                 '--seed',
                 type='int',
                 help=('Seed to use for random test order (default: %default). '
@@ -566,26 +537,6 @@ def _set_up_derived_options(port, options, args):
         for path in options.additional_platform_directory:
             additional_platform_directories.append(port.host.filesystem.abspath(path))
         options.additional_platform_directory = additional_platform_directories
-
-    if options.pixel_test_directories:
-        options.pixel_tests = True
-        verified_dirs = set()
-        pixel_test_directories = options.pixel_test_directories
-        for directory in pixel_test_directories:
-            # FIXME: we should support specifying the directories all the ways we support it for additional
-            # arguments specifying which tests and directories to run. We should also move the logic for that
-            # to Port.
-            filesystem = port.host.filesystem
-            if not filesystem.isdir(filesystem.join(port.layout_tests_dir(), directory)):
-                _log.warning("'%s' was passed to --pixel-test-directories, which doesn't seem to be a directory", str(directory))
-            else:
-                verified_dirs.add(directory)
-
-        options.pixel_test_directories = list(verified_dirs)
-
-    if options.run_singly:
-        options.batch_size = 1
-        options.verbose = True
 
     if not args and not options.test_list and options.smoke is None:
         options.smoke = port.default_smoke_test_only()
