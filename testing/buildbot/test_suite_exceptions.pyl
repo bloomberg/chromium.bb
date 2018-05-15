@@ -3584,8 +3584,9 @@
       # chromium.android.fyi
       'Android Tests with Tracing',
       'Jelly Bean Tester',
-      # chromium.clang
+      # chromium.clang; matching chromium.android, the test fails on these.
       'ToTAndroid x64',
+      'ToTAndroid',
       # On chromium.swarm, this should possibly be being run (or removed
       # from Android N5X Swarm).
       'Android N5 Swarm',
