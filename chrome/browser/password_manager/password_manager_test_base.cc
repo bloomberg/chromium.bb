@@ -37,8 +37,6 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ui/events/keycodes/dom_us_layout_data.h"
-#include "ui/events/keycodes/keyboard_code_conversion.h"
 
 namespace {
 
@@ -490,10 +488,9 @@ void PasswordManagerBrowserTestBase::NavigateToFile(const std::string& path) {
 
 void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
     const std::string& filename,
-    const std::string& username_id,
-    const std::string& password_id,
-    const std::string& submission_script) {
-  EXPECT_FALSE(password_id.empty());
+    const std::string& submission_script,
+    const std::string& expected_element,
+    const std::string& expected_value) {
   password_manager::TestPasswordStore* password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
@@ -503,11 +500,6 @@ void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
   NavigateToFile(filename);
 
   NavigationObserver observer(WebContents());
-  const char kUsername[] = "U";
-  const char kPassword[] = "P";
-  if (!username_id.empty())
-    FillElementWithValue(username_id, kUsername);
-  FillElementWithValue(password_id, kPassword);
   ASSERT_TRUE(content::ExecuteScript(RenderFrameHost(), submission_script));
   observer.Wait();
   WaitForPasswordStore();
@@ -527,34 +519,7 @@ void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
       WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
 
   // Wait until that interaction causes the password value to be revealed.
-  if (!username_id.empty())
-    WaitForElementValue(username_id, kUsername);
-  WaitForElementValue(password_id, kPassword);
-}
-
-void PasswordManagerBrowserTestBase::FillElementWithValue(
-    const std::string& element_id,
-    const std::string& value) {
-  ASSERT_TRUE(content::ExecuteScript(
-      RenderFrameHost(),
-      base::StringPrintf("document.getElementById('%s').focus();",
-                         element_id.c_str())));
-  for (size_t i = 0; i < value.length(); ++i) {
-    ui::DomKey dom_key = ui::DomKey::FromCharacter(value[i]);
-    base::char16 character = value[i];
-    const ui::PrintableCodeEntry* code_entry = std::find_if(
-        std::begin(ui::kPrintableCodeMap), std::end(ui::kPrintableCodeMap),
-        [character](const ui::PrintableCodeEntry& entry) {
-          return entry.character[0] == character ||
-                 entry.character[1] == character;
-        });
-    ASSERT_TRUE(code_entry != std::end(ui::kPrintableCodeMap));
-    bool shift = code_entry->character[1] == character;
-    ui::DomCode dom_code = code_entry->dom_code;
-    content::SimulateKeyPress(WebContents(), dom_key, dom_code,
-                              ui::DomCodeToUsLayoutKeyboardCode(dom_code),
-                              false, shift, false, false);
-  }
+  WaitForElementValue(expected_element, expected_value);
 }
 
 void PasswordManagerBrowserTestBase::WaitForElementValue(
