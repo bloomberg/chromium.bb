@@ -254,7 +254,7 @@ void FirstMeaningfulPaintDetector::RegisterNotifySwapTime(PaintEvent event) {
 void FirstMeaningfulPaintDetector::ReportSwapTime(
     PaintEvent event,
     WebLayerTreeView::SwapResult result,
-    double timestamp) {
+    base::TimeTicks timestamp) {
   DCHECK(event == PaintEvent::kProvisionalFirstMeaningfulPaint);
   DCHECK_GT(outstanding_swap_promise_count_, 0U);
   --outstanding_swap_promise_count_;
@@ -272,9 +272,10 @@ void FirstMeaningfulPaintDetector::ReportSwapTime(
   // TODO(crbug.com/738235): Consider not reporting any timestamp when failing
   // for reasons other than kDidNotSwapSwapFails.
   paint_timing_->ReportSwapResultHistogram(result);
-  provisional_first_meaningful_paint_swap_ = TimeTicksFromSeconds(timestamp);
+  provisional_first_meaningful_paint_swap_ = timestamp;
 
-  probe::paintTiming(GetDocument(), "firstMeaningfulPaintCandidate", timestamp);
+  probe::paintTiming(GetDocument(), "firstMeaningfulPaintCandidate",
+                     TimeTicksInSeconds(timestamp));
 
   // Ignore the first meaningful paint candidate as this generally is the first
   // contentful paint itself.
