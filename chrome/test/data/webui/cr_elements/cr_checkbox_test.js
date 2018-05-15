@@ -48,15 +48,17 @@ suite('cr-checkbox', function() {
 
   /**
    * @param {string} keyName The name of the key to trigger.
+   * @param {string} keyCode The event keyCode and code to trigger.
    * @param {HTMLElement=} element
    */
-  function triggerKeyPressEvent(keyName, element) {
+  function triggerKeyPressEvent(keyName, keyCode, element) {
     element = element || checkbox;
+
     // Note: MockInteractions incorrectly populates |keyCode| and |code| with
-    // the same value. Since the prod code only cares about |code| being 'Enter'
-    // or 'Space', passing a string as a 2nd param, instead of a number.
+    // the same value. The intention of passing a string here is only to set
+    // |code|, since |keyCode| is not used its value doesn't matter.
     MockInteractions.keyEventOn(
-        element, 'keypress', keyName, undefined, keyName);
+        element, 'keypress', keyCode, undefined, keyName);
   }
 
   // Test that the control is checked when the user taps on it (no movement
@@ -99,15 +101,22 @@ suite('cr-checkbox', function() {
   // 'Space' key.
   test('ToggleByKey', function() {
     let whenChanged = test_util.eventToPromise('change', checkbox);
-    triggerKeyPressEvent('Enter');
+    triggerKeyPressEvent('Enter', 'Enter');
     return whenChanged
         .then(function() {
           assertChecked();
           whenChanged = test_util.eventToPromise('change', checkbox);
-          triggerKeyPressEvent('Space');
+          triggerKeyPressEvent(' ', 'Space');
+          return whenChanged;
         })
         .then(function() {
           assertNotChecked();
+          whenChanged = test_util.eventToPromise('change', checkbox);
+          triggerKeyPressEvent('Enter', 'NumpadEnter');
+          return whenChanged;
+        })
+        .then(function() {
+          assertChecked();
         });
   });
 
@@ -122,7 +131,7 @@ suite('cr-checkbox', function() {
     });
 
     checkbox.click();
-    triggerKeyPressEvent('Enter');
+    triggerKeyPressEvent('Enter', 'Enter');
 
     // Wait 1 cycle to make sure change-event was not fired.
     setTimeout(done);
@@ -147,7 +156,7 @@ suite('cr-checkbox', function() {
     link.click();
     assertNotChecked();
 
-    triggerKeyPressEvent('Enter', link);
+    triggerKeyPressEvent('Enter', 'Enter', link);
     assertNotChecked();
 
     // Wait 1 cycle to make sure change-event was not fired.

@@ -125,7 +125,7 @@ Polymer({
    * @private
    */
   onKeyPress_: function(e) {
-    if (!this.shouldHandleEvent_(e) || (e.code != 'Space' && e.code != 'Enter'))
+    if (!this.shouldHandleEvent_(e) || (e.key != ' ' && e.key != 'Enter'))
       return;
 
     e.preventDefault();
