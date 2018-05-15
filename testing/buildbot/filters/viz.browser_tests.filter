@@ -36,18 +36,6 @@
 # Incorrect Focus State crbug.com/818205
 -WebViewFocusBrowserPluginSpecificTest.TouchFocusesEmbedder
 
-# Windows timeouts. https://crbug.com/821029
--BrowserNavigatorTest.Disposition_NewPopupFromAppPopup
--ExtensionApiCaptureTest.CaptureNullWindow
--ManifestVerifierBrowserTest.*
--OmniboxPopupContentsViewTest.ThemeIntegration/*
--PDFIsolatedExtensionTest.MultipleDomains
--PrefHashBrowserTest*
--StartupBrowserCreatorTest.ProfilesWithoutPagesNotLaunched
--UserInitiatedRunsDisabled*
--UserInitiatedRunsEnabled*
--WithVaryingSeeds/ChromeCleanerPromptUserTest.*
-
 # Mac
 # Shutdown error. https://crbug.com/823276
 -PluginPowerSaverBrowserTest.SmallerThanPlayIcon
