@@ -146,11 +146,9 @@ std::unique_ptr<extensions::UserScript> ParseContentScript(
 
   // The default for WebUI is not having special access, but we can change that
   // if needed.
-  bool allowed_everywhere = false;
-  if (extension &&
-      extensions::PermissionsData::CanExecuteScriptEverywhere(extension))
-    allowed_everywhere = true;
-
+  bool allowed_everywhere =
+      extension && extensions::PermissionsData::CanExecuteScriptEverywhere(
+                       extension->id(), extension->location());
   for (const std::string& match : script_value.matches) {
     URLPattern pattern(UserScript::ValidUserScriptSchemes(allowed_everywhere));
     if (pattern.Parse(match) != URLPattern::PARSE_SUCCESS) {

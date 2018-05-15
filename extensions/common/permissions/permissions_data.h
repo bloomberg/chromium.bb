@@ -15,6 +15,7 @@
 #include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message.h"
@@ -71,7 +72,10 @@ class PermissionsData {
 
   // Returns true if the extension is a COMPONENT extension or is on the
   // whitelist of extensions that can script all pages.
-  static bool CanExecuteScriptEverywhere(const Extension* extension);
+  // NOTE: This is static because it is used during extension initialization,
+  // before the extension has an associated PermissionsData object.
+  static bool CanExecuteScriptEverywhere(const ExtensionId& extension_id,
+                                         Manifest::Location location);
 
   // Returns true if we should skip the permissions warning for the extension
   // with the given |extension_id|.

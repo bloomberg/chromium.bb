@@ -61,8 +61,10 @@ bool CanSpecifyHostPermission(const Extension* extension,
       return true;
 
     // Component extensions can have access to all of chrome://*.
-    if (PermissionsData::CanExecuteScriptEverywhere(extension))
+    if (PermissionsData::CanExecuteScriptEverywhere(extension->id(),
+                                                    extension->location())) {
       return true;
+    }
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kExtensionsOnChromeURLs)) {
@@ -157,11 +159,14 @@ bool ParseHelper(Extension* extension,
     api_permissions->erase(*iter);
   }
 
+  bool can_execute_script_everywhere =
+      PermissionsData::CanExecuteScriptEverywhere(extension->id(),
+                                                  extension->location());
+
   // Parse host pattern permissions.
-  const int kAllowedSchemes =
-      PermissionsData::CanExecuteScriptEverywhere(extension)
-          ? URLPattern::SCHEME_ALL
-          : Extension::kValidHostPermissionSchemes;
+  const int kAllowedSchemes = can_execute_script_everywhere
+                                  ? URLPattern::SCHEME_ALL
+                                  : Extension::kValidHostPermissionSchemes;
 
   for (std::vector<std::string>::const_iterator iter = host_data.begin();
        iter != host_data.end();
@@ -177,16 +182,16 @@ bool ParseHelper(Extension* extension,
       pattern.SetPath("/*");
       int valid_schemes = pattern.valid_schemes();
       if (pattern.MatchesScheme(url::kFileScheme) &&
-          !PermissionsData::CanExecuteScriptEverywhere(extension)) {
+          !can_execute_script_everywhere) {
         extension->set_wants_file_access(true);
         if (!(extension->creation_flags() & Extension::ALLOW_FILE_ACCESS))
           valid_schemes &= ~URLPattern::SCHEME_FILE;
       }
 
       if (pattern.scheme() != content::kChromeUIScheme &&
-          !PermissionsData::CanExecuteScriptEverywhere(extension)) {
+          !can_execute_script_everywhere) {
         // Keep chrome:// in allowed schemes only if it's explicitly requested
-        // or CanExecuteScriptEverywhere is true. If the
+        // or can_execute_script_everywhere is true. If the
         // extensions_on_chrome_urls flag is not set, CanSpecifyHostPermission
         // will fail, so don't check the flag here.
         valid_schemes &= ~URLPattern::SCHEME_CHROMEUI;

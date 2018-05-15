@@ -55,8 +55,10 @@ PermissionsData::PageAccess ExtensionInjectionHost::CanExecuteOnFrame(
   // Only whitelisted extensions may run scripts on another extension's page.
   if (top_frame_security_origin.Protocol().Utf8() == kExtensionScheme &&
       top_frame_security_origin.Host().Utf8() != extension_->id() &&
-      !PermissionsData::CanExecuteScriptEverywhere(extension_))
+      !PermissionsData::CanExecuteScriptEverywhere(extension_->id(),
+                                                   extension_->location())) {
     return PermissionsData::PageAccess::kDenied;
+  }
 
   // Declarative user scripts use "page access" (from "permissions" section in
   // manifest) whereas non-declarative user scripts use custom

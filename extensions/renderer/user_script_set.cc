@@ -160,8 +160,8 @@ bool UserScriptSet::UpdateUserScripts(base::SharedMemoryHandle shared_memory,
     const Extension* extension =
         RendererExtensionRegistry::Get()->GetByID(script->extension_id());
     if (whitelisted_only &&
-        (!extension ||
-         !PermissionsData::CanExecuteScriptEverywhere(extension))) {
+        (!extension || !PermissionsData::CanExecuteScriptEverywhere(
+                           extension->id(), extension->location()))) {
       continue;
     }
 

@@ -125,8 +125,8 @@ void CheckRestrictedUrls(const Extension* extension,
   // We should only allow other schemes for extensions when it's a whitelisted
   // extension.
   error.clear();
-  bool allow_on_other_schemes =
-      PermissionsData::CanExecuteScriptEverywhere(extension);
+  bool allow_on_other_schemes = PermissionsData::CanExecuteScriptEverywhere(
+      extension->id(), extension->location());
   EXPECT_EQ(!allow_on_other_schemes,
             PermissionsData::IsRestrictedUrl(
                 invalid_url, extension, &error)) << name;
