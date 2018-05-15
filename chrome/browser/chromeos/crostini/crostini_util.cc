@@ -73,9 +73,7 @@ bool IsCrostiniAllowed() {
 }
 
 bool IsCrostiniUIAllowedForProfile(Profile* profile) {
-  if (!profile || profile->IsOffTheRecord() ||
-      chromeos::ProfileHelper::IsEphemeralUserProfile(profile) ||
-      chromeos::ProfileHelper::IsLockScreenAppProfile(profile)) {
+  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     return false;
   }
 
