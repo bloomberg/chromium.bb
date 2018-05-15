@@ -2306,7 +2306,8 @@ WebMediaPlayer::Preload HTMLMediaElement::PreloadType() const {
   // If the source scheme is requires network, force preload to 'none' on Data
   // Saver and for low end devices.
   if (GetDocument().GetSettings() &&
-      (GetNetworkStateNotifier().SaveDataEnabled() ||
+      ((GetNetworkStateNotifier().SaveDataEnabled() &&
+        !GetDocument().GetSettings()->GetDataSaverHoldbackMediaApi()) ||
        GetDocument().GetSettings()->GetForcePreloadNoneForMediaElements()) &&
       (current_src_.Protocol() != "blob" && current_src_.Protocol() != "data" &&
        current_src_.Protocol() != "file")) {

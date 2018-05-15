@@ -118,6 +118,14 @@ struct CONTENT_EXPORT WebPreferences {
   // Preference to save data. When enabled, requests will contain the header
   // 'Save-Data: on'.
   bool data_saver_enabled;
+  // Whether data saver holdback for Web APIs is enabled. If enabled, data saver
+  // appears as disabled to the web consumers even if it has been actually
+  // enabled by the user.
+  bool data_saver_holdback_web_api_enabled;
+  // Whether data saver holdback is enabled when queried by the media APIs
+  // within Blink. If enabled, data saver appears as disabled to the media APIs
+  // even if it has been actually enabled by the user.
+  bool data_saver_holdback_media_api_enabled;
   bool local_storage_enabled;
   bool databases_enabled;
   bool application_cache_enabled;

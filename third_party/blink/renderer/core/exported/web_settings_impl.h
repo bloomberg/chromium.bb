@@ -116,6 +116,8 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetMainFrameResizesAreOrientationChanges(bool) override;
   void SetMaxTouchPoints(int) override;
   void SetPictureInPictureEnabled(bool) override;
+  void SetDataSaverHoldbackWebApi(bool) override;
+  void SetDataSaverHoldbackMediaApi(bool) override;
   void SetMediaPlaybackGestureWhitelistScope(const WebString&) override;
   void SetPresentationRequiresUserGesture(bool) override;
   void SetEmbeddedMediaExperienceEnabled(bool) override;

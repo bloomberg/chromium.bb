@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/metrics/field_trial_params.h"
 #include "base/optional.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -152,7 +153,8 @@ void AddAdditionalRequestHeaders(
   if (!url.SchemeIsHTTPOrHTTPS())
     return;
 
-  if (!base::FeatureList::IsEnabled(features::kDataSaverHoldback)) {
+  if (!base::GetFieldTrialParamByFeatureAsBool(features::kDataSaverHoldback,
+                                               "holdback_web", false)) {
     bool is_reload =
         navigation_type == FrameMsg_Navigate_Type::RELOAD ||
         navigation_type == FrameMsg_Navigate_Type::RELOAD_BYPASSING_CACHE ||
