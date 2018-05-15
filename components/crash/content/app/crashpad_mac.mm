@@ -26,8 +26,39 @@
 #include "third_party/crashpad/crashpad/client/crashpad_info.h"
 #include "third_party/crashpad/crashpad/client/settings.h"
 #include "third_party/crashpad/crashpad/client/simulate_crash.h"
+#include "third_party/crashpad/crashpad/minidump/minidump_file_writer.h"
+#include "third_party/crashpad/crashpad/snapshot/mac/process_snapshot_mac.h"
 
 namespace crash_reporter {
+
+void DumpProcessWithoutCrashing(task_t task_port) {
+  crashpad::CrashReportDatabase* database = internal::GetCrashReportDatabase();
+  if (!database)
+    return;
+
+  crashpad::ProcessSnapshotMac snapshot;
+  if (!snapshot.Initialize(task_port))
+    return;
+
+  snapshot.SetAnnotationsSimpleMap(
+      {{"is-dump-process-without-crashing", "true"}});
+
+  crashpad::MinidumpFileWriter minidump;
+  minidump.InitializeFromSnapshot(&snapshot);
+
+  std::unique_ptr<crashpad::CrashReportDatabase::NewReport> new_report;
+  if (database->PrepareNewCrashReport(&new_report) !=
+      crashpad::CrashReportDatabase::kNoError) {
+    return;
+  }
+
+  if (!minidump.WriteEverything(new_report->Writer()))
+    return;
+
+  crashpad::UUID uuid;
+  database->FinishedWritingCrashReport(std::move(new_report), &uuid);
+}
+
 namespace internal {
 
 base::FilePath PlatformCrashpadInitialization(bool initial_client,

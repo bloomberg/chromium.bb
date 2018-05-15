@@ -23,6 +23,7 @@
 
 namespace crashpad {
 class CrashpadClient;
+class CrashReportDatabase;
 }
 
 namespace crash_reporter {
@@ -127,6 +128,12 @@ void RequestSingleCrashUploadImpl(const std::string& local_id);
 // The implementation function for GetCrashpadDatabasePath.
 base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl();
 
+#if defined(OS_MACOSX)
+// Captures a minidump for the process named by its |task_port| and stores it
+// in the current crash report database.
+void DumpProcessWithoutCrashing(task_t task_port);
+#endif
+
 namespace internal {
 
 #if defined(OS_WIN)
@@ -168,6 +175,10 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
                                               bool embedded_handler,
                                               const std::string& user_data_dir,
                                               const base::FilePath& exe_path);
+
+// Returns the current crash report database object, or null if it has not
+// been initialized yet.
+crashpad::CrashReportDatabase* GetCrashReportDatabase();
 
 }  // namespace internal
 
