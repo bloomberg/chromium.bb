@@ -33,7 +33,7 @@ Please also read [Respectful Changes](cl_respect.md) and
     request more time, or suggest another reviewer.
 
   * Use the status field in Gerrit settings to indicate if you're away and when
-  * you'll be back.
+    you'll be back.
 
   * Don't generally discourage people from sending you code reviews. This
     includes using a blanket "slow" in your status field.
