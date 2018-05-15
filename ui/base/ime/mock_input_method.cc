@@ -105,6 +105,10 @@ bool MockInputMethod::IsCandidatePopupOpen() const {
   return false;
 }
 
+bool MockInputMethod::GetClientShouldDoLearning() {
+  return false;
+}
+
 void MockInputMethod::ShowImeIfNeeded() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnShowImeIfNeeded();

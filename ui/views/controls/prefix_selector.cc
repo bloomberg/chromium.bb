@@ -151,6 +151,12 @@ const std::string& PrefixSelector::GetClientSourceInfo() const {
   return base::EmptyString();
 }
 
+bool PrefixSelector::ShouldDoLearning() {
+  // TODO(https://crbug.com/311180): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 void PrefixSelector::OnTextInput(const base::string16& text) {
   // Small hack to filter out 'tab' and 'enter' input, as the expectation is
   // that they are control characters and will not affect the currently-active

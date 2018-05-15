@@ -190,6 +190,11 @@ class UI_BASE_IME_EXPORT TextInputClient {
   // Returns a string description of the view hosting the given text input
   // element (ie. the URL for web contents), used for recording metrics.
   virtual const std::string& GetClientSourceInfo() const = 0;
+
+  // Returns whether text entered into this text client should be used to
+  // improve typing suggestions for the user. This should return false for text
+  // fields that are considered 'private' (e.g. in incognito tabs).
+  virtual bool ShouldDoLearning() = 0;
 };
 
 }  // namespace ui

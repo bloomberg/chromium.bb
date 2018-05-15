@@ -387,6 +387,10 @@ void OmniboxViewViews::RemovedFromWidget() {
   scoped_observer_.RemoveAll();
 }
 
+bool OmniboxViewViews::ShouldDoLearning() {
+  return location_bar_view_ && !location_bar_view_->profile()->IsOffTheRecord();
+}
+
 void OmniboxViewViews::SetTextAndSelectedRange(const base::string16& text,
                                                const gfx::Range& range) {
   SetText(text);

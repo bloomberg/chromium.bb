@@ -135,4 +135,8 @@ const std::string& DummyTextInputClient::GetClientSourceInfo() const {
   return base::EmptyString();
 }
 
+bool DummyTextInputClient::ShouldDoLearning() {
+  return false;
+}
+
 }  // namespace ui

@@ -58,6 +58,7 @@ class RemoteTextInputClient : public ui::TextInputClient,
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
   const std::string& GetClientSourceInfo() const override;
+  bool ShouldDoLearning() override;
 
   // ui::internal::InputMethodDelegate:
   ui::EventDispatchDetails DispatchKeyEventPostIME(

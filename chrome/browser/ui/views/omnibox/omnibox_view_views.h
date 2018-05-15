@@ -107,6 +107,7 @@ class OmniboxViewViews : public OmniboxView,
   ui::TextInputType GetTextInputType() const override;
   void AddedToWidget() override;
   void RemovedFromWidget() override;
+  bool ShouldDoLearning() override;
 
  protected:
   // For testing only.

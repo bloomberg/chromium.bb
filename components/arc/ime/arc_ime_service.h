@@ -138,6 +138,7 @@ class ArcImeService : public KeyedService,
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override {
   }
   const std::string& GetClientSourceInfo() const override;
+  bool ShouldDoLearning() override;
 
   // Normally, the default device scale factor is used to convert from DPI to
   // physical pixels. This method provides a way to override it for testing.

@@ -1459,6 +1459,10 @@ const std::string& RenderWidgetHostViewAura::GetClientSourceInfo() const {
   return base::EmptyString();
 }
 
+bool RenderWidgetHostViewAura::ShouldDoLearning() {
+  return GetTextInputManager() && GetTextInputManager()->should_do_learning();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewAura, display::DisplayObserver implementation:
 

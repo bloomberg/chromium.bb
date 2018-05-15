@@ -176,6 +176,12 @@ const std::string& RemoteTextInputClient::GetClientSourceInfo() const {
   return base::EmptyString();
 }
 
+bool RemoteTextInputClient::ShouldDoLearning() {
+  // TODO(https://crbug.com/311180): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 ui::EventDispatchDetails RemoteTextInputClient::DispatchKeyEventPostIME(
     ui::KeyEvent* event) {
   remote_client_->DispatchKeyEventPostIME(ui::Event::Clone(*event),
