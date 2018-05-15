@@ -412,8 +412,6 @@ class Predictor {
   // Applies the HSTS redirect for |url|, if any.
   GURL GetHSTSRedirectOnIOThread(const GURL& url);
 
-  void LogStartupMetrics();
-
   // ------------- End IO thread methods.
 
   std::unique_ptr<InitialObserver> initial_observer_;
