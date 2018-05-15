@@ -10,9 +10,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac.h"
+#include "chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa.h"
+#include "chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_views.h"
 #include "chrome/browser/ui/cocoa/tab_contents/web_drag_bookmark_handler_mac.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/focus_tracker.h"
@@ -106,20 +108,37 @@ ChromeWebContentsViewDelegateMac::BuildMenu(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
   std::unique_ptr<RenderViewContextMenuBase> menu;
-  content::RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
-  // If the frame tree does not have a focused frame at this point, do not
-  // bother creating RenderViewContextMenuMac.
-  // This happens if the frame has navigated to a different page before
-  // ContextMenu message was received by the current RenderFrameHost.
-  if (focused_frame) {
-    content::RenderWidgetHostView* widget_view =
-        GetActiveRenderWidgetHostView();
-    menu.reset(new RenderViewContextMenuMac(
-        focused_frame, params, widget_view->GetNativeView()));
+  menu.reset(CreateRenderViewContextMenu(web_contents, params));
+
+  if (menu)
     menu->Init();
-  }
 
   return menu;
+}
+
+RenderViewContextMenuBase*
+ChromeWebContentsViewDelegateMac::CreateRenderViewContextMenu(
+    content::WebContents* web_contents,
+    const content::ContextMenuParams& params) {
+  // If the frame tree does not have a focused frame at this point, do not
+  // bother creating RenderViewContextMenuBase. This happens if the frame has
+  // navigated to a different page before ContextMenu message was received by
+  // the current RenderFrameHost.
+  content::RenderFrameHost* focused_frame = web_contents->GetFocusedFrame();
+  if (!focused_frame)
+    return nullptr;
+
+  gfx::NativeView parent_view =
+      GetActiveRenderWidgetHostView()->GetNativeView();
+
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!views_mode_controller::IsViewsBrowserCocoa()) {
+    return new RenderViewContextMenuMacViews(focused_frame, params,
+                                             parent_view);
+  }
+#endif
+
+  return new RenderViewContextMenuMacCocoa(focused_frame, params, parent_view);
 }
 
 content::RenderWidgetHostView*

@@ -58,6 +58,10 @@ class ChromeWebContentsViewDelegateMac
   content::RenderWidgetHostView* GetActiveRenderWidgetHostView() const;
   NSWindow* GetNSWindowForFocusTracker() const;
 
+  RenderViewContextMenuBase* CreateRenderViewContextMenu(
+      content::WebContents* web_contents,
+      const content::ContextMenuParams& params);
+
   // The context menu. Callbacks are asynchronous so we need to keep it around.
   std::unique_ptr<RenderViewContextMenuBase> context_menu_;
 

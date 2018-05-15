@@ -7,12 +7,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
-
-@class MenuControllerCocoa;
 
 // Mac implementation of the context menu display code. Uses a Cocoa NSMenu
 // to display the context menu. Internally uses an obj-c object as the
@@ -21,17 +18,13 @@ class RenderViewContextMenuMac : public RenderViewContextMenu,
                                  public ui::TextServicesContextMenu::Delegate {
  public:
   RenderViewContextMenuMac(content::RenderFrameHost* render_frame_host,
-                           const content::ContextMenuParams& params,
-                           NSView* parent_view);
+                           const content::ContextMenuParams& params);
   ~RenderViewContextMenuMac() override;
 
   // SimpleMenuModel::Delegate:
   void ExecuteCommand(int command_id, int event_flags) override;
   bool IsCommandIdChecked(int command_id) const override;
   bool IsCommandIdEnabled(int command_id) const override;
-
-  // RenderViewContextMenuBase:
-  void Show() override;
 
   // TextServicesContextMenu::Delegate:
   base::string16 GetSelectedText() const override;
@@ -42,47 +35,23 @@ class RenderViewContextMenuMac : public RenderViewContextMenu,
   void UpdateTextDirection(base::i18n::TextDirection direction) override;
 
  protected:
+  // Adds menu to the platform's toolkit.
+  void InitToolkitMenu();
+
   // RenderViewContextMenu:
   void AppendPlatformEditableItems() override;
 
  private:
-  friend class ToolkitDelegateMac;
-
-  // Adds menu to the platform's toolkit.
-  void InitToolkitMenu();
-
-  // Cancels the menu.
-  void CancelToolkitMenu();
-
-  // Updates the status and text of the specified context-menu item.
-  void UpdateToolkitMenuItem(int command_id,
-                             bool enabled,
-                             bool hidden,
-                             const base::string16& title);
-
   // Handler for the "Look Up" menu item.
   void LookUpInDictionary();
 
   // Returns the ContextMenuParams value associated with |direction|.
   int ParamsForTextDirection(base::i18n::TextDirection direction) const;
 
-  // The Cocoa menu controller for this menu.
-  base::scoped_nsobject<MenuControllerCocoa> menu_controller_;
-
-  // The Cocoa parent view.
-  NSView* parent_view_;
-
   // The context menu that adds and handles Speech and BiDi.
   ui::TextServicesContextMenu text_services_context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuMac);
 };
-
-// The ChromeSwizzleServicesMenuUpdater filters Services menu items in the
-// contextual menus and elsewhere using swizzling.
-@interface ChromeSwizzleServicesMenuUpdater : NSObject
-// Return filtered entries, for testing.
-+ (void)storeFilteredEntriesForTestingInArray:(NSMutableArray*)array;
-@end
 
 #endif  // CHROME_BROWSER_UI_COCOA_RENDERER_CONTEXT_MENU_RENDER_VIEW_CONTEXT_MENU_MAC_H_
