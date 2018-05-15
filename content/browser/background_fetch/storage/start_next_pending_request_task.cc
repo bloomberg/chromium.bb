@@ -103,7 +103,8 @@ void StartNextPendingRequestTask::CreateAndStoreActiveRequest() {
   active_request_.set_unique_id(pending_request_.unique_id());
   active_request_.set_request_index(pending_request_.request_index());
   // Transfer ownership of the request to avoid a potentially expensive copy.
-  active_request_.set_allocated_request(pending_request_.release_request());
+  active_request_.set_allocated_serialized_request(
+      pending_request_.release_serialized_request());
 
   service_worker_context()->StoreRegistrationUserData(
       service_worker_registration_id_, GURL(metadata_->origin()),
@@ -134,7 +135,8 @@ void StartNextPendingRequestTask::StartDownload() {
 
   auto next_request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
       active_request_.request_index(),
-      DeserializeFetchRequest(active_request_.request()));
+      ServiceWorkerFetchRequest::ParseFromString(
+          active_request_.serialized_request()));
   next_request->SetDownloadGuid(active_request_.download_guid());
 
   std::move(callback_).Run(next_request);
@@ -146,18 +148,6 @@ void StartNextPendingRequestTask::StartDownload() {
                          pending_request_.request_index())},
       base::BindOnce(&StartNextPendingRequestTask::DidDeletePendingRequest,
                      weak_factory_.GetWeakPtr()));
-}
-
-ServiceWorkerFetchRequest StartNextPendingRequestTask::DeserializeFetchRequest(
-    const proto::ServiceWorkerFetchRequest& request) {
-  return ServiceWorkerFetchRequest(
-      GURL(request.url()), request.method(),
-      ServiceWorkerHeaderMap(request.headers().begin(),
-                             request.headers().end()),
-      Referrer(
-          GURL(request.referrer().url()),
-          static_cast<blink::WebReferrerPolicy>(request.referrer().policy())),
-      request.is_reload());
 }
 
 void StartNextPendingRequestTask::DidDeletePendingRequest(
