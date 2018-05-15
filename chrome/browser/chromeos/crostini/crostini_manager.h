@@ -75,6 +75,11 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   using GetContainerAppIconsCallback =
       base::OnceCallback<void(ConciergeClientResult result,
                               std::vector<Icon>& icons)>;
+  // The type of the callback for CrostiniManager::GetContainerSshKeys.
+  using GetContainerSshKeysCallback =
+      base::OnceCallback<void(ConciergeClientResult result,
+                              const std::string& container_public_key,
+                              const std::string& host_private_key)>;
   // The type of the callback for CrostiniManager::RestartCrostini.
   using RestartCrostiniCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::RemoveCrostini.
@@ -170,6 +175,14 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
                             int scale,
                             GetContainerAppIconsCallback callback);
 
+  // Asynchronously gets SSH server public key of container and trusted SSH
+  // client private key which can be used to connect to the container.
+  // |callback| is called after the method call finishes.
+  void GetContainerSshKeys(std::string vm_name,
+                           std::string container_name,
+                           std::string cryptohome_id,
+                           GetContainerSshKeysCallback callback);
+
   // Launches the crosh-in-a-window that displays a shell in an already running
   // container on a VM.
   void LaunchContainerTerminal(Profile* profile,
@@ -259,6 +272,12 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   void OnGetContainerAppIcons(
       GetContainerAppIconsCallback callback,
       base::Optional<vm_tools::concierge::ContainerAppIconResponse> response);
+
+  // Callback for CrostiniManager::GetContainerSshKeys. Called after the
+  // Concierge service finishes.
+  void OnGetContainerSshKeys(
+      GetContainerSshKeysCallback callback,
+      base::Optional<vm_tools::concierge::ContainerSshKeysResponse> response);
 
   // Helper for CrostiniManager::CreateDiskImage. Separated so it can be run
   // off the main thread.

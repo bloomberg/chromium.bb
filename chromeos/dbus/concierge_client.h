@@ -104,6 +104,14 @@ class CHROMEOS_EXPORT ConciergeClient : public DBusClient {
   virtual void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) = 0;
 
+  // Gets SSH server public key of container and trusted SSH client private key
+  // which can be used to connect to the container.
+  // |callback| is called after the method call finishes.
+  virtual void GetContainerSshKeys(
+      const vm_tools::concierge::ContainerSshKeysRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
+          callback) = 0;
+
   // Creates an instance of ConciergeClient.
   static ConciergeClient* Create();
 
