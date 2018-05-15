@@ -5,8 +5,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_IMPL_H_
 
+#include <list>
 #include <map>
+#include <memory>
 #include <random>
+#include <set>
+#include <unordered_map>
+#include <utility>
 
 #include "base/atomic_sequence_num.h"
 #include "base/cancelable_callback.h"
@@ -103,6 +108,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   void SetWorkBatchSize(int work_batch_size) override;
   void EnableCrashKeys(const char* file_name_crash_key,
                        const char* function_name_crash_key) override;
+  double GetSamplingRateForRecordingCPUTime() const override;
 
   // Implementation of SequencedTaskSource:
   Optional<PendingTask> TakeTask() override;

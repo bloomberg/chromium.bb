@@ -4,9 +4,8 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 
-#include <memory>
 #include <queue>
-#include <set>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
@@ -436,9 +435,11 @@ void TaskQueueManagerImpl::NotifyDidProcessTask(
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                "TaskQueueManagerImpl::NotifyDidProcessTaskObservers");
 
-  ThreadTicks task_end_thread_time;
-  if (executing_task.should_record_thread_time)
-    task_end_thread_time = ThreadTicks::Now();
+  Optional<TimeDelta> thread_time;
+  if (executing_task.should_record_thread_time) {
+    auto task_end_thread_time = ThreadTicks::Now();
+    thread_time = task_end_thread_time - executing_task.task_start_thread_time;
+  }
 
   if (!executing_task.task_queue->GetShouldNotifyObservers())
     return;
@@ -476,8 +477,7 @@ void TaskQueueManagerImpl::NotifyDidProcessTask(
     if (task_start_time_sec && task_end_time_sec) {
       executing_task.task_queue->OnTaskCompleted(
           executing_task.pending_task, executing_task.task_start_time,
-          time_after_task->Now(),
-          task_end_thread_time - executing_task.task_start_thread_time);
+          time_after_task->Now(), thread_time);
     }
   }
 
@@ -645,6 +645,12 @@ bool TaskQueueManagerImpl::ShouldRecordCPUTimeForTask() {
          main_thread_only().uniform_distribution(
              main_thread_only().random_generator) <
              kSamplingRateForRecordingCPUTime;
+}
+
+double TaskQueueManagerImpl::GetSamplingRateForRecordingCPUTime() const {
+  if (!ThreadTicks::IsSupported())
+    return 0;
+  return kSamplingRateForRecordingCPUTime;
 }
 
 MSVC_DISABLE_OPTIMIZE()
