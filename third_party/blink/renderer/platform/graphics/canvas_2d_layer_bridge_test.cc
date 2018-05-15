@@ -1122,6 +1122,7 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
 }
 
 TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
+  InSequence s;
   ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
   ScopedTestingPlatformSupport<FakePlatformSupport> platform;
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
@@ -1133,10 +1134,10 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
   viz::TransferableResource resource2;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
-  const GLuint texture_id1 = 1;
-  const GLuint texture_id2 = 2;
-  const GLuint image_id1 = 3;
-  const GLuint image_id2 = 4;
+  constexpr GLuint texture_id1 = 1;
+  constexpr GLuint texture_id2 = 2;
+  constexpr GLuint image_id1 = 3;
+  constexpr GLuint image_id2 = 4;
 
   Canvas2DLayerBridgePtr bridge(std::make_unique<Canvas2DLayerBridge>(
       IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
@@ -1144,15 +1145,15 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
+  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(nullptr, &resource1, &release_callback1);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
+  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(nullptr, &resource2, &release_callback2);
 
@@ -1186,6 +1187,7 @@ TEST_F(Canvas2DLayerBridgeTest, GpuMemoryBufferRecycling) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
+  InSequence s;
   ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
   ScopedTestingPlatformSupport<FakePlatformSupport> platform;
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
@@ -1197,10 +1199,10 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
   viz::TransferableResource resource2;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback1;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback2;
-  const GLuint texture_id1 = 1;
-  const GLuint texture_id2 = 2;
-  const GLuint image_id1 = 3;
-  const GLuint image_id2 = 4;
+  constexpr GLuint texture_id1 = 1;
+  constexpr GLuint texture_id2 = 2;
+  constexpr GLuint image_id1 = 3;
+  constexpr GLuint image_id2 = 4;
 
   Canvas2DLayerBridgePtr bridge(std::make_unique<Canvas2DLayerBridge>(
       IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
@@ -1208,15 +1210,15 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id1));
+  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id1));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(nullptr, &resource1, &release_callback1);
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id2));
+  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id2));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(nullptr, &resource2, &release_callback2);
 
@@ -1249,6 +1251,7 @@ TEST_F(Canvas2DLayerBridgeTest, NoGpuMemoryBufferRecyclingWhenPageHidden) {
 }
 
 TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
+  InSequence s;
   ScopedCanvas2dImageChromiumForTest canvas_2d_image_chromium(true);
   ScopedTestingPlatformSupport<FakePlatformSupport> platform;
   const_cast<gpu::Capabilities&>(SharedGpuContext::ContextProviderWrapper()
@@ -1258,8 +1261,8 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
 
   viz::TransferableResource resource;
   std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-  const GLuint texture_id = 1;
-  const GLuint image_id = 2;
+  constexpr GLuint texture_id = 1;
+  constexpr GLuint image_id = 2;
 
   Canvas2DLayerBridgePtr bridge(std::make_unique<Canvas2DLayerBridge>(
       IntSize(300, 150), 0, Canvas2DLayerBridge::kForceAccelerationForTesting,
@@ -1267,8 +1270,8 @@ TEST_F(Canvas2DLayerBridgeTest, ReleaseGpuMemoryBufferAfterBridgeDestroyed) {
 
   testing::Mock::VerifyAndClearExpectations(&gl_);
 
-  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id));
   EXPECT_CALL(gl_, CreateImageCHROMIUM(_, _, _, _)).WillOnce(Return(image_id));
+  EXPECT_CALL(gl_, GenTextures(1, _)).WillOnce(SetArgPointee<1>(texture_id));
   DrawSomething(bridge);
   bridge->PrepareTransferableResource(nullptr, &resource, &release_callback);
 
