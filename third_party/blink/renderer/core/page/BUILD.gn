@@ -22,7 +22,6 @@ blink_core_sources("page") {
     "drag_controller.h",
     "drag_data.cc",
     "drag_data.h",
-    "drag_session.h",
     "drag_state.h",
     "event_with_hit_test_results.h",
     "focus_changed_observer.cc",
