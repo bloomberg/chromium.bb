@@ -205,4 +205,37 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, LastUpdateTimeMillis) {
   EXPECT_EQ(2000, remote_devices_[1].last_update_time_millis);
 }
 
+TEST_F(CryptAuthRemoteDeviceLoaderTest, SoftwareFeatures) {
+  const std::vector<SoftwareFeature> kSupportedSoftwareFeatures{
+      BETTER_TOGETHER_HOST, BETTER_TOGETHER_CLIENT};
+  const std::vector<SoftwareFeature> kEnabledSoftwareFeatures{
+      BETTER_TOGETHER_HOST};
+
+  cryptauth::ExternalDeviceInfo first = CreateDeviceInfo("0");
+  for (const auto& software_feature : kSupportedSoftwareFeatures)
+    first.add_supported_software_features(software_feature);
+  for (const auto& software_feature : kEnabledSoftwareFeatures)
+    first.add_enabled_software_features(software_feature);
+
+  std::vector<cryptauth::ExternalDeviceInfo> device_infos{first};
+
+  RemoteDeviceLoader loader(device_infos, user_private_key_, kUserId,
+                            std::move(secure_message_delegate_));
+
+  std::vector<cryptauth::RemoteDevice> result;
+  EXPECT_CALL(*this, LoadCompleted());
+  loader.Load(
+      false, base::Bind(&CryptAuthRemoteDeviceLoaderTest::OnRemoteDevicesLoaded,
+                        base::Unretained(this)));
+
+  EXPECT_EQ(1u, remote_devices_.size());
+
+  EXPECT_EQ(SoftwareFeatureState::kSupported,
+            remote_devices_[0].GetSoftwareFeatureState(BETTER_TOGETHER_CLIENT));
+  EXPECT_EQ(SoftwareFeatureState::kEnabled,
+            remote_devices_[0].GetSoftwareFeatureState(BETTER_TOGETHER_HOST));
+  EXPECT_EQ(SoftwareFeatureState::kNotSupported,
+            remote_devices_[0].GetSoftwareFeatureState(MAGIC_TETHER_HOST));
+}
+
 }  // namespace cryptauth

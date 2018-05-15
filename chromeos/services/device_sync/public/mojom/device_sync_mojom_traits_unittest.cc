@@ -43,6 +43,14 @@ TEST(DeviceSyncMojomStructTraitsTest, BeaconSeed) {
 }
 
 TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
+  std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>
+      software_features = std::map<cryptauth::SoftwareFeature,
+                                   cryptauth::SoftwareFeatureState>();
+  software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_CLIENT] =
+      cryptauth::SoftwareFeatureState::kSupported;
+  software_features[cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST] =
+      cryptauth::SoftwareFeatureState::kEnabled;
+
   cryptauth::RemoteDevice input;
   input.user_id = "userId";
   input.name = "name";
@@ -51,6 +59,7 @@ TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
   input.unlock_key = true;
   input.supports_mobile_hotspot = true;
   input.last_update_time_millis = 3L;
+  input.software_features = software_features;
   input.LoadBeaconSeeds({CreateTestBeaconSeed()});
 
   cryptauth::RemoteDevice output;
@@ -64,6 +73,7 @@ TEST(DeviceSyncMojomStructTraitsTest, RemoteDevice) {
   EXPECT_TRUE(output.unlock_key);
   EXPECT_TRUE(output.supports_mobile_hotspot);
   EXPECT_EQ(3L, output.last_update_time_millis);
+  EXPECT_EQ(software_features, output.software_features);
   ASSERT_EQ(1u, output.beacon_seeds.size());
   EXPECT_EQ(kTestBeaconSeedData, output.beacon_seeds[0].data());
   EXPECT_EQ(kTestBeaconSeedStartTimeMillis,

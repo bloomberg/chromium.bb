@@ -16,6 +16,7 @@
 #include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/components/proximity_auth/unlock_manager.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/software_feature_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,9 +55,11 @@ void CompareRemoteDeviceLists(const RemoteDeviceList& list1,
 // Creates a RemoteDevice object for |user_id| with |name|.
 RemoteDevice CreateRemoteDevice(const std::string& user_id,
                                 const std::string& name) {
-  return RemoteDevice(user_id, name + "_pk", name, name + "_psk",
-                      true /* unlock_key */, true /* supports_mobile_hotspot */,
-                      0 /* last_update_time_millis */);
+  return RemoteDevice(
+      user_id, name + "_pk", name, name + "_psk", true /* unlock_key */,
+      true /* supports_mobile_hotspot */, 0 /* last_update_time_millis */,
+      std::map<cryptauth::SoftwareFeature,
+               cryptauth::SoftwareFeatureState>() /* software_features */);
 }
 
 // Mock implementation of UnlockManager.

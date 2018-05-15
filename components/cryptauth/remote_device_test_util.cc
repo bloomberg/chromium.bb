@@ -22,7 +22,8 @@ RemoteDevice CreateRemoteDeviceForTest() {
                       kTestRemoteDevicePublicKey, kTestRemoteDevicePSK,
                       kTestRemoteDeviceUnlockKey,
                       kTestRemoteDeviceSupportsMobileHotspot,
-                      kTestRemoteDeviceLastUpdateTimeMillis);
+                      kTestRemoteDeviceLastUpdateTimeMillis,
+                      std::map<SoftwareFeature, SoftwareFeatureState>());
 }
 
 std::vector<RemoteDevice> GenerateTestRemoteDevices(size_t num_to_create) {

@@ -39,6 +39,13 @@ enum SoftwareFeature {
   SMS_CONNECT_CLIENT
 };
 
+// Enumeration of what value a SoftwareFeature can be.
+enum SoftwareFeatureState {
+  kNotSupported,
+  kSupported,
+  kEnabled
+};
+
 // Used to generate rotating BLE advertisement data, which is necessary to
 // establish a BLE communication channel between two devices. To
 // create the BLE channel, both devices must possess the other's BeaconSeeds.
@@ -76,6 +83,10 @@ struct RemoteDevice {
   // The time at which this device's metadata was last updated on the CryptAuth
   // back-end.
   mojo_base.mojom.Time last_update_time;
+
+  // The features which this device either does not support, supports, or has
+  // enabled.
+  map<SoftwareFeature, SoftwareFeatureState> software_features;
 
   // Seeds belonging to the device. Each seed has start and end timestamps which
   // indicate how long the seed is valid, and each device has enough associated

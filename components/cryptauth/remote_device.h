@@ -5,10 +5,12 @@
 #ifndef COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_H_
 #define COMPONENTS_CRYPTAUTH_REMOTE_DEVICE_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
+#include "components/cryptauth/software_feature_state.h"
 
 namespace cryptauth {
 
@@ -21,6 +23,7 @@ struct RemoteDevice {
   bool unlock_key;
   bool supports_mobile_hotspot;
   int64_t last_update_time_millis;
+  std::map<SoftwareFeature, SoftwareFeatureState> software_features;
 
   // Note: To save space, the BeaconSeeds may not necessarily be included in
   // this object.
@@ -28,13 +31,15 @@ struct RemoteDevice {
   std::vector<BeaconSeed> beacon_seeds;
 
   RemoteDevice();
-  RemoteDevice(const std::string& user_id,
-               const std::string& name,
-               const std::string& public_key,
-               const std::string& persistent_symmetric_key,
-               bool unlock_key,
-               bool supports_mobile_hotspot,
-               int64_t last_update_time_millis);
+  RemoteDevice(
+      const std::string& user_id,
+      const std::string& name,
+      const std::string& public_key,
+      const std::string& persistent_symmetric_key,
+      bool unlock_key,
+      bool supports_mobile_hotspot,
+      int64_t last_update_time_millis,
+      const std::map<SoftwareFeature, SoftwareFeatureState>& software_features);
   RemoteDevice(const RemoteDevice& other);
   ~RemoteDevice();
 
@@ -43,6 +48,9 @@ struct RemoteDevice {
 
   // Returns a unique ID for the device.
   std::string GetDeviceId() const;
+
+  SoftwareFeatureState GetSoftwareFeatureState(
+      const SoftwareFeature& software_feature) const;
 
   // Returns a shortened device ID for the purpose of concise logging (device
   // IDs are often so long that logs are difficult to read). Note that this
