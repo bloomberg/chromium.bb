@@ -202,6 +202,8 @@ class SnooperNodeTest : public testing::TestWithParam<InputAndOutputParams> {
 
 // Performance of this test on debug builds is abysmal. So, only run it on
 // optimized builds.
+// TODO(crbug.com/842428): Analyze why only Windows debug test runs have this
+// problem and re-enable test.
 #ifdef NDEBUG
 #define MAYBE_ContinuousAudioFlowAdaptsToSkew ContinuousAudioFlowAdaptsToSkew
 #else
@@ -268,7 +270,16 @@ TEST_P(SnooperNodeTest, MAYBE_ContinuousAudioFlowAdaptsToSkew) {
   }
 }
 
-TEST_P(SnooperNodeTest, HandlesMissingInput) {
+// Performance of this test on debug builds is abysmal. So, only run it on
+// optimized builds.
+// TODO(crbug.com/842428): Analyze why only Windows debug test runs have this
+// problem and re-enable test.
+#ifdef NDEBUG
+#define MAYBE_HandlesMissingInput HandlesMissingInput
+#else
+#define MAYBE_HandlesMissingInput DISABLED_HandlesMissingInput
+#endif
+TEST_P(SnooperNodeTest, MAYBE_HandlesMissingInput) {
   // Compute drops to occur once per second for 1/4 second duration. Each drop
   // position must be aligned to input_params().frames_per_buffer() for the
   // heuristics in ScheduleInputTasks() to process these drop positions
