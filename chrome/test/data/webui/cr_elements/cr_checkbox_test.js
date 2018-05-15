@@ -187,4 +187,15 @@ suite('cr-checkbox', function() {
     // Initializing with disabled should make tabindex="-1".
     assertEquals(-1, checkbox.tabIndex);
   });
+
+  // Ensure that even if user clicks on the element, the entire element gets
+  // focused, as opposed to focusing the inner <button> only.
+  test('FocusAfterClicking', function() {
+    const innerButton = checkbox.$$('button');
+    innerButton.focus();
+    assertNotChecked();
+    assertEquals(null, checkbox.shadowRoot.activeElement);
+    assertEquals('CR-CHECKBOX', document.activeElement.tagName);
+  });
+
 });

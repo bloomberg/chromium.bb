@@ -173,6 +173,14 @@ Polymer({
     }
   },
 
+  /** @private */
+  onButtonFocus_: function() {
+    // Forward 'focus' to the enclosing element, so that a subsequent 'Space'
+    // keystroke does not trigger both 'keypress' and 'click' which would toggle
+    // the state twice erroneously.
+    this.focus();
+  },
+
   // customize the element's ripple
   _createRipple: function() {
     this._rippleContainer = this.$.knob;

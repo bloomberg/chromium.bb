@@ -180,6 +180,16 @@ suite('cr-toggle', function() {
         });
   });
 
+  // Ensure that even if user clicks on the element, the entire element gets
+  // focused, as opposed to focusing the inner <button> only.
+  test('FocusAfterClicking', function() {
+    const innerButton = toggle.$$('button');
+    innerButton.focus();
+    assertNotChecked();
+    assertEquals(null, toggle.shadowRoot.activeElement);
+    assertEquals('CR-TOGGLE', document.activeElement.tagName);
+  });
+
   // Test that the control is not affected by user interaction when disabled.
   test('ToggleWhenDisabled', function() {
     assertNotDisabled();

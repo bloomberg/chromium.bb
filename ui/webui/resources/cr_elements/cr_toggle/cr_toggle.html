@@ -97,7 +97,7 @@
          event on the parent and unexpectedly modify the toggle's state (see
          context at crbug.com/689158 and crbug.com/768555). The 'click'
          event is not fired when the <button> wrapper is used. -->
-    <button tabindex="-1">
+    <button tabindex="-1" on-focus="onButtonFocus_">
       <span id="bar"></span>
       <span id="knob"></span>
     </button>
