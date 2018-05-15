@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/inline_flow_box_painter.h"
 
 #include "third_party/blink/renderer/core/layout/api/line_layout_api_shim.h"
+#include "third_party/blink/renderer/core/layout/line/inline_flow_box.h"
 #include "third_party/blink/renderer/core/layout/line/root_inline_box.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_model_object_painter.h"
@@ -16,6 +17,34 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
+
+namespace {
+
+inline Node* GetNode(const LayoutObject* box_model) {
+  Node* node = nullptr;
+  for (const LayoutObject* obj = box_model; obj && !node; obj = obj->Parent())
+    node = obj->GeneratingNode();
+  return node;
+}
+
+inline const LayoutBoxModelObject* GetBoxModelObject(
+    const InlineFlowBox& flow_box) {
+  return ToLayoutBoxModelObject(
+      LineLayoutAPIShim::LayoutObjectFrom(flow_box.BoxModelObject()));
+}
+
+}  // anonymous namespace
+
+InlineFlowBoxPainter::InlineFlowBoxPainter(const InlineFlowBox& flow_box)
+    : InlineBoxPainterBase(
+          *GetBoxModelObject(flow_box),
+          &GetBoxModelObject(flow_box)->GetDocument(),
+          GetNode(GetBoxModelObject(flow_box)),
+          flow_box.GetLineLayoutItem().StyleRef(),
+          flow_box.GetLineLayoutItem().StyleRef(flow_box.IsFirstLineStyle())),
+      inline_flow_box_(flow_box),
+      box_painter_(
+          BoxModelObjectPainter(*GetBoxModelObject(flow_box), &flow_box)) {}
 
 void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset,
@@ -39,7 +68,7 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
 
   if (paint_info.phase == PaintPhase::kForeground) {
     // Paint our background, border and box-shadow.
-    PaintBoxDecorationBackground(paint_info, paint_offset);
+    PaintBackgroundBorderShadow(paint_info, paint_offset);
   }
 
   // Paint our children.
@@ -52,91 +81,20 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
   }
 }
 
-void InlineFlowBoxPainter::PaintFillLayers(const PaintInfo& paint_info,
-                                           const Color& c,
-                                           const FillLayer& fill_layer,
-                                           const LayoutRect& rect,
-                                           SkBlendMode op) {
-  // FIXME: This should be a for loop or similar. It's a little non-trivial to
-  // do so, however, since the layers need to be painted in reverse order.
-  if (fill_layer.Next())
-    PaintFillLayers(paint_info, c, *fill_layer.Next(), rect, op);
-  PaintFillLayer(paint_info, c, fill_layer, rect, op);
-}
-
-void InlineFlowBoxPainter::PaintFillLayer(const PaintInfo& paint_info,
-                                          const Color& c,
-                                          const FillLayer& fill_layer,
-                                          const LayoutRect& rect,
-                                          SkBlendMode op) {
-  LayoutBoxModelObject* box_model = ToLayoutBoxModelObject(
-      LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
-  BackgroundImageGeometry geometry(*box_model);
-  StyleImage* img = fill_layer.GetImage();
-  bool has_fill_image = img && img->CanRender();
-  BoxModelObjectPainter box_model_painter(*box_model, &inline_flow_box_);
-  if ((!has_fill_image &&
-       !inline_flow_box_.GetLineLayoutItem().Style()->HasBorderRadius()) ||
-      (!inline_flow_box_.PrevForSameLayoutObject() &&
-       !inline_flow_box_.NextForSameLayoutObject()) ||
-      !inline_flow_box_.Parent()) {
-    box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                                     kBackgroundBleedNone, geometry, op,
-                                     rect.Size());
-  } else if (inline_flow_box_.GetLineLayoutItem()
-                 .Style()
-                 ->BoxDecorationBreak() == EBoxDecorationBreak::kClone) {
-    GraphicsContextStateSaver state_saver(paint_info.context);
-    paint_info.context.Clip(PixelSnappedIntRect(rect));
-    box_model_painter.PaintFillLayer(paint_info, c, fill_layer, rect,
-                                     kBackgroundBleedNone, geometry, op,
-                                     rect.Size());
-  } else {
-    // We have a fill image that spans multiple lines.
-    // FIXME: frameSize ought to be the same as rect.size().
-    LayoutSize frame_size(inline_flow_box_.Width(), inline_flow_box_.Height());
-    LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
-        rect.Location(), frame_size,
-        inline_flow_box_.GetLineLayoutItem().Style()->Direction());
-    GraphicsContextStateSaver state_saver(paint_info.context);
-    // TODO(chrishtr): this should likely be pixel-snapped.
-    paint_info.context.Clip(PixelSnappedIntRect(rect));
-    box_model_painter.PaintFillLayer(
-        paint_info, c, fill_layer, image_strip_paint_rect, kBackgroundBleedNone,
-        geometry, op, rect.Size());
-  }
-}
-
 inline bool InlineFlowBoxPainter::ShouldForceIncludeLogicalEdges() const {
   return (!inline_flow_box_.PrevForSameLayoutObject() &&
           !inline_flow_box_.NextForSameLayoutObject()) ||
          !inline_flow_box_.Parent();
 }
 
-inline bool InlineFlowBoxPainter::IncludeLogicalLeftEdgeForBoxShadow() const {
+bool InlineFlowBoxPainter::IncludeLogicalLeftEdgeForBoxShadow() const {
   return ShouldForceIncludeLogicalEdges() ||
          inline_flow_box_.IncludeLogicalLeftEdge();
 }
 
-inline bool InlineFlowBoxPainter::IncludeLogicalRightEdgeForBoxShadow() const {
+bool InlineFlowBoxPainter::IncludeLogicalRightEdgeForBoxShadow() const {
   return ShouldForceIncludeLogicalEdges() ||
          inline_flow_box_.IncludeLogicalRightEdge();
-}
-
-void InlineFlowBoxPainter::PaintNormalBoxShadow(const PaintInfo& info,
-                                                const ComputedStyle& s,
-                                                const LayoutRect& paint_rect) {
-  BoxPainterBase::PaintNormalBoxShadow(info, paint_rect, s,
-                                       IncludeLogicalLeftEdgeForBoxShadow(),
-                                       IncludeLogicalRightEdgeForBoxShadow());
-}
-
-void InlineFlowBoxPainter::PaintInsetBoxShadow(const PaintInfo& info,
-                                               const ComputedStyle& s,
-                                               const LayoutRect& paint_rect) {
-  BoxPainterBase::PaintInsetBoxShadowWithBorderRect(
-      info, paint_rect, s, IncludeLogicalLeftEdgeForBoxShadow(),
-      IncludeLogicalRightEdgeForBoxShadow());
 }
 
 static LayoutRect ClipRectForNinePieceImageStrip(const InlineFlowBox& box,
@@ -168,8 +126,7 @@ static LayoutRect ClipRectForNinePieceImageStrip(const InlineFlowBox& box,
 }
 
 LayoutRect InlineFlowBoxPainter::PaintRectForImageStrip(
-    const LayoutPoint& paint_offset,
-    const LayoutSize& frame_size,
+    const LayoutRect& paint_rect,
     TextDirection direction) const {
   // We have a fill/border/mask image that spans multiple lines.
   // We need to adjust the offset by the width of all previous lines.
@@ -198,20 +155,20 @@ LayoutRect InlineFlowBoxPainter::PaintRectForImageStrip(
       total_logical_width += curr->LogicalWidth();
   }
   LayoutUnit strip_x =
-      paint_offset.X() -
+      paint_rect.X() -
       (inline_flow_box_.IsHorizontal() ? logical_offset_on_line : LayoutUnit());
   LayoutUnit strip_y =
-      paint_offset.Y() -
+      paint_rect.Y() -
       (inline_flow_box_.IsHorizontal() ? LayoutUnit() : logical_offset_on_line);
   LayoutUnit strip_width = inline_flow_box_.IsHorizontal() ? total_logical_width
-                                                           : frame_size.Width();
+                                                           : paint_rect.Width();
   LayoutUnit strip_height = inline_flow_box_.IsHorizontal()
-                                ? frame_size.Height()
+                                ? paint_rect.Height()
                                 : total_logical_width;
   return LayoutRect(strip_x, strip_y, strip_width, strip_height);
 }
 
-InlineFlowBoxPainter::BorderPaintingType
+InlineBoxPainterBase::BorderPaintingType
 InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
                                          IntRect& adjusted_clip_rect) const {
   adjusted_clip_rect = PixelSnappedIntRect(adjusted_frame_rect);
@@ -240,14 +197,7 @@ InlineFlowBoxPainter::GetBorderPaintType(const LayoutRect& adjusted_frame_rect,
   return kDontPaintBorders;
 }
 
-static inline Node* GetNode(const LayoutObject* box_model) {
-  Node* node = nullptr;
-  for (const LayoutObject* obj = box_model; obj && !node; obj = obj->Parent())
-    node = obj->GeneratingNode();
-  return node;
-}
-
-void InlineFlowBoxPainter::PaintBoxDecorationBackground(
+void InlineFlowBoxPainter::PaintBackgroundBorderShadow(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset) {
   DCHECK(paint_info.phase == PaintPhase::kForeground);
@@ -259,17 +209,13 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
   // boxes for a line may actually have to paint a background.
   LayoutObject* inline_flow_box_layout_object =
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.GetLineLayoutItem());
-  const ComputedStyle* style_to_use =
-      inline_flow_box_.GetLineLayoutItem().Style(
-          inline_flow_box_.IsFirstLineStyle());
   bool should_paint_box_decoration_background;
   if (inline_flow_box_.Parent())
     should_paint_box_decoration_background =
         inline_flow_box_layout_object->HasBoxDecorationBackground();
   else
     should_paint_box_decoration_background =
-        inline_flow_box_.IsFirstLineStyle() &&
-        style_to_use != inline_flow_box_.GetLineLayoutItem().Style();
+        inline_flow_box_.IsFirstLineStyle() && line_style_ != style_;
 
   if (!should_paint_box_decoration_background)
     return;
@@ -292,49 +238,13 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
   LayoutRect adjusted_frame_rect =
       LayoutRect(adjusted_paint_offset, frame_rect.Size());
 
-  IntRect adjusted_clip_rect;
-  BorderPaintingType border_painting_type =
-      GetBorderPaintType(adjusted_frame_rect, adjusted_clip_rect);
-
-  // Shadow comes first and is behind the background and border.
-  PaintNormalBoxShadow(paint_info, *style_to_use, adjusted_frame_rect);
-
-  Color background_color = inline_flow_box_layout_object->ResolveColor(
-      *style_to_use, GetCSSPropertyBackgroundColor());
-  PaintFillLayers(paint_info, background_color,
-                  style_to_use->BackgroundLayers(), adjusted_frame_rect);
-  PaintInsetBoxShadow(paint_info, *style_to_use, adjusted_frame_rect);
-
-  const LayoutObject* box_model = ToLayoutBoxModelObject(
+  const LayoutBoxModelObject* box_model = ToLayoutBoxModelObject(
       LineLayoutAPIShim::LayoutObjectFrom(inline_flow_box_.BoxModelObject()));
-
-  switch (border_painting_type) {
-    case kDontPaintBorders:
-      break;
-    case kPaintBordersWithoutClip:
-      BoxPainterBase::PaintBorder(
-          *box_model, box_model->GetDocument(), GetNode(box_model), paint_info,
-          adjusted_frame_rect,
-          inline_flow_box_.GetLineLayoutItem().StyleRef(
-              inline_flow_box_.IsFirstLineStyle()),
-          kBackgroundBleedNone, inline_flow_box_.IncludeLogicalLeftEdge(),
-          inline_flow_box_.IncludeLogicalRightEdge());
-      break;
-    case kPaintBordersWithClip:
-      // FIXME: What the heck do we do with RTL here? The math we're using is
-      // obviously not right, but it isn't even clear how this should work at
-      // all.
-      LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
-          adjusted_paint_offset, frame_rect.Size(), TextDirection::kLtr);
-      GraphicsContextStateSaver state_saver(paint_info.context);
-      paint_info.context.Clip(adjusted_clip_rect);
-      BoxPainterBase::PaintBorder(*box_model, box_model->GetDocument(),
-                                  GetNode(box_model), paint_info,
-                                  image_strip_paint_rect,
-                                  inline_flow_box_.GetLineLayoutItem().StyleRef(
-                                      inline_flow_box_.IsFirstLineStyle()));
-      break;
-  }
+  BackgroundImageGeometry geometry(*box_model);
+  PaintBoxDecorationBackground(paint_info, paint_offset, adjusted_frame_rect,
+                               geometry,
+                               inline_flow_box_.IncludeLogicalLeftEdge(),
+                               inline_flow_box_.IncludeLogicalRightEdge());
 }
 
 void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
@@ -374,8 +284,9 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     paint_info.context.BeginLayer(1.0f, SkBlendMode::kDstIn, &bounds);
   }
 
+  BackgroundImageGeometry geometry(box_model);
   PaintFillLayers(paint_info, Color::kTransparent,
-                  box_model.StyleRef().MaskLayers(), paint_rect);
+                  box_model.StyleRef().MaskLayers(), paint_rect, geometry);
 
   bool has_box_image = mask_box_image && mask_box_image->CanRender();
   if (!has_box_image || !mask_box_image->IsLoaded()) {
@@ -397,7 +308,8 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
     // FIXME: What the heck do we do with RTL here? The math we're using is
     // obviously not right, but it isn't even clear how this should work at all.
     LayoutRect image_strip_paint_rect = PaintRectForImageStrip(
-        adjusted_paint_offset, frame_rect.Size(), TextDirection::kLtr);
+        LayoutRect(adjusted_paint_offset, frame_rect.Size()),
+        TextDirection::kLtr);
     FloatRect clip_rect(ClipRectForNinePieceImageStrip(
         inline_flow_box_, mask_nine_piece_image, paint_rect));
     GraphicsContextStateSaver state_saver(paint_info.context);
@@ -441,6 +353,11 @@ LayoutRect InlineFlowBoxPainter::FrameRectClampedToLineTopAndBottomIfNeeded()
     }
   }
   return rect;
+}
+
+bool InlineFlowBoxPainter::InlineBoxHasMultipleFragments() const {
+  return inline_flow_box_.PrevForSameLayoutObject() ||
+         inline_flow_box_.NextForSameLayoutObject();
 }
 
 }  // namespace blink
