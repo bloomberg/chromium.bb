@@ -1702,9 +1702,9 @@ bool AudioTrack::Write(IMkvWriter* writer) const {
 
 const char Tracks::kOpusCodecId[] = "A_OPUS";
 const char Tracks::kVorbisCodecId[] = "A_VORBIS";
+const char Tracks::kAv1CodecId[] = "V_AV1";
 const char Tracks::kVp8CodecId[] = "V_VP8";
 const char Tracks::kVp9CodecId[] = "V_VP9";
-const char Tracks::kVp10CodecId[] = "V_VP10";
 const char Tracks::kWebVttCaptionsId[] = "D_WEBVTT/CAPTIONS";
 const char Tracks::kWebVttDescriptionsId[] = "D_WEBVTT/DESCRIPTIONS";
 const char Tracks::kWebVttMetadataId[] = "D_WEBVTT/METADATA";
@@ -4165,8 +4165,8 @@ bool Segment::DocTypeIsWebm() const {
   // TODO(vigneshv): Tweak .clang-format.
   const char* kWebmCodecIds[kNumCodecIds] = {
       Tracks::kOpusCodecId,          Tracks::kVorbisCodecId,
-      Tracks::kVp8CodecId,           Tracks::kVp9CodecId,
-      Tracks::kVp10CodecId,          Tracks::kWebVttCaptionsId,
+      Tracks::kAv1CodecId,           Tracks::kVp8CodecId,
+      Tracks::kVp9CodecId,           Tracks::kWebVttCaptionsId,
       Tracks::kWebVttDescriptionsId, Tracks::kWebVttMetadataId,
       Tracks::kWebVttSubtitlesId};
 
