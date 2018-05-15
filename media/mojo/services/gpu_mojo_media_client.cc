@@ -7,10 +7,12 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
+#include "media/base/media_switches.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
@@ -130,16 +132,19 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       android_overlay_factory_cb_, std::move(request_overlay_info_cb),
       std::make_unique<VideoFrameFactoryImpl>(gpu_task_runner_,
                                               std::move(get_stub_cb)));
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_WIN)
+#if defined(OS_WIN)
+  if (base::FeatureList::IsEnabled(kD3D11VideoDecoder)) {
+    return D3D11VideoDecoder::Create(
+        gpu_task_runner_, gpu_preferences_, gpu_workarounds_,
+        base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
+                            command_buffer_id->channel_token,
+                            command_buffer_id->route_id));
+  }
+#endif  // defined(OS_WIN)
   return VdaVideoDecoder::Create(
       task_runner, gpu_task_runner_, media_log, target_color_space,
       gpu_preferences_, gpu_workarounds_,
-      base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
-                          command_buffer_id->channel_token,
-                          command_buffer_id->route_id));
-#elif defined(OS_WIN)
-  return D3D11VideoDecoder::Create(
-      gpu_task_runner_, gpu_preferences_, gpu_workarounds_,
       base::BindRepeating(&GetCommandBufferStub, media_gpu_channel_manager_,
                           command_buffer_id->channel_token,
                           command_buffer_id->route_id));
