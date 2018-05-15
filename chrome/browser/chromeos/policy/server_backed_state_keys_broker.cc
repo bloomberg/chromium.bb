@@ -40,16 +40,15 @@ ServerBackedStateKeysBroker::RegisterUpdateCallback(
   return update_callbacks_.Add(callback);
 }
 
-void ServerBackedStateKeysBroker::RequestStateKeys(
-    const StateKeysCallback& callback) {
+void ServerBackedStateKeysBroker::RequestStateKeys(StateKeysCallback callback) {
   if (pending()) {
-    request_callbacks_.push_back(callback);
+    request_callbacks_.push_back(std::move(callback));
     FetchStateKeys();
     return;
   }
 
   if (!callback.is_null())
-    callback.Run(state_keys_);
+    std::move(callback).Run(state_keys_);
   return;
 }
 
@@ -87,12 +86,9 @@ void ServerBackedStateKeysBroker::StoreStateKeys(
 
   std::vector<StateKeysCallback> callbacks;
   request_callbacks_.swap(callbacks);
-  for (std::vector<StateKeysCallback>::const_iterator callback(
-           callbacks.begin());
-       callback != callbacks.end();
-       ++callback) {
-    if (!callback->is_null())
-      callback->Run(state_keys_);
+  for (auto& callback : callbacks) {
+    if (!callback.is_null())
+      std::move(callback).Run(state_keys_);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

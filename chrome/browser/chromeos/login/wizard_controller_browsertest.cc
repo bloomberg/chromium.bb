@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -182,6 +183,33 @@ void QuitLoopOnAutoEnrollmentProgress(
     policy::AutoEnrollmentState actual_state) {
   if (expected_state == actual_state)
     loop->Quit();
+}
+
+// Returns a string which can be put into the |kRlzEmbargoEndDateKey| VPD
+// variable. If |days_offset| is 0, the return value represents the current day.
+// If |days_offset| is positive, the return value represents |days_offset| days
+// in the future. If |days_offset| is negative, the return value represents
+// |days_offset| days in the past.
+std::string GenerateEmbargoEndDate(int days_offset) {
+  base::Time::Exploded exploded;
+  base::Time target_time =
+      base::Time::Now() + base::TimeDelta::FromDays(days_offset);
+  target_time.UTCExplode(&exploded);
+
+  std::string rlz_embargo_end_date_string = base::StringPrintf(
+      "%04d-%02d-%02d", exploded.year, exploded.month, exploded.day_of_month);
+
+  // Sanity check that base::Time::FromUTCString can read back the format used
+  // here.
+  base::Time reparsed_time;
+  EXPECT_TRUE(base::Time::FromUTCString(rlz_embargo_end_date_string.c_str(),
+                                        &reparsed_time));
+  EXPECT_EQ(target_time.ToDeltaSinceWindowsEpoch().InMicroseconds() /
+                base::Time::kMicrosecondsPerDay,
+            reparsed_time.ToDeltaSinceWindowsEpoch().InMicroseconds() /
+                base::Time::kMicrosecondsPerDay);
+
+  return rlz_embargo_end_date_string;
 }
 
 }  // namespace
@@ -820,15 +848,19 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
                                                   "2000-01");
   }
 
+  static AutoEnrollmentController* auto_enrollment_controller() {
+    return WizardController::default_controller()
+        ->GetAutoEnrollmentController();
+  }
+
   static void WaitForAutoEnrollmentState(policy::AutoEnrollmentState state) {
     base::RunLoop loop;
     std::unique_ptr<
         AutoEnrollmentController::ProgressCallbackList::Subscription>
         progress_subscription(
-            WizardController::default_controller()
-                ->GetAutoEnrollmentController()
-                ->RegisterProgressCallback(base::Bind(
-                    &QuitLoopOnAutoEnrollmentProgress, state, &loop)));
+            auto_enrollment_controller()->RegisterProgressCallback(
+                base::BindRepeating(&QuitLoopOnAutoEnrollmentProgress, state,
+                                    &loop)));
     loop.Run();
   }
 
@@ -912,9 +944,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
                        ControlFlowNoForcedReEnrollmentOnFirstBoot) {
   fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
   EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
-            WizardController::default_controller()
-                ->GetAutoEnrollmentController()
-                ->state());
+            auto_enrollment_controller()->state());
 
   CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
   EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
@@ -938,9 +968,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
   mock_auto_enrollment_check_screen_->RealShow();
   EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
-            WizardController::default_controller()
-                ->GetAutoEnrollmentController()
-                ->state());
+            auto_enrollment_controller()->state());
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
@@ -993,6 +1021,158 @@ IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
   CheckCurrentScreen(OobeScreen::SCREEN_DEVICE_DISABLED);
 
   EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+}
+
+class WizardControllerDeviceStateWithInitialEnrollmentTest
+    : public WizardControllerDeviceStateTest {
+ protected:
+  WizardControllerDeviceStateWithInitialEnrollmentTest() {
+    fake_statistics_provider_.SetMachineStatistic(
+        system::kSerialNumberKeyForTest, "test");
+    fake_statistics_provider_.SetMachineStatistic(system::kRlzBrandCodeKey,
+                                                  "AABC");
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    WizardControllerDeviceStateTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(
+        switches::kEnterpriseEnableInitialEnrollment,
+        chromeos::AutoEnrollmentController::kInitialEnrollmentAlways);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      WizardControllerDeviceStateWithInitialEnrollmentTest);
+};
+
+IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
+                       ControlFlowInitialEnrollment) {
+  fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
+  fake_statistics_provider_.SetMachineStatistic(
+      system::kRlzEmbargoEndDateKey,
+      GenerateEmbargoEndDate(-15 /* days_offset */));
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+
+  // Let update screen smooth time process (time = 0ms).
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
+  OnExit(*mock_update_screen_, ScreenExitCode::UPDATE_INSTALLED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
+  mock_auto_enrollment_check_screen_->RealShow();
+
+  // Wait for auto-enrollment controller to encounter the connection error.
+  WaitForAutoEnrollmentState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
+
+  // The error screen shows up if there's no auto-enrollment decision.
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+  EXPECT_EQ(GetErrorScreen(),
+            WizardController::default_controller()->current_screen());
+  base::DictionaryValue device_state;
+  device_state.SetString(policy::kDeviceStateRestoreMode,
+                         policy::kDeviceStateRestoreModeReEnrollmentEnforced);
+  g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
+                                        device_state);
+  EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_enrollment_screen_->view(),
+              SetParameters(mock_enrollment_screen_,
+                            EnrollmentModeMatches(
+                                policy::EnrollmentConfig::MODE_SERVER_FORCED)))
+      .Times(1);
+  OnExit(*mock_auto_enrollment_check_screen_,
+         ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+
+  ResetAutoEnrollmentCheckScreen();
+
+  // Make sure enterprise enrollment page shows up.
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+  OnExit(*mock_enrollment_screen_,
+         ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED);
+
+  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
+                       ControlFlowNoInitialEnrollmentDuringEmbargoPeriod) {
+  fake_statistics_provider_.ClearMachineStatistic(system::kActivateDateKey);
+  fake_statistics_provider_.SetMachineStatistic(
+      system::kRlzEmbargoEndDateKey,
+      GenerateEmbargoEndDate(1 /* days_offset */));
+  EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+            auto_enrollment_controller()->state());
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+
+  // Let update screen smooth time process (time = 0ms).
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
+  OnExit(*mock_update_screen_, ScreenExitCode::UPDATE_INSTALLED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  mock_auto_enrollment_check_screen_->RealShow();
+  EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+            auto_enrollment_controller()->state());
+}
+
+IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateWithInitialEnrollmentTest,
+                       ControlFlowNoInitialEnrollmentIfEnrolledBefore) {
+  fake_statistics_provider_.SetMachineStatistic(system::kCheckEnrollmentKey,
+                                                "0");
+  fake_statistics_provider_.SetMachineStatistic(
+      system::kRlzEmbargoEndDateKey,
+      GenerateEmbargoEndDate(1 /* days_offset */));
+  EXPECT_NE(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+            auto_enrollment_controller()->state());
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+
+  // Let update screen smooth time process (time = 0ms).
+  base::RunLoop().RunUntilIdle();
+
+  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
+  OnExit(*mock_update_screen_, ScreenExitCode::UPDATE_INSTALLED);
+
+  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+  mock_auto_enrollment_check_screen_->RealShow();
+  EXPECT_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT,
+            auto_enrollment_controller()->state());
 }
 
 class WizardControllerBrokenLocalStateTest : public WizardControllerTest {

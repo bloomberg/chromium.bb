@@ -27,7 +27,7 @@ class ServerBackedStateKeysBroker {
  public:
   typedef std::unique_ptr<base::CallbackList<void()>::Subscription>
       Subscription;
-  typedef base::Callback<void(const std::vector<std::string>&)>
+  typedef base::OnceCallback<void(const std::vector<std::string>&)>
       StateKeysCallback;
 
   ServerBackedStateKeysBroker(
@@ -46,7 +46,7 @@ class ServerBackedStateKeysBroker {
   // empty. If |this| gets destroyed before the callback happens or if the time
   // sync fails / the network is not established, then the |callback| is never
   // invoked. See http://crbug.com/649422 for more context.
-  void RequestStateKeys(const StateKeysCallback& callback);
+  void RequestStateKeys(StateKeysCallback callback);
 
   static base::TimeDelta GetPollIntervalForTesting();
 

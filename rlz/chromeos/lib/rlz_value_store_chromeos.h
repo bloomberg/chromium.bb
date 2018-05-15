@@ -63,7 +63,20 @@ class RlzValueStoreChromeOS : public RlzValueStore {
 
   void CollectGarbage() override;
 
+  enum class EmbargoState {
+    kMissingOrMalformed,
+    kInvalid,
+    kNotPassed,
+    kPassed
+  };
+
+  static EmbargoState GetRlzEmbargoState();
+
  private:
+  // Returns true if the |rlz_embargo_end_date| present in VPD has passed
+  // compared to the current time.
+  static bool HasRlzEmbargoEndDatePassed();
+
   // Reads RLZ store from file.
   void ReadStore();
 
