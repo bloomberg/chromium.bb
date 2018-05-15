@@ -80,9 +80,10 @@ void MediaStreamDescriptor::AddComponent(MediaStreamComponent* component) {
       break;
   }
 
-  for (auto*& observer : observers_) {
+  // Iterate over a copy of |observers_| to avoid re-entrancy issues.
+  Vector<WebMediaStreamObserver*> observers = observers_;
+  for (auto*& observer : observers)
     observer->TrackAdded(component);
-  }
 }
 
 void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
@@ -100,9 +101,10 @@ void MediaStreamDescriptor::RemoveComponent(MediaStreamComponent* component) {
       break;
   }
 
-  for (auto*& observer : observers_) {
+  // Iterate over a copy of |observers_| to avoid re-entrancy issues.
+  Vector<WebMediaStreamObserver*> observers = observers_;
+  for (auto*& observer : observers)
     observer->TrackRemoved(component);
-  }
 }
 
 void MediaStreamDescriptor::AddRemoteTrack(MediaStreamComponent* component) {
@@ -117,6 +119,17 @@ void MediaStreamDescriptor::RemoveRemoteTrack(MediaStreamComponent* component) {
     client_->RemoveTrackByComponent(component);
   else
     RemoveComponent(component);
+}
+
+void MediaStreamDescriptor::SetActive(bool active) {
+  if (active == active_)
+    return;
+
+  active_ = active;
+  // Iterate over a copy of |observers_| to avoid re-entrancy issues.
+  Vector<WebMediaStreamObserver*> observers = observers_;
+  for (auto*& observer : observers)
+    observer->ActiveStateChanged(active_);
 }
 
 void MediaStreamDescriptor::AddObserver(WebMediaStreamObserver* observer) {
