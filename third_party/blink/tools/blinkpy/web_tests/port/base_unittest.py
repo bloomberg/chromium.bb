@@ -885,6 +885,23 @@ class PortTest(unittest.TestCase):
             'Bug(test) failures/expected/image.html [ WontFix ]\n')
         self.assertTrue(port.skips_test('failures/expected/image.html'))
 
+    def test_should_run_pixel_test_first(self):
+        port = self.make_port(port_name='foo')
+        # pylint: disable=protected-access
+        port._options.image_first_tests = ['image-first', 'virtual/flag/additional-virtual-image-first']
+        port.host.filesystem.write_text_file(
+            '/mock-checkout/third_party/WebKit/LayoutTests/VirtualTestSuites',
+            json.dumps([
+                { "prefix": "flag", "base": "image-first", "args": ["--flag"]},
+                { "prefix": "flag", "base": "non-image-first", "args": ["--flag"]}
+            ]))
+
+        self.assertTrue(port.should_run_pixel_test_first('image-first/test.html'))
+        self.assertTrue(port.should_run_pixel_test_first('virtual/flag/image-first/test.html'))
+        self.assertTrue(port.should_run_pixel_test_first('virtual/flag/additional-virtual-image-first/test.html'))
+        self.assertFalse(port.should_run_pixel_test_first('non-image-first/test.html'))
+        self.assertFalse(port.should_run_pixel_test_first('virtual/flag/non-image-first/test.html'))
+
 
 class NaturalCompareTest(unittest.TestCase):
 
