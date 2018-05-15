@@ -1737,7 +1737,7 @@ class Port(object):
                 return suite.reference_args
         return []
 
-    def should_run_as_pixel_test(self, test_input):
+    def should_run_as_pixel_test(self, test_name):
         """Whether a test should run as pixel test (when there is no reference).
 
         This provides the *default* value for whether a test should run as
@@ -1746,13 +1746,9 @@ class Port(object):
         """
         if not self._options.pixel_tests:
             return False
-        if self._options.pixel_test_directories:
-            return any(test_input.test_name.startswith(directory) for directory in self._options.pixel_test_directories)
-        if self.should_run_in_wpt_mode(test_input.test_name):
-            # WPT should not run as pixel test by default, except reftests
-            # (for which reference files would exist).
-            return False
-        return True
+        # WPT should not run as pixel test by default, except reftests
+        # (for which reference files would exist).
+        return not self.should_run_in_wpt_mode(test_name)
 
     def should_run_pixel_test_first(self, test_name):
         """Returns true if the directory of the test (or the base test if the
