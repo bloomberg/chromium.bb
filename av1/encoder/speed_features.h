@@ -365,7 +365,9 @@ typedef struct SPEED_FEATURES {
 
   // Shortcut the transform block partition and type search when the target
   // rdcost is relatively lower.
-  int adaptive_txb_search;
+  // Values are 0 (not used) , or 1 - 2 with progressively increasing
+  // aggressiveness
+  int adaptive_txb_search_level;
 
   // Used if partition_search_type = FIXED_SIZE_PARTITION
   BLOCK_SIZE always_this_block_size;

@@ -2593,8 +2593,12 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     }
 #endif  // CONFIG_COLLECT_RD_STATS == 1
 
-    if (cpi->sf.adaptive_txb_search)
-      if ((best_rd - (best_rd >> 2)) > ref_best_rd) break;
+    if (cpi->sf.adaptive_txb_search_level) {
+      if ((best_rd - (best_rd >> cpi->sf.adaptive_txb_search_level)) >
+          ref_best_rd) {
+        break;
+      }
+    }
 
     // Skip transform type search when we found the block has been quantized to
     // all zero and at the same time, it has better rdcost than doing transform.
@@ -4220,8 +4224,10 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     if (tx_size > TX_4X4 && depth < MAX_VARTX_DEPTH)
       rd_stats->rate += x->txfm_partition_cost[ctx][0];
     no_split_rd = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
-    if (cpi->sf.adaptive_txb_search &&
-        (no_split_rd - (no_split_rd >> 3)) > ref_best_rd) {
+    if (cpi->sf.adaptive_txb_search_level &&
+        (no_split_rd -
+         (no_split_rd >> (1 + cpi->sf.adaptive_txb_search_level))) >
+            ref_best_rd) {
       *is_cost_valid = 0;
       return;
     }
