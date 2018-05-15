@@ -62,11 +62,6 @@ class CONTENT_EXPORT ServiceWorkerWriteToCacheJob
 
  private:
   friend class ServiceWorkerContextRequestHandlerTest;
-  // TODO(https://crbug.com/675540): Remove the following
-  // FRIEND_TEST_ALL_PREFIXES directive when the update_via_cache flag is
-  // shipped to stable.
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
-                           UpdateBefore24HoursWithoutUpdateViaCache);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerContextRequestHandlerTest,
                            ServiceWorkerDataRequestAnnotation);
 

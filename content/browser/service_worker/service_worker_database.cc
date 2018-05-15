@@ -1466,15 +1466,10 @@ void ServiceWorkerDatabase::WriteRegistrationDataInBatch(
   for (uint32_t feature : registration.used_features)
     data.add_used_features(feature);
 
-  // TODO(https://crbug.com/675540): Remove the the command line check and
-  // always set to data when shipping the updateViaCache flag to stable.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    data.set_update_via_cache(
-        static_cast<
-            ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType>(
-            registration.update_via_cache));
-  }
+  data.set_update_via_cache(
+      static_cast<
+          ServiceWorkerRegistrationData_ServiceWorkerUpdateViaCacheType>(
+          registration.update_via_cache));
 
   std::string value;
   bool success = data.SerializeToString(&value);

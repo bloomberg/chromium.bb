@@ -788,6 +788,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter pushManager
 [Worker]     getter scope
 [Worker]     getter sync
+[Worker]     getter updateViaCache
 [Worker]     getter waiting
 [Worker]     method constructor
 [Worker]     method getNotifications

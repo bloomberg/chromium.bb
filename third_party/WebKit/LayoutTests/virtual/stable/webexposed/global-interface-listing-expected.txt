@@ -6067,6 +6067,7 @@ interface ServiceWorkerRegistration : EventTarget
     getter pushManager
     getter scope
     getter sync
+    getter updateViaCache
     getter waiting
     method constructor
     method getNotifications
