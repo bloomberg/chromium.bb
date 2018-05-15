@@ -2197,8 +2197,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest, StartToCommitMetrics) {
   }
 }
 
-// Verify that the SameProcess vs CrossProcess version of the
-// TimeToReadyToCommit metric is correctly logged.
+// Verify that the TimeToReadyToCommit metrics are correctly logged for
+// SameProcess vs CrossProcess as well as MainFrame vs Subframe cases.
 IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
                        TimeToReadyToCommitMetrics) {
   EXPECT_TRUE(
@@ -2211,6 +2211,8 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url));
 
     base::HistogramTester::CountsMap expected_counts = {
+        {"Navigation.TimeToReadyToCommit.MainFrame", 1},
+        {"Navigation.TimeToReadyToCommit.MainFrame.NewNavigation", 1},
         {"Navigation.TimeToReadyToCommit.NewNavigation", 1},
         {"Navigation.TimeToReadyToCommit.SameProcess", 1},
         {"Navigation.TimeToReadyToCommit.SameProcess.NewNavigation", 1}};
@@ -2226,9 +2228,41 @@ IN_PROC_BROWSER_TEST_F(NavigationHandleImplBrowserTest,
     EXPECT_TRUE(NavigateToURL(shell(), url));
 
     base::HistogramTester::CountsMap expected_counts = {
+        {"Navigation.TimeToReadyToCommit.MainFrame", 1},
+        {"Navigation.TimeToReadyToCommit.MainFrame.NewNavigation", 1},
         {"Navigation.TimeToReadyToCommit.NewNavigation", 1},
         {"Navigation.TimeToReadyToCommit.CrossProcess", 1},
         {"Navigation.TimeToReadyToCommit.CrossProcess.NewNavigation", 1}};
+    EXPECT_THAT(
+        histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit."),
+        testing::ContainerEq(expected_counts));
+  }
+
+  // Add a new subframe.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  EXPECT_TRUE(ExecuteScript(
+      root, "document.body.appendChild(document.createElement('iframe'));"));
+
+  // Navigate subframe cross-site and ensure Subframe metrics are logged.
+  {
+    base::HistogramTester histograms;
+    GURL url(embedded_test_server()->GetURL("b.com", "/title3.html"));
+    NavigateFrameToURL(root->child_at(0), url);
+
+    std::string navigation_type =
+        AreAllSitesIsolatedForTesting() ? "CrossProcess" : "SameProcess";
+    base::HistogramTester::CountsMap expected_counts = {
+        {"Navigation.TimeToReadyToCommit.Subframe", 1},
+        {"Navigation.TimeToReadyToCommit.Subframe.NewNavigation", 1},
+        {"Navigation.TimeToReadyToCommit.NewNavigation", 1},
+        {base::StringPrintf("Navigation.TimeToReadyToCommit.%s",
+                            navigation_type.c_str()),
+         1},
+        {base::StringPrintf("Navigation.TimeToReadyToCommit.%s.NewNavigation",
+                            navigation_type.c_str()),
+         1}};
     EXPECT_THAT(
         histograms.GetTotalCountsForPrefix("Navigation.TimeToReadyToCommit."),
         testing::ContainerEq(expected_counts));
