@@ -103,8 +103,8 @@ def generate_content(component, basenames):
               '#define NO_IMPLICIT_ATOMICSTRING\n\n']
 
     basenames.sort()
-    output.extend('#include "bindings/%s/v8/v8_%s.cc"\n' % (component, to_snake_case(basename))
-                  for basename in basenames)
+    output.extend('#include "third_party/blink/renderer/bindings/%s/v8/v8_%s.cc"\n' %
+                  (component, to_snake_case(basename)) for basename in basenames)
     return ''.join(output)
 
 

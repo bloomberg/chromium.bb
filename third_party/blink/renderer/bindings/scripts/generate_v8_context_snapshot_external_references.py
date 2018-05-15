@@ -19,14 +19,14 @@ import v8_utilities
 
 
 INCLUDES = frozenset([
-    'bindings/core/v8/generated_code_helper.h',
-    'bindings/core/v8/v8_html_document.h',
-    'bindings/core/v8/v8_initializer.h',
-    'bindings/core/v8/v8_window.h',
-    'platform/bindings/dom_wrapper_world.h',
-    'platform/bindings/v8_object_constructor.h',
-    'platform/bindings/v8_per_isolate_data.h',
-    'platform/bindings/v8_private_property.h',
+    'third_party/blink/renderer/bindings/core/v8/generated_code_helper.h',
+    'third_party/blink/renderer/bindings/core/v8/v8_html_document.h',
+    'third_party/blink/renderer/bindings/core/v8/v8_initializer.h',
+    'third_party/blink/renderer/bindings/core/v8/v8_window.h',
+    'third_party/blink/renderer/platform/bindings/dom_wrapper_world.h',
+    'third_party/blink/renderer/platform/bindings/v8_object_constructor.h',
+    'third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h',
+    'third_party/blink/renderer/platform/bindings/v8_private_property.h',
     'v8/include/v8.h'])
 
 TEMPLATE_FILE = 'external_reference_table.cpp.tmpl'
@@ -184,7 +184,8 @@ class ExternalReferenceTableGenerator(object):
         context = context_builder.create_interface_context(interface, interfaces)
         name = '%s%s' % (interface.name, 'Partial' if interface.is_partial else '')
         self._interface_contexts[name] = context
-        include_file = 'bindings/%s/v8/%s.h' % (component, utilities.to_snake_case(context['v8_name']))
+        include_file = 'third_party/blink/renderer/bindings/%s/v8/%s.h' % (
+            component, utilities.to_snake_case(context['v8_name']))
         self._include_files.add(include_file)
 
     # Gathers all interface-dependent information and returns as a Jinja template context.
@@ -192,7 +193,7 @@ class ExternalReferenceTableGenerator(object):
         interfaces = []
         for name in sorted(self._interface_contexts):
             interfaces.append(self._interface_contexts[name])
-        header_path = 'bindings/modules/v8/v8_context_snapshot_external_references.h'
+        header_path = 'third_party/blink/renderer/bindings/modules/v8/v8_context_snapshot_external_references.h'
         include_files = list(self._include_files)
         return {
             'class': 'V8ContextSnapshotExternalReferences',
