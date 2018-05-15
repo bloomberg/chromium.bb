@@ -741,6 +741,8 @@ void AccessibilityManager::OnSelectToSpeakChanged() {
 
   const bool enabled = profile_->GetPrefs()->GetBoolean(
       ash::prefs::kAccessibilitySelectToSpeakEnabled);
+  if (enabled)
+    select_to_speak_loader_->SetProfile(profile_, base::Closure());
 
   if (select_to_speak_enabled_ == enabled)
     return;
