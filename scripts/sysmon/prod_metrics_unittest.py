@@ -129,6 +129,14 @@ class TestTsMonSink(cros_test_lib.TestCase):
             created='2015-01-05 13:32:49',
             modified='2015-01-05 13:32:49',
             note=''),
+        prod_metrics.Server(
+            hostname='chromeos1-devserver',
+            data_center='mtv',
+            status='primary',
+            roles=('devserver',),
+            created='2015-01-05 13:32:49',
+            modified='2015-01-05 13:32:49',
+            note=''),
     ]
     sink = prod_metrics._TsMonSink('prod_hosts/')
     sink.write_servers(servers)
@@ -140,10 +148,22 @@ class TestTsMonSink(cros_test_lib.TestCase):
         mock.call('prod_hosts/roles', ('mtv', 'harvestasha-xp'), None,
                   'afe,host_scheduler,scheduler,suite_scheduler',
                   enforce_ge=mock.ANY),
+        mock.call('prod_hosts/ignored', ('mtv', 'harvestasha-xp'), None,
+                  False, enforce_ge=mock.ANY),
+
         mock.call('prod_hosts/presence', ('mtv', 'harvestasha-vista'), None,
                   True, enforce_ge=mock.ANY),
         mock.call('prod_hosts/roles', ('mtv', 'harvestasha-vista'), None,
                   'devserver', enforce_ge=mock.ANY),
+        mock.call('prod_hosts/ignored', ('mtv', 'harvestasha-vista'), None,
+                  False, enforce_ge=mock.ANY),
+
+        mock.call('prod_hosts/presence', ('mtv', 'chromeos1-devserver'), None,
+                  True, enforce_ge=mock.ANY),
+        mock.call('prod_hosts/roles', ('mtv', 'chromeos1-devserver'), None,
+                  'devserver', enforce_ge=mock.ANY),
+        mock.call('prod_hosts/ignored', ('mtv', 'chromeos1-devserver'), None,
+                  True, enforce_ge=mock.ANY),
     ]
     setter.assert_has_calls(calls)
     self.assertEqual(len(setter.mock_calls), len(calls))

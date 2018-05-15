@@ -139,6 +139,7 @@ class _TsMonSink(object):
     # emit old presence and roles data.
     self._presence_metric.reset()
     self._roles_metric.reset()
+    self._ignored_metric.reset()
 
     for server in servers:
       fields = {
@@ -147,13 +148,14 @@ class _TsMonSink(object):
       }
       self._presence_metric.set(True, fields)
       self._roles_metric.set(self._format_roles(server.roles), fields)
+      self._ignored_metric.set(_is_ignored(server), fields)
 
   @property
   def _presence_metric(self):
     return metrics.Boolean(
         self._metric_root_path + 'presence',
         description=(
-            "A boolean indicating whether a server is in the machines db."),
+            'A boolean indicating whether a server is in the machines db.'),
         field_spec=[ts_mon.StringField('target_data_center'),
                     ts_mon.StringField('target_hostname'),])
 
@@ -162,12 +164,30 @@ class _TsMonSink(object):
     return metrics.String(
         self._metric_root_path + 'roles',
         description=(
-            "A string indicating the role of a server in the machines db."),
+            'A string indicating the role of a server in the machines db.'),
+        field_spec=[ts_mon.StringField('target_data_center'),
+                    ts_mon.StringField('target_hostname'),])
+
+  @property
+  def _ignored_metric(self):
+    return metrics.Boolean(
+        self._metric_root_path + 'ignored',
+        description=(
+            'A boolean, for servers ignored for test infra prod alerts.'),
         field_spec=[ts_mon.StringField('target_data_center'),
                     ts_mon.StringField('target_hostname'),])
 
   def _format_roles(self, roles):
     return ','.join(sorted(roles))
+
+
+def _is_ignored(server):
+  """Return True if the server should be ignored for test infra prod alerts."""
+  if server.hostname.startswith('chromeos1-'):
+    return True
+  if server.hostname.startswith('chromeos15-'):
+    return True
+  return False
 
 
 class _LoggingSink(object):
