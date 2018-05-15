@@ -44,7 +44,7 @@ const base::Feature kSecondaryUiMd = {"SecondaryUiMd",
 
 // Allows system keyboard event capture when |features::kKeyboardLockApi| is on.
 const base::Feature kSystemKeyboardLock{"SystemKeyboardLock",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTouchableAppContextMenu = {
     "EnableTouchableAppContextMenu", base::FEATURE_DISABLED_BY_DEFAULT};
