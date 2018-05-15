@@ -161,13 +161,10 @@ class CONTENT_EXPORT NavigationHandle {
   // be net::OK.
   virtual net::Error GetNetErrorCode() = 0;
 
-  // Returns the RenderFrameHost this navigation is taking place in. This can
-  // only be accessed after a response has been delivered for processing.
-  //
-  // If PlzNavigate is active, the RenderFrameHost returned will be the final
-  // host for the navigation. If PlzNavigate is inactive, the navigation may
-  // transfer to a new host up until the point that DidFinishNavigation is
-  // called.
+  // Returns the RenderFrameHost this navigation is committing in.  The
+  // RenderFrameHost returned will be the final host for the navigation.  This
+  // can only be accessed after a response has been delivered for processing,
+  // or after the navigation fails with an error page.
   virtual RenderFrameHost* GetRenderFrameHost() = 0;
 
   // Whether the navigation happened without changing document. Examples of
@@ -299,6 +296,7 @@ class CONTENT_EXPORT NavigationHandle {
 
   // Simulates the network request failing.
   virtual NavigationThrottle::ThrottleCheckResult CallWillFailRequestForTesting(
+      RenderFrameHost* render_frame_host,
       base::Optional<net::SSLInfo> ssl_info) = 0;
 
   // Simulates the reception of the network response.

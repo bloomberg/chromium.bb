@@ -255,6 +255,10 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
       bool skip_throttles,
       const base::Optional<std::string>& error_page_content);
 
+  // Helper to determine whether an error page for the provided error code
+  // should stay in the current process.
+  bool ShouldKeepErrorPageInCurrentProcess(int net_error);
+
   // Called when the NavigationThrottles have been checked by the
   // NavigationHandle.
   void OnStartChecksComplete(NavigationThrottle::ThrottleCheckResult result);

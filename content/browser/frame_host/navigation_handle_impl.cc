@@ -380,12 +380,14 @@ net::Error NavigationHandleImpl::GetNetErrorCode() {
 }
 
 RenderFrameHostImpl* NavigationHandleImpl::GetRenderFrameHost() {
-  // TODO(mkwst): Change this to check against 'READY_TO_COMMIT' once
-  // ReadyToCommitNavigation is available whether or not PlzNavigate is
-  // enabled. https://crbug.com/621856
-  CHECK_GE(state_, WILL_PROCESS_RESPONSE)
-      << "This accessor should only be called after a response has been "
-         "delivered for processing.";
+  // Only allow the RenderFrameHost to be retrieved once it has been set for
+  // this navigation.  This will happens either at WillProcessResponse time for
+  // regular navigations or at WillFailRequest time for error pages.
+  CHECK_GE(state_, WILL_FAIL_REQUEST)
+      << "This accessor should only be called after a RenderFrameHost has been "
+         "picked for this navigation.";
+  static_assert(WILL_FAIL_REQUEST < WILL_PROCESS_RESPONSE,
+                "WillFailRequest state should come before WillProcessResponse");
   return render_frame_host_;
 }
 
@@ -493,9 +495,11 @@ NavigationHandleImpl::CallWillRedirectRequestForTesting(
 
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CallWillFailRequestForTesting(
+    RenderFrameHost* render_frame_host,
     base::Optional<net::SSLInfo> ssl_info) {
   NavigationThrottle::ThrottleCheckResult result = NavigationThrottle::DEFER;
-  WillFailRequest(ssl_info, base::Bind(&UpdateThrottleCheckResult, &result));
+  WillFailRequest(static_cast<RenderFrameHostImpl*>(render_frame_host),
+                  ssl_info, base::Bind(&UpdateThrottleCheckResult, &result));
 
   // Reset the callback to ensure it will not be called later.
   complete_callback_.Reset();
@@ -504,7 +508,7 @@ NavigationHandleImpl::CallWillFailRequestForTesting(
 
 NavigationThrottle::ThrottleCheckResult
 NavigationHandleImpl::CallWillProcessResponseForTesting(
-    content::RenderFrameHost* render_frame_host,
+    RenderFrameHost* render_frame_host,
     const std::string& raw_response_headers) {
   scoped_refptr<net::HttpResponseHeaders> headers =
       new net::HttpResponseHeaders(raw_response_headers);
@@ -725,6 +729,7 @@ void NavigationHandleImpl::WillRedirectRequest(
 }
 
 void NavigationHandleImpl::WillFailRequest(
+    RenderFrameHostImpl* render_frame_host,
     base::Optional<net::SSLInfo> ssl_info,
     const ThrottleChecksFinishedCallback& callback) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
@@ -732,6 +737,7 @@ void NavigationHandleImpl::WillFailRequest(
   if (ssl_info.has_value())
     ssl_info_ = ssl_info.value();
 
+  render_frame_host_ = render_frame_host;
   complete_callback_ = callback;
   state_ = WILL_FAIL_REQUEST;
 
@@ -799,6 +805,18 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
     bool is_error) {
   TRACE_EVENT_ASYNC_STEP_INTO0("navigation", "NavigationHandle", this,
                                "ReadyToCommitNavigation");
+
+  // If the NavigationHandle already has a RenderFrameHost set at
+  // WillProcessResponse time, we should not be changing it.  One exception is
+  // errors originating from WillProcessResponse throttles, which might commit
+  // in a different RenderFrameHost.  For example, a throttle might return
+  // CANCEL with an error code from WillProcessResponse, which will cancel the
+  // navigation and get here to commit the error page, with |render_frame_host|
+  // recomputed for the error page.
+  DCHECK(!render_frame_host_ || is_error ||
+         render_frame_host_ == render_frame_host)
+      << "Unsupported RenderFrameHost change from " << render_frame_host_
+      << " to " << render_frame_host << " with is_error=" << is_error;
 
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;

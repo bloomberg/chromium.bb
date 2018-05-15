@@ -146,7 +146,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
     test_handle_->WillFailRequest(
-        ssl_info,
+        main_test_rfh(), ssl_info,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));
   }
@@ -1133,6 +1133,44 @@ TEST_F(NavigationHandleImplTest, WillFailRequestSetsSSLInfo) {
   EXPECT_EQ(net::CERT_STATUS_AUTHORITY_INVALID,
             test_handle()->GetSSLInfo().cert_status);
   EXPECT_EQ(connection_status, test_handle()->GetSSLInfo().connection_status);
+}
+
+// Helper throttle which checks that it can access NavigationHandle's
+// RenderFrameHost in WillFailRequest() and then defers the failure.
+class GetRenderFrameHostOnFailureNavigationThrottle
+    : public NavigationThrottle {
+ public:
+  GetRenderFrameHostOnFailureNavigationThrottle(NavigationHandle* handle)
+      : NavigationThrottle(handle) {}
+  ~GetRenderFrameHostOnFailureNavigationThrottle() override {}
+
+  NavigationThrottle::ThrottleCheckResult WillFailRequest() override {
+    EXPECT_TRUE(navigation_handle()->GetRenderFrameHost());
+    return NavigationThrottle::DEFER;
+  }
+
+  const char* GetNameForLogging() override {
+    return "GetRenderFrameHostOnFailureNavigationThrottle";
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GetRenderFrameHostOnFailureNavigationThrottle);
+};
+
+// Verify that the NavigationHandle::GetRenderFrameHost() can be retrieved by a
+// throttle in WillFailRequest(), as well as after deferring the failure.  This
+// is allowed, since at that point the final RenderFrameHost will have already
+// been chosen. See https://crbug.com/817881.
+TEST_F(NavigationHandleImplTest, WillFailRequestCanAccessRenderFrameHost) {
+  test_handle()->RegisterThrottleForTesting(
+      std::make_unique<GetRenderFrameHostOnFailureNavigationThrottle>(
+          test_handle()));
+  SimulateWillStartRequest();
+  SimulateWillFailRequest(net::ERR_CERT_DATE_INVALID);
+  EXPECT_EQ(NavigationHandleImpl::DEFERRING_FAILURE, state());
+  EXPECT_TRUE(test_handle()->GetRenderFrameHost());
+  Resume();
+  EXPECT_TRUE(test_handle()->GetRenderFrameHost());
 }
 
 }  // namespace content

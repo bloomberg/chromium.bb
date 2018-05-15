@@ -143,6 +143,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const GURL& new_referrer_url,
       bool new_is_external_protocol) override;
   NavigationThrottle::ThrottleCheckResult CallWillFailRequestForTesting(
+      RenderFrameHost* render_frame_host,
       base::Optional<net::SSLInfo> ssl_info) override;
   NavigationThrottle::ThrottleCheckResult CallWillProcessResponseForTesting(
       RenderFrameHost* render_frame_host,
@@ -269,11 +270,13 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       RenderProcessHost* post_redirect_process,
       const ThrottleChecksFinishedCallback& callback);
 
-  // Called when the URLRequest will fail. |callback| will be called when all
-  // throttles check have completed. This will allow the caller to explicitly
-  // cancel the navigation (with a custom error code and/or custom error page
-  // HTML) or let the failure proceed as normal.
-  void WillFailRequest(base::Optional<net::SSLInfo> ssl_info,
+  // Called when the URLRequest will fail. |render_frame_host| corresponds to
+  // the RenderFrameHost in which the error page will load. |callback| will be
+  // called when all throttles check have completed. This will allow the caller
+  // to explicitly cancel the navigation (with a custom error code and/or
+  // custom error page HTML) or let the failure proceed as normal.
+  void WillFailRequest(RenderFrameHostImpl* render_frame_host,
+                       base::Optional<net::SSLInfo> ssl_info,
                        const ThrottleChecksFinishedCallback& callback);
 
   // Called when the URLRequest has delivered response headers and metadata.
