@@ -23,7 +23,7 @@ EventWithCallback::EventWithCallback(
       latency_(latency),
       creation_timestamp_(timestamp_now),
       last_coalesced_timestamp_(timestamp_now) {
-  original_events_.emplace_back(std::move(event), std::move(callback));
+  original_events_.emplace_back(std::move(event), latency, std::move(callback));
 }
 
 EventWithCallback::EventWithCallback(
@@ -68,6 +68,14 @@ void EventWithCallback::CoalesceWith(EventWithCallback* other,
   last_coalesced_timestamp_ = timestamp_now;
 }
 
+static bool HandledOnCompositorThread(
+    InputHandlerProxy::EventDisposition disposition) {
+  return (disposition != InputHandlerProxy::DID_NOT_HANDLE &&
+          disposition !=
+              InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING &&
+          disposition != InputHandlerProxy::DID_HANDLE_NON_BLOCKING);
+}
+
 void EventWithCallback::RunCallbacks(
     InputHandlerProxy::EventDisposition disposition,
     const LatencyInfo& latency,
@@ -85,12 +93,18 @@ void EventWithCallback::RunCallbacks(
                : nullptr);
   original_events_.pop_front();
 
-  // Ack other events with coalesced latency to avoid redundant tracking.
-  LatencyInfo coalesced_latency = latency;
-  coalesced_latency.set_coalesced();
+  // If the event was handled on compositor thread, ack other events with
+  // coalesced latency to avoid redundant tracking. If not, the event should
+  // be handle on main thread, use the original latency instead.
+  bool handled = HandledOnCompositorThread(disposition);
   for (auto& coalesced_event : original_events_) {
+    if (handled) {
+      coalesced_event.latency_ = latency;
+      coalesced_event.latency_.set_coalesced();
+    }
     std::move(coalesced_event.callback_)
-        .Run(disposition, std::move(coalesced_event.event_), coalesced_latency,
+        .Run(disposition, std::move(coalesced_event.event_),
+             coalesced_event.latency_,
              did_overscroll_params
                  ? std::make_unique<DidOverscrollParams>(*did_overscroll_params)
                  : nullptr);
@@ -99,8 +113,11 @@ void EventWithCallback::RunCallbacks(
 
 EventWithCallback::OriginalEventWithCallback::OriginalEventWithCallback(
     WebScopedInputEvent event,
+    const LatencyInfo& latency,
     InputHandlerProxy::EventDispositionCallback callback)
-    : event_(std::move(event)), callback_(std::move(callback)) {}
+    : event_(std::move(event)),
+      latency_(latency),
+      callback_(std::move(callback)) {}
 
 EventWithCallback::OriginalEventWithCallback::~OriginalEventWithCallback() {}
 
