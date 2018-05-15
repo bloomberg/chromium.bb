@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">રાત્રિ પ્રકાશ: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM કાર્ડ લૉક કરેલ છે</translation>
 <translation id="2653659639078652383">સબમિટ કરો</translation>
-<translation id="2675319268637823299">વ્યવસ્થાપકે <ph name="USER_EMAIL" /> માટે બહુવિધ સાઇન ઇનને નામંજૂર કર્યું છે.
-    ચાલુ રાખવા માટે બધા વપરાશકર્તાઓએ સાઇન આઉટ કરવું જરૂરી છે.</translation>
 <translation id="2696763960464195425">જ્યારે તમે સાઇન આઉટ કરશો, ત્યારે તમારી માહિતી કાઢી નાખવામાં આવશે. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">તમારું કીબોર્ડ સેટ કરો</translation>
 <translation id="2718395828230677721">રાત્રિ પ્રકાશ</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">માઉસ કર્સરને હાઇલાઇટ કરો</translation>
 <translation id="3513798432020909783"><ph name="MANAGER_EMAIL" /> દ્વારા મેનેજ કરાતું એકાઉન્ટ</translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" પર પાછાં જાઓ (પુનર્પ્રારંભની જરૂર છે)</translation>
-<translation id="3582792037806681688">આ સત્રમાં કોઈ વપરાશકર્તા માટે બહુવિધ સાઇન-ઇન નામંજૂર કરવામાં આવેલ છે</translation>
 <translation id="3595596368722241419">બૅટરી પૂર્ણ ચાર્જ</translation>
 <translation id="3606978283550408104">બ્રેઇલ પ્રદર્શન કનેક્ટ થયું.</translation>
 <translation id="3621202678540785336">ઇનપુટ</translation>

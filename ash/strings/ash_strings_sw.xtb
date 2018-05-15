@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Mwanga wa Usiku: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM kadi imefungwa</translation>
 <translation id="2653659639078652383">Wasilisha</translation>
-<translation id="2675319268637823299">Msimamizi amezuia uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja kwa kutumia <ph name="USER_EMAIL" />.
-    Ni lazima watumiaji wote waondoke katika akaunti ili uendelee.</translation>
 <translation id="2696763960464195425">Maelezo yako yataondolewa wakati unaondoka kwenye akaunti. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Weka kibodi yako</translation>
 <translation id="2718395828230677721">Mwanga wa Usiku</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Angazia kiteuzi cha kipanya</translation>
 <translation id="3513798432020909783">Akaunti inasimamiwa na <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Badilisha hadi "<ph name="FROM_LOCALE" />" (inahitaji uzime na uwashe)</translation>
-<translation id="3582792037806681688">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja umezimwa kwa mtumiaji katika kipindi hiki</translation>
 <translation id="3595596368722241419">Betri imejaa</translation>
 <translation id="3606978283550408104">Onyesho la breli limeunganishwa.</translation>
 <translation id="3621202678540785336">Ingizo</translation>

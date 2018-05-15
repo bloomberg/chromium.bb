@@ -679,13 +679,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če se uporablja ta pravilnik, so uporabniku na voljo samo tiskalniki z ID-ji, ki se ujemajo z vrednostmi v tem pravilniku. ID-ji morajo ustrezati polju »id« ali »guid« v datoteki, določeni v pravilniku <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Omogoči razpoložljivost funkcije »Dotaknite se za iskanje« v pogledu vsebine brskalnika <ph name="PRODUCT_NAME" />.
-
-      Če omogočite to nastavitev, je funkcija »Dotaknite se za iskanje« na voljo uporabniku, ki lahko to funkcijo vkopi ali izklopi.
-
-      Če onemogočite to nastavitev, bo funkcija »Dotaknite se za iskanje« v celoti onemogočena.
-
-      Če ta pravilnik ni nastavljen, je enako, kot če je funkcija omogočena. Glejte zgornji opis.</translation>
 <translation id="285480231336205327">Omogoči visokokontrastni način</translation>
 <translation id="2854919890879212089">Povzroči, da <ph name="PRODUCT_NAME" /> kot privzeto možnost v predogledu tiskanja uporabi sistemsko privzet tiskalnik namesto nazadnje uporabljenega tiskalnika.
 
@@ -1671,7 +1664,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
           Če pravilnika ne nastavite, je izgovorjava onemogočena, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo izgovorjavo, pri čemer se njeno stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
 <translation id="5868414965372171132">Konfiguracija omrežja na ravni uporabnika</translation>
-<translation id="588135807064822874">Omogočanje funkcije Iskanje z dotikom</translation>
 <translation id="5883015257301027298">Privzeta nastavitev piškotkov</translation>
 <translation id="5887414688706570295">Nastavi predpono »TalkGadget«, ki jo bodo uporabljali gostitelji oddaljenega dostopa, in prepreči uporabnikom njeno spreminjanje.
 
@@ -1944,11 +1936,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6689792153960219308">Poročanje o stanju strojne opreme</translation>
 <translation id="6698071416141001300">Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproži vnovična uporaba gesla</translation>
 <translation id="6699880231565102694">Omogočanje preverjanja pristnosti v dveh korakih za gostitelje oddaljenega dostopa</translation>
-<translation id="6702257826895463228">Spletnim mestom dovoli hkratno premikanje in odpiranje pojavnih oken.
-
-      Podrobno pojasnilo je na strani https://www.chromestatus.com/features/5675755719622656.
-      Če je ta pravilnik omogočen, bo spletnim mestom dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.
-      Če je ta pravilnik onemogočen ali ni nastavljen, spletnim mestom ne bo dovoljeno hkratno premikanje in odpiranje novih oken/zavihkov.</translation>
 <translation id="6724842112053619797">Če omogočite to nastavitev, se podatki, shranjeni v profilih izdelka <ph name="PRODUCT_NAME" />, kot so zaznamki, podatki samodejnega izpolnjevanja, gesla in drugi podatki, prav tako zapišejo v datoteko, shranjeno v mapo uporabniškega profila za gostovanje ali na lokacijo, ki jo določi skrbnik s pravilnikom <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Če omogočite ta pravilnik, onemogočite sinhronizacijo z oblakom.
 
       Če je ta pravilnik onemogočen ali ni nastavljen, se uporabijo samo lokalni profili.

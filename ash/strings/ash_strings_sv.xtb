@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Nattljus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kortet är låst</translation>
 <translation id="2653659639078652383">Skicka</translation>
-<translation id="2675319268637823299">En administratör har förbjudit multiinloggning för <ph name="USER_EMAIL" />.
-    Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="2696763960464195425">Dina uppgifter tas bort när du loggar ut. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Ställ in tangentbord</translation>
 <translation id="2718395828230677721">Nattljus</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Markera muspekaren</translation>
 <translation id="3513798432020909783">Kontot hanteras av <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Byt tillbaka till "<ph name="FROM_LOCALE" />" (kräver omstart)</translation>
-<translation id="3582792037806681688">Multiinloggning tillåts inte för en användare i den här sessionen</translation>
 <translation id="3595596368722241419">Batteriet är fulladdat</translation>
 <translation id="3606978283550408104">Punktskriftsskärm ansluten.</translation>
 <translation id="3621202678540785336">Ingång</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">USB-C-enhet (bakre porten på högra sidan)</translation>
 <translation id="4017989525502048489">Laserpekare</translation>
 <translation id="4072264167173457037">medelstark signal</translation>
+<translation id="4217571870635786043">Diktering</translation>
 <translation id="4279490309300973883">Spegling</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">Bluetooth-enheten <ph name="DEVICE_NAME" /> har begärt tillstånd för koppling.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> tills batteriet är fullt</translation>
 <translation id="4544944664594876241">Kortkommandot för att låsa skärmen har ändrats. Använd <ph name="NEW_SHORTCUT" /> i stället för <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Knappen Textuppläsning</translation>
 <translation id="4659419629803378708">ChromeVox har aktiverats</translation>
 <translation id="4776917500594043016">Lösenord för <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">sök</translation>
@@ -290,6 +289,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (ägare)</translation>
 <translation id="7647488630410863958">Lås upp enheten om du vill visa aviseringarna</translation>
 <translation id="7649070708921625228">Hjälp</translation>
+<translation id="7654687942625752712">Inaktivera talad feedback genom att hålla båda volymknapparna nedtryckta i fem sekunder.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7692480393933218409">Laddar anslutna USB-C-enheter</translation>
 <translation id="776344839111254542">Klicka här om du vill se mer information om uppdateringen</translation>

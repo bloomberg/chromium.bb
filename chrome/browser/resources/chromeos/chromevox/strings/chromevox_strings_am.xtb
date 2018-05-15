@@ -54,6 +54,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />፣ የይለፍ ቃል ጽሑፍ ሳጥን</translation>
 <translation id="1467432559032391204">ግራ</translation>
 <translation id="1474557363159888097">ምንም ቀዳሚ መልህቅ የለም።</translation>
+<translation id="1480046233931937785">ክሬዲቶች</translation>
 <translation id="1487494366197411587">በChromebook ላይ የSearch ቁልፉ ልክ ከግራው Shift በላይ ነው።</translation>
 <translation id="1499041187027566160">ድምጽ ጨምር</translation>
 <translation id="1502086903961450562">ቀዳሚ ስዕላዊ</translation>
@@ -555,13 +556,6 @@
 <translation id="5682113568322255809">የመሬት ምልክት</translation>
 <translation id="5683155931978483559">ቀዳሚ አመልካች ሳጥን</translation>
 <translation id="5684277895745049190">ዝርዝር</translation>
-<translation id="5695831708991916435">የሚከተሉት ጥቂት አቋራጮች የChromeVox ትዕዛዞች አይደሉም፣ ነገር ግን ከChrome ምርጡን ሁሉ ለማግኘት አሁንም በጣም ጠቃሚ ናቸው።
-እንደ አዝራሮች እና አገናኞች ባሉ የእርምጃ ንጥሎች ውስጥ ወደፊት ለመሄድ የTab አዝራሩን ይጫኑ። ወደኋላ ለመሄድ Shift+Tab ይጫኑ። 
-እንዲሁም ኦምኒቦክ በመባል ወደሚታወቀው የChrome አሳሽ የአድራሻ ሳጥን ለመግባት Control + L ይጫኑ። 
-ወደ አዲስ ትር በራስ-ሰር ለመሄድ እና ለመክፈት Control+T ይጫኑ። የእርስዎ ጠቋሚ በኦሚኒቦክሱ ውስጥ ይሆናል። 
-አንድ ትር ለመዝጋት Control+W ይጫኑ። 
-በክፍት ትሮች መካከል ወደፊት ለመሄድ Control+Tab ይጠቀሙ። 
-የChrome አሳሽ ምናሌውን ለመክፈት Alt+F ይጫኑ።</translation>
 <translation id="5700650669149824506">ምንም ቀዳሚ የደረጃ 4 ርዕስ የለም።</translation>
 <translation id="5703716265115423771">ድምጽ ቀንስ</translation>
 <translation id="5709192780268610569">ምንም ረጅም ማብራሪያ የለም</translation>

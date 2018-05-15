@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">إضاءة ليلية: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">‏تم قفل شريحة SIM</translation>
 <translation id="2653659639078652383">إرسال</translation>
-<translation id="2675319268637823299">منع أحد المشرفين الدخول المتعدد لـ <ph name="USER_EMAIL" />.
-    يجب على جميع المستخدمين تسجيل الخروج للمتابعة.</translation>
 <translation id="2696763960464195425">ستتم إزالة معلوماتك عند تسجيل الخروج. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">تعيين لوحة المفاتيح</translation>
 <translation id="2718395828230677721">الإضاءة الليلية</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">تمييز مؤشر الماوس</translation>
 <translation id="3513798432020909783">يُدير <ph name="MANAGER_EMAIL" /> الحساب.</translation>
 <translation id="3573179567135747900">التغيير مرة أخرى إلى "<ph name="FROM_LOCALE" />" (يتطلب إعادة التشغيل)</translation>
-<translation id="3582792037806681688">تم منع الدخول المتعدد لمستخدم في هذه الجلسة</translation>
 <translation id="3595596368722241419">البطارية ممتلئة</translation>
 <translation id="3606978283550408104">تم توصيل شاشة برايل.</translation>
 <translation id="3621202678540785336">الإدخال</translation>
@@ -285,7 +282,7 @@
 <translation id="7536035074519304529">‏عنوان IP: ‏<ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> غير متوافق مع <ph name="SPECIFIED_RESOLUTION" />. تم تغيير الدقة إلى <ph name="FALLBACK_RESOLUTION" /></translation>
 <translation id="7562368315689366235">لوحة ألوان الرموز التعبيرية</translation>
-<translation id="7564874036684306347">قد ينتج عن نقل النوافذ إلى سطح مكتب آخر سلوك غير متوقع. ربما يتم تقسيم مربعات الحوار والنوافذ والإشعارات المتتالية بين سطحي المكتب.</translation>
+<translation id="7564874036684306347">قد ينتج عن نقل النوافذ إلى سطح مكتب آخر سلوك غير متوقع. من الممكن أن يتم تقسيم مربعات الحوار والنوافذ والإشعارات المتتالية بين سطحَي المكتب.</translation>
 <translation id="7569509451529460200">‏تم تفعيل Braille وChromeVox</translation>
 <translation id="7593891976182323525">‏مفتاح البحث أو Shift</translation>
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (المالك)</translation>

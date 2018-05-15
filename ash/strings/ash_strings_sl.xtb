@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Nočna svetloba: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Kartica SIM je zaklenjena</translation>
 <translation id="2653659639078652383">Pošlji</translation>
-<translation id="2675319268637823299">Skrbnik je prepovedal prijavo z več računi za <ph name="USER_EMAIL" />.
-    Če želite nadaljevati, morajo biti odjavljeni vsi uporabniki.</translation>
 <translation id="2696763960464195425">Vaši podatki bodo odstranjeni, ko se odjavite. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Nastavitev tipkovnice</translation>
 <translation id="2718395828230677721">Nočna svetloba</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Označitev miškinega kazalca</translation>
 <translation id="3513798432020909783">Račun upravlja <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Spremeni nazaj v jezik »<ph name="FROM_LOCALE" />« (potreben vnovični zagon)</translation>
-<translation id="3582792037806681688">V tej seji uporabniku ni dovoljena uporaba prijave z več računi</translation>
 <translation id="3595596368722241419">Baterija je polna</translation>
 <translation id="3606978283550408104">Povezava z braillovo vrstico je vzpostavljena.</translation>
 <translation id="3621202678540785336">Vhod</translation>

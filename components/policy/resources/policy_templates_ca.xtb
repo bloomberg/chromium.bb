@@ -423,7 +423,7 @@
 
       <ph name="PRINTER_DISPLAY_NAME" /> i <ph name="PRINTER_DESCRIPTION" /> són cadenes de format lliure que es poden personalitzar per facilitar la selecció de la impressora. Les cadenes <ph name="PRINTER_MANUFACTURER" /> i <ph name="PRINTER_MODEL" /> representen el fabricant i el model de la impressora, i serveixen perquè els usuaris finals puguin identificar la impressora més fàcilment. <ph name="PRINTER_URI" /> ha de ser una adreça accessible des d'un ordinador de client, com ara <ph name="URI_SCHEME" />, <ph name="URI_PORT" /> i <ph name="URI_QUEUE" />. <ph name="PRINTER_UUID" /> és opcional. Si s'indica, s'utilitza per eliminar la duplicació d'impressores <ph name="ZEROCONF_DISCOVERY" />.
 
-      <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de coincidir amb una de les cadenes que representen una impressora <ph name="PRODUCT_NAME" /> admesa. La cadena s'utilitzarà per identificar i instal·lar el fitxer PPD adequat per a la impressora. Pots trobar-ne més informació a https://support.google.com/chrome?p=noncloudprint.
+      <ph name="PRINTER_EFFECTIVE_MODEL" /> ha de coincidir amb una de les cadenes que representen una impressora compatible amb <ph name="PRODUCT_NAME" />. La cadena s'utilitzarà per identificar i instal·lar el fitxer PPD adequat per a la impressora. Pots trobar-ne més informació a https://support.google.com/chrome?p=noncloudprint.
 
       La configuració d'una impressora es completa quan s'utilitza per primera vegada, moment en què es baixen els fitxers PPD. Després, els que s'utilitzen sovint es desen a la memòria cau.
 
@@ -648,13 +648,6 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       Si s'utilitza, l'usuari només tindrà a la seva disposició les impressores amb identificadors que coincideixin amb els valors d'aquesta política. Els identificadors han de correspondre amb el camp "id" o "guid" del fitxer especificat a <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Permet que la funció Toca per cercar estigui disponible a la visualització de contingut de <ph name="PRODUCT_NAME" />.
-
-      Si activeu aquesta opció de configuració, l'usuari tindrà a la seva disposició la funció Toca per cercar i podrà activar-la i desactivar-la.
-
-      Si desactiveu aquesta opció, la funció Toca per cercar estarà totalment desactivada.
-
-      No establir aquesta política és igual que activar l'opció de configuració, amb el funcionament descrit abans.</translation>
 <translation id="285480231336205327">Activa el mode d'alt contrast</translation>
 <translation id="2854919890879212089">Fa que <ph name="PRODUCT_NAME" /> utilitzi la impressora predeterminada del sistema com a opció predeterminada a Previsualització de la impressió en lloc d'utilitzar la impressora que s'ha fet servir més recentment.
 
@@ -1577,7 +1570,6 @@ Si la política no es defineix, els usuaris podran triar si el prestatge s'ha d'
 
           Si no s'estableix aquesta política, els comentaris de veu es desactivaran quan la pantalla d'inici de sessió es mostri per primera vegada. Els usuaris poden activar o desactivar els comentaris de veu en qualsevol moment i el seu estat a la pantalla d'inici de sessió es mantindrà entre els usuaris.</translation>
 <translation id="5868414965372171132">Configuració de la xarxa per part de l'usuari</translation>
-<translation id="588135807064822874">Activa Toca per cercar</translation>
 <translation id="5883015257301027298">Configuració predeterminada de les galetes</translation>
 <translation id="5887414688706570295">Configura el prefix TalkGadget que utilitzaran els amfitrions d'accés remot i que impedeix que els usuaris el canviïn.
 
@@ -1837,11 +1829,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6689792153960219308">Informa de l'estat del maquinari</translation>
 <translation id="6698071416141001300">El marcatge de la protecció de contrasenyes als comptes en perill s'activa quan es reutilitza una contrasenya</translation>
 <translation id="6699880231565102694">Activació de l'autenticació de dos factors per als amfitrions d'accés remot</translation>
-<translation id="6702257826895463228">Permet que els llocs web naveguin i obrin finestres emergents simultàniament.
-
-      Per veure l'explicació completa, consulta https://www.chromestatus.com/features/5675755719622656.
-      Si aquesta política està activada, els llocs web podran navegar i obrir finestres o pestanyes noves simultàniament.
-      Si aquesta política està activada o no s'estableix, els llocs web no podran navegar i obrir finestres o pestanyes noves simultàniament.</translation>
 <translation id="6724842112053619797">Si actives aquesta opció de configuració, les opcions de configuració emmagatzemades als perfils que hi ha a <ph name="PRODUCT_NAME" />, com ara les adreces d'interès, les dades d'Emplenament automàtic o les contrasenyes, entre d'altres, també s'introduiran en un fitxer emmagatzemat a la carpeta Itinerància del perfil de l'usuari o a la ubicació especificada per l'administrador a la política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. En activar aquesta política, es desactiva la sincronització en núvol.
 
       Si aquesta política es desactiva o no es defineix, només s'utilitzaran els perfils locals habituals.

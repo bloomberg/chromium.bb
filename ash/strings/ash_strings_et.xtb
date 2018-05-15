@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Öövalgus: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-kaart on lukustatud</translation>
 <translation id="2653659639078652383">Esita</translation>
-<translation id="2675319268637823299">Administraator on keelanud e-posti aadressi <ph name="USER_EMAIL" /> puhul mitmele kontole sisselogimise.
-    Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="2696763960464195425">Teie teave eemaldatakse väljalogimisel. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Valige klaviatuur</translation>
 <translation id="2718395828230677721">Öövalgus</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Hiirekursori esiletõstmine</translation>
 <translation id="3513798432020909783">Kontohaldur: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Muuda tagasi seadele <ph name="FROM_LOCALE" /> (nõuab taaskäivitust)</translation>
-<translation id="3582792037806681688">Selle seanssi kasutaja jaoks on mitmele kontole sisselogimine keelatud</translation>
 <translation id="3595596368722241419">Aku on täis</translation>
 <translation id="3606978283550408104">Punktkirja ekraanikuva on ühendatud.</translation>
 <translation id="3621202678540785336">Sisend</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">C-tüüpi USB-seade (tagumine parempoolne port)</translation>
 <translation id="4017989525502048489">Laserkursor</translation>
 <translation id="4072264167173457037">Keskmine signaal</translation>
+<translation id="4217571870635786043">Dikteerimine</translation>
 <translation id="4279490309300973883">Peegeldamine</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">Bluetoothi seade „<ph name="DEVICE_NAME" />” küsib luba sidumiseks.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> täislaadimiseni</translation>
 <translation id="4544944664594876241">Ekraani lukustamise otseteed on muudetud. Kasutage vana otsetee <ph name="OLD_SHORTCUT" /> asemel uut otseteed <ph name="NEW_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Nupp Vali ja kuula</translation>
 <translation id="4659419629803378708">ChromeVox on lubatud</translation>
 <translation id="4776917500594043016">Kasutaja <ph name="USER_EMAIL_ADDRESS" /> parool</translation>
 <translation id="479989351350248267">otsing</translation>
@@ -290,6 +289,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (omanik)</translation>
 <translation id="7647488630410863958">Märguannete vaatamiseks avage seade</translation>
 <translation id="7649070708921625228">Abi</translation>
+<translation id="7654687942625752712">Suulise tagasiside keelamiseks vajutage ja hoidke mõlemat helitugevuse nuppu viis sekundit all.</translation>
 <translation id="7658239707568436148">Tühista</translation>
 <translation id="7692480393933218409">Ühendatud C-tüüpi USB-seadmete laadimine</translation>
 <translation id="776344839111254542">Klõpsake värskenduse üksikasjade vaatamiseks</translation>

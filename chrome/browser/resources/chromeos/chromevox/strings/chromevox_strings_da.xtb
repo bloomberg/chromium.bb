@@ -54,6 +54,7 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="1452236308086741652">Adgangskodetekstfeltet <ph name="VALUE" /></translation>
 <translation id="1467432559032391204">Venstre</translation>
 <translation id="1474557363159888097">Ingen tidligere ankre.</translation>
+<translation id="1480046233931937785">Medvirkende</translation>
 <translation id="1487494366197411587">På en Chromebook finder du tasten Søg lige over Shift-tasten.</translation>
 <translation id="1499041187027566160">lydstyrke op</translation>
 <translation id="1502086903961450562">Forrige grafik</translation>
@@ -556,13 +557,6 @@ Hvis du er færdig med selvstudiet, kan du gå til knappen Luk via ChromeVox og 
 <translation id="5682113568322255809">Orienteringspunkt</translation>
 <translation id="5683155931978483559">Forrige afkrydsningsfelt</translation>
 <translation id="5684277895745049190">Liste</translation>
-<translation id="5695831708991916435">Følgende genveje er ikke kommandoer i ChromeVox, men de kan stadig hjælpe dig med at optimere din Chrome-oplevelse.
-Tryk på tabulatortasten for at gå fremad mellem elementer, der ved tryk eller klik medfører en handling, f.eks. knapper og links. Tryk på Shift+tabulatortast for at gå tilbage.
-Tryk på Ctrl+L for at indtaste Chrome-browserens adressefelt, der også kaldes omnifeltet.
-Tryk på Ctrl+T for automatisk at åbne og gå til en ny fane. Markøren er i omnifeltet.
-Tryk på Ctrl+W for at lukke en fane.
-Tryk på Ctrl+tabulatortast for at gå fremad mellem åbne faner.
-Tryk på Alt+F for at åbne browsermenuen i Chrome.</translation>
 <translation id="5700650669149824506">Ingen tidligere niveau 4-overskrifter.</translation>
 <translation id="5703716265115423771">lydstyrke ned</translation>
 <translation id="5709192780268610569">Ingen lang beskrivelse</translation>

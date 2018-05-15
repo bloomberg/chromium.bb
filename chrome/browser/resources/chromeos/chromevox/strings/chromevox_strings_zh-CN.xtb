@@ -54,6 +54,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />，密码文本框</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1474557363159888097">不存在上一个定位点。</translation>
+<translation id="1480046233931937785">鸣谢</translation>
 <translation id="1487494366197411587">在 Chromebook 上，搜索键位于左侧 Shift 键的正上方。</translation>
 <translation id="1499041187027566160">调高音量</translation>
 <translation id="1502086903961450562">上一个图形</translation>
@@ -555,13 +556,6 @@
 <translation id="5682113568322255809">地标</translation>
 <translation id="5683155931978483559">上一个复选框</translation>
 <translation id="5684277895745049190">列表</translation>
-<translation id="5695831708991916435">以下几个快捷键并不是 ChromeVox 命令，但它们非常实用，有助于您充分利用 Chrome。
-要移到下一个可操作项（例如按钮和链接），请按 Tab 键。要移到前一个可操作项，请按 Shift+Tab。
-要进入 Chrome 浏览器的地址框（也称为多功能框），请按 Ctrl+L。
-要自动打开并转到新标签页，请按 Ctrl+T。光标将位于多功能框中。
-要关闭标签页，请按 Ctrl+W。
-要转到下一个打开的标签页，请按 Ctrl+Tab。
-要打开 Chrome 浏览器菜单，请按 Alt+F。</translation>
 <translation id="5700650669149824506">不存在上一个4级标题。</translation>
 <translation id="5703716265115423771">调低音量</translation>
 <translation id="5709192780268610569">无详细说明</translation>

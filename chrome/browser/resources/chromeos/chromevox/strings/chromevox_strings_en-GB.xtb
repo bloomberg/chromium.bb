@@ -54,6 +54,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1452236308086741652"><ph name="VALUE" />, password text box</translation>
 <translation id="1467432559032391204">Left</translation>
 <translation id="1474557363159888097">No previous anchor.</translation>
+<translation id="1480046233931937785">Credits</translation>
 <translation id="1487494366197411587">On the Chromebook, the Search key is immediately above the left Shift key.</translation>
 <translation id="1499041187027566160">volume up</translation>
 <translation id="1502086903961450562">Previous graphic</translation>
@@ -556,13 +557,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="5682113568322255809">Landmark</translation>
 <translation id="5683155931978483559">Previous tick box</translation>
 <translation id="5684277895745049190">List</translation>
-<translation id="5695831708991916435">The next few shortcuts aren’t ChromeVox commands, but they’re still very useful for getting the most out of Chrome.
-To navigate forward through actionable items like buttons and links, press the Tab key. To navigate backwards, press Shift+Tab. 
-To enter the Chrome browser address box, also called the omnibox, press Control + L. 
-To open and go to a new tab automatically, press Control+T. Your cursor will be in the omnibox. 
-To close a tab, press Control+W. 
-To move forward between open tabs, use Control+Tab. 
-To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="5700650669149824506">No previous level 4 heading.</translation>
 <translation id="5703716265115423771">volume down</translation>
 <translation id="5709192780268610569">No long description</translation>

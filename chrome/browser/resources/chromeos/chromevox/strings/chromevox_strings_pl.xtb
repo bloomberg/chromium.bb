@@ -54,6 +54,7 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="1452236308086741652"><ph name="VALUE" />, pole tekstowe hasła</translation>
 <translation id="1467432559032391204">W lewo</translation>
 <translation id="1474557363159888097">Brak poprzedniej kotwicy.</translation>
+<translation id="1480046233931937785">Autorzy</translation>
 <translation id="1487494366197411587">W Chromebooku klawisz Wyszukaj znajduje się tuż nad lewym klawiszem Shift.</translation>
 <translation id="1499041187027566160">zwiększ głośność</translation>
 <translation id="1502086903961450562">Poprzednia grafika</translation>
@@ -556,13 +557,6 @@ Jeśli nie korzystasz już z samouczka, użyj czytnika ChromeVox, by przejść 
 <translation id="5682113568322255809">Punkt orientacyjny</translation>
 <translation id="5683155931978483559">Poprzednie pole wyboru</translation>
 <translation id="5684277895745049190">Lista</translation>
-<translation id="5695831708991916435">Poniższe skróty nie są poleceniami czytnika ChromeVox, ale są bardzo przydatne podczas korzystania z Chrome.
-Aby przejść do następnego aktywnego elementu, np. przycisku lub linku, naciśnij klawisz Tab. Aby przejść do poprzedniego elementu, naciśnij Shift + Tab. 
-Aby otworzyć pole adresu (omnibox), naciśnij Ctrl + L. 
-Aby otworzyć nową kartę i automatycznie do niej przejść, naciśnij Ctrl + T. Kursor będzie ustawiony w omniboksie. 
-Aby zamknąć kartę, naciśnij Ctrl + W. 
-Aby przejść do następnej otwartej karty, naciśnij Ctrl + Tab. 
-Aby otworzyć menu przeglądarki Chrome, naciśnij Alt + F.</translation>
 <translation id="5700650669149824506">Brak poprzedniego nagłówka poziomu 4.</translation>
 <translation id="5703716265115423771">zmniejsz głośność</translation>
 <translation id="5709192780268610569">Brak długiego opisu</translation>

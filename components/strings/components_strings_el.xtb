@@ -129,7 +129,6 @@
 <translation id="1768211456781949159"><ph name="BEGIN_LINK" />Δοκιμάστε να εκτελέσετε τον Διαγνωστικό έλεγχο δικτύου των Windows<ph name="END_LINK" />.</translation>
 <translation id="1783075131180517613">Ενημερώστε την κωδική φράση πρόσβασης συγχρονισμού.</translation>
 <translation id="1787142507584202372">Οι ανοιχτές καρτέλες σας εμφανίζονται εδώ</translation>
-<translation id="1789575671122666129">Αναδυόμενα παράθυρα</translation>
 <translation id="1791429645902722292">Google Smart Lock</translation>
 <translation id="1803264062614276815">Όνομα κατόχου κάρτας</translation>
 <translation id="1806541873155184440">Προστέθηκε <ph name="ADDED_TO_AUTOFILL_MONTH" /></translation>
@@ -462,6 +461,7 @@
 <translation id="4171400957073367226">Εσφαλμένη υπογραφή επαλήθευσης</translation>
 <translation id="4173827307318847180">{MORE_ITEMS,plural, =1{<ph name="ITEM_COUNT" /> ακόμη στοιχείο}other{<ph name="ITEM_COUNT" /> ακόμη στοιχεία}}</translation>
 <translation id="4179515394835346607"><ph name="ROW_NAME" /> <ph name="ROW_CONTENT" /></translation>
+<translation id="4192549185358213268">Το Chrome συνιστά την επαναφορά του κωδικού πρόσβασης <ph name="ORG_NAME" /> εάν τον έχετε επαναχρησιμοποιήσει σε άλλους ιστοτόπους.</translation>
 <translation id="4196861286325780578">&amp;Επανάληψη μετακίνησης</translation>
 <translation id="4203896806696719780"><ph name="BEGIN_LINK" />Ελέγξτε τις διαμορφώσεις του τείχους προστασίας και της προστασίας από ιούς<ph name="END_LINK" /></translation>
 <translation id="4220128509585149162">Απότομες διακοπές λειτουργίας</translation>
@@ -695,13 +695,13 @@
 <translation id="5869405914158311789">Δεν είναι δυνατή η πρόσβαση σε αυτόν τον ιστότοπο</translation>
 <translation id="5869522115854928033">Αποθηκευμένοι κωδικοί πρόσβασης</translation>
 <translation id="5893752035575986141">Οι πιστωτικές κάρτες γίνονται δεκτές.</translation>
+<translation id="5898382028489516745">Το Chromium συνιστά την επαναφορά του κωδικού πρόσβασης <ph name="ORG_NAME" /> εάν τον έχετε επαναχρησιμοποιήσει σε άλλους ιστοτόπους.</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" /> (συγχρονισμένο)</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 σε χρήση}other{# σε χρήση}}</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="5959728338436674663">Αυτόματη αποστολή ορισμένων <ph name="BEGIN_WHITEPAPER_LINK" />πληροφοριών συστήματος και περιεχομένου σελίδων<ph name="END_WHITEPAPER_LINK" /> στην Google για διευκόλυνση του εντοπισμού επικίνδυνων εφαρμογών και ιστοτόπων<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967592137238574583">Επεξεργασία στοιχείων επικοινωνίας</translation>
 <translation id="5967867314010545767">Κατάργηση από το ιστορικό</translation>
-<translation id="5972020793760134803">Εναλλαγή σε καρτέλα</translation>
 <translation id="5975083100439434680">Σμίκρυνση</translation>
 <translation id="598637245381783098">Δεν είναι δυνατό το άνοιγμα της εφαρμογής πληρωμής</translation>
 <translation id="5989320800837274978">Δεν προσδιορίζονται ούτε οι σταθεροί διακομιστές μεσολάβησης ούτε μια διεύθυνση URL σεναρίου .pac.</translation>
@@ -1037,7 +1037,6 @@
 <translation id="8553075262323480129">Η μετάφραση απέτυχε επειδή δεν ήταν δυνατός ο προσδιορισμός της σελίδας.</translation>
 <translation id="8557066899867184262">Ο κωδικός CVC βρίσκεται στο πίσω μέρος της κάρτας.</translation>
 <translation id="8559762987265718583">Δεν είναι δυνατή η επίτευξη ιδιωτικής σύνδεσης με τον τομέα <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" /> επειδή η ημερομηνία και η ώρα (<ph name="DATE_AND_TIME" />) της συσκευής σας είναι λανθασμένες.</translation>
-<translation id="8564985650692024650">Το Chromium συνιστά την επαναφορά του κωδικού πρόσβασης <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" />, εάν τον έχετε χρησιμοποιήσει και σε άλλους ιστοτόπους.</translation>
 <translation id="8571890674111243710">Μετάφραση σελίδας σε <ph name="LANGUAGE" />...</translation>
 <translation id="858637041960032120">Προσθ. τηλεφ.
 </translation>
@@ -1065,7 +1064,6 @@
 <translation id="884264119367021077">Διεύθυνση αποστολής</translation>
 <translation id="884923133447025588">Δεν εντοπίστηκε μηχανισμός ακύρωσης.</translation>
 <translation id="885730110891505394">Κοινοποίηση στις υπηρεσίες της Google</translation>
-<translation id="8858065207712248076">Το Chrome συνιστά την επαναφορά του κωδικού πρόσβασης <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> εάν τον έχετε χρησιμοποιήσει και σε άλλους ιστοτόπους.</translation>
 <translation id="8866481888320382733">Σφάλμα ανάλυσης ρυθμίσεων πολιτικής</translation>
 <translation id="8870413625673593573">Έκλεισαν πρόσφατα</translation>
 <translation id="8874824191258364635">Εισαγάγετε έναν έγκυρο αριθμό κάρτας</translation>

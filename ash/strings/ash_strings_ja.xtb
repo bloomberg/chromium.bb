@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">読書灯: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM カードはロックされています</translation>
 <translation id="2653659639078652383">送信</translation>
-<translation id="2675319268637823299"><ph name="USER_EMAIL" /> のマルチログインは、管理者によって禁止されています。
-    続行するには、すべてのユーザーがログアウトする必要があります。</translation>
 <translation id="2696763960464195425">ログアウトすると利用時の情報は削除されます。<ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">キーボードを設定</translation>
 <translation id="2718395828230677721">読書灯</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">マウスカーソルをハイライト表示する</translation>
 <translation id="3513798432020909783">このアカウントは <ph name="MANAGER_EMAIL" /> により管理されています</translation>
 <translation id="3573179567135747900">「<ph name="FROM_LOCALE" />」に戻します（再起動が必要です）</translation>
-<translation id="3582792037806681688">このセッションで 1 人のユーザーに対するマルチ ログインは禁止されています。</translation>
 <translation id="3595596368722241419">バッテリー残量: 満</translation>
 <translation id="3606978283550408104">ブライユ点字ディスプレイが接続されています。</translation>
 <translation id="3621202678540785336">入力</translation>

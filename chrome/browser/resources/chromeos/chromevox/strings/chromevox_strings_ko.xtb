@@ -54,6 +54,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, 비밀번호 입력란</translation>
 <translation id="1467432559032391204">왼쪽</translation>
 <translation id="1474557363159888097">이전 앵커가 없습니다.</translation>
+<translation id="1480046233931937785">크레딧</translation>
 <translation id="1487494366197411587">Chromebook에서 검색 키는 왼쪽 Shift 키 바로 위에 있습니다.</translation>
 <translation id="1499041187027566160">볼륨 크게</translation>
 <translation id="1502086903961450562">이전 그래픽</translation>
@@ -556,13 +557,6 @@
 <translation id="5682113568322255809">랜드마크</translation>
 <translation id="5683155931978483559">이전 체크박스</translation>
 <translation id="5684277895745049190">목록</translation>
-<translation id="5695831708991916435">다음 단축키들은 ChromeVox 명령어는 아니지만 Chrome 사용에 도움이 되는 유용한 단축키들입니다.
-버튼과 링크 등 실행 가능한 항목 간에 이동하려면 Tab을 눌러 앞으로 이동, Shift+Tab을 눌러 뒤로 이동합니다.
-Chrome 브라우저 주소창(검색주소창이라고도 함)에 입력하려면 Control+L을 누릅니다. 
-새 탭을 열고 자동으로 이동하려면 Control+T를 누릅니다. 커서는 검색주소창에 있습니다.
-탭을 닫으려면 Control+W를 누릅니다.
-열려 있는 탭 간에 앞으로 이동하려면 Control+Tab을 누릅니다.
-Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="5700650669149824506">이전 수준 4 제목이 없습니다.</translation>
 <translation id="5703716265115423771">볼륨 작게</translation>
 <translation id="5709192780268610569">자세한 설명 없음</translation>

@@ -54,6 +54,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />、パスワード テキスト ボックス</translation>
 <translation id="1467432559032391204">左</translation>
 <translation id="1474557363159888097">前のアンカーはありません。</translation>
+<translation id="1480046233931937785">クレジット</translation>
 <translation id="1487494366197411587">Chromebook では、検索キーは左の Shift キーのすぐ上にあります。</translation>
 <translation id="1499041187027566160">音量を上げる</translation>
 <translation id="1502086903961450562">前の図</translation>
@@ -160,7 +161,7 @@
 <translation id="2637227747952042642">数式</translation>
 <translation id="2639750663247012216">ChromeVox 修飾キー</translation>
 <translation id="2644542693584024604">スペルミス</translation>
-<translation id="2673280813984708147">編集しています</translation>
+<translation id="2673280813984708147">は編集中です</translation>
 <translation id="267442004702508783">更新</translation>
 <translation id="2684412629217766642">ChromeVox のチュートリアルを閉じる</translation>
 <translation id="2697408785920771974">インライン オートコンプリート</translation>
@@ -556,13 +557,6 @@
 <translation id="5682113568322255809">ランドマーク</translation>
 <translation id="5683155931978483559">前のチェックボックス</translation>
 <translation id="5684277895745049190">リスト</translation>
-<translation id="5695831708991916435">次に紹介するいくつかのショートカットは ChromeVox のコマンドではありませんが、Chrome を活用する際に役立ちます。
-ボタンやリンクなどの操作可能な項目間を移動するには、順方向の場合は Tab キー、逆方向の場合は Shift+Tab キーを押します。
-Chrome ブラウザのアドレスバー（オムニボックスとも呼ばれます）に移動するには、Ctrl+L キーを押します。
-新しいタブを自動的に開いてそのタブに移動するには、Ctrl+T キーを押します。カーソルはアドレスバー内に置かれます。
-タブを閉じるには Ctrl+W キーを押します。
-開いているタブ間を移動するには、Ctrl+Tab キーを押します。
-Chrome ブラウザのメニューを開くには、Alt+F キーを押します。</translation>
 <translation id="5700650669149824506">前のレベル 4 見出しはありません。</translation>
 <translation id="5703716265115423771">音量を下げる</translation>
 <translation id="5709192780268610569">長い説明はありません</translation>

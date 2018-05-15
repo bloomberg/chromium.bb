@@ -54,6 +54,7 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="1452236308086741652"><ph name="VALUE" />, şifre metin kutusu</translation>
 <translation id="1467432559032391204">Sola</translation>
 <translation id="1474557363159888097">Önceki bağlantı yok.</translation>
+<translation id="1480046233931937785">Katkıda Bulunanlar</translation>
 <translation id="1487494366197411587">Chromebook'ta, Arama tuşu sol Üst Karakter tuşunun hemen üzerindedir.</translation>
 <translation id="1499041187027566160">sesi aç</translation>
 <translation id="1502086903961450562">Önceki grafik</translation>
@@ -555,13 +556,6 @@ Eğiticiyle işiniz bittiğinde, ChromeVox'ı kullanarak Kapat düğmesine gidin
 <translation id="5682113568322255809">Önemli Nokta</translation>
 <translation id="5683155931978483559">Önceki onay kutusu</translation>
 <translation id="5684277895745049190">Liste</translation>
-<translation id="5695831708991916435">Sonraki birkaç kısayol ChromeVox komutu değildir, ancak yine de Chrome'dan en iyi şekilde yararlanmanıza çok yardımcı olur.
-Düğmeler ve bağlantılar gibi işlem yapılabilir öğelerde ileriye doğru gezinmek için Sekme tuşuna basın. Geriye gitmek için Üst Karakter+Sekme tuşlarına basın.
-Çok amaçlı adres çubuğu olarak adlandırılan Chrome tarayıcı adres kutusuna girmek için Control+L tuşlarına basın.
-Yeni bir sekme açmak ve otomatik olarak o sekmeye gitmek için Control+T tuşlarına basın. İmleciniz çok amaçlı adres çubuğuna yerleştirilir.
-Bir sekmeyi kapatmak için Control+W tuşlarına basın.
-Açık sekmeler arasında ileriye doğru gitmek için Control+Sekme tuşlarını kullanın.
-Chrome tarayıcı menüsünü açmak için Alt+F tuşlarına basın.</translation>
 <translation id="5700650669149824506">Önceki 4. düzey başlık yok.</translation>
 <translation id="5703716265115423771">sesi kıs</translation>
 <translation id="5709192780268610569">Uzun açıklama yok</translation>

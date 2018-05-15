@@ -660,13 +660,6 @@
 
       Se esta política for utilizada, apenas as impressoras com IDs correspondentes aos valores nesta política estão disponíveis para o utilizador. Os IDs têm de corresponder aos campos "id" ou "guid" no ficheiro especificado em <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Ativa a disponibilidade de Tocar para pesquisar na vista de conteúdo do <ph name="PRODUCT_NAME" />.
-
-      Se ativar esta definição, a funcionalidade Tocar para pesquisar fica disponível para o utilizador e este pode optar por a ativar ou desativar.
-
-      Se desativar esta definição, Tocar para pesquisar é completamente desativado.
-
-      Se esta política for deixada por definir, é o equivalente a estar ativa. Consulte a descrição acima.</translation>
 <translation id="285480231336205327">Ativar modo de alto contraste</translation>
 <translation id="2854919890879212089">Faz com que o <ph name="PRODUCT_NAME" /> utilize a impressora predefinida do sistema como a escolha predefinida na Pré-visualização de impressão em vez da impressora utilizada mais recentemente.
 
@@ -1595,7 +1588,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, as respostas faladas são desativadas quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar as respostas faladas a qualquer momento e o estado desta funcionalidade no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="5868414965372171132">Configuração de rede ao nível do utilizador</translation>
-<translation id="588135807064822874">Ativar Tocar para pesquisar</translation>
 <translation id="5883015257301027298">Definição de cookies predefinida</translation>
 <translation id="5887414688706570295">Configura o prefixo do TalkGadget a ser utilizado por anfitriões de acesso remoto e evita que os utilizadores o alterem.
 
@@ -1856,11 +1848,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6689792153960219308">Comunicar o estado do hardware</translation>
 <translation id="6698071416141001300">A sinalização de conta protegida por palavra-passe em risco é acionada pela reutilização da palavra-passe.</translation>
 <translation id="6699880231565102694">Ativar a autenticação de dois fatores para anfitriões de acesso remoto</translation>
-<translation id="6702257826895463228">Permite que os sites naveguem e abram pop-ups em simultâneo.
-
-      Para obter uma explicação completa, consulte https://www.chromestatus.com/features/5675755719622656.
-      Se esta política estiver ativada, os sites serão autorizados a navegar e a abrir novas janelas/novos separadores em simultâneo.
-      Se esta política estiver desativada ou não definida, os sites deixarão de ter autorização para navegar e abrir uma nova janela/um novo separador em simultâneo.</translation>
 <translation id="6724842112053619797">Se ativar esta definição, as definições armazenadas nos perfis do <ph name="PRODUCT_NAME" />, tais como marcadores, dados de preenchimento automático, palavras-passe, etc., também são escritas num ficheiro armazenado na pasta do perfil de utilizador Roaming ou numa localização especificada pelo gestor através da política <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Se ativar esta política, desativa a sincronização na nuvem.
 
       Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.

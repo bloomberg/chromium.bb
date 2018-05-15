@@ -34,6 +34,7 @@
 <translation id="1047726139967079566">Запазване на отметка към тази страница...</translation>
 <translation id="1047956942837015229"><ph name="COUNT" /> елемента се изтриват...</translation>
 <translation id="1048286738600630630">Дисплеи</translation>
+<translation id="1049743911850919806">„Инкогнито“</translation>
 <translation id="1049795001945932310">&amp;Езикови настройки</translation>
 <translation id="1049926623896334335">Документ в Word</translation>
 <translation id="1054153489933238809">Отваряне на оригиналното изображение в нов раздел</translation>
@@ -526,7 +527,6 @@
 <translation id="1782924894173027610">Синхронизиращият сървър е зает. Моля, опитайте отново по-късно.</translation>
 <translation id="1784849162047402014">Дисковото пространство на устройството е малко</translation>
 <translation id="1786636458339910689">Екипни дискове</translation>
-<translation id="1789575671122666129">Изскачащи прозорци</translation>
 <translation id="1792619191750875668">Разширен екран</translation>
 <translation id="1793119619663054394">Наистина ли искате да премахнете <ph name="PROFILE_NAME" /> и всички свързани данни в Chrome от този компютър? Действието не може да бъде отменено.</translation>
 <translation id="1794791083288629568">Изпращане на отзиви, за да ни помогнете да отстраним този проблем.</translation>
@@ -649,12 +649,14 @@
 <translation id="1983959805486816857">След като създадете нов контролиран потребител, можете да управлявате настройките по всяко време от което и да е устройство на адрес <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="1984642098429648350">Закрепване на прозореца отдясно</translation>
 <translation id="1987139229093034863">Превключете към друг потребител.</translation>
+<translation id="1987317783729300807">Профили</translation>
 <translation id="1989112275319619282">Сърфиране</translation>
 <translation id="1992397118740194946">Няма зададен</translation>
 <translation id="1994173015038366702">URL адрес на сайт</translation>
 <translation id="1997484222658892567"><ph name="URL" /> иска да съхранява за постоянно голямо количество данни на локалния ви компютър</translation>
 <translation id="1997616988432401742">Вашите сертификати</translation>
 <translation id="1999115740519098545">При стартиране</translation>
+<translation id="2001796770603320721">Управление в Диск</translation>
 <translation id="2006638907958895361">Отваряне на връзката чрез <ph name="APP" /></translation>
 <translation id="2007404777272201486">Подаване на сигнал за проблем...</translation>
 <translation id="2016430552235416146">Традиционно</translation>
@@ -750,7 +752,6 @@
 <translation id="2151576029659734873">Въведен е невалиден индекс на раздел.</translation>
 <translation id="2154484045852737596">Редактиране на картата</translation>
 <translation id="2154710561487035718">Копиране на URL адреса</translation>
-<translation id="2155931291251286316">Изскачащите прозорци от <ph name="HOST" /> да се показват винаги</translation>
 <translation id="215753907730220065">Изход от цял екран</translation>
 <translation id="2157875535253991059">Тази страница сега е на цял екран.</translation>
 <translation id="216169395504480358">Добавяне на Wi-Fi...</translation>
@@ -1180,7 +1181,6 @@
 <translation id="2799223571221894425">Стартиране отново</translation>
 <translation id="2803375539583399270">Въведете ПИН кодa</translation>
 <translation id="2805646850212350655">Шифроване на файлова система от Microsoft</translation>
-<translation id="2805707493867224476">Разрешаване на всички сайтове да показват изскачащи прозорци</translation>
 <translation id="2805756323405976993">Приложения</translation>
 <translation id="2807517655263062534">Тук се показват изтеглените от вас файлове</translation>
 <translation id="2809586584051668049">и още <ph name="NUMBER_ADDITIONAL_DISABLED" /></translation>
@@ -1614,7 +1614,6 @@
 <translation id="347919930506963698">Направете Chrome още по-полезен</translation>
 <translation id="3479552764303398839">Не сега</translation>
 <translation id="3480892288821151001">Закрепване на прозореца отляво</translation>
-<translation id="3481915276125965083">Следните изскачащи прозорци са блокирани на тази страница:</translation>
 <translation id="3484273680291419129">Опасният софтуер се премахва...</translation>
 <translation id="3484869148456018791">Получаване на нов сертификат</translation>
 <translation id="3487007233252413104">анонимна функция</translation>
@@ -1721,7 +1720,6 @@
 правилния PUK код</translation>
 <translation id="363903084947548957">Следващият метод на въвеждане</translation>
 <translation id="3640214691812501263">Да се добави ли <ph name="EXTENSION_NAME" /> за <ph name="USER_NAME" />?</translation>
-<translation id="3643225892037417978">Потребителите в режим на гост не могат да управляват разширенията. За целта, моля, влезте в профила си.</translation>
 <translation id="3644896802912593514">Ширина</translation>
 <translation id="3646789916214779970">Възстановяване на темата по подразбиране</translation>
 <translation id="3648348069317717750">Открито е устройство <ph name="USB_DEVICE_NAME" /></translation>
@@ -2063,7 +2061,6 @@
 <translation id="4172051516777682613">Показване винаги</translation>
 <translation id="4175737294868205930">Постоянно хранилище</translation>
 <translation id="4176463684765177261">Деактивирано</translation>
-<translation id="4180684688621252156">Услуга за отпечатване</translation>
 <translation id="4180788401304023883">Да се изтрие ли сертификатът на сертифициращ орган „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="4181602000363099176">20x</translation>
 <translation id="4181841719683918333">Езици</translation>
@@ -2089,6 +2086,7 @@
 <translation id="42137655013211669">Достъпът до този ресурс бе забранен от сървъра.</translation>
 <translation id="4215350869199060536">Ами сега! Името съдържа невалидни символи!</translation>
 <translation id="4215448920900139318">Създаваме резервно копие на <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">Диктуване</translation>
 <translation id="4225397296022057997">На всички сайтове</translation>
 <translation id="4235200303672858594">Цял екран</translation>
 <translation id="4235813040357936597">Добавяне на профил за <ph name="PROFILE_NAME" /></translation>
@@ -2201,6 +2199,7 @@
 <translation id="4425149324548788773">Моят диск</translation>
 <translation id="4430019312045809116">Звук</translation>
 <translation id="4430369329743628066">Отметката бе добавена</translation>
+<translation id="4434045419905280838">Изскач. прозорци и пренасочвания</translation>
 <translation id="443454694385851356">Наследени (несигурни)</translation>
 <translation id="443464694732789311">Напред</translation>
 <translation id="443475966875174318">Актуализиране или премахване на несъвместими приложения</translation>
@@ -3272,6 +3271,7 @@
 <translation id="6075907793831890935">Обмен на данни с устройството с име „<ph name="HOSTNAME" />“</translation>
 <translation id="6076448957780543068">Включване на тази екранна снимка</translation>
 <translation id="6077131872140550515">Премахване от предпочитаните</translation>
+<translation id="6078323886959318429">Добавяне на пряк път</translation>
 <translation id="6078752646384677957">Моля, проверете микрофона си и нивата на звука.</translation>
 <translation id="6080515710685820702">Използвате общ компютър? Отворете прозорец в режим „инкогнито“.</translation>
 <translation id="6080689532560039067">Проверете системния си час</translation>
@@ -3480,7 +3480,6 @@
 <translation id="6406303162637086258">Симулиране на рестартиране на браузъра</translation>
 <translation id="6406506848690869874">Синхронизиранe</translation>
 <translation id="6408118934673775994">Четене и промяна на данните ви в/ъв <ph name="WEBSITE_1" />, <ph name="WEBSITE_2" /> и <ph name="WEBSITE_3" /></translation>
-<translation id="6409731863280057959">Изскачащи прозорци</translation>
 <translation id="6410257289063177456">Графични файлове</translation>
 <translation id="6410328738210026208">Промяна на канала и Powerwash</translation>
 <translation id="6410668567036790476">Добавяне на търсеща машина</translation>
@@ -3688,7 +3687,6 @@
 <translation id="6708242697268981054">Източник:</translation>
 <translation id="6709357832553498500">Свързване посредством <ph name="EXTENSIONNAME" /></translation>
 <translation id="6710213216561001401">Предишна</translation>
-<translation id="6716704051134091292">PDF конвертор</translation>
 <translation id="6718273304615422081">Компресира се...</translation>
 <translation id="671928215901716392">Заключване на екрана</translation>
 <translation id="67211069045302358">Да се нулират ли настройките за този сайт?</translation>
@@ -3813,7 +3811,6 @@
 <translation id="6920989436227028121">Отваряне като нормален раздел</translation>
 <translation id="6922128026973287222">Използвайте по-малко данни и сърфирайте по-бързо посредством Google Икономия на данни. Кликнете, за да научите повече.</translation>
 <translation id="6923132443355966645">Превъртане/кликване</translation>
-<translation id="6929555043669117778">Блокирането на изскачащи прозорци да продължи</translation>
 <translation id="6929835486583850209">Грешка при инсталирането на <ph name="APP_NAME" />...</translation>
 <translation id="6930242544192836755">Продължителност</translation>
 <translation id="6934241953272494177">Сканираме мултимедийното ви устройство...
@@ -3897,6 +3894,7 @@
 <translation id="7052237160939977163">Да се изпратят данните от проследяването на ефективността</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Блокиране</translation>
+<translation id="7055152154916055070">Блокирано бе пренасочване:</translation>
 <translation id="7056526158851679338">&amp;Инспектиране на устройствата</translation>
 <translation id="7059858479264779982">Задаване на автоматично стартиране</translation>
 <translation id="7059893117020417984">За да сърфирате частно, кликнете върху иконата с точки и отворете прозорец в режим „инкогнито“ от менюто</translation>
@@ -3923,7 +3921,6 @@
 <translation id="7088434364990739311">Стартирането на проверката за актуализации не бе успешно (код на грешката <ph name="ERROR" />).</translation>
 <translation id="7088561041432335295">Zip Archiver – отваряйте и пакетирайте ZIP файлове в приложението Файлове.</translation>
 <translation id="7088674813905715446">Администраторът е поставил това устройство в необезпечено състояние. За да го активирате за регистрация, моля, накарайте администратора да промени състоянието му на изчакващо.</translation>
-<translation id="7092106376816104">Изключения за изскачащи прозорци</translation>
 <translation id="7093434536568905704">GTK+</translation>
 <translation id="7093866338626856921">Обмен на данни с устройствата със следните имена: <ph name="HOSTNAMES" /></translation>
 <translation id="7096406577040705016">Превключване на лупата за увеличаване на целия екран</translation>
@@ -4143,7 +4140,6 @@
 <translation id="744341768939279100">Създаване на нов потребителски профил</translation>
 <translation id="7444726222535375658">Напред към Hangouts Meet</translation>
 <translation id="7444983668544353857">Деактивиране на <ph name="NETWORKDEVICE" /></translation>
-<translation id="7445682342344043969">Изскачащите прозорци са блокирани</translation>
 <translation id="7453008956351770337">С избирането на този принтер давате разрешение за достъп до него на следното разширение:</translation>
 <translation id="7453467225369441013">Ще излезете от повечето сайтове, но не и от профила си в Google.</translation>
 <translation id="7456142309650173560">за програмисти</translation>
@@ -4262,6 +4258,7 @@
 <translation id="7617366389578322136">Свързване със: <ph name="DEVICE_NAME" /></translation>
 <translation id="7622114377921274169">Зарежда се.</translation>
 <translation id="7624337243375417909">caps lock е изключен</translation>
+<translation id="7625568159987162309">Преглед на разрешенията и данните, съхранявани в сайтовете</translation>
 <translation id="7627790789328695202">Ами сега! Файлът „<ph name="FILE_NAME" />“ вече съществува. Преименувайте го и опитайте отново.</translation>
 <translation id="7628127343934101653">Отваряне на PDF файловете в стандартното приложение за визуализирането им.</translation>
 <translation id="7629827748548208700">Раздел: <ph name="TAB_NAME" /></translation>
@@ -4584,10 +4581,12 @@
 <translation id="806812017500012252">Подреждане по азбучен ред</translation>
 <translation id="8068253693380742035">Докоснете за вход в профила си</translation>
 <translation id="8069615408251337349">Google Отпечатване в облак</translation>
+<translation id="806972267388474605">Файлове за Linux</translation>
 <translation id="8071432093239591881">Отпечатване като изображение</translation>
 <translation id="8072988827236813198">Фиксиране на разделите</translation>
 <translation id="8074127646604999664">Разрешаване на наскоро затворените сайтове да завършват изпращането и получаването на данни</translation>
 <translation id="8075191520954018715">Състояние на паметта</translation>
+<translation id="8076492880354921740">Раздели</translation>
 <translation id="8076835018653442223">Достъпът до локални файлове на устройството ви е деактивиран от администратора ви</translation>
 <translation id="8077684120002777443">Потребителско име (напр. potrebitel@example.com)</translation>
 <translation id="8077816382010018681">Място за заглавието на известието за функцията за бързо отключване</translation>
@@ -4872,7 +4871,6 @@
 <translation id="8569682776816196752">Няма намерени местоназначения</translation>
 <translation id="8569764466147087991">Изберете файл за отваряне</translation>
 <translation id="8571213806525832805">Последните 4 седмици</translation>
-<translation id="8571613743082299268">Пренасочването към сайт бе блокирано</translation>
 <translation id="8574990355410201600">Разрешаване винаги на звука от <ph name="HOST" /></translation>
 <translation id="8578639784464423491">Не може да надхвърля 99 букви</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> елемента се синхронизират...</translation>
@@ -5204,7 +5202,6 @@
 <translation id="9065203028668620118">Редактиране</translation>
 <translation id="9066782832737749352">Синтезиран говор</translation>
 <translation id="9070219033670098627">Превключване към друг човек</translation>
-<translation id="907148966137935206">Забраняване на всички сайтове да показват изскачащи прозорци (препоръчително)</translation>
 <translation id="9071637495340542136"><ph name="APP_NAME" /> се инсталира...</translation>
 <translation id="9072550133391925347">С помощта на <ph name="PASSWORD_MANAGER_BRAND" /> автоматично влизате в отговарящи на условията сайтове и приложения с паролите, които сте запазили.</translation>
 <translation id="9073281213608662541">PAP</translation>

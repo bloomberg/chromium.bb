@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Νυχτερινός φωτισμός: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">Η κάρτα SIM είναι κλειδωμένη</translation>
 <translation id="2653659639078652383">Υποβολή</translation>
-<translation id="2675319268637823299">Ένας διαχειριστής δεν επιτρέπει τη σύνδεση σε πολλούς λογαριασμούς για τον χρήστη <ph name="USER_EMAIL" />.
-    Όλοι οι χρήστες πρέπει να αποσυνδεθούν για να συνεχίσετε.</translation>
 <translation id="2696763960464195425">Οι πληροφορίες σας θα διαγραφούν κατά την αποσύνδεση. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Ρύθμιση του πληκτρολογίου σας</translation>
 <translation id="2718395828230677721">Νυχτερινός φωτισμός</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Επισήμανση δείκτη ποντικιού</translation>
 <translation id="3513798432020909783">Ο λογαριασμός είναι διαχειριζόμενος από τον χρήστη <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Αλλάξτε το πάλι σε "<ph name="FROM_LOCALE" />" (απαιτείται επανεκκίνηση)</translation>
-<translation id="3582792037806681688">Δεν επιτρέπονται ο πολλαπλές συνδέσεις για έναν χρήστη σε αυτήν την περίοδο σύνδεσης</translation>
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
 <translation id="3606978283550408104">Συνδέθηκε η οθόνη Braille.</translation>
 <translation id="3621202678540785336">Είσοδος</translation>

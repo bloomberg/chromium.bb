@@ -54,6 +54,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />، کادر نوشتاری گذرواژه</translation>
 <translation id="1467432559032391204">چپ</translation>
 <translation id="1474557363159888097">کد لنگر قبلی موجود نیست.</translation>
+<translation id="1480046233931937785">دست‌اندرکاران</translation>
 <translation id="1487494366197411587">‏در Chromebook، کلید «جستجو» دقیقاً‌ در بالای کلید Shift چپ قرار دارد.</translation>
 <translation id="1499041187027566160">بالا بردن صدا</translation>
 <translation id="1502086903961450562">گرافیک قبلی</translation>
@@ -556,13 +557,6 @@
 <translation id="5682113568322255809">علامت مشخصه</translation>
 <translation id="5683155931978483559">کادر انتخاب قبلی</translation>
 <translation id="5684277895745049190">فهرست</translation>
-<translation id="5695831708991916435">‏چند میان‌بر بعدی جزء فرمان‌های ChromeVox نیستند، اما برای استفاده بهتر از Chrome مفید هستند.
-برای پیمایش رو به جلو در بین موارد عملکردی مثل دکمه‌ها و پیوندها، کلید Tab را فشار دهید. برای پیمایش رو به عقب، Shift+Tab را فشار دهید.
-برای وارد کردن کادر نشانی مرورگر Chrome (که omnibox هم گفته می‌شود)، روی Control + L فشار دهید.
-برای باز کردن برگه جدید و رفتن به آن به‌صورت خودکار، Control+T را فشار دهید. مکان‌نمای شما در omnibox قرار می‌گیرد. 
-برای بستن برگه، Control+W را فشار دهید. 
-برای حرکت به جلو بین برگه‌های باز، از Control+Tab استفاده کنید. 
-برای باز کردن منوی مرورگر Chrome، روی Alt+F فشار دهید.</translation>
 <translation id="5700650669149824506">عنوان سطح ۴ قبلی وجود ندارد.</translation>
 <translation id="5703716265115423771">پایین آوردن صدا</translation>
 <translation id="5709192780268610569">بدون شرح طولانی</translation>

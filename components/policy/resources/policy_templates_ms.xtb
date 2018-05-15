@@ -27,6 +27,7 @@
       Jika dasar ini ditetapkan, skrin log masuk akan sentiasa dipaparkan dalam tempat peristiwa yang diberikan oleh nilai pertama dasar ini (dasar ditentukan sebagai senarai untuk keserasian pemajuan).  Jika dasar ini tidak ditetapkan atau ditetapkan pada senarai kosong, skrin log masuk akan dipaparkan dalam tempat peristiwa sesi pengguna yang terakhir.  Jika dasar ini ditetapkan pada nilai yang merupakan tempat peristiwa yang tidak sah, skrin log masuk akan dipaparkan dalam tempat peristiwa sandaran (pada masa ini, en-US).</translation>
 <translation id="1062011392452772310">Dayakan pembuktian jauh untuk peranti</translation>
 <translation id="1062407476771304334">Gantikan</translation>
+<translation id="1079801999187584280">Jangan benarkan penggunaan Alat Pembangun</translation>
 <translation id="109166998561583554">Penanda akaun perlindungan kata laluan berisiko dicetuskan</translation>
 <translation id="1093082332347834239">Jika tetapan ini didayakan, hos bantuan jauh akan dijalankan dalam proses dengan kebenaran <ph name="UIACCESS_PERMISSION_NAME" />. Langkah ini akan membolehkan pengguna jauh berinteraksi dengan tetingkap ternaik pada desktop pengguna setempat.
 
@@ -79,6 +80,7 @@
 
           Faktor skala mestilah 100% atau lebih.</translation>
 <translation id="131353325527891113">Paparkan nama pengguna pada skrin log masuk</translation>
+<translation id="1325295456374328159">Konfigurasikan tempat peristiwa yang dibenarkan dalam sesi pengguna</translation>
 <translation id="1327466551276625742">Dayakan gesaan konfigurasi rangkaian apabila di luar talian</translation>
 <translation id="1330145147221172764">Dayakan papan kekunci pada skrin</translation>
 <translation id="13356285923490863">Nama Dasar</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">Sama ada hendak mendayakan kepercayaan dalam Infrastruktur PKI Lama Symantec Corporation</translation>
 <translation id="1393485621820363363">Pencetak peranti perusahaan didayakan</translation>
 <translation id="1397855852561539316">Pembekal carian lalai mencadangkan URL</translation>
+<translation id="1424081297104898791">Membenarkan anda mengawal tempat Alat Pembangun boleh digunakan.
+
+      Jika dasar ini ditetapkan kepada 'DeveloperToolsDisallowedForForceInstalledExtensions' (nilai 0, merupakan nilai lalai untuk pengguna perusahaan), Alat Pembangun dan konsol JavaScript boleh diakses secara umum, tetapi tidak boleh diakses dalam konteks sambungan yang dipasang oleh dasar perusahaan.
+      Jika dasar ini ditetapkan kepada 'DeveloperToolsAllowed' (nilai 1, merupakan nilai lalai untuk pengguna yang tidak diurus), Alat Pembangun dan konsol JavaScript boleh diakses dan digunakan dalam semua konteks, termasuk konteks sambungan yang dipasang oleh dasar perusahaan.
+      Jika dasar ini ditetapkan kepada 'DeveloperToolsDisallowed' (nilai 2), Alat Pembangun tidak boleh diakses dan elemen tapak web tidak boleh disemak lagi. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.
+      Jika dasar lama DeveloperToolsDisabled ditetapkan kepada benar, nilai dasar ini diabaikan dan Alat Pembangun dilumpuhkan.</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="1427655258943162134">Alamat atau URL pelayan proksi</translation>
 <translation id="1435659902881071157">Konfigurasi rangkaian tahap peranti</translation>
@@ -206,6 +214,7 @@
 <translation id="1803646570632580723">Senarai apl berpin untuk dipaparkan dalam pelancar</translation>
 <translation id="1808715480127969042">Sekat kuki pada tapak ini</translation>
 <translation id="1810261428246410396">Benarkan penggunaan Penambatan Segera.</translation>
+<translation id="1826282708349731794">Mengawal cara Chrome Cleanup melaporkan data kepada Google</translation>
 <translation id="1827523283178827583">Gunakan pelayan proksi tetap</translation>
 <translation id="1843117931376765605">Segar semula kadar untuk dasar pengguna</translation>
 <translation id="1844620919405873871">Mengkonfigurasikan dasar yang berkaitan buka kunci pantas.</translation>
@@ -610,6 +619,7 @@
       Dasar ini tidak mempengaruhi sama ada pengguna boleh mengkonfigurasi pencetak pada peranti individu. Tujuan dasar adalah sebagai tambahan kepada konfigurasi pencetak oleh pengguna individu.
       </translation>
 <translation id="2633084400146331575">Dayakan maklum balas yang dituturkan</translation>
+<translation id="2640843331263301324">Mendayakan Chrome Cleanup pada Windows</translation>
 <translation id="2646290749315461919">Membenarkan anda menetapkan sama ada tapak web dibenarkan untuk mengesan lokasi fizikal pengguna. Penjejakan lokasi fizikal pengguna boleh dibenarkan secara lalai, dinafikan secara lalai atau pengguna boleh ditanya setiap kali tapak web meminta lokasi fizikal. Jika dasar ini tidak ditetapkan, 'AskGeolocation' akan digunakan dan pengguna akan dapat mengubah.</translation>
 <translation id="2647069081229792812">Dayakan atau lumpuhkan pengeditan penanda halaman</translation>
 <translation id="2650049181907741121">Tindakan yang perlu diambil apabila pengguna menutup penutup</translation>
@@ -677,13 +687,6 @@
 
       Jika dasar ini digunakan, hanya pencetak dengan ID yang sepadan dengan nilai dalam dasar ini akan tersedia kepada pengguna. ID mesti sepadan dengan medan "id" atau "guid" dalam fail yang dinyatakan dalam <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Mendayakan ketersediaan Sentuh untuk Cari dalam paparan kandungan <ph name="PRODUCT_NAME" />.
-
-      Jika anda mendayakan tetapan ini, Sentuh untuk Cari akan tersedia kepada pengguna dan mereka boleh memilih untuk menghidupkan atau mematikan ciri tersebut.
-
-      Jika anda melumpuhkan tetapan ini, Sentuh untuk Cari akan dilumpuhkan sepenuhnya.
-
-      Jika dasar ini dibiarkan tanpa ditetapkan, keadaannya sama seperti tetapan ini didayakan, lihat huraian di atas.</translation>
 <translation id="285480231336205327">Dayakan mod kontras tinggi</translation>
 <translation id="2854919890879212089">Menyebabkan <ph name="PRODUCT_NAME" /> menggunakan pencetak lalai sistem sebagai pilihan lalai dalam Pratonton Cetakan dan bukannya pencetak yang paling baru digunakan.
 
@@ -1265,12 +1268,14 @@
 <translation id="4554651132977135445">Mod pemprosesan gelung balik dasar pengguna</translation>
 <translation id="4555850956567117258">Dayakan pembuktian jauh untuk pengguna</translation>
 <translation id="4557134566541205630">URL halaman tab baharu penyedia carian lalai</translation>
+<translation id="4567137030726189378">Benarkan penggunaan Alat Pembangun</translation>
 <translation id="4600786265870346112">Dayakan kursor besar</translation>
 <translation id="4604931264910482931">Konfigurasi senarai hitam pemesejan natif</translation>
 <translation id="4613508646038788144">Jika dasar ditetapkan kepada palsu, maka perisian pihak ketiga akan dibenarkan untuk menyuntik kod boleh laku ke dalam proses Chrome. Jika dasar tidak ditetapkan atau ditetapkan kepada benar, maka perisian pihak ketiga akan dihalang daripada menyuntik kod boleh laku ke dalam proses Chrome.</translation>
 <translation id="4617338332148204752">Langkau semakan teg meta dalam <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurasi senarai putih pemasangan sambungan</translation>
 <translation id="4632343302005518762">Benarkan <ph name="PRODUCT_FRAME_NAME" /> mengendalikan jenis kandungan yang disenaraikan</translation>
+<translation id="4632566332417930481">Jangan benarkan penggunaan Alat Pembangun pada sambungan yang dipasang oleh dasar perusahaan, benarkan penggunaan Alat Pembangun dalam konteks lain</translation>
 <translation id="4633786464238689684">Menukar tingkah laku lalai kekunci baris atas kepada kekunci fungsi.
 
           Jika dasar ini ditetapkan kepada benar, kekunci baris atas papan kekunci akan menghasilkan perintah kekunci fungsi secara lalai. Kekunci carian perlu ditekan untuk menukar kembali tingkah lakunya kepada kekunci media.
@@ -1541,10 +1546,14 @@
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada untuk mengimport atau tidak, atau pengimportan mungkin berlaku secara automatik.</translation>
 <translation id="5423197884968724595">Nama sekatan Android WebView:</translation>
+<translation id="5442026853063570579">Dasar ini turut mengawal akses kepada Pilihan Pembangun Android. Jika anda menetapkan dasar ini kepada 'DeveloperToolsDisallowed' (nilai 2), pengguna tidak dapat mengakses Pilihan Pembangun. Jika anda menetapkan dasar ini kepada nilai lain atau membiarkannya tidak ditetapkan, pengguna dapat mengakses Pilihan Pembangun dengan mengetik nombor binaan sebanyak tujuh kali dalam apl tetapan Android.</translation>
 <translation id="5447306928176905178">Dayakan maklumat pelaporan memori (saiz timbunan JS) pada halaman (lapuk)</translation>
 <translation id="5457065417344056871">Dayakan mod tetamu dalam penyemak imbas</translation>
 <translation id="5457924070961220141">Membenarkan anda mengkonfigurasi pemapar HTML lalai apabila <ph name="PRODUCT_FRAME_NAME" /> dipasang.
           Tetapan lalai yang gunakan apabila dasar ini dibiarkan tanpa ditetapkan ialah untuk membenarkan penyemak imbas hos membuat paparan, tetapi anda boleh memilih untuk mengatasi hal ini dan membenarkan <ph name="PRODUCT_FRAME_NAME" /> memaparkan halaman HTML secara lalai.</translation>
+<translation id="5459155981813668716">Mengkonfigurasi tempat peristiwa yang mungkin memaparkan <ph name="PRODUCT_OS_NAME" />.
+
+      Jika dasar ini ditetapkan, pengguna hanya boleh mengkonfigurasi <ph name="PRODUCT_OS_NAME" /> untuk dipaparkan dalam salah satu tempat peristiwa yang ditentukan oleh dasar ini. Jika dasar ini tidak ditetapkan atau ditetapkan pada senarai kosong, <ph name="PRODUCT_OS_NAME" /> boleh dipaparkan dalam semua tempat peristiwa yang disokong. Jika dasar ini ditetapkan pada senarai yang mempunyai nilai yang tidak sah, semua nilai yang tidak sah akan diabaikan. Jika pengguna mengkonfigurasi <ph name="PRODUCT_OS_NAME" /> sebelum ini untuk dipaparkan dalam bahasa yang tidak dibenarkan oleh dasar ini, tempat peristiwa yang dipaparkan akan ditukar kepada tempat peristiwa yang dibenarkan apabila pengguna mengelog masuk pada masa akan datang. Jika pengguna telah mengkonfigurasi tempat peristiwa pilihan dan salah satu tempat peristiwa pilihan itu dibenarkan oleh dasar ini, <ph name="PRODUCT_OS_NAME" /> akan bertukar kepada tempat peristiwa ini. Jika tidak, <ph name="PRODUCT_OS_NAME" /> akan bertukar kepada nilai pertama yang sah yang ditentukan oleh dasar ini atau bertukar kepada tempat peristiwa sebelumnya (pada masa ini en-US), jika dasar ini hanya mengandungi masukan yang tidak sah.</translation>
 <translation id="5464816904705580310">Konfigurasikan tetapan untuk pengguna terurus.</translation>
 <translation id="546726650689747237">Kelewatan pemalapan skrin apabila dijalankan dengan kuasa AC</translation>
 <translation id="5469484020713359236">Membolehkan anda menetapkan pola url yang menentukan tapak yang dibenarkan untuk menetapkan kuki.
@@ -1666,7 +1675,6 @@
 
           Jika dasar ini dibiarkan tanpa ditetapkan, maklum balas pertuturan dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan maklum balas pertuturan pada bila-bila masa dan statusnya pada skrin log masuk berterusan antara pengguna.</translation>
 <translation id="5868414965372171132">Konfigurasi rangkaian tahap pengguna</translation>
-<translation id="588135807064822874">Dayakan Sentuh untuk Cari</translation>
 <translation id="5883015257301027298">Tetapan kuki lalai</translation>
 <translation id="5887414688706570295">Mengkonfigurasi awalan TalkGadget yang akan digunakan oleh hos akses jauh dan menghalang pengguna daripada menukarnya.
 
@@ -1770,6 +1778,7 @@
 <translation id="6036523166753287175">Dayakan penyusuran tembok api daripada hos akses jauh</translation>
 <translation id="6070667616071269965">Reka letak papan kekunci skrin log masuk peranti</translation>
 <translation id="6074963268421707432">Jangan benarkan mana-mana tapak untuk memaparkan pemberitahuan desktop</translation>
+<translation id="6074964551275531965">Tetapkan tempoh waktu untuk pemberitahuan kemas kini</translation>
 <translation id="6076099373507468537">Menentukan senarai peranti USB yang dibenarkan untuk ditanggalkan daripada pemacu inti peranti tersebut untuk digunakan menerusi API chrome.usb terus dalam aplikasi web. Entri ialah pasangan Pengecam Vendor USB dan Pengecam Produk untuk mengenal pasti perkakasan khusus.
 
       Jika dasar ini tidak dikonfigurasikan, senarai peranti USB yang boleh ditanggalkan ditetapkan sebagai kosong.</translation>
@@ -1852,6 +1861,11 @@
       Jika anda mendayakan tetapan ini atau tidak menetapkan nilai, Auto Isi akan kekal di bawah kawalan pengguna. Perkara ini akan membenarkan mereka mengkonfigurasi profil Auto Isi dan untuk menghidupkan atau mematikan Auto Isi mengikut budi bicara mereka.</translation>
 <translation id="6394350458541421998">Dasar ini telah dihentikan pada <ph name="PRODUCT_OS_NAME" /> versi 29. Sebaliknya sila gunakan dasar PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Log keluar pengguna</translation>
+<translation id="6412477120967771054">Jika ditetapkan kepada palsu, akan menghalang Chrome Cleanup daripada mengimbas sistem untuk mengesan perisian yang tidak dikehendaki dan melakukan pembersihan. Tindakan memulakan Chrome Cleanup secara manual daripada chrome://settings/cleanup dilumpuhkan.
+
+      Jika ditetapkan kepada benar atau tidak ditetapkan, Chrome Cleanup akan mengimbas sistem secara berkala untuk mengesan perisian yang tidak dikehendaki dan sekiranya menemui perisian tersebut, Chrome Cleanup akan bertanya kepada pengguna sama ada hendak mengalihnya keluar. Tindakan memulakan Chrome Cleanup secara manual daripada chrome://settings didayakan.
+
+      Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="6417861582779909667">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk menetapkan kuki.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada dari dasar 'DefaultCookiesSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna tersebut jika sebaliknya.</translation>
@@ -1874,6 +1888,13 @@
       Untuk mengawal tapak web yang dibenarkan untuk menjalankan Flash, lihat dasar "DefaultPluginsSetting", "PluginsAllowedForUrls" dan "PluginsBlockedForUrls".
 
       Jika tetapan ini dilumpuhkan atau tidak ditetapkan, kandungan Flash daripada sumber lain atau kandungan kecil mungkin disekat.</translation>
+<translation id="6535639183431116351">Dasar ini ditamatkan dalam M68, sila gunakan DeveloperToolsAvailability sebagai ganti.
+
+      Melumpuhkan Alat Pembangun dan konsol JavaScript.
+
+      Jika anda mendayakan tetapan ini, Alat Pembangun tidak boleh diakses dan elemen tapak web tidak boleh disemak lagi. Sebarang pintasan papan kekunci dan mana-mana menu atau masukan menu konteks untuk membuka Alat Pembangun atau Konsol JavaScript akan dilumpuhkan.
+
+      Menetapkan pilihan ini kepada dilumpuhkan atau membiarkannya tanpa ditetapkan membolehkan pengguna menggunakan Alat Pembangun dan konsol JavaScript.</translation>
 <translation id="653608967792832033">Menetapkan panjang masa tanpa input daripada pengguna yang akan mengunci skrin selepas tempoh tersebut apabila dijalankan dengan kuasa bateri.
 
           Apabila dasar ini ditetapkan kepada nilai yang lebih besar daripada sifar, ia menetapkan panjang masa pengguna melahu sebelum <ph name="PRODUCT_OS_NAME" /> mengunci skrin.
@@ -1931,7 +1952,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dibiarkan tanpa ditetapkan, ramalan rangkaian akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="6658245400435704251">Menyatakan bilangan saat sehingga peranti boleh melambatkan muat turun kemas kini secara rawak dari masa kemas kini mula ditolak keluar ke pelayan. Peranti mungkin menunggu sebahagian masa ini dari segi masa jam dinding dan bahagian yang selebihnya dari segi bilangan semakan kemas kini. Dalam apa jua keadaan, serakan atas disempadani oleh jumlah masa yang tetap supaya peranti tidak sekali-kali akan tersekat menunggu selama-lamanya untuk memuat turun kemas kini.</translation>
 <translation id="6665670272107384733">Tetapkan kekerapan pengguna perlu memasukkan kata laluan untuk menggunakan buka kunci pantas</translation>
-<translation id="6681229465468164801">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dihalang daripada meminta pengguna memberikan tapak tersebut akses kepada peranti USB.
+<translation id="6681229465468164801">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dihalang daripada meminta pengguna memberi tapak tersebut akses kepada peranti USB.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultWebUsbGuardSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.
 
@@ -1939,11 +1960,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6689792153960219308">Laporkan status perkakasan</translation>
 <translation id="6698071416141001300">Penandaan akaun perlindungan kata laluan berisiko dicetuskan oleh penggunaan semula kata laluan</translation>
 <translation id="6699880231565102694">Dayakan pengesahan dua faktor untuk hos akses jauh</translation>
-<translation id="6702257826895463228">Benarkan tapak menavigasi dan membuka tetingkap timbul secara serentak.
-
-      Untuk mendapatkan penerangan lengkap, lihat https://www.chromestatus.com/features/5675755719622656.
-      Jika dasar ini didayakan, tapak akan dibenarkan menavigasi dan membuka tetingkap/tab baharu secara serentak.
-      Jika dasar ini dilumpuhkan atau tidak ditetapkan, tapak tidak dibenarkan menavigasi dan membuka tetingkap/tab baharu secara serentak.</translation>
 <translation id="6724842112053619797">Jika anda mendayakan tetapan ini, tetapan yang disimpan dalam profil <ph name="PRODUCT_NAME" /> seperti penanda halaman, data autolengkap, kata laluan dan sebagainya akan turut ditulis pada fail yang disimpan dalam folder profil "Roaming" pengguna atau lokasi yang ditentukan oleh Pentadbir melaui dasar <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" />. Sekiranya dasar ini didayakan, penyegerakan awan akan dilumpuhkan.
 
       Jika dasar ini dilumpuhkan atau dibiarkan tidak ditetapkan, hanya profil "local" biasa akan digunakan.
@@ -2106,7 +2122,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perlindungan Safe Browsing lalai akan digunakan pada semua sumber.
       Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Sekat pop muncul pada tapak ini</translation>
-<translation id="7085803328069945025">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan meminta pengguna memberikan tapak tersebut akses kepada peranti USB.
+<translation id="7085803328069945025">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan meminta pengguna memberi tapak tersebut akses kepada peranti USB.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultWebUsbGuardSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.
 
@@ -2312,6 +2328,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Lihat https://developers.google.com/safe-browsing untuk mendapatkan maklumat lanjut tentang Penyemakan Imbas Selamat.</translation>
 <translation id="7643883929273267746">Sekat akaun yang dapat dilihat di <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Menentukan sama ada data perayauan perlu didayakan untuk peranti. Jika ditetapkan kepada benar, perayauan data dibenarkan. Jika dibiarkan tanpa dikonfigurasi atau ditetapkan kepada palsu, perayauan data tidak akan tersedia.</translation>
+<translation id="7673194325208122247">Tempoh waktu (milisaat)</translation>
 <translation id="7683777542468165012">Segar Semula Dasar Dinamik</translation>
 <translation id="7694807474048279351">Jadualkan but semula automatik selepas kemas kini <ph name="PRODUCT_OS_NAME" /> telah dilaksanakan.
 
@@ -2444,6 +2461,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 
           Jika tetapan ini dilumpuhkan dan sambungan UDP keluar ditapis oleh firewall, maka mesin ini hanya boleh bersambung dengan mesin hos di dalam rangkaian setempat sahaja.</translation>
 <translation id="7976157349247117979">Nama destinasi <ph name="PRODUCT_NAME" /></translation>
+<translation id="7977445800390854860">Jika tidak ditetapkan, sekiranya Chrome Cleanup mengesan perisian yang tidak dikehendaki, Chrome Cleanup boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Chrome Cleanup kemudiannya akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu. Pengguna boleh memilih untuk berkongsi keputusan pembersihan dengan Google untuk membantu pengesanan perisian yang tidak dikehendaki pada masa akan datang. Keputusan ini mengandungi metadata fail dan kunci daftaran seperti yang diterangkan oleh Kertas Putih Privasi Chrome.
+
+      Jika ditetapkan kepada palsu, sekiranya Chrome Cleanup mengesan perisian yang tidak dikehendaki, Chrome Cleanup tidak akan melaporkan metadata tentang imbasan itu kepada Google, mengatasi sebarang dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Chrome Cleanup akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan tidak akan dilaporkan kepada Google dan pengguna tidak akan mempunyai pilihan untuk melakukannya.
+
+      Jika ditetapkan kepada benar, sekiranya Chrome Cleanup mengesan perisian yang tidak dikehendaki, Chrome Cleanup boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Chrome Cleanup akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan akan dilaporkan kepada Google dan pengguna tidak mempunyai pilihan untuk menghalangnya.
+
+      Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7978060394348264922">
       Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk memanfaatkan
       kedua-dua keadaan, pengasingan dan kesan yang terhad untuk pengguna,
@@ -2566,6 +2590,7 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8300455783946254851">Melumpuhkan penyegerakan Google Drive dalam apl Fail <ph name="PRODUCT_OS_NAME" /> semasa menggunakan sambungan selular apabila ditetapkan kepada Benar. Jika ini berlaku, data hanya akan disegerakkan ke Google Drive semasa disambungkan melalui Wi-Fi atau Ethernet.
 
           Jika tidak ditetapkan atau ditetapkan kepada Palsu, pengguna akan dapat memindahkan fail ke Google Drive melalui sambungan selular.</translation>
+<translation id="8300992833374611099">Kawal tempat yang boleh menggunakan Alat Pembangun</translation>
 <translation id="8312129124898414409">Membenarkan anda untuk menetapkan sama ada tapak web dibenarkan untuk menggunakan penghasilan kunci. Menggunakan penghasilan kunci boleh dibenarkan untuk semua tapak web atau ditolak untuk semua tapak web.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'BlockKeygen' akan digunakan dan pengguna akan dapat menukarnya.</translation>
@@ -2806,6 +2831,11 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Menyatakan sama ada aktiviti video menjejaskan pengurusan kuasa</translation>
+<translation id="9085839450090699752">Membenarkan anda menetapkan tempoh waktu dalam milisaat berkenaan pengguna yang akan dimaklumkan tentang <ph name="PRODUCT_NAME" /> yang mesti dilancarkan semula atau tentang peranti <ph name="PRODUCT_OS_NAME" /> yang mesti dimulakan semula untuk menggunakan kemas kini yang belum selesai.
+
+      Sepanjang tempoh waktu ini, pengguna akan dimaklumkan berulang kali tentang perlunya kemas kini. Untuk peranti <ph name="PRODUCT_OS_NAME" />, pemberitahuan mula semula akan dipaparkan dalam dulang sistem apabila naik taraf dikesan. Pemberitahuan ini akan berubah warna apabila separuh daripada tempoh pemberitahuan telah berlalu dan berubah warna sekali lagi apabila keseluruhan tempoh pemberitahuan telah berlalu. Untuk penyemak imbas <ph name="PRODUCT_NAME" />, menu apl akan berubah untuk menunjukkan pelancaran semula diperlukan apabila satu pertiga tempoh pemberitahuan telah berlalu. Pemberitahuan ini berubah warna apabila dua pertiga tempoh pemberitahuan telah berlalu dan berubah warna sekali lagi apabila keseluruhan tempoh pemberitahuan telah berlalu. Pemberitahuan tambahan yang didayakan oleh dasar <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> untuk penyemak imbas akan mengikut jadual yang sama ini.
+
+      Jika tidak ditetapkan, tempoh lalai 345600000 milisaat (empat hari) akan digunakan untuk peranti <ph name="PRODUCT_OS_NAME" /> dan 604800000 milisaat (satu minggu) untuk penyemak imbas.</translation>
 <translation id="9088433379343318874">Dayakan penyedia kandungan pengguna di bawah seliaan</translation>
 <translation id="9088444059179765143">Konfigurasi kaedah pengesanan zon waktu automatik</translation>
 <translation id="9096086085182305205">Senarai putih pelayan pengesahan</translation>

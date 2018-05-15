@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Ночной режим: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM-карта заблокирована</translation>
 <translation id="2653659639078652383">Отправить</translation>
-<translation id="2675319268637823299">Администратор отключил множественный вход для аккаунта <ph name="USER_EMAIL" />.
-    Чтобы вы смогли войти в этот аккаунт, все остальные пользователи должны выйти из него.</translation>
 <translation id="2696763960464195425">После выхода из аккаунта ваши данные будут удалены. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Выберите раскладку</translation>
 <translation id="2718395828230677721">Ночной режим</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Выделять указатель мыши</translation>
 <translation id="3513798432020909783">Администратор аккаунта: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Вернуться к языку: "<ph name="FROM_LOCALE" />" (потребуется перезагрузка)</translation>
-<translation id="3582792037806681688">Множественный вход для пользователя запрещен в этом сеансе</translation>
 <translation id="3595596368722241419">Аккумулятор заряжен</translation>
 <translation id="3606978283550408104">Брайлевский дисплей подключен</translation>
 <translation id="3621202678540785336">Вход</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">Устройство USB-C (дальний порт справа)</translation>
 <translation id="4017989525502048489">Лазерная указка</translation>
 <translation id="4072264167173457037">сигнал средней мощности</translation>
+<translation id="4217571870635786043">Голосовой ввод</translation>
 <translation id="4279490309300973883">Отражение</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">Устройству <ph name="DEVICE_NAME" /> требуется разрешение на подключение через Bluetooth.</translation>
 <translation id="453661520163887813">До полной зарядки <ph name="TIME" /></translation>
 <translation id="4544944664594876241">Изменились быстрые клавиши для блокировки экрана. Используйте <ph name="NEW_SHORTCUT" /> вместо <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Кнопка "Озвучивание при нажатии"</translation>
 <translation id="4659419629803378708">Функция ChromeVox включена</translation>
 <translation id="4776917500594043016">Пароль для адреса электронной почты <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">поиск</translation>
@@ -290,6 +289,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (владелец)</translation>
 <translation id="7647488630410863958">Чтобы просмотреть уведомления, разблокируйте устройство</translation>
 <translation id="7649070708921625228">Справка</translation>
+<translation id="7654687942625752712">Чтобы отключить озвучивание текста на экране, удерживайте обе кнопки громкости в течение пяти секунд.</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="7692480393933218409">Подключенные устройства USB-C заряжаются</translation>
 <translation id="776344839111254542">Нажмите, чтобы просмотреть информацию об обновлении</translation>

@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Llum nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La targeta SIM està bloquejada</translation>
 <translation id="2653659639078652383">Envia</translation>
-<translation id="2675319268637823299">Un administrador ha desactivat l'inici de sessió múltiple per a <ph name="USER_EMAIL" />.
-    Tots els usuaris han de tancar la sessió per continuar.</translation>
 <translation id="2696763960464195425">La teva informació se suprimirà quan tanquis la sessió. <ph name="LEARN_MORE" />.</translation>
 <translation id="2700493154570097719">Defineix el teu teclat</translation>
 <translation id="2718395828230677721">Llum nocturna</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Ressalta el cursor del ratolí</translation>
 <translation id="3513798432020909783">Compte gestionat per <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Torna a canviar a "<ph name="FROM_LOCALE" />" (requereix reiniciar)</translation>
-<translation id="3582792037806681688">S'ha desactivat l'inici de sessió múltiple en aquesta sessió a causa d'un usuari.</translation>
 <translation id="3595596368722241419">Bateria carregada.</translation>
 <translation id="3606978283550408104">S'ha connectat la pantalla Braille.</translation>
 <translation id="3621202678540785336">Entrada</translation>
@@ -190,7 +187,7 @@
 <translation id="5331975486040154427">Dispositiu USB-C (port posterior esquerre)</translation>
 <translation id="5397578532367286026">El gestor (<ph name="MANAGER_EMAIL" />) pot revisar l'ús i l'historial d'aquest usuari a chrome.com.</translation>
 <translation id="5430931332414098647">Compartició de xarxa instantània</translation>
-<translation id="5431825016875453137">VPN oberta / L2TP</translation>
+<translation id="5431825016875453137">OpenVPN/L2TP</translation>
 <translation id="544691375626129091">Ja s'han afegit tots els usuaris disponibles a aquesta sessió.</translation>
 <translation id="5457599981699367932">Navega com a convidat</translation>
 <translation id="54609108002486618">Gestionat</translation>

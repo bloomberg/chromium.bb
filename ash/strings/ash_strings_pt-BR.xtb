@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Modo noturno: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">O cartão SIM está bloqueado</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2675319268637823299">Um administrador desativou o login múltiplo para <ph name="USER_EMAIL" />.
-    Todos os usuários precisam sair para continuar.</translation>
 <translation id="2696763960464195425">Suas informações serão removidas quando você sair. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Configurar teclado</translation>
 <translation id="2718395828230677721">Modo noturno</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Destacar cursor do mouse</translation>
 <translation id="3513798432020909783">Conta gerenciada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Voltar a "<ph name="FROM_LOCALE" />" (exige reinicialização)</translation>
-<translation id="3582792037806681688">O login múltiplo foi desativado para um usuário nesta sessão</translation>
 <translation id="3595596368722241419">Bateria carregada</translation>
 <translation id="3606978283550408104">Display em braille conectado.</translation>
 <translation id="3621202678540785336">Entrada</translation>
@@ -285,7 +282,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7526573455193969409">A rede pode ser monitorada</translation>
 <translation id="7536035074519304529">Endereço IP: <ph name="ADDRESS" /></translation>
 <translation id="7561014039265304140"><ph name="DISPLAY_NAME" /> não suporta <ph name="SPECIFIED_RESOLUTION" />. A resolução foi alterada para <ph name="FALLBACK_RESOLUTION" /></translation>
-<translation id="7562368315689366235">Paleta de emoticons</translation>
+<translation id="7562368315689366235">Teclado de emojis</translation>
 <translation id="7564874036684306347">A movimentação de janelas para outra área de trabalho pode resultar em comportamentos inesperados. Notificações posteriores, janelas e caixas de diálogo podem ser divididas entre as áreas de trabalho.</translation>
 <translation id="7569509451529460200">Braille e ChromeVox estão ativados</translation>
 <translation id="7593891976182323525">Pesquisar ou Shift</translation>

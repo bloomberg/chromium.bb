@@ -54,6 +54,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="1452236308086741652"><ph name="VALUE" />, hộp văn bản nhập mật khẩu</translation>
 <translation id="1467432559032391204">Trái</translation>
 <translation id="1474557363159888097">Không có ký tự liên kết trước nào.</translation>
+<translation id="1480046233931937785">Tín dụng</translation>
 <translation id="1487494366197411587">Trên Chromebook, phím Tìm kiếm ở ngay phía trên phím Shift bên trái.</translation>
 <translation id="1499041187027566160">tăng âm lượng</translation>
 <translation id="1502086903961450562">Hình trước</translation>
@@ -424,7 +425,7 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="461613135510474570">Câu</translation>
 <translation id="463135993322337640">Bạn có thể tìm hiểu tính năng mới bằng cách nhấn ChromeVox, o, n</translation>
 <translation id="4647836961514597010">Công cụ chọn màu</translation>
-<translation id="4652110509054054146">Sử dụng tổ hợp phím Tìm kiếm Mũi tên trái hoặc phải để chuyển lên đầu dòng hoặc xuống cuối dòng, Tìm kiếm Control Mũi tên trái hoặc phải để chuyển lên đầu trang hoặc xuống cuối trang, Tìm kiếm Mũi tên lên hoặc xuống để chuyển lên một trang hoặc xuống một trang.</translation>
+<translation id="4652110509054054146">Sử dụng tổ hợp phím Tìm kiếm Mũi tên trái hoặc phải để thay thế phím Home hoặc End, Tìm kiếm Control Mũi tên trái hoặc Mũi tên phải để thay thế phím Control Home hoặc End, Tìm kiếm Mũi tên lên hoặc xuống để thay thế phím Page Up hoặc Down.</translation>
 <translation id="4660783501463101648">Đã xóa phiên bản cổ điển. Phím chuyển đổi trên bàn phím để quay về phiên bản ChromeVox cổ điển đã bị xóa.</translation>
 <translation id="4661075872484491155">cây</translation>
 <translation id="4668929960204016307">,</translation>
@@ -556,13 +557,6 @@ Nếu bạn đã đọc xong hướng dẫn, hãy sử dụng ChromeVox để đ
 <translation id="5682113568322255809">Mốc</translation>
 <translation id="5683155931978483559">Hộp kiểm trước</translation>
 <translation id="5684277895745049190">Danh sách</translation>
-<translation id="5695831708991916435">Một số phím tắt tiếp theo không phải là các phím lệnh của ChromeVox nhưng chúng vẫn rất hữu ích để khai thác tối đa lợi ích của Chrome.
-Để chuyển tiếp qua các mục có thể nhấp vào như nút và liên kết, nhấn phím Tab. Để quay lại, nhấn phím Shift+Tab. 
-Để tới hộp địa chỉ của trình duyệt Chrome, còn được gọi là thanh địa chỉ, nhấn phím Control + L. 
-Để mở và tự động chuyển sang tab mới, nhấn phím Control+T. Con trỏ của bạn sẽ nằm trong thanh địa chỉ. 
-Để đóng tab, nhấn phím Control+W. 
-Để chuyển tiếp giữa các tab đang mở, sử dụng phím Control+Tab. 
-Để mở menu của trình duyệt Chrome, nhấn phím Alt+F.</translation>
 <translation id="5700650669149824506">Không có tiêu đề cấp 4 trước nào.</translation>
 <translation id="5703716265115423771">giảm âm lượng</translation>
 <translation id="5709192780268610569">Không có mô tả dài nào</translation>

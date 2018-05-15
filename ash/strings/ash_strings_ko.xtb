@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">야간 조명: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">SIM 카드가 잠겨 있습니다.</translation>
 <translation id="2653659639078652383">제출</translation>
-<translation id="2675319268637823299">관리자가 <ph name="USER_EMAIL" />의 멀티 로그인을 허용하지 않았습니다.
-    계속하려면 모든 사용자가 로그아웃해야 합니다.</translation>
 <translation id="2696763960464195425">로그아웃하면 사용자 정보가 삭제됩니다. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">키보드 설정</translation>
 <translation id="2718395828230677721">야간 조명</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">마우스 커서 강조표시</translation>
 <translation id="3513798432020909783">계정 관리자: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">'<ph name="FROM_LOCALE" />'(으)로 다시 변경(다시 시작해야 함)</translation>
-<translation id="3582792037806681688">이 세션의 사용자에게 멀티 로그인이 허용되지 않습니다.</translation>
 <translation id="3595596368722241419">배터리 충전 완료</translation>
 <translation id="3606978283550408104">점자 디스플레이가 연결되었습니다.</translation>
 <translation id="3621202678540785336">입력</translation>

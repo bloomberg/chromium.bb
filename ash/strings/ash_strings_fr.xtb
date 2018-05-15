@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Éclairage nocturne : <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La carte SIM est verrouillée</translation>
 <translation id="2653659639078652383">Valider</translation>
-<translation id="2675319268637823299">Un administrateur a désactivé la connexion multicompte pour <ph name="USER_EMAIL" />.
-    Tous les utilisateurs doivent se déconnecter pour continuer.</translation>
 <translation id="2696763960464195425">Les informations vous concernant sont supprimées lorsque vous vous déconnectez. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Définir votre clavier</translation>
 <translation id="2718395828230677721">Éclairage nocturne</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Mettre le curseur de la souris en surbrillance</translation>
 <translation id="3513798432020909783">Compte géré par <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Revenir à "<ph name="FROM_LOCALE" />" (redémarrage requis)</translation>
-<translation id="3582792037806681688">La connexion multicompte a été désactivée pour un utilisateur de cette session.</translation>
 <translation id="3595596368722241419">Batterie pleine</translation>
 <translation id="3606978283550408104">La plage braille est connectée.</translation>
 <translation id="3621202678540785336">Entrée</translation>

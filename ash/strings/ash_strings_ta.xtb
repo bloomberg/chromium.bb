@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">இரவு ஒளி: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">சிம் கார்டு பூட்டப்பட்டுள்ளது</translation>
 <translation id="2653659639078652383">சமர்ப்பி</translation>
-<translation id="2675319268637823299"><ph name="USER_EMAIL" />க்கு, பல உள்நுழைவை நிர்வாகி அனுமதிக்கவில்லை.
-    தொடர, எல்லாப் பயனர்களும் வெளியேற வேண்டும்.</translation>
 <translation id="2696763960464195425">நீங்கள் வெளியேறியதும், உங்கள் தகவல் அகற்றப்படும். <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">எனது விசைப்பலகையை அமை</translation>
 <translation id="2718395828230677721">இரவு ஒளி</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">மவுஸ் கர்சரைத் தனிப்படுத்து</translation>
 <translation id="3513798432020909783">கணக்கை நிர்வகிப்பது: <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">"<ph name="FROM_LOCALE" />" க்கு மீண்டும் மாற்று (மறுதொடக்கம் தேவை)</translation>
-<translation id="3582792037806681688">இந்த அமர்வில் பயனருக்கான பல உள்நுழைவு மறுக்கப்பட்டுள்ளது</translation>
 <translation id="3595596368722241419">பேட்டரி நிரம்பியது</translation>
 <translation id="3606978283550408104">பிரெய்ல் திரை இணைக்கப்பட்டது.</translation>
 <translation id="3621202678540785336">உள்ளீடு</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">USB-C சாதனம் (வலது பக்கம் பின்னே இருக்கும் போர்ட்)</translation>
 <translation id="4017989525502048489">லேசர் பாயிண்டர்</translation>
 <translation id="4072264167173457037">நடுத்தரமான சிக்னல்</translation>
+<translation id="4217571870635786043">சொல்வதை எழுதுவது</translation>
 <translation id="4279490309300973883">பிரதிபலிக்கிறது</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">புளூடூத் சாதனம் "<ph name="DEVICE_NAME" />", இணைப்பதற்கான அனுமதியை விரும்புகிறது.</translation>
 <translation id="453661520163887813">முழு சார்ஜாக <ph name="TIME" /> ஆகும்</translation>
 <translation id="4544944664594876241">திரையைப் பூட்டுவதற்கான குறுக்குவழி மாற்றப்பட்டது.  <ph name="OLD_SHORTCUT" /> க்குப் பதிலாக <ph name="NEW_SHORTCUT" /> ஐப் பயன்படுத்தவும்.</translation>
+<translation id="4570957409596482333">பேசும் திரைக்கான பொத்தான்</translation>
 <translation id="4659419629803378708">ChromeVox இயக்கப்பட்டது</translation>
 <translation id="4776917500594043016"><ph name="USER_EMAIL_ADDRESS" /> க்கான கடவுச்சொல்</translation>
 <translation id="479989351350248267">Search</translation>
@@ -290,6 +289,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (உரிமையாளர்)</translation>
 <translation id="7647488630410863958">அறிவிப்புகளைப் பார்க்க, சாதனத்தைத் திறக்கவும்</translation>
 <translation id="7649070708921625228">உதவி</translation>
+<translation id="7654687942625752712">பேச்சுவடிவ கருத்தை முடக்க, ஐந்து வினாடிகளுக்கு இரண்டு ஒலியளவு விசைகளையும் அழுத்திப் பிடித்திருக்கவும்.</translation>
 <translation id="7658239707568436148">ரத்து செய்</translation>
 <translation id="7692480393933218409">இணைக்கப்பட்ட USB-C சாதனங்களுக்குச் சார்ஜ் ஏற்றப்படுகிறது</translation>
 <translation id="776344839111254542">புதுப்பிப்பு விவரங்களைப் பார்க்க, கிளிக் செய்யவும்</translation>

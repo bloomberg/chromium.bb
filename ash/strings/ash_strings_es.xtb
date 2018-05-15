@@ -82,8 +82,6 @@
 <translation id="2597972630681408282">Luz nocturna: <ph name="NIGHT_LIGHT_STATUS" /></translation>
 <translation id="2617342710774726426">La tarjeta SIM está bloqueada</translation>
 <translation id="2653659639078652383">Enviar</translation>
-<translation id="2675319268637823299">Un administrador ha inhabilitado el inicio de sesión múltiple para <ph name="USER_EMAIL" />.
-    Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="2696763960464195425">Tu información se eliminará cuando cierres la sesión. <ph name="LEARN_MORE" /></translation>
 <translation id="2700493154570097719">Elegir el teclado</translation>
 <translation id="2718395828230677721">Luz nocturna</translation>
@@ -129,7 +127,6 @@
 <translation id="3510164367642747937">Resaltar el cursor del ratón</translation>
 <translation id="3513798432020909783">Cuenta gestionada por <ph name="MANAGER_EMAIL" /></translation>
 <translation id="3573179567135747900">Cambiar de nuevo por "<ph name="FROM_LOCALE" />" (requiere reiniciar)</translation>
-<translation id="3582792037806681688">Se ha inhabilitado el inicio de sesión múltiple para un usuario en esta sesión</translation>
 <translation id="3595596368722241419">Batería al máximo</translation>
 <translation id="3606978283550408104">La pantalla braille está conectada.</translation>
 <translation id="3621202678540785336">Entrada</translation>
@@ -154,6 +151,7 @@
 <translation id="3995138139523574647">Dispositivo USB tipo C (puerto trasero derecho)</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
 <translation id="4072264167173457037">Señal media</translation>
+<translation id="4217571870635786043">Dictado</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -170,6 +168,7 @@
 <translation id="4527045527269911712">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para vincularse.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> para completar la carga</translation>
 <translation id="4544944664594876241">La combinación de teclas para bloquear la pantalla ha cambiado. Utiliza <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Botón Enunciar Selección</translation>
 <translation id="4659419629803378708">ChromeVox habilitado</translation>
 <translation id="4776917500594043016">Contraseña de <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">buscar</translation>
@@ -290,6 +289,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietario)</translation>
 <translation id="7647488630410863958">Desbloquear el dispositivo para ver las notificaciones</translation>
 <translation id="7649070708921625228">Ayuda</translation>
+<translation id="7654687942625752712">Mantén pulsadas ambas teclas de volumen durante cinco segundos para inhabilitar los mensajes de voz.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7692480393933218409">Cargando los dispositivos USB tipo C conectados</translation>
 <translation id="776344839111254542">Haz clic para ver los detalles de la actualización</translation>

@@ -27,6 +27,7 @@
       If this policy is set, the sign-in screen will always be displayed in the locale which is given by the first value of this policy (the policy is defined as a list for forward compatibility).  If this policy is not set or is set to an empty list, the sign-in screen will be displayed in the locale of the last user session.  If this policy is set to a value which is not a valid locale, the sign-in screen will be displayed in a fallback locale (currently, en-US).</translation>
 <translation id="1062011392452772310">Enable remote attestation for the device</translation>
 <translation id="1062407476771304334">Replace</translation>
+<translation id="1079801999187584280">Disallow usage of the Developer Tools</translation>
 <translation id="109166998561583554">Password protection at-risk account flagging trigger</translation>
 <translation id="1093082332347834239">If this setting is enabled, the remote assistance host will be run in a process with <ph name="UIACCESS_PERMISSION_NAME" /> permissions. This will allow remote users to interact with elevated windows on the local user's desktop.
 
@@ -79,6 +80,7 @@
 
           The scale factor must be 100% or more.</translation>
 <translation id="131353325527891113">Show usernames on login screen</translation>
+<translation id="1325295456374328159">Configure the allowed locales in a user session</translation>
 <translation id="1327466551276625742">Enable network configuration prompt when offline</translation>
 <translation id="1330145147221172764">Enable on-screen keyboard</translation>
 <translation id="13356285923490863">Policy Name</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">Whether to enable trust in Symantec Corporation's Legacy PKI Infrastructure</translation>
 <translation id="1393485621820363363">Enabled enterprise device printers</translation>
 <translation id="1397855852561539316">Default search provider suggest URL</translation>
+<translation id="1424081297104898791">Allows you to control where Developer Tools can be used.
+
+      If this policy is set to 'DeveloperToolsDisallowedForForceInstalledExtensions' (value 0, which is the default for enterprise users), the Developer Tools and the JavaScript console can be accessed in general, but they can not be accessed in the context of extensions installed by enterprise policy.
+      If this policy is set to 'DeveloperToolsAllowed' (value 1, which is the default for unmanaged users), the Developer Tools and the JavaScript console can be accessed and used in all contexts, including the context of extensions installed by enterprise policy.
+      If this policy is set to 'DeveloperToolsDisallowed' (value 2), the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
+      If the legacy policy DeveloperToolsDisabled is set to true, the value of this policy is ignored and the Developer Tools are disabled.</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1427655258943162134">Address or URL of proxy server</translation>
 <translation id="1435659902881071157">Device-level network configuration</translation>
@@ -206,6 +214,7 @@
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
 <translation id="1808715480127969042">Block cookies on these sites</translation>
 <translation id="1810261428246410396">Allow Instant Tethering to be used.</translation>
+<translation id="1826282708349731794">Controls how Chrome Clean-Up reports data to Google</translation>
 <translation id="1827523283178827583">Use fixed proxy servers</translation>
 <translation id="1843117931376765605">Refresh rate for user policy</translation>
 <translation id="1844620919405873871">Configures quick unlock related policies.</translation>
@@ -610,6 +619,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       This policy has no effect on whether users can configure printers on individual devices. It is intended to be supplementary to the configuration of printers by individual users.
       </translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
+<translation id="2640843331263301324">Enables Chrome Clean-Up on Windows</translation>
 <translation id="2646290749315461919">Allows you to set whether websites are allowed to track the users' physical location. Tracking the users' physical location can be allowed by default, denied by default or the user can be asked every time a website requests the physical location.
 
           If this policy is left not set, 'AskGeolocation' will be used and the user will be able to change it.</translation>
@@ -679,13 +689,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 
       If this policy is used, only the printers with ids matching the values in this policy are available to the user. The ids must correspond to the 'id' or 'guid' fields in the file specified in <ph name="DEVICE_PRINTERS_POLICY" />.
       </translation>
-<translation id="2844404652289407061">Enables the availability of Touch to Search in <ph name="PRODUCT_NAME" />'s content view.
-
-      If you enable this setting, Touch to Search will be available to the user and they can choose to turn the feature on or off.
-
-      If you disable this setting, Touch to Search will be disabled completely.
-
-      If this policy is left not set, it is equivalent to being enabled, see description above.</translation>
 <translation id="285480231336205327">Enable high contrast mode</translation>
 <translation id="2854919890879212089">Causes <ph name="PRODUCT_NAME" /> to use the system default printer as the default choice in Print Preview instead of the most recently used printer.
 
@@ -1267,12 +1270,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="4554651132977135445">User policy loopback processing mode</translation>
 <translation id="4555850956567117258">Enable remote attestation for the user</translation>
 <translation id="4557134566541205630">Default search provider new tab page URL</translation>
+<translation id="4567137030726189378">Allow usage of the Developer Tools</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
 <translation id="4604931264910482931">Configure native messaging blacklist</translation>
 <translation id="4613508646038788144">If the policy is set to false then third-party software will be allowed to inject executable code into Chrome's processes. If the policy is unset or set to true then third-party software will be prevented from injecting executable code into Chrome's processes.</translation>
 <translation id="4617338332148204752">Skip the meta tag check in <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configure extension installation whitelist</translation>
 <translation id="4632343302005518762">Allow <ph name="PRODUCT_FRAME_NAME" /> to handle the listed content types</translation>
+<translation id="4632566332417930481">Disallow usage of the Developer Tools on extensions installed by enterprise policy; allow usage of the Developer Tools in other contexts</translation>
 <translation id="4633786464238689684">Changes the default behaviour of the top row keys to function keys.
 
           If this policy is set to true, the keyboard's top row of keys will produce function key commands by default. The search key has to be pressed to revert their behaviour back to media keys.
@@ -1548,10 +1553,14 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="5423197884968724595">Android WebView restriction name:</translation>
+<translation id="5442026853063570579">This policy also controls access to Android Developer Options. If you set this policy to 'DeveloperToolsDisallowed' (value 2), users cannot access Developer Options. If you set this policy to another value or leave it unset, users can access Developer Options by tapping seven times on the build number in the Android settings app.</translation>
 <translation id="5447306928176905178">Enable reporting memory info (JS heap size) to page (deprecated)</translation>
 <translation id="5457065417344056871">Enable guest mode in browser</translation>
 <translation id="5457924070961220141">Allows you to configure the default HTML renderer when <ph name="PRODUCT_FRAME_NAME" /> is installed.
           The default setting used when this policy is left unset is to allow the host browser do the rendering, but you can optionally override this and have <ph name="PRODUCT_FRAME_NAME" /> render HTML pages by default.</translation>
+<translation id="5459155981813668716">Configures the locales <ph name="PRODUCT_OS_NAME" /> may be displayed in.
+
+      If this policy is set, the user can only configure <ph name="PRODUCT_OS_NAME" /> to be displayed in one of the locales specified by this policy. If this policy is not set or set to an empty list, <ph name="PRODUCT_OS_NAME" /> can be displayed in all supported locales. If this policy is set to a list with invalid values, all invalid values will be ignored. If a user previously configured <ph name="PRODUCT_OS_NAME" /> to be displayed in a language that is not allowed by this policy, the display locale will be switched to an allowed locale the next time that the user signs in. If the user had configured preferred locales and one of the preferred locales is allowed by this policy, <ph name="PRODUCT_OS_NAME" /> will switch to this locale. Otherwise, <ph name="PRODUCT_OS_NAME" /> will switch to the first valid value specified by this policy, or to a fallback locale (currently en-US), if this policy only contains invalid entries.</translation>
 <translation id="5464816904705580310">Configure settings for managed users.</translation>
 <translation id="546726650689747237">Screen dim delay when running on AC power</translation>
 <translation id="5469484020713359236">Allows you to set a list of url patterns that specify sites which are allowed to set cookies.
@@ -1673,7 +1682,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this policy is left unset, spoken feedback is disabled when the login screen is first shown. Users can enable or disable spoken feedback at any time and its status on the login screen is persisted between users.</translation>
 <translation id="5868414965372171132">User-level network configuration</translation>
-<translation id="588135807064822874">Enable Touch to Search</translation>
 <translation id="5883015257301027298">Default cookies setting</translation>
 <translation id="5887414688706570295">Configures the TalkGadget prefix that will be used by remote access hosts and prevents users from changing it.
 
@@ -1777,6 +1785,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
 <translation id="6070667616071269965">Device sign-in screen keyboard layouts</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
+<translation id="6074964551275531965">Set the time period for update notifications</translation>
 <translation id="6076099373507468537">Defines the list of USB devices that are allowed to be detached from their kernel driver in order to be used through the chrome.usb API directly inside a web application. Entries are pairs of USB Vendor Identifier and Product Identifier to identify a specific hardware.
 
       If this policy is not configured, the list of a detachable USB devices is empty.</translation>
@@ -1855,6 +1864,11 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If you enable this setting or do not set a value, Auto-fill will remain under the control of the user. This will allow them to configure Auto-fill profiles and to switch Auto-fill on or off at their own discretion.</translation>
 <translation id="6394350458541421998">This policy has been retired as of <ph name="PRODUCT_OS_NAME" /> version 29. Please use the PresentationScreenDimDelayScale policy instead.</translation>
 <translation id="6401669939808766804">Log the user out</translation>
+<translation id="6412477120967771054">If set to false, prevents Chrome Clean-Up from scanning the system for unwanted software and performing clean-ups. Manually triggering Chrome Clean-Up from chrome://settings/cleanup is disabled.
+
+      If set to true or unset, Chrome Clean–Up periodically scans the system for unwanted software and should any be found, will ask the user if they wish to remove it. Manually triggering Chrome Clean–Up from chrome://settings is enabled.
+
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="6417861582779909667">Allows you to set a list of url patterns that specify sites which are not allowed to set cookies.
 
           If this policy is left unset, the global default value will be used for all sites, either from the 'DefaultCookiesSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
@@ -1877,6 +1891,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       To control which websites are allowed to run Flash, see the 'DefaultPluginsSetting', 'PluginsAllowedForURLs' and 'PluginsBlockedForURLs' policies.
 
       If this setting is disabled or not set, Flash content from other origins or small content might be blocked.</translation>
+<translation id="6535639183431116351">This policy is deprecated in M68, please use DeveloperToolsAvailability instead.
+
+      Disables the Developer Tools and the JavaScript console.
+
+      If you enable this setting, the Developer Tools can not be accessed and web-site elements can not be inspected anymore. Any keyboard shortcuts and any menu or context menu entries to open the Developer Tools or the JavaScript Console will be disabled.
+
+      Setting this option to disabled or leaving it not set allows the user to use the Developer Tools and the JavaScript console.</translation>
 <translation id="653608967792832033">Specifies the length of time without user input after which the screen is locked when running on battery power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME" /> locks the screen.
@@ -1942,11 +1963,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6689792153960219308">Report hardware status</translation>
 <translation id="6698071416141001300">Password protection at-risk account flagging is triggered by password reuse</translation>
 <translation id="6699880231565102694">Enable two-factor authentication for remote access hosts</translation>
-<translation id="6702257826895463228">Allows sites to simultaneously navigate and open pop-ups.
-
-      For a full explanation, see https://www.chromestatus.com/features/5675755719622656.
-      If this policy is enabled, sites will be allowed to simultaneously navigate and open new windows/tabs.
-      If this policy is disabled or not set, sites will be prevented from simultaneously navigating and opening a new window/tab.</translation>
 <translation id="6724842112053619797">If you enable this setting, the settings stored in <ph name="PRODUCT_NAME" /> profiles like bookmarks, auto-fill data, passwords, etc. will also be written to a file stored in the roaming user profile folder or a location specified by the Administrator through the <ph name="ROAMING_PROFILE_LOCATION_POLICY_NAME" /> policy. Enabling this policy disables cloud sync.
 
       If this policy is disabled or left not set, only the regular local profiles will be used.
@@ -2314,6 +2330,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       See https://developers.google.com/safe-browsing for more info on Safe Browsing.</translation>
 <translation id="7643883929273267746">Restrict accounts that are visible in <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Determines whether data roaming should be enabled for the device. If set to true, data roaming is allowed. If left unconfigured or set to false, data roaming will be unavailable.</translation>
+<translation id="7673194325208122247">Time period (milliseconds)</translation>
 <translation id="7683777542468165012">Dynamic Policy Refresh</translation>
 <translation id="7694807474048279351">Schedule an automatic reboot after a <ph name="PRODUCT_OS_NAME" /> update has been applied.
 
@@ -2446,6 +2463,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
           If this setting is disabled and outgoing UDP connections are filtered by the firewall, then this machine can only connect to host machines within the local network.</translation>
 <translation id="7976157349247117979">Name of the <ph name="PRODUCT_NAME" /> destination</translation>
+<translation id="7977445800390854860">If unset, should Chrome Clean-Up detect unwanted software, it may report metadata about the scan to Google in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Clean-Up will then ask the user if they wish to clean up the unwanted software. The user can choose to share results of the clean-up with Google to assist with future unwanted software detection. These results contain file metadata and registry keys as described by the Chrome Privacy Whitepaper.
+
+      If set to false, should Chrome Clean-Up detect unwanted software, it will not report metadata about the scan to Google, overriding any policy set by SafeBrowsingExtendedReportingEnabled. Chrome Clean-Up will ask the user if they wish to clean up the unwanted software.  Results of the clean-up will not be reported to Google and the user will not have the option to do so.
+
+      If set to true, should Chrome Clean-Up detect unwanted software, it may report metadata about the scan to Google in accordance with policy set by SafeBrowsingExtendedReportingEnabled. Chrome Clean-Up will ask the user if they wish to clean up the unwanted software.  Results of the clean-up will be reported to Google and the user will not have the option to prevent it.
+
+      This policy is not available on Windows instances that are not joined to a <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7978060394348264922">
       You might want to look at the IsolateOrigins policy setting to get the
       best of both worlds, isolation and limited impact for users, by using
@@ -2568,6 +2592,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="8300455783946254851">Disables Google Drive syncing in the <ph name="PRODUCT_OS_NAME" /> Files app when using a mobile connection when set to True. In that case, data is only synced to Google Drive when connected via Wi-Fi or Ethernet.
 
           If not set or set to False, then users will be able to transfer files to Google Drive via mobile connections.</translation>
+<translation id="8300992833374611099">Control where Developer Tools can be used</translation>
 <translation id="8312129124898414409">Allows you to set whether websites are allowed to use key generation. Using key generation can be either allowed for all websites or denied for all websites.
 
           If this policy is left not set, 'BlockKeygen' will be used and the user will be able to change it.</translation>
@@ -2806,6 +2831,11 @@ The recommended way to configure policy on Windows is via GPO, although provisio
 <translation id="9035964157729712237">Extension IDs to exempt from the blacklist</translation>
 <translation id="9042911395677044526">Allows pushing network configuration to be applied per-user to a <ph name="PRODUCT_OS_NAME" /> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specify whether video activity affects power management</translation>
+<translation id="9085839450090699752">Allows you to set the time period, in milliseconds, over which users are notified that <ph name="PRODUCT_NAME" /> must be relaunched or that a <ph name="PRODUCT_OS_NAME" /> device must be restarted to apply a pending update.
+
+      Over this time period, the user will be informed repeatedly of the need for an update. For <ph name="PRODUCT_OS_NAME" /> devices, a restart notification appears in the system tray when an upgrade is detected. This notification changes colour once half of the notification period passes, and again once the full notification period has passed. For <ph name="PRODUCT_NAME" /> browsers, the app menu changes to indicate that a relaunch is needed once one third of the notification period passes. This notification changes colour once two thirds of the notification period passes, and again once the full notification period has passed. The additional notifications enabled by the <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> policy for browsers follow this same schedule.
+
+      If not set, the default period of 345600000 milliseconds (four days) is used for <ph name="PRODUCT_OS_NAME" /> devices and 604800000 milliseconds (one week) for browsers.</translation>
 <translation id="9088433379343318874">Enable the supervised user content provider</translation>
 <translation id="9088444059179765143">Configure the automatic timezone detection method</translation>
 <translation id="9096086085182305205">Authentication server whitelist</translation>

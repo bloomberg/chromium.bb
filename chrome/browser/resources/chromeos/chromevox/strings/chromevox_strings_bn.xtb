@@ -54,6 +54,7 @@
 <translation id="1452236308086741652"><ph name="VALUE" />, পাসওয়ার্ড পাঠ্য বাক্স</translation>
 <translation id="1467432559032391204">বামে</translation>
 <translation id="1474557363159888097">কোনো পূর্ববর্তী অ্যাঙ্কর নেই৷</translation>
+<translation id="1480046233931937785">কৃতিত্ব</translation>
 <translation id="1487494366197411587">Chromebook এ বাঁ Shift কী এর ঠিক উপরেই অনুসন্ধান কী।</translation>
 <translation id="1499041187027566160">ভলিউম বাড়ান</translation>
 <translation id="1502086903961450562">পূর্ববর্তী গ্রাফিক</translation>
@@ -89,6 +90,7 @@
 <translation id="1810107444790159527">তালিকা  বাক্স</translation>
 <translation id="1828385960365606039">মে</translation>
 <translation id="1834891354138622109">কলাম</translation>
+<translation id="1845944666972354496">চালু করতে ডবল ট্যাপ করুন</translation>
 <translation id="1865601187525349519">পাঠ্যের শেষে</translation>
 <translation id="1876229593313240038">দস্তাবেজ</translation>
 <translation id="188130072164734898">বর্তমান সময় ও তারিখ বলে৷</translation>
@@ -120,6 +122,7 @@
 <translation id="2179452035581866348">আপনাকে অপরিহার্য ও অতিরিক্ত তথ্য দিতে ChromeVox সাউন্ড ব্যবহার করে। প্রতিটি সাউন্ড কি বোঝায় তা শিখে নিলে আপনি আরও দ্রুত নেভিগেট করতে পারবেন। আপনি এতে স্বাচ্ছন্দ বোধ করলে, স্পিচে ভারবোস বর্ণনা বন্ধ করে দিতে পারেন এবং কোনো পৃষ্ঠার অপরিহার্য তথ্যের জন্য এই সাউন্ডগুলির উপর নির্ভর করতে পারেন। এখানে সাউন্ডগুলির পুরো তালিকা এবং সেগুলির কোনটির কি কাজ তা দেখতে পাচ্ছেন।</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{ডান বন্ধনী}one{#টি ডান বন্ধনী}other{#টি ডান বন্ধনী}}</translation>
 <translation id="2199994615414171367">পূর্ববর্তী গাণিতিক</translation>
+<translation id="2203046366315513658">কমান</translation>
 <translation id="2220529011494928058">কোনো সমস্যার অভিযোগ করুন</translation>
 <translation id="2223693656926968778">বর্তমান আইটেমের উপর ব্যবস্থা গ্রহণ করুন</translation>
 <translation id="225732394367814946">কথনের হার বাড়ান</translation>
@@ -158,6 +161,7 @@
 <translation id="2637227747952042642">গণিত</translation>
 <translation id="2639750663247012216">ChromeVox সংশোধক</translation>
 <translation id="2644542693584024604">misspelled</translation>
+<translation id="2673280813984708147">এডিট করছেন</translation>
 <translation id="267442004702508783">রিফ্রেশ করুন</translation>
 <translation id="2684412629217766642">ChromeVox টিউটোরিয়াল বন্ধ করুন</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -209,6 +213,7 @@
 <translation id="3060756054951570867"><ph name="TITLE" /> মেনু খোলা আছে</translation>
 <translation id="3078345202707391975">পরবর্তী স্তর ২ শিরোনাম</translation>
 <translation id="3078740164268491126">সারণী</translation>
+<translation id="3082249673510793544">স্ক্রল করে ফিরে যান</translation>
 <translation id="3082557070674409251">ক্লিক করা হয়েছে</translation>
 <translation id="3084806535845658316">কোনো টাইপিং ইকো নেই</translation>
 <translation id="3086746722712840547">দ্রষ্টব্য</translation>
@@ -343,7 +348,7 @@
 <translation id="3909320334364316587">পূর্ববর্তী স্তর ৬ শিরোনাম</translation>
 <translation id="3914173277599553213">প্রয়োজন</translation>
 <translation id="3914732343065571127">ChromeVox কমান্ড রেফারেন্স</translation>
-<translation id="3962990492275676168">বর্তমান অবস্থান থেকে পড়া শুরু করুন</translation>
+<translation id="3962990492275676168">বর্তমান লোকেশন থেকে পড়া শুরু করুন</translation>
 <translation id="4004802134384979325">চেক করা</translation>
 <translation id="4006140876663370126">img</translation>
 <translation id="4038349100599457191">মাস নির্বাচন</translation>
@@ -396,6 +401,7 @@
 <translation id="4372705107434148843">স্পিচ থামান</translation>
 <translation id="4373197658375206385">এমন কোনো পূর্ববর্তী আইটেম নেই যা লিঙ্ক নয়৷</translation>
 <translation id="4376316291247992553">ব্রেইল হিসাবে গ্রাফিক দেখুন</translation>
+<translation id="4378308539633073595">স্ক্রল করে এগিয়ে যান</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">পুনঃসেট করুন</translation>
 <translation id="4457472090507035117">এখনকার ভয়েসটি বেছে নিন:</translation>
@@ -403,6 +409,7 @@
 <translation id="4476183483923481720">নতুন লাইন</translation>
 <translation id="4482330759234983253">পূর্ববর্তী সারণী</translation>
 <translation id="4491109536499578614">ছবি</translation>
+<translation id="4517854969512651305">বাড়ান</translation>
 <translation id="4529987814483543472">ক্লাসিক কীম্যাপ</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{স্ল্যাশ}one{#টি স্ল্যাশ}other{#টি স্ল্যাশ}}</translation>
 <translation id="4547556996012970016">পরবর্তী স্তর ৫ শিরোনাম</translation>
@@ -418,6 +425,7 @@
 <translation id="461613135510474570">বাক্য</translation>
 <translation id="463135993322337640">নতুন কি আছে তা দেখার জন্য ChromeVox o, n টিপুন</translation>
 <translation id="4647836961514597010">রঙ চয়নকারী</translation>
+<translation id="4652110509054054146">হোম বা এন্ডে যেতে সার্চের সাথে বাঁ অথবা ডান দিকের তীরচিহ্ন টিপুন, কন্ট্রোল হম অথবে এন্ডের জন্য সার্চ কন্ট্রোলের সাথে বাঁ অথবা ডান দিকের তীরচিহ্ন টিপুন, পেজ আপ ও পেজ ডাউনের জন্য সার্চের সাথে উপরের বা নিচের তীরচিহ্ন টিপুন।</translation>
 <translation id="4660783501463101648">ক্লাসিক ভার্সন সরানো হয়েছে। কীবোর্ড টগল করে ChromeVox ক্লাসিক ভার্সনে ফিরে যাওয়ার সুবিধা সরিয়ে দেওয়া হয়েছে।</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>
@@ -549,13 +557,6 @@
 <translation id="5682113568322255809">ল্যান্ডমার্ক</translation>
 <translation id="5683155931978483559">পূর্ববর্তী চেকবাক্স</translation>
 <translation id="5684277895745049190">তালিকা</translation>
-<translation id="5695831708991916435">পরবর্তী কয়েকটি শর্টকাট ChromeVox কমান্ড না, কিন্তু এরপরও Chrome থেকে সর্বাধিক সুবিধা আদায় করার জন্য খুব দরকারী।
-বোতাম এবং লিঙ্কগুলির মতো ক্রিয়াযোগ্য আইটেমগুলির মাধ্যমে নেভিগেট করে এগোনর জন্য ট্যাব কী চাপুন। পিছন দিকে নেভিগেট করতে Shift + ট্যাব টিপুন।
-Chrome ব্রাউজারে ঠিকানা বাক্সে ঢুকতে, যা বহুউপযোগী ক্ষেত্র নামেও পরিচিত, কন্ট্রোল + L টিুপন।
-স্বয়ংক্রিয়ভাবে একটি নতুন ট্যাব খুলতে ও সেটিতে যেতে কন্ট্রোল+T টিপুন। আপনার কার্সারটি বহুউপযোগী ক্ষেত্রে থাকবে।
-একটি ট্যাব বন্ধ করতে, কন্ট্রোল+W টিপুন।
-খোলা ট্যাবগুলির মধ্যে অগ্রসর হতে, কন্ট্রোল+ট্যাব ব্যবহার করুন।
-Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপুন।</translation>
 <translation id="5700650669149824506">কোনো পূর্ববর্তী স্তর ৪ শিরোনাম নেই৷</translation>
 <translation id="5703716265115423771">ভলিউম কমান</translation>
 <translation id="5709192780268610569">কোনো দীর্ঘ বিবরণ নেই</translation>
@@ -789,7 +790,7 @@ Chrome ব্রাউজার মেনু খুলতে, Alt+F টিপু
 <translation id="817440585505441544">{COUNT,plural, =1{আন্ডারস্কোর}one{#টি আন্ডারস্কোর}other{#টি আন্ডারস্কোর}}</translation>
 <translation id="8179976553408161302">Enter</translation>
 <translation id="8184828902145951186">সারি</translation>
-<translation id="8186185314313222077">পূর্ণ স্ক্রীন টগল করুন</translation>
+<translation id="8186185314313222077">পূর্ণ স্ক্রিন টগল করুন</translation>
 <translation id="8199231515320852133">বর্তমান কক্ষের শিরোলেখ ঘোষণা করুন</translation>
 <translation id="820417203470636242">ফাঁকা কক্ষ৷</translation>
 <translation id="820469951249669083">পরের সারিতে যান</translation>

@@ -54,6 +54,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="1452236308086741652"><ph name="VALUE" />, text box ng password</translation>
 <translation id="1467432559032391204">Kaliwa</translation>
 <translation id="1474557363159888097">Walang nakaraang anchor.</translation>
+<translation id="1480046233931937785">Mga Credit</translation>
 <translation id="1487494366197411587">Sa Chromebook, ang key sa Paghahanap ay nasa itaas lang ng kaliwang Shift key.</translation>
 <translation id="1499041187027566160">lakasan ang volume</translation>
 <translation id="1502086903961450562">Nakaraang graphic</translation>
@@ -556,13 +557,6 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="5682113568322255809">Landmark</translation>
 <translation id="5683155931978483559">Nakaraang checkbox</translation>
 <translation id="5684277895745049190">Listahan</translation>
-<translation id="5695831708991916435">Ang susunod na ilang shortcut ay hindi mga command sa ChromeVox, ngunit mapapakinabangan pa rin ang mga ito upang masulit ang paggamit sa Chrome.
-Upang mag-navigate papunta sa mga item ng pagkilos tulad ng mga button at link, pindutin ang Tab key. Upang mag-navigate pabalik, pindutin ang Shift+Tab. 
-Upang mapunta sa kahon para sa address ng Chrome browser, na tinatawag ding omnibox, pindutin ang Control + L. 
-Upang awtomatikong magbukas ng tab at pumunta sa isang bagong tab, pindutin ang Control+T. Mapupunta ang iyong cursor sa omnibox. 
-Upang magsara ng tab, pindutin ang Control+W. 
-Upang magpalipat-lipat sa mga bukas na tab, gamitin ang Control+Tab. 
-Upang buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="5700650669149824506">Walang nakaraang heading sa antas 4.</translation>
 <translation id="5703716265115423771">hinaan ang volume</translation>
 <translation id="5709192780268610569">Walang mahabang paglalarawan</translation>

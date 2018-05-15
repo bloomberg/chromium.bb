@@ -54,6 +54,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="1452236308086741652"><ph name="VALUE" />, slaptažodžio teksto laukelis</translation>
 <translation id="1467432559032391204">Kairė</translation>
 <translation id="1474557363159888097">Nėra ankstesnio prieraišo.</translation>
+<translation id="1480046233931937785">Titrai</translation>
 <translation id="1487494366197411587">„Chromebook“ klavišas „Search“ yra iškart virš klavišo „Shift“.</translation>
 <translation id="1499041187027566160">garsumo didinimas</translation>
 <translation id="1502086903961450562">Ankstesnis grafinis elementas</translation>
@@ -556,13 +557,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="5682113568322255809">Orientyras</translation>
 <translation id="5683155931978483559">Ankstesnis žymimasis laukelis</translation>
 <translation id="5684277895745049190">Sąrašas</translation>
-<translation id="5695831708991916435">Toliau pateikti keli spartieji klavišai nėra „ChromeVox“ komandos, bet jie vis tiek labai naudingi norint išnaudoti visas „Chrome“ galimybes.
-Jei norite pereiti nuo vieno suaktyvinamo elemento, pvz., mygtuko ar nuorodos, prie kito, paspauskite tabuliavimo klavišą. Jei norite grįžti atgal, paspauskite „Shift“ ir tabuliavimo klavišą. 
-Kad pereitumėte į „Chrome“ naršyklės adreso laukelį, kuris dar vadinamas „omnibox“, paspauskite „Control“ ir L. 
-Kad atidarytumėte ir automatiškai pereitumėte į naują skirtuką, paspauskite „Control“ ir T. Žymeklis bus laukelyje „omnibox“. 
-Kad uždarytumėte skirtuką, paspauskite „Control“ ir W. 
-Kad pereitumėte nuo vieno atidaryto skirtuko prie kito, naudokite „Control“ ir tabuliavimo klavišą. 
-Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</translation>
 <translation id="5700650669149824506">Nėra ankstesnės 4 lygio antraštės.</translation>
 <translation id="5703716265115423771">garsumo mažinimas</translation>
 <translation id="5709192780268610569">Nėra ilgo aprašo</translation>

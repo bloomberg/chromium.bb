@@ -54,6 +54,7 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="1452236308086741652"><ph name="VALUE" />, zone de texte du mot de passe</translation>
 <translation id="1467432559032391204">Vers la gauche</translation>
 <translation id="1474557363159888097">Aucun ancrage précédent</translation>
+<translation id="1480046233931937785">Remerciements</translation>
 <translation id="1487494366197411587">Sur un Chromebook, la touche de recherche se trouve juste au-dessus de la touche Maj.</translation>
 <translation id="1499041187027566160">augmenter le volume</translation>
 <translation id="1502086903961450562">Élément graphique précédent</translation>
@@ -556,13 +557,6 @@ Une fois le didacticiel terminé, utilisez ChromeVox pour accéder au bouton de 
 <translation id="5682113568322255809">Rep</translation>
 <translation id="5683155931978483559">Case à cocher précédente</translation>
 <translation id="5684277895745049190">Liste</translation>
-<translation id="5695831708991916435">Les quelques nouveaux raccourcis ne sont pas des commandes ChromeVox, mais ils restent très utiles pour exploiter tout le potentiel de Chrome.
-Pour passer à l'élément interactif suivant comme un bouton ou un lien, appuyez sur la touche Tabulation, et pour revenir à l'élément précédent, appuyez sur Maj+Tabulation.
-Pour accéder à la zone d'adresse du navigateur Chrome, appelée également "omnibox", appuyez sur Ctrl+L.
-Pour ouvrir et accéder à un nouvel onglet automatiquement, appuyez sur Ctrl+T. Le curseur est alors placé dans l'omnibox.
-Pour fermer un onglet, appuyez sur Ctrl+W.
-Pour passer à l'onglet ouvert suivant, appuyez sur Ctrl+Tabulation. 
-Pour ouvrir le menu du navigateur Chrome, appuyez sur Alt+F.</translation>
 <translation id="5700650669149824506">Aucun titre de niveau 4 précédent</translation>
 <translation id="5703716265115423771">baisser le volume</translation>
 <translation id="5709192780268610569">Aucune description longue</translation>

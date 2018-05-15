@@ -54,6 +54,7 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="1452236308086741652"><ph name="VALUE" />, lösenordsruta</translation>
 <translation id="1467432559032391204">Vänster</translation>
 <translation id="1474557363159888097">Det finns inget föregående ankare.</translation>
+<translation id="1480046233931937785">Medverkande</translation>
 <translation id="1487494366197411587">På Chromebook sitter söktangenten precis ovanför den vänstra Skift-tangenten.</translation>
 <translation id="1499041187027566160">höj volymen</translation>
 <translation id="1502086903961450562">Föregående bild</translation>
@@ -556,13 +557,6 @@ Om du är klar med självstudierna kan du använda ChromeVox till att navigera t
 <translation id="5682113568322255809">Landmärke</translation>
 <translation id="5683155931978483559">Föregående kryssruta</translation>
 <translation id="5684277895745049190">Lista</translation>
-<translation id="5695831708991916435">De följande kortkommandona är inte ChromeVox-kommandon, men de är fortfarande mycket användbara för att få ut så mycket som möjligt av Chrome.
-Navigera framåt genom objekt som knappar och länkar genom att trycka på tabbtangenten. Navigera bakåt genom att trycka på Skift + tabbtangenten. 
-Öppna adressfältet i Chrome genom att trycka på Ctrl + L. 
-Öppna en ny flik automatiskt genom att trycka på Ctrl + T. Markören kommer att vara i adressfältet. 
-Stäng en flik genom att trycka Ctrl + W. 
-Flytta framåt mellan öppna flikar genom att trycka på Ctrl + tabbtangenten. 
-Öppna Chrome-menyn genom att trycka på Alt + F.</translation>
 <translation id="5700650669149824506">Det finns ingen föregående rubrik på nivå 4.</translation>
 <translation id="5703716265115423771">sänk volymen</translation>
 <translation id="5709192780268610569">Det finns ingen lång beskrivning</translation>
