@@ -23,6 +23,11 @@ libappindicator3.so.1()(64bit)
 libnss3.so(NSS_3.22)(64bit)
 libssl3.so(NSS_3.28)(64bit)
 
+# This dependency is added by newer versions of rpmlib.  To ensure consistency
+# of expected dependencies when Chrome is built with the older versions, add it
+# as a manual dependency.
+rpmlib(FileDigests) <= 4.6.0-1
+
 # For uploading crash reports with Breakpad.
 wget
 
