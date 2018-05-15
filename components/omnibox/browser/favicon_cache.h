@@ -9,13 +9,13 @@
 #include <map>
 
 #include "base/callback_forward.h"
+#include "base/callback_list.h"
 #include "base/containers/mru_cache.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/task/cancelable_task_tracker.h"
-#include "base/time/time.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -37,8 +37,8 @@ typedef base::OnceCallback<void(const gfx::Image& favicon)>
 // of them so we can synchronously deliver them to the UI to prevent flicker as
 // the user types.
 //
-// It also stores and times out null results from when we cannot fetch a favicon
-// from the history database. Null results timeout after a while.
+// This class also observes the HistoryService, and invalidates cached favicons
+// and null responses when matching favicons are updated.
 class FaviconCache : public history::HistoryServiceObserver {
  public:
   FaviconCache(favicon::FaviconService* favicon_service,
@@ -73,7 +73,7 @@ class FaviconCache : public history::HistoryServiceObserver {
  private:
   FRIEND_TEST_ALL_PREFIXES(FaviconCacheTest, ClearIconsWithHistoryDeletions);
   FRIEND_TEST_ALL_PREFIXES(FaviconCacheTest, ExpireNullFaviconsByHistory);
-  FRIEND_TEST_ALL_PREFIXES(FaviconCacheTest, ExpireNullFaviconsByTime);
+  FRIEND_TEST_ALL_PREFIXES(FaviconCacheTest, ObserveFaviconsChanged);
 
   enum class RequestType {
     BY_PAGE_URL,
@@ -88,9 +88,6 @@ class FaviconCache : public history::HistoryServiceObserver {
     bool operator<(const Request& rhs) const;
   };
 
-  // Chosen arbitrarily. Declared in the class for testing.
-  static const int kEmptyFaviconCacheLifetimeInSeconds;
-
   // Internal method backing GetFaviconForPageUrl and GetFaviconForIconUrl.
   gfx::Image GetFaviconInternal(const Request& request,
                                 FaviconFetchedCallback on_favicon_fetched);
@@ -100,10 +97,9 @@ class FaviconCache : public history::HistoryServiceObserver {
   void OnFaviconFetched(const Request& request,
                         const favicon_base::FaviconImageResult& result);
 
-  void AgeOutOldCachedEmptyFavicons();
-
-  // Virtual for testing.
-  virtual base::TimeTicks GetTimeNow();
+  // Removes cached favicons and null responses that match |request| from the
+  // cache. Subsequent matching requests pull fresh data from FaviconService.
+  void InvalidateCachedRequests(const Request& request);
 
   // history::HistoryServiceObserver:
   void OnURLVisited(history::HistoryService* history_service,
@@ -113,6 +109,7 @@ class FaviconCache : public history::HistoryServiceObserver {
                     base::Time visit_time) override;
   void OnURLsDeleted(history::HistoryService* history_service,
                      const history::DeletionInfo& deletion_info) override;
+  void OnFaviconsChanged(const std::set<GURL>& page_urls, const GURL& icon_url);
 
   // Non-owning pointer to a KeyedService.
   favicon::FaviconService* favicon_service_;
@@ -126,8 +123,13 @@ class FaviconCache : public history::HistoryServiceObserver {
 
   // Keep responses with empty favicons in a separate list, to prevent a
   // response with an empty favicon from ever evicting an existing favicon.
-  // The value is used to age out entries that are too old.
-  base::MRUCache<Request, base::TimeTicks> responses_without_favicons_;
+  // The value is always set to true and has no meaning.
+  base::MRUCache<Request, bool> responses_without_favicons_;
+
+  // Subscription for notifications of changes to favicons.
+  std::unique_ptr<base::CallbackList<void(const std::set<GURL>&,
+                                          const GURL&)>::Subscription>
+      favicons_changed_subscription_;
 
   base::WeakPtrFactory<FaviconCache> weak_factory_;
 
