@@ -5,8 +5,8 @@
 #include "content/app/content_service_manager_main_delegate.h"
 
 #include "base/command_line.h"
-#include "content/app/content_main_runner_impl.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/public/app/content_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "services/service_manager/runner/common/client_util.h"
@@ -16,7 +16,7 @@ namespace content {
 ContentServiceManagerMainDelegate::ContentServiceManagerMainDelegate(
     const ContentMainParams& params)
     : content_main_params_(params),
-      content_main_runner_(ContentMainRunnerImpl::Create()) {}
+      content_main_runner_(ContentMainRunner::Create()) {}
 
 ContentServiceManagerMainDelegate::~ContentServiceManagerMainDelegate() =
     default;
@@ -123,12 +123,5 @@ ContentServiceManagerMainDelegate::CreateEmbeddedService(
 
   return nullptr;
 }
-
-#if !defined(CHROME_MULTIPLE_DLL_CHILD)
-scoped_refptr<base::SingleThreadTaskRunner> ContentServiceManagerMainDelegate::
-    GetServiceManagerTaskRunnerForEmbedderProcess() {
-  return content_main_runner_->GetServiceManagerTaskRunnerForEmbedderProcess();
-}
-#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 }  // namespace content

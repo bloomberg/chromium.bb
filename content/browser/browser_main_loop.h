@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -96,6 +95,7 @@ class HostFrameSinkManager;
 namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
+class BrowserProcessSubThread;
 class BrowserThreadImpl;
 class LoaderDelegateImpl;
 class MediaStreamManager;
@@ -129,10 +129,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   explicit BrowserMainLoop(const MainFunctionParams& parameters);
   virtual ~BrowserMainLoop();
 
-  // |service_manager_thread| is optional. If set, it will be registered as
-  // BrowserThread::IO in CreateThreads() instead of creating a brand new
-  // thread.
-  void Init(std::unique_ptr<BrowserProcessSubThread> service_manager_thread);
+  void Init();
 
   // Return value is exit status. Anything other than RESULT_CODE_NORMAL_EXIT
   // is considered an error.
@@ -159,6 +156,8 @@ class CONTENT_EXPORT BrowserMainLoop {
   // Performs the shutdown sequence, starting with PostMainMessageLoopRun
   // through stopping threads to PostDestroyThreads.
   void ShutdownThreadsAndCleanUp();
+
+  void InitializeIOThreadForTesting();
 
   int GetResultCode() const { return result_code_; }
 
@@ -252,6 +251,10 @@ class CONTENT_EXPORT BrowserMainLoop {
   int PreMainMessageLoopRun();
 
   void MainMessageLoopRun();
+
+  // Initializes |io_thread_|. It will not be promoted to BrowserThread::IO
+  // until CreateThreads().
+  void InitializeIOThread();
 
   void InitializeMojo();
   void InitStartupTracingForDuration();
