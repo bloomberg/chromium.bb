@@ -322,10 +322,17 @@ public class OfflinePageUtilsTest {
                 boolean shared =
                         OfflinePageUtils.maybeShareOfflinePage(mActivityTestRule.getActivity(),
                                 mActivityTestRule.getActivity().getActivityTab(), shareCallback);
-                // The attempt to share a temporary page should fall back to sharing the URL.
-                Assert.assertFalse(shared);
+                // The attempt to share a temporary page should share a content URL.
+                Assert.assertTrue(shared);
             }
         });
+        // Wait for share callback to get called.
+        Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        // Assert that URI is what we expected.
+        String foundUri = shareCallback.getSharedUri();
+        Uri uri = Uri.parse(foundUri);
+        String uriPath = uri.getPath();
+        Assert.assertEquals(TEST_PAGE, uriPath);
     }
 
     // Checks on the UI thread if an offline path corresponds to a sharable file.
@@ -340,7 +347,7 @@ public class OfflinePageUtilsTest {
                         mActivityTestRule.getActivity().getActivityTab().getProfile());
 
                 boolean isSharable = OfflinePageUtils.isOfflinePageShareable(
-                        offlinePageBridge, privateOfflinePageItem, uriPath);
+                        offlinePageBridge, privateOfflinePageItem, Uri.parse(uriPath));
                 Assert.assertEquals(sharable, isSharable);
             }
         });
@@ -381,13 +388,13 @@ public class OfflinePageUtilsTest {
 
         // Check that pages with temporary namespaces are not sharable.
         checkIfOfflinePageIsSharable(
-                fullPrivatePath, SHARED_URI, OfflinePageBridge.BOOKMARK_NAMESPACE, false);
+                fullPrivatePath, SHARED_URI, OfflinePageBridge.BOOKMARK_NAMESPACE, true);
         checkIfOfflinePageIsSharable(
-                fullPrivatePath, SHARED_URI, OfflinePageBridge.LAST_N_NAMESPACE, false);
+                fullPrivatePath, SHARED_URI, OfflinePageBridge.LAST_N_NAMESPACE, true);
         checkIfOfflinePageIsSharable(
-                fullPrivatePath, SHARED_URI, OfflinePageBridge.CCT_NAMESPACE, false);
+                fullPrivatePath, SHARED_URI, OfflinePageBridge.CCT_NAMESPACE, true);
         checkIfOfflinePageIsSharable(
-                fullPrivatePath, SHARED_URI, OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE, false);
+                fullPrivatePath, SHARED_URI, OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE, true);
     }
 
     @Test

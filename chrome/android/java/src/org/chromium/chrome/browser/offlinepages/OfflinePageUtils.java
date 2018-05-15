@@ -20,6 +20,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareParams;
@@ -389,8 +390,18 @@ public class OfflinePageUtils {
         String offlinePath = offlinePage.getFilePath();
 
         final String pageUrl = tab.getUrl();
+        // We share temporary pages by content URI to prevent unanticipated side effects in the
+        // public directory. Temporary pages are ones not in a user requested download namespace.
+        Uri uri;
+        if (!offlinePageBridge.isUserRequestedDownloadNamespace(
+                    offlinePage.getClientId().getNamespace())) {
+            File file = new File(offlinePage.getFilePath());
+            uri = (new FileProviderHelper()).getContentUriFromFile(file);
+        } else {
+            uri = Uri.parse(pageUrl);
+        }
 
-        if (!isOfflinePageShareable(offlinePageBridge, offlinePage, pageUrl)) return false;
+        if (!isOfflinePageShareable(offlinePageBridge, offlinePage, uri)) return false;
 
         // The file access permission is needed since we may need to publish the archive file
         // if it resides in internal directory.
@@ -409,7 +420,8 @@ public class OfflinePageUtils {
 
             final String pageTitle = tab.getTitle();
             final File offlinePageFile = new File(offlinePath);
-            sharePage(activity, pageUrl, pageTitle, offlinePath, offlinePageFile, shareCallback);
+            sharePage(activity, uri.toString(), pageTitle, offlinePath, offlinePageFile,
+                    shareCallback);
         });
 
         return true;
@@ -423,22 +435,14 @@ public class OfflinePageUtils {
      * @return true if this page can be shared.
      */
     public static boolean isOfflinePageShareable(
-            OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage, String pageUri) {
+            OfflinePageBridge offlinePageBridge, OfflinePageItem offlinePage, Uri uri) {
         // Return false if there is no offline page or sharing is not enabled.
         if (offlinePage == null || !OfflinePageBridge.isPageSharingEnabled()) return false;
 
-        // We share temporary pages by URL instead of sharing the page to prevent unanticipated side
-        // effects in the public directory.
-        // TODO(petewil): https://crbug.com/831780 - Desired long term behavior is to share the page
-        // with a content URI instead of as a URL, so all offline pages are shared as MHTML.
-        if (isTemporaryNamespace(offlinePage.getClientId().getNamespace())) return false;
-
         String offlinePath = offlinePage.getFilePath();
-        Uri uri = Uri.parse(pageUri);
 
         // If we have a content or file Uri, then we can share the page.
         if (isSchemeContentOrFile(uri)) {
-            assert offlinePath.isEmpty();
             return true;
         }
 
@@ -464,17 +468,6 @@ public class OfflinePageUtils {
         return isContentScheme || isFileScheme;
     }
 
-    /**
-     * Determines if the page is in one of the temporary namespaces.
-     * @param namespace Namespace of the page in question.
-     * @return true if the page is in a temporary namespace.
-     */
-    public static boolean isTemporaryNamespace(String namespace) {
-        return namespace.equals(OfflinePageBridge.BOOKMARK_NAMESPACE)
-                || namespace.equals(OfflinePageBridge.LAST_N_NAMESPACE)
-                || namespace.equals(OfflinePageBridge.CCT_NAMESPACE)
-                || namespace.equals(OfflinePageBridge.SUGGESTED_ARTICLES_NAMESPACE);
-    }
 
     /**
      * For internal pages, we must publish them, then share them.

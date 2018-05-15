@@ -658,6 +658,15 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Determines if the page is in one of the user requested download namespaces.
+     * @param nameSpace Namespace of the page in question.
+     * @return true if the page is in a user requested download namespace.
+     */
+    public boolean isUserRequestedDownloadNamespace(String nameSpace) {
+        return nativeIsUserRequestedDownloadNamespace(mNativeOfflinePageBridge, nameSpace);
+    }
+
+    /**
      * Checks if the supplied file path is in a private dir internal to chrome.
      * @param file_path Path of the file to check.
      * @return True if the file is in a private directory.
@@ -873,6 +882,8 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, WebContents webContents);
     private native boolean nativeIsInPrivateDirectory(
             long nativeOfflinePageBridge, String filePath);
+    private native boolean nativeIsUserRequestedDownloadNamespace(
+            long nativeOfflinePageBridge, String nameSpace);
     private native OfflinePageItem nativeGetOfflinePage(
             long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeCheckForNewOfflineContent(
