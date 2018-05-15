@@ -371,6 +371,7 @@
 
   'chromeos_gtests_experimental': {
     'base_unittests': {},
+    'cros_vm_sanity_test': {},
     'net_unittests': {},
   },
 
