@@ -19,31 +19,31 @@ namespace ntlm {
 namespace {
 // Parses the challenge message and returns the |challenge_flags| and
 // |server_challenge| into the supplied buffer.
-// |server_challenge| must contain at least 8 bytes.
-bool ParseChallengeMessage(const Buffer& challenge_message,
-                           NegotiateFlags* challenge_flags,
-                           uint8_t* server_challenge) {
+bool ParseChallengeMessage(
+    base::span<const uint8_t> challenge_message,
+    NegotiateFlags* challenge_flags,
+    base::span<uint8_t, kChallengeLen> server_challenge) {
   NtlmBufferReader challenge_reader(challenge_message);
 
   return challenge_reader.MatchMessageHeader(MessageType::kChallenge) &&
          challenge_reader.SkipSecurityBufferWithValidation() &&
          challenge_reader.ReadFlags(challenge_flags) &&
-         challenge_reader.ReadBytes(server_challenge, kChallengeLen);
+         challenge_reader.ReadBytes(server_challenge);
 }
 
 // Parses the challenge message and extracts the information necessary to
 // make an NTLMv2 response.
-// |server_challenge| must contain at least 8 bytes.
-bool ParseChallengeMessageV2(const Buffer& challenge_message,
-                             NegotiateFlags* challenge_flags,
-                             uint8_t* server_challenge,
-                             std::vector<AvPair>* av_pairs) {
+bool ParseChallengeMessageV2(
+    base::span<const uint8_t> challenge_message,
+    NegotiateFlags* challenge_flags,
+    base::span<uint8_t, kChallengeLen> server_challenge,
+    std::vector<AvPair>* av_pairs) {
   NtlmBufferReader challenge_reader(challenge_message);
 
   return challenge_reader.MatchMessageHeader(MessageType::kChallenge) &&
          challenge_reader.SkipSecurityBufferWithValidation() &&
          challenge_reader.ReadFlags(challenge_flags) &&
-         challenge_reader.ReadBytes(server_challenge, kChallengeLen) &&
+         challenge_reader.ReadBytes(server_challenge) &&
          challenge_reader.SkipBytes(8) &&
          // challenge_reader.ReadTargetInfoPayload(av_pairs);
          (((*challenge_flags & NegotiateFlags::kTargetInfo) ==
@@ -71,27 +71,24 @@ bool WriteAuthenticateMessage(NtlmBufferWriter* authenticate_writer,
 }
 
 // Writes the NTLMv1 LM Response and NTLM Response.
-// |lm_response| must contain |kResponseLenV1| bytes.
-// |ntlm_response| must contain |kResponseLenV1| bytes.
-bool WriteResponsePayloads(NtlmBufferWriter* authenticate_writer,
-                           const uint8_t* lm_response,
-                           const uint8_t* ntlm_response) {
-  return authenticate_writer->WriteBytes(lm_response, kResponseLenV1) &&
-         authenticate_writer->WriteBytes(ntlm_response, kResponseLenV1);
+bool WriteResponsePayloads(
+    NtlmBufferWriter* authenticate_writer,
+    base::span<const uint8_t, kResponseLenV1> lm_response,
+    base::span<const uint8_t, kResponseLenV1> ntlm_response) {
+  return authenticate_writer->WriteBytes(lm_response) &&
+         authenticate_writer->WriteBytes(ntlm_response);
 }
 
 // Writes the |lm_response| and writes the NTLMv2 response by concatenating
 // |v2_proof|, |v2_proof_input|, |updated_target_info| and 4 zero bytes.
-//
-// |lm_response| must contain |kResponseLenV1| bytes.
-// |v2_proof| must contain |kNtlmProofLenV2| bytes.
-bool WriteResponsePayloadsV2(NtlmBufferWriter* authenticate_writer,
-                             const uint8_t* lm_response,
-                             const uint8_t* v2_proof,
-                             const Buffer& v2_proof_input,
-                             const Buffer& updated_target_info) {
-  return authenticate_writer->WriteBytes(lm_response, kResponseLenV1) &&
-         authenticate_writer->WriteBytes(v2_proof, kNtlmProofLenV2) &&
+bool WriteResponsePayloadsV2(
+    NtlmBufferWriter* authenticate_writer,
+    base::span<const uint8_t, kResponseLenV1> lm_response,
+    base::span<const uint8_t, kNtlmProofLenV2> v2_proof,
+    base::span<const uint8_t> v2_proof_input,
+    base::span<const uint8_t> updated_target_info) {
+  return authenticate_writer->WriteBytes(lm_response) &&
+         authenticate_writer->WriteBytes(v2_proof) &&
          authenticate_writer->WriteBytes(v2_proof_input) &&
          authenticate_writer->WriteBytes(updated_target_info) &&
          authenticate_writer->WriteUInt32(0);
@@ -146,7 +143,7 @@ NtlmClient::NtlmClient(NtlmFeatures features)
 
 NtlmClient::~NtlmClient() = default;
 
-Buffer NtlmClient::GetNegotiateMessage() const {
+std::vector<uint8_t> NtlmClient::GetNegotiateMessage() const {
   return negotiate_message_;
 }
 
@@ -164,7 +161,7 @@ void NtlmClient::GenerateNegotiateMessage() {
   negotiate_message_ = writer.Pass();
 }
 
-Buffer NtlmClient::GenerateAuthenticateMessage(
+std::vector<uint8_t> NtlmClient::GenerateAuthenticateMessage(
     const base::string16& domain,
     const base::string16& username,
     const base::string16& password,
@@ -172,8 +169,8 @@ Buffer NtlmClient::GenerateAuthenticateMessage(
     const std::string& channel_bindings,
     const std::string& spn,
     uint64_t client_time,
-    const uint8_t* client_challenge,
-    const Buffer& server_challenge_message) const {
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<const uint8_t> server_challenge_message) const {
   // Limit the size of strings that are accepted. As an absolute limit any
   // field represented by a |SecurityBuffer| or |AvPair| must be less than
   // UINT16_MAX bytes long. The strings are restricted to the maximum sizes
@@ -188,8 +185,9 @@ Buffer NtlmClient::GenerateAuthenticateMessage(
   // [2] - https://technet.microsoft.com/en-us/library/cc512606.aspx
   if (hostname.length() > kMaxFqdnLen || domain.length() > kMaxFqdnLen ||
       username.length() > kMaxUsernameLen ||
-      password.length() > kMaxPasswordLen)
-    return Buffer();
+      password.length() > kMaxPasswordLen) {
+    return {};
+  }
 
   NegotiateFlags challenge_flags;
   uint8_t server_challenge[kChallengeLen];
@@ -197,8 +195,8 @@ Buffer NtlmClient::GenerateAuthenticateMessage(
   uint8_t ntlm_response[kResponseLenV1];
 
   // Response fields only for NTLMv2
-  Buffer updated_target_info;
-  Buffer v2_proof_input;
+  std::vector<uint8_t> updated_target_info;
+  std::vector<uint8_t> v2_proof_input;
   uint8_t v2_proof[kNtlmProofLenV2];
   uint8_t v2_session_key[kSessionKeyLenV2];
 
@@ -206,7 +204,7 @@ Buffer NtlmClient::GenerateAuthenticateMessage(
     std::vector<AvPair> av_pairs;
     if (!ParseChallengeMessageV2(server_challenge_message, &challenge_flags,
                                  server_challenge, &av_pairs)) {
-      return Buffer();
+      return {};
     }
 
     uint64_t timestamp;
@@ -229,7 +227,7 @@ Buffer NtlmClient::GenerateAuthenticateMessage(
   } else {
     if (!ParseChallengeMessage(server_challenge_message, &challenge_flags,
                                server_challenge)) {
-      return Buffer();
+      return {};
     }
 
     // Calculate the responses for the authenticate message.
@@ -306,7 +304,7 @@ Buffer NtlmClient::GenerateAuthenticateMessage(
   DCHECK(authenticate_writer.IsEndOfBuffer());
   DCHECK_EQ(authenticate_message_len, authenticate_writer.GetLength());
 
-  Buffer auth_msg = authenticate_writer.Pass();
+  std::vector<uint8_t> auth_msg = authenticate_writer.Pass();
 
   // Backfill the MIC if enabled.
   if (IsMicEnabled()) {
@@ -314,9 +312,10 @@ Buffer NtlmClient::GenerateAuthenticateMessage(
     // set to zeros.
     DCHECK_LT(kMicOffsetV2 + kMicLenV2, authenticate_message_len);
 
-    uint8_t* mic_ptr = reinterpret_cast<uint8_t*>(&auth_msg[kMicOffsetV2]);
+    base::span<uint8_t, kMicLenV2> mic(
+        const_cast<uint8_t*>(auth_msg.data()) + kMicOffsetV2, kMicLenV2);
     GenerateMicV2(v2_session_key, negotiate_message_, server_challenge_message,
-                  auth_msg, mic_ptr);
+                  auth_msg, mic);
   }
 
   return auth_msg;

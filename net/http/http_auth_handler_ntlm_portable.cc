@@ -89,7 +89,8 @@ HttpAuthHandlerNTLM::Factory::Factory() = default;
 
 HttpAuthHandlerNTLM::Factory::~Factory() = default;
 
-ntlm::Buffer HttpAuthHandlerNTLM::GetNextToken(const ntlm::Buffer& in_token) {
+std::vector<uint8_t> HttpAuthHandlerNTLM::GetNextToken(
+    base::span<const uint8_t> in_token) {
   // If in_token is non-empty, then assume it contains a challenge message,
   // and generate the Authenticate message in reply. Otherwise return the
   // Negotiate message.
@@ -99,7 +100,7 @@ ntlm::Buffer HttpAuthHandlerNTLM::GetNextToken(const ntlm::Buffer& in_token) {
 
   std::string hostname = get_host_name_proc_();
   if (hostname.empty())
-    return ntlm::Buffer();
+    return {};
   uint8_t client_challenge[8];
   generate_random_proc_(client_challenge, 8);
   uint64_t client_time = get_ms_time_proc_();

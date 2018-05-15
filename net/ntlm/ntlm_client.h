@@ -20,6 +20,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -50,11 +51,11 @@ class NET_EXPORT_PRIVATE NtlmClient {
 
   bool IsEpaEnabled() const { return IsNtlmV2() && features_.enable_EPA; }
 
-  // Returns a |Buffer| containing the Negotiate message.
-  Buffer GetNegotiateMessage() const;
+  // Returns the Negotiate message.
+  std::vector<uint8_t> GetNegotiateMessage() const;
 
-  // Returns a |Buffer| containing the Authenticate message. If the method
-  // fails an empty |Buffer| is returned.
+  // Returns a the Authenticate message. If the method fails an empty vector
+  // is returned.
   //
   // |username| is treated case insensitively by NTLM however the mechanism
   // to uppercase is not clearly defined. In this implementation the default
@@ -81,12 +82,11 @@ class NET_EXPORT_PRIVATE NtlmClient {
   // 100 nanosecond ticks since midnight Jan 01, 1601 (UTC). If the server does
   // not send a timestamp, the client timestamp is used in the Proof Input
   // instead.
-  // |client_challenge| must contain 8 bytes of random data.
   // |server_challenge_message| is the full content of the challenge message
   // sent by the server.
   //
   // [1] - https://technet.microsoft.com/en-us/library/jj852267(v=ws.11).aspx
-  Buffer GenerateAuthenticateMessage(
+  std::vector<uint8_t> GenerateAuthenticateMessage(
       const base::string16& domain,
       const base::string16& username,
       const base::string16& password,
@@ -94,19 +94,19 @@ class NET_EXPORT_PRIVATE NtlmClient {
       const std::string& channel_bindings,
       const std::string& spn,
       uint64_t client_time,
-      const uint8_t* client_challenge,
-      const Buffer& server_challenge_message) const;
+      base::span<const uint8_t, kChallengeLen> client_challenge,
+      base::span<const uint8_t> server_challenge_message) const;
 
   // Simplified method for NTLMv1 which does not require |channel_bindings|,
   // |spn|, or |client_time|. See |GenerateAuthenticateMessage| for more
   // details.
-  Buffer GenerateAuthenticateMessageV1(
+  std::vector<uint8_t> GenerateAuthenticateMessageV1(
       const base::string16& domain,
       const base::string16& username,
       const base::string16& password,
       const std::string& hostname,
-      const uint8_t* client_challenge,
-      const Buffer& server_challenge_message) const {
+      base::span<const uint8_t, 8> client_challenge,
+      base::span<const uint8_t> server_challenge_message) const {
     DCHECK(!IsNtlmV2());
 
     return GenerateAuthenticateMessage(
@@ -150,7 +150,7 @@ class NET_EXPORT_PRIVATE NtlmClient {
 
   NtlmFeatures features_;
   NegotiateFlags negotiate_flags_;
-  Buffer negotiate_message_;
+  std::vector<uint8_t> negotiate_message_;
 
   DISALLOW_COPY_AND_ASSIGN(NtlmClient);
 };

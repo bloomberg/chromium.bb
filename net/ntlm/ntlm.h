@@ -17,6 +17,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -29,35 +30,30 @@ namespace ntlm {
 // bits stored in the 7 most significant bits of 8 bytes. The least
 // significant bit is undefined and will subsequently be set with odd parity
 // prior to use.
-// |ntlm_hash| must contain 16 bytes.
-// |keys| must contain 24 bytes.
-NET_EXPORT_PRIVATE void Create3DesKeysFromNtlmHash(const uint8_t* ntlm_hash,
-                                                   uint8_t* keys);
+NET_EXPORT_PRIVATE void Create3DesKeysFromNtlmHash(
+    base::span<const uint8_t, kNtlmHashLen> ntlm_hash,
+    base::span<uint8_t, 24> keys);
 
 // Generates the NTLMv1 Hash and writes the |kNtlmHashLen| byte result to
 // |hash|. Defined by NTOWFv1() in [MS-NLMP] Section 3.3.1.
-NET_EXPORT_PRIVATE void GenerateNtlmHashV1(const base::string16& password,
-                                           uint8_t* hash);
+NET_EXPORT_PRIVATE void GenerateNtlmHashV1(
+    const base::string16& password,
+    base::span<uint8_t, kNtlmHashLen> hash);
 
 // Generates the |kResponseLenV1| byte NTLMv1 response field according to the
 // DESL(K, V) function in [MS-NLMP] Section 6.
-//
-// |hash| must contain |kNtlmHashLen| bytes.
-// |challenge| must contain |kChallengeLen| bytes.
-// |response| must contain |kResponseLenV1| bytes.
-NET_EXPORT_PRIVATE void GenerateResponseDesl(const uint8_t* hash,
-                                             const uint8_t* challenge,
-                                             uint8_t* response);
+NET_EXPORT_PRIVATE void GenerateResponseDesl(
+    base::span<const uint8_t, kNtlmHashLen> hash,
+    base::span<const uint8_t, kChallengeLen> challenge,
+    base::span<uint8_t, kResponseLenV1> response);
 
 // Generates the NTLM Response field for NTLMv1 without extended session
 // security. Defined by ComputeResponse() in [MS-NLMP] Section 3.3.1 for the
 // case where NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY is not set.
-//
-// |server_challenge| must contain |kChallengeLen| bytes.
-// |ntlm_response| must contain |kResponseLenV1| bytes.
-NET_EXPORT_PRIVATE void GenerateNtlmResponseV1(const base::string16& password,
-                                               const uint8_t* server_challenge,
-                                               uint8_t* ntlm_response);
+NET_EXPORT_PRIVATE void GenerateNtlmResponseV1(
+    const base::string16& password,
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<uint8_t, kResponseLenV1> ntlm_response);
 
 // Generates both the LM Response and NTLM Response fields for NTLMv1 based
 // on the users password and the servers challenge. Both the LM and NTLM
@@ -70,75 +66,57 @@ NET_EXPORT_PRIVATE void GenerateNtlmResponseV1(const base::string16& password,
 //
 // The default flags include this flag and the client will not be
 // downgraded by the server.
-//
-// |server_challenge| must contain |kChallengeLen| bytes.
-// |lm_response| must contain |kResponseLenV1| bytes.
-// |ntlm_response| must contain |kResponseLenV1| bytes.
-NET_EXPORT_PRIVATE void GenerateResponsesV1(const base::string16& password,
-                                            const uint8_t* server_challenge,
-                                            uint8_t* lm_response,
-                                            uint8_t* ntlm_response);
+NET_EXPORT_PRIVATE void GenerateResponsesV1(
+    const base::string16& password,
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<uint8_t, kResponseLenV1> lm_response,
+    base::span<uint8_t, kResponseLenV1> ntlm_response);
 
 // The LM Response in V1 with extended session security is 8 bytes of the
 // |client_challenge| then 16 bytes of zero. This is the value
 // LmChallengeResponse in ComputeResponse() when
 // NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY is set. See [MS-NLMP] Section
 // 3.3.1.
-//
-// |lm_response| must contain |kResponseLenV1| bytes.
 NET_EXPORT_PRIVATE void GenerateLMResponseV1WithSessionSecurity(
-    const uint8_t* client_challenge,
-    uint8_t* lm_response);
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<uint8_t, kResponseLenV1> lm_response);
 
 // The |session_hash| is MD5(CONCAT(server_challenge, client_challenge)).
 // It is used instead of just |server_challenge| in NTLMv1 when
 // NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY is set. See [MS-NLMP] Section
 // 3.3.1.
-//
-// |server_challenge| must contain |kChallengeLen| bytes.
-// |client_challenge| must contain |kChallengeLen| bytes.
-// |session_hash| must contain |kNtlmHashLen|.
 NET_EXPORT_PRIVATE void GenerateSessionHashV1WithSessionSecurity(
-    const uint8_t* server_challenge,
-    const uint8_t* client_challenge,
-    uint8_t* session_hash);
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<uint8_t, kNtlmHashLen> session_hash);
 
 // Generates the NTLM Response for NTLMv1 with session security.
 // Defined by ComputeResponse() in [MS-NLMP] Section 3.3.1 for the
 // case where NTLMSSP_NEGOTIATE_EXTENDED_SESSIONSECURITY is set.
-//
-// |server_challenge| must contain |kChallengeLen| bytes.
-// |client_challenge| must contain |kChallengeLen| bytes.
-// |ntlm_response| must contain |kResponseLenV1| bytes.
 NET_EXPORT_PRIVATE void GenerateNtlmResponseV1WithSessionSecurity(
     const base::string16& password,
-    const uint8_t* server_challenge,
-    const uint8_t* client_challenge,
-    uint8_t* ntlm_response);
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<uint8_t, kResponseLenV1> ntlm_response);
 
 // Generates the responses for V1 with extended session security.
 // This is also known as NTLM2 (which is not the same as NTLMv2).
 // |lm_response| is the result of |GenerateLMResponseV1WithSessionSecurity| and
 // |ntlm_response| is the result of |GenerateNtlmResponseV1WithSessionSecurity|.
 // See [MS-NLMP] Section 3.3.1.
-//
-// |server_challenge| must contain |kChallengeLen| bytes.
-// |client_challenge| must contain |kChallengeLen| bytes.
-// |ntlm_response| must contain |kResponseLenV1| bytes.
 NET_EXPORT_PRIVATE void GenerateResponsesV1WithSessionSecurity(
     const base::string16& password,
-    const uint8_t* server_challenge,
-    const uint8_t* client_challenge,
-    uint8_t* lm_response,
-    uint8_t* ntlm_response);
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<uint8_t, kResponseLenV1> lm_response,
+    base::span<uint8_t, kResponseLenV1> ntlm_response);
 
-// Generates the NTLMv2 Hash and writes the |kNtlmHashLen| byte result to
-// |v2_hash|.
-// |v2_hash| must contain |kNtlmHashLen| bytes.
-NET_EXPORT_PRIVATE void GenerateNtlmHashV2(const base::string16& domain,
-                                           const base::string16& username,
-                                           const base::string16& password,
-                                           uint8_t* v2_hash);
+// Generates the NTLMv2 Hash and writes it into |v2_hash|.
+NET_EXPORT_PRIVATE void GenerateNtlmHashV2(
+    const base::string16& domain,
+    const base::string16& username,
+    const base::string16& password,
+    base::span<uint8_t, kNtlmHashLen> v2_hash);
 
 // In this implementation the Proof Input is the first 28 bytes of what
 // [MS-NLMP] section 3.3.2 calls "temp". "temp" is part of the input to
@@ -157,10 +135,9 @@ NET_EXPORT_PRIVATE void GenerateNtlmHashV2(const base::string16& domain,
 // [8-15]   - |timestamp|                         (Timestamp)
 // [16-23]  - |client_challenge|                  (Client challenge)
 // [24-27]  - 0x00000000                          (Reserved - all zero)
-//
-// |client_challenge| must contain |kChallengeLen| bytes.
-NET_EXPORT_PRIVATE Buffer GenerateProofInputV2(uint64_t timestamp,
-                                               const uint8_t* client_challenge);
+NET_EXPORT_PRIVATE std::vector<uint8_t> GenerateProofInputV2(
+    uint64_t timestamp,
+    base::span<const uint8_t, kChallengeLen> client_challenge);
 
 // The NTLMv2 Proof is part of the NTLMv2 Response. See NTProofStr in [MS-NLMP]
 // Section 3.3.2.
@@ -169,31 +146,22 @@ NET_EXPORT_PRIVATE Buffer GenerateProofInputV2(uint64_t timestamp,
 //     v2_proof = HMAC_MD5(
 //         v2_hash,
 //         CONCAT(server_challenge, v2_input, target_info, 0x00000000))
-//
-// |v2_hash| must contain |kNtlmHashLen| bytes.
-// |server_challenge| must contain |kChallengeLen| bytes.
-// |v2_input| must contain |kProofInputLenV2| bytes.
-// |target_info| contains the target info field that will be sent in the
-// authenticate message.
-// |v2_proof| must contain |kNtlmProofLenV2| bytes.
-NET_EXPORT_PRIVATE void GenerateNtlmProofV2(const uint8_t* v2_hash,
-                                            const uint8_t* server_challenge,
-                                            const Buffer& v2_input,
-                                            const Buffer& target_info,
-                                            uint8_t* v2_proof);
+NET_EXPORT_PRIVATE void GenerateNtlmProofV2(
+    base::span<const uint8_t, kNtlmHashLen> v2_hash,
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<const uint8_t, kProofInputLenV2> v2_input,
+    base::span<const uint8_t> target_info,
+    base::span<uint8_t, kNtlmProofLenV2> v2_proof);
 
 // The session base key is used to generate the Message Integrity Check (MIC).
 // See [MS-NLMP] Section 3.3.2.
 //
 // It is defined as;
 //     session_key = HMAC_MD5(v2_hash, v2_proof)
-//
-// |v2_hash| must contain |kNtlmHashLen| bytes.
-// |v2_proof| must contain |kNtlmProofLenV2| bytes.
-// |session_key| must contain |kSessionKeyLenV2| bytes.
-NET_EXPORT_PRIVATE void GenerateSessionBaseKeyV2(const uint8_t* v2_hash,
-                                                 const uint8_t* v2_proof,
-                                                 uint8_t* session_key);
+NET_EXPORT_PRIVATE void GenerateSessionBaseKeyV2(
+    base::span<const uint8_t, kNtlmHashLen> v2_hash,
+    base::span<const uint8_t, kNtlmProofLenV2> v2_proof,
+    base::span<uint8_t, kSessionKeyLenV2> session_key);
 
 // The channel bindings hash is an MD5 hash of a data structure containing
 // a hash of the server's certificate.
@@ -222,7 +190,7 @@ NET_EXPORT_PRIVATE void GenerateSessionBaseKeyV2(const uint8_t* v2_hash,
 //     channel_bindings_hash = MD5(ClientChannelBindingsUnhashed)
 NET_EXPORT_PRIVATE void GenerateChannelBindingHashV2(
     const std::string& channel_bindings,
-    uint8_t* channel_bindings_hash);
+    base::span<uint8_t, kNtlmHashLen> channel_bindings_hash);
 
 // The Message Integrity Check (MIC) is a hash calculated over all three
 // messages in the NTLM protocol. The MIC field in the authenticate message
@@ -240,21 +208,22 @@ NET_EXPORT_PRIVATE void GenerateChannelBindingHashV2(
 //
 // |session_key| must contain |kSessionKeyLenV2| bytes.
 // |mic| must contain |kMicLenV2| bytes.
-NET_EXPORT_PRIVATE void GenerateMicV2(const uint8_t* session_key,
-                                      const Buffer& negotiate_msg,
-                                      const Buffer& challenge_msg,
-                                      const Buffer& authenticate_msg,
-                                      uint8_t* mic);
+NET_EXPORT_PRIVATE void GenerateMicV2(
+    base::span<const uint8_t, kSessionKeyLenV2> session_key,
+    base::span<const uint8_t> negotiate_msg,
+    base::span<const uint8_t> challenge_msg,
+    base::span<const uint8_t> authenticate_msg,
+    base::span<uint8_t, kMicLenV2> mic);
 
 // Updates the target info sent by the server, and generates the clients
 // response target info.
-NET_EXPORT_PRIVATE Buffer
-GenerateUpdatedTargetInfo(bool is_mic_enabled,
-                          bool is_epa_enabled,
-                          const std::string& channel_bindings,
-                          const std::string& spn,
-                          const std::vector<AvPair>& av_pairs,
-                          uint64_t* server_timestamp);
+NET_EXPORT_PRIVATE std::vector<uint8_t> GenerateUpdatedTargetInfo(
+    bool is_mic_enabled,
+    bool is_epa_enabled,
+    const std::string& channel_bindings,
+    const std::string& spn,
+    const std::vector<AvPair>& av_pairs,
+    uint64_t* server_timestamp);
 
 }  // namespace ntlm
 }  // namespace net

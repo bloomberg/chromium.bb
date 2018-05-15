@@ -48,19 +48,13 @@ bool NtlmBufferWriter::WriteFlags(NegotiateFlags flags) {
   return WriteUInt32(static_cast<uint32_t>(flags));
 }
 
-bool NtlmBufferWriter::WriteBytes(const uint8_t* buffer, size_t len) {
-  if (!CanWrite(len))
+bool NtlmBufferWriter::WriteBytes(base::span<const uint8_t> bytes) {
+  if (!CanWrite(bytes.size()))
     return false;
 
-  memcpy(reinterpret_cast<void*>(GetBufferPtrAtCursor()),
-         reinterpret_cast<const void*>(buffer), len);
-
-  AdvanceCursor(len);
+  memcpy(GetBufferPtrAtCursor(), bytes.data(), bytes.size());
+  AdvanceCursor(bytes.size());
   return true;
-}
-
-bool NtlmBufferWriter::WriteBytes(const Buffer& bytes) {
-  return WriteBytes(bytes.data(), bytes.length());
 }
 
 bool NtlmBufferWriter::WriteZeros(size_t count) {
@@ -105,8 +99,7 @@ bool NtlmBufferWriter::WriteAvPair(const AvPair& pair) {
 }
 
 bool NtlmBufferWriter::WriteUtf8String(const std::string& str) {
-  return WriteBytes(reinterpret_cast<const uint8_t*>(str.c_str()),
-                    str.length());
+  return WriteBytes(base::as_bytes(base::make_span(str)));
 }
 
 bool NtlmBufferWriter::WriteUtf16AsUtf8String(const base::string16& str) {
@@ -120,7 +113,7 @@ bool NtlmBufferWriter::WriteUtf8AsUtf16String(const std::string& str) {
 }
 
 bool NtlmBufferWriter::WriteUtf16String(const base::string16& str) {
-  size_t num_bytes = str.length() * 2;
+  size_t num_bytes = str.size() * 2;
   if (!CanWrite(num_bytes))
     return false;
 
@@ -142,7 +135,7 @@ bool NtlmBufferWriter::WriteUtf16String(const base::string16& str) {
 }
 
 bool NtlmBufferWriter::WriteSignature() {
-  return WriteBytes(kSignature, kSignatureLen);
+  return WriteBytes(kSignature);
 }
 
 bool NtlmBufferWriter::WriteMessageType(MessageType message_type) {

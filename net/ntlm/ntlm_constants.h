@@ -7,16 +7,14 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string>
-#include <type_traits>
 
-#include "base/macros.h"
+#include <vector>
+
+#include "base/stl_util.h"
 #include "net/base/net_export.h"
 
 namespace net {
 namespace ntlm {
-
-using Buffer = std::basic_string<uint8_t>;
 
 // A security buffer is a structure within an NTLM message that indicates
 // the offset from the beginning of the message and the length of a payload
@@ -134,15 +132,18 @@ constexpr inline TargetInfoAvFlags operator&(TargetInfoAvFlags lhs,
 // other AvPairs the value of these 2 fields is undefined and the payload
 // is in the |buffer| field. For these fields the payload is copied verbatim
 // and it's content is not read or validated in any way.
-struct AvPair {
-  AvPair() {}
-  AvPair(TargetInfoAvId avid, uint16_t avlen) : avid(avid), avlen(avlen) {}
-  AvPair(TargetInfoAvId avid, Buffer buffer)
-      : buffer(std::move(buffer)), avid(avid) {
-    avlen = this->buffer.size();
-  }
+struct NET_EXPORT_PRIVATE AvPair {
+  AvPair();
+  AvPair(TargetInfoAvId avid, uint16_t avlen);
+  AvPair(TargetInfoAvId avid, std::vector<uint8_t> buffer);
+  AvPair(const AvPair& other);
+  AvPair(AvPair&& other);
+  ~AvPair();
 
-  Buffer buffer;
+  AvPair& operator=(const AvPair& other);
+  AvPair& operator=(AvPair&& other);
+
+  std::vector<uint8_t> buffer;
   uint64_t timestamp;
   TargetInfoAvFlags flags;
   TargetInfoAvId avid;
@@ -150,7 +151,7 @@ struct AvPair {
 };
 
 static constexpr uint8_t kSignature[] = "NTLMSSP";
-static constexpr size_t kSignatureLen = arraysize(kSignature);
+static constexpr size_t kSignatureLen = base::size(kSignature);
 static constexpr uint16_t kProofInputVersionV2 = 0x0101;
 static constexpr size_t kSecurityBufferLen =
     (2 * sizeof(uint16_t)) + sizeof(uint32_t);

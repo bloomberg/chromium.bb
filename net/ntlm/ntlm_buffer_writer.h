@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "base/containers/span.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 #include "net/base/net_export.h"
@@ -49,8 +50,8 @@ class NET_EXPORT_PRIVATE NtlmBufferWriter {
   size_t GetLength() const { return buffer_.size(); }
   size_t GetCursor() const { return cursor_; }
   bool IsEndOfBuffer() const { return cursor_ >= GetLength(); }
-  const Buffer& GetBuffer() const { return buffer_; }
-  Buffer Pass() const { return std::move(buffer_); }
+  base::span<const uint8_t> GetBuffer() const { return buffer_; }
+  std::vector<uint8_t> Pass() const { return std::move(buffer_); }
 
   // Returns true if there are |len| more bytes between the current cursor
   // position and the end of the buffer.
@@ -71,13 +72,9 @@ class NET_EXPORT_PRIVATE NtlmBufferWriter {
   // Writes flags as a 32 bit unsigned value (little endian).
   bool WriteFlags(NegotiateFlags flags) WARN_UNUSED_RESULT;
 
-  // Writes |len| bytes from |buffer|. If there are not |len| more bytes in
-  // the buffer, it returns false.
-  bool WriteBytes(const uint8_t* buffer, size_t len) WARN_UNUSED_RESULT;
-
-  // Writes the bytes from the |Buffer|. If there are not enough
+  // Writes the bytes from the |buffer|. If there are not enough
   // bytes in the buffer, it returns false.
-  bool WriteBytes(const Buffer& buffer) WARN_UNUSED_RESULT;
+  bool WriteBytes(base::span<const uint8_t> buffer) WARN_UNUSED_RESULT;
 
   // Writes |count| bytes of zeros to the buffer. If there are not |count|
   // more bytes in available in the buffer, it returns false.
@@ -179,8 +176,8 @@ class NET_EXPORT_PRIVATE NtlmBufferWriter {
   void AdvanceCursor(size_t count) { SetCursor(GetCursor() + count); }
 
   // Returns a pointer to the start of the buffer.
-  const uint8_t* GetBufferPtr() const { return &buffer_[0]; }
-  uint8_t* GetBufferPtr() { return &buffer_[0]; }
+  const uint8_t* GetBufferPtr() const { return buffer_.data(); }
+  uint8_t* GetBufferPtr() { return buffer_.data(); }
 
   // Returns pointer into the buffer at the current cursor location.
   const uint8_t* GetBufferPtrAtCursor() const {
@@ -188,7 +185,7 @@ class NET_EXPORT_PRIVATE NtlmBufferWriter {
   }
   uint8_t* GetBufferPtrAtCursor() { return GetBufferPtr() + GetCursor(); }
 
-  Buffer buffer_;
+  std::vector<uint8_t> buffer_;
   size_t cursor_;
 
   DISALLOW_COPY_AND_ASSIGN(NtlmBufferWriter);

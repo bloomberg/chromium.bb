@@ -91,11 +91,11 @@ void UpdateTargetInfoAvPairs(bool is_mic_enabled,
   }
 
   if (is_epa_enabled) {
-    Buffer channel_bindings_hash(kChannelBindingsHashLen, 0);
+    std::vector<uint8_t> channel_bindings_hash(kChannelBindingsHashLen, 0);
 
     // Hash the channel bindings if they exist otherwise they remain zeros.
     if (!channel_bindings.empty()) {
-      GenerateChannelBindingHashV2(channel_bindings, &channel_bindings_hash[0]);
+      GenerateChannelBindingHashV2(channel_bindings, channel_bindings_hash);
     }
 
     av_pairs->emplace_back(TargetInfoAvId::kChannelBindings,
@@ -119,8 +119,8 @@ void UpdateTargetInfoAvPairs(bool is_mic_enabled,
   *target_info_len += kAvPairHeaderLen;
 }
 
-Buffer WriteUpdatedTargetInfo(const std::vector<AvPair>& av_pairs,
-                              size_t updated_target_info_len) {
+std::vector<uint8_t> WriteUpdatedTargetInfo(const std::vector<AvPair>& av_pairs,
+                                            size_t updated_target_info_len) {
   bool result = true;
   NtlmBufferWriter writer(updated_target_info_len);
   for (const AvPair& pair : av_pairs) {
@@ -151,21 +151,24 @@ void Splay56To64(const uint8_t* key_56, uint8_t* key_64) {
 
 }  // namespace
 
-void Create3DesKeysFromNtlmHash(const uint8_t* ntlm_hash, uint8_t* keys) {
+void Create3DesKeysFromNtlmHash(
+    base::span<const uint8_t, kNtlmHashLen> ntlm_hash,
+    base::span<uint8_t, 24> keys) {
   // Put the first 112 bits from |ntlm_hash| into the first 16 bytes of
   // |keys|.
-  Splay56To64(ntlm_hash, keys);
-  Splay56To64(ntlm_hash + 7, keys + 8);
+  Splay56To64(ntlm_hash.data(), keys.data());
+  Splay56To64(ntlm_hash.data() + 7, keys.data() + 8);
 
   // Put the next 2x 7 bits in bytes 16 and 17 of |keys|, then
   // the last 2 bits in byte 18, then zero pad the rest of the final key.
   keys[16] = ntlm_hash[14];
   keys[17] = ntlm_hash[14] << 7 | ntlm_hash[15] >> 1;
   keys[18] = ntlm_hash[15] << 6;
-  memset(keys + 19, 0, 5);
+  memset(keys.data() + 19, 0, 5);
 }
 
-void GenerateNtlmHashV1(const base::string16& password, uint8_t* hash) {
+void GenerateNtlmHashV1(const base::string16& password,
+                        base::span<uint8_t, kNtlmHashLen> hash) {
   size_t length = password.length() * 2;
   NtlmBufferWriter writer(length);
 
@@ -173,12 +176,12 @@ void GenerateNtlmHashV1(const base::string16& password, uint8_t* hash) {
   bool result = writer.WriteUtf16String(password) && writer.IsEndOfBuffer();
   DCHECK(result);
 
-  MD4(writer.GetBuffer().data(), writer.GetLength(), hash);
+  MD4(writer.GetBuffer().data(), writer.GetLength(), hash.data());
 }
 
-void GenerateResponseDesl(const uint8_t* hash,
-                          const uint8_t* challenge,
-                          uint8_t* response) {
+void GenerateResponseDesl(base::span<const uint8_t, kNtlmHashLen> hash,
+                          base::span<const uint8_t, kChallengeLen> challenge,
+                          base::span<uint8_t, kResponseLenV1> response) {
   constexpr size_t block_count = 3;
   constexpr size_t block_size = sizeof(DES_cblock);
   static_assert(kChallengeLen == block_size,
@@ -187,7 +190,7 @@ void GenerateResponseDesl(const uint8_t* hash,
                 "kResponseLenV1 must equal block_count * block_size");
 
   const DES_cblock* challenge_block =
-      reinterpret_cast<const DES_cblock*>(challenge);
+      reinterpret_cast<const DES_cblock*>(challenge.data());
   uint8_t keys[block_count * block_size];
 
   // Map the NTLM hash to three 8 byte DES keys, with 7 bits of the key in each
@@ -197,7 +200,8 @@ void GenerateResponseDesl(const uint8_t* hash,
   Create3DesKeysFromNtlmHash(hash, keys);
   for (size_t ix = 0; ix < block_count * block_size; ix += block_size) {
     DES_cblock* key_block = reinterpret_cast<DES_cblock*>(keys + ix);
-    DES_cblock* response_block = reinterpret_cast<DES_cblock*>(response + ix);
+    DES_cblock* response_block =
+        reinterpret_cast<DES_cblock*>(response.data() + ix);
 
     DES_key_schedule key_schedule;
     DES_set_odd_parity(key_block);
@@ -207,47 +211,52 @@ void GenerateResponseDesl(const uint8_t* hash,
   }
 }
 
-void GenerateNtlmResponseV1(const base::string16& password,
-                            const uint8_t* challenge,
-                            uint8_t* ntlm_response) {
+void GenerateNtlmResponseV1(
+    const base::string16& password,
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<uint8_t, kResponseLenV1> ntlm_response) {
   uint8_t ntlm_hash[kNtlmHashLen];
   GenerateNtlmHashV1(password, ntlm_hash);
-  GenerateResponseDesl(ntlm_hash, challenge, ntlm_response);
+  GenerateResponseDesl(ntlm_hash, server_challenge, ntlm_response);
 }
 
-void GenerateResponsesV1(const base::string16& password,
-                         const uint8_t* server_challenge,
-                         uint8_t* lm_response,
-                         uint8_t* ntlm_response) {
+void GenerateResponsesV1(
+    const base::string16& password,
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<uint8_t, kResponseLenV1> lm_response,
+    base::span<uint8_t, kResponseLenV1> ntlm_response) {
   GenerateNtlmResponseV1(password, server_challenge, ntlm_response);
 
   // In NTLM v1 (with LMv1 disabled), the lm_response and ntlm_response are the
   // same. So just copy the ntlm_response into the lm_response.
-  memcpy(lm_response, ntlm_response, kResponseLenV1);
+  memcpy(lm_response.data(), ntlm_response.data(), kResponseLenV1);
 }
 
-void GenerateLMResponseV1WithSessionSecurity(const uint8_t* client_challenge,
-                                             uint8_t* lm_response) {
+void GenerateLMResponseV1WithSessionSecurity(
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<uint8_t, kResponseLenV1> lm_response) {
   // In NTLM v1 with Session Security (aka NTLM2) the lm_response is 8 bytes of
   // client challenge and 16 bytes of zeros. (See 3.3.1)
-  memcpy(lm_response, client_challenge, kChallengeLen);
-  memset(lm_response + kChallengeLen, 0, kResponseLenV1 - kChallengeLen);
+  memcpy(lm_response.data(), client_challenge.data(), kChallengeLen);
+  memset(lm_response.data() + kChallengeLen, 0, kResponseLenV1 - kChallengeLen);
 }
 
-void GenerateSessionHashV1WithSessionSecurity(const uint8_t* server_challenge,
-                                              const uint8_t* client_challenge,
-                                              uint8_t* session_hash) {
+void GenerateSessionHashV1WithSessionSecurity(
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<uint8_t, kNtlmHashLen> session_hash) {
   MD5_CTX ctx;
   MD5_Init(&ctx);
-  MD5_Update(&ctx, server_challenge, kChallengeLen);
-  MD5_Update(&ctx, client_challenge, kChallengeLen);
-  MD5_Final(session_hash, &ctx);
+  MD5_Update(&ctx, server_challenge.data(), kChallengeLen);
+  MD5_Update(&ctx, client_challenge.data(), kChallengeLen);
+  MD5_Final(session_hash.data(), &ctx);
 }
 
-void GenerateNtlmResponseV1WithSessionSecurity(const base::string16& password,
-                                               const uint8_t* server_challenge,
-                                               const uint8_t* client_challenge,
-                                               uint8_t* ntlm_response) {
+void GenerateNtlmResponseV1WithSessionSecurity(
+    const base::string16& password,
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<uint8_t, kResponseLenV1> ntlm_response) {
   // Generate the NTLMv1 Hash.
   uint8_t ntlm_hash[kNtlmHashLen];
   GenerateNtlmHashV1(password, ntlm_hash);
@@ -257,15 +266,17 @@ void GenerateNtlmResponseV1WithSessionSecurity(const base::string16& password,
   GenerateSessionHashV1WithSessionSecurity(server_challenge, client_challenge,
                                            session_hash);
 
-  // Only the first 8 bytes of |session_hash| are actually used.
-  GenerateResponseDesl(ntlm_hash, session_hash, ntlm_response);
+  GenerateResponseDesl(
+      ntlm_hash, base::make_span(session_hash).subspan<0, kChallengeLen>(),
+      ntlm_response);
 }
 
-void GenerateResponsesV1WithSessionSecurity(const base::string16& password,
-                                            const uint8_t* server_challenge,
-                                            const uint8_t* client_challenge,
-                                            uint8_t* lm_response,
-                                            uint8_t* ntlm_response) {
+void GenerateResponsesV1WithSessionSecurity(
+    const base::string16& password,
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<const uint8_t, kChallengeLen> client_challenge,
+    base::span<uint8_t, kResponseLenV1> lm_response,
+    base::span<uint8_t, kResponseLenV1> ntlm_response) {
   GenerateLMResponseV1WithSessionSecurity(client_challenge, lm_response);
   GenerateNtlmResponseV1WithSessionSecurity(password, server_challenge,
                                             client_challenge, ntlm_response);
@@ -274,7 +285,7 @@ void GenerateResponsesV1WithSessionSecurity(const base::string16& password,
 void GenerateNtlmHashV2(const base::string16& domain,
                         const base::string16& username,
                         const base::string16& password,
-                        uint8_t* v2_hash) {
+                        base::span<uint8_t, kNtlmHashLen> v2_hash) {
   // NOTE: According to [MS-NLMP] Section 3.3.2 only the username and not the
   // domain is uppercased.
   base::string16 upper_username;
@@ -291,56 +302,59 @@ void GenerateNtlmHashV2(const base::string16& domain,
   DCHECK(writer_result);
 
   unsigned int outlen = kNtlmHashLen;
-  v2_hash =
+  uint8_t* out_hash =
       HMAC(EVP_md5(), v1_hash, sizeof(v1_hash), input_writer.GetBuffer().data(),
-           input_writer.GetLength(), v2_hash, &outlen);
-  DCHECK_NE(nullptr, v2_hash);
+           input_writer.GetLength(), v2_hash.data(), &outlen);
+  DCHECK_EQ(v2_hash.data(), out_hash);
   DCHECK_EQ(sizeof(v1_hash), outlen);
 }
 
-Buffer GenerateProofInputV2(uint64_t timestamp,
-                            const uint8_t* client_challenge) {
+std::vector<uint8_t> GenerateProofInputV2(
+    uint64_t timestamp,
+    base::span<const uint8_t, kChallengeLen> client_challenge) {
   NtlmBufferWriter writer(kProofInputLenV2);
   bool result = writer.WriteUInt16(kProofInputVersionV2) &&
                 writer.WriteZeros(6) && writer.WriteUInt64(timestamp) &&
-                writer.WriteBytes(client_challenge, kChallengeLen) &&
-                writer.WriteZeros(4) && writer.IsEndOfBuffer();
+                writer.WriteBytes(client_challenge) && writer.WriteZeros(4) &&
+                writer.IsEndOfBuffer();
 
   DCHECK(result);
   return writer.Pass();
 }
 
-void GenerateNtlmProofV2(const uint8_t* v2_hash,
-                         const uint8_t* server_challenge,
-                         const Buffer& v2_input,
-                         const Buffer& target_info,
-                         uint8_t* v2_proof) {
-  DCHECK_EQ(kProofInputLenV2, v2_input.size());
-
+void GenerateNtlmProofV2(
+    base::span<const uint8_t, kNtlmHashLen> v2_hash,
+    base::span<const uint8_t, kChallengeLen> server_challenge,
+    base::span<const uint8_t, kProofInputLenV2> v2_input,
+    base::span<const uint8_t> target_info,
+    base::span<uint8_t, kNtlmProofLenV2> v2_proof) {
   bssl::ScopedHMAC_CTX ctx;
-  HMAC_Init_ex(ctx.get(), v2_hash, kNtlmHashLen, EVP_md5(), NULL);
+  HMAC_Init_ex(ctx.get(), v2_hash.data(), kNtlmHashLen, EVP_md5(), NULL);
   DCHECK_EQ(kNtlmProofLenV2, HMAC_size(ctx.get()));
-  HMAC_Update(ctx.get(), server_challenge, kChallengeLen);
-  HMAC_Update(ctx.get(), v2_input.data(), v2_input.size());
+  HMAC_Update(ctx.get(), server_challenge.data(), kChallengeLen);
+  HMAC_Update(ctx.get(), v2_input.data(), kProofInputLenV2);
   HMAC_Update(ctx.get(), target_info.data(), target_info.size());
   const uint32_t zero = 0;
   HMAC_Update(ctx.get(), reinterpret_cast<const uint8_t*>(&zero),
               sizeof(uint32_t));
-  HMAC_Final(ctx.get(), v2_proof, nullptr);
+  HMAC_Final(ctx.get(), v2_proof.data(), nullptr);
 }
 
-void GenerateSessionBaseKeyV2(const uint8_t* v2_hash,
-                              const uint8_t* v2_proof,
-                              uint8_t* session_key) {
+void GenerateSessionBaseKeyV2(
+    base::span<const uint8_t, kNtlmHashLen> v2_hash,
+    base::span<const uint8_t, kNtlmProofLenV2> v2_proof,
+    base::span<uint8_t, kSessionKeyLenV2> session_key) {
   unsigned int outlen = kSessionKeyLenV2;
-  session_key = HMAC(EVP_md5(), v2_hash, kNtlmHashLen, v2_proof,
-                     kNtlmProofLenV2, session_key, &outlen);
-  DCHECK_NE(nullptr, session_key);
+  uint8_t* result =
+      HMAC(EVP_md5(), v2_hash.data(), kNtlmHashLen, v2_proof.data(),
+           kNtlmProofLenV2, session_key.data(), &outlen);
+  DCHECK_EQ(session_key.data(), result);
   DCHECK_EQ(kSessionKeyLenV2, outlen);
 }
 
-void GenerateChannelBindingHashV2(const std::string& channel_bindings,
-                                  uint8_t* channel_bindings_hash) {
+void GenerateChannelBindingHashV2(
+    const std::string& channel_bindings,
+    base::span<uint8_t, kNtlmHashLen> channel_bindings_hash) {
   NtlmBufferWriter writer(kEpaUnhashedStructHeaderLen);
   bool result = writer.WriteZeros(16) &&
                 writer.WriteUInt32(channel_bindings.length()) &&
@@ -351,30 +365,31 @@ void GenerateChannelBindingHashV2(const std::string& channel_bindings,
   MD5_Init(&ctx);
   MD5_Update(&ctx, writer.GetBuffer().data(), writer.GetBuffer().size());
   MD5_Update(&ctx, channel_bindings.data(), channel_bindings.size());
-  MD5_Final(channel_bindings_hash, &ctx);
+  MD5_Final(channel_bindings_hash.data(), &ctx);
 }
 
-void GenerateMicV2(const uint8_t* session_key,
-                   const Buffer& negotiate_msg,
-                   const Buffer& challenge_msg,
-                   const Buffer& authenticate_msg,
-                   uint8_t* mic) {
+void GenerateMicV2(base::span<const uint8_t, kSessionKeyLenV2> session_key,
+                   base::span<const uint8_t> negotiate_msg,
+                   base::span<const uint8_t> challenge_msg,
+                   base::span<const uint8_t> authenticate_msg,
+                   base::span<uint8_t, kMicLenV2> mic) {
   bssl::ScopedHMAC_CTX ctx;
-  HMAC_Init_ex(ctx.get(), session_key, kNtlmHashLen, EVP_md5(), NULL);
+  HMAC_Init_ex(ctx.get(), session_key.data(), kSessionKeyLenV2, EVP_md5(),
+               NULL);
   DCHECK_EQ(kMicLenV2, HMAC_size(ctx.get()));
   HMAC_Update(ctx.get(), negotiate_msg.data(), negotiate_msg.size());
   HMAC_Update(ctx.get(), challenge_msg.data(), challenge_msg.size());
   HMAC_Update(ctx.get(), authenticate_msg.data(), authenticate_msg.size());
-  HMAC_Final(ctx.get(), mic, nullptr);
+  HMAC_Final(ctx.get(), mic.data(), nullptr);
 }
 
-NET_EXPORT_PRIVATE Buffer
-GenerateUpdatedTargetInfo(bool is_mic_enabled,
-                          bool is_epa_enabled,
-                          const std::string& channel_bindings,
-                          const std::string& spn,
-                          const std::vector<AvPair>& av_pairs,
-                          uint64_t* server_timestamp) {
+NET_EXPORT_PRIVATE std::vector<uint8_t> GenerateUpdatedTargetInfo(
+    bool is_mic_enabled,
+    bool is_epa_enabled,
+    const std::string& channel_bindings,
+    const std::string& spn,
+    const std::vector<AvPair>& av_pairs,
+    uint64_t* server_timestamp) {
   size_t updated_target_info_len = 0;
   std::vector<AvPair> updated_av_pairs(av_pairs);
   UpdateTargetInfoAvPairs(is_mic_enabled, is_epa_enabled, channel_bindings, spn,
