@@ -1,7 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
 
 <!-- Common paper-button styling for Material Design WebUI. -->
 <dom-module id="paper-button-style">
@@ -13,8 +12,9 @@
         --disabled-color: rgb(241, 243, 244);
         /* Blue-ish color used either as a background or as a text color,
            depending on the type of button. */
+        --paper-button-ink-color: var(--google-blue-600);
+        --paper-ripple-opacity: 0.1;
         --text-or-bg-color: var(--google-blue-600);
-        --paper-button-ink-color: var(--paper-grey-600);
 
         border: 1px solid rgb(218, 220, 224);
         border-radius: 4px;
@@ -47,7 +47,8 @@
       }
 
       paper-button.action-button {
-        --paper-button-ink-color: black;
+        --paper-ripple-opacity: 0.32;
+        --paper-button-ink-color: white;
         background-color: var(--text-or-bg-color);
         border: none;
         color: white;
