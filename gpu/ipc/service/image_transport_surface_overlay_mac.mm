@@ -183,7 +183,8 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
-    const gfx::Rect& pixel_damage_rect) {
+    const gfx::Rect& pixel_damage_rect,
+    const PresentationCallback& callback) {
   TRACE_EVENT0("gpu", "ImageTransportSurfaceOverlayMac::SwapBuffersInternal");
 
   // Do a GL fence for flush to apply back-pressure before drawing.
@@ -242,16 +243,21 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
 
   // Send the swap parameters to the browser.
   delegate_->DidSwapBuffersComplete(std::move(params));
-
+  constexpr int64_t kRefreshIntervalInMicroseconds =
+      base::Time::kMicrosecondsPerSecond / 60;
+  gfx::PresentationFeedback feedback(
+      base::TimeTicks::Now(),
+      base::TimeDelta::FromMicroseconds(kRefreshIntervalInMicroseconds),
+      0 /* flags */);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, std::move(feedback)));
   return gfx::SwapResult::SWAP_ACK;
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffers(
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide useful presentation feedback.
-  // https://crbug.com/776877
   return SwapBuffersInternal(
-      gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()));
+      gfx::Rect(0, 0, pixel_size_.width(), pixel_size_.height()), callback);
 }
 
 gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(
@@ -260,9 +266,7 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::PostSubBuffer(
     int width,
     int height,
     const PresentationCallback& callback) {
-  // TODO(penghuang): Provide useful presentation feedback.
-  // https://crbug.com/776877
-  return SwapBuffersInternal(gfx::Rect(x, y, width, height));
+  return SwapBuffersInternal(gfx::Rect(x, y, width, height), callback);
 }
 
 bool ImageTransportSurfaceOverlayMac::SupportsPostSubBuffer() {
@@ -345,6 +349,10 @@ void ImageTransportSurfaceOverlayMac::ScheduleCALayerInUseQuery(
 }
 
 bool ImageTransportSurfaceOverlayMac::IsSurfaceless() const {
+  return true;
+}
+
+bool ImageTransportSurfaceOverlayMac::SupportsPresentationCallback() {
   return true;
 }
 

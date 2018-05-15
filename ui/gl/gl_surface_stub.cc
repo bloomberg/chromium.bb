@@ -4,6 +4,7 @@
 
 #include "ui/gl/gl_surface_stub.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
 namespace gl {
@@ -24,8 +25,10 @@ bool GLSurfaceStub::IsOffscreen() {
 
 gfx::SwapResult GLSurfaceStub::SwapBuffers(
     const PresentationCallback& callback) {
-  callback.Run(gfx::PresentationFeedback(base::TimeTicks::Now(),
-                                         base::TimeDelta(), 0 /* flags */));
+  gfx::PresentationFeedback feedback(base::TimeTicks::Now(), base::TimeDelta(),
+                                     0 /* flags */);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(callback, std::move(feedback)));
   return gfx::SwapResult::SWAP_ACK;
 }
 

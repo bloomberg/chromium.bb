@@ -64,6 +64,7 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   void ScheduleCALayerInUseQuery(
       std::vector<CALayerInUseQuery> queries) override;
   bool IsSurfaceless() const override;
+  bool SupportsPresentationCallback() override;
 
   // ui::GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
@@ -74,7 +75,8 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   void SetSnapshotRequested();
   bool GetAndResetSnapshotRequested();
 
-  gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect);
+  gfx::SwapResult SwapBuffersInternal(const gfx::Rect& pixel_damage_rect,
+                                      const PresentationCallback& callback);
   void ApplyBackpressure(base::TimeTicks* before_flush_time,
                          base::TimeTicks* after_flush_before_commit_time);
 
