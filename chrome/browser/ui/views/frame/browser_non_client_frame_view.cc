@@ -132,16 +132,14 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
 }
 
 void BrowserNonClientFrameView::OnTabAdded(int index) {
-  if (MD::GetMode() == MD::MATERIAL_REFRESH &&
-      browser_view()->tabstrip()->tab_count() == 2) {
+  if (MD::IsRefreshUi() && browser_view()->tabstrip()->tab_count() == 2) {
     // We are exiting single-tab mode and need to repaint the frame.
     SchedulePaint();
   }
 }
 
 void BrowserNonClientFrameView::OnTabRemoved(int index) {
-  if (MD::GetMode() == MD::MATERIAL_REFRESH &&
-      browser_view()->tabstrip()->tab_count() == 1) {
+  if (MD::IsRefreshUi() && browser_view()->tabstrip()->tab_count() == 1) {
     // We are entering single-tab mode and need to repaint the frame.
     SchedulePaint();
   }
@@ -155,7 +153,7 @@ bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
   // Single-tab mode is only available in Refresh. The special color we use for
   // won't be visible if there's a frame image, but since it's used to determine
   // constrast of other UI elements, the theme color should be used instead.
-  return MD::GetMode() == MD::MATERIAL_REFRESH && GetFrameImage().isNull() &&
+  return MD::IsRefreshUi() && GetFrameImage().isNull() &&
          browser_view()->IsTabStripVisible() &&
          browser_view()->tabstrip()->tab_count() == 1;
 }
