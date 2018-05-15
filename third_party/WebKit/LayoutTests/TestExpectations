@@ -4693,6 +4693,7 @@ crbug.com/831993 [ Linux ] virtual/gpu-rasterization/images/cross-fade-overflow-
 crbug.com/832842 [ Win7 ] virtual/webrtc-wpt-unified-plan/external/wpt/webrtc/RTCDTMFSender-ontonechange.https.html [ Failure ]
 crbug.com/833655 [ Linux ] media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833655 [ Linux ] virtual/new-remote-playback-pipeline/media/controls/closed-captions-dynamic-update.html [ Skip ]
+crbug.com/833655 [ Linux ] virtual/incremental-shadow-dom/media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833655 [ Linux ] virtual/video-surface-layer/media/controls/closed-captions-dynamic-update.html [ Skip ]
 crbug.com/833658 [ Linux Win Mac ] media/video-controls-focus-movement-on-hide.html [ Pass Failure ]
 crbug.com/833100 [ Mac ] external/wpt/battery-status/battery-full-manual.https.html [ Failure ]
@@ -4713,9 +4714,6 @@ crbug.com/836783 fast/peerconnection/RTCRtpSender-setParameters.html [ Pass Time
 crbug.com/838254 virtual/video-surface-layer/media/webkit-media-controls-webkit-appearance.html [ Failure ]
 
 crbug.com/839332 [ Mac ] virtual/video-surface-layer/media/video-no-audio.html [ Pass Failure ]
-
-# Sheriff 2018-05-14
-crbug.com/842793 [ Linux ] virtual/incremental-shadow-dom/media/controls/closed-captions-dynamic-update.html [ Pass Failure ]
 
 # Sheriff 2018-05-17
 crbug.com/840792 [ Mac10.12 Mac10.13 ] external/wpt/pointerevents/pointerevent_touch-action-table-test_touch-manual.html [ Pass Timeout ]
