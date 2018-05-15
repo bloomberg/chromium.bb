@@ -77,13 +77,11 @@ public class BrowserStartupControllerTest {
         private boolean mWasSuccess;
         private boolean mWasFailure;
         private boolean mHasStartupResult;
-        private boolean mAlreadyStarted;
 
         @Override
-        public void onSuccess(boolean alreadyStarted) {
+        public void onSuccess() {
             assert !mHasStartupResult;
             mWasSuccess = true;
-            mAlreadyStarted = alreadyStarted;
             mHasStartupResult = true;
         }
 
@@ -131,9 +129,6 @@ public class BrowserStartupControllerTest {
 
         Assert.assertTrue("Callback should have been executed.", callback.mHasStartupResult);
         Assert.assertTrue("Callback should have been a success.", callback.mWasSuccess);
-        Assert.assertFalse(
-                "Callback should be told that the browser process was not already started.",
-                callback.mAlreadyStarted);
     }
 
     @Test
@@ -185,11 +180,6 @@ public class BrowserStartupControllerTest {
         Assert.assertTrue("Callback 2 should have been a success.", callback2.mWasSuccess);
         Assert.assertTrue("Callback 3 should have been executed.", callback3.mHasStartupResult);
         Assert.assertTrue("Callback 3 should have been a success.", callback3.mWasSuccess);
-        // Some startup tasks might have been enqueued after the browser process was started, but
-        // not the first one which kicked of the startup.
-        Assert.assertFalse(
-                "Callback 1 should be told that the browser process was not already started.",
-                callback1.mAlreadyStarted);
     }
 
     @Test
@@ -255,12 +245,8 @@ public class BrowserStartupControllerTest {
 
         Assert.assertTrue("Callback 3 should have been executed.", callback3.mHasStartupResult);
         Assert.assertTrue("Callback 3 should have been a success.", callback3.mWasSuccess);
-        Assert.assertTrue("Callback 3 should be told that the browser process was already started.",
-                callback3.mAlreadyStarted);
         Assert.assertTrue("Callback 4 should have been executed.", callback4.mHasStartupResult);
         Assert.assertTrue("Callback 4 should have been a success.", callback4.mWasSuccess);
-        Assert.assertTrue("Callback 4 should be told that the browser process was already started.",
-                callback4.mAlreadyStarted);
     }
 
     @Test
@@ -412,9 +398,6 @@ public class BrowserStartupControllerTest {
 
         Assert.assertTrue("Callback should have been executed.", callback.mHasStartupResult);
         Assert.assertTrue("Callback should have been a success.", callback.mWasSuccess);
-        Assert.assertFalse(
-                "Callback should be told that the browser process was not already started.",
-                callback.mAlreadyStarted);
     }
 
     @Test
@@ -459,8 +442,6 @@ public class BrowserStartupControllerTest {
 
         Assert.assertTrue("Callback should have been executed.", callback.mHasStartupResult);
         Assert.assertTrue("Callback should have been a success.", callback.mWasSuccess);
-        Assert.assertTrue("Callback should be told that the browser process was already started.",
-                callback.mAlreadyStarted);
     }
 
     @Test

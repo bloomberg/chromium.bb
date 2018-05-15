@@ -322,7 +322,7 @@ public class ChromeBrowserInitializer {
                         }
 
                         @Override
-                        public void onSuccess(boolean success) {
+                        public void onSuccess() {
                             tasks.start(false);
                         }
                     });

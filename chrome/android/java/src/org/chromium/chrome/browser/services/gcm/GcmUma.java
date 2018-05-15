@@ -63,18 +63,17 @@ public class GcmUma {
             @Override
             public void run() {
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .addStartupCompletedObserver(
-                                new StartupCallback() {
-                                    @Override
-                                    public void onSuccess(boolean alreadyStarted) {
-                                        task.run();
-                                    }
+                        .addStartupCompletedObserver(new StartupCallback() {
+                            @Override
+                            public void onSuccess() {
+                                task.run();
+                            }
 
-                                    @Override
-                                    public void onFailure() {
-                                        // Startup failed.
-                                    }
-                                });
+                            @Override
+                            public void onFailure() {
+                                // Startup failed.
+                            }
+                        });
             }
         });
     }

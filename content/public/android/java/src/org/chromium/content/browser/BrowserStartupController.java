@@ -44,15 +44,11 @@ public class BrowserStartupController {
      * This provides the interface to the callbacks for successful or failed startup
      */
     public interface StartupCallback {
-        void onSuccess(boolean alreadyStarted);
+        void onSuccess();
         void onFailure();
     }
 
     private static final String TAG = "cr.BrowserStartup";
-
-    // Helper constants for {@link StartupCallback#onSuccess}.
-    private static final boolean ALREADY_STARTED = true;
-    private static final boolean NOT_ALREADY_STARTED = false;
 
     // Helper constants for {@link #executeEnqueuedCallbacks(int, boolean)}.
     @VisibleForTesting
@@ -72,7 +68,7 @@ public class BrowserStartupController {
     @CalledByNative
     static void browserStartupComplete(int result) {
         if (sInstance != null) {
-            sInstance.executeEnqueuedCallbacks(result, NOT_ALREADY_STARTED);
+            sInstance.executeEnqueuedCallbacks(result);
         }
     }
 
@@ -113,7 +109,7 @@ public class BrowserStartupController {
             public void run() {
                 addStartupCompletedObserver(new StartupCallback() {
                     @Override
-                    public void onSuccess(boolean alreadyStarted) {
+                    public void onSuccess() {
                         assert mTracingController == null;
                         Context context = ContextUtils.getApplicationContext();
                         mTracingController = new TracingControllerAndroid(context);
@@ -191,7 +187,7 @@ public class BrowserStartupController {
                     if (mHasCalledContentStart) return;
                     if (contentStart() > 0) {
                         // Failed. The callbacks may not have run, so run them.
-                        enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
+                        enqueueCallbackExecution(STARTUP_FAILURE);
                     }
                 }
             });
@@ -220,7 +216,7 @@ public class BrowserStartupController {
             if (!mHasCalledContentStart) {
                 if (contentStart() > 0) {
                     // Failed. The callbacks may not have run, so run them.
-                    enqueueCallbackExecution(STARTUP_FAILURE, NOT_ALREADY_STARTED);
+                    enqueueCallbackExecution(STARTUP_FAILURE);
                     startedSuccessfully = false;
                 }
             }
@@ -268,13 +264,13 @@ public class BrowserStartupController {
         }
     }
 
-    private void executeEnqueuedCallbacks(int startupResult, boolean alreadyStarted) {
+    private void executeEnqueuedCallbacks(int startupResult) {
         assert ThreadUtils.runningOnUiThread() : "Callback from browser startup from wrong thread.";
         mStartupDone = true;
         mStartupSuccess = (startupResult <= 0);
         for (StartupCallback asyncStartupCallback : mAsyncStartupCallbacks) {
             if (mStartupSuccess) {
-                asyncStartupCallback.onSuccess(alreadyStarted);
+                asyncStartupCallback.onSuccess();
             } else {
                 asyncStartupCallback.onFailure();
             }
@@ -285,11 +281,11 @@ public class BrowserStartupController {
 
     // Queue the callbacks to run. Since running the callbacks clears the list it is safe to call
     // this more than once.
-    private void enqueueCallbackExecution(final int startupFailure, final boolean alreadyStarted) {
+    private void enqueueCallbackExecution(final int startupFailure) {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                executeEnqueuedCallbacks(startupFailure, alreadyStarted);
+                executeEnqueuedCallbacks(startupFailure);
             }
         });
     }
@@ -299,7 +295,7 @@ public class BrowserStartupController {
             @Override
             public void run() {
                 if (mStartupSuccess) {
-                    callback.onSuccess(ALREADY_STARTED);
+                    callback.onSuccess();
                 } else {
                     callback.onFailure();
                 }
