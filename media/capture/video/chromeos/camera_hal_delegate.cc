@@ -130,11 +130,18 @@ void CameraHalDelegate::GetSupportedFormats(
       reinterpret_cast<int64_t*>((*min_frame_durations)->data.data());
   for (size_t i = 0; i < (*min_frame_durations)->count;
        i += kStreamDurationSize) {
-    int32_t format = base::checked_cast<int32_t>(iter[kStreamFormatOffset]);
+    auto hal_format =
+        static_cast<cros::mojom::HalPixelFormat>(iter[kStreamFormatOffset]);
     int32_t width = base::checked_cast<int32_t>(iter[kStreamWidthOffset]);
     int32_t height = base::checked_cast<int32_t>(iter[kStreamHeightOffset]);
     int64_t duration = iter[kStreamDurationOffset];
     iter += kStreamDurationSize;
+
+    if (hal_format == cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB) {
+      // Skip BLOB formats and use it only for TakePicture() since it's
+      // inefficient to stream JPEG frames for CrOS camera HAL.
+      continue;
+    }
 
     if (duration <= 0) {
       LOG(ERROR) << "Ignoring invalid frame duration: " << duration;
@@ -142,9 +149,6 @@ void CameraHalDelegate::GetSupportedFormats(
     }
     float max_fps = 1.0 * 1000000000LL / duration;
 
-    DVLOG(1) << "[" << std::hex << format << " " << std::dec << width << " "
-             << height << " " << duration << "]";
-    auto hal_format = static_cast<cros::mojom::HalPixelFormat>(format);
     const ChromiumPixelFormat cr_format =
         camera_buffer_factory_->ResolveStreamBufferFormat(hal_format);
     if (cr_format.video_format == PIXEL_FORMAT_UNKNOWN) {
@@ -327,6 +331,7 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
     LOG(ERROR) << "Failed to get camera info. Camera id: " << camera_id;
   }
   // In case of error |camera_info| is empty.
+  SortCameraMetadata(&camera_info->static_camera_characteristics);
   camera_info_[std::to_string(camera_id)] = std::move(camera_info);
   if (camera_info_.size() == num_builtin_cameras_) {
     builtin_camera_info_updated_.Signal();
