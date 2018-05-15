@@ -19,6 +19,8 @@ GFX_SWITCHES_EXPORT extern const char kDisableDirectWriteForUI[];
 GFX_SWITCHES_EXPORT extern const char kEnableHarfBuzzRenderText[];
 #endif
 
+GFX_SWITCHES_EXPORT extern const char kDisableFontSubpixelPositioning[];
+
 GFX_SWITCHES_EXPORT extern const char kHeadless[];
 
 }  // namespace switches
