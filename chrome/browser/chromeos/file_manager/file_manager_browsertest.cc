@@ -21,6 +21,9 @@ struct TestCase {
   TestCase(GuestMode mode, const char* name)
     : guest_mode(mode), test_name(name) {}
 
+  explicit TestCase(const char* name)
+    : test_name(name) {}
+
   const char* GetTestName() const {
     CHECK(test_name) << "FATAL: no test name";
     return test_name;
@@ -111,20 +114,20 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDisplay,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "fileDisplayDownloads"),
+    ::testing::Values(TestCase("fileDisplayDownloads"),
                       TestCase(IN_GUEST_MODE, "fileDisplayDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "fileDisplayDrive"),
-                      TestCase(NOT_IN_GUEST_MODE, "fileDisplayMtp"),
-                      TestCase(NOT_IN_GUEST_MODE, "fileSearch"),
-                      TestCase(NOT_IN_GUEST_MODE, "fileSearchCaseInsensitive"),
-                      TestCase(NOT_IN_GUEST_MODE, "fileSearchNotFound")));
+                      TestCase("fileDisplayDrive"),
+                      TestCase("fileDisplayMtp"),
+                      TestCase("fileSearch"),
+                      TestCase("fileSearchCaseInsensitive"),
+                      TestCase("fileSearchNotFound")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     OpenVideoFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestCase(IN_GUEST_MODE, "videoOpenDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "videoOpenDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "videoOpenDrive")));
+                      TestCase("videoOpenDownloads"),
+                      TestCase("videoOpenDrive")));
 
 // TIMEOUT PASS on MSAN, https://crbug.com/836254
 #if defined(MEMORY_SANITIZER)
@@ -137,15 +140,15 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase(IN_GUEST_MODE, "audioOpenDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "audioOpenDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "audioOpenDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "audioAutoAdvanceDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "audioRepeatAllModeSingleFileDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "audioNoRepeatModeSingleFileDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "audioRepeatOneModeSingleFileDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "audioRepeatAllModeMultipleFileDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "audioNoRepeatModeMultipleFileDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "audioRepeatOneModeMultipleFileDrive")));
+        TestCase("audioOpenDownloads"),
+        TestCase("audioOpenDrive"),
+        TestCase("audioAutoAdvanceDrive"),
+        TestCase("audioRepeatAllModeSingleFileDrive"),
+        TestCase("audioNoRepeatModeSingleFileDrive"),
+        TestCase("audioRepeatOneModeSingleFileDrive"),
+        TestCase("audioRepeatAllModeMultipleFileDrive"),
+        TestCase("audioNoRepeatModeMultipleFileDrive"),
+        TestCase("audioRepeatOneModeMultipleFileDrive")));
 
 // Fails on the MSAN bots, https://crbug.com/837551
 #if defined(MEMORY_SANITIZER)
@@ -157,260 +160,257 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_OpenImageFiles,
     FileManagerBrowserTest,
     ::testing::Values(TestCase(IN_GUEST_MODE, "imageOpenDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "imageOpenDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "imageOpenDrive")));
+                      TestCase("imageOpenDownloads"),
+                      TestCase("imageOpenDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "selectCreateFolderDownloads"),
+        TestCase("selectCreateFolderDownloads"),
         TestCase(IN_GUEST_MODE, "createFolderDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "createFolderDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "createFolderDrive")));
+        TestCase("createFolderDownloads"),
+        TestCase("createFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase(IN_GUEST_MODE, "keyboardDeleteDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "keyboardDeleteDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "keyboardDeleteDrive"),
+        TestCase("keyboardDeleteDownloads"),
+        TestCase("keyboardDeleteDrive"),
         TestCase(IN_GUEST_MODE, "keyboardCopyDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "keyboardCopyDrive"),
+        TestCase("keyboardCopyDownloads"),
+        TestCase("keyboardCopyDrive"),
         TestCase(IN_GUEST_MODE, "renameFileDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "renameFileDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "renameFileDrive"),
+        TestCase("renameFileDownloads"),
+        TestCase("renameFileDrive"),
         TestCase(IN_GUEST_MODE, "renameNewFolderDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "renameNewFolderDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "renameNewFolderDrive")));
+        TestCase("renameNewFolderDownloads"),
+        TestCase("renameNewFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "deleteMenuItemNoEntrySelected"),
-        TestCase(NOT_IN_GUEST_MODE, "deleteEntryWithToolbar")));
+        TestCase("deleteMenuItemNoEntrySelected"),
+        TestCase("deleteEntryWithToolbar")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     QuickView,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "openQuickView"),
-                      TestCase(NOT_IN_GUEST_MODE, "closeQuickView")));
+    ::testing::Values(TestCase("openQuickView"),
+                      TestCase("closeQuickView")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DirectoryTreeContextMenu,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "dirCopyWithContextMenu"),
+        TestCase("dirCopyWithContextMenu"),
         TestCase(IN_GUEST_MODE, "dirCopyWithContextMenu"),
-        TestCase(NOT_IN_GUEST_MODE, "dirCopyWithKeyboard"),
+        TestCase("dirCopyWithKeyboard"),
         TestCase(IN_GUEST_MODE, "dirCopyWithKeyboard"),
-        TestCase(NOT_IN_GUEST_MODE, "dirCopyWithoutChangingCurrent"),
-        TestCase(NOT_IN_GUEST_MODE, "dirCutWithContextMenu"),
+        TestCase("dirCopyWithoutChangingCurrent"),
+        TestCase("dirCutWithContextMenu"),
         TestCase(IN_GUEST_MODE, "dirCutWithContextMenu"),
-        TestCase(NOT_IN_GUEST_MODE, "dirCutWithKeyboard"),
+        TestCase("dirCutWithKeyboard"),
         TestCase(IN_GUEST_MODE, "dirCutWithKeyboard"),
-        TestCase(NOT_IN_GUEST_MODE, "dirPasteWithoutChangingCurrent"),
-        TestCase(NOT_IN_GUEST_MODE, "dirPasteWithContextMenu"),
+        TestCase("dirPasteWithoutChangingCurrent"),
+        TestCase("dirPasteWithContextMenu"),
         TestCase(IN_GUEST_MODE, "dirPasteWithContextMenu"),
-        TestCase(NOT_IN_GUEST_MODE, "dirPasteWithoutChangingCurrent"),
-        TestCase(NOT_IN_GUEST_MODE, "dirRenameWithContextMenu"),
+        TestCase("dirPasteWithoutChangingCurrent"),
+        TestCase("dirRenameWithContextMenu"),
         TestCase(IN_GUEST_MODE, "dirRenameWithContextMenu"),
-        TestCase(NOT_IN_GUEST_MODE, "dirRenameWithKeyboard"),
+        TestCase("dirRenameWithKeyboard"),
         TestCase(IN_GUEST_MODE, "dirRenameWithKeyboard"),
-        TestCase(NOT_IN_GUEST_MODE, "dirRenameWithoutChangingCurrent"),
-        TestCase(NOT_IN_GUEST_MODE, "dirRenameToEmptyString"),
+        TestCase("dirRenameWithoutChangingCurrent"),
+        TestCase("dirRenameToEmptyString"),
         TestCase(IN_GUEST_MODE, "dirRenameToEmptyString"),
-        TestCase(NOT_IN_GUEST_MODE, "dirRenameToExisting"),
+        TestCase("dirRenameToExisting"),
         TestCase(IN_GUEST_MODE, "dirRenameToExisting"),
-        TestCase(NOT_IN_GUEST_MODE, "dirCreateWithContextMenu"),
-        TestCase(NOT_IN_GUEST_MODE, "dirCreateWithKeyboard"),
-        TestCase(NOT_IN_GUEST_MODE, "dirCreateWithoutChangingCurrent")));
+        TestCase("dirCreateWithContextMenu"),
+        TestCase("dirCreateWithKeyboard"),
+        TestCase("dirCreateWithoutChangingCurrent")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DriveSpecific,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "driveOpenSidebarOffline"),
-        TestCase(NOT_IN_GUEST_MODE, "driveOpenSidebarSharedWithMe"),
-        TestCase(NOT_IN_GUEST_MODE, "driveAutoCompleteQuery"),
-        TestCase(NOT_IN_GUEST_MODE, "drivePinFileMobileNetwork"),
-        TestCase(NOT_IN_GUEST_MODE, "driveClickFirstSearchResult"),
-        TestCase(NOT_IN_GUEST_MODE, "drivePressEnterToSearch")));
+        TestCase("driveOpenSidebarOffline"),
+        TestCase("driveOpenSidebarSharedWithMe"),
+        TestCase("driveAutoCompleteQuery"),
+        TestCase("drivePinFileMobileNetwork"),
+        TestCase("driveClickFirstSearchResult"),
+        TestCase("drivePressEnterToSearch")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Transfer,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "transferFromDriveToDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "transferFromDownloadsToDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "transferFromSharedToDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "transferFromSharedToDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "transferFromOfflineToDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "transferFromOfflineToDrive")));
+        TestCase("transferFromDriveToDownloads"),
+        TestCase("transferFromDownloadsToDrive"),
+        TestCase("transferFromSharedToDownloads"),
+        TestCase("transferFromSharedToDrive"),
+        TestCase("transferFromOfflineToDownloads"),
+        TestCase("transferFromOfflineToDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     RestorePrefs,
     FileManagerBrowserTest,
     ::testing::Values(TestCase(IN_GUEST_MODE, "restoreSortColumn"),
-                      TestCase(NOT_IN_GUEST_MODE, "restoreSortColumn"),
+                      TestCase("restoreSortColumn"),
                       TestCase(IN_GUEST_MODE, "restoreCurrentView"),
-                      TestCase(NOT_IN_GUEST_MODE, "restoreCurrentView")));
+                      TestCase("restoreCurrentView")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     ShareDialog,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "shareFile"),
-                      TestCase(NOT_IN_GUEST_MODE, "shareDirectory")));
+    ::testing::Values(TestCase("shareFile"),
+                      TestCase("shareDirectory")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     RestoreGeometry,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "restoreGeometry"),
+    ::testing::Values(TestCase("restoreGeometry"),
                       TestCase(IN_GUEST_MODE, "restoreGeometry"),
-                      TestCase(NOT_IN_GUEST_MODE,
-                               "restoreGeometryMaximized")));
+                      TestCase("restoreGeometryMaximized")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Traverse,
     FileManagerBrowserTest,
     ::testing::Values(TestCase(IN_GUEST_MODE, "traverseDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "traverseDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "traverseDrive")));
+                      TestCase("traverseDownloads"),
+                      TestCase("traverseDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SuggestAppDialog,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "suggestAppDialog")));
+    ::testing::Values(TestCase("suggestAppDialog")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     ExecuteDefaultTaskOnDownloads,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "executeDefaultTaskDownloads"),
+        TestCase("executeDefaultTaskDownloads"),
         TestCase(IN_GUEST_MODE, "executeDefaultTaskDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     ExecuteDefaultTaskOnDrive,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE,
-                               "executeDefaultTaskDrive")));
+    ::testing::Values(TestCase("executeDefaultTaskDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DefaultTaskDialog,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "defaultTaskDialogDownloads"),
+        TestCase("defaultTaskDialogDownloads"),
         TestCase(IN_GUEST_MODE, "defaultTaskDialogDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "defaultTaskDialogDrive")));
+        TestCase("defaultTaskDialogDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     GenericTask,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "genericTaskIsNotExecuted"),
-        TestCase(NOT_IN_GUEST_MODE, "genericTaskAndNonGenericTask")));
+        TestCase("genericTaskIsNotExecuted"),
+        TestCase("genericTaskAndNonGenericTask")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FolderShortcuts,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "traverseFolderShortcuts"),
-        TestCase(NOT_IN_GUEST_MODE, "addRemoveFolderShortcuts")));
+        TestCase("traverseFolderShortcuts"),
+        TestCase("addRemoveFolderShortcuts")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SortColumns,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "sortColumns"),
+    ::testing::Values(TestCase("sortColumns"),
                       TestCase(IN_GUEST_MODE, "sortColumns")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabIndex,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "tabindexSearchBoxFocus")));
+        TestCase("tabindexSearchBoxFocus")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexFocus,
     FileManagerBrowserTestWithLegacyEventDispatch,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "tabindexFocus")));
+    ::testing::Values(TestCase("tabindexFocus")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexFocusDownloads,
     FileManagerBrowserTestWithLegacyEventDispatch,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "tabindexFocusDownloads"),
+    ::testing::Values(TestCase("tabindexFocusDownloads"),
                       TestCase(IN_GUEST_MODE, "tabindexFocusDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexFocusDirectorySelected,
     FileManagerBrowserTestWithLegacyEventDispatch,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE,
-                               "tabindexFocusDirectorySelected")));
+    ::testing::Values(TestCase("tabindexFocusDirectorySelected")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexOpenDialog,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "tabindexOpenDialogDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "tabindexOpenDialogDownloads"),
+        TestCase("tabindexOpenDialogDrive"),
+        TestCase("tabindexOpenDialogDownloads"),
         TestCase(IN_GUEST_MODE, "tabindexOpenDialogDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexSaveFileDialog,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "tabindexSaveFileDialogDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "tabindexSaveFileDialogDownloads"),
+        TestCase("tabindexSaveFileDialogDrive"),
+        TestCase("tabindexSaveFileDialogDownloads"),
         TestCase(IN_GUEST_MODE, "tabindexSaveFileDialogDownloads")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     OpenFileDialog,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "openFileDialogDownloads"),
+    ::testing::Values(TestCase("openFileDialogDownloads"),
                       TestCase(IN_GUEST_MODE, "openFileDialogDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "openFileDialogDrive"),
+                      TestCase("openFileDialogDrive"),
                       TestCase(IN_INCOGNITO, "openFileDialogDownloads"),
                       TestCase(IN_INCOGNITO, "openFileDialogDrive"),
-                      TestCase(NOT_IN_GUEST_MODE, "openFileDialogUnload")));
+                      TestCase("openFileDialogUnload")));
 
 // Test does too much? Flaky on all bots: http://crbug.com/500966
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     DISABLED_CopyBetweenWindows,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "copyBetweenWindowsLocalToUsb"),
-        TestCase(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "copyBetweenWindowsDriveToLocal"),
-        TestCase(NOT_IN_GUEST_MODE, "copyBetweenWindowsDriveToUsb"),
-        TestCase(NOT_IN_GUEST_MODE, "copyBetweenWindowsUsbToLocal")));
+        TestCase("copyBetweenWindowsLocalToDrive"),
+        TestCase("copyBetweenWindowsLocalToUsb"),
+        TestCase("copyBetweenWindowsUsbToDrive"),
+        TestCase("copyBetweenWindowsDriveToLocal"),
+        TestCase("copyBetweenWindowsDriveToUsb"),
+        TestCase("copyBetweenWindowsUsbToLocal")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     ShowGridView,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase(NOT_IN_GUEST_MODE, "showGridViewDownloads"),
+    ::testing::Values(TestCase("showGridViewDownloads"),
                       TestCase(IN_GUEST_MODE, "showGridViewDownloads"),
-                      TestCase(NOT_IN_GUEST_MODE, "showGridViewDrive")));
+                      TestCase("showGridViewDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Providers,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "requestMount"),
-        TestCase(NOT_IN_GUEST_MODE, "requestMountMultipleMounts"),
-        TestCase(NOT_IN_GUEST_MODE, "requestMountSourceDevice"),
-        TestCase(NOT_IN_GUEST_MODE, "requestMountSourceFile")));
+        TestCase("requestMount"),
+        TestCase("requestMountMultipleMounts"),
+        TestCase("requestMountSourceDevice"),
+        TestCase("requestMountSourceFile")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     GearMenu,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase(NOT_IN_GUEST_MODE, "showHiddenFilesDownloads"),
-        TestCase(NOT_IN_GUEST_MODE, "showHiddenFilesDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "toogleGoogleDocsDrive"),
-        TestCase(NOT_IN_GUEST_MODE, "showPasteIntoCurrentFolder")));
+        TestCase("showHiddenFilesDownloads"),
+        TestCase("showHiddenFilesDrive"),
+        TestCase("toogleGoogleDocsDrive"),
+        TestCase("showPasteIntoCurrentFolder")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {
