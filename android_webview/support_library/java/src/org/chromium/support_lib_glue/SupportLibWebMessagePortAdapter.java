@@ -84,6 +84,12 @@ class SupportLibWebMessagePortAdapter implements WebMessagePortBoundaryInterface
         public /* WebMessagePort */ InvocationHandler[] getPorts() {
             return SupportLibWebMessagePortAdapter.fromMessagePorts(mPorts);
         }
+
+        @Override
+        public String[] getSupportedFeatures() {
+            // getData() and getPorts() are not covered by feature flags.
+            return new String[0];
+        }
     }
 
     public static /* WebMessagePort */ InvocationHandler[] fromMessagePorts(

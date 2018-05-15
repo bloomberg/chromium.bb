@@ -9,7 +9,7 @@ import java.lang.reflect.InvocationHandler;
 /**
  * Boundary interface for WebMessage.
  */
-public interface WebMessageBoundaryInterface {
+public interface WebMessageBoundaryInterface extends FeatureFlagHolderBoundaryInterface {
     String getData();
 
     /* WebMessagePort */ InvocationHandler[] getPorts();
