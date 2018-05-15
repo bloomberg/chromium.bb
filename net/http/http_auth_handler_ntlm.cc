@@ -80,9 +80,8 @@ int HttpAuthHandlerNTLM::GenerateAuthTokenImpl(
     }
   }
 
-  ntlm::Buffer next_token = GetNextToken(
-      ntlm::Buffer(reinterpret_cast<const uint8_t*>(decoded_auth_data.data()),
-                   decoded_auth_data.size()));
+  std::vector<uint8_t> next_token =
+      GetNextToken(base::as_bytes(base::make_span(decoded_auth_data)));
   if (next_token.empty())
     return ERR_UNEXPECTED;
 

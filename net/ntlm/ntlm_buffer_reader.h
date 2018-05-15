@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "base/strings/string_piece.h"
+#include "base/containers/span.h"
 #include "net/base/net_export.h"
 #include "net/ntlm/ntlm_constants.h"
 
@@ -49,15 +49,11 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
  public:
   NtlmBufferReader();
   // |buffer| is not copied and must outlive the |NtlmBufferReader|.
-  explicit NtlmBufferReader(const Buffer& buffer);
-  explicit NtlmBufferReader(base::StringPiece buffer);
+  explicit NtlmBufferReader(base::span<const uint8_t> buffer);
 
-  // This class does not take ownership of |ptr|, so the caller must ensure
-  // that the buffer outlives the |NtlmBufferReader|.
-  NtlmBufferReader(const uint8_t* ptr, size_t len);
   ~NtlmBufferReader();
 
-  size_t GetLength() const { return buffer_.length(); }
+  size_t GetLength() const { return buffer_.size(); }
   size_t GetCursor() const { return cursor_; }
   bool IsEndOfBuffer() const { return cursor_ >= GetLength(); }
 
@@ -92,14 +88,14 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
   bool ReadFlags(NegotiateFlags* flags) WARN_UNUSED_RESULT;
 
   // Reads |len| bytes and copies them into |buffer|.
-  bool ReadBytes(uint8_t* buffer, size_t len) WARN_UNUSED_RESULT;
+  bool ReadBytes(base::span<uint8_t> buffer) WARN_UNUSED_RESULT;
 
   // Reads |sec_buf.length| bytes from offset |sec_buf.offset| and copies them
   // into |buffer|. If the security buffer specifies a payload outside the
   // buffer, then the call fails. Unlike the other Read* methods, this does
   // not move the cursor.
   bool ReadBytesFrom(const SecurityBuffer& sec_buf,
-                     uint8_t* buffer) WARN_UNUSED_RESULT;
+                     base::span<uint8_t> buffer) WARN_UNUSED_RESULT;
 
   // Reads |sec_buf.length| bytes from offset |sec_buf.offset| and assigns
   // |reader| an |NtlmBufferReader| representing the payload. If the security
@@ -207,9 +203,7 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
   void AdvanceCursor(size_t count) { SetCursor(GetCursor() + count); }
 
   // Returns a constant pointer to the start of the buffer.
-  const uint8_t* GetBufferPtr() const {
-    return reinterpret_cast<const uint8_t*>(buffer_.data());
-  }
+  const uint8_t* GetBufferPtr() const { return buffer_.data(); }
 
   // Returns a pointer to the underlying buffer at the current cursor
   // position.
@@ -221,8 +215,8 @@ class NET_EXPORT_PRIVATE NtlmBufferReader {
     return *(GetBufferAtCursor());
   }
 
-  base::StringPiece buffer_;
-  size_t cursor_;
+  base::span<const uint8_t> buffer_;
+  size_t cursor_ = 0;
 };
 
 }  // namespace ntlm

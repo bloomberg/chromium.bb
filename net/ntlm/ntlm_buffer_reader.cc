@@ -11,19 +11,10 @@
 namespace net {
 namespace ntlm {
 
-NtlmBufferReader::NtlmBufferReader() : NtlmBufferReader(nullptr, 0) {}
+NtlmBufferReader::NtlmBufferReader() {}
 
-NtlmBufferReader::NtlmBufferReader(const Buffer& buffer)
-    : NtlmBufferReader(
-          base::StringPiece(reinterpret_cast<const char*>(buffer.data()),
-                            buffer.length())) {}
-
-NtlmBufferReader::NtlmBufferReader(base::StringPiece str)
-    : buffer_(str), cursor_(0) {}
-
-NtlmBufferReader::NtlmBufferReader(const uint8_t* ptr, size_t len)
-    : NtlmBufferReader(
-          base::StringPiece(reinterpret_cast<const char*>(ptr), len)) {}
+NtlmBufferReader::NtlmBufferReader(base::span<const uint8_t> buffer)
+    : buffer_(buffer) {}
 
 NtlmBufferReader::~NtlmBufferReader() = default;
 
@@ -59,25 +50,22 @@ bool NtlmBufferReader::ReadFlags(NegotiateFlags* flags) {
   return true;
 }
 
-bool NtlmBufferReader::ReadBytes(uint8_t* buffer, size_t len) {
-  if (!CanRead(len))
+bool NtlmBufferReader::ReadBytes(base::span<uint8_t> buffer) {
+  if (!CanRead(buffer.size()))
     return false;
 
-  memcpy(reinterpret_cast<void*>(buffer),
-         reinterpret_cast<const void*>(GetBufferAtCursor()), len);
+  memcpy(buffer.data(), GetBufferAtCursor(), buffer.size());
 
-  AdvanceCursor(len);
+  AdvanceCursor(buffer.size());
   return true;
 }
 
 bool NtlmBufferReader::ReadBytesFrom(const SecurityBuffer& sec_buf,
-                                     uint8_t* buffer) {
-  if (!CanReadFrom(sec_buf))
+                                     base::span<uint8_t> buffer) {
+  if (!CanReadFrom(sec_buf) || buffer.size() < sec_buf.length)
     return false;
 
-  memcpy(reinterpret_cast<void*>(buffer),
-         reinterpret_cast<const void*>(GetBufferPtr() + sec_buf.offset),
-         sec_buf.length);
+  memcpy(buffer.data(), GetBufferPtr() + sec_buf.offset, sec_buf.length);
 
   return true;
 }
@@ -87,7 +75,8 @@ bool NtlmBufferReader::ReadPayloadAsBufferReader(const SecurityBuffer& sec_buf,
   if (!CanReadFrom(sec_buf))
     return false;
 
-  *reader = NtlmBufferReader(GetBufferPtr() + sec_buf.offset, sec_buf.length);
+  *reader = NtlmBufferReader(
+      base::make_span(GetBufferPtr() + sec_buf.offset, sec_buf.length));
   return true;
 }
 
@@ -139,7 +128,7 @@ bool NtlmBufferReader::ReadTargetInfo(size_t target_info_len,
       return false;
 
     // Take a copy of the payload in the AVPair.
-    pair.buffer.assign(GetBufferAtCursor(), pair.avlen);
+    pair.buffer.assign(GetBufferAtCursor(), GetBufferAtCursor() + pair.avlen);
     if (pair.avid == TargetInfoAvId::kEol) {
       // Terminator must have zero length.
       if (pair.avlen != 0)

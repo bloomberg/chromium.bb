@@ -4,7 +4,7 @@
 
 #include "net/ntlm/ntlm_buffer_reader.h"
 
-#include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -13,9 +13,9 @@ namespace ntlm {
 
 TEST(NtlmBufferReaderTest, Initialization) {
   const uint8_t buf[1] = {0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
-  ASSERT_EQ(arraysize(buf), reader.GetLength());
+  ASSERT_EQ(base::size(buf), reader.GetLength());
   ASSERT_EQ(0u, reader.GetCursor());
   ASSERT_FALSE(reader.IsEndOfBuffer());
   ASSERT_TRUE(reader.CanRead(1));
@@ -33,7 +33,7 @@ TEST(NtlmBufferReaderTest, Initialization) {
 }
 
 TEST(NtlmBufferReaderTest, EmptyBuffer) {
-  Buffer b;
+  std::vector<uint8_t> b;
   NtlmBufferReader reader(b);
 
   ASSERT_EQ(0u, reader.GetCursor());
@@ -44,7 +44,7 @@ TEST(NtlmBufferReaderTest, EmptyBuffer) {
 }
 
 TEST(NtlmBufferReaderTest, NullBuffer) {
-  NtlmBufferReader reader(nullptr, 0);
+  NtlmBufferReader reader;
 
   ASSERT_EQ(0u, reader.GetCursor());
   ASSERT_EQ(0u, reader.GetLength());
@@ -57,7 +57,7 @@ TEST(NtlmBufferReaderTest, Read16) {
   const uint8_t buf[2] = {0x22, 0x11};
   const uint16_t expected = 0x1122;
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   uint16_t actual;
   ASSERT_TRUE(reader.ReadUInt16(&actual));
@@ -70,7 +70,7 @@ TEST(NtlmBufferReaderTest, Read32) {
   const uint8_t buf[4] = {0x44, 0x33, 0x22, 0x11};
   const uint32_t expected = 0x11223344;
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   uint32_t actual;
   ASSERT_TRUE(reader.ReadUInt32(&actual));
@@ -83,7 +83,7 @@ TEST(NtlmBufferReaderTest, Read64) {
   const uint8_t buf[8] = {0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11};
   const uint64_t expected = 0x1122334455667788;
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   uint64_t actual;
   ASSERT_TRUE(reader.ReadUInt64(&actual));
@@ -96,12 +96,12 @@ TEST(NtlmBufferReaderTest, ReadBytes) {
   const uint8_t expected[8] = {0x88, 0x77, 0x66, 0x55, 0x44, 0x33, 0x22, 0x11};
   uint8_t actual[8];
 
-  NtlmBufferReader reader(expected, arraysize(expected));
+  NtlmBufferReader reader(expected);
 
-  ASSERT_TRUE(reader.ReadBytes(actual, arraysize(actual)));
-  ASSERT_EQ(0, memcmp(actual, expected, arraysize(actual)));
+  ASSERT_TRUE(reader.ReadBytes(actual));
+  ASSERT_EQ(0, memcmp(actual, expected, base::size(actual)));
   ASSERT_TRUE(reader.IsEndOfBuffer());
-  ASSERT_FALSE(reader.ReadBytes(actual, 1));
+  ASSERT_FALSE(reader.ReadBytes(base::make_span(actual, 1)));
 }
 
 TEST(NtlmBufferReaderTest, ReadSecurityBuffer) {
@@ -109,7 +109,7 @@ TEST(NtlmBufferReaderTest, ReadSecurityBuffer) {
   const uint16_t length = 0x1122;
   const uint32_t offset = 0x55667788;
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   SecurityBuffer sec_buf;
   ASSERT_TRUE(reader.ReadSecurityBuffer(&sec_buf));
@@ -121,7 +121,7 @@ TEST(NtlmBufferReaderTest, ReadSecurityBuffer) {
 
 TEST(NtlmBufferReaderTest, ReadSecurityBufferPastEob) {
   const uint8_t buf[7] = {0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   SecurityBuffer sec_buf;
   ASSERT_FALSE(reader.ReadSecurityBuffer(&sec_buf));
@@ -130,7 +130,7 @@ TEST(NtlmBufferReaderTest, ReadSecurityBufferPastEob) {
 TEST(NtlmBufferReaderTest, ReadPayloadAsBufferReader) {
   const uint8_t buf[8] = {0xff, 0xff, 0x11, 0x22, 0x33, 0x44, 0xff, 0xff};
   const uint32_t expected = 0x44332211;
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
   ASSERT_EQ(0u, reader.GetCursor());
 
   // Create a security buffer with offset 2 and length 4.
@@ -156,7 +156,7 @@ TEST(NtlmBufferReaderTest, ReadPayloadAsBufferReader) {
 
 TEST(NtlmBufferReaderTest, ReadPayloadBadOffset) {
   const uint8_t buf[4] = {0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   NtlmBufferReader sub_reader;
   ASSERT_FALSE(
@@ -165,7 +165,7 @@ TEST(NtlmBufferReaderTest, ReadPayloadBadOffset) {
 
 TEST(NtlmBufferReaderTest, ReadPayloadBadLength) {
   const uint8_t buf[4] = {0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   NtlmBufferReader sub_reader;
   ASSERT_FALSE(
@@ -175,7 +175,7 @@ TEST(NtlmBufferReaderTest, ReadPayloadBadLength) {
 TEST(NtlmBufferReaderTest, SkipSecurityBuffer) {
   const uint8_t buf[kSecurityBufferLen] = {0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
   ASSERT_TRUE(reader.SkipSecurityBuffer());
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_FALSE(reader.SkipSecurityBuffer());
@@ -185,14 +185,14 @@ TEST(NtlmBufferReaderTest, SkipSecurityBufferPastEob) {
   // The buffer is one byte shorter than security buffer.
   const uint8_t buf[kSecurityBufferLen - 1] = {0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
   ASSERT_FALSE(reader.SkipSecurityBuffer());
 }
 
 TEST(NtlmBufferReaderTest, SkipSecurityBufferWithValidationEmpty) {
   const uint8_t buf[kSecurityBufferLen] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
   ASSERT_TRUE(reader.SkipSecurityBufferWithValidation());
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_FALSE(reader.SkipSecurityBufferWithValidation());
@@ -203,7 +203,7 @@ TEST(NtlmBufferReaderTest, SkipSecurityBufferWithValidationValid) {
   const uint8_t buf[kSecurityBufferLen + 1] = {
       0x01, 0, 0x01, 0, kSecurityBufferLen, 0, 0, 0, 0xFF};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
   ASSERT_TRUE(reader.SkipSecurityBufferWithValidation());
   ASSERT_EQ(kSecurityBufferLen, reader.GetCursor());
   ASSERT_FALSE(reader.SkipSecurityBufferWithValidation());
@@ -215,7 +215,7 @@ TEST(NtlmBufferReaderTest,
   const uint8_t buf[kSecurityBufferLen + 1] = {
       0x02, 0, 0x02, 0, kSecurityBufferLen, 0, 0, 0, 0xFF};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
   ASSERT_FALSE(reader.SkipSecurityBufferWithValidation());
 }
 
@@ -225,7 +225,7 @@ TEST(NtlmBufferReaderTest,
   const uint8_t buf[kSecurityBufferLen + 1] = {
       0x02, 0, 0x02, 0, kSecurityBufferLen + 1, 0, 0, 0, 0xFF};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
   ASSERT_FALSE(reader.SkipSecurityBufferWithValidation());
 }
 
@@ -236,7 +236,7 @@ TEST(NtlmBufferReaderTest,
   const uint8_t buf[kSecurityBufferLen] = {0, 0, 0, 0, kSecurityBufferLen + 1,
                                            0, 0, 0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
   ASSERT_TRUE(reader.SkipSecurityBufferWithValidation());
   ASSERT_EQ(kSecurityBufferLen, reader.GetCursor());
 }
@@ -244,25 +244,25 @@ TEST(NtlmBufferReaderTest,
 TEST(NtlmBufferReaderTest, SkipBytes) {
   const uint8_t buf[8] = {0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
-  ASSERT_TRUE(reader.SkipBytes(arraysize(buf)));
+  ASSERT_TRUE(reader.SkipBytes(base::size(buf)));
   ASSERT_TRUE(reader.IsEndOfBuffer());
-  ASSERT_FALSE(reader.SkipBytes(arraysize(buf)));
+  ASSERT_FALSE(reader.SkipBytes(base::size(buf)));
 }
 
 TEST(NtlmBufferReaderTest, SkipBytesPastEob) {
   const uint8_t buf[8] = {0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
-  ASSERT_FALSE(reader.SkipBytes(arraysize(buf) + 1));
+  ASSERT_FALSE(reader.SkipBytes(base::size(buf) + 1));
 }
 
 TEST(NtlmBufferReaderTest, MatchSignatureTooShort) {
   const uint8_t buf[7] = {0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   ASSERT_TRUE(reader.CanRead(7));
   ASSERT_FALSE(reader.MatchSignature());
@@ -271,7 +271,7 @@ TEST(NtlmBufferReaderTest, MatchSignatureTooShort) {
 TEST(NtlmBufferReaderTest, MatchSignatureNoMatch) {
   // The last byte should be a 0.
   const uint8_t buf[8] = {'N', 'T', 'L', 'M', 'S', 'S', 'P', 0xff};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   ASSERT_TRUE(reader.CanRead(8));
   ASSERT_FALSE(reader.MatchSignature());
@@ -279,7 +279,7 @@ TEST(NtlmBufferReaderTest, MatchSignatureNoMatch) {
 
 TEST(NtlmBufferReaderTest, MatchSignatureOk) {
   const uint8_t buf[8] = {'N', 'T', 'L', 'M', 'S', 'S', 'P', 0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   ASSERT_TRUE(reader.MatchSignature());
   ASSERT_TRUE(reader.IsEndOfBuffer());
@@ -288,7 +288,7 @@ TEST(NtlmBufferReaderTest, MatchSignatureOk) {
 TEST(NtlmBufferReaderTest, ReadInvalidMessageType) {
   // Only 0x01, 0x02, and 0x03 are valid message types.
   const uint8_t buf[4] = {0x04, 0, 0, 0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   MessageType message_type;
   ASSERT_FALSE(reader.ReadMessageType(&message_type));
@@ -297,7 +297,7 @@ TEST(NtlmBufferReaderTest, ReadInvalidMessageType) {
 TEST(NtlmBufferReaderTest, ReadMessageTypeNegotiate) {
   const uint8_t buf[4] = {static_cast<uint8_t>(MessageType::kNegotiate), 0, 0,
                           0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   MessageType message_type;
   ASSERT_TRUE(reader.ReadMessageType(&message_type));
@@ -308,7 +308,7 @@ TEST(NtlmBufferReaderTest, ReadMessageTypeNegotiate) {
 TEST(NtlmBufferReaderTest, ReadMessageTypeChallenge) {
   const uint8_t buf[4] = {static_cast<uint8_t>(MessageType::kChallenge), 0, 0,
                           0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   MessageType message_type;
   ASSERT_TRUE(reader.ReadMessageType(&message_type));
@@ -320,10 +320,10 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoEolOnly) {
   // Buffer contains only an EOL terminator.
   const uint8_t buf[4] = {0, 0, 0, 0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_TRUE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_TRUE(av_pairs.empty());
 }
@@ -343,10 +343,10 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTimestampAndEolOnly) {
                            0x55, 0x66, 0x77, 0x88, 0,    0,    0,    0};
   const uint64_t expected_timestamp = 0x8877665544332211;
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_TRUE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_EQ(1u, av_pairs.size());
 
@@ -361,10 +361,10 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoFlagsAndEolOnly) {
   // Buffer contains a flags av pair with the MIC bit and an EOL terminator.
   const uint8_t buf[12] = {0x06, 0, 0x04, 0, 0x02, 0, 0, 0, 0, 0, 0, 0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_TRUE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_EQ(1u, av_pairs.size());
 
@@ -378,10 +378,10 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTooSmall) {
   // Target info must least contain enough space for a terminator pair.
   const uint8_t buf[3] = {0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_FALSE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
 }
 
 TEST(NtlmBufferReaderTest, ReadTargetInfoInvalidTimestampSize) {
@@ -390,10 +390,10 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoInvalidTimestampSize) {
   const uint8_t buf[15] = {0x07, 0,    0x07, 0, 0x11, 0x22, 0x33, 0x44,
                            0x55, 0x66, 0x77, 0, 0,    0,    0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_FALSE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
 }
 
 TEST(NtlmBufferReaderTest, ReadTargetInfoInvalidTimestampPastEob) {
@@ -401,10 +401,10 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoInvalidTimestampPastEob) {
   const uint8_t buf[11] = {0x07, 0,    0x08, 0,    0x11, 0x22,
                            0x33, 0x44, 0x55, 0x66, 0x77};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_FALSE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
 }
 
 TEST(NtlmBufferReaderTest, ReadTargetInfoOtherField) {
@@ -413,10 +413,10 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoOtherField) {
   const uint8_t buf[16] = {0x02, 0, 0x08, 0, 'A', 0, 'B', 0,
                            'C',  0, 'D',  0, 0,   0, 0,   0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_TRUE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_TRUE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_EQ(1u, av_pairs.size());
 
@@ -431,10 +431,10 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoNoTerminator) {
   // terminating AvPair.
   const uint8_t buf[12] = {0x02, 0, 0x08, 0, 'A', 0, 'B', 0, 'C', 0, 'D', 0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_FALSE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
 }
 
 TEST(NtlmBufferReaderTest, ReadTargetInfoTerminatorAtLocationOtherThanEnd) {
@@ -444,20 +444,20 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTerminatorAtLocationOtherThanEnd) {
                          0,    0, 0x02, 0, 0x08, 0, 'A', 0, 'B', 0,
                          'C',  0, 'D',  0, 0,    0, 0,   0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_FALSE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
 }
 
 TEST(NtlmBufferReaderTest, ReadTargetInfoTerminatorNonZeroLength) {
   // A flags Av Pair followed by a terminator pair with a non-zero length.
   const uint8_t buf[] = {0x06, 0, 0x04, 0, 0x02, 0, 0, 0, 0, 0, 0x01, 0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_FALSE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
 }
 
 TEST(NtlmBufferReaderTest, ReadTargetInfoTerminatorNonZeroLength2) {
@@ -467,17 +467,17 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTerminatorNonZeroLength2) {
   const uint8_t buf[] = {0x06, 0,    0x04, 0,    0x02, 0, 0, 0, 0,
                          0,    0x01, 0,    0xff, 0,    0, 0, 0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
-  ASSERT_FALSE(reader.ReadTargetInfo(arraysize(buf), &av_pairs));
+  ASSERT_FALSE(reader.ReadTargetInfo(base::size(buf), &av_pairs));
 }
 
 TEST(NtlmBufferReaderTest, ReadTargetInfoEmptyPayload) {
   // Security buffer with no payload.
   const uint8_t buf[] = {0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfoPayload(&av_pairs));
@@ -490,7 +490,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoEolOnlyPayload) {
   const uint8_t buf[] = {0x04, 0x00, 0x04, 0x00, 0x08, 0x00,
                          0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfoPayload(&av_pairs));
@@ -506,7 +506,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoTooShortPayload) {
   const uint8_t buf[] = {0x03, 0x00, 0x03, 0x00, 0x08, 0x00,
                          0x00, 0x00, 0x00, 0x00, 0x00};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
   ASSERT_FALSE(reader.ReadTargetInfoPayload(&av_pairs));
@@ -519,7 +519,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoFlagsPayload) {
                          0x00, 0x06, 0,    0x04, 0,    0x02, 0,
                          0,    0,    0,    0,    0,    0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfoPayload(&av_pairs));
@@ -541,7 +541,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoFlagsPayloadWithPaddingBetween) {
   const uint8_t buf[] = {0x0c, 0x00, 0x0c, 0x00, 0x0c, 0x00, 0x00, 0x00,
                          0xff, 0xff, 0xff, 0xff, 0x06, 0,    0x04, 0,
                          0x02, 0,    0,    0,    0,    0,    0,    0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   std::vector<AvPair> av_pairs;
   ASSERT_TRUE(reader.ReadTargetInfoPayload(&av_pairs));
@@ -558,7 +558,7 @@ TEST(NtlmBufferReaderTest, ReadTargetInfoFlagsPayloadWithPaddingBetween) {
 TEST(NtlmBufferReaderTest, ReadMessageTypeAuthenticate) {
   const uint8_t buf[4] = {static_cast<uint8_t>(MessageType::kAuthenticate), 0,
                           0, 0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   MessageType message_type;
   ASSERT_TRUE(reader.ReadMessageType(&message_type));
@@ -569,7 +569,7 @@ TEST(NtlmBufferReaderTest, ReadMessageTypeAuthenticate) {
 TEST(NtlmBufferReaderTest, MatchMessageTypeAuthenticate) {
   const uint8_t buf[4] = {static_cast<uint8_t>(MessageType::kAuthenticate), 0,
                           0, 0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   ASSERT_TRUE(reader.MatchMessageType(MessageType::kAuthenticate));
   ASSERT_TRUE(reader.IsEndOfBuffer());
@@ -578,7 +578,7 @@ TEST(NtlmBufferReaderTest, MatchMessageTypeAuthenticate) {
 TEST(NtlmBufferReaderTest, MatchMessageTypeInvalid) {
   // Only 0x01, 0x02, and 0x03 are valid message types.
   const uint8_t buf[4] = {0x04, 0, 0, 0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   ASSERT_FALSE(reader.MatchMessageType(MessageType::kAuthenticate));
 }
@@ -586,7 +586,7 @@ TEST(NtlmBufferReaderTest, MatchMessageTypeInvalid) {
 TEST(NtlmBufferReaderTest, MatchMessageTypeMismatch) {
   const uint8_t buf[4] = {static_cast<uint8_t>(MessageType::kChallenge), 0, 0,
                           0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   ASSERT_FALSE(reader.MatchMessageType(MessageType::kAuthenticate));
 }
@@ -597,7 +597,7 @@ TEST(NtlmBufferReaderTest, MatchAuthenticateHeader) {
       'M', 'S', 'S',
       'P', 0,   static_cast<uint8_t>(MessageType::kAuthenticate),
       0,   0,   0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   ASSERT_TRUE(reader.MatchMessageHeader(MessageType::kAuthenticate));
   ASSERT_TRUE(reader.IsEndOfBuffer());
@@ -609,7 +609,7 @@ TEST(NtlmBufferReaderTest, MatchAuthenticateHeaderMisMatch) {
       'M', 'S', 'S',
       'P', 0,   static_cast<uint8_t>(MessageType::kChallenge),
       0,   0,   0};
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   ASSERT_FALSE(reader.MatchMessageType(MessageType::kAuthenticate));
 }
@@ -617,9 +617,9 @@ TEST(NtlmBufferReaderTest, MatchAuthenticateHeaderMisMatch) {
 TEST(NtlmBufferReaderTest, MatchZeros) {
   const uint8_t buf[6] = {0, 0, 0, 0, 0, 0};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
-  ASSERT_TRUE(reader.MatchZeros(arraysize(buf)));
+  ASSERT_TRUE(reader.MatchZeros(base::size(buf)));
   ASSERT_TRUE(reader.IsEndOfBuffer());
   ASSERT_FALSE(reader.MatchZeros(1));
 }
@@ -627,15 +627,15 @@ TEST(NtlmBufferReaderTest, MatchZeros) {
 TEST(NtlmBufferReaderTest, MatchZerosFail) {
   const uint8_t buf[6] = {0, 0, 0, 0, 0, 0xFF};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
-  ASSERT_FALSE(reader.MatchZeros(arraysize(buf)));
+  ASSERT_FALSE(reader.MatchZeros(base::size(buf)));
 }
 
 TEST(NtlmBufferReaderTest, MatchEmptySecurityBuffer) {
   const uint8_t buf[kSecurityBufferLen] = {0, 0, 0, 0, 0, 0, 0, 0};
 
-  NtlmBufferReader reader(buf, kSecurityBufferLen);
+  NtlmBufferReader reader(buf);
 
   ASSERT_TRUE(reader.MatchEmptySecurityBuffer());
   ASSERT_TRUE(reader.IsEndOfBuffer());
@@ -645,7 +645,7 @@ TEST(NtlmBufferReaderTest, MatchEmptySecurityBuffer) {
 TEST(NtlmBufferReaderTest, MatchEmptySecurityBufferLengthZeroOffsetEnd) {
   const uint8_t buf[kSecurityBufferLen] = {0, 0, 0, 0, 0x08, 0, 0, 0};
 
-  NtlmBufferReader reader(buf, kSecurityBufferLen);
+  NtlmBufferReader reader(buf);
 
   ASSERT_TRUE(reader.MatchEmptySecurityBuffer());
   ASSERT_TRUE(reader.IsEndOfBuffer());
@@ -654,7 +654,7 @@ TEST(NtlmBufferReaderTest, MatchEmptySecurityBufferLengthZeroOffsetEnd) {
 TEST(NtlmBufferReaderTest, MatchEmptySecurityBufferLengthZeroPastEob) {
   const uint8_t buf[kSecurityBufferLen] = {0, 0, 0, 0, 0x09, 0, 0, 0};
 
-  NtlmBufferReader reader(buf, kSecurityBufferLen);
+  NtlmBufferReader reader(buf);
 
   ASSERT_FALSE(reader.MatchEmptySecurityBuffer());
 }
@@ -663,7 +663,7 @@ TEST(NtlmBufferReaderTest, MatchEmptySecurityBufferLengthNonZeroLength) {
   const uint8_t buf[kSecurityBufferLen + 1] = {0x01, 0, 0, 0,   0x08,
                                                0,    0, 0, 0xff};
 
-  NtlmBufferReader reader(buf, kSecurityBufferLen);
+  NtlmBufferReader reader(buf);
 
   ASSERT_FALSE(reader.MatchEmptySecurityBuffer());
 }
@@ -671,7 +671,7 @@ TEST(NtlmBufferReaderTest, MatchEmptySecurityBufferLengthNonZeroLength) {
 TEST(NtlmBufferReaderTest, ReadAvPairHeader) {
   const uint8_t buf[4] = {0x06, 0x00, 0x11, 0x22};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   TargetInfoAvId actual_avid;
   uint16_t actual_avlen;
@@ -685,7 +685,7 @@ TEST(NtlmBufferReaderTest, ReadAvPairHeader) {
 TEST(NtlmBufferReaderTest, ReadAvPairHeaderPastEob) {
   const uint8_t buf[3] = {0x06, 0x00, 0x11};
 
-  NtlmBufferReader reader(buf, arraysize(buf));
+  NtlmBufferReader reader(buf);
 
   TargetInfoAvId avid;
   uint16_t avlen;

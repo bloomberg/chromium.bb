@@ -921,6 +921,7 @@ component("net") {
       "ntlm/ntlm_buffer_writer.h",
       "ntlm/ntlm_client.cc",
       "ntlm/ntlm_client.h",
+      "ntlm/ntlm_constants.cc",
       "ntlm/ntlm_constants.h",
       "proxy_resolution/dhcp_pac_file_adapter_fetcher_win.cc",
       "proxy_resolution/dhcp_pac_file_adapter_fetcher_win.h",
