@@ -35,9 +35,12 @@ class ToolkitDelegateViews : public RenderViewContextMenuBase::ToolkitDelegate {
                  const gfx::Point& point,
                  ui::MenuSourceType type);
 
- private:
+ protected:
   // ToolkitDelegate:
   void Init(ui::SimpleMenuModel* menu_model) override;
+
+ private:
+  // ToolkitDelegate:
   void Cancel() override;
   void UpdateMenuItem(int command_id,
                       bool enabled,

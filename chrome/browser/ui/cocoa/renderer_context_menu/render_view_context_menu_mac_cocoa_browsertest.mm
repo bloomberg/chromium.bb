@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac.h"
+#include "chrome/browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
@@ -17,9 +17,9 @@
 #include "content/public/test/test_utils.h"
 #import "testing/gtest_mac.h"
 
-class RenderViewContextMenuMacBrowserTest : public InProcessBrowserTest {
+class RenderViewContextMenuMacCocoaBrowserTest : public InProcessBrowserTest {
  public:
-  RenderViewContextMenuMacBrowserTest() {}
+  RenderViewContextMenuMacCocoaBrowserTest() {}
 
  protected:
   void SetUpOnMainThread() override {
@@ -46,26 +46,27 @@ class RenderViewContextMenuMacBrowserTest : public InProcessBrowserTest {
   base::scoped_nsobject<NSTextField> textField_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuMacBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuMacCocoaBrowserTest);
 };
 
 // Confirm that the private classes used to filter Safari's redundant Services
 // items exist and implement the expected methods, and that the filtering code
 // successfully removes those Services items.
-IN_PROC_BROWSER_TEST_F(RenderViewContextMenuMacBrowserTest, ServicesFiltering) {
+IN_PROC_BROWSER_TEST_F(RenderViewContextMenuMacCocoaBrowserTest,
+                       ServicesFiltering) {
   // Confirm that the _NSServicesMenuUpdater class exists and implements the
   // method we expect it to.
   Class menuUpdaterClass = NSClassFromString(@"_NSServicesMenuUpdater");
   EXPECT_TRUE(menuUpdaterClass);
-  EXPECT_TRUE([menuUpdaterClass instancesRespondToSelector:
-      @selector(populateMenu:withServiceEntries:forDisplay:)]);
+  EXPECT_TRUE([menuUpdaterClass instancesRespondToSelector:@selector
+                                (populateMenu:withServiceEntries:forDisplay:)]);
 
   // Confirm that the _NSServiceEntry class exists and implements the
   // method we expect it to.
   Class serviceEntryClass = NSClassFromString(@"_NSServiceEntry");
   EXPECT_TRUE(serviceEntryClass);
-  EXPECT_TRUE([serviceEntryClass instancesRespondToSelector:
-      @selector(bundleIdentifier)]);
+  EXPECT_TRUE([serviceEntryClass
+      instancesRespondToSelector:@selector(bundleIdentifier)]);
 
   // Make the testing textfield the browser window's first responder, in
   // preparation for the contextual menu we're about to display. Even though the

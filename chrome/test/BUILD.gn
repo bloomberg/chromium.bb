@@ -1894,7 +1894,7 @@ test("browser_tests") {
           "../browser/ui/cocoa/passwords/passwords_bubble_browsertest.mm",
           "../browser/ui/cocoa/permission_bubble/permission_bubble_views_cocoa_browsertest.mm",
           "../browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm",
-          "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_browsertest.mm",
+          "../browser/ui/cocoa/renderer_context_menu/render_view_context_menu_mac_cocoa_browsertest.mm",
           "../browser/ui/cocoa/ssl_client_certificate_selector_cocoa_browsertest.mm",
           "../browser/ui/cocoa/task_manager_mac_browsertest.mm",
           "../browser/ui/cocoa/view_id_util_browsertest.mm",
