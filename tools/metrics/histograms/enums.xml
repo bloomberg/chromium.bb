@@ -45714,6 +45714,8 @@ Full version information for the fingerprint enum values:
   <int value="50" label="kErrorCodeOmahaUpdateIgnoredOverCellular"/>
   <int value="51" label="kErrorCodePayloadTimestampError"/>
   <int value="52" label="kErrorCodeUpdatedButNotActive"/>
+  <int value="53" label="kErrorCodeNoUpdate"/>
+  <int value="54" label="kErrorCodeRollbackNotPossible"/>
 </enum>
 
 <enum name="UpdateEngineInstallDateProvisioningSource">
