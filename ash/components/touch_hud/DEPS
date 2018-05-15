@@ -7,5 +7,6 @@ include_rules = [
   "+services/service_manager/public",
   "+services/ui/public",
   "+ui/aura",
+  "+ui/display",
   "+ui/views",
 ]
