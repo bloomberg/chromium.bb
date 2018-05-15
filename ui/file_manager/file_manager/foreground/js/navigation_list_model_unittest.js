@@ -30,13 +30,15 @@ function testModel() {
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
   var recentItem = new NavigationModelFakeItem(
-      'recent-label', {toURL: () => 'fake-entry://recent'});
+      'recent-label', NavigationModelItemType.RECENT,
+      {toURL: () => 'fake-entry://recent'});
   var addNewServicesItem = new NavigationModelMenuItem(
       'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
       volumeManager, shortcutListModel, recentItem, addNewServicesItem);
   model.linuxFilesItem = new NavigationModelFakeItem(
-      'linux-files-label', {toURL: () => 'fake-entry://linux-files'});
+      'linux-files-label', NavigationModelItemType.CROSTINI,
+      {toURL: () => 'fake-entry://linux-files'});
 
   assertEquals(6, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);
