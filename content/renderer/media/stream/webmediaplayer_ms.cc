@@ -42,11 +42,18 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace {
+
 enum class RendererReloadAction {
   KEEP_RENDERER,
   REMOVE_RENDERER,
   NEW_RENDERER
 };
+
+bool IsPlayableTrack(const blink::WebMediaStreamTrack& track) {
+  return !track.IsNull() && !track.Source().IsNull() &&
+         track.Source().GetReadyState() !=
+             blink::WebMediaStreamSource::kReadyStateEnded;
+}
 
 }  // namespace
 
@@ -417,6 +424,16 @@ void WebMediaPlayerMS::TrackRemoved(const blink::WebMediaStreamTrack& track) {
   Reload();
 }
 
+void WebMediaPlayerMS::ActiveStateChanged(bool is_active) {
+  if (!is_active) {
+    // This makes the media element elegible to be garbage collected. Otherwise,
+    // the element will be considered active and will never be garbage
+    // collected.
+    SetNetworkState(kNetworkStateIdle);
+  }
+  // The case when the stream becomes active is handled by TrackAdded().
+}
+
 void WebMediaPlayerMS::Reload() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (web_stream_.IsNull())
@@ -438,7 +455,8 @@ void WebMediaPlayerMS::ReloadVideo() {
     if (video_frame_provider_)
       renderer_action = RendererReloadAction::REMOVE_RENDERER;
     current_video_track_id_ = blink::WebString();
-  } else if (video_tracks[0].Id() != current_video_track_id_) {
+  } else if (video_tracks[0].Id() != current_video_track_id_ &&
+             IsPlayableTrack(video_tracks[0])) {
     renderer_action = RendererReloadAction::NEW_RENDERER;
     current_video_track_id_ = video_tracks[0].Id();
   }
@@ -448,6 +466,7 @@ void WebMediaPlayerMS::ReloadVideo() {
       if (video_frame_provider_)
         video_frame_provider_->Stop();
 
+      SetNetworkState(kNetworkStateLoading);
       video_frame_provider_ = renderer_factory_->GetVideoRenderer(
           web_stream_,
           media::BindToCurrentLoop(
@@ -487,7 +506,8 @@ void WebMediaPlayerMS::ReloadAudio() {
     if (audio_renderer_)
       renderer_action = RendererReloadAction::REMOVE_RENDERER;
     current_audio_track_id_ = blink::WebString();
-  } else if (audio_tracks[0].Id() != current_video_track_id_) {
+  } else if (audio_tracks[0].Id() != current_audio_track_id_ &&
+             IsPlayableTrack(audio_tracks[0])) {
     renderer_action = RendererReloadAction::NEW_RENDERER;
     current_audio_track_id_ = audio_tracks[0].Id();
   }
@@ -497,8 +517,14 @@ void WebMediaPlayerMS::ReloadAudio() {
       if (audio_renderer_)
         audio_renderer_->Stop();
 
+      SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
       audio_renderer_ = renderer_factory_->GetAudioRenderer(
           web_stream_, frame->GetRoutingID(), initial_audio_output_device_id_);
+
+      // |audio_renderer_| can be null in tests.
+      if (!audio_renderer_)
+        break;
+
       audio_renderer_->SetVolume(volume_);
       audio_renderer_->Start();
       audio_renderer_->Play();

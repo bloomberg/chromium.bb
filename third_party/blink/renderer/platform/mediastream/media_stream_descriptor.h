@@ -102,7 +102,7 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   void RemoveRemoteTrack(MediaStreamComponent*);
 
   bool Active() const { return active_; }
-  void SetActive(bool active) { active_ = active; }
+  void SetActive(bool active);
 
   void AddObserver(WebMediaStreamObserver*);
   void RemoveObserver(WebMediaStreamObserver*);

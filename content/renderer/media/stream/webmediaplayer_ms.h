@@ -195,6 +195,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // blink::WebMediaStreamObserver implementation
   void TrackAdded(const blink::WebMediaStreamTrack& track) override;
   void TrackRemoved(const blink::WebMediaStreamTrack& track) override;
+  void ActiveStateChanged(bool is_active) override;
 
  private:
   friend class WebMediaPlayerMSTest;

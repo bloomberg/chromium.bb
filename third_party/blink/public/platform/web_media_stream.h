@@ -38,9 +38,12 @@ class WebString;
 class BLINK_PLATFORM_EXPORT WebMediaStreamObserver {
  public:
   // TrackAdded is called when |track| is added to the observed MediaStream.
-  virtual void TrackAdded(const blink::WebMediaStreamTrack&) = 0;
+  virtual void TrackAdded(const blink::WebMediaStreamTrack&) {}
   // TrackRemoved is called when |track| is added to the observed MediaStream.
-  virtual void TrackRemoved(const blink::WebMediaStreamTrack&) = 0;
+  virtual void TrackRemoved(const blink::WebMediaStreamTrack&) {}
+  // ActiveStateChanged is called when the observed MediaStream becomes either
+  // active or inactive.
+  virtual void ActiveStateChanged(bool is_active) {}
 
  protected:
   virtual ~WebMediaStreamObserver() = default;
