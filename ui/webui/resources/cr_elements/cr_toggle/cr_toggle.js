@@ -167,7 +167,7 @@ Polymer({
    * @private
    */
   onKeyPress_: function(e) {
-    if (e.code == 'Space' || e.code == 'Enter') {
+    if (e.key == ' ' || e.key == 'Enter') {
       e.preventDefault();
       this.toggleState_(true);
     }

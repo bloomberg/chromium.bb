@@ -45,13 +45,16 @@ suite('cr-toggle', function() {
     assertEquals('false', toggle.getAttribute('aria-disabled'));
   }
 
-  /** @param {string} keyName The name of the key to trigger. */
-  function triggerKeyPressEvent(keyName) {
+  /**
+   * @param {string} keyName The name of the key to trigger.
+   * @param {string} keyCode The event keyCode and code to trigger.
+   */
+  function triggerKeyPressEvent(keyName, keyCode) {
     // Note: MockInteractions incorrectly populates |keyCode| and |code| with
-    // the same value. Since the prod code only cares about |code| being 'Enter'
-    // or 'Space', passing a string as a 2nd param, instead of a number.
+    // the same value. The intention of passing a string here is only to set
+    // |code|, since |keyCode| is not used its value doesn't matter.
     MockInteractions.keyEventOn(
-        toggle, 'keypress', keyName, undefined, keyName);
+        toggle, 'keypress', keyCode, undefined, keyName);
   }
 
   /**
@@ -158,14 +161,23 @@ suite('cr-toggle', function() {
   // 'Space' key.
   test('ToggleByKey', function() {
     let whenChanged = test_util.eventToPromise('change', toggle);
-    triggerKeyPressEvent('Enter');
-    return whenChanged.then(function() {
-      assertChecked();
-      whenChanged = test_util.eventToPromise('change', toggle);
-      triggerKeyPressEvent('Space');
-    }).then(function() {
-      assertNotChecked();
-    });
+    triggerKeyPressEvent('Enter', 'Enter');
+    return whenChanged
+        .then(function() {
+          assertChecked();
+          whenChanged = test_util.eventToPromise('change', toggle);
+          triggerKeyPressEvent(' ', 'Space');
+          return whenChanged;
+        })
+        .then(function() {
+          assertNotChecked();
+          whenChanged = test_util.eventToPromise('change', toggle);
+          triggerKeyPressEvent('Enter', 'NumpadEnter');
+          return whenChanged;
+        })
+        .then(function() {
+          assertChecked();
+        });
   });
 
   // Test that the control is not affected by user interaction when disabled.
