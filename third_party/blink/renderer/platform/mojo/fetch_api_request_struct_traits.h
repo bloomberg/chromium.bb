@@ -55,11 +55,7 @@ struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
   static WTF::HashMap<WTF::String, WTF::String> headers(
       const ::blink::WebServiceWorkerRequest&);
 
-  static WTF::String blob_uuid(const ::blink::WebServiceWorkerRequest&);
-
-  static uint64_t blob_size(const ::blink::WebServiceWorkerRequest&);
-
-  static blink::mojom::blink::BlobPtr blob(
+  static scoped_refptr<::blink::BlobDataHandle> blob(
       const ::blink::WebServiceWorkerRequest&);
 
   static const ::blink::Referrer& referrer(

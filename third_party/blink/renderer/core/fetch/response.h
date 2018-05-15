@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_RESPONSE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FETCH_RESPONSE_H_
 
+#include "third_party/blink/public/platform/modules/fetch/fetch_api_response.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -45,6 +46,7 @@ class CORE_EXPORT Response final : public Body {
                           ExceptionState&);
   static Response* Create(ExecutionContext*, FetchResponseData*);
   static Response* Create(ScriptState*, const WebServiceWorkerResponse&);
+  static Response* Create(ScriptState*, mojom::blink::FetchAPIResponse&);
 
   static Response* CreateClone(const Response&);
 
@@ -75,6 +77,7 @@ class CORE_EXPORT Response final : public Body {
   // Does not call response.setBlobDataHandle().
   void PopulateWebServiceWorkerResponse(
       WebServiceWorkerResponse& /* response */);
+  mojom::blink::FetchAPIResponsePtr PopulateFetchAPIResponse();
 
   bool HasBody() const;
   BodyStreamBuffer* BodyBuffer() override { return response_->Buffer(); }

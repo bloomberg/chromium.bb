@@ -9,9 +9,8 @@
 #include <utility>
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -58,9 +57,6 @@ using RequestEntriesCallback =
     blink::protocol::CacheStorage::Backend::RequestEntriesCallback;
 using RequestCachedResponseCallback =
     blink::protocol::CacheStorage::Backend::RequestCachedResponseCallback;
-using BatchOperation = blink::WebServiceWorkerCache::BatchOperation;
-
-using WebServiceWorkerCacheStorage = ::blink::WebServiceWorkerCacheStorage;
 
 namespace blink {
 
@@ -104,7 +100,7 @@ ProtocolResponse AssertCacheStorage(
     const String& security_origin,
     InspectedFrames* frames,
     InspectorCacheStorageAgent::CachesMap* caches,
-    WebServiceWorkerCacheStorage** result) {
+    mojom::blink::CacheStorage** result) {
   scoped_refptr<const SecurityOrigin> sec_origin =
       SecurityOrigin::CreateFromString(security_origin);
 
@@ -123,14 +119,11 @@ ProtocolResponse AssertCacheStorage(
   auto it = caches->find(security_origin);
 
   if (it == caches->end()) {
-    std::unique_ptr<WebServiceWorkerCacheStorage> cache_storage =
-        Platform::Current()->CreateCacheStorage(
-            context->GetInterfaceProvider());
-    if (!cache_storage) {
-      return ProtocolResponse::Error("Could not find cache storage.");
-    }
-    *result = cache_storage.get();
-    caches->Set(security_origin, std::move(cache_storage));
+    mojom::blink::CacheStoragePtr cache_storage_ptr;
+    context->GetInterfaceProvider()->GetInterface(
+        mojo::MakeRequest(&cache_storage_ptr));
+    *result = cache_storage_ptr.get();
+    caches->Set(security_origin, std::move(cache_storage_ptr));
   } else {
     *result = it->value.get();
   }
@@ -143,7 +136,7 @@ ProtocolResponse AssertCacheStorageAndNameForId(
     InspectedFrames* frames,
     String* cache_name,
     InspectorCacheStorageAgent::CachesMap* caches,
-    WebServiceWorkerCacheStorage** result) {
+    mojom::blink::CacheStorage** result) {
   String security_origin;
   ProtocolResponse response =
       ParseCacheId(cache_id, &security_origin, cache_name);
@@ -152,67 +145,29 @@ ProtocolResponse AssertCacheStorageAndNameForId(
   return AssertCacheStorage(security_origin, frames, caches, result);
 }
 
-CString CacheStorageErrorString(mojom::CacheStorageError error) {
+CString CacheStorageErrorString(mojom::blink::CacheStorageError error) {
   switch (error) {
-    case mojom::CacheStorageError::kErrorNotImplemented:
+    case mojom::blink::CacheStorageError::kErrorNotImplemented:
       return CString("not implemented.");
-    case mojom::CacheStorageError::kErrorNotFound:
+    case mojom::blink::CacheStorageError::kErrorNotFound:
       return CString("not found.");
-    case mojom::CacheStorageError::kErrorExists:
+    case mojom::blink::CacheStorageError::kErrorExists:
       return CString("cache already exists.");
-    case mojom::CacheStorageError::kErrorQuotaExceeded:
+    case mojom::blink::CacheStorageError::kErrorQuotaExceeded:
       return CString("quota exceeded.");
-    case mojom::CacheStorageError::kErrorCacheNameNotFound:
+    case mojom::blink::CacheStorageError::kErrorCacheNameNotFound:
       return CString("cache not found.");
-    case mojom::CacheStorageError::kErrorQueryTooLarge:
+    case mojom::blink::CacheStorageError::kErrorQueryTooLarge:
       return CString("operation too large.");
-    case mojom::CacheStorageError::kErrorStorage:
+    case mojom::blink::CacheStorageError::kErrorStorage:
       return CString("storage failure.");
-    case mojom::CacheStorageError::kSuccess:
+    case mojom::blink::CacheStorageError::kSuccess:
       // This function should only be called upon error.
       break;
   }
   NOTREACHED();
   return "";
 }
-
-class RequestCacheNames
-    : public WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks {
- public:
-  RequestCacheNames(const String& security_origin,
-                    std::unique_ptr<RequestCacheNamesCallback> callback)
-      : security_origin_(security_origin), callback_(std::move(callback)) {}
-
-  ~RequestCacheNames() override = default;
-
-  void OnSuccess(const WebVector<WebString>& caches) override {
-    std::unique_ptr<Array<ProtocolCache>> array =
-        Array<ProtocolCache>::create();
-    for (size_t i = 0; i < caches.size(); i++) {
-      String name = String(caches[i]);
-      std::unique_ptr<ProtocolCache> entry =
-          ProtocolCache::create()
-              .setSecurityOrigin(security_origin_)
-              .setCacheName(name)
-              .setCacheId(BuildCacheId(security_origin_, name))
-              .build();
-      array->addItem(std::move(entry));
-    }
-    callback_->sendSuccess(std::move(array));
-  }
-
-  void OnError(mojom::CacheStorageError error) override {
-    callback_->sendFailure(ProtocolResponse::Error(
-        String::Format("Error requesting cache names: %s",
-                       CacheStorageErrorString(error).data())));
-  }
-
- private:
-  String security_origin_;
-  std::unique_ptr<RequestCacheNamesCallback> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(RequestCacheNames);
-};
 
 struct DataRequestParams {
   String cache_name;
@@ -234,14 +189,36 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
  public:
   ResponsesAccumulator(int num_responses,
                        const DataRequestParams& params,
+                       mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr,
                        std::unique_ptr<RequestEntriesCallback> callback)
       : params_(params),
         num_responses_left_(num_responses),
         responses_(static_cast<size_t>(num_responses)),
+        cache_ptr_(std::move(cache_ptr)),
         callback_(std::move(callback)) {}
 
-  void AddRequestResponsePair(const WebServiceWorkerRequest& request,
-                              const WebServiceWorkerResponse& response) {
+  void Dispatch(const Vector<WebServiceWorkerRequest>& requests) {
+    for (const auto& request : requests) {
+      cache_ptr_->Match(
+          request, mojom::blink::QueryParams::New(),
+          WTF::Bind(
+              [](scoped_refptr<ResponsesAccumulator> accumulator,
+                 WebServiceWorkerRequest request,
+                 mojom::blink::MatchResultPtr result) {
+                if (result->is_status()) {
+                  accumulator->SendFailure(result->get_status());
+                } else {
+                  accumulator->AddRequestResponsePair(request,
+                                                      result->get_response());
+                }
+              },
+              scoped_refptr<ResponsesAccumulator>(this), request));
+    }
+  }
+
+  void AddRequestResponsePair(
+      const WebServiceWorkerRequest& request,
+      const mojom::blink::FetchAPIResponsePtr& response) {
     DCHECK_GT(num_responses_left_, 0);
     RequestResponse& request_response =
         responses_.at(responses_.size() - num_responses_left_);
@@ -249,10 +226,13 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     request_response.request_url = request.Url().GetString();
     request_response.request_method = request.Method();
     request_response.request_headers = request.Headers();
-    request_response.response_status = response.Status();
-    request_response.response_status_text = response.StatusText();
-    request_response.response_time = response.ResponseTime().ToDoubleT();
-    request_response.response_headers = response.Headers();
+    request_response.response_status = response->status_code;
+    request_response.response_status_text = response->status_text;
+    request_response.response_time = response->response_time.ToDoubleT();
+    for (const auto& header : response->headers) {
+      request_response.response_headers.Set(AtomicString(header.key),
+                                            AtomicString(header.value));
+    }
 
     if (--num_responses_left_ != 0)
       return;
@@ -289,8 +269,11 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
     callback_->sendSuccess(std::move(array), has_more);
   }
 
-  void SendFailure(const ProtocolResponse& error) {
-    callback_->sendFailure(error);
+  void SendFailure(const mojom::blink::CacheStorageError& error) {
+    callback_->sendFailure(ProtocolResponse::Error(
+        String::Format("Error requesting responses for cache %s : %s",
+                       params_.cache_name.Utf8().data(),
+                       CacheStorageErrorString(error).data())));
   }
 
   std::unique_ptr<Array<Header>> SerializeHeaders(
@@ -309,189 +292,59 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
   DataRequestParams params_;
   int num_responses_left_;
   Vector<RequestResponse> responses_;
+  mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr_;
   std::unique_ptr<RequestEntriesCallback> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponsesAccumulator);
 };
 
-class GetCacheResponsesForRequestData
-    : public WebServiceWorkerCache::CacheMatchCallbacks {
+class GetCacheKeysForRequestData {
  public:
-  GetCacheResponsesForRequestData(const DataRequestParams& params,
-                                  const WebServiceWorkerRequest& request,
-                                  scoped_refptr<ResponsesAccumulator> accum)
-      : params_(params), request_(request), accumulator_(std::move(accum)) {}
-  ~GetCacheResponsesForRequestData() override = default;
-
-  void OnSuccess(const WebServiceWorkerResponse& response) override {
-    accumulator_->AddRequestResponsePair(request_, response);
+  GetCacheKeysForRequestData(
+      const DataRequestParams& params,
+      mojom::blink::CacheStorageCacheAssociatedPtrInfo cache_ptr_info,
+      std::unique_ptr<RequestEntriesCallback> callback)
+      : params_(params), callback_(std::move(callback)) {
+    cache_ptr_.Bind(std::move(cache_ptr_info));
   }
 
-  void OnError(mojom::CacheStorageError error) override {
-    accumulator_->SendFailure(ProtocolResponse::Error(
-        String::Format("Error requesting responses for cache  %s: %s",
-                       params_.cache_name.Utf8().data(),
-                       CacheStorageErrorString(error).data())));
+  void Dispatch(std::unique_ptr<GetCacheKeysForRequestData> self) {
+    cache_ptr_->Keys(
+        WebServiceWorkerRequest(), mojom::blink::QueryParams::New(),
+        WTF::Bind(
+            [](DataRequestParams params,
+               std::unique_ptr<GetCacheKeysForRequestData> self,
+               mojom::blink::CacheKeysResultPtr result) {
+              if (result->is_status()) {
+                self->callback_->sendFailure(
+                    ProtocolResponse::Error(String::Format(
+                        "Error requesting requests for cache %s: %s",
+                        params.cache_name.Utf8().data(),
+                        CacheStorageErrorString(result->get_status()).data())));
+              } else {
+                auto& requests = result->get_keys();
+                if (requests.IsEmpty()) {
+                  std::unique_ptr<Array<DataEntry>> array =
+                      Array<DataEntry>::create();
+                  self->callback_->sendSuccess(std::move(array), false);
+                  return;
+                }
+                scoped_refptr<ResponsesAccumulator> accumulator =
+                    base::AdoptRef(new ResponsesAccumulator(
+                        requests.size(), params, std::move(self->cache_ptr_),
+                        std::move(self->callback_)));
+                accumulator->Dispatch(result->get_keys());
+              }
+            },
+            params_, std::move(self)));
   }
 
  private:
   DataRequestParams params_;
-  WebServiceWorkerRequest request_;
-  scoped_refptr<ResponsesAccumulator> accumulator_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCacheResponsesForRequestData);
-};
-
-class GetCacheKeysForRequestData
-    : public WebServiceWorkerCache::CacheWithRequestsCallbacks {
- public:
-  GetCacheKeysForRequestData(const DataRequestParams& params,
-                             std::unique_ptr<WebServiceWorkerCache> cache,
-                             std::unique_ptr<RequestEntriesCallback> callback)
-      : params_(params),
-        cache_(std::move(cache)),
-        callback_(std::move(callback)) {}
-  ~GetCacheKeysForRequestData() override = default;
-
-  WebServiceWorkerCache* Cache() { return cache_.get(); }
-  void OnSuccess(const WebVector<WebServiceWorkerRequest>& requests) override {
-    if (requests.IsEmpty()) {
-      std::unique_ptr<Array<DataEntry>> array = Array<DataEntry>::create();
-      callback_->sendSuccess(std::move(array), false);
-      return;
-    }
-    scoped_refptr<ResponsesAccumulator> accumulator =
-        base::AdoptRef(new ResponsesAccumulator(requests.size(), params_,
-                                                std::move(callback_)));
-    for (size_t i = 0; i < requests.size(); i++) {
-      const auto& request = requests[i];
-      auto cache_request = std::make_unique<GetCacheResponsesForRequestData>(
-          params_, request, accumulator);
-      cache_->DispatchMatch(std::move(cache_request), request,
-                            WebServiceWorkerCache::QueryParams());
-    }
-  }
-
-  void OnError(mojom::CacheStorageError error) override {
-    callback_->sendFailure(ProtocolResponse::Error(
-        String::Format("Error requesting requests for cache %s: %s",
-                       params_.cache_name.Utf8().data(),
-                       CacheStorageErrorString(error).data())));
-  }
-
- private:
-  DataRequestParams params_;
-  std::unique_ptr<WebServiceWorkerCache> cache_;
+  mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr_;
   std::unique_ptr<RequestEntriesCallback> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GetCacheKeysForRequestData);
-};
-
-class GetCacheForRequestData
-    : public WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks {
- public:
-  GetCacheForRequestData(const DataRequestParams& params,
-                         std::unique_ptr<RequestEntriesCallback> callback)
-      : params_(params), callback_(std::move(callback)) {}
-  ~GetCacheForRequestData() override = default;
-
-  void OnSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override {
-    auto cache_request = std::make_unique<GetCacheKeysForRequestData>(
-        params_, std::move(cache), std::move(callback_));
-    cache_request->Cache()->DispatchKeys(std::move(cache_request),
-                                         WebServiceWorkerRequest(),
-                                         WebServiceWorkerCache::QueryParams());
-  }
-
-  void OnError(mojom::CacheStorageError error) override {
-    callback_->sendFailure(ProtocolResponse::Error(String::Format(
-        "Error requesting cache %s: %s", params_.cache_name.Utf8().data(),
-        CacheStorageErrorString(error).data())));
-  }
-
- private:
-  DataRequestParams params_;
-  std::unique_ptr<RequestEntriesCallback> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCacheForRequestData);
-};
-
-class DeleteCache : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
- public:
-  explicit DeleteCache(std::unique_ptr<DeleteCacheCallback> callback)
-      : callback_(std::move(callback)) {}
-  ~DeleteCache() override = default;
-
-  void OnSuccess() override { callback_->sendSuccess(); }
-
-  void OnError(mojom::CacheStorageError error) override {
-    callback_->sendFailure(ProtocolResponse::Error(
-        String::Format("Error requesting cache names: %s",
-                       CacheStorageErrorString(error).data())));
-  }
-
- private:
-  std::unique_ptr<DeleteCacheCallback> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteCache);
-};
-
-class DeleteCacheEntry : public WebServiceWorkerCache::CacheBatchCallbacks {
- public:
-  explicit DeleteCacheEntry(std::unique_ptr<DeleteEntryCallback> callback)
-      : callback_(std::move(callback)) {}
-  ~DeleteCacheEntry() override = default;
-
-  void OnSuccess() override { callback_->sendSuccess(); }
-
-  void OnError(mojom::CacheStorageError error) override {
-    callback_->sendFailure(ProtocolResponse::Error(
-        String::Format("Error requesting cache names: %s",
-                       CacheStorageErrorString(error).data())));
-  }
-
- private:
-  std::unique_ptr<DeleteEntryCallback> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeleteCacheEntry);
-};
-
-class GetCacheForDeleteEntry
-    : public WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks {
- public:
-  GetCacheForDeleteEntry(const String& request_spec,
-                         const String& cache_name,
-                         std::unique_ptr<DeleteEntryCallback> callback)
-      : request_spec_(request_spec),
-        cache_name_(cache_name),
-        callback_(std::move(callback)) {}
-  ~GetCacheForDeleteEntry() override = default;
-
-  void OnSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override {
-    auto delete_request =
-        std::make_unique<DeleteCacheEntry>(std::move(callback_));
-    BatchOperation delete_operation;
-    delete_operation.operation_type =
-        WebServiceWorkerCache::kOperationTypeDelete;
-    delete_operation.request.SetURL(KURL(request_spec_));
-    Vector<BatchOperation> operations;
-    operations.push_back(delete_operation);
-    cache.release()->DispatchBatch(std::move(delete_request),
-                                   WebVector<BatchOperation>(operations));
-  }
-
-  void OnError(mojom::CacheStorageError error) override {
-    callback_->sendFailure(ProtocolResponse::Error(String::Format(
-        "Error requesting cache %s: %s", cache_name_.Utf8().data(),
-        CacheStorageErrorString(error).data())));
-  }
-
- private:
-  String request_spec_;
-  String cache_name_;
-  std::unique_ptr<DeleteEntryCallback> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(GetCacheForDeleteEntry);
 };
 
 class CachedResponseFileReaderLoaderClient final
@@ -547,35 +400,6 @@ class CachedResponseFileReaderLoaderClient final
   DISALLOW_COPY_AND_ASSIGN(CachedResponseFileReaderLoaderClient);
 };
 
-class CachedResponseMatchCallback
-    : public WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks {
- public:
-  explicit CachedResponseMatchCallback(
-      std::unique_ptr<RequestCachedResponseCallback> callback)
-      : callback_(std::move(callback)) {}
-
-  void OnSuccess(const WebServiceWorkerResponse& response) override {
-    std::unique_ptr<protocol::DictionaryValue> headers =
-        protocol::DictionaryValue::create();
-    if (!response.GetBlobDataHandle()) {
-      callback_->sendSuccess(CachedResponse::create().setBody("").build());
-      return;
-    }
-    CachedResponseFileReaderLoaderClient::Load(response.GetBlobDataHandle(),
-                                               std::move(callback_));
-  }
-
-  void OnError(mojom::CacheStorageError error) override {
-    callback_->sendFailure(ProtocolResponse::Error(
-        String::Format("Unable to read cached response: %s",
-                       CacheStorageErrorString(error).data())));
-  }
-
- private:
-  std::unique_ptr<RequestCachedResponseCallback> callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CachedResponseMatchCallback);
-};
 }  // namespace
 
 InspectorCacheStorageAgent::InspectorCacheStorageAgent(InspectedFrames* frames)
@@ -602,7 +426,7 @@ void InspectorCacheStorageAgent::requestCacheNames(
     return;
   }
 
-  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  mojom::blink::CacheStorage* cache_storage = nullptr;
 
   ProtocolResponse response =
       AssertCacheStorage(security_origin, frames_, &caches_, &cache_storage);
@@ -611,7 +435,21 @@ void InspectorCacheStorageAgent::requestCacheNames(
     return;
   }
 
-  cache_storage->DispatchKeys(std::make_unique<RequestCacheNames>(
+  cache_storage->Keys(WTF::Bind(
+      [](String security_origin,
+         std::unique_ptr<RequestCacheNamesCallback> callback,
+         const Vector<String>& caches) {
+        std::unique_ptr<Array<ProtocolCache>> array =
+            Array<ProtocolCache>::create();
+        for (auto& cache : caches) {
+          array->addItem(ProtocolCache::create()
+                             .setSecurityOrigin(security_origin)
+                             .setCacheName(cache)
+                             .setCacheId(BuildCacheId(security_origin, cache))
+                             .build());
+        }
+        callback->sendSuccess(std::move(array));
+      },
       security_origin, std::move(callback)));
 }
 
@@ -621,7 +459,7 @@ void InspectorCacheStorageAgent::requestEntries(
     int page_size,
     std::unique_ptr<RequestEntriesCallback> callback) {
   String cache_name;
-  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  mojom::blink::CacheStorage* cache_storage = nullptr;
   ProtocolResponse response = AssertCacheStorageAndNameForId(
       cache_id, frames_, &cache_name, &caches_, &cache_storage);
   if (!response.isSuccess()) {
@@ -633,25 +471,52 @@ void InspectorCacheStorageAgent::requestEntries(
   params.page_size = page_size;
   params.skip_count = skip_count;
 
-  cache_storage->DispatchOpen(
-      std::make_unique<GetCacheForRequestData>(params, std::move(callback)),
-      WebString(cache_name));
+  cache_storage->Open(
+      cache_name,
+      WTF::Bind(
+          [](DataRequestParams params,
+             std::unique_ptr<RequestEntriesCallback> callback,
+             mojom::blink::OpenResultPtr result) {
+            if (result->is_status()) {
+              callback->sendFailure(ProtocolResponse::Error(String::Format(
+                  "Error requesting cache %s: %s",
+                  params.cache_name.Utf8().data(),
+                  CacheStorageErrorString(result->get_status()).data())));
+            } else {
+              auto request = std::make_unique<GetCacheKeysForRequestData>(
+                  params, std::move(result->get_cache()), std::move(callback));
+              auto* request_ptr = request.get();
+              request_ptr->Dispatch(std::move(request));
+            }
+          },
+          params, std::move(callback)));
 }
 
 void InspectorCacheStorageAgent::deleteCache(
     const String& cache_id,
     std::unique_ptr<DeleteCacheCallback> callback) {
   String cache_name;
-  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  mojom::blink::CacheStorage* cache_storage = nullptr;
   ProtocolResponse response = AssertCacheStorageAndNameForId(
       cache_id, frames_, &cache_name, &caches_, &cache_storage);
   if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
-  cache_storage->DispatchDelete(
-      std::make_unique<DeleteCache>(std::move(callback)),
-      WebString(cache_name));
+  cache_storage->Delete(
+      cache_name,
+      WTF::Bind(
+          [](std::unique_ptr<DeleteCacheCallback> callback,
+             mojom::blink::CacheStorageError error) {
+            if (error == mojom::blink::CacheStorageError::kSuccess) {
+              callback->sendSuccess();
+            } else {
+              callback->sendFailure(ProtocolResponse::Error(
+                  String::Format("Error requesting cache names: %s",
+                                 CacheStorageErrorString(error).data())));
+            }
+          },
+          std::move(callback)));
 }
 
 void InspectorCacheStorageAgent::deleteEntry(
@@ -659,16 +524,53 @@ void InspectorCacheStorageAgent::deleteEntry(
     const String& request,
     std::unique_ptr<DeleteEntryCallback> callback) {
   String cache_name;
-  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  mojom::blink::CacheStorage* cache_storage = nullptr;
   ProtocolResponse response = AssertCacheStorageAndNameForId(
       cache_id, frames_, &cache_name, &caches_, &cache_storage);
   if (!response.isSuccess()) {
     callback->sendFailure(response);
     return;
   }
-  cache_storage->DispatchOpen(std::make_unique<GetCacheForDeleteEntry>(
-                                  request, cache_name, std::move(callback)),
-                              WebString(cache_name));
+  cache_storage->Open(
+      cache_name,
+      WTF::Bind(
+          [](String cache_name, String request,
+             std::unique_ptr<DeleteEntryCallback> callback,
+             mojom::blink::OpenResultPtr result) {
+            if (result->is_status()) {
+              callback->sendFailure(ProtocolResponse::Error(String::Format(
+                  "Error requesting cache %s: %s", cache_name.Utf8().data(),
+                  CacheStorageErrorString(result->get_status()).data())));
+            } else {
+              Vector<mojom::blink::BatchOperationPtr> batch_operations;
+              batch_operations.push_back(mojom::blink::BatchOperation::New());
+              auto& operation = batch_operations.back();
+              operation->operation_type = mojom::blink::OperationType::kDelete;
+              operation->request.SetURL(KURL(request));
+
+              mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr;
+              cache_ptr.Bind(std::move(result->get_cache()));
+              auto* cache = cache_ptr.get();
+              cache->Batch(
+                  std::move(batch_operations),
+                  WTF::Bind(
+                      [](mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr,
+                         std::unique_ptr<DeleteEntryCallback> callback,
+                         mojom::blink::CacheStorageError error) {
+                        if (error !=
+                            mojom::blink::CacheStorageError::kSuccess) {
+                          callback->sendFailure(
+                              ProtocolResponse::Error(String::Format(
+                                  "Error deleting cache entry: %s",
+                                  CacheStorageErrorString(error).data())));
+                        } else {
+                          callback->sendSuccess();
+                        }
+                      },
+                      std::move(cache_ptr), std::move(callback)));
+            }
+          },
+          cache_name, request, std::move(callback)));
 }
 
 void InspectorCacheStorageAgent::requestCachedResponse(
@@ -676,7 +578,7 @@ void InspectorCacheStorageAgent::requestCachedResponse(
     const String& request_url,
     std::unique_ptr<RequestCachedResponseCallback> callback) {
   String cache_name;
-  WebServiceWorkerCacheStorage* cache_storage = nullptr;
+  mojom::blink::CacheStorage* cache_storage = nullptr;
   ProtocolResponse response = AssertCacheStorageAndNameForId(
       cache_id, frames_, &cache_name, &caches_, &cache_storage);
   if (!response.isSuccess()) {
@@ -685,8 +587,27 @@ void InspectorCacheStorageAgent::requestCachedResponse(
   }
   WebServiceWorkerRequest request;
   request.SetURL(KURL(request_url));
-  cache_storage->DispatchMatch(
-      std::make_unique<CachedResponseMatchCallback>(std::move(callback)),
-      request, WebServiceWorkerCache::QueryParams());
+  cache_storage->Match(
+      request, mojom::blink::QueryParams::New(),
+      WTF::Bind(
+          [](std::unique_ptr<RequestCachedResponseCallback> callback,
+             mojom::blink::MatchResultPtr result) {
+            if (result->is_status()) {
+              callback->sendFailure(ProtocolResponse::Error(String::Format(
+                  "Unable to read cached response: %s",
+                  CacheStorageErrorString(result->get_status()).data())));
+            } else {
+              std::unique_ptr<protocol::DictionaryValue> headers =
+                  protocol::DictionaryValue::create();
+              if (!result->get_response()->blob) {
+                callback->sendSuccess(
+                    CachedResponse::create().setBody("").build());
+                return;
+              }
+              CachedResponseFileReaderLoaderClient::Load(
+                  std::move(result->get_response()->blob), std::move(callback));
+            }
+          },
+          std::move(callback)));
 }
 }  // namespace blink

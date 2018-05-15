@@ -30,10 +30,15 @@ struct CONTENT_EXPORT StructTraits<blink::mojom::FetchAPIResponseDataView,
       const content::ServiceWorkerResponse& response) {
     return response.is_in_cache_storage;
   }
-  static blink::mojom::BlobPtr blob(
+  static blink::mojom::SerializedBlobPtr blob(
       const content::ServiceWorkerResponse& response) {
     if (response.blob) {
-      return response.blob->Clone();
+      blink::mojom::SerializedBlobPtr serialized_blob_ptr =
+          blink::mojom::SerializedBlob::New();
+      serialized_blob_ptr->uuid = response.blob_uuid;
+      serialized_blob_ptr->size = response.blob_size;
+      serialized_blob_ptr->blob = response.blob->Clone().PassInterface();
+      return serialized_blob_ptr;
     }
     return nullptr;
   }
@@ -51,12 +56,6 @@ struct CONTENT_EXPORT StructTraits<blink::mojom::FetchAPIResponseDataView,
   headers(const content::ServiceWorkerResponse& response) {
     return response.headers;
   }
-  static std::string blob_uuid(const content::ServiceWorkerResponse& response) {
-    return response.blob_uuid;
-  }
-  static uint64_t blob_size(const content::ServiceWorkerResponse& response) {
-    return response.blob_size;
-  }
   static blink::mojom::ServiceWorkerResponseError error(
       const content::ServiceWorkerResponse& response) {
     return response.error;
@@ -73,18 +72,16 @@ struct CONTENT_EXPORT StructTraits<blink::mojom::FetchAPIResponseDataView,
       const content::ServiceWorkerResponse& response) {
     return response.cors_exposed_header_names;
   }
-  static std::string side_data_blob_uuid(
-      const content::ServiceWorkerResponse& response) {
-    return response.side_data_blob_uuid;
-  }
-  static uint64_t side_data_blob_size(
-      const content::ServiceWorkerResponse& response) {
-    return response.side_data_blob_size;
-  }
-  static blink::mojom::BlobPtr side_data_blob(
+  static blink::mojom::SerializedBlobPtr side_data_blob(
       const content::ServiceWorkerResponse& response) {
     if (response.side_data_blob) {
-      return response.side_data_blob->Clone();
+      blink::mojom::SerializedBlobPtr serialized_blob_ptr =
+          blink::mojom::SerializedBlob::New();
+      serialized_blob_ptr->uuid = response.side_data_blob_uuid;
+      serialized_blob_ptr->size = response.side_data_blob_size;
+      serialized_blob_ptr->blob =
+          response.side_data_blob->Clone().PassInterface();
+      return serialized_blob_ptr;
     }
     return nullptr;
   }

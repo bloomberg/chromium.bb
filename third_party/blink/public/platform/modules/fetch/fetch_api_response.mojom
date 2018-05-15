@@ -6,14 +6,14 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
-import "third_party/blink/public/mojom/blob/blob.mojom";
+import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
 import "url/mojom/url.mojom";
 
 // Represents a response to a fetch operation. ServiceWorker uses this to
-// respond to a FetchEvent dispatched by the browser. The plan is for the Cache
-// and fetch() API to also use it. It's currently typemapped to
-// content::ServiceWorkerResponse.
+// respond to a FetchEvent dispatched by the browser. It is currently used by
+// the Cache API, and the plan is for the fetch() API to also use it. It's
+// currently typemapped to content::ServiceWorkerResponse.
 struct FetchAPIResponse {
   // List of URLs that originally generated this response, it includes all URLs
   // in case of HTTP redirect, first URL on redirect chain is on position 0.
@@ -34,15 +34,8 @@ struct FetchAPIResponse {
   // The response headers. It's case insensitive for header name as key.
   map<string, string> headers;
 
-  // Blob id within Browser, used to notify browser when the blob/payload has
-  // been consumed.
-  string blob_uuid;
-
-  // Size of the blob/payload.
-  uint64 blob_size;
-
   // Mojo interface to read the response payload.
-  Blob? blob;
+  SerializedBlob? blob;
 
   // Error codes for service worker APIs. This enum is used by
   ServiceWorkerResponseError error;
@@ -52,7 +45,7 @@ struct FetchAPIResponse {
   mojo_base.mojom.Time response_time;
 
   // Name of cache where this response was retrieved, empty otherwise.
-  string cache_storage_cache_name;
+  string? cache_storage_cache_name;
 
   // In case this is a CORS response fetched by a ServiceWorker, this is the
   // set of headers that should be exposed.
@@ -62,7 +55,5 @@ struct FetchAPIResponse {
   bool is_in_cache_storage;
 
   // Side data is used to pass the metadata of the response (eg. V8 code cache).
-  string side_data_blob_uuid;
-  uint64 side_data_blob_size;
-  Blob? side_data_blob;
+  SerializedBlob? side_data_blob;
 };

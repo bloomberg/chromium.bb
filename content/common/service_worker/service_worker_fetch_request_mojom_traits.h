@@ -63,18 +63,7 @@ struct StructTraits<blink::mojom::FetchAPIRequestDataView,
   }
 
   // content::ServiceWorkerFetchRequest does not support the request body.
-  static const std::string& blob_uuid(
-      const content::ServiceWorkerFetchRequest& request) {
-    return base::EmptyString();
-  }
-
-  // content::ServiceWorkerFetchRequest does not support the request body.
-  static uint64_t blob_size(const content::ServiceWorkerFetchRequest& request) {
-    return 0;
-  }
-
-  // content::ServiceWorkerFetchRequest does not support the request body.
-  static blink::mojom::BlobPtr blob(
+  static blink::mojom::SerializedBlobPtr blob(
       const content::ServiceWorkerFetchRequest& request) {
     return nullptr;
   }

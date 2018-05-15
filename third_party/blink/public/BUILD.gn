@@ -173,8 +173,6 @@ source_set("blink_headers") {
     "platform/modules/screen_orientation/web_screen_orientation_enum_traits.h",
     "platform/modules/serviceworker/web_navigation_preload_state.h",
     "platform/modules/serviceworker/web_service_worker.h",
-    "platform/modules/serviceworker/web_service_worker_cache.h",
-    "platform/modules/serviceworker/web_service_worker_cache_storage.h",
     "platform/modules/serviceworker/web_service_worker_client_query_options.h",
     "platform/modules/serviceworker/web_service_worker_clients_claim_callbacks.h",
     "platform/modules/serviceworker/web_service_worker_clients_info.h",

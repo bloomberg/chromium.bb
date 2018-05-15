@@ -123,7 +123,6 @@ class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
 class WebScrollbarBehavior;
 class WebSecurityOrigin;
-class WebServiceWorkerCacheStorage;
 class WebSocketHandshakeThrottle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
@@ -274,11 +273,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Must return non-null.
   virtual WebIDBFactory* IdbFactory() { return nullptr; }
-
-  // Cache Storage ----------------------------------------------------------
-
-  virtual std::unique_ptr<WebServiceWorkerCacheStorage> CreateCacheStorage(
-      service_manager::InterfaceProvider* mojo_provider);
 
   // Gamepad -------------------------------------------------------------
 

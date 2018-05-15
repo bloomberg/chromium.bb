@@ -42,7 +42,6 @@
 #include "content/public/renderer/media_stream_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/renderer/blob_storage/webblobregistry_impl.h"
-#include "content/renderer/cache_storage/webserviceworkercachestorage_impl.h"
 #include "content/renderer/device_sensors/device_motion_event_pump.h"
 #include "content/renderer/device_sensors/device_orientation_event_pump.h"
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
@@ -558,16 +557,6 @@ void RendererBlinkPlatformImpl::CloneSessionStorageNamespace(
 
 WebIDBFactory* RendererBlinkPlatformImpl::IdbFactory() {
   return web_idb_factory_.get();
-}
-
-//------------------------------------------------------------------------------
-
-std::unique_ptr<blink::WebServiceWorkerCacheStorage>
-RendererBlinkPlatformImpl::CreateCacheStorage(
-    service_manager::InterfaceProvider* mojo_provider) {
-  // Requires the Interface Provider from ExecutionContext, because it can be
-  // different of RendererBlinkPlatformImpl::GetInterfaceProvider()
-  return std::make_unique<WebServiceWorkerCacheStorageImpl>(mojo_provider);
 }
 
 //------------------------------------------------------------------------------

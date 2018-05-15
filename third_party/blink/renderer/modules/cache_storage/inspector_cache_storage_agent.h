@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/core/inspector/inspector_base_agent.h"
 #include "third_party/blink/renderer/core/inspector/protocol/CacheStorage.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -21,8 +21,7 @@ class InspectedFrames;
 class MODULES_EXPORT InspectorCacheStorageAgent final
     : public InspectorBaseAgent<protocol::CacheStorage::Metainfo> {
  public:
-  using CachesMap =
-      HashMap<String, std::unique_ptr<WebServiceWorkerCacheStorage>>;
+  using CachesMap = HashMap<String, mojom::blink::CacheStoragePtr>;
 
   static InspectorCacheStorageAgent* Create(InspectedFrames* frames) {
     return new InspectorCacheStorageAgent(frames);
