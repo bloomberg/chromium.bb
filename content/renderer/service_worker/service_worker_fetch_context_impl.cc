@@ -52,14 +52,14 @@ void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
 std::unique_ptr<blink::WebURLLoaderFactory>
 ServiceWorkerFetchContextImpl::CreateURLLoaderFactory() {
   DCHECK(url_loader_factory_);
-  return std::make_unique<content::WebURLLoaderFactoryImpl>(
+  return std::make_unique<WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(), std::move(url_loader_factory_));
 }
 
 std::unique_ptr<blink::WebURLLoaderFactory>
 ServiceWorkerFetchContextImpl::WrapURLLoaderFactory(
     mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
-  return std::make_unique<content::WebURLLoaderFactoryImpl>(
+  return std::make_unique<WebURLLoaderFactoryImpl>(
       resource_dispatcher_->GetWeakPtr(),
       base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
           network::mojom::URLLoaderFactoryPtrInfo(

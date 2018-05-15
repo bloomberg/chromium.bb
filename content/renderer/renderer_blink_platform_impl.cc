@@ -339,7 +339,7 @@ RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactory() {
 std::unique_ptr<blink::WebURLLoaderFactory>
 RendererBlinkPlatformImpl::WrapURLLoaderFactory(
     mojo::ScopedMessagePipeHandle url_loader_factory_handle) {
-  return std::make_unique<content::WebURLLoaderFactoryImpl>(
+  return std::make_unique<WebURLLoaderFactoryImpl>(
       RenderThreadImpl::current()->resource_dispatcher()->GetWeakPtr(),
       base::MakeRefCounted<network::WrapperSharedURLLoaderFactory>(
           network::mojom::URLLoaderFactoryPtrInfo(
