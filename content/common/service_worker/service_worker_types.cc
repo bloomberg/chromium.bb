@@ -56,7 +56,7 @@ ServiceWorkerFetchRequest& ServiceWorkerFetchRequest::operator=(
 
 ServiceWorkerFetchRequest::~ServiceWorkerFetchRequest() {}
 
-std::string ServiceWorkerFetchRequest::Serialize() {
+std::string ServiceWorkerFetchRequest::Serialize() const {
   proto::internal::ServiceWorkerFetchRequest request_proto;
 
   request_proto.set_url(url.spec());
