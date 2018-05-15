@@ -49,10 +49,13 @@ void DownloadManagerTabHelper::Download(
   }
 
   // Another download is already in progress. Ask the user if current download
-  // should be replaced if new download was initiated by a link click. Otherwise
-  // silently drop the download to prevent web pages from spamming the user.
-  if (!ui::PageTransitionTypeIncludingQualifiersIs(
-          block_task->GetTransitionType(), ui::PAGE_TRANSITION_LINK)) {
+  // should be replaced if new download was initiated by a link click or typed
+  // into the omnibox. Otherwise silently drop the download to prevent web pages
+  // from spamming the user.
+  ui::PageTransition transition = block_task->GetTransitionType();
+  if (!(transition & ui::PAGE_TRANSITION_FROM_ADDRESS_BAR) &&
+      !ui::PageTransitionTypeIncludingQualifiersIs(transition,
+                                                   ui::PAGE_TRANSITION_LINK)) {
     return;
   }
 

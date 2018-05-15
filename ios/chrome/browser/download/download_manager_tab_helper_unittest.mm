@@ -54,7 +54,7 @@ TEST_F(DownloadManagerTabHelperTest, DownloadCreationForVisibleWebState) {
 
 // Tests creating the second download while the first download is still in
 // progress. Second download should be rejected because its transition type is
-// not ui::PAGE_TRANSITION_LINK.
+// not ui::PAGE_TRANSITION_LINK or ui::PAGE_TRANSITION_FROM_ADDRESS_BAR.
 TEST_F(DownloadManagerTabHelperTest, DownloadRejection) {
   web_state_->WasShown();
   ASSERT_FALSE(delegate_.state);
@@ -107,7 +107,7 @@ TEST_F(DownloadManagerTabHelperTest, DownloadReplacingViaDelegate) {
 
   auto task2 = std::make_unique<web::FakeDownloadTask>(GURL(kUrl), kMimeType);
   const web::FakeDownloadTask* task2_ptr = task2.get();
-  task2->SetTransitionType(ui::PAGE_TRANSITION_LINK);
+  task2->SetTransitionType(ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   tab_helper()->Download(std::move(task2));
 
   ASSERT_TRUE(delegate_.state);
