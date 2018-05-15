@@ -16,6 +16,7 @@ if __name__ == '__main__':
 
 from writers import chromeos_adml_writer
 from writers import adml_writer_unittest
+from writers.admx_writer import AdmxElementType
 
 
 class ChromeOsAdmlWriterUnittest(
@@ -66,6 +67,39 @@ class ChromeOsAdmlWriterUnittest(
 
     policy['supported_chrome_os_management'] = ['active_directory']
     self.assertTrue(self.writer.IsPolicySupported(policy))
+
+  # Overridden.
+  def testDictionaryPolicy(self, is_external = False):
+    dict_policy = {
+      'name': 'DictionaryPolicyStub',
+      'type': 'external' if is_external else 'dict',
+      'caption': 'Dictionary policy caption',
+      'label': 'Dictionary policy label',
+      'desc': 'This is a test description.',
+    }
+    self. _InitWriterForAddingPolicies(self.writer, dict_policy)
+    self.writer.WritePolicy(dict_policy)
+    # Assert generated string elements.
+    output = self.GetXMLOfChildren(self.writer._string_table_elem)
+    expected_output = (
+        '<string id="DictionaryPolicyStub">Dictionary policy caption</string>\n'
+        '<string id="DictionaryPolicyStub_Explain">'
+        'This is a test description.</string>\n'
+        '<string id="DictionaryPolicyStub_Legacy">'
+        'Dictionary policy label (deprecated)</string>')
+    self.AssertXMLEquals(output, expected_output)
+    # Assert generated presentation elements.
+    output = self.GetXMLOfChildren(self.writer._presentation_table_elem)
+    expected_output = (
+        '<presentation id="DictionaryPolicyStub">\n'
+        '  <textBox refId="DictionaryPolicyStub_Legacy">\n'
+        '    <label>Dictionary policy label (deprecated)</label>\n'
+        '  </textBox>\n'
+        '  <multiTextBox defaultHeight="8" refId="DictionaryPolicyStub">'
+        'Dictionary policy label</multiTextBox>\n'
+        '</presentation>')
+    self.AssertXMLEquals(output, expected_output)
+
 
 if __name__ == '__main__':
   unittest.main()

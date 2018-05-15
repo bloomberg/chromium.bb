@@ -522,10 +522,10 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
 
     self.AssertXMLEquals(output, expected_output)
 
-  def testDictionaryPolicy(self):
+  def testDictionaryPolicy(self, is_external = False):
     dict_policy = {
       'name': 'SampleDictionaryPolicy',
-      'type': 'dict',
+      'type': 'external' if is_external else 'dict',
     }
     self._initWriterForPolicy(self.writer, dict_policy)
 
@@ -548,29 +548,7 @@ class AdmxWriterUnittest(xml_writer_base_unittest.XmlWriterBaseTest):
     self.AssertXMLEquals(output, expected_output)
 
   def testExternalPolicy(self):
-    external_policy = {
-      'name': 'SampleExternalPolicy',
-      'type': 'external',
-    }
-    self._initWriterForPolicy(self.writer, external_policy)
-
-    self.writer.WritePolicy(external_policy)
-    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
-    expected_output = (
-        '<policy class="' + self.writer.GetClass(external_policy) + '"'
-        ' displayName="$(string.SampleExternalPolicy)"'
-        ' explainText="$(string.SampleExternalPolicy_Explain)"'
-        ' key="Software\\Policies\\' + self._GetKey() + '"'
-        ' name="SampleExternalPolicy"'
-        ' presentation="$(presentation.SampleExternalPolicy)">\n'
-        '  <parentCategory ref="PolicyGroup"/>\n'
-        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
-        '  <elements>\n'
-        '    <text id="SampleExternalPolicy" maxLength="1000000"'
-            ' valueName="SampleExternalPolicy"/>\n'
-        '  </elements>\n'
-        '</policy>')
-    self.AssertXMLEquals(output, expected_output)
+    self.testDictionaryPolicy(is_external = True)
 
   def testPlatform(self):
     # Test that the writer correctly chooses policies of platform Windows.

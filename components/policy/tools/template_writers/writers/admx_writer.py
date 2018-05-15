@@ -7,6 +7,77 @@ from xml.dom import minidom
 from writers import xml_formatted_writer
 
 
+class AdmxElementType:
+  '''The different types of ADMX elements that can be used to display a policy.
+  This is related to the 'type' field in policy_templates.json, but there isn't
+  a perfect 1:1 mapping. This class is also used when writing ADML files, to
+  ensure that the ADML generated from policy_templates.json is compatible with
+  the ADMX generated from policy_templates.json"""
+  '''
+  MAIN = 1
+  STRING = 2
+  MULTI_STRING = 3
+  INT = 4
+  ENUM = 5
+  LIST = 6
+  GROUP = 7
+
+  @staticmethod
+  def GetType(policy, allow_multi_strings = False):
+    '''Returns the ADMX element type that should be used for the given policy.
+    This logic is shared between the ADMX writer and the ADML writer, to ensure
+    that the ADMX and ADML generated from policy_tempates.json are compatible.
+
+    Args:
+      policy: A dict describing the policy, as found in policy_templates.json.
+      allow_multi_strings: If true, the use of multi-line textbox elements is
+          allowed, so this function will sometimes return MULTI_STRING. If false
+          it falls back to single-line textboxes instead by returning STRING.
+
+    Returns:
+      One of the enum values of AdmxElementType.
+
+    Raises:
+      Exception: If policy['type'] is not recognized.
+    '''
+    policy_type = policy['type']
+    policy_example = policy.get('example_value')
+
+    # TODO(olsen): Some policies are defined in policy_templates.json as type
+    # string, but the string is actually a JSON object. We should change the
+    # schema so they are 'dict' or similar, but until then, we use this
+    # heuristic to decide whether they are actually JSON and so could benefit
+    # from being displayed to the user as a multi-line string:
+    if (policy_type == 'string'
+        and allow_multi_strings
+        and policy_example is not None
+        and policy_example.strip().startswith('{')):
+      return AdmxElementType.MULTI_STRING
+
+    admx_element_type = AdmxElementType._POLICY_TYPE_MAP.get(policy_type)
+    if admx_element_type is None:
+      raise Exception('Unknown policy type %s.' % policy_type)
+
+    if (admx_element_type == AdmxElementType.MULTI_STRING
+        and not allow_multi_strings):
+      return AdmxElementType.STRING
+
+    return admx_element_type
+
+AdmxElementType._POLICY_TYPE_MAP = {
+    'main': AdmxElementType.MAIN,
+    'string': AdmxElementType.STRING,
+    'dict': AdmxElementType.MULTI_STRING,
+    'external': AdmxElementType.MULTI_STRING,
+    'int': AdmxElementType.INT,
+    'int-enum': AdmxElementType.ENUM,
+    'string-enum': AdmxElementType.ENUM,
+    'list': AdmxElementType.LIST,
+    'string-enum-list': AdmxElementType.LIST,
+    'group': AdmxElementType.GROUP
+  }
+
+
 def GetWriter(config):
   '''Factory method for instanciating the ADMXWriter. Every Writer needs a
   GetWriter method because the TemplateFormatter uses this method to
@@ -176,16 +247,29 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
     }
     self.AddElement(definitions_elem, 'definition', attributes)
 
-  def _AddStringPolicy(self, parent, name):
+  def _AddStringPolicy(self, parent, name, id = None):
     '''Generates ADMX elements for a String-Policy and adds them to the
     passed parent node.
     '''
+    attributes = {
+      'id': id or name,
+      'valueName': name,
+      'maxLength': '1000000',
+    }
+    self.AddElement(parent, 'text', attributes)
+
+  def _AddMultiStringPolicy(self, parent, name):
+    '''Generates ADMX elements for a multi-line String-Policy and adds them to
+    the passed parent node.
+    '''
+    # We currently also show a single-line textbox - see http://crbug/829328
+    self._AddStringPolicy(parent, name, id = name + '_Legacy')
     attributes = {
       'id': name,
       'valueName': name,
       'maxLength': '1000000',
     }
-    self.AddElement(parent, 'text', attributes)
+    self.AddElement(parent, 'multiText', attributes)
 
   def _AddIntPolicy(self, parent, name):
     '''Generates ADMX elements for an Int-Policy and adds them to the passed
@@ -264,14 +348,14 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
       raise Exception('There is supposed to be only one "elements" node but'
                       ' there are %s.' % str(len(elements_list)))
 
-  def _WritePolicy(self, policy, name, key, parent):
-    '''Generates AMDX elements for a Policy. There are four different policy
-    types: Main-Policy, String-Policy, Enum-Policy and List-Policy.
-    '''
-    policies_elem = self._active_policies_elem
-    policy_type = policy['type']
-    policy_name = policy['name']
+  def _GetAdmxElementType(self, policy):
+    '''Returns the ADMX element type for a particular Policy.'''
+    return AdmxElementType.GetType(policy, allow_multi_strings = False)
 
+  def _WritePolicy(self, policy, name, key, parent):
+    '''Generates ADMX elements for a Policy.'''
+    policies_elem = self._active_policies_elem
+    policy_name = policy['name']
     attributes = {
       'name': name,
       'class': self.GetClass(policy),
@@ -280,6 +364,7 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
       'presentation': self._AdmlPresentation(policy_name),
       'key': key,
     }
+
     # Store the current "policy" AMDX element in self for later use by the
     # WritePolicy method.
     policy_elem = self.AddElement(policies_elem, 'policy',
@@ -288,27 +373,30 @@ class ADMXWriter(xml_formatted_writer.XMLFormattedWriter):
                     {'ref': parent})
     self.AddElement(policy_elem, 'supportedOn',
                     {'ref': self.config['win_supported_os']})
-    if policy_type == 'main':
+
+    element_type = self._GetAdmxElementType(policy)
+    if element_type == AdmxElementType.MAIN:
       self.AddAttribute(policy_elem, 'valueName', policy_name)
       self._AddMainPolicy(policy_elem)
-    elif policy_type in ('string', 'dict', 'external'):
-      # 'dict' and 'external' policies are configured as JSON-encoded strings on
-      # Windows.
+    elif element_type == AdmxElementType.STRING:
       parent = self._GetElements(policy_elem)
       self._AddStringPolicy(parent, policy_name)
-    elif policy_type == 'int':
+    elif element_type == AdmxElementType.MULTI_STRING:
+      parent = self._GetElements(policy_elem)
+      self._AddMultiStringPolicy(parent, policy_name)
+    elif element_type == AdmxElementType.INT:
       parent = self._GetElements(policy_elem)
       self._AddIntPolicy(parent, policy_name)
-    elif policy_type in ('int-enum', 'string-enum'):
+    elif element_type == AdmxElementType.ENUM:
       parent = self._GetElements(policy_elem)
       self._AddEnumPolicy(parent, policy)
-    elif policy_type in ('list', 'string-enum-list'):
+    elif element_type == AdmxElementType.LIST:
       parent = self._GetElements(policy_elem)
       self._AddListPolicy(parent, key, policy_name)
-    elif policy_type == 'group':
+    elif element_type == AdmxElementType.GROUP:
       pass
     else:
-      raise Exception('Unknown policy type %s.' % policy_type)
+      raise Exception('Unknown element type %s.' % element_type)
 
   def WritePolicy(self, policy):
     if self.CanBeMandatory(policy):

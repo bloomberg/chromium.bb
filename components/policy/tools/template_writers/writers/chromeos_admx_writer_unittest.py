@@ -16,6 +16,7 @@ if __name__ == '__main__':
 
 from writers import chromeos_admx_writer
 from writers import admx_writer_unittest
+from writers.admx_writer import AdmxElementType
 
 
 class ChromeOsAdmxWriterUnittest(
@@ -115,6 +116,35 @@ class ChromeOsAdmxWriterUnittest(
 
     policy['supported_chrome_os_management'] = ['active_directory']
     self.assertTrue(self.writer.IsPolicySupported(policy))
+
+  #Overridden
+  def testDictionaryPolicy(self, is_external = False):
+    dict_policy = {
+      'name': 'SampleDictionaryPolicy',
+      'type': 'external' if is_external else 'dict',
+    }
+    self._initWriterForPolicy(self.writer, dict_policy)
+
+    self.writer.WritePolicy(dict_policy)
+    output = self.GetXMLOfChildren(self._GetPoliciesElement(self.writer._doc))
+    expected_output = (
+        '<policy class="' + self.writer.GetClass(dict_policy) + '"'
+        ' displayName="$(string.SampleDictionaryPolicy)"'
+        ' explainText="$(string.SampleDictionaryPolicy_Explain)"'
+        ' key="Software\\Policies\\' + self._GetKey() + '"'
+        ' name="SampleDictionaryPolicy"'
+        ' presentation="$(presentation.SampleDictionaryPolicy)">\n'
+        '  <parentCategory ref="PolicyGroup"/>\n'
+        '  <supportedOn ref="SUPPORTED_TESTOS"/>\n'
+        '  <elements>\n'
+        '    <text id="SampleDictionaryPolicy_Legacy" maxLength="1000000"'
+            ' valueName="SampleDictionaryPolicy"/>\n'
+        '    <multiText id="SampleDictionaryPolicy" maxLength="1000000"'
+            ' valueName="SampleDictionaryPolicy"/>\n'
+        '  </elements>\n'
+        '</policy>')
+    self.AssertXMLEquals(output, expected_output)
+
 
 if __name__ == '__main__':
   unittest.main()
