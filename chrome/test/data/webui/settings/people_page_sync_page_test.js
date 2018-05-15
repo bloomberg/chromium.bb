@@ -78,9 +78,9 @@ cr.define('settings_people_page_sync_page', function() {
       Polymer.dom.flush();
 
       encryptWithGoogle =
-          syncPage.$$('paper-radio-button[name="encrypt-with-google"]');
+          syncPage.$$('cr-radio-button[name="encrypt-with-google"]');
       encryptWithPassphrase =
-          syncPage.$$('paper-radio-button[name="encrypt-with-passphrase"]');
+          syncPage.$$('cr-radio-button[name="encrypt-with-passphrase"]');
       assertTrue(!!encryptWithGoogle);
       assertTrue(!!encryptWithPassphrase);
     });

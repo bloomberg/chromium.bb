@@ -1,8 +1,9 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
+<link rel="import" href="../shared_vars_css.html">
+
 <!--
 List of customizable styles:
 
@@ -36,7 +37,7 @@ List of customizable styles:
 
       :host([disabled]) {
         cursor: initial;
-        opacity: 0.38;
+        opacity: var(--cr-disabled-opacity);
         pointer-events: none;
       }
 

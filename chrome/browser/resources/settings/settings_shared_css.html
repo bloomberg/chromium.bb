@@ -105,22 +105,13 @@
         color: var(--google-blue-500);
       }
 
-      controlled-radio-button,
-      paper-radio-button {
-        --paper-radio-button-checked-color: var(--google-blue-500);
-        --paper-radio-button-label-spacing: 22px;
-        --paper-radio-button-radio-container: {
-          flex-shrink: 0;
-        };
-        --paper-radio-button-unchecked-color: var(--paper-grey-600);
-        -webkit-margin-start: 2px;
-        align-items: center;
-        display: flex;
-        min-height: var(--settings-row-min-height);
-      }
-
       paper-radio-group {
         width: 100%;
+      }
+
+      paper-radio-group:focus {
+        background-color: var(--google-grey-300);
+        outline: none;
       }
 
       /* See also: .no-min-width below. */

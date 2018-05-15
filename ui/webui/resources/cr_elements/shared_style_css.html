@@ -54,11 +54,11 @@
         min-height: 1px;
       }
 
-      [selectable]:focus,
-      [selectable] > :focus {
+      [selectable]:not(paper-radio-group):focus,
+      [selectable]:not(paper-radio-group) > :focus {
         @apply --cr-selectable-focus;
       }
-      [selectable] > * {
+      [selectable]:not(paper-radio-group) > * {
         @apply --cr-actionable;
       }
 

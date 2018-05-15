@@ -177,16 +177,17 @@ cr.define('settings_people_page_quick_unlock', function() {
       const noneRadioButton = null;
 
       /**
-       * Asserts that only the given radio button is active and all of the
-       * others are inactive.
+       * Asserts that only the given radio button is checked and all of the
+       * others are unchecked.
        * @param {Element} radioButton
        */
-      function assertRadioButtonActive(radioButton) {
+      function assertRadioButtonChecked(radioButton) {
         function doAssert(element, name) {
           if (radioButton == element)
-            assertTrue(element.active, 'Expected ' + name + ' to be active');
+            assertTrue(element.checked, 'Expected ' + name + ' to be checked');
           else
-            assertFalse(element.active, 'Expected ' + name + ' to be inactive');
+            assertFalse(
+                element.checked, 'Expected ' + name + ' to be unchecked');
         }
 
         doAssert(passwordRadioButton, 'passwordButton');
@@ -263,9 +264,9 @@ cr.define('settings_people_page_quick_unlock', function() {
               });
 
           passwordRadioButton =
-              getFromElement('paper-radio-button[name="password"]');
+              getFromElement('cr-radio-button[name="password"]');
           pinPasswordRadioButton =
-              getFromElement('paper-radio-button[name="pin+password"]');
+              getFromElement('cr-radio-button[name="pin+password"]');
 
           done();
         });
@@ -275,7 +276,7 @@ cr.define('settings_people_page_quick_unlock', function() {
       // quickUnlockPrivate calls.
       test('ShowingScreenDoesNotModifyPrefs', function() {
         assertTrue(getLockScreenPref());
-        assertRadioButtonActive(passwordRadioButton);
+        assertRadioButtonChecked(passwordRadioButton);
         assertDeepEquals([], quickUnlockPrivateApi.activeModes);
       });
 
@@ -301,11 +302,11 @@ cr.define('settings_people_page_quick_unlock', function() {
       // prefs.
       test('TappingButtonsChangesUnderlyingState', function() {
         function togglePin() {
-          assertRadioButtonActive(passwordRadioButton);
+          assertRadioButtonChecked(passwordRadioButton);
 
           // Tap pin+password button.
           MockInteractions.tap(pinPasswordRadioButton);
-          assertRadioButtonActive(pinPasswordRadioButton);
+          assertRadioButtonChecked(pinPasswordRadioButton);
           assertTrue(isSetupPinButtonVisible());
           assertDeepEquals([], quickUnlockPrivateApi.activeModes);
 
@@ -314,7 +315,7 @@ cr.define('settings_people_page_quick_unlock', function() {
 
           // Tap password button and verify quick unlock is disabled.
           MockInteractions.tap(passwordRadioButton);
-          assertRadioButtonActive(passwordRadioButton);
+          assertRadioButtonChecked(passwordRadioButton);
           assertFalse(isSetupPinButtonVisible());
           assertDeepEquals([], quickUnlockPrivateApi.activeModes);
         }
@@ -334,11 +335,11 @@ cr.define('settings_people_page_quick_unlock', function() {
       // will update to show quick unlock is active.
       test('EnablingQuickUnlockChangesButtonState', function() {
         setActiveModes([QuickUnlockMode.PIN]);
-        assertRadioButtonActive(pinPasswordRadioButton);
+        assertRadioButtonChecked(pinPasswordRadioButton);
         assertTrue(isSetupPinButtonVisible());
 
         setActiveModes([]);
-        assertRadioButtonActive(passwordRadioButton);
+        assertRadioButtonChecked(passwordRadioButton);
         assertDeepEquals([], quickUnlockPrivateApi.activeModes);
       });
 
@@ -349,11 +350,11 @@ cr.define('settings_people_page_quick_unlock', function() {
             0,
             fakeUma.getHistogramValue(
                 LockScreenProgress.CHOOSE_PIN_OR_PASSWORD));
-        assertRadioButtonActive(passwordRadioButton);
+        assertRadioButtonChecked(passwordRadioButton);
 
         MockInteractions.tap(pinPasswordRadioButton);
         assertTrue(isSetupPinButtonVisible());
-        assertRadioButtonActive(pinPasswordRadioButton);
+        assertRadioButtonChecked(pinPasswordRadioButton);
 
         Polymer.dom.flush();
         MockInteractions.tap(getFromElement('#setupPinButton'));
