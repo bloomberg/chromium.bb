@@ -97,12 +97,18 @@ bool GLSurfaceCast::Resize(const gfx::Size& size,
                                         has_alpha);
 }
 
-bool GLSurfaceCast::ScheduleOverlayPlane(int z_order,
-                                         gfx::OverlayTransform transform,
-                                         gl::GLImage* image,
-                                         const gfx::Rect& bounds_rect,
-                                         const gfx::RectF& crop_rect,
-                                         bool enable_blend) {
+bool GLSurfaceCast::ScheduleOverlayPlane(
+    int z_order,
+    gfx::OverlayTransform transform,
+    gl::GLImage* image,
+    const gfx::Rect& bounds_rect,
+    const gfx::RectF& crop_rect,
+    bool enable_blend,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  // Currently the Ozone-Cast platform doesn't use the gpu_fence, so we don't
+  // propagate it further. If this changes we will need to store the gpu fence
+  // to ensure it stays valid for as long as the operation needs it, and pass a
+  // pointer to the fence in the call below.
   return image->ScheduleOverlayPlane(widget_, z_order, transform, bounds_rect,
                                      crop_rect, enable_blend,
                                      /* gpu_fence */ nullptr);

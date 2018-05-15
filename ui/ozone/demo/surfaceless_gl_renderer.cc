@@ -13,6 +13,7 @@
 #include "base/trace_event/trace_event.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -230,13 +231,15 @@ void SurfacelessGlRenderer::RenderFrame() {
     CHECK(overlay_list.front().overlay_handled);
     surface_->ScheduleOverlayPlane(
         0, gfx::OVERLAY_TRANSFORM_NONE, buffers_[back_buffer_]->image(),
-        primary_plane_rect_, gfx::RectF(0, 0, 1, 1), false);
+        primary_plane_rect_, gfx::RectF(0, 0, 1, 1), false,
+        /* gpu_fence */ nullptr);
   }
 
   if (overlay_buffers_[0] && overlay_list.back().overlay_handled) {
     surface_->ScheduleOverlayPlane(1, gfx::OVERLAY_TRANSFORM_NONE,
                                    overlay_buffers_[back_buffer_]->image(),
-                                   overlay_rect, gfx::RectF(0, 0, 1, 1), false);
+                                   overlay_rect, gfx::RectF(0, 0, 1, 1), false,
+                                   /* gpu_fence */ nullptr);
   }
 
   back_buffer_ ^= 1;

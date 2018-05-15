@@ -25,6 +25,7 @@
 #include "ui/gl/gl_surface_format.h"
 
 namespace gfx {
+class GpuFence;
 class VSyncProvider;
 }
 
@@ -233,7 +234,8 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
                                     GLImage* image,
                                     const gfx::Rect& bounds_rect,
                                     const gfx::RectF& crop_rect,
-                                    bool enable_blend);
+                                    bool enable_blend,
+                                    std::unique_ptr<gfx::GpuFence> gpu_fence);
 
   // Schedule a CALayer to be shown at swap time.
   // All arguments correspond to their CALayer properties.
@@ -283,6 +285,10 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // Support for eglGetFrameTimestamps.
   virtual bool SupportsSwapTimestamps() const;
   virtual void SetEnableSwapTimestamps();
+
+  // Tells the surface to use the provided plane GPU fences when swapping
+  // buffers.
+  virtual void SetUsePlaneGpuFences();
 
   static GLSurface* GetCurrent();
 
@@ -362,7 +368,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
                             GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect,
-                            bool enable_blend) override;
+                            bool enable_blend,
+                            std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
   bool SetEnableDCLayers(bool enable) override;
   bool IsSurfaceless() const override;
@@ -376,6 +383,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   void SetRelyOnImplicitSync() override;
   bool SupportsSwapTimestamps() const override;
   void SetEnableSwapTimestamps() override;
+  void SetUsePlaneGpuFences() override;
 
   GLSurface* surface() const { return surface_.get(); }
 

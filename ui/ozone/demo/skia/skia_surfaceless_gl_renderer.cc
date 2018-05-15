@@ -19,6 +19,7 @@
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -245,13 +246,15 @@ void SurfacelessSkiaGlRenderer::RenderFrame() {
     CHECK(overlay_list.front().overlay_handled);
     gl_surface_->ScheduleOverlayPlane(
         0, gfx::OVERLAY_TRANSFORM_NONE, buffers_[back_buffer_]->image(),
-        primary_plane_rect_, gfx::RectF(0, 0, 1, 1), /* enable_blend */ true);
+        primary_plane_rect_, gfx::RectF(0, 0, 1, 1), /* enable_blend */ true,
+        /* gpu_fence */ nullptr);
   }
 
   if (overlay_buffer_[0] && overlay_list.back().overlay_handled) {
     gl_surface_->ScheduleOverlayPlane(
         1, gfx::OVERLAY_TRANSFORM_NONE, overlay_buffer_[back_buffer_]->image(),
-        overlay_rect, gfx::RectF(0, 0, 1, 1), /* enable_blend */ true);
+        overlay_rect, gfx::RectF(0, 0, 1, 1), /* enable_blend */ true,
+        /* gpu_fence */ nullptr);
   }
 
   back_buffer_ ^= 1;

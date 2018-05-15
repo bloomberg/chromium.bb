@@ -12,6 +12,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/swap_result.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_image.h"
@@ -162,7 +163,8 @@ bool GLSurface::ScheduleOverlayPlane(int z_order,
                                      GLImage* image,
                                      const gfx::Rect& bounds_rect,
                                      const gfx::RectF& crop_rect,
-                                     bool enable_blend) {
+                                     bool enable_blend,
+                                     std::unique_ptr<gfx::GpuFence> gpu_fence) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -231,6 +233,11 @@ bool GLSurface::SupportsSwapTimestamps() const {
 
 void GLSurface::SetEnableSwapTimestamps() {
   NOTREACHED();
+}
+
+void GLSurface::SetUsePlaneGpuFences() {
+  // It's fine for GLSurface derived classes to ignore the fences
+  // and synchronize using other methods.
 }
 
 GLSurface* GLSurface::GetCurrent() {
@@ -409,14 +416,17 @@ void GLSurfaceAdapter::SetVSyncEnabled(bool enabled) {
   surface_->SetVSyncEnabled(enabled);
 }
 
-bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
-                                            gfx::OverlayTransform transform,
-                                            GLImage* image,
-                                            const gfx::Rect& bounds_rect,
-                                            const gfx::RectF& crop_rect,
-                                            bool enable_blend) {
+bool GLSurfaceAdapter::ScheduleOverlayPlane(
+    int z_order,
+    gfx::OverlayTransform transform,
+    GLImage* image,
+    const gfx::Rect& bounds_rect,
+    const gfx::RectF& crop_rect,
+    bool enable_blend,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
   return surface_->ScheduleOverlayPlane(z_order, transform, image, bounds_rect,
-                                        crop_rect, enable_blend);
+                                        crop_rect, enable_blend,
+                                        std::move(gpu_fence));
 }
 
 bool GLSurfaceAdapter::ScheduleDCLayer(
@@ -470,6 +480,10 @@ bool GLSurfaceAdapter::SupportsSwapTimestamps() const {
 
 void GLSurfaceAdapter::SetEnableSwapTimestamps() {
   return surface_->SetEnableSwapTimestamps();
+}
+
+void GLSurfaceAdapter::SetUsePlaneGpuFences() {
+  surface_->SetUsePlaneGpuFences();
 }
 
 GLSurfaceAdapter::~GLSurfaceAdapter() {}
