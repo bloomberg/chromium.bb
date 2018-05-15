@@ -1315,6 +1315,7 @@
     'pdf_unittests': {},
     'ppapi_unittests': {},
     'printing_unittests': {},
+    'service_manager_unittests': {}, # crbug.com/843134
     'views_unittests': {},
   },
 
@@ -1379,7 +1380,6 @@
     'boringssl_crypto_tests': {},
     'boringssl_ssl_tests': {},
     'libjingle_xmpp_unittests': {},
-    'service_manager_unittests': {},
   },
 
   'non_clang_mac_win_chromium_gtests': {
