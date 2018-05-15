@@ -62,6 +62,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/exclusive_access/keyboard_lock_controller.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -907,6 +908,16 @@ bool RenderViewContextMenu::IsHTML5Fullscreen() const {
   FullscreenController* controller =
       browser->exclusive_access_manager()->fullscreen_controller();
   return controller->IsTabFullscreen();
+}
+
+bool RenderViewContextMenu::IsPressAndHoldEscRequiredToExitFullscreen() const {
+  Browser* browser = chrome::FindBrowserWithWebContents(source_web_contents_);
+  if (!browser)
+    return false;
+
+  KeyboardLockController* controller =
+      browser->exclusive_access_manager()->keyboard_lock_controller();
+  return controller->RequiresPressAndHoldEscToExit();
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)

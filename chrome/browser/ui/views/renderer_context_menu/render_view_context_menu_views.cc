@@ -137,6 +137,11 @@ bool RenderViewContextMenuViews::GetAcceleratorForCommandId(
     case IDC_CONTENT_CONTEXT_EXIT_FULLSCREEN:
       // Esc only works in HTML5 (site-triggered) fullscreen.
       if (IsHTML5Fullscreen()) {
+        // Per UX design feedback, do not show an accelerator when press and
+        // hold is required to exit fullscreen.
+        if (IsPressAndHoldEscRequiredToExitFullscreen())
+          return false;
+
         *accel = ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE);
         return true;
       }
