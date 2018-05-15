@@ -32,6 +32,7 @@
 #include "net/base/escape.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -530,7 +531,7 @@ void SupervisedUserURLFilter::SetManualURLs(std::map<GURL, bool> url_map) {
 }
 
 void SupervisedUserURLFilter::InitAsyncURLChecker(
-    net::URLRequestContextGetter* context) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("supervised_user_url_filter", R"(
         semantics {
@@ -552,8 +553,8 @@ void SupervisedUserURLFilter::InitAsyncURLChecker(
             "family dashboard."
           policy_exception_justification: "Not implemented."
         })");
-  async_url_checker_.reset(
-      new SafeSearchURLChecker(context, traffic_annotation));
+  async_url_checker_.reset(new SafeSearchURLChecker(
+      std::move(url_loader_factory), traffic_annotation));
 }
 
 void SupervisedUserURLFilter::ClearAsyncURLChecker() {

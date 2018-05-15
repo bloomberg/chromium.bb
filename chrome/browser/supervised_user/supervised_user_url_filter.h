@@ -28,9 +28,9 @@ namespace base {
 class TaskRunner;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 // This class manages the filtering behavior for URLs, i.e. it tells callers
 // if a URL should be allowed, blocked or warned about. It uses information
@@ -160,7 +160,8 @@ class SupervisedUserURLFilter {
   void SetManualURLs(std::map<GURL, bool> url_map);
 
   // Initializes the experimental asynchronous checker.
-  void InitAsyncURLChecker(net::URLRequestContextGetter* context);
+  void InitAsyncURLChecker(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
   // Clears any asynchronous checker.
   void ClearAsyncURLChecker();

@@ -45,6 +45,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_ANDROID)
@@ -588,7 +589,9 @@ void SupervisedUserService::OnSafeSitesSettingChanged() {
       supervised_users::IsSafeSitesOnlineCheckEnabled(profile_);
   if (use_online_check != url_filter_.HasAsyncURLChecker()) {
     if (use_online_check)
-      url_filter_.InitAsyncURLChecker(profile_->GetRequestContext());
+      url_filter_.InitAsyncURLChecker(
+          content::BrowserContext::GetDefaultStoragePartition(profile_)
+              ->GetURLLoaderFactoryForBrowserProcess());
     else
       url_filter_.ClearAsyncURLChecker();
   }
