@@ -109,6 +109,11 @@ void ChooserOnlyTemporalInputTypeView::UpdateView() {
   ToHTMLElement(node)->setTextContent(display_value);
 }
 
+void ChooserOnlyTemporalInputTypeView::ValueAttributeChanged() {
+  if (!GetElement().HasDirtyValue())
+    UpdateView();
+}
+
 void ChooserOnlyTemporalInputTypeView::DidSetValue(const String& value,
                                                    bool value_changed) {
   if (value_changed)

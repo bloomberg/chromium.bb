@@ -539,6 +539,7 @@ fast/forms/button/button-value.html
 fast/forms/checkbox/checkbox-checked-state-affected-by-default-state.html
 fast/forms/color/color-setrangetext.html
 fast/forms/datalist/slider-appearance-with-ticks-crash.html
+fast/forms/date/date-chooseronly-defaultValue.html
 fast/forms/date/date-format-warning.html
 fast/forms/date-multiple-fields/date-multiple-fields-ax-value-changed-notification.html
 fast/forms/datetimelocal/datetimelocal-input-type.html
