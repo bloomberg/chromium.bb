@@ -12,6 +12,7 @@ import logging
 import io
 import os
 import StringIO
+import stat
 import sys
 import tarfile
 import tempfile
@@ -954,6 +955,19 @@ class IsolateServerDownloadTest(TestCase):
           return result
     self.fail('Unknown request %s' % url)
 
+  def _get_actual(self):
+    actual = {}
+    for root, _dirs, files in os.walk(self.tempdir):
+      for item in files:
+        p = os.path.join(root, item)
+        with open(p, 'rb') as f:
+          content = f.read()
+        if os.path.islink(p):
+          actual[p] = (os.readlink(p), 0)
+        else:
+          actual[p] = (content, os.stat(p).st_mode & 0777)
+    return actual
+
   def setUp(self):
     super(IsolateServerDownloadTest, self).setUp()
     self._flagged_requests = []
@@ -1009,12 +1023,6 @@ class IsolateServerDownloadTest(TestCase):
 
   def test_download_isolated_simple(self):
     # Test downloading an isolated tree.
-    actual = {}
-    def putfile_mock(
-        srcfileobj, dstpath, file_mode=None, size=-1, use_symlink=False):
-      actual[dstpath] = srcfileobj.read()
-    self.mock(isolateserver, 'putfile', putfile_mock)
-    self.mock(os, 'makedirs', lambda _: None)
     server = 'http://example.com'
     files = {
       os.path.join('a', 'foo'): 'Content',
@@ -1023,14 +1031,30 @@ class IsolateServerDownloadTest(TestCase):
     isolated = {
       'command': ['Absurb', 'command'],
       'relative_cwd': 'a',
-      'files': dict(
-          (k, {'h': isolateserver_mock.hash_content(v), 's': len(v)})
-          for k, v in files.iteritems()),
+      'files': {
+        os.path.join('a', 'foo'): {
+          'h': isolateserver_mock.hash_content('Content'),
+          's': len('Content'),
+          'm': 0700,
+        },
+        'b': {
+          'h': isolateserver_mock.hash_content('More content'),
+          's': len('More content'),
+          'm': 0600,
+        },
+        'c': {
+          'l': 'a/foo',
+        },
+      },
+      'read_only': 1,
       'version': isolated_format.ISOLATED_FILE_VERSION,
     }
     isolated_data = json.dumps(isolated, sort_keys=True, separators=(',',':'))
     isolated_hash = isolateserver_mock.hash_content(isolated_data)
-    requests = [(v['h'], files[k]) for k, v in isolated['files'].iteritems()]
+    requests = [
+      (v['h'], files[k]) for k, v in isolated['files'].iteritems()
+      if 'h' in v
+    ]
     requests.append((isolated_hash, isolated_data))
     requests = [
       (
@@ -1058,8 +1082,12 @@ class IsolateServerDownloadTest(TestCase):
     ]
     self.expected_requests(requests)
     self.assertEqual(0, isolateserver.main(cmd))
-    expected = dict(
-        (os.path.join(self.tempdir, k), v) for k, v in files.iteritems())
+    expected = {
+      os.path.join(self.tempdir, 'a', 'foo'): ('Content', 0500),
+      os.path.join(self.tempdir, 'b'): ('More content', 0400),
+      os.path.join(self.tempdir, 'c'): (u'a/foo', 0),
+    }
+    actual = self._get_actual()
     self.assertEqual(expected, actual)
     expected_stdout = (
         'To run this test please run from the directory %s:\n  Absurb command\n'
@@ -1068,12 +1096,6 @@ class IsolateServerDownloadTest(TestCase):
 
   def test_download_isolated_tar_archive(self):
     # Test downloading an isolated tree.
-    actual = {}
-    def putfile_mock(
-        srcfileobj, dstpath, file_mode=None, size=-1, use_symlink=False):
-      actual[dstpath] = (srcfileobj.read(size), file_mode)
-    self.mock(isolateserver, 'putfile', putfile_mock)
-    self.mock(os, 'makedirs', lambda _: None)
     server = 'http://example.com'
 
     files = {
@@ -1152,6 +1174,7 @@ class IsolateServerDownloadTest(TestCase):
     self.assertEqual(0, isolateserver.main(cmd))
     expected = dict(
         (os.path.join(self.tempdir, k), v) for k, v in files.iteritems())
+    actual = self._get_actual()
     self.assertEqual(expected, actual)
     expected_stdout = (
         'To run this test please run from the directory %s:\n  Absurb command\n'
