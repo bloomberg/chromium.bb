@@ -6,10 +6,10 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_RTC_RTP_SENDER_H_
 
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_rtc_rtp_parameters.h"
 #include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/blink/public/platform/web_rtc_void_request.h"
 #include "third_party/blink/public/platform/web_string.h"
+#include "third_party/webrtc/api/rtpparameters.h"
 
 namespace blink {
 
@@ -34,9 +34,9 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   // https://crbug.com/790007
   virtual void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) = 0;
   virtual std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const = 0;
-  virtual std::unique_ptr<WebRTCRtpParameters> GetParameters() const = 0;
-  virtual void SetParameters(WebVector<WebRTCRtpEncodingParameters>,
-                             WebRTCDegradationPreference,
+  virtual std::unique_ptr<webrtc::RtpParameters> GetParameters() const = 0;
+  virtual void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
+                             webrtc::DegradationPreference,
                              WebRTCVoidRequest) = 0;
   virtual void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) = 0;
 };

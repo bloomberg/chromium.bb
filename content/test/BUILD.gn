@@ -1659,7 +1659,6 @@ test("content_unittests") {
     "../renderer/media/webrtc/peer_connection_tracker_unittest.cc",
     "../renderer/media/webrtc/rtc_data_channel_handler_unittest.cc",
     "../renderer/media/webrtc/rtc_peer_connection_handler_unittest.cc",
-    "../renderer/media/webrtc/rtc_rtp_parameters_unittest.cc",
     "../renderer/media/webrtc/rtc_rtp_receiver_unittest.cc",
     "../renderer/media/webrtc/rtc_rtp_sender_unittest.cc",
     "../renderer/media/webrtc/rtc_stats_unittest.cc",

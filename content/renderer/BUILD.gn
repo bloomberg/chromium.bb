@@ -406,8 +406,6 @@ target(link_target_type, "renderer") {
     "media/webrtc/rtc_peer_connection_handler.h",
     "media/webrtc/rtc_rtp_contributing_source.cc",
     "media/webrtc/rtc_rtp_contributing_source.h",
-    "media/webrtc/rtc_rtp_parameters.cc",
-    "media/webrtc/rtc_rtp_parameters.h",
     "media/webrtc/rtc_rtp_receiver.cc",
     "media/webrtc/rtc_rtp_receiver.h",
     "media/webrtc/rtc_rtp_sender.cc",
