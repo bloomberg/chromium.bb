@@ -51,9 +51,9 @@ std::string GetConstHistogramWithSuffix(const char* suffix) {
 #define RECORD_HISTOGRAMS_FOR_SUFFIX(data, value, histogram_suffix)            \
   do {                                                                         \
     PAGE_LOAD_HISTOGRAM(GetConstHistogramWithSuffix(histogram_suffix), value); \
-    if (data->lofi_requested()) {                                              \
+    if (data->lite_page_received()) {                                          \
       PAGE_LOAD_HISTOGRAM(                                                     \
-          std::string(internal::kHistogramDataReductionProxyLoFiOnPrefix)      \
+          std::string(internal::kHistogramDataReductionProxyLitePagePrefix)    \
               .append(histogram_suffix),                                       \
           value);                                                              \
     }                                                                          \
@@ -75,8 +75,8 @@ namespace internal {
 
 const char kHistogramDataReductionProxyPrefix[] =
     "PageLoad.Clients.DataReductionProxy.";
-const char kHistogramDataReductionProxyLoFiOnPrefix[] =
-    "PageLoad.Clients.DataReductionProxy.LoFiOn.";
+const char kHistogramDataReductionProxyLitePagePrefix[] =
+    "PageLoad.Clients.Previews.LitePages.";
 
 const char kResourcesPercentProxied[] =
     "Experimental.CompletedResources.Network.PercentProxied";
