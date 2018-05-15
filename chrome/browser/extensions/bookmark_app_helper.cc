@@ -188,10 +188,9 @@ void GenerateIcons(
   if (generated_icon_color == SK_ColorTRANSPARENT)
     generated_icon_color = SK_ColorDKGRAY;
 
-  for (std::set<int>::const_iterator it = generate_sizes.begin();
-       it != generate_sizes.end(); ++it) {
+  for (int size : generate_sizes) {
     extensions::BookmarkAppHelper::GenerateIcon(
-        bitmap_map, *it, generated_icon_color, icon_letter);
+        bitmap_map, size, generated_icon_color, icon_letter);
   }
 }
 
@@ -385,10 +384,10 @@ BookmarkAppHelper::ConstrainBitmapsToSizes(
     const std::set<int>& sizes) {
   std::map<int, BitmapAndSource> output_bitmaps;
   std::map<int, BitmapAndSource> ordered_bitmaps;
-  for (std::vector<BitmapAndSource>::const_iterator it = bitmaps.begin();
-       it != bitmaps.end(); ++it) {
-    DCHECK(it->bitmap.width() == it->bitmap.height());
-    ordered_bitmaps[it->bitmap.width()] = *it;
+  for (const BitmapAndSource& bitmap_and_source : bitmaps) {
+    const SkBitmap& bitmap = bitmap_and_source.bitmap;
+    DCHECK(bitmap.width() == bitmap.height());
+    ordered_bitmaps[bitmap.width()] = bitmap_and_source;
   }
 
   if (ordered_bitmaps.size() > 0) {
@@ -442,14 +441,12 @@ bool BookmarkAppHelper::BookmarkOrHostedAppInstalled(
 
   // Iterate through the extensions and extract the LaunchWebUrl (bookmark apps)
   // or check the web extent (hosted apps).
-  for (extensions::ExtensionSet::const_iterator iter = extensions.begin();
-       iter != extensions.end(); ++iter) {
-    const Extension* extension = iter->get();
+  for (const scoped_refptr<const Extension>& extension : extensions) {
     if (!extension->is_hosted_app())
       continue;
 
     if (extension->web_extent().MatchesURL(url) ||
-        AppLaunchInfo::GetLaunchWebURL(extension) == url) {
+        AppLaunchInfo::GetLaunchWebURL(extension.get()) == url) {
       return true;
     }
   }
@@ -673,28 +670,20 @@ void BookmarkAppHelper::OnIconsDownloaded(
   }
 
   std::vector<BitmapAndSource> downloaded_icons;
-  for (FaviconDownloader::FaviconMap::const_iterator map_it = bitmaps.begin();
-       map_it != bitmaps.end();
-       ++map_it) {
-    for (std::vector<SkBitmap>::const_iterator bitmap_it =
-             map_it->second.begin();
-         bitmap_it != map_it->second.end();
-         ++bitmap_it) {
-      if (bitmap_it->empty() || bitmap_it->width() != bitmap_it->height())
+  for (const std::pair<GURL, std::vector<SkBitmap>>& url_bitmap : bitmaps) {
+    for (const SkBitmap& bitmap : url_bitmap.second) {
+      if (bitmap.empty() || bitmap.width() != bitmap.height())
         continue;
 
-      downloaded_icons.push_back(BitmapAndSource(map_it->first, *bitmap_it));
+      downloaded_icons.push_back(BitmapAndSource(url_bitmap.first, bitmap));
     }
   }
 
   // Add all existing icons from WebApplicationInfo.
-  for (std::vector<WebApplicationInfo::IconInfo>::const_iterator it =
-           web_app_info_.icons.begin();
-       it != web_app_info_.icons.end();
-       ++it) {
-    const SkBitmap& icon = it->data;
+  for (const WebApplicationInfo::IconInfo& icon_info : web_app_info_.icons) {
+    const SkBitmap& icon = icon_info.data;
     if (!icon.drawsNothing() && icon.width() == icon.height()) {
-      downloaded_icons.push_back(BitmapAndSource(it->url, icon));
+      downloaded_icons.push_back(BitmapAndSource(icon_info.url, icon));
     }
   }
 
