@@ -76,9 +76,7 @@ class HTMLCanvasPainterTestForSPv2 : public PaintControllerPaintTest {
   FakeGLES2Interface gl_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        HTMLCanvasPainterTestForSPv2,
-                        testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
+INSTANTIATE_SPV2_TEST_CASE_P(HTMLCanvasPainterTestForSPv2);
 
 TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   // Insert a <canvas> and force it into accelerated mode.

@@ -26,6 +26,9 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
  protected:
   const RasterInvalidationTracking* GetRasterInvalidationTracking() const {
     // TODO(wangxianzhu): Test SPv2.
+    // TODO(wangxianzhu): For SPv175, XXXPaintInvalidator doesn't do raster
+    // invalidation, so the test should be moved to somewhere else (or use
+    // layout tests?).
     return GetLayoutView()
         .Layer()
         ->GraphicsLayerBacking()
@@ -118,11 +121,12 @@ class BoxPaintInvalidatorTest : public PaintControllerPaintTest {
   FragmentData fragment_data_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        BoxPaintInvalidatorTest,
-                        testing::Values(0, kRootLayerScrolling));
+INSTANTIATE_PAINT_TEST_CASE_P(BoxPaintInvalidatorTest);
 
 TEST_P(BoxPaintInvalidatorTest, SlowMapToVisualRectInAncestorSpaceLayoutView) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   SetBodyInnerHTML(
       "<!doctype html>"
       "<style>"
@@ -151,8 +155,6 @@ TEST_P(BoxPaintInvalidatorTest, SlowMapToVisualRectInAncestorSpaceLayoutView) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
-
   auto& target = *GetDocument().getElementById("target");
   auto& box = *ToLayoutBox(target.GetLayoutObject());
   // Remove border.
@@ -187,8 +189,6 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonPaintingNothing) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
-
   auto& target = *GetDocument().getElementById("target");
   auto& box = *ToLayoutBox(target.GetLayoutObject());
   // Remove border.
@@ -246,11 +246,11 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
-  ScopedSlimmingPaintV2ForTest spv2(true);
   auto& target = *GetDocument().getElementById("target");
 
   // The target initially has border.
-  ExpectFullPaintInvalidationOnGeometryChange("With border");
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    ExpectFullPaintInvalidationOnGeometryChange("With border");
 
   // Clear border.
   target.setAttribute(HTMLNames::classAttr, "");
@@ -277,6 +277,9 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonOtherCases) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationExpand) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   GetDocument().View()->SetTracksPaintInvalidations(true);
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 200px");
@@ -294,6 +297,9 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationExpand) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationShrink) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   GetDocument().View()->SetTracksPaintInvalidations(true);
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 20px; height: 80px");
@@ -311,6 +317,9 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationShrink) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationMixed) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   GetDocument().View()->SetTracksPaintInvalidations(true);
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 80px");
@@ -328,6 +337,9 @@ TEST_P(BoxPaintInvalidatorTest, IncrementalInvalidationMixed) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   Element* target = GetDocument().getElementById("target");
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
@@ -359,6 +371,9 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChagne) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChangeWithTransform) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "border transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -392,6 +407,9 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelVisualRectChangeWithTransform) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   Element* target = GetDocument().getElementById("target");
   LayoutObject* target_object = target->GetLayoutObject();
   EXPECT_EQ(LayoutRect(0, 0, 70, 140),
@@ -431,6 +449,9 @@ TEST_P(BoxPaintInvalidatorTest, SubpixelWithinPixelsChange) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, ResizeRotated) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr, "transform: rotate(45deg)");
   GetDocument().View()->UpdateAllLifecyclePhases();
@@ -450,6 +471,9 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotated) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, ResizeRotatedChild) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::styleAttr,
                        "transform: rotate(45deg); width: 200px");
@@ -474,6 +498,9 @@ TEST_P(BoxPaintInvalidatorTest, ResizeRotatedChild) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   EnableCompositing();
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "");
@@ -490,13 +517,8 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
   EXPECT_EQ(IntRect(0, 2000, 800, 1000), raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(&GetLayoutView()),
             raster_invalidations[0].client);
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
-              raster_invalidations[0].reason);
-  } else {
-    EXPECT_EQ(PaintInvalidationReason::kIncremental,
-              raster_invalidations[0].reason);
-  }
+  EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
+            raster_invalidations[0].reason);
 
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -509,6 +531,9 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewResize) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   EnableCompositing();
   GetDocument().body()->setAttribute(HTMLNames::classAttr, "gradient");
   Element* target = GetDocument().getElementById("target");
@@ -527,13 +552,8 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
   EXPECT_EQ(IntRect(0, 0, 800, 3000), raster_invalidations[0].rect);
   EXPECT_EQ(static_cast<const DisplayItemClient*>(&GetLayoutView()),
             raster_invalidations[0].client);
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
-              raster_invalidations[0].reason);
-  } else {
-    EXPECT_EQ(PaintInvalidationReason::kBackground,
-              raster_invalidations[0].reason);
-  }
+  EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
+            raster_invalidations[0].reason);
 
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
@@ -546,6 +566,9 @@ TEST_P(BoxPaintInvalidatorTest, CompositedLayoutViewGradientResize) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0 }
@@ -596,6 +619,9 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewResize) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   SetBodyInnerHTML(R"HTML(
     <style>
       body { margin: 0 }
@@ -655,6 +681,9 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedLayoutViewGradientResize) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, CompositedBackgroundAttachmentLocalResize) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   EnableCompositing();
 
   Element* target = GetDocument().getElementById("target");
@@ -711,6 +740,9 @@ TEST_P(BoxPaintInvalidatorTest, CompositedBackgroundAttachmentLocalResize) {
 
 TEST_P(BoxPaintInvalidatorTest,
        CompositedBackgroundAttachmentLocalGradientResize) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   EnableCompositing();
 
   Element* target = GetDocument().getElementById("target");
@@ -767,6 +799,9 @@ TEST_P(BoxPaintInvalidatorTest,
 }
 
 TEST_P(BoxPaintInvalidatorTest, NonCompositedBackgroundAttachmentLocalResize) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "border local-background");
   target->SetInnerHTMLFromString(
@@ -800,6 +835,9 @@ TEST_P(BoxPaintInvalidatorTest, NonCompositedBackgroundAttachmentLocalResize) {
 }
 
 TEST_P(BoxPaintInvalidatorTest, CompositedSolidBackgroundResize) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
   EnableCompositing();
   Element* target = GetDocument().getElementById("target");
   target->setAttribute(HTMLNames::classAttr, "solid-composited-scroller");

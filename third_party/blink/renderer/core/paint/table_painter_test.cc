@@ -14,9 +14,7 @@
 namespace blink {
 
 using TablePainterTest = PaintControllerPaintTest;
-INSTANTIATE_TEST_CASE_P(All,
-                        TablePainterTest,
-                        testing::Values(0, kRootLayerScrolling));
+INSTANTIATE_PAINT_TEST_CASE_P(TablePainterTest);
 
 TEST_P(TablePainterTest, Background) {
   SetBodyInnerHTML(R"HTML(
@@ -34,7 +32,7 @@ TEST_P(TablePainterTest, Background) {
   LayoutObject& row1 = *GetLayoutObjectByElementId("row1");
   LayoutObject& row2 = *GetLayoutObjectByElementId("row2");
 
-  RootPaintController().InvalidateAll();
+  InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   IntRect interest_rect(0, 0, 200, 200);
   Paint(&interest_rect);
@@ -76,7 +74,7 @@ TEST_P(TablePainterTest, BackgroundWithCellSpacing) {
   LayoutObject& cell1 = *GetLayoutObjectByElementId("cell1");
   LayoutObject& cell2 = *GetLayoutObjectByElementId("cell2");
 
-  RootPaintController().InvalidateAll();
+  InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell1 and the spacing between cell1 and cell2.
   IntRect interest_rect(0, 200, 200, 150);
@@ -129,19 +127,29 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
   LayoutObject& cell2 = *GetLayoutObjectByElementId("cell2");
   LayoutObject& row = *GetLayoutObjectByElementId("row");
 
-  RootPaintController().InvalidateAll();
+  InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects cell1 and the spacing between cell1 and cell2.
   IntRect interest_rect(200, 0, 200, 200);
   Paint(&interest_rect);
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 5,
-      TestDisplayItem(ViewBackgroundClient(), DisplayItem::kDocumentBackground),
-      TestDisplayItem(row, DisplayItem::kBeginCompositing),
-      TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
-      TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground),
-      TestDisplayItem(row, DisplayItem::kEndCompositing));
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 3,
+        TestDisplayItem(ViewBackgroundClient(),
+                        DisplayItem::kDocumentBackground),
+        TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground));
+  } else {
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 5,
+        TestDisplayItem(ViewBackgroundClient(),
+                        DisplayItem::kDocumentBackground),
+        TestDisplayItem(row, DisplayItem::kBeginCompositing),
+        TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(cell1, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(row, DisplayItem::kEndCompositing));
+  }
 
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the spacing only.
@@ -157,13 +165,23 @@ TEST_P(TablePainterTest, BackgroundInSelfPaintingRow) {
   interest_rect = IntRect(450, 0, 200, 200);
   Paint(&interest_rect);
 
-  EXPECT_DISPLAY_LIST(
-      RootPaintController().GetDisplayItemList(), 5,
-      TestDisplayItem(ViewBackgroundClient(), DisplayItem::kDocumentBackground),
-      TestDisplayItem(row, DisplayItem::kBeginCompositing),
-      TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
-      TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground),
-      TestDisplayItem(row, DisplayItem::kEndCompositing));
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 3,
+        TestDisplayItem(ViewBackgroundClient(),
+                        DisplayItem::kDocumentBackground),
+        TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground));
+  } else {
+    EXPECT_DISPLAY_LIST(
+        RootPaintController().GetDisplayItemList(), 5,
+        TestDisplayItem(ViewBackgroundClient(),
+                        DisplayItem::kDocumentBackground),
+        TestDisplayItem(row, DisplayItem::kBeginCompositing),
+        TestDisplayItem(row, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(cell2, DisplayItem::kBoxDecorationBackground),
+        TestDisplayItem(row, DisplayItem::kEndCompositing));
+  }
 }
 
 TEST_P(TablePainterTest, CollapsedBorderAndOverflow) {
@@ -181,7 +199,7 @@ TEST_P(TablePainterTest, CollapsedBorderAndOverflow) {
 
   auto& cell = *ToLayoutTableCell(GetLayoutObjectByElementId("cell"));
 
-  RootPaintController().InvalidateAll();
+  InvalidateAll(RootPaintController());
   GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
   // Intersects the overflowing part of cell but not border box.
   IntRect interest_rect(0, 0, 100, 100);

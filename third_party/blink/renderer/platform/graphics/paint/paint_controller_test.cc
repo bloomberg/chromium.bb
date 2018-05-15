@@ -35,9 +35,11 @@ INSTANTIATE_TEST_CASE_P(
     PaintControllerTest,
     testing::Values(0,
                     kSlimmingPaintV175,
+                    kBlinkGenPropertyTrees,
                     kSlimmingPaintV2,
                     kUnderInvalidationChecking,
                     kSlimmingPaintV175 | kUnderInvalidationChecking,
+                    kBlinkGenPropertyTrees | kUnderInvalidationChecking,
                     kSlimmingPaintV2 | kUnderInvalidationChecking));
 
 TEST_P(PaintControllerTest, NestedRecorders) {

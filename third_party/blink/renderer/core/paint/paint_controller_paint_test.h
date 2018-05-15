@@ -44,8 +44,10 @@ class PaintControllerPaintTestBase : public RenderingTest {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       if (GetLayoutView().Layer()->NeedsRepaint()) {
         GraphicsContext graphics_context(RootPaintController());
-        GetDocument().View()->Paint(graphics_context, kGlobalPaintNormalPhase,
-                                    CullRect(LayoutRect::InfiniteIntRect()));
+        GetDocument().View()->Paint(
+            graphics_context, kGlobalPaintNormalPhase,
+            interest_rect ? CullRect(*interest_rect)
+                          : CullRect(LayoutRect::InfiniteIntRect()));
         return true;
       }
       GetDocument().View()->Lifecycle().AdvanceTo(
@@ -63,9 +65,8 @@ class PaintControllerPaintTestBase : public RenderingTest {
   }
 
   const DisplayItemClient& ViewBackgroundClient() {
-    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-        RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      // With SPv1* and RLS, the document background uses the scrolling contents
+    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      // With SPv1*, the document background uses the scrolling contents
       // layer as its DisplayItemClient.
       return *GetLayoutView().Layer()->GraphicsLayerBacking();
     }
@@ -107,6 +108,10 @@ class PaintControllerPaintTestBase : public RenderingTest {
 
   void InvalidateAll(PaintController& paint_controller) {
     paint_controller.InvalidateAllForTesting();
+    if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      DCHECK_EQ(&paint_controller, GetDocument().View()->GetPaintController());
+      GetLayoutView().Layer()->SetNeedsRepaint();
+    }
   }
 
   bool ClientCacheIsValid(const DisplayItemClient& client) {

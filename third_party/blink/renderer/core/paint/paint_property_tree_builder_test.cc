@@ -27,13 +27,10 @@ PaintPropertyTreeBuilderTest::FramePreTranslation(
     const LocalFrameView* frame_view) {
   if (!frame_view)
     frame_view = GetDocument().View();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    return frame_view->GetLayoutView()
-        ->FirstFragment()
-        .PaintProperties()
-        ->PaintOffsetTranslation();
-  }
-  return frame_view->PreTranslation();
+  return frame_view->GetLayoutView()
+      ->FirstFragment()
+      .PaintProperties()
+      ->PaintOffsetTranslation();
 }
 
 const TransformPaintPropertyNode*
@@ -41,39 +38,30 @@ PaintPropertyTreeBuilderTest::FrameScrollTranslation(
     const LocalFrameView* frame_view) {
   if (!frame_view)
     frame_view = GetDocument().View();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    return frame_view->GetLayoutView()
-        ->FirstFragment()
-        .PaintProperties()
-        ->ScrollTranslation();
-  }
-  return frame_view->ScrollTranslation();
+  return frame_view->GetLayoutView()
+      ->FirstFragment()
+      .PaintProperties()
+      ->ScrollTranslation();
 }
 
 const ClipPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameContentClip(
     const LocalFrameView* frame_view) {
   if (!frame_view)
     frame_view = GetDocument().View();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    return frame_view->GetLayoutView()
-        ->FirstFragment()
-        .PaintProperties()
-        ->OverflowClip();
-  }
-  return frame_view->ContentClip();
+  return frame_view->GetLayoutView()
+      ->FirstFragment()
+      .PaintProperties()
+      ->OverflowClip();
 }
 
 const ScrollPaintPropertyNode* PaintPropertyTreeBuilderTest::FrameScroll(
     const LocalFrameView* frame_view) {
   if (!frame_view)
     frame_view = GetDocument().View();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    return frame_view->GetLayoutView()
-        ->FirstFragment()
-        .PaintProperties()
-        ->Scroll();
-  }
-  return frame_view->ScrollNode();
+  return frame_view->GetLayoutView()
+      ->FirstFragment()
+      .PaintProperties()
+      ->Scroll();
 }
 
 const ObjectPaintProperties*
@@ -126,9 +114,7 @@ void PaintPropertyTreeBuilderTest::SetUp() {
 #define CHECK_EXACT_VISUAL_RECT(expected, source_object, ancestor) \
   CHECK_VISUAL_RECT(expected, source_object, ancestor, 0)
 
-INSTANTIATE_TEST_CASE_P(All,
-                        PaintPropertyTreeBuilderTest,
-                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_PAINT_TEST_CASE_P(PaintPropertyTreeBuilderTest);
 
 TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   LoadTestData("fixed-position.html");
@@ -406,12 +392,6 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameScrollingTraditional) {
   EXPECT_EQ(FramePreTranslation(), FrameContentClip()->LocalTransformSpace());
   EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), FrameContentClip()->ClipRect());
   EXPECT_TRUE(FrameContentClip()->Parent()->IsRoot());
-
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    // No scroll properties should be present.
-    EXPECT_EQ(nullptr,
-              frame_view->GetLayoutView()->FirstFragment().PaintProperties());
-  }
 
   CHECK_EXACT_VISUAL_RECT(LayoutRect(8, 8, 784, 10000),
                           GetDocument().body()->GetLayoutObject(),
@@ -4945,12 +4925,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
   FloatSize page_size(100, 100);
   GetFrame().StartPrinting(page_size, page_size, 1);
   GetDocument().View()->UpdateLifecyclePhasesForPrinting();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_EQ(nullptr, FrameContentClip(main_frame_view));
-  } else {
-    EXPECT_EQ(FloatRect(LayoutRect::InfiniteIntRect()),
-              FrameContentClip(main_frame_view)->ClipRect().Rect());
-  }
+  EXPECT_EQ(nullptr, FrameContentClip(main_frame_view));
   ASSERT_NE(nullptr, FrameContentClip(child_frame_view));
   EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),
             FrameContentClip(child_frame_view)->ClipRect().Rect());
@@ -4965,12 +4940,7 @@ TEST_P(PaintPropertyTreeBuilderTest, FrameClipWhenPrinting) {
   ASSERT_NE(nullptr, FrameContentClip(main_frame_view));
   EXPECT_NE(FloatRect(LayoutRect::InfiniteIntRect()),
             FrameContentClip(main_frame_view)->ClipRect().Rect());
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_EQ(nullptr, FrameContentClip(child_frame_view));
-  } else {
-    EXPECT_EQ(FloatRect(LayoutRect::InfiniteIntRect()),
-              FrameContentClip(child_frame_view)->ClipRect().Rect());
-  }
+  EXPECT_EQ(nullptr, FrameContentClip(child_frame_view));
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, OverflowControlsClip) {
@@ -5188,10 +5158,6 @@ TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, RootHasCompositedScrolling) {
-  // TODO(pdr): Set compositing reasons for FrameView scrolling.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id='forceScroll' style='height: 2000px'></div>
   )HTML");
@@ -5210,10 +5176,6 @@ TEST_P(PaintPropertyTreeBuilderTest, RootHasCompositedScrolling) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, IframeDoesNotRequireCompositedScrolling) {
-  // TODO(pdr): Set compositing reasons for FrameView scrolling.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <iframe style='width: 200px; height: 200px;'></iframe>
     <div id='forceScroll' style='height: 2000px'></div>

@@ -75,9 +75,7 @@ class FrameThrottlingTest : public SimTest, public PaintTestConfigurations {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        FrameThrottlingTest,
-                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_PAINT_TEST_CASE_P(FrameThrottlingTest);
 
 TEST_P(FrameThrottlingTest, ThrottleInvisibleFrames) {
   SimRequest main_resource("https://example.com/", "text/html");
