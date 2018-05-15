@@ -12,11 +12,14 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace content {
 class NavigationLoaderInterceptor;
 class ResourceContext;
 class ServiceWorkerProviderHost;
-class URLLoaderFactoryGetter;
 
 // The URLLoader for loading a shared worker script. Only used for the main
 // script request.
@@ -40,7 +43,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
       network::mojom::URLLoaderClientPtr client,
       base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
       ResourceContext* resource_context,
-      scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> network_factory,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation);
   ~SharedWorkerScriptLoader() override;
 
@@ -86,7 +89,7 @@ class SharedWorkerScriptLoader : public network::mojom::URLLoader,
   network::mojom::URLLoaderClientPtr client_;
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
   ResourceContext* resource_context_;
-  scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_factory_;
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   base::Optional<net::RedirectInfo> redirect_info_;

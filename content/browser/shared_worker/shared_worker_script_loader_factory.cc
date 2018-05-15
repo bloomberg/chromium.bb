@@ -10,10 +10,10 @@
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/shared_worker/shared_worker_script_loader.h"
-#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 
 namespace content {
@@ -22,10 +22,10 @@ SharedWorkerScriptLoaderFactory::SharedWorkerScriptLoaderFactory(
     ServiceWorkerContextWrapper* context,
     base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host,
     ResourceContext* resource_context,
-    scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter)
+    scoped_refptr<network::SharedURLLoaderFactory> network_factory)
     : service_worker_provider_host_(service_worker_provider_host),
       resource_context_(resource_context),
-      loader_factory_getter_(loader_factory_getter) {
+      network_factory_(std::move(network_factory)) {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK_EQ(service_worker_provider_host_->provider_type(),
             blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
@@ -54,8 +54,8 @@ void SharedWorkerScriptLoaderFactory::CreateLoaderAndStart(
   mojo::MakeStrongBinding(
       std::make_unique<SharedWorkerScriptLoader>(
           routing_id, request_id, options, resource_request, std::move(client),
-          service_worker_provider_host_, resource_context_,
-          loader_factory_getter_, traffic_annotation),
+          service_worker_provider_host_, resource_context_, network_factory_,
+          traffic_annotation),
       std::move(request));
 }
 

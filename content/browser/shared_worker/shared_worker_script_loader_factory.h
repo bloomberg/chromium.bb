@@ -8,11 +8,14 @@
 #include "base/macros.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace content {
 
 class ServiceWorkerContextWrapper;
 class ServiceWorkerProviderHost;
-class URLLoaderFactoryGetter;
 class ResourceContext;
 
 // S13nServiceWorker:
@@ -32,7 +35,7 @@ class SharedWorkerScriptLoaderFactory
       ServiceWorkerContextWrapper* context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
       ResourceContext* resource_context,
-      scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter);
+      scoped_refptr<network::SharedURLLoaderFactory> network_factory);
   ~SharedWorkerScriptLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
@@ -49,7 +52,7 @@ class SharedWorkerScriptLoaderFactory
  private:
   base::WeakPtr<ServiceWorkerProviderHost> service_worker_provider_host_;
   ResourceContext* resource_context_ = nullptr;
-  scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedWorkerScriptLoaderFactory);
 };

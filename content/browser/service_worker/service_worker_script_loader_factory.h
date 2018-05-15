@@ -8,11 +8,14 @@
 #include "base/macros.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace content {
 
 class ServiceWorkerContextCore;
 class ServiceWorkerProviderHost;
-class URLLoaderFactoryGetter;
 
 // S13nServiceWorker:
 // Created per one running service worker for loading its scripts. This is kept
@@ -29,10 +32,10 @@ class URLLoaderFactoryGetter;
 class ServiceWorkerScriptLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
-  // |loader_factory_getter| is used to get the network factory for
-  // loading the script.
+  // |network_factory| is used to load scripts when the service worker main
+  // script has an http(s) scheme.
   //
-  // |non_network_loader_factory| is non-null when the service worker main
+  // |non_network_factory| is non-null when the service worker main
   // script URL has a non-http(s) scheme (e.g., a chrome-extension:// URL).
   // It will be used to load the main script and any non-http(s) imported
   // script.
@@ -48,8 +51,8 @@ class ServiceWorkerScriptLoaderFactory
   ServiceWorkerScriptLoaderFactory(
       base::WeakPtr<ServiceWorkerContextCore> context,
       base::WeakPtr<ServiceWorkerProviderHost> provider_host,
-      scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter,
-      network::mojom::URLLoaderFactoryPtr non_network_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> network_factory,
+      network::mojom::URLLoaderFactoryPtr non_network_factory);
   ~ServiceWorkerScriptLoaderFactory() override;
 
   // network::mojom::URLLoaderFactory:
@@ -69,8 +72,8 @@ class ServiceWorkerScriptLoaderFactory
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-  scoped_refptr<URLLoaderFactoryGetter> loader_factory_getter_;
-  network::mojom::URLLoaderFactoryPtr non_network_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> network_factory_;
+  network::mojom::URLLoaderFactoryPtr non_network_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerScriptLoaderFactory);
 };

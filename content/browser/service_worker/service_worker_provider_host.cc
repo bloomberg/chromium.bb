@@ -688,7 +688,8 @@ ServiceWorkerProviderHost::CompleteStartWorkerPreparation(
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     mojo::MakeStrongAssociatedBinding(
         std::make_unique<ServiceWorkerScriptLoaderFactory>(
-            context_, AsWeakPtr(), context_->loader_factory_getter(),
+            context_, AsWeakPtr(),
+            context_->loader_factory_getter()->GetNetworkFactory(),
             std::move(non_network_loader_factory)),
         mojo::MakeRequest(&script_loader_factory_ptr_info));
     provider_info->script_loader_factory_ptr_info =
