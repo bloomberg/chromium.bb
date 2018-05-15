@@ -503,7 +503,7 @@ public class ContentSuggestionsNotifier {
         if (!browserStartup.isStartupSuccessfullyCompleted()) {
             browserStartup.addStartupCompletedObserver(new StartupCallback() {
                 @Override
-                public void onSuccess(boolean alreadyStarted) {
+                public void onSuccess() {
                     flushCachedMetrics();
                 }
                 @Override

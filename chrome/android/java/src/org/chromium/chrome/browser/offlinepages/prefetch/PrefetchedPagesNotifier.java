@@ -176,7 +176,7 @@ public class PrefetchedPagesNotifier {
         if (!browserStartup.isStartupSuccessfullyCompleted()) {
             browserStartup.addStartupCompletedObserver(new StartupCallback() {
                 @Override
-                public void onSuccess(boolean alreadyStarted) {
+                public void onSuccess() {
                     r.run();
                 }
                 @Override

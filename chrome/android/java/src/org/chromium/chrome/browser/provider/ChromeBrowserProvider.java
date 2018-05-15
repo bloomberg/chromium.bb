@@ -255,7 +255,7 @@ public class ChromeBrowserProvider extends ContentProvider {
                         .addStartupCompletedObserver(
                                 new BrowserStartupController.StartupCallback() {
                                     @Override
-                                    public void onSuccess(boolean alreadyStarted) {
+                                    public void onSuccess() {
                                         ensureNativeSideInitialized();
                                     }
 

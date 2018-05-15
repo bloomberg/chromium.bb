@@ -106,10 +106,9 @@ public class ChromiumLinkerTestActivity extends Activity {
         try {
             BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                     .startBrowserProcessesAsync(
-                            true,
-                            new BrowserStartupController.StartupCallback() {
+                            true, new BrowserStartupController.StartupCallback() {
                                 @Override
-                                public void onSuccess(boolean alreadyStarted) {
+                                public void onSuccess() {
                                     finishInitialization(savedInstanceState);
                                 }
 
