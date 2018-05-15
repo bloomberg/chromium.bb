@@ -114,12 +114,6 @@ _OS_NEGATIVE_FILTER['win'] = [
 _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=416
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1857
-    'TakesScreenshotTest.testShouldCaptureScreenshot',
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtIFramePageAfterSwitching',
 ]
 
 _SPECIFIC_OS_REVISION_NEGATIVE_FILTER = {}
