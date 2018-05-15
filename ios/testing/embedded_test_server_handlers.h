@@ -16,6 +16,11 @@ class HttpResponse;
 
 namespace testing {
 
+// Text returned from HandleForm handler.
+extern const char kTestFormPage[];
+// Field value for form returned from HandleForm handler.
+extern const char kTestFormFieldValue[];
+
 // Returns a page with iframe which uses URL from the query as src.
 std::unique_ptr<net::test_server::HttpResponse> HandleIFrame(
     const net::test_server::HttpRequest& request);
@@ -25,6 +30,11 @@ std::unique_ptr<net::test_server::HttpResponse> HandleIFrame(
 // there is no internet connection.
 std::unique_ptr<net::test_server::HttpResponse> HandleEchoQueryOrCloseSocket(
     const bool& responds_with_content,
+    const net::test_server::HttpRequest& request);
+
+// Returns a page with html form and kTestFormPage text. The form contains one
+// text field with kTestFormFieldValue value.
+std::unique_ptr<net::test_server::HttpResponse> HandleForm(
     const net::test_server::HttpRequest& request);
 
 }  // namespace testing

@@ -12,24 +12,31 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
 
+namespace {
+// Extracts and escapes url spec from the query.
+std::string ExtractUlrSpecFromQuery(
+    const net::test_server::HttpRequest& request) {
+  GURL request_url = request.GetURL();
+  std::string spec = net::UnescapeBinaryURLComponent(request_url.query());
+
+  // Escape the URL spec.
+  GURL url(spec);
+  return url.is_valid() ? net::EscapeForHTML(url.spec()) : spec;
+}
+}  // namespace
+
 namespace testing {
+
+const char kTestFormPage[] = "ios.testing.HandleForm";
+const char kTestFormFieldValue[] = "test-value";
 
 std::unique_ptr<net::test_server::HttpResponse> HandleIFrame(
     const net::test_server::HttpRequest& request) {
-  GURL request_url = request.GetURL();
-  std::string iframe_src = net::UnescapeBinaryURLComponent(request_url.query());
-
-  // Escape iframe src.
-  GURL iframe_url(iframe_src);
-  if (iframe_url.is_valid()) {
-    iframe_src = net::EscapeForHTML(iframe_url.spec());
-  }
-
   auto http_response = std::make_unique<net::test_server::BasicHttpResponse>();
   http_response->set_content_type("text/html");
   http_response->set_content(base::StringPrintf(
       "<html><head></head><body><iframe src='%s'></iframe></body></html>",
-      iframe_src.c_str()));
+      ExtractUlrSpecFromQuery(request).c_str()));
   return std::move(http_response);
 }
 
@@ -43,6 +50,21 @@ std::unique_ptr<net::test_server::HttpResponse> HandleEchoQueryOrCloseSocket(
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
   response->set_content_type("text/html");
   response->set_content(request.GetURL().query());
+  return std::move(response);
+}
+
+std::unique_ptr<net::test_server::HttpResponse> HandleForm(
+    const net::test_server::HttpRequest& request) {
+  std::string form_action = ExtractUlrSpecFromQuery(request);
+  auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+  response->set_content_type("text/html");
+  response->set_content(base::StringPrintf(
+      "<form method='post' id='form' action='%s'>"
+      "  <input type='text' name='test-name' value='%s'>"
+      "</form>"
+      "%s",
+      form_action.c_str(), kTestFormFieldValue, kTestFormPage));
+
   return std::move(response);
 }
 
