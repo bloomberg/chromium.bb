@@ -56,3 +56,50 @@ TEST_F('CrElementsProfileAvatarSelectorFocusTest', 'All', function() {
   cr_profile_avatar_selector.registerTests();
   mocha.grep(cr_profile_avatar_selector.TestNames.Focus).run();
 });
+
+/**
+ * @constructor
+ * @extends {CrElementsFocusTest}
+ */
+function CrElementsToggleTest() {}
+
+CrElementsToggleTest.prototype = {
+  __proto__: CrElementsFocusTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_toggle/cr_toggle.html',
+
+  /** @override */
+  extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_toggle_test.js',
+  ]),
+};
+
+TEST_F('CrElementsToggleTest', 'All', function() {
+  mocha.run();
+});
+
+
+/**
+ * @constructor
+ * @extends {CrElementsFocusTest}
+ */
+function CrElementsCheckboxTest() {}
+
+CrElementsCheckboxTest.prototype = {
+  __proto__: CrElementsFocusTest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html',
+
+  /** @override */
+  extraLibraries: CrElementsFocusTest.prototype.extraLibraries.concat([
+    '../settings/test_util.js',
+    'cr_checkbox_test.js',
+  ]),
+};
+
+TEST_F('CrElementsCheckboxTest', 'All', function() {
+  mocha.run();
+});
