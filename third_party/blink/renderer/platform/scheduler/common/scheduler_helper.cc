@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
+#include <utility>
+
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -133,6 +135,12 @@ base::TimeTicks SchedulerHelper::NowTicks() const {
     return task_queue_manager_->NowTicks();
   // We may need current time for tracing when shutting down worker thread.
   return base::TimeTicks::Now();
+}
+
+double SchedulerHelper::GetSamplingRateForRecordingCPUTime() const {
+  if (task_queue_manager_)
+    return task_queue_manager_->GetSamplingRateForRecordingCPUTime();
+  return 0;
 }
 
 }  // namespace scheduler

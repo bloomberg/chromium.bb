@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 
-#include <memory>
+#include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/debug/stack_trace.h"
@@ -2475,7 +2476,7 @@ void MainThreadSchedulerImpl::RecordTaskUkm(
     base::TimeTicks start,
     base::TimeTicks end,
     base::Optional<base::TimeDelta> thread_time) {
-  if (!ShouldRecordTaskUkm())
+  if (!ShouldRecordTaskUkm(thread_time.has_value()))
     return;
 
   if (queue && queue->GetFrameScheduler()) {
@@ -2652,10 +2653,29 @@ bool MainThreadSchedulerImpl::IsAudioPlaying() const {
   return main_thread_only().is_audio_playing;
 }
 
-bool MainThreadSchedulerImpl::ShouldRecordTaskUkm() {
-  // This function returns true with probability of kSamplingRateForTaskUkm.
+bool MainThreadSchedulerImpl::ShouldIgnoreTaskForUkm(bool has_thread_time,
+                                                     double* sampling_rate) {
+  const double thread_time_sampling_rate =
+      helper_.GetSamplingRateForRecordingCPUTime();
+  if (thread_time_sampling_rate && *sampling_rate < thread_time_sampling_rate) {
+    if (!has_thread_time)
+      return true;
+    *sampling_rate /= thread_time_sampling_rate;
+  }
+  return false;
+}
+
+bool MainThreadSchedulerImpl::ShouldRecordTaskUkm(bool has_thread_time) {
+  double sampling_rate = kSamplingRateForTaskUkm;
+
+  // If thread_time is sampled as well, try to align UKM sampling with it so
+  // that we only record UKMs for tasks that also record thread_time.
+  if (ShouldIgnoreTaskForUkm(has_thread_time, &sampling_rate)) {
+    return false;
+  }
+
   return main_thread_only().uniform_distribution(
-             main_thread_only().random_generator) < kSamplingRateForTaskUkm;
+             main_thread_only().random_generator) < sampling_rate;
 }
 
 // static

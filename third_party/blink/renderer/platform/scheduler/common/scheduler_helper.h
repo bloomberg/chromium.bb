@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_SCHEDULER_HELPER_H_
 
 #include <stddef.h>
+#include <memory>
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -89,6 +90,7 @@ class PLATFORM_EXPORT SchedulerHelper
   void RegisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
   void UnregisterTimeDomain(base::sequence_manager::TimeDomain* time_domain);
   bool GetAndClearSystemIsQuiescentBit();
+  double GetSamplingRateForRecordingCPUTime() const;
 
   // Test helpers.
   void SetWorkBatchSizeForTesting(size_t work_batch_size);

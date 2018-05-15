@@ -5,6 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_H_
 
+#include <memory>
+#include <utility>
+
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -78,6 +81,10 @@ class PLATFORM_EXPORT TaskQueueManager {
 
   virtual void EnableCrashKeys(const char* file_name_crash_key,
                                const char* function_name_crash_key) = 0;
+
+  // Returns the portion of tasks for which CPU time is recorded or 0 if not
+  // sampled.
+  virtual double GetSamplingRateForRecordingCPUTime() const = 0;
 
   // Creates a task queue with the given type, |spec| and args. Must be called
   // on the thread this class was created on.

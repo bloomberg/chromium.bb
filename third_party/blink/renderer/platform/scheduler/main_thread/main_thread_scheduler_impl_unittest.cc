@@ -3919,6 +3919,27 @@ TEST_F(MainThreadSchedulerImplWithInitalVirtualTimeTest, VirtualTimeOverride) {
   EXPECT_EQ(base::Time::Now(), base::Time::FromJsTime(1000000.0));
 }
 
+TEST_F(MainThreadSchedulerImplTest, ShouldIgnoreTaskForUkm) {
+  bool supports_thread_ticks = base::ThreadTicks::IsSupported();
+  double sampling_rate;
+
+  sampling_rate = 0.0001;
+  EXPECT_FALSE(scheduler_->ShouldIgnoreTaskForUkm(true, &sampling_rate));
+  if (supports_thread_ticks) {
+    EXPECT_EQ(0.01, sampling_rate);
+  } else {
+    EXPECT_EQ(0.0001, sampling_rate);
+  }
+
+  sampling_rate = 0.0001;
+  if (supports_thread_ticks) {
+    EXPECT_TRUE(scheduler_->ShouldIgnoreTaskForUkm(false, &sampling_rate));
+  } else {
+    EXPECT_FALSE(scheduler_->ShouldIgnoreTaskForUkm(false, &sampling_rate));
+    EXPECT_EQ(0.0001, sampling_rate);
+  }
+}
+
 }  // namespace main_thread_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

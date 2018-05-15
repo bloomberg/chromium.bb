@@ -5,7 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_IMPL_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_MAIN_THREAD_MAIN_THREAD_SCHEDULER_IMPL_H_
 
+#include <map>
+#include <memory>
 #include <random>
+#include <set>
+#include <string>
 
 #include "base/atomicops.h"
 #include "base/gtest_prod_util.h"
@@ -50,6 +54,7 @@ namespace scheduler {
 namespace main_thread_scheduler_impl_unittest {
 class MainThreadSchedulerImplForTest;
 class MainThreadSchedulerImplTest;
+FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, ShouldIgnoreTaskForUkm);
 FORWARD_DECLARE_TEST(MainThreadSchedulerImplTest, Tracing);
 }  // namespace main_thread_scheduler_impl_unittest
 class PageSchedulerImpl;
@@ -314,6 +319,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
   FRIEND_TEST_ALL_PREFIXES(
       main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest,
+      ShouldIgnoreTaskForUkm);
+  FRIEND_TEST_ALL_PREFIXES(
+      main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest,
       Tracing);
 
   enum class ExpensiveTaskPolicy { kRun, kBlock, kThrottle };
@@ -442,7 +450,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   class PollableNeedsUpdateFlag {
    public:
-    PollableNeedsUpdateFlag(base::Lock* write_lock);
+    explicit PollableNeedsUpdateFlag(base::Lock* write_lock);
     ~PollableNeedsUpdateFlag();
 
     // Set the flag. May only be called if |write_lock| is held.
@@ -589,7 +597,14 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // TaskQueueThrottler.
   void VirtualTimeResumed();
 
-  bool ShouldRecordTaskUkm();
+  // Returns true if the current task should not be reported in UKM because no
+  // thread time was recorded for it. Also updates |sampling_rate| to account
+  // for the ignored tasks by sampling the remaining tasks with higher
+  // probability.
+  bool ShouldIgnoreTaskForUkm(bool has_thread_time, double* sampling_rate);
+
+  // Returns true with probability of kSamplingRateForTaskUkm.
+  bool ShouldRecordTaskUkm(bool has_thread_time);
 
   // Probabilistically record all task metadata for the current task.
   // If task belongs to a per-frame queue, this task is attributed to
