@@ -1676,7 +1676,13 @@
         '--test-launcher-filter-file=../../testing/buildbot/filters/viz.content_unittests.filter',
       ],
       'test': 'content_unittests',
-    }
+    },
+    'viz_interactive_ui_tests': {
+       'args': [
+        '--enable-features=VizDisplayCompositor',
+      ],
+       'test': 'interactive_ui_tests',
+     },
   },
 
   'viz_gtests': {
