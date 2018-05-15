@@ -603,41 +603,6 @@
     "args": ["--enable-blink-features=FractionalMouseEvent"]
   },
   {
-    "prefix": "incremental-shadow-dom",
-    "base": "external/wpt/shadow-dom",
-    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
-  },
-  {
-    "prefix": "incremental-shadow-dom",
-    "base": "fast/dom/shadow",
-    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
-  },
-  {
-    "prefix": "incremental-shadow-dom",
-    "base": "shadow-dom",
-    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
-  },
-  {
-    "prefix": "incremental-shadow-dom",
-    "base": "html/details_summary",
-    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
-  },
-  {
-    "prefix": "incremental-shadow-dom",
-    "base": "http/tests/devtools/elements/shadow",
-    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
-  },
-  {
-    "prefix": "incremental-shadow-dom",
-    "base": "media/controls",
-    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
-  },
-  {
-    "prefix": "incremental-shadow-dom",
-    "base": "external/wpt/css/css-scoping",
-    "args": ["--enable-blink-features=SlotInFlatTree,IncrementalShadowDOM"]
-  },
-  {
     "prefix": "unified-autoplay",
     "base": "external/wpt/feature-policy",
     "args": ["--autoplay-policy=document-user-activation-required"]
