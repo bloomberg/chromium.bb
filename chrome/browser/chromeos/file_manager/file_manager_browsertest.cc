@@ -34,10 +34,9 @@ struct TestCase {
   const char* test_name = nullptr;
 };
 
-// FileManager browser test class.
-class FileManagerBrowserTest :
-      public FileManagerBrowserTestBase,
-      public ::testing::WithParamInterface<TestCase> {
+// FileManager browser test.
+class FileManagerBrowserTest : public FileManagerBrowserTestBase,
+                               public ::testing::WithParamInterface<TestCase> {
  public:
   FileManagerBrowserTest() = default;
 
