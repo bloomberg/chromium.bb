@@ -23,6 +23,8 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   const MenuConfig& menu_config = MenuConfig::instance();
   int pos = 0;
   int separator_thickness = menu_config.separator_thickness;
+  if (type_ == ui::DOUBLE_SEPARATOR)
+    separator_thickness = menu_config.double_separator_thickness;
   switch (type_) {
     case ui::LOWER_SEPARATOR:
       pos = height() - separator_thickness;
@@ -30,7 +32,7 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
     case ui::UPPER_SEPARATOR:
       break;
     default:
-      pos = height() / 2;
+      pos = (height() - separator_thickness) / 2;
       break;
   }
 
@@ -69,6 +71,9 @@ gfx::Size MenuSeparator::CalculatePreferredSize() const {
       break;
     case ui::UPPER_SEPARATOR:
       height = menu_config.separator_upper_height;
+      break;
+    case ui::DOUBLE_SEPARATOR:
+      height = menu_config.double_separator_height;
       break;
     default:
       height = menu_config.separator_height;

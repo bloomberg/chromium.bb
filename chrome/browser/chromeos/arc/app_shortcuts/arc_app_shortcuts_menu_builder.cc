@@ -59,7 +59,8 @@ void ArcAppShortcutsMenuBuilder::OnGetAppShortcutItems(
     GetMenuModelCallback callback,
     std::unique_ptr<ArcAppShortcutItems> app_shortcut_items) {
   app_shortcut_items_ = std::move(app_shortcut_items);
-  if (app_shortcut_items_) {
+  if (app_shortcut_items_ && !app_shortcut_items_->empty()) {
+    menu_model->AddSeparator(ui::DOUBLE_SEPARATOR);
     int command_id = command_id_first_;
     for (const auto& item : *app_shortcut_items_)
       menu_model->AddItemWithIcon(command_id++, item.short_label, item.icon);

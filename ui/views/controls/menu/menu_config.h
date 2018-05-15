@@ -94,6 +94,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Height of a normal separator (ui::NORMAL_SEPARATOR).
   int separator_height;
 
+  // Height of a double separator (ui::DOUBLE_SEPARATOR).
+  int double_separator_height;
+
   // Height of a ui::UPPER_SEPARATOR.
   int separator_upper_height;
 
@@ -105,6 +108,9 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Thickness of the drawn separator line in pixels.
   int separator_thickness;
+
+  // Thickness of the drawn separator line in pixels for double separator.
+  int double_separator_thickness;
 
   // Are mnemonics shown?
   bool show_mnemonics;

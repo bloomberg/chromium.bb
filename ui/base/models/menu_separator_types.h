@@ -9,13 +9,16 @@ namespace ui {
 
 // For a separator we have the following types.
 enum MenuSeparatorType {
-  // Normal - top to bottom: Spacing, line, spacing
+  // Normal - top to bottom: Spacing, line, spacing.
   NORMAL_SEPARATOR,
 
-  // Upper - top to bottom: Line, spacing
+  // Double thickness - top to bottom: Spacing, line, spacing.
+  DOUBLE_SEPARATOR,
+
+  // Upper - top to bottom: Line, spacing.
   UPPER_SEPARATOR,
 
-  // Lower - top to bottom: Spacing, line
+  // Lower - top to bottom: Spacing, line.
   LOWER_SEPARATOR,
 
   // Spacing - top to bottom: Spacing only.
