@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/ash_layout_constants.h"
+#include "ash/public/cpp/ash_layout_constants.h"
 
 #include "base/logging.h"
 #include "ui/base/material_design/material_design_controller.h"
+
+namespace ash {
 
 gfx::Size GetAshLayoutSize(AshLayoutSize size) {
   constexpr int kButtonWidth = 32;
@@ -29,3 +31,5 @@ gfx::Size GetAshLayoutSize(AshLayoutSize size) {
   NOTREACHED();
   return gfx::Size();
 }
+
+}  // namespace ash

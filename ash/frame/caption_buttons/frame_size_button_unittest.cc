@@ -4,9 +4,9 @@
 
 #include "ash/frame/caption_buttons/frame_size_button.h"
 
-#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

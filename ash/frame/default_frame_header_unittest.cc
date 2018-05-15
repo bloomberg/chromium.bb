@@ -31,11 +31,11 @@ TEST_F(DefaultFrameHeaderTest, TitleIconAlignment) {
   w->SetBounds(gfx::Rect(0, 0, 500, 500));
   w->Show();
 
-  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
+  DefaultFrameHeader frame_header(w->non_client_view()->frame_view(),
                                   &container);
   frame_header.SetLeftHeaderView(&window_icon);
   frame_header.LayoutHeader();
-  gfx::Rect title_bounds = frame_header.GetAvailableTitleBounds();
+  gfx::Rect title_bounds = frame_header.GetTitleBounds();
   EXPECT_EQ(window_icon.bounds().CenterPoint().y(),
             title_bounds.CenterPoint().y());
 }
@@ -46,11 +46,11 @@ TEST_F(DefaultFrameHeaderTest, BackButtonAlignment) {
   FrameCaptionButtonContainerView container(w.get());
   FrameBackButton back;
 
-  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
+  DefaultFrameHeader frame_header(w->non_client_view()->frame_view(),
                                   &container);
   frame_header.SetBackButton(&back);
   frame_header.LayoutHeader();
-  gfx::Rect title_bounds = frame_header.GetAvailableTitleBounds();
+  gfx::Rect title_bounds = frame_header.GetTitleBounds();
   // The back button should be positioned at the left edge, and
   // vertically centered.
   EXPECT_EQ(back.bounds().CenterPoint().y(), title_bounds.CenterPoint().y());
@@ -67,7 +67,7 @@ TEST_F(DefaultFrameHeaderTest, FrameColors) {
   w->SetBounds(gfx::Rect(0, 0, 500, 500));
   w->Show();
 
-  DefaultFrameHeader frame_header(w.get(), w->non_client_view()->frame_view(),
+  DefaultFrameHeader frame_header(w->non_client_view()->frame_view(),
                                   &container);
 
   // Check frame color is sensitive to mode.

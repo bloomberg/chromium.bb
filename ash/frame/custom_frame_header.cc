@@ -4,10 +4,9 @@
 
 #include "ash/frame/custom_frame_header.h"
 
-#include "ash/ash_layout_constants.h"
-#include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/frame_header_util.h"
+#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "base/logging.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -15,11 +14,9 @@
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
@@ -32,9 +29,6 @@ namespace {
 // Color for the window title text.
 const SkColor kNormalWindowTitleTextColor = SkColorSetRGB(40, 40, 40);
 const SkColor kIncognitoWindowTitleTextColor = SK_ColorWHITE;
-
-// Duration of crossfade animation for activating and deactivating frame.
-const int kActivationCrossfadeDurationMs = 200;
 
 // Creates a path with rounded top corners.
 SkPath MakeRoundRectPath(const gfx::Rect& bounds,
@@ -137,163 +131,49 @@ void CustomFrameHeader::Init(
   DCHECK(appearance_provider);
   DCHECK(caption_button_container);
 
-  view_ = view;
+  set_view(view);
   appearance_provider_ = appearance_provider;
   is_incognito_ = incognito;
-  caption_button_container_ = caption_button_container;
 
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MINIMIZE,
-                                            kWindowControlMinimizeIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_CLOSE,
-                                            kWindowControlCloseIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_LEFT_SNAPPED,
-                                            kWindowControlLeftSnappedIcon);
-  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_RIGHT_SNAPPED,
-                                            kWindowControlRightSnappedIcon);
-}
-
-int CustomFrameHeader::GetMinimumHeaderWidth() const {
-  // Ensure we have enough space for the window icon and buttons. We allow
-  // the title string to collapse to zero width.
-  return GetTitleBounds().x() +
-         caption_button_container_->GetMinimumSize().width();
-}
-
-void CustomFrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
-  Mode old_mode = mode_;
-  mode_ = mode;
-
-  if (mode_ != old_mode) {
-    if (!initial_paint_ && FrameHeaderUtil::CanAnimateActivation(GetWidget())) {
-      activation_animation_.SetSlideDuration(kActivationCrossfadeDurationMs);
-      if (mode_ == MODE_ACTIVE)
-        activation_animation_.Show();
-      else
-        activation_animation_.Hide();
-    } else {
-      if (mode_ == MODE_ACTIVE)
-        activation_animation_.Reset(1);
-      else
-        activation_animation_.Reset(0);
-    }
-    initial_paint_ = false;
-  }
-
-  PaintFrameImages(canvas, false);
-  PaintFrameImages(canvas, true);
-
-  if (GetWidget()->widget_delegate() &&
-      GetWidget()->widget_delegate()->ShouldShowWindowTitle()) {
-    PaintTitleBar(canvas);
-  }
-}
-
-void CustomFrameHeader::LayoutHeader() {
-  LayoutHeaderInternal();
-  // Default to the header height; owning code may override via
-  // SetHeaderHeightForPainting().
-  painted_height_ = GetHeaderHeight();
-}
-
-int CustomFrameHeader::GetHeaderHeight() const {
-  return caption_button_container_->height();
-}
-
-int CustomFrameHeader::GetHeaderHeightForPainting() const {
-  return painted_height_;
-}
-
-void CustomFrameHeader::SetHeaderHeightForPainting(int height) {
-  painted_height_ = height;
-}
-
-void CustomFrameHeader::SchedulePaintForTitle() {
-  view_->SchedulePaintInRect(GetTitleBounds());
-}
-
-void CustomFrameHeader::SetPaintAsActive(bool paint_as_active) {
-  SkColor frame_color =
-      appearance_provider_->GetFrameHeaderColor(paint_as_active);
-  caption_button_container_->SetPaintAsActive(paint_as_active);
-  caption_button_container_->SetBackgroundColor(frame_color);
-  if (back_button_) {
-    back_button_->set_paint_as_active(paint_as_active);
-    back_button_->SetBackgroundColor(frame_color);
-  }
-}
-
-void CustomFrameHeader::OnShowStateChanged(ui::WindowShowState show_state) {
-  if (show_state == ui::SHOW_STATE_MINIMIZED)
-    return;
-
-  // Call LayoutHeaderInternal() instead of LayoutHeader() here because
-  // |show_state| shouldn't cause |painted_height_| change.
-  LayoutHeaderInternal();
-}
-
-void CustomFrameHeader::SetLeftHeaderView(views::View* left_header_view) {
-  window_icon_ = left_header_view;
-}
-
-void CustomFrameHeader::SetBackButton(FrameCaptionButton* back_button) {
-  back_button_ = back_button;
-}
-
-FrameCaptionButton* CustomFrameHeader::GetBackButton() const {
-  return back_button_;
-}
-
-void CustomFrameHeader::SetFrameColors(SkColor active_frame_color,
-                                       SkColor inactive_frame_color) {
-  view_->SchedulePaintInRect(GetPaintedBounds());
+  SetCaptionButtonContainer(caption_button_container);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// gfx::AnimationDelegate overrides:
+// CustomFrameHeader, protected:
 
-void CustomFrameHeader::AnimationProgressed(const gfx::Animation* animation) {
-  view_->SchedulePaintInRect(GetPaintedBounds());
+void CustomFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
+  PaintFrameImages(canvas, false /* active */);
+  PaintFrameImages(canvas, true /* active */);
+  PaintTitleBar(canvas);
+}
+
+AshLayoutSize CustomFrameHeader::GetButtonLayoutSize() const {
+  return GetWidget()->IsMaximized() || GetWidget()->IsFullscreen() ||
+                 appearance_provider_->IsTabletMode()
+             ? AshLayoutSize::kBrowserCaptionMaximized
+             : AshLayoutSize::kBrowserCaptionRestored;
+}
+
+SkColor CustomFrameHeader::GetTitleColor() const {
+  return is_incognito_ ? kIncognitoWindowTitleTextColor
+                       : kNormalWindowTitleTextColor;
+}
+
+SkColor CustomFrameHeader::GetCurrentFrameColor() const {
+  return appearance_provider_->GetFrameHeaderColor(mode() == MODE_ACTIVE);
+}
+
+void CustomFrameHeader::DoSetFrameColors(SkColor active_frame_color,
+                                         SkColor inactive_frame_color) {
+  UpdateCaptionButtonColors();
+  view()->SchedulePaint();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CustomFrameHeader, private:
 
-void CustomFrameHeader::LayoutHeaderInternal() {
-  caption_button_container_->SetButtonImage(
-      CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE,
-      GetWidget()->IsMaximized() || GetWidget()->IsFullscreen()
-          ? kWindowControlRestoreIcon
-          : kWindowControlMaximizeIcon);
-
-  const AshLayoutSize button_size_type =
-      GetWidget()->IsMaximized() || GetWidget()->IsFullscreen() ||
-              appearance_provider_->IsTabletMode()
-          ? AshLayoutSize::kBrowserCaptionMaximized
-          : AshLayoutSize::kBrowserCaptionRestored;
-  caption_button_container_->SetButtonSize(GetAshLayoutSize(button_size_type));
-
-  const gfx::Size caption_button_container_size =
-      caption_button_container_->GetPreferredSize();
-  caption_button_container_->SetBounds(
-      view_->width() - caption_button_container_size.width(), 0,
-      caption_button_container_size.width(),
-      caption_button_container_size.height());
-
-  caption_button_container_->Layout();
-
-  if (!window_icon_)
-    return;
-
-  // Vertically center the window icon with respect to the caption button
-  // container.
-  const gfx::Size icon_size(window_icon_->GetPreferredSize());
-  const int icon_offset_y = (GetHeaderHeight() - icon_size.height()) / 2;
-  window_icon_->SetBounds(FrameHeaderUtil::GetLeftViewXInset(), icon_offset_y,
-                          icon_size.width(), icon_size.height());
-}
-
 void CustomFrameHeader::PaintFrameImages(gfx::Canvas* canvas, bool active) {
-  int alpha = activation_animation_.CurrentValueBetween(0, 0xFF);
+  int alpha = activation_animation().CurrentValueBetween(0, 0xFF);
   if (!active)
     alpha = 0xFF - alpha;
 
@@ -316,31 +196,6 @@ void CustomFrameHeader::PaintFrameImages(gfx::Canvas* canvas, bool active) {
                               opaque_background_color, GetPaintedBounds(),
                               corner_radius,
                               FrameHeaderUtil::GetThemeBackgroundXInset());
-}
-
-void CustomFrameHeader::PaintTitleBar(gfx::Canvas* canvas) {
-  // The window icon is painted by its own views::View.
-  canvas->DrawStringRectWithFlags(
-      GetWidget()->widget_delegate()->GetWindowTitle(),
-      views::NativeWidgetAura::GetWindowTitleFontList(),
-      is_incognito_ ? kIncognitoWindowTitleTextColor
-                    : kNormalWindowTitleTextColor,
-      view_->GetMirroredRect(GetTitleBounds()),
-      gfx::Canvas::NO_SUBPIXEL_RENDERING);
-}
-
-gfx::Rect CustomFrameHeader::GetPaintedBounds() const {
-  return gfx::Rect(view_->width(), painted_height_);
-}
-
-gfx::Rect CustomFrameHeader::GetTitleBounds() const {
-  views::View* left_view = window_icon_ ? window_icon_ : back_button_;
-  return FrameHeaderUtil::GetAvailableTitleBounds(
-      left_view, caption_button_container_, GetHeaderHeight());
-}
-
-views::Widget* CustomFrameHeader::GetWidget() {
-  return view_->GetWidget();
 }
 
 }  // namespace ash

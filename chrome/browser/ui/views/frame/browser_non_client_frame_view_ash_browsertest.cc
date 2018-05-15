@@ -6,12 +6,12 @@
 
 #include <string>
 
-#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/frame_header.h"
 #include "ash/public/cpp/ash_constants.h"
+#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
@@ -722,7 +722,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
 // contents don't exceed the height of the caption buttons.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FrameSize) {
   EXPECT_EQ(frame_header_->GetHeaderHeight(),
-            GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height());
+            GetAshLayoutSize(ash::AshLayoutSize::kNonBrowserCaption).height());
   EXPECT_LE(app_menu_button_->size().height(),
             frame_header_->GetHeaderHeight());
   EXPECT_LE(hosted_app_button_container_->size().height(),

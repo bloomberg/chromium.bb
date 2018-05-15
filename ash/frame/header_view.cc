@@ -78,8 +78,8 @@ HeaderView::HeaderView(views::Widget* target_widget,
   AddChildView(caption_button_container_);
 
   if (window_style == mojom::WindowStyle::DEFAULT) {
-    frame_header_ = std::make_unique<DefaultFrameHeader>(
-        target_widget_, this, caption_button_container_);
+    frame_header_ =
+        std::make_unique<DefaultFrameHeader>(this, caption_button_container_);
   } else {
     DCHECK_EQ(mojom::WindowStyle::BROWSER, window_style);
     DCHECK_EQ(Config::MASH, Shell::GetAshConfig());

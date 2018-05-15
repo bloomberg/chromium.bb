@@ -7,11 +7,11 @@
 #include <memory>
 
 #include "ash/accelerators/accelerator_controller.h"
-#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_view.h"
 #include "ash/frame/wide_frame_view.h"
+#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
@@ -217,7 +217,8 @@ TEST_F(CustomFrameViewAshTest, AvatarIcon) {
 // new visibility.
 TEST_F(CustomFrameViewAshTest, HeaderViewNotifiedOfChildSizeChange) {
   TestWidgetConstraintsDelegate* delegate = new TestWidgetConstraintsDelegate;
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 400, 500));
 
   const gfx::Rect initial =
       delegate->GetFrameCaptionButtonContainerViewBounds();
@@ -336,7 +337,8 @@ TEST_F(CustomFrameViewAshTest, MinimizedWindowsInTabletMode) {
 
 TEST_F(CustomFrameViewAshTest, HeaderVisibilityInOverviewMode) {
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 400, 500));
 
   // Verify the header is not painted in overview mode and painted when not in
   // overview mode.
@@ -465,7 +467,8 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
   TestButtonModel* model_ptr = model.get();
 
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 400, 500));
 
   ui::Accelerator accelerator_back_press(ui::VKEY_BROWSER_BACK, ui::EF_NONE);
   accelerator_back_press.set_key_state(ui::Accelerator::KeyState::PRESSED);
@@ -491,7 +494,8 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
   // Back button is disabled, so clicking on it should not should
   // generate back key sequence.
   ui::test::EventGenerator& generator = GetEventGenerator();
-  generator.MoveMouseTo(header_view->GetBoundsInScreen().CenterPoint());
+  generator.MoveMouseTo(
+      header_view->GetBackButton()->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
   EXPECT_EQ(0u, target_back_press.count());
   EXPECT_EQ(0u, target_back_release.count());
@@ -626,7 +630,8 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
 
 TEST_F(CustomFrameViewAshTest, WideFrame) {
   auto* delegate = new CustomFrameTestWidgetDelegate();
-  std::unique_ptr<views::Widget> widget = CreateTestWidget(delegate);
+  std::unique_ptr<views::Widget> widget = CreateTestWidget(
+      delegate, kShellWindowId_DefaultContainer, gfx::Rect(0, 0, 400, 500));
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
   HeaderView* header_view =
