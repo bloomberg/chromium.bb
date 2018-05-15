@@ -4,6 +4,7 @@
 
 #include "services/identity/public/cpp/identity_manager.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace identity {
 
@@ -43,7 +44,7 @@ AccountInfo IdentityManager::GetPrimaryAccountInfo() {
   // document the API to use here.
   DCHECK_EQ(signin_manager_->GetAuthenticatedAccountId(),
             primary_account_info_.account_id);
-#if DCHECK_IS_ON()
+
   // Note: If the primary account's refresh token gets revoked, then the account
   // gets removed from AccountTrackerService (via
   // AccountFetcherService::OnRefreshTokenRevoked), and so SigninManager's
@@ -54,10 +55,23 @@ AccountInfo IdentityManager::GetPrimaryAccountInfo() {
               primary_account_info_.account_id);
     DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().gaia,
               primary_account_info_.gaia);
-    DCHECK_EQ(signin_manager_->GetAuthenticatedAccountInfo().email,
-              primary_account_info_.email);
+
+    // TODO(842670): As described in the bug, AccountTrackerService's email
+    // address can be updated after it is initially set on ChromeOS. Figure out
+    // right long-term solution for this problem.
+    if (signin_manager_->GetAuthenticatedAccountInfo().email !=
+        primary_account_info_.email) {
+      // This update should only be to move it from normalized form to the form
+      // in which the user entered the email when creating the account. The
+      // below check verifies that the normalized forms of the two email
+      // addresses are identical.
+      DCHECK(gaia::AreEmailsSame(
+          signin_manager_->GetAuthenticatedAccountInfo().email,
+          primary_account_info_.email));
+      primary_account_info_.email =
+          signin_manager_->GetAuthenticatedAccountInfo().email;
+    }
   }
-#endif  // DCHECK_IS_ON()
 #endif  // defined(OS_CHROMEOS)
   return primary_account_info_;
 }

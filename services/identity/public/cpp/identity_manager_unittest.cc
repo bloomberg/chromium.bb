@@ -24,7 +24,11 @@ using SigninManagerForTest = FakeSigninManager;
 #endif  // OS_CHROMEOS
 
 const char kTestGaiaId[] = "dummyId";
-const char kTestEmail[] = "me@dummy.com";
+const char kTestEmail[] = "me@gmail.com";
+
+#if defined(OS_CHROMEOS)
+const char kTestEmailWithPeriod[] = "m.e@gmail.com";
+#endif
 
 // Subclass of FakeProfileOAuth2TokenService with bespoke behavior.
 class CustomFakeProfileOAuth2TokenService
@@ -59,6 +63,14 @@ class CustomFakeProfileOAuth2TokenService
   std::set<std::string> expected_scopes_to_invalidate_;
   std::string expected_access_token_to_invalidate_;
   base::OnceClosure on_access_token_invalidated_callback_;
+};
+
+class AccountTrackerServiceForTest : public AccountTrackerService {
+ public:
+  void SetAccountStateFromUserInfo(const std::string& account_id,
+                                   const base::DictionaryValue* user_info) {
+    AccountTrackerService::SetAccountStateFromUserInfo(account_id, user_info);
+  }
 };
 
 class TestSigninManagerObserver : public SigninManagerBase::Observer {
@@ -241,7 +253,7 @@ class IdentityManagerTest : public testing::Test {
   identity_manager_diagnostics_observer() {
     return identity_manager_diagnostics_observer_.get();
   }
-  AccountTrackerService* account_tracker() { return &account_tracker_; }
+  AccountTrackerServiceForTest* account_tracker() { return &account_tracker_; }
   SigninManagerForTest* signin_manager() { return &signin_manager_; }
   CustomFakeProfileOAuth2TokenService* token_service() {
     return &token_service_;
@@ -268,7 +280,7 @@ class IdentityManagerTest : public testing::Test {
  private:
   base::MessageLoop message_loop_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
-  AccountTrackerService account_tracker_;
+  AccountTrackerServiceForTest account_tracker_;
   TestSigninClient signin_client_;
   SigninManagerForTest signin_manager_;
   CustomFakeProfileOAuth2TokenService token_service_;
@@ -471,6 +483,36 @@ TEST_F(IdentityManagerTest,
       signin_manager_observer.primary_account_from_signout_callback();
   EXPECT_EQ(std::string(), primary_account_from_signout_callback.gaia);
   EXPECT_EQ(std::string(), primary_account_from_signout_callback.email);
+}
+#endif
+
+#if defined(OS_CHROMEOS)
+// On ChromeOS, AccountTrackerService first receives the normalized email
+// address from GAIA and then later has it updated with the user's
+// originally-specified version of their email address (at the time of that
+// address' creation). This latter will differ if the user's originally-
+// specified address was not in normalized form (e.g., if it contained
+// periods). This test simulates such a flow in order to verify that
+// IdentityManager correctly reflects the updated version. See crbug.com/842041
+// and crbug.com/842670 for further details.
+TEST_F(IdentityManagerTest, IdentityManagerReflectsUpdatedEmailAddress) {
+  AccountInfo primary_account_info =
+      identity_manager()->GetPrimaryAccountInfo();
+  EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
+  EXPECT_EQ(kTestEmail, primary_account_info.email);
+
+  // Simulate the flow wherein the user's email address was updated
+  // to the originally-created non-normalized version.
+  base::DictionaryValue user_info;
+  user_info.SetString("id", kTestGaiaId);
+  user_info.SetString("email", kTestEmailWithPeriod);
+  account_tracker()->SetAccountStateFromUserInfo(
+      primary_account_info.account_id, &user_info);
+
+  // Verify that IdentityManager reflects the update.
+  primary_account_info = identity_manager()->GetPrimaryAccountInfo();
+  EXPECT_EQ(kTestGaiaId, primary_account_info.gaia);
+  EXPECT_EQ(kTestEmailWithPeriod, primary_account_info.email);
 }
 #endif
 
