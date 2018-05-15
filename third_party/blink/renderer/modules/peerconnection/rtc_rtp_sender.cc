@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/modules/peerconnection/rtc_dtmf_sender.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_error_util.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_peer_connection.h"
-#include "third_party/blink/renderer/modules/peerconnection/rtc_rtp_parameters.h"
 #include "third_party/blink/renderer/modules/peerconnection/rtc_void_request_script_promise_resolver_impl.h"
 #include "third_party/blink/renderer/modules/peerconnection/web_rtc_stats_report_callback_resolver.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
@@ -165,10 +164,56 @@ bool HasInvalidModification(const RTCRtpParameters& parameters,
   return false;
 }
 
-std::tuple<WebVector<WebRTCRtpEncodingParameters>,
-           base::Optional<WebRTCDegradationPreference>>
-ToWebRTCRtpParameters(const RTCRtpParameters& parameters) {
-  WebVector<WebRTCRtpEncodingParameters> encodings;
+// Relative weights for each priority as defined in RTCWEB-DATA
+// https://tools.ietf.org/html/draft-ietf-rtcweb-data-channel
+const double kPriorityWeightVeryLow = 0.5;
+const double kPriorityWeightLow = 1;
+const double kPriorityWeightMedium = 2;
+const double kPriorityWeightHigh = 4;
+
+std::string PriorityFromDouble(double priority) {
+  // Find the middle point between 2 priority weights to match them to a
+  // WebRTC priority
+  const double very_low_upper_bound =
+      (kPriorityWeightVeryLow + kPriorityWeightLow) / 2;
+  const double low_upper_bound =
+      (kPriorityWeightLow + kPriorityWeightMedium) / 2;
+  const double medium_upper_bound =
+      (kPriorityWeightMedium + kPriorityWeightHigh) / 2;
+
+  if (priority < webrtc::kDefaultBitratePriority * very_low_upper_bound) {
+    return "very-low";
+  }
+  if (priority < webrtc::kDefaultBitratePriority * low_upper_bound) {
+    return "low";
+  }
+  if (priority < webrtc::kDefaultBitratePriority * medium_upper_bound) {
+    return "medium";
+  }
+  return "high";
+}
+
+double PriorityToDouble(const WTF::String& priority) {
+  double result = 1;
+
+  if (priority == "very-low") {
+    result = webrtc::kDefaultBitratePriority * kPriorityWeightVeryLow;
+  } else if (priority == "low") {
+    result = webrtc::kDefaultBitratePriority * kPriorityWeightLow;
+  } else if (priority == "medium") {
+    result = webrtc::kDefaultBitratePriority * kPriorityWeightMedium;
+  } else if (priority == "high") {
+    result = webrtc::kDefaultBitratePriority * kPriorityWeightHigh;
+  } else {
+    NOTREACHED();
+  }
+  return result;
+}
+
+std::tuple<std::vector<webrtc::RtpEncodingParameters>,
+           webrtc::DegradationPreference>
+ToRtpParameters(const RTCRtpParameters& parameters) {
+  std::vector<webrtc::RtpEncodingParameters> encodings;
   if (parameters.hasEncodings()) {
     encodings.reserve(parameters.encodings().size());
 
@@ -176,39 +221,16 @@ ToWebRTCRtpParameters(const RTCRtpParameters& parameters) {
       // TODO(orphis): Forward missing fields from the WebRTC library:
       // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy,
       // rid
-      const base::Optional<uint8_t> codec_payload_type;
-      const base::Optional<WebRTCDtxStatus> dtx;
-      bool active = encoding.active();
-
-      const auto& js_priority = encoding.priority();
-      WebRTCPriorityType priority;
-
-      if (js_priority == "very-low") {
-        priority = WebRTCPriorityType::VeryLow;
-      } else if (js_priority == "low") {
-        priority = WebRTCPriorityType::Low;
-      } else if (js_priority == "medium") {
-        priority = WebRTCPriorityType::Medium;
-      } else if (js_priority == "high") {
-        priority = WebRTCPriorityType::High;
-      } else {
-        NOTREACHED();
-      }
-
-      const base::Optional<uint32_t> ptime;
-      const base::Optional<uint32_t> max_bitrate =
-          encoding.hasMaxBitrate() ? encoding.maxBitrate()
-                                   : base::Optional<uint32_t>();
-      const base::Optional<uint32_t> max_framerate;
-      const base::Optional<double> scale_resolution_down_by;
-      const base::Optional<WebString> rid;
-
-      encodings.emplace_back(codec_payload_type, dtx, active, priority, ptime,
-                             max_bitrate, max_framerate,
-                             scale_resolution_down_by, rid);
+      encodings.push_back({});
+      encodings.back().active = encoding.active();
+      encodings.back().bitrate_priority = PriorityToDouble(encoding.priority());
+      if (encoding.hasMaxBitrate())
+        encodings.back().max_bitrate_bps = clampTo<int>(encoding.maxBitrate());
     }
   }
-  base::Optional<WebRTCDegradationPreference> degradation_preference;
+
+  webrtc::DegradationPreference degradation_preference =
+      webrtc::DegradationPreference::BALANCED;
   return std::make_tuple(encodings, degradation_preference);
 }
 
@@ -253,56 +275,37 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
 void RTCRtpSender::getParameters(RTCRtpParameters& parameters) {
   // TODO(orphis): Forward missing fields from the WebRTC library:
   // transactionId, rtcp, headerExtensions, degradationPreference
-  std::unique_ptr<WebRTCRtpParameters> web_parameters =
+  std::unique_ptr<webrtc::RtpParameters> webrtc_parameters =
       sender_->GetParameters();
 
   HeapVector<RTCRtpEncodingParameters> encodings;
-  encodings.ReserveCapacity(web_parameters->Encodings().size());
-  for (const auto& web_encoding : web_parameters->Encodings()) {
+  encodings.ReserveCapacity(webrtc_parameters->encodings.size());
+  for (const auto& web_encoding : webrtc_parameters->encodings) {
     // TODO(orphis): Forward missing fields from the WebRTC library:
     // codecPayloadType, dtx, ptime, maxFramerate, scaleResolutionDownBy, rid
     encodings.emplace_back();
     RTCRtpEncodingParameters& encoding = encodings.back();
-    encoding.setActive(web_encoding.Active());
-    if (web_encoding.MaxBitrate())
-      encoding.setMaxBitrate(web_encoding.MaxBitrate().value());
-
-    const char* priority = "";
-    switch (web_encoding.Priority()) {
-      case WebRTCPriorityType::VeryLow:
-        priority = "very-low";
-        break;
-      case WebRTCPriorityType::Low:
-        priority = "low";
-        break;
-      case WebRTCPriorityType::Medium:
-        priority = "medium";
-        break;
-      case WebRTCPriorityType::High:
-        priority = "high";
-        break;
-      default:
-        NOTREACHED();
-    }
-    encoding.setPriority(priority);
+    encoding.setActive(web_encoding.active);
+    if (web_encoding.max_bitrate_bps)
+      encoding.setMaxBitrate(web_encoding.max_bitrate_bps.value());
+    encoding.setPriority(WTF::String::FromUTF8(
+        PriorityFromDouble(web_encoding.bitrate_priority).c_str()));
   }
   parameters.setEncodings(encodings);
 
   HeapVector<RTCRtpCodecParameters> codecs;
-  codecs.ReserveCapacity(web_parameters->Codecs().size());
-  for (const auto& web_codec : web_parameters->Codecs()) {
+  codecs.ReserveCapacity(webrtc_parameters->codecs.size());
+  for (const auto& web_codec : webrtc_parameters->codecs) {
     // TODO(orphis): Forward missing field from the WebRTC library:
     // sdpFmtpLine
     codecs.emplace_back();
     RTCRtpCodecParameters& codec = codecs.back();
-    if (web_codec.PayloadType())
-      codec.setPayloadType(web_codec.PayloadType().value());
-    if (web_codec.MimeType())
-      codec.setMimeType(web_codec.MimeType().value());
-    if (web_codec.ClockRate())
-      codec.setClockRate(web_codec.ClockRate().value());
-    if (web_codec.Channels())
-      codec.setChannels(web_codec.Channels().value());
+    codec.setPayloadType(web_codec.payload_type);
+    codec.setMimeType(WTF::String::FromUTF8(web_codec.mime_type().c_str()));
+    if (web_codec.clock_rate)
+      codec.setClockRate(web_codec.clock_rate.value());
+    if (web_codec.num_channels)
+      codec.setChannels(web_codec.num_channels.value());
   }
   parameters.setCodecs(codecs);
 
@@ -336,18 +339,12 @@ ScriptPromise RTCRtpSender::setParameters(ScriptState* script_state,
   // field and the degradationPreference field. We just forward those to the
   // native layer without having to transform all the other read-only
   // parameters.
-  WebVector<WebRTCRtpEncodingParameters> encodings;
-  base::Optional<WebRTCDegradationPreference> degradation_preference;
-  std::tie(encodings, degradation_preference) =
-      ToWebRTCRtpParameters(parameters);
-
-  if (!degradation_preference) {
-    degradation_preference = blink::WebRTCDegradationPreference::Balanced;
-  }
+  std::vector<webrtc::RtpEncodingParameters> encodings;
+  webrtc::DegradationPreference degradation_preference;
+  std::tie(encodings, degradation_preference) = ToRtpParameters(parameters);
 
   auto* request = new SetParametersRequest(resolver, this);
-  sender_->SetParameters(std::move(encodings), degradation_preference.value(),
-                         request);
+  sender_->SetParameters(std::move(encodings), degradation_preference, request);
   return promise;
 }
 

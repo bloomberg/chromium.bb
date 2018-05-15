@@ -4,11 +4,11 @@
 
 #include "content/renderer/media/webrtc/rtc_rtp_sender.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
-#include "content/renderer/media/webrtc/rtc_rtp_parameters.h"
 #include "content/renderer/media/webrtc/rtc_stats.h"
 
 namespace content {
@@ -138,29 +138,26 @@ class RTCRtpSender::RTCRtpSenderInternal
     return std::make_unique<RtcDtmfSenderHandler>(dtmf_sender);
   }
 
-  std::unique_ptr<blink::WebRTCRtpParameters> GetParameters() {
+  std::unique_ptr<webrtc::RtpParameters> GetParameters() {
     parameters_ = webrtc_sender_->GetParameters();
-    return std::make_unique<blink::WebRTCRtpParameters>(
-        GetWebRTCRtpParameters(parameters_));
+    return std::make_unique<webrtc::RtpParameters>(parameters_);
   }
 
-  void SetParameters(
-      blink::WebVector<blink::WebRTCRtpEncodingParameters> encodings,
-      blink::WebRTCDegradationPreference degradation_preference,
-      base::OnceCallback<void(webrtc::RTCError)> callback) {
+  void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters> encodings,
+                     webrtc::DegradationPreference degradation_preference,
+                     base::OnceCallback<void(webrtc::RTCError)> callback) {
     DCHECK(main_thread_->BelongsToCurrentThread());
 
     webrtc::RtpParameters new_parameters = parameters_;
 
-    new_parameters.degradation_preference =
-        ToDegradationPreference(degradation_preference);
+    new_parameters.degradation_preference = degradation_preference;
 
     for (std::size_t i = 0; i < new_parameters.encodings.size(); ++i) {
       // Encodings have other parameters in the native layer that aren't exposed
       // to the blink layer. So instead of copying the new struct over the old
       // one, we copy the members one by one over the old struct, effectively
       // patching the changes done by the user.
-      auto encoding = FromWebRTCRtpEncodingParameters(encodings[i]);
+      const auto& encoding = encodings[i];
       new_parameters.encodings[i].codec_payload_type =
           encoding.codec_payload_type;
       new_parameters.encodings[i].dtx = encoding.dtx;
@@ -366,14 +363,13 @@ std::unique_ptr<blink::WebRTCDTMFSenderHandler> RTCRtpSender::GetDtmfSender()
   return internal_->GetDtmfSender();
 }
 
-std::unique_ptr<blink::WebRTCRtpParameters> RTCRtpSender::GetParameters()
-    const {
+std::unique_ptr<webrtc::RtpParameters> RTCRtpSender::GetParameters() const {
   return internal_->GetParameters();
 }
 
 void RTCRtpSender::SetParameters(
-    blink::WebVector<blink::WebRTCRtpEncodingParameters> encodings,
-    blink::WebRTCDegradationPreference degradation_preference,
+    blink::WebVector<webrtc::RtpEncodingParameters> encodings,
+    webrtc::DegradationPreference degradation_preference,
     blink::WebRTCVoidRequest request) {
   internal_->SetParameters(
       std::move(encodings), degradation_preference,

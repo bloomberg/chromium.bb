@@ -30,11 +30,11 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const override {
     return nullptr;
   }
-  std::unique_ptr<WebRTCRtpParameters> GetParameters() const override {
-    return std::unique_ptr<WebRTCRtpParameters>();
+  std::unique_ptr<webrtc::RtpParameters> GetParameters() const override {
+    return std::unique_ptr<webrtc::RtpParameters>();
   }
-  void SetParameters(WebVector<WebRTCRtpEncodingParameters>,
-                     WebRTCDegradationPreference,
+  void SetParameters(blink::WebVector<webrtc::RtpEncodingParameters>,
+                     webrtc::DegradationPreference,
                      WebRTCVoidRequest) override {}
   void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override {}
 
