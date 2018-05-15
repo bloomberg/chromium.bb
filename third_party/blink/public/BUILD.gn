@@ -373,7 +373,6 @@ source_set("blink_headers") {
     "platform/web_screen_info.h",
     "platform/web_scroll_anchor_data.h",
     "platform/web_scroll_into_view_params.h",
-    "platform/web_scrollbar.h",
     "platform/web_scrollbar_behavior.h",
     "platform/web_scrollbar_buttons_placement.h",
     "platform/web_scrollbar_overlay_color_theme.h",

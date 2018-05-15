@@ -28,7 +28,6 @@
 #include <algorithm>
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
-#include "third_party/blink/public/platform/web_scrollbar.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
@@ -636,11 +635,6 @@ void Scrollbar::SetNeedsPaintInvalidation(ScrollbarPart invalid_parts) {
   if (scrollable_area_)
     scrollable_area_->SetScrollbarNeedsPaintInvalidation(Orientation());
 }
-
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAuto, kScrollbarAuto);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAlwaysOff,
-                   kScrollbarAlwaysOff);
-STATIC_ASSERT_ENUM(WebScrollbar::ScrollingMode::kAlwaysOn, kScrollbarAlwaysOn);
 
 STATIC_ASSERT_ENUM(kWebScrollbarOverlayColorThemeDark,
                    kScrollbarOverlayColorThemeDark);

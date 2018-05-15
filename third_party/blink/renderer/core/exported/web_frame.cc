@@ -25,6 +25,7 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/wtf/assertions.h"
 
 namespace blink {
 
@@ -387,5 +388,12 @@ Frame* WebFrame::ToCoreFrame(const WebFrame& frame) {
   NOTREACHED();
   return nullptr;
 }
+
+STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAuto,
+                   kScrollbarAuto);
+STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOff,
+                   kScrollbarAlwaysOff);
+STATIC_ASSERT_ENUM(WebFrameOwnerProperties::ScrollingMode::kAlwaysOn,
+                   kScrollbarAlwaysOn);
 
 }  // namespace blink

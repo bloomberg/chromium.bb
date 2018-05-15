@@ -33,7 +33,6 @@
 
 #include <memory>
 #include "third_party/blink/public/platform/web_canvas.h"
-#include "third_party/blink/public/platform/web_scrollbar.h"
 #include "third_party/blink/public/web/web_external_popup_menu_client.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/forms/popup_menu.h"
