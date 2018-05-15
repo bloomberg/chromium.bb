@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/process/process.h"
 #include "build/build_config.h"
+#include "chrome/browser/hang_monitor/hang_crash_dump.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/plugins/hung_plugin_infobar_delegate.h"
 #include "chrome/common/channel_info.h"
@@ -21,11 +22,6 @@
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
-#endif
-
 
 namespace {
 
@@ -42,13 +38,10 @@ void KillPluginOnIOThread(int child_id) {
   while (!iter.Done()) {
     const content::ChildProcessData& data = iter.GetData();
     if (data.id == child_id) {
-#if defined(OS_WIN)
-      CrashDumpAndTerminateHungChildProcess(data.handle);
-#else
+      CrashDumpHungChildProcess(data.handle);
       base::Process process =
           base::Process::DeprecatedGetProcessFromHandle(data.handle);
       process.Terminate(content::RESULT_CODE_HUNG, false);
-#endif
       break;
     }
     ++iter;

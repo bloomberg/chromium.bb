@@ -534,8 +534,9 @@ jumbo_split_static_library("browser") {
     "google/google_url_tracker_factory.h",
     "gpu/gpu_mode_manager.cc",
     "gpu/gpu_mode_manager.h",
+    "hang_monitor/hang_crash_dump.h",
+    "hang_monitor/hang_crash_dump_mac.cc",
     "hang_monitor/hang_crash_dump_win.cc",
-    "hang_monitor/hang_crash_dump_win.h",
     "history/chrome_history_backend_client.cc",
     "history/chrome_history_backend_client.h",
     "history/chrome_history_client.cc",
@@ -3156,6 +3157,9 @@ jumbo_split_static_library("browser") {
       "recovery/recovery_install_global_error_factory.cc",
       "recovery/recovery_install_global_error_factory.h",
     ]
+  } else {
+    # On other platforms, use the generic implementation.
+    sources += [ "hang_monitor/hang_crash_dump.cc" ]
   }
 
   if (is_win || is_linux) {

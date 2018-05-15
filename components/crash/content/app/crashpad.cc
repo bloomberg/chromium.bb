@@ -379,4 +379,12 @@ base::FilePath::StringType::const_pointer GetCrashpadDatabasePathImpl() {
   return g_database_path->value().c_str();
 }
 
+namespace internal {
+
+crashpad::CrashReportDatabase* GetCrashReportDatabase() {
+  return g_database;
+}
+
+}  // namespace internal
+
 }  // namespace crash_reporter

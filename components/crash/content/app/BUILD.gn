@@ -98,6 +98,13 @@ static_library("app") {
     ]
   }
 
+  if (is_mac) {
+    deps += [
+      "//third_party/crashpad/crashpad/minidump",
+      "//third_party/crashpad/crashpad/snapshot",
+    ]
+  }
+
   if (is_android) {
     libs = [ "log" ]
   }

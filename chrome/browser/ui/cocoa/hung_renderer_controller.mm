@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/hang_monitor/hang_crash_dump.h"
 #import "chrome/browser/ui/cocoa/multi_key_equivalent_button.h"
 #import "chrome/browser/ui/cocoa/tab_contents/favicon_util_mac.h"
 #include "chrome/browser/ui/hung_renderer/hung_renderer_core.h"
@@ -208,8 +209,11 @@ class HungRendererObserverBridge : public content::WebContentsObserver,
 }
 
 - (IBAction)kill:(id)sender {
-  if (hungWidget_)
-    hungWidget_->GetProcess()->Shutdown(content::RESULT_CODE_HUNG);
+  if (hungWidget_) {
+    auto* rph = hungWidget_->GetProcess();
+    CrashDumpHungChildProcess(rph->GetProcess().Handle());
+    rph->Shutdown(content::RESULT_CODE_HUNG);
+  }
 
   // Cannot call performClose:, because the close button is disabled.
   [self close];
