@@ -226,6 +226,15 @@ public abstract class CronetProvider {
         }
         String className = context.getResources().getString(resId);
 
+        // If the resource specifies a well known provider, don't load it because
+        // there will be an attempt to load it anyways.
+        if (className == null || className.equals(PLAY_SERVICES_CRONET_PROVIDER_CLASS)
+                || className.equals(GMS_CORE_CRONET_PROVIDER_CLASS)
+                || className.equals(JAVA_CRONET_PROVIDER_CLASS)
+                || className.equals(NATIVE_CRONET_PROVIDER_CLASS)) {
+            return false;
+        }
+
         if (!addCronetProviderImplByClassName(context, className, providers, true)) {
             Log.e(TAG,
                     "Unable to instantiate Cronet implementation class " + className
