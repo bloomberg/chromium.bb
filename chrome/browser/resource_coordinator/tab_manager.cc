@@ -284,24 +284,6 @@ void TabManager::DiscardTab(DiscardReason reason) {
   DiscardTabImpl(reason);
 }
 
-void TabManager::DiscardTabById(int32_t tab_id, DiscardReason reason) {
-  for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
-    if (lifecycle_unit->GetID() == tab_id) {
-      lifecycle_unit->Discard(reason);
-      return;
-    }
-  }
-}
-
-void TabManager::FreezeTabById(int32_t tab_id) {
-  for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
-    if (lifecycle_unit->GetID() == tab_id) {
-      lifecycle_unit->Freeze();
-      return;
-    }
-  }
-}
-
 WebContents* TabManager::DiscardTabByExtension(content::WebContents* contents) {
   if (contents) {
     TabLifecycleUnitExternal* tab_lifecycle_unit_external =

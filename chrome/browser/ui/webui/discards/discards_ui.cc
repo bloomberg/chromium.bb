@@ -50,6 +50,15 @@ mojom::LifecycleUnitVisibility GetLifecycleUnitVisibility(
 #endif
 }
 
+resource_coordinator::LifecycleUnit* GetLifecycleUnitById(int32_t id) {
+  for (resource_coordinator::LifecycleUnit* lifecycle_unit :
+       g_browser_process->GetTabManager()->GetSortedLifecycleUnits()) {
+    if (lifecycle_unit->GetID() == id)
+      return lifecycle_unit;
+  }
+  return nullptr;
+}
+
 class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
  public:
   // This instance is deleted when the supplied pipe is destroyed.
@@ -108,28 +117,32 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
     std::move(callback).Run(std::move(infos));
   }
 
-  void SetAutoDiscardable(int32_t tab_id,
+  void SetAutoDiscardable(int32_t id,
                           bool is_auto_discardable,
                           SetAutoDiscardableCallback callback) override {
-    resource_coordinator::TabManager* tab_manager =
-        g_browser_process->GetTabManager();
-    tab_manager->SetTabAutoDiscardableState(tab_id, is_auto_discardable);
+    auto* lifecycle_unit = GetLifecycleUnitById(id);
+    if (lifecycle_unit) {
+      auto* tab_lifecycle_unit_external =
+          lifecycle_unit->AsTabLifecycleUnitExternal();
+      if (tab_lifecycle_unit_external)
+        tab_lifecycle_unit_external->SetAutoDiscardable(is_auto_discardable);
+    }
     std::move(callback).Run();
   }
 
-  void DiscardById(int32_t tab_id,
+  void DiscardById(int32_t id,
                    bool urgent,
                    DiscardByIdCallback callback) override {
-    resource_coordinator::TabManager* tab_manager =
-        g_browser_process->GetTabManager();
-    tab_manager->DiscardTabById(tab_id, GetDiscardReason(urgent));
+    auto* lifecycle_unit = GetLifecycleUnitById(id);
+    if (lifecycle_unit)
+      lifecycle_unit->Discard(GetDiscardReason(urgent));
     std::move(callback).Run();
   }
 
-  void FreezeById(int32_t tab_id) override {
-    resource_coordinator::TabManager* tab_manager =
-        g_browser_process->GetTabManager();
-    tab_manager->FreezeTabById(tab_id);
+  void FreezeById(int32_t id) override {
+    auto* lifecycle_unit = GetLifecycleUnitById(id);
+    if (lifecycle_unit)
+      lifecycle_unit->Freeze();
   }
 
   void Discard(bool urgent, DiscardCallback callback) override {
