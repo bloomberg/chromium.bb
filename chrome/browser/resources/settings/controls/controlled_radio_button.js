@@ -7,17 +7,10 @@ Polymer({
 
   behaviors: [
     PrefControlBehavior,
-    Polymer.IronA11yKeysBehavior,
+    CrRadioButtonBehavior,
   ],
 
   properties: {
-    checked: {
-      type: Boolean,
-      value: false,
-      reflectToAttribute: true,
-      observer: 'checkedChanged_',
-    },
-
     disabled: {
       type: Boolean,
       computed: 'computeDisabled_(pref.*)',
@@ -25,44 +18,10 @@ Polymer({
       observer: 'disabledChanged_',
     },
 
-    label: {
-      type: String,
-      value: '',  // Allows the hidden$= binding to run without being set.
-    },
-
     name: {
       type: String,
       notify: true,
     },
-
-    /** @private */
-    pressed_: Boolean,
-  },
-
-  hostAttributes: {
-    'aria-disabled': 'false',
-    'aria-checked': 'false',
-    role: 'radio',
-    tabindex: 0,
-  },
-
-  listeners: {
-    'blur': 'updatePressed_',
-    'down': 'updatePressed_',
-    'focus': 'updatePressed_',
-    'up': 'updatePressed_',
-  },
-
-  keyBindings: {
-    // This is mainly for screenreaders, which can perform actions on things
-    // that aren't focused (only focused things get synthetic click/tap events).
-    'enter:keyup': 'click',
-    'space:keyup': 'click',
-  },
-
-  /** @private */
-  checkedChanged_: function() {
-    this.setAttribute('aria-checked', this.checked ? 'true' : 'false');
   },
 
   /**
@@ -103,16 +62,5 @@ Polymer({
     // Disallow <controlled-radio-button on-click="..."> when disabled.
     e.preventDefault();
     e.stopPropagation();
-  },
-
-  /**
-   * @param {!Event} e
-   * @private
-   */
-  updatePressed_: function(e) {
-    if (this.disabled)
-      return;
-
-    this.pressed_ = ['down', 'focus'].includes(e.type);
   },
 });

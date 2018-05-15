@@ -450,10 +450,8 @@ cr.define('device_page_tests', function() {
      * @param {boolean} expected
      */
     function expectNaturalScrollValue(pointersPage, expected) {
-      const naturalScrollOff =
-          pointersPage.$$('paper-radio-button[name="false"]');
-      const naturalScrollOn =
-          pointersPage.$$('paper-radio-button[name="true"]');
+      const naturalScrollOff = pointersPage.$$('cr-radio-button[name="false"]');
+      const naturalScrollOn = pointersPage.$$('cr-radio-button[name="true"]');
       assertTrue(!!naturalScrollOff);
       assertTrue(!!naturalScrollOn);
 
@@ -567,8 +565,7 @@ cr.define('device_page_tests', function() {
         expectNaturalScrollValue(pointersPage, false);
 
         // Tapping the link shouldn't enable the radio button.
-        const naturalScrollOn =
-            pointersPage.$$('paper-radio-button[name="true"]');
+        const naturalScrollOn = pointersPage.$$('cr-radio-button[name="true"]');
         const a = naturalScrollOn.querySelector('a');
 
         MockInteractions.tap(a);

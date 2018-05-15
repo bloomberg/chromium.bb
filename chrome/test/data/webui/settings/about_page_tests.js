@@ -912,8 +912,7 @@ cr.define('settings_about_page', function() {
           dialog = document.createElement('settings-channel-switcher-dialog');
           document.body.appendChild(dialog);
 
-          radioButtons =
-              dialog.shadowRoot.querySelectorAll('paper-radio-button');
+          radioButtons = dialog.shadowRoot.querySelectorAll('cr-radio-button');
           assertEquals(3, radioButtons.length);
           return browserProxy.whenCalled('getChannelInfo');
         });

@@ -5,12 +5,12 @@
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_toggle/cr_toggle.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="sync_browser_proxy.html">
 <link rel="import" href="../privacy_page/personalization_options.html">
@@ -373,13 +373,14 @@
             <paper-radio-group disabled$="[[syncPrefs.encryptAllData]]"
                 selected="[[selectedEncryptionRadio_(
                     syncPrefs.passphraseTypeIsCustom)]]"
+                selectable="cr-radio-button"
                 on-paper-radio-group-changed=
                     "onEncryptionRadioSelectionChanged_">
-              <paper-radio-button name="encrypt-with-google"
+              <cr-radio-button name="encrypt-with-google"
                   class="list-item" disabled="[[syncPrefs.encryptAllData]]">
                 $i18n{encryptWithGoogleCredentialsLabel}
-              </paper-radio-button>
-              <paper-radio-button name="encrypt-with-passphrase"
+              </cr-radio-button>
+              <cr-radio-button name="encrypt-with-passphrase"
                   class="list-item" disabled="[[syncPrefs.encryptAllData]]">
                 <template is="dom-if" if="[[syncPrefs.fullEncryptionBody]]">
                   <span>[[syncPrefs.fullEncryptionBody]]</span>
@@ -389,7 +390,7 @@
                     $i18nRaw{encryptWithSyncPassphraseLabel}
                   </span>
                 </template>
-              </paper-radio-button>
+              </cr-radio-button>
             </paper-radio-group>
             <div id="reset-sync-message-box" class="list-item"
                 hidden="[[!syncPrefs.encryptAllData]]">

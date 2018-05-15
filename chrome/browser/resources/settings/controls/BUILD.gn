@@ -33,6 +33,7 @@ js_library("controlled_radio_button") {
     ":pref_control_behavior",
     "../prefs:pref_util",
     "//third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
+    "//ui/webui/resources/cr_elements/cr_radio_button:cr_radio_button_behavior",
     "//ui/webui/resources/js:assert",
   ]
   externs_list = [ "$externs_path/settings_private.js" ]

@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="../controls/settings_radio_group.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
-<link rel="import" href="device_page_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
+<link rel="import" href="device_page_browser_proxy.html">
 
 <dom-module id="settings-pointers">
   <template>
@@ -79,17 +79,17 @@
         <div class="list-frame">
           <settings-radio-group
               pref="{{prefs.settings.touchpad.natural_scroll}}">
-            <paper-radio-button name="false">
+            <cr-radio-button name="false">
               $i18n{traditionalScrollLabel}
-            </paper-radio-button>
-            <paper-radio-button name="true">
+            </cr-radio-button>
+            <cr-radio-button name="true">
               $i18n{naturalScrollLabel}
               <a href="$i18n{naturalScrollLearnMoreLink}" target="_blank"
                   on-click="onLearnMoreLinkActivated_"
                   on-keydown="onLearnMoreLinkActivated_">
                 $i18n{naturalScrollLearnMore}
               </a>
-            </paper-radio-button>
+            </cr-radio-button>
           </settings-radio-group>
         </div>
       </div>
