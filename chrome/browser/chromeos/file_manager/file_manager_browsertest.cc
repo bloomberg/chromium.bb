@@ -18,9 +18,6 @@ namespace file_manager {
 
 // TestCase: FileManagerBrowserTest parameters.
 struct TestCase {
-  TestCase(const char* name, GuestMode mode)
-    : test_name(name), guest_mode(mode) {}
-
   explicit TestCase(const char* name)
     : test_name(name) {}
 
@@ -31,6 +28,16 @@ struct TestCase {
 
   GuestMode GetGuestMode() const {
     return guest_mode;
+  }
+
+  TestCase& InGuestMode() {
+    guest_mode = IN_GUEST_MODE;
+    return *this;
+  }
+
+  TestCase& InIncognito() {
+    guest_mode = IN_INCOGNITO;
+    return *this;
   }
 
   const char* test_name = nullptr;
@@ -115,7 +122,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDisplay,
     FileManagerBrowserTest,
     ::testing::Values(TestCase("fileDisplayDownloads"),
-                      TestCase("fileDisplayDownloads", IN_GUEST_MODE),
+                      TestCase("fileDisplayDownloads").InGuestMode(),
                       TestCase("fileDisplayDrive"),
                       TestCase("fileDisplayMtp"),
                       TestCase("fileSearch"),
@@ -125,7 +132,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     OpenVideoFiles,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase("videoOpenDownloads", IN_GUEST_MODE),
+    ::testing::Values(TestCase("videoOpenDownloads").InGuestMode(),
                       TestCase("videoOpenDownloads"),
                       TestCase("videoOpenDrive")));
 
@@ -139,7 +146,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_OpenAudioFiles,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase("audioOpenDownloads", IN_GUEST_MODE),
+        TestCase("audioOpenDownloads").InGuestMode(),
         TestCase("audioOpenDownloads"),
         TestCase("audioOpenDrive"),
         TestCase("audioAutoAdvanceDrive"),
@@ -159,7 +166,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     MAYBE_OpenImageFiles,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase("imageOpenDownloads", IN_GUEST_MODE),
+    ::testing::Values(TestCase("imageOpenDownloads").InGuestMode(),
                       TestCase("imageOpenDownloads"),
                       TestCase("imageOpenDrive")));
 
@@ -168,7 +175,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("selectCreateFolderDownloads"),
-        TestCase("createFolderDownloads", IN_GUEST_MODE),
+        TestCase("createFolderDownloads").InGuestMode(),
         TestCase("createFolderDownloads"),
         TestCase("createFolderDrive")));
 
@@ -176,16 +183,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
     FileManagerBrowserTest,
     ::testing::Values(
-        TestCase("keyboardDeleteDownloads", IN_GUEST_MODE),
+        TestCase("keyboardDeleteDownloads").InGuestMode(),
         TestCase("keyboardDeleteDownloads"),
         TestCase("keyboardDeleteDrive"),
-        TestCase("keyboardCopyDownloads", IN_GUEST_MODE),
+        TestCase("keyboardCopyDownloads").InGuestMode(),
         TestCase("keyboardCopyDownloads"),
         TestCase("keyboardCopyDrive"),
-        TestCase("renameFileDownloads", IN_GUEST_MODE),
+        TestCase("renameFileDownloads").InGuestMode(),
         TestCase("renameFileDownloads"),
         TestCase("renameFileDrive"),
-        TestCase("renameNewFolderDownloads", IN_GUEST_MODE),
+        TestCase("renameNewFolderDownloads").InGuestMode(),
         TestCase("renameNewFolderDownloads"),
         TestCase("renameNewFolderDrive")));
 
@@ -207,27 +214,27 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("dirCopyWithContextMenu"),
-        TestCase("dirCopyWithContextMenu", IN_GUEST_MODE),
+        TestCase("dirCopyWithContextMenu").InGuestMode(),
         TestCase("dirCopyWithKeyboard"),
-        TestCase("dirCopyWithKeyboard", IN_GUEST_MODE),
+        TestCase("dirCopyWithKeyboard").InGuestMode(),
         TestCase("dirCopyWithoutChangingCurrent"),
         TestCase("dirCutWithContextMenu"),
-        TestCase("dirCutWithContextMenu", IN_GUEST_MODE),
+        TestCase("dirCutWithContextMenu").InGuestMode(),
         TestCase("dirCutWithKeyboard"),
-        TestCase("dirCutWithKeyboard", IN_GUEST_MODE),
+        TestCase("dirCutWithKeyboard").InGuestMode(),
         TestCase("dirPasteWithoutChangingCurrent"),
         TestCase("dirPasteWithContextMenu"),
-        TestCase("dirPasteWithContextMenu", IN_GUEST_MODE),
+        TestCase("dirPasteWithContextMenu").InGuestMode(),
         TestCase("dirPasteWithoutChangingCurrent"),
         TestCase("dirRenameWithContextMenu"),
-        TestCase("dirRenameWithContextMenu", IN_GUEST_MODE),
+        TestCase("dirRenameWithContextMenu").InGuestMode(),
         TestCase("dirRenameWithKeyboard"),
-        TestCase("dirRenameWithKeyboard", IN_GUEST_MODE),
+        TestCase("dirRenameWithKeyboard").InGuestMode(),
         TestCase("dirRenameWithoutChangingCurrent"),
         TestCase("dirRenameToEmptyString"),
-        TestCase("dirRenameToEmptyString", IN_GUEST_MODE),
+        TestCase("dirRenameToEmptyString").InGuestMode(),
         TestCase("dirRenameToExisting"),
-        TestCase("dirRenameToExisting", IN_GUEST_MODE),
+        TestCase("dirRenameToExisting").InGuestMode(),
         TestCase("dirCreateWithContextMenu"),
         TestCase("dirCreateWithKeyboard"),
         TestCase("dirCreateWithoutChangingCurrent")));
@@ -257,9 +264,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     RestorePrefs,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase("restoreSortColumn", IN_GUEST_MODE),
+    ::testing::Values(TestCase("restoreSortColumn").InGuestMode(),
                       TestCase("restoreSortColumn"),
-                      TestCase("restoreCurrentView", IN_GUEST_MODE),
+                      TestCase("restoreCurrentView").InGuestMode(),
                       TestCase("restoreCurrentView")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
@@ -272,13 +279,13 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     RestoreGeometry,
     FileManagerBrowserTest,
     ::testing::Values(TestCase("restoreGeometry"),
-                      TestCase("restoreGeometry", IN_GUEST_MODE),
+                      TestCase("restoreGeometry").InGuestMode(),
                       TestCase("restoreGeometryMaximized")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Traverse,
     FileManagerBrowserTest,
-    ::testing::Values(TestCase("traverseDownloads", IN_GUEST_MODE),
+    ::testing::Values(TestCase("traverseDownloads").InGuestMode(),
                       TestCase("traverseDownloads"),
                       TestCase("traverseDrive")));
 
@@ -292,7 +299,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("executeDefaultTaskDownloads"),
-        TestCase("executeDefaultTaskDownloads",IN_GUEST_MODE)));
+        TestCase("executeDefaultTaskDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     ExecuteDefaultTaskOnDrive,
@@ -304,7 +311,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("defaultTaskDialogDownloads"),
-        TestCase("defaultTaskDialogDownloads", IN_GUEST_MODE),
+        TestCase("defaultTaskDialogDownloads").InGuestMode(),
         TestCase("defaultTaskDialogDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
@@ -325,7 +332,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     SortColumns,
     FileManagerBrowserTest,
     ::testing::Values(TestCase("sortColumns"),
-                      TestCase("sortColumns",IN_GUEST_MODE)));
+                      TestCase("sortColumns").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabIndex,
@@ -342,7 +349,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexFocusDownloads,
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestCase("tabindexFocusDownloads"),
-                      TestCase("tabindexFocusDownloads", IN_GUEST_MODE)));
+                      TestCase("tabindexFocusDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexFocusDirectorySelected,
@@ -355,7 +362,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestCase("tabindexOpenDialogDrive"),
         TestCase("tabindexOpenDialogDownloads"),
-        TestCase("tabindexOpenDialogDownloads", IN_GUEST_MODE)));
+        TestCase("tabindexOpenDialogDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabindexSaveFileDialog,
@@ -363,16 +370,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         TestCase("tabindexSaveFileDialogDrive"),
         TestCase("tabindexSaveFileDialogDownloads"),
-        TestCase("tabindexSaveFileDialogDownloads", IN_GUEST_MODE)));
+        TestCase("tabindexSaveFileDialogDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     OpenFileDialog,
     FileManagerBrowserTest,
     ::testing::Values(TestCase("openFileDialogDownloads"),
-                      TestCase("openFileDialogDownloads", IN_GUEST_MODE),
+                      TestCase("openFileDialogDownloads").InGuestMode(),
                       TestCase("openFileDialogDrive"),
-                      TestCase("openFileDialogDownloads", IN_INCOGNITO),
-                      TestCase("openFileDialogDrive", IN_INCOGNITO),
+                      TestCase("openFileDialogDownloads").InIncognito(),
+                      TestCase("openFileDialogDrive").InIncognito(),
                       TestCase("openFileDialogUnload")));
 
 // Test does too much? Flaky on all bots: http://crbug.com/500966
@@ -391,7 +398,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ShowGridView,
     FileManagerBrowserTest,
     ::testing::Values(TestCase("showGridViewDownloads"),
-                      TestCase("showGridViewDownloads", IN_GUEST_MODE),
+                      TestCase("showGridViewDownloads").InGuestMode(),
                       TestCase("showGridViewDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
