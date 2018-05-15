@@ -16,6 +16,7 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/net/cookies/cookie_store_ios_persistent.h"
 #import "ios/net/cookies/system_cookie_store.h"
+#include "ios/web/public/features.h"
 #include "ios/web/public/web_thread.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_store.h"
@@ -87,6 +88,17 @@ std::unique_ptr<net::CookieStore> CreateCookieStore(
     std::unique_ptr<net::SystemCookieStore> system_cookie_store) {
   if (config.cookie_store_type == CookieStoreConfig::COOKIE_MONSTER)
     return CreateCookieMonster(config);
+
+  // On iOS 11, there is no need to use PersistentCookieStore or CookieMonster
+  // because there is a way to access cookies in WKHTTPCookieStore. This will
+  // allow URLFetcher and anyother users of net:CookieStore to in iOS to set
+  // and get cookies directly in WKHTTPCookieStore.
+  if (@available(iOS 11, *)) {
+    if (base::FeatureList::IsEnabled(web::features::kWKHTTPSystemCookieStore)) {
+      return std::make_unique<net::CookieStoreIOS>(
+          std::move(system_cookie_store));
+    }
+  }
 
   scoped_refptr<net::SQLitePersistentCookieStore> persistent_store = nullptr;
   if (config.session_cookie_mode ==
