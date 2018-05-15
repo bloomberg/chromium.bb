@@ -3676,6 +3676,52 @@ free_device:
     return ret;
 }
 
+static int
+process_device(drmDevicePtr *device, const char *d_name,
+               int req_subsystem_type,
+               bool fetch_deviceinfo, uint32_t flags)
+{
+    struct stat sbuf;
+    char node[PATH_MAX + 1];
+    int node_type, subsystem_type;
+    unsigned int maj, min;
+
+    node_type = drmGetNodeType(d_name);
+    if (node_type < 0)
+        return -1;
+
+    snprintf(node, PATH_MAX, "%s/%s", DRM_DIR_NAME, d_name);
+    if (stat(node, &sbuf))
+        return -1;
+
+    maj = major(sbuf.st_rdev);
+    min = minor(sbuf.st_rdev);
+
+    if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
+        return -1;
+
+    subsystem_type = drmParseSubsystemType(maj, min);
+    if (req_subsystem_type != -1 && req_subsystem_type != subsystem_type)
+        return -1;
+
+    switch (subsystem_type) {
+    case DRM_BUS_PCI:
+        return drmProcessPciDevice(device, node, node_type, maj, min,
+                                   fetch_deviceinfo, flags);
+    case DRM_BUS_USB:
+        return drmProcessUsbDevice(device, node, node_type, maj, min,
+                                   fetch_deviceinfo, flags);
+    case DRM_BUS_PLATFORM:
+        return drmProcessPlatformDevice(device, node, node_type, maj, min,
+                                        fetch_deviceinfo, flags);
+    case DRM_BUS_HOST1X:
+        return drmProcessHost1xDevice(device, node, node_type, maj, min,
+                                      fetch_deviceinfo, flags);
+    default:
+        return -1;
+   }
+}
+
 /* Consider devices located on the same bus as duplicate and fold the respective
  * entries into a single one.
  *
@@ -3805,8 +3851,7 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
     DIR *sysdir;
     struct dirent *dent;
     struct stat sbuf;
-    char node[PATH_MAX + 1];
-    int node_type, subsystem_type;
+    int subsystem_type;
     int maj, min;
     int ret, i, node_count;
     int max_count = 16;
@@ -3844,55 +3889,9 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
 
     i = 0;
     while ((dent = readdir(sysdir))) {
-        node_type = drmGetNodeType(dent->d_name);
-        if (node_type < 0)
+        ret = process_device(&d, dent->d_name, subsystem_type, true, flags);
+        if (ret)
             continue;
-
-        snprintf(node, PATH_MAX, "%s/%s", DRM_DIR_NAME, dent->d_name);
-        if (stat(node, &sbuf))
-            continue;
-
-        maj = major(sbuf.st_rdev);
-        min = minor(sbuf.st_rdev);
-
-        if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
-            continue;
-
-        if (drmParseSubsystemType(maj, min) != subsystem_type)
-            continue;
-
-        switch (subsystem_type) {
-        case DRM_BUS_PCI:
-            ret = drmProcessPciDevice(&d, node, node_type, maj, min, true, flags);
-            if (ret)
-                continue;
-
-            break;
-
-        case DRM_BUS_USB:
-            ret = drmProcessUsbDevice(&d, node, node_type, maj, min, true, flags);
-            if (ret)
-                continue;
-
-            break;
-
-        case DRM_BUS_PLATFORM:
-            ret = drmProcessPlatformDevice(&d, node, node_type, maj, min, true, flags);
-            if (ret)
-                continue;
-
-            break;
-
-        case DRM_BUS_HOST1X:
-            ret = drmProcessHost1xDevice(&d, node, node_type, maj, min, true, flags);
-            if (ret)
-                continue;
-
-            break;
-
-        default:
-            continue;
-        }
 
         if (i >= max_count) {
             drmDevicePtr *temp;
@@ -3973,10 +3972,6 @@ int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
     drmDevicePtr device;
     DIR *sysdir;
     struct dirent *dent;
-    struct stat sbuf;
-    char node[PATH_MAX + 1];
-    int node_type, subsystem_type;
-    int maj, min;
     int ret, i, node_count, device_count;
     int max_count = 16;
 
@@ -3995,61 +3990,9 @@ int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
 
     i = 0;
     while ((dent = readdir(sysdir))) {
-        node_type = drmGetNodeType(dent->d_name);
-        if (node_type < 0)
+        ret = process_device(&device, dent->d_name, -1, devices != NULL, flags);
+        if (ret)
             continue;
-
-        snprintf(node, PATH_MAX, "%s/%s", DRM_DIR_NAME, dent->d_name);
-        if (stat(node, &sbuf))
-            continue;
-
-        maj = major(sbuf.st_rdev);
-        min = minor(sbuf.st_rdev);
-
-        if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
-            continue;
-
-        subsystem_type = drmParseSubsystemType(maj, min);
-
-        if (subsystem_type < 0)
-            continue;
-
-        switch (subsystem_type) {
-        case DRM_BUS_PCI:
-            ret = drmProcessPciDevice(&device, node, node_type,
-                                      maj, min, devices != NULL, flags);
-            if (ret)
-                continue;
-
-            break;
-
-        case DRM_BUS_USB:
-            ret = drmProcessUsbDevice(&device, node, node_type, maj, min,
-                                      devices != NULL, flags);
-            if (ret)
-                continue;
-
-            break;
-
-        case DRM_BUS_PLATFORM:
-            ret = drmProcessPlatformDevice(&device, node, node_type, maj, min,
-                                           devices != NULL, flags);
-            if (ret)
-                continue;
-
-            break;
-
-        case DRM_BUS_HOST1X:
-            ret = drmProcessHost1xDevice(&device, node, node_type, maj, min,
-                                         devices != NULL, flags);
-            if (ret)
-                continue;
-
-            break;
-
-        default:
-            continue;
-        }
 
         if (i >= max_count) {
             drmDevicePtr *temp;
