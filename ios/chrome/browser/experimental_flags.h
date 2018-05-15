@@ -63,6 +63,9 @@ bool IsThirdPartyKeyboardWorkaroundEnabled();
 // Whether RecentTabs UI Reboot is enabled.
 bool IsRecentTabsUIRebootEnabled();
 
+// Whether the Bookmarks UI Reboot is enabled.
+bool IsBookmarksUIRebootEnabled();
+
 // Whether the Collections UI Reboot is enabled.
 bool IsCollectionsUIRebootEnabled();
 
