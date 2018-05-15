@@ -88,6 +88,8 @@ class EVENTS_EXPORT EventTarget {
   // Sets |target_handler| as |target_handler_| and returns the old handler.
   EventHandler* SetTargetHandler(EventHandler* target_handler);
 
+  bool HasTargetHandler() const { return target_handler_ != nullptr; }
+
  protected:
   EventHandler* target_handler() { return target_handler_; }
 

@@ -10,15 +10,17 @@
 
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws2/ids.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 class Window;
 }
 
 namespace gfx {
-class Rect;
+class Insets;
 }
 
 namespace ui {
@@ -53,6 +55,11 @@ class WindowServiceClientTestHelper {
   void SetWindowBounds(aura::Window* window,
                        const gfx::Rect& bounds,
                        uint32_t change_id = 1);
+  void SetClientArea(
+      aura::Window* window,
+      const gfx::Insets& insets,
+      base::Optional<std::vector<gfx::Rect>> additional_client_areas =
+          base::Optional<std::vector<gfx::Rect>>());
   void SetWindowProperty(aura::Window* window,
                          const std::string& name,
                          const std::vector<uint8_t>& value,

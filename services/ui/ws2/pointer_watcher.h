@@ -5,10 +5,15 @@
 #ifndef SERVICES_UI_WS2_POINTER_WATCHER_H_
 #define SERVICES_UI_WS2_POINTER_WATCHER_H_
 
+#include <memory>
+
 #include "base/macros.h"
 #include "ui/aura/window_event_dispatcher_observer.h"
 
 namespace ui {
+
+class Event;
+
 namespace ws2 {
 
 class WindowServiceClient;
@@ -32,6 +37,10 @@ class PointerWatcher : public aura::WindowEventDispatcherObserver {
 
   explicit PointerWatcher(WindowServiceClient* client);
   ~PointerWatcher() override;
+
+  // Applies any necessary transformations on the event before sending to the
+  // client.
+  static std::unique_ptr<Event> CreateEventForClient(const Event& event);
 
   void set_types_to_watch(TypesToWatch types) { types_to_watch_ = types; }
 

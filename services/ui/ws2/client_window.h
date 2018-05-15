@@ -5,17 +5,24 @@
 #ifndef SERVICES_UI_WS2_CLIENT_WINDOW_H_
 #define SERVICES_UI_WS2_CLIENT_WINDOW_H_
 
+#include <vector>
+
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/ui/ws2/ids.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace aura {
 class Window;
 }
 
 namespace ui {
+
+class EventHandler;
+
 namespace ws2 {
 
 class WindowHostFrameSinkClient;
@@ -30,9 +37,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
 
   // Creates a new ClientWindow. The lifetime of the ClientWindow is tied to
   // that of the Window (the Window ends up owning the ClientWindow).
+  // |is_top_level| is true if the window represents a top-level window.
   static ClientWindow* Create(aura::Window* window,
                               WindowServiceClient* client,
-                              const viz::FrameSinkId& frame_sink_id);
+                              const viz::FrameSinkId& frame_sink_id,
+                              bool is_top_level);
+
+  aura::Window* window() { return window_; }
 
   // Returns the ClientWindow associated with a window, null if not created yet.
   static ClientWindow* GetMayBeNull(aura::Window* window) {
@@ -61,6 +72,19 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   const viz::FrameSinkId& frame_sink_id() const { return frame_sink_id_; }
 
+  const std::vector<gfx::Rect>& additional_client_areas() const {
+    return additional_client_areas_;
+  }
+  const gfx::Insets& client_area() const { return client_area_; }
+  void SetClientArea(const gfx::Insets& insets,
+                     const std::vector<gfx::Rect>& additional_client_areas);
+
+  // Returns true if the window is a top-level window and there is at least some
+  // non-client area.
+  bool HasNonClientArea() const;
+
+  bool IsTopLevel() const;
+
   void AttachCompositorFrameSink(
       viz::mojom::CompositorFrameSinkRequest compositor_frame_sink,
       viz::mojom::CompositorFrameSinkClientPtr client);
@@ -68,7 +92,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
  private:
   ClientWindow(aura::Window*,
                WindowServiceClient* client,
-               const viz::FrameSinkId& frame_sink_id);
+               const viz::FrameSinkId& frame_sink_id,
+               bool is_top_level);
 
   aura::Window* window_;
 
@@ -98,6 +123,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   // viz::HostFrameSinkClient registered with the HostFrameSinkManager for the
   // window.
   std::unique_ptr<WindowHostFrameSinkClient> window_host_frame_sink_client_;
+
+  // Together |client_area_| and |additional_client_areas_| are used to specify
+  // the client area. See SetClientArea() in mojom for details.
+  gfx::Insets client_area_;
+  std::vector<gfx::Rect> additional_client_areas_;
+
+  std::unique_ptr<ui::EventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientWindow);
 };

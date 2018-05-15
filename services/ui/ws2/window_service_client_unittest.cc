@@ -248,6 +248,198 @@ TEST(WindowServiceClientTest, WindowToWindowData) {
           data->properties[ui::mojom::WindowManager::kAlwaysOnTop_Property]));
 }
 
+TEST(WindowServiceClientTest, MovePressDragRelease) {
+  WindowServiceTestHelper helper;
+  TestWindowTreeClient* window_tree_client = helper.window_tree_client();
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
+
+  test::EventGenerator event_generator(helper.root());
+  {
+    event_generator.MoveMouseTo(50, 50);
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_ENTERED, event->type());
+    EXPECT_EQ(gfx::Point(40, 40), event->AsLocatedEvent()->location());
+    event = window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_MOVED, event->type());
+    EXPECT_EQ(gfx::Point(40, 40), event->AsLocatedEvent()->location());
+  }
+
+  {
+    event_generator.PressLeftButton();
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_DOWN, event->type());
+    EXPECT_EQ(gfx::Point(40, 40), event->AsLocatedEvent()->location());
+  }
+
+  {
+    event_generator.MoveMouseTo(0, 0);
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_MOVED, event->type());
+    EXPECT_EQ(gfx::Point(-10, -10), event->AsLocatedEvent()->location());
+  }
+
+  {
+    event_generator.ReleaseLeftButton();
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_UP, event->type());
+    EXPECT_EQ(gfx::Point(-10, -10), event->AsLocatedEvent()->location());
+  }
+}
+
+class EventRecordingWindowDelegate : public aura::test::TestWindowDelegate {
+ public:
+  EventRecordingWindowDelegate() = default;
+  ~EventRecordingWindowDelegate() override = default;
+
+  std::queue<std::unique_ptr<ui::Event>>& events() { return events_; }
+
+  std::unique_ptr<Event> PopEvent() {
+    if (events_.empty())
+      return nullptr;
+    auto event = std::move(events_.front());
+    events_.pop();
+    return event;
+  }
+
+  void ClearEvents() {
+    std::queue<std::unique_ptr<ui::Event>> events;
+    std::swap(events_, events);
+  }
+
+  // aura::test::TestWindowDelegate:
+  void OnEvent(ui::Event* event) override {
+    events_.push(ui::Event::Clone(*event));
+  }
+
+ private:
+  std::queue<std::unique_ptr<ui::Event>> events_;
+
+  DISALLOW_COPY_AND_ASSIGN(EventRecordingWindowDelegate);
+};
+
+TEST(WindowServiceClientTest, MoveFromClientToNonClient) {
+  EventRecordingWindowDelegate window_delegate;
+  WindowServiceTestHelper helper;
+  TestWindowTreeClient* window_tree_client = helper.window_tree_client();
+  helper.delegate()->set_delegate_for_next_top_level(&window_delegate);
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
+  ASSERT_TRUE(top_level);
+
+  top_level->Show();
+  top_level->SetBounds(gfx::Rect(10, 10, 100, 100));
+  helper.helper()->SetClientArea(top_level, gfx::Insets(10, 0, 0, 0));
+
+  window_delegate.ClearEvents();
+
+  test::EventGenerator event_generator(helper.root());
+  {
+    event_generator.MoveMouseTo(50, 50);
+    // Move generates both an enter and move.
+    std::unique_ptr<Event> enter_event =
+        window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(enter_event);
+    EXPECT_EQ(ET_POINTER_ENTERED, enter_event->type());
+    EXPECT_EQ(gfx::Point(40, 40), enter_event->AsLocatedEvent()->location());
+    std::unique_ptr<Event> move_event =
+        window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(move_event);
+    EXPECT_EQ(ET_POINTER_MOVED, move_event->type());
+    EXPECT_EQ(gfx::Point(40, 40), move_event->AsLocatedEvent()->location());
+
+    // The delegate should see the same events.
+    ASSERT_EQ(2u, window_delegate.events().size());
+    enter_event = window_delegate.PopEvent();
+    EXPECT_EQ(ET_MOUSE_ENTERED, enter_event->type());
+    EXPECT_EQ(gfx::Point(40, 40), enter_event->AsLocatedEvent()->location());
+    move_event = window_delegate.PopEvent();
+    EXPECT_EQ(ET_MOUSE_MOVED, move_event->type());
+    EXPECT_EQ(gfx::Point(40, 40), move_event->AsLocatedEvent()->location());
+  }
+
+  // Move the mouse over the non-client area.
+  // The event is still sent to the client, and the delegate.
+  {
+    event_generator.MoveMouseTo(15, 16);
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_MOVED, event->type());
+    EXPECT_EQ(gfx::Point(5, 6), event->AsLocatedEvent()->location());
+
+    // Delegate should also get the events.
+    event = window_delegate.PopEvent();
+    EXPECT_EQ(ET_MOUSE_MOVED, event->type());
+    EXPECT_EQ(gfx::Point(5, 6), event->AsLocatedEvent()->location());
+  }
+
+  // Only the delegate should get the press in this case.
+  {
+    event_generator.PressLeftButton();
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_FALSE(event);
+
+    event = window_delegate.PopEvent();
+    EXPECT_EQ(ET_MOUSE_PRESSED, event->type());
+    EXPECT_EQ(gfx::Point(5, 6), event->AsLocatedEvent()->location());
+  }
+
+  // Move mouse into client area, only the delegate should get the move (drag).
+  {
+    event_generator.MoveMouseTo(35, 51);
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_FALSE(event);
+
+    event = window_delegate.PopEvent();
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_MOUSE_DRAGGED, event->type());
+    EXPECT_EQ(gfx::Point(25, 41), event->AsLocatedEvent()->location());
+  }
+
+  // Release over client area, again only delegate should get it.
+  {
+    event_generator.ReleaseLeftButton();
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_FALSE(event);
+
+    event = window_delegate.PopEvent();
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_MOUSE_RELEASED, event->type());
+  }
+
+  {
+    event_generator.MoveMouseTo(26, 50);
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_MOVED, event->type());
+    EXPECT_EQ(gfx::Point(16, 40), event->AsLocatedEvent()->location());
+
+    // Delegate should also get the events.
+    event = window_delegate.PopEvent();
+    EXPECT_EQ(ET_MOUSE_MOVED, event->type());
+    EXPECT_EQ(gfx::Point(16, 40), event->AsLocatedEvent()->location());
+  }
+
+  // Press in client area. Only the client should get the event.
+  {
+    event_generator.PressLeftButton();
+    std::unique_ptr<Event> event = window_tree_client->PopInputEvent().event;
+    ASSERT_TRUE(event);
+    EXPECT_EQ(ET_POINTER_DOWN, event->type());
+    EXPECT_EQ(gfx::Point(16, 40), event->AsLocatedEvent()->location());
+
+    event = window_delegate.PopEvent();
+    ASSERT_FALSE(event);
+  }
+}
+
 TEST(WindowServiceClientTest, PointerWatcher) {
   WindowServiceTestHelper helper;
   TestWindowTreeClient* window_tree_client = helper.window_tree_client();
