@@ -32,23 +32,26 @@
 
 // This function will determine whether or not to create a warped
 // prediction.
-static INLINE int allow_warp(const MB_MODE_INFO *const mbmi,
-                             const WarpTypesAllowed *const warp_types,
-                             const WarpedMotionParams *const gm_params,
-                             int build_for_obmc, int x_scale, int y_scale,
-                             WarpedMotionParams *final_warp_params) {
+int av1_allow_warp(const MB_MODE_INFO *const mbmi,
+                   const WarpTypesAllowed *const warp_types,
+                   const WarpedMotionParams *const gm_params,
+                   int build_for_obmc, int x_scale, int y_scale,
+                   WarpedMotionParams *final_warp_params) {
   if (x_scale != SCALE_SUBPEL_SHIFTS || y_scale != SCALE_SUBPEL_SHIFTS)
     return 0;
 
-  *final_warp_params = default_warp_params;
+  if (final_warp_params != NULL) *final_warp_params = default_warp_params;
 
   if (build_for_obmc) return 0;
 
   if (warp_types->local_warp_allowed && !mbmi->wm_params[0].invalid) {
-    memcpy(final_warp_params, &mbmi->wm_params[0], sizeof(*final_warp_params));
+    if (final_warp_params != NULL)
+      memcpy(final_warp_params, &mbmi->wm_params[0],
+             sizeof(*final_warp_params));
     return 1;
   } else if (warp_types->global_warp_allowed && !gm_params->invalid) {
-    memcpy(final_warp_params, gm_params, sizeof(*final_warp_params));
+    if (final_warp_params != NULL)
+      memcpy(final_warp_params, gm_params, sizeof(*final_warp_params));
     return 1;
   }
 
@@ -73,8 +76,8 @@ void av1_make_inter_predictor(
   WarpedMotionParams final_warp_params;
   const int do_warp =
       (w >= 8 && h >= 8 &&
-       allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]],
-                  build_for_obmc, xs, ys, &final_warp_params));
+       av1_allow_warp(mi, warp_types, &xd->global_motion[mi->ref_frame[ref]],
+                      build_for_obmc, xs, ys, &final_warp_params));
   if (do_warp && xd->cur_frame_force_integer_mv == 0) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const struct buf_2d *const pre_buf = &pd->pre[ref];
