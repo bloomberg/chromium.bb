@@ -25,7 +25,11 @@ bool RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
          rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
          rfm1.device_scale_factor != rfm2.device_scale_factor ||
          rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
-         rfm1.local_surface_id != rfm2.local_surface_id;
+         rfm1.local_surface_id != rfm2.local_surface_id ||
+         rfm1.top_controls_height != rfm2.top_controls_height ||
+         rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
+         rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
+         rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio;
 }
 
 RenderFrameMetadata& RenderFrameMetadata::operator=(
@@ -42,7 +46,11 @@ bool RenderFrameMetadata::operator==(const RenderFrameMetadata& other) const {
          is_mobile_optimized == other.is_mobile_optimized &&
          device_scale_factor == other.device_scale_factor &&
          viewport_size_in_pixels == other.viewport_size_in_pixels &&
-         local_surface_id == other.local_surface_id;
+         local_surface_id == other.local_surface_id &&
+         top_controls_height == other.top_controls_height &&
+         top_controls_shown_ratio == other.top_controls_shown_ratio &&
+         bottom_controls_height == other.bottom_controls_height &&
+         bottom_controls_shown_ratio == other.bottom_controls_shown_ratio;
 }
 
 bool RenderFrameMetadata::operator!=(const RenderFrameMetadata& other) const {

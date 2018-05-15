@@ -66,6 +66,16 @@ class CC_EXPORT RenderFrameMetadata {
 
   // The last viz::LocalSurfaceId used to submit a CompositorFrame.
   base::Optional<viz::LocalSurfaceId> local_surface_id;
+
+  // Used to position the Android location top bar and page content, whose
+  // precise position is computed by the renderer compositor.
+  float top_controls_height = 0.f;
+  float top_controls_shown_ratio = 0.f;
+
+  // Used to position Android bottom bar, whose position is computed by the
+  // renderer compositor.
+  float bottom_controls_height = 0.f;
+  float bottom_controls_shown_ratio = 0.f;
 };
 
 }  // namespace cc

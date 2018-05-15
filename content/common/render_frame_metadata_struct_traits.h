@@ -52,6 +52,24 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.local_surface_id;
   }
 
+  static float top_controls_height(const cc::RenderFrameMetadata& metadata) {
+    return metadata.top_controls_height;
+  }
+
+  static float top_controls_shown_ratio(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.top_controls_shown_ratio;
+  }
+
+  static float bottom_controls_height(const cc::RenderFrameMetadata& metadata) {
+    return metadata.bottom_controls_height;
+  }
+
+  static float bottom_controls_shown_ratio(
+      const cc::RenderFrameMetadata& metadata) {
+    return metadata.bottom_controls_shown_ratio;
+  }
+
   static bool Read(content::mojom::RenderFrameMetadataDataView data,
                    cc::RenderFrameMetadata* out);
 };

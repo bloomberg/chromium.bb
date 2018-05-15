@@ -41,6 +41,7 @@
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/managed_memory_policy.h"
 #include "cc/trees/mutator_host_client.h"
+#include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/task_runner_provider.h"
 #include "cc/trees/ukm_manager.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
@@ -76,7 +77,6 @@ class PendingTreeDurationHistogramTimer;
 class PendingTreeRasterDurationHistogramTimer;
 class RasterTilePriorityQueue;
 class RasterBufferProvider;
-class RenderFrameMetadata;
 class RenderFrameMetadataObserver;
 class RenderingStatsInstrumentation;
 class ResourcePool;
@@ -1056,6 +1056,7 @@ class CC_EXPORT LayerTreeHostImpl
   uint32_t last_presentation_token_ = 0u;
 
   viz::LocalSurfaceId last_draw_local_surface_id_;
+  base::Optional<RenderFrameMetadata> last_draw_render_frame_metadata_;
   viz::ChildLocalSurfaceIdAllocator child_local_surface_id_allocator_;
 
   const int default_color_space_id_;
