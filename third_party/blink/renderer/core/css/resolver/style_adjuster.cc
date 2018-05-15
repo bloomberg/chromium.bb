@@ -236,9 +236,10 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   if (IsHTMLFrameElement(element) || IsHTMLFrameSetElement(element)) {
     // Frames and framesets never honor position:relative or position:absolute.
     // This is necessary to fix a crash where a site tries to position these
-    // objects. They also never honor display.
+    // objects. They also never honor display nor floating.
     style.SetPosition(EPosition::kStatic);
     style.SetDisplay(EDisplay::kBlock);
+    style.SetFloating(EFloat::kNone);
     return;
   }
 
@@ -531,7 +532,9 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   const ComputedStyle& parent_style = *state.ParentStyle();
   const ComputedStyle& layout_parent_style = *state.LayoutParentStyle();
 
-  if (style.Display() != EDisplay::kNone && element &&
+  if (element &&
+      (style.Display() != EDisplay::kNone ||
+       element->LayoutObjectIsNeeded(style)) &&
       element->IsHTMLElement()) {
     AdjustStyleForHTMLElement(style, ToHTMLElement(*element));
   }
