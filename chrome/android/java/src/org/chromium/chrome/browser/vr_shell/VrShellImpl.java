@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.widget.newtab.NewTabButton;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.base.PermissionCallback;
 import org.chromium.ui.base.WindowAndroid;
@@ -216,6 +217,9 @@ public class VrShellImpl
             @Override
             public void onWebContentsSwapped(Tab tab, boolean didStartLoad, boolean didFinishLoad) {
                 onContentChanged(tab);
+                // It is not needed to restore IME for old web contents as it is going away and
+                // replaced by the new web contents.
+                configWebContentsImeForVr(tab.getWebContents());
             }
 
             @Override
@@ -426,41 +430,41 @@ public class VrShellImpl
         mTabObserver.onContentChanged(mTab);
     }
 
+    private void configWebContentsImeForVr(WebContents webContents) {
+        if (webContents == null) return;
+
+        ImeAdapter imeAdapter = ImeAdapter.fromWebContents(webContents);
+        if (imeAdapter == null) return;
+
+        mInputMethodManagerWrapper = new VrInputMethodManagerWrapper(mActivity, this);
+        imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
+    }
+
+    private void restoreWebContentsImeFromVr(WebContents webContents) {
+        if (webContents == null) return;
+
+        ImeAdapter imeAdapter = ImeAdapter.fromWebContents(webContents);
+        if (imeAdapter == null) return;
+
+        imeAdapter.setInputMethodManagerWrapper(
+                ImeAdapter.createDefaultInputMethodManagerWrapper(mActivity));
+        mInputMethodManagerWrapper = null;
+    }
+
     private void initializeTabForVR() {
         if (mTab == null) return;
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
         mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
         mTab.setTabRedirectHandler(mTabRedirectHandler);
         assert mTab.getWindowAndroid() == mContentVrWindowAndroid;
-        initializeImeForVr();
-    }
-
-    private void initializeImeForVr() {
-        assert mTab != null;
-        if (mTab.getWebContents() == null) return;
-        ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mTab.getWebContents());
-        if (imeAdapter != null) {
-            mInputMethodManagerWrapper = new VrInputMethodManagerWrapper(mActivity, this);
-            imeAdapter.setInputMethodManagerWrapper(mInputMethodManagerWrapper);
-        }
-    }
-
-    private void uninitializeImeForVr() {
-        assert mTab != null;
-        if (mTab.getWebContents() == null) return;
-        ImeAdapter imeAdapter = ImeAdapter.fromWebContents(mTab.getWebContents());
-        if (imeAdapter != null) {
-            imeAdapter.setInputMethodManagerWrapper(
-                    ImeAdapter.createDefaultInputMethodManagerWrapper(mActivity));
-        }
-        mInputMethodManagerWrapper = null;
+        configWebContentsImeForVr(mTab.getWebContents());
     }
 
     private void restoreTabFromVR() {
         if (mTab == null) return;
         mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
         mNonVrTabRedirectHandler = null;
-        uninitializeImeForVr();
+        restoreWebContentsImeFromVr(mTab.getWebContents());
     }
 
     private void reparentAllTabs(WindowAndroid window) {
@@ -717,7 +721,7 @@ public class VrShellImpl
         if (mTab != null) {
             mTab.removeObserver(mTabObserver);
             restoreTabFromVR();
-            uninitializeImeForVr();
+            restoreWebContentsImeFromVr(mTab.getWebContents());
             if (mTab.getContentViewCore() != null) {
                 View parent = mTab.getContentView();
                 mTab.getWebContents().setSize(parent.getWidth(), parent.getHeight());
