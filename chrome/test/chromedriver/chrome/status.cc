@@ -50,8 +50,8 @@ const char* DefaultMessageForStatusCode(StatusCode code) {
       return "invalid cookie domain";
     case kUnexpectedAlertOpen:
       return "unexpected alert open";
-    case kNoAlertOpen:
-      return "no alert open";
+    case kNoSuchAlert:
+      return "no such alert";
     case kScriptTimeout:
       return "asynchronous script timeout";
     case kInvalidSelector:

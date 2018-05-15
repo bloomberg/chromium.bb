@@ -766,6 +766,9 @@ HttpHandler::PrepareStandardResponse(
       response.reset(
           new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
       break;
+    case kNoSuchAlert:
+      response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
+      break;
     case kNoSuchCookie:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
       break;
@@ -819,7 +822,6 @@ HttpHandler::PrepareStandardResponse(
     // TODO(kereliuk): evaluate the usage of these as they relate to the spec
     case kElementNotVisible:
     case kXPathLookupError:
-    case kNoAlertOpen:
     case kNoSuchExecutionContext:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
