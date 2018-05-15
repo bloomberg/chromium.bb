@@ -2954,6 +2954,9 @@ sysfs_uevent_get(const char *path, const char *fmt, ...)
 }
 #endif
 
+/* Little white lie to avoid major rework of the existing code */
+#define DRM_BUS_VIRTIO 0x10
+
 static int drmParseSubsystemType(int maj, int min)
 {
 #ifdef __linux__
@@ -2983,6 +2986,9 @@ static int drmParseSubsystemType(int maj, int min)
     if (strncmp(name, "/host1x", 7) == 0)
         return DRM_BUS_HOST1X;
 
+    if (strncmp(name, "/virtio", 7) == 0)
+        return DRM_BUS_VIRTIO;
+
     return -EINVAL;
 #elif defined(__OpenBSD__)
     return DRM_BUS_PCI;
@@ -2995,11 +3001,15 @@ static int drmParseSubsystemType(int maj, int min)
 static char *
 get_real_pci_path(int maj, int min, char *real_path)
 {
-    char path[PATH_MAX + 1];
+    char path[PATH_MAX + 1], *term;
 
     snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
     if (!realpath(path, real_path))
         return NULL;
+
+    term = strrchr(real_path, '/');
+    if (term && strncmp(term, "/virtio", 7) == 0)
+        *term = 0;
 
     return real_path;
 }
@@ -3724,6 +3734,7 @@ process_device(drmDevicePtr *device, const char *d_name,
 
     switch (subsystem_type) {
     case DRM_BUS_PCI:
+    case DRM_BUS_VIRTIO:
         return drmProcessPciDevice(device, node, node_type, maj, min,
                                    fetch_deviceinfo, flags);
     case DRM_BUS_USB:
