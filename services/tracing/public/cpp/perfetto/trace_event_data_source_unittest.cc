@@ -25,39 +25,57 @@ namespace {
 class MockProducerClient : public ProducerClient {
  public:
   MockProducerClient()
-      : delegate_(perfetto::base::kPageSize), stream_(&delegate_) {}
+      : delegate_(perfetto::base::kPageSize), stream_(&delegate_) {
+    trace_packet_.Reset(&stream_);
+  }
 
   std::unique_ptr<perfetto::TraceWriter> CreateTraceWriter(
       perfetto::BufferID target_buffer) override;
 
-  perfetto::protos::pbzero::TracePacket* NewTracePacket() {
-    trace_packet_.Reset(&stream_);
-    return &trace_packet_;
-  }
-
-  std::unique_ptr<perfetto::protos::TracePacket> GetPreviousPacket() {
-    uint32_t message_size = trace_packet_.Finalize();
+  void FlushPacketIfPossible() {
     // GetNewBuffer() in ScatteredStreamWriterNullDelegate doesn't
     // actually return a new buffer, but rather lets us access the buffer
     // buffer already used by protozero to write the TracePacket into.
     protozero::ContiguousMemoryRange buffer = delegate_.GetNewBuffer();
-    EXPECT_GE(buffer.size(), message_size);
 
-    auto proto = std::make_unique<perfetto::protos::TracePacket>();
-    EXPECT_TRUE(proto->ParseFromArray(buffer.begin, message_size));
+    uint32_t message_size = trace_packet_.Finalize();
+    if (message_size) {
+      EXPECT_GE(buffer.size(), message_size);
 
-    return proto;
+      auto proto = std::make_unique<perfetto::protos::TracePacket>();
+      EXPECT_TRUE(proto->ParseFromArray(buffer.begin, message_size));
+      if (proto->has_chrome_events()) {
+        finalized_packets_.push_back(std::move(proto));
+      }
+    }
+
+    stream_.Reset(buffer);
+    trace_packet_.Reset(&stream_);
+  }
+
+  perfetto::protos::pbzero::TracePacket* NewTracePacket() {
+    FlushPacketIfPossible();
+
+    return &trace_packet_;
+  }
+
+  size_t GetFinalizedPacketCount() {
+    FlushPacketIfPossible();
+    return finalized_packets_.size();
   }
 
   const google::protobuf::RepeatedPtrField<perfetto::protos::ChromeTraceEvent>
-  GetChromeTraceEvents() {
-    auto proto = GetPreviousPacket();
+  GetChromeTraceEvents(size_t packet_index = 0) {
+    FlushPacketIfPossible();
+    EXPECT_GT(finalized_packets_.size(), packet_index);
 
-    auto event_bundle = proto->chrome_events();
+    auto event_bundle = finalized_packets_[packet_index]->chrome_events();
     return event_bundle.trace_events();
   }
 
  private:
+  std::vector<std::unique_ptr<perfetto::protos::TracePacket>>
+      finalized_packets_;
   perfetto::protos::pbzero::TracePacket trace_packet_;
   protozero::ScatteredStreamWriterNullDelegate delegate_;
   protozero::ScatteredStreamWriter stream_;
@@ -274,6 +292,52 @@ TEST_F(TraceEventDataSourceTest, EventWithPointerArgs) {
 
   EXPECT_EQ(static_cast<uintptr_t>(0xBEEF), trace_args[0].pointer_value());
   EXPECT_EQ(static_cast<uintptr_t>(0xF00D), trace_args[1].pointer_value());
+}
+
+TEST_F(TraceEventDataSourceTest, CompleteTraceEventsIntoSeparateBeginAndEnd) {
+  static const char kCategoryGroup[] = "foo";
+  static const char kEventName[] = "bar";
+
+  CreateTraceEventDataSource();
+
+  auto* category_group_enabled =
+      TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(kCategoryGroup);
+
+  trace_event_internal::TraceID trace_event_trace_id =
+      trace_event_internal::kNoId;
+
+  auto handle = trace_event_internal::AddTraceEventWithThreadIdAndTimestamp(
+      TRACE_EVENT_PHASE_COMPLETE, category_group_enabled, kEventName,
+      trace_event_trace_id.scope(), trace_event_trace_id.raw_id(),
+      1 /* thread_id */,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(10),
+      trace_event_trace_id.id_flags() | TRACE_EVENT_FLAG_EXPLICIT_TIMESTAMP,
+      trace_event_internal::kNoId);
+
+  base::trace_event::TraceLog::GetInstance()->UpdateTraceEventDurationExplicit(
+      category_group_enabled, kEventName, handle,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(20),
+      base::ThreadTicks() + base::TimeDelta::FromMicroseconds(50));
+
+  // TRACE_EVENT_PHASE_COMPLETE events should internally emit a
+  // TRACE_EVENT_PHASE_BEGIN event first, and then a TRACE_EVENT_PHASE_END event
+  // when the duration is attempted set on the first event.
+  EXPECT_EQ(2u, producer_client()->GetFinalizedPacketCount());
+
+  auto events_from_first_packet = producer_client()->GetChromeTraceEvents(0);
+  EXPECT_EQ(events_from_first_packet.size(), 1);
+
+  auto begin_trace_event = events_from_first_packet[0];
+  EXPECT_EQ(TRACE_EVENT_PHASE_BEGIN, begin_trace_event.phase());
+  EXPECT_EQ(10, begin_trace_event.timestamp());
+
+  auto events_from_second_packet = producer_client()->GetChromeTraceEvents(1);
+  EXPECT_EQ(events_from_second_packet.size(), 1);
+
+  auto end_trace_event = events_from_second_packet[0];
+  EXPECT_EQ(TRACE_EVENT_PHASE_END, end_trace_event.phase());
+  EXPECT_EQ(20, end_trace_event.timestamp());
+  EXPECT_EQ(50, end_trace_event.thread_timestamp());
 }
 
 }  // namespace

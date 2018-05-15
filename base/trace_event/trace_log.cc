@@ -1251,6 +1251,13 @@ TraceEventHandle TraceLog::AddTraceEventWithThreadIdAndTimestamp(
           subtle::NoBarrier_Load(&trace_event_override_));
   if (trace_event_override) {
     TraceEvent new_trace_event;
+    // If we have an override in place for events, rather than sending
+    // them to the tracelog, we don't have a way of going back and updating
+    // the duration of _COMPLETE events. Instead, we emit separate _BEGIN
+    // and _END events.
+    if (phase == TRACE_EVENT_PHASE_COMPLETE)
+      phase = TRACE_EVENT_PHASE_BEGIN;
+
     new_trace_event.Initialize(thread_id, offset_event_timestamp, thread_now,
                                phase, category_group_enabled, name, scope, id,
                                bind_id, num_args, arg_names, arg_types,
@@ -1447,6 +1454,26 @@ void TraceLog::UpdateTraceEventDurationExplicit(
 
   std::string console_message;
   if (category_group_enabled_local & TraceCategory::ENABLED_FOR_RECORDING) {
+    AddTraceEventOverrideCallback trace_event_override =
+        reinterpret_cast<AddTraceEventOverrideCallback>(
+            subtle::NoBarrier_Load(&trace_event_override_));
+
+    // If we send events off to an override instead of the TraceBuffer,
+    // we don't have way of updating the prior event so we'll emit a
+    // separate _END event instead.
+    if (trace_event_override) {
+      TraceEvent new_trace_event;
+      new_trace_event.Initialize(
+          static_cast<int>(base::PlatformThread::CurrentId()), now, thread_now,
+          TRACE_EVENT_PHASE_END, category_group_enabled, name,
+          trace_event_internal::kGlobalScope,
+          trace_event_internal::kNoId /* id */,
+          trace_event_internal::kNoId /* bind_id */, 0, nullptr, nullptr,
+          nullptr, nullptr, TRACE_EVENT_FLAG_NONE);
+      trace_event_override(new_trace_event);
+      return;
+    }
+
     OptionalAutoLock lock(&lock_);
 
     TraceEvent* trace_event = GetEventByHandleInternal(handle, &lock);
