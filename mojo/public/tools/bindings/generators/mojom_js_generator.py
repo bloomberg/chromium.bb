@@ -332,7 +332,9 @@ class Generator(generator.Generator):
   def _ClosureType(self, kind):
     if kind in mojom.PRIMITIVES:
       return _kind_to_closure_type[kind]
-    if (mojom.IsStructKind(kind) or mojom.IsInterfaceKind(kind) or
+    if mojom.IsInterfaceKind(kind):
+      return kind.module.namespace + "." + kind.name + "Ptr"
+    if (mojom.IsStructKind(kind) or
         mojom.IsEnumKind(kind)):
       return kind.module.namespace + "." + kind.name
     # TODO(calamity): Support unions properly.
