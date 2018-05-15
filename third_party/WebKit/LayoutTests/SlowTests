@@ -515,3 +515,5 @@ crbug.com/825170 external/wpt/css/css-transitions/transitioncancel-001.html [ Sl
 # This test does a lot of IPC because it tests limits on IPC allocations,
 # and is therefore slow.
 crbug.com/826957 fast/peerconnection/RTCPeerConnection-manyCandidates.html [ Slow ]
+
+crbug.com/842995 external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/078.html [ Slow ]
