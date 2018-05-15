@@ -223,8 +223,6 @@ component("capture_lib") {
 
   if (is_chromeos) {
     sources += [
-      "video/chromeos/camera_3a_controller.cc",
-      "video/chromeos/camera_3a_controller.h",
       "video/chromeos/camera_buffer_factory.cc",
       "video/chromeos/camera_buffer_factory.h",
       "video/chromeos/camera_device_context.cc",
@@ -344,7 +342,6 @@ test("capture_unittests") {
 
   if (is_chromeos) {
     sources += [
-      "video/chromeos/camera_3a_controller_unittest.cc",
       "video/chromeos/camera_device_delegate_unittest.cc",
       "video/chromeos/camera_hal_delegate_unittest.cc",
       "video/chromeos/camera_hal_dispatcher_impl_unittest.cc",

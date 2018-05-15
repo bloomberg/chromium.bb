@@ -56,7 +56,7 @@ class CAPTURE_EXPORT CameraDeviceContext {
     //
     //   ConstructDefaultRequestSettings() ->
     //   OnConstructedDefaultRequestSettings() ->
-    //   |stream_buffer_manager_|->StartPreview()
+    //   |stream_buffer_manager_|->StartCapture()
     //
     // In the kCapturing state the |stream_buffer_manager_| runs the capture
     // loop to send capture requests and process capture results.
