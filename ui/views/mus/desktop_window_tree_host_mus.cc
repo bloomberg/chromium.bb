@@ -513,7 +513,11 @@ void DesktopWindowTreeHostMus::GetWindowPlacement(
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetWindowBoundsInScreen() const {
-  return gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
+  gfx::Point display_origin = GetDisplay().bounds().origin();
+  gfx::Rect bounds_in_dip =
+      gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
+  bounds_in_dip.Offset(display_origin.x(), display_origin.y());
+  return bounds_in_dip;
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetClientAreaBoundsInScreen() const {
