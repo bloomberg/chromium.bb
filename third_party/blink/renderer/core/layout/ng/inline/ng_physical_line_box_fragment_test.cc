@@ -59,6 +59,7 @@ TEST_F(NGPhysicalLineBoxFragmentTest, FirstLastLogicalLeafInSimpleText) {
       "</div>");
   EXPECT_TEXT_FRAGMENT("foo", GetLineBox()->FirstLogicalLeaf());
   EXPECT_TEXT_FRAGMENT("bar", GetLineBox()->LastLogicalLeaf());
+  EXPECT_TEXT_FRAGMENT("bar", GetLineBox()->LastLogicalLeafIgnoringLineBreak());
 }
 
 TEST_F(NGPhysicalLineBoxFragmentTest, FirstLastLogicalLeafInRtlText) {
@@ -69,6 +70,7 @@ TEST_F(NGPhysicalLineBoxFragmentTest, FirstLastLogicalLeafInRtlText) {
       "</bdo>");
   EXPECT_TEXT_FRAGMENT("foo", GetLineBox()->FirstLogicalLeaf());
   EXPECT_TEXT_FRAGMENT("bar", GetLineBox()->LastLogicalLeaf());
+  EXPECT_TEXT_FRAGMENT("bar", GetLineBox()->LastLogicalLeafIgnoringLineBreak());
 }
 
 TEST_F(NGPhysicalLineBoxFragmentTest,
@@ -81,6 +83,7 @@ TEST_F(NGPhysicalLineBoxFragmentTest,
       "</div>");
   EXPECT_TEXT_FRAGMENT("f", GetLineBox()->FirstLogicalLeaf());
   EXPECT_TEXT_FRAGMENT("r", GetLineBox()->LastLogicalLeaf());
+  EXPECT_TEXT_FRAGMENT("r", GetLineBox()->LastLogicalLeafIgnoringLineBreak());
 }
 
 TEST_F(NGPhysicalLineBoxFragmentTest, FirstLastLogicalLeafWithInlineBlock) {
@@ -92,12 +95,26 @@ TEST_F(NGPhysicalLineBoxFragmentTest, FirstLastLogicalLeafWithInlineBlock) {
       "</div>");
   EXPECT_BOX_FRAGMENT("foo", GetLineBox()->FirstLogicalLeaf());
   EXPECT_BOX_FRAGMENT("baz", GetLineBox()->LastLogicalLeaf());
+  EXPECT_BOX_FRAGMENT("baz", GetLineBox()->LastLogicalLeafIgnoringLineBreak());
 }
 
 TEST_F(NGPhysicalLineBoxFragmentTest, FirstLastLogicalLeafWithImages) {
   SetBodyInnerHTML("<div id=root><img id=img1>foo<img id=img2></div>");
   EXPECT_BOX_FRAGMENT("img1", GetLineBox()->FirstLogicalLeaf());
   EXPECT_BOX_FRAGMENT("img2", GetLineBox()->LastLogicalLeaf());
+  EXPECT_BOX_FRAGMENT("img2", GetLineBox()->LastLogicalLeafIgnoringLineBreak());
+}
+
+TEST_F(NGPhysicalLineBoxFragmentTest, LastLogicalLeafSoftWrap) {
+  SetBodyInnerHTML("<div id=root style='width: 2em'>foo bar</div>");
+  EXPECT_TEXT_FRAGMENT("foo", GetLineBox()->LastLogicalLeaf());
+  EXPECT_TEXT_FRAGMENT("foo", GetLineBox()->LastLogicalLeafIgnoringLineBreak());
+}
+
+TEST_F(NGPhysicalLineBoxFragmentTest, LastLogicalLeafHardWrap) {
+  SetBodyInnerHTML("<div id=root>foo<br>bar</div>");
+  EXPECT_TEXT_FRAGMENT("\n", GetLineBox()->LastLogicalLeaf());
+  EXPECT_TEXT_FRAGMENT("foo", GetLineBox()->LastLogicalLeafIgnoringLineBreak());
 }
 
 }  // namespace blink

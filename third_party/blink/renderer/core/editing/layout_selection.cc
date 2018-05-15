@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -658,6 +659,26 @@ static unsigned ClampOffset(unsigned offset,
                   text_fragment.EndOffset());
 }
 
+static bool IsBeforeLineBreak(const NGPaintFragment& fragment) {
+  // TODO(yoichio): InlineBlock should not be container line box.
+  // See paint/selection/text-selection-inline-block.html.
+  const NGPaintFragment* container_line_box = fragment.ContainerLineBox();
+  DCHECK(container_line_box);
+  const NGPhysicalLineBoxFragment& physical_line_box =
+      ToNGPhysicalLineBoxFragment(container_line_box->PhysicalFragment());
+  const NGPhysicalFragment* last_leaf_not_linebreak =
+      physical_line_box.LastLogicalLeafIgnoringLineBreak();
+  DCHECK(last_leaf_not_linebreak);
+  if (&fragment.PhysicalFragment() != last_leaf_not_linebreak)
+    return false;
+  // Even If |fragment| is before linebreak, if its direction differs to line
+  // direction, we don't paint line break. See
+  // paint/selection/text-selection-newline-mixed-ltr-rtl.html.
+  const ShapeResult* shape_result =
+      ToNGPhysicalTextFragment(fragment.PhysicalFragment()).TextShapeResult();
+  return physical_line_box.BaseDirection() == shape_result->Direction();
+}
+
 LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const NGPaintFragment& fragment) const {
   const NGPhysicalTextFragment& text_fragment =
@@ -670,31 +691,47 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
   switch (text_fragment.GetLayoutObject()->GetSelectionState()) {
     case SelectionState::kStart: {
       DCHECK(SelectionStart().has_value());
-      unsigned start_in_block = SelectionStart().value_or(0);
+      const unsigned start_in_block = SelectionStart().value_or(0);
+      const bool is_continuous = start_in_block <= text_fragment.EndOffset();
       return {ClampOffset(start_in_block, text_fragment),
-              text_fragment.EndOffset()};
+              text_fragment.EndOffset(),
+              (is_continuous && IsBeforeLineBreak(fragment))
+                  ? SelectLineBreak::kSelected
+                  : SelectLineBreak::kNotSelected};
     }
     case SelectionState::kEnd: {
       DCHECK(SelectionEnd().has_value());
-      unsigned end_in_block =
+      const unsigned end_in_block =
           SelectionEnd().value_or(text_fragment.EndOffset());
-      return {text_fragment.StartOffset(),
-              ClampOffset(end_in_block, text_fragment)};
+      const unsigned end_in_fragment = ClampOffset(end_in_block, text_fragment);
+      const bool is_continuous = text_fragment.EndOffset() < end_in_block;
+      return {text_fragment.StartOffset(), end_in_fragment,
+              (is_continuous && IsBeforeLineBreak(fragment))
+                  ? SelectLineBreak::kSelected
+                  : SelectLineBreak::kNotSelected};
     }
     case SelectionState::kStartAndEnd: {
       DCHECK(SelectionStart().has_value());
       DCHECK(SelectionEnd().has_value());
-      unsigned start_in_block = SelectionStart().value_or(0);
-      unsigned end_in_block =
+      const unsigned start_in_block = SelectionStart().value_or(0);
+      const unsigned end_in_block =
           SelectionEnd().value_or(text_fragment.EndOffset());
-      return {ClampOffset(start_in_block, text_fragment),
-              ClampOffset(end_in_block, text_fragment)};
+      const unsigned end_in_fragment = ClampOffset(end_in_block, text_fragment);
+      const bool is_continuous = start_in_block <= text_fragment.EndOffset() &&
+                                 text_fragment.EndOffset() < end_in_block;
+      return {ClampOffset(start_in_block, text_fragment), end_in_fragment,
+              (is_continuous && IsBeforeLineBreak(fragment))
+                  ? SelectLineBreak::kSelected
+                  : SelectLineBreak::kNotSelected};
     }
-    case SelectionState::kInside:
-      return {text_fragment.StartOffset(), text_fragment.EndOffset()};
+    case SelectionState::kInside: {
+      return {text_fragment.StartOffset(), text_fragment.EndOffset(),
+              IsBeforeLineBreak(fragment) ? SelectLineBreak::kSelected
+                                          : SelectLineBreak::kNotSelected};
+    }
     default:
       // This block is not included in selection.
-      return {0, 0};
+      return {0, 0, SelectLineBreak::kNotSelected};
   }
 }
 
