@@ -465,11 +465,10 @@ class CORE_EXPORT WebViewImpl final : public WebView,
       bool zoom_into_legible_scale);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ParameterizedWebFrameTest,
-                           DivScrollIntoEditableTest);
-  FRIEND_TEST_ALL_PREFIXES(ParameterizedWebFrameTest,
+  FRIEND_TEST_ALL_PREFIXES(WebFrameTest, DivScrollIntoEditableTest);
+  FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
                            DivScrollIntoEditablePreservePageScaleTest);
-  FRIEND_TEST_ALL_PREFIXES(ParameterizedWebFrameTest,
+  FRIEND_TEST_ALL_PREFIXES(WebFrameTest,
                            DivScrollIntoEditableTestZoomToLegibleScaleDisabled);
 
   void SetPageScaleFactorAndLocation(float, const FloatPoint&);
