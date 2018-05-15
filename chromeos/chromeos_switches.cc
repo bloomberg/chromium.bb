@@ -392,6 +392,10 @@ const char kEnterpriseDisableLicenseTypeSelection[] =
 const char kEnterpriseEnableForcedReEnrollment[] =
     "enterprise-enable-forced-re-enrollment";
 
+// Whether to enable initial enterprise enrollment.
+const char kEnterpriseEnableInitialEnrollment[] =
+    "enterprise-enable-initial-enrollment";
+
 // Enables the zero-touch enterprise enrollment flow.
 const char kEnterpriseEnableZeroTouchEnrollment[] =
     "enterprise-enable-zero-touch-enrollment";

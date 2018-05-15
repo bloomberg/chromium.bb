@@ -215,7 +215,8 @@ void ShouldOfferUpdateViaPowerwash(
     // get enrolled and the admin allows TPM firmware update via powerwash.
     const AutoEnrollmentController::FRERequirement requirement =
         AutoEnrollmentController::GetFRERequirement();
-    if (requirement == AutoEnrollmentController::EXPLICITLY_REQUIRED) {
+    if (requirement ==
+        AutoEnrollmentController::FRERequirement::kExplicitlyRequired) {
       callback.Run(false);
       return;
     }

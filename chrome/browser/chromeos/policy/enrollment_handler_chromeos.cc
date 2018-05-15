@@ -344,8 +344,7 @@ void EnrollmentHandlerChromeOS::HandleStateKeysResult(
   DCHECK_EQ(STEP_STATE_KEYS, enrollment_step_);
 
   // Make sure state keys are available if forced re-enrollment is on.
-  if (chromeos::AutoEnrollmentController::GetMode() ==
-      chromeos::AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT) {
+  if (chromeos::AutoEnrollmentController::IsFREEnabled()) {
     client_->SetStateKeysToUpload(state_keys);
     current_state_key_ = state_keys_broker_->current_state_key();
     if (state_keys.empty() || current_state_key_.empty()) {

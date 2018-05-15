@@ -84,38 +84,6 @@ std::string GetKeyName(const std::string& key, Product product) {
   return key + "." + GetProductName(product) + "." + brand;
 }
 
-// Returns true if the |rlz_embargo_end_date| present in VPD has passed
-// compared to the current time.
-bool HasRlzEmbargoEndDatePassed() {
-  chromeos::system::StatisticsProvider* stats =
-      chromeos::system::StatisticsProvider::GetInstance();
-
-  std::string rlz_embargo_end_date;
-  if (!stats->GetMachineStatistic(chromeos::system::kRlzEmbargoEndDateKey,
-                                  &rlz_embargo_end_date)) {
-    // |rlz_embargo_end_date| only exists on new devices that have not yet
-    // launched. When the field doesn't exist, returns true so it's a no-op.
-    return true;
-  }
-  base::Time parsed_time;
-  if (!base::Time::FromUTCString(rlz_embargo_end_date.c_str(), &parsed_time)) {
-    LOG(ERROR) << "|rlz_embargo_end_date| exists but cannot be parsed.";
-    return true;
-  }
-
-  if (parsed_time - base::Time::Now() >=
-      base::TimeDelta::FromDays(
-          RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays)) {
-    // If |rlz_embargo_end_date| is more than this many days in the future,
-    // ignore it. Because it indicates that the device is not connected to an
-    // ntp server in the factory, and its internal clock could be off when the
-    // date is written.
-    return true;
-  }
-
-  return base::Time::Now() > parsed_time;
-}
-
 }  // namespace
 
 const int RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays =
@@ -321,6 +289,45 @@ bool RlzValueStoreChromeOS::ClearAllStatefulEvents(Product product) {
 void RlzValueStoreChromeOS::CollectGarbage() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NOTIMPLEMENTED();
+}
+
+// static
+RlzValueStoreChromeOS::EmbargoState
+RlzValueStoreChromeOS::GetRlzEmbargoState() {
+  chromeos::system::StatisticsProvider* stats =
+      chromeos::system::StatisticsProvider::GetInstance();
+
+  std::string rlz_embargo_end_date;
+  if (!stats->GetMachineStatistic(chromeos::system::kRlzEmbargoEndDateKey,
+                                  &rlz_embargo_end_date)) {
+    // |rlz_embargo_end_date| only exists on new devices that have not yet
+    // launched.
+    return EmbargoState::kMissingOrMalformed;
+  }
+  base::Time parsed_time;
+  if (!base::Time::FromUTCString(rlz_embargo_end_date.c_str(), &parsed_time)) {
+    LOG(ERROR) << "|rlz_embargo_end_date| exists but cannot be parsed.";
+    return EmbargoState::kMissingOrMalformed;
+  }
+
+  if (parsed_time - base::Time::Now() >=
+      base::TimeDelta::FromDays(
+          RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays)) {
+    // If |rlz_embargo_end_date| is more than this many days in the future,
+    // ignore it. Because it indicates that the device is not connected to an
+    // ntp server in the factory, and its internal clock could be off when the
+    // date is written.
+    // TODO(pmarko): UMA stat for how often this happens.
+    return EmbargoState::kInvalid;
+  }
+
+  return base::Time::Now() > parsed_time ? EmbargoState::kPassed
+                                         : EmbargoState::kNotPassed;
+}
+
+// static
+bool RlzValueStoreChromeOS::HasRlzEmbargoEndDatePassed() {
+  return GetRlzEmbargoState() != EmbargoState::kNotPassed;
 }
 
 void RlzValueStoreChromeOS::ReadStore() {

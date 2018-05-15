@@ -407,7 +407,8 @@ void CoreOobeHandler::HandleToggleResetScreen() {
   // effect of dropping the FRE requirement if it was previously in effect.
   const AutoEnrollmentController::FRERequirement requirement =
       AutoEnrollmentController::GetFRERequirement();
-  if (requirement != AutoEnrollmentController::EXPLICITLY_REQUIRED) {
+  if (requirement !=
+      AutoEnrollmentController::FRERequirement::kExplicitlyRequired) {
     LaunchResetScreen();
   }
 }

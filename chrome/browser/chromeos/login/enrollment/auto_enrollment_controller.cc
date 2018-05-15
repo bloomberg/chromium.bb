@@ -19,10 +19,15 @@
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 
 namespace chromeos {
 
 namespace {
+
+// Maximum number of bits of the identifer hash to send during initial
+// enrollment check.
+const int kInitialEnrollmentModulusPowerLimit = 6;
 
 // Maximum time to wait before forcing a decision.  Note that download time for
 // state key buckets can be non-negligible, especially on 2G connections.
@@ -57,19 +62,45 @@ int GetSanitizedArg(const std::string& switch_name) {
 
 std::string FRERequirementToString(
     AutoEnrollmentController::FRERequirement requirement) {
+  using FRERequirement = AutoEnrollmentController::FRERequirement;
   switch (requirement) {
-    case AutoEnrollmentController::REQUIRED:
+    case FRERequirement::kRequired:
       return "Auto-enrollment required.";
-    case AutoEnrollmentController::NOT_REQUIRED:
+    case FRERequirement::kNotRequired:
       return "Auto-enrollment disabled: first setup.";
-    case AutoEnrollmentController::EXPLICITLY_REQUIRED:
+    case FRERequirement::kExplicitlyRequired:
       return "Auto-enrollment required: flag in VPD.";
-    case AutoEnrollmentController::EXPLICITLY_NOT_REQUIRED:
+    case FRERequirement::kExplicitlyNotRequired:
       return "Auto-enrollment disabled: flag in VPD.";
   }
 
   NOTREACHED();
   return std::string();
+}
+
+// Returns true if this is an official build and the device has chrome firmware.
+bool IsOfficialChrome() {
+#if defined(OFFICIAL_BUILD)
+  std::string firmware_type;
+  const bool non_chrome_firmware =
+      system::StatisticsProvider::GetInstance()->GetMachineStatistic(
+          system::kFirmwareTypeKey, &firmware_type) &&
+      firmware_type == system::kFirmwareTypeValueNonchrome;
+  return !non_chrome_firmware;
+#else
+  return false;
+#endif
+}
+
+// Schedules immediate initialization of the |DeviceManagementService| and
+// returns it.
+policy::DeviceManagementService* InitializeAndGetDeviceManagementService() {
+  policy::BrowserPolicyConnectorChromeOS* connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  policy::DeviceManagementService* service =
+      connector->device_management_service();
+  service->ScheduleInitialization(0);
+  return service;
 }
 
 }  // namespace
@@ -79,32 +110,60 @@ const char AutoEnrollmentController::kForcedReEnrollmentNever[] = "never";
 const char AutoEnrollmentController::kForcedReEnrollmentOfficialBuild[] =
     "official";
 
+const char AutoEnrollmentController::kInitialEnrollmentAlways[] = "always";
+const char AutoEnrollmentController::kInitialEnrollmentNever[] = "never";
+const char AutoEnrollmentController::kInitialEnrollmentOfficialBuild[] =
+    "official";
+
 // static
-AutoEnrollmentController::Mode AutoEnrollmentController::GetMode() {
+bool AutoEnrollmentController::IsFREEnabled() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   std::string command_line_mode = command_line->GetSwitchValueASCII(
       switches::kEnterpriseEnableForcedReEnrollment);
-  if (command_line_mode == kForcedReEnrollmentAlways) {
-    return MODE_FORCED_RE_ENROLLMENT;
-  } else if (command_line_mode.empty() ||
-             command_line_mode == kForcedReEnrollmentOfficialBuild) {
-#if defined(OFFICIAL_BUILD)
-    std::string firmware_type;
-    const bool non_chrome_firmware =
-        system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-            system::kFirmwareTypeKey, &firmware_type) &&
-        firmware_type == system::kFirmwareTypeValueNonchrome;
-    return non_chrome_firmware ? MODE_NONE : MODE_FORCED_RE_ENROLLMENT;
-#else
-    return MODE_NONE;
-#endif
-  } else if (command_line_mode == kForcedReEnrollmentNever) {
-    return MODE_NONE;
+  if (command_line_mode == kForcedReEnrollmentAlways)
+    return true;
+
+  if (command_line_mode.empty() ||
+      command_line_mode == kForcedReEnrollmentOfficialBuild) {
+    return IsOfficialChrome();
   }
 
-  LOG(FATAL) << "Unknown auto-enrollment mode " << command_line_mode;
-  return MODE_NONE;
+  if (command_line_mode == kForcedReEnrollmentNever)
+    return false;
+
+  LOG(FATAL) << "Unknown auto-enrollment mode for FRE " << command_line_mode;
+  return false;
+}
+
+// static
+bool AutoEnrollmentController::IsInitialEnrollmentEnabled() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+
+  if (!command_line->HasSwitch(switches::kEnterpriseEnableInitialEnrollment))
+    return false;
+
+  std::string command_line_mode = command_line->GetSwitchValueASCII(
+      switches::kEnterpriseEnableInitialEnrollment);
+  if (command_line_mode == kInitialEnrollmentAlways)
+    return true;
+
+  if (command_line_mode.empty() ||
+      command_line_mode == kInitialEnrollmentOfficialBuild) {
+    return IsOfficialChrome();
+  }
+
+  if (command_line_mode == kInitialEnrollmentNever)
+    return false;
+
+  LOG(FATAL) << "Unknown auto-enrollment mode for initial enrollment "
+             << command_line_mode;
+  return false;
+}
+
+// static
+bool AutoEnrollmentController::IsEnabled() {
+  return IsFREEnabled() || IsInitialEnrollmentEnabled();
 }
 
 // static
@@ -118,15 +177,51 @@ AutoEnrollmentController::GetFRERequirement() {
 
   if (fre_flag_found) {
     if (check_enrollment_value == "0")
-      return AutoEnrollmentController::EXPLICITLY_NOT_REQUIRED;
+      return FRERequirement::kExplicitlyNotRequired;
     if (check_enrollment_value == "1")
-      return AutoEnrollmentController::EXPLICITLY_REQUIRED;
+      return FRERequirement::kExplicitlyRequired;
   }
   if (!provider->GetMachineStatistic(system::kActivateDateKey, nullptr) &&
       !provider->GetEnterpriseMachineID().empty()) {
-    return AutoEnrollmentController::NOT_REQUIRED;
+    return FRERequirement::kNotRequired;
   }
-  return AutoEnrollmentController::REQUIRED;
+  return FRERequirement::kRequired;
+}
+
+// static
+AutoEnrollmentController::InitialEnrollmentRequirement
+AutoEnrollmentController::GetInitialEnrollmentRequirement() {
+  system::StatisticsProvider* provider =
+      system::StatisticsProvider::GetInstance();
+  rlz_lib::RlzValueStoreChromeOS::EmbargoState embargo_state =
+      rlz_lib::RlzValueStoreChromeOS::GetRlzEmbargoState();
+  if (embargo_state == rlz_lib::RlzValueStoreChromeOS::EmbargoState::kInvalid) {
+    LOG(WARNING)
+        << "Skip Initial Enrollment Check due to invalid embargo date.";
+    // TODO(pmarko): UMA Stat.
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+  if (embargo_state ==
+      rlz_lib::RlzValueStoreChromeOS::EmbargoState::kNotPassed) {
+    VLOG(1) << "Skip Initial Enrollment Check due to not-passed embargo date.";
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+
+  if (provider->GetEnterpriseMachineID().empty()) {
+    LOG(WARNING)
+        << "Skip Initial Enrollment Check due to missing serial number.";
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+
+  std::string rlz_brand_code;
+  const bool rlz_brand_code_found =
+      provider->GetMachineStatistic(system::kRlzBrandCodeKey, &rlz_brand_code);
+  if (!rlz_brand_code_found || rlz_brand_code.empty()) {
+    LOG(WARNING) << "Skip Initial Enrollment Check due to missing brand code.";
+    return InitialEnrollmentRequirement::kNotRequired;
+  }
+
+  return InitialEnrollmentRequirement::kRequired;
 }
 
 AutoEnrollmentController::AutoEnrollmentController() {}
@@ -151,36 +246,15 @@ void AutoEnrollmentController::Start() {
       break;
   }
 
-  // Skip if GAIA is disabled or modulus configuration is not present.
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(chromeos::switches::kDisableGaiaServices) ||
-      (!command_line->HasSwitch(
-           chromeos::switches::kEnterpriseEnrollmentInitialModulus) &&
-       !command_line->HasSwitch(
-           chromeos::switches::kEnterpriseEnrollmentModulusLimit))) {
-    VLOG(1) << "Auto-enrollment disabled: command line.";
-    UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
-    return;
-  }
-
-  // Skip if mode comes up as none.
-  if (GetMode() == MODE_NONE) {
-    VLOG(1) << "Auto-enrollment disabled: no mode.";
-    UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
-    return;
-  }
-
-  fre_requirement_ = GetFRERequirement();
-  VLOG(1) << FRERequirementToString(fre_requirement_);
-  if (fre_requirement_ == EXPLICITLY_NOT_REQUIRED ||
-      fre_requirement_ == NOT_REQUIRED) {
-    UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
-    return;
-  }
-
   // If a client is being created or already existing, bail out.
   if (client_start_weak_factory_.HasWeakPtrs() || client_) {
     LOG(ERROR) << "Auto-enrollment client is already running.";
+    return;
+  }
+
+  DetermineAutoEnrollmentCheckType();
+  if (auto_enrollment_check_type_ == AutoEnrollmentCheckType::kNone) {
+    UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     return;
   }
 
@@ -210,16 +284,111 @@ AutoEnrollmentController::RegisterProgressCallback(
   return progress_callbacks_.Add(callback);
 }
 
+void AutoEnrollmentController::DetermineAutoEnrollmentCheckType() {
+  // Skip everything if neither FRE nor Initial Enrollment are enabled.
+  if (!IsEnabled()) {
+    VLOG(1) << "Auto-enrollment disabled";
+    auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
+    return;
+  }
+
+  // Skip everything if GAIA is disabled.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kDisableGaiaServices)) {
+    VLOG(1) << "Auto-enrollment disabled: command line (gaia).";
+    auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
+    return;
+  }
+
+  // Skip everything if the device was in consumer mode previously.
+  fre_requirement_ = GetFRERequirement();
+  VLOG(1) << FRERequirementToString(fre_requirement_);
+  if (fre_requirement_ == FRERequirement::kExplicitlyNotRequired) {
+    VLOG(1) << "Auto-enrollment disabled: VPD";
+    auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
+    return;
+  }
+
+  if (ShouldDoFRECheck(command_line, fre_requirement_)) {
+    // FRE has precedence over Initial Enrollment.
+    VLOG(1) << "Proceeding with FRE";
+    auto_enrollment_check_type_ = AutoEnrollmentCheckType::kFRE;
+    return;
+  }
+
+  if (ShouldDoInitialEnrollmentCheck()) {
+    VLOG(1) << "Proceeding with Initial Enrollment";
+    auto_enrollment_check_type_ = AutoEnrollmentCheckType::kInitialEnrollment;
+    return;
+  }
+
+  auto_enrollment_check_type_ = AutoEnrollmentCheckType::kNone;
+}
+
+// static
+bool AutoEnrollmentController::ShouldDoFRECheck(
+    base::CommandLine* command_line,
+    FRERequirement fre_requirement) {
+  // Skip FRE check if modulus configuration is not present.
+  if (!command_line->HasSwitch(switches::kEnterpriseEnrollmentInitialModulus) &&
+      !command_line->HasSwitch(switches::kEnterpriseEnrollmentModulusLimit)) {
+    VLOG(1) << "FRE disabled: command line (config)";
+    return false;
+  }
+
+  // Skip FRE check if it is not enabled by command-line switches.
+  if (!IsFREEnabled()) {
+    VLOG(1) << "FRE disabled";
+    return false;
+  }
+
+  // Skip FRE check if it is not required according to the device state.
+  if (fre_requirement == FRERequirement::kNotRequired)
+    return false;
+
+  return true;
+}
+
+// static
+bool AutoEnrollmentController::ShouldDoInitialEnrollmentCheck() {
+  // Skip Initial Enrollment check if it is not enabled according to
+  // command-line flags.
+  if (!IsInitialEnrollmentEnabled())
+    return false;
+
+  // Skip Initial Enrollment check if it is not required according to the
+  // device state.
+  if (GetInitialEnrollmentRequirement() ==
+      InitialEnrollmentRequirement::kNotRequired)
+    return false;
+
+  return true;
+}
+
 void AutoEnrollmentController::OnOwnershipStatusCheckDone(
     DeviceSettingsService::OwnershipStatus status) {
   switch (status) {
     case DeviceSettingsService::OWNERSHIP_NONE:
-      g_browser_process->platform_part()
-          ->browser_policy_connector_chromeos()
-          ->GetStateKeysBroker()
-          ->RequestStateKeys(
-              base::Bind(&AutoEnrollmentController::StartClient,
-                         client_start_weak_factory_.GetWeakPtr()));
+      switch (auto_enrollment_check_type_) {
+        case AutoEnrollmentCheckType::kFRE:
+          // For FRE, request state keys first.
+          g_browser_process->platform_part()
+              ->browser_policy_connector_chromeos()
+              ->GetStateKeysBroker()
+              ->RequestStateKeys(
+                  base::BindOnce(&AutoEnrollmentController::StartClientForFRE,
+                                 client_start_weak_factory_.GetWeakPtr()));
+          break;
+        case AutoEnrollmentCheckType::kInitialEnrollment:
+          StartClientForInitialEnrollment();
+          break;
+        case AutoEnrollmentCheckType::kNone:
+          // The ownership check is only triggered if
+          // |auto_enrollment_check_type_| indicates that an auto-enrollment
+          // check should be done.
+          NOTREACHED();
+          break;
+      }
       return;
     case DeviceSettingsService::OWNERSHIP_TAKEN:
       VLOG(1) << "Device already owned, skipping auto-enrollment check.";
@@ -232,35 +401,32 @@ void AutoEnrollmentController::OnOwnershipStatusCheckDone(
   }
 }
 
-void AutoEnrollmentController::StartClient(
+void AutoEnrollmentController::StartClientForFRE(
     const std::vector<std::string>& state_keys) {
   if (state_keys.empty()) {
     LOG(ERROR) << "No state keys available";
-    if (fre_requirement_ == EXPLICITLY_REQUIRED) {
+    if (fre_requirement_ == FRERequirement::kExplicitlyRequired) {
       // Retry to fetch the state keys. For devices where FRE is required to be
       // checked, we can't proceed with empty state keys.
       g_browser_process->platform_part()
           ->browser_policy_connector_chromeos()
           ->GetStateKeysBroker()
           ->RequestStateKeys(
-              base::Bind(&AutoEnrollmentController::StartClient,
-                         client_start_weak_factory_.GetWeakPtr()));
+              base::BindOnce(&AutoEnrollmentController::StartClientForFRE,
+                             client_start_weak_factory_.GetWeakPtr()));
     } else {
       UpdateState(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT);
     }
     return;
   }
 
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
   policy::DeviceManagementService* service =
-      connector->device_management_service();
-  service->ScheduleInitialization(0);
+      InitializeAndGetDeviceManagementService();
 
   int power_initial =
-      GetSanitizedArg(chromeos::switches::kEnterpriseEnrollmentInitialModulus);
+      GetSanitizedArg(switches::kEnterpriseEnrollmentInitialModulus);
   int power_limit =
-      GetSanitizedArg(chromeos::switches::kEnterpriseEnrollmentModulusLimit);
+      GetSanitizedArg(switches::kEnterpriseEnrollmentModulusLimit);
   if (power_initial > power_limit) {
     LOG(ERROR) << "Initial auto-enrollment modulus is larger than the limit, "
                   "clamping to the limit.";
@@ -274,7 +440,40 @@ void AutoEnrollmentController::StartClient(
       g_browser_process->system_request_context(), state_keys.front(),
       power_initial, power_limit);
 
-  VLOG(1) << "Starting auto-enrollment client.";
+  VLOG(1) << "Starting auto-enrollment client for FRE.";
+  client_->Start();
+}
+
+void AutoEnrollmentController::StartClientForInitialEnrollment() {
+  policy::DeviceManagementService* service =
+      InitializeAndGetDeviceManagementService();
+
+  // Initial Enrollment does not transfer any data in the initial exchange, and
+  // supports uploading up to |kInitialEnrollmentModulusPowerLimit| bits of the
+  // identifier hash.
+  const int power_initial = 0;
+  const int power_limit = kInitialEnrollmentModulusPowerLimit;
+
+  system::StatisticsProvider* provider =
+      system::StatisticsProvider::GetInstance();
+  std::string serial_number = provider->GetEnterpriseMachineID();
+  std::string rlz_brand_code;
+  const bool rlz_brand_code_found =
+      provider->GetMachineStatistic(system::kRlzBrandCodeKey, &rlz_brand_code);
+  // The initial enrollment check should not be started if the serial number or
+  // brand code are missing. This is ensured in
+  // |GetInitialEnrollmentRequirement|.
+  CHECK(!serial_number.empty() && rlz_brand_code_found &&
+        !rlz_brand_code.empty());
+
+  client_ = policy::AutoEnrollmentClient::CreateForInitialEnrollment(
+      base::BindRepeating(&AutoEnrollmentController::UpdateState,
+                          weak_ptr_factory_.GetWeakPtr()),
+      service, g_browser_process->local_state(),
+      g_browser_process->system_request_context(), serial_number,
+      rlz_brand_code, power_initial, power_limit);
+
+  VLOG(1) << "Starting auto-enrollment client for Initial Enrollment.";
   client_->Start();
 }
 
@@ -308,7 +507,7 @@ void AutoEnrollmentController::StartRemoveFirmwareManagementParameters() {
   DCHECK_EQ(policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT, state_);
 
   cryptohome::RemoveFirmwareManagementParametersRequest request;
-  chromeos::DBusThreadManager::Get()
+  DBusThreadManager::Get()
       ->GetCryptohomeClient()
       ->RemoveFirmwareManagementParametersFromTpm(
           request,
@@ -336,7 +535,7 @@ void AutoEnrollmentController::Timeout() {
   // REQUIRED case as well.
   // TODO(mnissler): Add UMA to track results of auto-enrollment checks.
   if (client_start_weak_factory_.HasWeakPtrs() &&
-      fre_requirement_ != EXPLICITLY_REQUIRED) {
+      fre_requirement_ != FRERequirement::kExplicitlyRequired) {
     // If the callbacks to check ownership status or state keys are still
     // pending, there's a bug in the code running on the device. No use in
     // retrying anything, need to fix that bug.

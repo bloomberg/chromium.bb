@@ -100,8 +100,7 @@ bool GetMachineFlag(const std::string& key, bool default_value) {
 
 // Checks whether forced re-enrollment is enabled.
 bool ForcedReEnrollmentEnabled() {
-  return chromeos::AutoEnrollmentController::GetMode() ==
-         chromeos::AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT;
+  return chromeos::AutoEnrollmentController::IsFREEnabled();
 }
 
 }  // namespace

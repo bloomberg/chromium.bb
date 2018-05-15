@@ -76,9 +76,7 @@ void AutoEnrollmentCheckScreen::ClearState() {
 
 void AutoEnrollmentCheckScreen::Show() {
   // If the decision got made already, don't show the screen at all.
-  if (AutoEnrollmentController::GetMode() !=
-          AutoEnrollmentController::MODE_FORCED_RE_ENROLLMENT ||
-      IsCompleted()) {
+  if (!AutoEnrollmentController::IsEnabled() || IsCompleted()) {
     SignalCompletion();
     return;
   }
@@ -210,7 +208,7 @@ bool AutoEnrollmentCheckScreen::UpdateAutoEnrollmentState(
       return false;
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
       if (auto_enrollment_controller_->GetFRERequirement() !=
-          AutoEnrollmentController::EXPLICITLY_REQUIRED) {
+          AutoEnrollmentController::FRERequirement::kExplicitlyRequired) {
         return false;
       }
       // Fall to the same behavior like any connection error if the device is
@@ -265,7 +263,7 @@ bool AutoEnrollmentCheckScreen::IsCompleted() const {
     case policy::AUTO_ENROLLMENT_STATE_SERVER_ERROR:
       // Server errors should block OOBE for enrolled devices.
       return auto_enrollment_controller_->GetFRERequirement() !=
-             AutoEnrollmentController::EXPLICITLY_REQUIRED;
+             AutoEnrollmentController::FRERequirement::kExplicitlyRequired;
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT:
     case policy::AUTO_ENROLLMENT_STATE_TRIGGER_ZERO_TOUCH:
     case policy::AUTO_ENROLLMENT_STATE_NO_ENROLLMENT:
