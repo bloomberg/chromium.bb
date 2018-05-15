@@ -20,15 +20,7 @@ function setUp() {
   // Override VolumeInfo.prototype.resolveDisplayRoot.
   VolumeInfoImpl.prototype.resolveDisplayRoot = function() {};
 
-  // Mock chrome.fileManagerPrivate.isCrostiniEnabled.
   // TODO(crbug.com/834103): Add integration test for Crostini.
-  chrome.fileManagerPrivate = {
-    crostiniEnabled: false,
-    isCrostiniEnabled: function(callback) {
-      callback(this.crostiniEnabled);
-    },
-  };
-
   drive = new MockFileSystem('drive');
   hoge = new MockFileSystem('removable:hoge');
 }
@@ -37,17 +29,14 @@ function testModel() {
   var volumeManager = new MockVolumeManagerWrapper();
   var shortcutListModel = new MockFolderShortcutDataModel(
       [new MockFileEntry(drive, '/root/shortcut')]);
-  var fakeEntry = {
-    toURL: function() {
-      return 'fake-entry://recent';
-    }
-  };
-  var recentItem = new NavigationModelRecentItem('recent-label', fakeEntry);
-  chrome.fileManagerPrivate.crostiniEnabled = true;
+  var recentItem = new NavigationModelFakeItem(
+      'recent-label', {toURL: () => 'fake-entry://recent'});
   var addNewServicesItem = new NavigationModelMenuItem(
       'menu-button-label', '#add-new-services', 'menu-button-icon');
   var model = new NavigationListModel(
       volumeManager, shortcutListModel, recentItem, addNewServicesItem);
+  model.linuxFilesItem = new NavigationModelFakeItem(
+      'linux-files-label', {toURL: () => 'fake-entry://linux-files'});
 
   assertEquals(6, model.length);
   assertEquals('drive', model.item(0).volumeInfo.volumeId);

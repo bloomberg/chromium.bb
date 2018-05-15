@@ -10,7 +10,7 @@ var NavigationModelItemType = {
   VOLUME: 'volume',
   MENU: 'menu',
   RECENT: 'recent',
-  SFTP_MOUNT: 'sftp_mount',
+  CROSTINI: 'crostini',
 };
 
 /**
@@ -111,20 +111,20 @@ NavigationModelMenuItem.prototype = /** @struct */ {
 };
 
 /**
- * Item of NavigationListModel for a Recent view.
+ * Item of NavigationListModel for a fake item such as Recent or Linux Files.
  *
  * @param {string} label Label on the menu button.
- * @param {!FakeEntry} entry Fake entry for the Recent root folder.
+ * @param {!FakeEntry} entry Fake entry for the root folder.
  * @constructor
  * @extends {NavigationModelItem}
  * @struct
  */
-function NavigationModelRecentItem(label, entry) {
+function NavigationModelFakeItem(label, entry) {
   NavigationModelItem.call(this, label, NavigationModelItemType.RECENT);
   this.entry_ = entry;
 }
 
-NavigationModelRecentItem.prototype = /** @struct */ {
+NavigationModelFakeItem.prototype = /** @struct */ {
   __proto__: NavigationModelItem.prototype,
   get entry() {
     return this.entry_;
@@ -132,49 +132,11 @@ NavigationModelRecentItem.prototype = /** @struct */ {
 };
 
 /**
- * Item of NavigationListModel for an SFTP Mount as used by Linux files.
- *
- * @param {string} label Label on the item.
- * @param {!FakeEntry} entry Fake entry for the SFTP Mount root folder.
- * @param {string} icon CSS icon.
- * @constructor
- * @extends {NavigationModelItem}
- * @struct
- */
-function NavigationModelSFTPMountItem(label, entry, icon) {
-  NavigationModelItem.call(this, label, NavigationModelItemType.SFTP_MOUNT);
-  this.entry_ = entry;
-  this.icon_ = icon;
-}
-
-NavigationModelSFTPMountItem.prototype = /** @struct */ {
-  __proto__: NavigationModelItem.prototype,
-  get entry() {
-    return this.entry_;
-  },
-  get icon() {
-    return this.icon_;
-  },
-  /**
-   * Start crostini container and mount it.
-   */
-  mount: function() {
-    chrome.fileManagerPrivate.mountCrostiniContainer(() => {
-      // TODO(crbug.com/834103): implement crostini error handling.
-      if (chrome.runtime.lastError) {
-        console.error(
-            'mountCrostiniContainer error: ', chrome.runtime.lastError.message);
-      }
-    });
-  },
-};
-
-/**
  * A navigation list model. This model combines multiple models.
  * @param {!VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
  * @param {(!cr.ui.ArrayDataModel|!FolderShortcutsDataModel)} shortcutListModel
  *     The list of folder shortcut.
- * @param {NavigationModelRecentItem} recentModelItem Recent folder.
+ * @param {NavigationModelFakeItem} recentModelItem Recent folder.
  * @param {NavigationModelMenuItem} addNewServicesItem Add new services item.
  * @constructor
  * @extends {cr.EventTarget}
@@ -196,7 +158,7 @@ function NavigationListModel(
   this.shortcutListModel_ = shortcutListModel;
 
   /**
-   * @private {NavigationModelRecentItem}
+   * @private {NavigationModelFakeItem}
    * @const
    */
   this.recentModelItem_ = recentModelItem;
@@ -205,7 +167,7 @@ function NavigationListModel(
    * Root folder for crostini Linux Files.
    * This field will be set asynchronously after calling
    * chrome.fileManagerPrivate.isCrostiniEnabled.
-   * @private {NavigationModelSFTPMountItem}
+   * @private {NavigationModelFakeItem}
    */
   this.linuxFilesItem_ = null;
 
@@ -255,24 +217,6 @@ function NavigationListModel(
     var volumeInfo = this.volumeManager_.getVolumeInfo(shortcutEntry);
     this.shortcutList_.push(entryToModelItem(shortcutEntry));
   }
-
-  // Check if crostini is enabled to create linuxFilesItem_.
-  chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
-    if (!enabled)
-      return;
-
-    this.linuxFilesItem_ = new NavigationModelSFTPMountItem(
-        str('LINUX_FILES_ROOT_LABEL'), {
-          isDirectory: true,
-          rootType: VolumeManagerCommon.RootType.CROSTINI,
-          toURL: function() {
-            return 'fake-entry://linux-files';
-          },
-        },
-        'linux-files');
-    // Reorder items to ensure Linux Files is shown.
-    this.reorderNavigationItems_();
-  });
 
   // Reorder volumes, shortcuts, and optional items for initial display.
   this.reorderNavigationItems_();
@@ -388,8 +332,22 @@ function NavigationListModel(
  */
 NavigationListModel.prototype = {
   __proto__: cr.EventTarget.prototype,
-  get length() { return this.length_(); },
-  get folderShortcutList() { return this.shortcutList_; }
+  get length() {
+    return this.length_();
+  },
+  get folderShortcutList() {
+    return this.shortcutList_;
+  },
+  /**
+   * Set the crostini Linux Files root and reorder items.
+   * This setter is provided separate to the constructor since
+   * this field is set async after calling fileManagerPrivate.isCrostiniEnabled.
+   * @param {NavigationModelFakeItem} item Linux Files root.
+   */
+  set linuxFilesItem(item) {
+    this.linuxFilesItem_ = item;
+    this.reorderNavigationItems_();
+  },
 };
 
 /**
