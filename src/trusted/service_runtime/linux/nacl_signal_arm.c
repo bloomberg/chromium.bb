@@ -17,7 +17,7 @@
 void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
                                   const void *raw_ctx) {
   ucontext_t *uctx = (ucontext_t *) raw_ctx;
-  struct sigcontext *mctx = &uctx->uc_mcontext;
+  mcontext_t *mctx = &uctx->uc_mcontext;
 
   memset(sig_ctx, 0, sizeof(*sig_ctx));
 
@@ -49,7 +49,7 @@ void NaClSignalContextFromHandler(struct NaClSignalContext *sig_ctx,
 void NaClSignalContextToHandler(void *raw_ctx,
                                 const struct NaClSignalContext *sig_ctx) {
   ucontext_t *uctx = (ucontext_t *) raw_ctx;
-  struct sigcontext *mctx = &uctx->uc_mcontext;
+  mcontext_t *mctx = &uctx->uc_mcontext;
 
   mctx->arm_pc = sig_ctx->prog_ctr;
   mctx->arm_sp = sig_ctx->stack_ptr;
