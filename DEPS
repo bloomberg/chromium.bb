@@ -1897,7 +1897,7 @@ hooks = [
   {
     'name': 'Fetch Android AFDO profile',
     'pattern': '.',
-    'condition': 'checkout_android',
+    'condition': 'checkout_android or checkout_linux',
     'action': ['vpython', 'src/chrome/android/profiles/update_afdo_profile.py'],
   },
   {
