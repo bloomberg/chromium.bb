@@ -148,6 +148,10 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // string can be used to disable GL rendering (e.g., WebGL support).
   std::string gl_implementation;
 
+  // Names of mojo services exposed by the browser to the renderer. These
+  // services will be added to the browser's service manifest.
+  std::unordered_set<std::string> mojo_service_names;
+
   // Default per-context options, can be specialized on per-context basis.
 
   std::string product_name_and_version;
@@ -247,6 +251,7 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetDisableSandbox(bool disable_sandbox);
   Builder& SetEnableResourceScheduler(bool enable_resource_scheduler);
   Builder& SetGLImplementation(const std::string& gl_implementation);
+  Builder& AddMojoServiceName(const std::string& mojo_service_name);
   Builder& SetAppendCommandLineFlagsCallback(
       const Options::AppendCommandLineFlagsCallback& callback);
 #if defined(OS_WIN)

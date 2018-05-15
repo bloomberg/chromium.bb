@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "headless/lib/renderer/headless_render_frame_controller_impl.h"
 #include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)
@@ -25,6 +26,7 @@ void HeadlessContentRendererClient::RenderFrameCreated(
   new printing::PrintRenderFrameHelper(
       render_frame, std::make_unique<HeadlessPrintRenderFrameHelperDelegate>());
 #endif
+  new HeadlessRenderFrameControllerImpl(render_frame);
 }
 
 }  // namespace headless

@@ -1,0 +1,21 @@
+<html>
+<script>
+function tabsocketTest() {
+  // Unfortunately, the order in which
+  // HeadlessRenderFrameControllerImpl::DidCreateScriptContext and
+  // HeadlessRenderFrameControllerImpl::InstallMainWorldTabSocket are called
+  // is non-deterministic.  This means the TabSocket might not have been
+  // installed yet.  If that happens just try again a bit later.
+  if (window.hasOwnProperty('TabSocket')) {
+    window.TabSocket.send('Hello world!');
+
+    window.TabSocket.onmessage = function(message) {
+      window.TabSocket.send('Embedder sent us: ' + message);
+    };
+  } else {
+    setTimeout(tabsocketTest, 1);
+  }
+}
+tabsocketTest();
+</script>
+</html>
