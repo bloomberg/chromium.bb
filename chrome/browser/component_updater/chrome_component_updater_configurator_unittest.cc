@@ -121,8 +121,8 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
 
   const auto urls = config->UpdateUrl();
   ASSERT_EQ(2u, urls.size());
-  ASSERT_STREQ(kUpdaterDefaultUrlAlt, urls[0].spec().c_str());
-  ASSERT_STREQ(kUpdaterFallbackUrlAlt, urls[1].spec().c_str());
+  ASSERT_STREQ(kUpdaterDefaultUrl, urls[0].spec().c_str());
+  ASSERT_STREQ(kUpdaterFallbackUrl, urls[1].spec().c_str());
 
   ASSERT_EQ(config->UpdateUrl(), config->PingUrl());
 
@@ -132,7 +132,7 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
     const ConfiguratorImpl config(cmdline, true);
     const auto urls = config.UpdateUrl();
     ASSERT_EQ(1u, urls.size());
-    ASSERT_STREQ(kUpdaterDefaultUrlAlt, urls[0].spec().c_str());
+    ASSERT_STREQ(kUpdaterDefaultUrl, urls[0].spec().c_str());
     ASSERT_EQ(config.UpdateUrl(), config.PingUrl());
   }
 
@@ -140,8 +140,8 @@ TEST_F(ChromeComponentUpdaterConfiguratorTest, TestUseEncryption) {
     const ConfiguratorImpl config(cmdline, false);
     const auto urls = config.UpdateUrl();
     ASSERT_EQ(2u, urls.size());
-    ASSERT_STREQ(kUpdaterDefaultUrlAlt, urls[0].spec().c_str());
-    ASSERT_STREQ(kUpdaterFallbackUrlAlt, urls[1].spec().c_str());
+    ASSERT_STREQ(kUpdaterDefaultUrl, urls[0].spec().c_str());
+    ASSERT_STREQ(kUpdaterFallbackUrl, urls[1].spec().c_str());
     ASSERT_EQ(config.UpdateUrl(), config.PingUrl());
   }
 }
