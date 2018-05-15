@@ -14,6 +14,10 @@
 #include "ui/gl/gl_export.h"
 #include "ui/gl/gl_image.h"
 
+namespace gfx {
+class GpuFence;
+}  // namespace gfx
+
 namespace gl {
 
 // For saving the properties of a GLImage overlay plane and scheduling it later.
@@ -24,12 +28,15 @@ class GL_EXPORT GLSurfaceOverlay {
                    GLImage* image,
                    const gfx::Rect& bounds_rect,
                    const gfx::RectF& crop_rect,
-                   bool enable_blend);
-  GLSurfaceOverlay(const GLSurfaceOverlay& other);
+                   bool enable_blend,
+                   std::unique_ptr<gfx::GpuFence> gpu_fence);
+  GLSurfaceOverlay(GLSurfaceOverlay&& other);
   ~GLSurfaceOverlay();
 
   // Schedule the image as an overlay plane to be shown at swap time for
-  // |widget|.
+  // |widget|. The caller needs to ensure that after calling this method the
+  // object will stay valid for as long as the associated gpu fence needs to
+  // remain valid (typically until after displaying the overlay).
   bool ScheduleOverlayPlane(gfx::AcceleratedWidget widget) const;
 
   void Flush() const;
@@ -41,6 +48,7 @@ class GL_EXPORT GLSurfaceOverlay {
   gfx::Rect bounds_rect_;
   gfx::RectF crop_rect_;
   bool enable_blend_;
+  std::unique_ptr<gfx::GpuFence> gpu_fence_;
 };
 
 }  // namespace gl

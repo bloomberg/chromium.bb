@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/trace_event/trace_event.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_vsync_provider.h"
@@ -63,14 +64,17 @@ gfx::SwapResult GbmSurfaceless::SwapBuffers(
   return gfx::SwapResult::SWAP_FAILED;
 }
 
-bool GbmSurfaceless::ScheduleOverlayPlane(int z_order,
-                                          gfx::OverlayTransform transform,
-                                          gl::GLImage* image,
-                                          const gfx::Rect& bounds_rect,
-                                          const gfx::RectF& crop_rect,
-                                          bool enable_blend) {
-  unsubmitted_frames_.back()->overlays.push_back(gl::GLSurfaceOverlay(
-      z_order, transform, image, bounds_rect, crop_rect, enable_blend));
+bool GbmSurfaceless::ScheduleOverlayPlane(
+    int z_order,
+    gfx::OverlayTransform transform,
+    gl::GLImage* image,
+    const gfx::Rect& bounds_rect,
+    const gfx::RectF& crop_rect,
+    bool enable_blend,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
+  unsubmitted_frames_.back()->overlays.push_back(
+      gl::GLSurfaceOverlay(z_order, transform, image, bounds_rect, crop_rect,
+                           enable_blend, std::move(gpu_fence)));
   return true;
 }
 

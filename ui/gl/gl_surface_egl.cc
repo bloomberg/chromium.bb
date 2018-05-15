@@ -21,6 +21,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/gpu_fence.h"
 #include "ui/gl/angle_platform_impl.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
@@ -1404,13 +1405,15 @@ bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(
     GLImage* image,
     const gfx::Rect& bounds_rect,
     const gfx::RectF& crop_rect,
-    bool enable_blend) {
+    bool enable_blend,
+    std::unique_ptr<gfx::GpuFence> gpu_fence) {
 #if !defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return false;
 #else
   pending_overlays_.push_back(GLSurfaceOverlay(z_order, transform, image,
-                                               bounds_rect, crop_rect, true));
+                                               bounds_rect, crop_rect, true,
+                                               std::move(gpu_fence)));
   return true;
 #endif
 }

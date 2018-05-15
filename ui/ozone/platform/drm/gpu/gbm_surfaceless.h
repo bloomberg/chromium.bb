@@ -42,7 +42,8 @@ class GbmSurfaceless : public gl::SurfacelessEGL {
                             gl::GLImage* image,
                             const gfx::Rect& bounds_rect,
                             const gfx::RectF& crop_rect,
-                            bool enable_blend) override;
+                            bool enable_blend,
+                            std::unique_ptr<gfx::GpuFence> gpu_fence) override;
   bool IsOffscreen() override;
   gfx::VSyncProvider* GetVSyncProvider() override;
   bool SupportsPresentationCallback() override;

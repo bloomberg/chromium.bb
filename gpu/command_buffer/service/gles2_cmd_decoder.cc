@@ -12374,8 +12374,8 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
   if (!surface_->ScheduleOverlayPlane(
           c.plane_z_order, transform, image,
           gfx::Rect(c.bounds_x, c.bounds_y, c.bounds_width, c.bounds_height),
-          gfx::RectF(c.uv_x, c.uv_y, c.uv_width, c.uv_height),
-          c.enable_blend)) {
+          gfx::RectF(c.uv_x, c.uv_y, c.uv_width, c.uv_height), c.enable_blend,
+          nullptr)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
                        "glScheduleOverlayPlaneCHROMIUM",
                        "failed to schedule overlay");
