@@ -20,7 +20,7 @@ class MODULES_EXPORT V8ContextSnapshotExternalReferences {
 
  public:
   // The definition of this method is auto-generated in
-  // V8ContextSnapshotExternalReferences.cpp.
+  // v8_context_snapshot_external_references.cc.
   static const intptr_t* GetTable();
 };
 
