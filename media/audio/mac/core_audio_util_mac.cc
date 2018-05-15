@@ -10,7 +10,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
-#include "media/audio/audio_manager.h"
 
 namespace media {
 namespace core_audio_mac {
@@ -25,7 +24,6 @@ AudioObjectPropertyScope InputOutputScope(bool is_input) {
 base::Optional<std::string> GetDeviceStringProperty(
     AudioObjectID device_id,
     AudioObjectPropertySelector property_selector) {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   CFStringRef property_value = nullptr;
   UInt32 size = sizeof(property_value);
   AudioObjectPropertyAddress property_address = {
@@ -55,7 +53,6 @@ base::Optional<uint32_t> GetDeviceUint32Property(
     AudioObjectID device_id,
     AudioObjectPropertySelector property_selector,
     AudioObjectPropertyScope property_scope) {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   AudioObjectPropertyAddress property_address = {
       property_selector, property_scope, kAudioObjectPropertyElementMaster};
   UInt32 property_value;
@@ -72,7 +69,6 @@ base::Optional<uint32_t> GetDeviceUint32Property(
 uint32_t GetDevicePropertySize(AudioObjectID device_id,
                                AudioObjectPropertySelector property_selector,
                                AudioObjectPropertyScope property_scope) {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   AudioObjectPropertyAddress property_address = {
       property_selector, property_scope, kAudioObjectPropertyElementMaster};
   UInt32 size = 0;
@@ -91,7 +87,6 @@ uint32_t GetDevicePropertySize(AudioObjectID device_id,
 std::vector<AudioObjectID> GetAudioDeviceIDs(
     AudioObjectID audio_object_id,
     AudioObjectPropertySelector property_selector) {
-  DCHECK(AudioManager::Get()->GetTaskRunner()->BelongsToCurrentThread());
   AudioObjectPropertyAddress property_address = {
       property_selector, kAudioObjectPropertyScopeGlobal,
       kAudioObjectPropertyElementMaster};
