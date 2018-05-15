@@ -44,7 +44,6 @@ crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-be
 # Flakily leaks
 # -----------------------------------------------------------------
 crbug.com/780386 external/wpt/html/dom/reflection-grouping.html [ Leak Pass ]
-crbug.com/796944 [ Linux ] synthetic_gestures/synthetic-pinch-zoom-gesture.html [ Leak Pass ]
 crbug.com/667560 [ Linux ] http/tests/devtools/console/console-search.js [ Leak Pass ]
 crbug.com/835943 [ Linux ] http/tests/appcache/non-html.xhtml [ Leak Pass ]
 

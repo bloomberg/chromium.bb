@@ -7,10 +7,10 @@
         <title>touch-action: pinch-zoom</title>
         <meta name="assert" content="TA15.4 - With `touch-action: pinch-zoom` on a swiped or click/dragged element, only pinch zoom and two finger pan should be possible.">
         <meta name="viewport" content="width=device-width">
-        <link rel="stylesheet" type="text/css" href="../../../external/wpt/pointerevents/pointerevent_styles.css">
-        <script src="../../../resources/testharness.js"></script>
-        <script src="../../../resources/testharnessreport.js"></script>
-        <script src="../../../external/wpt/pointerevents/pointerevent_support.js"></script>
+        <link rel="stylesheet" type="text/css" href="../../../../external/wpt/pointerevents/pointerevent_styles.css">
+        <script src="../../../../resources/testharness.js"></script>
+        <script src="../../../../resources/testharnessreport.js"></script>
+        <script src="../../../../external/wpt/pointerevents/pointerevent_support.js"></script>
         <style>
             #target0 {
             width: 700px;
@@ -87,9 +87,14 @@
                 var target0 = document.getElementById("target0");
                 var btnComplete = document.getElementById("btnComplete");
 
-                var scrollListenerExecuted = false;
                 target0.addEventListener("scroll", function(event) {
-                    scrollListenerExecuted = true;
+                  // Ignore spurious scroll events.
+                  if (target0.scrollLeft == 0 && target0.scrollTop == 0)
+                    return;
+
+                  test_touchaction.step(function() {
+                    assert_unreached('scroll listener');
+                  });
                 });
 
                 // Check if "touch-action: pinch-zoom" attribute works properly
@@ -97,7 +102,6 @@
                 on_event(btnComplete, 'click', function(event) {
                     detected_pointertypes[event.pointerType] = true;
                     test_touchaction.step(function() {
-                        assert_true(scrollListenerExecuted, "scroll listener should not have been executed by the end of the test");
                         assert_equals(target0.scrollLeft, 0, "scroll x offset should be 0 in the end of the test");
                         assert_equals(target0.scrollTop, 0, "scroll y offset should be 0 in the end of the test");
                         assert_greater_than(window.visualViewport.scale, 1, "scale should be greater than 1 in the end of the test");
@@ -115,13 +119,21 @@
 
         <script>
             function inject_input() {
-                return touchScrollInTarget('#target0', 'down').then(function() {
-                    return pinchZoomInTarget('#target0', 3.0);
-                }).then(function() {
-                    document.getElementById("btnComplete").click();
+              return new Promise(function(resolve) {
+                window.addEventListener('load', function() {
+                  window.requestAnimationFrame(function() {
+                    touchScrollInTarget('#target0', 'down').then(function() {
+                      window.requestAnimationFrame(function() {
+                        pinchZoomInTarget('#target0', 3.0).then(resolve);
+                      });
+                    });
+                  });
                 });
+              }).then(function() {
+                document.getElementById("btnComplete").click();
+              });
             }
         </script>
-        <script src='../../../external/wpt_automation/pointerevents/pointerevent_common_input.js'></script>
+        <script src='../../../../external/wpt_automation/pointerevents/pointerevent_common_input.js'></script>
     </body>
 </html>

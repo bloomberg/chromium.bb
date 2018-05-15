@@ -81,54 +81,48 @@ SyntheticGestureTargetMac::SyntheticGestureTargetMac(
     RenderWidgetHostViewCocoa* cocoa_view)
     : SyntheticGestureTargetBase(host), cocoa_view_(cocoa_view) {}
 
-void SyntheticGestureTargetMac::DispatchInputEventToPlatform(
-    const WebInputEvent& event) {
-  if (WebInputEvent::IsGestureEventType(event.GetType())) {
-    // Create an autorelease pool so that we clean up any synthetic events we
-    // generate.
-    base::mac::ScopedNSAutoreleasePool pool;
+void SyntheticGestureTargetMac::DispatchWebGestureEventToPlatform(
+    const WebGestureEvent& web_gesture,
+    const ui::LatencyInfo& latency_info) {
+  // Create an autorelease pool so that we clean up any synthetic events we
+  // generate.
+  base::mac::ScopedNSAutoreleasePool pool;
 
-    const WebGestureEvent* gesture_event =
-        static_cast<const WebGestureEvent*>(&event);
+  NSPoint content_local = NSMakePoint(
+      web_gesture.PositionInWidget().x,
+      [cocoa_view_ frame].size.height - web_gesture.PositionInWidget().y);
+  NSPoint location_in_window =
+      [cocoa_view_ convertPoint:content_local toView:nil];
 
-    switch (event.GetType()) {
-      case WebInputEvent::kGesturePinchBegin: {
-        id cocoa_event = [SyntheticPinchEvent
-            eventWithMagnification:0.0f
-                  locationInWindow:NSMakePoint(
-                                       gesture_event->PositionInWidget().x,
-                                       gesture_event->PositionInWidget().y)
-                             phase:NSEventPhaseBegan];
-        [cocoa_view_ handleBeginGestureWithEvent:cocoa_event];
-        return;
-      }
-      case WebInputEvent::kGesturePinchEnd: {
-        id cocoa_event = [SyntheticPinchEvent
-            eventWithMagnification:0.0f
-                  locationInWindow:NSMakePoint(
-                                       gesture_event->PositionInWidget().x,
-                                       gesture_event->PositionInWidget().y)
-                             phase:NSEventPhaseEnded];
-        [cocoa_view_ handleEndGestureWithEvent:cocoa_event];
-        return;
-      }
-      case WebInputEvent::kGesturePinchUpdate: {
-        id cocoa_event = [SyntheticPinchEvent
-            eventWithMagnification:gesture_event->data.pinch_update.scale - 1.0f
-                  locationInWindow:NSMakePoint(
-                                       gesture_event->PositionInWidget().x,
-                                       gesture_event->PositionInWidget().y)
-                             phase:NSEventPhaseChanged];
-        [cocoa_view_ magnifyWithEvent:cocoa_event];
-        return;
-      }
-      default:
-        break;
+  switch (web_gesture.GetType()) {
+    case WebInputEvent::kGesturePinchBegin: {
+      id cocoa_event =
+          [SyntheticPinchEvent eventWithMagnification:0.0f
+                                     locationInWindow:location_in_window
+                                                phase:NSEventPhaseBegan];
+      [cocoa_view_ handleBeginGestureWithEvent:cocoa_event
+                       isSyntheticallyInjected:YES];
+      return;
     }
+    case WebInputEvent::kGesturePinchEnd: {
+      id cocoa_event =
+          [SyntheticPinchEvent eventWithMagnification:0.0f
+                                     locationInWindow:location_in_window
+                                                phase:NSEventPhaseEnded];
+      [cocoa_view_ handleEndGestureWithEvent:cocoa_event];
+      return;
+    }
+    case WebInputEvent::kGesturePinchUpdate: {
+      id cocoa_event = [SyntheticPinchEvent
+          eventWithMagnification:web_gesture.data.pinch_update.scale - 1.0f
+                locationInWindow:location_in_window
+                           phase:NSEventPhaseChanged];
+      [cocoa_view_ magnifyWithEvent:cocoa_event];
+      return;
+    }
+    default:
+      NOTREACHED();
   }
-
-  // This event wasn't handled yet, forward to the base class.
-  SyntheticGestureTargetBase::DispatchInputEventToPlatform(event);
 }
 
 void SyntheticGestureTargetMac::DispatchWebTouchEventToPlatform(

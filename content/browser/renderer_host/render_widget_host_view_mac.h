@@ -321,7 +321,8 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const blink::WebMouseEvent& web_event) override;
   void OnNSViewForwardWheelEvent(
       const blink::WebMouseWheelEvent& web_event) override;
-  void OnNSViewGestureBegin(blink::WebGestureEvent begin_event) override;
+  void OnNSViewGestureBegin(blink::WebGestureEvent begin_event,
+                            bool is_synthetically_injected) override;
   void OnNSViewGestureUpdate(blink::WebGestureEvent update_event) override;
   void OnNSViewGestureEnd(blink::WebGestureEvent end_event) override;
   void OnNSViewSmartMagnify(

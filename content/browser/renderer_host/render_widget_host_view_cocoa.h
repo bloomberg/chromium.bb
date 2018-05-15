@@ -179,7 +179,8 @@ struct DidOverscrollParams;
 //   |magnifyWithEvent:| when the given event's phase is NSEventPhaseBegin.
 // - On 10.10 and earlier, or when linking with an earlier SDK, it is called
 //   by |beginGestureWithEvent:| when a gesture begins.
-- (void)handleBeginGestureWithEvent:(NSEvent*)event;
+- (void)handleBeginGestureWithEvent:(NSEvent*)event
+            isSyntheticallyInjected:(BOOL)isSyntheticallyInjected;
 
 // Common code path for handling end gesture events. This helper method is
 // called via different codepaths based on OS version and SDK:

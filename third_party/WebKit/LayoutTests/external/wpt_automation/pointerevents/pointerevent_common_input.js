@@ -16,6 +16,16 @@ function scrollPageIfNeeded(targetSelector, targetDocument) {
     window.scrollTo(targetRect.left, targetRect.top);
 }
 
+function waitForCompositorCommit() {
+  return new Promise((resolve) => {
+    // For now, we just rAF twice. It would be nice to have a proper mechanism
+    // for this.
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(resolve);
+    });
+  });
+}
+
 // Mouse inputs.
 function mouseMoveToDocument() {
   return new Promise(function(resolve, reject) {
@@ -340,15 +350,19 @@ function pointerDragInTarget(pointerType, targetSelector, direction) {
         throw("drag direction '" + direction + "' is not expected, direction should be 'down', 'up', 'left' or 'right'");
       }
 
-      chrome.gpuBenchmarking.pointerActionSequence( [
-        {source: pointerType,
-         actions: [
-            { name: 'pointerDown', x: xPosition1, y: yPosition1 },
-            { name: 'pointerMove', x: xPosition2, y: yPosition2 },
-            { name: 'pointerMove', x: xPosition3, y: yPosition3 },
-            { name: 'pause', duration: 0.1 },
-            { name: 'pointerUp' }
-        ]}], resolve);
+      // Ensure the compositor is aware of any scrolling done in
+      // |scrollPageIfNeeded| before sending the input events.
+      waitForCompositorCommit().then(() => {
+        chrome.gpuBenchmarking.pointerActionSequence( [
+          {source: pointerType,
+           actions: [
+              { name: 'pointerDown', x: xPosition1, y: yPosition1 },
+              { name: 'pointerMove', x: xPosition2, y: yPosition2 },
+              { name: 'pointerMove', x: xPosition3, y: yPosition3 },
+              { name: 'pause', duration: 0.1 },
+              { name: 'pointerUp' }
+          ]}], resolve);
+      });
     } else {
       reject();
     }
@@ -399,7 +413,11 @@ function pinchZoomInTarget(targetSelector, scale) {
       }
       pointerAction1.actions.push({name: 'pointerUp'});
       pointerAction2.actions.push({name: 'pointerUp'});
-      chrome.gpuBenchmarking.pointerActionSequence(pointerActions, resolve);
+      // Ensure the compositor is aware of any scrolling done in
+      // |scrollPageIfNeeded| before sending the input events.
+      waitForCompositorCommit().then(() => {
+        chrome.gpuBenchmarking.pointerActionSequence(pointerActions, resolve);
+      });
     } else {
       reject();
     }

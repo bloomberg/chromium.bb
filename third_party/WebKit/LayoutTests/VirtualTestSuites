@@ -78,6 +78,21 @@
              "--enable-prefer-compositing-to-lcd-text"]
   },
   {
+    "prefix": "threaded",
+    "base": "fast/events/pinch",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "fast/events/pointerevents/pinch",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
+    "prefix": "threaded",
+    "base": "synthetic_gestures",
+    "args": ["--enable-threaded-compositing"]
+  },
+  {
     "prefix": "gpu-rasterization",
     "base": "images",
     "args": ["--force-gpu-rasterization"]
