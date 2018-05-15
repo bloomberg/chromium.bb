@@ -425,10 +425,10 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   ASSERT_NE(nullptr, menu);
 
   // Separators are not added to touchable app context menus. For touchable app
-  // context menus, arc app has three more app shortcuts provided by
-  // arc::FakeAppInstance.
+  // context menus, arc app has double separator and three more app shortcuts
+  // provided by arc::FakeAppInstance.
   const int expected_items =
-      features::IsTouchableAppContextMenuEnabled() ? 7 : 6;
+      features::IsTouchableAppContextMenuEnabled() ? 8 : 6;
 
   ASSERT_EQ(expected_items, menu->GetItemCount());
   int index = 0;
@@ -460,11 +460,11 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   // ARC app menu requires model to be recalculated.
   menu = GetContextMenuModel(&item);
 
-  // Separators are not added to touchable app context menus. For touchable app
-  // context menus, arc app has three more app shortcuts provided by
-  // arc::FakeAppInstance.
+  // Separators are not added to touchable app context menus except for arc app
+  // shortcuts. For touchable app context menus, arc app has double separator
+  // and three more app shortcuts provided by arc::FakeAppInstance.
   const int expected_items_app_open =
-      features::IsTouchableAppContextMenuEnabled() ? 6 : 4;
+      features::IsTouchableAppContextMenuEnabled() ? 7 : 4;
   ASSERT_EQ(expected_items_app_open, menu->GetItemCount());
   index = 0;
   ValidateItemState(menu.get(), index++,
@@ -478,6 +478,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
 
   // Test arc app shortcuts provided by arc::FakeAppInstance.
   if (features::IsTouchableAppContextMenuEnabled()) {
+    ValidateItemState(menu.get(), index++, MenuState());  // double separator
     for (int i = 0; i < 3; ++i) {
       EXPECT_EQ(base::StringPrintf("ShortLabel %d", i),
                 base::UTF16ToUTF8(menu->GetLabelAt(i + index)));
@@ -498,10 +499,10 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   menu = GetContextMenuModel(&item);
 
   // Separators and disabled options are not added to touchable app context
-  // menus. For touchable app context menus, arc app has three more app
-  // shortcuts provided by arc::FakeAppInstance.
+  // menus. For touchable app context menus, arc app has double separator and
+  // three more app shortcuts provided by arc::FakeAppInstance.
   const int expected_items_reopen =
-      features::IsTouchableAppContextMenuEnabled() ? 5 : 6;
+      features::IsTouchableAppContextMenuEnabled() ? 6 : 6;
   ASSERT_EQ(expected_items_reopen, menu->GetItemCount());
   index = 0;
   ValidateItemState(menu.get(), index++,
@@ -521,6 +522,7 @@ TEST_P(AppContextMenuTest, ArcMenu) {
   }
   // Test arc app shortcuts provided by arc::FakeAppInstance.
   if (features::IsTouchableAppContextMenuEnabled()) {
+    ValidateItemState(menu.get(), index++, MenuState());  // double separator
     for (int i = 0; i < 3; ++i) {
       EXPECT_EQ(base::StringPrintf("ShortLabel %d", i),
                 base::UTF16ToUTF8(menu->GetLabelAt(i + index)));
@@ -553,10 +555,10 @@ TEST_P(AppContextMenuTest, ArcMenuShortcut) {
   std::unique_ptr<ui::MenuModel> menu = GetContextMenuModel(&item);
   ASSERT_NE(nullptr, menu);
   // Separators are not added to touchable app context menus. For touchable app
-  // context menus, arc app has three more app shortcuts provided by
-  // arc::FakeAppInstance.
+  // context menus, arc app has double separator and three more app shortcuts
+  // provided by arc::FakeAppInstance.
   const int expected_items =
-      features::IsTouchableAppContextMenuEnabled() ? 7 : 6;
+      features::IsTouchableAppContextMenuEnabled() ? 8 : 6;
   int index = 0;
   ASSERT_EQ(expected_items, menu->GetItemCount());
   ValidateItemState(menu.get(), index++,
@@ -573,6 +575,7 @@ TEST_P(AppContextMenuTest, ArcMenuShortcut) {
                     MenuState(app_list::AppContextMenu::SHOW_APP_INFO));
   // Test arc app shortcuts provided by arc::FakeAppInstance.
   if (features::IsTouchableAppContextMenuEnabled()) {
+    ValidateItemState(menu.get(), index++, MenuState());  // double separator
     for (int i = 0; i < 3; ++i) {
       EXPECT_EQ(base::StringPrintf("ShortLabel %d", i),
                 base::UTF16ToUTF8(menu->GetLabelAt(i + index)));
@@ -586,9 +589,10 @@ TEST_P(AppContextMenuTest, ArcMenuShortcut) {
 
   menu = GetContextMenuModel(&item);
   // Separators and disabled options are not added to touchable app context
-  // menus. For touchable app context menus, arc app has three more app
-  // shortcuts provided by arc::FakeAppInstance.
-  const int expected_items_non_ready = 6;
+  // menus. For touchable app context menus, arc app has double separator and
+  // three more app shortcuts provided by arc::FakeAppInstance.
+  const int expected_items_non_ready =
+      features::IsTouchableAppContextMenuEnabled() ? 7 : 6;
   ASSERT_EQ(expected_items_non_ready, menu->GetItemCount());
   index = 0;
   ValidateItemState(menu.get(), index++,
@@ -608,6 +612,7 @@ TEST_P(AppContextMenuTest, ArcMenuShortcut) {
 
   // Test arc app shortcuts provided by arc::FakeAppInstance.
   if (features::IsTouchableAppContextMenuEnabled()) {
+    ValidateItemState(menu.get(), index++, MenuState());  // double separator
     for (int i = 0; i < 3; ++i) {
       EXPECT_EQ(base::StringPrintf("ShortLabel %d", i),
                 base::UTF16ToUTF8(menu->GetLabelAt(i + index)));
@@ -633,9 +638,9 @@ TEST_P(AppContextMenuTest, ArcMenuStickyItem) {
     ASSERT_NE(nullptr, menu);
 
     // Separators are not added to touchable app context menus. For touchable
-    // app context menus, arc app has three more app shortcuts provided by
-    // arc::FakeAppInstance.
-    int expected_items = features::IsTouchableAppContextMenuEnabled() ? 6 : 5;
+    // app context menus, arc app has double separator and three more app
+    // shortcuts provided by arc::FakeAppInstance.
+    int expected_items = features::IsTouchableAppContextMenuEnabled() ? 7 : 5;
     ASSERT_EQ(expected_items, menu->GetItemCount());
     int index = 0;
     ValidateItemState(menu.get(), index++,
@@ -651,6 +656,7 @@ TEST_P(AppContextMenuTest, ArcMenuStickyItem) {
 
     // Test arc app shortcuts provided by arc::FakeAppInstance.
     if (features::IsTouchableAppContextMenuEnabled()) {
+      ValidateItemState(menu.get(), index++, MenuState());  // double separator
       for (int i = 0; i < 3; ++i) {
         EXPECT_EQ(base::StringPrintf("ShortLabel %d", i),
                   base::UTF16ToUTF8(menu->GetLabelAt(i + index)));

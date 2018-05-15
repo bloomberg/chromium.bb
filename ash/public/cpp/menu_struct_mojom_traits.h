@@ -69,6 +69,8 @@ struct EnumTraits<ash::mojom::MenuSeparatorType, ui::MenuSeparatorType> {
     switch (input) {
       case ui::MenuSeparatorType::NORMAL_SEPARATOR:
         return ash::mojom::MenuSeparatorType::NORMAL_SEPARATOR;
+      case ui::MenuSeparatorType::DOUBLE_SEPARATOR:
+        return ash::mojom::MenuSeparatorType::DOUBLE_SEPARATOR;
       case ui::MenuSeparatorType::UPPER_SEPARATOR:
         return ash::mojom::MenuSeparatorType::UPPER_SEPARATOR;
       case ui::MenuSeparatorType::LOWER_SEPARATOR:
@@ -87,6 +89,9 @@ struct EnumTraits<ash::mojom::MenuSeparatorType, ui::MenuSeparatorType> {
     switch (input) {
       case ash::mojom::MenuSeparatorType::NORMAL_SEPARATOR:
         *out = ui::MenuSeparatorType::NORMAL_SEPARATOR;
+        return true;
+      case ash::mojom::MenuSeparatorType::DOUBLE_SEPARATOR:
+        *out = ui::MenuSeparatorType::DOUBLE_SEPARATOR;
         return true;
       case ash::mojom::MenuSeparatorType::UPPER_SEPARATOR:
         *out = ui::MenuSeparatorType::UPPER_SEPARATOR;

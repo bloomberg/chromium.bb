@@ -60,12 +60,15 @@ class ArcAppShortcutsMenuBuilderTest : public testing::Test {
 TEST_F(ArcAppShortcutsMenuBuilderTest, Basic) {
   base::RunLoop run_loop;
   std::unique_ptr<ui::MenuModel> menu;
+  auto simple_menu_model = std::make_unique<ui::SimpleMenuModel>(nullptr);
+  const base::string16 first_item_label = base::UTF8ToUTF16("FirstItemLabel");
+  simple_menu_model->AddItem(1, first_item_label);
   auto arc_app_shortcuts_menu_builder =
       std::make_unique<ArcAppShortcutsMenuBuilder>(
           profile(), kFakeAppId, display::kInvalidDisplayId,
           kLaunchAppShortcutFirst, kLaunchAppShortcutLast);
   arc_app_shortcuts_menu_builder->BuildMenu(
-      kFakeAppPackageName, std::make_unique<ui::SimpleMenuModel>(nullptr),
+      kFakeAppPackageName, std::move(simple_menu_model),
       base::BindLambdaForTesting(
           [&](std::unique_ptr<ui::MenuModel> returned_menu) {
             menu = std::move(returned_menu);
@@ -74,8 +77,11 @@ TEST_F(ArcAppShortcutsMenuBuilderTest, Basic) {
   run_loop.Run();
 
   DCHECK(menu);
-  for (int i = 0; i < menu->GetItemCount(); ++i) {
-    EXPECT_EQ(base::StringPrintf("ShortLabel %d", i),
+  int i = 0;
+  EXPECT_EQ(first_item_label, menu->GetLabelAt(i++));
+  EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(i++));
+  for (; i < menu->GetItemCount(); ++i) {
+    EXPECT_EQ(base::StringPrintf("ShortLabel %d", i - 2),
               base::UTF16ToUTF8(menu->GetLabelAt(i)));
   }
 }
