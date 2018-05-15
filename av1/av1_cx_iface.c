@@ -652,7 +652,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->single_tile_decoding =
       (oxcf->large_scale_tile) ? extra_cfg->single_tile_decoding : 0;
   if (oxcf->large_scale_tile) {
-    // superblock_size can only be AOM_SUPERBLOCK_SIZE_64X64 or
+    // The superblock_size can only be AOM_SUPERBLOCK_SIZE_64X64 or
     // AOM_SUPERBLOCK_SIZE_128X128 while oxcf->large_scale_tile = 1;
     if (extra_cfg->superblock_size != AOM_SUPERBLOCK_SIZE_64X64 &&
         extra_cfg->superblock_size != AOM_SUPERBLOCK_SIZE_128X128)
