@@ -966,7 +966,8 @@ UIImage* InfoBarCloseImage() {
   if (IsRefreshInfobarEnabled()) {
     button.uppercaseTitle = NO;
     button.layer.cornerRadius = kButtonCornerRadius;
-    button.titleLabel.font = InfoBarButtonLabelFont();
+    [button setTitleFont:InfoBarButtonLabelFont()
+                forState:UIControlStateNormal];
   }
   button.inkColor = [[palette tint300] colorWithAlphaComponent:0.5f];
   [button setBackgroundColor:[palette tint500] forState:UIControlStateNormal];
