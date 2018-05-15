@@ -107,17 +107,6 @@ class TabManager : public LifecycleUnitObserver,
   // unload handler and fast-kill the tab regardless).
   void DiscardTab(DiscardReason reason);
 
-  // Discards a tab with the given unique ID. The tab still exists in the
-  // tab-strip; clicking on it will reload it. Returns null if the tab cannot
-  // be found or cannot be discarded. Otherwise returns the new web_contents
-  // of the discarded tab.
-  void DiscardTabById(int32_t tab_id, DiscardReason reason);
-
-  // Freezes a tab with the given unique ID. Unlike discarding, freezing does
-  // not kill or change the tab other than stopping its task queues. Revisiting
-  // the tab causes it to unfreeze.
-  void FreezeTabById(int32_t tab_id);
-
   // Method used by the extensions API to discard tabs. If |contents| is null,
   // discards the least important tab using DiscardTab(). Otherwise discards
   // the given contents. Returns the new web_contents or null if no tab
