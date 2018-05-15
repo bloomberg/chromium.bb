@@ -1056,23 +1056,7 @@ void NavigationRequest::OnRequestFailedInternal(
     render_frame_host =
         frame_tree_node_->render_manager()->GetFrameHostForNavigation(*this);
   } else {
-    // Decide whether to leave the error page in the original process.
-    // * If this was a renderer-initiated navigation, and the request is blocked
-    //   because the initiating document wasn't allowed to make the request,
-    //   commit the error in the existing process. This is a strategy to to
-    //   avoid creating a process for the destination, which may belong to an
-    //   origin with a higher privilege level.
-    // * Error pages resulting from errors like network outage, no network, or
-    //   DNS error can reasonably expect that a reload at a later point in time
-    //   would work. These should be allowed to transfer away from the current
-    //   process: they do belong to whichever process that will host the
-    //   destination URL, as a reload will end up committing in that process
-    //   anyway.
-    // * Error pages that arise during browser-initiated navigations to blocked
-    //   URLs should be allowed to transfer away from the current process, which
-    //   didn't request the navigation and may have a higher privilege level
-    //   than the blocked destination.
-    if (net_error == net::ERR_BLOCKED_BY_CLIENT && !browser_initiated()) {
+    if (ShouldKeepErrorPageInCurrentProcess(net_error)) {
       render_frame_host = frame_tree_node_->current_frame_host();
     } else {
       render_frame_host =
@@ -1099,9 +1083,30 @@ void NavigationRequest::OnRequestFailedInternal(
   } else {
     // Check if the navigation should be allowed to proceed.
     navigation_handle_->WillFailRequest(
-        ssl_info, base::Bind(&NavigationRequest::OnFailureChecksComplete,
-                             base::Unretained(this), render_frame_host));
+        render_frame_host, ssl_info,
+        base::Bind(&NavigationRequest::OnFailureChecksComplete,
+                   base::Unretained(this), render_frame_host));
   }
+}
+
+bool NavigationRequest::ShouldKeepErrorPageInCurrentProcess(int net_error) {
+  // Decide whether to leave the error page in the original process.
+  // * If this was a renderer-initiated navigation, and the request is blocked
+  //   because the initiating document wasn't allowed to make the request,
+  //   commit the error in the existing process. This is a strategy to to
+  //   avoid creating a process for the destination, which may belong to an
+  //   origin with a higher privilege level.
+  // * Error pages resulting from errors like network outage, no network, or
+  //   DNS error can reasonably expect that a reload at a later point in time
+  //   would work. These should be allowed to transfer away from the current
+  //   process: they do belong to whichever process that will host the
+  //   destination URL, as a reload will end up committing in that process
+  //   anyway.
+  // * Error pages that arise during browser-initiated navigations to blocked
+  //   URLs should be allowed to transfer away from the current process, which
+  //   didn't request the navigation and may have a higher privilege level
+  //   than the blocked destination.
+  return net_error == net::ERR_BLOCKED_BY_CLIENT && !browser_initiated();
 }
 
 void NavigationRequest::OnRequestStarted(base::TimeTicks timestamp) {
@@ -1309,14 +1314,32 @@ void NavigationRequest::OnFailureChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(result.action() != NavigationThrottle::DEFER);
 
+  int old_net_error = net_error_;
   net_error_ = result.net_error_code();
   navigation_handle_->set_net_error_code(static_cast<net::Error>(net_error_));
 
-  // TODO(crbug.com/774663): We may want to take result.action() into account..
-  if (net::ERR_ABORTED == net_error_) {
+  // TODO(crbug.com/774663): We may want to take result.action() into account.
+  if (net::ERR_ABORTED == result.net_error_code()) {
     frame_tree_node_->ResetNavigationRequest(false, true);
     return;
   }
+
+  // Ensure that WillFailRequest() isn't changing the error code in a way that
+  // switches the destination process for the error page - see
+  // https://crbug.com/817881.  This is not a concern with error page
+  // isolation, where all errors will go into one process.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+          frame_tree_node_->IsMainFrame())) {
+    CHECK_EQ(ShouldKeepErrorPageInCurrentProcess(old_net_error),
+             ShouldKeepErrorPageInCurrentProcess(net_error_))
+        << " Unsupported error code change in WillFailRequest(): from "
+        << net_error_ << " to " << result.net_error_code();
+  }
+
+  // Sanity check that we haven't changed the RenderFrameHost picked for the
+  // error page in OnRequestFailedInternal when running the WillFailRequest
+  // checks.
+  CHECK_EQ(navigation_handle_->GetRenderFrameHost(), render_frame_host);
 
   CommitErrorPage(render_frame_host, result.error_page_content());
   // DO NOT ADD CODE after this. The previous call to CommitErrorPage caused
