@@ -252,7 +252,6 @@ crbug.com/570656 [ Mac ] fast/text/unicode-fallback-font.html [ Slow ]
 crbug.com/658211 [ Win7 Debug ] fast/text/line-break-ascii.html [ Slow ]
 
 crbug.com/802029 fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
-crbug.com/802029 virtual/incremental-shadow-dom/fast/dom/shadow/focus-controller-recursion-crash.html [ Slow ]
 crbug.com/697735 external/wpt/editing/run/backcolor.html [ Slow ]
 crbug.com/697735 external/wpt/editing/run/bold.html [ Slow ]
 crbug.com/697735 external/wpt/editing/run/createlink.html [ Slow ]
