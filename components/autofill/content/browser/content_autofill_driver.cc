@@ -124,10 +124,10 @@ void ContentAutofillDriver::RendererShouldAcceptDataListSuggestion(
   GetAutofillAgent()->AcceptDataListSuggestion(value);
 }
 
-void ContentAutofillDriver::RendererShouldClearFilledForm() {
+void ContentAutofillDriver::RendererShouldClearFilledSection() {
   if (!RendererIsAvailable())
     return;
-  GetAutofillAgent()->ClearForm();
+  GetAutofillAgent()->ClearSection();
 }
 
 void ContentAutofillDriver::RendererShouldClearPreviewedForm() {

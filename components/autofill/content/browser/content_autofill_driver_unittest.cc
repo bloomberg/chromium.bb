@@ -47,7 +47,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   FakeAutofillAgent()
       : fill_form_id_(-1),
         preview_form_id_(-1),
-        called_clear_form_(false),
+        called_clear_section_(false),
         called_clear_previewed_form_(false) {}
 
   ~FakeAutofillAgent() override {}
@@ -101,7 +101,7 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
 
   // Returns whether mojo interface method mojom::AutofillAgent::ClearForm() got
   // called.
-  bool GetCalledClearForm() { return called_clear_form_; }
+  bool GetCalledClearSection() { return called_clear_section_; }
 
   // Returns whether mojo interface method
   // mojom::AutofillAgent::ClearPreviewedForm() got called.
@@ -167,8 +167,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
-  void ClearForm() override {
-    called_clear_form_ = true;
+  void ClearSection() override {
+    called_clear_section_ = true;
     CallDone();
   }
 
@@ -222,8 +222,8 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   base::Optional<FormData> preview_form_form_;
   // Records data received from FieldTypePredictionsAvailable() call.
   base::Optional<std::vector<FormDataPredictions>> predictions_;
-  // Records whether ClearForm() got called.
-  bool called_clear_form_;
+  // Records whether ClearSection() got called.
+  bool called_clear_section_;
   // Records whether ClearPreviewedForm() got called.
   bool called_clear_previewed_form_;
   // Records string received from FillFieldWithValue() call.
@@ -410,13 +410,13 @@ TEST_F(ContentAutofillDriverTest, AcceptDataListSuggestion) {
   EXPECT_EQ(input_value, output_value);
 }
 
-TEST_F(ContentAutofillDriverTest, ClearFilledFormSentToRenderer) {
+TEST_F(ContentAutofillDriverTest, ClearFilledSectionSentToRenderer) {
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->RendererShouldClearFilledForm();
+  driver_->RendererShouldClearFilledSection();
   run_loop.RunUntilIdle();
 
-  EXPECT_TRUE(fake_agent_.GetCalledClearForm());
+  EXPECT_TRUE(fake_agent_.GetCalledClearSection());
 }
 
 TEST_F(ContentAutofillDriverTest, ClearPreviewedFormSentToRenderer) {

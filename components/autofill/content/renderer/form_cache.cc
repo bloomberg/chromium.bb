@@ -265,7 +265,7 @@ void FormCache::Reset() {
   initial_checked_state_.clear();
 }
 
-bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
+bool FormCache::ClearSectionWithElement(const WebFormControlElement& element) {
   WebFormElement form_element = element.Form();
   std::vector<WebFormControlElement> control_elements;
   if (form_element.IsNull()) {
@@ -283,6 +283,9 @@ bool FormCache::ClearFormWithElement(const WebFormControlElement& element) {
 
     // Don't clear field that was not autofilled
     if (!control_element.IsAutofilled())
+      continue;
+
+    if (control_element.AutofillSection() != element.AutofillSection())
       continue;
 
     control_element.SetAutofilled(false);

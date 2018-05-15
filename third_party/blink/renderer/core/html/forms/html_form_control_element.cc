@@ -240,6 +240,10 @@ void HTMLFormControlElement::SetAutofilled(bool autofilled) {
   PseudoStateChanged(CSSSelector::kPseudoAutofill);
 }
 
+void HTMLFormControlElement::SetAutofillSection(const WebString& section) {
+  autofill_section_ = section;
+}
+
 const AtomicString& HTMLFormControlElement::autocapitalize() const {
   if (!FastGetAttribute(autocapitalizeAttr).IsEmpty())
     return HTMLElement::autocapitalize();

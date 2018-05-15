@@ -51,7 +51,7 @@ class MockAutofillDriver : public TestAutofillDriver {
   // Mock methods to enable testability.
   MOCK_METHOD1(RendererShouldAcceptDataListSuggestion,
                void(const base::string16&));
-  MOCK_METHOD0(RendererShouldClearFilledForm, void());
+  MOCK_METHOD0(RendererShouldClearFilledSection, void());
   MOCK_METHOD0(RendererShouldClearPreviewedForm, void());
   MOCK_METHOD1(RendererShouldFillFieldWithValue, void(const base::string16&));
   MOCK_METHOD1(RendererShouldPreviewFieldWithValue,
@@ -584,7 +584,7 @@ TEST_F(AutofillExternalDelegateUnitTest,
 // the user accepted the suggestion to clear the form.
 TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateClearForm) {
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
-  EXPECT_CALL(*autofill_driver_, RendererShouldClearFilledForm());
+  EXPECT_CALL(*autofill_driver_, RendererShouldClearFilledSection());
 
   external_delegate_->DidAcceptSuggestion(base::string16(),
                                           POPUP_ITEM_ID_CLEAR_FORM,

@@ -583,7 +583,7 @@ std::vector<FormDataPredictions> FormStructure::GetFieldTypePredictions(
       annotated_field.overall_type = field->Type().ToString();
       annotated_field.parseable_name =
           base::UTF16ToUTF8(field->parseable_name());
-      annotated_field.section = field->section();
+      annotated_field.section = field->section;
       form.fields.push_back(annotated_field);
     }
 
@@ -702,7 +702,7 @@ void FormStructure::RetrieveFromCache(
         field->set_heuristic_type(cached_field->second->heuristic_type());
         field->SetHtmlType(cached_field->second->html_type(),
                            cached_field->second->html_mode());
-        field->set_section(cached_field->second->section());
+        field->section = cached_field->second->section;
         field->set_only_fill_when_focused(
             cached_field->second->only_fill_when_focused());
       }
@@ -880,7 +880,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
     // in the default section.  These default section names will be overridden
     // by subsequent heuristic parsing steps if there are no author-specified
     // section names.
-    field->set_section(kDefaultSection);
+    field->section = kDefaultSection;
 
     std::vector<std::string> tokens =
         LowercaseAndTokenizeAttributeString(field->autocomplete_attribute);
@@ -930,8 +930,8 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
       tokens.pop_back();
     }
 
-    DCHECK_EQ(kDefaultSection, field->section());
-    std::string section = field->section();
+    DCHECK_EQ(kDefaultSection, field->section);
+    std::string section = field->section;
     HtmlFieldMode mode = HTML_MODE_NONE;
 
     // (3) The preceding token, if any, may be a fixed string that is either
@@ -964,7 +964,7 @@ void FormStructure::ParseFieldTypesFromAutocompleteAttributes() {
 
     if (section != kDefaultSection) {
       has_author_specified_sections_ = true;
-      field->set_section(section);
+      field->section = section;
     }
 
     // No errors encountered while parsing!
@@ -1223,7 +1223,7 @@ void FormStructure::RationalizePhoneNumbersInSection(std::string section) {
     return;
   std::vector<AutofillField*> fields;
   for (size_t i = 0; i < field_count(); ++i) {
-    if (field(i)->section() != section)
+    if (field(i)->section != section)
       continue;
     fields.push_back(field(i));
   }
@@ -1350,7 +1350,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
       // All credit card fields belong to the same section that's different
       // from address sections.
       if (AutofillType(current_type).group() == CREDIT_CARD) {
-        field->set_section("credit-card");
+        field->section = "credit-card";
         continue;
       }
 
@@ -1423,7 +1423,7 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
         is_hidden_section = false;
       }
 
-      field->set_section(base::UTF16ToUTF8(current_section));
+      field->section = base::UTF16ToUTF8(current_section);
     }
   }
 
@@ -1432,9 +1432,9 @@ void FormStructure::IdentifySections(bool has_author_specified_sections) {
   for (const auto& field : fields_) {
     FieldTypeGroup field_type_group = field->Type().group();
     if (field_type_group == CREDIT_CARD)
-      field->set_section(field->section() + "-cc");
+      field->section = field->section + "-cc";
     else
-      field->set_section(field->section() + "-default");
+      field->section = field->section + "-default";
   }
 }
 

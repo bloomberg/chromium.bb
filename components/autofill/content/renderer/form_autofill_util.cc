@@ -910,8 +910,9 @@ void ForEachMatchingUnownedFormField(const WebElement& initiating_element,
                                  filters, force_override, callback);
 }
 
-// Sets the |field|'s value to the value in |data|.
-// Also sets the "autofilled" attribute, causing the background to be yellow.
+// Sets the |field|'s value to the value in |data|, and specifies the section
+// for filled fields.  Also sets the "autofilled" attribute,
+// causing the background to be yellow.
 void FillFormField(const FormFieldData& data,
                    bool is_initiating_node,
                    blink::WebFormControlElement* field) {
@@ -940,6 +941,7 @@ void FillFormField(const FormFieldData& data,
     return;
 
   field->SetAutofilled(true);
+  field->SetAutofillSection(WebString::FromUTF8(data.section));
 
   if (is_initiating_node &&
       ((IsTextInput(input_element) || IsMonthInput(input_element)) ||

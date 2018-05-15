@@ -127,6 +127,11 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool IsAutofilled() const { return is_autofilled_; }
   void SetAutofilled(bool = true);
 
+  // The autofill section to which this element belongs (e.g. billing address,
+  // shipping address, .. .)
+  WebString AutofillSection() const { return autofill_section_; }
+  void SetAutofillSection(const WebString&);
+
   const AtomicString& autocapitalize() const final;
 
   static const HTMLFormControlElement* EnclosingFormControlElement(const Node*);
@@ -196,16 +201,18 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
   unsigned unique_renderer_form_control_id_;
 
+  WebString autofill_section_;
+
   enum AncestorDisabledState {
     kAncestorDisabledStateUnknown,
     kAncestorDisabledStateEnabled,
     kAncestorDisabledStateDisabled
   };
+
   mutable AncestorDisabledState ancestor_disabled_state_;
   enum DataListAncestorState { kUnknown, kInsideDataList, kNotInsideDataList };
   mutable enum DataListAncestorState data_list_ancestor_state_;
   mutable bool may_have_field_set_ancestor_ : 1;
-
   bool is_autofilled_ : 1;
   bool has_validation_message_ : 1;
   // The initial value of m_willValidate depends on the derived class. We can't

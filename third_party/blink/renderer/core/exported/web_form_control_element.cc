@@ -76,6 +76,14 @@ void WebFormControlElement::SetAutofilled(bool autofilled) {
   Unwrap<HTMLFormControlElement>()->SetAutofilled(autofilled);
 }
 
+WebString WebFormControlElement::AutofillSection() const {
+  return ConstUnwrap<HTMLFormControlElement>()->AutofillSection();
+}
+
+void WebFormControlElement::SetAutofillSection(const WebString& section) {
+  Unwrap<HTMLFormControlElement>()->SetAutofillSection(section);
+}
+
 WebString WebFormControlElement::NameForAutofill() const {
   return ConstUnwrap<HTMLFormControlElement>()->NameForAutofill();
 }

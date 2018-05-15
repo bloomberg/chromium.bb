@@ -468,11 +468,11 @@ void AutofillAgent::FieldTypePredictionsAvailable(
   }
 }
 
-void AutofillAgent::ClearForm() {
+void AutofillAgent::ClearSection() {
   if (element_.IsNull())
     return;
 
-  form_cache_.ClearFormWithElement(element_);
+  form_cache_.ClearSectionWithElement(element_);
 }
 
 void AutofillAgent::ClearPreviewedForm() {

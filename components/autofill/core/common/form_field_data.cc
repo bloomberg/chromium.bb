@@ -159,6 +159,9 @@ bool FormFieldData::SameFieldAs(const FormFieldData& field) const {
   // of the field, so we don't want to compare the values.
   // Similarly, flags like is_enabled, which are only used for parsing but are
   // not stored persistently, are not used for comparison.
+  // is_autofilled and section are also secondary properties of a field. Two
+  // fields could be the same, and have different sections, because the section
+  // is updated for one, but not for the other.
   return name == field.name && id == field.id &&
          form_control_type == field.form_control_type &&
          autocomplete_attribute == field.autocomplete_attribute &&

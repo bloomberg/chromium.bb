@@ -108,7 +108,7 @@ bool SectionHasAutofilledField(const FormStructure& form_structure,
                                const std::string& section) {
   DCHECK_EQ(form_structure.field_count(), form.fields.size());
   for (size_t i = 0; i < form_structure.field_count(); ++i) {
-    if (form_structure.field(i)->section() == section &&
+    if (form_structure.field(i)->section == section &&
         form.fields[i].is_autofilled) {
       return true;
     }
@@ -601,7 +601,7 @@ void AutofillManager::OnQueryFormFieldAutofillImpl(
         suggestions.assign(1, warning_suggestion);
       } else {
         bool section_has_autofilled_field = SectionHasAutofilledField(
-            *form_structure, form, autofill_field->section());
+            *form_structure, form, autofill_field->section);
         if (section_has_autofilled_field) {
           // If the relevant section has auto-filled  fields and the renderer is
           // querying for suggestions, then for some fields, the user is editing
@@ -672,7 +672,7 @@ bool AutofillManager::WillFillCreditCardNumber(const FormData& form,
 
   DCHECK_EQ(form_structure->field_count(), form.fields.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
-    if (form_structure->field(i)->section() == autofill_field->section() &&
+    if (form_structure->field(i)->section == autofill_field->section &&
         form_structure->field(i)->Type().GetStorableType() ==
             CREDIT_CARD_NUMBER &&
         form.fields[i].value.empty() && !form.fields[i].is_autofilled) {
@@ -1323,7 +1323,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
   FormData result = form;
 
   if (base::FeatureList::IsEnabled(kAutofillRationalizeFieldTypePredictions)) {
-    form_structure->RationalizePhoneNumbersInSection(autofill_field->section());
+    form_structure->RationalizePhoneNumbersInSection(autofill_field->section);
   }
 
   DCHECK_EQ(form_structure->field_count(), form.fields.size());
@@ -1346,7 +1346,7 @@ void AutofillManager::FillOrPreviewDataModelForm(
       !is_refill && !is_credit_card;
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
-    if (form_structure->field(i)->section() != autofill_field->section())
+    if (form_structure->field(i)->section != autofill_field->section)
       continue;
 
     if (form_structure->field(i)->only_fill_when_focused() &&
@@ -1409,6 +1409,9 @@ void AutofillManager::FillOrPreviewDataModelForm(
     // will be sent to the renderer.
     FillFieldWithValue(cached_field, data_model, &result.fields[i],
                        should_notify, cvc);
+
+    if (result.fields[i].is_autofilled)
+      result.fields[i].section = form_structure->field(i)->section;
 
     if ((!cached_field->is_focusable ||
          cached_field->role == FormFieldData::ROLE_ATTRIBUTE_PRESENTATION) &&

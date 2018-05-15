@@ -1584,7 +1584,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_EQ(19, input_element.SelectionEnd());
   }
 
-  void TestClearFormWithNode(const char* html, bool unowned) {
+  void TestClearSectionWithNode(const char* html, bool unowned) {
     LoadHTML(html);
     WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
@@ -1608,7 +1608,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     notenabled.SetValue(WebString::FromUTF8("no clear"));
 
     // Clear the form.
-    EXPECT_TRUE(form_cache.ClearFormWithElement(firstname));
+    EXPECT_TRUE(form_cache.ClearSectionWithElement(firstname));
 
     // Verify that the auto-filled attribute has been turned off.
     EXPECT_FALSE(firstname.IsAutofilled());
@@ -1686,8 +1686,113 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_EQ(0, firstname.SelectionEnd());
   }
 
-  void TestClearFormWithNodeContainingSelectOne(const char* html,
-                                                bool unowned) {
+  void TestClearTwoSections(const char* html, bool unowned) {
+    LoadHTML(html);
+    WebLocalFrame* web_frame = GetMainFrame();
+    ASSERT_NE(nullptr, web_frame);
+
+    FormCache form_cache(web_frame);
+    std::vector<FormData> forms = form_cache.ExtractNewForms();
+    ASSERT_EQ(1U, forms.size());
+
+    // Set the autofilled attribute and specify the section attribute.
+    WebInputElement firstname_shipping =
+        GetInputElementById("firstname-shipping");
+    firstname_shipping.SetAutofillValue("John");
+    firstname_shipping.SetAutofilled(true);
+    firstname_shipping.SetAutofillSection("shipping");
+
+    WebInputElement lastname_shipping =
+        GetInputElementById("lastname-shipping");
+    lastname_shipping.SetAutofillValue("Smith");
+    lastname_shipping.SetAutofilled(true);
+    lastname_shipping.SetAutofillSection("shipping");
+
+    WebInputElement city_shipping = GetInputElementById("city-shipping");
+    city_shipping.SetAutofillValue("Montreal");
+    city_shipping.SetAutofilled(true);
+    city_shipping.SetAutofillSection("shipping");
+
+    WebInputElement firstname_billing =
+        GetInputElementById("firstname-billing");
+    firstname_billing.SetAutofillValue("John");
+    firstname_billing.SetAutofilled(true);
+    firstname_billing.SetAutofillSection("billing");
+
+    WebInputElement lastname_billing = GetInputElementById("lastname-billing");
+    lastname_billing.SetAutofillValue("Smith");
+    lastname_billing.SetAutofilled(true);
+    lastname_billing.SetAutofillSection("billing");
+
+    WebInputElement city_billing = GetInputElementById("city-billing");
+    city_billing.SetAutofillValue("Paris");
+    city_billing.SetAutofilled(true);
+    city_billing.SetAutofillSection("billing");
+
+    // Clear the first (shipping) section.
+    EXPECT_TRUE(form_cache.ClearSectionWithElement(firstname_shipping));
+
+    // Verify that the autofilled attribute is false only for the shipping
+    // section.
+    EXPECT_FALSE(firstname_shipping.IsAutofilled());
+    EXPECT_FALSE(lastname_shipping.IsAutofilled());
+    EXPECT_FALSE(city_shipping.IsAutofilled());
+    EXPECT_TRUE(firstname_billing.IsAutofilled());
+    EXPECT_TRUE(lastname_billing.IsAutofilled());
+    EXPECT_TRUE(city_billing.IsAutofilled());
+
+    // Verify that the shipping section is cleared, but not the billing one.
+    FormData form;
+    FormFieldData field;
+    EXPECT_TRUE(FindFormAndFieldForFormControlElement(firstname_shipping, &form,
+                                                      &field));
+    EXPECT_EQ(GetCanonicalOriginForDocument(web_frame->GetDocument()),
+              form.origin);
+    EXPECT_FALSE(form.origin.is_empty());
+    if (!unowned) {
+      EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+      EXPECT_EQ(GURL("http://abc.com"), form.action);
+    }
+
+    const std::vector<FormFieldData>& fields = form.fields;
+    ASSERT_EQ(6U, fields.size());
+
+    FormFieldData expected;
+    expected.form_control_type = "text";
+    expected.max_length = WebInputElement::DefaultMaxLength();
+
+    // shipping section
+    expected.is_autofilled = false;
+    expected.name = ASCIIToUTF16("firstname-shipping");
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[0]);
+
+    expected.name = ASCIIToUTF16("lastname-shipping");
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[1]);
+
+    expected.name = ASCIIToUTF16("city-shipping");
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[2]);
+
+    // billing section
+    expected.is_autofilled = true;
+    expected.name = ASCIIToUTF16("firstname-billing");
+    expected.value = ASCIIToUTF16("John");
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[3]);
+
+    expected.name = ASCIIToUTF16("lastname-billing");
+    expected.value = ASCIIToUTF16("Smith");
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[4]);
+
+    expected.name = ASCIIToUTF16("city-billing");
+    expected.value = ASCIIToUTF16("Paris");
+    EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
+
+    // Verify that the cursor position has been updated.
+    EXPECT_EQ(0, firstname_shipping.SelectionStart());
+    EXPECT_EQ(0, firstname_shipping.SelectionEnd());
+  }
+
+  void TestClearSectionWithNodeContainingSelectOne(const char* html,
+                                                   bool unowned) {
     LoadHTML(html);
     WebLocalFrame* web_frame = GetMainFrame();
     ASSERT_NE(nullptr, web_frame);
@@ -1709,7 +1814,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     state.SetAutofilled(true);
 
     // Clear the form.
-    EXPECT_TRUE(form_cache.ClearFormWithElement(firstname));
+    EXPECT_TRUE(form_cache.ClearSectionWithElement(firstname));
 
     // Verify that the auto-filled attribute has been turned off.
     EXPECT_FALSE(firstname.IsAutofilled());
@@ -1936,7 +2041,7 @@ class FormAutofillTest : public ChromeRenderViewTest {
     phone.SetAutofilled(true);
 
     // Clear the fields.
-    EXPECT_TRUE(form_cache.ClearFormWithElement(firstname));
+    EXPECT_TRUE(form_cache.ClearSectionWithElement(firstname));
 
     // Verify only autofilled fields are cleared.
     EXPECT_EQ(ASCIIToUTF16("Wyatt"), firstname.Value().Utf16());
@@ -4584,8 +4689,8 @@ TEST_F(FormAutofillTest, FillFormNonEmptyFieldForUnownedForm) {
       true, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
-TEST_F(FormAutofillTest, ClearFormWithNode) {
-  TestClearFormWithNode(
+TEST_F(FormAutofillTest, ClearSectionWithNode) {
+  TestClearSectionWithNode(
       "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
       "  <INPUT type='text' id='lastname' value='Earp'/>"
@@ -4604,8 +4709,22 @@ TEST_F(FormAutofillTest, ClearFormWithNode) {
       false);
 }
 
-TEST_F(FormAutofillTest, ClearFormWithNodeForUnownedForm) {
-  TestClearFormWithNode(
+// Test regular FillForm function.
+TEST_F(FormAutofillTest, ClearTwoSections) {
+  TestClearTwoSections(
+      "<FORM name='TestForm' action='http://abc.com' method='post'>"
+      "  <INPUT type='text' id='firstname-shipping'/>"
+      "  <INPUT type='text' id='lastname-shipping'/>"
+      "  <INPUT type='text' id='city-shipping'/>"
+      "  <INPUT type='text' id='firstname-billing'/>"
+      "  <INPUT type='text' id='lastname-billing'/>"
+      "  <INPUT type='text' id='city-billing'/>"
+      "</FORM>",
+      false);
+}
+
+TEST_F(FormAutofillTest, ClearSectionWithNodeForUnownedForm) {
+  TestClearSectionWithNode(
       "<HEAD><TITLE>store checkout</TITLE></HEAD>"
       "  <!-- Indented on purpose //-->"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
@@ -4624,8 +4743,8 @@ TEST_F(FormAutofillTest, ClearFormWithNodeForUnownedForm) {
       true);
 }
 
-TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOne) {
-  TestClearFormWithNodeContainingSelectOne(
+TEST_F(FormAutofillTest, ClearSectionWithNodeContainingSelectOne) {
+  TestClearSectionWithNodeContainingSelectOne(
       "<FORM name='TestForm' action='http://abc.com' method='post'>"
       "  <INPUT type='text' id='firstname' value='Wyatt'/>"
       "  <INPUT type='text' id='lastname' value='Earp'/>"
@@ -4640,8 +4759,9 @@ TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOne) {
       false);
 }
 
-TEST_F(FormAutofillTest, ClearFormWithNodeContainingSelectOneForUnownedForm) {
-  TestClearFormWithNodeContainingSelectOne(
+TEST_F(FormAutofillTest,
+       ClearSectionWithNodeContainingSelectOneForUnownedForm) {
+  TestClearSectionWithNodeContainingSelectOne(
       "<HEAD><TITLE>store checkout</TITLE></HEAD>"
       "<INPUT type='text' id='firstname' value='Wyatt'/>"
       "<INPUT type='text' id='lastname' value='Earp'/>"

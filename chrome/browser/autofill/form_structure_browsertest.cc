@@ -98,7 +98,7 @@ std::string FormStructuresToString(
       forms_string += " | " + base::UTF16ToUTF8(field->name);
       forms_string += " | " + base::UTF16ToUTF8(field->label);
       forms_string += " | " + base::UTF16ToUTF8(field->value);
-      forms_string += " | " + field->section();
+      forms_string += " | " + field->section;
       forms_string += "\n";
     }
   }
