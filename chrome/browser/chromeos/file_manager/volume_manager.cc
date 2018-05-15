@@ -124,6 +124,8 @@ std::string VolumeTypeToString(VolumeType type) {
       return "media_view";
     case VOLUME_TYPE_TESTING:
       return "testing";
+    case VOLUME_TYPE_CROSTINI:
+      return "crostini";
     case NUM_VOLUME_TYPE:
       break;
   }
@@ -299,6 +301,21 @@ std::unique_ptr<Volume> Volume::CreateForMediaView(
   volume->is_read_only_ = true;
   volume->watchable_ = false;
   volume->volume_id_ = arc::GetMediaViewVolumeId(root_document_id);
+  return volume;
+}
+
+// static
+std::unique_ptr<Volume> Volume::CreateForSshfsCrostini(
+    const base::FilePath& sshfs_mount_path) {
+  std::unique_ptr<Volume> volume(new Volume());
+  volume->type_ = VOLUME_TYPE_CROSTINI;
+  volume->device_type_ = chromeos::DEVICE_TYPE_UNKNOWN;
+  // Keep source_path empty.
+  volume->source_ = SOURCE_SYSTEM;
+  volume->mount_path_ = sshfs_mount_path;
+  volume->mount_condition_ = chromeos::disks::MOUNT_CONDITION_NONE;
+  volume->volume_id_ = GenerateVolumeId(*volume);
+  volume->watchable_ = false;
   return volume;
 }
 
@@ -485,6 +502,13 @@ base::WeakPtr<Volume> VolumeManager::FindVolumeById(
   if (it != mounted_volumes_.end())
     return it->second->AsWeakPtr();
   return base::WeakPtr<Volume>();
+}
+
+void VolumeManager::AddSshfsCrostiniVolume(
+    const base::FilePath& sshfs_mount_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DoMountEvent(chromeos::MOUNT_ERROR_NONE,
+               Volume::CreateForSshfsCrostini(sshfs_mount_path));
 }
 
 bool VolumeManager::RegisterDownloadsDirectoryForTesting(
