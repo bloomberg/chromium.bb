@@ -38,7 +38,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
 #include "third_party/blink/public/platform/modules/webmidi/web_midi_accessor.h"
 #include "third_party/blink/public/platform/web_canvas_capture_handler.h"
 #include "third_party/blink/public/platform/web_gesture_curve.h"
@@ -199,11 +198,6 @@ std::unique_ptr<WebStorageNamespace> Platform::CreateLocalStorageNamespace() {
 
 std::unique_ptr<WebStorageNamespace> Platform::CreateSessionStorageNamespace(
     base::StringPiece namespace_id) {
-  return nullptr;
-}
-
-std::unique_ptr<WebServiceWorkerCacheStorage> Platform::CreateCacheStorage(
-    service_manager::InterfaceProvider* mojo_provider) {
   return nullptr;
 }
 

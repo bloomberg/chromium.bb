@@ -7,7 +7,8 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache.h"
+
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_query_options.h"
@@ -31,7 +32,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
 
  public:
   static Cache* Create(GlobalFetch::ScopedFetcher*,
-                       std::unique_ptr<WebServiceWorkerCache>);
+                       mojom::blink::CacheStorageCacheAssociatedPtrInfo);
 
   // From Cache.idl:
   ScriptPromise match(ScriptState*,
@@ -61,8 +62,7 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                      const CacheQueryOptions&,
                      ExceptionState&);
 
-  static WebServiceWorkerCache::QueryParams ToWebQueryParams(
-      const CacheQueryOptions&);
+  static mojom::blink::QueryParamsPtr ToQueryParams(const CacheQueryOptions&);
 
   void Trace(blink::Visitor*) override;
 
@@ -72,12 +72,12 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   class CodeCacheHandleCallbackForPut;
   class FetchResolvedForAdd;
   friend class FetchResolvedForAdd;
-  Cache(GlobalFetch::ScopedFetcher*, std::unique_ptr<WebServiceWorkerCache>);
+  Cache(GlobalFetch::ScopedFetcher*,
+        mojom::blink::CacheStorageCacheAssociatedPtrInfo);
 
   ScriptPromise MatchImpl(ScriptState*,
                           const Request*,
                           const CacheQueryOptions&);
-  ScriptPromise MatchAllImpl(ScriptState*);
   ScriptPromise MatchAllImpl(ScriptState*,
                              const Request*,
                              const CacheQueryOptions&);
@@ -90,15 +90,13 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
   ScriptPromise PutImpl(ScriptState*,
                         const HeapVector<Member<Request>>&,
                         const HeapVector<Member<Response>>&);
-  ScriptPromise KeysImpl(ScriptState*);
   ScriptPromise KeysImpl(ScriptState*,
                          const Request*,
                          const CacheQueryOptions&);
 
-  WebServiceWorkerCache* WebCache() const;
-
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
-  std::unique_ptr<WebServiceWorkerCache> web_cache_;
+
+  mojom::blink::CacheStorageCacheAssociatedPtr cache_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(Cache);
 };

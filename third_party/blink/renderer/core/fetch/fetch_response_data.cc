@@ -28,6 +28,15 @@ WebVector<WebString> HeaderSetToWebVector(const WebHTTPHeaderSet& headers) {
   return result;
 }
 
+Vector<String> HeaderSetToVector(const WebHTTPHeaderSet& headers) {
+  Vector<String> result;
+  result.ReserveInitialCapacity(headers.size());
+  // WebHTTPHeaderSet stores headers using Latin1 encoding.
+  for (const auto& header : headers)
+    result.push_back(String(header.data(), header.size()));
+  return result;
+}
+
 }  // namespace
 
 FetchResponseData* FetchResponseData::Create() {
@@ -236,6 +245,31 @@ void FetchResponseData::PopulateWebServiceWorkerResponse(
   for (const auto& header : HeaderList()->List()) {
     response.AppendHeader(header.first, header.second);
   }
+}
+
+mojom::blink::FetchAPIResponsePtr
+FetchResponseData::PopulateFetchAPIResponse() {
+  if (internal_response_) {
+    mojom::blink::FetchAPIResponsePtr response =
+        internal_response_->PopulateFetchAPIResponse();
+    response->response_type = type_;
+    response->cors_exposed_header_names =
+        HeaderSetToVector(cors_exposed_header_names_);
+    return response;
+  }
+  mojom::blink::FetchAPIResponsePtr response =
+      mojom::blink::FetchAPIResponse::New();
+  response->url_list = url_list_;
+  response->status_code = status_;
+  response->status_text = status_message_;
+  response->response_type = type_;
+  response->response_time = response_time_;
+  response->cache_storage_cache_name = cache_storage_cache_name_;
+  response->cors_exposed_header_names =
+      HeaderSetToVector(cors_exposed_header_names_);
+  for (const auto& header : HeaderList()->List())
+    response->headers.insert(header.first, header.second);
+  return response;
 }
 
 FetchResponseData::FetchResponseData(Type type,

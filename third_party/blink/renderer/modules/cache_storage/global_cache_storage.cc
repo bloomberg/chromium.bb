@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/cache_storage/global_cache_storage.h"
 
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -38,10 +37,7 @@ class GlobalCacheStorageImpl final
     return *supplement;
   }
 
-  ~GlobalCacheStorageImpl() {
-    if (caches_)
-      caches_->Dispose();
-  }
+  ~GlobalCacheStorageImpl() {}
 
   CacheStorage* Caches(T& fetching_scope, ExceptionState& exception_state) {
     ExecutionContext* context = fetching_scope.GetExecutionContext();
@@ -73,8 +69,7 @@ class GlobalCacheStorageImpl final
       }
       caches_ =
           CacheStorage::Create(GlobalFetch::ScopedFetcher::From(fetching_scope),
-                               Platform::Current()->CreateCacheStorage(
-                                   context->GetInterfaceProvider()));
+                               context->GetInterfaceProvider());
     }
     return caches_;
   }

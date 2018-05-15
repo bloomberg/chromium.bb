@@ -128,6 +128,11 @@ void WebServiceWorkerRequest::SetBlob(const WebString& uuid,
       BlobDataHandle::Create(uuid, String(), size, std::move(blob_info));
 }
 
+void WebServiceWorkerRequest::SetBlobDataHandle(
+    scoped_refptr<BlobDataHandle> blob_data_handle) {
+  private_->blob_data_handle = std::move(blob_data_handle);
+}
+
 scoped_refptr<BlobDataHandle> WebServiceWorkerRequest::GetBlobDataHandle()
     const {
   return private_->blob_data_handle;

@@ -44,7 +44,6 @@ class WebMediaPlayer;
 class WebMediaRecorderHandler;
 class WebMediaStream;
 class WebSecurityOrigin;
-class WebServiceWorkerCacheStorage;
 }  // namespace blink
 
 namespace device {
@@ -126,8 +125,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebPublicSuffixList* PublicSuffixList() override;
   blink::WebScrollbarBehavior* ScrollbarBehavior() override;
   blink::WebIDBFactory* IdbFactory() override;
-  std::unique_ptr<blink::WebServiceWorkerCacheStorage> CreateCacheStorage(
-      service_manager::InterfaceProvider* mojo_provider) override;
   blink::WebFileSystem* FileSystem() override;
   blink::WebString FileSystemCreateOriginIdentifier(
       const blink::WebSecurityOrigin& origin) override;

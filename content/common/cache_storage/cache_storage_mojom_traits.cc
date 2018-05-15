@@ -61,14 +61,20 @@ bool StructTraits<blink::mojom::BatchOperationDataView,
                   content::CacheStorageBatchOperation>::
     Read(blink::mojom::BatchOperationDataView data,
          content::CacheStorageBatchOperation* out) {
-  if (!data.ReadRequest(&out->request))
-    return false;
-  if (!data.ReadResponse(&out->response))
-    return false;
-  if (!data.ReadMatchParams(&out->match_params))
-    return false;
+  base::Optional<content::ServiceWorkerResponse> response;
+  base::Optional<content::CacheStorageCacheQueryParams> match_params;
   if (!data.ReadOperationType(&out->operation_type))
     return false;
+  if (!data.ReadRequest(&out->request))
+    return false;
+  if (!data.ReadResponse(&response))
+    return false;
+  if (!data.ReadMatchParams(&match_params))
+    return false;
+  if (response)
+    out->response = *response;
+  if (match_params)
+    out->match_params = *match_params;
   return true;
 }
 

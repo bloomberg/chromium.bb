@@ -207,10 +207,12 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
     Read(blink::mojom::FetchAPIRequestDataView data,
          content::ServiceWorkerFetchRequest* out) {
   std::unordered_map<std::string, std::string> headers;
+  blink::mojom::SerializedBlobPtr serialized_blob_ptr;
   if (!data.ReadMode(&out->mode) ||
       !data.ReadRequestContextType(&out->request_context_type) ||
       !data.ReadFrameType(&out->frame_type) || !data.ReadUrl(&out->url) ||
       !data.ReadMethod(&out->method) || !data.ReadHeaders(&headers) ||
+      !data.ReadBlob(&serialized_blob_ptr) ||
       !data.ReadReferrer(&out->referrer) ||
       !data.ReadCredentialsMode(&out->credentials_mode) ||
       !data.ReadRedirectMode(&out->redirect_mode) ||
@@ -220,11 +222,7 @@ bool StructTraits<blink::mojom::FetchAPIRequestDataView,
   }
 
   // content::ServiceWorkerFetchRequest doesn't support request body.
-  base::Optional<std::string> blob_uuid;
-  if (data.ReadBlobUuid(&blob_uuid) && blob_uuid && !blob_uuid->empty())
-    return false;
-  blink::mojom::BlobPtr blob = data.TakeBlob<blink::mojom::BlobPtr>();
-  if (blob)
+  if (serialized_blob_ptr)
     return false;
 
   out->is_main_resource_load = data.is_main_resource_load();

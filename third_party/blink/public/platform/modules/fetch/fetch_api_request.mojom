@@ -7,7 +7,7 @@ module blink.mojom;
 import "services/network/public/mojom/fetch_api.mojom";
 import "services/network/public/mojom/request_context_frame_type.mojom";
 import "third_party/blink/public/platform/referrer.mojom";
-import "third_party/blink/public/mojom/blob/blob.mojom";
+import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "url/mojom/url.mojom";
 
 // Type of the context associated with a request.
@@ -101,11 +101,13 @@ struct FetchAPIRequest {
   RequestContextType request_context_type;
   network.mojom.RequestContextFrameType frame_type;
   url.mojom.Url url;
-  string method;
+  // TODO(lfg): |method| shouldn't be nullable. This is allowed in order to
+  // facilitate type conversions between FetchAPIRequest and
+  // WebServiceWorkerRequest, but should be made non-nullable once the browser
+  // process is converted to use the mojo type.
+  string? method;
   map<string, string> headers;
-  string? blob_uuid;
-  uint64 blob_size;
-  Blob? blob;
+  SerializedBlob? blob;
   Referrer referrer;
   network.mojom.FetchCredentialsMode credentials_mode;
   FetchCacheMode cache_mode;

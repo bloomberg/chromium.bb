@@ -42,6 +42,39 @@ namespace blink {
 
 namespace {
 
+template <typename CORSHeadersContainer>
+FetchResponseData* FilterResponseData(
+    network::mojom::FetchResponseType response_type,
+    FetchResponseData* response,
+    CORSHeadersContainer& headers) {
+  switch (response_type) {
+    case network::mojom::FetchResponseType::kBasic:
+      return response->CreateBasicFilteredResponse();
+      break;
+    case network::mojom::FetchResponseType::kCORS: {
+      WebHTTPHeaderSet header_names;
+      for (const auto& header : headers)
+        header_names.insert(header.Ascii().data());
+      return response->CreateCORSFilteredResponse(header_names);
+      break;
+    }
+    case network::mojom::FetchResponseType::kOpaque:
+      return response->CreateOpaqueFilteredResponse();
+      break;
+    case network::mojom::FetchResponseType::kOpaqueRedirect:
+      return response->CreateOpaqueRedirectFilteredResponse();
+      break;
+    case network::mojom::FetchResponseType::kDefault:
+      return response;
+      break;
+    case network::mojom::FetchResponseType::kError:
+      DCHECK_EQ(response->GetType(), network::mojom::FetchResponseType::kError);
+      return response;
+      break;
+  }
+  return response;
+}
+
 FetchResponseData* CreateFetchResponseDataFromWebResponse(
     ScriptState* script_state,
     const WebServiceWorkerResponse& web_response) {
@@ -74,29 +107,42 @@ FetchResponseData* CreateFetchResponseDataFromWebResponse(
       nullptr /* AbortSignal */));
 
   // Filter the response according to |webResponse|'s ResponseType.
-  switch (web_response.ResponseType()) {
-    case network::mojom::FetchResponseType::kBasic:
-      response = response->CreateBasicFilteredResponse();
-      break;
-    case network::mojom::FetchResponseType::kCORS: {
-      WebHTTPHeaderSet header_names;
-      for (const auto& header : web_response.CorsExposedHeaderNames())
-        header_names.insert(header.Ascii().data());
-      response = response->CreateCORSFilteredResponse(header_names);
-      break;
-    }
-    case network::mojom::FetchResponseType::kOpaque:
-      response = response->CreateOpaqueFilteredResponse();
-      break;
-    case network::mojom::FetchResponseType::kOpaqueRedirect:
-      response = response->CreateOpaqueRedirectFilteredResponse();
-      break;
-    case network::mojom::FetchResponseType::kDefault:
-      break;
-    case network::mojom::FetchResponseType::kError:
-      DCHECK_EQ(response->GetType(), network::mojom::FetchResponseType::kError);
-      break;
+  response = FilterResponseData(web_response.ResponseType(), response,
+                                web_response.CorsExposedHeaderNames());
+
+  return response;
+}
+
+FetchResponseData* CreateFetchResponseDataFromFetchAPIResponse(
+    ScriptState* script_state,
+    mojom::blink::FetchAPIResponse& fetch_api_response) {
+  FetchResponseData* response = nullptr;
+  if (fetch_api_response.status_code > 0)
+    response = FetchResponseData::Create();
+  else
+    response = FetchResponseData::CreateNetworkErrorResponse();
+
+  response->SetURLList(fetch_api_response.url_list);
+  response->SetStatus(fetch_api_response.status_code);
+  response->SetStatusMessage(WTF::AtomicString(fetch_api_response.status_text));
+  response->SetResponseTime(fetch_api_response.response_time);
+  response->SetCacheStorageCacheName(
+      fetch_api_response.cache_storage_cache_name);
+
+  for (const auto& header : fetch_api_response.headers)
+    response->HeaderList()->Append(header.key, header.value);
+
+  if (fetch_api_response.blob) {
+    response->ReplaceBodyStreamBuffer(new BodyStreamBuffer(
+        script_state,
+        new BlobBytesConsumer(ExecutionContext::From(script_state),
+                              fetch_api_response.blob),
+        nullptr /* AbortSignal */));
   }
+
+  // Filter the response according to |fetch_api_response|'s ResponseType.
+  response = FilterResponseData(fetch_api_response.response_type, response,
+                                fetch_api_response.cors_exposed_header_names);
 
   return response;
 }
@@ -296,6 +342,14 @@ Response* Response::Create(ScriptState* script_state,
   return new Response(ExecutionContext::From(script_state), response_data);
 }
 
+Response* Response::Create(ScriptState* script_state,
+                           mojom::blink::FetchAPIResponse& response) {
+  auto* fetch_response_data =
+      CreateFetchResponseDataFromFetchAPIResponse(script_state, response);
+  return new Response(ExecutionContext::From(script_state),
+                      fetch_response_data);
+}
+
 Response* Response::error(ScriptState* script_state) {
   FetchResponseData* response_data =
       FetchResponseData::CreateNetworkErrorResponse();
@@ -414,6 +468,10 @@ bool Response::HasPendingActivity() const {
 void Response::PopulateWebServiceWorkerResponse(
     WebServiceWorkerResponse& response) {
   response_->PopulateWebServiceWorkerResponse(response);
+}
+
+mojom::blink::FetchAPIResponsePtr Response::PopulateFetchAPIResponse() {
+  return response_->PopulateFetchAPIResponse();
 }
 
 Response::Response(ExecutionContext* context)

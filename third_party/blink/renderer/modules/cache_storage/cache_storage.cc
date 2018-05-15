@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
+#include "base/metrics/histogram_macros.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/dom/exception_code.h"
@@ -23,271 +23,128 @@
 
 namespace blink {
 
-namespace {
-
-DOMException* CreateNoImplementationException() {
-  return DOMException::Create(kNotSupportedError,
-                              "No CacheStorage implementation provided.");
-}
-
-}  // namespace
-
-// FIXME: Consider using CallbackPromiseAdapter.
-class CacheStorage::Callbacks final
-    : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
-  WTF_MAKE_NONCOPYABLE(Callbacks);
-
- public:
-  explicit Callbacks(ScriptPromiseResolver* resolver) : resolver_(resolver) {}
-  ~Callbacks() override = default;
-
-  void OnSuccess() override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    resolver_->Resolve(true);
-    resolver_.Clear();
-  }
-
-  void OnError(mojom::CacheStorageError reason) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    if (reason == mojom::CacheStorageError::kErrorNotFound)
-      resolver_->Resolve(false);
-    else
-      resolver_->Reject(CacheStorageError::CreateException(reason));
-    resolver_.Clear();
-  }
-
- private:
-  Persistent<ScriptPromiseResolver> resolver_;
-};
-
-// FIXME: Consider using CallbackPromiseAdapter.
-class CacheStorage::WithCacheCallbacks final
-    : public WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks {
-  WTF_MAKE_NONCOPYABLE(WithCacheCallbacks);
-
- public:
-  WithCacheCallbacks(const String& cache_name,
-                     CacheStorage* cache_storage,
-                     ScriptPromiseResolver* resolver)
-      : cache_name_(cache_name),
-        cache_storage_(cache_storage),
-        resolver_(resolver) {}
-  ~WithCacheCallbacks() override = default;
-
-  void OnSuccess(std::unique_ptr<WebServiceWorkerCache> web_cache) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    DCHECK(cache_storage_) << "CacheStorage should outlive WithCacheCallbacks.";
-    Cache* cache = Cache::Create(cache_storage_->scoped_fetcher_,
-                                 base::WrapUnique(web_cache.release()));
-    resolver_->Resolve(cache);
-    resolver_.Clear();
-  }
-
-  void OnError(mojom::CacheStorageError reason) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    if (reason == mojom::CacheStorageError::kErrorNotFound ||
-        reason == mojom::CacheStorageError::kErrorStorage) {
-      resolver_->Resolve();
-    } else {
-      resolver_->Reject(CacheStorageError::CreateException(reason));
-    }
-    resolver_.Clear();
-  }
-
- private:
-  String cache_name_;
-
-  // TODO(crbug.com/831117): Switch to Persistent<CacheStorage> once Oilpan can
-  // handle it on thread shutdown.
-  // |cache_storage_| is guaranteed to be alive during OnSuccess/OnError because
-  // CacheStorage is actually owned by GlobalCacheStorage, which is terminated
-  // when LocalDOMWindow/WorkerGlobalScope is terminated.
-  // Ownership chain:
-  // GlobalCacheStorage => CacheStorage => WebServiceWorkerCacheStorage(Impl) =>
-  // WithCacheCallbacks.
-  WeakPersistent<CacheStorage> cache_storage_;
-  Persistent<ScriptPromiseResolver> resolver_;
-};
-
-// FIXME: Consider using CallbackPromiseAdapter.
-class CacheStorage::MatchCallbacks
-    : public WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks {
-  WTF_MAKE_NONCOPYABLE(MatchCallbacks);
-
- public:
-  explicit MatchCallbacks(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
-  void OnSuccess(const WebServiceWorkerResponse& web_response) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    ScriptState::Scope scope(resolver_->GetScriptState());
-    resolver_->Resolve(
-        Response::Create(resolver_->GetScriptState(), web_response));
-    resolver_.Clear();
-  }
-
-  void OnError(mojom::CacheStorageError reason) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    if (reason == mojom::CacheStorageError::kErrorNotFound ||
-        reason == mojom::CacheStorageError::kErrorStorage ||
-        reason == mojom::CacheStorageError::kErrorCacheNameNotFound) {
-      resolver_->Resolve();
-    } else {
-      resolver_->Reject(CacheStorageError::CreateException(reason));
-    }
-    resolver_.Clear();
-  }
-
- private:
-  Persistent<ScriptPromiseResolver> resolver_;
-};
-
-// FIXME: Consider using CallbackPromiseAdapter.
-class CacheStorage::DeleteCallbacks final
-    : public WebServiceWorkerCacheStorage::CacheStorageCallbacks {
-  WTF_MAKE_NONCOPYABLE(DeleteCallbacks);
-
- public:
-  DeleteCallbacks(const String& cache_name,
-                  CacheStorage* cache_storage,
-                  ScriptPromiseResolver* resolver)
-      : cache_name_(cache_name), resolver_(resolver) {}
-  ~DeleteCallbacks() override = default;
-
-  void OnSuccess() override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    resolver_->Resolve(true);
-    resolver_.Clear();
-  }
-
-  void OnError(mojom::CacheStorageError reason) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    if (reason == mojom::CacheStorageError::kErrorNotFound ||
-        reason == mojom::CacheStorageError::kErrorStorage) {
-      resolver_->Resolve(false);
-    } else {
-      resolver_->Reject(CacheStorageError::CreateException(reason));
-    }
-    resolver_.Clear();
-  }
-
- private:
-  String cache_name_;
-  Persistent<ScriptPromiseResolver> resolver_;
-};
-
-// FIXME: Consider using CallbackPromiseAdapter.
-class CacheStorage::KeysCallbacks final
-    : public WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks {
-  WTF_MAKE_NONCOPYABLE(KeysCallbacks);
-
- public:
-  explicit KeysCallbacks(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-  ~KeysCallbacks() override = default;
-
-  void OnSuccess(const WebVector<WebString>& keys) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    Vector<String> wtf_keys;
-    for (size_t i = 0; i < keys.size(); ++i)
-      wtf_keys.push_back(keys[i]);
-    resolver_->Resolve(wtf_keys);
-    resolver_.Clear();
-  }
-
-  void OnError(mojom::CacheStorageError reason) override {
-    if (!resolver_->GetExecutionContext() ||
-        resolver_->GetExecutionContext()->IsContextDestroyed())
-      return;
-    resolver_->Reject(CacheStorageError::CreateException(reason));
-    resolver_.Clear();
-  }
-
- private:
-  Persistent<ScriptPromiseResolver> resolver_;
-};
-
 CacheStorage* CacheStorage::Create(
     GlobalFetch::ScopedFetcher* fetcher,
-    std::unique_ptr<WebServiceWorkerCacheStorage> web_cache_storage) {
-  return new CacheStorage(fetcher, std::move(web_cache_storage));
+    service_manager::InterfaceProvider* mojo_provider) {
+  return new CacheStorage(fetcher, mojo_provider);
 }
 
 ScriptPromise CacheStorage::open(ScriptState* script_state,
                                  const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  const ScriptPromise promise = resolver->Promise();
 
-  if (web_cache_storage_) {
-    web_cache_storage_->DispatchOpen(
-        std::make_unique<WithCacheCallbacks>(cache_name, this, resolver),
-        cache_name);
-  } else {
-    resolver->Reject(CreateNoImplementationException());
-  }
+  cache_storage_ptr_->Open(
+      cache_name,
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver,
+             GlobalFetch::ScopedFetcher* fetcher, TimeTicks start_time,
+             mojom::blink::OpenResultPtr result) {
+            if (!resolver->GetExecutionContext() ||
+                resolver->GetExecutionContext()->IsContextDestroyed())
+              return;
+            if (result->is_status()) {
+              switch (result->get_status()) {
+                case mojom::blink::CacheStorageError::kErrorNotFound:
+                case mojom::blink::CacheStorageError::kErrorStorage:
+                  resolver->Resolve();
+                  break;
+                default:
+                  resolver->Reject(
+                      CacheStorageError::CreateException(result->get_status()));
+                  break;
+              }
+            } else {
+              UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Open",
+                                  TimeTicks::Now() - start_time);
+              resolver->Resolve(
+                  Cache::Create(fetcher, std::move(result->get_cache())));
+            }
+          },
+          WrapPersistent(resolver), WrapPersistent(scoped_fetcher_.Get()),
+          TimeTicks::Now()));
 
-  return promise;
+  return resolver->Promise();
 }
 
 ScriptPromise CacheStorage::has(ScriptState* script_state,
                                 const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  const ScriptPromise promise = resolver->Promise();
 
-  if (web_cache_storage_) {
-    web_cache_storage_->DispatchHas(std::make_unique<Callbacks>(resolver),
-                                    cache_name);
-  } else {
-    resolver->Reject(CreateNoImplementationException());
-  }
+  cache_storage_ptr_->Has(
+      cache_name,
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+             mojom::blink::CacheStorageError result) {
+            if (!resolver->GetExecutionContext() ||
+                resolver->GetExecutionContext()->IsContextDestroyed())
+              return;
+            switch (result) {
+              case mojom::blink::CacheStorageError::kSuccess:
+                UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Has",
+                                    TimeTicks::Now() - start_time);
+                resolver->Resolve(true);
+                break;
+              case mojom::blink::CacheStorageError::kErrorNotFound:
+                resolver->Resolve(false);
+                break;
+              default:
+                resolver->Reject(CacheStorageError::CreateException(result));
+                break;
+            }
+          },
+          WrapPersistent(resolver), TimeTicks::Now()));
 
-  return promise;
+  return resolver->Promise();
 }
 
 ScriptPromise CacheStorage::Delete(ScriptState* script_state,
                                    const String& cache_name) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  const ScriptPromise promise = resolver->Promise();
 
-  if (web_cache_storage_) {
-    web_cache_storage_->DispatchDelete(
-        std::make_unique<DeleteCallbacks>(cache_name, this, resolver),
-        cache_name);
-  } else {
-    resolver->Reject(CreateNoImplementationException());
-  }
+  cache_storage_ptr_->Delete(
+      cache_name,
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+             mojom::blink::CacheStorageError result) {
+            if (!resolver->GetExecutionContext() ||
+                resolver->GetExecutionContext()->IsContextDestroyed())
+              return;
+            switch (result) {
+              case mojom::blink::CacheStorageError::kSuccess:
+                UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Delete",
+                                    TimeTicks::Now() - start_time);
+                resolver->Resolve(true);
+                break;
+              case mojom::blink::CacheStorageError::kErrorStorage:
+              case mojom::blink::CacheStorageError::kErrorNotFound:
+                resolver->Resolve(false);
+                break;
+              default:
+                resolver->Reject(CacheStorageError::CreateException(result));
+                break;
+            }
+          },
+          WrapPersistent(resolver), TimeTicks::Now()));
 
-  return promise;
+  return resolver->Promise();
 }
 
 ScriptPromise CacheStorage::keys(ScriptState* script_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
-  const ScriptPromise promise = resolver->Promise();
 
-  if (web_cache_storage_)
-    web_cache_storage_->DispatchKeys(std::make_unique<KeysCallbacks>(resolver));
-  else
-    resolver->Reject(CreateNoImplementationException());
+  cache_storage_ptr_->Keys(WTF::Bind(
+      [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+         const Vector<String>& keys) {
+        if (!resolver->GetExecutionContext() ||
+            resolver->GetExecutionContext()->IsContextDestroyed())
+          return;
+        UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Keys",
+                            TimeTicks::Now() - start_time);
+        resolver->Resolve(keys);
+      },
+      WrapPersistent(resolver), TimeTicks::Now()));
 
-  return promise;
+  return resolver->Promise();
 }
 
 ScriptPromise CacheStorage::match(ScriptState* script_state,
@@ -319,28 +176,46 @@ ScriptPromise CacheStorage::MatchImpl(ScriptState* script_state,
     return promise;
   }
 
-  if (web_cache_storage_) {
-    web_cache_storage_->DispatchMatch(
-        std::make_unique<MatchCallbacks>(resolver), web_request,
-        Cache::ToWebQueryParams(options));
-  } else {
-    resolver->Reject(CreateNoImplementationException());
-  }
+  cache_storage_ptr_->Match(
+      web_request, Cache::ToQueryParams(options),
+      WTF::Bind(
+          [](ScriptPromiseResolver* resolver, TimeTicks start_time,
+             mojom::blink::MatchResultPtr result) {
+            if (!resolver->GetExecutionContext() ||
+                resolver->GetExecutionContext()->IsContextDestroyed())
+              return;
+            if (result->is_status()) {
+              switch (result->get_status()) {
+                case mojom::CacheStorageError::kErrorNotFound:
+                case mojom::CacheStorageError::kErrorStorage:
+                case mojom::CacheStorageError::kErrorCacheNameNotFound:
+                  resolver->Resolve();
+                  break;
+                default:
+                  resolver->Reject(
+                      CacheStorageError::CreateException(result->get_status()));
+                  break;
+              }
+            } else {
+              UMA_HISTOGRAM_TIMES("ServiceWorkerCache.CacheStorage.Match",
+                                  TimeTicks::Now() - start_time);
+              ScriptState::Scope scope(resolver->GetScriptState());
+              resolver->Resolve(Response::Create(resolver->GetScriptState(),
+                                                 *result->get_response()));
+            }
+          },
+          WrapPersistent(resolver), TimeTicks::Now()));
 
   return promise;
 }
 
-CacheStorage::CacheStorage(
-    GlobalFetch::ScopedFetcher* fetcher,
-    std::unique_ptr<WebServiceWorkerCacheStorage> web_cache_storage)
-    : scoped_fetcher_(fetcher),
-      web_cache_storage_(std::move(web_cache_storage)) {}
+CacheStorage::CacheStorage(GlobalFetch::ScopedFetcher* fetcher,
+                           service_manager::InterfaceProvider* mojo_provider)
+    : scoped_fetcher_(fetcher) {
+  mojo_provider->GetInterface(mojo::MakeRequest(&cache_storage_ptr_));
+}
 
 CacheStorage::~CacheStorage() = default;
-
-void CacheStorage::Dispose() {
-  web_cache_storage_.reset();
-}
 
 void CacheStorage::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);

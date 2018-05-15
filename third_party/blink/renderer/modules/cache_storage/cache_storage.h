@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "base/macros.h"
-#include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_cache_storage.h"
+#include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache.h"
@@ -19,16 +19,13 @@
 
 namespace blink {
 
-class WebServiceWorkerCacheStorage;
-
 class CacheStorage final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static CacheStorage* Create(GlobalFetch::ScopedFetcher*,
-                              std::unique_ptr<WebServiceWorkerCacheStorage>);
+                              service_manager::InterfaceProvider*);
   ~CacheStorage() override;
-  void Dispose();
 
   ScriptPromise open(ScriptState*, const String& cache_name);
   ScriptPromise has(ScriptState*, const String& cache_name);
@@ -52,13 +49,14 @@ class CacheStorage final : public ScriptWrappable {
   friend class DeleteCallbacks;
 
   CacheStorage(GlobalFetch::ScopedFetcher*,
-               std::unique_ptr<WebServiceWorkerCacheStorage>);
+               service_manager::InterfaceProvider*);
   ScriptPromise MatchImpl(ScriptState*,
                           const Request*,
                           const CacheQueryOptions&);
 
   Member<GlobalFetch::ScopedFetcher> scoped_fetcher_;
-  std::unique_ptr<WebServiceWorkerCacheStorage> web_cache_storage_;
+
+  mojom::blink::CacheStoragePtr cache_storage_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(CacheStorage);
 };

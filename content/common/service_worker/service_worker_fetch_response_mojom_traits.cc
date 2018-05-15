@@ -23,32 +23,38 @@ bool StructTraits<blink::mojom::FetchAPIResponseDataView,
                   content::ServiceWorkerResponse>::
     Read(blink::mojom::FetchAPIResponseDataView data,
          content::ServiceWorkerResponse* out) {
+  blink::mojom::SerializedBlobPtr serialized_blob_ptr;
+  blink::mojom::SerializedBlobPtr serialized_side_data_blob_ptr;
   if (!data.ReadUrlList(&out->url_list) ||
       !data.ReadStatusText(&out->status_text) ||
       !data.ReadResponseType(&out->response_type) ||
-      !data.ReadHeaders(&out->headers) || !data.ReadBlobUuid(&out->blob_uuid) ||
-      !data.ReadError(&out->error) ||
+      !data.ReadHeaders(&out->headers) ||
+      !data.ReadBlob(&serialized_blob_ptr) || !data.ReadError(&out->error) ||
       !data.ReadResponseTime(&out->response_time) ||
       !data.ReadCacheStorageCacheName(&out->cache_storage_cache_name) ||
-      !data.ReadCorsExposedHeaderNames(&out->cors_exposed_header_names)) {
+      !data.ReadCorsExposedHeaderNames(&out->cors_exposed_header_names) ||
+      !data.ReadSideDataBlob(&serialized_side_data_blob_ptr)) {
     return false;
   }
 
   out->status_code = data.status_code();
-  out->blob_size = data.blob_size();
   out->is_in_cache_storage = data.is_in_cache_storage();
 
-  if (!out->blob_uuid.empty()) {
-    blink::mojom::BlobPtr blob = data.TakeBlob<blink::mojom::BlobPtr>();
-    out->blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
+  if (serialized_blob_ptr) {
+    out->blob_uuid = serialized_blob_ptr->uuid;
+    out->blob_size = serialized_blob_ptr->size;
+    blink::mojom::BlobPtr blob_ptr;
+    blob_ptr.Bind(std::move(serialized_blob_ptr->blob));
+    out->blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
   }
 
-  out->side_data_blob_size = data.side_data_blob_size();
-  if (!out->side_data_blob_uuid.empty()) {
-    blink::mojom::BlobPtr side_data_blob =
-        data.TakeSideDataBlob<blink::mojom::BlobPtr>();
+  if (serialized_side_data_blob_ptr) {
+    out->side_data_blob_uuid = serialized_side_data_blob_ptr->uuid;
+    out->side_data_blob_size = serialized_side_data_blob_ptr->size;
+    blink::mojom::BlobPtr blob_ptr;
+    blob_ptr.Bind(std::move(serialized_side_data_blob_ptr->blob));
     out->side_data_blob =
-        base::MakeRefCounted<storage::BlobHandle>(std::move(side_data_blob));
+        base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
   }
 
   return true;
