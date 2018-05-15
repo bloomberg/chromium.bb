@@ -139,6 +139,10 @@ bool IsRecentTabsUIRebootEnabled() {
   return base::FeatureList::IsEnabled(kUIRefreshPhase1);
 }
 
+bool IsBookmarksUIRebootEnabled() {
+  return base::FeatureList::IsEnabled(kCollectionsUIReboot);
+}
+
 bool IsCollectionsUIRebootEnabled() {
   return base::FeatureList::IsEnabled(kCollectionsUIReboot);
 }
