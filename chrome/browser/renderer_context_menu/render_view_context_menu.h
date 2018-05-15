@@ -99,6 +99,10 @@ class RenderViewContextMenu : public RenderViewContextMenuBase {
   // page (as opposed to the user). Used to determine which shortcut to display.
   bool IsHTML5Fullscreen() const;
 
+  // Returns true if keyboard lock is active and requires the user to press and
+  // hold escape to exit exclusive access mode.
+  bool IsPressAndHoldEscRequiredToExitFullscreen() const;
+
  private:
   friend class RenderViewContextMenuTest;
   friend class TestRenderViewContextMenu;
