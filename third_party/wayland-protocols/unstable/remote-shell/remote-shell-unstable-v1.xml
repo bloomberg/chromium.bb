@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="15">
+  <interface name="zcr_remote_shell_v1" version="16">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -894,7 +894,7 @@
 
   </interface>
 
-  <interface name="zcr_notification_surface_v1" version="2">
+  <interface name="zcr_notification_surface_v1" version="16">
     <description summary="A notification window">
       An interface that may be implemented by a wl_surface to host
       notification contents.
@@ -906,9 +906,9 @@
       </description>
     </request>
 
-    <!-- Version 2 additions -->
+    <!-- Version 16 additions -->
 
-    <request name="set_app_id" since="2">
+    <request name="set_app_id" since="16">
       <description summary="set application ID">
 	Set an application identifier for the notification surface.
       </description>

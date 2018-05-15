@@ -1788,7 +1788,7 @@ zcr_remote_surface_v1_pip(struct zcr_remote_surface_v1 *zcr_remote_surface_v1)
 /**
  * @ingroup iface_zcr_notification_surface_v1
  */
-#define ZCR_NOTIFICATION_SURFACE_V1_SET_APP_ID_SINCE_VERSION 2
+#define ZCR_NOTIFICATION_SURFACE_V1_SET_APP_ID_SINCE_VERSION 16
 
 /** @ingroup iface_zcr_notification_surface_v1 */
 static inline void
