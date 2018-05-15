@@ -5,10 +5,10 @@
     "service_manager:connector": {
       "provides": {
         "connect_unittests:connect_test_service": [
-          "service_manager::test::mojom::ConnectTestService"
+          "service_manager.test.mojom.ConnectTestService"
         ],
         "service_manager:service_factory": [
-          "service_manager::mojom::ServiceFactory"
+          "service_manager.mojom.ServiceFactory"
         ]
       }
     }

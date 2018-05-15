@@ -4,7 +4,7 @@
     "navigation:frame": {
       "provides": {
         "browser": [
-          "headless::HeadlessRenderFrameController"
+          "headless.HeadlessRenderFrameController"
         ]
       }
     }

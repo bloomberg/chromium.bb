@@ -5,8 +5,8 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "mash:launchable": [ "mash::mojom::Launchable" ],
-        "chromeos:autoclick": [ "autoclick::mojom::AutoclickController" ]
+        "mash:launchable": [ "mash.mojom.Launchable" ],
+        "chromeos:autoclick": [ "autoclick.mojom.AutoclickController" ]
       },
       "requires": {
         "*": [ "app" ],

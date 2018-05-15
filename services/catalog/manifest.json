@@ -9,8 +9,8 @@
     // build time or something. Same with service:service_manager.
     "service_manager:connector": {
       "provides": {
-        "directory": [ "filesystem::mojom::Directory" ],
-        "control": [ "catalog::mojom::CatalogControl" ]
+        "directory": [ "filesystem.mojom.Directory" ],
+        "control": [ "catalog.mojom.CatalogControl" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]

@@ -6,7 +6,7 @@
       "provides": {
         "service_manager_unittest:embedder": [ ],
         "service_manager:service_factory": [
-          "service_manager::mojom::ServiceFactory"
+          "service_manager.mojom.ServiceFactory"
         ]
       },
       "requires": {

@@ -31,7 +31,7 @@ std::move(p_{{param.name}})
 {%- endmacro %}
 
 {#--- Begin #}
-const char {{class_name}}::Name_[] = "{{namespace_as_string}}::{{class_name}}";
+const char {{class_name}}::Name_[] = "{{namespace}}.{{class_name}}";
 
 {#--- Constants #}
 {%-  for constant in interface.constants %}

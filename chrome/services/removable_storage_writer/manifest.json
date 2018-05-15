@@ -5,7 +5,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "removable_storage_writer": [ "chrome::mojom::RemovableStorageWriter" ]
+        "removable_storage_writer": [ "chrome.mojom.RemovableStorageWriter" ]
        },
        "requires": {
          "service_manager": [ "service_manager:all_users" ]

@@ -5,7 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "background_service_manager_unittest:test_service": [
-          "service_manager::mojom::TestService"
+          "service_manager.mojom.TestService"
         ]
       }
     }

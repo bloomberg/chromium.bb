@@ -5,7 +5,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "import": [ "chrome::mojom::ProfileImport" ]
+        "import": [ "chrome.mojom.ProfileImport" ]
        },
        "requires": {
          "service_manager": [ "service_manager:all_users" ]

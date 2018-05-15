@@ -5,15 +5,15 @@
     "service_manager:connector": {
       "provides": {
         "renderer": [
-          "chromecast::media::mojom::MediaCaps",
-          "chromecast::mojom::MemoryPressureController"
+          "chromecast.media.mojom.MediaCaps",
+          "chromecast.mojom.MemoryPressureController"
         ]
       }
     },
     "navigation:frame": {
       "provides": {
         "renderer": [
-          "chromecast::shell::mojom::ApplicationMediaCapabilities"
+          "chromecast.shell.mojom.ApplicationMediaCapabilities"
         ]
       }
     }

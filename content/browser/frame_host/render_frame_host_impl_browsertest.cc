@@ -1242,8 +1242,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   const GURL kUrl3(embedded_test_server()->GetURL("/title3.html"));
   const GURL kUrl4(embedded_test_server()->GetURL("/empty.html"));
 
-  // The 31-bit hash of the string "content::mojom::BrowserTarget".
-  const int32_t kHashOfContentMojomBrowserTarget = 0x1CA01D37;
+  // The 31-bit hash of the string "content.mojom:BrowserTarget".
+  const int32_t kHashOfContentMojomBrowserTarget = 0x1730feb8;
 
   // Client ends of the fake interface provider requests injected for the first
   // and second navigations.
@@ -1275,9 +1275,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Simulate two interface requests corresponding to the first navigation
   // arrived after the second navigation was committed, hence were dropped.
-  interface_provider_1->GetInterface("content::mojom::BrowserTarget",
+  interface_provider_1->GetInterface("content.mojom.BrowserTarget",
                                      CreateDisconnectedMessagePipeHandle());
-  interface_provider_1->GetInterface("content::mojom::BrowserTarget",
+  interface_provider_1->GetInterface("content.mojom.BrowserTarget",
                                      CreateDisconnectedMessagePipeHandle());
 
   // RFHI destroys the DroppedInterfaceRequestLogger from navigation `n` on
@@ -1295,7 +1295,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   }
 
   // Simulate one interface request dropped for the second URL.
-  interface_provider_2->GetInterface("content::mojom::BrowserTarget",
+  interface_provider_2->GetInterface("content.mojom.BrowserTarget",
                                      CreateDisconnectedMessagePipeHandle());
 
   // A final navigation should record the sample from the second URL.
@@ -1311,9 +1311,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
 
   // Both the DroppedInterfaceRequestLogger for the first and second URLs are
   // destroyed -- even more interfacerequests should not cause any crashes.
-  interface_provider_1->GetInterface("content::mojom::BrowserTarget",
+  interface_provider_1->GetInterface("content.mojom.BrowserTarget",
                                      CreateDisconnectedMessagePipeHandle());
-  interface_provider_2->GetInterface("content::mojom::BrowserTarget",
+  interface_provider_2->GetInterface("content.mojom.BrowserTarget",
                                      CreateDisconnectedMessagePipeHandle());
 
   // The interface connections should be broken.

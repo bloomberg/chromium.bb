@@ -5,7 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "shutdown_unittest:shutdown_test_client_controller": [
-          "service_manager::mojom::ShutdownTestClientController"
+          "service_manager.mojom.ShutdownTestClientController"
         ]
       },
       "requires": {

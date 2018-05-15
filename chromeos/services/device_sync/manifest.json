@@ -4,7 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "device_sync": [ "device_sync::mojom::DeviceSync" ]
+        "device_sync": [ "device_sync.mojom.DeviceSync" ]
        }
      }
   }

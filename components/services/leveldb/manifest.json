@@ -5,7 +5,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "leveldb:leveldb": [ "leveldb::mojom::LevelDBService" ]
+        "leveldb:leveldb": [ "leveldb.mojom.LevelDBService" ]
       },
       "requires": {
         "*": [ "app" ]

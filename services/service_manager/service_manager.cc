@@ -876,7 +876,7 @@ ServiceManager::ServiceManager(std::unique_ptr<ServiceProcessLauncherFactory>
       weak_ptr_factory_(this) {
   InterfaceProviderSpec spec;
   spec.provides[kCapability_ServiceManager].insert(
-      "service_manager::mojom::ServiceManager");
+      "service_manager.mojom.ServiceManager");
   spec.requires["*"].insert("service_manager:service_factory");
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
@@ -1107,9 +1107,9 @@ void ServiceManager::InitCatalog(mojom::ServicePtr catalog) {
   // TODO(beng): It'd be great to build this from the manifest, however there's
   //             a bit of a chicken-and-egg problem.
   InterfaceProviderSpec spec;
-  spec.provides["directory"].insert("filesystem::mojom::Directory");
-  spec.provides["catalog:catalog"].insert("catalog::mojom::Catalog");
-  spec.provides["control"].insert("catalog::mojom::CatalogControl");
+  spec.provides["directory"].insert("filesystem.mojom.Directory");
+  spec.provides["catalog:catalog"].insert("catalog.mojom.Catalog");
+  spec.provides["control"].insert("catalog.mojom.CatalogControl");
   InterfaceProviderSpecMap specs;
   specs[mojom::kServiceManager_ConnectorSpec] = std::move(spec);
 

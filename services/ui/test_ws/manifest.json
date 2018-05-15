@@ -6,10 +6,10 @@
     "service_manager:connector": {
       "provides": {
         "app": [
-          "ui::mojom::WindowTreeFactory"
+          "ui.mojom.WindowTreeFactory"
         ],
         "window_tree_host_factory": [
-          "ui::mojom::WindowTreeHostFactory"
+          "ui.mojom.WindowTreeHostFactory"
         ]
       }
     }
