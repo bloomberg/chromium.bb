@@ -163,6 +163,8 @@ std::unique_ptr<base::DictionaryValue> GetCupsPrinterInfo(
   // |printer.ppd_reference_.autoconf|. If the implementation of
   // IsIppEverywhere() changes this will need to be changed as well.
   printer_info->SetBoolean("printerAutoconf", printer.IsIppEverywhere());
+  printer_info->SetString("printerPPDPath",
+                          printer.ppd_reference().user_supplied_ppd_url);
 
   auto optional = printer.GetUriComponents();
   if (!optional.has_value()) {

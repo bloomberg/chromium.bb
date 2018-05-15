@@ -1808,6 +1808,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"editPrinterDialogTitle",
      IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE},
     {"editPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_BUTTON},
+    {"currentPpdMessage",
+     IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_CURRENT_PPD_MESSAGE},
 #else
     {"localPrintersTitle", IDS_SETTINGS_PRINTING_LOCAL_PRINTERS_TITLE},
 #endif
