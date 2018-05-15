@@ -49,7 +49,6 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
   cc::LayerTreeSettings settings_;
   std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;
   std::unique_ptr<cc::LayerTreeResourceProvider> resource_provider_;
-  viz::ContextProvider* context_provider_ = nullptr;
 };
 
 }  // namespace blink

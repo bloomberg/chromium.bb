@@ -23,18 +23,12 @@ VideoFrameResourceProvider::VideoFrameResourceProvider(
     : settings_(settings) {}
 
 VideoFrameResourceProvider::~VideoFrameResourceProvider() {
-  if (context_provider_) {
-    resource_updater_ = nullptr;
-    resource_provider_ = nullptr;
-  }
+  resource_updater_.reset();
+  resource_provider_.reset();
 }
 
 void VideoFrameResourceProvider::Initialize(
     viz::ContextProvider* media_context_provider) {
-  // TODO(lethalantidote): Need to handle null contexts.
-  // https://crbug/768565
-  CHECK(media_context_provider);
-  context_provider_ = media_context_provider;
 
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
       media_context_provider, true, settings_.resource_settings);
@@ -42,7 +36,7 @@ void VideoFrameResourceProvider::Initialize(
   // TODO(kylechar): VideoResourceUpdater needs something it can notify about
   // SharedBitmaps that isn't a LayerTreeFrameSink. https://crbug.com/730660#c88
   resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
-      context_provider_, nullptr, resource_provider_.get(),
+      media_context_provider, nullptr, resource_provider_.get(),
       settings_.use_stream_video_draw_quad,
       settings_.resource_settings.use_gpu_memory_buffer_resources,
       settings_.resource_settings.use_r16_texture);

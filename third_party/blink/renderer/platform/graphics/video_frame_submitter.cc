@@ -22,7 +22,7 @@ namespace blink {
 
 namespace {
 // Delay to retry getting the context_provider.
-constexpr int kGetContextProviderRetry = 150;
+constexpr int kGetContextProviderRetryMS = 150;
 }  // namespace
 
 VideoFrameSubmitter::VideoFrameSubmitter(
@@ -117,23 +117,26 @@ void VideoFrameSubmitter::Initialize(cc::VideoFrameProvider* provider) {
 }
 
 void VideoFrameSubmitter::OnReceivedContextProvider(
+    bool use_gpu_compositing,
     viz::ContextProvider* context_provider) {
   // We could get a null |context_provider| back if the context is still lost.
-  // TODO(lethalantidote): Handle software compositing case.
-  if (!context_provider) {
+  if (!context_provider && use_gpu_compositing) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(
             context_provider_callback_,
             base::BindOnce(&VideoFrameSubmitter::OnReceivedContextProvider,
                            weak_ptr_factory_.GetWeakPtr())),
-        base::TimeDelta::FromMilliseconds(kGetContextProviderRetry));
+        base::TimeDelta::FromMilliseconds(kGetContextProviderRetryMS));
     return;
   }
 
   context_provider_ = context_provider;
-  context_provider_->AddObserver(this);
   resource_provider_->Initialize(context_provider);
+
+  if (context_provider_)
+    context_provider_->AddObserver(this);
+
   if (frame_sink_id_.is_valid())
     StartSubmitting();
 }
