@@ -168,5 +168,8 @@ test("media_blink_unittests") {
     } else {
       deps += [ "//v8:v8_external_startup_data_assets" ]
     }
+
+    # KeySystemConfigSelectorTest fails on Android (crbug.com/608541).
+    sources -= [ "key_system_config_selector_unittest.cc" ]
   }
 }
