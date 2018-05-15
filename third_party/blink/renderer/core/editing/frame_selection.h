@@ -65,25 +65,33 @@ enum class CaretVisibility;
 
 enum class HandleVisibility { kNotVisible, kVisible };
 
+enum class SelectLineBreak { kNotSelected, kSelected };
+
 // This is return type of ComputeLayoutSelectionStatus(paintfragment).
 // This structure represents how the fragment is selected.
 // |start|, |end| : Selection start/end offset. This offset is based on
 //   the text of NGInlineNode of a parent block thus
 //   |fragemnt.StartOffset <= start <= end <= fragment.EndOffset|.
 // |start| == |end| means this fragment is not selected.
+// |line_break| : This value represents If this fragment is selected and
+// selection wraps line break.
 struct LayoutSelectionStatus {
   STACK_ALLOCATED();
 
-  LayoutSelectionStatus(unsigned passed_start, unsigned passed_end)
-      : start(passed_start), end(passed_end) {
+  LayoutSelectionStatus(unsigned passed_start,
+                        unsigned passed_end,
+                        SelectLineBreak passed_line_break)
+      : start(passed_start), end(passed_end), line_break(passed_line_break) {
     DCHECK_LE(start, end);
   }
   bool operator==(const LayoutSelectionStatus& other) const {
-    return start == other.start && end == other.end;
+    return start == other.start && end == other.end &&
+           line_break == other.line_break;
   }
 
   unsigned start;
   unsigned end;
+  SelectLineBreak line_break;
 };
 
 class CORE_EXPORT FrameSelection final
