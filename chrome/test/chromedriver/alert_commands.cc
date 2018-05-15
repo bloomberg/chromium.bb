@@ -73,7 +73,7 @@ Status ExecuteSetAlertText(Session* session,
       web_view->GetJavaScriptDialogManager();
 
   if (!dialog_manager->IsDialogOpen())
-    return Status(kNoAlertOpen);
+    return Status(kNoSuchAlert);
 
   std::string type;
   Status status = dialog_manager->GetTypeOfDialog(&type);

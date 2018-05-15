@@ -19,10 +19,10 @@ TEST(JavaScriptDialogManager, NoDialog) {
   BrowserInfo browser_info;
   JavaScriptDialogManager manager(&client, &browser_info);
   std::string message("HI");
-  ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kNoSuchAlert, manager.GetDialogMessage(&message).code());
   ASSERT_FALSE(manager.IsDialogOpen());
   ASSERT_STREQ("HI", message.c_str());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
+  ASSERT_EQ(kNoSuchAlert, manager.HandleDialog(false, NULL).code());
 }
 
 TEST(JavaScriptDialogManager, HandleDialogPassesParams) {
@@ -78,8 +78,8 @@ TEST(JavaScriptDialogManager, ReconnectClearsStateAndSendsEnable) {
   ASSERT_TRUE(manager.OnConnected(&client).IsOk());
   ASSERT_EQ("Page.enable", client.commands_[0].method);
   ASSERT_FALSE(manager.IsDialogOpen());
-  ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
+  ASSERT_EQ(kNoSuchAlert, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kNoSuchAlert, manager.HandleDialog(false, NULL).code());
 }
 
 namespace {
@@ -129,7 +129,7 @@ TEST(JavaScriptDialogManager, OneDialog) {
   params.SetString("defaultPrompt", "");
   ASSERT_FALSE(manager.IsDialogOpen());
   std::string message;
-  ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kNoSuchAlert, manager.GetDialogMessage(&message).code());
 
   ASSERT_EQ(
       kOk,
@@ -144,8 +144,8 @@ TEST(JavaScriptDialogManager, OneDialog) {
   client.set_closing_count(1);
   ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
   ASSERT_FALSE(manager.IsDialogOpen());
-  ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
+  ASSERT_EQ(kNoSuchAlert, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kNoSuchAlert, manager.HandleDialog(false, NULL).code());
 }
 
 TEST(JavaScriptDialogManager, TwoDialogs) {
@@ -183,8 +183,8 @@ TEST(JavaScriptDialogManager, TwoDialogs) {
   client.set_closing_count(2);
   ASSERT_EQ(kOk, manager.HandleDialog(false, NULL).code());
   ASSERT_FALSE(manager.IsDialogOpen());
-  ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
+  ASSERT_EQ(kNoSuchAlert, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kNoSuchAlert, manager.HandleDialog(false, NULL).code());
 }
 
 TEST(JavaScriptDialogManager, OneDialogManualClose) {
@@ -197,7 +197,7 @@ TEST(JavaScriptDialogManager, OneDialogManualClose) {
   params.SetString("defaultPrompt", "");
   ASSERT_FALSE(manager.IsDialogOpen());
   std::string message;
-  ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kNoSuchAlert, manager.GetDialogMessage(&message).code());
 
   ASSERT_EQ(
       kOk,
@@ -213,6 +213,6 @@ TEST(JavaScriptDialogManager, OneDialogManualClose) {
       kOk,
       manager.OnEvent(&client, "Page.javascriptDialogClosed", params).code());
   ASSERT_FALSE(manager.IsDialogOpen());
-  ASSERT_EQ(kNoAlertOpen, manager.GetDialogMessage(&message).code());
-  ASSERT_EQ(kNoAlertOpen, manager.HandleDialog(false, NULL).code());
+  ASSERT_EQ(kNoSuchAlert, manager.GetDialogMessage(&message).code());
+  ASSERT_EQ(kNoSuchAlert, manager.HandleDialog(false, NULL).code());
 }

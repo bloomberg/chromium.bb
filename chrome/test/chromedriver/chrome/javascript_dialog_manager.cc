@@ -24,7 +24,7 @@ bool JavaScriptDialogManager::IsDialogOpen() const {
 
 Status JavaScriptDialogManager::GetDialogMessage(std::string* message) {
   if (!IsDialogOpen())
-    return Status(kNoAlertOpen);
+    return Status(kNoSuchAlert);
 
   *message = unhandled_dialog_queue_.front();
   return Status(kOk);
@@ -32,7 +32,7 @@ Status JavaScriptDialogManager::GetDialogMessage(std::string* message) {
 
 Status JavaScriptDialogManager::GetTypeOfDialog(std::string* type) {
   if (!IsDialogOpen())
-    return Status(kNoAlertOpen);
+    return Status(kNoSuchAlert);
 
   *type = dialog_type_queue_.front();
   return Status(kOk);
@@ -41,7 +41,7 @@ Status JavaScriptDialogManager::GetTypeOfDialog(std::string* type) {
 Status JavaScriptDialogManager::HandleDialog(bool accept,
                                              const std::string* text) {
   if (!IsDialogOpen())
-    return Status(kNoAlertOpen);
+    return Status(kNoSuchAlert);
 
   base::DictionaryValue params;
   params.SetBoolean("accept", accept);

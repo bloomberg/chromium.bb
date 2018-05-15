@@ -49,7 +49,7 @@ class NoSuchSession(ChromeDriverException):
   pass
 class UnexpectedAlertOpen(ChromeDriverException):
   pass
-class NoAlertOpen(ChromeDriverException):
+class NoSuchAlert(ChromeDriverException):
   pass
 class NoSuchCookie(ChromeDriverException):
   pass
@@ -79,7 +79,7 @@ def _ExceptionForLegacyResponse(response):
     23: NoSuchWindow,
     24: InvalidCookieDomain,
     26: UnexpectedAlertOpen,
-    27: NoAlertOpen,
+    27: NoSuchAlert,
     28: ScriptTimeout,
     32: InvalidSelector,
     33: SessionNotCreatedException,
@@ -105,7 +105,7 @@ def _ExceptionForStandardResponse(response):
     'no such window': NoSuchWindow,
     'invalid cookie domain': InvalidCookieDomain,
     'unexpected alert open': UnexpectedAlertOpen,
-    'no alert open': NoAlertOpen,
+    'no such alert': NoSuchAlert,
     'asynchronous script timeout': ScriptTimeout,
     'invalid selector': InvalidSelector,
     'session not created exception': SessionNotCreatedException,
