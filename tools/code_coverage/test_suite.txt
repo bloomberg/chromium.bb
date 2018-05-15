@@ -54,6 +54,7 @@ nacl_loader_unittests
 native_theme_unittests
 net_unittests
 pdf_unittests
+pdfium_embeddertests
 pdfium_unittests
 ppapi_unittests
 printing_unittests
