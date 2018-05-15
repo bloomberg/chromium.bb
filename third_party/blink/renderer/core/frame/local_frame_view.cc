@@ -601,7 +601,8 @@ void LocalFrameView::InvalidateRect(const IntRect& rect) {
   layout_object->InvalidatePaintRectangle(LayoutRect(paint_invalidation_rect));
 }
 
-void LocalFrameView::SetFrameRect(const IntRect& frame_rect) {
+void LocalFrameView::SetFrameRect(const IntRect& unclamped_frame_rect) {
+  IntRect frame_rect(SaturatedRect(unclamped_frame_rect));
   if (frame_rect == frame_rect_)
     return;
   const bool width_changed = frame_rect_.Width() != frame_rect.Width();
