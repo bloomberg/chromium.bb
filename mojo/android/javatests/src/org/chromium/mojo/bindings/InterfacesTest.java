@@ -229,7 +229,7 @@ public class InterfacesTest {
     @Test
     @SmallTest
     public void testName() {
-        Assert.assertEquals("sample::NamedObject", NamedObject.MANAGER.getName());
+        Assert.assertEquals("sample.NamedObject", NamedObject.MANAGER.getName());
     }
 
     @Test

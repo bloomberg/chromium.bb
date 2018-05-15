@@ -4,9 +4,9 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "connect_unittests:class": [ "service_manager::test::mojom::ClassInterface" ],
+        "connect_unittests:class": [ "service_manager.test.mojom.ClassInterface" ],
         "connect_unittests:connect_test_service": [
-          "service_manager::test::mojom::ConnectTestService"
+          "service_manager.test.mojom.ConnectTestService"
         ]
       }
     }

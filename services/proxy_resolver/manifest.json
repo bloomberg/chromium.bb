@@ -4,7 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "factory": [ "proxy_resolver::mojom::ProxyResolverFactory" ]
+        "factory": [ "proxy_resolver.mojom.ProxyResolverFactory" ]
        },
        "requires": {
          "service_manager": [ "service_manager:all_users" ]

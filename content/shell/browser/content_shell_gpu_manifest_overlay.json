@@ -4,7 +4,7 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "content::mojom::PowerMonitorTest"
+          "content.mojom.PowerMonitorTest"
         ]
       }
     }

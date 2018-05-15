@@ -9,9 +9,9 @@
       },
       "provides": {
         "assistant": [
-            "chromeos::assistant::mojom::Assistant",
-            "chromeos::assistant::mojom::AssistantPlatform",
-            "chromeos::assistant::mojom::AssistantSettingsManager"
+            "chromeos.assistant.mojom.Assistant",
+            "chromeos.assistant.mojom.AssistantPlatform",
+            "chromeos.assistant.mojom.AssistantSettingsManager"
         ]
       }
     }

@@ -53,7 +53,7 @@ TEST(ConstantTest, InterfaceConstants) {
   EXPECT_EQ(base::StringPiece(InterfaceWithConstants::kStringValue),
             "interface test string contents");
   EXPECT_EQ(base::StringPiece(InterfaceWithConstants::Name_),
-            "mojo::test::InterfaceWithConstants");
+            "mojo.test.InterfaceWithConstants");
 }
 
 }  // namespace test

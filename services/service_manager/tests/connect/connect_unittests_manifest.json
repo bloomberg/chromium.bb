@@ -5,7 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "connect_unittests:exposed_interface": [
-          "service_manager::test::mojom::ExposedInterface"
+          "service_manager.test.mojom.ExposedInterface"
         ]
       },
       "requires": {

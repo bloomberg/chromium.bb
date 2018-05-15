@@ -12,7 +12,7 @@
     "service_manager:connector": {
       "provides": {
         "service_manager:service_factory": [
-          "service_manager::mojom::ServiceFactory"
+          "service_manager.mojom.ServiceFactory"
         ]
       },
       "requires": {

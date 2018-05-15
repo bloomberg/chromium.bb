@@ -4,7 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "echo" : [ "echo::mojom::Echo" ]
+        "echo" : [ "echo.mojom.Echo" ]
       },
       "requires": {
         "service_manager": [ "service_manager:all_users" ]

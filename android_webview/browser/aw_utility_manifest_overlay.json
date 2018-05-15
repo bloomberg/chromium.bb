@@ -4,7 +4,7 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "heap_profiling::mojom::ProfilingClient"
+          "heap_profiling.mojom.ProfilingClient"
         ]
       }
     }

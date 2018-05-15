@@ -5,10 +5,10 @@
     "service_manager:connector": {
       "provides": {
         "lifecycle_unittest:lifecycle_control": [
-          "service_manager::test::mojom::LifecycleControl"
+          "service_manager.test.mojom.LifecycleControl"
         ],
         "service_manager:service_factory": [
-          "service_manager::mojom::ServiceFactory"
+          "service_manager.mojom.ServiceFactory"
         ]
       }
     }

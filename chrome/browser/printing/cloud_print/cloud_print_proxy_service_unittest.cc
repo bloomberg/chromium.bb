@@ -149,7 +149,7 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
     service_manager::InterfaceProvider::TestApi test_api(
         &process_control_.remote_interfaces());
     test_api.SetBinderForName(
-        "cloud_print::mojom::CloudPrint",
+        "cloud_print.mojom.CloudPrint",
         base::Bind(&TestCloudPrintProxyService::HandleCloudPrintProxyRequest,
                    base::Unretained(this)));
     service_manager::mojom::InterfaceProviderPtr handle;
@@ -160,7 +160,7 @@ class TestCloudPrintProxyService : public CloudPrintProxyService {
   ~TestCloudPrintProxyService() override {
     service_manager::InterfaceProvider::TestApi test_api(
         &ServiceProcessControl::GetInstance()->remote_interfaces());
-    test_api.ClearBinderForName("cloud_print::mojom::CloudPrint");
+    test_api.ClearBinderForName("cloud_print.mojom.CloudPrint");
   }
 
   void Initialize() {

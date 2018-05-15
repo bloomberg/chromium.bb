@@ -4,7 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "identity_manager" : [ "identity::mojom::IdentityManager" ]
+        "identity_manager" : [ "identity.mojom.IdentityManager" ]
       }
     }
   }

@@ -215,7 +215,7 @@ params.{{parameter.name}}{% if not loop.last %}, {% endif -%}
   }
 
   var {{interface.name}} = {
-    name: '{{module.mojom_namespace|replace(".","::")}}::{{interface.mojom_name}}',
+    name: '{{module.mojom_namespace}}.{{interface.mojom_name}}',
     kVersion: {{interface.version}},
     ptrClass: {{interface.name}}Ptr,
     proxyClass: {{interface.name}}Proxy,

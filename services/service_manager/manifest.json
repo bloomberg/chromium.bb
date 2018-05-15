@@ -25,7 +25,7 @@
         "service_manager:block_wildcard": [ ],
 
         "service_manager:service_manager": [
-          "service_manager::mojom::ServiceManager"
+          "service_manager.mojom.ServiceManager"
         ]
       },
       "requires": {

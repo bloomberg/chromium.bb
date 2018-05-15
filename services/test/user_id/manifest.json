@@ -4,7 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "user_id" : [ "user_id::mojom::UserId" ]
+        "user_id" : [ "user_id.mojom.UserId" ]
       }
     }
   }

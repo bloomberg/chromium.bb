@@ -5,18 +5,18 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
-          "content::mojom::Child",
-          "content::mojom::ChildControl",
-          "content::mojom::ChildHistogramFetcher",
-          "content::mojom::ChildHistogramFetcherFactory",
-          "content::mojom::ResourceUsageReporter",
-          "IPC::mojom::ChannelBootstrap",
-          "printing::mojom::PdfToEmfConverterFactory",
-          "printing::mojom::PdfToPwgRasterConverter",
-          "service_manager::mojom::ServiceFactory"
+          "content.mojom.Child",
+          "content.mojom.ChildControl",
+          "content.mojom.ChildHistogramFetcher",
+          "content.mojom.ChildHistogramFetcherFactory",
+          "content.mojom.ResourceUsageReporter",
+          "IPC.mojom.ChannelBootstrap",
+          "printing.mojom.PdfToEmfConverterFactory",
+          "printing.mojom.PdfToPwgRasterConverter",
+          "service_manager.mojom.ServiceFactory"
         ],
         "service_manager:service_factory": [
-          "service_manager::mojom::ServiceFactory"
+          "service_manager.mojom.ServiceFactory"
         ]
       },
       "requires": {

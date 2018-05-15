@@ -6,13 +6,13 @@
     "service_manager:connector": {
       "provides": {
         "network_service": [
-          "network::mojom::NetworkService"
+          "network.mojom.NetworkService"
         ],
         "test": [
-          "network::mojom::NetworkServiceTest"
+          "network.mojom.NetworkServiceTest"
         ],
         "url_loader": [
-          "network::mojom::URLLoaderFactory"
+          "network.mojom.URLLoaderFactory"
         ]
       },
       "requires": {
