@@ -1168,11 +1168,9 @@ DirectoryModel.prototype.onVolumeInfoListUpdated_ = function(event) {
   // then redirect to it in the focused window.
   // Note, that this is a temporary solution for https://crbug.com/427776.
   if (window.isFocused() && event.added.length === 1 &&
-      event.added[0].volumeType === VolumeManagerCommon.VolumeType.PROVIDED &&
-      (event.added[0].source === VolumeManagerCommon.Source.FILE ||
-       VolumeManagerCommon.getProvidedFileSystemIdFromVolumeId(
-           event.added[0].volumeId) ===
-           VolumeManagerCommon.ProvidedFileSystem.CROSTINI)) {
+      ((event.added[0].volumeType === VolumeManagerCommon.VolumeType.PROVIDED &&
+        event.added[0].source === VolumeManagerCommon.Source.FILE) ||
+       event.added[0].volumeType === VolumeManagerCommon.VolumeType.CROSTINI)) {
     event.added[0].resolveDisplayRoot().then(function(displayRoot) {
       // Resolving a display root on FSP volumes is instant, despite the
       // asynchronous call.

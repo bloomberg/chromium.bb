@@ -365,9 +365,8 @@ NavigationListModel.prototype.reorderNavigationItems_ = function() {
   // Check if Linux files already mounted.
   let linuxFilesMounted = false;
   for (let i = 0; i < this.volumeList_.length; i++) {
-    if (VolumeManagerCommon.getProvidedFileSystemIdFromVolumeId(
-            this.volumeList_[i].volumeInfo.volumeId) ===
-        VolumeManagerCommon.ProvidedFileSystem.CROSTINI) {
+    if (this.volumeList_[i].volumeInfo.volumeType ===
+        VolumeManagerCommon.VolumeType.CROSTINI) {
       linuxFilesMounted = true;
       break;
     }

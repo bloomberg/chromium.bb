@@ -328,26 +328,6 @@ VolumeManagerCommon.getMediaViewRootTypeFromVolumeId = function(volumeId) {
       volumeId.split(':', 2)[1]);
 };
 
-
-/**
- * List of known FSP-provided fileSystemId values.
- *
- * @enum {string}
- * @const
- */
-VolumeManagerCommon.ProvidedFileSystem = {
-  CROSTINI: 'crostini',
-};
-
-/**
- * Obtains fileSystemId from volumeId of FSP-provided mount.
- * @param {string} volumeId Volume ID.
- * @return {string|undefined}
- */
-VolumeManagerCommon.getProvidedFileSystemIdFromVolumeId = function(volumeId) {
-  return volumeId ? volumeId.split(':', 3)[2] : undefined;
-};
-
 /**
  * Fake entries for virtual folders which hold Google Drive offline files,
  * Google Drive "Shared with me" files, and mixed Recent files.
