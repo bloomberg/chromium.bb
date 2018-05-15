@@ -40,7 +40,9 @@
   OP(BindTexImage2DCHROMIUM)                   /* 281 */ \
   OP(ReleaseTexImage2DCHROMIUM)                /* 282 */ \
   OP(TexStorage2D)                             /* 283 */ \
-  OP(CopySubTexture)                           /* 284 */
+  OP(CopySubTexture)                           /* 284 */ \
+  OP(TraceBeginCHROMIUM)                       /* 285 */ \
+  OP(TraceEndCHROMIUM)                         /* 286 */
 
 enum CommandId {
   kOneBeforeStartPoint =

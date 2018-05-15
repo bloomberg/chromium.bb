@@ -1397,4 +1397,68 @@ static_assert(offsetof(CopySubTexture, width) == 28,
 static_assert(offsetof(CopySubTexture, height) == 32,
               "offset of CopySubTexture height should be 32");
 
+struct TraceBeginCHROMIUM {
+  typedef TraceBeginCHROMIUM ValueType;
+  static const CommandId kCmdId = kTraceBeginCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init(GLuint _category_bucket_id, GLuint _name_bucket_id) {
+    SetHeader();
+    category_bucket_id = _category_bucket_id;
+    name_bucket_id = _name_bucket_id;
+  }
+
+  void* Set(void* cmd, GLuint _category_bucket_id, GLuint _name_bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_category_bucket_id, _name_bucket_id);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32_t category_bucket_id;
+  uint32_t name_bucket_id;
+};
+
+static_assert(sizeof(TraceBeginCHROMIUM) == 12,
+              "size of TraceBeginCHROMIUM should be 12");
+static_assert(offsetof(TraceBeginCHROMIUM, header) == 0,
+              "offset of TraceBeginCHROMIUM header should be 0");
+static_assert(offsetof(TraceBeginCHROMIUM, category_bucket_id) == 4,
+              "offset of TraceBeginCHROMIUM category_bucket_id should be 4");
+static_assert(offsetof(TraceBeginCHROMIUM, name_bucket_id) == 8,
+              "offset of TraceBeginCHROMIUM name_bucket_id should be 8");
+
+struct TraceEndCHROMIUM {
+  typedef TraceEndCHROMIUM ValueType;
+  static const CommandId kCmdId = kTraceEndCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(3);
+
+  static uint32_t ComputeSize() {
+    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() { header.SetCmd<ValueType>(); }
+
+  void Init() { SetHeader(); }
+
+  void* Set(void* cmd) {
+    static_cast<ValueType*>(cmd)->Init();
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+};
+
+static_assert(sizeof(TraceEndCHROMIUM) == 4,
+              "size of TraceEndCHROMIUM should be 4");
+static_assert(offsetof(TraceEndCHROMIUM, header) == 0,
+              "offset of TraceEndCHROMIUM header should be 0");
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_RASTER_CMD_FORMAT_AUTOGEN_H_

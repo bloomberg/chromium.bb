@@ -68,6 +68,7 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
 
   // Set to true to LOG every command.
   void SetLogCommands(bool log_commands) override;
+  gles2::Outputter* outputter() const override;
   bool log_commands() const { return log_commands_; }
 
   virtual void SetCopyTextureResourceManagerForTest(
@@ -77,12 +78,14 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
   virtual ServiceTransferCache* GetTransferCacheForTest() = 0;
 
  protected:
-  RasterDecoder(CommandBufferServiceBase* command_buffer_service);
+  RasterDecoder(CommandBufferServiceBase* command_buffer_service,
+                gles2::Outputter* outputter);
 
  private:
-  bool initialized_;
-  bool debug_;
-  bool log_commands_;
+  bool initialized_ = false;
+  bool debug_ = false;
+  bool log_commands_ = false;
+  gles2::Outputter* outputter_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(RasterDecoder);
 };

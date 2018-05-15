@@ -71,4 +71,7 @@ virtual void CopySubTexture(GLuint source_id,
                             GLint y,
                             GLsizei width,
                             GLsizei height) = 0;
+virtual void TraceBeginCHROMIUM(const char* category_name,
+                                const char* trace_name) = 0;
+virtual void TraceEndCHROMIUM() = 0;
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_INTERFACE_AUTOGEN_H_

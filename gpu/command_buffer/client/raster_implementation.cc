@@ -1231,6 +1231,32 @@ void RasterImplementation::EndGpuRaster() {
   NOTREACHED();
 }
 
+void RasterImplementation::TraceBeginCHROMIUM(const char* category_name,
+                                              const char* trace_name) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceBeginCHROMIUM("
+                     << category_name << ", " << trace_name << ")");
+  SetBucketAsCString(kResultBucketId, category_name);
+  SetBucketAsCString(kResultBucketId + 1, trace_name);
+  helper_->TraceBeginCHROMIUM(kResultBucketId, kResultBucketId + 1);
+  helper_->SetBucketSize(kResultBucketId, 0);
+  helper_->SetBucketSize(kResultBucketId + 1, 0);
+  current_trace_stack_++;
+}
+
+void RasterImplementation::TraceEndCHROMIUM() {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glTraceEndCHROMIUM("
+                     << ")");
+  if (current_trace_stack_ == 0) {
+    SetGLError(GL_INVALID_OPERATION, "glTraceEndCHROMIUM",
+               "missing begin trace");
+    return;
+  }
+  helper_->TraceEndCHROMIUM();
+  current_trace_stack_--;
+}
+
 RasterImplementation::RasterProperties::RasterProperties(
     SkColor background_color,
     bool can_use_lcd_text,

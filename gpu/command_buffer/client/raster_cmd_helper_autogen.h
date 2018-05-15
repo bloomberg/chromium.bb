@@ -294,4 +294,20 @@ void CopySubTexture(GLuint source_id,
   }
 }
 
+void TraceBeginCHROMIUM(GLuint category_bucket_id, GLuint name_bucket_id) {
+  raster::cmds::TraceBeginCHROMIUM* c =
+      GetCmdSpace<raster::cmds::TraceBeginCHROMIUM>();
+  if (c) {
+    c->Init(category_bucket_id, name_bucket_id);
+  }
+}
+
+void TraceEndCHROMIUM() {
+  raster::cmds::TraceEndCHROMIUM* c =
+      GetCmdSpace<raster::cmds::TraceEndCHROMIUM>();
+  if (c) {
+    c->Init();
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_CMD_HELPER_AUTOGEN_H_

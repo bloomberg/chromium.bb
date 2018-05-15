@@ -128,6 +128,10 @@ class RASTER_EXPORT RasterImplementationGLES : public RasterInterface {
   void BeginGpuRaster() override;
   void EndGpuRaster() override;
 
+  void TraceBeginCHROMIUM(const char* category_name,
+                          const char* trace_name) override;
+  void TraceEndCHROMIUM() override;
+
  private:
   struct Texture {
     Texture(GLuint id,

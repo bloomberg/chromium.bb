@@ -352,5 +352,14 @@ void RasterImplementationGLES::EndGpuRaster() {
   gl_->ActiveTexture(GL_TEXTURE0);
 }
 
+void RasterImplementationGLES::TraceBeginCHROMIUM(const char* category_name,
+                                                  const char* trace_name) {
+  gl_->TraceBeginCHROMIUM(category_name, trace_name);
+}
+
+void RasterImplementationGLES::TraceEndCHROMIUM() {
+  gl_->TraceEndCHROMIUM();
+}
+
 }  // namespace raster
 }  // namespace gpu

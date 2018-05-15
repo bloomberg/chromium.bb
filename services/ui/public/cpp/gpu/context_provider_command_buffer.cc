@@ -268,6 +268,13 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
       return bind_result_;
     }
 
+    std::string type_name =
+        command_buffer_metrics::ContextTypeToString(context_type_);
+    std::string unique_context_name =
+        base::StringPrintf("%s-%p", type_name.c_str(), raster_impl.get());
+    raster_impl->TraceBeginCHROMIUM("gpu_toplevel",
+                                    unique_context_name.c_str());
+
     impl_ = raster_impl.get();
     raster_interface_ = std::move(raster_impl);
     helper_ = std::move(raster_helper);
