@@ -77,6 +77,13 @@ config("blink_pch") {
 # config -----------------------------------------------------------------------
 
 config("config") {
+  include_dirs = [
+    ".",
+    "..",
+    "$root_gen_dir/third_party/blink/renderer",
+    "$root_gen_dir/third_party/blink",
+  ]
+
   cflags = []
   defines = []
 

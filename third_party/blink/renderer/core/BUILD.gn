@@ -41,7 +41,10 @@ config("config") {
 }
 
 config("core_include_dirs") {
-  include_dirs = []
+  include_dirs = [
+    "..",
+    "$root_gen_dir/third_party/blink/renderer",
+  ]
   if (is_android && use_openmax_dl_fft) {
     include_dirs += [ "//third_party/openmax_dl" ]
   }
@@ -1577,6 +1580,7 @@ target("jumbo_" + core_link_small_target_type, "core_generated") {
     ":core_include_dirs",
     "//tools/v8_context_snapshot:use_v8_context_snapshot",
   ]
+  include_dirs = [ "$root_gen_dir/third_party/blink/renderer" ]
 
   cflags = []
   defines = []
