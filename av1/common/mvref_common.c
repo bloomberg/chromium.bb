@@ -1406,6 +1406,8 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
   int lst_frame_sort_idx = -1;
   int gld_frame_sort_idx = -1;
 
+  assert(cm->seq_params.enable_order_hint);
+  assert(cm->seq_params.order_hint_bits_minus_1 >= 0);
   const int cur_frame_offset = (int)cm->frame_offset;
   const int cur_frame_sort_idx = 1 << cm->seq_params.order_hint_bits_minus_1;
 
