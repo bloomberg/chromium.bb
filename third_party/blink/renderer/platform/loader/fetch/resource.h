@@ -128,10 +128,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void SetLinkPreload(bool is_link_preload) { link_preload_ = is_link_preload; }
   bool IsLinkPreload() const { return link_preload_; }
 
-  void SetPreloadDiscoveryTime(double preload_discovery_time) {
-    preload_discovery_time_ = preload_discovery_time;
-  }
-
   const ResourceError& GetResourceError() const {
     DCHECK(error_);
     return *error_;
@@ -498,8 +494,6 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   TimeTicks load_finish_time_;
 
   unsigned long identifier_;
-
-  double preload_discovery_time_;
 
   size_t encoded_size_;
   size_t encoded_size_memory_usage_;

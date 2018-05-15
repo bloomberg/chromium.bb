@@ -37,7 +37,6 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request)
     : resource_request_(resource_request),
       decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
-      preload_discovery_time_(0.0),
       defer_(kNoDefer),
       origin_restriction_(kUseDefaultOriginRestrictionForType),
       placeholder_image_request_type_(kDisallowPlaceholder) {}
@@ -48,7 +47,6 @@ FetchParameters::FetchParameters(
       decoder_options_(data->decoder_options),
       options_(data->options),
       speculative_preload_type_(data->speculative_preload_type),
-      preload_discovery_time_(data->preload_discovery_time),
       defer_(data->defer),
       origin_restriction_(data->origin_restriction),
       resource_width_(data->resource_width),
@@ -61,7 +59,6 @@ FetchParameters::FetchParameters(const ResourceRequest& resource_request,
       decoder_options_(TextResourceDecoderOptions::kPlainTextContent),
       options_(options),
       speculative_preload_type_(SpeculativePreloadType::kNotSpeculative),
-      preload_discovery_time_(0.0),
       defer_(kNoDefer),
       origin_restriction_(kUseDefaultOriginRestrictionForType),
       placeholder_image_request_type_(kDisallowPlaceholder) {}
@@ -115,7 +112,6 @@ void FetchParameters::SetSpeculativePreloadType(
     SpeculativePreloadType speculative_preload_type,
     double discovery_time) {
   speculative_preload_type_ = speculative_preload_type;
-  preload_discovery_time_ = discovery_time;
 }
 
 void FetchParameters::MakeSynchronous() {
@@ -164,7 +160,6 @@ std::unique_ptr<CrossThreadFetchParametersData> FetchParameters::CopyData()
   data->decoder_options = decoder_options_;
   data->options = CrossThreadResourceLoaderOptionsData(options_);
   data->speculative_preload_type = speculative_preload_type_;
-  data->preload_discovery_time = preload_discovery_time_;
   data->defer = defer_;
   data->origin_restriction = origin_restriction_;
   data->resource_width = resource_width_;
