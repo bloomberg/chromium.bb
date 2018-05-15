@@ -116,9 +116,15 @@ class CertVerifyImplUsingProc : public CertVerifyImpl {
       return true;  // "skipping" is considered a successful return.
     }
 
+    base::FilePath dump_path;
+    if (!dump_prefix_path.empty()) {
+      dump_path = dump_prefix_path.AddExtension(FILE_PATH_LITERAL(".pem"))
+                      .InsertBeforeExtensionASCII("." + GetName());
+    }
+
     return VerifyUsingCertVerifyProc(proc_.get(), target_der_cert, hostname,
                                      intermediate_der_certs, root_der_certs,
-                                     crl_set, dump_prefix_path);
+                                     crl_set, dump_path);
   }
 
  private:
