@@ -67,7 +67,6 @@ class ASH_EXPORT HighlighterController
   void SetExitCallback(base::OnceClosure callback, bool require_success);
 
   // Update highlighter enabled |state| and notify observers.
-  // TODO(warx): add UpdateEnabledState test cases.
   void UpdateEnabledState(HighlighterEnabledState enabled_state);
 
   void BindRequest(mojom::HighlighterControllerRequest request);

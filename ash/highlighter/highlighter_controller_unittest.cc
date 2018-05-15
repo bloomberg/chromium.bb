@@ -10,6 +10,9 @@
 #include "ash/highlighter/highlighter_controller_test_api.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
+#include "ash/system/palette/mock_palette_tool_delegate.h"
+#include "ash/system/palette/palette_tool.h"
+#include "ash/system/palette/tools/metalayer_mode.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/window_tree_host.h"
@@ -18,6 +21,31 @@
 
 namespace ash {
 namespace {
+
+class TestHighlighterObserver : public HighlighterController::Observer {
+ public:
+  TestHighlighterObserver() = default;
+  ~TestHighlighterObserver() override = default;
+
+  // HighlighterController::Observer:
+  void OnHighlighterEnabledChanged(HighlighterEnabledState state) override {
+    if (state == HighlighterEnabledState::kEnabled) {
+      ++enabled_count_;
+    } else if (state == HighlighterEnabledState::kDisabledByUser) {
+      ++disabled_by_user_count_;
+    } else {
+      DCHECK_EQ(HighlighterEnabledState::kDisabledBySessionEnd, state);
+      ++disabled_by_session_end_;
+    }
+  }
+
+  int enabled_count_ = 0;
+  int disabled_by_user_count_ = 0;
+  int disabled_by_session_end_ = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestHighlighterObserver);
+};
 
 class HighlighterControllerTest : public AshTestBase {
  public:
@@ -28,9 +56,13 @@ class HighlighterControllerTest : public AshTestBase {
     AshTestBase::SetUp();
     controller_test_api_ = std::make_unique<HighlighterControllerTestApi>(
         Shell::Get()->highlighter_controller());
+
+    palette_tool_delegate_ = std::make_unique<MockPaletteToolDelegate>();
+    tool_ = std::make_unique<MetalayerMode>(palette_tool_delegate_.get());
   }
 
   void TearDown() override {
+    tool_.reset();
     // This needs to be called first to reset the controller state before the
     // shell instance gets torn down.
     controller_test_api_.reset();
@@ -61,6 +93,8 @@ class HighlighterControllerTest : public AshTestBase {
   }
 
   std::unique_ptr<HighlighterControllerTestApi> controller_test_api_;
+  std::unique_ptr<MockPaletteToolDelegate> palette_tool_delegate_;
+  std::unique_ptr<PaletteTool> tool_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HighlighterControllerTest);
@@ -459,6 +493,39 @@ TEST_F(HighlighterControllerTest, DetachedClient) {
   controller_test_api_->ResetSelection();
   TraceRect(trace);
   EXPECT_TRUE(controller_test_api_->HandleSelectionCalled());
+}
+
+// Test enabling/disabling metalayer mode by selecting/deselecting on palette
+// tool and calling UpdateEnabledState notify observers properly.
+TEST_F(HighlighterControllerTest, UpdateEnabledState) {
+  HighlighterController* controller = Shell::Get()->highlighter_controller();
+  TestHighlighterObserver observer;
+  controller->AddObserver(&observer);
+
+  ASSERT_EQ(0, observer.enabled_count_);
+  ASSERT_EQ(0, observer.disabled_by_user_count_);
+  ASSERT_EQ(0, observer.disabled_by_session_end_);
+  tool_->OnEnable();
+  EXPECT_EQ(1, observer.enabled_count_);
+  EXPECT_EQ(0, observer.disabled_by_user_count_);
+  EXPECT_EQ(0, observer.disabled_by_session_end_);
+
+  tool_->OnDisable();
+  EXPECT_EQ(1, observer.enabled_count_);
+  EXPECT_EQ(1, observer.disabled_by_user_count_);
+  EXPECT_EQ(0, observer.disabled_by_session_end_);
+
+  tool_->OnEnable();
+  EXPECT_EQ(2, observer.enabled_count_);
+  EXPECT_EQ(1, observer.disabled_by_user_count_);
+  EXPECT_EQ(0, observer.disabled_by_session_end_);
+  controller->UpdateEnabledState(
+      HighlighterEnabledState::kDisabledBySessionEnd);
+  EXPECT_EQ(2, observer.enabled_count_);
+  EXPECT_EQ(1, observer.disabled_by_user_count_);
+  EXPECT_EQ(1, observer.disabled_by_session_end_);
+
+  controller->RemoveObserver(&observer);
 }
 
 }  // namespace ash
