@@ -123,6 +123,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceClient : public BluezDBusClient {
     // The Advertising Data Flags of the remote device. Read-only.
     dbus::Property<std::vector<uint8_t>> advertising_data_flags;
 
+    // The MTU used in ATT communication with the remote device. Read-only.
+    dbus::Property<uint16_t> mtu;
+
     Properties(dbus::ObjectProxy* object_proxy,
                const std::string& interface_name,
                const PropertyChangedCallback& callback);

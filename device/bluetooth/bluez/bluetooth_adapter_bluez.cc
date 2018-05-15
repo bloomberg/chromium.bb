@@ -680,6 +680,9 @@ void BluetoothAdapterBlueZ::DevicePropertyChanged(
     NotifyDeviceChanged(device_bluez);
   }
 
+  if (property_name == properties->mtu.name())
+    NotifyDeviceMTUChanged(device_bluez, properties->mtu.value());
+
   if (property_name == properties->services_resolved.name() &&
       properties->services_resolved.value()) {
     device_bluez->UpdateGattServices(object_path);
@@ -1117,6 +1120,14 @@ void BluetoothAdapterBlueZ::NotifyDeviceAddressChanged(
 
   for (auto& observer : observers_)
     observer.DeviceAddressChanged(this, device, old_address);
+}
+
+void BluetoothAdapterBlueZ::NotifyDeviceMTUChanged(BluetoothDeviceBlueZ* device,
+                                                   uint16_t mtu) {
+  DCHECK(device->adapter_ == this);
+
+  for (auto& observer : observers_)
+    observer.DeviceMTUChanged(this, device, mtu);
 }
 
 void BluetoothAdapterBlueZ::UseProfile(

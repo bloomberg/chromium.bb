@@ -40,6 +40,8 @@ void TestBluetoothAdapterObserver::Reset() {
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
   device_paired_changed_count_ = 0;
   device_new_paired_status_ = false;
+  device_mtu_changed_count_ = 0;
+  device_mtu_ = 0;
 #endif
   device_removed_count_ = 0;
   last_device_ = NULL;
@@ -142,6 +144,17 @@ void TestBluetoothAdapterObserver::DevicePairedChanged(
   ++device_paired_changed_count_;
   last_device_ = device;
   device_new_paired_status_ = new_paired_status;
+
+  QuitMessageLoop();
+}
+
+void TestBluetoothAdapterObserver::DeviceMTUChanged(
+    device::BluetoothAdapter* adapter,
+    device::BluetoothDevice* device,
+    uint16_t mtu) {
+  ++device_mtu_changed_count_;
+  last_device_ = device;
+  device_mtu_ = mtu;
 
   QuitMessageLoop();
 }
