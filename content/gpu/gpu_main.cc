@@ -343,8 +343,7 @@ int GpuMain(const MainFunctionParams& parameters) {
     SkGraphics::Init();
 #if defined(OS_LINUX)
     // Set up the font IPC so that the GPU process can create typefaces.
-    SkFontConfigInterface::SetGlobal(new FontConfigIPC(GetSandboxFD()))
-        ->unref();
+    SkFontConfigInterface::SetGlobal(sk_make_sp<FontConfigIPC>(GetSandboxFD()));
 #endif
   }
 

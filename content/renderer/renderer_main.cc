@@ -132,8 +132,7 @@ int RendererMain(const MainFunctionParams& parameters) {
   // This call could already have been made from zygote_main_linux.cc. However
   // we need to do it here if Zygote is disabled.
   if (process_command_line.HasSwitch(switches::kNoZygote)) {
-    SkFontConfigInterface::SetGlobal(new FontConfigIPC(GetSandboxFD()))
-        ->unref();
+    SkFontConfigInterface::SetGlobal(sk_make_sp<FontConfigIPC>(GetSandboxFD()));
   }
 #endif
 

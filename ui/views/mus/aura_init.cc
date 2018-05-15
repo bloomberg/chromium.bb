@@ -114,7 +114,7 @@ bool AuraInit::Init(service_manager::Connector* connector,
 // Initialize the skia font code to go ask fontconfig underneath.
 #if defined(OS_LINUX)
   font_loader_ = sk_make_sp<font_service::FontLoader>(connector);
-  SkFontConfigInterface::SetGlobal(font_loader_.get());
+  SkFontConfigInterface::SetGlobal(font_loader_);
 
   // Initialize static default font, by running this now, before any other apps
   // load, we ensure all the state is set up.

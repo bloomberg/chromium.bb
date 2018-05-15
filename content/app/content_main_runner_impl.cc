@@ -396,7 +396,7 @@ void PreSandboxInit() {
   InitializeWebRtcModule();
 #endif
 
-  SkFontConfigInterface::SetGlobal(new FontConfigIPC(GetSandboxFD()))->unref();
+  SkFontConfigInterface::SetGlobal(sk_make_sp<FontConfigIPC>(GetSandboxFD()));
 
   // Set the android SkFontMgr for blink. We need to ensure this is done
   // before the sandbox is initialized to allow the font manager to access
