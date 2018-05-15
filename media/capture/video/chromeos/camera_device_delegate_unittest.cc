@@ -110,8 +110,11 @@ class MockCameraDevice : public cros::mojom::Camera3DeviceOps {
   DISALLOW_COPY_AND_ASSIGN(MockCameraDevice);
 };
 
+constexpr int32_t kJpegMaxBufferSize = 1024;
+constexpr size_t kDefaultWidth = 1280, kDefaultHeight = 720;
 const VideoCaptureDeviceDescriptor kDefaultDescriptor("Fake device", "0");
-const VideoCaptureFormat kDefaultCaptureFormat(gfx::Size(1280, 720),
+const VideoCaptureFormat kDefaultCaptureFormat(gfx::Size(kDefaultWidth,
+                                                         kDefaultHeight),
                                                30.0,
                                                PIXEL_FORMAT_I420);
 
@@ -153,16 +156,60 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     cros::mojom::CameraInfoPtr camera_info = cros::mojom::CameraInfo::New();
     cros::mojom::CameraMetadataPtr static_metadata =
         cros::mojom::CameraMetadata::New();
+
+    static_metadata->entry_count = 3;
+    static_metadata->entry_capacity = 3;
+    static_metadata->entries =
+        std::vector<cros::mojom::CameraMetadataEntryPtr>();
+
     cros::mojom::CameraMetadataEntryPtr entry =
         cros::mojom::CameraMetadataEntry::New();
     entry->index = 0;
+    entry->tag = cros::mojom::CameraMetadataTag::
+        ANDROID_SCALER_AVAILABLE_STREAM_CONFIGURATIONS;
+    entry->type = cros::mojom::EntryType::TYPE_INT32;
+    entry->count = 12;
+    std::vector<int32_t> stream_configurations(entry->count);
+    stream_configurations[0] = static_cast<int32_t>(
+        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_IMPLEMENTATION_DEFINED);
+    stream_configurations[1] = kDefaultWidth;
+    stream_configurations[2] = kDefaultHeight;
+    stream_configurations[3] = static_cast<int32_t>(
+        cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT);
+    stream_configurations[4] = static_cast<int32_t>(
+        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888);
+    stream_configurations[5] = kDefaultWidth;
+    stream_configurations[6] = kDefaultHeight;
+    stream_configurations[7] = static_cast<int32_t>(
+        cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT);
+    stream_configurations[8] = static_cast<int32_t>(
+        cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_BLOB);
+    stream_configurations[9] = kDefaultWidth;
+    stream_configurations[10] = kDefaultHeight;
+    stream_configurations[11] = static_cast<int32_t>(
+        cros::mojom::Camera3StreamType::CAMERA3_STREAM_OUTPUT);
+    uint8_t* as_int8 = reinterpret_cast<uint8_t*>(stream_configurations.data());
+    entry->data.assign(as_int8, as_int8 + entry->count * sizeof(int32_t));
+    static_metadata->entries->push_back(std::move(entry));
+
+    entry = cros::mojom::CameraMetadataEntry::New();
+    entry->index = 1;
     entry->tag = cros::mojom::CameraMetadataTag::ANDROID_SENSOR_ORIENTATION;
     entry->type = cros::mojom::EntryType::TYPE_INT32;
     entry->count = 1;
     entry->data = std::vector<uint8_t>(4, 0);
-    static_metadata->entries =
-        std::vector<cros::mojom::CameraMetadataEntryPtr>();
     static_metadata->entries->push_back(std::move(entry));
+
+    entry = cros::mojom::CameraMetadataEntry::New();
+    entry->index = 2;
+    entry->tag = cros::mojom::CameraMetadataTag::ANDROID_JPEG_MAX_SIZE;
+    entry->type = cros::mojom::EntryType::TYPE_INT32;
+    entry->count = 1;
+    int32_t jpeg_max_size = kJpegMaxBufferSize;
+    as_int8 = reinterpret_cast<uint8_t*>(&jpeg_max_size);
+    entry->data.assign(as_int8, as_int8 + entry->count * sizeof(int32_t));
+    static_metadata->entries->push_back(std::move(entry));
+
     switch (camera_id) {
       case 0:
         camera_info->facing = cros::mojom::CameraFacing::CAMERA_FACING_FRONT;
@@ -195,23 +242,17 @@ class CameraDeviceDelegateTest : public ::testing::Test {
       base::OnceCallback<void(int32_t,
                               cros::mojom::Camera3StreamConfigurationPtr)>&
           callback) {
-    ASSERT_EQ(1u, config->streams.size());
-    ASSERT_EQ(static_cast<uint32_t>(kDefaultCaptureFormat.frame_size.width()),
-              config->streams[0]->width);
-    ASSERT_EQ(static_cast<uint32_t>(kDefaultCaptureFormat.frame_size.height()),
-              config->streams[0]->height);
-    ASSERT_EQ(cros::mojom::HalPixelFormat::HAL_PIXEL_FORMAT_YCbCr_420_888,
-              config->streams[0]->format);
-    config->streams[0]->usage = 0;
-    config->streams[0]->max_buffers = 1;
+    ASSERT_EQ(2u, config->streams.size());
+    for (size_t i = 0; i < config->streams.size(); ++i) {
+      config->streams[i]->usage = 0;
+      config->streams[i]->max_buffers = 1;
+    }
     std::move(callback).Run(0, std::move(config));
   }
 
   void ConstructFakeRequestSettings(
       cros::mojom::Camera3RequestTemplate type,
       base::OnceCallback<void(cros::mojom::CameraMetadataPtr)>& callback) {
-    ASSERT_EQ(cros::mojom::Camera3RequestTemplate::CAMERA3_TEMPLATE_PREVIEW,
-              type);
     cros::mojom::CameraMetadataPtr fake_settings =
         cros::mojom::CameraMetadata::New();
     fake_settings->entry_count = 1;
@@ -291,10 +332,27 @@ class CameraDeviceDelegateTest : public ::testing::Test {
         .Times(1)
         .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
                              CreateFakeGpuMemoryBuffer));
+    EXPECT_CALL(
+        mock_gpu_memory_buffer_manager_,
+        CreateGpuMemoryBuffer(_, gfx::BufferFormat::R_8,
+                              gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
+                              gpu::kNullSurfaceHandle))
+        .Times(1)
+        .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
+                             CreateFakeGpuMemoryBuffer));
+    EXPECT_CALL(
+        mock_gpu_memory_buffer_manager_,
+        CreateGpuMemoryBuffer(gfx::Size(kDefaultWidth, kDefaultHeight),
+                              gfx::BufferFormat::YUV_420_BIPLANAR,
+                              gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+                              gpu::kNullSurfaceHandle))
+        .Times(1)
+        .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
+                             CreateFakeGpuMemoryBuffer));
     EXPECT_CALL(mock_gpu_memory_buffer_manager_,
                 CreateGpuMemoryBuffer(
-                    gfx::Size(1280, 720), gfx::BufferFormat::YUV_420_BIPLANAR,
-                    gfx::BufferUsage::SCANOUT_CAMERA_READ_WRITE,
+                    gfx::Size(kJpegMaxBufferSize, 1), gfx::BufferFormat::R_8,
+                    gfx::BufferUsage::CAMERA_AND_CPU_READ_WRITE,
                     gpu::kNullSurfaceHandle))
         .Times(1)
         .WillOnce(Invoke(&unittest_internal::MockGpuMemoryBufferManager::
