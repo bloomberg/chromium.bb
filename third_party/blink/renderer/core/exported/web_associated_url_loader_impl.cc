@@ -38,6 +38,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_cors.h"
 #include "third_party/blink/public/platform/web_http_header_visitor.h"
