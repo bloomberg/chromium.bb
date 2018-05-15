@@ -162,8 +162,7 @@ aom_codec_err_t aom_codec_dec_init_ver(aom_codec_ctx_t *ctx,
  *     buffer was too short.
  */
 aom_codec_err_t aom_codec_peek_stream_info(aom_codec_iface_t *iface,
-                                           const uint8_t *data,
-                                           unsigned int data_sz,
+                                           const uint8_t *data, size_t data_sz,
                                            aom_codec_stream_info_t *si);
 
 /*!\brief Return information about the current stream.
@@ -212,7 +211,7 @@ aom_codec_err_t aom_codec_get_stream_info(aom_codec_ctx_t *ctx,
  *         for recoverability capabilities.
  */
 aom_codec_err_t aom_codec_decode(aom_codec_ctx_t *ctx, const uint8_t *data,
-                                 unsigned int data_sz, void *user_priv);
+                                 size_t data_sz, void *user_priv);
 
 /*!\brief Decoded frames iterator
  *

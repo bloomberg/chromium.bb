@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 
     if (!skip) {
       putc('.', stdout);
-      if (aom_codec_decode(&codec, frame, (unsigned int)frame_size, NULL))
+      if (aom_codec_decode(&codec, frame, frame_size, NULL))
         die_codec(&codec, "Failed to decode frame.");
 
       while ((img = aom_codec_get_frame(&codec, &iter)) != NULL)

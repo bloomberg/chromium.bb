@@ -137,7 +137,7 @@ int main(int argc, char **argv) {
       size_t frame_size = 0;
       const unsigned char *frame =
           aom_video_reader_get_frame(reader, &frame_size);
-      if (aom_codec_decode(&codec, frame, (unsigned int)frame_size, NULL))
+      if (aom_codec_decode(&codec, frame, frame_size, NULL))
         die_codec(&codec, "Failed to decode frame.");
 
       while ((img = aom_codec_get_frame(&codec, &iter)) != NULL) {

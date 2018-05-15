@@ -204,7 +204,7 @@ static void parse_operating_points(struct aom_read_bit_buffer *rb,
 }
 
 static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
-                                                unsigned int data_sz,
+                                                size_t data_sz,
                                                 aom_codec_stream_info_t *si,
                                                 int *is_intra_only) {
   int intra_only_flag = 0;
@@ -275,8 +275,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   return AOM_CODEC_OK;
 }
 
-static aom_codec_err_t decoder_peek_si(const uint8_t *data,
-                                       unsigned int data_sz,
+static aom_codec_err_t decoder_peek_si(const uint8_t *data, size_t data_sz,
                                        aom_codec_stream_info_t *si) {
   return decoder_peek_si_internal(data, data_sz, si, NULL);
 }
@@ -459,7 +458,7 @@ static INLINE void check_resync(aom_codec_alg_priv_t *const ctx,
 }
 
 static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
-                                  const uint8_t **data, uint64_t data_sz,
+                                  const uint8_t **data, size_t data_sz,
                                   void *user_priv) {
   const AVxWorkerInterface *const winterface = aom_get_worker_interface();
 
@@ -469,8 +468,8 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   if (!ctx->si.h) {
     int is_intra_only = 0;
     ctx->si.is_annexb = ctx->is_annexb;
-    const aom_codec_err_t res = decoder_peek_si_internal(
-        *data, (unsigned int)data_sz, &ctx->si, &is_intra_only);
+    const aom_codec_err_t res =
+        decoder_peek_si_internal(*data, data_sz, &ctx->si, &is_intra_only);
     if (res != AOM_CODEC_OK) return res;
 
     if (!ctx->si.is_kf && !is_intra_only) return AOM_CODEC_ERROR;
@@ -509,7 +508,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
 }
 
 static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
-                                      const uint8_t *data, unsigned int data_sz,
+                                      const uint8_t *data, size_t data_sz,
                                       void *user_priv) {
   const uint8_t *data_start = data;
   const uint8_t *const data_end = data + data_sz;
@@ -555,7 +554,9 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
       frame_size = (uint64_t)(data_end - data_start);
     }
 
-    res = decode_one(ctx, &data_start, frame_size, user_priv);
+    if (frame_size > UINT32_MAX) return AOM_CODEC_CORRUPT_FRAME;
+
+    res = decode_one(ctx, &data_start, (size_t)frame_size, user_priv);
     if (res != AOM_CODEC_OK) return res;
 
     // Allow extra zero bytes after the frame end

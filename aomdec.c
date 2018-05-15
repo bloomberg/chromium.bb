@@ -797,8 +797,7 @@ static int main_loop(int argc, const char **argv_) {
 
         aom_usec_timer_start(&timer);
 
-        if (aom_codec_decode(&decoder, buf, (unsigned int)bytes_in_buffer,
-                             NULL)) {
+        if (aom_codec_decode(&decoder, buf, bytes_in_buffer, NULL)) {
           const char *detail = aom_codec_error_detail(&decoder);
           warn("Failed to decode frame %d: %s", frame_in,
                aom_codec_error(&decoder));

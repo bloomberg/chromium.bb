@@ -149,7 +149,7 @@ int main(int argc, char **argv) {
                                     &buffer_size)) {
     aom_codec_iter_t iter = NULL;
     aom_image_t *img = NULL;
-    if (aom_codec_decode(&codec, buf, (unsigned int)bytes_in_buffer, NULL))
+    if (aom_codec_decode(&codec, buf, bytes_in_buffer, NULL))
       die_codec(&codec, "Failed to decode frame.");
 
     while ((img = aom_codec_get_frame(&codec, &iter)) != NULL) {

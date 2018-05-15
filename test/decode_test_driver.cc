@@ -22,8 +22,8 @@ const char kAV1Name[] = "AOMedia Project AV1 Decoder";
 
 aom_codec_err_t Decoder::PeekStream(const uint8_t *cxdata, size_t size,
                                     aom_codec_stream_info_t *stream_info) {
-  return aom_codec_peek_stream_info(
-      CodecInterface(), cxdata, static_cast<unsigned int>(size), stream_info);
+  return aom_codec_peek_stream_info(CodecInterface(), cxdata, size,
+                                    stream_info);
 }
 
 aom_codec_err_t Decoder::DecodeFrame(const uint8_t *cxdata, size_t size) {
@@ -35,8 +35,7 @@ aom_codec_err_t Decoder::DecodeFrame(const uint8_t *cxdata, size_t size,
   aom_codec_err_t res_dec;
   InitOnce();
   API_REGISTER_STATE_CHECK(
-      res_dec = aom_codec_decode(&decoder_, cxdata,
-                                 static_cast<unsigned int>(size), user_priv));
+      res_dec = aom_codec_decode(&decoder_, cxdata, size, user_priv));
   return res_dec;
 }
 

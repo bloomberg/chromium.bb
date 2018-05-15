@@ -113,7 +113,7 @@ typedef aom_codec_err_t (*aom_codec_destroy_fn_t)(aom_codec_alg_priv_t *ctx);
  *     Bitstream is parsable and stream information updated
  */
 typedef aom_codec_err_t (*aom_codec_peek_si_fn_t)(const uint8_t *data,
-                                                  unsigned int data_sz,
+                                                  size_t data_sz,
                                                   aom_codec_stream_info_t *si);
 
 /*!\brief Return information about the current stream.
@@ -195,7 +195,7 @@ typedef const struct aom_codec_ctrl_fn_map {
  */
 typedef aom_codec_err_t (*aom_codec_decode_fn_t)(aom_codec_alg_priv_t *ctx,
                                                  const uint8_t *data,
-                                                 unsigned int data_sz,
+                                                 size_t data_sz,
                                                  void *user_priv);
 
 /*!\brief Decoded frames iterator
