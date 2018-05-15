@@ -567,7 +567,7 @@ bool CookieMonster::IsCookieableScheme(const std::string& scheme) {
 const char* const CookieMonster::kDefaultCookieableSchemes[] = {"http", "https",
                                                                 "ws", "wss"};
 const int CookieMonster::kDefaultCookieableSchemesCount =
-    arraysize(kDefaultCookieableSchemes);
+    base::size(kDefaultCookieableSchemes);
 
 CookieChangeDispatcher& CookieMonster::GetChangeDispatcher() {
   return change_dispatcher_;
@@ -1355,7 +1355,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   // Ideally, this would be asserted up where we define kChangeCauseMapping,
   // but DeletionCause's visibility (or lack thereof) forces us to make
   // this check here.
-  static_assert(arraysize(kChangeCauseMapping) == DELETE_COOKIE_LAST_ENTRY + 1,
+  static_assert(base::size(kChangeCauseMapping) == DELETE_COOKIE_LAST_ENTRY + 1,
                 "kChangeCauseMapping size should match DeletionCause size");
 
   CanonicalCookie* cc = it->second.get();

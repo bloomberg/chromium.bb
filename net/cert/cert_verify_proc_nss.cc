@@ -19,6 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/protected_memory.h"
 #include "base/memory/protected_memory_cfi.h"
+#include "base/stl_util.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
 #include "crypto/scoped_nss_types.h"
@@ -461,19 +462,19 @@ SECStatus PKIXVerifyCert(CERTCertificate* cert_handle,
 
   CERTRevocationFlags revocation_flags;
   revocation_flags.leafTests.number_of_defined_methods =
-      arraysize(method_flags);
+      base::size(method_flags);
   revocation_flags.leafTests.cert_rev_flags_per_method = method_flags;
   revocation_flags.leafTests.number_of_preferred_methods =
-      arraysize(preferred_revocation_methods);
+      base::size(preferred_revocation_methods);
   revocation_flags.leafTests.preferred_methods = preferred_revocation_methods;
   revocation_flags.leafTests.cert_rev_method_independent_flags =
       revocation_method_independent_flags;
 
   revocation_flags.chainTests.number_of_defined_methods =
-      arraysize(method_flags);
+      base::size(method_flags);
   revocation_flags.chainTests.cert_rev_flags_per_method = method_flags;
   revocation_flags.chainTests.number_of_preferred_methods =
-      arraysize(preferred_revocation_methods);
+      base::size(preferred_revocation_methods);
   revocation_flags.chainTests.preferred_methods = preferred_revocation_methods;
   revocation_flags.chainTests.cert_rev_method_independent_flags =
       revocation_method_independent_flags;

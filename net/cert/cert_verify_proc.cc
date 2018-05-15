@@ -8,10 +8,12 @@
 
 #include <algorithm>
 
+#include "base/containers/span.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -61,15 +63,7 @@ namespace {
 const char kLeafCert[] = "Leaf";
 const char kIntermediateCert[] = "Intermediate";
 const char kRootCert[] = "Root";
-// Matches the order of X509Certificate::PublicKeyType
-const char* const kCertTypeStrings[] = {
-    "Unknown",
-    "RSA",
-    "DSA",
-    "ECDSA",
-    "DH",
-    "ECDH"
-};
+
 // Histogram buckets for RSA/DSA/DH key sizes.
 const int kRsaDsaKeySizes[] = {512, 768, 1024, 1536, 2048, 3072, 4096, 8192,
                                16384};
@@ -77,12 +71,23 @@ const int kRsaDsaKeySizes[] = {512, 768, 1024, 1536, 2048, 3072, 4096, 8192,
 // 186-4 approved curves.
 const int kEccKeySizes[] = {163, 192, 224, 233, 256, 283, 384, 409, 521, 571};
 
-const char* CertTypeToString(int cert_type) {
-  if (cert_type < 0 ||
-      static_cast<size_t>(cert_type) >= arraysize(kCertTypeStrings)) {
-    return "Unsupported";
+const char* CertTypeToString(X509Certificate::PublicKeyType cert_type) {
+  switch (cert_type) {
+    case X509Certificate::kPublicKeyTypeUnknown:
+      return "Unknown";
+    case X509Certificate::kPublicKeyTypeRSA:
+      return "RSA";
+    case X509Certificate::kPublicKeyTypeDSA:
+      return "DSA";
+    case X509Certificate::kPublicKeyTypeECDSA:
+      return "ECDSA";
+    case X509Certificate::kPublicKeyTypeDH:
+      return "DH";
+    case X509Certificate::kPublicKeyTypeECDH:
+      return "ECDH";
   }
-  return kCertTypeStrings[cert_type];
+  NOTREACHED();
+  return "Unsupported";
 }
 
 void RecordPublicKeyHistogram(const char* chain_position,
@@ -660,16 +665,14 @@ bool CertVerifyProc::IsBlacklisted(X509Certificate* cert) {
   //
   // The old certs had a lifetime of five years, so this can be removed April
   // 2nd, 2019.
-  const std::string& cn = cert->subject().common_name;
-  static const char kCloudFlareCNSuffix[] = ".cloudflare.com";
-  // kCloudFlareEpoch is the base::Time internal value for midnight at the
-  // beginning of April 2nd, 2014, UTC.
-  static const int64_t kCloudFlareEpoch = INT64_C(13040870400000000);
-  if (cn.size() > arraysize(kCloudFlareCNSuffix) - 1 &&
-      cn.compare(cn.size() - (arraysize(kCloudFlareCNSuffix) - 1),
-                 arraysize(kCloudFlareCNSuffix) - 1,
-                 kCloudFlareCNSuffix) == 0 &&
-      cert->valid_start() < base::Time::FromInternalValue(kCloudFlareEpoch)) {
+  const base::StringPiece cn(cert->subject().common_name);
+  static constexpr base::StringPiece kCloudflareCNSuffix(".cloudflare.com");
+  // April 2nd, 2014 UTC, expressed as seconds since the Unix Epoch.
+  static constexpr base::TimeDelta kCloudflareEpoch =
+      base::TimeDelta::FromSeconds(1396396800);
+
+  if (cn.ends_with(kCloudflareCNSuffix) &&
+      cert->valid_start() < (base::Time::UnixEpoch() + kCloudflareEpoch)) {
     return true;
   }
 
@@ -693,39 +696,34 @@ bool CertVerifyProc::IsPublicKeyBlacklisted(
   return false;
 }
 
-static const size_t kMaxDomainLength = 18;
-
 // CheckNameConstraints verifies that every name in |dns_names| is in one of
-// the domains specified by |domains|. The |domains| array is terminated by an
-// empty string.
+// the domains specified by |domains|.
 static bool CheckNameConstraints(const std::vector<std::string>& dns_names,
-                                 const char domains[][kMaxDomainLength]) {
-  for (std::vector<std::string>::const_iterator i = dns_names.begin();
-       i != dns_names.end(); ++i) {
+                                 base::span<const base::StringPiece> domains) {
+  for (const auto& host : dns_names) {
     bool ok = false;
     url::CanonHostInfo host_info;
-    const std::string dns_name = CanonicalizeHost(*i, &host_info);
+    const std::string dns_name = CanonicalizeHost(host, &host_info);
     if (host_info.IsIPAddress())
       continue;
 
     // If the name is not in a known TLD, ignore it. This permits internal
-    // names.
+    // server names.
     if (!registry_controlled_domains::HostHasRegistryControlledDomain(
             dns_name, registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
-            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES))
+            registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
       continue;
+    }
 
-    for (size_t j = 0; domains[j][0]; ++j) {
-      const size_t domain_length = strlen(domains[j]);
-      // The DNS name must have "." + domains[j] as a suffix.
-      if (i->size() <= (1 /* period before domain */ + domain_length))
+    for (const auto& domain : domains) {
+      // The |domain| must be of ".somesuffix" form, and |dns_name| must
+      // have |domain| as a suffix.
+      DCHECK_EQ('.', domain[0]);
+      if (dns_name.size() <= domain.size())
         continue;
-
-      std::string suffix =
-          base::ToLowerASCII(&(*i)[i->size() - domain_length - 1]);
-      if (suffix[0] != '.')
-        continue;
-      if (memcmp(&suffix[1], domains[j], domain_length) != 0)
+      base::StringPiece suffix =
+          base::StringPiece(dns_name).substr(dns_name.size() - domain.size());
+      if (!base::LowerCaseEqualsASCII(suffix, domain))
         continue;
       ok = true;
       break;
@@ -738,62 +736,52 @@ static bool CheckNameConstraints(const std::vector<std::string>& dns_names,
   return true;
 }
 
-// PublicKeyDomainLimitation contains SHA-256(SPKI) and a pointer to an array of
-// fixed-length strings that contain the domains that the SPKI is allowed to
-// issue for.
-struct PublicKeyDomainLimitation {
-  uint8_t public_key[crypto::kSHA256Length];
-  const char (*domains)[kMaxDomainLength];
-};
-
 // static
 bool CertVerifyProc::HasNameConstraintsViolation(
     const HashValueVector& public_key_hashes,
     const std::string& common_name,
     const std::vector<std::string>& dns_names,
     const std::vector<std::string>& ip_addrs) {
-  static const char kDomainsANSSI[][kMaxDomainLength] = {
-    "fr",  // France
-    "gp",  // Guadeloupe
-    "gf",  // Guyane
-    "mq",  // Martinique
-    "re",  // Réunion
-    "yt",  // Mayotte
-    "pm",  // Saint-Pierre et Miquelon
-    "bl",  // Saint Barthélemy
-    "mf",  // Saint Martin
-    "wf",  // Wallis et Futuna
-    "pf",  // Polynésie française
-    "nc",  // Nouvelle Calédonie
-    "tf",  // Terres australes et antarctiques françaises
-    "",
+  static constexpr base::StringPiece kDomainsANSSI[] = {
+      ".fr",  // France
+      ".gp",  // Guadeloupe
+      ".gf",  // Guyane
+      ".mq",  // Martinique
+      ".re",  // Réunion
+      ".yt",  // Mayotte
+      ".pm",  // Saint-Pierre et Miquelon
+      ".bl",  // Saint Barthélemy
+      ".mf",  // Saint Martin
+      ".wf",  // Wallis et Futuna
+      ".pf",  // Polynésie française
+      ".nc",  // Nouvelle Calédonie
+      ".tf",  // Terres australes et antarctiques françaises
   };
 
-  static const char kDomainsIndiaCCA[][kMaxDomainLength] = {
-    "gov.in",
-    "nic.in",
-    "ac.in",
-    "rbi.org.in",
-    "bankofindia.co.in",
-    "ncode.in",
-    "tcs.co.in",
-    "",
+  static constexpr base::StringPiece kDomainsIndiaCCA[] = {
+      ".gov.in",   ".nic.in",    ".ac.in", ".rbi.org.in", ".bankofindia.co.in",
+      ".ncode.in", ".tcs.co.in",
   };
 
-  static const char kDomainsTest[][kMaxDomainLength] = {
-    "example.com",
-    "",
+  static constexpr base::StringPiece kDomainsTest[] = {
+      ".example.com",
   };
 
-  static const PublicKeyDomainLimitation kLimits[] = {
+  // PublicKeyDomainLimitation contains SHA-256(SPKI) and a pointer to an array
+  // of fixed-length strings that contain the domains that the SPKI is allowed
+  // to issue for.
+  static const struct PublicKeyDomainLimitation {
+    SHA256HashValue public_key_hash;
+    base::span<const base::StringPiece> domains;
+  } kLimits[] = {
       // C=FR, ST=France, L=Paris, O=PM/SGDN, OU=DCSSI,
       // CN=IGC/A/emailAddress=igca@sgdn.pm.gouv.fr
       //
       // net/data/ssl/blacklist/b9bea7860a962ea3611dab97ab6da3e21c1068b97d55575ed0e11279c11c8932.pem
       {
-          {0x86, 0xc1, 0x3a, 0x34, 0x08, 0xdd, 0x1a, 0xa7, 0x7e, 0xe8, 0xb6,
-           0x94, 0x7c, 0x03, 0x95, 0x87, 0x72, 0xf5, 0x31, 0x24, 0x8c, 0x16,
-           0x27, 0xbe, 0xfb, 0x2c, 0x4f, 0x4b, 0x04, 0xd0, 0x44, 0x96},
+          {{0x86, 0xc1, 0x3a, 0x34, 0x08, 0xdd, 0x1a, 0xa7, 0x7e, 0xe8, 0xb6,
+            0x94, 0x7c, 0x03, 0x95, 0x87, 0x72, 0xf5, 0x31, 0x24, 0x8c, 0x16,
+            0x27, 0xbe, 0xfb, 0x2c, 0x4f, 0x4b, 0x04, 0xd0, 0x44, 0x96}},
           kDomainsANSSI,
       },
       // C=IN, O=India PKI, CN=CCA India 2007
@@ -801,9 +789,9 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       //
       // net/data/ssl/blacklist/f375e2f77a108bacc4234894a9af308edeca1acd8fbde0e7aaa9634e9daf7e1c.pem
       {
-          {0x7e, 0x6a, 0xcd, 0x85, 0x3c, 0xac, 0xc6, 0x93, 0x2e, 0x9b, 0x51,
-           0x9f, 0xda, 0xd1, 0xbe, 0xb5, 0x15, 0xed, 0x2a, 0x2d, 0x00, 0x25,
-           0xcf, 0xd3, 0x98, 0xc3, 0xac, 0x1f, 0x0d, 0xbb, 0x75, 0x4b},
+          {{0x7e, 0x6a, 0xcd, 0x85, 0x3c, 0xac, 0xc6, 0x93, 0x2e, 0x9b, 0x51,
+            0x9f, 0xda, 0xd1, 0xbe, 0xb5, 0x15, 0xed, 0x2a, 0x2d, 0x00, 0x25,
+            0xcf, 0xd3, 0x98, 0xc3, 0xac, 0x1f, 0x0d, 0xbb, 0x75, 0x4b}},
           kDomainsIndiaCCA,
       },
       // C=IN, O=India PKI, CN=CCA India 2011
@@ -811,9 +799,9 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       //
       // net/data/ssl/blacklist/2d66a702ae81ba03af8cff55ab318afa919039d9f31b4d64388680f81311b65a.pem
       {
-          {0x42, 0xa7, 0x09, 0x84, 0xff, 0xd3, 0x99, 0xc4, 0xea, 0xf0, 0xe7,
-           0x02, 0xa4, 0x4b, 0xef, 0x2a, 0xd8, 0xa7, 0x9b, 0x8b, 0xf4, 0x64,
-           0x8f, 0x6b, 0xb2, 0x10, 0xe1, 0x23, 0xfd, 0x07, 0x57, 0x93},
+          {{0x42, 0xa7, 0x09, 0x84, 0xff, 0xd3, 0x99, 0xc4, 0xea, 0xf0, 0xe7,
+            0x02, 0xa4, 0x4b, 0xef, 0x2a, 0xd8, 0xa7, 0x9b, 0x8b, 0xf4, 0x64,
+            0x8f, 0x6b, 0xb2, 0x10, 0xe1, 0x23, 0xfd, 0x07, 0x57, 0x93}},
           kDomainsIndiaCCA,
       },
       // C=IN, O=India PKI, CN=CCA India 2014
@@ -821,36 +809,35 @@ bool CertVerifyProc::HasNameConstraintsViolation(
       //
       // net/data/ssl/blacklist/60109bc6c38328598a112c7a25e38b0f23e5a7511cb815fb64e0c4ff05db7df7.pem
       {
-          {0x9c, 0xf4, 0x70, 0x4f, 0x3e, 0xe5, 0xa5, 0x98, 0x94, 0xb1, 0x6b,
-           0xf0, 0x0c, 0xfe, 0x73, 0xd5, 0x88, 0xda, 0xe2, 0x69, 0xf5, 0x1d,
-           0xe6, 0x6a, 0x4b, 0xa7, 0x74, 0x46, 0xee, 0x2b, 0xd1, 0xf7},
+          {{0x9c, 0xf4, 0x70, 0x4f, 0x3e, 0xe5, 0xa5, 0x98, 0x94, 0xb1, 0x6b,
+            0xf0, 0x0c, 0xfe, 0x73, 0xd5, 0x88, 0xda, 0xe2, 0x69, 0xf5, 0x1d,
+            0xe6, 0x6a, 0x4b, 0xa7, 0x74, 0x46, 0xee, 0x2b, 0xd1, 0xf7}},
           kDomainsIndiaCCA,
       },
       // Not a real certificate - just for testing.
       // net/data/ssl/certificates/name_constraint_*.pem
       {
-          {0x8e, 0x9b, 0x14, 0x9f, 0x01, 0x45, 0x4c, 0xee, 0xde, 0xfa, 0x5e,
-           0x73, 0x40, 0x36, 0x21, 0xba, 0xd9, 0x1f, 0xee, 0xe0, 0x3e, 0x74,
-           0x25, 0x6c, 0x59, 0xf4, 0x6f, 0xbf, 0x45, 0x03, 0x5f, 0x8d},
+          {{0x8e, 0x9b, 0x14, 0x9f, 0x01, 0x45, 0x4c, 0xee, 0xde, 0xfa, 0x5e,
+            0x73, 0x40, 0x36, 0x21, 0xba, 0xd9, 0x1f, 0xee, 0xe0, 0x3e, 0x74,
+            0x25, 0x6c, 0x59, 0xf4, 0x6f, 0xbf, 0x45, 0x03, 0x5f, 0x8d}},
           kDomainsTest,
       },
   };
 
-  for (unsigned i = 0; i < arraysize(kLimits); ++i) {
-    for (HashValueVector::const_iterator j = public_key_hashes.begin();
-         j != public_key_hashes.end(); ++j) {
-      if (j->tag() == HASH_VALUE_SHA256 &&
-          memcmp(j->data(), kLimits[i].public_key, crypto::kSHA256Length) ==
-              0) {
-        if (dns_names.empty() && ip_addrs.empty()) {
-          std::vector<std::string> dns_names;
-          dns_names.push_back(common_name);
-          if (!CheckNameConstraints(dns_names, kLimits[i].domains))
-            return true;
-        } else {
-          if (!CheckNameConstraints(dns_names, kLimits[i].domains))
-            return true;
-        }
+  for (const auto& limit : kLimits) {
+    for (const auto& hash : public_key_hashes) {
+      if (hash.tag() != HASH_VALUE_SHA256)
+        continue;
+      if (memcmp(hash.data(), limit.public_key_hash.data, hash.size()) != 0)
+        continue;
+      if (dns_names.empty() && ip_addrs.empty()) {
+        std::vector<std::string> names;
+        names.push_back(common_name);
+        if (!CheckNameConstraints(names, limit.domains))
+          return true;
+      } else {
+        if (!CheckNameConstraints(dns_names, limit.domains))
+          return true;
       }
     }
   }

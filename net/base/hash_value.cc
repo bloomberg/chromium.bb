@@ -140,20 +140,18 @@ bool operator>=(const HashValue& lhs, const HashValue& rhs) {
 }
 
 bool IsSHA256HashInSortedArray(const HashValue& hash,
-                               const SHA256HashValue* array,
-                               size_t array_len) {
-  return std::binary_search(array, array + array_len, hash,
+                               base::span<const SHA256HashValue> array) {
+  return std::binary_search(array.begin(), array.end(), hash,
                             SHA256ToHashValueComparator());
 }
 
-bool IsAnySHA256HashInSortedArray(const HashValueVector& hashes,
-                                  const SHA256HashValue* list,
-                                  size_t list_length) {
+bool IsAnySHA256HashInSortedArray(base::span<const HashValue> hashes,
+                                  base::span<const SHA256HashValue> array) {
   for (const auto& hash : hashes) {
     if (hash.tag() != HASH_VALUE_SHA256)
       continue;
 
-    if (IsSHA256HashInSortedArray(hash, list, list_length))
+    if (IsSHA256HashInSortedArray(hash, array))
       return true;
   }
   return false;

@@ -110,17 +110,15 @@ TEST(CertVerifierTest, RequestParamsComparators) {
           false,
       },
   };
-  for (size_t i = 0; i < arraysize(tests); ++i) {
-    SCOPED_TRACE(i);
-
-    const CertVerifier::RequestParams& key1 = tests[i].key1;
-    const CertVerifier::RequestParams& key2 = tests[i].key2;
+  for (const auto& test : tests) {
+    const CertVerifier::RequestParams& key1 = test.key1;
+    const CertVerifier::RequestParams& key2 = test.key2;
 
     // Ensure that the keys are equivalent to themselves.
     EXPECT_FALSE(key1 < key1);
     EXPECT_FALSE(key2 < key2);
 
-    if (tests[i].equal) {
+    if (test.equal) {
       EXPECT_TRUE(!(key1 < key2) && !(key2 < key1));
     } else {
       EXPECT_TRUE((key1 < key2) || (key2 < key1));

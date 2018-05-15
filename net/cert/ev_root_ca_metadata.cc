@@ -13,8 +13,11 @@
 #include <stdlib.h>
 #endif
 
+#include <algorithm>
+
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/strings/string_piece.h"
 #include "net/der/input.h"
 #if defined(USE_NSS_CERTS)
 #include "crypto/nss_util.h"
@@ -25,6 +28,7 @@
 
 namespace net {
 
+namespace {
 #if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 // Raw metadata.
 struct EVMetadata {
@@ -33,19 +37,17 @@ struct EVMetadata {
   // entities and, in the case of cross-signing, we might need to list another
   // CA's policy OID under the cross-signing root.
   static const size_t kMaxOIDsPerCA = 2;
-  // This is the maximum length of an OID string (including the trailing NUL).
-  static const size_t kMaxOIDLength = 32;
 
   // The SHA-256 fingerprint of the root CA certificate, used as a unique
   // identifier for a root CA certificate.
   SHA256HashValue fingerprint;
 
   // The EV policy OIDs of the root CA.
-  char policy_oids[kMaxOIDsPerCA][kMaxOIDLength];
+  base::StringPiece policy_oids[kMaxOIDsPerCA];
 };
 
 // These certificates may be found in net/data/ssl/ev_roots.
-static const EVMetadata ev_root_ca_metadata[] = {
+static const EVMetadata kEvRootCaMetadata[] = {
     // AC Camerfirma S.A. Chambers of Commerce Root - 2008
     // https://www.camerfirma.com
     {
@@ -751,9 +753,10 @@ static const EVMetadata ev_root_ca_metadata[] = {
     }};
 
 #endif  // defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
+}  // namespace
 
-static base::LazyInstance<EVRootCAMetadata>::Leaky
-    g_ev_root_ca_metadata = LAZY_INSTANCE_INITIALIZER;
+static base::LazyInstance<EVRootCAMetadata>::Leaky g_ev_root_ca_metadata =
+    LAZY_INSTANCE_INITIALIZER;
 
 // static
 EVRootCAMetadata* EVRootCAMetadata::GetInstance() {
@@ -796,12 +799,8 @@ bool EVRootCAMetadata::HasEVPolicyOID(const SHA256HashValue& fingerprint,
   PolicyOIDMap::const_iterator iter = ev_policy_.find(fingerprint);
   if (iter == ev_policy_.end())
     return false;
-  for (std::vector<PolicyOID>::const_iterator
-       j = iter->second.begin(); j != iter->second.end(); ++j) {
-    if (*j == policy_oid)
-      return true;
-  }
-  return false;
+  return std::find(iter->second.begin(), iter->second.end(), policy_oid) !=
+         iter->second.end();
 }
 
 bool EVRootCAMetadata::HasEVPolicyOIDGivenBytes(
@@ -888,18 +887,16 @@ bool ConvertBytesToDottedString(const der::Input& policy_oid,
 }  // namespace
 
 bool EVRootCAMetadata::IsEVPolicyOID(PolicyOID policy_oid) const {
-  for (size_t i = 0; i < arraysize(ev_root_ca_metadata); i++) {
-    for (size_t j = 0; j < arraysize(ev_root_ca_metadata[i].policy_oids); j++) {
-      if (ev_root_ca_metadata[i].policy_oids[j][0] == '\0')
-        break;
-      if (strcmp(policy_oid, ev_root_ca_metadata[i].policy_oids[j]) == 0)
-        return true;
+  for (const auto& ev_root : kEvRootCaMetadata) {
+    if (std::find(std::begin(ev_root.policy_oids),
+                  std::end(ev_root.policy_oids),
+                  policy_oid) != std::end(ev_root.policy_oids)) {
+      return true;
     }
   }
 
-  for (ExtraEVCAMap::const_iterator i = extra_cas_.begin();
-       i != extra_cas_.end(); i++) {
-    if (i->second == policy_oid)
+  for (const auto& ca : extra_cas_) {
+    if (ca.second == policy_oid)
       return true;
   }
 
@@ -915,19 +912,15 @@ bool EVRootCAMetadata::IsEVPolicyOIDGivenBytes(
 
 bool EVRootCAMetadata::HasEVPolicyOID(const SHA256HashValue& fingerprint,
                                       PolicyOID policy_oid) const {
-  for (size_t i = 0; i < arraysize(ev_root_ca_metadata); i++) {
-    if (fingerprint != ev_root_ca_metadata[i].fingerprint)
+  for (const auto& ev_root : kEvRootCaMetadata) {
+    if (fingerprint != ev_root.fingerprint)
       continue;
-    for (size_t j = 0; j < arraysize(ev_root_ca_metadata[i].policy_oids); j++) {
-      if (ev_root_ca_metadata[i].policy_oids[j][0] == '\0')
-        break;
-      if (strcmp(policy_oid, ev_root_ca_metadata[i].policy_oids[j]) == 0)
-        return true;
-    }
-    return false;
+    return std::find(std::begin(ev_root.policy_oids),
+                     std::end(ev_root.policy_oids),
+                     policy_oid) != std::end(ev_root.policy_oids);
   }
 
-  ExtraEVCAMap::const_iterator it = extra_cas_.find(fingerprint);
+  auto it = extra_cas_.find(fingerprint);
   return it != extra_cas_.end() && it->second == policy_oid;
 }
 
@@ -946,11 +939,10 @@ bool EVRootCAMetadata::IsCaBrowserForumEvOid(PolicyOID policy_oid) {
 
 bool EVRootCAMetadata::AddEVCA(const SHA256HashValue& fingerprint,
                                const char* policy) {
-  for (size_t i = 0; i < arraysize(ev_root_ca_metadata); i++) {
-    if (fingerprint == ev_root_ca_metadata[i].fingerprint)
+  for (const auto& ev_root : kEvRootCaMetadata) {
+    if (fingerprint == ev_root.fingerprint)
       return false;
   }
-
   if (extra_cas_.find(fingerprint) != extra_cas_.end())
     return false;
 
@@ -959,9 +951,10 @@ bool EVRootCAMetadata::AddEVCA(const SHA256HashValue& fingerprint,
 }
 
 bool EVRootCAMetadata::RemoveEVCA(const SHA256HashValue& fingerprint) {
-  ExtraEVCAMap::iterator it = extra_cas_.find(fingerprint);
+  auto it = extra_cas_.find(fingerprint);
   if (it == extra_cas_.end())
     return false;
+
   extra_cas_.erase(it);
   return true;
 }
@@ -970,12 +963,12 @@ bool EVRootCAMetadata::RemoveEVCA(const SHA256HashValue& fingerprint) {
 
 namespace {
 
-std::string OIDStringToDER(const char* policy) {
+std::string OIDStringToDER(base::StringPiece policy) {
   uint8_t* der;
   size_t len;
   bssl::ScopedCBB cbb;
   if (!CBB_init(cbb.get(), 32) ||
-      !CBB_add_asn1_oid_from_text(cbb.get(), policy, strlen(policy)) ||
+      !CBB_add_asn1_oid_from_text(cbb.get(), policy.data(), policy.size()) ||
       !CBB_finish(cbb.get(), &der, &len)) {
     return std::string();
   }
@@ -1090,43 +1083,37 @@ bool EVRootCAMetadata::RemoveEVCA(const SHA256HashValue& fingerprint) {
 #endif
 
 EVRootCAMetadata::EVRootCAMetadata() {
-  // Constructs the object from the raw metadata in ev_root_ca_metadata.
+// Constructs the object from the raw metadata in kEvRootCaMetadata.
 #if defined(USE_NSS_CERTS)
   crypto::EnsureNSSInit();
 
-  for (size_t i = 0; i < arraysize(ev_root_ca_metadata); i++) {
-    const EVMetadata& metadata = ev_root_ca_metadata[i];
-    for (size_t j = 0; j < arraysize(metadata.policy_oids); j++) {
-      if (metadata.policy_oids[j][0] == '\0')
+  for (const auto& ev_root : kEvRootCaMetadata) {
+    for (const auto& policy : ev_root.policy_oids) {
+      if (policy.empty())
         break;
-      const char* policy_oid = metadata.policy_oids[j];
-
-      PolicyOID policy;
-      if (!RegisterOID(policy_oid, &policy)) {
-        LOG(ERROR) << "Failed to register OID: " << policy_oid;
+      PolicyOID policy_oid;
+      if (!RegisterOID(policy.data(), &policy_oid)) {
+        LOG(ERROR) << "Failed to register OID: " << policy;
         continue;
       }
 
-      ev_policy_[metadata.fingerprint].push_back(policy);
-      policy_oids_.insert(policy);
+      ev_policy_[ev_root.fingerprint].push_back(policy_oid);
+      policy_oids_.insert(policy_oid);
     }
   }
 #elif defined(PLATFORM_USES_CHROMIUM_EV_METADATA) && !defined(OS_WIN)
-  for (size_t i = 0; i < arraysize(ev_root_ca_metadata); i++) {
-    const EVMetadata& metadata = ev_root_ca_metadata[i];
-    for (size_t j = 0; j < arraysize(metadata.policy_oids); j++) {
-      if (metadata.policy_oids[j][0] == '\0')
+  for (const auto& ev_root : kEvRootCaMetadata) {
+    for (const auto& policy : ev_root.policy_oids) {
+      if (policy.empty())
         break;
-      const char* policy_oid = metadata.policy_oids[j];
 
-      PolicyOID policy;
-      std::string policy_der = OIDStringToDER(policy_oid);
+      std::string policy_der = OIDStringToDER(policy.data());
       if (policy_der.empty()) {
-        LOG(ERROR) << "Failed to register OID: " << policy_oid;
+        LOG(ERROR) << "Failed to register OID: " << policy;
         continue;
       }
 
-      ev_policy_[metadata.fingerprint].push_back(policy_der);
+      ev_policy_[ev_root.fingerprint].push_back(policy_der);
       policy_oids_.insert(policy_der);
     }
   }

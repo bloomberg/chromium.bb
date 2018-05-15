@@ -11,6 +11,7 @@
 
 #include "base/memory/free_deleter.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_local.h"
@@ -628,7 +629,7 @@ class RevocationInjector {
     };
     BOOL ok = CryptInstallOIDFunctionAddress(
         NULL, X509_ASN_ENCODING, CRYPT_OID_VERIFY_REVOCATION_FUNC,
-        arraysize(kInterceptFunction), kInterceptFunction,
+        base::size(kInterceptFunction), kInterceptFunction,
         CRYPT_INSTALL_OID_FUNC_BEFORE_FLAG);
     DCHECK(ok);
   }
@@ -884,7 +885,7 @@ int CertVerifyProcWin::VerifyInternal(
     szOID_SGC_NETSCAPE
   };
   chain_para.RequestedUsage.dwType = USAGE_MATCH_TYPE_OR;
-  chain_para.RequestedUsage.Usage.cUsageIdentifier = arraysize(usage);
+  chain_para.RequestedUsage.Usage.cUsageIdentifier = base::size(usage);
   chain_para.RequestedUsage.Usage.rgpszUsageIdentifier =
       const_cast<LPSTR*>(usage);
 
