@@ -3766,6 +3766,13 @@ drm_device_has_rdev(drmDevicePtr device, dev_t find_rdev)
     return false;
 }
 
+/*
+ * The kernel drm core has a number of places that assume maximum of
+ * 3x64 devices nodes. That's 64 for each of primary, control and
+ * render nodes. Rounded it up to 256 for simplicity.
+ */
+#define MAX_DRM_NODES 256
+
 /**
  * Get information about the opened drm device
  *
@@ -3846,7 +3853,7 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
 
     return 0;
 #else
-    drmDevicePtr *local_devices;
+    drmDevicePtr local_devices[MAX_DRM_NODES];
     drmDevicePtr d;
     DIR *sysdir;
     struct dirent *dent;
@@ -3854,7 +3861,6 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
     int subsystem_type;
     int maj, min;
     int ret, i, node_count;
-    int max_count = 16;
     dev_t find_rdev;
 
     if (drm_device_validate_flags(flags))
@@ -3877,15 +3883,9 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
     if (subsystem_type < 0)
         return subsystem_type;
 
-    local_devices = calloc(max_count, sizeof(drmDevicePtr));
-    if (local_devices == NULL)
-        return -ENOMEM;
-
     sysdir = opendir(DRM_DIR_NAME);
-    if (!sysdir) {
-        ret = -errno;
-        goto free_locals;
-    }
+    if (!sysdir)
+        return -errno;
 
     i = 0;
     while ((dent = readdir(sysdir))) {
@@ -3893,16 +3893,12 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
         if (ret)
             continue;
 
-        if (i >= max_count) {
-            drmDevicePtr *temp;
-
-            max_count += 16;
-            temp = realloc(local_devices, max_count * sizeof(drmDevicePtr));
-            if (!temp)
-                goto free_devices;
-            local_devices = temp;
+        if (i >= MAX_DRM_NODES) {
+            fprintf(stderr, "More than %d drm nodes detected. "
+                    "Please report a bug - that should not happen.\n"
+                    "Skipping extra nodes\n", MAX_DRM_NODES);
+            break;
         }
-
         local_devices[i] = d;
         i++;
     }
@@ -3921,18 +3917,9 @@ int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
     }
 
     closedir(sysdir);
-    free(local_devices);
     if (*device == NULL)
         return -ENODEV;
     return 0;
-
-free_devices:
-    drmFreeDevices(local_devices, i);
-    closedir(sysdir);
-
-free_locals:
-    free(local_devices);
-    return ret;
 #endif
 }
 
@@ -3968,25 +3955,18 @@ int drmGetDevice(int fd, drmDevicePtr *device)
  */
 int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
 {
-    drmDevicePtr *local_devices;
+    drmDevicePtr local_devices[MAX_DRM_NODES];
     drmDevicePtr device;
     DIR *sysdir;
     struct dirent *dent;
     int ret, i, node_count, device_count;
-    int max_count = 16;
 
     if (drm_device_validate_flags(flags))
         return -EINVAL;
 
-    local_devices = calloc(max_count, sizeof(drmDevicePtr));
-    if (local_devices == NULL)
-        return -ENOMEM;
-
     sysdir = opendir(DRM_DIR_NAME);
-    if (!sysdir) {
-        ret = -errno;
-        goto free_locals;
-    }
+    if (!sysdir)
+        return -errno;
 
     i = 0;
     while ((dent = readdir(sysdir))) {
@@ -3994,16 +3974,12 @@ int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
         if (ret)
             continue;
 
-        if (i >= max_count) {
-            drmDevicePtr *temp;
-
-            max_count += 16;
-            temp = realloc(local_devices, max_count * sizeof(drmDevicePtr));
-            if (!temp)
-                goto free_devices;
-            local_devices = temp;
+        if (i >= MAX_DRM_NODES) {
+            fprintf(stderr, "More than %d drm nodes detected. "
+                    "Please report a bug - that should not happen.\n"
+                    "Skipping extra nodes\n", MAX_DRM_NODES);
+            break;
         }
-
         local_devices[i] = device;
         i++;
     }
@@ -4025,16 +4001,7 @@ int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
     }
 
     closedir(sysdir);
-    free(local_devices);
     return device_count;
-
-free_devices:
-    drmFreeDevices(local_devices, i);
-    closedir(sysdir);
-
-free_locals:
-    free(local_devices);
-    return ret;
 }
 
 /**
