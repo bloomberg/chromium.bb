@@ -664,13 +664,6 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
   if (!descriptor)
     return;
 
-#if defined(OS_CHROMEOS)
-  // TODO(jcliang): Remove this after we implement TakePhoto.
-  if (VideoCaptureDeviceFactoryChromeOS::ShouldEnable()) {
-    return;
-  }
-#endif
-
 #if defined(OS_ANDROID)
   // TODO(mcasas): fails on Lollipop devices, reconnect https://crbug.com/646840
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
@@ -713,13 +706,6 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
   if (!descriptor)
     return;
 
-#if defined(OS_CHROMEOS)
-  // TODO(jcliang): Remove this after we implement GetPhotoCapabilities.
-  if (VideoCaptureDeviceFactoryChromeOS::ShouldEnable()) {
-    return;
-  }
-#endif
-
 #if defined(OS_ANDROID)
   // TODO(mcasas): fails on Lollipop devices, reconnect https://crbug.com/646840
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
@@ -745,6 +731,9 @@ WRAPPED_TEST_P(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
       base::BindOnce(&MockImageCaptureClient::DoOnGetPhotoState,
                      image_capture_client_);
 
+  // On Chrome OS AllocateAndStart() is asynchronous, so wait until we get the
+  // first frame.
+  WaitForCapturedFrame();
   base::RunLoop run_loop;
   base::Closure quit_closure = BindToCurrentLoop(run_loop.QuitClosure());
   EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState())
