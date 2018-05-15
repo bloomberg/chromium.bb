@@ -316,6 +316,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         mMoreButton.setContentDescriptionContext(item.getDisplayFileName());
         boolean canShowMore = item.isComplete() && isMoreButtonEnabled();
         mMoreButton.setVisibility(canShowMore ? View.VISIBLE : View.GONE);
+        mMoreButton.setClickable(item.isInteractive());
 
         setLongClickable(item.isComplete());
     }
@@ -328,7 +329,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     @Override
     public void onSelectionStateChange(List<DownloadHistoryItemWrapper> selectedItems) {
         super.onSelectionStateChange(selectedItems);
-        mMoreButton.setClickable(mItem.isInteractive());
+        mMoreButton.setClickable(mItem == null ? false : mItem.isInteractive());
     }
 
     @Override
