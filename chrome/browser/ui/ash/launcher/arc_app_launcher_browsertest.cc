@@ -20,8 +20,8 @@
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -491,8 +491,8 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, IsAppOpen) {
   SendPackageAdded(kTestAppPackage, true);
   const std::string app_id = GetTestApp1Id(kTestAppPackage);
 
-  AppListService* service = AppListService::Get();
-  AppListControllerDelegate* delegate = service->GetControllerDelegate();
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  AppListControllerDelegate* delegate = client->GetControllerDelegate();
   EXPECT_FALSE(delegate->IsAppOpen(app_id));
   arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
   EXPECT_FALSE(delegate->IsAppOpen(app_id));

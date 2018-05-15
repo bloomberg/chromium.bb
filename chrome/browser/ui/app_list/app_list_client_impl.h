@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
+#include "chrome/browser/ui/app_list/app_list_controller_impl.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/user_manager/user_manager.h"
@@ -26,7 +27,6 @@ class SearchController;
 class SearchResourceManager;
 }  // namespace app_list
 
-class AppListControllerDelegate;
 class AppListModelUpdater;
 class AppSyncUIStateWatcher;
 class Profile;
@@ -38,6 +38,8 @@ class AppListClientImpl
  public:
   AppListClientImpl();
   ~AppListClientImpl() override;
+
+  static AppListClientImpl* GetInstance();
 
   // ash::mojom::AppListClient:
   void StartSearch(const base::string16& raw_query) override;
@@ -76,9 +78,23 @@ class AppListClientImpl
   // client is accessed or active user is changed.
   void UpdateProfile();
 
-  void set_controller_delegate(AppListControllerDelegate* controller_delegate) {
-    controller_delegate_ = controller_delegate;
+  // Shows the app list if it isn't already showing and switches to |state|,
+  // unless it is |INVALID_STATE| (in which case, opens on the default state).
+  void ShowAndSwitchToState(ash::AppListState state);
+
+  void ShowAppList();
+  void DismissAppList();
+
+  bool app_list_target_visibility() const {
+    return app_list_target_visibility_;
   }
+  bool app_list_visible() const { return app_list_visible_; }
+
+  // Returns a pointer to control the app list views in ash.
+  ash::mojom::AppListController* GetAppListController() const;
+
+  AppListControllerDelegate* GetControllerDelegate();
+  Profile* GetCurrentAppListProfile() const;
 
   app_list::SearchController* GetSearchControllerForTest();
 
@@ -95,11 +111,10 @@ class AppListClientImpl
   // Updates the speech webview and start page for the current |profile_|.
   void SetUpSearchUI();
 
-  // Unowned pointer to the controller delegate.
-  AppListControllerDelegate* controller_delegate_ = nullptr;
   // Unowned pointer to the associated profile. May change if SetProfile is
   // called.
   Profile* profile_ = nullptr;
+
   // Unowned pointer to the model updater owned by AppListSyncableService.
   // Will change if |profile_| changes.
   AppListModelUpdater* model_updater_ = nullptr;
@@ -113,6 +128,11 @@ class AppListClientImpl
 
   mojo::Binding<ash::mojom::AppListClient> binding_;
   ash::mojom::AppListControllerPtr app_list_controller_;
+
+  AppListControllerDelegateImpl controller_delegate_;
+
+  bool app_list_target_visibility_ = false;
+  bool app_list_visible_ = false;
 
   base::WeakPtrFactory<AppListClientImpl> weak_ptr_factory_;
 

@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
@@ -34,8 +33,8 @@ using AppListControllerBrowserTest = InProcessBrowserTest;
 
 // Test the CreateNewWindow function of the controller delegate.
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
-  AppListService* service = AppListService::Get();
-  AppListControllerDelegate* controller(service->GetControllerDelegate());
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  AppListControllerDelegate* controller(client->GetControllerDelegate());
   ASSERT_TRUE(controller);
 
   EXPECT_EQ(1U, chrome::GetBrowserCount(browser()->profile()));
@@ -64,14 +63,16 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
       .AppendASCII("platform_apps")
       .AppendASCII("minimal");
 
-  AppListServiceImpl* service = AppListServiceImpl::GetInstance();
-  ASSERT_TRUE(service);
-  AppListModelUpdater* model_updater = test::GetModelUpdater(service);
-  app_list::SearchController* search_controller =
-      service->GetAppListClient()->GetSearchControllerForTest();
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  ASSERT_TRUE(client);
+  // Associate |client| with the current profile.
+  client->UpdateProfile();
+
+  AppListModelUpdater* model_updater = test::GetModelUpdater(client);
   ASSERT_TRUE(model_updater);
-  // Getting the AppListClient to associate it with the current profile.
-  ASSERT_TRUE(service->GetAppListClient());
+  app_list::SearchController* search_controller =
+      client->GetSearchControllerForTest();
+  ASSERT_TRUE(search_controller);
 
   // Install the extension.
   const extensions::Extension* extension = InstallExtension(
@@ -81,8 +82,8 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
   const std::string title = extension->name();
 
   // Show the app list first, otherwise we won't have a search box to update.
-  service->Show();
-  service->FlushForTesting();
+  client->ShowAppList();
+  client->FlushMojoForTesting();
 
   // Currently the search box is empty, so we have no result.
   EXPECT_FALSE(search_controller->GetResultByTitleForTest(title));
@@ -92,19 +93,19 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
                                  true /* initiated_by_user */);
 
   // Ensure everything is done, from Chrome to Ash and backwards.
-  service->FlushForTesting();
+  client->FlushMojoForTesting();
   EXPECT_TRUE(search_controller->GetResultByTitleForTest(title));
 
   // Uninstall the extension.
   UninstallExtension(extension->id());
 
   // Ensure everything is done, from Chrome to Ash and backwards.
-  service->FlushForTesting();
+  client->FlushMojoForTesting();
 
   // We cannot find the extension any more.
   EXPECT_FALSE(search_controller->GetResultByTitleForTest(title));
 
-  service->DismissAppList();
+  client->DismissAppList();
 }
 
 class AppListControllerGuestModeBrowserTest : public InProcessBrowserTest {
@@ -130,9 +131,9 @@ void AppListControllerGuestModeBrowserTest::SetUpCommandLine(
 
 // Test creating the initial app list in guest mode.
 IN_PROC_BROWSER_TEST_F(AppListControllerGuestModeBrowserTest, Incognito) {
-  AppListService* service = AppListService::Get();
-  EXPECT_TRUE(service->GetCurrentAppListProfile());
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  EXPECT_TRUE(client->GetCurrentAppListProfile());
 
-  service->Show();
-  EXPECT_EQ(browser()->profile(), service->GetCurrentAppListProfile());
+  client->ShowAppList();
+  EXPECT_EQ(browser()->profile(), client->GetCurrentAppListProfile());
 }

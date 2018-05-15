@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_model_updater.h"
 #include "extensions/browser/app_sorting.h"
@@ -121,7 +121,7 @@ extensions::AppSorting* ChromeAppListItem::GetAppSorting() {
 AppListControllerDelegate* ChromeAppListItem::GetController() {
   return g_controller_for_test != nullptr
              ? g_controller_for_test
-             : AppListService::Get()->GetControllerDelegate();
+             : AppListClientImpl::GetInstance()->GetControllerDelegate();
 }
 
 void ChromeAppListItem::UpdateFromSync(

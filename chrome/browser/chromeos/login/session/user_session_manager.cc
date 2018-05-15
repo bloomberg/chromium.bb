@@ -85,7 +85,6 @@
 #include "chrome/browser/supervised_user/child_accounts/child_account_service.h"
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/common/channel_info.h"
@@ -1996,7 +1995,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   }
 
   // Associates AppListClient with the current active profile.
-  AppListServiceImpl::GetInstance()->GetAppListClient();
+  AppListClientImpl::GetInstance()->UpdateProfile();
 }
 
 void UserSessionManager::RespectLocalePreferenceWrapper(

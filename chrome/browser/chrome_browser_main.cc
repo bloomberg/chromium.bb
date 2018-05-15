@@ -102,7 +102,6 @@
 #include "chrome/browser/tracing/background_tracing_field_trial.h"
 #include "chrome/browser/tracing/navigation_tracing.h"
 #include "chrome/browser/translate/translate_service.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_native_dialog_factory.h"
@@ -305,7 +304,6 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "ui/aura/env.h"
 #endif
