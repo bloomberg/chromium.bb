@@ -4,43 +4,22 @@
 
 #include "media/capture/video/chromeos/camera_metadata_utils.h"
 
-#include <algorithm>
-#include <unordered_set>
+#include <set>
 
 namespace media {
 
-cros::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
+const cros::mojom::CameraMetadataEntryPtr* GetMetadataEntry(
     const cros::mojom::CameraMetadataPtr& camera_metadata,
     cros::mojom::CameraMetadataTag tag) {
-  if (!camera_metadata || !camera_metadata->entries.has_value()) {
+  if (!camera_metadata->entries.has_value()) {
     return nullptr;
   }
-  // We assume the metadata entries are sorted.
-  auto iter = std::find_if(camera_metadata->entries.value().begin(),
-                           camera_metadata->entries.value().end(),
-                           [tag](const cros::mojom::CameraMetadataEntryPtr& e) {
-                             return e->tag == tag;
-                           });
-  if (iter == camera_metadata->entries.value().end()) {
-    return nullptr;
+  for (const auto& entry : camera_metadata->entries.value()) {
+    if (entry->tag == tag) {
+      return &entry;
+    }
   }
-  return &(camera_metadata->entries.value()[(*iter)->index]);
-}
-
-void SortCameraMetadata(cros::mojom::CameraMetadataPtr* camera_metadata) {
-  if (!camera_metadata || !(*camera_metadata) ||
-      !(*camera_metadata)->entries.has_value()) {
-    return;
-  }
-  std::sort((*camera_metadata)->entries.value().begin(),
-            (*camera_metadata)->entries.value().end(),
-            [](const cros::mojom::CameraMetadataEntryPtr& a,
-               const cros::mojom::CameraMetadataEntryPtr& b) {
-              return a->tag < b->tag;
-            });
-  for (size_t i = 0; i < (*camera_metadata)->entries.value().size(); ++i) {
-    (*camera_metadata)->entries.value()[i]->index = i;
-  }
+  return nullptr;
 }
 
 void MergeMetadata(cros::mojom::CameraMetadataPtr* to,
@@ -55,7 +34,7 @@ void MergeMetadata(cros::mojom::CameraMetadataPtr* to,
     return;
   }
 
-  std::unordered_set<cros::mojom::CameraMetadataTag> tags;
+  std::set<cros::mojom::CameraMetadataTag> tags;
   if ((*to)->entries) {
     for (const auto& entry : (*to)->entries.value()) {
       tags.insert(entry->tag);

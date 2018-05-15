@@ -6,10 +6,6 @@
 
 #include <memory>
 
-#if defined(OS_CHROMEOS)
-#include "media/capture/video/chromeos/stream_buffer_manager.h"
-#endif
-
 using ::testing::Return;
 
 namespace media {
@@ -21,9 +17,8 @@ class FakeGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
  public:
   FakeGpuMemoryBuffer(const gfx::Size& size, gfx::BufferFormat format)
       : size_(size), format_(format) {
-    // We use only NV12 or R8 in unit tests.
-    EXPECT_TRUE(format == gfx::BufferFormat::YUV_420_BIPLANAR ||
-                format == gfx::BufferFormat::R_8);
+    // We use only NV12 in unit tests.
+    EXPECT_EQ(gfx::BufferFormat::YUV_420_BIPLANAR, format);
 
     size_t y_plane_size = size_.width() * size_.height();
     size_t uv_plane_size = size_.width() * size_.height() / 2;
@@ -41,13 +36,6 @@ class FakeGpuMemoryBuffer : public gfx::GpuMemoryBuffer {
     handle_.native_pixmap_handle.planes.push_back(gfx::NativePixmapPlane(
         size_.width(), handle_.native_pixmap_handle.planes[0].size,
         uv_plane_size));
-
-    // For faking a valid JPEG blob buffer.
-    Camera3JpegBlob* header = reinterpret_cast<Camera3JpegBlob*>(
-        reinterpret_cast<uintptr_t>(data_.data()) + size_.width() -
-        sizeof(Camera3JpegBlob));
-    header->jpeg_blob_id = kCamera3JpegBlobId;
-    header->jpeg_size = size_.width();
 #endif
   }
 
