@@ -966,7 +966,6 @@ class CORE_EXPORT Element : public ContainerNode {
   scoped_refptr<ComputedStyle> PropagateInheritedProperties(StyleRecalcChange);
 
   StyleRecalcChange RecalcOwnStyle(StyleRecalcChange);
-  void RecalcOwnStyleForReattach();
   void RecalcShadowIncludingDescendantStylesForReattach();
   void RecalcShadowRootStylesForReattach();
 
