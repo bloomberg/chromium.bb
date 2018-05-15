@@ -136,6 +136,19 @@ TEST(AomLeb128, DecodeFailTest) {
   ASSERT_EQ(aom_uleb_decode(&kAllPadBytesBuffer[0], kMaximumLeb128CodedSize,
                             &decoded_value, NULL),
             -1);
+
+  // Test that LEB128 input that decodes to a value larger than 32-bits fails.
+  uint8_t encode_buffer[kMaximumLeb128CodedSize] = { 0 };
+  const uint64_t kTooLargeForDecode = static_cast<uint64_t>(UINT32_MAX) + 1;
+  ASSERT_GT(aom_uleb_size_in_bytes(kTooLargeForDecode), 4u);
+  size_t bytes_written = 0;
+  ASSERT_EQ(aom_uleb_encode(kTooLargeForDecode, kMaximumLeb128CodedSize,
+                            &encode_buffer[0], &bytes_written),
+            0);
+  size_t value_size = 0;
+  ASSERT_EQ(aom_uleb_decode(&encode_buffer[0], kMaximumLeb128CodedSize,
+                            &decoded_value, &value_size),
+            -1);
 }
 
 TEST(AomLeb128, EncodeFailTest) {

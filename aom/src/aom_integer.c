@@ -35,6 +35,12 @@ int aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value,
         if (length) {
           *length = i + 1;
         }
+
+        // Fail on values larger than 32-bits to ensure consistent behavior on
+        // 32 and 64 bit targets: value is typically used to determine buffer
+        // allocation size.
+        if (*value > UINT32_MAX) return -1;
+
         return 0;
       }
     }
