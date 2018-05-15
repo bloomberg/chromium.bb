@@ -93,7 +93,7 @@ def main():
                        for meta_data in meta_data_list]
     interface_names.sort()
 
-    includes = ['#include "bindings/modules/v8/%s.h"' %
+    includes = ['#include "third_party/blink/renderer/bindings/modules/v8/%s.h"' %
                 build_basename(interface_name)
                 for interface_name in interface_names]
     initialize_calls = ['  %s::initialize();' % interface_name
