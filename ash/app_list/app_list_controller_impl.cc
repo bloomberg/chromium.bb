@@ -187,6 +187,21 @@ void AppListControllerImpl::SetItemMetadata(const std::string& id,
   // data may not contain valid position or icon. Preserve it in this case.
   if (!data->position.IsValid())
     data->position = item->position();
+
+  // Update the item's position and name based on the metadata.
+  if (!data->position.Equals(item->position()))
+    model_.SetItemPosition(item, data->position);
+
+  if (data->short_name.empty()) {
+    if (data->name != item->name()) {
+      model_.SetItemName(item, data->name);
+    }
+  } else {
+    if (data->name != item->name() || data->short_name != item->short_name()) {
+      model_.SetItemNameAndShortName(item, data->name, data->short_name);
+    }
+  }
+
   // Folder icon is generated on ash side and chrome side passes a null
   // icon here. Skip it.
   if (data->icon.isNull())
