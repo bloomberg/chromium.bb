@@ -110,7 +110,11 @@ struct VulkanInstance {
     }
 
     std::unordered_set<std::string> desired_layers({
+#if !defined(VK_USE_PLATFORM_XLIB_KHR)
+      // TODO(crbug.com/843346): Make validation work in combination with
+      // VK_KHR_xlib_surface or switch to VK_KHR_xcb_surface.
       "VK_LAYER_LUNARG_standard_validation",
+#endif
     });
 
     for (const VkLayerProperties& layer_property : instance_layers) {
