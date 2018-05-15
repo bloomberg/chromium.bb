@@ -1202,6 +1202,10 @@ DirectoryModel.prototype.createDirectoryContents_ =
     return DirectoryContents.createForRecent(
         context, /** @type {!FakeEntry} */ (entry), query);
   }
+  if (entry.rootType == VolumeManagerCommon.RootType.CROSTINI) {
+    return DirectoryContents.createForCrostiniMounter(
+        context, /** @type {!FakeEntry} */ (entry));
+  }
   if (query && canUseDriveSearch) {
     // Drive search.
     return DirectoryContents.createForDriveSearch(

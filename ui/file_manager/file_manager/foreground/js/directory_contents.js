@@ -316,6 +316,37 @@ RecentContentScanner.prototype.scan = function(
 };
 
 /**
+ * Shows an empty list and spinner whilst starting and mounting the
+ * crostini container.
+ * @constructor
+ * @extends {ContentScanner}
+ */
+function CrostiniMounter() {
+  ContentScanner.call(this);
+}
+
+/**
+ * Extends ContentScanner.
+ */
+CrostiniMounter.prototype.__proto__ = ContentScanner.prototype;
+
+/**
+ * @override
+ */
+CrostiniMounter.prototype.scan = function(
+    entriesCallback, successCallback, errorCallback) {
+  chrome.fileManagerPrivate.mountCrostiniContainer(() => {
+    if (chrome.runtime.lastError) {
+      console.error(
+          'mountCrostiniContainer error: ', chrome.runtime.lastError.message);
+      errorCallback(util.createDOMError(util.FileError.NOT_READABLE_ERR));
+      return;
+    }
+    successCallback();
+  });
+};
+
+/**
  * This class manages filters and determines a file should be shown or not.
  * When filters are changed, a 'changed' event is fired.
  *
@@ -939,5 +970,20 @@ DirectoryContents.createForDriveMetadataSearch = function(
 DirectoryContents.createForRecent = function(context, recentRootEntry, query) {
   return new DirectoryContents(context, true, recentRootEntry, function() {
     return new RecentContentScanner(query, recentRootEntry.sourceRestriction);
+  });
+};
+
+/**
+ * Creates a DirectoryContents instance to show the sshfs crostini files.
+ *
+ * @param {FileListContext} context File list context.
+ * @param {!FakeEntry} crostiniRootEntry Fake directory entry representing the
+ *     root of recent files.
+ * @return {DirectoryContents} Created DirectoryContents instance.
+ */
+DirectoryContents.createForCrostiniMounter = function(
+    context, crostiniRootEntry) {
+  return new DirectoryContents(context, true, crostiniRootEntry, function() {
+    return new CrostiniMounter();
   });
 };
