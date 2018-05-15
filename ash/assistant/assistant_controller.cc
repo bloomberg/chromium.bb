@@ -93,19 +93,11 @@ void AssistantController::RemoveInteractionModelObserver(
 }
 
 void AssistantController::StartInteraction() {
-  // TODO(dmblack): Instruct underlying service to start listening if current
-  // input modality is VOICE.
-  if (assistant_interaction_model_.interaction_state() ==
-      InteractionState::kInactive) {
-    OnInteractionStarted();
-  }
+  OnInteractionStarted();
 }
 
 void AssistantController::StopInteraction() {
-  if (assistant_interaction_model_.interaction_state() !=
-      InteractionState::kInactive) {
-    OnInteractionDismissed();
-  }
+  assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
 }
 
 void AssistantController::ToggleInteraction() {
@@ -119,13 +111,16 @@ void AssistantController::ToggleInteraction() {
 
 void AssistantController::OnInteractionStateChanged(
     InteractionState interaction_state) {
-  if (interaction_state == InteractionState::kInactive) {
-    assistant_interaction_model_.ClearInteraction();
+  if (interaction_state == InteractionState::kActive)
+    return;
 
-    // TODO(dmblack): Input modality should default back to the user's
-    // preferred input modality.
-    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
-  }
+  // When the user-facing interaction is dismissed, we instruct the service to
+  // terminate any listening, speaking, or query in flight.
+  DCHECK(assistant_);
+  assistant_->StopActiveInteraction();
+
+  assistant_interaction_model_.ClearInteraction();
+  assistant_interaction_model_.SetInputModality(InputModality::kVoice);
 }
 
 void AssistantController::OnHighlighterEnabledChanged(
@@ -139,21 +134,26 @@ void AssistantController::OnHighlighterEnabledChanged(
   }
 }
 
+void AssistantController::OnInputModalityChanged(InputModality input_modality) {
+  if (input_modality == InputModality::kVoice)
+    return;
+
+  // When switching to a non-voice input modality we instruct the underlying
+  // service to terminate any listening, speaking, or in flight query. We do not
+  // do this when switching to voice input modality because initiation of a
+  // voice interaction will automatically interrupt any pre-existing activity.
+  // Stopping the active interaction here for voice input modality would
+  // actually have the undesired effect of stopping the voice interaction.
+  DCHECK(assistant_);
+  assistant_->StopActiveInteraction();
+}
+
 void AssistantController::OnInteractionStarted() {
   assistant_interaction_model_.SetInteractionState(InteractionState::kActive);
 }
 
 void AssistantController::OnInteractionFinished(
-    AssistantInteractionResolution resolution) {}
-
-void AssistantController::OnInteractionDismissed() {
-  assistant_interaction_model_.SetInteractionState(InteractionState::kInactive);
-
-  // When the user-facing interaction is dismissed, we instruct the service to
-  // terminate any listening, speaking, or query in flight.
-  DCHECK(assistant_);
-  assistant_->StopActiveInteraction();
-}
+    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {}
 
 void AssistantController::OnDialogPlateContentsChanged(
     const std::string& text) {
@@ -162,16 +162,6 @@ void AssistantController::OnDialogPlateContentsChanged(
     // voice so that we will show the mic icon in the UI.
     assistant_interaction_model_.SetInputModality(InputModality::kVoice);
   } else {
-    // If switching to keyboard modality from voice, we instruct the service to
-    // terminate any listening, speaking, or query in flight.
-    // TODO(dmblack): We probably want this same logic when switching to any
-    // modality from voice. Handle this instead in OnInputModalityChanged, but
-    // we will need to add a previous modality parameter to that API.
-    if (assistant_interaction_model_.input_modality() ==
-        InputModality::kVoice) {
-      DCHECK(assistant_);
-      assistant_->StopActiveInteraction();
-    }
     assistant_interaction_model_.SetInputModality(InputModality::kKeyboard);
     assistant_interaction_model_.SetMicState(MicState::kClosed);
   }

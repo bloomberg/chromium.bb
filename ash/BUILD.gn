@@ -1850,6 +1850,7 @@ test("ash_unittests") {
     "//chromeos:power_manager_proto",
     "//chromeos:test_support",
     "//chromeos:test_support_without_gmock",
+    "//chromeos/services/assistant:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//components/account_id",
     "//components/password_manager/core/browser:hash_password_manager",

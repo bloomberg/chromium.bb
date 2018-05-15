@@ -79,6 +79,7 @@ include_rules = [
   # TODO(jamescook): Eliminate this. http://crbug.com/644355
   "+chromeos/network",
   "+chromeos/services/assistant/public" ,
+  "+chromeos/services/assistant/test_support",
   "+chromeos/services/multidevice_setup/public/mojom",
   # TODO(jamescook): Eliminate this. http://crbug.com/644361
   "+chromeos/settings/timezone_settings.h",

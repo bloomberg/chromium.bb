@@ -127,6 +127,12 @@ void AssistantBubble::OnWidgetActivationChanged(views::Widget* widget,
 }
 
 void AssistantBubble::OnWidgetDestroying(views::Widget* widget) {
+  // We need to be sure that the Assistant interaction is stopped when the
+  // widget is closed. Special cases, such as closing the widget via the |ESC|
+  // key might otherwise go unhandled, causing inconsistencies between the
+  // widget visibility state and the underlying interaction model state.
+  assistant_controller_->StopInteraction();
+
   container_view_->GetWidget()->RemoveObserver(this);
   container_view_ = nullptr;
 }
