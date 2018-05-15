@@ -63,18 +63,15 @@ class CHROMEOS_EXPORT AccountManager {
     Observer();
     virtual ~Observer();
 
-    // Called when the list of accounts known to |AccountManager| is updated.
+    // Called when the token for |account_key| is updated/inserted.
     // Use |AccountManager::AddObserver| to add an |Observer|.
-    // Note: This is not called when the token for an already known account is
-    // updated.
     // Note: |Observer|s which register with |AccountManager| before its
     // initialization is complete will get notified when |AccountManager| is
     // fully initialized.
     // Note: |Observer|s which register with |AccountManager| after its
     // initialization is complete will not get an immediate
     // notification-on-registration.
-    virtual void OnAccountListUpdated(
-        const std::vector<AccountKey>& accounts) = 0;
+    virtual void OnTokenUpserted(const AccountKey& account_key) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Observer);
@@ -155,8 +152,8 @@ class CHROMEOS_EXPORT AccountManager {
   // persist the current state of |tokens_|.
   void PersistTokensAsync();
 
-  // Notify |Observer|s about an account list update.
-  void NotifyAccountListObservers();
+  // Notify |Observer|s about a token update.
+  void NotifyTokenObservers(const AccountKey& account_key);
 
   // Status of this object's initialization.
   InitializationState init_state_ = InitializationState::kNotStarted;

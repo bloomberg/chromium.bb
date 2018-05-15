@@ -156,7 +156,10 @@ void AccountManager::InsertTokensAndRunInitializationCallbacks(
     std::move(cb).Run();
   }
   initialization_callbacks_.clear();
-  NotifyAccountListObservers();
+
+  for (const auto& token : tokens_) {
+    NotifyTokenObservers(token.first);
+  }
 }
 
 AccountManager::~AccountManager() {
@@ -208,14 +211,10 @@ void AccountManager::UpsertTokenInternal(const AccountKey& account_key,
   DCHECK(account_key.IsValid()) << "Invalid account_key: " << account_key;
 
   auto it = tokens_.find(account_key);
-  const bool is_new_account = (it == tokens_.end());
-  if (is_new_account || (it->second != token)) {
+  if ((it == tokens_.end()) || (it->second != token)) {
     tokens_[account_key] = token;
     PersistTokensAsync();
-  }
-
-  if (is_new_account) {
-    NotifyAccountListObservers();
+    NotifyTokenObservers(account_key);
   }
 }
 
@@ -225,12 +224,11 @@ void AccountManager::PersistTokensAsync() {
       std::make_unique<std::string>(GetSerializedTokens(tokens_)));
 }
 
-void AccountManager::NotifyAccountListObservers() {
+void AccountManager::NotifyTokenObservers(const AccountKey& account_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  std::vector<AccountKey> accounts = GetAccountKeys(tokens_);
   for (auto& observer : observers_) {
-    observer.OnAccountListUpdated(accounts);
+    observer.OnTokenUpserted(account_key);
   }
 }
 
