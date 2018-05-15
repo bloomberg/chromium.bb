@@ -260,6 +260,11 @@ const base::Feature kMojoVideoDecoder {
 #endif
 };
 
+// Enable The D3D11 Video decoder. Must also enable MojoVideoDecoder for
+// this to have any effect.
+const base::Feature kD3D11VideoDecoder{"D3D11VideoDecoder",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Manage and report MSE buffered ranges by PTS intervals, not DTS intervals.
 const base::Feature kMseBufferByPts{"MseBufferByPts",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
