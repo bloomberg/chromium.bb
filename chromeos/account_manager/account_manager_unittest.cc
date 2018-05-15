@@ -4,6 +4,7 @@
 
 #include "chromeos/account_manager/account_manager.h"
 
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -48,14 +49,13 @@ class AccountManagerObserver : public AccountManager::Observer {
   AccountManagerObserver() = default;
   ~AccountManagerObserver() override = default;
 
-  void OnAccountListUpdated(
-      const std::vector<AccountManager::AccountKey>& accounts) override {
+  void OnTokenUpserted(const AccountManager::AccountKey& account_key) override {
     is_callback_called_ = true;
-    accounts_ = accounts;
+    accounts_.insert(account_key);
   }
 
   bool is_callback_called_ = false;
-  std::vector<AccountManager::AccountKey> accounts_;
+  std::set<AccountManager::AccountKey> accounts_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AccountManagerObserver);
@@ -130,7 +130,22 @@ TEST_F(AccountManagerTest, TestPersistence) {
   EXPECT_EQ(kAccountKey_, accounts[0]);
 }
 
-TEST_F(AccountManagerTest, TestObserverAddAccount) {
+TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenInsertion) {
+  auto observer = std::make_unique<AccountManagerObserver>();
+  EXPECT_FALSE(observer->is_callback_called_);
+
+  account_manager_->AddObserver(observer.get());
+
+  account_manager_->UpsertToken(kAccountKey_, "123");
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(observer->is_callback_called_);
+  EXPECT_EQ(1UL, observer->accounts_.size());
+  EXPECT_EQ(kAccountKey_, *observer->accounts_.begin());
+
+  account_manager_->RemoveObserver(observer.get());
+}
+
+TEST_F(AccountManagerTest, ObserversAreNotifiedOnTokenUpdate) {
   auto observer = std::make_unique<AccountManagerObserver>();
   EXPECT_FALSE(observer->is_callback_called_);
 
@@ -138,17 +153,32 @@ TEST_F(AccountManagerTest, TestObserverAddAccount) {
   account_manager_->UpsertToken(kAccountKey_, "123");
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(observer->is_callback_called_);
-  EXPECT_EQ(1UL, observer->accounts_.size());
-  EXPECT_EQ(kAccountKey_, observer->accounts_[0]);
-
-  // Observers should not be called if account list does not change.
+  // Observers should be called when token is updated.
   observer->is_callback_called_ = false;
   account_manager_->UpsertToken(kAccountKey_, "456");
   scoped_task_environment_.RunUntilIdle();
+  EXPECT_TRUE(observer->is_callback_called_);
+  EXPECT_EQ(1UL, observer->accounts_.size());
+  EXPECT_EQ(kAccountKey_, *observer->accounts_.begin());
+
+  account_manager_->RemoveObserver(observer.get());
+}
+
+TEST_F(AccountManagerTest, ObserversAreNotNotifiedIfTokenIsNotUpdated) {
+  auto observer = std::make_unique<AccountManagerObserver>();
+  const std::string& kToken = "123";
   EXPECT_FALSE(observer->is_callback_called_);
 
-  // Don't leak
+  account_manager_->AddObserver(observer.get());
+  account_manager_->UpsertToken(kAccountKey_, kToken);
+  scoped_task_environment_.RunUntilIdle();
+
+  // Observers should not be called when token is not updated.
+  observer->is_callback_called_ = false;
+  account_manager_->UpsertToken(kAccountKey_, kToken);
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(observer->is_callback_called_);
+
   account_manager_->RemoveObserver(observer.get());
 }
 

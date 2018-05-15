@@ -49,8 +49,7 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
   LoadCredentialsState GetLoadCredentialsState() const override;
 
   // |AccountManager::Observer| overrides
-  void OnAccountListUpdated(
-      const std::vector<AccountManager::AccountKey>& account_keys) override;
+  void OnTokenUpserted(const AccountManager::AccountKey& account_key) override;
 
   // TODO(sinhak): Implement server token revocation.
   // TODO(sinhak): Implement scoped batch changes.

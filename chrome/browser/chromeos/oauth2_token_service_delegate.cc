@@ -120,10 +120,10 @@ void ChromeOSOAuth2TokenServiceDelegate::UpdateCredentials(
 
   const AccountManager::AccountKey& account_key =
       MapAccountIdToAccountKey(account_id);
-  account_keys_.insert(account_key);
-  account_manager_->UpsertToken(account_key, refresh_token);
 
-  FireRefreshTokenAvailable(account_id);
+  // Will result in AccountManager calling
+  // |ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted|.
+  account_manager_->UpsertToken(account_key, refresh_token);
 }
 
 net::URLRequestContextGetter*
@@ -146,16 +146,11 @@ void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
     std::vector<AccountManager::AccountKey> account_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  OnAccountListUpdated(account_keys);
-
   load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
-  FireRefreshTokensLoaded();
   for (const auto& account_key : account_keys) {
-    std::string account_id = MapAccountKeyToAccountId(account_key);
-    if (!account_id.empty()) {
-      FireRefreshTokenAvailable(account_id);
-    }
+    OnTokenUpserted(account_key);
   }
+  FireRefreshTokensLoaded();
 }
 
 std::string ChromeOSOAuth2TokenServiceDelegate::MapAccountKeyToAccountId(
@@ -187,11 +182,18 @@ ChromeOSOAuth2TokenServiceDelegate::MapAccountIdToAccountKey(
       account_info.gaia, account_manager::AccountType::ACCOUNT_TYPE_GAIA};
 }
 
-void ChromeOSOAuth2TokenServiceDelegate::OnAccountListUpdated(
-    const std::vector<AccountManager::AccountKey>& account_keys) {
+void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
+    const AccountManager::AccountKey& account_key) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  account_keys_.clear();
-  account_keys_.insert(account_keys.begin(), account_keys.end());
+  account_keys_.insert(account_key);
+
+  std::string account_id = MapAccountKeyToAccountId(account_key);
+  if (!account_id.empty()) {
+    FireRefreshTokenAvailable(account_id);
+
+    errors_.erase(account_id);
+    FireAuthErrorChanged(account_id, GoogleServiceAuthError::AuthErrorNone());
+  }
 }
 
 }  // namespace chromeos

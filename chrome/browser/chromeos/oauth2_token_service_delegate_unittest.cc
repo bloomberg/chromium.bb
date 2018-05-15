@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/oauth2_token_service_delegate.h"
 
 #include <memory>
+#include <set>
 #include <string>
 #include <utility>
 
@@ -27,8 +28,12 @@ namespace {
 using account_manager::AccountType::ACCOUNT_TYPE_GAIA;
 using account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY;
 
-class AuthErrorObserver : public OAuth2TokenService::Observer {
+class TokenServiceObserver : public OAuth2TokenService::Observer {
  public:
+  void OnRefreshTokenAvailable(const std::string& account_id) override {
+    account_ids_.insert(account_id);
+  }
+
   void OnAuthErrorChanged(const std::string& account_id,
                           const GoogleServiceAuthError& auth_error) override {
     last_err_account_id_ = account_id;
@@ -37,6 +42,7 @@ class AuthErrorObserver : public OAuth2TokenService::Observer {
 
   std::string last_err_account_id_;
   GoogleServiceAuthError last_err_;
+  std::set<std::string> account_ids_;
 };
 
 }  // namespace
@@ -114,7 +120,7 @@ TEST_F(CrOSOAuthDelegateTest, RefreshTokenIsAvailableForGaiaAccounts) {
 }
 
 TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAuthErrorChange) {
-  AuthErrorObserver observer;
+  TokenServiceObserver observer;
   auto error =
       GoogleServiceAuthError(GoogleServiceAuthError::State::SERVICE_ERROR);
   delegate_->AddObserver(&observer);
@@ -123,6 +129,49 @@ TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnAuthErrorChange) {
   EXPECT_EQ(error, delegate_->GetAuthError(account_info_.account_id));
   EXPECT_EQ(account_info_.account_id, observer.last_err_account_id_);
   EXPECT_EQ(error, observer.last_err_);
+
+  delegate_->RemoveObserver(&observer);
+}
+
+TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnCredentialsInsertion) {
+  TokenServiceObserver observer;
+  delegate_->AddObserver(&observer);
+  delegate_->UpdateCredentials(account_info_.account_id, "123");
+
+  EXPECT_EQ(1UL, observer.account_ids_.size());
+  EXPECT_EQ(account_info_.account_id, *observer.account_ids_.begin());
+  EXPECT_EQ(account_info_.account_id, observer.last_err_account_id_);
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(), observer.last_err_);
+
+  delegate_->RemoveObserver(&observer);
+}
+
+TEST_F(CrOSOAuthDelegateTest, ObserversAreNotifiedOnCredentialsUpdate) {
+  TokenServiceObserver observer;
+  delegate_->AddObserver(&observer);
+  delegate_->UpdateCredentials(account_info_.account_id, "123");
+
+  EXPECT_EQ(1UL, observer.account_ids_.size());
+  EXPECT_EQ(account_info_.account_id, *observer.account_ids_.begin());
+  EXPECT_EQ(account_info_.account_id, observer.last_err_account_id_);
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(), observer.last_err_);
+
+  delegate_->RemoveObserver(&observer);
+}
+
+TEST_F(CrOSOAuthDelegateTest,
+       ObserversAreNotNotifiedIfCredentialsAreNotUpdated) {
+  TokenServiceObserver observer;
+  const std::string kToken = "123";
+  delegate_->AddObserver(&observer);
+
+  delegate_->UpdateCredentials(account_info_.account_id, kToken);
+  observer.account_ids_.clear();
+  observer.last_err_account_id_ = std::string();
+  delegate_->UpdateCredentials(account_info_.account_id, kToken);
+
+  EXPECT_TRUE(observer.account_ids_.empty());
+  EXPECT_EQ(std::string(), observer.last_err_account_id_);
 
   delegate_->RemoveObserver(&observer);
 }
