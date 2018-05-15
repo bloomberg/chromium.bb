@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "base/callback_forward.h"
-#include "base/process/process_handle.h"
+#include "base/process/process.h"
 #include "chrome/common/conflicts/module_event_sink_win.mojom.h"
 #include "content/public/common/process_type.h"
 
@@ -21,12 +21,12 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
  public:
   // Callback for retrieving the handle associated with a process. This is used
   // by "Create" to get a handle to the remote process.
-  using GetProcessHandleCallback = base::Callback<base::ProcessHandle()>;
+  using GetProcessCallback = base::Callback<base::Process()>;
 
   // Creates a service endpoint that forwards notifications from the remote
   // |process| of the provided |process_type| to the provided |module_database|.
   // The |module_database| must outlive this object.
-  ModuleEventSinkImpl(base::ProcessHandle process,
+  ModuleEventSinkImpl(base::Process process,
                       content::ProcessType process_type,
                       ModuleDatabase* module_database);
   ~ModuleEventSinkImpl() override;
@@ -35,7 +35,7 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
   // creates a concrete implementation of mojom::ModuleDatabase interface in the
   // current process, for the remote process represented by the provided
   // |request|. This should only be called on the UI thread.
-  static void Create(GetProcessHandleCallback get_process_handle,
+  static void Create(GetProcessCallback get_process,
                      content::ProcessType process_type,
                      ModuleDatabase* module_database,
                      mojom::ModuleEventSinkRequest request);
@@ -48,7 +48,7 @@ class ModuleEventSinkImpl : public mojom::ModuleEventSink {
   friend class ModuleEventSinkImplTest;
 
   // A handle to the process on the other side of the pipe.
-  base::ProcessHandle process_;
+  base::Process process_;
 
   // The module database this forwards events to. The |module_database| must
   // outlive this object.

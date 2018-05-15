@@ -16,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/common/conflicts/module_watcher_win.h"
 #include "content/public/browser/browser_thread.h"
@@ -94,33 +95,14 @@ bool GetModuleTimeDateStamp(base::ProcessHandle process,
   return true;
 }
 
-}  // namespace
-
-ModuleEventSinkImpl::ModuleEventSinkImpl(base::ProcessHandle process,
-                                         content::ProcessType process_type,
-                                         ModuleDatabase* module_database)
-    : process_(process),
-      module_database_(module_database),
-      process_type_(process_type) {}
-
-ModuleEventSinkImpl::~ModuleEventSinkImpl() = default;
-
-// static
-void ModuleEventSinkImpl::Create(
-    GetProcessHandleCallback get_process_handle,
-    content::ProcessType process_type,
-    ModuleDatabase* module_database,
-    mojom::ModuleEventSinkRequest request) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::ProcessHandle process = get_process_handle.Run();
-  auto module_event_sink_impl = std::make_unique<ModuleEventSinkImpl>(
-      process, process_type, module_database);
-  mojo::MakeStrongBinding(std::move(module_event_sink_impl),
-                          std::move(request));
-}
-
-void ModuleEventSinkImpl::OnModuleEvent(mojom::ModuleEventType event_type,
-                                        uint64_t load_address) {
+// Handles the module event on a background task. Looks up the path, size and
+// time date stamp of the remote process and forwards the event to the
+// ModuleDatabase.
+void HandleModuleEvent(ModuleDatabase* module_database,
+                       base::Process process,
+                       content::ProcessType process_type,
+                       mojom::ModuleEventType event_Type,
+                       uint64_t load_address) {
   // Mojo takes care of validating |event_type|, so only |load_address| needs to
   // be checked. Load addresses must be aligned with the allocation granularity
   // which is at least 64KB on any supported Windows OS.
@@ -138,18 +120,54 @@ void ModuleEventSinkImpl::OnModuleEvent(mojom::ModuleEventType event_type,
   // Look up the various pieces of module metadata in the remote process.
 
   base::FilePath module_path;
-  if (!GetModulePath(process_, module, &module_path))
+  if (!GetModulePath(process.Handle(), module, &module_path))
     return;
 
   uint32_t module_size = 0;
-  if (!GetModuleSize(process_, module, &module_size))
+  if (!GetModuleSize(process.Handle(), module, &module_size))
     return;
 
   uint32_t module_time_date_stamp = 0;
-  if (!GetModuleTimeDateStamp(process_, load_address, &module_time_date_stamp))
+  if (!GetModuleTimeDateStamp(process.Handle(), load_address,
+                              &module_time_date_stamp))
     return;
 
   // Forward this to the module database.
-  module_database_->OnModuleLoad(process_type_, module_path, module_size,
-                                 module_time_date_stamp, load_address);
+  module_database->OnModuleLoad(process_type, module_path, module_size,
+                                module_time_date_stamp, load_address);
+}
+
+}  // namespace
+
+ModuleEventSinkImpl::ModuleEventSinkImpl(base::Process process,
+                                         content::ProcessType process_type,
+                                         ModuleDatabase* module_database)
+    : process_(std::move(process)),
+      module_database_(module_database),
+      process_type_(process_type) {}
+
+ModuleEventSinkImpl::~ModuleEventSinkImpl() = default;
+
+// static
+void ModuleEventSinkImpl::Create(GetProcessCallback get_process,
+                                 content::ProcessType process_type,
+                                 ModuleDatabase* module_database,
+                                 mojom::ModuleEventSinkRequest request) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  base::Process process = get_process.Run();
+  auto module_event_sink_impl = std::make_unique<ModuleEventSinkImpl>(
+      std::move(process), process_type, module_database);
+  mojo::MakeStrongBinding(std::move(module_event_sink_impl),
+                          std::move(request));
+}
+
+void ModuleEventSinkImpl::OnModuleEvent(mojom::ModuleEventType event_type,
+                                        uint64_t load_address) {
+  // Handle the event on a background sequence.
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
+      base::BindOnce(&HandleModuleEvent, module_database_, process_.Duplicate(),
+                     process_type_, event_type, load_address));
 }
