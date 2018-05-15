@@ -101,7 +101,6 @@ class APIPermission {
     kEmbeddedExtensionOptions,
     kEnterprisePlatformKeys,
     kEnterprisePlatformKeysPrivate,
-    kEnterpriseReportingPrivate,
     kDeleted_ExperienceSamplingPrivate,
     kExperimental,
     kExtensionView,
@@ -252,6 +251,7 @@ class APIPermission {
     kDeclarativeNetRequest,
     kLockWindowFullscreenPrivate,
     kWebrtcLoggingPrivateAudioDebug,
+    kEnterpriseReportingPrivate,
     kCecPrivate,
     // Last entry: Add new entries above and ensure to update the
     // "ExtensionPermission3" enum in tools/metrics/histograms/histograms.xml
