@@ -975,9 +975,6 @@ Resource* ResourceFetcher::CreateResourceForLoading(
   Resource* resource = factory.Create(
       params.GetResourceRequest(), params.Options(), params.DecoderOptions());
   resource->SetLinkPreload(params.IsLinkPreload());
-  if (params.IsSpeculativePreload()) {
-    resource->SetPreloadDiscoveryTime(params.PreloadDiscoveryTime());
-  }
   resource->SetCacheIdentifier(cache_identifier);
   resource->SetSourceOrigin(GetSourceOrigin(params.Options()));
 

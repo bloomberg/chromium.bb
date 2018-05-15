@@ -136,7 +136,6 @@ class CORE_EXPORT PreloadRequest {
         resource_type_(resource_type),
         script_type_(ScriptType::kClassic),
         cross_origin_(kCrossOriginAttributeNotSet),
-        discovery_time_(CurrentTimeTicksInSeconds()),
         defer_(FetchParameters::kNoDefer),
         resource_width_(resource_width),
         client_hints_preferences_(client_hints_preferences),
@@ -157,7 +156,6 @@ class CORE_EXPORT PreloadRequest {
   ScriptType script_type_;
   CrossOriginAttributeValue cross_origin_;
   String nonce_;
-  double discovery_time_;
   FetchParameters::DeferOption defer_;
   FetchParameters::ResourceWidth resource_width_;
   ClientHintsPreferences client_hints_preferences_;

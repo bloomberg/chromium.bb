@@ -98,7 +98,7 @@ Resource* PreloadRequest::Start(Document* document,
     speculative_preload_type =
         FetchParameters::SpeculativePreloadType::kInserted;
   }
-  params.SetSpeculativePreloadType(speculative_preload_type, discovery_time_);
+  params.SetSpeculativePreloadType(speculative_preload_type);
 
   if (resource_type_ == Resource::kScript) {
     MaybeDisallowFetchForDocWrittenScript(params, *document);
