@@ -152,6 +152,7 @@ bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
     case mojom::FeaturePolicyFeature::kVerticalScroll:
     case mojom::FeaturePolicyFeature::kLegacyImageFormats:
     case mojom::FeaturePolicyFeature::kImageCompression:
+    case mojom::FeaturePolicyFeature::kDocumentStreamInsertion:
       return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled();
     default:
       return false;
@@ -194,6 +195,9 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
                                  mojom::FeaturePolicyFeature::kPictureInPicture);
     if (RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled()) {
       default_feature_name_map.Set(
+          "document-stream-insertion",
+          mojom::FeaturePolicyFeature::kDocumentStreamInsertion);
+      default_feature_name_map.Set(
           "image-compression", mojom::FeaturePolicyFeature::kImageCompression);
       default_feature_name_map.Set(
           "legacy-image-formats",
@@ -212,8 +216,6 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
           "cookie", mojom::FeaturePolicyFeature::kDocumentCookie);
       default_feature_name_map.Set(
           "domain", mojom::FeaturePolicyFeature::kDocumentDomain);
-      default_feature_name_map.Set("docwrite",
-                                   mojom::FeaturePolicyFeature::kDocumentWrite);
     }
     if (RuntimeEnabledFeatures::FeaturePolicyAutoplayFeatureEnabled()) {
       default_feature_name_map.Set("autoplay",

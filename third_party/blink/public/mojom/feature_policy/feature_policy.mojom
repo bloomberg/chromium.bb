@@ -58,8 +58,6 @@ enum FeaturePolicyFeature {
   kDocumentCookie,
   // Contols access to document.domain attribute.
   kDocumentDomain,
-  // Controls access to document.write and document.writeln methods.
-  kDocumentWrite,
   // Controls whether synchronous script elements will run.
   kSyncScript,
   // Controls use of synchronous XMLHTTPRequest API.
@@ -90,6 +88,10 @@ enum FeaturePolicyFeature {
   kPictureInPicture,
   // Controls the ability to block and interfere with vertical scrolling.
   kVerticalScroll,
+  // Controls the ability of the document to use several dynamic markup API
+  // which interfere with document's input stream (document.write(),
+  // document.close(), etc.).
+  kDocumentStreamInsertion,
 };
 
 // This struct holds feature policy whitelist data that needs to be replicated

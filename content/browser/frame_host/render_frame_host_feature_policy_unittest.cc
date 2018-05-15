@@ -30,7 +30,7 @@ class RenderFrameHostFeaturePolicyTest
   static constexpr const char* kOrigin4 = "https://test.com";
 
   static const blink::mojom::FeaturePolicyFeature kDefaultEnabledFeature =
-      blink::mojom::FeaturePolicyFeature::kDocumentWrite;
+      blink::mojom::FeaturePolicyFeature::kDocumentStreamInsertion;
   static const blink::mojom::FeaturePolicyFeature kDefaultSelfFeature =
       blink::mojom::FeaturePolicyFeature::kGeolocation;
 
