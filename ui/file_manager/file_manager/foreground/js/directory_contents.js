@@ -318,6 +318,16 @@ RecentContentScanner.prototype.scan = function(
 /**
  * Shows an empty list and spinner whilst starting and mounting the
  * crostini container.
+ *
+ * This function is only called once to start and mount the crostini
+ * container.  When FilesApp starts, the related fake root entry for
+ * crostini is shown which uses this CrostiniMounter as its ContentScanner.
+ *
+ * When the sshfs mount completes, it will show up as a disk volume.
+ * NavigationListModel.reorderNavigationItems_ will detect that crostini
+ * is mounted as a disk volume and hide the fake root item while the
+ * disk volume exists.
+ *
  * @constructor
  * @extends {ContentScanner}
  */
