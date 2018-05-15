@@ -7512,6 +7512,25 @@ class LayerTreeHostTestPaintedDeviceScaleFactor : public LayerTreeHostTest {
 };
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPaintedDeviceScaleFactor);
 
+// Makes sure that presentation-time requests are correctly propagated to the
+// frame's metadata.
+class LayerTreeHostTestPresentationTimeRequest : public LayerTreeHostTest {
+ protected:
+  void BeginTest() override {
+    layer_tree_host()->RequestPresentationTimeForNextFrame(base::DoNothing());
+    PostSetNeedsCommitToMainThread();
+  }
+
+  void DisplayReceivedCompositorFrameOnThread(
+      const viz::CompositorFrame& frame) override {
+    EXPECT_NE(0u, frame.metadata.presentation_token);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+};
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestPresentationTimeRequest);
+
 // Makes sure that viz::LocalSurfaceId is propagated to the LayerTreeFrameSink.
 class LayerTreeHostTestLocalSurfaceId : public LayerTreeHostTest {
  protected:
