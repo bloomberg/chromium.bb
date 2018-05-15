@@ -12928,9 +12928,7 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
   std::unique_ptr<FrameTestHelpers::WebViewHelper> web_view_helper_;
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        SlimmingPaintWebFrameTest,
-                        testing::ValuesIn(kSlimmingPaintV2TestConfigurations));
+INSTANTIATE_SPV2_TEST_CASE_P(SlimmingPaintWebFrameTest);
 
 TEST_P(SlimmingPaintWebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());

@@ -123,9 +123,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        VisualRectMappingTest,
-                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_PAINT_TEST_CASE_P(VisualRectMappingTest);
 
 TEST_P(VisualRectMappingTest, LayoutText) {
   SetBodyInnerHTML(R"HTML(

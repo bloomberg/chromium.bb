@@ -16,16 +16,15 @@ class ViewPainterTest : public PaintControllerPaintTest {
   void RunFixedBackgroundTest(bool prefer_compositing_to_lcd_text);
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        ViewPainterTest,
-                        testing::Values(0,
-                                        kSlimmingPaintV175,
-                                        kRootLayerScrolling,
-                                        kSlimmingPaintV175 |
-                                            kRootLayerScrolling));
+INSTANTIATE_PAINT_TEST_CASE_P(ViewPainterTest);
 
 void ViewPainterTest::RunFixedBackgroundTest(
     bool prefer_compositing_to_lcd_text) {
+  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
+  // small.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   if (prefer_compositing_to_lcd_text) {
     Settings* settings = GetDocument().GetFrame()->GetSettings();
     settings->SetPreferCompositingToLCDTextEnabled(true);
@@ -101,6 +100,11 @@ TEST_P(ViewPainterTest, DocumentFixedBackgroundHighDPI) {
 }
 
 TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
+  // TODO(crbug.com/792577): Cull rect for frame scrolling contents is too
+  // small.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
   SetBodyInnerHTML("<div style='height: 5000px'></div>");
 
   const DisplayItemClient* background_item_client;
@@ -128,15 +132,8 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
   const auto& tree_state = chunk.properties;
   EXPECT_EQ(EffectPaintPropertyNode::Root(), tree_state.Effect());
   const auto* properties = GetLayoutView().FirstFragment().PaintProperties();
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    EXPECT_EQ(properties->ScrollTranslation(), tree_state.Transform());
-    EXPECT_EQ(properties->OverflowClip(), tree_state.Clip());
-  } else {
-    EXPECT_EQ(nullptr, properties);
-    const auto* frame_view = GetDocument().View();
-    EXPECT_EQ(frame_view->ScrollTranslation(), tree_state.Transform());
-    EXPECT_EQ(frame_view->ContentClip(), tree_state.Clip());
-  }
+  EXPECT_EQ(properties->ScrollTranslation(), tree_state.Transform());
+  EXPECT_EQ(properties->OverflowClip(), tree_state.Clip());
 }
 
 }  // namespace blink

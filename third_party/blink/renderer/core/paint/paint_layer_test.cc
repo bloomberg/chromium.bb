@@ -28,9 +28,7 @@ class PaintLayerTest : public PaintTestConfigurations, public RenderingTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        PaintLayerTest,
-                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_PAINT_TEST_CASE_P(PaintLayerTest);
 
 TEST_P(PaintLayerTest, ChildWithoutPaintLayer) {
   SetBodyInnerHTML(
@@ -88,15 +86,11 @@ TEST_P(PaintLayerTest, CompositedBoundsTransformedChild) {
 TEST_P(PaintLayerTest, RootLayerCompositedBounds) {
   SetBodyInnerHTML(
       "<style> body { width: 1000px; height: 1000px; margin: 0 } </style>");
-  EXPECT_EQ(RuntimeEnabledFeatures::RootLayerScrollingEnabled()
-                ? LayoutRect(0, 0, 800, 600)
-                : LayoutRect(0, 0, 1000, 1000),
+  EXPECT_EQ(LayoutRect(0, 0, 800, 600),
             GetLayoutView().Layer()->BoundingBoxForCompositing());
 }
 
 TEST_P(PaintLayerTest, RootLayerScrollBounds) {
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
   SetBodyInnerHTML(
@@ -159,11 +153,6 @@ TEST_P(PaintLayerTest, ScrollsWithViewportFixedPosition) {
 }
 
 TEST_P(PaintLayerTest, ScrollsWithViewportFixedPositionInsideTransform) {
-  // We don't intend to launch SPv2 without root layer scrolling, so skip this
-  // test in that configuration because it's broken.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-      !RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
   SetBodyInnerHTML(R"HTML(
     <div style='transform: translateZ(0)'>
       <div id='target' style='position: fixed'></div>
@@ -1178,11 +1167,9 @@ TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
 }
 
 TEST_P(PaintLayerTest, FrameViewContentSize) {
-  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
   SetBodyInnerHTML(
       "<style> body { width: 1200px; height: 900px; margin: 0 } </style>");
-  EXPECT_EQ(rls ? IntSize(800, 600) : IntSize(1200, 900),
-            GetDocument().View()->ContentsSize());
+  EXPECT_EQ(IntSize(800, 600), GetDocument().View()->ContentsSize());
 }
 
 TEST_P(PaintLayerTest, ReferenceClipPathWithPageZoom) {

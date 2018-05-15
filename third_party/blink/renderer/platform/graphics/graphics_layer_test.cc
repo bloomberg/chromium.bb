@@ -130,7 +130,9 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
 
 INSTANTIATE_TEST_CASE_P(All,
                         GraphicsLayerTest,
-                        testing::Values(0, kSlimmingPaintV175));
+                        testing::Values(0,
+                                        kSlimmingPaintV175,
+                                        kBlinkGenPropertyTrees));
 
 class AnimationForTesting : public CompositorAnimationClient {
  public:

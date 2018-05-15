@@ -34,9 +34,7 @@ class PaintInvalidationTest : public PaintTestConfigurations,
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All,
-                        PaintInvalidationTest,
-                        testing::ValuesIn(kAllSlimmingPaintTestConfigurations));
+INSTANTIATE_PAINT_TEST_CASE_P(PaintInvalidationTest);
 
 // Changing style in a way that changes overflow without layout should cause
 // the layout view to possibly need a paint invalidation since we may have
