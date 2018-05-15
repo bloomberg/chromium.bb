@@ -108,6 +108,24 @@ action("embed_resources") {
   ]
 }
 
+mojom("tab_socket") {
+  sources = [
+    "lib/tab_socket.mojom",
+  ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
+}
+
+mojom("headless_render_frame_controller") {
+  sources = [
+    "lib/headless_render_frame_controller.mojom",
+  ]
+  public_deps = [
+    "//mojo/public/mojom/base",
+  ]
+}
+
 service_manifest("headless_browser_manifest_overlay") {
   source = "lib/browser/headless_browser_manifest_overlay.json"
 }
@@ -132,6 +150,8 @@ grit("resources") {
   deps = [
     ":headless_browser_manifest_overlay",
     ":headless_packaged_services_manifest_overlay",
+    ":headless_render_frame_controller_js",
+    ":tab_socket_js",
   ]
 }
 
@@ -318,6 +338,8 @@ component("headless") {
     "lib/browser/headless_resource_dispatcher_host_delegate.h",
     "lib/browser/headless_shell_application_mac.h",
     "lib/browser/headless_shell_application_mac.mm",
+    "lib/browser/headless_tab_socket_impl.cc",
+    "lib/browser/headless_tab_socket_impl.h",
     "lib/browser/headless_url_request_context_getter.cc",
     "lib/browser/headless_url_request_context_getter.h",
     "lib/browser/headless_window_tree_host.h",
@@ -431,7 +453,9 @@ component("headless") {
 
   deps = [
     ":gen_devtools_client_api",
+    ":headless_render_frame_controller",
     ":protocol_sources",
+    ":tab_socket",
     ":version_header",
     "//components/cookie_config",
     "//components/security_state/core",
@@ -459,6 +483,10 @@ component("headless") {
       "lib/headless_content_main_delegate.h",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
+      "lib/renderer/headless_render_frame_controller_impl.cc",
+      "lib/renderer/headless_render_frame_controller_impl.h",
+      "lib/renderer/headless_tab_socket_bindings.cc",
+      "lib/renderer/headless_tab_socket_bindings.h",
       "lib/utility/headless_content_utility_client.cc",
       "lib/utility/headless_content_utility_client.h",
     ]
@@ -541,6 +569,10 @@ if (!is_component_build) {
       "lib/headless_content_main_delegate.h",
       "lib/renderer/headless_content_renderer_client.cc",
       "lib/renderer/headless_content_renderer_client.h",
+      "lib/renderer/headless_render_frame_controller_impl.cc",
+      "lib/renderer/headless_render_frame_controller_impl.h",
+      "lib/renderer/headless_tab_socket_bindings.cc",
+      "lib/renderer/headless_tab_socket_bindings.h",
     ]
 
     deps = [
@@ -760,6 +792,8 @@ test("headless_browsertests") {
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
     "test/headless_test_launcher.cc",
+    "test/tab_socket_test.cc",
+    "test/tab_socket_test.h",
     "test/test_protocol_handler.cc",
     "test/test_protocol_handler.h",
     "test/test_url_request_job.cc",
