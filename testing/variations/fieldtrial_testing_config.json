@@ -394,26 +394,6 @@
             ]
         }
     ],
-    "AutofillProfileCleanup": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "AutofillProfileCleanup"
-                    ]
-                }
-            ]
-        }
-    ],
     "AutofillProfileOrderByFrecency": [
         {
             "platforms": [
