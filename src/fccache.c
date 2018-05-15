@@ -1015,6 +1015,55 @@ FcDirCacheLoadFile (const FcChar8 *cache_file, struct stat *file_stat)
     return cache;
 }
 
+static int
+FcDirChecksum (struct stat *statb)
+{
+    int			ret = (int) statb->st_mtime;
+    char		*endptr;
+    char		*source_date_epoch;
+    unsigned long long	epoch;
+
+    source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+    if (source_date_epoch)
+    {
+	epoch = strtoull(source_date_epoch, &endptr, 10);
+
+	if (endptr == source_date_epoch)
+	    fprintf (stderr,
+		     "Fontconfig: SOURCE_DATE_EPOCH invalid\n");
+	else if ((errno == ERANGE && (epoch == ULLONG_MAX || epoch == 0))
+		|| (errno != 0 && epoch == 0))
+	    fprintf (stderr,
+		     "Fontconfig: SOURCE_DATE_EPOCH: strtoull: %s: %llu\n",
+		     strerror(errno), epoch);
+	else if (*endptr != '\0')
+	    fprintf (stderr,
+		     "Fontconfig: SOURCE_DATE_EPOCH has trailing garbage\n");
+	else if (epoch > ULONG_MAX)
+	    fprintf (stderr,
+		     "Fontconfig: SOURCE_DATE_EPOCH must be <= %lu but saw: %llu\n",
+		     ULONG_MAX, epoch);
+	else if (epoch < ret)
+	    /* Only override if directory is newer */
+	    ret = (int) epoch;
+    }
+
+    return ret;
+}
+
+static int64_t
+FcDirChecksumNano (struct stat *statb)
+{
+#ifdef HAVE_STRUCT_STAT_ST_MTIM
+    /* No nanosecond component to parse */
+    if (getenv("SOURCE_DATE_EPOCH"))
+	return 0;
+    return statb->st_mtim.tv_nsec;
+#else
+    return 0;
+#endif
+}
+
 /*
  * Validate a cache file by reading the header and checking
  * the magic number and the size field
@@ -1033,10 +1082,10 @@ FcDirCacheValidateHelper (FcConfig *config, int fd, struct stat *fd_stat, struct
 	ret = FcFalse;
     else if (fd_stat->st_size != c.size)
 	ret = FcFalse;
-    else if (c.checksum != (int) dir_stat->st_mtime)
+    else if (c.checksum != FcDirChecksum (dir_stat))
 	ret = FcFalse;
 #ifdef HAVE_STRUCT_STAT_ST_MTIM
-    else if (c.checksum_nano != dir_stat->st_mtim.tv_nsec)
+    else if (c.checksum_nano != FcDirChecksumNano (dir_stat))
 	ret = FcFalse;
 #endif
     return ret;
@@ -1112,10 +1161,8 @@ FcDirCacheBuild (FcFontSet *set, const FcChar8 *dir, struct stat *dir_stat, FcSt
     cache->magic = FC_CACHE_MAGIC_ALLOC;
     cache->version = FC_CACHE_VERSION_NUMBER;
     cache->size = serialize->size;
-    cache->checksum = (int) dir_stat->st_mtime;
-#ifdef HAVE_STRUCT_STAT_ST_MTIM
-    cache->checksum_nano = dir_stat->st_mtim.tv_nsec;
-#endif
+    cache->checksum = FcDirChecksum (dir_stat);
+    cache->checksum_nano = FcDirChecksumNano (dir_stat);
 
     /*
      * Serialize directory name
