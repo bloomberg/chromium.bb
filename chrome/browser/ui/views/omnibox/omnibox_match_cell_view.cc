@@ -185,9 +185,9 @@ bool OmniboxMatchCellView::CanProcessEventsWithinSubtree() const {
 
 int OmniboxMatchCellView::GetDescriptionHeight() const {
   int icon_width = icon_view_->width();
-  int answer_icon_size = image_view_->visible()
-                             ? image_view_->height() + kAnswerIconToTextPadding
-                             : 0;
+  int answer_icon_size = image_view_->GetImage().isNull()
+                             ? 0
+                             : image_view_->height() + kAnswerIconToTextPadding;
   int deduction = GetIconAlignmentOffset() + icon_width +
                   (HorizontalPadding() * 3) + answer_icon_size;
   int description_width = std::max(width() - deduction, 0);
@@ -204,25 +204,36 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
       (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
-  if (is_old_style_answer_ || is_rich_suggestion_) {
-    // Multi-line layout doesn't use the separator.
-    separator_view_->SetSize(gfx::Size());
 
-    // Set up default (placeholder) image.
+  // Set up the small icon.
+  if (is_rich_suggestion_) {
+    icon_view_->SetSize(gfx::Size());
+  } else {
+    icon_view_->SetSize(icon_view_->CalculatePreferredSize());
+  }
+
+  // Set up the separator.
+  if (is_old_style_answer_ || is_rich_suggestion_) {
+    separator_view_->SetSize(gfx::Size());
+  } else {
+    separator_view_->SetSize(separator_view_->CalculatePreferredSize());
+  }
+
+  // Set up the larger image.
+  if (!is_rich_suggestion_) {
+    // An entry with |is_old_style_answer_| may use the image_view_. But it's
+    // set when the image arrives (later).
+    image_view_->SetImage(gfx::ImageSkia());
+  } else {
     SkColor color = result_view->GetColor(OmniboxPart::RESULTS_BACKGROUND);
     extensions::image_util::ParseHexColorString(match.image_dominant_color,
                                                 &color);
     color = SkColorSetA(color, 0x40);  // 25% transparency (arbitrary).
+    const gfx::Size size = gfx::Size(kRichImageSize, kRichImageSize);
     image_view_->SetImage(
-        gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(
-            gfx::Size(kRichImageSize, kRichImageSize), color));
-  } else {
-    // Single-line layout doesn't use the image.
-    image_view_->SetSize(gfx::Size());
-  }
-  if (is_rich_suggestion_) {
-    // All rich suggestions don't use the old (small) icon.
-    icon_view_->SetSize(gfx::Size());
+        gfx::CanvasImageSource::MakeImageSkia<PlaceholderImageSource>(size,
+                                                                      color));
+    image_view_->SetSize(size);
   }
 }
 
@@ -245,13 +256,12 @@ void OmniboxMatchCellView::LayoutOldStyleAnswer() {
   const int text_height = content_view_->GetLineHeight();
   int x = GetIconAlignmentOffset() + HorizontalPadding();
   int y = GetVerticalInsets(text_height, /*is_old_style_answer=*/true).top();
-  icon_view_->SetSize(icon_view_->CalculatePreferredSize());
   icon_view_->SetPosition(
       gfx::Point(x, y + (text_height - icon_view_->height()) / 2));
   x += icon_view_->width() + HorizontalPadding();
   content_view_->SetBounds(x, y, width() - x, text_height);
   y += text_height;
-  if (image_view_->visible()) {
+  if (!image_view_->GetImage().isNull()) {
     // The description may be multi-line. Using the view height results in
     // an image that's too large, so we use the line height here instead.
     int image_edge_length = description_view_->GetLineHeight();
