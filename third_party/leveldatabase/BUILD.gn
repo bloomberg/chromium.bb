@@ -27,11 +27,6 @@ config("leveldb_config") {
     # leveldb to use it.
     defines += [ "OS_WIN" ]
   }
-
-  if (is_clang) {
-    # Suppress no override warning for overridden functions.
-    cflags = [ "-Wno-inconsistent-missing-override" ]
-  }
 }
 
 leveldb_sources = [
