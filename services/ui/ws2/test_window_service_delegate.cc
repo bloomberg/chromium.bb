@@ -20,7 +20,8 @@ std::unique_ptr<aura::Window> TestWindowServiceDelegate::NewTopLevel(
     aura::PropertyConverter* property_converter,
     const base::flat_map<std::string, std::vector<uint8_t>>& properties) {
   std::unique_ptr<aura::Window> window =
-      std::make_unique<aura::Window>(nullptr);
+      std::make_unique<aura::Window>(delegate_for_next_top_level_);
+  delegate_for_next_top_level_ = nullptr;
   window->Init(LAYER_NOT_DRAWN);
   if (top_level_parent_)
     top_level_parent_->AddChild(window.get());

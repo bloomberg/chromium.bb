@@ -38,7 +38,8 @@ ClientWindow* WindowService::GetClientWindowForWindowCreateIfNecessary(
   const viz::FrameSinkId frame_sink_id =
       ClientWindowId(kWindowServerClientId, next_window_id_++);
   CHECK_NE(0u, next_window_id_);
-  return ClientWindow::Create(window, nullptr, frame_sink_id);
+  const bool is_top_level = false;
+  return ClientWindow::Create(window, nullptr, frame_sink_id, is_top_level);
 }
 
 std::unique_ptr<WindowServiceClient> WindowService::CreateWindowServiceClient(

@@ -14,6 +14,17 @@
 namespace ui {
 namespace ws2 {
 
+// static
+std::unique_ptr<Event> PointerWatcher::CreateEventForClient(
+    const Event& event) {
+  // Client code expects to get PointerEvents.
+  if (event.IsMouseEvent())
+    return std::make_unique<ui::PointerEvent>(*event.AsMouseEvent());
+  if (event.IsTouchEvent())
+    return std::make_unique<ui::PointerEvent>(*event.AsTouchEvent());
+  return Event::Clone(event);
+}
+
 PointerWatcher::PointerWatcher(WindowServiceClient* client) : client_(client) {
   aura::Env::GetInstance()->AddWindowEventDispatcherObserver(this);
 }
@@ -51,15 +62,8 @@ void PointerWatcher::OnWindowEventDispatcherStartedProcessing(
   // only send pointer events if an event wasn't also sent to the client.
   // Part of https://crbug.com/837692
   std::unique_ptr<ui::Event> event_to_send;
-  // Client code expects to get PointerEvents.
-  if (event.IsMouseEvent())
-    event_to_send = std::make_unique<ui::PointerEvent>(*event.AsMouseEvent());
-  else if (event.IsTouchEvent())
-    event_to_send = std::make_unique<ui::PointerEvent>(*event.AsTouchEvent());
-  else
-    NOTREACHED();
   client_->SendPointerWatcherEventToClient(dispatcher->host()->GetDisplayId(),
-                                           std::move(event_to_send));
+                                           CreateEventForClient(event));
 }
 
 }  // namespace ws2

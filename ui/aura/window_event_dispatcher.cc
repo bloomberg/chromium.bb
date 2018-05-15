@@ -316,7 +316,7 @@ ui::EventDispatchDetails WindowEventDispatcher::DispatchMouseEnterOrExit(
     ui::EventType type) {
   Env::GetInstance()->env_controller()->UpdateStateForMouseEvent(window(),
                                                                  event);
-  if (!mouse_moved_handler_ || !mouse_moved_handler_->delegate() ||
+  if (!mouse_moved_handler_ || !mouse_moved_handler_->HasTargetHandler() ||
       !window()->Contains(mouse_moved_handler_))
     return DispatchDetails();
 

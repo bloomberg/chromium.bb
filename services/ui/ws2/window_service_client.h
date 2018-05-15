@@ -68,10 +68,19 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   void InitForEmbed(aura::Window* root, mojom::WindowTreePtr window_tree_ptr);
   void InitFromFactory();
 
+  bool intercepts_events() const { return intercepts_events_; }
+
+  // Notifies the client than an event has been received.
+  void SendEventToClient(aura::Window* window, const ui::Event& event);
+
   // Notifies the client that an event matching a pointer watcher has been
   // received.
   void SendPointerWatcherEventToClient(int64_t display_id,
                                        std::unique_ptr<Event> event);
+
+  // Returns true if |window| was created by the client calling
+  // NewTopLevelWindow().
+  bool IsTopLevel(aura::Window* window);
 
   WindowService* window_service() { return window_service_; }
 
@@ -119,9 +128,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   bool IsClientCreatedWindow(aura::Window* window);
   bool IsClientRootWindow(aura::Window* window);
 
-  // Returns true if |window| was created by the client calling
-  // NewTopLevelWindow().
-  bool IsTopLevel(aura::Window* window);
   ClientRoots::iterator FindClientRootWithRoot(aura::Window* window);
 
   // Returns true if |window| has been exposed to this client. A client
@@ -133,6 +139,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // Called for windows created by the client (including top-levels).
   aura::Window* AddClientCreatedWindow(
       const ClientWindowId& id,
+      bool is_top_level,
       std::unique_ptr<aura::Window> window_ptr);
 
   // Adds/removes a Window from the set of windows known to the client. This
@@ -230,7 +237,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   void SetWindowTransform(uint32_t change_id,
                           Id window_id,
                           const gfx::Transform& transform) override;
-  void SetClientArea(Id window_id,
+  void SetClientArea(Id transport_window_id,
                      const gfx::Insets& insets,
                      const base::Optional<std::vector<gfx::Rect>>&
                          additional_client_areas) override;
@@ -329,11 +336,13 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 
   mojom::WindowTreeClient* window_tree_client_;
 
-  // If true the client sees all the decendants of windows with embeddings
-  // in them that were created by this client, and additionally any events
-  // normally targeted at a descendant are targeted at the first ancestor Window
-  // created by this client. This is done to allow a client to intercept events
-  // normally targeted at descendants and dispatch them using some other means.
+  // If true, all events that would normally target another client embedded by
+  // this client are sent to this client. For example, consider the Window
+  // hierarchy A->B->C where client 1 created A and B, client 1 embedded
+  // client 2 in window B, and client 2 created C. If an event occurs that would
+  // normally target C, then the event is instead sent to client 1 with a target
+  // of B. If true, any clients embedded by this client never get normal events
+  // (they can still observer pointer events).
   const bool intercepts_events_;
 
   // Controls whether the client can change the visibility of the roots.

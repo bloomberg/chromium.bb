@@ -8,6 +8,10 @@
 #include "base/macros.h"
 #include "services/ui/ws2/window_service_delegate.h"
 
+namespace aura {
+class WindowDelegate;
+}
+
 namespace ui {
 namespace ws2 {
 
@@ -22,6 +26,10 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
     top_level_parent_ = parent;
   }
 
+  void set_delegate_for_next_top_level(aura::WindowDelegate* delegate) {
+    delegate_for_next_top_level_ = delegate;
+  }
+
   // WindowServiceDelegate:
   std::unique_ptr<aura::Window> NewTopLevel(
       aura::PropertyConverter* property_converter,
@@ -30,6 +38,7 @@ class TestWindowServiceDelegate : public WindowServiceDelegate {
 
  private:
   aura::Window* top_level_parent_;
+  aura::WindowDelegate* delegate_for_next_top_level_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowServiceDelegate);
 };

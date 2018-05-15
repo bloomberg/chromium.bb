@@ -77,11 +77,30 @@ WindowServiceClient::~WindowServiceClient() {
   }
 }
 
+void WindowServiceClient::SendEventToClient(aura::Window* window,
+                                            const Event& event) {
+  // TODO(sky): remove event_id.
+  const uint32_t event_id = 1;
+  // Events should only come to windows connected to displays.
+  DCHECK(window->GetHost());
+  const int64_t display_id = window->GetHost()->GetDisplayId();
+  // TODO(sky): wire up |matches_pointer_watcher|.
+  const bool matches_pointer_watcher = false;
+  window_tree_client_->OnWindowInputEvent(
+      event_id, TransportIdForWindow(window), display_id, 0u, gfx::PointF(),
+      PointerWatcher::CreateEventForClient(event), matches_pointer_watcher);
+}
+
 void WindowServiceClient::SendPointerWatcherEventToClient(
     int64_t display_id,
     std::unique_ptr<ui::Event> event) {
   window_tree_client_->OnPointerEventObserved(std::move(event),
                                               kInvalidTransportId, display_id);
+}
+
+bool WindowServiceClient::IsTopLevel(aura::Window* window) {
+  auto iter = FindClientRootWithRoot(window);
+  return iter != client_roots_.end() && (*iter)->is_top_level();
 }
 
 ClientRoot* WindowServiceClient::CreateClientRoot(
@@ -206,13 +225,10 @@ bool WindowServiceClient::IsClientRootWindow(aura::Window* window) {
   return window && FindClientRootWithRoot(window) != client_roots_.end();
 }
 
-bool WindowServiceClient::IsTopLevel(aura::Window* window) {
-  auto iter = FindClientRootWithRoot(window);
-  return iter != client_roots_.end() && (*iter)->is_top_level();
-}
-
 WindowServiceClient::ClientRoots::iterator
 WindowServiceClient::FindClientRootWithRoot(aura::Window* window) {
+  if (!window)
+    return client_roots_.end();
   for (auto iter = client_roots_.begin(); iter != client_roots_.end(); ++iter) {
     if (iter->get()->window() == window)
       return iter;
@@ -234,10 +250,11 @@ bool WindowServiceClient::IsWindowRootOfAnotherClient(
 
 aura::Window* WindowServiceClient::AddClientCreatedWindow(
     const ClientWindowId& id,
+    bool is_top_level,
     std::unique_ptr<aura::Window> window_ptr) {
   aura::Window* window = window_ptr.get();
   client_created_windows_.insert(std::move(window_ptr));
-  ClientWindow::Create(window, this, id);
+  ClientWindow::Create(window, this, id, is_top_level);
   AddWindowToKnownWindows(window, id);
   return window;
 }
@@ -374,8 +391,9 @@ bool WindowServiceClient::NewWindowImpl(
     DVLOG(1) << "NewWindow failed (id is not valid for client)";
     return false;
   }
+  const bool is_top_level = false;
   aura::Window* window = AddClientCreatedWindow(
-      client_window_id, std::make_unique<aura::Window>(nullptr));
+      client_window_id, is_top_level, std::make_unique<aura::Window>(nullptr));
 
   SetWindowType(window, aura::GetWindowTypeFromProperties(properties));
   for (auto& pair : properties) {
@@ -585,10 +603,11 @@ bool WindowServiceClient::EmbedImpl(
     mojom::WindowTreeClientPtr window_tree_client,
     uint32_t flags) {
   DVLOG(3) << "Embed window_id=" << window_id;
-  if (flags & mojom::kEmbedFlagEmbedderInterceptsEvents) {
-    // TODO: add support for this.
-    NOTIMPLEMENTED();
-  }
+
+  // mojom::kEmbedFlagEmbedderInterceptsEvents is inherited, otherwise an
+  // embedder could effectively circumvent it by embedding itself.
+  if (intercepts_events_)
+    flags = mojom::kEmbedFlagEmbedderInterceptsEvents;
 
   aura::Window* window = GetWindowByClientId(window_id);
   if (!window) {
@@ -600,13 +619,10 @@ bool WindowServiceClient::EmbedImpl(
     return false;
   }
 
-  // mojom::kEmbedFlagEmbedderInterceptsEvents is inherited, otherwise an
-  // embedder could effectively circumvent it by embedding itself.
-  const bool intercepts_events = intercepts_events_;
-
   auto new_client_binding = std::make_unique<WindowServiceClientBinding>();
   new_client_binding->InitForEmbed(
-      window_service_, std::move(window_tree_client), intercepts_events, window,
+      window_service_, std::move(window_tree_client),
+      flags & mojom::kEmbedFlagEmbedderInterceptsEvents, window,
       base::BindOnce(&WindowServiceClient::OnChildBindingConnectionLost,
                      base::Unretained(this), new_client_binding.get()));
 
@@ -714,8 +730,9 @@ void WindowServiceClient::NewTopLevelWindow(
     return;
   }
   top_level_ptr->set_owned_by_parent(false);
-  aura::Window* top_level =
-      AddClientCreatedWindow(client_window_id, std::move(top_level_ptr));
+  const bool is_top_level = true;
+  aura::Window* top_level = AddClientCreatedWindow(
+      client_window_id, is_top_level, std::move(top_level_ptr));
   ClientWindow::GetMayBeNull(top_level)->SetFrameSinkId(client_window_id);
   const int64_t display_id =
       display::Screen::GetScreen()->GetDisplayNearestWindow(top_level).id();
@@ -773,10 +790,26 @@ void WindowServiceClient::SetWindowTransform(uint32_t change_id,
 }
 
 void WindowServiceClient::SetClientArea(
-    Id window_id,
+    Id transport_window_id,
     const gfx::Insets& insets,
     const base::Optional<std::vector<gfx::Rect>>& additional_client_areas) {
-  NOTIMPLEMENTED();
+  const ClientWindowId window_id = MakeClientWindowId(transport_window_id);
+  aura::Window* window = GetWindowByClientId(window_id);
+  DVLOG(3) << "SetClientArea client window_id=" << window_id.ToString()
+           << " insets=" << insets.ToString();
+  if (!window) {
+    DVLOG(1) << "SetClientArea failed (invalid window id)";
+    return;
+  }
+  if (!IsClientRootWindow(window) || !IsTopLevel(window)) {
+    DVLOG(1) << "SetClientArea failed (access denied)";
+    return;
+  }
+
+  ClientWindow* client_window = ClientWindow::GetMayBeNull(window);
+  DCHECK(client_window);  // Must exist because of preceeding conditionals.
+  client_window->SetClientArea(
+      insets, additional_client_areas.value_or(std::vector<gfx::Rect>()));
 }
 
 void WindowServiceClient::SetHitTestMask(
@@ -957,10 +990,9 @@ void WindowServiceClient::SetEventTargetingPolicy(
     window->SetEventTargetingPolicy(policy);
 }
 
-void WindowServiceClient::OnWindowInputEventAck(
-    uint32_t event_id,
-    ::ui::mojom::EventResult result) {
-  NOTIMPLEMENTED();
+void WindowServiceClient::OnWindowInputEventAck(uint32_t event_id,
+                                                mojom::EventResult result) {
+  // TODO(sky): this is no longer needed, remove.
 }
 
 void WindowServiceClient::DeactivateWindow(Id window_id) {

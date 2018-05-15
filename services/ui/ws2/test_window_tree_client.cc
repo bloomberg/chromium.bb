@@ -12,6 +12,12 @@
 namespace ui {
 namespace ws2 {
 
+TestWindowTreeClient::InputEvent::InputEvent() = default;
+
+TestWindowTreeClient::InputEvent::InputEvent(InputEvent&& other) = default;
+
+TestWindowTreeClient::InputEvent::~InputEvent() = default;
+
 TestWindowTreeClient::ObservedPointerEvent::ObservedPointerEvent() = default;
 
 TestWindowTreeClient::ObservedPointerEvent::ObservedPointerEvent(
@@ -24,6 +30,15 @@ TestWindowTreeClient::TestWindowTreeClient() {
 }
 
 TestWindowTreeClient::~TestWindowTreeClient() = default;
+
+TestWindowTreeClient::InputEvent TestWindowTreeClient::PopInputEvent() {
+  if (input_events_.empty())
+    return InputEvent();
+
+  InputEvent event = std::move(input_events_.front());
+  input_events_.pop();
+  return event;
+}
 
 TestWindowTreeClient::ObservedPointerEvent
 TestWindowTreeClient::PopObservedPointerEvent() {
@@ -159,7 +174,20 @@ void TestWindowTreeClient::OnWindowInputEvent(
     const gfx::PointF& event_location_in_screen_pixel_layout,
     std::unique_ptr<ui::Event> event,
     bool matches_pointer_watcher) {
-  tree_->OnWindowInputEventAck(event_id, mojom::EventResult::HANDLED);
+  tracker_.OnWindowInputEvent(window_id, *event, display_id,
+                              event_location_in_screen_pixel_layout,
+                              matches_pointer_watcher);
+
+  InputEvent input_event;
+  input_event.event_id = event_id;
+  input_event.window_id = window_id;
+  input_event.display_id = display_id;
+  input_event.event = std::move(event);
+  input_event.matches_pointer_watcher = matches_pointer_watcher;
+  input_events_.push(std::move(input_event));
+
+  if (tree_)
+    tree_->OnWindowInputEventAck(event_id, mojom::EventResult::HANDLED);
 }
 
 void TestWindowTreeClient::OnPointerEventObserved(

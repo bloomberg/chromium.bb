@@ -21,6 +21,19 @@ namespace ws2 {
 class TestWindowTreeClient : public mojom::WindowTreeClient,
                              public TestChangeTracker::Delegate {
  public:
+  // Created every time OnWindowInputEvent() is called.
+  struct InputEvent {
+    InputEvent();
+    InputEvent(InputEvent&& other);
+    ~InputEvent();
+
+    uint32_t event_id;
+    Id window_id;
+    int64_t display_id;
+    std::unique_ptr<ui::Event> event;
+    bool matches_pointer_watcher;
+  };
+
   // An ObservedPointerEvent is created for each call to
   // OnPointerEventObserved()
   struct ObservedPointerEvent {
@@ -35,6 +48,13 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
 
   TestWindowTreeClient();
   ~TestWindowTreeClient() override;
+
+  std::queue<InputEvent>& input_events() { return input_events_; }
+
+  // Returns the oldest InputEvent that was received by way of
+  // OnWindowInputEvent(). If no events have been observed, |event| in the
+  // returned object is null.
+  InputEvent PopInputEvent();
 
   std::queue<ObservedPointerEvent>& observed_pointer_events() {
     return observed_pointer_events_;
@@ -163,6 +183,7 @@ class TestWindowTreeClient : public mojom::WindowTreeClient,
   mojom::WindowTreePtr tree_;
   Id root_window_id_ = 0;
   bool track_root_bounds_changes_ = false;
+  std::queue<InputEvent> input_events_;
   std::queue<ObservedPointerEvent> observed_pointer_events_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWindowTreeClient);

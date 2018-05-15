@@ -52,6 +52,15 @@ void WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
       local_surface_id);
 }
 
+void WindowServiceClientTestHelper::SetClientArea(
+    aura::Window* window,
+    const gfx::Insets& insets,
+    base::Optional<std::vector<gfx::Rect>> additional_client_areas) {
+  window_service_client_->SetClientArea(
+      window_service_client_->TransportIdForWindow(window), insets,
+      additional_client_areas);
+}
+
 void WindowServiceClientTestHelper::SetWindowProperty(
     aura::Window* window,
     const std::string& name,
