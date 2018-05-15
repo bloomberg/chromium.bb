@@ -7,6 +7,7 @@
 import base64
 
 from writers import adml_writer
+from writers.admx_writer import AdmxElementType
 
 
 def GetWriter(config):
@@ -26,3 +27,7 @@ class ChromeOSADMLWriter(adml_writer.ADMLWriter):
   def IsPolicySupported(self, policy):
     return self.IsCrOSManagementSupported(policy, 'active_directory') and \
            super(ChromeOSADMLWriter, self).IsPolicySupported(policy)
+
+  # Overridden.
+  def _GetAdmxElementType(self, policy):
+    return AdmxElementType.GetType(policy, allow_multi_strings = True)

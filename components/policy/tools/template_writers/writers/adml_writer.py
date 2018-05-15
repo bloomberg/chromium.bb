@@ -5,6 +5,8 @@
 
 from xml.dom import minidom
 from writers import xml_formatted_writer
+from writers.admx_writer import AdmxElementType
+import json
 import re
 
 
@@ -50,6 +52,10 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
           self._string_table_elem, 'string', {'id': id})
       string_elem.appendChild(self._doc.createTextNode(text))
 
+  def _GetAdmxElementType(self, policy):
+    '''Returns the ADMX element type for a particular Policy.'''
+    return AdmxElementType.GetType(policy, allow_multi_strings = False)
+
   def WritePolicy(self, policy):
     '''Generates the ADML elements for a Policy.
     <stringTable>
@@ -66,13 +72,13 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     Args:
       policy: The Policy to generate ADML elements for.
     '''
-    policy_type = policy['type']
     policy_name = policy['name']
     policy_caption = policy.get('caption', policy_name)
     policy_label = policy.get('label', policy_name)
 
+    policy_example = policy.get('example_value')
     policy_desc = policy.get('desc')
-    example_value_text = self._GetExampleValueText(policy.get('example_value'))
+    example_value_text = self._GetExampleValueText(policy_example)
 
     if policy_desc is not None and example_value_text is not None:
       policy_explain = policy_desc + '\n\n' + example_value_text
@@ -89,34 +95,45 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     presentation_elem = self.AddElement(
         self._presentation_table_elem, 'presentation', {'id': policy_name})
 
-    if policy_type == 'main':
+    admx_element_type = self._GetAdmxElementType(policy)
+    if admx_element_type == AdmxElementType.MAIN:
       pass
-    elif policy_type in ('string', 'dict', 'external'):
-      # 'dict' and 'external' policies are configured as JSON-encoded strings on
-      # Windows.
+    elif admx_element_type == AdmxElementType.STRING:
       textbox_elem = self.AddElement(presentation_elem, 'textBox',
                                      {'refId': policy_name})
       label_elem = self.AddElement(textbox_elem, 'label')
       label_elem.appendChild(self._doc.createTextNode(policy_label))
-    elif policy_type == 'int':
+    elif admx_element_type == AdmxElementType.MULTI_STRING:
+      # We currently also show a single-line textbox - see http://crbug/829328
+      textbox_elem = self.AddElement(presentation_elem, 'textBox',
+                                     {'refId': policy_name + '_Legacy'})
+      label_elem = self.AddElement(textbox_elem, 'label')
+      legacy_label = self._GetLegacySingleLineLabel(policy_label)
+      self._AddString(policy_name + '_Legacy', legacy_label)
+      label_elem.appendChild(self._doc.createTextNode(legacy_label))
+      # New multi-line textbox, easier to use than old single-line textbox:
+      multitextbox_elem = self.AddElement(presentation_elem, 'multiTextBox',
+          {'refId': policy_name, 'defaultHeight': '8'})
+      multitextbox_elem.appendChild(self._doc.createTextNode(policy_label))
+    elif admx_element_type == AdmxElementType.INT:
       textbox_elem = self.AddElement(presentation_elem, 'decimalTextBox',
                                      {'refId': policy_name})
       textbox_elem.appendChild(self._doc.createTextNode(policy_label + ':'))
-    elif policy_type in ('int-enum', 'string-enum'):
+    elif admx_element_type == AdmxElementType.ENUM:
       for item in policy['items']:
         self._AddString(policy_name + "_" + item['name'], item['caption'])
       dropdownlist_elem = self.AddElement(presentation_elem, 'dropdownList',
                                           {'refId': policy_name})
       dropdownlist_elem.appendChild(self._doc.createTextNode(policy_label))
-    elif policy_type in ('list', 'string-enum-list'):
+    elif admx_element_type == AdmxElementType.LIST:
       self._AddString(policy_name + 'Desc', policy_caption)
       listbox_elem = self.AddElement(presentation_elem, 'listBox',
                                      {'refId': policy_name + 'Desc'})
       listbox_elem.appendChild(self._doc.createTextNode(policy_label))
-    elif policy_type == 'group':
+    elif admx_element_type == AdmxElementType.GROUP:
       pass
     else:
-      raise Exception('Unknown policy type %s.' % policy_type)
+      raise Exception('Unknown element type %s.' % admx_element_type)
 
   def BeginPolicyGroup(self, group):
     '''Generates ADML elements for a Policy-Group. For each Policy-Group two
@@ -161,7 +178,15 @@ class ADMLWriter(xml_formatted_writer.XMLFormattedWriter):
     if isinstance(example_value, list):
       value_as_text = '\n'.join([str(v) for v in example_value])
       return self._GetLocalizedMessage('example_value') + '\n\n' + value_as_text
+    if isinstance(example_value, dict):
+      value_as_text = json.dumps(example_value)
+      return self._GetLocalizedMessage('example_value') + '\n\n' + value_as_text
     return None
+
+  def _GetLegacySingleLineLabel(self, policy_label):
+    '''Generates a label for a legacy single-line textbox.'''
+    return (self._GetLocalizedMessage('legacy_single_line_label')
+        .replace('$6', policy_label))
 
   def _GetLocalizedMessage(self, msg_id):
     '''Returns the localized message of the given message ID.'''
