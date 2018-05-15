@@ -6,8 +6,8 @@
 // that callbacks are correctly invoked, expected parameters are correct,
 // and failures are detected.
 
-var kTestPrefName = 'download.default_directory';
-var kTestPrefValue = '/Downloads';
+var kTestPrefName = 'autofill.enabled';
+var kTestPrefValue = true;
 
 // This corresponds to policy key: kHomepageIsNewTabPage used in
 // settings_private_apitest.cc.

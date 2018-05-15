@@ -70,8 +70,12 @@ bool IsPrivilegedCrosSetting(const std::string& pref_name) {
 #endif
 
 bool IsSettingReadOnly(const std::string& pref_name) {
+  // download.default_directory is used to display the directory location and
+  // for policy indicators, but should not be changed directly.
+  if (pref_name == prefs::kDownloadDefaultDirectory)
+    return true;
 #if defined(OS_CHROMEOS)
-  // System timezone is never directly changable by the user.
+  // System timezone is never directly changeable by the user.
   if (pref_name == chromeos::kSystemTimezone)
     return chromeos::system::PerUserTimezoneEnabled();
   // enable_screen_lock must be changed through the quickUnlockPrivate API.
