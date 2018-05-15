@@ -32,7 +32,7 @@ class GestureConfigurationCast : public GestureConfiguration {
             switches::kCompensateForUnstablePinchZoom)
             ? 5
             : 0);
-    set_velocity_tracker_strategy(VelocityTracker::Strategy::INT1);
+    set_velocity_tracker_strategy(VelocityTracker::Strategy::LSQ2_RESTRICTED);
     set_span_slop(max_touch_move_in_pixels_for_click() * 2);
     set_swipe_enabled(true);
     set_two_finger_tap_enabled(true);
