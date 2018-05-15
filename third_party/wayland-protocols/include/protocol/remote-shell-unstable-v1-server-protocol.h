@@ -1498,7 +1498,7 @@ struct zcr_notification_surface_v1_interface {
 	 * set application ID
 	 *
 	 * Set an application identifier for the notification surface.
-	 * @since 2
+	 * @since 16
 	 */
 	void (*set_app_id)(struct wl_client *client,
 			   struct wl_resource *resource,
@@ -1513,7 +1513,7 @@ struct zcr_notification_surface_v1_interface {
 /**
  * @ingroup iface_zcr_notification_surface_v1
  */
-#define ZCR_NOTIFICATION_SURFACE_V1_SET_APP_ID_SINCE_VERSION 2
+#define ZCR_NOTIFICATION_SURFACE_V1_SET_APP_ID_SINCE_VERSION 16
 
 #ifdef  __cplusplus
 }

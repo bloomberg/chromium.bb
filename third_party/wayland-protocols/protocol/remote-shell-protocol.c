@@ -70,7 +70,7 @@ static const struct wl_message zcr_remote_shell_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_shell_v1_interface = {
-	"zcr_remote_shell_v1", 15,
+	"zcr_remote_shell_v1", 16,
 	3, zcr_remote_shell_v1_requests,
 	5, zcr_remote_shell_v1_events,
 };
@@ -137,11 +137,11 @@ WL_EXPORT const struct wl_interface zcr_remote_surface_v1_interface = {
 
 static const struct wl_message zcr_notification_surface_v1_requests[] = {
 	{ "destroy", "", types + 0 },
-	{ "set_app_id", "2s", types + 0 },
+	{ "set_app_id", "16s", types + 0 },
 };
 
 WL_EXPORT const struct wl_interface zcr_notification_surface_v1_interface = {
-	"zcr_notification_surface_v1", 2,
+	"zcr_notification_surface_v1", 16,
 	2, zcr_notification_surface_v1_requests,
 	0, NULL,
 };
