@@ -795,8 +795,6 @@ class ComputedStyle : public ComputedStyleBase,
     SetZIndexInternal(0);
   }
 
-  // zoom
-  bool SetZoom(float);
   bool SetEffectiveZoom(float);
 
   // -webkit-clip-path
@@ -2542,13 +2540,6 @@ class ComputedStyle : public ComputedStyleBase,
       ComputedStyleTest,
       UpdatePropertySpecificDifferencesCompositingReasonsUsedStylePreserve3D);
 };
-
-inline bool ComputedStyle::SetZoom(float f) {
-  if (Zoom() == f)
-    return false;
-  SetZoomInternal(f);
-  return true;
-}
 
 inline bool ComputedStyle::SetEffectiveZoom(float f) {
   // Clamp the effective zoom value to a smaller (but hopeful still large
