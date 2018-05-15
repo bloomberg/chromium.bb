@@ -485,6 +485,8 @@ class SitePerProcessHitTestBrowserTest
     } else if (std::get<0>(GetParam()) == 2) {
       feature_list_.InitAndEnableFeature(
           features::kEnableVizHitTestSurfaceLayer);
+    } else {
+      feature_list_.InitAndDisableFeature(features::kEnableVizHitTestDrawQuad);
     }
   }
 

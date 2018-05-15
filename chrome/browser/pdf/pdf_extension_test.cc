@@ -365,6 +365,8 @@ class PDFExtensionHitTestTest : public PDFExtensionTest,
     PDFExtensionTest::SetUpCommandLine(command_line);
     if (GetParam()) {
       feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
+    } else {
+      feature_list_.InitAndDisableFeature(features::kEnableVizHitTestDrawQuad);
     }
   }
 
