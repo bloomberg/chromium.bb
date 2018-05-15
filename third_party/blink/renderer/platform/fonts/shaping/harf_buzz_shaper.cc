@@ -895,6 +895,28 @@ void HarfBuzzShaper::ShapeSegment(RangeData* range_data,
   }
 }
 
+// Get a RunSegmenter for the specified range and FontOrientation.
+//
+// Because RunSegmenter needs pre-context but is foward-only, it needs to start
+// from the beginning for each range. By caching the last-used RunSegmenter,
+// when caller shapes multiple ranges of a string incrementally, we can re-use
+// existing instance and avoid scanning from the beginning.
+RunSegmenter* HarfBuzzShaper::CachedRunSegmenter(
+    unsigned start,
+    unsigned end,
+    FontOrientation orientation) const {
+  if (!run_segmenter_.has_value() || run_segmenter_->HasProgressedPast(start) ||
+      !run_segmenter_->Supports(orientation)) {
+    // RunSegmenter is not created yet, or existing instance cannot be reused
+    // for the new range. Create a new instance.
+    //
+    // Run segmentation needs to operate on the entire string, regardless of the
+    // shaping window (defined by the start and end parameters).
+    run_segmenter_.emplace(text_, text_length_, orientation);
+  }
+  return &run_segmenter_.value();
+}
+
 scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
                                           TextDirection direction,
                                           unsigned start,
@@ -905,12 +927,8 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
   unsigned length = end - start;
   scoped_refptr<ShapeResult> result = ShapeResult::Create(font, length, direction);
   HarfBuzzScopedPtr<hb_buffer_t> buffer(hb_buffer_create(), hb_buffer_destroy);
-
-  // Run segmentation needs to operate on the entire string, regardless of the
-  // shaping window (defined by the start and end parameters).
-  RunSegmenter::RunSegmenterRange segment_range = RunSegmenter::NullRange();
-  RunSegmenter run_segmenter(text_, text_length_,
-                             font->GetFontDescription().Orientation());
+  RunSegmenter* run_segmenter =
+      CachedRunSegmenter(start, end, font->GetFontDescription().Orientation());
 
   RangeData range_data;
   range_data.buffer = buffer.Get();
@@ -920,11 +938,20 @@ scoped_refptr<ShapeResult> HarfBuzzShaper::Shape(const Font* font,
   range_data.end = end;
   SetFontFeatures(font, &range_data.font_features);
 
-  while (run_segmenter.Consume(&segment_range)) {
+  RunSegmenter::RunSegmenterRange segment_range = RunSegmenter::NullRange();
+  for (unsigned run_segmenter_start = start;
+       run_segmenter->ConsumePast(run_segmenter_start, &segment_range);
+       run_segmenter_start = segment_range.end) {
     // Only shape segments overlapping with the range indicated by start and
     // end. Not only those strictly within.
     if (start < segment_range.end && end > segment_range.start)
       ShapeSegment(&range_data, segment_range, result.get());
+
+    // Break if beyond the requested range. Because RunSegmenter is
+    // incremental, further ranges are not needed. This also allows reusing
+    // the segmenter state for next incremental calls.
+    if (segment_range.end >= end)
+      break;
   }
 
   // Ensure we have at least one run for StartIndexForResult().

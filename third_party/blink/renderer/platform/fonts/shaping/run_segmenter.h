@@ -36,9 +36,23 @@ class PLATFORM_EXPORT RunSegmenter {
     FontFallbackPriority font_fallback_priority;
   };
 
+  // Initialize a RunSegmenter.
   RunSegmenter(const UChar* buffer, unsigned buffer_size, FontOrientation);
 
-  bool Consume(RunSegmenterRange*);
+  // Returns true if the internal state is past |start|. RunSegmenter is forward
+  // incremental that once it's past a point, it cannot be used for text before
+  // it. On the ohter hand, if it's not, caller can use the existing instance.
+  bool HasProgressedPast(unsigned start) const;
+
+  // Returns true if this instance supports the specified FontOrientation.
+  bool Supports(FontOrientation) const;
+
+  // Advance to the range that includes |start| and return the range. Returns
+  // false if there are no such ranges.
+  //
+  // Callers need to update |start| of the next call to the previous range end
+  // when they need next range.
+  bool ConsumePast(unsigned start, RunSegmenterRange*);
 
   static RunSegmenterRange NullRange() {
     return {0, 0, USCRIPT_INVALID_CODE, OrientationIterator::kOrientationKeep,
@@ -49,6 +63,7 @@ class PLATFORM_EXPORT RunSegmenter {
   void ConsumeOrientationIteratorPastLastSplit();
   void ConsumeScriptIteratorPastLastSplit();
   void ConsumeSymbolsIteratorPastLastSplit();
+  bool Consume();
 
   unsigned buffer_size_;
   RunSegmenterRange candidate_range_;
