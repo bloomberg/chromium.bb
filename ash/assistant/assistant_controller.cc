@@ -139,13 +139,16 @@ void AssistantController::OnInputModalityChanged(InputModality input_modality) {
     return;
 
   // When switching to a non-voice input modality we instruct the underlying
-  // service to terminate any listening, speaking, or in flight query. We do not
-  // do this when switching to voice input modality because initiation of a
-  // voice interaction will automatically interrupt any pre-existing activity.
+  // service to terminate any listening, speaking, or in flight voice query. We
+  // do not do this when switching to voice input modality because initiation of
+  // a voice interaction will automatically interrupt any pre-existing activity.
   // Stopping the active interaction here for voice input modality would
   // actually have the undesired effect of stopping the voice interaction.
-  DCHECK(assistant_);
-  assistant_->StopActiveInteraction();
+  if (assistant_interaction_model_.query().type() ==
+      AssistantQueryType::kVoice) {
+    DCHECK(assistant_);
+    assistant_->StopActiveInteraction();
+  }
 }
 
 void AssistantController::OnInteractionStarted() {
@@ -267,6 +270,8 @@ void AssistantController::OnSpeechRecognitionStarted() {
   assistant_interaction_model_.ClearInteraction();
   assistant_interaction_model_.SetInputModality(InputModality::kVoice);
   assistant_interaction_model_.SetMicState(MicState::kOpen);
+  assistant_interaction_model_.SetQuery(
+      std::make_unique<AssistantVoiceQuery>());
 }
 
 void AssistantController::OnSpeechRecognitionIntermediateResult(
