@@ -218,21 +218,23 @@ class ASH_EXPORT WindowGrid : public aura::WindowObserver,
   // Moves the selection widget to the targeted window.
   void MoveSelectionWidgetToTarget(bool animate);
 
-  // Attempts to fit all |rects| inside |bounds|. The method ensures that
-  // the |rects| vector has appropriate size and populates it with the values
-  // placing Rects next to each other left-to-right in rows of equal |height|.
-  // While fitting |rects| several metrics are collected that can be used by the
-  // caller. |max_bottom| specifies the bottom that the rects are extending to.
-  // |min_right| and |max_right| report the right bound of the narrowest and the
-  // widest rows respectively. In-values of the |max_bottom|, |min_right| and
-  // |max_right| parameters are ignored and their values are always initialized
-  // inside this method. Returns true on success and false otherwise.
+  // Attempts to fit all |out_rects| inside |bounds|. The method ensures that
+  // the |out_rects| vector has appropriate size and populates it with the
+  // values placing rects next to each other left-to-right in rows of equal
+  // |height|. While fitting |out_rects| several metrics are collected that can
+  // be used by the caller. |out_max_bottom| specifies the bottom that the rects
+  // are extending to. |out_min_right| and |out_max_right| report the right
+  // bound of the narrowest and the widest rows respectively. In-values of the
+  // |out_max_bottom|, |out_min_right| and |out_max_right| parameters are
+  // ignored and their values are always initialized inside this method. Returns
+  // true on success and false otherwise.
   bool FitWindowRectsInBounds(const gfx::Rect& bounds,
                               int height,
-                              std::vector<gfx::Rect>* rects,
-                              int* max_bottom,
-                              int* min_right,
-                              int* max_right);
+                              WindowSelectorItem* ignored_item,
+                              std::vector<gfx::Rect>* out_rects,
+                              int* out_max_bottom,
+                              int* out_min_right,
+                              int* out_max_right);
 
   // Sets |selector_item|'s |should_animate_when_entering_|,
   // |should_animate_when_exiting_| and |should_be_observed_when_exiting_|.
