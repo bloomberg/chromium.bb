@@ -5,6 +5,7 @@
 #include "components/cryptauth/remote_device.h"
 
 #include "base/base64.h"
+#include "base/stl_util.h"
 
 namespace cryptauth {
 
@@ -13,9 +14,8 @@ namespace {
 // Returns true if both vectors are BeaconSeeds are equal.
 bool AreBeaconSeedsEqual(const std::vector<BeaconSeed> beacon_seeds1,
                          const std::vector<BeaconSeed> beacon_seeds2) {
-  if (beacon_seeds1.size() != beacon_seeds2.size()) {
+  if (beacon_seeds1.size() != beacon_seeds2.size())
     return false;
-  }
 
   for (size_t i = 0; i < beacon_seeds1.size(); ++i) {
     const BeaconSeed& seed1 = beacon_seeds1[i];
@@ -37,20 +37,23 @@ RemoteDevice::RemoteDevice()
       supports_mobile_hotspot(false),
       last_update_time_millis(0L) {}
 
-RemoteDevice::RemoteDevice(const std::string& user_id,
-                           const std::string& name,
-                           const std::string& public_key,
-                           const std::string& persistent_symmetric_key,
-                           bool unlock_key,
-                           bool supports_mobile_hotspot,
-                           int64_t last_update_time_millis)
+RemoteDevice::RemoteDevice(
+    const std::string& user_id,
+    const std::string& name,
+    const std::string& public_key,
+    const std::string& persistent_symmetric_key,
+    bool unlock_key,
+    bool supports_mobile_hotspot,
+    int64_t last_update_time_millis,
+    const std::map<SoftwareFeature, SoftwareFeatureState>& software_features)
     : user_id(user_id),
       name(name),
       public_key(public_key),
       persistent_symmetric_key(persistent_symmetric_key),
       unlock_key(unlock_key),
       supports_mobile_hotspot(supports_mobile_hotspot),
-      last_update_time_millis(last_update_time_millis) {}
+      last_update_time_millis(last_update_time_millis),
+      software_features(software_features) {}
 
 RemoteDevice::RemoteDevice(const RemoteDevice& other) = default;
 
@@ -64,6 +67,14 @@ void RemoteDevice::LoadBeaconSeeds(
 
 std::string RemoteDevice::GetDeviceId() const {
   return RemoteDevice::GenerateDeviceId(public_key);
+}
+
+SoftwareFeatureState RemoteDevice::GetSoftwareFeatureState(
+    const SoftwareFeature& software_feature) const {
+  if (!base::ContainsKey(software_features, software_feature))
+    return SoftwareFeatureState::kNotSupported;
+
+  return software_features.at(software_feature);
 }
 
 std::string RemoteDevice::GetTruncatedDeviceIdForLogs() const {
@@ -87,7 +98,7 @@ bool RemoteDevice::operator==(const RemoteDevice& other) const {
          unlock_key == other.unlock_key &&
          supports_mobile_hotspot == other.supports_mobile_hotspot &&
          last_update_time_millis == other.last_update_time_millis &&
-         are_beacon_seeds_equal;
+         software_features == other.software_features && are_beacon_seeds_equal;
 }
 
 bool RemoteDevice::operator<(const RemoteDevice& other) const {

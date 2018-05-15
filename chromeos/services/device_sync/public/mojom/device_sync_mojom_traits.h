@@ -46,6 +46,9 @@ class StructTraits<chromeos::device_sync::mojom::RemoteDeviceDataView,
       const cryptauth::RemoteDevice& remote_device);
   static base::Time last_update_time(
       const cryptauth::RemoteDevice& remote_device);
+  static const std::map<cryptauth::SoftwareFeature,
+                        cryptauth::SoftwareFeatureState>&
+  software_features(const cryptauth::RemoteDevice& remote_device);
   static const std::vector<cryptauth::BeaconSeed>& beacon_seeds(
       const cryptauth::RemoteDevice& remote_device);
 
@@ -61,6 +64,17 @@ class EnumTraits<chromeos::device_sync::mojom::SoftwareFeature,
       cryptauth::SoftwareFeature input);
   static bool FromMojom(chromeos::device_sync::mojom::SoftwareFeature input,
                         cryptauth::SoftwareFeature* out);
+};
+
+template <>
+class EnumTraits<chromeos::device_sync::mojom::SoftwareFeatureState,
+                 cryptauth::SoftwareFeatureState> {
+ public:
+  static chromeos::device_sync::mojom::SoftwareFeatureState ToMojom(
+      cryptauth::SoftwareFeatureState input);
+  static bool FromMojom(
+      chromeos::device_sync::mojom::SoftwareFeatureState input,
+      cryptauth::SoftwareFeatureState* out);
 };
 
 }  // namespace mojo

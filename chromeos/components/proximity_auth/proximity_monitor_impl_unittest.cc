@@ -20,6 +20,7 @@
 #include "chromeos/components/proximity_auth/proximity_monitor_observer.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/software_feature_state.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -90,13 +91,17 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
                                  "",
                                  false /* paired */,
                                  true /* connected */),
-        remote_device_(kRemoteDeviceUserId,
-                       kRemoteDeviceName,
-                       kRemoteDevicePublicKey,
-                       kPersistentSymmetricKey,
-                       true /* unlock_key */,
-                       true /* mobile_hotspot_supported */,
-                       0 /* last_update_time_millis */),
+        remote_device_(
+            kRemoteDeviceUserId,
+            kRemoteDeviceName,
+            kRemoteDevicePublicKey,
+            kPersistentSymmetricKey,
+            true /* unlock_key */,
+            true /* mobile_hotspot_supported */,
+            0 /* last_update_time_millis */,
+            std::map<
+                cryptauth::SoftwareFeature,
+                cryptauth::SoftwareFeatureState>() /* software_features */),
         connection_(remote_device_),
         pref_manager_(new NiceMock<MockProximityAuthPrefManager>()),
         monitor_(&connection_, pref_manager_.get()),
@@ -357,7 +362,9 @@ TEST_F(ProximityAuthProximityMonitorImplTest,
   cryptauth::RemoteDevice unnamed_remote_device(
       kRemoteDeviceUserId, "" /* name */, kRemoteDevicePublicKey,
       kPersistentSymmetricKey, true /* unlock_key */,
-      true /* supports_mobile_hotspot */, 0 /* last_update_time_millis */);
+      true /* supports_mobile_hotspot */, 0 /* last_update_time_millis */,
+      std::map<cryptauth::SoftwareFeature,
+               cryptauth::SoftwareFeatureState>() /* software_features */);
   cryptauth::FakeConnection connection(unnamed_remote_device);
 
   ProximityMonitorImpl monitor(&connection, pref_manager_.get());
