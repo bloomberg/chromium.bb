@@ -8,6 +8,7 @@
 
 #include <cctype>
 #include <string>
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
@@ -31,7 +32,6 @@
 #include "chrome/browser/installable/installable_manager.h"
 #include "chrome/browser/installable/installable_params.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"

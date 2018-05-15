@@ -19,8 +19,8 @@
 #include "chrome/browser/chromeos/genius_app/app_id.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_model_builder.h"
@@ -388,9 +388,9 @@ void AppListSyncableService::BuildModel() {
   // TODO(calamity): make this a DCHECK after a dev channel release.
   CHECK(IsExtensionServiceReady());
   AppListControllerDelegate* controller = NULL;
-  AppListService* service = AppListService::Get();
-  if (service)
-    controller = service->GetControllerDelegate();
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  if (client)
+    controller = client->GetControllerDelegate();
   apps_builder_.reset(new ExtensionAppModelBuilder(controller));
   if (arc::IsArcAllowedForProfile(profile_))
     arc_apps_builder_.reset(new ArcAppModelBuilder(controller));

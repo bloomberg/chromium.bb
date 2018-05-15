@@ -10,10 +10,9 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
-#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_model_builder.h"
-#include "chrome/browser/ui/app_list/crostini/crostini_installer_view.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
@@ -30,9 +29,7 @@ class CrostiniInstallerViewBrowserTest : public DialogBrowserTest {
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    AppListServiceImpl* service = test::GetAppListServiceImpl();
-    AppListClientImpl* client = service->GetAppListClient();
-    client->ActivateItem(kCrostiniTerminalId, 0);
+    test::GetAppListClient()->ActivateItem(kCrostiniTerminalId, 0);
   }
 
   void SetUp() override {

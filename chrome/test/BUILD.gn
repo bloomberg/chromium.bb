@@ -1971,8 +1971,8 @@ test("browser_tests") {
     }
     if (enable_app_list) {
       sources += [
+        "../browser/ui/app_list/app_list_client_impl_browsertest.cc",
         "../browser/ui/app_list/app_list_controller_browsertest.cc",
-        "../browser/ui/app_list/app_list_service_impl_browsertest.cc",
         "../browser/ui/app_list/search/webstore/webstore_provider_browsertest.cc",
       ]
     }
@@ -5000,7 +5000,7 @@ if (!is_android) {
 
     if (enable_app_list) {
       sources +=
-          [ "../browser/ui/app_list/app_list_service_interactive_uitest.cc" ]
+          [ "../browser/ui/app_list/app_list_client_interactive_uitest.cc" ]
     }
 
     if (enable_extensions) {

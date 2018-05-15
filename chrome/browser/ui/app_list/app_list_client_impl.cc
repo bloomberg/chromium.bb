@@ -21,7 +21,6 @@
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/app_sync_ui_state_watcher.h"
@@ -36,6 +35,12 @@
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace {
+
+AppListClientImpl* g_app_list_client_instance = nullptr;
+
+}  // namespace
+
 AppListClientImpl::AppListClientImpl()
     : template_url_service_observer_(this),
       binding_(this),
@@ -47,21 +52,28 @@ AppListClientImpl::AppListClientImpl()
   ash::mojom::AppListClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   app_list_controller_->SetClient(std::move(client));
-
-  AppListServiceImpl::GetInstance()->SetAppListControllerAndClient(
-      app_list_controller_.get(), this);
-
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
+
+  DCHECK(!g_app_list_client_instance);
+  g_app_list_client_instance = this;
 }
 
 AppListClientImpl::~AppListClientImpl() {
   user_manager::UserManager::Get()->RemoveSessionStateObserver(this);
+
+  DCHECK_EQ(this, g_app_list_client_instance);
+  g_app_list_client_instance = nullptr;
+}
+
+// static
+AppListClientImpl* AppListClientImpl::GetInstance() {
+  return g_app_list_client_instance;
 }
 
 void AppListClientImpl::StartSearch(const base::string16& raw_query) {
   if (search_controller_) {
     search_controller_->Start(raw_query);
-    controller_delegate_->OnSearchStarted();
+    controller_delegate_.OnSearchStarted();
   }
 }
 
@@ -118,7 +130,7 @@ void AppListClientImpl::SearchResultContextMenuItemSelected(
 }
 
 void AppListClientImpl::ViewClosing() {
-  controller_delegate_->SetAppListDisplayId(display::kInvalidDisplayId);
+  controller_delegate_.SetAppListDisplayId(display::kInvalidDisplayId);
 }
 
 void AppListClientImpl::ViewShown(int64_t display_id) {
@@ -127,7 +139,7 @@ void AppListClientImpl::ViewShown(int64_t display_id) {
     base::UmaHistogramSparse("Apps.AppListBadgedAppsCount",
                              model_updater_->BadgedItemCount());
   }
-  controller_delegate_->SetAppListDisplayId(display_id);
+  controller_delegate_.SetAppListDisplayId(display_id);
 }
 
 void AppListClientImpl::ActivateItem(const std::string& id, int event_flags) {
@@ -163,11 +175,11 @@ void AppListClientImpl::ContextMenuItemSelected(const std::string& id,
 }
 
 void AppListClientImpl::OnAppListTargetVisibilityChanged(bool visible) {
-  AppListServiceImpl::GetInstance()->set_app_list_target_visible(visible);
+  app_list_target_visibility_ = visible;
 }
 
 void AppListClientImpl::OnAppListVisibilityChanged(bool visible) {
-  AppListServiceImpl::GetInstance()->set_app_list_visible(visible);
+  app_list_visible_ = visible;
 }
 
 void AppListClientImpl::StartVoiceInteractionSession() {
@@ -275,7 +287,7 @@ void AppListClientImpl::SetUpSearchUI() {
       new app_list::SearchResourceManager(profile_, model_updater_));
 
   search_controller_ = app_list::CreateSearchController(
-      profile_, model_updater_, controller_delegate_);
+      profile_, model_updater_, &controller_delegate_);
 }
 
 app_list::SearchController* AppListClientImpl::GetSearchControllerForTest() {
@@ -295,6 +307,38 @@ void AppListClientImpl::OnTemplateURLServiceChanged() {
           template_url_service->search_terms_data()) == SEARCH_ENGINE_GOOGLE;
 
   model_updater_->SetSearchEngineIsGoogle(is_google);
+}
+
+void AppListClientImpl::ShowAndSwitchToState(ash::AppListState state) {
+  if (!app_list_controller_)
+    return;
+  app_list_controller_->ShowAppListAndSwitchToState(state);
+}
+
+void AppListClientImpl::ShowAppList() {
+  // This may not work correctly if the profile passed in is different from the
+  // one the ash Shell is currently using.
+  if (!app_list_controller_)
+    return;
+  app_list_controller_->ShowAppList();
+}
+
+void AppListClientImpl::DismissAppList() {
+  if (!app_list_controller_)
+    return;
+  app_list_controller_->DismissAppList();
+}
+
+Profile* AppListClientImpl::GetCurrentAppListProfile() const {
+  return ChromeLauncherController::instance()->profile();
+}
+
+AppListControllerDelegate* AppListClientImpl::GetControllerDelegate() {
+  return &controller_delegate_;
+}
+
+ash::mojom::AppListController* AppListClientImpl::GetAppListController() const {
+  return app_list_controller_.get();
 }
 
 void AppListClientImpl::FlushMojoForTesting() {

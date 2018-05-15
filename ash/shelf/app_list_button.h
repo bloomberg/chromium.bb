@@ -86,7 +86,7 @@ class ASH_EXPORT AppListButton : public views::ImageButton,
   void InitializeVoiceInteractionOverlay();
 
   // True if the app list is currently showing for this display.
-  // This is useful because other IsApplistVisible functions aren't per-display.
+  // This is useful because other app_list_visible functions aren't per-display.
   bool is_showing_app_list_ = false;
 
   InkDropButtonListener* listener_;

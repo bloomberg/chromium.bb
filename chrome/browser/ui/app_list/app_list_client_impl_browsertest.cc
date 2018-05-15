@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/app_list_service_impl.h"
+#include "chrome/browser/ui/app_list/app_list_client_impl.h"
 
 #include <memory>
 
@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/chrome_app_list_item.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,18 +22,18 @@
 #include "extensions/common/constants.h"
 #include "ui/base/models/menu_model.h"
 
-// Browser Test for AppListServiceImpl.
-using AppListServiceImplBrowserTest = InProcessBrowserTest;
+// Browser Test for AppListClientImpl.
+using AppListClientImplBrowserTest = InProcessBrowserTest;
 
 // Test that all the items in the context menu for a hosted app have valid
 // labels.
-IN_PROC_BROWSER_TEST_F(AppListServiceImplBrowserTest, ShowContextMenu) {
-  AppListService* service = AppListService::Get();
-  EXPECT_TRUE(service);
+IN_PROC_BROWSER_TEST_F(AppListClientImplBrowserTest, ShowContextMenu) {
+  AppListClientImpl* client = AppListClientImpl::GetInstance();
+  EXPECT_TRUE(client);
 
   // Show the app list to ensure it has loaded a profile.
-  service->Show();
-  AppListModelUpdater* model_updater = test::GetModelUpdater(service);
+  client->ShowAppList();
+  AppListModelUpdater* model_updater = test::GetModelUpdater(client);
   EXPECT_TRUE(model_updater);
 
   // Get the webstore hosted app, which is always present.
