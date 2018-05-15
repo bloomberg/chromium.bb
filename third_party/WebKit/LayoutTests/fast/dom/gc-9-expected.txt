@@ -87,7 +87,7 @@ FAIL: document.body.style.myCustomProperty should be 1 but instead is undefined.
 PASS: document.styleSheets.myCustomProperty should be 1 and is.
 PASS: document.styleSheets[0].myCustomProperty should be 1 and is.
 PASS: document.styleSheets[0].cssRules.myCustomProperty should be 1 and is.
-FAIL: document.styleSheets[0].cssRules[0].myCustomProperty should be 1 but instead is undefined.
+PASS: document.styleSheets[0].cssRules[0].myCustomProperty should be 1 and is.
 PASS: document.getElementsByTagName('style')[0].sheet.myCustomProperty should be 1 and is.
 PASS: document.getElementsByTagName('svg')[0].firstChild.sheet.myCustomProperty should be 1 and is.
 PASS: new XPathEvaluator().myCustomProperty should be undefined and is.

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/style_sheet.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_member.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding.h"
@@ -182,6 +183,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool CanBeActivated(const String& current_preferrable_name) const;
 
   void Trace(blink::Visitor*) override;
+  void TraceWrappers(blink::ScriptWrappableVisitor*) const override;
 
  private:
   CSSStyleSheet(StyleSheetContents*, CSSImportRule* owner_rule);
@@ -228,8 +230,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
 
   TextPosition start_position_;
   Member<MediaList> media_cssom_wrapper_;
-  mutable HeapVector<Member<CSSRule>> child_rule_cssom_wrappers_;
-  mutable Member<CSSRuleList> rule_list_cssom_wrapper_;
+  mutable HeapVector<TraceWrapperMember<CSSRule>> child_rule_cssom_wrappers_;
+  mutable TraceWrapperMember<CSSRuleList> rule_list_cssom_wrapper_;
   DISALLOW_COPY_AND_ASSIGN(CSSStyleSheet);
 };
 

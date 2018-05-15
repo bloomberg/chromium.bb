@@ -60,6 +60,11 @@ class StyleSheetCSSRuleList final : public CSSRuleList {
     CSSRuleList::Trace(visitor);
   }
 
+  void TraceWrappers(ScriptWrappableVisitor* visitor) const override {
+    visitor->TraceWrappers(style_sheet_);
+    CSSRuleList::TraceWrappers(visitor);
+  }
+
  private:
   StyleSheetCSSRuleList(CSSStyleSheet* sheet) : style_sheet_(sheet) {}
 
@@ -70,7 +75,7 @@ class StyleSheetCSSRuleList final : public CSSRuleList {
 
   CSSStyleSheet* GetStyleSheet() const override { return style_sheet_; }
 
-  Member<CSSStyleSheet> style_sheet_;
+  TraceWrapperMember<CSSStyleSheet> style_sheet_;
 };
 
 #if DCHECK_IS_ON()
@@ -575,6 +580,15 @@ void CSSStyleSheet::Trace(blink::Visitor* visitor) {
   visitor->Trace(child_rule_cssom_wrappers_);
   visitor->Trace(rule_list_cssom_wrapper_);
   StyleSheet::Trace(visitor);
+}
+
+void CSSStyleSheet::TraceWrappers(
+    blink::ScriptWrappableVisitor* visitor) const {
+  for (auto& rule : child_rule_cssom_wrappers_) {
+    visitor->TraceWrappers(rule);
+  }
+  visitor->TraceWrappers(rule_list_cssom_wrapper_);
+  StyleSheet::TraceWrappers(visitor);
 }
 
 }  // namespace blink
