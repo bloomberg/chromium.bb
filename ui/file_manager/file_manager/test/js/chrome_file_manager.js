@@ -118,8 +118,15 @@ chrome.fileManagerPrivate = {
   grantAccess: (entryUrls, callback) => {
     setTimeout(callback, 0);
   },
+  isCrostiniEnabled: (callback) => {
+    setTimeout(callback, 0, true);
+  },
   isUMAEnabled: (callback) => {
     setTimeout(callback, 0, false);
+  },
+  mountCrostiniContainer: (callback) => {
+    // Simulate startup of vm and container by taking 3s.
+    setTimeout(callback, 3000);
   },
   onAppsUpdated: {
     addListener: () => {},
