@@ -28,7 +28,7 @@ namespace {
 void OnReceivedHttpErrorOnUiThread(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const AwWebResourceRequest& request,
-    scoped_refptr<const net::HttpResponseHeaders> original_response_headers) {
+    std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> http_error_info) {
   AwContentsClientBridge* client =
       AwContentsClientBridge::FromWebContentsGetter(web_contents_getter);
   if (!client) {
@@ -36,7 +36,7 @@ void OnReceivedHttpErrorOnUiThread(
                   << request.url;
     return;
   }
-  client->OnReceivedHttpError(request, original_response_headers);
+  client->OnReceivedHttpError(request, std::move(http_error_info));
 }
 
 }  // namespace
@@ -74,14 +74,16 @@ int AwNetworkDelegate::OnHeadersReceived(
     // A request info may not exist for requests not originating from content.
     if (request_info == nullptr)
         return net::OK;
-    // keep a ref before binding and posting to UI thread.
-    scoped_refptr<const net::HttpResponseHeaders> response_headers(
-        original_response_headers);
+
+    // extract out the info we need before posting to UI thread.
+    std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> error_info =
+        AwContentsClientBridge::ExtractHttpErrorInfo(original_response_headers);
+
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&OnReceivedHttpErrorOnUiThread,
                        request_info->GetWebContentsGetterForRequest(),
-                       AwWebResourceRequest(*request), response_headers));
+                       AwWebResourceRequest(*request), std::move(error_info)));
   }
   return net::OK;
 }

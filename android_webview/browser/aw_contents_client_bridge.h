@@ -43,6 +43,20 @@ namespace android_webview {
 // any references.
 class AwContentsClientBridge {
  public:
+  // Used to package up information needed by OnReceivedHttpError for transfer
+  // between IO and UI threads.
+  struct HttpErrorInfo {
+    HttpErrorInfo();
+    ~HttpErrorInfo();
+
+    int status_code;
+    std::string status_text;
+    std::string mime_type;
+    std::string encoding;
+    std::vector<std::string> response_header_names;
+    std::vector<std::string> response_header_values;
+  };
+
   using CertErrorCallback =
       base::OnceCallback<void(content::CertificateRequestResultType)>;
   using SafeBrowsingActionCallback =
@@ -110,9 +124,12 @@ class AwContentsClientBridge {
                          SafeBrowsingActionCallback callback);
 
   // Called when a response from the server is received with status code >= 400.
-  void OnReceivedHttpError(
-      const AwWebResourceRequest& request,
-      const scoped_refptr<const net::HttpResponseHeaders>& response_headers);
+  void OnReceivedHttpError(const AwWebResourceRequest& request,
+                           std::unique_ptr<HttpErrorInfo> error_info);
+
+  // This should be called from IO thread.
+  static std::unique_ptr<HttpErrorInfo> ExtractHttpErrorInfo(
+      const net::HttpResponseHeaders* response_headers);
 
   // Methods called from Java.
   void ProceedSslError(JNIEnv* env,
