@@ -534,6 +534,8 @@ def _GeneratePerFileLineByLineCoverageInHtml(binary_paths, profdata_file_path,
   subprocess_cmd.extend(
       ['-object=' + binary_path for binary_path in binary_paths[1:]])
   _AddArchArgumentForIOSIfNeeded(subprocess_cmd, len(binary_paths))
+  if _GetHostPlatform() in ['linux', 'mac']:
+    subprocess_cmd.extend(['-Xdemangler', 'c++filt', '-Xdemangler', '-n'])
   subprocess_cmd.extend(filters)
   if ignore_filename_regex:
     subprocess_cmd.append('-ignore-filename-regex=%s' % ignore_filename_regex)
