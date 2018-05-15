@@ -386,16 +386,6 @@ NaClAppProcessType PP_ToNaClAppProcessType(
   return static_cast<NaClAppProcessType>(pp_process_type);
 }
 
-// A dummy IPC::Listener object with a no-op message handler.  We use
-// this with an IPC::SyncChannel where we only send synchronous
-// messages and don't need to handle any messages other than sync
-// replies.
-class NoOpListener : public IPC::Listener {
- public:
-  bool OnMessageReceived(const IPC::Message& message) override { return false; }
-  void OnChannelError() override {}
-};
-
 }  // namespace
 
 // Launch NaCl's sel_ldr process.
@@ -525,7 +515,8 @@ void PPBNaClPrivate::LaunchSelLdr(
       // translator process.
       *translator_channel = IPC::SyncChannel::Create(
           instance_info.channel_handle, IPC::Channel::MODE_CLIENT,
-          new NoOpListener, content::RenderThread::Get()->GetIOTaskRunner(),
+          /* listener = */ nullptr,
+          content::RenderThread::Get()->GetIOTaskRunner(),
           base::ThreadTaskRunnerHandle::Get(), true,
           content::RenderThread::Get()->GetShutdownEvent());
     } else {
