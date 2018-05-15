@@ -8,8 +8,10 @@
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_border_edges.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
@@ -332,6 +334,38 @@ void NGPhysicalFragment::PropagateContentsVisualRect(
   NGPhysicalOffsetRect visual_rect = VisualRectWithContents();
   visual_rect.offset += Offset();
   parent_visual_rect->Unite(visual_rect);
+}
+
+const Vector<NGInlineItem>& NGPhysicalFragment::InlineItemsOfContainingBlock()
+    const {
+  DCHECK(IsInline());
+  DCHECK(GetLayoutObject());
+  LayoutBlockFlow* block_flow =
+      GetLayoutObject()->Parent()->EnclosingNGBlockFlow();
+  // TODO(xiaochengh): Code below is copied from ng_offset_mapping.cc with
+  // modification. Unify them.
+  DCHECK(block_flow);
+  DCHECK(block_flow->ChildrenInline());
+  NGBlockNode block_node = NGBlockNode(block_flow);
+  DCHECK(block_node.CanUseNewLayout());
+  NGLayoutInputNode node = block_node.FirstChild();
+  DCHECK(node);
+  DCHECK(node.IsInline());
+
+  // TODO(xiaochengh): Handle ::first-line.
+  return ToNGInlineNode(node).ItemsData(false).items;
+}
+
+UBiDiLevel NGPhysicalFragment::BidiLevel() const {
+  NOTREACHED();
+  return 0;
+}
+
+TextDirection NGPhysicalFragment::ResolvedDirection() const {
+  DCHECK(IsInline());
+  DCHECK(IsText() || IsAtomicInline());
+  // TODO(xiaochengh): Store direction in |base_direction_| flag.
+  return DirectionFromLevel(BidiLevel());
 }
 
 scoped_refptr<NGPhysicalFragment> NGPhysicalFragment::CloneWithoutOffset()

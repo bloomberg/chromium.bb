@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 
@@ -183,6 +184,21 @@ PositionWithAffinity NGPhysicalBoxFragment::PositionForPoint(
     return PositionForPointInInlineLevelBox(point);
 
   return PositionForPointInInlineFormattingContext(point);
+}
+
+UBiDiLevel NGPhysicalBoxFragment::BidiLevel() const {
+  // TODO(xiaochengh): Make the implementation more efficient.
+  DCHECK(IsInline());
+  DCHECK(IsAtomicInline());
+  const auto& inline_items = InlineItemsOfContainingBlock();
+  const NGInlineItem* self_item =
+      std::find_if(inline_items.begin(), inline_items.end(),
+                   [this](const NGInlineItem& item) {
+                     return GetLayoutObject() == item.GetLayoutObject();
+                   });
+  DCHECK(self_item);
+  DCHECK_NE(self_item, inline_items.end());
+  return self_item->BidiLevel();
 }
 
 scoped_refptr<NGPhysicalFragment> NGPhysicalBoxFragment::CloneWithoutOffset()
