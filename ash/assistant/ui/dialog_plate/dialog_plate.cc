@@ -21,7 +21,6 @@ namespace {
 // Appearance.
 constexpr SkColor kBorderColor = SkColorSetA(SK_ColorBLACK, 0x1F);
 constexpr int kBorderSizeDip = 1;
-constexpr int kIconSizeDip = 24;
 constexpr int kPaddingHorizontalDip = 14;
 constexpr int kPaddingVerticalDip = 8;
 constexpr int kPreferredHeightDip = 48;
@@ -31,39 +30,8 @@ constexpr int kSpacingDip = 8;
 constexpr SkColor kTextColorHint = SkColorSetA(SK_ColorBLACK, 0x42);
 constexpr SkColor kTextColorPrimary = SkColorSetA(SK_ColorBLACK, 0xDE);
 
-// TODO(dmblack): Remove after implementing stateful icon.
-// Background colors to represent icon states.
-constexpr SkColor kKeyboardColor = SkColorSetRGB(0x4C, 0x8B, 0xF5);    // Blue
-constexpr SkColor kMicOpenColor = SkColorSetRGB(0xDD, 0x51, 0x44);     // Red
-constexpr SkColor kMicClosedColor = SkColorSetA(SK_ColorBLACK, 0x1F);  // Grey
-
 // TODO(b/77638210): Replace with localized resource strings.
 constexpr char kHint[] = "Type a message";
-
-// TODO(dmblack): Remove after removing placeholders.
-// RoundRectBackground ---------------------------------------------------------
-
-class RoundRectBackground : public views::Background {
- public:
-  RoundRectBackground(SkColor color, int corner_radius)
-      : color_(color), corner_radius_(corner_radius) {}
-
-  ~RoundRectBackground() override = default;
-
-  // views::Background:
-  void Paint(gfx::Canvas* canvas, views::View* view) const override {
-    cc::PaintFlags flags;
-    flags.setAntiAlias(true);
-    flags.setColor(color_);
-    canvas->DrawRoundRect(view->GetContentsBounds(), corner_radius_, flags);
-  }
-
- private:
-  const SkColor color_;
-  const int corner_radius_;
-
-  DISALLOW_COPY_AND_ASSIGN(RoundRectBackground);
-};
 
 }  // namespace
 
@@ -72,17 +40,11 @@ class RoundRectBackground : public views::Background {
 DialogPlate::DialogPlate(AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
       textfield_(new views::Textfield()),
-      icon_(new views::View()) {
+      action_view_(new ActionView(assistant_controller, this)) {
   InitLayout();
-
-  // The Assistant controller indirectly owns the view hierarchy to which
-  // DialogPlate belongs, so is guaranteed to outlive it.
-  assistant_controller_->AddInteractionModelObserver(this);
 }
 
-DialogPlate::~DialogPlate() {
-  assistant_controller_->RemoveInteractionModelObserver(this);
-}
+DialogPlate::~DialogPlate() = default;
 
 gfx::Size DialogPlate::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, kPreferredHeightDip);
@@ -118,28 +80,18 @@ void DialogPlate::InitLayout() {
 
   layout->SetFlexForView(textfield_, 1);
 
-  // TODO(dmblack): Replace w/ stateful icon.
-  // Icon.
-  icon_->SetPreferredSize(gfx::Size(kIconSizeDip, kIconSizeDip));
-  AddChildView(icon_);
-
-  // TODO(dmblack): Remove once the icon has been replaced. Only needed to
-  // force the background for the initial state.
-  UpdateIcon();
+  // Action.
+  AddChildView(action_view_);
 }
 
-void DialogPlate::OnInputModalityChanged(InputModality input_modality) {
-  // TODO(dmblack): When the stylus is selected we will hide the dialog plate
-  // and so should suspend any ongoing animations once the stateful icon is
-  // implemented.
-  if (input_modality == InputModality::kStylus)
-    return;
+void DialogPlate::OnActionPressed() {
+  const base::StringPiece16& trimmed_text =
+      base::TrimWhitespace(textfield_->text(), base::TrimPositions::TRIM_ALL);
 
-  UpdateIcon();
-}
+  assistant_controller_->OnDialogPlateActionPressed(
+      base::UTF16ToUTF8(trimmed_text));
 
-void DialogPlate::OnMicStateChanged(MicState mic_state) {
-  UpdateIcon();
+  textfield_->SetText(base::string16());
 }
 
 void DialogPlate::ContentsChanged(views::Textfield* textfield,
@@ -156,46 +108,24 @@ bool DialogPlate::HandleKeyEvent(views::Textfield* textfield,
   if (key_event.type() != ui::EventType::ET_KEY_PRESSED)
     return false;
 
-  const base::StringPiece16& text =
-      base::TrimWhitespace(textfield->text(), base::TrimPositions::TRIM_ALL);
+  const base::string16& text = textfield_->text();
 
+  // We filter out committing an empty string here but do allow committing a
+  // whitespace only string. If the user commits a whitespace only string, we
+  // want to be able to show a helpful message. This is taken care of in
+  // AssistantController's handling of the commit event.
   if (text.empty())
     return false;
 
-  assistant_controller_->OnDialogPlateContentsCommitted(
-      base::UTF16ToUTF8(text));
+  const base::StringPiece16& trimmed_text =
+      base::TrimWhitespace(text, base::TrimPositions::TRIM_ALL);
 
-  textfield->SetText(base::string16());
+  assistant_controller_->OnDialogPlateContentsCommitted(
+      base::UTF16ToUTF8(trimmed_text));
+
+  textfield_->SetText(base::string16());
 
   return true;
-}
-
-// TODO(dmblack): Revise this method to update the state of the stateful icon
-// once it has been implemented. For the time being, we represent state by
-// modifying the background color of the placeholder icon.
-void DialogPlate::UpdateIcon() {
-  const AssistantInteractionModel* interaction_model =
-      assistant_controller_->interaction_model();
-
-  if (interaction_model->input_modality() == InputModality::kKeyboard) {
-    icon_->SetBackground(std::make_unique<RoundRectBackground>(
-        kKeyboardColor, kIconSizeDip / 2));
-    SchedulePaint();
-    return;
-  }
-
-  switch (interaction_model->mic_state()) {
-    case MicState::kClosed:
-      icon_->SetBackground(std::make_unique<RoundRectBackground>(
-          kMicClosedColor, kIconSizeDip / 2));
-      break;
-    case MicState::kOpen:
-      icon_->SetBackground(std::make_unique<RoundRectBackground>(
-          kMicOpenColor, kIconSizeDip / 2));
-      break;
-  }
-
-  SchedulePaint();
 }
 
 void DialogPlate::RequestFocus() {

@@ -76,6 +76,9 @@ class AssistantController
   void StopInteraction();
   void ToggleInteraction();
 
+  // Invoked on dialog plate action pressed event.
+  void OnDialogPlateActionPressed(const std::string& text);
+
   // Invoked on dialog plate contents changed event.
   void OnDialogPlateContentsChanged(const std::string& text);
 
