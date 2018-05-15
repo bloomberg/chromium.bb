@@ -2992,16 +2992,29 @@ static int drmParseSubsystemType(int maj, int min)
 #endif
 }
 
+static char *
+get_real_pci_path(int maj, int min, char *real_path)
+{
+    char path[PATH_MAX + 1];
+
+    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+    if (!realpath(path, real_path))
+        return NULL;
+
+    return real_path;
+}
+
 static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
 {
 #ifdef __linux__
     unsigned int domain, bus, dev, func;
-    char path[PATH_MAX + 1], *value;
+    char real_path[PATH_MAX + 1], *value;
     int num;
 
-    snprintf(path, sizeof(path), "/sys/dev/char/%d:%d/device", maj, min);
+    if (get_real_pci_path(maj, min, real_path) == NULL)
+        return -ENOENT;
 
-    value = sysfs_uevent_get(path, "PCI_SLOT_NAME");
+    value = sysfs_uevent_get(real_path, "PCI_SLOT_NAME");
     if (!value)
         return -ENOENT;
 
@@ -3114,14 +3127,16 @@ static int parse_separate_sysfs_files(int maj, int min,
       "subsystem_vendor",
       "subsystem_device",
     };
-    char path[PATH_MAX + 1];
+    char path[PATH_MAX + 1], real_path[PATH_MAX + 1];
     unsigned int data[ARRAY_SIZE(attrs)];
     FILE *fp;
     int ret;
 
+    if (get_real_pci_path(maj, min, real_path) == NULL)
+        return -ENOENT;
+
     for (unsigned i = ignore_revision ? 1 : 0; i < ARRAY_SIZE(attrs); i++) {
-        snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/%s", maj, min,
-                 attrs[i]);
+        snprintf(path, PATH_MAX, "%s/%s", real_path, attrs[i]);
         fp = fopen(path, "r");
         if (!fp)
             return -errno;
@@ -3145,11 +3160,14 @@ static int parse_separate_sysfs_files(int maj, int min,
 static int parse_config_sysfs_file(int maj, int min,
                                    drmPciDeviceInfoPtr device)
 {
-    char path[PATH_MAX + 1];
+    char path[PATH_MAX + 1], real_path[PATH_MAX + 1];
     unsigned char config[64];
     int fd, ret;
 
-    snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/config", maj, min);
+    if (get_real_pci_path(maj, min, real_path) == NULL)
+        return -ENOENT;
+
+    snprintf(path, PATH_MAX, "%s/config", real_path);
     fd = open(path, O_RDONLY);
     if (fd < 0)
         return -errno;
