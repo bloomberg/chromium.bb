@@ -259,7 +259,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   void MapAncestorToLocal(const LayoutBoxModelObject*,
                           TransformState&,
                           MapCoordinatesFlags) const override;
-  bool ShouldClipOverflow() const final;
   void ComputeSelfHitTestRects(Vector<LayoutRect>&,
                                const LayoutPoint& layer_offset) const override;
 
