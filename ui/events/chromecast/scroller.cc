@@ -31,8 +31,7 @@ const float kEpsilon = 1e-5f;
 const float kThresholdForFlingEnd = 0.1f;
 
 // Scale factor applied to incoming fling velocity.
-const float kFlingVelocityAttenuationFactor = 0.5f;
-
+const float kFlingVelocityAttenuationFactor = 1.0f;
 
 bool ApproxEquals(float a, float b) {
   return std::abs(a - b) < kEpsilon;
