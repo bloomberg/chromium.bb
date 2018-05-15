@@ -113,6 +113,34 @@ aom_codec_err_t aom_read_obu_header(uint8_t *buffer, size_t buffer_length,
   return parse_result;
 }
 
+int aom_get_num_layers_from_operating_point_idc(
+    int operating_point_idc, unsigned int *number_spatial_layers,
+    unsigned int *number_temporal_layers) {
+  // derive number of spatial/temporal layers from operating_point_idc
+
+  if (!number_spatial_layers || !number_temporal_layers) return -1;
+  if (operating_point_idc == 0) {
+    *number_temporal_layers = 1;
+    *number_spatial_layers = 1;
+  } else {
+    *number_spatial_layers = 0;
+    *number_temporal_layers = 0;
+    for (int j = 0; j < MAX_NUM_SPATIAL_LAYERS; j++) {
+      *number_spatial_layers +=
+          (operating_point_idc >> (j + MAX_NUM_TEMPORAL_LAYERS)) & 0x1;
+    }
+    for (int j = 0; j < MAX_NUM_TEMPORAL_LAYERS; j++) {
+      *number_temporal_layers += (operating_point_idc >> j) & 0x1;
+    }
+  }
+
+  if (*number_spatial_layers > MAX_NUM_SPATIAL_LAYERS ||
+      *number_temporal_layers > MAX_NUM_TEMPORAL_LAYERS)
+    return -1;
+
+  return 0;
+}
+
 static int is_obu_in_current_operating_point(AV1Decoder *pbi,
                                              ObuHeader obu_header) {
   if (!pbi->current_operating_point) {
@@ -193,6 +221,9 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
     operating_point = 0;
   pbi->current_operating_point =
       seq_params->operating_point_idc[operating_point];
+  aom_get_num_layers_from_operating_point_idc(pbi->current_operating_point,
+                                              &cm->number_spatial_layers,
+                                              &cm->number_temporal_layers);
 
   read_sequence_header(cm, rb);
 

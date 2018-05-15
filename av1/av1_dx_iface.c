@@ -180,18 +180,9 @@ static void parse_operating_points(struct aom_read_bit_buffer *rb,
 #endif  // !CONFIG_BUFFER_MODEL
     }
 
-    // derive number of spatial/temporal layers from operating_point_idc0
-    if (operating_point_idc0 == 0) {
-      si->number_temporal_layers = 1;
-      si->number_spatial_layers = 1;
-    } else {
-      si->number_spatial_layers = 0;
-      si->number_temporal_layers = 0;
-      for (int j = 0; j < 8; j++) {
-        si->number_spatial_layers += (operating_point_idc0 >> (j + 8)) & 0x1;
-        si->number_temporal_layers += (operating_point_idc0 >> j) & 0x1;
-      }
-    }
+    aom_get_num_layers_from_operating_point_idc(operating_point_idc0,
+                                                &si->number_spatial_layers,
+                                                &si->number_temporal_layers);
   }
 }
 
@@ -669,6 +660,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           img = &ctx->img;
           img->temporal_id = cm->temporal_layer_id;
           img->spatial_id = cm->spatial_layer_id;
+          img->max_spatial_id = cm->number_spatial_layers - 1;
           return add_grain_if_needed(
               img, ctx->image_with_grain,
               &frame_worker_data->pbi->common.film_grain_params);

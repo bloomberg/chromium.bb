@@ -543,7 +543,8 @@ typedef struct AV1Common {
   int frame_refs_short_signaling;
   int temporal_layer_id;
   int spatial_layer_id;
-  int number_spatial_layers;
+  unsigned int number_temporal_layers;
+  unsigned int number_spatial_layers;
   int num_allocated_above_context_mi_col;
   int num_allocated_above_contexts;
   int num_allocated_above_context_planes;

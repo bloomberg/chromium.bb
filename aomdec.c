@@ -115,6 +115,8 @@ static const arg_def_t isannexb =
     ARG_DEF(NULL, "annexb", 0, "Bitstream is in Annex-B format");
 static const arg_def_t oppointarg = ARG_DEF(
     NULL, "oppoint", 1, "Select an operating point of a scalable bitstream");
+static const arg_def_t outallarg = ARG_DEF(
+    NULL, "all-layers", 0, "Output all decoded frames of a scalable bitstream");
 
 static const arg_def_t *all_args[] = {
   &help,           &codecarg,   &use_yv12,    &use_i420,      &flipuvarg,
@@ -122,7 +124,7 @@ static const arg_def_t *all_args[] = {
   &postprocarg,    &summaryarg, &outputfile,  &threadsarg,    &verbosearg,
   &scalearg,       &fb_arg,     &md5arg,      &framestatsarg, &continuearg,
   &outbitdeptharg, &tilem,      &tiler,       &tilec,         &isannexb,
-  &oppointarg,     NULL
+  &oppointarg,     &outallarg,  NULL
 };
 
 #if CONFIG_LIBYUV
@@ -514,6 +516,7 @@ static int main_loop(int argc, const char **argv_) {
   int dec_flags = 0;
   int do_scale = 0;
   int operating_point = 0;
+  int output_all_layers = 0;
   aom_image_t *scaled_img = NULL;
   aom_image_t *img_shifted = NULL;
   int frame_avail, got_data, flush_decoder = 0;
@@ -539,6 +542,7 @@ static int main_loop(int argc, const char **argv_) {
 #endif
   struct ObuDecInputContext obu_ctx = { NULL, NULL, 0,
                                         0,    0,    IGNORE_ENHANCEMENT_LAYERS };
+
   obu_ctx.avx_ctx = &aom_input_ctx;
   input.obu_ctx = &obu_ctx;
   input.aom_input_ctx = &aom_input_ctx;
@@ -624,6 +628,9 @@ static int main_loop(int argc, const char **argv_) {
       tile_col = arg_parse_int(&arg);
     } else if (arg_match(&arg, &oppointarg, argi)) {
       operating_point = arg_parse_int(&arg);
+    } else if (arg_match(&arg, &outallarg, argi)) {
+      output_all_layers = 1;
+      input.obu_ctx->last_layer_id = 0;
     } else {
       argj++;
     }
@@ -838,6 +845,12 @@ static int main_loop(int argc, const char **argv_) {
     if ((img = aom_codec_get_frame(&decoder, &iter))) {
       ++frame_out;
       got_data = 1;
+      if (output_all_layers) {
+        if (obu_ctx.last_layer_id++ == img->max_spatial_id) {
+          // We've decoded the last layer.  Reset
+          obu_ctx.last_layer_id = 0;
+        }
+      }
     }
 
     aom_usec_timer_mark(&timer);
