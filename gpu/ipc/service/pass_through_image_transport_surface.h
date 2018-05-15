@@ -83,6 +83,7 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   bool snapshot_requested_ = false;
   int swap_generation_ = 0;
   bool vsync_enabled_ = true;
+  bool allow_running_presentation_callback_ = true;
 
   base::WeakPtrFactory<PassThroughImageTransportSurface> weak_ptr_factory_;
 

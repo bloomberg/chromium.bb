@@ -8,6 +8,7 @@
 
 #include "base/files/file_util.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace ui {
@@ -39,8 +40,11 @@ gfx::SwapResult GLSurfaceOSMesaPng::SwapBuffers(
   if (!output_path_.empty())
     WriteBufferToPng();
 
-  callback.Run(gfx::PresentationFeedback(base::TimeTicks::Now(),
-                                         base::TimeDelta(), 0 /* flags */));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(callback, gfx::PresentationFeedback(base::TimeTicks::Now(),
+                                                         base::TimeDelta(),
+                                                         0 /* flags */)));
   return gfx::SwapResult::SWAP_ACK;
 }
 

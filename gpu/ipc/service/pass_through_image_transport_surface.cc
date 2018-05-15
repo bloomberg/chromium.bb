@@ -231,6 +231,7 @@ void PassThroughImageTransportSurface::StartSwapBuffers(
   // crbug.com/223558.
   SendVSyncUpdateIfAvailable();
   UpdateVSyncEnabled();
+  allow_running_presentation_callback_ = false;
 
   // Populated later in the DecoderClient, before passing to client.
   response->swap_id = 0;
@@ -250,6 +251,7 @@ void PassThroughImageTransportSurface::FinishSwapBuffers(
     params.swap_response = std::move(response);
     delegate_->DidSwapBuffersComplete(std::move(params));
   }
+  allow_running_presentation_callback_ = true;
 }
 
 void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
@@ -265,6 +267,7 @@ void PassThroughImageTransportSurface::FinishSwapBuffersAsync(
 void PassThroughImageTransportSurface::BufferPresented(
     const GLSurface::PresentationCallback& callback,
     const gfx::PresentationFeedback& feedback) {
+  DCHECK(allow_running_presentation_callback_);
   if (!is_presentation_callback_enabled_)
     return;
   callback.Run(feedback);
