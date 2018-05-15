@@ -44,19 +44,6 @@ void Fail(const gfx::Image& favicon) {
   FAIL() << "This asynchronous callback should never have been called.";
 }
 
-class TestFaviconCache : public FaviconCache {
- public:
-  explicit TestFaviconCache(favicon::FaviconService* favicon_service)
-      : FaviconCache(favicon_service, nullptr /* history_service */) {}
-  ~TestFaviconCache() override {}
-
-  base::TimeTicks GetTimeNow() override { return fake_time_now_; }
-  void SetTimeNow(base::TimeTicks now) { fake_time_now_ = now; }
-
- private:
-  base::TimeTicks fake_time_now_;
-};
-
 }  // namespace
 
 class FaviconCacheTest : public testing::Test {
@@ -65,7 +52,8 @@ class FaviconCacheTest : public testing::Test {
   const GURL kUrlB = GURL("http://www.b.com/");
   const GURL kIconUrl = GURL("http://a.com/favicon.ico");
 
-  FaviconCacheTest() : cache_(&favicon_service_) {}
+  FaviconCacheTest()
+      : cache_(&favicon_service_, nullptr /* history_service */) {}
 
   testing::NiceMock<favicon::MockFaviconService> favicon_service_;
 
@@ -100,7 +88,7 @@ class FaviconCacheTest : public testing::Test {
   favicon_base::FaviconImageCallback favicon_service_a_site_response_;
   favicon_base::FaviconImageCallback favicon_service_b_site_response_;
 
-  TestFaviconCache cache_;
+  FaviconCache cache_;
 };
 
 TEST_F(FaviconCacheTest, Basic) {
@@ -275,7 +263,7 @@ TEST_F(FaviconCacheTest, ExpireNullFaviconsByHistory) {
       cache_.GetFaviconForPageUrl(kUrlA, base::BindOnce(&Fail)).IsEmpty());
 }
 
-TEST_F(FaviconCacheTest, ExpireNullFaviconsByTime) {
+TEST_F(FaviconCacheTest, ObserveFaviconsChanged) {
   ExpectFaviconServiceForPageUrlCalls(2, 1);
 
   EXPECT_TRUE(
@@ -283,21 +271,11 @@ TEST_F(FaviconCacheTest, ExpireNullFaviconsByTime) {
   EXPECT_TRUE(
       cache_.GetFaviconForPageUrl(kUrlB, base::BindOnce(&Fail)).IsEmpty());
 
-  base::TimeDelta max_duration = base::TimeDelta::FromSeconds(
-      FaviconCache::kEmptyFaviconCacheLifetimeInSeconds);
-
-  // Set the time to epoch and respond with the first empty favicon.
-  cache_.SetTimeNow(base::TimeTicks());
+  // Simulate responses to both requests.
   favicon_service_a_site_response_.Run(favicon_base::FaviconImageResult());
-
-  // Increment the time to half the duration of the expiry time and respond
-  // with the second empty favicon.
-  cache_.SetTimeNow(base::TimeTicks() + max_duration / 2);
   favicon_service_b_site_response_.Run(favicon_base::FaviconImageResult());
 
-  // Now increment the time so the the first, but not the second, cached empty
-  // favicon is expired.
-  cache_.SetTimeNow(base::TimeTicks() + max_duration);
+  cache_.OnFaviconsChanged({kUrlA}, GURL());
 
   // Request the two favicons again.
   EXPECT_TRUE(
@@ -307,5 +285,5 @@ TEST_F(FaviconCacheTest, ExpireNullFaviconsByTime) {
 
   // Our call to |ExpectFaviconServiceForPageUrlCalls(expected A calls, expected
   // B calls)| above should verify that we re-request the icon for kUrlA only
-  // (because the empty result has been aged out).
+  // (because the null result has been invalidated by OnFaviconsChanged).
 }
