@@ -1005,11 +1005,17 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
   DCHECK(thread_checker_.CalledOnValidThread());
   video_rotation_ = video_rotation;
 
-  video_layer_ = cc::VideoLayer::Create(compositor_.get(), video_rotation);
-  video_layer_->SetContentsOpaque(is_opaque);
+  // Keep the old |video_layer_| and |video_weblayer_| alive until SetWebLayer
+  // is called with a new pointer, as it may use the pointer from the last call.
+  auto new_video_layer =
+      cc::VideoLayer::Create(compositor_.get(), video_rotation);
+  new_video_layer->SetContentsOpaque(is_opaque);
 
-  video_weblayer_ = std::make_unique<blink::WebLayer>(video_layer_.get());
-  get_client()->SetWebLayer(video_weblayer_.get());
+  auto new_weblayer = std::make_unique<blink::WebLayer>(new_video_layer.get());
+  get_client()->SetWebLayer(new_weblayer.get());
+
+  video_layer_ = std::move(new_video_layer);
+  video_weblayer_ = std::move(new_weblayer);
 }
 
 void WebMediaPlayerMS::RepaintInternal() {
