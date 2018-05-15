@@ -468,6 +468,7 @@ void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
   target_tree->elastic_overscroll()->PushPendingToActive();
 
   target_tree->set_content_source_id(content_source_id());
+  target_tree->set_request_presentation_time(request_presentation_time());
 
   if (TakeNewLocalSurfaceIdRequest())
     target_tree->RequestNewLocalSurfaceId();
