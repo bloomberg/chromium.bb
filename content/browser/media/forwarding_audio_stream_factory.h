@@ -11,7 +11,9 @@
 #include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "content/browser/media/audio_muting_session.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/common/content_export.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
@@ -30,6 +32,7 @@ namespace content {
 
 class AudioStreamBroker;
 class RenderFrameHost;
+class WebContents;
 
 // This class handles stream creation operations for a WebContents.
 // This class is operated on the UI thread.
@@ -50,7 +53,6 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
 
   const base::UnguessableToken& group_id() { return group_id_; }
 
-  // TODO(https://crbug.com/803102): Add loopback and muting streams.
   // TODO(https://crbug.com/787806): Automatically restore streams on audio
   // service restart.
   void CreateInputStream(
@@ -67,10 +69,23 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
       const media::AudioParameters& params,
       media::mojom::AudioOutputStreamProviderClientPtr client);
 
+  void CreateLoopbackStream(
+      RenderFrameHost* frame,
+      WebContents* source_contents,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      bool mute_source,
+      mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client);
+
+  // Sets the muting state for all output streams created through this factory.
+  void SetMuted(bool muted);
+
+  // Returns the current muting state.
+  bool IsMuted() const;
+
   // WebContentsObserver implementation. We observe these events so that we can
   // clean up streams belonging to a frame when that frame is destroyed.
   void FrameDeleted(RenderFrameHost* render_frame_host) final;
-  void WebContentsDestroyed() final;
 
   // E.g. to override binder.
   service_manager::Connector* get_connector_for_testing() {
@@ -110,6 +125,9 @@ class CONTENT_EXPORT ForwardingAudioStreamFactory final
   // TODO(https://crbug.com/830494): Refactor to make this unnecessary and
   // remove it.
   int stream_id_counter_ = 0;
+
+  // Instantiated when |outputs_| should be muted, empty otherwise.
+  base::Optional<AudioMutingSession> muter_;
 
   StreamBrokerSet inputs_;
   StreamBrokerSet outputs_;

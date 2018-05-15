@@ -79,6 +79,7 @@ void ForwardingAudioStreamFactory::CreateOutputStream(
 
   const int process_id = frame->GetProcess()->GetID();
   const int frame_id = frame->GetRoutingID();
+
   outputs_
       .insert(broker_factory_->CreateAudioOutputStreamBroker(
           process_id, frame_id, ++stream_id_counter_, device_id, params,
@@ -90,16 +91,53 @@ void ForwardingAudioStreamFactory::CreateOutputStream(
       ->CreateStream(GetFactory());
 }
 
+void ForwardingAudioStreamFactory::CreateLoopbackStream(
+    RenderFrameHost* frame,
+    WebContents* source_contents,
+    const media::AudioParameters& params,
+    uint32_t shared_memory_count,
+    bool mute_source,
+    mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  const int process_id = frame->GetProcess()->GetID();
+  const int frame_id = frame->GetRoutingID();
+  inputs_
+      .insert(broker_factory_->CreateAudioLoopbackStreamBroker(
+          process_id, frame_id,
+          std::make_unique<AudioStreamBrokerFactory::LoopbackSource>(
+              source_contents),
+          params, shared_memory_count, mute_source,
+          base::BindOnce(&ForwardingAudioStreamFactory::RemoveInput,
+                         base::Unretained(this)),
+          std::move(renderer_factory_client)))
+      .first->get()
+      ->CreateStream(GetFactory());
+}
+
+void ForwardingAudioStreamFactory::SetMuted(bool muted) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_NE(muted, IsMuted());
+
+  if (!muted) {
+    muter_.reset();
+    return;
+  }
+
+  muter_.emplace(group_id_);
+  if (remote_factory_)
+    muter_->Connect(remote_factory_.get());
+}
+
+bool ForwardingAudioStreamFactory::IsMuted() const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return !!muter_;
+}
+
 void ForwardingAudioStreamFactory::FrameDeleted(
     RenderFrameHost* render_frame_host) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CleanupStreamsBelongingTo(render_frame_host);
-}
-
-void ForwardingAudioStreamFactory::WebContentsDestroyed() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(outputs_.empty());
-  DCHECK(inputs_.empty());
 }
 
 void ForwardingAudioStreamFactory::CleanupStreamsBelongingTo(
@@ -145,6 +183,10 @@ audio::mojom::StreamFactory* ForwardingAudioStreamFactory::GetFactory() {
     remote_factory_.set_connection_error_handler(
         base::BindOnce(&ForwardingAudioStreamFactory::ResetRemoteFactoryPtr,
                        base::Unretained(this)));
+
+    // Restore the muting session on reconnect.
+    if (muter_)
+      muter_->Connect(remote_factory_.get());
   }
 
   return remote_factory_.get();
@@ -161,6 +203,8 @@ void ForwardingAudioStreamFactory::ResetRemoteFactoryPtr() {
   remote_factory_.reset();
   // The stream brokers will call a callback to be deleted soon, give them a
   // chance to signal an error to the client first.
+  inputs_.clear();
+  outputs_.clear();
 }
 
 }  // namespace content
