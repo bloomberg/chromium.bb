@@ -9,6 +9,7 @@
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "services/network/network_context.h"
+#include "services/network/public/cpp/features.h"
 
 #if !defined(OS_IOS)
 #include "services/network/proxy_service_mojo.h"
@@ -59,8 +60,16 @@ URLRequestContextBuilderMojo::CreateProxyResolutionService(
   if (mojo_proxy_resolver_factory_) {
     std::unique_ptr<net::DhcpPacFileFetcher> dhcp_pac_file_fetcher =
         dhcp_fetcher_factory_->Create(url_request_context);
-    auto pac_file_fetcher =
-        net::PacFileFetcherImpl::CreateWithFileUrlSupport(url_request_context);
+    std::unique_ptr<net::PacFileFetcherImpl> pac_file_fetcher;
+    // https://crbug.com/839566 PAC file support is deprecated and disabled when
+    // the network service is enabled. It will eventually be disabled in all
+    // cases.
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+      pac_file_fetcher = net::PacFileFetcherImpl::Create(url_request_context);
+    } else {
+      pac_file_fetcher = net::PacFileFetcherImpl::CreateWithFileUrlSupport(
+          url_request_context);
+    }
     return CreateProxyResolutionServiceUsingMojoFactory(
         std::move(mojo_proxy_resolver_factory_),
         std::move(proxy_config_service), std::move(pac_file_fetcher),

@@ -275,7 +275,7 @@ class NetworkContextConfigurationBrowserTest
 
   // Sends a request and expects it to be handled by embedded_test_server()
   // acting as a proxy;
-  void TestProxyConfigured() {
+  void TestProxyConfigured(bool expect_success) {
     std::unique_ptr<network::ResourceRequest> request =
         std::make_unique<network::ResourceRequest>();
     // This URL should be directed to the test server because of the proxy.
@@ -290,9 +290,16 @@ class NetworkContextConfigurationBrowserTest
         loader_factory(), simple_loader_helper.GetCallback());
     simple_loader_helper.WaitForCallback();
 
-    EXPECT_EQ(net::OK, simple_loader->NetError());
-    ASSERT_TRUE(simple_loader_helper.response_body());
-    EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
+    if (expect_success) {
+      EXPECT_EQ(net::OK, simple_loader->NetError());
+      ASSERT_TRUE(simple_loader_helper.response_body());
+      EXPECT_EQ(*simple_loader_helper.response_body(), "Echo");
+    } else {
+      // TestHostResolver returns net::ERR_NOT_IMPLEMENTED for non-local host
+      // URLs.
+      EXPECT_EQ(net::ERR_NOT_IMPLEMENTED, simple_loader->NetError());
+      ASSERT_FALSE(simple_loader_helper.response_body());
+    }
   }
 
   // Makes a request that hangs, and will live until browser shutdown.
@@ -726,7 +733,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, DISABLED_Hsts) {
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, ProxyConfig) {
   SetProxyPref(embedded_test_server()->host_port_pair());
-  TestProxyConfigured();
+  TestProxyConfigured(/*expect_success=*/true);
 }
 
 // This test should not end in an AssertNoURLLRequests CHECK.
@@ -833,7 +840,7 @@ class NetworkContextConfigurationProxyOnStartBrowserTest
 // use that configuration.
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationProxyOnStartBrowserTest,
                        TestInitialProxyConfig) {
-  TestProxyConfigured();
+  TestProxyConfigured(/*expect_success=*/true);
 }
 
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
@@ -872,7 +879,7 @@ class NetworkContextConfigurationHttpPacBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpPacBrowserTest, HttpPac) {
-  TestProxyConfigured();
+  TestProxyConfigured(/*expect_success=*/true);
 }
 
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
@@ -907,7 +914,19 @@ class NetworkContextConfigurationFilePacBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationFilePacBrowserTest, FilePac) {
-  TestProxyConfigured();
+  bool network_service_disabled =
+      !base::FeatureList::IsEnabled(network::features::kNetworkService);
+#if defined(OS_MACOSX)
+  // https://crbug.com/843324: the NetworkServiceTestHelper does not work on Mac
+  // so the TestHostResolver is not used to resolve the host name when the
+  // network service is enabled. The system host resolver is used instead
+  // and goed to the network, which we don't want in tests. (and it does not
+  // return the expected net::ERR_NOT_IMPLEMENTED).
+  if (!network_service_disabled)
+    return;
+#endif
+  // PAC file URLs are not supported with the network service
+  TestProxyConfigured(/*expect_success=*/network_service_disabled);
 }
 
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
@@ -930,7 +949,7 @@ class NetworkContextConfigurationDataPacBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationDataPacBrowserTest, DataPac) {
-  TestProxyConfigured();
+  TestProxyConfigured(/*expect_success=*/true);
 }
 
 // Make sure the system URLRequestContext can handle fetching PAC scripts from
@@ -1088,7 +1107,7 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
 // |NetworkServiceTestHelper| doesn't work on browser_tests on OSX.
 // See https://crbug.com/757088
 #if defined(OS_MACOSX)
-// Instiates tests with a prefix indicating which NetworkContext is being
+// Instantiates tests with a prefix indicating which NetworkContext is being
 // tested, and a suffix of "/0" if the network service is disabled and "/1" if
 // it's enabled.
 #define INSTANTIATE_TEST_CASES_FOR_TEST_FIXTURE(TestFixture)               \
@@ -1142,9 +1161,9 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationHttpsStrippingPacBrowserTest,
       ::testing::Values(TestCase({NetworkServiceState::kDisabled,          \
                                   NetworkContextType::kSafeBrowsing}),     \
                         TestCase({NetworkServiceState::kEnabled,           \
-                                  NetworkContextType::kSystem}),           \
+                                  NetworkContextType::kSafeBrowsing}),     \
                         TestCase({NetworkServiceState::kRestarted,         \
-                                  NetworkContextType::kSystem})));         \
+                                  NetworkContextType::kSafeBrowsing})));   \
                                                                            \
   INSTANTIATE_TEST_CASE_P(                                                 \
       ProfileMainNetworkContext, TestFixture,                              \
