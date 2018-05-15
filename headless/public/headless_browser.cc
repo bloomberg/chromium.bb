@@ -134,11 +134,6 @@ Builder& Builder::SetGLImplementation(const std::string& gl_implementation) {
   return *this;
 }
 
-Builder& Builder::AddMojoServiceName(const std::string& mojo_service_name) {
-  options_.mojo_service_names.insert(mojo_service_name);
-  return *this;
-}
-
 Builder& Builder::SetAppendCommandLineFlagsCallback(
     const Options::AppendCommandLineFlagsCallback& callback) {
   options_.append_command_line_flags_callback = callback;

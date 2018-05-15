@@ -120,8 +120,6 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   // fetching for different network schemes.
   Builder& SetProtocolHandlers(ProtocolHandlerMap protocol_handlers);
 
-  Builder& AddTabSocketMojoBindings();
-
   // By default if you add mojo bindings, http and https are disabled because
   // its almost certinly unsafe for arbitary sites on the internet to have
   // access to these bindings.  If you know what you're doing it may be OK to

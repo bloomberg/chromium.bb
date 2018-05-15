@@ -507,16 +507,6 @@ HeadlessBrowserContext::Builder::SetAllowCookies(bool allow_cookies) {
 }
 
 HeadlessBrowserContext::Builder&
-HeadlessBrowserContext::Builder::AddTabSocketMojoBindings() {
-  std::string js_bindings =
-      ui::ResourceBundle::GetSharedInstance()
-          .GetRawDataResource(IDR_HEADLESS_TAB_SOCKET_MOJOM_JS)
-          .as_string();
-  mojo_bindings_.emplace_back("headless/lib/tab_socket.mojom", js_bindings);
-  return *this;
-}
-
-HeadlessBrowserContext::Builder&
 HeadlessBrowserContext::Builder::EnableUnsafeNetworkAccessWithMojoBindings(
     bool enable_http_and_https_if_mojo_used) {
   enable_http_and_https_if_mojo_used_ = enable_http_and_https_if_mojo_used;

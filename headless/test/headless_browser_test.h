@@ -144,9 +144,6 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   // the map returned is empty.
   virtual ProtocolHandlerMap GetProtocolHandlers();
 
-  // Whether to allow TabSockets when creating |web_contents_|.
-  virtual bool GetAllowTabSockets();
-
   // Whether to enable BeginFrameControl when creating |web_contents_|.
   virtual bool GetEnableBeginFrameControl();
 
