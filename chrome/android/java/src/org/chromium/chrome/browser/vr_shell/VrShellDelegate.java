@@ -788,8 +788,6 @@ public class VrShellDelegate
      */
     public static VrClassesWrapper getVrClassesWrapper() {
         if (sVrClassesWrapper == null) sVrClassesWrapper = createVrClassesWrapper();
-        // Disable VR on standalone VR devices (https://crbug.com/841850).
-        if (sVrClassesWrapper != null && sVrClassesWrapper.bootsToVr()) return null;
         return sVrClassesWrapper;
     }
 
