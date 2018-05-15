@@ -175,6 +175,13 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
           &original_component)) {
     scroll_name = "ScrollBegin";
     DCHECK(input_modality == "Wheel" || input_modality == "Touch");
+
+    // This UMA metric tracks the performance of overall scrolling as a high
+    // level metric.
+    UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
+        "Event.Latency.ScrollBegin.TimeToScrollUpdateSwapBegin",
+        original_component, gpu_swap_begin_component);
+
     // This UMA metric tracks the time between the final frame swap for the
     // first scroll event in a sequence and the original timestamp of that
     // scroll event's underlying touch/wheel event.
@@ -193,6 +200,13 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
                  &original_component)) {
     scroll_name = "ScrollUpdate";
     DCHECK(input_modality == "Wheel" || input_modality == "Touch");
+
+    // This UMA metric tracks the performance of overall scrolling as a high
+    // level metric.
+    UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
+        "Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin",
+        original_component, gpu_swap_begin_component);
+
     // This UMA metric tracks the time from when the original touch/wheel event
     // is created to when the scroll gesture results in final frame swap.
     // First scroll events are excluded from this metric.

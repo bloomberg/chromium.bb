@@ -249,6 +249,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
 
       // UMA histograms.
       EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.ScrollBegin."
+                          "TimeToScrollUpdateSwapBegin",
+                          1));
+      EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.ScrollUpdate."
+                          "TimeToScrollUpdateSwapBegin",
+                          0));
+      EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
                           1));
@@ -344,6 +352,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
           total_ukm_entry_count);
 
       // UMA histograms.
+      EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.ScrollBegin."
+                          "TimeToScrollUpdateSwapBegin",
+                          0));
+      EXPECT_TRUE(
+          HistogramSizeEq("Event.Latency.ScrollUpdate."
+                          "TimeToScrollUpdateSwapBegin",
+                          1));
       EXPECT_TRUE(
           HistogramSizeEq("Event.Latency.ScrollBegin.Wheel."
                           "TimeToScrollUpdateSwapBegin2",
@@ -463,6 +479,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
         total_ukm_entry_count);
 
     // UMA histograms.
+    EXPECT_TRUE(
+        HistogramSizeEq("Event.Latency.ScrollBegin."
+                        "TimeToScrollUpdateSwapBegin",
+                        1));
+    EXPECT_TRUE(
+        HistogramSizeEq("Event.Latency.ScrollUpdate."
+                        "TimeToScrollUpdateSwapBegin",
+                        0));
     EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 1));
 
@@ -565,6 +589,14 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToScrollHistograms) {
         total_ukm_entry_count);
 
     // UMA histograms.
+    EXPECT_TRUE(
+        HistogramSizeEq("Event.Latency.ScrollBegin."
+                        "TimeToScrollUpdateSwapBegin",
+                        0));
+    EXPECT_TRUE(
+        HistogramSizeEq("Event.Latency.ScrollUpdate."
+                        "TimeToScrollUpdateSwapBegin",
+                        1));
     EXPECT_TRUE(HistogramSizeEq(
         "Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2", 0));
     EXPECT_TRUE(HistogramSizeEq(
