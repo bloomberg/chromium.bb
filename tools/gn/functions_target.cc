@@ -61,28 +61,31 @@ Value ExecuteGenericTarget(const char* target_type,
 // action ----------------------------------------------------------------------
 
 // Common help paragraph on script runtime execution directories.
-#define SCRIPT_EXECUTION_CONTEXT \
-    "  The script will be executed with the given arguments with the current\n"\
-    "  directory being that of the root build directory. If you pass files\n"\
-    "  to your script, see \"gn help rebase_path\" for how to convert\n" \
-    "  file names to be relative to the build directory (file names in the\n" \
-    "  sources, outputs, and inputs will be all treated as relative to the\n" \
-    "  current build file and converted as needed automatically).\n"
+#define SCRIPT_EXECUTION_CONTEXT                                              \
+  "\n"                                                                        \
+  "  The script will be executed with the given arguments with the current\n" \
+  "  directory being that of the root build directory. If you pass files\n"   \
+  "  to your script, see \"gn help rebase_path\" for how to convert\n"        \
+  "  file names to be relative to the build directory (file names in the\n"   \
+  "  sources, outputs, and inputs will be all treated as relative to the\n"   \
+  "  current build file and converted as needed automatically).\n"
 
 // Common help paragraph on script output directories.
-#define SCRIPT_EXECUTION_OUTPUTS \
-    "  All output files must be inside the output directory of the build.\n" \
-    "  You would generally use |$target_out_dir| or |$target_gen_dir| to\n" \
-    "  reference the output or generated intermediate file directories,\n" \
-    "  respectively.\n"
+#define SCRIPT_EXECUTION_OUTPUTS                                           \
+  "\n"                                                                     \
+  "  All output files must be inside the output directory of the build.\n" \
+  "  You would generally use |$target_out_dir| or |$target_gen_dir| to\n"  \
+  "  reference the output or generated intermediate file directories,\n"   \
+  "  respectively.\n"
 
-#define ACTION_DEPS \
-    "  The \"deps\" and \"public_deps\" for an action will always be\n" \
-    "  completed before any part of the action is run so it can depend on\n" \
-    "  the output of previous steps. The \"data_deps\" will be built if the\n" \
-    "  action is built, but may not have completed before all steps of the\n" \
-    "  action are started. This can give additional parallelism in the build\n"\
-    "  for runtime-only dependencies.\n"
+#define ACTION_DEPS                                                           \
+  "\n"                                                                        \
+  "  The \"deps\" and \"public_deps\" for an action will always be\n"         \
+  "  completed before any part of the action is run so it can depend on\n"    \
+  "  the output of previous steps. The \"data_deps\" will be built if the\n"  \
+  "  action is built, but may not have completed before all steps of the\n"   \
+  "  action are started. This can give additional parallelism in the build\n" \
+  "  for runtime-only dependencies.\n"
 
 const char kAction[] = "action";
 const char kAction_HelpShort[] =
