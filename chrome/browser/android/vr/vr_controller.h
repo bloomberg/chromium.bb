@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/android/vr/gvr_util.h"
 #include "chrome/browser/vr/platform_controller.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
@@ -18,6 +19,7 @@
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gfx/transform.h"
 
 namespace blink {
 class WebGestureEvent;
@@ -54,7 +56,7 @@ class VrController : public PlatformController {
   device::mojom::XRInputSourceStatePtr GetInputSourceState();
 
   // Called once per frame to update controller state.
-  void UpdateState(const gvr::Mat4f& head_direction);
+  void UpdateState(const gfx::Transform& head_pose);
 
   std::unique_ptr<GestureList> DetectGestures();
 
@@ -191,6 +193,9 @@ class VrController : public PlatformController {
 
   // Displacement of the touch point from the previews to the current touch
   gfx::Vector2dF displacement_;
+
+  // Head offset. Keeps the controller at the user's side with 6DoF headsets.
+  gfx::Point3F head_offset_;
 
   int64_t last_touch_timestamp_ = 0;
   int64_t last_timestamp_nanos_ = 0;
