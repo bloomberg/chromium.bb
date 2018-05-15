@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
+<link rel="import" href="chrome://resources/cr_elements/paper_tabs_style_css.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-pages/iron-pages.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
@@ -18,7 +19,7 @@
 
 <dom-module id="settings-clear-browsing-data-dialog">
   <template>
-    <style include="settings-shared">
+    <style include="settings-shared paper-tabs-style">
       :host {
         /* Fixed height to allow multiple tabs with different height.
          * The last entry in the advanced tab should show half an entry.
@@ -80,21 +81,10 @@
       }
 
       paper-tabs {
-        --paper-tabs-selection-bar-color: var(--google-blue-500);
         --paper-tabs: {
           font-size: 100%;
           height: 40px;
         }
-      }
-
-      paper-tab {
-        --paper-tab-content: {
-          color: var(--google-blue-700);
-        };
-        --paper-tab-content-unselected: {
-          opacity: 1;
-          color: var(--paper-grey-600);
-        };
       }
 
       .time-range-row {

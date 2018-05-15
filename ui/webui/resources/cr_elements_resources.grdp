@@ -304,6 +304,10 @@
              file="../../webui/resources/cr_elements/paper_input_style_css.html"
              type="chrome_html"
              compress="gzip" />
+  <structure name="IDR_CR_ELEMENTS_PAPER_TABS_STYLE_CSS_HTML"
+             file="../../webui/resources/cr_elements/paper_tabs_style_css.html"
+             type="chrome_html"
+             compress="gzip" />
   <structure name="IDR_CR_ELEMENTS_SEARCH_HIGHLIGHT_STYLE_CSS_HTML"
              file="../../webui/resources/cr_elements/search_highlight_style_css.html"
              type="chrome_html"
