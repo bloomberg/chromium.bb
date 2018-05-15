@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessInteractiveBrowserTest,
   // take time to propagate to the renderer's main thread.
   content::DOMMessageQueue msg_queue;
   std::string reply;
-  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('f'),
+  SimulateKeyPress(web_contents, ui::DomKey::FromCharacter('F'),
                    ui::DomCode::US_F, ui::VKEY_F, false, false, false, false);
   EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
   EXPECT_EQ("\"F\"", reply);
