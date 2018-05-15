@@ -3824,7 +3824,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': append_useflags(['thinlto']),
       },
 
-      'veyron_jaq-release': {
+      'peach_pit-release': {
           'useflags': append_useflags(['thinlto']),
       },
 
