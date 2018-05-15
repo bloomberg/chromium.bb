@@ -20,25 +20,20 @@
         <div id="first-run-title">[[i18n('firstRunFlowTitle')]]</div>
         <div id="first-run-text">
           <span>[[i18n('firstRunFlowText')]]</span>
-          <a href="[[firstRunFlowLearnMoreUrl]]" target="_blank">
-            <span class="first-run-learn-more">
-              [[i18n('learnMoreText')]]
-            </span>
+          <a href="[[firstRunFlowLearnMoreUrl]]" class="first-run-learn-more"
+              target="_blank">
+            [[i18n('learnMoreText')]]
           </a>
         </div>
         <div id="first-run-flow-cloud-pref"
             hidden$="[[!showFirstRunFlowCloudPref]]">
-          <div>
-            <cr-checkbox checked id="first-run-cloud-checkbox"></cr-checkbox>
-          </div>
-          <div>
+          <cr-checkbox checked id="first-run-cloud-checkbox">
             <span>[[getFirstRunFlowCloudPrefText_()]]</span>
-            <a href="[[firstRunFlowCloudPrefLearnMoreUrl]]" target="_blank">
-              <span class="first-run-learn-more">
-                [[i18n('learnMoreText')]]
-              </span>
+            <a href="[[firstRunFlowCloudPrefLearnMoreUrl]]"
+                class="first-run-learn-more" target="_blank">
+              [[i18n('learnMoreText')]]
             </a>
-          </div>
+          </cr-checkbox>
         </div>
         <div id="first-run-button-container">
           <paper-button id="first-run-button" class="button"
