@@ -559,6 +559,17 @@ void ArcBluetoothBridge::DevicePairedChanged(BluetoothAdapter* adapter,
   }
 }
 
+void ArcBluetoothBridge::DeviceMTUChanged(BluetoothAdapter* adapter,
+                                          BluetoothDevice* device,
+                                          uint16_t mtu) {
+  auto* bluetooth_instance = ARC_GET_INSTANCE_FOR_METHOD(
+      arc_bridge_service_->bluetooth(), OnMTUReceived);
+  if (!device->IsConnected() || bluetooth_instance == nullptr)
+    return;
+  bluetooth_instance->OnMTUReceived(
+      mojom::BluetoothAddress::From(device->GetAddress()), mtu);
+}
+
 void ArcBluetoothBridge::DeviceRemoved(BluetoothAdapter* adapter,
                                        BluetoothDevice* device) {
   if (!IsInstanceUp())

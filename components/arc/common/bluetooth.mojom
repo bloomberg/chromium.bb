@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 10
+// Next MinVersion: 11
 
 module arc.mojom;
 
@@ -405,7 +405,7 @@ interface BluetoothHost {
       => (BluetoothGattStatus status);
 };
 
-// Next Method ID: 19
+// Next Method ID: 20
 interface BluetoothInstance {
   // DEPRECATED: Please use Init@18 instead.
   InitDeprecated@0(BluetoothHost host_ptr);
@@ -465,10 +465,11 @@ interface BluetoothInstance {
       array<uint8> value,
       [MinVersion=9] BluetoothGattDBAttributeType attribute_type)
       => (BluetoothGattStatus status);
+  [MinVersion=10] OnMTUReceived@19(BluetoothAddress remote_addr, uint16 mtu);
 
   // Bluetooth SDP function
   [MinVersion=5] OnGetSdpRecords@17(BluetoothStatus status,
-                                    BluetoothAddress remove_addr,
+                                    BluetoothAddress remote_addr,
                                     BluetoothUUID target_uuid,
                                     array<BluetoothSdpRecord> records);
 };

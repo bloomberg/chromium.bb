@@ -94,6 +94,10 @@ class ArcBluetoothBridge
                            device::BluetoothDevice* device,
                            bool new_paired_status) override;
 
+  void DeviceMTUChanged(device::BluetoothAdapter* adapter,
+                        device::BluetoothDevice* device,
+                        uint16_t mtu) override;
+
   void DeviceRemoved(device::BluetoothAdapter* adapter,
                      device::BluetoothDevice* device) override;
 
