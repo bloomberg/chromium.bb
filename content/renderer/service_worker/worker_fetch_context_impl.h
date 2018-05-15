@@ -108,7 +108,7 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   static void InstallRewriteURLFunction(RewriteURLFunction rewrite_url);
 
  private:
-  class URLLoaderFactoryImpl;
+  class Factory;
 
   bool Send(IPC::Message* message);
 
@@ -181,9 +181,9 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   // This is owned by ThreadedMessagingProxyBase on the main thread.
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
-  // A weak ptr to blink::WebURLLoaderFactory which was created and passed to
+  // The blink::WebURLLoaderFactory which was created and passed to
   // Blink by CreateURLLoaderFactory().
-  base::WeakPtr<URLLoaderFactoryImpl> url_loader_factory_;
+  base::WeakPtr<Factory> web_loader_factory_;
 
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
