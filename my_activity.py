@@ -695,6 +695,9 @@ class MyActivity(object):
           self.monorail_issue_search, monorail_projects.keys())
       monorail_issues = list(itertools.chain.from_iterable(monorail_issues))
 
+    if not monorail_issues:
+      return
+
     with contextlib.closing(ThreadPool(len(monorail_issues))) as pool:
       filtered_issues = pool.map(
           self.filter_modified_monorail_issue, monorail_issues)
