@@ -75,7 +75,6 @@
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/prerender/prerender_message_filter.h"
 #include "chrome/browser/prerender/prerender_util.h"
-#include "chrome/browser/printing/printing_message_filter.h"
 #include "chrome/browser/profiles/chrome_browser_main_extra_parts_profiles.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
@@ -439,9 +438,12 @@
 #endif
 
 #if BUILDFLAG(ENABLE_PRINTING)
+#include "chrome/browser/printing/printing_message_filter.h"
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"
 #endif
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
 #include "chrome/services/printing/public/mojom/constants.mojom.h"
 #endif
 
@@ -3401,7 +3403,8 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
       base::ASCIIToUTF16("PDF Compositor Service");
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
   (*services)[printing::mojom::kChromePrintingServiceName] =
       l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME);
 #endif
