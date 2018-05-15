@@ -641,7 +641,7 @@ function addTargetToList(data, list, properties) {
         row, 'inspect', sendCommand.bind(null, 'inspect-additional', data.url),
         false);
     row.classList.add('additional');
-  } else if (!data.hasCustomInspectAction) {
+  } else if (!data.hasCustomInspectAction && data.type !== 'iframe') {
     addActionLink(
         row, 'inspect', sendTargetCommand.bind(null, 'inspect', data),
         data.hasNoUniqueId || data.adbAttachedForeign);
