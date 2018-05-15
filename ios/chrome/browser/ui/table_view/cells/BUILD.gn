@@ -4,6 +4,8 @@
 
 source_set("cells") {
   sources = [
+    "table_view_accessory_item.h",
+    "table_view_accessory_item.mm",
     "table_view_activity_indicator_header_footer_item.h",
     "table_view_activity_indicator_header_footer_item.mm",
     "table_view_cells_constants.h",
@@ -42,6 +44,7 @@ source_set("cells") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "table_view_accessory_item_unittest.mm",
     "table_view_header_footer_item_unittest.mm",
     "table_view_item_unittest.mm",
     "table_view_text_header_footer_item_unittest.mm",
