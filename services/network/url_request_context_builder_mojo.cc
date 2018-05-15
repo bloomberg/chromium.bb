@@ -41,6 +41,7 @@ URLRequestContextOwner URLRequestContextBuilderMojo::Create(
       this, params, quic_disabled, net_log, network_quality_estimator,
       nullptr, /* sth_distributor */
       nullptr, /* out_ct_tree_tracker */
+      nullptr, /* out_require_ct_delegate */
       nullptr /* out_static_user_agent_settings */);
 }
 

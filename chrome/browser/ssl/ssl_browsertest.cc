@@ -103,6 +103,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -785,36 +786,6 @@ class SSLUITestBase : public InProcessBrowserTest {
     EXPECT_TRUE(pref_service->IsManagedPreference(pref_name));
   }
 
-  // Sets the policy identified by |policy_name| to the value specified by
-  // |list_values|, ensuring that the corresponding list pref |pref_name| is
-  // updated to match. |policy_name| must specify a policy that is a list of
-  // string values.
-  void ConfigureStringListPolicy(PrefService* pref_service,
-                                 const char* policy_name,
-                                 const char* pref_name,
-                                 const std::vector<std::string>& list_values) {
-    std::unique_ptr<base::ListValue> policy_value =
-        std::make_unique<base::ListValue>();
-    for (const auto& value : list_values) {
-      policy_value->GetList().emplace_back(value);
-    }
-    policy::PolicyMap policy_map;
-    policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
-                   policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-                   std::move(policy_value), nullptr);
-
-    EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
-
-    const base::ListValue* pref_value = pref_service->GetList(pref_name);
-    ASSERT_TRUE(pref_value);
-    std::vector<std::string> pref_values;
-    for (const auto& value : pref_value->GetList()) {
-      ASSERT_TRUE(value.is_string());
-      pref_values.push_back(value.GetString());
-    }
-    EXPECT_THAT(pref_values, testing::UnorderedElementsAreArray(list_values));
-  }
-
   // Checks that the SSLConfig associated with the net::URLRequestContext
   // of the |context_getter| has the SSLConfig member identified by |member|
   // set to |expected|. This is sequenced such that any changes to prefs
@@ -949,8 +920,10 @@ class SSLUITestBase : public InProcessBrowserTest {
     policy_provider_.UpdateChromePolicy(policies);
     ASSERT_TRUE(base::MessageLoopCurrent::Get());
 
-    base::RunLoop loop;
-    loop.RunUntilIdle();
+    base::RunLoop().RunUntilIdle();
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+      content::FlushNetworkServiceInstanceForTesting();
   }
 
   void RunOnIOThreadBlocking(base::OnceClosure task) {
@@ -1983,38 +1956,137 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SymantecPrefsCanEnable) {
       CheckSSLConfig(browser()->profile()->GetRequestContext(), member, true));
 }
 
-IN_PROC_BROWSER_TEST_P(SSLUITest,
-                       CertificateTransparencyEnforcementDisabledForUrls) {
-  bool require = true;
-  net::TransportSecurityState::SetShouldRequireCTForTesting(&require);
+class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
+ public:
+  CertificateTransparencySSLUITest()
+      : CertVerifierBrowserTest(),
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+  ~CertificateTransparencySSLUITest() override {}
 
-  scoped_refptr<net::X509Certificate> cert = https_server_.GetCertificate();
-  net::HashValueVector hashes;
-  hashes.push_back(GetSPKIHash(cert->cert_buffer()));
-  std::vector<std::string> disabled_urls{"www.google.com"};
+  void SetUpOnMainThread() override {
+    CertVerifierBrowserTest::SetUpOnMainThread();
+    host_resolver()->AddRule("*", "127.0.0.1");
+    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+  }
 
-  // Make sure that CT is required without the policy set.
-  ASSERT_NO_FATAL_FAILURE(CheckCTStatus(
-      browser()->profile()->GetRequestContext(), disabled_urls.front(), cert,
-      true, hashes, net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
-      net::TransportSecurityState::CTRequirementsStatus::
-          CT_REQUIREMENTS_NOT_MET));
-  ASSERT_NO_FATAL_FAILURE(CheckCTStatus(
-      browser()->profile()->GetRequestContext(), disabled_urls.front(), cert,
-      true, hashes, net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS,
-      net::TransportSecurityState::CTRequirementsStatus::CT_REQUIREMENTS_MET));
+  void SetUp() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
+        &policy_provider_);
 
-  // Configure the policy.
+    CertVerifierBrowserTest::SetUp();
+  }
+
+  // Sets the policy identified by |policy_name| to the value specified by
+  // |list_values|, ensuring that the corresponding list pref |pref_name| is
+  // updated to match. |policy_name| must specify a policy that is a list of
+  // string values.
+  void ConfigureStringListPolicy(PrefService* pref_service,
+                                 const char* policy_name,
+                                 const char* pref_name,
+                                 const std::vector<std::string>& list_values) {
+    std::unique_ptr<base::ListValue> policy_value =
+        std::make_unique<base::ListValue>();
+    for (const auto& value : list_values) {
+      policy_value->GetList().emplace_back(value);
+    }
+    policy::PolicyMap policy_map;
+    policy_map.Set(policy_name, policy::POLICY_LEVEL_MANDATORY,
+                   policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
+                   std::move(policy_value), nullptr);
+
+    EXPECT_NO_FATAL_FAILURE(UpdateChromePolicy(policy_map));
+
+    const base::ListValue* pref_value = pref_service->GetList(pref_name);
+    ASSERT_TRUE(pref_value);
+    std::vector<std::string> pref_values;
+    for (const auto& value : pref_value->GetList()) {
+      ASSERT_TRUE(value.is_string());
+      pref_values.push_back(value.GetString());
+    }
+    EXPECT_THAT(pref_values, testing::UnorderedElementsAreArray(list_values));
+  }
+
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
+ private:
+  void UpdateChromePolicy(const policy::PolicyMap& policies) {
+    policy_provider_.UpdateChromePolicy(policies);
+    ASSERT_TRUE(base::MessageLoopCurrent::Get());
+
+    base::RunLoop().RunUntilIdle();
+
+    if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+      content::FlushNetworkServiceInstanceForTesting();
+  }
+
+  net::EmbeddedTestServer https_server_;
+
+  policy::MockConfigurationPolicyProvider policy_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(CertificateTransparencySSLUITest);
+};
+
+// Visit an HTTPS page that has a publicly trusted certificate issued after
+// the Certificate Transparency requirement date of April 2018. The connection
+// should be blocked, as the server will not be providing CT details, and the
+// Chrome CT Policy should be being enforced.
+IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
+                       EnforcedAfterApril2018) {
+  ASSERT_TRUE(https_server()->Start());
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "may_2018.pem");
+  ASSERT_TRUE(verify_result.verified_cert);
+  verify_result.is_issued_by_known_root = true;
+  verify_result.public_key_hashes.push_back(
+      GetSPKIHash(verify_result.verified_cert->cert_buffer()));
+
+  mock_cert_verifier()->AddResultForCert(https_server()->GetCertificate().get(),
+                                         verify_result, net::OK);
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+
+  CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
+                     net::CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED,
+                     security_state::DANGEROUS,
+                     AuthState::SHOWING_INTERSTITIAL);
+}
+
+// Visit an HTTPS page that has a publicly trusted certificate issued after
+// the Certificate Transparency requirement date of April 2018. The connection
+// would normally be blocked, as the server will not be providing CT details,
+// and the Chrome CT Policy should be being enforced; however, because a policy
+// configuration exists that disables CT enforcement for that cert, the
+// connection should succeed.
+IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
+                       EnforcedAfterApril2018UnlessPoliciesSet) {
+  ASSERT_TRUE(https_server()->Start());
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "may_2018.pem");
+  ASSERT_TRUE(verify_result.verified_cert);
+  verify_result.is_issued_by_known_root = true;
+  verify_result.public_key_hashes.push_back(
+      GetSPKIHash(verify_result.verified_cert->cert_buffer()));
+
+  mock_cert_verifier()->AddResultForCert(https_server()->GetCertificate().get(),
+                                         verify_result, net::OK);
+
   ASSERT_NO_FATAL_FAILURE(ConfigureStringListPolicy(
       browser()->profile()->GetPrefs(),
-      policy::key::kCertificateTransparencyEnforcementDisabledForUrls,
-      certificate_transparency::prefs::kCTExcludedHosts, disabled_urls));
+      policy::key::kCertificateTransparencyEnforcementDisabledForCas,
+      certificate_transparency::prefs::kCTExcludedSPKIs,
+      {verify_result.public_key_hashes.back().ToString()}));
 
-  // Make sure CT is now explicitly disabled.
-  ASSERT_NO_FATAL_FAILURE(CheckCTStatus(
-      browser()->profile()->GetRequestContext(), disabled_urls.front(), cert,
-      true, hashes, net::ct::CTPolicyCompliance::CT_POLICY_NOT_ENOUGH_SCTS,
-      net::TransportSecurityState::CTRequirementsStatus::CT_NOT_REQUIRED));
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
+                     CertError::NONE, security_state::SECURE, AuthState::NONE);
 }
 
 // Visit a HTTP page which request WSS connection to a server providing invalid

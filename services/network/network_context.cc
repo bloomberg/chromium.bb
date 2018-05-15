@@ -18,7 +18,7 @@
 #include "base/task_scheduler/task_traits.h"
 #include "build/build_config.h"
 #include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
-#include "components/certificate_transparency/ct_policy_manager.h"
+#include "components/certificate_transparency/chrome_require_ct_delegate.h"
 #include "components/certificate_transparency/features.h"
 #include "components/certificate_transparency/sth_distributor.h"
 #include "components/certificate_transparency/sth_reporter.h"
@@ -228,7 +228,7 @@ NetworkContext::NetworkContext(
       builder.get(), params_.get(), network_service->quic_disabled(),
       network_service->net_log(), network_service->network_quality_estimator(),
       network_service_->sth_reporter(), &ct_tree_tracker_,
-      &user_agent_settings_);
+      &require_ct_delegate_, &user_agent_settings_);
   url_request_context_ = url_request_context_owner_.url_request_context.get();
 
   network_service_->RegisterNetworkContext(this);
@@ -264,7 +264,8 @@ NetworkContext::~NetworkContext() {
     network_service_->DeregisterNetworkContext(this);
 
   if (url_request_context_ &&
-      url_request_context_->transport_security_state()) {
+      url_request_context_->transport_security_state() &&
+      require_ct_delegate_) {
     url_request_context_->transport_security_state()->SetRequireCTDelegate(
         nullptr);
   }
@@ -524,13 +525,11 @@ void NetworkContext::SetCTPolicy(
     const std::vector<std::string>& excluded_hosts,
     const std::vector<std::string>& excluded_spkis,
     const std::vector<std::string>& excluded_legacy_spkis) {
-  if (!ct_policy_manager_) {
-    ct_policy_manager_.reset(new certificate_transparency::CTPolicyManager());
-    url_request_context_->transport_security_state()->SetRequireCTDelegate(
-        ct_policy_manager_->GetDelegate());
-  }
-  ct_policy_manager_->UpdateCTPolicies(required_hosts, excluded_hosts,
-                                       excluded_spkis, excluded_legacy_spkis);
+  if (!require_ct_delegate_)
+    return;
+
+  require_ct_delegate_->UpdateCTPolicies(required_hosts, excluded_hosts,
+                                         excluded_spkis, excluded_legacy_spkis);
 }
 
 void NetworkContext::CreateUDPSocket(mojom::UDPSocketRequest request,
@@ -623,6 +622,8 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     certificate_transparency::STHReporter* sth_reporter,
     std::unique_ptr<certificate_transparency::TreeStateTracker>*
         out_ct_tree_tracker,
+    std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>*
+        out_require_ct_delegate,
     net::StaticHttpUserAgentSettings** out_http_user_agent_settings) {
   if (net_log)
     builder->set_net_log(net_log);
@@ -790,6 +791,14 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
   }
 #endif
 
+  if (out_require_ct_delegate &&
+      network_context_params->enforce_chrome_ct_policy) {
+    *out_require_ct_delegate =
+        std::make_unique<certificate_transparency::ChromeRequireCTDelegate>();
+    result.url_request_context->transport_security_state()
+        ->SetRequireCTDelegate(out_require_ct_delegate->get());
+  }
+
   return result;
 }
 
@@ -908,7 +917,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       network_service_ ? network_service_->network_quality_estimator()
                        : nullptr,
       network_service_ ? network_service_->sth_reporter() : nullptr,
-      &ct_tree_tracker_, &user_agent_settings_);
+      &ct_tree_tracker_, &require_ct_delegate_, &user_agent_settings_);
 
   return result;
 }

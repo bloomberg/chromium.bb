@@ -191,6 +191,11 @@ unit tests.
    https://g.co/chrome/symantecpkicerts. (Note, however, that the leaf and
    root do not actually form a chain.)
 
+- may_2018.pem
+   An 825-day certificate issued on May 1, 2018, the official start of
+   enforcement requiring Certificate Transparency for new certificates. This
+   certificate does not have any embedded SCTs.
+
 - tls_feature_extension.pem
   A certificate that contains the TLS Feature Extension.
 
