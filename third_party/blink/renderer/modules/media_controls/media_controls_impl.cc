@@ -109,13 +109,13 @@ constexpr int kModernMinWidthForOverlayPlayButton = 72;
 constexpr int kMinScrubbingMessageWidth = 300;
 
 const char* kStateCSSClasses[7] = {
-    "phase-pre-ready state-no-source",    // kNoSource
-    "phase-pre-ready state-no-metadata",  // kNotLoaded
-    "state-loading-metadata",             // kLoadingMetadata
-    "phase-ready state-stopped",          // kStopped
-    "phase-ready state-playing",          // kPlaying
-    "phase-ready state-buffering",        // kBuffering
-    "phase-ready state-scrubbing",        // kScrubbing
+    "state-no-source",         // kNoSource
+    "state-no-metadata",       // kNotLoaded
+    "state-loading-metadata",  // kLoadingMetadata
+    "state-stopped",           // kStopped
+    "state-playing",           // kPlaying
+    "state-buffering",         // kBuffering
+    "state-scrubbing",         // kScrubbing
 };
 
 // The padding in pixels inside the button panel.
@@ -127,6 +127,16 @@ const char kActAsAudioControlsCSSClass[] = "audio-only";
 const char kScrubbingMessageCSSClass[] = "scrubbing-message";
 const char kTestModeCSSClass[] = "test-mode";
 const char kImmersiveModeCSSClass[] = "immersive-mode";
+
+const char kSizingTinyCSSClass[] = "sizing-tiny";
+const char kSizingSmallCSSClass[] = "sizing-small";
+const char kSizingMediumCSSClass[] = "sizing-medium";
+const char kSizingLargeCSSClass[] = "sizing-large";
+
+// The minimum width in pixels to reach a given size.
+constexpr int kSizingSmallThreshold = 308;
+constexpr int kSizingMediumThreshold = 641;
+constexpr int kSizingLargeThreshold = 1441;
 
 bool ShouldShowFullscreenButton(const HTMLMediaElement& media_element) {
   // Unconditionally allow the user to exit fullscreen if we are in it
@@ -668,36 +678,45 @@ Node::InsertionNotificationRequest MediaControlsImpl::InsertedInto(
 
 void MediaControlsImpl::UpdateCSSClassFromState() {
   const ControlsState state = State();
-  StringBuilder builder;
-  builder.Append(kStateCSSClasses[state]);
+
+  Vector<String> toAdd;
+  Vector<String> toRemove;
+
+  if (state < kLoadingMetadata)
+    toAdd.push_back("phase-pre-ready");
+  else
+    toRemove.push_back("phase-pre-ready");
+
+  if (state > kLoadingMetadata)
+    toAdd.push_back("phase-ready");
+  else
+    toRemove.push_back("phase-ready");
+
+  for (int i = 0; i < 7; i++) {
+    if (i == state)
+      toAdd.push_back(kStateCSSClasses[i]);
+    else
+      toRemove.push_back(kStateCSSClasses[i]);
+  }
 
   if (MediaElement().ShouldShowControls() && ShouldShowVideoControls() &&
       !VideoElement().HasAvailableVideoFrame() &&
       VideoElement().PosterImageURL().IsEmpty() &&
       state <= ControlsState::kLoadingMetadata) {
-    builder.Append(" ");
-    builder.Append(kShowDefaultPosterCSSClass);
-  }
-
-  if (is_acting_as_audio_controls_) {
-    builder.Append(" ");
-    builder.Append(kActAsAudioControlsCSSClass);
+    toAdd.push_back(kShowDefaultPosterCSSClass);
+  } else {
+    toRemove.push_back(kShowDefaultPosterCSSClass);
   }
 
   if (ShouldShowVideoControls() && GetDocument().GetSettings() &&
       GetDocument().GetSettings()->GetImmersiveModeEnabled()) {
-    builder.Append(" ");
-    builder.Append(kImmersiveModeCSSClass);
+    toAdd.push_back(kImmersiveModeCSSClass);
+  } else {
+    toRemove.push_back(kImmersiveModeCSSClass);
   }
 
-  if (is_test_mode_) {
-    builder.Append(" ");
-    builder.Append(kTestModeCSSClass);
-  }
-
-  const AtomicString& classes = builder.ToAtomicString();
-  if (getAttribute("class") != classes)
-    setAttribute("class", classes);
+  classList().add(toAdd, ASSERT_NO_EXCEPTION);
+  classList().remove(toRemove, ASSERT_NO_EXCEPTION);
 
   if (loading_panel_)
     loading_panel_->UpdateDisplayState();
@@ -718,6 +737,14 @@ void MediaControlsImpl::UpdateCSSClassFromState() {
       UpdateOverflowMenuWanted();
     }
   }
+}
+
+void MediaControlsImpl::SetClass(const AtomicString& class_name,
+                                 bool should_have_class) {
+  if (should_have_class && !classList().contains(class_name))
+    classList().Add(class_name);
+  else if (!should_have_class && classList().contains(class_name))
+    classList().Remove(class_name);
 }
 
 MediaControlsImpl::ControlsState MediaControlsImpl::State() const {
@@ -844,7 +871,7 @@ LayoutObject* MediaControlsImpl::ContainerLayoutObject() {
 
 void MediaControlsImpl::SetTestMode(bool enable) {
   is_test_mode_ = enable;
-  UpdateCSSClassFromState();
+  SetClass(kTestModeCSSClass, enable);
 }
 
 void MediaControlsImpl::MaybeShow() {
@@ -1277,6 +1304,16 @@ void MediaControlsImpl::UpdateScrubbingMessageFits() const {
     scrubbing_message_->SetDoesFit(size_.Width() >= kMinScrubbingMessageWidth);
 }
 
+void MediaControlsImpl::UpdateSizingCSSClass() {
+  int width = size_.Width();
+  SetClass(kSizingTinyCSSClass, width < kSizingSmallThreshold);
+  SetClass(kSizingSmallCSSClass,
+           width >= kSizingSmallThreshold && width < kSizingMediumThreshold);
+  SetClass(kSizingMediumCSSClass,
+           width >= kSizingMediumThreshold && width < kSizingLargeThreshold);
+  SetClass(kSizingLargeCSSClass, width >= kSizingLargeThreshold);
+}
+
 void MediaControlsImpl::MaybeToggleControlsFromTap() {
   if (MediaElement().paused())
     return;
@@ -1650,6 +1687,7 @@ void MediaControlsImpl::ComputeWhichControlsFit() {
   // This might be better suited for a layout, but since JS media controls
   // won't benefit from that anwyay, we just do it here like JS will.
   if (IsModern()) {
+    UpdateSizingCSSClass();
     UpdateOverflowMenuWanted();
     UpdateScrubbingMessageFits();
     return;
@@ -1828,6 +1866,7 @@ void MediaControlsImpl::StartActingAsAudioControls() {
   DCHECK(!is_acting_as_audio_controls_);
 
   is_acting_as_audio_controls_ = true;
+  SetClass(kActAsAudioControlsCSSClass, true);
   PopulatePanel();
   Reset();
 }
@@ -1837,6 +1876,7 @@ void MediaControlsImpl::StopActingAsAudioControls() {
   DCHECK(is_acting_as_audio_controls_);
 
   is_acting_as_audio_controls_ = false;
+  SetClass(kActAsAudioControlsCSSClass, false);
   PopulatePanel();
   Reset();
 }

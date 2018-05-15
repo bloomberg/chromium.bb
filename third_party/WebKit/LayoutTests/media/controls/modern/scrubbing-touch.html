@@ -29,7 +29,7 @@ async_test(t => {
     }
 
     // Check the scrubbing UI is shown with the correct time.
-    checkControlsClassName(video, 'phase-ready state-scrubbing');
+    checkControlsHasClass(video, 'state-scrubbing');
 
     // Check the scrubbing message is shown.
     assert_true(isControlVisible(scrubbingMessage));
@@ -39,7 +39,7 @@ async_test(t => {
 
     // Add an event listener for when we start playing again after seeking.
     video.addEventListener('playing', t.step_func_done(() => {
-      checkControlsClassName(video, 'phase-ready state-playing');
+      checkControlsDoesNotHaveClass(video, 'state-scrubbing');
 
       // Check the scrubbing message is no longer shown.
       assert_false(isControlVisible(scrubbingMessage));

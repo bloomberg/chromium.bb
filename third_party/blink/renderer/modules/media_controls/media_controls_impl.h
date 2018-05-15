@@ -218,6 +218,9 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   // Update the CSS class when we think the state has updated.
   void UpdateCSSClassFromState();
 
+  // Sets/removes a CSS class from this element based on |should_have_class|.
+  void SetClass(const AtomicString& class_name, bool should_have_class);
+
   // Get the HTMLVideoElement that the controls are attached to. The caller must
   // check that the element is a video element first.
   HTMLVideoElement& VideoElement();
@@ -264,6 +267,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   void UpdateOverflowMenuWanted() const;
   void UpdateScrubbingMessageFits() const;
+  void UpdateSizingCSSClass();
   void MaybeRecordElementsDisplayed() const;
 
   // Takes a popup menu (caption, overflow) and position on the screen. This is
