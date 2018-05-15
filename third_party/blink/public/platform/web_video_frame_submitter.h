@@ -20,9 +20,10 @@ class ContextProvider;
 
 namespace blink {
 
-// Callback to obtain the media ContextProvider.
+// Callback to obtain the media ContextProvider and a bool indicating whether
+// we are in software compositing mode.
 using WebContextProviderCallback = base::RepeatingCallback<void(
-    base::OnceCallback<void(viz::ContextProvider*)>)>;
+    base::OnceCallback<void(bool, viz::ContextProvider*)>)>;
 using WebFrameSinkDestroyedCallback = base::RepeatingCallback<void()>;
 
 // Exposes the VideoFrameSubmitter, which submits CompositorFrames containing

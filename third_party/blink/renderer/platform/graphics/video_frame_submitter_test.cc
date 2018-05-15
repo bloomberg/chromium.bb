@@ -136,7 +136,7 @@ class VideoFrameSubmitterTest : public testing::Test {
         new StrictMock<MockVideoFrameResourceProvider>(context_provider_.get());
     submitter_ = std::make_unique<VideoFrameSubmitter>(
         base::BindRepeating(
-            [](base::OnceCallback<void(viz::ContextProvider*)>) {}),
+            [](base::OnceCallback<void(bool, viz::ContextProvider*)>) {}),
         base::WrapUnique<MockVideoFrameResourceProvider>(resource_provider_));
 
     submitter_->Initialize(provider_.get());

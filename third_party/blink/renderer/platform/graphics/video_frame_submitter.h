@@ -42,7 +42,7 @@ class PLATFORM_EXPORT VideoFrameSubmitter
     compositor_frame_sink_ = std::move(*sink);
   }
 
-  void OnReceivedContextProvider(viz::ContextProvider*);
+  void OnReceivedContextProvider(bool, viz::ContextProvider*);
 
   // cc::VideoFrameProvider::Client implementation.
   void StopUsingProvider() override;

@@ -101,11 +101,13 @@ class FrameFetchContext : public media::ResourceFetchContext {
 };
 
 void ObtainAndSetContextProvider(
-    base::OnceCallback<void(viz::ContextProvider*)>
+    base::OnceCallback<void(bool, viz::ContextProvider*)>
         set_context_provider_callback,
-    media::GpuVideoAcceleratorFactories* factories) {
-  viz::ContextProvider* context_provider = factories->GetMediaContextProvider();
-  std::move(set_context_provider_callback).Run(context_provider);
+    std::pair<media::GpuVideoAcceleratorFactories*, bool> gpu_info) {
+  viz::ContextProvider* context_provider =
+      gpu_info.first->GetMediaContextProvider();
+  std::move(set_context_provider_callback)
+      .Run(gpu_info.second, context_provider);
 }
 
 // Obtains the media ContextProvider and calls the given callback on the same
@@ -114,11 +116,13 @@ void ObtainAndSetContextProvider(
 // thread.
 void PostMediaContextProviderToCallback(
     scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
-    base::OnceCallback<void(viz::ContextProvider*)>
+    base::OnceCallback<void(bool, viz::ContextProvider*)>
         set_context_provider_callback) {
   base::PostTaskAndReplyWithResult(
       main_task_runner.get(), FROM_HERE, base::BindOnce([]() {
-        return content::RenderThreadImpl::current()->GetGpuFactories();
+        return std::pair<media::GpuVideoAcceleratorFactories*, bool>(
+            content::RenderThreadImpl::current()->GetGpuFactories(),
+            !content::RenderThreadImpl::current()->IsGpuCompositingDisabled());
       }),
       base::BindOnce(&ObtainAndSetContextProvider,
                      std::move(set_context_provider_callback)));
