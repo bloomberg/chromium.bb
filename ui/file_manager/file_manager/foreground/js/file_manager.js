@@ -1168,14 +1168,15 @@ FileManager.prototype = /** @struct */ {
         assert(this.volumeManager_), assert(this.folderShortcutsModel_),
         fakeEntriesVisible &&
                 !DialogType.isFolderDialog(this.launchParams_.type) ?
-            new NavigationModelFakeItem(str('RECENT_ROOT_LABEL'), {
-              isDirectory: true,
-              rootType: VolumeManagerCommon.RootType.RECENT,
-              toURL: function() {
-                return 'fake-entry://recent';
-              },
-              sourceRestriction: this.getSourceRestriction_()
-            }) :
+            new NavigationModelFakeItem(
+                str('RECENT_ROOT_LABEL'), NavigationModelItemType.RECENT, {
+                  isDirectory: true,
+                  rootType: VolumeManagerCommon.RootType.RECENT,
+                  toURL: function() {
+                    return 'fake-entry://recent';
+                  },
+                  sourceRestriction: this.getSourceRestriction_()
+                }) :
             null,
         addNewServicesVisible ?
             new NavigationModelMenuItem(
@@ -1186,8 +1187,8 @@ FileManager.prototype = /** @struct */ {
     chrome.fileManagerPrivate.isCrostiniEnabled((enabled) => {
       if (!enabled)
         return;
-      this.directoryTree.dataModel.linuxFilesItem =
-          new NavigationModelFakeItem(str('LINUX_FILES_ROOT_LABEL'), {
+      this.directoryTree.dataModel.linuxFilesItem = new NavigationModelFakeItem(
+          str('LINUX_FILES_ROOT_LABEL'), NavigationModelItemType.CROSTINI, {
             isDirectory: true,
             rootType: VolumeManagerCommon.RootType.CROSTINI,
             toURL: function() {

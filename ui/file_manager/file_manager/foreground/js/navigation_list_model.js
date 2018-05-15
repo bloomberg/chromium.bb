@@ -114,13 +114,14 @@ NavigationModelMenuItem.prototype = /** @struct */ {
  * Item of NavigationListModel for a fake item such as Recent or Linux Files.
  *
  * @param {string} label Label on the menu button.
+ * @param {NavigationModelItemType} type
  * @param {!FakeEntry} entry Fake entry for the root folder.
  * @constructor
  * @extends {NavigationModelItem}
  * @struct
  */
-function NavigationModelFakeItem(label, entry) {
-  NavigationModelItem.call(this, label, NavigationModelItemType.RECENT);
+function NavigationModelFakeItem(label, type, entry) {
+  NavigationModelItem.call(this, label, type);
   this.entry_ = entry;
 }
 
