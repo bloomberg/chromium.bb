@@ -7,8 +7,10 @@
 #include "services/ui/ws2/client_change.h"
 #include "services/ui/ws2/client_change_tracker.h"
 #include "services/ui/ws2/client_window.h"
+#include "services/ui/ws2/window_service.h"
 #include "services/ui/ws2/window_service_client.h"
 #include "ui/aura/mus/client_surface_embedder.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/dip_util.h"
 
@@ -65,6 +67,29 @@ void ClientRoot::UpdatePrimarySurfaceId() {
       viz::SurfaceId(window_->GetFrameSinkId(), GetLocalSurfaceId()));
 }
 
+void ClientRoot::OnWindowPropertyChanged(aura::Window* window,
+                                         const void* key,
+                                         intptr_t old) {
+  if (window_service_client_->property_change_tracker_
+          ->IsProcessingChangeForWindow(window, ClientChangeType::kProperty)) {
+    // Do not send notifications for changes intiated by the client.
+    return;
+  }
+  std::string transport_name;
+  std::unique_ptr<std::vector<uint8_t>> transport_value;
+  if (window_service_client_->window_service()
+          ->property_converter()
+          ->ConvertPropertyForTransport(window, key, &transport_name,
+                                        &transport_value)) {
+    base::Optional<std::vector<uint8_t>> transport_value_mojo;
+    if (transport_value)
+      transport_value_mojo.emplace(std::move(*transport_value));
+    window_service_client_->window_tree_client_->OnWindowSharedPropertyChanged(
+        window_service_client_->TransportIdForWindow(window), transport_name,
+        transport_value_mojo);
+  }
+}
+
 void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
                                        const gfx::Rect& old_bounds,
                                        const gfx::Rect& new_bounds,
@@ -74,8 +99,7 @@ void ClientRoot::OnWindowBoundsChanged(aura::Window* window,
   base::Optional<viz::LocalSurfaceId> surface_id = local_surface_id_;
   if (window_service_client_->property_change_tracker_
           ->IsProcessingChangeForWindow(window, ClientChangeType::kBounds)) {
-    // The expectation is the client is not notified of changes the client
-    // initiated.
+    // Do not send notifications for changes intiated by the client.
     return;
   }
   window_service_client_->window_tree_client_->OnWindowBoundsChanged(

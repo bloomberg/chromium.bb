@@ -340,8 +340,8 @@ mojom::WindowDataPtr WindowServiceClient::WindowToWindowData(
       transient_parent ? TransportIdForWindow(transient_parent)
                        : kInvalidTransportId;
   client_window->bounds = window->bounds();
-
-  // TODO(crbug.com/837695): Include the window properties.
+  client_window->properties =
+      window_service_->property_converter()->GetTransportProperties(window);
   client_window->visible = window->TargetVisibility();
   return client_window;
 }
@@ -506,16 +506,19 @@ bool WindowServiceClient::SetWindowPropertyImpl(
   }
   DCHECK(window_service_->property_converter()->IsTransportNameRegistered(name))
       << "Attempting to set an unrgistered property; this is not implemented.";
-  if (IsClientCreatedWindow(window) || IsClientRootWindow(window)) {
-    std::unique_ptr<std::vector<uint8_t>> data;
-    if (value.has_value())
-      data = std::make_unique<std::vector<uint8_t>>(value.value());
-    window_service_->property_converter()->SetPropertyFromTransportValue(
-        window, name, data.get());
-    return true;
+  if (!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) {
+    DVLOG(1) << "SetWindowProperty failed (access policy denied change)";
+    return false;
   }
-  DVLOG(1) << "SetWindowProperty failed (access policy denied change)";
-  return false;
+
+  ClientChange change(property_change_tracker_.get(), window,
+                      ClientChangeType::kProperty);
+  std::unique_ptr<std::vector<uint8_t>> data;
+  if (value.has_value())
+    data = std::make_unique<std::vector<uint8_t>>(value.value());
+  window_service_->property_converter()->SetPropertyFromTransportValue(
+      window, name, data.get());
+  return true;
 }
 
 bool WindowServiceClient::SetWindowOpacityImpl(const ClientWindowId& window_id,

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "mojo/public/cpp/bindings/map.h"
@@ -422,7 +423,7 @@ void TestChangeTracker::OnWindowSharedPropertyChanged(
   if (!data)
     change.property_value = "NULL";
   else
-    change.property_value.assign(data->begin(), data->end());
+    change.property_value = base::HexEncode(data->data(), data->size());
   AddChange(change);
 }
 

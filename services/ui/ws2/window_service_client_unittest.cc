@@ -118,8 +118,8 @@ class TestLayoutManager : public aura::LayoutManager {
 TEST(WindowServiceClientTest, NewWindow) {
   WindowServiceTestHelper helper;
   EXPECT_TRUE(helper.changes()->empty());
-  aura::Window* top_level = helper.helper()->NewWindow(1);
-  ASSERT_TRUE(top_level);
+  aura::Window* window = helper.helper()->NewWindow(1);
+  ASSERT_TRUE(window);
   EXPECT_EQ("ChangeCompleted id=1 sucess=true",
             SingleChangeToDescription(*helper.changes()));
   helper.changes()->clear();
@@ -130,12 +130,12 @@ TEST(WindowServiceClientTest, NewWindowWithProperties) {
   EXPECT_TRUE(helper.changes()->empty());
   aura::PropertyConverter::PrimitiveType value = true;
   std::vector<uint8_t> transport = mojo::ConvertTo<std::vector<uint8_t>>(value);
-  aura::Window* top_level = helper.helper()->NewWindow(
+  aura::Window* window = helper.helper()->NewWindow(
       1, {{ui::mojom::WindowManager::kAlwaysOnTop_Property, transport}});
-  ASSERT_TRUE(top_level);
+  ASSERT_TRUE(window);
   EXPECT_EQ("ChangeCompleted id=1 sucess=true",
             SingleChangeToDescription(*helper.changes()));
-  EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
+  EXPECT_TRUE(window->GetProperty(aura::client::kAlwaysOnTopKey));
   helper.changes()->clear();
 }
 
@@ -163,7 +163,7 @@ TEST(WindowServiceClientTest, NewTopLevelWindowWithProperties) {
   helper.changes()->clear();
 }
 
-TEST(WindowServiceClientTest, SetWindowBounds) {
+TEST(WindowServiceClientTest, SetTopLevelWindowBounds) {
   WindowServiceTestHelper helper;
   aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
   helper.changes()->clear();
@@ -203,20 +203,49 @@ TEST(WindowServiceClientTest, SetWindowBounds) {
   helper.changes()->clear();
 }
 
-TEST(WindowServiceClientTest, SetWindowProperty) {
+// Tests the ability of the client to change properties on the server.
+TEST(WindowServiceClientTest, SetTopLevelWindowProperty) {
   WindowServiceTestHelper helper;
   aura::Window* top_level = helper.helper()->NewTopLevelWindow(1);
   helper.changes()->clear();
 
   EXPECT_FALSE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
-  aura::PropertyConverter::PrimitiveType value = true;
-  std::vector<uint8_t> transport = mojo::ConvertTo<std::vector<uint8_t>>(value);
+  aura::PropertyConverter::PrimitiveType client_value = true;
+  std::vector<uint8_t> client_transport_value =
+      mojo::ConvertTo<std::vector<uint8_t>>(client_value);
   helper.helper()->SetWindowProperty(
-      top_level, ui::mojom::WindowManager::kAlwaysOnTop_Property, transport, 2);
+      top_level, ui::mojom::WindowManager::kAlwaysOnTop_Property,
+      client_transport_value, 2);
   EXPECT_EQ("ChangeCompleted id=2 sucess=true",
             SingleChangeToDescription(*helper.changes()));
   EXPECT_TRUE(top_level->GetProperty(aura::client::kAlwaysOnTopKey));
   helper.changes()->clear();
+
+  top_level->SetProperty(aura::client::kAlwaysOnTopKey, false);
+  EXPECT_EQ(
+      "PropertyChanged window=0,1 key=prop:always_on_top "
+      "value=0000000000000000",
+      SingleChangeToDescription(*helper.changes()));
+  helper.changes()->clear();
+}
+
+TEST(WindowServiceClientTest, WindowToWindowData) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(1);
+  helper.changes()->clear();
+
+  window->SetBounds(gfx::Rect(1, 2, 300, 400));
+  window->SetProperty(aura::client::kAlwaysOnTopKey, true);
+  window->Show();  // Called to make the window visible.
+  mojom::WindowDataPtr data = helper.helper()->WindowToWindowData(window);
+  EXPECT_EQ(gfx::Rect(1, 2, 300, 400), data->bounds);
+  EXPECT_TRUE(data->visible);
+  EXPECT_EQ(1u, data->properties.count(
+                    ui::mojom::WindowManager::kAlwaysOnTop_Property));
+  EXPECT_EQ(
+      aura::PropertyConverter::PrimitiveType(true),
+      mojo::ConvertTo<aura::PropertyConverter::PrimitiveType>(
+          data->properties[ui::mojom::WindowManager::kAlwaysOnTop_Property]));
 }
 
 TEST(WindowServiceClientTest, PointerWatcher) {

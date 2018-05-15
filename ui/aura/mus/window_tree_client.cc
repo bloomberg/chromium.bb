@@ -981,20 +981,9 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
 
   DCHECK(window_manager_delegate_ || !IsRoot(window));
 
-  base::flat_map<std::string, std::vector<uint8_t>> transport_properties;
-  std::set<const void*> property_keys =
-      window->GetWindow()->GetAllPropertyKeys();
   PropertyConverter* property_converter = delegate_->GetPropertyConverter();
-  for (const void* key : property_keys) {
-    std::string transport_name;
-    std::unique_ptr<std::vector<uint8_t>> transport_value;
-    if (!property_converter->ConvertPropertyForTransport(
-            window->GetWindow(), key, &transport_name, &transport_value)) {
-      continue;
-    }
-    transport_properties[transport_name] =
-        transport_value ? std::move(*transport_value) : std::vector<uint8_t>();
-  }
+  base::flat_map<std::string, std::vector<uint8_t>> transport_properties =
+      property_converter->GetTransportProperties(window->GetWindow());
 
   const uint32_t change_id = ScheduleInFlightChange(
       std::make_unique<CrashInFlightChange>(window, ChangeType::NEW_WINDOW));

@@ -73,6 +73,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   void SendPointerWatcherEventToClient(int64_t display_id,
                                        std::unique_ptr<Event> event);
 
+  WindowService* window_service() { return window_service_; }
+
  private:
   friend class ClientRoot;
   friend class WindowServiceClientTestHelper;

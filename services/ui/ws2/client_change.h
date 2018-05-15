@@ -27,6 +27,8 @@ class ClientChangeTracker;
 enum class ClientChangeType {
   // Used for WindowTree::SetWindowBounds().
   kBounds,
+  // Used for WindowTree::SetWindowProperty().
+  kProperty,
 };
 
 // ClientChange represents an incoming request from a WindowTreeClient. For
