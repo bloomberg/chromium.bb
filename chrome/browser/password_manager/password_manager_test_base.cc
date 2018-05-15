@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -486,42 +487,6 @@ void PasswordManagerBrowserTestBase::NavigateToFile(const std::string& path) {
   observer.Wait();
 }
 
-void PasswordManagerBrowserTestBase::VerifyPasswordIsSavedAndFilled(
-    const std::string& filename,
-    const std::string& submission_script,
-    const std::string& expected_element,
-    const std::string& expected_value) {
-  password_manager::TestPasswordStore* password_store =
-      static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(
-              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS).get());
-  EXPECT_TRUE(password_store->IsEmpty());
-
-  NavigateToFile(filename);
-
-  NavigationObserver observer(WebContents());
-  ASSERT_TRUE(content::ExecuteScript(RenderFrameHost(), submission_script));
-  observer.Wait();
-  WaitForPasswordStore();
-
-  BubbleObserver(WebContents()).AcceptSavePrompt();
-
-  // Spin the message loop to make sure the password store had a chance to save
-  // the password.
-  WaitForPasswordStore();
-  ASSERT_FALSE(password_store->IsEmpty());
-
-  NavigateToFile(filename);
-
-  // Let the user interact with the page, so that DOM gets modification events,
-  // needed for autofilling fields.
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
-
-  // Wait until that interaction causes the password value to be revealed.
-  WaitForElementValue(expected_element, expected_value);
-}
-
 void PasswordManagerBrowserTestBase::WaitForElementValue(
     const std::string& element_id,
     const std::string& expected_value) {
@@ -688,8 +653,8 @@ void PasswordManagerBrowserTestBase::AddHSTSHost(const std::string& host) {
 }
 
 void PasswordManagerBrowserTestBase::CheckThatCredentialsStored(
-    const base::string16& username,
-    const base::string16& password) {
+    const std::string& username,
+    const std::string& password) {
   scoped_refptr<password_manager::TestPasswordStore> password_store =
       static_cast<password_manager::TestPasswordStore*>(
           PasswordStoreFactory::GetForProfile(
@@ -700,6 +665,6 @@ void PasswordManagerBrowserTestBase::CheckThatCredentialsStored(
   auto& passwords_vector = passwords_map.begin()->second;
   ASSERT_EQ(1u, passwords_vector.size());
   const autofill::PasswordForm& form = passwords_vector[0];
-  EXPECT_EQ(username, form.username_value);
-  EXPECT_EQ(password, form.password_value);
+  EXPECT_EQ(base::ASCIIToUTF16(username), form.username_value);
+  EXPECT_EQ(base::ASCIIToUTF16(password), form.password_value);
 }
