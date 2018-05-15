@@ -297,14 +297,10 @@ void CanvasResourceGpuMemoryBuffer::TearDown() {
   if (!context_provider_wrapper_ || !image_id_)
     return;
   auto* gl = context_provider_wrapper_->ContextProvider()->ContextGL();
-  if (gl && texture_id_) {
-    GLenum target = TextureTarget();
-    gl->BindTexture(target, texture_id_);
-    gl->ReleaseTexImage2DCHROMIUM(target, image_id_);
+  if (gl && image_id_)
     gl->DestroyImageCHROMIUM(image_id_);
+  if (gl && texture_id_)
     gl->DeleteTextures(1, &texture_id_);
-    gl->BindTexture(target, 0);
-  }
   image_id_ = 0;
   texture_id_ = 0;
   gpu_memory_buffer_ = nullptr;
