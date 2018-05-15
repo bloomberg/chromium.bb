@@ -2165,7 +2165,7 @@ void LocalFrameView::UpdateCompositedSelectionIfNeeded() {
   if (!local_frame) {
     // Clearing the mainframe when there is no focused frame (and hence
     // no localFrame) is legacy behaviour, and implemented here to
-    // satisfy ParameterizedWebFrameTest.CompositedSelectionBoundsCleared's
+    // satisfy WebFrameTest.CompositedSelectionBoundsCleared's
     // first check that the composited selection has been cleared even
     // though no frame has focus yet. If this is not desired, then the
     // expectation needs to be removed from the test.
