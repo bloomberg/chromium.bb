@@ -1147,7 +1147,7 @@
     },
     {
       name: "ServiceWorkerUpdateViaCache",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "SetRootScroller",

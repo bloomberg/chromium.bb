@@ -215,12 +215,6 @@ bool ServiceWorkerUtils::ExtractSinglePartHttpRange(
 bool ServiceWorkerUtils::ShouldBypassCacheDueToUpdateViaCache(
     bool is_main_script,
     blink::mojom::ServiceWorkerUpdateViaCache cache_mode) {
-  // TODO(https://crbug.com/675540): Remove the command line check and always
-  // respect cache_mode when shipping updateViaCache flag to stable.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
-    return false;
-  }
   switch (cache_mode) {
     case blink::mojom::ServiceWorkerUpdateViaCache::kImports:
       return is_main_script;
