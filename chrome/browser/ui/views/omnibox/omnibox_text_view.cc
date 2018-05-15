@@ -9,10 +9,13 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_text_view.h"
 
+#include "base/feature_list.h"
+#include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
@@ -242,11 +245,13 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateText(
     const SuggestionAnswer::ImageLine& line) const {
   std::unique_ptr<gfx::RenderText> destination =
       CreateRenderText(base::string16());
-  // This assumes that the first text type in the line can be used to specify
-  // the font for all the text fields in the line.  For now this works but
-  // eventually it may be necessary to get RenderText to support multiple font
-  // sizes or use multiple RenderTexts.
-  destination->SetFontList(GetFontForType(line.text_fields()[0].type()));
+  if (!base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout)) {
+    // This assumes that the first text type in the line can be used to specify
+    // the font for all the text fields in the line.  For now this works but
+    // eventually it may be necessary to get RenderText to support multiple font
+    // sizes or use multiple RenderTexts.
+    destination->SetFontList(GetFontForType(line.text_fields()[0].type()));
+  }
 
   for (const SuggestionAnswer::TextField& text_field : line.text_fields())
     AppendText(destination.get(), text_field.text(), text_field.type());
@@ -311,19 +316,25 @@ void OmniboxTextView::AppendTextHelper(gfx::RenderText* destination,
   int offset = destination->text().length();
   gfx::Range range(offset, offset + text.length());
   destination->AppendText(text);
-  const TextStyle& text_style = GetTextStyle(text_type);
-  // TODO(dschuyler): follow up on the problem of different font sizes within
-  // one RenderText.  Maybe with destination->SetFontList(...).
-  destination->ApplyWeight(
-      is_bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL, range);
-  destination->ApplyColor(result_view_->GetColor(text_style.part), range);
+  if (base::FeatureList::IsEnabled(omnibox::kOmniboxNewAnswerLayout)) {
+    destination->ApplyColor(
+        result_view_->GetColor(OmniboxPart::RESULTS_TEXT_DIMMED), range);
+  } else {
+    const TextStyle& text_style = GetTextStyle(text_type);
+    // TODO(dschuyler): follow up on the problem of different font sizes within
+    // one RenderText.  Maybe with destination->SetFontList(...).
+    destination->ApplyWeight(
+        is_bold ? gfx::Font::Weight::BOLD : gfx::Font::Weight::NORMAL, range);
+    destination->ApplyColor(result_view_->GetColor(text_style.part), range);
 
-  // Baselines are always aligned under the touch UI. Font sizes change instead.
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
-    destination->ApplyBaselineStyle(text_style.baseline, range);
-  } else if (text_style.touchable_size_delta != 0) {
-    destination->ApplyFontSizeOverride(GetFontForType(text_type).GetFontSize(),
-                                       range);
+    // Baselines are always aligned under the touch UI. Font sizes change
+    // instead.
+    if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+      destination->ApplyBaselineStyle(text_style.baseline, range);
+    } else if (text_style.touchable_size_delta != 0) {
+      destination->ApplyFontSizeOverride(
+          GetFontForType(text_type).GetFontSize(), range);
+    }
   }
 }
 
