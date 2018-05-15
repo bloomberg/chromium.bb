@@ -188,8 +188,8 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
         const int32_t u =
             (int32_t)(dat[i * dat_stride + j] << SGRPROJ_RST_BITS);
         int32_t v = u << SGRPROJ_PRJ_BITS;
-        if (params->r0 > 0) v += xq[0] * (flt0[i * flt0_stride + j] - u);
-        if (params->r1 > 0) v += xq[1] * (flt1[i * flt1_stride + j] - u);
+        if (params->r[0] > 0) v += xq[0] * (flt0[i * flt0_stride + j] - u);
+        if (params->r[1] > 0) v += xq[1] * (flt1[i * flt1_stride + j] - u);
         const int32_t e =
             ROUND_POWER_OF_TWO(v, SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS) -
             src[i * src_stride + j];
@@ -200,7 +200,7 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
     const uint16_t *src = CONVERT_TO_SHORTPTR(src8);
     const uint16_t *dat = CONVERT_TO_SHORTPTR(dat8);
     const int32_t half = 1 << (SGRPROJ_RST_BITS + SGRPROJ_PRJ_BITS - 1);
-    if (params->r0 > 0 && params->r1 > 0) {
+    if (params->r[0] > 0 && params->r[1] > 0) {
       int xq0 = xq[0];
       int xq1 = xq[1];
       for (i = 0; i < height; ++i) {
@@ -222,11 +222,11 @@ static int64_t get_pixel_proj_error(const uint8_t *src8, int width, int height,
         flt1 += flt1_stride;
         src += src_stride;
       }
-    } else if (params->r0 > 0 || params->r1 > 0) {
+    } else if (params->r[0] > 0 || params->r[1] > 0) {
       int exq;
       int32_t *flt;
       int flt_stride;
-      if (params->r0 > 0) {
+      if (params->r[0] > 0) {
         exq = xq[0];
         flt = flt0;
         flt_stride = flt0_stride;
@@ -282,7 +282,9 @@ static int64_t finer_search_pixel_proj_error(
   int tap_max[] = { SGRPROJ_PRJ_MAX0, SGRPROJ_PRJ_MAX1 };
   for (int s = start_step; s >= 1; s >>= 1) {
     for (int p = 0; p < 2; ++p) {
-      if ((params->r0 == 0 && p == 0) || (params->r1 == 0 && p == 1)) continue;
+      if ((params->r[0] == 0 && p == 0) || (params->r[1] == 0 && p == 1)) {
+        continue;
+      }
       int skip = 0;
       do {
         if (xqd[p] - s >= tap_min[p]) {
@@ -353,9 +355,9 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
         const double s =
             (double)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
         const double f1 =
-            (params->r0 > 0) ? (double)flt0[i * flt0_stride + j] - u : 0;
+            (params->r[0] > 0) ? (double)flt0[i * flt0_stride + j] - u : 0;
         const double f2 =
-            (params->r1 > 0) ? (double)flt1[i * flt1_stride + j] - u : 0;
+            (params->r[1] > 0) ? (double)flt1[i * flt1_stride + j] - u : 0;
         H[0][0] += f1 * f1;
         H[1][1] += f2 * f2;
         H[0][1] += f1 * f2;
@@ -372,9 +374,9 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
         const double s =
             (double)(src[i * src_stride + j] << SGRPROJ_RST_BITS) - u;
         const double f1 =
-            (params->r0 > 0) ? (double)flt0[i * flt0_stride + j] - u : 0;
+            (params->r[0] > 0) ? (double)flt0[i * flt0_stride + j] - u : 0;
         const double f2 =
-            (params->r1 > 0) ? (double)flt1[i * flt1_stride + j] - u : 0;
+            (params->r[1] > 0) ? (double)flt1[i * flt1_stride + j] - u : 0;
         H[0][0] += f1 * f1;
         H[1][1] += f2 * f2;
         H[0][1] += f1 * f2;
@@ -389,7 +391,7 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
   H[1][0] = H[0][1];
   C[0] /= size;
   C[1] /= size;
-  if (params->r0 == 0) {
+  if (params->r[0] == 0) {
     // H matrix is now only the scalar H[1][1]
     // C vector is now only the scalar C[1]
     Det = H[1][1];
@@ -399,7 +401,7 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
 
     xq[0] = 0;
     xq[1] = (int)rint(x[1] * (1 << SGRPROJ_PRJ_BITS));
-  } else if (params->r1 == 0) {
+  } else if (params->r[1] == 0) {
     // H matrix is now only the scalar H[0][0]
     // C vector is now only the scalar C[0]
     Det = H[0][0];
@@ -421,11 +423,11 @@ static void get_proj_subspace(const uint8_t *src8, int width, int height,
 }
 
 void encode_xq(int *xq, int *xqd, const sgr_params_type *params) {
-  if (params->r0 == 0) {
+  if (params->r[0] == 0) {
     xqd[0] = 0;
     xqd[1] = clamp((1 << SGRPROJ_PRJ_BITS) - xq[1], SGRPROJ_PRJ_MIN1,
                    SGRPROJ_PRJ_MAX1);
-  } else if (params->r1 == 0) {
+  } else if (params->r[1] == 0) {
     xqd[0] = clamp(xq[0], SGRPROJ_PRJ_MIN0, SGRPROJ_PRJ_MAX0);
     xqd[1] = clamp((1 << SGRPROJ_PRJ_BITS) - xqd[0], SGRPROJ_PRJ_MIN1,
                    SGRPROJ_PRJ_MAX1);
@@ -505,12 +507,12 @@ static int count_sgrproj_bits(SgrprojInfo *sgrproj_info,
                               SgrprojInfo *ref_sgrproj_info) {
   int bits = SGRPROJ_PARAMS_BITS;
   const sgr_params_type *params = &sgr_params[sgrproj_info->ep];
-  if (params->r0 > 0)
+  if (params->r[0] > 0)
     bits += aom_count_primitive_refsubexpfin(
         SGRPROJ_PRJ_MAX0 - SGRPROJ_PRJ_MIN0 + 1, SGRPROJ_PRJ_SUBEXP_K,
         ref_sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0,
         sgrproj_info->xqd[0] - SGRPROJ_PRJ_MIN0);
-  if (params->r1 > 0)
+  if (params->r[1] > 0)
     bits += aom_count_primitive_refsubexpfin(
         SGRPROJ_PRJ_MAX1 - SGRPROJ_PRJ_MIN1 + 1, SGRPROJ_PRJ_SUBEXP_K,
         ref_sgrproj_info->xqd[1] - SGRPROJ_PRJ_MIN1,

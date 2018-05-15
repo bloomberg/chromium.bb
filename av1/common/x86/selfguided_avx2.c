@@ -219,10 +219,9 @@ static void calc_ab(int32_t *A, int32_t *B, const int32_t *C, const int32_t *D,
                     int width, int height, int buf_stride, int bit_depth,
                     int sgr_params_idx, int radius_idx) {
   const sgr_params_type *const params = &sgr_params[sgr_params_idx];
-  const int r = (radius_idx == 0) ? params->r0 : params->r1;
+  const int r = params->r[radius_idx];
   const int n = (2 * r + 1) * (2 * r + 1);
-  const __m256i s =
-      _mm256_set1_epi32((radius_idx == 0) ? params->s0 : params->s1);
+  const __m256i s = _mm256_set1_epi32(params->s[radius_idx]);
   // one_over_n[n-1] is 2^12/n, so easily fits in an int16
   const __m256i one_over_n = _mm256_set1_epi32(one_by_x[n - 1]);
 
@@ -357,10 +356,9 @@ static void calc_ab_fast(int32_t *A, int32_t *B, const int32_t *C,
                          int buf_stride, int bit_depth, int sgr_params_idx,
                          int radius_idx) {
   const sgr_params_type *const params = &sgr_params[sgr_params_idx];
-  const int r = (radius_idx == 0) ? params->r0 : params->r1;
+  const int r = params->r[radius_idx];
   const int n = (2 * r + 1) * (2 * r + 1);
-  const __m256i s =
-      _mm256_set1_epi32((radius_idx == 0) ? params->s0 : params->s1);
+  const __m256i s = _mm256_set1_epi32(params->s[radius_idx]);
   // one_over_n[n-1] is 2^12/n, so easily fits in an int16
   const __m256i one_over_n = _mm256_set1_epi32(one_by_x[n - 1]);
 
@@ -610,18 +608,18 @@ void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
   // If params->r == 0 we skip the corresponding filter. We only allow one of
   // the radii to be 0, as having both equal to 0 would be equivalent to
   // skipping SGR entirely.
-  assert(!(params->r0 == 0 && params->r1 == 0));
-  assert(params->r0 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
-  assert(params->r1 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
+  assert(!(params->r[0] == 0 && params->r[1] == 0));
+  assert(params->r[0] < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
+  assert(params->r[1] < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
 
-  if (params->r0 > 0) {
+  if (params->r[0] > 0) {
     calc_ab_fast(A, B, C, D, width, height, buf_stride, bit_depth,
                  sgr_params_idx, 0);
     final_filter_fast(flt0, flt_stride, A, B, buf_stride, dgd8, dgd_stride,
                       width, height, highbd);
   }
 
-  if (params->r1 > 0) {
+  if (params->r[1] > 0) {
     calc_ab(A, B, C, D, width, height, buf_stride, bit_depth, sgr_params_idx,
             1);
     final_filter(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
@@ -672,7 +670,7 @@ void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
       __m256i v_0 = _mm256_slli_epi32(u_0, SGRPROJ_PRJ_BITS);
       __m256i v_1 = _mm256_slli_epi32(u_1, SGRPROJ_PRJ_BITS);
 
-      if (params->r0 > 0) {
+      if (params->r[0] > 0) {
         const __m256i f1_0 = _mm256_sub_epi32(yy_loadu_256(&flt0[k]), u_0);
         v_0 = _mm256_add_epi32(v_0, _mm256_mullo_epi32(xq0, f1_0));
 
@@ -680,7 +678,7 @@ void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
         v_1 = _mm256_add_epi32(v_1, _mm256_mullo_epi32(xq0, f1_1));
       }
 
-      if (params->r1 > 0) {
+      if (params->r[1] > 0) {
         const __m256i f2_0 = _mm256_sub_epi32(yy_loadu_256(&flt1[k]), u_0);
         v_0 = _mm256_add_epi32(v_0, _mm256_mullo_epi32(xq1, f2_0));
 

@@ -28,12 +28,14 @@
 // spec using GenSgrprojVtable().
 // Note: Setting r = 0 skips the filter; with corresponding s = -1 (invalid).
 const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
-  { 2, 140, 1, 3236 }, { 2, 112, 1, 2158 }, { 2, 93, 1, 1618 },
-  { 2, 80, 1, 1438 },  { 2, 70, 1, 1295 },  { 2, 58, 1, 1177 },
-  { 2, 47, 1, 1079 },  { 2, 37, 1, 996 },   { 2, 30, 1, 925 },
-  { 2, 25, 1, 863 },   { 0, -1, 1, 2589 },  { 0, -1, 1, 1618 },
-  { 0, -1, 1, 1177 },  { 0, -1, 1, 925 },   { 2, 56, 0, -1 },
-  { 2, 22, 0, -1 },
+  { { 2, 1 }, { 140, 3236 } }, { { 2, 1 }, { 112, 2158 } },
+  { { 2, 1 }, { 93, 1618 } },  { { 2, 1 }, { 80, 1438 } },
+  { { 2, 1 }, { 70, 1295 } },  { { 2, 1 }, { 58, 1177 } },
+  { { 2, 1 }, { 47, 1079 } },  { { 2, 1 }, { 37, 996 } },
+  { { 2, 1 }, { 30, 925 } },   { { 2, 1 }, { 25, 863 } },
+  { { 0, 1 }, { -1, 2589 } },  { { 0, 1 }, { -1, 1618 } },
+  { { 0, 1 }, { -1, 1177 } },  { { 0, 1 }, { -1, 925 } },
+  { { 2, 0 }, { 56, -1 } },    { { 2, 0 }, { 22, -1 } },
 };
 
 static AV1PixelRect whole_frame_rect(const AV1_COMMON *cm, int is_uv) {
@@ -102,18 +104,16 @@ void av1_free_restoration_struct(RestorationInfo *rst_info) {
 
 #if 0
 // Pair of values for each sgrproj parameter:
-// Index 0 corresponds to r0, e0
-// Index 1 corresponds to r1, e1
+// Index 0 corresponds to r[0], e[0]
+// Index 1 corresponds to r[1], e[1]
 int sgrproj_mtable[SGRPROJ_PARAMS][2];
 
 static void GenSgrprojVtable() {
   for (int i = 0; i < SGRPROJ_PARAMS; ++i) {
     const sgr_params_type *const params = &sgr_params[i];
-    const int e_list[2] = { params->e0, params->e1 };
-    const int r_list[2] = { params->r0, params->r1 };
     for (int j = 0; j < 2; ++j) {
-      const int e = e_list[j];
-      const int r = r_list[j];
+      const int e = params->e[j];
+      const int r = params->r[j];
       if (r == 0) {                 // filter is disabled
         sgrproj_mtable[i][j] = -1;  // mark invalid
       } else {                      // filter is enabled
@@ -620,10 +620,10 @@ static void boxsum(int32_t *src, int width, int height, int src_stride, int r,
 }
 
 void decode_xq(const int *xqd, int *xq, const sgr_params_type *params) {
-  if (params->r0 == 0) {
+  if (params->r[0] == 0) {
     xq[0] = 0;
     xq[1] = (1 << SGRPROJ_PRJ_BITS) - xqd[1];
-  } else if (params->r1 == 0) {
+  } else if (params->r[1] == 0) {
     xq[0] = xqd[0];
     xq[1] = 0;
   } else {
@@ -664,7 +664,7 @@ static void selfguided_restoration_fast_internal(
     int32_t *dgd, int width, int height, int dgd_stride, int32_t *dst,
     int dst_stride, int bit_depth, int sgr_params_idx, int radius_idx) {
   const sgr_params_type *const params = &sgr_params[sgr_params_idx];
-  const int r = (radius_idx == 0) ? params->r0 : params->r1;
+  const int r = params->r[radius_idx];
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
   // Adjusting the stride of A and B here appears to avoid bad cache effects,
@@ -710,7 +710,7 @@ static void selfguided_restoration_fast_internal(
       // are (almost) identical, so in this case we saturate to p=0.
       uint32_t p = (a * n < b * b) ? 0 : a * n - b * b;
 
-      const uint32_t s = (radius_idx == 0) ? params->s0 : params->s1;
+      const uint32_t s = params->s[radius_idx];
 
       // p * s < (2^14 * n^2) * round(2^20 / n^2 eps) < 2^34 / eps < 2^32
       // as long as eps >= 4. So p * s fits into a uint32_t, and z < 2^12
@@ -796,7 +796,7 @@ static void selfguided_restoration_internal(int32_t *dgd, int width, int height,
                                             int sgr_params_idx,
                                             int radius_idx) {
   const sgr_params_type *const params = &sgr_params[sgr_params_idx];
-  const int r = (radius_idx == 0) ? params->r0 : params->r1;
+  const int r = params->r[radius_idx];
   const int width_ext = width + 2 * SGRPROJ_BORDER_HORZ;
   const int height_ext = height + 2 * SGRPROJ_BORDER_VERT;
   // Adjusting the stride of A and B here appears to avoid bad cache effects,
@@ -842,7 +842,7 @@ static void selfguided_restoration_internal(int32_t *dgd, int width, int height,
       // are (almost) identical, so in this case we saturate to p=0.
       uint32_t p = (a * n < b * b) ? 0 : a * n - b * b;
 
-      const uint32_t s = (radius_idx == 0) ? params->s0 : params->s1;
+      const uint32_t s = params->s[radius_idx];
 
       // p * s < (2^14 * n^2) * round(2^20 / n^2 eps) < 2^34 / eps < 2^32
       // as long as eps >= 4. So p * s fits into a uint32_t, and z < 2^12
@@ -938,13 +938,13 @@ void av1_selfguided_restoration_c(const uint8_t *dgd8, int width, int height,
   // If params->r == 0 we skip the corresponding filter. We only allow one of
   // the radii to be 0, as having both equal to 0 would be equivalent to
   // skipping SGR entirely.
-  assert(!(params->r0 == 0 && params->r1 == 0));
+  assert(!(params->r[0] == 0 && params->r[1] == 0));
 
-  if (params->r0 > 0)
+  if (params->r[0] > 0)
     selfguided_restoration_fast_internal(dgd32, width, height, dgd32_stride,
                                          flt0, flt_stride, bit_depth,
                                          sgr_params_idx, 0);
-  if (params->r1 > 0)
+  if (params->r[1] > 0)
     selfguided_restoration_internal(dgd32, width, height, dgd32_stride, flt1,
                                     flt_stride, bit_depth, sgr_params_idx, 1);
 }
@@ -974,8 +974,8 @@ void apply_selfguided_restoration_c(const uint8_t *dat8, int width, int height,
       int32_t v = u << SGRPROJ_PRJ_BITS;
       // If params->r == 0 then we skipped the filtering in
       // av1_selfguided_restoration_c, i.e. flt[k] == u
-      if (params->r0 > 0) v += xq[0] * (flt0[k] - u);
-      if (params->r1 > 0) v += xq[1] * (flt1[k] - u);
+      if (params->r[0] > 0) v += xq[0] * (flt0[k] - u);
+      if (params->r[1] > 0) v += xq[1] * (flt1[k] - u);
       const int16_t w =
           (int16_t)ROUND_POWER_OF_TWO(v, SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
 

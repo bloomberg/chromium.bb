@@ -172,10 +172,8 @@ extern "C" {
 #endif
 
 typedef struct {
-  int r0;  // radius #0
-  int s0;  // sgr parameter corresponding to r0, based on GenSgrprojVtable()
-  int r1;  // radius #1
-  int s1;  // sgr parameter corresponding to r1, based on GenSgrprojVtable()
+  int r[2];  // radii
+  int s[2];  // sgr parameters for r[0] and r[1], based on GenSgrprojVtable()
 } sgr_params_type;
 
 typedef struct {
