@@ -558,7 +558,9 @@ static aom_codec_err_t set_encoder_config(
   // FIXME(debargha): Should this be:
   // oxcf->allow_ref_frame_mvs = extra_cfg->allow_ref_frame_mvs &
   //                             extra_cfg->enable_order_hint ?
-  oxcf->allow_ref_frame_mvs = extra_cfg->allow_ref_frame_mvs;
+  // Disallow using temporal MVs while large_scale_tile = 1.
+  oxcf->allow_ref_frame_mvs =
+      extra_cfg->allow_ref_frame_mvs && !cfg->large_scale_tile;
   oxcf->under_shoot_pct = cfg->rc_undershoot_pct;
   oxcf->over_shoot_pct = cfg->rc_overshoot_pct;
 

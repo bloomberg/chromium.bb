@@ -4648,6 +4648,11 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   // S_FRAMEs are always error resilient
   cm->error_resilient_mode |= frame_is_sframe(cm);
+
+  cm->large_scale_tile = cpi->oxcf.large_scale_tile;
+  cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
+  if (cm->large_scale_tile) cm->seq_params.frame_id_numbers_present_flag = 0;
+
   cm->allow_ref_frame_mvs &= frame_might_allow_ref_frame_mvs(cm);
   cm->allow_warped_motion =
       cpi->oxcf.allow_warped_motion && frame_might_allow_warped_motion(cm);
@@ -4768,10 +4773,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     // updates
     cm->num_tg = DEFAULT_MAX_NUM_TG;
   }
-
-  cm->large_scale_tile = cpi->oxcf.large_scale_tile;
-  cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
-  if (cm->large_scale_tile) cm->seq_params.frame_id_numbers_present_flag = 0;
 
   // For 1 pass CBR, check if we are dropping this frame.
   // Never drop on key frame.
