@@ -478,14 +478,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes"){
 }  # CONFIG_AV1_ENCODER
 
 #
-# Inverse transform
-if (aom_config("CONFIG_AV1") eq "yes") {
-  add_proto qw/void aom_highbd_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-
-  add_proto qw/void aom_highbd_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
-}  # CONFIG_AV1
-
-#
 # Quantization
 #
 if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {

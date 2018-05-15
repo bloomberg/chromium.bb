@@ -28,8 +28,6 @@ list(APPEND AOM_DSP_COMMON_SOURCES
             "${AOM_ROOT}/aom_dsp/entcode.h"
             "${AOM_ROOT}/aom_dsp/intrapred.c"
             "${AOM_ROOT}/aom_dsp/intrapred_common.h"
-            "${AOM_ROOT}/aom_dsp/inv_txfm.c"
-            "${AOM_ROOT}/aom_dsp/inv_txfm.h"
             "${AOM_ROOT}/aom_dsp/loopfilter.c"
             "${AOM_ROOT}/aom_dsp/prob.h"
             "${AOM_ROOT}/aom_dsp/simd/v128_intrinsics.h"

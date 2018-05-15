@@ -10,7 +10,6 @@
  */
 
 #include <stdlib.h>
-#include "aom_dsp/inv_txfm.h"
 #include "av1/common/av1_inv_txfm1d.h"
 
 static void range_check_buf(int32_t stage, const int32_t *input,

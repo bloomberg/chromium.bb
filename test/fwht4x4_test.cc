@@ -44,11 +44,11 @@ void fwht4x4_ref(const int16_t *in, tran_low_t *out, int stride,
 }
 
 void iwht4x4_10(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_iwht4x4_16_add_c(in, out, stride, 10);
+  av1_highbd_iwht4x4_16_add_c(in, out, stride, 10);
 }
 
 void iwht4x4_12(const tran_low_t *in, uint8_t *out, int stride) {
-  aom_highbd_iwht4x4_16_add_c(in, out, stride, 12);
+  av1_highbd_iwht4x4_16_add_c(in, out, stride, 12);
 }
 
 class Trans4x4WHT : public libaom_test::TransformTestBase,

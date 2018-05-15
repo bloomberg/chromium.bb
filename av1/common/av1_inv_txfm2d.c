@@ -11,11 +11,97 @@
 
 #include "./aom_dsp_rtcd.h"
 #include "./av1_rtcd.h"
-#include "aom_dsp/inv_txfm.h"
 #include "av1/common/enums.h"
 #include "av1/common/av1_txfm.h"
 #include "av1/common/av1_inv_txfm1d.h"
 #include "av1/common/av1_inv_txfm1d_cfg.h"
+
+void av1_highbd_iwht4x4_16_add_c(const tran_low_t *input, uint8_t *dest8,
+                                 int stride, int bd) {
+  /* 4-point reversible, orthonormal inverse Walsh-Hadamard in 3.5 adds,
+     0.5 shifts per pixel. */
+  int i;
+  tran_low_t output[16];
+  tran_low_t a1, b1, c1, d1, e1;
+  const tran_low_t *ip = input;
+  tran_low_t *op = output;
+  uint16_t *dest = CONVERT_TO_SHORTPTR(dest8);
+
+  for (i = 0; i < 4; i++) {
+    a1 = ip[0] >> UNIT_QUANT_SHIFT;
+    c1 = ip[1] >> UNIT_QUANT_SHIFT;
+    d1 = ip[2] >> UNIT_QUANT_SHIFT;
+    b1 = ip[3] >> UNIT_QUANT_SHIFT;
+    a1 += c1;
+    d1 -= b1;
+    e1 = (a1 - d1) >> 1;
+    b1 = e1 - b1;
+    c1 = e1 - c1;
+    a1 -= b1;
+    d1 += c1;
+    op[0] = a1;
+    op[1] = b1;
+    op[2] = c1;
+    op[3] = d1;
+    ip += 4;
+    op += 4;
+  }
+
+  ip = output;
+  for (i = 0; i < 4; i++) {
+    a1 = ip[4 * 0];
+    c1 = ip[4 * 1];
+    d1 = ip[4 * 2];
+    b1 = ip[4 * 3];
+    a1 += c1;
+    d1 -= b1;
+    e1 = (a1 - d1) >> 1;
+    b1 = e1 - b1;
+    c1 = e1 - c1;
+    a1 -= b1;
+    d1 += c1;
+    dest[stride * 0] = highbd_clip_pixel_add(dest[stride * 0], a1, bd);
+    dest[stride * 1] = highbd_clip_pixel_add(dest[stride * 1], b1, bd);
+    dest[stride * 2] = highbd_clip_pixel_add(dest[stride * 2], c1, bd);
+    dest[stride * 3] = highbd_clip_pixel_add(dest[stride * 3], d1, bd);
+
+    ip++;
+    dest++;
+  }
+}
+
+void av1_highbd_iwht4x4_1_add_c(const tran_low_t *in, uint8_t *dest8,
+                                int dest_stride, int bd) {
+  int i;
+  tran_low_t a1, e1;
+  tran_low_t tmp[4];
+  const tran_low_t *ip = in;
+  tran_low_t *op = tmp;
+  uint16_t *dest = CONVERT_TO_SHORTPTR(dest8);
+  (void)bd;
+
+  a1 = ip[0] >> UNIT_QUANT_SHIFT;
+  e1 = a1 >> 1;
+  a1 -= e1;
+  op[0] = a1;
+  op[1] = op[2] = op[3] = e1;
+
+  ip = tmp;
+  for (i = 0; i < 4; i++) {
+    e1 = ip[0] >> 1;
+    a1 = ip[0] - e1;
+    dest[dest_stride * 0] =
+        highbd_clip_pixel_add(dest[dest_stride * 0], a1, bd);
+    dest[dest_stride * 1] =
+        highbd_clip_pixel_add(dest[dest_stride * 1], e1, bd);
+    dest[dest_stride * 2] =
+        highbd_clip_pixel_add(dest[dest_stride * 2], e1, bd);
+    dest[dest_stride * 3] =
+        highbd_clip_pixel_add(dest[dest_stride * 3], e1, bd);
+    ip++;
+    dest++;
+  }
+}
 
 static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {

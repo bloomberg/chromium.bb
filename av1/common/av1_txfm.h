@@ -83,6 +83,11 @@ static INLINE int32_t half_btf(int32_t w0, int32_t in0, int32_t w1, int32_t in1,
   return round_shift(result_64, bit);
 }
 
+static INLINE uint16_t highbd_clip_pixel_add(uint16_t dest, tran_high_t trans,
+                                             int bd) {
+  return clip_pixel_highbd(dest + (int)trans, bd);
+}
+
 typedef void (*TxfmFunc)(const int32_t *input, int32_t *output, int8_t cos_bit,
                          const int8_t *stage_range);
 

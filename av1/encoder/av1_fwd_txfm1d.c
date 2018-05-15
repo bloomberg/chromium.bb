@@ -10,7 +10,6 @@
  */
 
 #include <stdlib.h>
-#include "aom_dsp/inv_txfm.h"
 #include "av1/encoder/av1_fwd_txfm1d.h"
 
 #if CONFIG_COEFFICIENT_RANGE_CHECKING

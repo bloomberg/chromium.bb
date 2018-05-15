@@ -16,7 +16,6 @@
 #include "av1/common/blockd.h"
 #include "av1/common/common.h"
 #include "av1/common/enums.h"
-#include "aom_dsp/inv_txfm.h"
 #include "aom_dsp/txfm_common.h"
 
 #ifdef __cplusplus

@@ -13,9 +13,9 @@
 
 #include "./aom_dsp_rtcd.h"
 #include "./av1_rtcd.h"
-#include "aom_dsp/inv_txfm.h"
 #include "aom_ports/mem.h"
 #include "av1/common/av1_inv_txfm1d_cfg.h"
+#include "av1/common/av1_txfm.h"
 #include "av1/common/blockd.h"
 #include "av1/common/enums.h"
 #include "av1/common/idct.h"
@@ -33,9 +33,9 @@ int av1_get_tx_scale(const TX_SIZE tx_size) {
 static void highbd_iwht4x4_add(const tran_low_t *input, uint8_t *dest,
                                int stride, int eob, int bd) {
   if (eob > 1)
-    aom_highbd_iwht4x4_16_add(input, dest, stride, bd);
+    av1_highbd_iwht4x4_16_add(input, dest, stride, bd);
   else
-    aom_highbd_iwht4x4_1_add(input, dest, stride, bd);
+    av1_highbd_iwht4x4_1_add(input, dest, stride, bd);
 }
 
 static const int32_t *cast_to_int32(const tran_low_t *input) {
