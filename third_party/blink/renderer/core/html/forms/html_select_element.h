@@ -136,8 +136,6 @@ class CORE_EXPORT HTMLSelectElement final
   void OptGroupInsertedOrRemoved(HTMLOptGroupElement&);
   void HrInsertedOrRemoved(HTMLHRElement&);
 
-  void UpdateListOnLayoutObject();
-
   HTMLOptionElement* SpatialNavigationFocusedOption();
   void HandleMouseRelease();
 
