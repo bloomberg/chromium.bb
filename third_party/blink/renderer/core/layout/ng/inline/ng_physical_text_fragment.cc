@@ -203,4 +203,24 @@ PositionWithAffinity NGPhysicalTextFragment::PositionForPoint(
   return PositionWithAffinity(position, TextAffinity::kDownstream);
 }
 
+UBiDiLevel NGPhysicalTextFragment::BidiLevel() const {
+  // TODO(xiaochengh): Make the implementation more efficient with, e.g.,
+  // binary search and/or LayoutNGText::InlineItems().
+  const auto& items = InlineItemsOfContainingBlock();
+  const NGInlineItem* containing_item = std::find_if(
+      items.begin(), items.end(), [this](const NGInlineItem& item) {
+        return item.StartOffset() <= StartOffset() &&
+               item.EndOffset() >= EndOffset();
+      });
+  DCHECK(containing_item);
+  DCHECK_NE(containing_item, items.end());
+  return containing_item->BidiLevel();
+}
+
+TextDirection NGPhysicalTextFragment::ResolvedDirection() const {
+  if (TextShapeResult())
+    return TextShapeResult()->Direction();
+  return NGPhysicalFragment::ResolvedDirection();
+}
+
 }  // namespace blink

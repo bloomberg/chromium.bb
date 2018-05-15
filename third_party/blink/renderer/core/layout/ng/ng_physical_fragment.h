@@ -15,11 +15,14 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 
+#include <unicode/ubidi.h>
+
 namespace blink {
 
 class ComputedStyle;
 class LayoutObject;
 class Node;
+class NGInlineItem;
 struct NGPhysicalOffsetRect;
 struct NGPixelSnappedPhysicalBoxStrut;
 class PaintLayer;
@@ -181,6 +184,13 @@ class CORE_EXPORT NGPhysicalFragment
   virtual PositionWithAffinity PositionForPoint(
       const NGPhysicalOffset&) const = 0;
 
+  // Returns the bidi level of a text or atomic inline fragment.
+  virtual UBiDiLevel BidiLevel() const;
+
+  // Returns the resolved direction of a text or atomic inline fragment. Not to
+  // be confused with the CSS 'direction' property.
+  virtual TextDirection ResolvedDirection() const;
+
   scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const;
 
   String ToString() const;
@@ -213,6 +223,8 @@ class CORE_EXPORT NGPhysicalFragment
                      NGFragmentType type,
                      unsigned sub_type,
                      scoped_refptr<NGBreakToken> break_token = nullptr);
+
+  const Vector<NGInlineItem>& InlineItemsOfContainingBlock() const;
 
   LayoutObject* layout_object_;
   scoped_refptr<const ComputedStyle> style_;

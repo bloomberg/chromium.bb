@@ -147,6 +147,9 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
 
   PositionWithAffinity PositionForPoint(const NGPhysicalOffset&) const override;
 
+  UBiDiLevel BidiLevel() const override;
+  TextDirection ResolvedDirection() const override;
+
  private:
   LayoutUnit InlinePositionForOffset(unsigned offset,
                                      LayoutUnit (*round)(float),
