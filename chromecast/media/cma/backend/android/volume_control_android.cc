@@ -14,11 +14,11 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/no_destructor.h"
 #include "chromecast/base/init_command_line_shlib.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/chromecast_buildflags.h"
@@ -68,8 +68,10 @@ float MapIntoDifferentVolumeTableDomain(AudioContentType from_type,
 
 }  // namespace
 
-base::LazyInstance<VolumeControlAndroid>::Leaky g_volume_control =
-    LAZY_INSTANCE_INITIALIZER;
+VolumeControlAndroid& GetVolumeControl() {
+  static base::NoDestructor<VolumeControlAndroid> volume_control;
+  return *volume_control;
+}
 
 VolumeControlAndroid::VolumeControlAndroid()
     : thread_("VolumeControl"),
@@ -319,37 +321,37 @@ void VolumeControl::Finalize() {
 
 // static
 void VolumeControl::AddVolumeObserver(VolumeObserver* observer) {
-  g_volume_control.Get().AddVolumeObserver(observer);
+  GetVolumeControl().AddVolumeObserver(observer);
 }
 
 // static
 void VolumeControl::RemoveVolumeObserver(VolumeObserver* observer) {
-  g_volume_control.Get().RemoveVolumeObserver(observer);
+  GetVolumeControl().RemoveVolumeObserver(observer);
 }
 
 // static
 float VolumeControl::GetVolume(AudioContentType type) {
-  return g_volume_control.Get().GetVolume(type);
+  return GetVolumeControl().GetVolume(type);
 }
 
 // static
 void VolumeControl::SetVolume(AudioContentType type, float level) {
-  g_volume_control.Get().SetVolume(type, level);
+  GetVolumeControl().SetVolume(type, level);
 }
 
 // static
 bool VolumeControl::IsMuted(AudioContentType type) {
-  return g_volume_control.Get().IsMuted(type);
+  return GetVolumeControl().IsMuted(type);
 }
 
 // static
 void VolumeControl::SetMuted(AudioContentType type, bool muted) {
-  g_volume_control.Get().SetMuted(type, muted);
+  GetVolumeControl().SetMuted(type, muted);
 }
 
 // static
 void VolumeControl::SetOutputLimit(AudioContentType type, float limit) {
-  g_volume_control.Get().SetOutputLimit(type, limit);
+  GetVolumeControl().SetOutputLimit(type, limit);
 }
 
 // static

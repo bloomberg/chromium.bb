@@ -7,9 +7,9 @@
 #include <memory>
 #include <string>
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "chromecast/common/extensions_api/cast_aliases.h"
 #include "chromecast/common/extensions_api/cast_api_features.h"
 #include "chromecast/common/extensions_api/cast_api_permissions.h"
@@ -79,9 +79,6 @@ class ShellPermissionMessageProvider : public PermissionMessageProvider {
   DISALLOW_COPY_AND_ASSIGN(ShellPermissionMessageProvider);
 };
 
-base::LazyInstance<ShellPermissionMessageProvider>::DestructorAtExit
-    g_permission_message_provider = LAZY_INSTANCE_INITIALIZER;
-
 }  // namespace
 
 CastExtensionsClient::CastExtensionsClient()
@@ -109,7 +106,9 @@ void CastExtensionsClient::InitializeWebStoreUrls(
 const PermissionMessageProvider&
 CastExtensionsClient::GetPermissionMessageProvider() const {
   NOTIMPLEMENTED();
-  return g_permission_message_provider.Get();
+  static base::NoDestructor<ShellPermissionMessageProvider>
+      g_permission_message_provider;
+  return *g_permission_message_provider;
 }
 
 const std::string CastExtensionsClient::GetProductName() {

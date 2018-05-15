@@ -4,8 +4,8 @@
 
 #include "chromecast/browser/extensions/cast_extension_host_delegate.h"
 
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "chromecast/browser/extensions/cast_extension_web_contents_observer.h"
 #include "extensions/browser/media_capture_util.h"
 #include "extensions/browser/serial_extension_host_queue.h"
@@ -57,11 +57,9 @@ bool CastExtensionHostDelegate::CheckMediaAccessPermission(
   return media_capture_util::CheckMediaAccessPermission(type, extension);
 }
 
-static base::LazyInstance<SerialExtensionHostQueue>::DestructorAtExit g_queue =
-    LAZY_INSTANCE_INITIALIZER;
-
 ExtensionHostQueue* CastExtensionHostDelegate::GetExtensionHostQueue() const {
-  return g_queue.Pointer();
+  static base::NoDestructor<SerialExtensionHostQueue> queue;
+  return queue.get();
 }
 
 }  // namespace extensions

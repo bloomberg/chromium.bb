@@ -4,7 +4,7 @@
 
 #include "chromecast/crash/app_state_tracker.h"
 
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "chromecast/crash/cast_crash_keys.h"
 #include "components/crash/core/common/crash_key.h"
 
@@ -16,11 +16,9 @@ struct CurrentAppState {
   std::string last_launched_app;
 };
 
-base::LazyInstance<CurrentAppState>::DestructorAtExit g_app_state =
-    LAZY_INSTANCE_INITIALIZER;
-
 CurrentAppState* GetAppState() {
-  return g_app_state.Pointer();
+  static base::NoDestructor<CurrentAppState> app_state;
+  return app_state.get();
 }
 
 }  // namespace

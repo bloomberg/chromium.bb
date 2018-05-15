@@ -13,8 +13,8 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/posix/global_descriptors.h"
 #include "build/build_config.h"
@@ -43,8 +43,11 @@
 namespace {
 
 #if defined(OS_LINUX)
-base::LazyInstance<chromecast::CastCrashReporterClient>::Leaky
-    g_crash_reporter_client = LAZY_INSTANCE_INITIALIZER;
+chromecast::CastCrashReporterClient* GetCastCrashReporter() {
+  static base::NoDestructor<chromecast::CastCrashReporterClient>
+      crash_reporter_client;
+  return crash_reporter_client.get();
+}
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_ANDROID)
@@ -145,7 +148,7 @@ void CastMainDelegate::PreSandboxStartup() {
   base::PathService::Get(FILE_CAST_ANDROID_LOG, &log_file);
   chromecast::CrashHandler::Initialize(process_type, log_file);
 #elif defined(OS_LINUX)
-  crash_reporter::SetCrashReporterClient(g_crash_reporter_client.Pointer());
+  crash_reporter::SetCrashReporterClient(GetCastCrashReporter());
 
   if (process_type != switches::kZygoteProcess) {
     CastCrashReporterClient::InitCrashReporter(process_type);
