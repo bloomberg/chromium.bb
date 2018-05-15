@@ -90,7 +90,7 @@ bool AvatarButtonErrorController::SyncErrorObserver::HasSyncError() {
   if (sync_service) {
     SyncErrorController* sync_error_controller =
         sync_service->sync_error_controller();
-    browser_sync::ProfileSyncService::Status status;
+    syncer::SyncStatus status;
     sync_service->QueryDetailedSyncStatus(&status);
     return sync_service->HasUnrecoverableError() ||
            status.sync_protocol_error.action == syncer::UPGRADE_CLIENT ||

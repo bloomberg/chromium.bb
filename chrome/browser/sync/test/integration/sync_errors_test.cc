@@ -86,7 +86,7 @@ class ActionableErrorChecker : public SingleClientStatusChangeChecker {
   // Checks if an actionable error has been hit. Called repeatedly each time PSS
   // notifies observers of a state change.
   bool IsExitConditionSatisfied() override {
-    ProfileSyncService::Status status;
+    syncer::SyncStatus status;
     service()->QueryDetailedSyncStatus(&status);
     return (status.sync_protocol_error.action != syncer::UNKNOWN_ACTION &&
             service()->HasUnrecoverableError());
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ActionableErrorTest) {
   // Wait until an actionable error is encountered.
   ASSERT_TRUE(ActionableErrorChecker(GetSyncService(0)).Wait());
 
-  ProfileSyncService::Status status;
+  syncer::SyncStatus status;
   GetSyncService(0)->QueryDetailedSyncStatus(&status);
   ASSERT_EQ(status.sync_protocol_error.error_type, syncer::TRANSIENT_ERROR);
   ASSERT_EQ(status.sync_protocol_error.action, syncer::UPGRADE_CLIENT);
@@ -198,7 +198,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
   ASSERT_TRUE(SyncDisabledChecker(GetSyncService(0)).Wait());
-  ProfileSyncService::Status status;
+  syncer::SyncStatus status;
   GetSyncService(0)->QueryDetailedSyncStatus(&status);
   ASSERT_EQ(status.sync_protocol_error.error_type, syncer::NOT_MY_BIRTHDAY);
   ASSERT_EQ(status.sync_protocol_error.action, syncer::DISABLE_SYNC_ON_CLIENT);
@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   std::string url = "www.google.com";
 
   // Remember cache_guid before actionable error.
-  ProfileSyncService::Status status;
+  syncer::SyncStatus status;
   GetSyncService(0)->QueryDetailedSyncStatus(&status);
   std::string old_cache_guid = status.sync_id;
 
