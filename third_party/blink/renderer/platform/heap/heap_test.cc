@@ -2370,7 +2370,13 @@ TEST(HeapTest, LargeHeapObjects) {
   PreciselyCollectGarbage();
 }
 
-TEST(HeapTest, LargeHashMap) {
+// This test often fails on Android (https://crbug.com/843032).
+#if defined(OS_ANDROID)
+#define MAYBE_LargeHashMap DISABLED_LargeHashMap
+#else
+#define MAYBE_LargeHashMap LargeHashMap
+#endif
+TEST(HeapTest, MAYBE_LargeHashMap) {
   ClearOutOldGarbage();
   size_t size = (1 << 27) / sizeof(Member<IntWrapper>);
   Persistent<HeapHashMap<int, Member<IntWrapper>>> map =
