@@ -7,6 +7,7 @@
 
 #include "base/scoped_observer.h"
 #include "base/strings/stringprintf.h"
+#include "ios/testing/embedded_test_server_handlers.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
@@ -28,6 +29,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "net/test/embedded_test_server/request_handler_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -43,7 +45,6 @@ namespace web {
 
 namespace {
 
-const char kTestFormValue[] = "inttestvalue";
 const char kTestPageText[] = "landing!";
 const char kExpectedMimeType[] = "text/html";
 
@@ -473,24 +474,6 @@ class PolicyDeciderMock : public WebStatePolicyDecider {
   MOCK_METHOD2(ShouldAllowResponse, bool(NSURLResponse*, bool for_main_frame));
 };
 
-// Responds with a page that contains an html form.
-std::unique_ptr<net::test_server::HttpResponse> HandleFormPage(
-    const net::test_server::HttpRequest& request) {
-  if (request.GetURL().path() == "/form") {
-    auto result = std::make_unique<net::test_server::BasicHttpResponse>();
-    result->set_content_type("text/html");
-    result->set_content(base::StringPrintf(
-        "<form method='post' id='form' action='echo'>"
-        "  <input type=''text' name='inttestname' value='%s'>"
-        "</form>"
-        "%s",
-        kTestFormValue, kTestPageText));
-
-    return std::move(result);
-  }
-  return nullptr;
-}
-
 // Responds with a download.
 std::unique_ptr<net::test_server::HttpResponse> HandleDownloadPage(
     const net::test_server::HttpRequest& request) {
@@ -532,7 +515,9 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
     web_state_impl->GetWebController().nativeProvider = provider_;
 
     test_server_ = std::make_unique<net::test_server::EmbeddedTestServer>();
-    test_server_->RegisterDefaultHandler(base::BindRepeating(&HandleFormPage));
+    test_server_->RegisterRequestHandler(
+        base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/form",
+                            base::BindRepeating(&testing::HandleForm)));
     test_server_->RegisterDefaultHandler(
         base::BindRepeating(&HandleDownloadPage));
     RegisterDefaultHandlers(test_server_.get());
@@ -986,7 +971,7 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
 
 // Tests successful navigation to a new page with post HTTP method.
 TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
-  const GURL url = test_server_->GetURL("/form");
+  const GURL url = test_server_->GetURL("/form?echo");
   const GURL action = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
@@ -1001,7 +986,8 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
+  ASSERT_TRUE(
+      WaitForWebViewContainingText(web_state(), testing::kTestFormPage));
 
   // Submit the form using JavaScript.
   NavigationContext* context = nullptr;
@@ -1025,12 +1011,13 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"document.getElementById('form').submit();");
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestFormValue));
+  ASSERT_TRUE(
+      WaitForWebViewContainingText(web_state(), testing::kTestFormFieldValue));
 }
 
 // Tests successful reload of a page returned for post request.
 TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
-  const GURL url = test_server_->GetURL("/form");
+  const GURL url = test_server_->GetURL("/form?echo");
   const GURL action = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
@@ -1045,7 +1032,8 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
+  ASSERT_TRUE(
+      WaitForWebViewContainingText(web_state(), testing::kTestFormPage));
 
   // Submit the form using JavaScript.
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
@@ -1062,7 +1050,8 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"window.document.getElementById('form').submit();");
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestFormValue));
+  ASSERT_TRUE(
+      WaitForWebViewContainingText(web_state(), testing::kTestFormFieldValue));
 
   // Reload the page.
   NavigationContext* context = nullptr;
@@ -1108,7 +1097,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
 
 // Tests going forward to a page rendered from post response.
 TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
-  const GURL url = test_server_->GetURL("/form");
+  const GURL url = test_server_->GetURL("/form?echo");
   const GURL action = test_server_->GetURL("/echo");
 
   // Perform new page navigation.
@@ -1123,7 +1112,8 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ASSERT_TRUE(LoadUrl(url));
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestPageText));
+  ASSERT_TRUE(
+      WaitForWebViewContainingText(web_state(), testing::kTestFormPage));
 
   // Submit the form using JavaScript.
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
@@ -1140,7 +1130,8 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
   ExecuteJavaScript(@"window.document.getElementById('form').submit();");
-  ASSERT_TRUE(WaitForWebViewContainingText(web_state(), kTestFormValue));
+  ASSERT_TRUE(
+      WaitForWebViewContainingText(web_state(), testing::kTestFormFieldValue));
 
   // Go Back.
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
