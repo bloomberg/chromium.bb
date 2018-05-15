@@ -3281,32 +3281,29 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   write_tile_info(cm, saved_wb, wb);
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
-  {
-    int delta_q_allowed = 1;
 
-    if (cm->delta_q_present_flag)
-      assert(delta_q_allowed == 1 && cm->base_qindex > 0);
-    if (delta_q_allowed == 1 && cm->base_qindex > 0) {
-      aom_wb_write_bit(wb, cm->delta_q_present_flag);
-      if (cm->delta_q_present_flag) {
-        aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
-        xd->prev_qindex = cm->base_qindex;
-        if (cm->allow_intrabc)
-          assert(cm->delta_lf_present_flag == 0);
-        else
-          aom_wb_write_bit(wb, cm->delta_lf_present_flag);
-        if (cm->delta_lf_present_flag) {
-          aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
-          xd->prev_delta_lf_from_base = 0;
-          aom_wb_write_bit(wb, cm->delta_lf_multi);
-          const int frame_lf_count =
-              av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
-          for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
-            xd->prev_delta_lf[lf_id] = 0;
-        }
+  if (cm->delta_q_present_flag) assert(cm->base_qindex > 0);
+  if (cm->base_qindex > 0) {
+    aom_wb_write_bit(wb, cm->delta_q_present_flag);
+    if (cm->delta_q_present_flag) {
+      aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
+      xd->prev_qindex = cm->base_qindex;
+      if (cm->allow_intrabc)
+        assert(cm->delta_lf_present_flag == 0);
+      else
+        aom_wb_write_bit(wb, cm->delta_lf_present_flag);
+      if (cm->delta_lf_present_flag) {
+        aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_lf_res) - 1, 2);
+        xd->prev_delta_lf_from_base = 0;
+        aom_wb_write_bit(wb, cm->delta_lf_multi);
+        const int frame_lf_count =
+            av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
+        for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
+          xd->prev_delta_lf[lf_id] = 0;
       }
     }
   }
+
   if (cm->all_lossless) {
     assert(av1_superres_unscaled(cm));
   } else {
