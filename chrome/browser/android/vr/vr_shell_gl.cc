@@ -1183,9 +1183,7 @@ void VrShellGl::UpdateViewports() {
 void VrShellGl::UpdateController(const RenderInfo& render_info,
                                  base::TimeTicks current_time) {
   TRACE_EVENT0("gpu", "VrShellGl::UpdateController");
-  gvr::Mat4f gvr_head_pose;
-  TransformToGvrMat(render_info.head_pose, &gvr_head_pose);
-  controller_->UpdateState(gvr_head_pose);
+  controller_->UpdateState(render_info.head_pose);
   gfx::Point3F laser_origin = controller_->GetPointerStart();
 
   device::GvrGamepadData controller_data = controller_->GetGamepadData();
