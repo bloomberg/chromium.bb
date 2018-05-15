@@ -3099,7 +3099,6 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	struct weston_view *ev;
 	pixman_region32_t surface_overlap, renderer_region;
 	struct weston_plane *primary, *next_plane;
-	bool picked_scanout = false;
 
 	assert(!output->state_last);
 	state = drm_output_state_duplicate(output->state_cur,
@@ -3147,19 +3146,13 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 					  &ev->transform.boundingbox);
 
 		next_plane = NULL;
-		if (pixman_region32_not_empty(&surface_overlap) || picked_scanout)
+		if (pixman_region32_not_empty(&surface_overlap))
 			next_plane = primary;
 		if (next_plane == NULL)
 			next_plane = drm_output_prepare_cursor_view(state, ev);
 
-		/* If a higher-stacked view already got assigned to scanout, it's incorrect to
-		 * assign a subsequent (lower-stacked) view to scanout.
-		 */
-		if (next_plane == NULL) {
+		if (next_plane == NULL)
 			next_plane = drm_output_prepare_scanout_view(state, ev);
-			if (next_plane)
-				picked_scanout = true;
-		}
 
 		if (next_plane == NULL)
 			next_plane = drm_output_prepare_overlay_view(state, ev);
