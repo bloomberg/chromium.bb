@@ -86,6 +86,7 @@ class AssistantController
   void OnSuggestionChipPressed(int id);
 
   // AssistantInteractionModelObserver:
+  void OnInputModalityChanged(InputModality input_modality) override;
   void OnInteractionStateChanged(InteractionState interaction_state) override;
 
   // HighlighterController::Observer:
@@ -115,8 +116,6 @@ class AssistantController
       mojom::AssistantCardRendererPtr assistant_card_renderer) override;
 
  private:
-  void OnInteractionDismissed();
-
   mojo::Binding<mojom::AssistantController> assistant_controller_binding_;
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
       assistant_event_subscriber_binding_;

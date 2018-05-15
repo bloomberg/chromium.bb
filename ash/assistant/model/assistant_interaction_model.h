@@ -117,7 +117,7 @@ class AssistantInteractionModel {
   void NotifySuggestionsCleared();
 
   InteractionState interaction_state_ = InteractionState::kInactive;
-  InputModality input_modality_;
+  InputModality input_modality_ = InputModality::kVoice;
   MicState mic_state_ = MicState::kClosed;
   std::unique_ptr<AssistantQuery> query_;
   std::vector<AssistantSuggestionPtr> suggestions_;

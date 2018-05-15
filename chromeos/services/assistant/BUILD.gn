@@ -120,3 +120,16 @@ catalog("tests_catalog") {
   testonly = true
   embedded_services = [ ":unittest_manifest" ]
 }
+
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "test_support/mock_assistant.cc",
+    "test_support/mock_assistant.h",
+  ]
+  deps = [
+    "//base",
+    "//chromeos/services/assistant/public/mojom",
+    "//testing/gmock",
+  ]
+}

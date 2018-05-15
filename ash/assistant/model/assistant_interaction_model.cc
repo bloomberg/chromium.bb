@@ -11,10 +11,7 @@
 namespace ash {
 
 AssistantInteractionModel::AssistantInteractionModel()
-    : query_(std::make_unique<AssistantEmptyQuery>()) {
-  // TODO(dmblack): Default input modality should be read from user preferences.
-  input_modality_ = InputModality::kVoice;
-}
+    : query_(std::make_unique<AssistantEmptyQuery>()) {}
 
 AssistantInteractionModel::~AssistantInteractionModel() = default;
 
