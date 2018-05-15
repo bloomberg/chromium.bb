@@ -20,14 +20,11 @@
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context.h"
+#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/url_constants.h"
-
-using net::URLFetcher;
-using net::URLFetcherDelegate;
-using net::URLRequestContextGetter;
-using net::URLRequestStatus;
 
 namespace {
 
@@ -43,23 +40,6 @@ const size_t kDefaultCacheTimeoutSeconds = 3600;
 std::string BuildRequestData(const std::string& api_key, const GURL& url) {
   std::string query = net::EscapeQueryParamValue(url.spec(), true);
   return base::StringPrintf(kDataFormat, api_key.c_str(), query.c_str());
-}
-
-// Creates a URLFetcher to call the SafeSearch API for |url|.
-std::unique_ptr<net::URLFetcher> CreateFetcher(
-    URLFetcherDelegate* delegate,
-    URLRequestContextGetter* context,
-    const std::string& api_key,
-    const GURL& url,
-    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  std::unique_ptr<net::URLFetcher> fetcher =
-      URLFetcher::Create(0, GURL(kSafeSearchApiUrl), URLFetcher::POST, delegate,
-                         traffic_annotation);
-  fetcher->SetUploadData(kDataContentType, BuildRequestData(api_key, url));
-  fetcher->SetRequestContext(context);
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES);
-  return fetcher;
 }
 
 // Parses a SafeSearch API |response| and stores the result in |is_porn|.
@@ -93,21 +73,22 @@ bool ParseResponse(const std::string& response, bool* is_porn) {
 
 struct SafeSearchURLChecker::Check {
   Check(const GURL& url,
-        std::unique_ptr<net::URLFetcher> fetcher,
+        std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
         CheckCallback callback);
   ~Check();
 
   GURL url;
-  std::unique_ptr<net::URLFetcher> fetcher;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
   std::vector<CheckCallback> callbacks;
   base::TimeTicks start_time;
 };
 
-SafeSearchURLChecker::Check::Check(const GURL& url,
-                                   std::unique_ptr<net::URLFetcher> fetcher,
-                                   CheckCallback callback)
+SafeSearchURLChecker::Check::Check(
+    const GURL& url,
+    std::unique_ptr<network::SimpleURLLoader> simple_url_loader,
+    CheckCallback callback)
     : url(url),
-      fetcher(std::move(fetcher)),
+      simple_url_loader(std::move(simple_url_loader)),
       start_time(base::TimeTicks::Now()) {
   callbacks.push_back(std::move(callback));
 }
@@ -125,15 +106,17 @@ SafeSearchURLChecker::CheckResult::CheckResult(Classification classification,
       timestamp(base::TimeTicks::Now()) {}
 
 SafeSearchURLChecker::SafeSearchURLChecker(
-    URLRequestContextGetter* context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const net::NetworkTrafficAnnotationTag& traffic_annotation)
-    : SafeSearchURLChecker(context, traffic_annotation, kDefaultCacheSize) {}
+    : SafeSearchURLChecker(std::move(url_loader_factory),
+                           traffic_annotation,
+                           kDefaultCacheSize) {}
 
 SafeSearchURLChecker::SafeSearchURLChecker(
-    URLRequestContextGetter* context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     size_t cache_size)
-    : context_(context),
+    : url_loader_factory_(std::move(url_loader_factory)),
       traffic_annotation_(traffic_annotation),
       cache_(cache_size),
       cache_timeout_(
@@ -183,48 +166,56 @@ bool SafeSearchURLChecker::CheckURL(const GURL& url, CheckCallback callback) {
 
   DVLOG(1) << "Checking URL " << url;
   std::string api_key = google_apis::GetAPIKey();
-  std::unique_ptr<URLFetcher> fetcher(
-      CreateFetcher(this, context_, api_key, url, traffic_annotation_));
-  fetcher->Start();
-  checks_in_progress_.push_back(
-      std::make_unique<Check>(url, std::move(fetcher), std::move(callback)));
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(kSafeSearchApiUrl);
+  resource_request->method = "POST";
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation_);
+  simple_url_loader->AttachStringForUpload(BuildRequestData(api_key, url),
+                                           kDataContentType);
+  auto it = checks_in_progress_.insert(
+      checks_in_progress_.begin(),
+      std::make_unique<Check>(url, std::move(simple_url_loader),
+                              std::move(callback)));
+  network::SimpleURLLoader* loader = it->get()->simple_url_loader.get();
+  loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&SafeSearchURLChecker::OnSimpleLoaderComplete,
+                     base::Unretained(this), std::move(it)));
   return false;
 }
 
-void SafeSearchURLChecker::OnURLFetchComplete(const net::URLFetcher* source) {
-  auto it = checks_in_progress_.begin();
-  while (it != checks_in_progress_.end()) {
-    if (source == (*it)->fetcher.get())
-      break;
-    ++it;
-  }
-  DCHECK(it != checks_in_progress_.end());
+void SafeSearchURLChecker::OnSimpleLoaderComplete(
+    CheckList::iterator it,
+    std::unique_ptr<std::string> response_body) {
   Check* check = it->get();
 
-  const URLRequestStatus& status = source->GetStatus();
-  if (!status.is_success()) {
+  GURL url = check->url;
+  std::vector<CheckCallback> callbacks = std::move(check->callbacks);
+  base::TimeTicks start_time = check->start_time;
+  checks_in_progress_.erase(it);
+
+  if (!response_body) {
     DLOG(WARNING) << "URL request failed! Letting through...";
-    for (size_t i = 0; i < check->callbacks.size(); i++)
-      std::move(check->callbacks[i])
-          .Run(check->url, Classification::SAFE, true);
-    checks_in_progress_.erase(it);
+    for (size_t i = 0; i < callbacks.size(); i++)
+      std::move(callbacks[i]).Run(url, Classification::SAFE, true);
     return;
   }
 
-  std::string response_body;
-  source->GetResponseAsString(&response_body);
   bool is_porn = false;
-  bool uncertain = !ParseResponse(response_body, &is_porn);
+  bool uncertain = !ParseResponse(*response_body, &is_porn);
   Classification classification =
       is_porn ? Classification::UNSAFE : Classification::SAFE;
 
   // TODO(msramek): Consider moving this to SupervisedUserResourceThrottle.
   UMA_HISTOGRAM_TIMES("ManagedUsers.SafeSitesDelay",
-                      base::TimeTicks::Now() - check->start_time);
+                      base::TimeTicks::Now() - start_time);
 
-  cache_.Put(check->url, CheckResult(classification, uncertain));
+  cache_.Put(url, CheckResult(classification, uncertain));
 
-  for (size_t i = 0; i < check->callbacks.size(); i++)
-    std::move(check->callbacks[i]).Run(check->url, classification, uncertain);
-  checks_in_progress_.erase(it);
+  for (size_t i = 0; i < callbacks.size(); i++)
+    std::move(callbacks[i]).Run(url, classification, uncertain);
 }

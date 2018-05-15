@@ -27,6 +27,7 @@
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_ui.h"
 
 using content::BrowserThread;

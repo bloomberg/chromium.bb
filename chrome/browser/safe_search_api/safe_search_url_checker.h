@@ -13,20 +13,19 @@
 #include "base/callback_forward.h"
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
-}
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 // This class uses the SafeSearch API to check the SafeSearch classification
 // of the content on a given URL and returns the result asynchronously
 // via a callback.
-class SafeSearchURLChecker : net::URLFetcherDelegate {
+class SafeSearchURLChecker {
  public:
   enum class Classification { SAFE, UNSAFE };
 
@@ -35,13 +34,13 @@ class SafeSearchURLChecker : net::URLFetcherDelegate {
       void(const GURL&, Classification classification, bool /* uncertain */)>;
 
   explicit SafeSearchURLChecker(
-      net::URLRequestContextGetter* context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
   SafeSearchURLChecker(
-      net::URLRequestContextGetter* context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       size_t cache_size);
-  ~SafeSearchURLChecker() override;
+  ~SafeSearchURLChecker();
 
   // Returns whether |callback| was run synchronously.
   bool CheckURL(const GURL& url, CheckCallback callback);
@@ -58,14 +57,15 @@ class SafeSearchURLChecker : net::URLFetcherDelegate {
     bool uncertain;
     base::TimeTicks timestamp;
   };
+  using CheckList = std::list<std::unique_ptr<Check>>;
 
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(CheckList::iterator it,
+                              std::unique_ptr<std::string> response_body);
 
-  net::URLRequestContextGetter* context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 
-  std::vector<std::unique_ptr<Check>> checks_in_progress_;
+  CheckList checks_in_progress_;
 
   base::MRUCache<GURL, CheckResult> cache_;
   base::TimeDelta cache_timeout_;

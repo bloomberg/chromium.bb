@@ -18,8 +18,9 @@
 #include "base/values.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -30,8 +31,6 @@ using testing::_;
 namespace {
 
 const size_t kCacheSize = 2;
-
-const int kSafeSearchURLCheckerURLFetcherID = 0;
 
 const char* kURLs[] = {
     "http://www.randomsite1.com",
@@ -44,6 +43,9 @@ const char* kURLs[] = {
     "http://www.randomsite8.com",
     "http://www.randomsite9.com",
 };
+
+const char kSafeSearchApiUrl[] =
+    "https://safesearch.googleapis.com/v1:classify";
 
 std::string BuildResponse(bool is_porn) {
   base::DictionaryValue dict;
@@ -66,9 +68,10 @@ class SafeSearchURLCheckerTest : public testing::Test {
  public:
   SafeSearchURLCheckerTest()
       : next_url_(0),
-        request_context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
-        checker_(request_context_.get(),
+        test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
+        checker_(test_shared_loader_factory_,
                  TRAFFIC_ANNOTATION_FOR_TESTS,
                  kCacheSize) {}
 
@@ -83,59 +86,62 @@ class SafeSearchURLCheckerTest : public testing::Test {
     return GURL(kURLs[next_url_++]);
   }
 
+  void SetupResponse(const GURL& url,
+                     net::Error error,
+                     const std::string& response) {
+    network::URLLoaderCompletionStatus status(error);
+    status.decoded_body_length = response.size();
+    test_url_loader_factory_.AddResponse(GURL(kSafeSearchApiUrl),
+                                         network::ResourceResponseHead(),
+                                         response, status);
+  }
+
   // Returns true if the result was returned synchronously (cache hit).
   bool CheckURL(const GURL& url) {
-    return checker_.CheckURL(url,
-                             base::Bind(&SafeSearchURLCheckerTest::OnCheckDone,
-                                        base::Unretained(this)));
+    bool cached = checker_.CheckURL(
+        url, base::BindOnce(&SafeSearchURLCheckerTest::OnCheckDone,
+                            base::Unretained(this)));
+    return cached;
   }
 
-  net::TestURLFetcher* GetURLFetcher() {
-    net::TestURLFetcher* url_fetcher =
-        url_fetcher_factory_.GetFetcherByID(kSafeSearchURLCheckerURLFetcherID);
-    EXPECT_TRUE(url_fetcher);
-    return url_fetcher;
+  void WaitForResponse() { base::RunLoop().RunUntilIdle(); }
+
+  bool SendValidResponse(const GURL& url, bool is_porn) {
+    SetupResponse(url, net::OK, BuildResponse(is_porn));
+    bool result = CheckURL(url);
+    WaitForResponse();
+    return result;
   }
 
-  void SendResponse(net::Error error, const std::string& response) {
-    net::TestURLFetcher* url_fetcher = GetURLFetcher();
-    url_fetcher->set_status(net::URLRequestStatus::FromError(error));
-    url_fetcher->set_response_code(net::HTTP_OK);
-    url_fetcher->SetResponseString(response);
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
+  bool SendFailedResponse(const GURL& url) {
+    SetupResponse(url, net::ERR_ABORTED, std::string());
+    bool result = CheckURL(url);
+    WaitForResponse();
+    return result;
   }
-
-  void SendValidResponse(bool is_porn) {
-    SendResponse(net::OK, BuildResponse(is_porn));
-  }
-
-  void SendFailedResponse() { SendResponse(net::ERR_ABORTED, std::string()); }
 
   size_t next_url_;
   base::MessageLoop message_loop_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   SafeSearchURLChecker checker_;
 };
 
 TEST_F(SafeSearchURLCheckerTest, Simple) {
   {
     GURL url(GetNewURL());
-    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
-    SendValidResponse(false);
+    ASSERT_FALSE(SendValidResponse(url, false));
   }
   {
     GURL url(GetNewURL());
-    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, Classification::UNSAFE, false));
-    SendValidResponse(true);
+    ASSERT_FALSE(SendValidResponse(url, true));
   }
   {
     GURL url(GetNewURL());
-    ASSERT_FALSE(CheckURL(url));
     EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, true));
-    SendFailedResponse();
+    ASSERT_FALSE(SendFailedResponse(url));
   }
 }
 
@@ -147,37 +153,35 @@ TEST_F(SafeSearchURLCheckerTest, Cache) {
   GURL url3(GetNewURL());
 
   // Populate the cache.
-  ASSERT_FALSE(CheckURL(url1));
   EXPECT_CALL(*this, OnCheckDone(url1, Classification::SAFE, false));
-  SendValidResponse(false);
-  ASSERT_FALSE(CheckURL(url2));
+  ASSERT_FALSE(SendValidResponse(url1, false));
   EXPECT_CALL(*this, OnCheckDone(url2, Classification::SAFE, false));
-  SendValidResponse(false);
+  ASSERT_FALSE(SendValidResponse(url2, false));
 
-  // Now we should get results synchronously.
+  // Now we should get results synchronously, without a network request.
+  test_url_loader_factory_.ClearResponses();
   EXPECT_CALL(*this, OnCheckDone(url2, Classification::SAFE, false));
   ASSERT_TRUE(CheckURL(url2));
   EXPECT_CALL(*this, OnCheckDone(url1, Classification::SAFE, false));
   ASSERT_TRUE(CheckURL(url1));
 
   // Now |url2| is the LRU and should be evicted on the next check.
-  ASSERT_FALSE(CheckURL(url3));
   EXPECT_CALL(*this, OnCheckDone(url3, Classification::SAFE, false));
-  SendValidResponse(false);
+  ASSERT_FALSE(SendValidResponse(url3, false));
 
-  ASSERT_FALSE(CheckURL(url2));
   EXPECT_CALL(*this, OnCheckDone(url2, Classification::SAFE, false));
-  SendValidResponse(false);
+  ASSERT_FALSE(SendValidResponse(url2, false));
 }
 
 TEST_F(SafeSearchURLCheckerTest, CoalesceRequestsToSameURL) {
   GURL url(GetNewURL());
   // Start two checks for the same URL.
+  SetupResponse(url, net::OK, BuildResponse(false));
   ASSERT_FALSE(CheckURL(url));
   ASSERT_FALSE(CheckURL(url));
-  // A single response should answer both checks.
+  // A single response should answer both of those checks
   EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false)).Times(2);
-  SendValidResponse(false);
+  WaitForResponse();
 }
 
 TEST_F(SafeSearchURLCheckerTest, CacheTimeout) {
@@ -185,13 +189,11 @@ TEST_F(SafeSearchURLCheckerTest, CacheTimeout) {
 
   checker_.SetCacheTimeoutForTesting(base::TimeDelta::FromSeconds(0));
 
-  ASSERT_FALSE(CheckURL(url));
   EXPECT_CALL(*this, OnCheckDone(url, Classification::SAFE, false));
-  SendValidResponse(false);
+  ASSERT_FALSE(SendValidResponse(url, false));
 
   // Since the cache timeout is zero, the cache entry should be invalidated
   // immediately.
-  ASSERT_FALSE(CheckURL(url));
   EXPECT_CALL(*this, OnCheckDone(url, Classification::UNSAFE, false));
-  SendValidResponse(true);
+  ASSERT_FALSE(SendValidResponse(url, true));
 }
