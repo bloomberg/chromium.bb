@@ -143,7 +143,8 @@ EngineBridge.prototype = {
                             context.type + ':' +
                             context.autoComplete + ':' +
                             context.autoCorrect + ':' +
-                            context.spellCheck);
+                            context.spellCheck + ':' +
+                            context.shouldDoLearning);
   },
 
   /**

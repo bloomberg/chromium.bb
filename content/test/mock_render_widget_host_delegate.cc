@@ -11,7 +11,9 @@
 
 namespace content {
 
-MockRenderWidgetHostDelegate::MockRenderWidgetHostDelegate() = default;
+MockRenderWidgetHostDelegate::MockRenderWidgetHostDelegate()
+    : text_input_manager_(false /* should_do_learning */) {}
+
 MockRenderWidgetHostDelegate::~MockRenderWidgetHostDelegate() = default;
 
 void MockRenderWidgetHostDelegate::ResizeDueToAutoResize(

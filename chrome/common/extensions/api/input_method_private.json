@@ -55,6 +55,7 @@
           "autoCorrect": {"type": "boolean", "description": "Whether the text field wants auto-correct."},
           "autoComplete": {"type": "boolean", "description": "Whether the text field wants auto-complete."},
           "spellCheck": {"type": "boolean", "description": "Whether the text field wants spell-check."},
+          "shouldDoLearning": {"type": "boolean", "description": "Whether text entered into the text field should be used to improve typing suggestions for the user."},
           "focusReason": {"$ref": "FocusReason", "description": "How the text field was focused"}
         }
       }

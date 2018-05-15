@@ -250,7 +250,7 @@ void InputMethodAuraLinux::UpdateContextFocusState() {
 
   ui::IMEEngineHandlerInterface::InputContext context(
       GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-      ui::TextInputClient::FOCUS_REASON_OTHER);
+      ui::TextInputClient::FOCUS_REASON_OTHER, GetClientShouldDoLearning());
   ui::IMEBridge::Get()->SetCurrentInputContext(context);
 
   ui::IMEEngineHandlerInterface* engine = GetEngine();

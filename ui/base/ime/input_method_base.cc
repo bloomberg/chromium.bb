@@ -121,6 +121,11 @@ bool InputMethodBase::CanComposeInline() const {
   return client ? client->CanComposeInline() : true;
 }
 
+bool InputMethodBase::GetClientShouldDoLearning() {
+  TextInputClient* client = GetTextInputClient();
+  return client && client->ShouldDoLearning();
+}
+
 void InputMethodBase::ShowImeIfNeeded() {
   for (InputMethodObserver& observer : observer_list_)
     observer.OnShowImeIfNeeded();

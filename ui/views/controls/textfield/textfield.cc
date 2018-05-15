@@ -1768,6 +1768,12 @@ const std::string& Textfield::GetClientSourceInfo() const {
   return base::EmptyString();
 }
 
+bool Textfield::ShouldDoLearning() {
+  // TODO(https://crbug.com/311180): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Textfield, protected:
 

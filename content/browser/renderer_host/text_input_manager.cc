@@ -35,7 +35,8 @@ bool ShouldUpdateTextInputState(const content::TextInputState& old_state,
 
 }  // namespace
 
-TextInputManager::TextInputManager() : active_view_(nullptr) {}
+TextInputManager::TextInputManager(bool should_do_learning)
+    : active_view_(nullptr), should_do_learning_(should_do_learning) {}
 
 TextInputManager::~TextInputManager() {
   // If there is an active view, we should unregister it first so that the

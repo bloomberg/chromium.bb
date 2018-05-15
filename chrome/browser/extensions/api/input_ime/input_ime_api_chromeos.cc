@@ -207,6 +207,7 @@ class ImeObserverChromeOS : public ui::ImeObserver {
       input_context.auto_correct = ConvertInputContextAutoCorrect(context);
       input_context.auto_complete = ConvertInputContextAutoComplete(context);
       input_context.spell_check = ConvertInputContextSpellCheck(context);
+      input_context.should_do_learning = context.should_do_learning;
       input_context.focus_reason = input_method_private::ParseFocusReason(
           ConvertInputContextFocusReason(context));
 

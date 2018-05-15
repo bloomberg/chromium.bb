@@ -81,6 +81,10 @@ bool DummyInputMethod::IsCandidatePopupOpen() const {
   return false;
 }
 
+bool DummyInputMethod::GetClientShouldDoLearning() {
+  return false;
+}
+
 void DummyInputMethod::ShowImeIfNeeded() {
 }
 

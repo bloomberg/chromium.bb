@@ -44,7 +44,8 @@
           "type": {"$ref": "InputContextType", "description": "Type of value this text field edits, (Text, Number, URL, etc)"},
           "autoCorrect": {"type": "boolean", "description": "Whether the text field wants auto-correct."},
           "autoComplete": {"type": "boolean", "description": "Whether the text field wants auto-complete."},
-          "spellCheck": {"type": "boolean", "description": "Whether the text field wants spell-check."}
+          "spellCheck": {"type": "boolean", "description": "Whether the text field wants spell-check."},
+          "shouldDoLearning": {"type": "boolean", "description": "Whether text entered into the text field should be used to improve typing suggestions for the user."}
         }
       },
       {

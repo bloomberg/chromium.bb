@@ -26,7 +26,8 @@ class IMEBridgeImpl : public IMEBridge {
         current_input_context_(ui::TEXT_INPUT_TYPE_NONE,
                                ui::TEXT_INPUT_MODE_DEFAULT,
                                0,
-                               ui::TextInputClient::FOCUS_REASON_NONE),
+                               ui::TextInputClient::FOCUS_REASON_NONE,
+                               false /* should_do_learning */),
         candidate_window_handler_(nullptr) {}
 #else
   IMEBridgeImpl()
@@ -36,7 +37,8 @@ class IMEBridgeImpl : public IMEBridge {
         current_input_context_(ui::TEXT_INPUT_TYPE_NONE,
                                ui::TEXT_INPUT_MODE_DEFAULT,
                                0,
-                               ui::TextInputClient::FOCUS_REASON_NONE) {}
+                               ui::TextInputClient::FOCUS_REASON_NONE,
+                               false /* should_do_learning */) {}
 #endif
 
   ~IMEBridgeImpl() override {}

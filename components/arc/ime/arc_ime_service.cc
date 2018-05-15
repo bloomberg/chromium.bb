@@ -518,6 +518,12 @@ const std::string& ArcImeService::GetClientSourceInfo() const {
   return base::EmptyString();
 }
 
+bool ArcImeService::ShouldDoLearning() {
+  // TODO(https://crbug.com/311180): Implement this method.
+  NOTIMPLEMENTED_LOG_ONCE();
+  return true;
+}
+
 // static
 void ArcImeService::SetOverrideDefaultDeviceScaleFactorForTesting(
     base::Optional<double> scale_factor) {

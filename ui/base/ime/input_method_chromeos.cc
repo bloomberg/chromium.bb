@@ -193,7 +193,7 @@ void InputMethodChromeOS::OnTextInputTypeChanged(
     engine->FocusOut();
     ui::IMEEngineHandlerInterface::InputContext context(
         GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-        GetClientFocusReason());
+        GetClientFocusReason(), GetClientShouldDoLearning());
     engine->FocusIn(context);
   }
 
@@ -310,7 +310,7 @@ void InputMethodChromeOS::OnDidChangeFocusedClient(
   if (GetEngine()) {
     ui::IMEEngineHandlerInterface::InputContext context(
         GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-        GetClientFocusReason());
+        GetClientFocusReason(), GetClientShouldDoLearning());
     GetEngine()->FocusIn(context);
   }
 }
@@ -355,7 +355,7 @@ void InputMethodChromeOS::UpdateContextFocusState() {
 
   ui::IMEEngineHandlerInterface::InputContext context(
       GetTextInputType(), GetTextInputMode(), GetTextInputFlags(),
-      GetClientFocusReason());
+      GetClientFocusReason(), GetClientShouldDoLearning());
   ui::IMEBridge::Get()->SetCurrentInputContext(context);
 
   if (!IsTextInputTypeNone())

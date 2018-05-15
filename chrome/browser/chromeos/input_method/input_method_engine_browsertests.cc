@@ -67,6 +67,14 @@ class InputMethodEngineBrowserTest
 
   void TearDownInProcessBrowserTestFixture() override { extension_ = NULL; }
 
+  ui::IMEEngineHandlerInterface::InputContext CreateInputContextWithInputType(
+      ui::TextInputType type) {
+    return ui::IMEEngineHandlerInterface::InputContext(
+        type, ui::TEXT_INPUT_MODE_DEFAULT, ui::TEXT_INPUT_FLAG_NONE,
+        ui::TextInputClient::FOCUS_REASON_OTHER,
+        false /* should_do_learning */);
+  }
+
  protected:
   void LoadTestInputMethod() {
     // This will load "chrome/test/data/extensions/input_ime"
@@ -179,11 +187,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(activated_listener.was_satisfied());
 
   // onFocus event should be fired if FocusIn function is called.
-  ExtensionTestMessageListener focus_listener("onFocus:text:true:true:true",
-                                              false);
-  ui::IMEEngineHandlerInterface::InputContext context(
-      ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
-      ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+  ExtensionTestMessageListener focus_listener(
+      "onFocus:text:true:true:true:false", false);
+  const auto context =
+      CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_TEXT);
   engine_handler->FocusIn(context);
   ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
   ASSERT_TRUE(focus_listener.was_satisfied());
@@ -262,9 +269,8 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
   ASSERT_TRUE(host);
 
   engine_handler->Enable("APIArgumentIME");
-  ui::IMEEngineHandlerInterface::InputContext context(
-      ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
-      ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+  const auto context =
+      CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_TEXT);
   engine_handler->FocusIn(context);
 
   {
@@ -937,61 +943,55 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
     mock_candidate_window->Reset();
 
     {
-      ExtensionTestMessageListener focus_listener("onFocus:text:true:true:true",
-                                                  false);
-      ui::IMEEngineHandlerInterface::InputContext context(
-          ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+      ExtensionTestMessageListener focus_listener(
+          "onFocus:text:true:true:true:false", false);
+      const auto context =
+          CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_TEXT);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
     {
       ExtensionTestMessageListener focus_listener(
-          "onFocus:search:true:true:true", false);
-      ui::IMEEngineHandlerInterface::InputContext context(
-          ui::TEXT_INPUT_TYPE_SEARCH, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
-      engine_handler->FocusIn(context);
-      ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
-      ASSERT_TRUE(focus_listener.was_satisfied());
-    }
-    {
-      ExtensionTestMessageListener focus_listener("onFocus:tel:true:true:true",
-                                                  false);
-      ui::IMEEngineHandlerInterface::InputContext context(
-          ui::TEXT_INPUT_TYPE_TELEPHONE, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
-      engine_handler->FocusIn(context);
-      ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
-      ASSERT_TRUE(focus_listener.was_satisfied());
-    }
-    {
-      ExtensionTestMessageListener focus_listener("onFocus:url:true:true:true",
-                                                  false);
-      ui::IMEEngineHandlerInterface::InputContext context(
-          ui::TEXT_INPUT_TYPE_URL, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+          "onFocus:search:true:true:true:false", false);
+      const auto context =
+          CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_SEARCH);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
     {
       ExtensionTestMessageListener focus_listener(
-          "onFocus:email:true:true:true", false);
-      ui::IMEEngineHandlerInterface::InputContext context(
-          ui::TEXT_INPUT_TYPE_EMAIL, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+          "onFocus:tel:true:true:true:false", false);
+      const auto context =
+          CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_TELEPHONE);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
     }
     {
       ExtensionTestMessageListener focus_listener(
-          "onFocus:number:true:true:true", false);
-      ui::IMEEngineHandlerInterface::InputContext context(
-          ui::TEXT_INPUT_TYPE_NUMBER, ui::TEXT_INPUT_MODE_DEFAULT,
-          ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+          "onFocus:url:true:true:true:false", false);
+      const auto context =
+          CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_URL);
+      engine_handler->FocusIn(context);
+      ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
+      ASSERT_TRUE(focus_listener.was_satisfied());
+    }
+    {
+      ExtensionTestMessageListener focus_listener(
+          "onFocus:email:true:true:true:false", false);
+      const auto context =
+          CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_EMAIL);
+      engine_handler->FocusIn(context);
+      ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
+      ASSERT_TRUE(focus_listener.was_satisfied());
+    }
+    {
+      ExtensionTestMessageListener focus_listener(
+          "onFocus:number:true:true:true:false", false);
+      const auto context =
+          CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_NUMBER);
       engine_handler->FocusIn(context);
       ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
       ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1090,10 +1090,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     SCOPED_TRACE("Text");
 
     ExtensionTestMessageListener focus_listener(
-        "onFocus:text:false:false:false", false);
-    ui::IMEEngineHandlerInterface::InputContext context(
-        ui::TEXT_INPUT_TYPE_TEXT, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+        "onFocus:text:false:false:false:false", false);
+    const auto context =
+        CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_TEXT);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1102,10 +1101,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     SCOPED_TRACE("Password");
 
     ExtensionTestMessageListener focus_listener(
-        "onFocus:password:false:false:false", false);
-    ui::IMEEngineHandlerInterface::InputContext context(
-        ui::TEXT_INPUT_TYPE_PASSWORD, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+        "onFocus:password:false:false:false:false", false);
+    const auto context =
+        CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1113,11 +1111,10 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
   {
     SCOPED_TRACE("URL");
 
-    ExtensionTestMessageListener focus_listener("onFocus:url:false:false:false",
-                                                false);
-    ui::IMEEngineHandlerInterface::InputContext context(
-        ui::TEXT_INPUT_TYPE_URL, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+    ExtensionTestMessageListener focus_listener(
+        "onFocus:url:false:false:false:false", false);
+    const auto context =
+        CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_URL);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1126,10 +1123,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     SCOPED_TRACE("Search");
 
     ExtensionTestMessageListener focus_listener(
-        "onFocus:search:false:false:false", false);
-    ui::IMEEngineHandlerInterface::InputContext context(
-        ui::TEXT_INPUT_TYPE_SEARCH, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+        "onFocus:search:false:false:false:false", false);
+    const auto context =
+        CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_SEARCH);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1138,10 +1134,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     SCOPED_TRACE("Email");
 
     ExtensionTestMessageListener focus_listener(
-        "onFocus:email:false:false:false", false);
-    ui::IMEEngineHandlerInterface::InputContext context(
-        ui::TEXT_INPUT_TYPE_EMAIL, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+        "onFocus:email:false:false:false:false", false);
+    const auto context =
+        CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_EMAIL);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1150,10 +1145,9 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
     SCOPED_TRACE("Number");
 
     ExtensionTestMessageListener focus_listener(
-        "onFocus:number:false:false:false", false);
-    ui::IMEEngineHandlerInterface::InputContext context(
-        ui::TEXT_INPUT_TYPE_NUMBER, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+        "onFocus:number:false:false:false:false", false);
+    const auto context =
+        CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_NUMBER);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
@@ -1161,15 +1155,43 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, RestrictedKeyboard) {
   {
     SCOPED_TRACE("Telephone");
 
-    ExtensionTestMessageListener focus_listener("onFocus:tel:false:false:false",
-                                                false);
-    ui::IMEEngineHandlerInterface::InputContext context(
-        ui::TEXT_INPUT_TYPE_TELEPHONE, ui::TEXT_INPUT_MODE_DEFAULT,
-        ui::TEXT_INPUT_FLAG_NONE, ui::TextInputClient::FOCUS_REASON_OTHER);
+    ExtensionTestMessageListener focus_listener(
+        "onFocus:tel:false:false:false:false", false);
+    const auto context =
+        CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_TELEPHONE);
     engine_handler->FocusIn(context);
     ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
     ASSERT_TRUE(focus_listener.was_satisfied());
   }
+}
+
+IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest, ShouldDoLearning) {
+  LoadTestInputMethod();
+
+  InputMethodManager::Get()->GetActiveIMEState()->ChangeInputMethod(
+      kIdentityIMEID, false /* show_message */);
+
+  std::unique_ptr<ui::MockIMEInputContextHandler> mock_input_context(
+      new ui::MockIMEInputContextHandler());
+  std::unique_ptr<MockIMECandidateWindowHandler> mock_candidate_window(
+      new MockIMECandidateWindowHandler());
+
+  ui::IMEBridge::Get()->SetInputContextHandler(mock_input_context.get());
+  ui::IMEBridge::Get()->SetCandidateWindowHandler(mock_candidate_window.get());
+
+  ui::IMEEngineHandlerInterface* engine_handler =
+      ui::IMEBridge::Get()->GetCurrentEngineHandler();
+  ASSERT_TRUE(engine_handler);
+  engine_handler->Enable("IdentityIME");
+
+  // onFocus event should be fired if FocusIn function is called.
+  ExtensionTestMessageListener focus_listener(
+      "onFocus:text:true:true:true:true", false);
+  auto context = CreateInputContextWithInputType(ui::TEXT_INPUT_TYPE_TEXT);
+  context.should_do_learning = true;
+  engine_handler->FocusIn(context);
+  ASSERT_TRUE(focus_listener.WaitUntilSatisfied());
+  ASSERT_TRUE(focus_listener.was_satisfied());
 }
 
 }  // namespace

@@ -240,6 +240,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(ui::TextEditCommand command) override;
   const std::string& GetClientSourceInfo() const override;
+  bool ShouldDoLearning() override;
 
   // Overridden from display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;

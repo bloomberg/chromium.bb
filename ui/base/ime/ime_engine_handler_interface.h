@@ -38,21 +38,25 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
     InputContext(TextInputType type_,
                  TextInputMode mode_,
                  int flags_,
-                 TextInputClient::FocusReason focus_reason_)
+                 TextInputClient::FocusReason focus_reason_,
+                 bool should_do_learning_)
         : type(type_),
           mode(mode_),
           flags(flags_),
-          focus_reason(focus_reason_) {}
+          focus_reason(focus_reason_),
+          should_do_learning(should_do_learning_) {}
     InputContext(int id_,
                  TextInputType type_,
                  TextInputMode mode_,
                  int flags_,
-                 TextInputClient::FocusReason focus_reason_)
+                 TextInputClient::FocusReason focus_reason_,
+                 bool should_do_learning_)
         : id(id_),
           type(type_),
           mode(mode_),
           flags(flags_),
-          focus_reason(focus_reason_) {}
+          focus_reason(focus_reason_),
+          should_do_learning(should_do_learning_) {}
     // An attribute of the context id which used for ChromeOS only.
     int id;
     // An attribute of the field defined at
@@ -69,6 +73,9 @@ class UI_BASE_IME_EXPORT IMEEngineHandlerInterface {
     // An attribute to indicate how this input field was focused.
     TextInputClient::FocusReason focus_reason =
         TextInputClient::FOCUS_REASON_NONE;
+    // An attribute to indicate whether text entered in this field should be
+    // used to improve typing suggestions for the user.
+    bool should_do_learning = false;
   };
 
   virtual ~IMEEngineHandlerInterface() {}

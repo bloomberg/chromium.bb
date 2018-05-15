@@ -53,6 +53,7 @@ class DummyTextInputClient : public TextInputClient {
   bool IsTextEditCommandEnabled(TextEditCommand command) const override;
   void SetTextEditCommandForNextKeyEvent(TextEditCommand command) override;
   const std::string& GetClientSourceInfo() const override;
+  bool ShouldDoLearning() override;
 
   int insert_char_count() const { return insert_char_count_; }
   base::char16 last_insert_char() const { return last_insert_char_; }

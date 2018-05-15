@@ -59,6 +59,7 @@ void ImeObserver::OnFocus(
   context_value.auto_correct = ConvertInputContextAutoCorrect(context);
   context_value.auto_complete = ConvertInputContextAutoComplete(context);
   context_value.spell_check = ConvertInputContextSpellCheck(context);
+  context_value.should_do_learning = context.should_do_learning;
 
   std::unique_ptr<base::ListValue> args(
       input_ime::OnFocus::Create(context_value));
