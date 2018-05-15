@@ -193,7 +193,7 @@ bool FormDataImporter::ImportAddressProfiles(const FormStructure& form) {
   std::set<std::string> sections;
   for (const auto& field : form) {
     if (field->Type().group() != CREDIT_CARD)
-      sections.insert(field->section());
+      sections.insert(field->section);
   }
 
   // We save a maximum of 2 profiles per submitted form (e.g. for shipping and
@@ -230,7 +230,7 @@ bool FormDataImporter::ImportAddressProfileForSection(
   // Go through each |form| field and attempt to constitute a valid profile.
   for (const auto& field : form) {
     // Reject fields that are not within the specified |section|.
-    if (field->section() != section)
+    if (field->section != section)
       continue;
 
     base::string16 value;

@@ -1269,7 +1269,7 @@ TEST_F(FormStructureTest, HeuristicsAutocompleteAttributeWithSections) {
   // sections.
   std::set<std::string> section_names;
   for (size_t i = 0; i < 9; ++i) {
-    section_names.insert(form_structure.field(i)->section());
+    section_names.insert(form_structure.field(i)->section);
   }
   EXPECT_EQ(9U, section_names.size());
 }
@@ -1313,7 +1313,7 @@ TEST_F(FormStructureTest,
   // section.
   std::set<std::string> section_names;
   for (size_t i = 0; i < 6; ++i) {
-    section_names.insert(form_structure.field(i)->section());
+    section_names.insert(form_structure.field(i)->section);
   }
   EXPECT_EQ(1U, section_names.size());
 }
@@ -1342,7 +1342,7 @@ TEST_F(FormStructureTest, HeuristicsAutocompleteAttributeWithSectionsRepeated) {
   // section.
   std::set<std::string> section_names;
   for (size_t i = 0; i < 2; ++i) {
-    section_names.insert(form_structure.field(i)->section());
+    section_names.insert(form_structure.field(i)->section);
   }
   EXPECT_EQ(1U, section_names.size());
 }
@@ -1380,8 +1380,7 @@ TEST_F(FormStructureTest, HeuristicsDontOverrideAutocompleteAttributeSections) {
   // form, we do not apply these usual heuristics.
   EXPECT_EQ(ASCIIToUTF16("one"), form_structure.field(0)->name);
   EXPECT_EQ(ASCIIToUTF16("two"), form_structure.field(3)->name);
-  EXPECT_EQ(form_structure.field(0)->section(),
-            form_structure.field(3)->section());
+  EXPECT_EQ(form_structure.field(0)->section, form_structure.field(3)->section);
 }
 
 TEST_F(FormStructureTest, HeuristicsSample8) {

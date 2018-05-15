@@ -570,6 +570,9 @@ bool StructTraits<
   if (!data.ReadCssClasses(&out->css_classes))
     return false;
 
+  if (!data.ReadSection(&out->section))
+    return false;
+
   out->properties_mask = data.properties_mask();
 
   out->max_length = data.max_length();

@@ -212,7 +212,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
     manager_->ShowAutofillSettings();
   } else if (identifier == POPUP_ITEM_ID_CLEAR_FORM) {
     // User selected 'Clear form'.
-    driver_->RendererShouldClearFilledForm();
+    driver_->RendererShouldClearFilledSection();
   } else if (identifier == POPUP_ITEM_ID_PASSWORD_ENTRY ||
              identifier == POPUP_ITEM_ID_USERNAME_ENTRY) {
     NOTREACHED();  // Should be handled elsewhere.

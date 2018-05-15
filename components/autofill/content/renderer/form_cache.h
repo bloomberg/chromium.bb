@@ -39,9 +39,9 @@ class FormCache {
   // Resets the forms.
   void Reset();
 
-  // Clears the values of all input elements in the form that contains
-  // |element|.  Returns false if the form is not found.
-  bool ClearFormWithElement(const blink::WebFormControlElement& element);
+  // Clears the values of all input elements in the section of the form that
+  // contains |element|.  Returns false if the form is not found.
+  bool ClearSectionWithElement(const blink::WebFormControlElement& element);
 
   // For each field in the |form|, if |attach_predictions_to_dom| is true, sets
   // the title to include the field's heuristic type, server type, and

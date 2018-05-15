@@ -64,6 +64,11 @@ class BLINK_EXPORT WebFormControlElement : public WebElement {
   bool IsAutofilled() const;
   void SetAutofilled(bool);
 
+  // The autofill section to which this element belongs (e.g. billing address,
+  // shipping address, .. .)
+  WebString AutofillSection() const;
+  void SetAutofillSection(const WebString&);
+
   // Returns true if autocomplete attribute of the element is not set as "off".
   bool AutoComplete() const;
 

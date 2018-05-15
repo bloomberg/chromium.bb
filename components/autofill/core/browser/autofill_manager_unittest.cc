@@ -4288,11 +4288,11 @@ TEST_F(AutofillManagerTest, DetermineHeuristicsWithOverallPrediction) {
   // Although the heuristic types of the first two fields belongs to the address
   // section, the final fields' section should be based on the overall
   // prediction, therefore they should be grouped in one section.
-  const auto section = form_structure->field(0)->section();
-  EXPECT_EQ(section, form_structure->field(1)->section());
-  EXPECT_EQ(section, form_structure->field(2)->section());
-  EXPECT_EQ(section, form_structure->field(3)->section());
-  EXPECT_EQ(section, form_structure->field(4)->section());
+  const auto section = form_structure->field(0)->section;
+  EXPECT_EQ(section, form_structure->field(1)->section);
+  EXPECT_EQ(section, form_structure->field(2)->section);
+  EXPECT_EQ(section, form_structure->field(3)->section);
+  EXPECT_EQ(section, form_structure->field(4)->section);
 }
 
 // Test that we are able to save form data when forms are submitted and we only

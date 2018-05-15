@@ -91,8 +91,7 @@ void AutofillDriverIOS::DidInteractWithCreditCardForm() {
   }
 }
 
-void AutofillDriverIOS::RendererShouldClearFilledForm() {
-}
+void AutofillDriverIOS::RendererShouldClearFilledSection() {}
 
 void AutofillDriverIOS::RendererShouldClearPreviewedForm() {
 }

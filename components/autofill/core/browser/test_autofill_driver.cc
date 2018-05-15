@@ -41,8 +41,7 @@ void TestAutofillDriver::RendererShouldAcceptDataListSuggestion(
     const base::string16& value) {
 }
 
-void TestAutofillDriver::RendererShouldClearFilledForm() {
-}
+void TestAutofillDriver::RendererShouldClearFilledSection() {}
 
 void TestAutofillDriver::RendererShouldClearPreviewedForm() {
 }

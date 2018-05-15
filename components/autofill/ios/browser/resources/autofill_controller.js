@@ -329,12 +329,14 @@ __gCrWeb.autofill['fillForm'] = function(data, forceFillFieldIdentifier) {
   }
 };
 
+// TODO(crbug.com/816941): Clear should only clear the current section and not
+// the whole form.
 /**
- * Clear autofilled fields of the specified form. Fields that are not currently
- * autofilled are not modified.
+ * Clear autofilled fields of the specified form section. Fields that are not
+ * currently autofilled are not modified.
  * Field contents are cleared, and Autofill flag and styling are removed.
  * 'change' events are sent for fields whose contents changed.
- * Based on FormCache::ClearFormWithElement().
+ * Based on FormCache::ClearSectionWithElement().
  *
  * @param {string} formName Identifier for form element (from
  *     getFormIdentifier).

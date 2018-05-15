@@ -107,6 +107,11 @@ struct FormFieldData {
   std::string autocomplete_attribute;
   base::string16 placeholder;
   base::string16 css_classes;
+
+  // The unique identifier of the section (e.g. billing vs. shipping address)
+  // of this field.
+  std::string section;
+
   // Note: we use uint64_t instead of size_t because this struct is sent over
   // IPC which could span 32 & 64 bit processes. We chose uint64_t instead of
   // uint32_t to maintain compatibility with old code which used size_t
@@ -160,6 +165,7 @@ std::ostream& operator<<(std::ostream& os, const FormFieldData& field);
     EXPECT_EQ(expected.max_length, actual.max_length);                         \
     EXPECT_EQ(expected.css_classes, actual.css_classes);                       \
     EXPECT_EQ(expected.is_autofilled, actual.is_autofilled);                   \
+    EXPECT_EQ(expected.section, actual.section);                               \
     EXPECT_EQ(expected.check_status, actual.check_status);                     \
     EXPECT_EQ(expected.properties_mask, actual.properties_mask);               \
     EXPECT_EQ(expected.id, actual.id);                                         \

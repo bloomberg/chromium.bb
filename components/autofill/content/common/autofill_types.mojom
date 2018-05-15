@@ -115,6 +115,7 @@ struct FormFieldData {
 
   uint64 max_length;
   bool is_autofilled;
+  string section;
   CheckStatus check_status;
   bool is_focusable;
   bool should_autocomplete;
