@@ -77,6 +77,9 @@ volumeManagerUtil.createVolumeInfo = function(volumeMetadata) {
           break;
       }
       break;
+    case VolumeManagerCommon.VolumeType.CROSTINI:
+      localizedLabel = str('LINUX_FILES_ROOT_LABEL');
+      break;
     default:
       // TODO(mtomasz): Calculate volumeLabel for all types of volumes in the
       // C++ layer.

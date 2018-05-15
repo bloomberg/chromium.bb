@@ -700,13 +700,6 @@ VolumeItem.prototype.setupIcon_ = function(icon, volumeInfo) {
         'volume-subtype',
         VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(
             volumeInfo.volumeId));
-  } else if (
-      volumeInfo.volumeType === VolumeManagerCommon.VolumeType.PROVIDED) {
-    icon.setAttribute(
-        'volume-subtype',
-        VolumeManagerCommon.getProvidedFileSystemIdFromVolumeId(
-            volumeInfo.volumeId) ||
-            '');
   } else {
     icon.setAttribute('volume-subtype', volumeInfo.deviceType || '');
   }
