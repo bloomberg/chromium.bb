@@ -217,15 +217,15 @@ class A {
 
 A a;
 scoped_refptr<SequencedTaskRunner> task_runner_for_a = ...;
-task_runner->PostTask(FROM_HERE,
-                      base::BindOnce(&A::AddValue, base::Unretained(&a)));
-task_runner->PostTask(FROM_HERE,
-                      base::BindOnce(&A::AddValue, base::Unretained(&a)));
+task_runner_for_a->PostTask(FROM_HERE,
+                      base::BindOnce(&A::AddValue, base::Unretained(&a), 42));
+task_runner_for_a->PostTask(FROM_HERE,
+                      base::BindOnce(&A::AddValue, base::Unretained(&a), 27));
 
 // Access from a different sequence causes a DCHECK failure.
 scoped_refptr<SequencedTaskRunner> other_task_runner = ...;
 other_task_runner->PostTask(FROM_HERE,
-                            base::BindOnce(&A::AddValue, base::Unretained(&a)));
+                            base::BindOnce(&A::AddValue, base::Unretained(&a), 1));
 ```
 
 Locks should only be used to swap in a shared data structure that can be
