@@ -5,7 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_OWNER_PROPERTIES_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_OWNER_PROPERTIES_H_
 
-#include "third_party/blink/public/platform/web_scrollbar.h"
 #include "third_party/blink/public/platform/web_string.h"
 
 #if INSIDE_BLINK
@@ -15,7 +14,7 @@
 namespace blink {
 
 struct WebFrameOwnerProperties {
-  using ScrollingMode = WebScrollbar::ScrollingMode;
+  enum class ScrollingMode { kAuto, kAlwaysOff, kAlwaysOn, kLast = kAlwaysOn };
 
   WebString name;  // browsing context container's name
   ScrollingMode scrolling_mode;
