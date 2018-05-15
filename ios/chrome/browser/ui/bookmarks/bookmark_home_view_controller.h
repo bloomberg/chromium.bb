@@ -10,6 +10,8 @@
 #include <set>
 #include <vector>
 
+#import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
+
 @protocol ApplicationCommands;
 @protocol UrlLoader;
 class GURL;
@@ -22,11 +24,7 @@ namespace bookmarks {
 class BookmarkNode;
 }  // namespace bookmarks
 
-@class BookmarkContextBar;
 @class BookmarkHomeViewController;
-@class BookmarkHomeWaitingView;
-@class BookmarkTableView;
-@class MDCAppBar;
 
 @protocol BookmarkHomeViewControllerDelegate
 // The view controller wants to be dismissed. If |urls| is not empty, then
@@ -46,7 +44,7 @@ class BookmarkNode;
 @end
 
 // Class to navigate the bookmark hierarchy.
-@interface BookmarkHomeViewController : UITableViewController
+@interface BookmarkHomeViewController : ChromeTableViewController
 
 // Set to YES, only when this view controller instance is being created
 // from cached path. Once the view controller is shown, this is set to NO.
@@ -63,19 +61,13 @@ class BookmarkNode;
                   browserState:(ios::ChromeBrowserState*)browserState
                     dispatcher:(id<ApplicationCommands>)dispatcher
     NS_DESIGNATED_INITIALIZER;
-- (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;
-- (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;
-- (instancetype)initWithNibName:(NSString*)nibNameOrNil
-                         bundle:(NSBundle*)nibBundleOrNil NS_UNAVAILABLE;
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)tableViewStyle
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+    NS_UNAVAILABLE;
 
 // Setter to set _rootNode value.
 - (void)setRootNode:(const bookmarks::BookmarkNode*)rootNode;
-
-// This method should be called at most once in the life-cycle of the class.
-// It should be called at the soonest possible time after the view has been
-// loaded, and the bookmark model is loaded.
-- (void)loadBookmarkViews;
 
 @end
 

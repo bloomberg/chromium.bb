@@ -48,7 +48,6 @@
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ios/web/public/referrer.h"
 #include "skia/ext/skia_utils_ios.h"
@@ -154,18 +153,12 @@ const CGFloat kShadowRadius = 12.0f;
 // The mediator that provides data for this view controller.
 @property(nonatomic, strong) BookmarkHomeMediator* mediator;
 
-// The table view's styler.
-@property(nonatomic, strong) ChromeTableViewStyler* tableViewStyler;
-
 // The view controller used to pick a folder in which to move the selected
 // bookmarks.
 @property(nonatomic, strong) BookmarkFolderViewController* folderSelector;
 
 // Object to load URLs.
 @property(nonatomic, weak) id<UrlLoader> loader;
-
-// The app bar for the bookmarks.
-@property(nonatomic, strong) MDCAppBar* appBar;
 
 // The view controller used to view and edit a single bookmark.
 @property(nonatomic, strong) BookmarkEditViewController* editViewController;
@@ -202,7 +195,6 @@ const CGFloat kShadowRadius = 12.0f;
 
 @implementation BookmarkHomeViewController
 
-@synthesize appBar = _appBar;
 @synthesize bookmarks = _bookmarks;
 @synthesize browserState = _browserState;
 @synthesize editViewController = _editViewController;
@@ -216,7 +208,6 @@ const CGFloat kShadowRadius = 12.0f;
 @synthesize isReconstructingFromCache = _isReconstructingFromCache;
 @synthesize sharedState = _sharedState;
 @synthesize mediator = _mediator;
-@synthesize tableViewStyler = _tableViewStyler;
 @synthesize deleteButton = _deleteButton;
 @synthesize moreButton = _moreButton;
 @synthesize spinnerView = _spinnerView;
@@ -232,7 +223,9 @@ const CGFloat kShadowRadius = 12.0f;
                   browserState:(ios::ChromeBrowserState*)browserState
                     dispatcher:(id<ApplicationCommands>)dispatcher {
   DCHECK(browserState);
-  self = [super initWithStyle:UITableViewStylePlain];
+  self =
+      [super initWithTableViewStyle:UITableViewStylePlain
+                        appBarStyle:ChromeTableViewControllerStyleWithAppBar];
   if (self) {
     _browserState = browserState->GetOriginalChromeBrowserState();
     _loader = loader;
@@ -261,7 +254,8 @@ const CGFloat kShadowRadius = 12.0f;
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  // Set Toolbar Appearance.
+  // Set Navigation Bar and Toolbar appearance.
+  self.navigationController.navigationBarHidden = YES;
   self.navigationController.toolbar.translucent = NO;
   self.navigationController.toolbar.barTintColor = [UIColor whiteColor];
   self.navigationController.toolbar.accessibilityIdentifier =
@@ -333,24 +327,21 @@ const CGFloat kShadowRadius = 12.0f;
 
 - (void)loadBookmarkViews {
   DCHECK(_rootNode);
+  [self loadModel];
 
   self.sharedState =
       [[BookmarkHomeSharedState alloc] initWithBookmarkModel:_bookmarks
                                            displayedRootNode:_rootNode];
+  self.sharedState.tableViewModel = self.tableViewModel;
+  self.sharedState.tableView = self.tableView;
   self.sharedState.observer = self;
 
-  self.automaticallyAdjustsScrollViewInsets = NO;
-  self.sharedState.tableView = self.tableView;
-
   // Configure the table view.
-  self.tableViewStyler = [[ChromeTableViewStyler alloc] init];
   self.sharedState.tableView.accessibilityIdentifier = @"bookmarksTableView";
-  if (@available(iOS 11.0, *)) {
-    self.sharedState.tableView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
   self.sharedState.tableView.estimatedRowHeight =
       [BookmarkHomeSharedState cellHeightPt];
+  self.tableView.sectionHeaderHeight = 0;
+  self.tableView.sectionFooterHeight = 0;
   self.sharedState.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   self.sharedState.tableView.allowsMultipleSelectionDuringEditing = YES;
 
@@ -368,8 +359,6 @@ const CGFloat kShadowRadius = 12.0f;
                                            browserState:self.browserState];
   self.mediator.consumer = self;
   [self.mediator startMediating];
-  self.sharedState.tableView.dataSource = self;
-  self.sharedState.tableView.delegate = self;
 
   // After the table view has been added.
   [self setupNavigationBar];
@@ -393,20 +382,6 @@ const CGFloat kShadowRadius = 12.0f;
 }
 
 #pragma mark - BookmarkHomeConsumer
-
-- (void)reconfigureCellsForItems:(NSArray*)items {
-  for (TableViewItem* item in items) {
-    NSIndexPath* indexPath =
-        [self.sharedState.tableViewModel indexPathForItem:item];
-    UITableViewCell* cell =
-        [self.sharedState.tableView cellForRowAtIndexPath:indexPath];
-
-    // |cell| may be nil if the row is not currently on screen.
-    if (cell) {
-      [item configureCell:cell withStyler:self.tableViewStyler];
-    }
-  }
-}
 
 - (void)refreshContents {
   [self.mediator computeBookmarkTableViewData];
@@ -947,20 +922,6 @@ const CGFloat kShadowRadius = 12.0f;
 - (void)setupNavigationBar {
   DCHECK(self.sharedState.tableView);
   self.navigationController.navigationBarHidden = YES;
-  self.appBar = [[MDCAppBar alloc] init];
-  [self addChildViewController:self.appBar.headerViewController];
-  ConfigureAppBarWithCardStyle(self.appBar);
-  // Set the header view's tracking scroll view.
-  self.appBar.headerViewController.headerView.trackingScrollView =
-      self.sharedState.tableView;
-  self.sharedState.headerView = self.appBar.headerViewController.headerView;
-
-  [self.appBar addSubviewsToParent];
-  // Prevent the touch events on appBar from being forwarded to the tableView.
-  // See https://crbug.com/773580
-  [self.appBar.headerViewController.headerView
-      stopForwardingTouchEventsForView:self.appBar.navigationBar];
-
   if (self.navigationController.viewControllers.count > 1) {
     // Add custom back button.
     UIBarButtonItem* backButton =
@@ -1726,61 +1687,14 @@ const CGFloat kShadowRadius = 12.0f;
   [self handleSelectEditNodes:sharedState.editNodes];
 }
 
-#pragma mark UIScrollViewDelegate
-
-- (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  if (scrollView == self.sharedState.headerView.trackingScrollView) {
-    [self.sharedState.headerView trackingScrollViewDidScroll];
-  }
-}
-
-- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  if (scrollView == self.sharedState.headerView.trackingScrollView) {
-    [self.sharedState.headerView trackingScrollViewDidEndDecelerating];
-  }
-}
-
-- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
-                  willDecelerate:(BOOL)decelerate {
-  if (scrollView == self.sharedState.headerView.trackingScrollView) {
-    [self.sharedState.headerView
-        trackingScrollViewDidEndDraggingWillDecelerate:decelerate];
-  }
-}
-
-- (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
-                     withVelocity:(CGPoint)velocity
-              targetContentOffset:(inout CGPoint*)targetContentOffset {
-  if (scrollView == self.sharedState.headerView.trackingScrollView) {
-    [self.sharedState.headerView
-        trackingScrollViewWillEndDraggingWithVelocity:velocity
-                                  targetContentOffset:targetContentOffset];
-  }
-}
-
 #pragma mark - UITableViewDataSource
-
-- (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
-  return [self.sharedState.tableViewModel numberOfSections];
-}
-
-- (NSInteger)tableView:(UITableView*)tableView
-    numberOfRowsInSection:(NSInteger)section {
-  return [self.sharedState.tableViewModel numberOfItemsInSection:section];
-}
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
+  UITableViewCell* cell =
+      [super tableView:tableView cellForRowAtIndexPath:indexPath];
   TableViewItem* item =
       [self.sharedState.tableViewModel itemAtIndexPath:indexPath];
-  Class cellClass = [item cellClass];
-  NSString* reuseIdentifier = NSStringFromClass(cellClass);
-  [self.sharedState.tableView registerClass:cellClass
-                     forCellReuseIdentifier:reuseIdentifier];
-  UITableViewCell* cell = [self.sharedState.tableView
-      dequeueReusableCellWithIdentifier:reuseIdentifier
-                           forIndexPath:indexPath];
-  [item configureCell:cell withStyler:self.tableViewStyler];
 
   if (item.type == BookmarkHomeItemTypeBookmark) {
     BookmarkHomeNodeItem* nodeItem =
