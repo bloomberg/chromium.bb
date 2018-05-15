@@ -150,8 +150,7 @@ bool PublicSessionPermissionHelper::HandlePermissionRequestImpl(
     messages.push_back(PermissionMessage(
         l10n_util::GetStringUTF16(IDS_EXTENSION_PROMPT_WARNING_CURRENT_HOST),
         extensions::PermissionIDSet()));
-    permissions_prompt->AddPermissions(
-        messages, ExtensionInstallPrompt::REGULAR_PERMISSIONS);
+    permissions_prompt->AddPermissions(messages);
   }
 
   // This Unretained is safe because the lifetime of this object is until

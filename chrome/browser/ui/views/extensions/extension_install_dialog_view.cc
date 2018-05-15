@@ -215,20 +215,18 @@ struct ExtensionInfoSection {
 // Adds a section to |sections| for permissions of |perm_type| if there are any.
 void AddPermissions(ExtensionInstallPrompt::Prompt* prompt,
                     std::vector<ExtensionInfoSection>& sections,
-                    int available_width,
-                    ExtensionInstallPrompt::PermissionsType perm_type) {
-  if (prompt->GetPermissionCount(perm_type) == 0)
-    return;
+                    int available_width) {
+  DCHECK_GT(prompt->GetPermissionCount(), 0u);
 
   auto permissions_view = std::make_unique<PermissionsView>(available_width);
 
-  for (size_t i = 0; i < prompt->GetPermissionCount(perm_type); ++i) {
-    permissions_view->AddItem(prompt->GetPermission(i, perm_type),
-                              prompt->GetPermissionsDetails(i, perm_type));
+  for (size_t i = 0; i < prompt->GetPermissionCount(); ++i) {
+    permissions_view->AddItem(prompt->GetPermission(i),
+                              prompt->GetPermissionsDetails(i));
   }
 
   sections.push_back(
-      {prompt->GetPermissionsHeading(perm_type), std::move(permissions_view)});
+      {prompt->GetPermissionsHeading(), std::move(permissions_view)});
 }
 
 }  // namespace
@@ -276,16 +274,9 @@ void ExtensionInstallDialogView::CreateContents() {
 
   std::vector<ExtensionInfoSection> sections;
   if (prompt_->ShouldShowPermissions()) {
-    bool has_permissions =
-        prompt_->GetPermissionCount(
-            ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS) > 0;
+    bool has_permissions = prompt_->GetPermissionCount() > 0;
     if (has_permissions) {
-      AddPermissions(
-          prompt_.get(), sections, content_width,
-          ExtensionInstallPrompt::PermissionsType::REGULAR_PERMISSIONS);
-      AddPermissions(
-          prompt_.get(), sections, content_width,
-          ExtensionInstallPrompt::PermissionsType::WITHHELD_PERMISSIONS);
+      AddPermissions(prompt_.get(), sections, content_width);
     } else {
       sections.push_back(
           {l10n_util::GetStringUTF16(IDS_EXTENSION_NO_SPECIAL_PERMISSIONS),
