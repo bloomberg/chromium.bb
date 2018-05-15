@@ -3117,6 +3117,12 @@ WebHitTestResult WebViewImpl::HitTestResultAt(const WebPoint& point) {
 
 HitTestResult WebViewImpl::CoreHitTestResultAt(
     const WebPoint& point_in_viewport) {
+  // TODO(crbug.com/843128): When we do async hit-testing, we might try to do
+  // hit-testing when the local main frame is not valid anymore. Look into if we
+  // can avoid getting here earlier in the pipeline.
+  if (!MainFrameImpl() || !MainFrameImpl()->GetFrameView())
+    return HitTestResult();
+
   DocumentLifecycle::AllowThrottlingScope throttling_scope(
       MainFrameImpl()->GetFrame()->GetDocument()->Lifecycle());
   LocalFrameView* view = MainFrameImpl()->GetFrameView();
