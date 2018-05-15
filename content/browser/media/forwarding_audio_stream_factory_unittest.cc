@@ -14,11 +14,14 @@
 #include "base/unguessable_token.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_renderer_host.h"
 #include "media/base/audio_parameters.h"
 #include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/audio/public/cpp/fake_stream_factory.h"
 #include "services/audio/public/mojom/constants.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -34,6 +37,30 @@ using ::testing::InSequence;
 namespace content {
 
 namespace {
+
+class MockStreamFactory : public audio::FakeStreamFactory,
+                          public audio::mojom::LocalMuter {
+ public:
+  MockStreamFactory() : muter_binding_(this) {}
+  ~MockStreamFactory() final {}
+
+  bool IsConnected() {
+    return binding_ && !binding_.handle().QuerySignalsState().peer_closed();
+  }
+  bool IsMuterConnected() { return muter_binding_.is_bound(); }
+
+ private:
+  void BindMuter(audio::mojom::LocalMuterAssociatedRequest request,
+                 const base::UnguessableToken& group_id) final {
+    muter_binding_.Bind(std::move(request));
+    muter_binding_.set_connection_error_handler(base::BindOnce(
+        &MockStreamFactory::MuterUnbound, base::Unretained(this)));
+  }
+  void MuterUnbound() { muter_binding_.Close(); }
+
+  mojo::AssociatedBinding<audio::mojom::LocalMuter> muter_binding_;
+  DISALLOW_COPY_AND_ASSIGN(MockStreamFactory);
+};
 
 class MockBroker : public AudioStreamBroker {
  public:
@@ -52,6 +79,7 @@ class MockBroker : public AudioStreamBroker {
 
  private:
   base::WeakPtrFactory<MockBroker> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(MockBroker);
 };
 
 class MockBrokerFactory : public AudioStreamBrokerFactory {
@@ -70,6 +98,10 @@ class MockBrokerFactory : public AudioStreamBrokerFactory {
 
   void ExpectOutputStreamBrokerCreation(std::unique_ptr<MockBroker> broker) {
     prepared_output_stream_brokers_.push(std::move(broker));
+  }
+
+  void ExpectLoopbackStreamBrokerCreation(std::unique_ptr<MockBroker> broker) {
+    prepared_loopback_stream_brokers_.push(std::move(broker));
   }
 
   std::unique_ptr<AudioStreamBroker> CreateAudioInputStreamBroker(
@@ -111,9 +143,31 @@ class MockBrokerFactory : public AudioStreamBrokerFactory {
     return std::move(prepared_broker);
   }
 
+  std::unique_ptr<AudioStreamBroker> CreateAudioLoopbackStreamBroker(
+      int render_process_id,
+      int render_frame_id,
+      std::unique_ptr<LoopbackSource> source,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      bool mute_source,
+      AudioStreamBroker::DeleterCallback deleter,
+      mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
+      final {
+    std::unique_ptr<MockBroker> prepared_broker =
+        std::move(prepared_loopback_stream_brokers_.front());
+    prepared_loopback_stream_brokers_.pop();
+    CHECK_NE(nullptr, prepared_broker.get());
+    EXPECT_EQ(render_process_id, prepared_broker->render_process_id());
+    EXPECT_EQ(render_frame_id, prepared_broker->render_frame_id());
+    prepared_broker->deleter = std::move(deleter);
+    return std::move(prepared_broker);
+  }
+
  private:
+  base::queue<std::unique_ptr<MockBroker>> prepared_loopback_stream_brokers_;
   base::queue<std::unique_ptr<MockBroker>> prepared_input_stream_brokers_;
   base::queue<std::unique_ptr<MockBroker>> prepared_output_stream_brokers_;
+  DISALLOW_COPY_AND_ASSIGN(MockBrokerFactory);
 };
 
 class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
@@ -125,9 +179,8 @@ class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
     connector_test_api.OverrideBinderForTesting(
         service_manager::Identity(audio::mojom::kServiceName),
         audio::mojom::StreamFactory::Name_,
-        base::BindRepeating(
-            &ForwardingAudioStreamFactoryTest::SetPendingFactoryRequest,
-            base::Unretained(this)));
+        base::BindRepeating(&ForwardingAudioStreamFactoryTest::BindFactory,
+                            base::Unretained(this)));
   }
 
   ~ForwardingAudioStreamFactoryTest() override {}
@@ -139,8 +192,17 @@ class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
         RenderFrameHostTester::For(main_rfh())->AppendChild("other_rfh");
   }
 
-  void SetPendingFactoryRequest(mojo::ScopedMessagePipeHandle factory_request) {
-    pending_factory_request_ = std::move(factory_request);
+  void BindFactory(mojo::ScopedMessagePipeHandle factory_request) {
+    stream_factory_.binding_.Bind(
+        audio::mojom::StreamFactoryRequest(std::move(factory_request)));
+  }
+
+  base::WeakPtr<MockBroker> ExpectLoopbackBrokerConstruction(
+      RenderFrameHost* rfh) {
+    auto broker = std::make_unique<StrictMock<MockBroker>>(rfh);
+    auto weak_broker = broker->GetWeakPtr();
+    broker_factory_->ExpectLoopbackStreamBrokerCreation(std::move(broker));
+    return weak_broker;
   }
 
   base::WeakPtr<MockBroker> ExpectInputBrokerConstruction(
@@ -166,9 +228,9 @@ class ForwardingAudioStreamFactoryTest : public RenderViewHostTestHarness {
   static const media::AudioParameters kParams;
   static const uint32_t kSharedMemoryCount;
   static const bool kEnableAgc;
+  MockStreamFactory stream_factory_;
   service_manager::mojom::ConnectorRequest connector_request_;
   std::unique_ptr<service_manager::Connector> connector_;
-  mojo::ScopedMessagePipeHandle pending_factory_request_;
   RenderFrameHost* other_rfh_;
   std::unique_ptr<MockBrokerFactory> broker_factory_;
 };
@@ -181,6 +243,7 @@ const media::AudioParameters ForwardingAudioStreamFactoryTest::kParams =
     media::AudioParameters::UnavailableDeviceParams();
 const uint32_t ForwardingAudioStreamFactoryTest::kSharedMemoryCount = 10;
 const bool ForwardingAudioStreamFactoryTest::kEnableAgc = false;
+const bool kMuteSource = true;
 
 }  // namespace
 
@@ -195,6 +258,23 @@ TEST_F(ForwardingAudioStreamFactoryTest, CreateInputStream_CreatesInputStream) {
   mojo::MakeRequest(&client);
   factory.CreateInputStream(main_rfh(), kInputDeviceId, kParams,
                             kSharedMemoryCount, kEnableAgc, std::move(client));
+}
+
+TEST_F(ForwardingAudioStreamFactoryTest,
+       CreateLoopbackStream_CreatesLoopbackStream) {
+  std::unique_ptr<WebContents> source_contents = CreateTestWebContents();
+  mojom::RendererAudioInputStreamFactoryClientPtr client;
+  base::WeakPtr<MockBroker> broker =
+      ExpectLoopbackBrokerConstruction(main_rfh());
+
+  ForwardingAudioStreamFactory factory(web_contents(), std::move(connector_),
+                                       std::move(broker_factory_));
+
+  EXPECT_CALL(*broker, CreateStream(NotNull()));
+  mojo::MakeRequest(&client);
+  factory.CreateLoopbackStream(main_rfh(), source_contents.get(), kParams,
+                               kSharedMemoryCount, kMuteSource,
+                               std::move(client));
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest,
@@ -246,6 +326,41 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest,
+       LoopbackBrokerDeleterCalled_DestroysInputStream) {
+  std::unique_ptr<WebContents> source_contents = CreateTestWebContents();
+  mojom::RendererAudioInputStreamFactoryClientPtr client;
+  base::WeakPtr<MockBroker> main_rfh_broker =
+      ExpectLoopbackBrokerConstruction(main_rfh());
+  base::WeakPtr<MockBroker> other_rfh_broker =
+      ExpectLoopbackBrokerConstruction(other_rfh());
+
+  ForwardingAudioStreamFactory factory(web_contents(), std::move(connector_),
+                                       std::move(broker_factory_));
+
+  {
+    EXPECT_CALL(*main_rfh_broker, CreateStream(NotNull()));
+    mojo::MakeRequest(&client);
+    factory.CreateLoopbackStream(main_rfh(), source_contents.get(), kParams,
+                                 kSharedMemoryCount, kMuteSource,
+                                 std::move(client));
+    testing::Mock::VerifyAndClear(&*main_rfh_broker);
+  }
+  {
+    EXPECT_CALL(*other_rfh_broker, CreateStream(NotNull()));
+    mojo::MakeRequest(&client);
+    factory.CreateLoopbackStream(other_rfh(), source_contents.get(), kParams,
+                                 kSharedMemoryCount, kMuteSource,
+                                 std::move(client));
+    testing::Mock::VerifyAndClear(&*other_rfh_broker);
+  }
+
+  std::move(other_rfh_broker->deleter).Run(&*other_rfh_broker);
+  EXPECT_FALSE(other_rfh_broker)
+      << "Loopback broker should be destructed when deleter is called.";
+  EXPECT_TRUE(main_rfh_broker);
+}
+
+TEST_F(ForwardingAudioStreamFactoryTest,
        OutputBrokerDeleterCalled_DestroysOutputStream) {
   media::mojom::AudioOutputStreamProviderClientPtr client;
   base::WeakPtr<MockBroker> main_rfh_broker =
@@ -278,11 +393,18 @@ TEST_F(ForwardingAudioStreamFactoryTest,
 }
 
 TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
+  std::unique_ptr<WebContents> source_contents = CreateTestWebContents();
+
   mojom::RendererAudioInputStreamFactoryClientPtr input_client;
   base::WeakPtr<MockBroker> main_rfh_input_broker =
       ExpectInputBrokerConstruction(main_rfh());
   base::WeakPtr<MockBroker> other_rfh_input_broker =
       ExpectInputBrokerConstruction(other_rfh());
+
+  base::WeakPtr<MockBroker> main_rfh_loopback_broker =
+      ExpectLoopbackBrokerConstruction(main_rfh());
+  base::WeakPtr<MockBroker> other_rfh_loopback_broker =
+      ExpectLoopbackBrokerConstruction(other_rfh());
 
   media::mojom::AudioOutputStreamProviderClientPtr output_client;
   base::WeakPtr<MockBroker> main_rfh_output_broker =
@@ -311,6 +433,23 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
   }
 
   {
+    EXPECT_CALL(*main_rfh_loopback_broker, CreateStream(NotNull()));
+    mojo::MakeRequest(&input_client);
+    factory.CreateLoopbackStream(main_rfh(), source_contents.get(), kParams,
+                                 kSharedMemoryCount, kMuteSource,
+                                 std::move(input_client));
+    testing::Mock::VerifyAndClear(&*main_rfh_loopback_broker);
+  }
+  {
+    EXPECT_CALL(*other_rfh_loopback_broker, CreateStream(NotNull()));
+    mojo::MakeRequest(&input_client);
+    factory.CreateLoopbackStream(other_rfh(), source_contents.get(), kParams,
+                                 kSharedMemoryCount, kMuteSource,
+                                 std::move(input_client));
+    testing::Mock::VerifyAndClear(&*other_rfh_loopback_broker);
+  }
+
+  {
     EXPECT_CALL(*main_rfh_output_broker, CreateStream(NotNull()));
     mojo::MakeRequest(&output_client);
     factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
@@ -330,6 +469,10 @@ TEST_F(ForwardingAudioStreamFactoryTest, DestroyFrame_DestroysRelatedStreams) {
   EXPECT_FALSE(other_rfh_input_broker)
       << "Input broker should be destructed when owning frame is destructed.";
   EXPECT_TRUE(main_rfh_input_broker);
+  EXPECT_FALSE(other_rfh_loopback_broker) << "Loopback broker should be "
+                                             "destructed when owning frame is "
+                                             "destructed.";
+  EXPECT_TRUE(main_rfh_loopback_broker);
   EXPECT_FALSE(other_rfh_output_broker)
       << "Output broker should be destructed when owning frame is destructed.";
   EXPECT_TRUE(main_rfh_output_broker);
@@ -416,23 +559,153 @@ TEST_F(ForwardingAudioStreamFactoryTest, LastStreamDeleted_ClearsFactoryPtr) {
   }
 
   base::RunLoop().RunUntilIdle();
-  EXPECT_FALSE(pending_factory_request_->QuerySignalsState().peer_closed());
+  EXPECT_TRUE(stream_factory_.IsConnected());
   std::move(other_rfh_input_broker->deleter).Run(&*other_rfh_input_broker);
   base::RunLoop().RunUntilIdle();
   // Connection should still be open, since there are still streams left.
-  EXPECT_FALSE(pending_factory_request_->QuerySignalsState().peer_closed());
+  EXPECT_TRUE(stream_factory_.IsConnected());
   std::move(main_rfh_input_broker->deleter).Run(&*main_rfh_input_broker);
   base::RunLoop().RunUntilIdle();
   // Connection should still be open, since there are still streams left.
-  EXPECT_FALSE(pending_factory_request_->QuerySignalsState().peer_closed());
+  EXPECT_TRUE(stream_factory_.IsConnected());
   std::move(other_rfh_output_broker->deleter).Run(&*other_rfh_output_broker);
   base::RunLoop().RunUntilIdle();
   // Connection should still be open, since there's still a stream left.
-  EXPECT_FALSE(pending_factory_request_->QuerySignalsState().peer_closed());
+  EXPECT_TRUE(stream_factory_.IsConnected());
   std::move(main_rfh_output_broker->deleter).Run(&*main_rfh_output_broker);
   base::RunLoop().RunUntilIdle();
   // Now there are no streams left, connection should be broken.
-  EXPECT_TRUE(pending_factory_request_->QuerySignalsState().peer_closed());
+  EXPECT_FALSE(stream_factory_.IsConnected());
+}
+
+TEST_F(ForwardingAudioStreamFactoryTest,
+       MuteNoOutputStreams_DoesNotConnectMuter) {
+  ForwardingAudioStreamFactory factory(web_contents(), std::move(connector_),
+                                       std::move(broker_factory_));
+  EXPECT_FALSE(factory.IsMuted());
+
+  factory.SetMuted(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(factory.IsMuted());
+  EXPECT_FALSE(stream_factory_.IsConnected());
+  EXPECT_FALSE(stream_factory_.IsMuterConnected());
+
+  factory.SetMuted(false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(factory.IsMuted());
+  EXPECT_FALSE(stream_factory_.IsConnected());
+  EXPECT_FALSE(stream_factory_.IsMuterConnected());
+}
+
+TEST_F(ForwardingAudioStreamFactoryTest, MuteWithOutputStream_ConnectsMuter) {
+  media::mojom::AudioOutputStreamProviderClientPtr client;
+  base::WeakPtr<MockBroker> broker = ExpectOutputBrokerConstruction(main_rfh());
+  ForwardingAudioStreamFactory factory(web_contents(), std::move(connector_),
+                                       std::move(broker_factory_));
+
+  EXPECT_CALL(*broker, CreateStream(NotNull()));
+  mojo::MakeRequest(&client);
+  factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
+                             std::move(client));
+  base::RunLoop().RunUntilIdle();
+  testing::Mock::VerifyAndClear(&*broker);
+
+  EXPECT_TRUE(stream_factory_.IsConnected());
+  EXPECT_FALSE(factory.IsMuted());
+
+  factory.SetMuted(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(factory.IsMuted());
+  EXPECT_TRUE(stream_factory_.IsConnected());
+  EXPECT_TRUE(stream_factory_.IsMuterConnected());
+
+  factory.SetMuted(false);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(factory.IsMuted());
+  EXPECT_TRUE(stream_factory_.IsConnected());
+  EXPECT_FALSE(stream_factory_.IsMuterConnected());
+}
+
+TEST_F(ForwardingAudioStreamFactoryTest,
+       WhenMuting_ConnectedWhenOutputStreamExists) {
+  media::mojom::AudioOutputStreamProviderClientPtr client;
+  base::WeakPtr<MockBroker> broker = ExpectOutputBrokerConstruction(main_rfh());
+  ForwardingAudioStreamFactory factory(web_contents(), std::move(connector_),
+                                       std::move(broker_factory_));
+
+  EXPECT_FALSE(stream_factory_.IsConnected());
+  EXPECT_FALSE(factory.IsMuted());
+
+  factory.SetMuted(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(factory.IsMuted());
+  EXPECT_FALSE(stream_factory_.IsConnected());
+  EXPECT_FALSE(stream_factory_.IsMuterConnected());
+
+  EXPECT_CALL(*broker, CreateStream(NotNull()));
+  mojo::MakeRequest(&client);
+  factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
+                             std::move(client));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(factory.IsMuted());
+  EXPECT_TRUE(stream_factory_.IsConnected());
+  EXPECT_TRUE(stream_factory_.IsMuterConnected());
+  testing::Mock::VerifyAndClear(&*broker);
+
+  std::move(broker->deleter).Run(&*broker);
+  EXPECT_FALSE(broker);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(factory.IsMuted());
+  EXPECT_FALSE(stream_factory_.IsConnected());
+  EXPECT_FALSE(stream_factory_.IsMuterConnected());
+}
+
+TEST_F(ForwardingAudioStreamFactoryTest,
+       WhenMuting_AddRemoveSecondStream_DoesNotChangeMuting) {
+  media::mojom::AudioOutputStreamProviderClientPtr client;
+  base::WeakPtr<MockBroker> broker = ExpectOutputBrokerConstruction(main_rfh());
+  base::WeakPtr<MockBroker> another_broker =
+      ExpectOutputBrokerConstruction(main_rfh());
+  ForwardingAudioStreamFactory factory(web_contents(), std::move(connector_),
+                                       std::move(broker_factory_));
+
+  {
+    EXPECT_CALL(*broker, CreateStream(NotNull()));
+    mojo::MakeRequest(&client);
+    factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
+                               std::move(client));
+    base::RunLoop().RunUntilIdle();
+    testing::Mock::VerifyAndClear(&*broker);
+  }
+  EXPECT_TRUE(stream_factory_.IsConnected());
+  EXPECT_FALSE(factory.IsMuted());
+
+  factory.SetMuted(true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(factory.IsMuted());
+  EXPECT_TRUE(stream_factory_.IsConnected());
+  EXPECT_TRUE(stream_factory_.IsMuterConnected());
+
+  {
+    EXPECT_CALL(*another_broker, CreateStream(NotNull()));
+    mojo::MakeRequest(&client);
+    factory.CreateOutputStream(main_rfh(), kOutputDeviceId, kParams,
+                               std::move(client));
+    base::RunLoop().RunUntilIdle();
+    testing::Mock::VerifyAndClear(&*another_broker);
+  }
+
+  EXPECT_TRUE(factory.IsMuted());
+  EXPECT_TRUE(stream_factory_.IsConnected());
+  EXPECT_TRUE(stream_factory_.IsMuterConnected());
+
+  std::move(another_broker->deleter).Run(&*another_broker);
+  EXPECT_FALSE(another_broker);
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(factory.IsMuted());
+  EXPECT_TRUE(stream_factory_.IsConnected());
+  EXPECT_TRUE(stream_factory_.IsMuterConnected());
 }
 
 }  // namespace content

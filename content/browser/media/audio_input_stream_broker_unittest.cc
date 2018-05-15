@@ -68,6 +68,7 @@ class MockRendererAudioInputStreamFactoryClient
   mojo::Binding<mojom::RendererAudioInputStreamFactoryClient> binding_;
   media::mojom::AudioInputStreamPtr input_stream_;
   media::mojom::AudioInputStreamClientRequest client_request_;
+  DISALLOW_COPY_AND_ASSIGN(MockRendererAudioInputStreamFactoryClient);
 };
 
 class MockStreamFactory : public audio::FakeStreamFactory {
@@ -128,6 +129,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
   }
 
   StreamRequestData* stream_request_data_;
+  DISALLOW_COPY_AND_ASSIGN(MockStreamFactory);
 };
 
 struct TestEnvironment {

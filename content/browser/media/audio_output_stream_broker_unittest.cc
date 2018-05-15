@@ -74,6 +74,7 @@ class MockAudioOutputStreamProviderClient
 
  private:
   mojo::Binding<media::mojom::AudioOutputStreamProviderClient> binding_;
+  DISALLOW_COPY_AND_ASSIGN(MockAudioOutputStreamProviderClient);
 };
 
 class MockStreamFactory : public audio::FakeStreamFactory {
@@ -128,6 +129,7 @@ class MockStreamFactory : public audio::FakeStreamFactory {
   }
 
   StreamRequestData* stream_request_data_;
+  DISALLOW_COPY_AND_ASSIGN(MockStreamFactory);
 };
 
 // This struct collects test state we need without doing anything fancy.

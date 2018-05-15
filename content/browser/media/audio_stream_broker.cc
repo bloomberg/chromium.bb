@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/media/audio_input_stream_broker.h"
+#include "content/browser/media/audio_loopback_stream_broker.h"
 #include "content/browser/media/audio_output_stream_broker.h"
 
 namespace content {
@@ -31,6 +32,22 @@ class AudioStreamBrokerFactoryImpl final : public AudioStreamBrokerFactory {
     return std::make_unique<AudioInputStreamBroker>(
         render_process_id, render_frame_id, device_id, params,
         shared_memory_count, enable_agc, std::move(deleter),
+        std::move(renderer_factory_client));
+  }
+
+  std::unique_ptr<AudioStreamBroker> CreateAudioLoopbackStreamBroker(
+      int render_process_id,
+      int render_frame_id,
+      std::unique_ptr<LoopbackSource> source,
+      const media::AudioParameters& params,
+      uint32_t shared_memory_count,
+      bool mute_source,
+      AudioStreamBroker::DeleterCallback deleter,
+      mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client)
+      final {
+    return std::make_unique<AudioLoopbackStreamBroker>(
+        render_process_id, render_frame_id, std::move(source), params,
+        shared_memory_count, mute_source, std::move(deleter),
         std::move(renderer_factory_client));
   }
 
