@@ -22,5 +22,8 @@ const base::Feature kWebErrorPages{"WebErrorPages",
 const base::Feature kWKHTTPSystemCookieStore{"WKHTTPSystemCookieStore",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kCrashOnUnexpectedURLChange{
+    "CrashOnUnexpectedURLChange", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace web
