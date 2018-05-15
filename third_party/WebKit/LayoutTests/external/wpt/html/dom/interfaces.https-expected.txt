@@ -4929,11 +4929,11 @@ PASS CanvasRenderingContext2D interface: operation translate(unrestricted double
 PASS Unscopable handled correctly for translate(unrestricted double, unrestricted double) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS Unscopable handled correctly for transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
-FAIL CanvasRenderingContext2D interface: operation getTransform() assert_own_property: interface prototype object missing non-static operation expected property "getTransform" missing
+PASS CanvasRenderingContext2D interface: operation getTransform()
 PASS Unscopable handled correctly for getTransform() on CanvasRenderingContext2D
-FAIL CanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) assert_equals: property has wrong .length expected 0 but got 6
+PASS CanvasRenderingContext2D interface: operation setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)
 PASS Unscopable handled correctly for setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on CanvasRenderingContext2D
-FAIL CanvasRenderingContext2D interface: operation setTransform(DOMMatrix2DInit) assert_equals: property has wrong .length expected 0 but got 6
+PASS CanvasRenderingContext2D interface: operation setTransform(DOMMatrix2DInit)
 PASS Unscopable handled correctly for setTransform(DOMMatrix2DInit) on CanvasRenderingContext2D
 PASS CanvasRenderingContext2D interface: operation resetTransform()
 PASS Unscopable handled correctly for resetTransform() on CanvasRenderingContext2D
@@ -5078,7 +5078,7 @@ PASS CanvasRenderingContext2D interface: document.createElement("canvas").getCon
 PASS CanvasRenderingContext2D interface: calling translate(unrestricted double, unrestricted double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)" with the proper type
 PASS CanvasRenderingContext2D interface: calling transform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
-FAIL CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "getTransform()" with the proper type assert_inherits: property "getTransform" not found in prototype chain
+PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "getTransform()" with the proper type
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double)" with the proper type
 PASS CanvasRenderingContext2D interface: calling setTransform(unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double, unrestricted double) on document.createElement("canvas").getContext("2d") with too few arguments must throw TypeError
 PASS CanvasRenderingContext2D interface: document.createElement("canvas").getContext("2d") must inherit property "setTransform(DOMMatrix2DInit)" with the proper type
