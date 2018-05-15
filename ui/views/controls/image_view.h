@@ -106,10 +106,10 @@ class VIEWS_EXPORT ImageView : public View {
   gfx::ImageSkia image_;
 
   // Horizontal alignment.
-  Alignment horiz_alignment_;
+  Alignment horizontal_alignment_;
 
   // Vertical alignment.
-  Alignment vert_alignment_;
+  Alignment vertical_alignment_;
 
   // The current tooltip text.
   base::string16 tooltip_text_;
