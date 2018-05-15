@@ -163,13 +163,16 @@ class PreflightControllerTest : public testing::Test {
         base::BindOnce(&PreflightControllerTest::HandleRequestCompletion,
                        base::Unretained(this)),
         0 /* request_id */, request, TRAFFIC_ANNOTATION_FOR_TESTS,
-        url_loader_factory_ptr_.get());
+        url_loader_factory_ptr_.get(),
+        base::BindOnce(&PreflightControllerTest::CancelPreflight,
+                       base::Unretained(this)));
     run_loop_->Run();
   }
 
   base::Optional<CORSErrorStatus> status() { return status_; }
   base::Optional<CORSErrorStatus> success() { return base::nullopt; }
   size_t access_count() { return access_count_; }
+  bool cancel_preflight_called() const { return cancel_preflight_called_; }
 
  private:
   void SetUp() override {
@@ -207,6 +210,8 @@ class PreflightControllerTest : public testing::Test {
     return response;
   }
 
+  void CancelPreflight() { cancel_preflight_called_ = true; }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -216,6 +221,7 @@ class PreflightControllerTest : public testing::Test {
 
   net::test_server::EmbeddedTestServer test_server_;
   size_t access_count_ = 0;
+  bool cancel_preflight_called_ = false;
 
   std::unique_ptr<PreflightController> preflight_controller_;
   base::Optional<CORSErrorStatus> status_;
@@ -244,6 +250,20 @@ TEST_F(PreflightControllerTest, CheckValidRequest) {
   PerformPreflightCheck(request);
   ASSERT_FALSE(status());
   EXPECT_EQ(1u, access_count());  // Should be from the preflight cache.
+}
+
+// TODO(yhirano): Remove this test case when the network service is fully
+// enabled.
+TEST_F(PreflightControllerTest, CancelPreflightIsCalled) {
+  ResourceRequest request;
+  request.url = GetURL("/allow");
+  request.request_initiator = url::Origin::Create(request.url);
+
+  EXPECT_FALSE(cancel_preflight_called());
+  PerformPreflightCheck(request);
+  ASSERT_FALSE(status());
+  EXPECT_TRUE(cancel_preflight_called());
+  EXPECT_EQ(1u, access_count());
 }
 
 }  // namespace

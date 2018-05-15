@@ -225,10 +225,12 @@ class PreflightController::PreflightLoader final {
   PreflightLoader(PreflightController* controller,
                   CompletionCallback completion_callback,
                   const ResourceRequest& request,
-                  const net::NetworkTrafficAnnotationTag& annotation_tag)
+                  const net::NetworkTrafficAnnotationTag& annotation_tag,
+                  base::OnceCallback<void()> preflight_finalizer)
       : controller_(controller),
         completion_callback_(std::move(completion_callback)),
-        original_request_(request) {
+        original_request_(request),
+        preflight_finalizer_(std::move(preflight_finalizer)) {
     loader_ = SimpleURLLoader::Create(CreatePreflightRequest(request),
                                       annotation_tag);
   }
@@ -310,6 +312,8 @@ class PreflightController::PreflightLoader final {
 
   void FinalizeLoader() {
     DCHECK(loader_);
+    if (preflight_finalizer_)
+      std::move(preflight_finalizer_).Run();
     loader_.reset();
   }
 
@@ -326,6 +330,11 @@ class PreflightController::PreflightLoader final {
   // Holds caller's information.
   PreflightController::CompletionCallback completion_callback_;
   const ResourceRequest original_request_;
+
+  // This is needed because we sometimes need to cancel the preflight loader
+  // synchronously.
+  // TODO(yhirano): Remove this when the network service is fully enabled.
+  base::OnceCallback<void()> preflight_finalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightLoader);
 };
@@ -352,7 +361,8 @@ void PreflightController::PerformPreflightCheck(
     int32_t request_id,
     const ResourceRequest& request,
     const net::NetworkTrafficAnnotationTag& annotation_tag,
-    mojom::URLLoaderFactory* loader_factory) {
+    mojom::URLLoaderFactory* loader_factory,
+    base::OnceCallback<void()> preflight_finalizer) {
   DCHECK(request.request_initiator);
 
   if (!request.is_external_request &&
@@ -364,7 +374,8 @@ void PreflightController::PerformPreflightCheck(
   }
 
   auto emplaced_pair = loaders_.emplace(std::make_unique<PreflightLoader>(
-      this, std::move(callback), request, annotation_tag));
+      this, std::move(callback), request, annotation_tag,
+      std::move(preflight_finalizer)));
   (*emplaced_pair.first)->Request(loader_factory, request_id);
 }
 
