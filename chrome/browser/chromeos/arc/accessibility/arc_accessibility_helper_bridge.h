@@ -83,7 +83,7 @@ class ArcAccessibilityHelperBridge
 
   // ArcNotificationSurfaceManager::Observer overrides.
   void OnNotificationSurfaceAdded(ArcNotificationSurface* surface) override;
-  void OnNotificationSurfaceRemoved(ArcNotificationSurface* surface) override;
+  void OnNotificationSurfaceRemoved(ArcNotificationSurface* surface) override{};
 
   const std::map<int32_t, std::unique_ptr<AXTreeSourceArc>>&
   task_id_to_tree_for_test() const {
@@ -127,16 +127,6 @@ class ArcAccessibilityHelperBridge
       notification_key_to_tree_;
   std::unique_ptr<chromeos::AccessibilityStatusSubscription>
       accessibility_status_subscription_;
-
-  // Map for managing notifications in backward compatible way, creating
-  // notification with WINDOW_STATE_CHANGED event.
-  // Key: notification key
-  // Value: retain counter
-  // TODO(yawano): Remove this after this becomes unnecessary.
-  std::map<std::string, int32_t> backward_compat_notification_keys_;
-
-  // TODO(yawano): Remove this after this becomes unnecessary.
-  std::set<std::string> notification_keys_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcAccessibilityHelperBridge);
 };
