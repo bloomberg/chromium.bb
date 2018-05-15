@@ -419,6 +419,7 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Views as |children_|. The default implementation returns |children_|,
   // subclass if the paint order should differ from that of |children_|.
   // This order is taken into account by painting and targeting implementations.
+  // NOTE: see SetPaintToLayer() for details on painting and views with layers.
   virtual View::Views GetChildrenInZOrder();
 
   // Transformations -----------------------------------------------------------
@@ -439,6 +440,10 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // . SetPaintToLayer(ui::LayerType) has been invoked.
   // View creates the Layer only when it exists in a Widget with a non-NULL
   // Compositor.
+  // Enabling a view to have a layer impacts painting of sibling views.
+  // Specifically views with layers effectively paint in a z-order that is
+  // always above any sibling views that do not have layers. This happens
+  // regardless of the ordering returned by GetChildrenInZOrder().
   void SetPaintToLayer(ui::LayerType layer_type = ui::LAYER_TEXTURED);
 
   // Please refer to the comments above the DestroyLayerImpl() function for
