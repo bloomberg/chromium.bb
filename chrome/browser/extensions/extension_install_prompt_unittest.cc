@@ -54,17 +54,11 @@ void VerifyPromptIconCallback(
 void VerifyPromptPermissionsCallback(
     const base::Closure& quit_closure,
     size_t regular_permissions_count,
-    size_t withheld_permissions_count,
     ExtensionInstallPromptShowParams* params,
     const ExtensionInstallPrompt::DoneCallback& done_callback,
     std::unique_ptr<ExtensionInstallPrompt::Prompt> install_prompt) {
   ASSERT_TRUE(install_prompt.get());
-  EXPECT_EQ(regular_permissions_count,
-            install_prompt->GetPermissionCount(
-                ExtensionInstallPrompt::REGULAR_PERMISSIONS));
-  EXPECT_EQ(withheld_permissions_count,
-            install_prompt->GetPermissionCount(
-                ExtensionInstallPrompt::WITHHELD_PERMISSIONS));
+  EXPECT_EQ(regular_permissions_count, install_prompt->GetPermissionCount());
   quit_closure.Run();
 }
 
@@ -124,8 +118,7 @@ TEST_F(ExtensionInstallPromptUnitTest, PromptShowsPermissionWarnings) {
           ExtensionInstallPrompt::PERMISSIONS_PROMPT),
       std::move(permission_set),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
-                 1u,    // |regular_permissions_count|.
-                 0u));  // |withheld_permissions_count|.
+                 1u));  // |regular_permissions_count|.
   run_loop.Run();
 }
 
@@ -157,8 +150,7 @@ TEST_F(ExtensionInstallPromptUnitTest,
       ExtensionInstallPrompt::DoneCallback(), extension.get(), nullptr,
       std::move(sub_prompt),
       base::Bind(&VerifyPromptPermissionsCallback, run_loop.QuitClosure(),
-                 2u,    // |regular_permissions_count|.
-                 0u));  // |withheld_permissions_count|.
+                 2u));  // |regular_permissions_count|.
   run_loop.Run();
 }
 

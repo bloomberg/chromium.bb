@@ -68,7 +68,6 @@ typedef NSUInteger CellAttributes;
 // returned.
 - (NSString*)
 appendPermissionsForPrompt:(const ExtensionInstallPrompt::Prompt&)prompt
-                  withType:(ExtensionInstallPrompt::PermissionsType)type
                   children:(NSMutableArray*)children;
 - (void)updateViewFrame:(NSRect)frame;
 @end
@@ -641,7 +640,6 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 - (NSArray*)buildWarnings:(const ExtensionInstallPrompt::Prompt&)prompt {
   NSMutableArray* warnings = [NSMutableArray array];
   NSString* heading = nil;
-  NSString* withheldHeading = nil;
 
   bool hasPermissions = prompt.GetPermissionCount(
       ExtensionInstallPrompt::PermissionsType::ALL_PERMISSIONS);
@@ -649,18 +647,10 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
       kBoldText | kAutoExpandCell | kNoExpandMarker;
   if (prompt.ShouldShowPermissions()) {
     NSMutableArray* children = [NSMutableArray array];
-    NSMutableArray* withheldChildren = [NSMutableArray array];
 
     heading =
         [self appendPermissionsForPrompt:prompt
-                                withType:ExtensionInstallPrompt::PermissionsType
-                                             ::REGULAR_PERMISSIONS
                                 children:children];
-    withheldHeading =
-        [self appendPermissionsForPrompt:prompt
-                                withType:ExtensionInstallPrompt::PermissionsType
-                                             ::WITHHELD_PERMISSIONS
-                                children:withheldChildren];
 
     if (!hasPermissions) {
       [children addObject:
@@ -675,13 +665,6 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
       [warnings addObject:[self buildItemWithTitle:heading
                                     cellAttributes:warningCellAttributes
                                           children:children]];
-    }
-
-    // Add withheld permissions to the prompt if they exist.
-    if (withheldHeading) {
-      [warnings addObject:[self buildItemWithTitle:withheldHeading
-                                    cellAttributes:warningCellAttributes
-                                          children:withheldChildren]];
     }
   }
 
@@ -741,28 +724,26 @@ bool HasAttribute(id item, CellAttributesMask attributeMask) {
 
 - (NSString*)
 appendPermissionsForPrompt:(const ExtensionInstallPrompt::Prompt&)prompt
-                 withType:(ExtensionInstallPrompt::PermissionsType)type
                  children:(NSMutableArray*)children {
-  size_t permissionsCount = prompt.GetPermissionCount(type);
+  size_t permissionsCount = prompt.GetPermissionCount();
   if (permissionsCount == 0)
     return NULL;
 
   for (size_t i = 0; i < permissionsCount; ++i) {
-    NSDictionary* item = [self
-        buildItemWithTitle:SysUTF16ToNSString(prompt.GetPermission(i, type))
-            cellAttributes:kUseBullet
-                  children:nil];
+    NSDictionary* item =
+        [self buildItemWithTitle:SysUTF16ToNSString(prompt.GetPermission(i))
+                  cellAttributes:kUseBullet
+                        children:nil];
     [children addObject:item];
 
     // If there are additional details, add them below this item.
-    if (!prompt.GetPermissionsDetails(i, type).empty()) {
+    if (!prompt.GetPermissionsDetails(i).empty()) {
       if (prompt.GetIsShowingDetails(
               ExtensionInstallPrompt::PERMISSIONS_DETAILS, i)) {
-        item =
-            [self buildItemWithTitle:SysUTF16ToNSString(
-                                         prompt.GetPermissionsDetails(i, type))
-                      cellAttributes:kNoExpandMarker
-                            children:nil];
+        item = [self buildItemWithTitle:SysUTF16ToNSString(
+                                            prompt.GetPermissionsDetails(i))
+                         cellAttributes:kNoExpandMarker
+                               children:nil];
         [children addObject:item];
       }
 
@@ -772,7 +753,7 @@ appendPermissionsForPrompt:(const ExtensionInstallPrompt::Prompt&)prompt
     }
   }
 
-  return SysUTF16ToNSString(prompt.GetPermissionsHeading(type));
+  return SysUTF16ToNSString(prompt.GetPermissionsHeading());
 }
 
 - (void)updateViewFrame:(NSRect)frame {
