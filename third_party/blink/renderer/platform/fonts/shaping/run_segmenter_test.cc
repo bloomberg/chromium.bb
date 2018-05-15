@@ -61,7 +61,9 @@ class RunSegmenterTest : public testing::Test {
                   const Vector<SegmenterExpectedRun>& expect) {
     RunSegmenter::RunSegmenterRange segmenter_range;
     unsigned long run_count = 0;
-    while (run_segmenter->Consume(&segmenter_range)) {
+    for (unsigned run_segmenter_start = 0;
+         run_segmenter->ConsumePast(run_segmenter_start, &segmenter_range);
+         run_segmenter_start = segmenter_range.end) {
       ASSERT_LT(run_count, expect.size());
       ASSERT_EQ(expect[run_count].start, segmenter_range.start);
       ASSERT_EQ(expect[run_count].limit, segmenter_range.end);
@@ -96,7 +98,7 @@ TEST_F(RunSegmenterTest, Empty) {
       0, 0, USCRIPT_INVALID_CODE, OrientationIterator::kOrientationKeep};
   RunSegmenter run_segmenter(empty.Characters16(), empty.length(),
                              FontOrientation::kVerticalMixed);
-  DCHECK(!run_segmenter.Consume(&segmenter_range));
+  DCHECK(!run_segmenter.ConsumePast(0, &segmenter_range));
   ASSERT_EQ(segmenter_range.start, 0u);
   ASSERT_EQ(segmenter_range.end, 0u);
   ASSERT_EQ(segmenter_range.script, USCRIPT_INVALID_CODE);
@@ -246,6 +248,31 @@ TEST_F(RunSegmenterTest, EmojiSubdivisionFlags) {
         "󠁥󠁮󠁧󠁿",
         USCRIPT_COMMON, OrientationIterator::kOrientationKeep,
         FontFallbackPriority::kEmojiEmoji}});
+}
+
+// Test ConsumePast with |start| advances to the run that includes |start|.
+TEST_F(RunSegmenterTest, PastFirstRun) {
+  String text(u"αβγあいうabc");
+  RunSegmenter run_segmenter(text.Characters16(), text.length(),
+                             FontOrientation::kHorizontal);
+  RunSegmenter::RunSegmenterRange segmenter_range;
+  EXPECT_TRUE(run_segmenter.ConsumePast(7, &segmenter_range));
+  EXPECT_EQ(segmenter_range.start, 6u);
+  EXPECT_EQ(segmenter_range.end, 9u);
+  EXPECT_EQ(segmenter_range.script, USCRIPT_LATIN);
+  EXPECT_EQ(segmenter_range.render_orientation,
+            OrientationIterator::kOrientationKeep);
+  EXPECT_EQ(segmenter_range.font_fallback_priority,
+            FontFallbackPriority::kText);
+}
+
+// Test ConsumePast with |start| larger than buffer size returns false.
+TEST_F(RunSegmenterTest, PastBufferLength) {
+  String text(u"abc");
+  RunSegmenter run_segmenter(text.Characters16(), text.length(),
+                             FontOrientation::kHorizontal);
+  RunSegmenter::RunSegmenterRange segmenter_range;
+  EXPECT_FALSE(run_segmenter.ConsumePast(4, &segmenter_range));
 }
 
 }  // namespace blink
