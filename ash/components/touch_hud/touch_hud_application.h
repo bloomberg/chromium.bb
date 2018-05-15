@@ -5,11 +5,17 @@
 #ifndef ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_APPLICATION_H_
 #define ASH_COMPONENTS_TOUCH_HUD_TOUCH_HUD_APPLICATION_H_
 
+#include <stdint.h>
+
+#include <map>
+#include <memory>
+
 #include "base/macros.h"
 #include "mash/public/mojom/launchable.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "ui/display/display_observer.h"
 
 namespace views {
 class AuraInit;
@@ -18,8 +24,11 @@ class Widget;
 
 namespace touch_hud {
 
+// Application that paints touch tap points as circles. Creates a fullscreen
+// transparent widget on each display to draw the taps.
 class TouchHudApplication : public service_manager::Service,
-                            public mash::mojom::Launchable {
+                            public mash::mojom::Launchable,
+                            public display::DisplayObserver {
  public:
   TouchHudApplication();
   ~TouchHudApplication() override;
@@ -36,11 +45,20 @@ class TouchHudApplication : public service_manager::Service,
   // mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;
 
+  // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& new_display) override;
+  void OnDisplayRemoved(const display::Display& old_display) override;
+
+  // Creates the touch HUD widget for a display.
+  void CreateWidgetForDisplay(int64_t display_id);
+
   void Create(mash::mojom::LaunchableRequest request);
 
   service_manager::BinderRegistry registry_;
   mojo::Binding<mash::mojom::Launchable> binding_;
-  views::Widget* widget_ = nullptr;
+
+  // Maps display::Display::id() to the touch HUD widget for that display.
+  std::map<int64_t, std::unique_ptr<views::Widget>> display_id_to_widget_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
 
