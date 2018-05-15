@@ -12,6 +12,7 @@
 #include "chrome/browser/media/router/mojo/media_route_controller.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_metrics.h"
 #include "chrome/browser/media/router/providers/cast/cast_media_route_provider.h"
+#include "chrome/browser/media/router/providers/cast/chrome_cast_message_handler.h"
 #include "chrome/browser/media/router/providers/wired_display/wired_display_media_route_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -243,7 +244,9 @@ void MediaRouterDesktop::InitializeCastMediaRouteProvider() {
           new CastMediaRouteProvider(
               mojo::MakeRequest(&cast_provider_ptr),
               media_router_ptr.PassInterface(),
-              media_sink_service_->cast_app_discovery_service(), task_runner),
+              media_sink_service_->GetCastMediaSinkServiceImpl(),
+              media_sink_service_->cast_app_discovery_service(),
+              GetCastMessageHandler(), task_runner),
           base::OnTaskRunnerDeleter(task_runner));
   RegisterMediaRouteProvider(MediaRouteProviderId::CAST,
                              std::move(cast_provider_ptr), base::DoNothing());

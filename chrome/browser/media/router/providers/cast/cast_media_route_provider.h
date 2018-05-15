@@ -12,6 +12,10 @@
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
+namespace cast_channel {
+class CastMessageHandler;
+}
+
 namespace url {
 class Origin;
 }
@@ -26,8 +30,10 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   CastMediaRouteProvider(
       mojom::MediaRouteProviderRequest request,
       mojom::MediaRouterPtrInfo media_router,
+      MediaSinkServiceBase* media_sink_service,
       CastAppDiscoveryService* app_discovery_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      cast_channel::CastMessageHandler* message_handler,
+      const scoped_refptr<base::SequencedTaskRunner>& task_runner);
   ~CastMediaRouteProvider() override;
 
   // mojom::MediaRouteProvider:
@@ -92,14 +98,24 @@ class CastMediaRouteProvider : public mojom::MediaRouteProvider {
   void OnSinkQueryUpdated(const MediaSource::Id& source_id,
                           const std::vector<MediaSinkInternal>& sinks);
 
+  // Broadcasts a message with |app_ids| and |requests| to all sinks.
+  void BroadcastMessageToSinks(const std::vector<std::string>& app_ids,
+                               const cast_channel::BroadcastRequest& request);
+
   // Binds |this| to the Mojo request passed into the ctor.
   mojo::Binding<mojom::MediaRouteProvider> binding_;
 
   // Mojo pointer to the Media Router.
   mojom::MediaRouterPtr media_router_;
 
+  // Non-owned pointer to the Cast MediaSinkServiceBase.
+  MediaSinkServiceBase* const media_sink_service_;
+
   // Non-owned pointer to the CastAppDiscoveryService instance.
   CastAppDiscoveryService* const app_discovery_service_;
+
+  // Non-owned pointer to the CastMessageHandler instance.
+  cast_channel::CastMessageHandler* const message_handler_;
 
   // Registered sink queries.
   base::flat_map<MediaSource::Id, CastAppDiscoveryService::Subscription>

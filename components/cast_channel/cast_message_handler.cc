@@ -133,6 +133,29 @@ void CastMessageHandler::RequestAppAvailability(
   SendCastMessage(socket, message);
 }
 
+void CastMessageHandler::SendBroadcastMessage(
+    int socket_id,
+    const std::vector<std::string>& app_ids,
+    const BroadcastRequest& request) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  CastSocket* socket = socket_service_->GetSocket(socket_id);
+  if (!socket) {
+    DVLOG(2) << __func__ << ": socket not found: " << socket_id;
+    return;
+  }
+
+  int request_id = NextRequestId();
+  DVLOG(2) << __func__ << ", socket_id: " << socket->id()
+           << ", request_id: " << request_id;
+
+  // Note: Even though the message is formatted like a request, we don't care
+  // about the response, as broadcasts are fire-and-forget.
+  CastMessage message =
+      CreateBroadcastRequest(sender_id_, request_id, app_ids, request);
+  SendCastMessage(socket, message);
+}
+
 void CastMessageHandler::AppAvailabilityTimedOut(int request_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << __func__ << ", request_id: " << request_id;

@@ -87,6 +87,24 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
                                             int request_id,
                                             const std::string& app_id);
 
+// Represents a broadcast request. Currently it is used for precaching data
+// on a receiver.
+struct BroadcastRequest {
+  BroadcastRequest(const std::string& broadcast_namespace,
+                   const std::string& message);
+  ~BroadcastRequest();
+  bool operator==(const BroadcastRequest& other) const;
+
+  std::string broadcast_namespace;
+  std::string message;
+};
+
+// Creates a broadcast request with the given parameters.
+CastMessage CreateBroadcastRequest(const std::string& source_id,
+                                   int request_id,
+                                   const std::vector<std::string>& app_ids,
+                                   const BroadcastRequest& request);
+
 // Possible results of a GET_APP_AVAILABILITY request.
 enum class GetAppAvailabilityResult {
   kAvailable,

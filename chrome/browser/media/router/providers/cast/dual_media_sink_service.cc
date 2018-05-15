@@ -38,6 +38,10 @@ DialMediaSinkServiceImpl* DualMediaSinkService::GetDialMediaSinkServiceImpl() {
   return dial_media_sink_service_->impl();
 }
 
+MediaSinkServiceBase* DualMediaSinkService::GetCastMediaSinkServiceImpl() {
+  return cast_media_sink_service_->impl();
+}
+
 DualMediaSinkService::Subscription
 DualMediaSinkService::AddSinksDiscoveredCallback(
     const OnSinksDiscoveredProviderCallback& callback) {
@@ -75,10 +79,11 @@ DualMediaSinkService::DualMediaSinkService() {
     if (CastMediaRouteProviderEnabled()) {
       cast_channel::CastSocketService* cast_socket_service =
           cast_channel::CastSocketService::GetInstance();
-      cast_app_discovery_service_ = std::make_unique<CastAppDiscoveryService>(
-          GetCastMessageHandler(), cast_socket_service,
-          cast_media_sink_service_->impl(),
-          base::DefaultTickClock::GetInstance());
+      cast_app_discovery_service_ =
+          std::make_unique<CastAppDiscoveryServiceImpl>(
+              GetCastMessageHandler(), cast_socket_service,
+              cast_media_sink_service_->impl(),
+              base::DefaultTickClock::GetInstance());
     }
   }
 }

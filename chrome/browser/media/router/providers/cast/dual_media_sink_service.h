@@ -59,6 +59,9 @@ class DualMediaSinkService {
   // Used by DialMediaRouteProvider only.
   DialMediaSinkServiceImpl* GetDialMediaSinkServiceImpl();
 
+  // Used by CastMediaRouteProvider only.
+  MediaSinkServiceBase* GetCastMediaSinkServiceImpl();
+
   CastAppDiscoveryService* cast_app_discovery_service() {
     return cast_app_discovery_service_.get();
   }

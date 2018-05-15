@@ -88,6 +88,7 @@ void CastTransportImpl::SendMessage(
     const net::CompletionCallback& callback,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(IsCastMessageValid(message));
   std::string serialized_message;
   if (!MessageFramer::Serialize(message, &serialized_message)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

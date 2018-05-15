@@ -26,6 +26,7 @@
 #include "chrome/browser/media/router/discovery/dial/dial_url_fetcher.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
+#include "chrome/browser/media/router/providers/cast/cast_app_discovery_service.h"
 #include "chrome/browser/media/router/providers/dial/dial_activity_manager.h"
 #include "chrome/common/media_router/discovery/media_sink_internal.h"
 #include "net/base/ip_endpoint.h"
@@ -136,6 +137,23 @@ class MockCastMediaSinkService : public CastMediaSinkService {
                void(const OnSinksDiscoveredCallback&, MediaSinkServiceBase*));
   MOCK_METHOD0(OnUserGesture, void());
   MOCK_METHOD0(StartMdnsDiscovery, void());
+};
+
+class MockCastAppDiscoveryService : public CastAppDiscoveryService {
+ public:
+  MockCastAppDiscoveryService();
+  ~MockCastAppDiscoveryService() override;
+
+  Subscription StartObservingMediaSinks(
+      const CastMediaSource& source,
+      const SinkQueryCallback& callback) override;
+  MOCK_METHOD1(DoStartObservingMediaSinks, void(const CastMediaSource&));
+  MOCK_METHOD0(Refresh, void());
+
+  SinkQueryCallbackList& callbacks() { return callbacks_; }
+
+ private:
+  SinkQueryCallbackList callbacks_;
 };
 
 class MockDialAppDiscoveryService : public DialAppDiscoveryService {
