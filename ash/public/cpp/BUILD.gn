@@ -33,6 +33,8 @@ component("cpp") {
     "ash_constants.h",
     "ash_features.cc",
     "ash_features.h",
+    "ash_layout_constants.cc",
+    "ash_layout_constants.h",
     "ash_pref_names.cc",
     "ash_pref_names.h",
     "ash_public_export.h",

@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_ASH_LAYOUT_CONSTANTS_H_
-#define ASH_ASH_LAYOUT_CONSTANTS_H_
+#ifndef ASH_PUBLIC_CPP_ASH_LAYOUT_CONSTANTS_H_
+#define ASH_PUBLIC_CPP_ASH_LAYOUT_CONSTANTS_H_
 
-#include "ash/ash_export.h"
+#include "ash/public/cpp/ash_public_export.h"
 #include "ui/gfx/geometry/size.h"
+
+namespace ash {
 
 enum class AshLayoutSize {
   // Size of a caption button in a maximized browser window.
@@ -19,6 +21,8 @@ enum class AshLayoutSize {
   kNonBrowserCaption,
 };
 
-ASH_EXPORT gfx::Size GetAshLayoutSize(AshLayoutSize size);
+ASH_PUBLIC_EXPORT gfx::Size GetAshLayoutSize(AshLayoutSize size);
 
-#endif  // ASH_ASH_LAYOUT_CONSTANTS_H_
+}  // namespace ash
+
+#endif  // ASH_PUBLIC_CPP_ASH_LAYOUT_CONSTANTS_H_

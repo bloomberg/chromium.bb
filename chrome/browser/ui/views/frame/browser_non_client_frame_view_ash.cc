@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_back_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
@@ -16,6 +15,7 @@
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
@@ -236,9 +236,9 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
   }
 
   const int header_height =
-      restored
-          ? GetAshLayoutSize(AshLayoutSize::kBrowserCaptionRestored).height()
-          : frame_header_->GetHeaderHeight();
+      restored ? GetAshLayoutSize(ash::AshLayoutSize::kBrowserCaptionRestored)
+                     .height()
+               : frame_header_->GetHeaderHeight();
   return header_height - browser_view()->GetTabStripHeight();
 }
 
@@ -653,7 +653,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
     header = std::move(browser_frame_header);
   } else {
     std::unique_ptr<ash::DefaultFrameHeader> default_frame_header =
-        std::make_unique<ash::DefaultFrameHeader>(frame(), this,
+        std::make_unique<ash::DefaultFrameHeader>(this,
                                                   caption_button_container_);
     // TODO(alancutter): Move this branch into a new HostedAppFrameHeader class.
     if (extensions::HostedAppBrowserController::

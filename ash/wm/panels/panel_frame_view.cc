@@ -51,8 +51,8 @@ void PanelFrameView::InitFrameHeader() {
   caption_button_container_ = new FrameCaptionButtonContainerView(frame_);
   AddChildView(caption_button_container_);
 
-  frame_header_ = std::make_unique<DefaultFrameHeader>(
-      frame_, this, caption_button_container_);
+  frame_header_ =
+      std::make_unique<DefaultFrameHeader>(this, caption_button_container_);
   GetWidgetWindow()->SetProperty(aura::client::kTopViewColor,
                                  DefaultFrameHeader::GetDefaultFrameColor());
 

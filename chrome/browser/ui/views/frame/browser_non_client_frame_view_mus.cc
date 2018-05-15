@@ -37,7 +37,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/ash_layout_constants.h"
+#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/window_properties.h"
 #endif
 
@@ -458,10 +458,10 @@ void BrowserNonClientFrameViewMus::PaintContentEdge(gfx::Canvas* canvas) {
 
 int BrowserNonClientFrameViewMus::GetHeaderHeight() const {
 #if defined(OS_CHROMEOS)
-  // TODO: move ash_layout_constants to ash/public/cpp.
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
-  return GetAshLayoutSize(restored ? AshLayoutSize::kBrowserCaptionRestored
-                                   : AshLayoutSize::kBrowserCaptionMaximized)
+  return GetAshLayoutSize(restored
+                              ? ash::AshLayoutSize::kBrowserCaptionRestored
+                              : ash::AshLayoutSize::kBrowserCaptionMaximized)
       .height();
 #else
   return views::WindowManagerFrameValues::instance().normal_insets.top();

@@ -4,8 +4,8 @@
 
 #include "ash/frame/caption_buttons/frame_back_button.h"
 
-#include "ash/ash_layout_constants.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
+#include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ui/aura/window.h"
