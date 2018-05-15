@@ -10,7 +10,6 @@
 #include "content/browser/loader/merkle_integrity_source_stream.h"
 #include "content/browser/web_package/signed_exchange_cert_fetcher_factory.h"
 #include "content/browser/web_package/signed_exchange_certificate_chain.h"
-#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
 #include "content/browser/web_package/signed_exchange_header.h"
 #include "content/browser/web_package/signed_exchange_signature_verifier.h"
@@ -89,10 +88,10 @@ SignedExchangeHandler::SignedExchangeHandler(
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeHandler::SignedExchangeHandler");
 
-  base::Optional<std::string> content_type_version_param;
-  if (!SignedExchangeHeaderParser::GetVersionParamFromContentType(
-          content_type, &content_type_version_param) ||
-      !content_type_version_param || *content_type_version_param != "b0") {
+  // Currently, only 'v=b0' is supported.
+  if (!SignedExchangeHeaderParser::GetVersionParamFromContentType(content_type,
+                                                                  &version_) ||
+      version_ != SignedExchangeVersion::kB0) {
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&SignedExchangeHandler::RunErrorCallback,
                                   weak_factory_.GetWeakPtr(), net::ERR_FAILED));
@@ -237,11 +236,12 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
   // TODO(https://crbug.com/819467): When we will support ed25519Key, |cert_url|
   // may be empty.
   DCHECK(cert_url.is_valid());
+  DCHECK(version_.has_value());
 
   DCHECK(cert_fetcher_factory_);
   cert_fetcher_ = std::move(cert_fetcher_factory_)
                       ->CreateFetcherAndStart(
-                          cert_url, false,
+                          cert_url, false, *version_,
                           base::BindOnce(&SignedExchangeHandler::OnCertReceived,
                                          base::Unretained(this)),
                           devtools_proxy_.get());

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/common/content_export.h"
 #include "net/base/hash_value.h"
 #include "url/gurl.h"
@@ -49,11 +50,11 @@ class CONTENT_EXPORT SignedExchangeHeaderParser {
       SignedExchangeDevToolsProxy* devtools_proxy);
 
   // Parses |content_type| to get the value of "v=" parameter of the signed
-  // exchange. Example: "b0" for "application/signed-exchange;v=b0". Returns
-  // false if failed to parse.
+  // exchange, and converts to SignedExchangeVersion. Returns false if failed to
+  // parse.
   static bool GetVersionParamFromContentType(
       base::StringPiece content_type,
-      base::Optional<std::string>* version_param);
+      base::Optional<SignedExchangeVersion>* version_param);
 };
 
 }  // namespace content

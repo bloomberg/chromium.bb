@@ -52,6 +52,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       const GURL& cert_url,
       url::Origin request_initiator,
       bool force_fetch,
+      SignedExchangeVersion version,
       CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy);
 
@@ -73,6 +74,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
       const GURL& cert_url,
       url::Origin request_initiator,
       bool force_fetch,
+      SignedExchangeVersion version,
       CertificateCallback callback,
       SignedExchangeDevToolsProxy* devtools_proxy);
   void Start();
@@ -99,6 +101,7 @@ class CONTENT_EXPORT SignedExchangeCertFetcher
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   std::vector<std::unique_ptr<URLLoaderThrottle>> throttles_;
   std::unique_ptr<network::ResourceRequest> resource_request_;
+  const SignedExchangeVersion version_;
   CertificateCallback callback_;
 
   std::unique_ptr<ThrottlingURLLoader> url_loader_;

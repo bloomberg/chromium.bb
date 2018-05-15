@@ -70,15 +70,16 @@ SignedExchangeCertFetcher::CreateAndStart(
     const GURL& cert_url,
     url::Origin request_initiator,
     bool force_fetch,
+    SignedExchangeVersion version,
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::CreateAndStart");
   std::unique_ptr<SignedExchangeCertFetcher> cert_fetcher(
-      new SignedExchangeCertFetcher(std::move(shared_url_loader_factory),
-                                    std::move(throttles), cert_url,
-                                    std::move(request_initiator), force_fetch,
-                                    std::move(callback), devtools_proxy));
+      new SignedExchangeCertFetcher(
+          std::move(shared_url_loader_factory), std::move(throttles), cert_url,
+          std::move(request_initiator), force_fetch, version,
+          std::move(callback), devtools_proxy));
   cert_fetcher->Start();
   return cert_fetcher;
 }
@@ -89,11 +90,13 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     const GURL& cert_url,
     url::Origin request_initiator,
     bool force_fetch,
+    SignedExchangeVersion version,
     CertificateCallback callback,
     SignedExchangeDevToolsProxy* devtools_proxy)
     : shared_url_loader_factory_(std::move(shared_url_loader_factory)),
       throttles_(std::move(throttles)),
       resource_request_(std::make_unique<network::ResourceRequest>()),
+      version_(version),
       callback_(std::move(callback)),
       devtools_proxy_(devtools_proxy) {
   // TODO(https://crbug.com/803774): Revisit more ResourceRequest flags.
@@ -179,12 +182,10 @@ void SignedExchangeCertFetcher::OnDataComplete() {
   body_.reset();
   handle_watcher_ = nullptr;
 
-  // TODO(https://crbug.com/803774): Take SignedExchangeVersion as a
-  // parameter of CreateAndStart() and use it here.
   std::unique_ptr<SignedExchangeCertificateChain> cert_chain =
       SignedExchangeCertificateChain::Parse(
-          SignedExchangeVersion::kB0,
-          base::as_bytes(base::make_span(body_string_)), devtools_proxy_);
+          version_, base::as_bytes(base::make_span(body_string_)),
+          devtools_proxy_);
   body_string_.clear();
   if (!cert_chain) {
     signed_exchange_utils::ReportErrorAndEndTraceEvent(

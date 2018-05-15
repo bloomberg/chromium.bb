@@ -210,7 +210,8 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &mock_loader_factory_),
         std::move(throttles_), url_, request_initiator_, force_fetch,
-        std::move(callback), nullptr /* devtools_proxy */);
+        SignedExchangeVersion::kB0, std::move(callback),
+        nullptr /* devtools_proxy */);
   }
 
   void CallOnReceiveResponse() {
