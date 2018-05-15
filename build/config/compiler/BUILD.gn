@@ -115,8 +115,8 @@ declare_args() {
   # We currently only have default profiles for Chromium in-tree, so we disable
   # this by default for all downstream projects, since these profiles are likely
   # nonsensical for said projects.
-  clang_use_default_sample_profile =
-      build_with_chromium && is_official_build && is_android
+  clang_use_default_sample_profile = build_with_chromium && is_official_build &&
+                                     (is_android || is_desktop_linux)
 
   # Turn this on to have the compiler output extra timing information.
   compiler_timing = false
@@ -1999,7 +1999,8 @@ if (is_clang && current_toolchain == default_toolchain) {
   } else if (clang_use_default_sample_profile) {
     assert(build_with_chromium,
            "Our default profiles currently only apply to Chromium")
-    assert(is_android, "The current platform has no default profile")
+    assert(is_android || is_desktop_linux,
+           "The current platform has no default profile")
     _clang_sample_profile = rebase_path("//chrome/android/profiles/afdo.prof")
   }
 }
