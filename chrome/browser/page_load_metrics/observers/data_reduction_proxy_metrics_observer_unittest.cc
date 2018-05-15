@@ -113,11 +113,11 @@ class TestDataReductionProxyMetricsObserver
   TestDataReductionProxyMetricsObserver(content::WebContents* web_contents,
                                         TestPingbackClient* pingback_client,
                                         bool data_reduction_proxy_used,
-                                        bool lofi_used)
+                                        bool lite_page_used)
       : web_contents_(web_contents),
         pingback_client_(pingback_client),
         data_reduction_proxy_used_(data_reduction_proxy_used),
-        lofi_used_(lofi_used) {}
+        lite_page_used_(lite_page_used) {}
 
   ~TestDataReductionProxyMetricsObserver() override {}
 
@@ -128,7 +128,7 @@ class TestDataReductionProxyMetricsObserver
         DataForNavigationHandle(web_contents_, navigation_handle);
     data->set_used_data_reduction_proxy(data_reduction_proxy_used_);
     data->set_request_url(GURL(kDefaultTestUrl));
-    data->set_lofi_requested(lofi_used_);
+    data->set_lite_page_received(lite_page_used_);
     return DataReductionProxyMetricsObserver::OnCommit(navigation_handle,
                                                        source_id);
   }
@@ -160,7 +160,7 @@ class TestDataReductionProxyMetricsObserver
   content::WebContents* web_contents_;
   TestPingbackClient* pingback_client_;
   bool data_reduction_proxy_used_;
-  bool lofi_used_;
+  bool lite_page_used_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyMetricsObserver);
 };
@@ -171,7 +171,7 @@ class DataReductionProxyMetricsObserverTest
   DataReductionProxyMetricsObserverTest()
       : pingback_client_(new TestPingbackClient()),
         data_reduction_proxy_used_(false),
-        is_using_lofi_(false),
+        is_using_lite_page_(false),
         opt_out_expected_(false) {}
 
   void ResetTest() {
@@ -195,10 +195,10 @@ class DataReductionProxyMetricsObserverTest
   }
 
   void RunTest(bool data_reduction_proxy_used,
-               bool is_using_lofi,
+               bool is_using_lite_page,
                bool opt_out_expected) {
     data_reduction_proxy_used_ = data_reduction_proxy_used;
-    is_using_lofi_ = is_using_lofi;
+    is_using_lite_page_ = is_using_lite_page;
     opt_out_expected_ = opt_out_expected;
     NavigateAndCommit(GURL(kDefaultTestUrl));
     SimulateTimingUpdate(timing_);
@@ -206,9 +206,9 @@ class DataReductionProxyMetricsObserverTest
   }
 
   void RunTestAndNavigateToUntrackedUrl(bool data_reduction_proxy_used,
-                                        bool is_using_lofi,
+                                        bool is_using_lite_page,
                                         bool opt_out_expected) {
-    RunTest(data_reduction_proxy_used, is_using_lofi, opt_out_expected);
+    RunTest(data_reduction_proxy_used, is_using_lite_page, opt_out_expected);
     NavigateToUntrackedUrl();
   }
 
@@ -301,9 +301,9 @@ class DataReductionProxyMetricsObserverTest
             .append(histogram_suffix),
         data_reduction_proxy_used_ ? 1 : 0);
     histogram_tester().ExpectTotalCount(
-        std::string(internal::kHistogramDataReductionProxyLoFiOnPrefix)
+        std::string(internal::kHistogramDataReductionProxyLitePagePrefix)
             .append(histogram_suffix),
-        is_using_lofi_ ? 1 : 0);
+        is_using_lite_page_ ? 1 : 0);
     if (!data_reduction_proxy_used_)
       return;
     histogram_tester().ExpectUniqueSample(
@@ -312,12 +312,12 @@ class DataReductionProxyMetricsObserverTest
         static_cast<base::HistogramBase::Sample>(
             event.value().InMilliseconds()),
         1);
-    if (!is_using_lofi_)
+    if (!is_using_lite_page_)
       return;
     histogram_tester().ExpectUniqueSample(
-        std::string(internal::kHistogramDataReductionProxyLoFiOnPrefix)
+        std::string(internal::kHistogramDataReductionProxyLitePagePrefix)
             .append(histogram_suffix),
-        event.value().InMilliseconds(), is_using_lofi_ ? 1 : 0);
+        event.value().InMilliseconds(), is_using_lite_page_ ? 1 : 0);
   }
 
   void ValidateDataHistograms(int network_resources,
@@ -397,7 +397,7 @@ class DataReductionProxyMetricsObserverTest
     tracker->AddObserver(
         std::make_unique<TestDataReductionProxyMetricsObserver>(
             web_contents(), pingback_client_.get(), data_reduction_proxy_used_,
-            is_using_lofi_));
+            is_using_lite_page_));
   }
 
   std::unique_ptr<TestPingbackClient> pingback_client_;
@@ -405,7 +405,7 @@ class DataReductionProxyMetricsObserverTest
 
  private:
   bool data_reduction_proxy_used_;
-  bool is_using_lofi_;
+  bool is_using_lite_page_;
   bool opt_out_expected_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyMetricsObserverTest);
@@ -420,16 +420,16 @@ TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOff) {
 
 TEST_F(DataReductionProxyMetricsObserverTest, DataReductionProxyOn) {
   ResetTest();
-  // Verify that when the data reduction proxy was used, but lofi was not used,
-  // the correpsonding UMA is reported.
+  // Verify that when the data reduction proxy was used, but lite page was not
+  // used, the correpsonding UMA is reported.
   RunTest(true, false, false);
   ValidateHistograms();
 }
 
-TEST_F(DataReductionProxyMetricsObserverTest, LofiEnabled) {
+TEST_F(DataReductionProxyMetricsObserverTest, LitePageEnabled) {
   ResetTest();
-  // Verify that when the data reduction proxy was used and lofi was used, both
-  // histograms are reported.
+  // Verify that when the data reduction proxy was used and lite page was used,
+  // both histograms are reported.
   RunTest(true, true, false);
   ValidateHistograms();
 }
@@ -488,7 +488,6 @@ TEST_F(DataReductionProxyMetricsObserverTest, OnCompletePingback) {
   data->set_lofi_received(true);
 
   // Verify LoFi is tracked when a LoFi response is received.
-
   page_load_metrics::ExtraRequestCompleteInfo resource = {
       GURL(kResourceUrl),
       net::HostPortPair(),

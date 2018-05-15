@@ -30,7 +30,7 @@ namespace internal {
 
 // Various UMA histogram names for DataReductionProxy core page load metrics.
 extern const char kHistogramDataReductionProxyPrefix[];
-extern const char kHistogramDataReductionProxyLoFiOnPrefix[];
+extern const char kHistogramDataReductionProxyLitePagePrefix[];
 
 // Byte and request specific histogram suffixes.
 extern const char kResourcesPercentProxied[];
