@@ -316,7 +316,6 @@ def RunRemote(site_config, options, patch_pool):
         branch=options.branch,
         extra_args=args,
         user_email=user_email,
-        master_buildbucket_id='',  # TODO: Add new option to populate.
     )
     results.append(tryjob.Submit(dryrun=False))
 
