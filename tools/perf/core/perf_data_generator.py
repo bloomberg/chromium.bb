@@ -113,12 +113,12 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
 # bisecting Chrome builds with their web tests. For questions or to report
 # issues, please contact johnchen@chromium.org and stgao@chromium.org.
 BUILDER_ADDITIONAL_COMPILE_TARGETS = {
-    'Android Compile': ['microdump_stackwalk', 'angle_perftests'],
-    'Android arm64 Compile': ['microdump_stackwalk', 'angle_perftests'],
-    'Linux Builder': ['chromedriver'],
-    'Mac Builder': ['chromedriver'],
-    'Win Builder': ['chromedriver'],
-    'Win x64 Builder': ['chromedriver'],
+    'Android Compile Perf': ['microdump_stackwalk', 'angle_perftests'],
+    'Android arm64 Compile Perf': ['microdump_stackwalk', 'angle_perftests'],
+    'Linux Builder Perf': ['chromedriver'],
+    'Mac Builder Perf': ['chromedriver'],
+    'Win Builder Perf': ['chromedriver'],
+    'Win x64 Builder Perf': ['chromedriver'],
 }
 
 
