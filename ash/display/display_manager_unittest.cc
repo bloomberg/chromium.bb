@@ -3376,7 +3376,96 @@ class FontTestHelper : public AshTestBase {
   DISALLOW_COPY_AND_ASSIGN(FontTestHelper);
 };
 
+bool IsTextSubpixelPositioningEnabled() {
+  gfx::FontRenderParams params =
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
+  return params.subpixel_positioning;
+}
+
+gfx::FontRenderParams::Hinting GetFontHintingParams() {
+  gfx::FontRenderParams params =
+      gfx::GetFontRenderParams(gfx::FontRenderParamsQuery(), nullptr);
+  return params.hinting;
+}
+
 }  // namespace
+
+using DisplayManagerFontTest = testing::Test;
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100Internal) {
+  FontTestHelper helper(1.0f, FontTestHelper::INTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.0f,
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200Internal) {
+  FontTestHelper helper(2.0f, FontTestHelper::INTERNAL);
+  ASSERT_DOUBLE_EQ(
+      2.0f,
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+
+  display::test::DisplayManagerTestApi(helper.display_manager())
+      .SetDisplayUIScale(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+                         2.0f);
+
+  ASSERT_DOUBLE_EQ(
+      1.0f,
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf100External) {
+  FontTestHelper helper(1.0f, FontTestHelper::EXTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.0f,
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf125External) {
+  FontTestHelper helper(1.25f, FontTestHelper::EXTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.25f,
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+  EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+}
+
+TEST_F(DisplayManagerFontTest, TextSubpixelPositioningWithDsf200External) {
+  FontTestHelper helper(2.0f, FontTestHelper::EXTERNAL);
+  ASSERT_DOUBLE_EQ(
+      2.0f,
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+}
+
+TEST_F(DisplayManagerFontTest,
+       TextSubpixelPositioningWithDsf125InternalWithScaling) {
+  FontTestHelper helper(1.25f, FontTestHelper::INTERNAL);
+  ASSERT_DOUBLE_EQ(
+      1.0f,
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_FALSE(IsTextSubpixelPositioningEnabled());
+  EXPECT_NE(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+
+  display::test::DisplayManagerTestApi(helper.display_manager())
+      .SetDisplayUIScale(display::Screen::GetScreen()->GetPrimaryDisplay().id(),
+                         0.8f);
+
+  ASSERT_DOUBLE_EQ(
+      1.25f,
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor());
+  EXPECT_TRUE(IsTextSubpixelPositioningEnabled());
+  EXPECT_EQ(gfx::FontRenderParams::HINTING_NONE, GetFontHintingParams());
+}
 
 TEST_F(DisplayManagerTest, CheckInitializationOfRotationProperty) {
   int64_t id = display_manager()->GetDisplayAt(0).id();

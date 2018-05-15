@@ -18,6 +18,11 @@ const char kDisableDirectWriteForUI[] = "disable-directwrite-for-ui";
 const char kEnableHarfBuzzRenderText[] = "enable-harfbuzz-rendertext";
 #endif
 
+// Force disables font subpixel positioning. This affects the character glyph
+// sharpness, kerning, hinting and layout.
+const char kDisableFontSubpixelPositioning[] =
+    "disable-font-subpixel-positioning";
+
 // Run in headless mode, i.e., without a UI or display server dependencies.
 const char kHeadless[] = "headless";
 

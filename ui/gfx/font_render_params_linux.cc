@@ -278,11 +278,16 @@ FontRenderParams GetFontRenderParams(const FontRenderParamsQuery& query,
     params.hinting = FontRenderParams::HINTING_FULL;
     params.subpixel_rendering = FontRenderParams::SUBPIXEL_RENDERING_NONE;
     params.subpixel_positioning = false;
-  } else {
+  } else if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kDisableFontSubpixelPositioning)) {
 #if !defined(OS_CHROMEOS)
     params.subpixel_positioning = actual_query.device_scale_factor > 1.0f;
 #else
-    params.subpixel_positioning = false;
+    // We want to enable subpixel positioning for fractional dsf.
+    params.subpixel_positioning =
+        std::abs(std::round(actual_query.device_scale_factor) -
+                 actual_query.device_scale_factor) >
+        std::numeric_limits<float>::epsilon();
 #endif  // !defined(OS_CHROMEOS)
 
     // To enable subpixel positioning, we need to disable hinting.
