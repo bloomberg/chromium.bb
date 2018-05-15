@@ -26,6 +26,11 @@ class WebViewWebMainParts : public web::WebMainParts {
   void PostMainMessageLoopRun() override;
   void PostDestroyThreads() override;
 
+  // Loads resources that are not scaled. f.e. javascript files.
+  void LoadNonScalableResources();
+  // Loads resources that can be scaled. f.e. png images for @1x, @2x, and @3x.
+  void LoadScalableResources();
+
   DISALLOW_COPY_AND_ASSIGN(WebViewWebMainParts);
 };
 
