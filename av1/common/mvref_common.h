@@ -37,7 +37,7 @@ typedef struct position {
 static INLINE int get_relative_dist(const AV1_COMMON *cm, int a, int b) {
   if (!cm->seq_params.enable_order_hint) return 0;
 
-  const int bits = cm->seq_params.order_hint_bits_minus1 + 1;
+  const int bits = cm->seq_params.order_hint_bits_minus_1 + 1;
 
   assert(bits >= 1);
   assert(a >= 0 && a < (1 << bits));

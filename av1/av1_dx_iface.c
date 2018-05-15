@@ -170,10 +170,10 @@ static void parse_operating_points(struct aom_read_bit_buffer *rb,
   if (is_reduced_header) {
     aom_rb_read_literal(rb, LEVEL_BITS);  // level
   } else {
-    const uint8_t operating_points_minus1_cnt =
-        aom_rb_read_literal(rb, OP_POINTS_MINUS1_BITS);
+    const uint8_t operating_points_cnt_minus_1 =
+        aom_rb_read_literal(rb, OP_POINTS_CNT_MINUS_1_BITS);
     int operating_point_idc0 = 0;
-    for (int i = 0; i < operating_points_minus1_cnt + 1; i++) {
+    for (int i = 0; i < operating_points_cnt_minus_1 + 1; i++) {
       int operating_point_idc;
       operating_point_idc = aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
       if (i == 0) operating_point_idc0 = operating_point_idc;

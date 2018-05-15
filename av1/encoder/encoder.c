@@ -920,7 +920,7 @@ void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
     seq->force_screen_content_tools = 2;
     seq->force_integer_mv = 2;
   }
-  seq->order_hint_bits_minus1 =
+  seq->order_hint_bits_minus_1 =
       seq->enable_order_hint ? DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1 : -1;
 
   seq->enable_dual_filter = oxcf->enable_dual_filter;

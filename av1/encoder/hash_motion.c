@@ -271,14 +271,14 @@ void av1_generate_block_hash_value(const YV12_BUFFER_CONFIG *picture,
   }
 
   if (block_size >= 4) {
-    const int size_minus1 = block_size - 1;
+    const int size_minus_1 = block_size - 1;
     pos = 0;
     for (int y_pos = 0; y_pos < y_end; y_pos++) {
       for (int x_pos = 0; x_pos < x_end; x_pos++) {
         dst_pic_block_same_info[2][pos] =
             (!dst_pic_block_same_info[0][pos] &&
              !dst_pic_block_same_info[1][pos]) ||
-            (((x_pos & size_minus1) == 0) && ((y_pos & size_minus1) == 0));
+            (((x_pos & size_minus_1) == 0) && ((y_pos & size_minus_1) == 0));
         pos++;
       }
       pos += block_size - 1;

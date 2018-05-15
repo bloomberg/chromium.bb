@@ -197,7 +197,7 @@ typedef struct SequenceHeader {
   BLOCK_SIZE sb_size;  // Size of the superblock used for this frame
   int mib_size;        // Size of the superblock in units of MI blocks
   int mib_size_log2;   // Log 2 of above.
-  int order_hint_bits_minus1;
+  int order_hint_bits_minus_1;
   int force_screen_content_tools;  // 0 - force off
                                    // 1 - force on
                                    // 2 - adaptive
@@ -530,7 +530,7 @@ typedef struct AV1Common {
   int current_frame_id;
   int ref_frame_id[REF_FRAMES];
   int valid_for_referencing[REF_FRAMES];
-  int invalid_delta_frame_id_minus1;
+  int invalid_delta_frame_id_minus_1;
   LV_MAP_CTX_TABLE coeff_ctx_table;
   TPL_MV_REF *tpl_mvs;
   int tpl_mvs_mem_size;

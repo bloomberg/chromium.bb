@@ -2800,7 +2800,7 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
       assert(seq_params->force_integer_mv == 2);
     }
     if (seq_params->enable_order_hint)
-      aom_wb_write_literal(wb, seq_params->order_hint_bits_minus1, 3);
+      aom_wb_write_literal(wb, seq_params->order_hint_bits_minus_1, 3);
   }
 
   aom_wb_write_bit(wb, seq_params->enable_superres);
@@ -3062,7 +3062,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     assert(cm->cur_frame_force_integer_mv == 0);
   }
 
-  cm->invalid_delta_frame_id_minus1 = 0;
+  cm->invalid_delta_frame_id_minus_1 = 0;
   int frame_size_override_flag = 0;
   cm->frame_refs_short_signaling = 0;
 
@@ -3089,7 +3089,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
     if (cm->seq_params.enable_order_hint)
       aom_wb_write_literal(wb, cm->frame_offset,
-                           cm->seq_params.order_hint_bits_minus1 + 1);
+                           cm->seq_params.order_hint_bits_minus_1 + 1);
 
     if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
       aom_wb_write_literal(wb, cm->primary_ref_frame, PRIMARY_REF_BITS);
@@ -3179,7 +3179,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
         // Write order hint to bit stream
         aom_wb_write_literal(wb, frame_bufs[buf_idx].cur_frame_offset,
-                             cm->seq_params.order_hint_bits_minus1 + 1);
+                             cm->seq_params.order_hint_bits_minus_1 + 1);
       }
     }
   }
@@ -3235,15 +3235,15 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
           int i = get_ref_frame_map_idx(cpi, ref_frame);
           int frame_id_len = cm->seq_params.frame_id_length;
           int diff_len = cm->seq_params.delta_frame_id_length;
-          int delta_frame_id_minus1 =
+          int delta_frame_id_minus_1 =
               ((cm->current_frame_id - cm->ref_frame_id[i] +
                 (1 << frame_id_len)) %
                (1 << frame_id_len)) -
               1;
-          if (delta_frame_id_minus1 < 0 ||
-              delta_frame_id_minus1 >= (1 << diff_len))
-            cm->invalid_delta_frame_id_minus1 = 1;
-          aom_wb_write_literal(wb, delta_frame_id_minus1, diff_len);
+          if (delta_frame_id_minus_1 < 0 ||
+              delta_frame_id_minus_1 >= (1 << diff_len))
+            cm->invalid_delta_frame_id_minus_1 = 1;
+          aom_wb_write_literal(wb, delta_frame_id_minus_1, diff_len);
         }
       }
 
@@ -3559,24 +3559,24 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
   if (cm->seq_params.reduced_still_picture_hdr) {
     write_bitstream_level(cm->seq_params.level[0], &wb);
   } else {
-    uint8_t operating_points_minus1_cnt =
+    uint8_t operating_points_cnt_minus_1 =
         number_spatial_layers > 1 ? number_spatial_layers - 1 : 0;
-    aom_wb_write_literal(&wb, operating_points_minus1_cnt,
-                         OP_POINTS_MINUS1_BITS);
+    aom_wb_write_literal(&wb, operating_points_cnt_minus_1,
+                         OP_POINTS_CNT_MINUS_1_BITS);
     int i;
-    if (operating_points_minus1_cnt == 0) {
+    if (operating_points_cnt_minus_1 == 0) {
       cm->seq_params.operating_point_idc[0] = 0;
     } else {
       // Set operating_point_idc[] such that for the i-th operating point the
       // first (operating_points_cnt-i) spatial layers and the first temporal
       // layer are decoded Note that highest quality operating point should come
       // first
-      for (i = 0; i < operating_points_minus1_cnt + 1; i++)
+      for (i = 0; i < operating_points_cnt_minus_1 + 1; i++)
         cm->seq_params.operating_point_idc[i] =
-            (~(~0u << (operating_points_minus1_cnt + 1 - i)) << 8) | 1;
+            (~(~0u << (operating_points_cnt_minus_1 + 1 - i)) << 8) | 1;
     }
 
-    for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
+    for (i = 0; i < operating_points_cnt_minus_1 + 1; i++) {
       aom_wb_write_literal(&wb, cm->seq_params.operating_point_idc[i],
                            OP_POINTS_IDC_BITS);
       write_bitstream_level(cm->seq_params.level[i], &wb);

@@ -4511,7 +4511,7 @@ void av1_encode_frame(AV1_COMP *cpi) {
   } else {
     cm->frame_offset = cm->current_video_frame;
   }
-  cm->frame_offset %= (1 << (cm->seq_params.order_hint_bits_minus1 + 1));
+  cm->frame_offset %= (1 << (cm->seq_params.order_hint_bits_minus_1 + 1));
 
   // Make sure segment_id is no larger than last_active_segid.
   if (cm->seg.enabled && cm->seg.update_map) {

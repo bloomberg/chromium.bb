@@ -3023,7 +3023,7 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     seq_params->enable_ref_frame_mvs = 0;
     seq_params->force_screen_content_tools = 2;
     seq_params->force_integer_mv = 2;
-    seq_params->order_hint_bits_minus1 = -1;
+    seq_params->order_hint_bits_minus_1 = -1;
   } else {
     seq_params->enable_interintra_compound = aom_rb_read_bit(rb);
     seq_params->enable_masked_compound = aom_rb_read_bit(rb);
@@ -3051,7 +3051,7 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
     } else {
       seq_params->force_integer_mv = 2;
     }
-    seq_params->order_hint_bits_minus1 =
+    seq_params->order_hint_bits_minus_1 =
         seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;
   }
 
@@ -3420,7 +3420,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         frame_is_sframe(cm) ? 1 : aom_rb_read_literal(rb, 1);
 
     cm->frame_offset =
-        aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
+        aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus_1 + 1);
     cm->current_video_frame = cm->frame_offset;
 
     if (!cm->error_resilient_mode && !frame_is_intra_only(cm)) {
@@ -3491,7 +3491,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       for (int ref_idx = 0; ref_idx < REF_FRAMES; ref_idx++) {
         // Read order hint from bit stream
         unsigned int frame_offset =
-            aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus1 + 1);
+            aom_rb_read_literal(rb, cm->seq_params.order_hint_bits_minus_1 + 1);
         // Get buffer index
         int buf_idx = cm->ref_frame_map[ref_idx];
         assert(buf_idx < FRAME_BUFFERS);
@@ -3607,12 +3607,12 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         if (cm->seq_params.frame_id_numbers_present_flag) {
           int frame_id_length = cm->seq_params.frame_id_length;
           int diff_len = cm->seq_params.delta_frame_id_length;
-          int delta_frame_id_minus1 = aom_rb_read_literal(rb, diff_len);
+          int delta_frame_id_minus_1 = aom_rb_read_literal(rb, diff_len);
           int ref_frame_id =
-              ((cm->current_frame_id - (delta_frame_id_minus1 + 1) +
+              ((cm->current_frame_id - (delta_frame_id_minus_1 + 1) +
                 (1 << frame_id_length)) %
                (1 << frame_id_length));
-          // Compare values derived from delta_frame_id_minus1 and
+          // Compare values derived from delta_frame_id_minus_1 and
           // refresh_frame_flags. Also, check valid for referencing
           if (ref_frame_id != cm->ref_frame_id[ref] ||
               cm->valid_for_referencing[ref] == 0)

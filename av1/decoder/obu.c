@@ -140,7 +140,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
                                          struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
   uint32_t saved_bit_offset = rb->bit_offset;
-  int operating_points_minus1_cnt = 0;
+  int operating_points_cnt_minus_1 = 0;
 
   cm->profile = av1_read_profile(rb);
 
@@ -162,9 +162,9 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
       return AOM_CODEC_UNSUP_BITSTREAM;
     seq_params->decoder_rate_model_param_present_flag[0] = 0;
   } else {
-    operating_points_minus1_cnt =
-        aom_rb_read_literal(rb, OP_POINTS_MINUS1_BITS);
-    for (int i = 0; i < operating_points_minus1_cnt + 1; i++) {
+    operating_points_cnt_minus_1 =
+        aom_rb_read_literal(rb, OP_POINTS_CNT_MINUS_1_BITS);
+    for (int i = 0; i < operating_points_cnt_minus_1 + 1; i++) {
       seq_params->operating_point_idc[i] =
           aom_rb_read_literal(rb, OP_POINTS_IDC_BITS);
       seq_params->level[i] = read_bitstream_level(rb);
@@ -185,7 +185,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   // This decoder supports all levels.  Choose operating point provided by
   // external means
   int operating_point = pbi->operating_point;
-  if (operating_point < 0 || operating_point > operating_points_minus1_cnt)
+  if (operating_point < 0 || operating_point > operating_points_cnt_minus_1)
     operating_point = 0;
   pbi->current_operating_point =
       seq_params->operating_point_idc[operating_point];
