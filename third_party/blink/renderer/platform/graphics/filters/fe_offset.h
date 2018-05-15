@@ -37,7 +37,8 @@ class PLATFORM_EXPORT FEOffset final : public FilterEffect {
   float Dy() const;
   void SetDy(float);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEOffset(Filter*, float dx, float dy);

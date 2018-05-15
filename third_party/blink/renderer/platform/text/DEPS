@@ -13,7 +13,6 @@ include_rules = [
     "+third_party/blink/renderer/platform/language.h",
     "+third_party/blink/renderer/platform/layout_locale.h",
     "+third_party/blink/renderer/platform/layout_test_support.h",
-    "+third_party/blink/renderer/platform/layout_unit.h",
     "+third_party/blink/renderer/platform/platform_export.h",
     "+third_party/blink/renderer/platform/runtime_enabled_features.h",
     "+third_party/blink/renderer/platform/testing",

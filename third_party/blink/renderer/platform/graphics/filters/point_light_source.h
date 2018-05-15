@@ -36,7 +36,7 @@ class PLATFORM_EXPORT PointLightSource final : public LightSource {
   const FloatPoint3D& GetPosition() const { return position_; }
   bool SetPosition(const FloatPoint3D&) override;
 
-  TextStream& ExternalRepresentation(TextStream&) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&) const override;
 
  private:
   PointLightSource(const FloatPoint3D& position)

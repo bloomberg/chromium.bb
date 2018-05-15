@@ -265,6 +265,7 @@ PLATFORM_EXPORT FloatRect MapRect(const FloatRect&,
                                   const FloatRect& dest_rect);
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatRect&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const FloatRect&);
 
 }  // namespace blink
 

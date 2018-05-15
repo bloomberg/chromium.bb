@@ -27,9 +27,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_TREE_AS_TEXT_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -40,7 +40,6 @@ class LayoutRect;
 class LocalFrame;
 class LayoutBlockFlow;
 class LayoutObject;
-class TextStream;
 
 enum LayoutAsTextBehaviorFlags {
   kLayoutAsTextBehaviorNormal = 0,
@@ -77,7 +76,7 @@ ExternalRepresentation(LocalFrame*,
 CORE_EXPORT String
 ExternalRepresentation(Element*,
                        LayoutAsTextBehavior = kLayoutAsTextBehaviorNormal);
-void Write(TextStream&,
+void Write(WTF::TextStream&,
            const LayoutObject&,
            int indent = 0,
            LayoutAsTextBehavior = kLayoutAsTextBehaviorNormal);
@@ -89,17 +88,17 @@ class LayoutTreeAsText {
   // (This just involves rebaselining many results though, so for now it's
   // not being done).
  public:
-  static void WriteLayoutObject(TextStream&,
+  static void WriteLayoutObject(WTF::TextStream&,
                                 const LayoutObject&,
                                 LayoutAsTextBehavior);
-  static void WriteLayers(TextStream&,
+  static void WriteLayers(WTF::TextStream&,
                           const PaintLayer* root_layer,
                           PaintLayer*,
                           const LayoutRect& paint_dirty_rect,
                           int indent = 0,
                           LayoutAsTextBehavior = kLayoutAsTextBehaviorNormal,
                           const PaintLayer* marked_layer = nullptr);
-  static void WriteLineBoxTree(TextStream&,
+  static void WriteLineBoxTree(WTF::TextStream&,
                                const LayoutBlockFlow&,
                                int indent = 0);
 };
@@ -111,7 +110,7 @@ CORE_EXPORT String CounterValueForElement(Element*);
 
 CORE_EXPORT String MarkerTextForListItem(Element*);
 
-TextStream& operator<<(TextStream&, const Color&);
+WTF::TextStream& operator<<(WTF::TextStream&, const Color&);
 
 }  // namespace blink
 

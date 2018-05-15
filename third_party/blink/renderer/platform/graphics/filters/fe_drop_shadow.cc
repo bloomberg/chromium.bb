@@ -23,7 +23,7 @@
 #include "third_party/blink/renderer/platform/graphics/filters/fe_gaussian_blur.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/skia/include/effects/SkDropShadowImageFilter.h"
 
 namespace blink {
@@ -91,8 +91,8 @@ sk_sp<PaintFilter> FEDropShadow::CreateImageFilter() {
       std::move(input), &crop_rect);
 }
 
-TextStream& FEDropShadow::ExternalRepresentation(TextStream& ts,
-                                                 int indent) const {
+WTF::TextStream& FEDropShadow::ExternalRepresentation(WTF::TextStream& ts,
+                                                      int indent) const {
   WriteIndent(ts, indent);
   ts << "[feDropShadow";
   FilterEffect::ExternalRepresentation(ts);

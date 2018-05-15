@@ -67,7 +67,8 @@ class PLATFORM_EXPORT FEComponentTransfer final : public FilterEffect {
       const ComponentTransferFunction& blue_func,
       const ComponentTransferFunction& alpha_func);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEComponentTransfer(Filter*,

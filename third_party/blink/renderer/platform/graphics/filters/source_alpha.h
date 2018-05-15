@@ -29,7 +29,8 @@ class PLATFORM_EXPORT SourceAlpha final : public FilterEffect {
  public:
   static SourceAlpha* Create(FilterEffect*);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   explicit SourceAlpha(FilterEffect*);

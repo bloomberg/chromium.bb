@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 
 namespace blink {
@@ -106,7 +106,7 @@ class PrintContextTest : public RenderingTest {
                                          int height,
                                          const char* url,
                                          const char* children = nullptr) {
-    TextStream ts;
+    WTF::TextStream ts;
     ts << "<a style='position: absolute; left: " << x << "px; top: " << y
        << "px; width: " << width << "px; height: " << height << "px' href='"
        << url << "'>" << (children ? children : url) << "</a>";
@@ -115,7 +115,7 @@ class PrintContextTest : public RenderingTest {
 
   static String InlineHtmlForLink(const char* url,
                                   const char* children = nullptr) {
-    TextStream ts;
+    WTF::TextStream ts;
     ts << "<a href='" << url << "'>" << (children ? children : url) << "</a>";
     return ts.Release();
   }
@@ -124,7 +124,7 @@ class PrintContextTest : public RenderingTest {
                               int y,
                               const char* name,
                               const char* text_content) {
-    TextStream ts;
+    WTF::TextStream ts;
     ts << "<a name='" << name << "' style='position: absolute; left: " << x
        << "px; top: " << y << "px'>" << text_content << "</a>";
     return ts.Release();

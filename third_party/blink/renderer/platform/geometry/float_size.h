@@ -208,6 +208,7 @@ inline IntPoint FlooredIntPoint(const FloatSize& p) {
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatSize&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const FloatSize&);
 
 }  // namespace blink
 

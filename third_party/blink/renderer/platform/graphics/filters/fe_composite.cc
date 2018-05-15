@@ -29,7 +29,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -210,8 +210,8 @@ sk_sp<PaintFilter> FEComposite::CreateImageFilterInternal(
                                          std::move(foreground), &crop_rect);
 }
 
-static TextStream& operator<<(TextStream& ts,
-                              const CompositeOperationType& type) {
+static WTF::TextStream& operator<<(WTF::TextStream& ts,
+                                   const CompositeOperationType& type) {
   switch (type) {
     case FECOMPOSITE_OPERATOR_UNKNOWN:
       ts << "UNKNOWN";
@@ -241,8 +241,8 @@ static TextStream& operator<<(TextStream& ts,
   return ts;
 }
 
-TextStream& FEComposite::ExternalRepresentation(TextStream& ts,
-                                                int indent) const {
+WTF::TextStream& FEComposite::ExternalRepresentation(WTF::TextStream& ts,
+                                                     int indent) const {
   WriteIndent(ts, indent);
   ts << "[feComposite";
   FilterEffect::ExternalRepresentation(ts);

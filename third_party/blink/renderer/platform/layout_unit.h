@@ -711,6 +711,8 @@ inline bool IsIntegerValue(const LayoutUnit value) {
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutUnit&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&,
+                                            const LayoutUnit&);
 
 }  // namespace blink
 

@@ -327,6 +327,8 @@ inline IntRect PixelSnappedIntRect(LayoutPoint location, LayoutSize size) {
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutRect&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&,
+                                            const LayoutRect&);
 
 }  // namespace blink
 

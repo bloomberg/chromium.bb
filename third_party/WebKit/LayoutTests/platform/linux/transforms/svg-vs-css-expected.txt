@@ -33,9 +33,9 @@ layer at (28,85) size 200x200
   LayoutBlockFlow (relative positioned) {div} at (10,66.81) size 200x200 [bgcolor=#C0C0C0] [border: (1px solid #000000)]
     LayoutSVGRoot {svg} at (1,1) size 200x200
       LayoutSVGContainer {g} at (-84.85,0) size 204.85x169.71 [transform={m=((1.00,0.00)(0.00,1.00)) t=(75.00,25.00)}]
-        LayoutSVGRect {rect} at (0,0) size 60x60 [stroke={[type=SOLID] [color=#000000] [dash array={1.00, 1.00}]}] [x=0.00] [y=0.00] [width=60.00] [height=60.00]
+        LayoutSVGRect {rect} at (0,0) size 60x60 [stroke={[type=SOLID] [color=#000000] [dash array=[1.00, 1.00]]}] [x=0.00] [y=0.00] [width=60.00] [height=60.00]
         LayoutSVGContainer {g} at (-42.43,0) size 102.43x84.85 [transform={m=((2.00,0.00)(0.00,2.00)) t=(0.00,0.00)}]
-          LayoutSVGRect {rect} at (0,0) size 60x60 [stroke={[type=SOLID] [color=#000000] [dash array={1.00, 1.00}]}] [x=0.00] [y=0.00] [width=60.00] [height=60.00]
+          LayoutSVGRect {rect} at (0,0) size 60x60 [stroke={[type=SOLID] [color=#000000] [dash array=[1.00, 1.00]]}] [x=0.00] [y=0.00] [width=60.00] [height=60.00]
           LayoutSVGRect {rect} at (0,0) size 60x60 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,0.00)}] [stroke={[type=SOLID] [color=#0000FF]}] [x=0.00] [y=0.00] [width=60.00] [height=60.00]
     LayoutText {#text} at (0,0) size 0x0
 layer at (28,352) size 200x200

@@ -51,7 +51,8 @@ class PLATFORM_EXPORT FEDisplacementMap final : public FilterEffect {
   float Scale() const;
   bool SetScale(float);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEDisplacementMap(Filter*,

@@ -31,7 +31,8 @@ class PLATFORM_EXPORT FEMerge final : public FilterEffect {
  public:
   static FEMerge* Create(Filter*);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   explicit FEMerge(Filter*);

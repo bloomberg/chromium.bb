@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 
 #include <algorithm>
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -24,6 +25,10 @@ std::ostream& operator<<(std::ostream& ostream, const LayoutPoint& point) {
 String LayoutPoint::ToString() const {
   return String::Format("%s,%s", X().ToString().Ascii().data(),
                         Y().ToString().Ascii().data());
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const LayoutPoint& point) {
+  return ts << FloatPoint(point);
 }
 
 }  // namespace blink

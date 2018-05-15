@@ -28,7 +28,7 @@
 #include "SkPaintImageFilter.h"
 #include "SkPerlinNoiseShader.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -148,7 +148,8 @@ sk_sp<PaintFilter> FETurbulence::CreateImageFilter() {
       StitchTiles() ? &size : nullptr, &rect);
 }
 
-static TextStream& operator<<(TextStream& ts, const TurbulenceType& type) {
+static WTF::TextStream& operator<<(WTF::TextStream& ts,
+                                   const TurbulenceType& type) {
   switch (type) {
     case FETURBULENCE_TYPE_UNKNOWN:
       ts << "UNKNOWN";
@@ -163,8 +164,8 @@ static TextStream& operator<<(TextStream& ts, const TurbulenceType& type) {
   return ts;
 }
 
-TextStream& FETurbulence::ExternalRepresentation(TextStream& ts,
-                                                 int indent) const {
+WTF::TextStream& FETurbulence::ExternalRepresentation(WTF::TextStream& ts,
+                                                      int indent) const {
   WriteIndent(ts, indent);
   ts << "[feTurbulence";
   FilterEffect::ExternalRepresentation(ts);

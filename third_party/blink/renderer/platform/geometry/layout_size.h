@@ -227,6 +227,8 @@ inline LayoutSize RoundedLayoutSize(const FloatSize& s) {
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const LayoutSize&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&,
+                                            const LayoutSize&);
 
 }  // namespace blink
 

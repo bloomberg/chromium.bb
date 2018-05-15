@@ -243,6 +243,8 @@ PLATFORM_EXPORT bool FindIntersection(const FloatPoint& p1,
                                       FloatPoint& intersection);
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const FloatPoint&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&,
+                                            const FloatPoint&);
 
 }  // namespace blink
 

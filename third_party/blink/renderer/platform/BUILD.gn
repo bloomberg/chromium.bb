@@ -1399,8 +1399,6 @@ jumbo_component("platform") {
     "text/text_run.cc",
     "text/text_run.h",
     "text/text_run_iterator.h",
-    "text/text_stream.cc",
-    "text/text_stream.h",
     "text/truncation.h",
     "text/unicode_bidi.h",
     "text/unicode_range.cc",

@@ -54,6 +54,7 @@ class String;
 class StringBuilder;
 class StringImpl;
 class StringView;
+class TextStream;
 class Uint8Array;
 class Uint8ClampedArray;
 class Uint16Array;

@@ -19,7 +19,8 @@ class PLATFORM_EXPORT FEBoxReflect final : public FilterEffect {
   }
 
   // FilterEffect implementation
-  TextStream& ExternalRepresentation(TextStream&, int indentation) const final;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indentation) const final;
 
  private:
   FEBoxReflect(Filter*, const BoxReflection&);

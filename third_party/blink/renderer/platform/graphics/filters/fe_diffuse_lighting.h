@@ -50,7 +50,8 @@ class PLATFORM_EXPORT FEDiffuseLighting final : public FELighting {
   const LightSource* GetLightSource() const;
   void SetLightSource(scoped_refptr<LightSource>);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEDiffuseLighting(Filter*,

@@ -26,7 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_LAYOUT_TREE_AS_TEXT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_SVG_SVG_LAYOUT_TREE_AS_TEXT_H_
 
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -39,15 +39,19 @@ class LayoutSVGRoot;
 class LayoutSVGText;
 
 // functions used by the main LayoutTreeAsText code
-void Write(TextStream&, const LayoutSVGShape&, int indent);
-void Write(TextStream&, const LayoutSVGRoot&, int indent);
-void WriteSVGResourceContainer(TextStream&, const LayoutObject&, int indent);
-void WriteSVGContainer(TextStream&, const LayoutObject&, int indent);
-void WriteSVGImage(TextStream&, const LayoutSVGImage&, int indent);
-void WriteSVGInlineText(TextStream&, const LayoutSVGInlineText&, int indent);
-void WriteSVGText(TextStream&, const LayoutSVGText&, int indent);
-void WriteSVGInline(TextStream&, const LayoutSVGInline&, int indent);
-void WriteResources(TextStream&, const LayoutObject&, int indent);
+void Write(WTF::TextStream&, const LayoutSVGShape&, int indent);
+void Write(WTF::TextStream&, const LayoutSVGRoot&, int indent);
+void WriteSVGResourceContainer(WTF::TextStream&,
+                               const LayoutObject&,
+                               int indent);
+void WriteSVGContainer(WTF::TextStream&, const LayoutObject&, int indent);
+void WriteSVGImage(WTF::TextStream&, const LayoutSVGImage&, int indent);
+void WriteSVGInlineText(WTF::TextStream&,
+                        const LayoutSVGInlineText&,
+                        int indent);
+void WriteSVGText(WTF::TextStream&, const LayoutSVGText&, int indent);
+void WriteSVGInline(WTF::TextStream&, const LayoutSVGInline&, int indent);
+void WriteResources(WTF::TextStream&, const LayoutObject&, int indent);
 
 }  // namespace blink
 

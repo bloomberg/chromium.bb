@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -272,6 +273,14 @@ std::ostream& operator<<(std::ostream& ostream, const FloatRect& rect) {
 String FloatRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().data(),
                         Size().ToString().Ascii().data());
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const FloatRect& r) {
+  ts << "at (" << WTF::TextStream::FormatNumberRespectingIntegers(r.X());
+  ts << "," << WTF::TextStream::FormatNumberRespectingIntegers(r.Y());
+  ts << ") size " << WTF::TextStream::FormatNumberRespectingIntegers(r.Width());
+  ts << "x" << WTF::TextStream::FormatNumberRespectingIntegers(r.Height());
+  return ts;
 }
 
 }  // namespace blink

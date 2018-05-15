@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_filter.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
@@ -37,7 +38,6 @@ namespace blink {
 
 class Filter;
 class FilterEffect;
-class TextStream;
 
 typedef HeapVector<Member<FilterEffect>> FilterEffectVector;
 
@@ -82,8 +82,8 @@ class PLATFORM_EXPORT FilterEffect
     return kFilterEffectTypeUnknown;
   }
 
-  virtual TextStream& ExternalRepresentation(TextStream&,
-                                             int indention = 0) const;
+  virtual WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                                  int indention = 0) const;
 
   FloatRect FilterPrimitiveSubregion() const {
     return filter_primitive_subregion_;

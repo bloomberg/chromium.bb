@@ -25,7 +25,7 @@
 #include <memory>
 #include "SkMergeImageFilter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 namespace blink {
 
@@ -47,7 +47,8 @@ sk_sp<PaintFilter> FEMerge::CreateImageFilter() {
   return sk_make_sp<MergePaintFilter>(input_refs.get(), size, &rect);
 }
 
-TextStream& FEMerge::ExternalRepresentation(TextStream& ts, int indent) const {
+WTF::TextStream& FEMerge::ExternalRepresentation(WTF::TextStream& ts,
+                                                 int indent) const {
   WriteIndent(ts, indent);
   ts << "[feMerge";
   FilterEffect::ExternalRepresentation(ts);

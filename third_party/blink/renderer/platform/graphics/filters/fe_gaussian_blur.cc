@@ -27,7 +27,7 @@
 
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/filters/paint_filter_builder.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 
 #include "SkBlurImageFilter.h"
 
@@ -92,8 +92,8 @@ sk_sp<PaintFilter> FEGaussianBlur::CreateImageFilter() {
       &rect);
 }
 
-TextStream& FEGaussianBlur::ExternalRepresentation(TextStream& ts,
-                                                   int indent) const {
+WTF::TextStream& FEGaussianBlur::ExternalRepresentation(WTF::TextStream& ts,
+                                                        int indent) const {
   WriteIndent(ts, indent);
   ts << "[feGaussianBlur";
   FilterEffect::ExternalRepresentation(ts);

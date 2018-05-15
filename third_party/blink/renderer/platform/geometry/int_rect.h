@@ -226,6 +226,7 @@ inline bool operator!=(const IntRect& a, const IntRect& b) {
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntRect&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const IntRect&);
 
 }  // namespace blink
 

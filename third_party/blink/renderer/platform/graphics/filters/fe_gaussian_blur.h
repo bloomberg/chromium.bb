@@ -35,7 +35,8 @@ class PLATFORM_EXPORT FEGaussianBlur final : public FilterEffect {
   // blur effect with |stdDeviation| to an area |rect|.
   static FloatRect MapEffect(const FloatSize& std_deviation, const FloatRect&);
 
-  TextStream& ExternalRepresentation(TextStream&, int indention) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&,
+                                          int indention) const override;
 
  private:
   FEGaussianBlur(Filter*, float, float);

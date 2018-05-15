@@ -101,7 +101,6 @@
 #include "third_party/blink/renderer/platform/plugins/plugin_script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
-#include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {

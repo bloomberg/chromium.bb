@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -172,6 +173,10 @@ std::ostream& operator<<(std::ostream& ostream, const LayoutRect& rect) {
 String LayoutRect::ToString() const {
   return String::Format("%s %s", Location().ToString().Ascii().data(),
                         Size().ToString().Ascii().data());
+}
+
+WTF::TextStream& operator<<(WTF::TextStream& ts, const LayoutRect& rect) {
+  return ts << FloatRect(rect);
 }
 
 }  // namespace blink

@@ -40,7 +40,7 @@ class PLATFORM_EXPORT DistantLightSource final : public LightSource {
   bool SetAzimuth(float) override;
   bool SetElevation(float) override;
 
-  TextStream& ExternalRepresentation(TextStream&) const override;
+  WTF::TextStream& ExternalRepresentation(WTF::TextStream&) const override;
 
  private:
   DistantLightSource(float azimuth, float elevation)

@@ -23,8 +23,8 @@
 
 #include <math.h>
 
-#include "third_party/blink/renderer/platform/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "ui/gfx/geometry/point3_f.h"
 
@@ -65,7 +65,7 @@ String FloatPoint3D::ToString() const {
   return String::Format("%lg,%lg,%lg", X(), Y(), Z());
 }
 
-TextStream& operator<<(TextStream& ts, const FloatPoint3D& p) {
+WTF::TextStream& operator<<(WTF::TextStream& ts, const FloatPoint3D& p) {
   ts << "x=" << p.X() << " y=" << p.Y() << " z=" << p.Z();
   return ts;
 }

@@ -159,6 +159,7 @@ inline int IntPoint::DistanceSquaredToPoint(const IntPoint& point) const {
 }
 
 PLATFORM_EXPORT std::ostream& operator<<(std::ostream&, const IntPoint&);
+PLATFORM_EXPORT WTF::TextStream& operator<<(WTF::TextStream&, const IntPoint&);
 
 }  // namespace blink
 
