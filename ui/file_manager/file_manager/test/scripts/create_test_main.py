@@ -133,14 +133,17 @@ scripts += ['<script src="%s"></script>' % s for s in [
 #  * background/js/background_common_scripts.js
 #  * background/js/background_scripts.js
 # into <script> tags in main.html.
-# Add polymer lib at start.
+# Add polymer libs at start.
 bg_scripts = read('background/js/background_scripts.js').split('\n')
 includes2scripts('foreground/js/main_scripts.js')
 includes2scripts('background/js/background_common_scripts.js')
 includes2scripts('background/js/background_scripts.js')
 main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
     ('<link rel="import" href="../../../third_party/polymer/v1_0/'
-     'components-chromium/polymer/polymer.html">')] + scripts)
+     'components-chromium/polymer/polymer.html">'),
+    ('<link rel="import" href="../../../third_party/polymer/v1_0/'
+     'components-chromium/paper-progress/paper-progress.html">'),
+    ] + scripts)
 
 # Load QuickView in iframe rather than webview.
 # Change references in files_quick_view.html to use updated
