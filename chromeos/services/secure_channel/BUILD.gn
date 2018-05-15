@@ -10,6 +10,9 @@ static_library("secure_channel") {
     "connect_to_device_operation_base.h",
     "connect_to_device_operation_factory.h",
     "connect_to_device_operation_factory_base.h",
+    "connection_attempt.h",
+    "connection_attempt_base.h",
+    "connection_attempt_delegate.h",
     "pending_connection_request.h",
     "pending_connection_request_base.h",
     "pending_connection_request_delegate.cc",
@@ -32,6 +35,10 @@ static_library("test_support") {
     "fake_connect_to_device_operation.h",
     "fake_connect_to_device_operation_factory.cc",
     "fake_connect_to_device_operation_factory.h",
+    "fake_connection_attempt.cc",
+    "fake_connection_attempt.h",
+    "fake_connection_attempt_delegate.cc",
+    "fake_connection_attempt_delegate.h",
     "fake_connection_delegate.cc",
     "fake_connection_delegate.h",
     "fake_pending_connection_request.cc",
@@ -44,6 +51,7 @@ static_library("test_support") {
     ":secure_channel",
     "//base",
     "//chromeos/services/secure_channel/public/mojom",
+    "//components/cryptauth:cryptauth",
   ]
 }
 
@@ -53,6 +61,7 @@ source_set("unit_tests") {
   sources = [
     "connect_to_device_operation_base_unittest.cc",
     "connect_to_device_operation_factory_base_unittest.cc",
+    "connection_attempt_base_unittest.cc",
     "pending_connection_request_base_unittest.cc",
   ]
 
