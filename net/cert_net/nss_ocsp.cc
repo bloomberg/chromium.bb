@@ -778,14 +778,16 @@ const unsigned char network_solutions_ca_name[] = {
   0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65,
   0x20, 0x41, 0x75, 0x74, 0x68, 0x6f, 0x72, 0x69, 0x74, 0x79
 };
-const unsigned int network_solutions_ca_name_len = 100;
+const unsigned int network_solutions_ca_name_len =
+    base::size(network_solutions_ca_name);
 
 // This CA is an intermediate CA, subordinate to UTN-USERFirst-Hardware.
 const unsigned char network_solutions_ca_key_id[] = {
   0x3c, 0x41, 0xe2, 0x8f, 0x08, 0x08, 0xa9, 0x4c, 0x25, 0x89,
   0x8d, 0x6d, 0xc5, 0x38, 0xd0, 0xfc, 0x85, 0x8c, 0x62, 0x17
 };
-const unsigned int network_solutions_ca_key_id_len = 20;
+const unsigned int network_solutions_ca_key_id_len =
+    base::size(network_solutions_ca_key_id);
 
 // This CA is a root CA.  It is also cross-certified by
 // UTN-USERFirst-Hardware.
@@ -793,7 +795,8 @@ const unsigned char network_solutions_ca_key_id2[] = {
   0x21, 0x30, 0xc9, 0xfb, 0x00, 0xd7, 0x4e, 0x98, 0xda, 0x87,
   0xaa, 0x2a, 0xd0, 0xa7, 0x2e, 0xb1, 0x40, 0x31, 0xa7, 0x4c
 };
-const unsigned int network_solutions_ca_key_id2_len = 20;
+const unsigned int network_solutions_ca_key_id2_len =
+    base::size(network_solutions_ca_key_id2);
 
 // An entry in our OCSP responder table.  |issuer| and |issuer_key_id| are
 // the key.  |ocsp_url| is the value.
@@ -834,12 +837,12 @@ const OCSPResponderTableEntry g_ocsp_responder_table[] = {
 
 char* GetAlternateOCSPAIAInfo(CERTCertificate *cert) {
   if (cert && !cert->isRoot && cert->authKeyID) {
-    for (unsigned int i=0; i < arraysize(g_ocsp_responder_table); i++) {
-      if (SECITEM_CompareItem(&g_ocsp_responder_table[i].issuer,
-                              &cert->derIssuer) == SECEqual &&
-          SECITEM_CompareItem(&g_ocsp_responder_table[i].issuer_key_id,
+    for (const auto& responder : g_ocsp_responder_table) {
+      if (SECITEM_CompareItem(&responder.issuer, &cert->derIssuer) ==
+              SECEqual &&
+          SECITEM_CompareItem(&responder.issuer_key_id,
                               &cert->authKeyID->keyID) == SECEqual) {
-        return PORT_Strdup(g_ocsp_responder_table[i].ocsp_url);
+        return PORT_Strdup(responder.ocsp_url);
       }
     }
   }

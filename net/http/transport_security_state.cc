@@ -10,6 +10,7 @@
 
 #include "base/base64.h"
 #include "base/build_time.h"
+#include "base/containers/span.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
@@ -952,8 +953,9 @@ TransportSecurityState::CheckCTRequirements(
       continue;
     }
 
-    if (!IsAnySHA256HashInSortedArray(public_key_hashes, restricted_ca.roots,
-                                      restricted_ca.roots_length)) {
+    if (!IsAnySHA256HashInSortedArray(
+            public_key_hashes,
+            base::make_span(restricted_ca.roots, restricted_ca.roots_length))) {
       // No match for this set of restricted roots.
       continue;
     }
@@ -962,9 +964,10 @@ TransportSecurityState::CheckCTRequirements(
     // restricted. Determine if any of the hashes are on the exclusion
     // list as exempt from the CT requirement.
     if (restricted_ca.exceptions &&
-        IsAnySHA256HashInSortedArray(public_key_hashes,
-                                     restricted_ca.exceptions,
-                                     restricted_ca.exceptions_length)) {
+        IsAnySHA256HashInSortedArray(
+            public_key_hashes,
+            base::make_span(restricted_ca.exceptions,
+                            restricted_ca.exceptions_length))) {
       // Found an excluded sub-CA; CT is not required.
       continue;
     }

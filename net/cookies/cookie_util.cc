@@ -8,6 +8,7 @@
 #include <cstdlib>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
@@ -158,7 +159,6 @@ base::Time ParseCookieExpirationTime(const std::string& time_string) {
   static const char* const kMonths[] = {
     "jan", "feb", "mar", "apr", "may", "jun",
     "jul", "aug", "sep", "oct", "nov", "dec" };
-  static const int kMonthsLen = arraysize(kMonths);
   // We want to be pretty liberal, and support most non-ascii and non-digit
   // characters as a delimiter.  We can't treat : as a delimiter, because it
   // is the delimiter for hh:mm:ss, and we want to keep this field together.
@@ -185,11 +185,11 @@ base::Time ParseCookieExpirationTime(const std::string& time_string) {
     // String field
     if (!numerical) {
       if (!found_month) {
-        for (int i = 0; i < kMonthsLen; ++i) {
+        for (size_t i = 0; i < base::size(kMonths); ++i) {
           // Match prefix, so we could match January, etc
           if (base::StartsWith(token, base::StringPiece(kMonths[i], 3),
                                base::CompareCase::INSENSITIVE_ASCII)) {
-            exploded.month = i + 1;
+            exploded.month = static_cast<int>(i) + 1;
             found_month = true;
             break;
           }

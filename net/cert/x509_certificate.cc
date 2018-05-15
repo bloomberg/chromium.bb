@@ -318,8 +318,8 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
     // formats other than PEM are acceptable, check to see if the decoded
     // data is one of the accepted formats.
     if (format & ~FORMAT_PEM_CERT_SEQUENCE) {
-      for (size_t i = 0; certificates.empty() &&
-           i < arraysize(kFormatDecodePriority); ++i) {
+      for (size_t i = 0;
+           certificates.empty() && i < base::size(kFormatDecodePriority); ++i) {
         if (format & kFormatDecodePriority[i]) {
           certificates = CreateCertBuffersFromBytes(
               decoded.c_str(), decoded.size(), kFormatDecodePriority[i]);
@@ -337,8 +337,8 @@ CertificateList X509Certificate::CreateCertificateListFromBytes(
   // Try each of the formats, in order of parse preference, to see if |data|
   // contains the binary representation of a Format, if it failed to parse
   // as a PEM certificate/chain.
-  for (size_t i = 0; certificates.empty() &&
-       i < arraysize(kFormatDecodePriority); ++i) {
+  for (size_t i = 0;
+       certificates.empty() && i < base::size(kFormatDecodePriority); ++i) {
     if (format & kFormatDecodePriority[i])
       certificates =
           CreateCertBuffersFromBytes(data, length, kFormatDecodePriority[i]);

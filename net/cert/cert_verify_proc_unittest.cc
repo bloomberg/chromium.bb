@@ -12,6 +12,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/sha1.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -751,7 +752,7 @@ TEST_P(CertVerifyProcInternalTest, GoogleDigiNotarTest) {
 TEST(CertVerifyProcTest, BlacklistIsSorted) {
 // Defines kBlacklistedSPKIs.
 #include "net/cert/cert_verify_proc_blacklist.inc"
-  for (size_t i = 0; i < arraysize(kBlacklistedSPKIs) - 1; ++i) {
+  for (size_t i = 0; i < base::size(kBlacklistedSPKIs) - 1; ++i) {
     EXPECT_GT(0, memcmp(kBlacklistedSPKIs[i], kBlacklistedSPKIs[i + 1],
                         crypto::kSHA256Length))
         << " at index " << i;
@@ -1231,12 +1232,13 @@ TEST(CertVerifyProcTest, TestHasTooLongValidity) {
 
   base::FilePath certs_dir = GetTestCertsDirectory();
 
-  for (size_t i = 0; i < arraysize(tests); ++i) {
+  for (const auto& test : tests) {
+    SCOPED_TRACE(test.file);
+
     scoped_refptr<X509Certificate> certificate =
-        ImportCertFromFile(certs_dir, tests[i].file);
-    SCOPED_TRACE(tests[i].file);
+        ImportCertFromFile(certs_dir, test.file);
     ASSERT_TRUE(certificate);
-    EXPECT_EQ(tests[i].is_valid_too_long,
+    EXPECT_EQ(test.is_valid_too_long,
               CertVerifyProc::HasTooLongValidity(*certificate));
   }
 }

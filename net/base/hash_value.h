@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "base/containers/span.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "net/base/net_export.h"
@@ -102,14 +103,12 @@ typedef std::vector<HashValue> HashValueVector;
 // IsSHA256HashInSortedArray returns true iff |hash| is in |array|, a sorted
 // array of SHA256 hashes.
 bool IsSHA256HashInSortedArray(const HashValue& hash,
-                               const SHA256HashValue* array,
-                               size_t array_len);
+                               base::span<const SHA256HashValue> array);
 
 // IsAnySHA256HashInSortedArray returns true iff any value in |hashes| is in
 // |array|, a sorted array of SHA256 hashes.
-bool IsAnySHA256HashInSortedArray(const HashValueVector& hashes,
-                                  const SHA256HashValue* list,
-                                  size_t list_length);
+bool IsAnySHA256HashInSortedArray(base::span<const HashValue> hashes,
+                                  base::span<const SHA256HashValue> array);
 
 }  // namespace net
 

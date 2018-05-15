@@ -582,17 +582,18 @@ TEST_F(CertNetFetcherImplTest, CancelAll) {
   ASSERT_TRUE(test_server_.Start());
 
   CreateFetcher();
-  std::unique_ptr<CertNetFetcher::Request> request[3];
+  std::unique_ptr<CertNetFetcher::Request> requests[3];
 
   GURL url = test_server_.GetURL("/cert.crt");
 
-  for (size_t i = 0; i < arraysize(request); ++i) {
-    request[i] = StartRequest(fetcher(), url);
+  for (auto& request : requests) {
+    request = StartRequest(fetcher(), url);
   }
 
   // Cancel all the requests.
-  for (size_t i = 0; i < arraysize(request); ++i)
-    request[i].reset();
+  for (auto& request : requests) {
+    request.reset();
+  }
 
   EXPECT_EQ(1, NumCreatedRequests());
 }

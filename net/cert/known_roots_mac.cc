@@ -34,8 +34,7 @@ class OSXKnownRootHelper {
       return true;
 
     HashValue hash(x509_util::CalculateFingerprint256(cert));
-    return IsSHA256HashInSortedArray(hash, &known_roots_[0],
-                                     known_roots_.size());
+    return IsSHA256HashInSortedArray(hash, known_roots_);
   }
 
  private:

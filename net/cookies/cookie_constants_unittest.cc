@@ -33,8 +33,8 @@ TEST(CookieConstantsTest, TestCookiePriority) {
   // Unrecognized tokens are interpreted as COOKIE_PRIORITY_DEFAULT.
   const char* const bad_tokens[] = {
     "", "lo", "lowerest", "high ", " high", "0"};
-  for (size_t i = 0; i < arraysize(bad_tokens); ++i) {
-    EXPECT_EQ(COOKIE_PRIORITY_DEFAULT, StringToCookiePriority(bad_tokens[i]));
+  for (const auto* bad_token : bad_tokens) {
+    EXPECT_EQ(COOKIE_PRIORITY_DEFAULT, StringToCookiePriority(bad_token));
   }
 }
 

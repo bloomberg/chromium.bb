@@ -48,40 +48,40 @@ TEST(ParsedCookieTest, TestQuoted) {
   // handle differently.  I've tested Internet Explorer 6, Opera 9.6,
   // Firefox 3, and Safari Windows 3.2.1.  We originally tried to match
   // Firefox closely, however we now match Internet Explorer and Safari.
-  const char* const values[] = {
+  const struct {
+    const char* input;
+    const char* expected;
+  } kTests[] = {
       // Trailing whitespace after a quoted value.  The whitespace after
       // the quote is stripped in all browsers.
-      "\"zzz \"  ",
-      "\"zzz \"",
+      {"\"zzz \"  ", "\"zzz \""},
       // Handling a quoted value with a ';', like FOO="zz;pp"  ;
       // IE and Safari: "zz;
       // Firefox and Opera: "zz;pp"
-      "\"zz;pp\" ;",
-      "\"zz",
+      {"\"zz;pp\" ;", "\"zz"},
       // Handling a value with multiple quoted parts, like FOO="zzz "   "ppp" ;
       // IE and Safari: "zzz "   "ppp";
       // Firefox: "zzz ";
       // Opera: <rejects cookie>
-      "\"zzz \"   \"ppp\" ",
-      "\"zzz \"   \"ppp\"",
+      {
+          "\"zzz \"   \"ppp\" ", "\"zzz \"   \"ppp\"",
+      },
       // A quote in a value that didn't start quoted.  like FOO=A"B ;
       // IE, Safari, and Firefox: A"B;
       // Opera: <rejects cookie>
-      "A\"B",
-      "A\"B",
-  };
+      {
+          "A\"B", "A\"B",
+      }};
 
-  for (size_t i = 0; i < arraysize(values); i += 2) {
-    std::string input(values[i]);
-    std::string expected(values[i + 1]);
-
-    ParsedCookie pc("aBc=" + input + " ; path=\"/\"  ; httponly ");
+  for (const auto& test : kTests) {
+    ParsedCookie pc(std::string("aBc=") + test.input +
+                    " ; path=\"/\"  ; httponly ");
     EXPECT_TRUE(pc.IsValid());
     EXPECT_FALSE(pc.IsSecure());
     EXPECT_TRUE(pc.IsHttpOnly());
     EXPECT_TRUE(pc.HasPath());
     EXPECT_EQ("aBc", pc.Name());
-    EXPECT_EQ(expected, pc.Value());
+    EXPECT_EQ(test.expected, pc.Value());
 
     // If a path was quoted, the path attribute keeps the quotes.  This will
     // make the cookie effectively useless, but path parameters aren't supposed
