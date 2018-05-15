@@ -39,7 +39,6 @@
 #endif  // !defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-#include "chrome/services/printing/pdf_to_emf_converter_factory.h"
 #include "chrome/services/util_win/public/mojom/constants.mojom.h"
 #include "chrome/services/util_win/util_win_service.h"
 #endif
@@ -62,19 +61,24 @@
 #include "chrome/utility/mash_service_factory.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/services/printing/printing_service.h"
-#include "chrome/services/printing/public/mojom/constants.mojom.h"
-#endif
-
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
-#include "chrome/utility/printing_handler.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "chrome/common/chrome_content_client.h"
 #include "components/printing/service/public/cpp/pdf_compositor_service_factory.h"  // nogncheck
 #include "components/printing/service/public/interfaces/pdf_compositor.mojom.h"  // nogncheck
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
+#include "chrome/services/printing/printing_service.h"
+#include "chrome/services/printing/public/mojom/constants.mojom.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
+#include "chrome/services/printing/pdf_to_emf_converter_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
+#include "chrome/utility/printing_handler.h"
 #endif
 
 #if defined(FULL_SAFE_BROWSING) || defined(OS_CHROMEOS)
@@ -102,7 +106,7 @@ void RegisterRemovableStorageWriterService(
 
 ChromeContentUtilityClient::ChromeContentUtilityClient()
     : utility_process_running_elevated_(false) {
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
   printing_handler_ = std::make_unique<printing::PrintingHandler>();
 #endif
 
@@ -132,7 +136,7 @@ void ChromeContentUtilityClient::UtilityThreadStarted() {
   // If our process runs with elevated privileges, only add elevated Mojo
   // interfaces to the interface registry.
   if (!utility_process_running_elevated_) {
-#if defined(OS_WIN)
+#if BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN)
     // TODO(crbug.com/798782): remove when the Cloud print chrome/service is
     // removed.
     registry->AddInterface(
@@ -150,7 +154,7 @@ bool ChromeContentUtilityClient::OnMessageReceived(
   if (utility_process_running_elevated_)
     return false;
 
-#if defined(OS_WIN) && BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) && defined(OS_WIN)
   if (printing_handler_->OnMessageReceived(message))
     return true;
 #endif
@@ -178,7 +182,8 @@ void ChromeContentUtilityClient::RegisterServices(
   services->emplace(printing::mojom::kServiceName, pdf_compositor_info);
 #endif
 
-#if BUILDFLAG(ENABLE_PRINT_PREVIEW)
+#if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
+    (BUILDFLAG(ENABLE_PRINTING) && defined(OS_WIN))
   service_manager::EmbeddedServiceInfo printing_info;
   printing_info.factory =
       base::BindRepeating(&printing::PrintingService::CreateService);

@@ -3255,9 +3255,6 @@ are declared in build/common.gypi.
         </message>
       </if>
       <if expr="is_win">
-        <message name="IDS_UTILITY_PROCESS_PDF_CONVERTOR_NAME" desc="The name of the utility process used for converting PDFs to a different format.">
-          PDF Convertor
-        </message>
         <message name="IDS_UTILITY_PROCESS_FILE_DIALOG_NAME" desc="The name of the utility process used for handling a file open/save dialog.">
           File Open/Save Dialog
         </message>
@@ -3275,9 +3272,9 @@ are declared in build/common.gypi.
           Media File Checker
         </message>
       </if>
-      <if expr="enable_print_preview">
+      <if expr="enable_print_preview or (enable_printing and is_win)">
         <message name="IDS_UTILITY_PROCESS_PRINTING_SERVICE_NAME" desc="The name of the utility process used for printing conversions.">
-          Printing service
+          Printing Service
         </message>
       </if>
       <message name="IDS_UTILITY_PROCESS_PATCH_NAME" desc="The name of the utility process used for patching file operations.">
