@@ -576,6 +576,46 @@ class DownloadCreateObserver : DownloadManager::Observer {
   base::Closure completion_closure_;
 };
 
+class ErrorStreamCountingObserver : download::DownloadItem::Observer {
+ public:
+  ErrorStreamCountingObserver() : item_(nullptr), count_(0){};
+
+  ~ErrorStreamCountingObserver() override {
+    if (item_)
+      item_->RemoveObserver(this);
+  }
+
+  void OnDownloadUpdated(download::DownloadItem* download) override {
+    std::unique_ptr<base::HistogramSamples> samples =
+        histogram_tester_.GetHistogramSamplesSinceCreation(
+            "Download.ParallelDownloadAddStreamSuccess");
+    if (samples->GetCount(0 /* failure */) == count_ &&
+        !completion_closure_.is_null())
+      base::ResetAndReturn(&completion_closure_).Run();
+  }
+
+  void OnDownloadDestroyed(download::DownloadItem* download) override {
+    item_ = nullptr;
+  }
+
+  void WaitForFinished(download::DownloadItem* item, int count) {
+    item_ = item;
+    count_ = count;
+    if (item_) {
+      item_->AddObserver(this);
+      base::RunLoop run_loop;
+      completion_closure_ = run_loop.QuitClosure();
+      run_loop.Run();
+    }
+  }
+
+ private:
+  base::HistogramTester histogram_tester_;
+  download::DownloadItem* item_;
+  int count_;
+  base::Closure completion_closure_;
+};
+
 bool IsDownloadInState(download::DownloadItem::DownloadState state,
                        download::DownloadItem* item) {
   return item->GetState() == state;
@@ -974,7 +1014,8 @@ class ParallelDownloadTest : public DownloadContentTest {
   void RunResumptionTest(
       const download::DownloadItem::ReceivedSlices& received_slices,
       int64_t total_length,
-      size_t expected_request_count) {
+      size_t expected_request_count,
+      bool support_partial_response) {
     EXPECT_TRUE(
         base::FeatureList::IsEnabled(download::features::kParallelDownloading));
     GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
@@ -983,6 +1024,7 @@ class ParallelDownloadTest : public DownloadContentTest {
     parameters.etag = "ABC";
     parameters.size = total_length;
     parameters.last_modified = std::string();
+    parameters.support_partial_response = support_partial_response;
     // Needed to specify HTTP connection type to create parallel download.
     parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
     TestDownloadHttpResponse::StartServing(parameters, server_url);
@@ -999,12 +1041,17 @@ class ParallelDownloadTest : public DownloadContentTest {
     // Resume the parallel download with sparse file and received slices data.
     download->Resume();
     WaitForCompletion(download);
-    test_response_handler()->WaitUntilCompletion(expected_request_count);
+    // TODO(qinmin): count the failed partial responses in DownloadJob when
+    // support_partial_response is false. EmbeddedTestServer doesn't know
+    // whether completing or canceling the response will come first.
+    if (support_partial_response) {
+      test_response_handler()->WaitUntilCompletion(expected_request_count);
 
-    // Verify number of requests sent to the server.
-    const TestDownloadResponseHandler::CompletedRequests& completed_requests =
-        test_response_handler()->completed_requests();
-    EXPECT_EQ(expected_request_count, completed_requests.size());
+      // Verify number of requests sent to the server.
+      const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+          test_response_handler()->completed_requests();
+      EXPECT_EQ(expected_request_count, completed_requests.size());
+    }
 
     // Verify download content on disk.
     ReadAndVerifyFileContents(parameters.pattern_generator_seed,
@@ -1013,6 +1060,7 @@ class ParallelDownloadTest : public DownloadContentTest {
 
   // Verifies parallel download completion.
   void RunCompletionTest(TestDownloadHttpResponse::Parameters& parameters) {
+    ErrorStreamCountingObserver observer;
     EXPECT_TRUE(
         base::FeatureList::IsEnabled(download::features::kParallelDownloading));
 
@@ -1026,22 +1074,28 @@ class ParallelDownloadTest : public DownloadContentTest {
     parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
     TestRequestPauseHandler request_pause_handler;
     parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
+    // Send some data for the first request and pause it so download won't
+    // complete before other parallel requests are created.
     parameters.pause_offset = DownloadRequestCore::kDownloadByteStreamSize;
     TestDownloadHttpResponse::StartServing(parameters, server_url);
 
     download::DownloadItem* download =
         StartDownloadAndReturnItem(shell(), server_url);
-    // Send some data for the first request and pause it so download won't
-    // complete before other parallel requests are created.
-    test_response_handler()->WaitUntilCompletion(2u);
+
+    if (parameters.support_partial_response)
+      test_response_handler()->WaitUntilCompletion(2u);
+    else
+      observer.WaitForFinished(download, 2);
 
     // Now resume the first request.
     request_pause_handler.Resume();
     WaitForCompletion(download);
-    test_response_handler()->WaitUntilCompletion(3u);
-    const TestDownloadResponseHandler::CompletedRequests& completed_requests =
-        test_response_handler()->completed_requests();
-    EXPECT_EQ(kTestRequestCount, static_cast<int>(completed_requests.size()));
+    if (parameters.support_partial_response) {
+      test_response_handler()->WaitUntilCompletion(3u);
+      const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+          test_response_handler()->completed_requests();
+      EXPECT_EQ(3u, completed_requests.size());
+    }
     ReadAndVerifyFileContents(parameters.pattern_generator_seed,
                               parameters.size, download->GetTargetFilePath());
   }
@@ -3182,6 +3236,17 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, OnlyFirstRequestValid) {
   RunCompletionTest(parameters);
 }
 
+// The server will send Accept-Ranges header without partial response.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, NoPartialResponse) {
+  TestDownloadHttpResponse::Parameters parameters;
+  parameters.etag = "ABC";
+  parameters.size = 5097152;
+  parameters.support_byte_ranges = true;
+  parameters.support_partial_response = false;
+
+  RunCompletionTest(parameters);
+}
+
 // Verify parallel download resumption.
 IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, Resumption) {
   // Create the received slices data, the last request is not finished and the
@@ -3192,7 +3257,8 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, Resumption) {
       download::DownloadItem::ReceivedSlice(2000000, 1000,
                                             false /* finished */)};
 
-  RunResumptionTest(received_slices, 3000000, kTestRequestCount);
+  RunResumptionTest(received_slices, 3000000, kTestRequestCount,
+                    true /* support_partial_response */);
 }
 
 // Verifies that if the last slice is finished, parallel download resumption
@@ -3207,7 +3273,8 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceFinished) {
 
   // The server shouldn't receive an additional request, since the last slice
   // is marked as finished.
-  RunResumptionTest(received_slices, 3000000, kTestRequestCount - 1);
+  RunResumptionTest(received_slices, 3000000, kTestRequestCount - 1,
+                    true /* support_partial_response */);
 }
 
 // Verifies that if the last slice is finished, but the database record is not
@@ -3223,7 +3290,23 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionLastSliceUnfinished) {
 
   // Client will send an out of range request where server will send back HTTP
   // range not satisfied, and download can complete.
-  RunResumptionTest(received_slices, 3000000, kTestRequestCount);
+  RunResumptionTest(received_slices, 3000000, kTestRequestCount,
+                    true /* support_partial_response */);
+}
+
+// Verify that if server doesn't support partial response, resuming a parallel
+// download should complete the download.
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ResumptionNoPartialResponse) {
+  // Create the received slices data, the last request is not finished and the
+  // server will send more data to finish the last slice.
+  std::vector<download::DownloadItem::ReceivedSlice> received_slices = {
+      download::DownloadItem::ReceivedSlice(0, 1000),
+      download::DownloadItem::ReceivedSlice(1000000, 1000),
+      download::DownloadItem::ReceivedSlice(2000000, 1000,
+                                            false /* finished */)};
+
+  RunResumptionTest(received_slices, 3000000, kTestRequestCount,
+                    false /* support_partial_response */);
 }
 
 // Test to verify that the browser-side enforcement of X-Frame-Options does
