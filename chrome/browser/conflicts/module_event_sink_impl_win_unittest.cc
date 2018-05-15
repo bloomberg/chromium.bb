@@ -34,10 +34,21 @@ class ModuleEventSinkImplTest : public testing::Test {
         module_database_(std::make_unique<ModuleDatabase>(
             base::SequencedTaskRunnerHandle::Get())) {}
 
-  void CreateModuleSinkImpl() {
+  bool CreateModuleSinkImpl() {
+    HANDLE process_handle = 0;
+    if (!::DuplicateHandle(::GetCurrentProcess(), ::GetCurrentProcess(),
+                           ::GetCurrentProcess(), &process_handle,
+
+                                       0,
+                                       FALSE,
+                                       DUPLICATE_SAME_ACCESS)) {
+      return false;
+    }
+
     module_event_sink_impl_ = std::make_unique<ModuleEventSinkImpl>(
-        ::GetCurrentProcess(), content::PROCESS_TYPE_BROWSER,
+        base::Process(process_handle), content::PROCESS_TYPE_BROWSER,
         module_database_.get());
+    return true;
   }
 
   const ModuleDatabase::ModuleMap& modules() {
@@ -59,16 +70,18 @@ TEST_F(ModuleEventSinkImplTest, CallsForwardedAsExpected) {
 
   EXPECT_EQ(0u, modules().size());
 
-  CreateModuleSinkImpl();
+  ASSERT_TRUE(CreateModuleSinkImpl());
   EXPECT_EQ(0u, modules().size());
 
   // An invalid load event should not cause a module entry.
   module_event_sink_impl_->OnModuleEvent(
       mojom::ModuleEventType::MODULE_ALREADY_LOADED, kInvalidLoadAddress);
+  test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(0u, modules().size());
 
   // A valid load event should cause a module entry.
   module_event_sink_impl_->OnModuleEvent(mojom::ModuleEventType::MODULE_LOADED,
                                          kValidLoadAddress);
+  test_browser_thread_bundle_.RunUntilIdle();
   EXPECT_EQ(1u, modules().size());
 }
