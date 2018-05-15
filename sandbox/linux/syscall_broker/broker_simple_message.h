@@ -77,7 +77,7 @@ class SANDBOX_EXPORT BrokerSimpleMessage {
  private:
   friend class BrokerSimpleMessageTestHelper;
 
-  enum class EntryType { DATA = 0xBDBDBD80, INT = 0xBDBDBD81 };
+  enum class EntryType : uint32_t { DATA = 0xBDBDBD80, INT = 0xBDBDBD81 };
 
   // Returns whether or not the next available entry matches the expected entry
   // type.
