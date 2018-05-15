@@ -1291,8 +1291,10 @@ TEST(TimeDelta, MaxConversions) {
   EXPECT_TRUE(TimeDelta::FromSecondsD(std::numeric_limits<double>::infinity())
                   .is_max());
 
-  constexpr double max_d = max_int;
-  constexpr double min_d = min_int;
+  // Note that max_int/min_int will be rounded when converted to doubles - they
+  // can't be exactly represented.
+  constexpr double max_d = static_cast<double>(max_int);
+  constexpr double min_d = static_cast<double>(min_int);
 
   static_assert(
       TimeDelta::FromSecondsD(max_d / Time::kMicrosecondsPerSecond + 1)
