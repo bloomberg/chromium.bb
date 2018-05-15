@@ -153,7 +153,41 @@ void AssistantController::OnInteractionStarted() {
 }
 
 void AssistantController::OnInteractionFinished(
-    chromeos::assistant::mojom::AssistantInteractionResolution resolution) {}
+    AssistantInteractionResolution resolution) {
+  // When a voice query is interrupted we do not receive any follow up speech
+  // recognition events but the mic is closed.
+  if (resolution == AssistantInteractionResolution::kInterruption) {
+    assistant_interaction_model_.SetMicState(MicState::kClosed);
+  }
+}
+
+void AssistantController::OnDialogPlateActionPressed(const std::string& text) {
+  InputModality input_modality = assistant_interaction_model_.input_modality();
+
+  // When using keyboard input modality, pressing the dialog plate action is
+  // equivalent to a commit.
+  if (input_modality == InputModality::kKeyboard) {
+    OnDialogPlateContentsCommitted(text);
+    return;
+  }
+
+  DCHECK(assistant_);
+
+  // It should not be possible to press the dialog plate action when not using
+  // keyboard or voice input modality.
+  DCHECK(input_modality == InputModality::kVoice);
+
+  // When using voice input modality, pressing the dialog plate action will
+  // toggle the voice interaction state.
+  switch (assistant_interaction_model_.mic_state()) {
+    case MicState::kClosed:
+      assistant_->StartVoiceInteraction();
+      break;
+    case MicState::kOpen:
+      assistant_->StopActiveInteraction();
+      break;
+  }
+}
 
 void AssistantController::OnDialogPlateContentsChanged(
     const std::string& text) {
@@ -169,6 +203,15 @@ void AssistantController::OnDialogPlateContentsChanged(
 
 void AssistantController::OnDialogPlateContentsCommitted(
     const std::string& text) {
+  // TODO(dmblack): Handle an empty text query more gracefully by showing a
+  // helpful message to the user. Currently we just reset state and pretend as
+  // if nothing happened.
+  if (text.empty()) {
+    assistant_interaction_model_.ClearInteraction();
+    assistant_interaction_model_.SetInputModality(InputModality::kVoice);
+    return;
+  }
+
   assistant_interaction_model_.ClearInteraction();
   assistant_interaction_model_.SetQuery(
       std::make_unique<AssistantTextQuery>(text));

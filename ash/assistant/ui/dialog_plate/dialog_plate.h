@@ -5,7 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_DIALOG_PLATE_DIALOG_PLATE_H_
 #define ASH_ASSISTANT_UI_DIALOG_PLATE_DIALOG_PLATE_H_
 
-#include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/ui/dialog_plate/action_view.h"
 #include "base/macros.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -16,7 +16,7 @@ class AssistantController;
 
 class DialogPlate : public views::View,
                     public views::TextfieldController,
-                    public AssistantInteractionModelObserver {
+                    public ActionViewListener {
  public:
   explicit DialogPlate(AssistantController* assistant_controller);
   ~DialogPlate() override;
@@ -25,15 +25,14 @@ class DialogPlate : public views::View,
   gfx::Size CalculatePreferredSize() const override;
   void RequestFocus() override;
 
-  // AssistantInteractionModelObserver:
-  void OnInputModalityChanged(InputModality input_modality) override;
-  void OnMicStateChanged(MicState mic_state) override;
-
   // views::TextfieldController:
   void ContentsChanged(views::Textfield* sender,
                        const base::string16& new_contents) override;
   bool HandleKeyEvent(views::Textfield* sender,
                       const ui::KeyEvent& key_event) override;
+
+  // ActionViewListener:
+  void OnActionPressed() override;
 
  private:
   void InitLayout();
@@ -41,7 +40,7 @@ class DialogPlate : public views::View,
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
   views::Textfield* textfield_;                      // Owned by view hierarchy.
-  views::View* icon_;                                // Owned by view hierarchy.
+  ActionView* action_view_;                          // Owned by view hierarchy.
 
   DISALLOW_COPY_AND_ASSIGN(DialogPlate);
 };
