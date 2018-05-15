@@ -99,6 +99,10 @@ void WelcomeWin10Handler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
+void WelcomeWin10Handler::OnJavascriptDisallowed() {
+  pinned_state_callback_id_.clear();
+}
+
 void WelcomeWin10Handler::HandleGetPinnedToTaskbarState(
     const base::ListValue* args) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

@@ -25,6 +25,7 @@ class WelcomeWin10Handler : public content::WebUIMessageHandler {
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
+  void OnJavascriptDisallowed() override;
 
  private:
   // Handlers for javascript calls.
