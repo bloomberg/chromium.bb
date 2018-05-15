@@ -81,8 +81,25 @@ void RenderFrameAudioInputStreamFactory::CreateStreamAfterLookingUpDevice(
   if (!factory)
     return;
 
-  if (WebContentsMediaCaptureId::Parse(device.id, nullptr)) {
-    CHECK(false) << "TODO(https://crbug.com/824019) not implemented.";
+  WebContentsMediaCaptureId capture_id;
+  if (WebContentsMediaCaptureId::Parse(device.id, &capture_id)) {
+    // For MEDIA_DESKTOP_AUDIO_CAPTURE, the source is selected from picker
+    // window, we do not mute the source audio.
+    // For MEDIA_TAB_AUDIO_CAPTURE, the probable use case is Cast, we mute
+    // the source audio.
+    // TODO(qiangchen): Analyze audio constraints to make a duplicating or
+    // diverting decision. It would give web developer more flexibility.
+
+    RenderFrameHost* source_host = RenderFrameHost::FromID(
+        capture_id.render_process_id, capture_id.main_render_frame_id);
+    if (!source_host) {
+      // The source of the capture has already been destroyed, so fail early.
+      return;
+    }
+
+    factory->CreateLoopbackStream(
+        render_frame_host_, source_host, audio_params, shared_memory_count,
+        capture_id.disable_local_echo, std::move(client));
 
     if (device.type == MEDIA_DESKTOP_AUDIO_CAPTURE)
       IncrementDesktopCaptureCounter(SYSTEM_LOOPBACK_AUDIO_CAPTURER_CREATED);

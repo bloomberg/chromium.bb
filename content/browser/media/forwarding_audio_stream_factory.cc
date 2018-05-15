@@ -93,12 +93,18 @@ void ForwardingAudioStreamFactory::CreateOutputStream(
 
 void ForwardingAudioStreamFactory::CreateLoopbackStream(
     RenderFrameHost* frame,
-    WebContents* source_contents,
+    RenderFrameHost* frame_of_source_web_contents,
     const media::AudioParameters& params,
     uint32_t shared_memory_count,
     bool mute_source,
     mojom::RendererAudioInputStreamFactoryClientPtr renderer_factory_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(frame);
+  DCHECK(frame_of_source_web_contents);
+  WebContents* source_contents =
+      WebContents::FromRenderFrameHost(frame_of_source_web_contents);
+  if (!source_contents)
+    return;
 
   const int process_id = frame->GetProcess()->GetID();
   const int frame_id = frame->GetRoutingID();
