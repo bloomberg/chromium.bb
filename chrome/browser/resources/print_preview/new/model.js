@@ -271,14 +271,13 @@ Polymer({
   },
 
   observers: [
-    'updateSettings_(' +
-        'destination.id, destination.capabilities, ' +
+    'updateSettingsFromDestination_(destination.capabilities)',
+    'updateSettingsAvailabilityFromDocumentInfo_(' +
         'documentInfo.isModifiable, documentInfo.hasCssMediaStyles,' +
         'documentInfo.hasSelection)',
     'updateHeaderFooterAvailable_(' +
-        'documentInfo.isModifiable, documentInfo.margins, ' +
-        'settings.margins.value, settings.customMargins.value, ' +
-        'settings.mediaSize.value)',
+        'documentInfo.margins, settings.margins.value, ' +
+        'settings.customMargins.value, settings.mediaSize.value)',
     'updateRecentDestinations_(destination, destination.capabilities)',
     'stickySettingsChanged_(' +
         'settings.collate.value, settings.layout.value, settings.color.value,' +
@@ -300,14 +299,13 @@ Polymer({
 
   /**
    * Updates the availability of the settings sections and values of dpi and
-   *     media size settings.
+   *     media size settings based on the destination capabilities.
    * @private
    */
-  updateSettings_: function() {
+  updateSettingsFromDestination_: function() {
     const caps = (!!this.destination && !!this.destination.capabilities) ?
         this.destination.capabilities.printer :
         null;
-    this.updateSettingsAvailability_(caps);
 
     if (!caps)
       return;
@@ -316,6 +314,7 @@ Polymer({
       return;
 
     this.lastDestinationCapabilities_ = this.destination.capabilities;
+    this.updateSettingsAvailabilityFromDestination_(caps);
     this.updateSettingsValues_(caps);
   },
 
@@ -323,31 +322,56 @@ Polymer({
    * @param {?print_preview.CddCapabilities} caps The printer capabilities.
    * @private
    */
-  updateSettingsAvailability_: function(caps) {
-    const isSaveToPdf = this.destination.id ==
-        print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
-    const knownSizeToSaveAsPdf = isSaveToPdf &&
-        (!this.documentInfo.isModifiable ||
-         this.documentInfo.hasCssMediaStyles);
+  updateSettingsAvailabilityFromDestination_: function(caps) {
     this.set('settings.copies.available', !!caps && !!(caps.copies));
     this.set('settings.collate.available', !!caps && !!(caps.collate));
     this.set('settings.layout.available', this.isLayoutAvailable_(caps));
     this.set('settings.color.available', this.destination.hasColorCapability);
-    this.set('settings.margins.available', this.documentInfo.isModifiable);
-    this.set(
-        'settings.customMargins.available', this.documentInfo.isModifiable);
-    this.set(
-        'settings.mediaSize.available',
-        !!caps && !!caps.media_size && !knownSizeToSaveAsPdf);
     this.set(
         'settings.dpi.available',
         !!caps && !!caps.dpi && !!caps.dpi.option &&
             caps.dpi.option.length > 1);
+    this.set('settings.duplex.available', !!caps && !!caps.duplex);
+    this.set(
+        'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
+
+    if (this.documentInfo)
+      this.updateSettingsAvailabilityFromDestinationAndDocumentInfo_();
+
+    this.fire('settings-availability-updated');
+  },
+
+  /** @private */
+  updateSettingsAvailabilityFromDestinationAndDocumentInfo_: function() {
+    const knownSizeToSaveAsPdf = this.destination.id ==
+            print_preview.Destination.GooglePromotedId.SAVE_AS_PDF &&
+        (!this.documentInfo.isModifiable ||
+         this.documentInfo.hasCssMediaStyles);
     this.set(
         'settings.fitToPage.available',
-        !this.documentInfo.isModifiable && !isSaveToPdf);
+        !knownSizeToSaveAsPdf && !this.documentInfo.isModifiable);
     this.set('settings.scaling.available', !knownSizeToSaveAsPdf);
-    this.set('settings.duplex.available', !!caps && !!caps.duplex);
+    const caps = (!!this.destination && !!this.destination.capabilities) ?
+        this.destination.capabilities.printer :
+        null;
+    this.set(
+        'settings.mediaSize.available',
+        !!caps && !!caps.media_size && !knownSizeToSaveAsPdf);
+    this.set('settings.layout.available', this.isLayoutAvailable_(caps));
+    this.set(
+        'settings.otherOptions.available',
+        this.settings.duplex.available ||
+            this.settings.cssBackground.available ||
+            this.settings.selectionOnly.available ||
+            this.settings.headerFooter.available ||
+            this.settings.rasterize.available);
+  },
+
+  /** @private */
+  updateSettingsAvailabilityFromDocumentInfo_: function() {
+    this.set('settings.margins.available', this.documentInfo.isModifiable);
+    this.set(
+        'settings.customMargins.available', this.documentInfo.isModifiable);
     this.set(
         'settings.cssBackground.available', this.documentInfo.isModifiable);
     this.set(
@@ -358,15 +382,10 @@ Polymer({
     this.set(
         'settings.rasterize.available',
         !this.documentInfo.isModifiable && !cr.isWindows && !cr.isMac);
-    this.set(
-        'settings.otherOptions.available',
-        this.settings.duplex.available ||
-            this.settings.cssBackground.available ||
-            this.settings.selectionOnly.available ||
-            this.settings.headerFooter.available ||
-            this.settings.rasterize.available);
-    this.set(
-        'settings.vendorItems.available', !!caps && !!caps.vendor_capability);
+
+    if (this.destination)
+      this.updateSettingsAvailabilityFromDestinationAndDocumentInfo_();
+
     this.fire('settings-availability-updated');
   },
 

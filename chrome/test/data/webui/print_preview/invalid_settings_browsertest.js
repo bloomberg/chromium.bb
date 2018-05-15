@@ -139,7 +139,8 @@ cr.define('invalid_settings_browsertest', function() {
 
       // Expected message
       const expectedMessage = 'The selected printer is not available or not '
-          + 'installed correctly.';
+          + 'installed correctly.  Check your printer or try selecting another '
+          + 'printer.';
 
       // Get references to relevant elements.
       const previewAreaEl = page.$.previewArea;

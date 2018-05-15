@@ -481,7 +481,8 @@ Polymer({
         break;
       case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
       case print_preview_new.PreviewAreaState.UNSUPPORTED_CLOUD_PRINTER:
-        this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
+        if (this.state != print_preview_new.State.INVALID_PRINTER)
+          this.$.state.transitTo(print_preview_new.State.INVALID_PRINTER);
         break;
       case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:

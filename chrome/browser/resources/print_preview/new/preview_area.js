@@ -34,6 +34,14 @@ cr.exportPath('print_preview_new');
  */
 print_preview_new.PDFPlugin;
 
+/**
+ * @typedef {{
+ *   width_microns: number,
+ *   height_microns: number,
+ * }}
+ */
+print_preview_new.MediaSizeValue;
+
 /** @enum {string} */
 print_preview_new.PreviewAreaState = {
   NO_PLUGIN: 'no-plugin',
@@ -90,7 +98,7 @@ Polymer({
     previewLoaded_: {
       type: Boolean,
       notify: true,
-      computed: 'computePreviewLoaded_(previewState)',
+      computed: 'computePreviewLoaded_(documentReady_, pluginLoaded_)',
     },
   },
 
@@ -102,16 +110,27 @@ Polymer({
   observers: [
     'onSettingsChanged_(settings.color.value, settings.cssBackground.value, ' +
         'settings.fitToPage.value, settings.headerFooter.value, ' +
-        'settings.layout.value, settings.margins.value, ' +
-        'settings.customMargins.value, settings.mediaSize.value, ' +
-        'settings.ranges.value, settings.selectionOnly.value, ' +
-        'settings.scaling.value, settings.pagesPerSheet.value, ' +
-        'settings.rasterize.value, destination.id, destination.capabilities)',
+        'settings.layout.value, settings.ranges.value, ' +
+        'settings.selectionOnly.value, settings.scaling.value, ' +
+        'settings.pagesPerSheet.value, settings.rasterize.value, destination)',
+    'onMarginsChanged_(settings.margins.value)',
+    'onCustomMarginsChanged_(settings.customMargins.value)',
+    'onMediaSizeChanged_(settings.mediaSize.value)',
     'pluginOrDocumentStatusChanged_(pluginLoaded_, documentReady_)',
   ],
 
-  /** @private {print_preview.NativeLayer} */
+  /** @private {?print_preview.NativeLayer} */
   nativeLayer_: null,
+
+  /**
+   * @private {?print_preview.MarginsSetting}
+   */
+  lastCustomMargins_: null,
+
+  /**
+   * @private {?print_preview_new.MediaSizeValue}
+   */
+  lastMediaSize_: null,
 
   /** @private {number} */
   inFlightRequestId_: -1,
@@ -157,10 +176,7 @@ Polymer({
    * @private
    */
   computePreviewLoaded_: function() {
-    return this.previewState ==
-        print_preview_new.PreviewAreaState.DISPLAY_PREVIEW ||
-        this.previewState ==
-        print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
+    return this.documentReady_ && this.pluginLoaded_;
   },
 
   /** @return {boolean} Whether the preview is loaded. */
@@ -229,7 +245,24 @@ Polymer({
    * @private
    */
   getInvisible_: function() {
-    return this.previewLoaded() ? 'invisible' : '';
+    return this.isInDisplayPreviewState_() ? 'invisible' : '';
+  },
+
+  /**
+   * @return {string} 'true' if overlay is aria-hidden, 'false' otherwise.
+   * @private
+   */
+  getAriaHidden_: function() {
+    return this.isInDisplayPreviewState_().toString();
+  },
+
+  /**
+   * @return {boolean} Whether the preview area is in DISPLAY_PREVIEW state.
+   * @private
+   */
+  isInDisplayPreviewState_: function() {
+    return this.previewState ==
+        print_preview_new.PreviewAreaState.DISPLAY_PREVIEW;
   },
 
   /**
@@ -281,9 +314,13 @@ Polymer({
         return this.i18n('noPlugin');
       case print_preview_new.PreviewAreaState.LOADING:
         return this.i18n('loading');
+      case print_preview_new.PreviewAreaState.DISPLAY_PREVIEW:
+        return '';
+      // <if expr="is_macosx">
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING:
       case print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED:
         return this.i18n('openingPDFInPreview');
+      // </if>
       case print_preview_new.PreviewAreaState.INVALID_SETTINGS:
         return this.i18n('invalidPrinterSettings');
       case print_preview_new.PreviewAreaState.PREVIEW_FAILED:
@@ -318,11 +355,7 @@ Polymer({
 
   /** @private */
   onStateChanged_: function() {
-    if (this.state == print_preview_new.State.NOT_READY) {
-      // Resetting the destination clears the invalid settings error.
-      this.previewState = print_preview_new.PreviewAreaState.LOADING;
-    } else if (
-        this.state == print_preview_new.State.READY &&
+    if (this.state == print_preview_new.State.READY &&
         this.requestPreviewWhenReady_) {
       this.startPreview_();
       this.requestPreviewWhenReady_ = false;
@@ -334,7 +367,7 @@ Polymer({
   setOpeningPdfInPreview: function() {
     assert(cr.isMac);
     this.previewState =
-        (this.previewState == print_preview_new.PreviewAreaState.LOADING) ?
+        this.previewState == print_preview_new.PreviewAreaState.LOADING ?
         print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADING :
         print_preview_new.PreviewAreaState.OPEN_IN_PREVIEW_LOADED;
   },
@@ -584,6 +617,49 @@ Polymer({
   onGcpErrorLearnMoreClick_: function() {
     this.nativeLayer_.forceOpenNewTab(
         this.i18n('gcpCertificateErrorLearnMoreURL'));
+  },
+
+  /** @private */
+  onMarginsChanged_: function() {
+    if (this.getSettingValue('margins') !=
+        print_preview.ticket_items.MarginsTypeValue.CUSTOM) {
+      this.lastCustomMargins_ = null;
+      this.onSettingsChanged_();
+    } else {
+      this.lastCustomMargins_ =
+          /** @type {!print_preview.MarginsSetting} */ (
+              this.getSettingValue('customMargins'));
+    }
+  },
+
+  /** @private */
+  onCustomMarginsChanged_: function() {
+    const newValue =
+        /** @type {!print_preview.MarginsSetting} */ (
+            this.getSettingValue('customMargins'));
+    if (!!this.lastCustomMargins_ &&
+        this.getSettingValue('margins') ==
+            print_preview.ticket_items.MarginsTypeValue.CUSTOM &&
+        (this.lastCustomMargins_.marginTop != newValue.marginTop ||
+         this.lastCustomMargins_.marginLeft != newValue.marginLeft ||
+         this.lastCustomMargins_.marginRight != newValue.marginRight ||
+         this.lastCustomMargins_.marginBottom != newValue.marginBottom)) {
+      this.onSettingsChanged_();
+    }
+    this.lastCustomMargins_ = newValue;
+  },
+
+  /** @private */
+  onMediaSizeChanged_: function() {
+    const newValue =
+        /** @type {!print_preview_new.MediaSizeValue} */ (
+            this.getSettingValue('mediaSize'));
+    if (!!this.lastMediaSize_ &&
+        (newValue.height_microns != this.lastMediaSize_.height_microns ||
+         newValue.width_microns != this.lastMediaSize_.width_microns)) {
+      this.onSettingsChanged_();
+    }
+    this.lastMediaSize_ = newValue;
   },
 
   /**

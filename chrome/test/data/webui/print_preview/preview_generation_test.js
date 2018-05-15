@@ -257,9 +257,8 @@ cr.define('preview_generation_test', function() {
         barDestination.capabilities =
             print_preview_test_utils.getCddTemplate(barDestination.id)
                 .capabilities;
-        page.set('destination_', barDestination);
         nativeLayer.resetResolver('getPreview');
-        page.set('destination_.capabilities', barDestination.capabilities);
+        page.set('destination_', barDestination);
         return nativeLayer.whenCalled('getPreview');
       }).then(function(args) {
         assertEquals('BarDevice', page.destination_.id);
