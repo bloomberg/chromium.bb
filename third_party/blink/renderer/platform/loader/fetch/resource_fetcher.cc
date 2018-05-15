@@ -1554,8 +1554,7 @@ void ResourceFetcher::HandleLoaderError(Resource* resource,
 
 void ResourceFetcher::MoveResourceLoaderToNonBlocking(ResourceLoader* loader) {
   DCHECK(loader);
-  // TODO(yoav): Convert CHECK to DCHECK if no crash reports come in.
-  CHECK(loaders_.Contains(loader));
+  DCHECK(loaders_.Contains(loader));
   non_blocking_loaders_.insert(loader);
   loaders_.erase(loader);
 }
