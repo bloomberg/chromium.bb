@@ -119,6 +119,13 @@ void ServiceWorkerGlobalScopeClient::DidHandleBackgroundFetchedEvent(
                                           event_dispatch_time);
 }
 
+void ServiceWorkerGlobalScopeClient::DidHandleCookieChangeEvent(
+    int event_id,
+    mojom::ServiceWorkerEventStatus status,
+    double event_dispatch_time) {
+  client_.DidHandleCookieChangeEvent(event_id, status, event_dispatch_time);
+}
+
 void ServiceWorkerGlobalScopeClient::DidHandleExtendableMessageEvent(
     int event_id,
     mojom::ServiceWorkerEventStatus status,

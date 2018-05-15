@@ -46,6 +46,7 @@
 namespace content {
 
 class BackgroundFetchContext;
+class CookieStoreContext;
 class BlobRegistryWrapper;
 class BlobURLLoaderFactory;
 class PrefetchURLLoaderService;
@@ -142,6 +143,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   BlobURLLoaderFactory* GetBlobURLLoaderFactory();
   BlobRegistryWrapper* GetBlobRegistry();
   PrefetchURLLoaderService* GetPrefetchURLLoaderService();
+  CookieStoreContext* GetCookieStoreContext();
 
   // mojom::StoragePartitionService interface.
   void OpenLocalStorage(const url::Origin& origin,
@@ -187,6 +189,7 @@ class CONTENT_EXPORT StoragePartitionImpl
 
   friend class BackgroundSyncManagerTest;
   friend class BackgroundSyncServiceImplTest;
+  friend class CookieStoreManagerTest;
   friend class PaymentAppContentUnitTestBase;
   friend class StoragePartitionImplMap;
   friend class URLLoaderFactoryForBrowserProcess;
@@ -309,6 +312,7 @@ class CONTENT_EXPORT StoragePartitionImpl
   scoped_refptr<BlobURLLoaderFactory> blob_url_loader_factory_;
   scoped_refptr<BlobRegistryWrapper> blob_registry_;
   scoped_refptr<PrefetchURLLoaderService> prefetch_url_loader_service_;
+  scoped_refptr<CookieStoreContext> cookie_store_context_;
 
   // BindingSet for StoragePartitionService, using the process id as the
   // binding context type. The process id can subsequently be used during

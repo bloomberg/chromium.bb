@@ -104,6 +104,12 @@ class MockWebServiceWorkerContextProxy
       override {
     NOTREACHED();
   }
+  void DispatchCookieChangeEvent(int event_id,
+                                 const blink::WebString& name,
+                                 const blink::WebString& value,
+                                 bool is_deleted) override {
+    NOTREACHED();
+  }
   void DispatchExtendableMessageEvent(
       int event_id,
       blink::TransferableMessage message,

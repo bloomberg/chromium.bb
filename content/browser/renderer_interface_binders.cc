@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "content/browser/background_fetch/background_fetch_service_impl.h"
+#include "content/browser/cookie_store/cookie_store_context.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
 #include "content/browser/payments/payment_manager.h"
@@ -31,6 +32,7 @@
 #include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
+#include "third_party/blink/public/mojom/cookie_store/cookie_store.mojom.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "third_party/blink/public/platform/modules/notifications/notification_service.mojom.h"
 #include "url/origin.h"
@@ -180,6 +182,13 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       base::BindRepeating(GetRestrictedCookieManagerForWorker));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](blink::mojom::CookieStoreRequest request, RenderProcessHost* host,
+         const url::Origin& origin) {
+        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
+            ->GetCookieStoreContext()
+            ->CreateService(std::move(request), origin);
+      }));
 }
 
 RendererInterfaceBinders& GetRendererInterfaceBinders() {

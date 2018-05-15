@@ -33,5 +33,12 @@
   [CallWith=ScriptState, ImplementedAs=Delete, RaisesException] Promise<void> delete(
       CookieStoreSetOptions options);
 
-  attribute EventHandler onchange;
+  [Exposed=ServiceWorker, CallWith=ScriptState, RaisesException]
+  Promise<void> subscribeToChanges(
+      sequence<CookieStoreGetOptions> subscriptions);
+
+  [Exposed=ServiceWorker, CallWith=ScriptState, RaisesException]
+  Promise<sequence<CookieStoreGetOptions>> getChangeSubscriptions();
+
+  [Exposed=Window] attribute EventHandler onchange;
 };

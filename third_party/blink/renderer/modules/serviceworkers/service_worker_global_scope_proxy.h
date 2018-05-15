@@ -99,6 +99,10 @@ class ServiceWorkerGlobalScopeProxy final
       const WebString& developer_id,
       const WebString& unique_id,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) override;
+  void DispatchCookieChangeEvent(int event_id,
+                                 const WebString& cookie_name,
+                                 const WebString& cookie_value,
+                                 bool is_cookie_delete) override;
   void DispatchExtendableMessageEvent(
       int event_id,
       TransferableMessage,

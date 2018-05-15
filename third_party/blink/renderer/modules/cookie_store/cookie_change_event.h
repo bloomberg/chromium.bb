@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/modules/cookie_store/cookie_list_item.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -22,7 +23,7 @@ class CookieChangeEvent final : public Event {
 
   // Used by Blink.
   //
-  // The caller is expected to create a HeapVector and std::move() it into this
+  // The caller is expected to create HeapVectors and std::move() them into this
   // method.
   static CookieChangeEvent* Create(const AtomicString& type,
                                    HeapVector<CookieListItem> changed,

@@ -490,6 +490,8 @@ struct ServiceWorkerContextClient::WorkerContextData {
       notification_close_event_callbacks;
   std::map<int, DispatchPushEventCallback> push_event_callbacks;
   std::map<int, DispatchFetchEventCallback> fetch_event_callbacks;
+  std::map<int, DispatchCookieChangeEventCallback>
+      cookie_change_event_callbacks;
   std::map<int, DispatchExtendableMessageEventCallback> message_event_callbacks;
 
   // Maps for response callbacks.
@@ -966,6 +968,15 @@ void ServiceWorkerContextClient::DidHandleBackgroundFetchedEvent(
     blink::mojom::ServiceWorkerEventStatus status,
     double event_dispatch_time) {
   RunEventCallback(&context_->background_fetched_event_callbacks,
+                   context_->timeout_timer.get(), request_id, status,
+                   base::Time::FromDoubleT(event_dispatch_time));
+}
+
+void ServiceWorkerContextClient::DidHandleCookieChangeEvent(
+    int request_id,
+    blink::mojom::ServiceWorkerEventStatus status,
+    double event_dispatch_time) {
+  RunEventCallback(&context_->cookie_change_event_callbacks,
                    context_->timeout_timer.get(), request_id, status,
                    base::Time::FromDoubleT(event_dispatch_time));
 }
@@ -1604,6 +1615,27 @@ void ServiceWorkerContextClient::DispatchPushEvent(
   if (!payload.is_null)
     data = blink::WebString::FromUTF8(payload.data);
   proxy_->DispatchPushEvent(request_id, data);
+}
+
+void ServiceWorkerContextClient::DispatchCookieChangeEvent(
+    const net::CanonicalCookie& cookie,
+    ::network::mojom::CookieChangeCause cause,
+    DispatchCookieChangeEventCallback callback) {
+  TRACE_EVENT0("ServiceWorker",
+               "ServiceWorkerContextClient::DispatchCookieChangeEvent");
+
+  int request_id = context_->timeout_timer->StartEvent(
+      CreateAbortCallback(&context_->cookie_change_event_callbacks));
+  context_->cookie_change_event_callbacks.emplace(request_id,
+                                                  std::move(callback));
+
+  // TODO(pwnall): Map |cause| to a blink enum. Currently, a cookie overwrite
+  //               shows up as delete + insert.
+  bool is_cookie_delete =
+      cause != ::network::mojom::CookieChangeCause::INSERTED;
+  proxy_->DispatchCookieChangeEvent(
+      request_id, blink::WebString::FromUTF8(cookie.Name()),
+      blink::WebString::FromUTF8(cookie.Value()), is_cookie_delete);
 }
 
 void ServiceWorkerContextClient::Ping(PingCallback callback) {

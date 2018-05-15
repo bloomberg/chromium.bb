@@ -228,6 +228,7 @@
           "blink::mojom::BackgroundFetchService",
           "blink::mojom::BudgetService",
           "blink::mojom::CacheStorage",
+          "blink::mojom::CookieStore",
           "blink::mojom::LockManager",
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",

@@ -239,6 +239,15 @@ class EmbeddedWorkerTestHelper::MockServiceWorkerEventDispatcher
                                           std::move(callback));
   }
 
+  void DispatchCookieChangeEvent(
+      const net::CanonicalCookie& cookie,
+      ::network::mojom::CookieChangeCause cause,
+      DispatchCookieChangeEventCallback callback) override {
+    if (!helper_)
+      return;
+    helper_->OnCookieChangeEventStub(cookie, cause, std::move(callback));
+  }
+
   void DispatchFetchEvent(
       mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
@@ -611,6 +620,15 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchedEvent(
                           base::Time::Now());
 }
 
+void EmbeddedWorkerTestHelper::OnCookieChangeEvent(
+    const net::CanonicalCookie& cookie,
+    ::network::mojom::CookieChangeCause cause,
+    mojom::ServiceWorkerEventDispatcher::DispatchCookieChangeEventCallback
+        callback) {
+  std::move(callback).Run(blink::mojom::ServiceWorkerEventStatus::COMPLETED,
+                          base::Time::Now());
+}
+
 void EmbeddedWorkerTestHelper::OnExtendableMessageEvent(
     mojom::ExtendableMessageEventPtr event,
     mojom::ServiceWorkerEventDispatcher::DispatchExtendableMessageEventCallback
@@ -909,6 +927,17 @@ void EmbeddedWorkerTestHelper::OnBackgroundFetchedEventStub(
       base::BindOnce(&EmbeddedWorkerTestHelper::OnBackgroundFetchedEvent,
                      AsWeakPtr(), developer_id, unique_id, fetches,
                      std::move(callback)));
+}
+
+void EmbeddedWorkerTestHelper::OnCookieChangeEventStub(
+    const net::CanonicalCookie& cookie,
+    ::network::mojom::CookieChangeCause cause,
+    mojom::ServiceWorkerEventDispatcher::DispatchCookieChangeEventCallback
+        callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&EmbeddedWorkerTestHelper::OnCookieChangeEvent,
+                     AsWeakPtr(), cookie, cause, std::move(callback)));
 }
 
 void EmbeddedWorkerTestHelper::OnExtendableMessageEventStub(

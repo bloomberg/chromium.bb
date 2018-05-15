@@ -25,7 +25,9 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_test_sink.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/cookies/cookie_change_dispatcher.h"
 #include "net/http/http_response_info.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "url/gurl.h"
@@ -218,6 +220,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchedEventCallback callback);
+  virtual void OnCookieChangeEvent(
+      const net::CanonicalCookie& cookie,
+      ::network::mojom::CookieChangeCause cause,
+      mojom::ServiceWorkerEventDispatcher::DispatchCookieChangeEventCallback
+          callback);
   virtual void OnExtendableMessageEvent(
       mojom::ExtendableMessageEventPtr event,
       mojom::ServiceWorkerEventDispatcher::
@@ -319,6 +326,11 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
       const std::vector<BackgroundFetchSettledFetch>& fetches,
       mojom::ServiceWorkerEventDispatcher::
           DispatchBackgroundFetchedEventCallback callback);
+  void OnCookieChangeEventStub(
+      const net::CanonicalCookie& cookie,
+      ::network::mojom::CookieChangeCause cause,
+      mojom::ServiceWorkerEventDispatcher::DispatchCookieChangeEventCallback
+          callback);
   void OnExtendableMessageEventStub(
       mojom::ExtendableMessageEventPtr event,
       mojom::ServiceWorkerEventDispatcher::

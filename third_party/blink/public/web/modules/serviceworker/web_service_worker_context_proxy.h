@@ -87,6 +87,12 @@ class WebServiceWorkerContextProxy {
       const WebString& developer_id,
       const WebString& unique_id,
       const WebVector<WebBackgroundFetchSettledFetch>& fetches) = 0;
+  // TODO(pwnall): Use blink::CanonicalCookie, after https://crrev.com/c/991196
+  //               lands.
+  virtual void DispatchCookieChangeEvent(int event_id,
+                                         const WebString& cookie_name,
+                                         const WebString& cookie_value,
+                                         bool is_cookie_delete) = 0;
   virtual void DispatchExtendableMessageEvent(
       int event_id,
       TransferableMessage,
