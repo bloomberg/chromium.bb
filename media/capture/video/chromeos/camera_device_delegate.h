@@ -17,20 +17,9 @@
 
 namespace media {
 
-class Camera3AController;
-class CameraDeviceContext;
 class CameraHalDelegate;
+class CameraDeviceContext;
 class StreamBufferManager;
-
-enum class StreamType : int32_t {
-  kPreview = 0,
-  kStillCapture = 1,
-  kUnknown,
-};
-
-std::string StreamTypeToString(StreamType stream_type);
-
-std::ostream& operator<<(std::ostream& os, StreamType stream_type);
 
 // The interface to register buffer with and send capture request to the
 // camera HAL.
@@ -133,14 +122,10 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
   // settings of the stream in |stream_context_|.
   // OnConstructedDefaultRequestSettings sets the request settings in
   // |streams_context_|.  If there's no error
-  // OnConstructedDefaultPreviewRequestSettings calls StartPreview to start the
-  // video capture loop.
-  // OnConstructDefaultStillCaptureRequestSettings triggers
-  // |stream_buffer_manager_| to request a still capture.
-  void ConstructDefaultRequestSettings(StreamType stream_type);
-  void OnConstructedDefaultPreviewRequestSettings(
-      cros::mojom::CameraMetadataPtr settings);
-  void OnConstructedDefaultStillCaptureRequestSettings(
+  // OnConstructedDefaultRequestSettings calls StartCapture to start the video
+  // capture loop.
+  void ConstructDefaultRequestSettings();
+  void OnConstructedDefaultRequestSettings(
       cros::mojom::CameraMetadataPtr settings);
 
   // StreamCaptureInterface implementations.  These methods are called by
@@ -166,11 +151,7 @@ class CAPTURE_EXPORT CameraDeviceDelegate final {
 
   CameraDeviceContext* device_context_;
 
-  std::queue<VideoCaptureDevice::TakePhotoCallback> take_photo_callbacks_;
-
   std::unique_ptr<StreamBufferManager> stream_buffer_manager_;
-
-  std::unique_ptr<Camera3AController> camera_3a_controller_;
 
   // Stores the static camera characteristics of the camera device. E.g. the
   // supported formats and resolution, various available exposure and apeture
