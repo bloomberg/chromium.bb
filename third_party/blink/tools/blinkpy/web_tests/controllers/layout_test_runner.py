@@ -273,7 +273,7 @@ class Worker(object):
         else:
             test_input.should_run_pixel_test = self._port.should_run_as_pixel_test(test_input)
         test_input.should_run_pixel_test_first = (
-            self._port.should_run_pixel_test_first(test_input))
+            self._port.should_run_pixel_test_first(test_input.test_name))
 
     def _run_test(self, test_input, shard_name):
         self._batch_count += 1
