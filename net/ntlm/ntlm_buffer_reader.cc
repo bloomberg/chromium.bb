@@ -54,6 +54,9 @@ bool NtlmBufferReader::ReadBytes(base::span<uint8_t> buffer) {
   if (!CanRead(buffer.size()))
     return false;
 
+  if (buffer.empty())
+    return true;
+
   memcpy(buffer.data(), GetBufferAtCursor(), buffer.size());
 
   AdvanceCursor(buffer.size());
@@ -64,6 +67,9 @@ bool NtlmBufferReader::ReadBytesFrom(const SecurityBuffer& sec_buf,
                                      base::span<uint8_t> buffer) {
   if (!CanReadFrom(sec_buf) || buffer.size() < sec_buf.length)
     return false;
+
+  if (buffer.empty())
+    return true;
 
   memcpy(buffer.data(), GetBufferPtr() + sec_buf.offset, sec_buf.length);
 

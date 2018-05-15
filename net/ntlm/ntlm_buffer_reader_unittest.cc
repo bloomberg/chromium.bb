@@ -41,6 +41,24 @@ TEST(NtlmBufferReaderTest, EmptyBuffer) {
   ASSERT_TRUE(reader.CanRead(0));
   ASSERT_FALSE(reader.CanRead(1));
   ASSERT_TRUE(reader.IsEndOfBuffer());
+
+  // A read from an empty (zero-byte) source into an empty (zero-byte)
+  // destination buffer should succeed as a no-op.
+  std::vector<uint8_t> dest;
+  ASSERT_TRUE(reader.ReadBytes(dest));
+
+  // A read from a non-empty source into an empty (zero-byte) destination
+  // buffer should succeed as a no-op.
+  std::vector<uint8_t> b2{0x01};
+  NtlmBufferReader reader2(b2);
+  ASSERT_EQ(0u, reader2.GetCursor());
+  ASSERT_EQ(1u, reader2.GetLength());
+
+  ASSERT_TRUE(reader2.CanRead(0));
+  ASSERT_TRUE(reader2.ReadBytes(dest));
+
+  ASSERT_EQ(0u, reader2.GetCursor());
+  ASSERT_EQ(1u, reader2.GetLength());
 }
 
 TEST(NtlmBufferReaderTest, NullBuffer) {
@@ -51,6 +69,11 @@ TEST(NtlmBufferReaderTest, NullBuffer) {
   ASSERT_TRUE(reader.CanRead(0));
   ASSERT_FALSE(reader.CanRead(1));
   ASSERT_TRUE(reader.IsEndOfBuffer());
+
+  // A read from a null source into an empty (zero-byte) destination buffer
+  // should succeed as a no-op.
+  std::vector<uint8_t> dest;
+  ASSERT_TRUE(reader.ReadBytes(dest));
 }
 
 TEST(NtlmBufferReaderTest, Read16) {

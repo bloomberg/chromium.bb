@@ -37,6 +37,42 @@ TEST(NtlmBufferWriterTest, Initialization) {
   ASSERT_FALSE(writer.CanWrite(2));
 }
 
+TEST(NtlmBufferWriterTest, EmptyWrite) {
+  NtlmBufferWriter writer(0);
+
+  ASSERT_EQ(0u, writer.GetLength());
+  ASSERT_EQ(0u, writer.GetBuffer().size());
+  ASSERT_EQ(0u, writer.GetCursor());
+  ASSERT_EQ(nullptr, GetBufferPtr(writer));
+
+  // An empty (zero-byte) write into a zero-byte writer should succeed as a
+  // no-op.
+  std::vector<uint8_t> b;
+  ASSERT_TRUE(writer.CanWrite(0));
+  ASSERT_TRUE(writer.WriteBytes(b));
+
+  ASSERT_EQ(0u, writer.GetLength());
+  ASSERT_EQ(0u, writer.GetBuffer().size());
+  ASSERT_EQ(0u, writer.GetCursor());
+  ASSERT_EQ(nullptr, GetBufferPtr(writer));
+
+  // An empty (zero-byte) write into a non-zero-byte writer should succeed as
+  // a no-op.
+  NtlmBufferWriter writer2(1);
+  ASSERT_EQ(1u, writer2.GetLength());
+  ASSERT_EQ(1u, writer2.GetBuffer().size());
+  ASSERT_EQ(0u, writer2.GetCursor());
+  ASSERT_NE(nullptr, GetBufferPtr(writer2));
+
+  ASSERT_TRUE(writer2.CanWrite(0));
+  ASSERT_TRUE(writer2.WriteBytes(b));
+
+  ASSERT_EQ(1u, writer2.GetLength());
+  ASSERT_EQ(1u, writer2.GetBuffer().size());
+  ASSERT_EQ(0u, writer2.GetCursor());
+  ASSERT_NE(nullptr, GetBufferPtr(writer2));
+}
+
 TEST(NtlmBufferWriterTest, Write16) {
   uint8_t expected[2] = {0x22, 0x11};
   const uint16_t value = 0x1122;
