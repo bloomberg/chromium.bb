@@ -57,6 +57,7 @@ class ExceptionState;
 class MemoryInfo;
 class PerformanceNavigation;
 class PerformanceObserver;
+class PerformanceMark;
 class PerformanceMeasure;
 class PerformanceTiming;
 class ResourceResponse;
@@ -158,12 +159,13 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void setEventTimingBufferMaxSize(unsigned);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(eventtimingbufferfull);
 
-  void mark(ScriptState*, const String& mark_name, ExceptionState&);
+  PerformanceMark* mark(ScriptState*, const String& mark_name, ExceptionState&);
 
-  void mark(ScriptState*,
-            const String& mark_name,
-            DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
-            ExceptionState&);
+  PerformanceMark* mark(
+      ScriptState*,
+      const String& mark_name,
+      DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
+      ExceptionState&);
 
   void clearMarks(const String& mark_name);
 

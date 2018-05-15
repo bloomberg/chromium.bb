@@ -65,7 +65,7 @@ interface Performance : EventTarget {
     // User Timing
     // https://w3c.github.io/user-timing/#extensions-performance-interface
     [MeasureAs=UserTiming, CallWith=ScriptState, RaisesException] void mark(DOMString markName);
-    [MeasureAs=UserTiming, CallWith=ScriptState, RuntimeEnabled=CustomUserTiming, RaisesException] void mark(DOMString markName, (DOMHighResTimeStamp or PerformanceMarkOptions) startTimeOrPerformanceMarkOptions);
+    [MeasureAs=UserTiming, CallWith=ScriptState, RuntimeEnabled=CustomUserTiming, RaisesException] PerformanceMark? mark(DOMString markName, (DOMHighResTimeStamp or PerformanceMarkOptions) startTimeOrPerformanceMarkOptions);
     [MeasureAs=UserTiming] void clearMarks(optional DOMString markName = null);
 
     // Doing either of the following requires enabling CustomUserTiming:
