@@ -108,4 +108,13 @@ void FakeConciergeClient::WaitForServiceToBeAvailable(
       FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
+void FakeConciergeClient::GetContainerSshKeys(
+    const vm_tools::concierge::ContainerSshKeysRequest& request,
+    DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
+        callback) {
+  vm_tools::concierge::ContainerSshKeysResponse response;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(response)));
+}
+
 }  // namespace chromeos

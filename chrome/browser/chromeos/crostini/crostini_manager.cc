@@ -664,6 +664,22 @@ void CrostiniManager::GetContainerAppIcons(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void CrostiniManager::GetContainerSshKeys(
+    std::string vm_name,
+    std::string container_name,
+    std::string cryptohome_id,
+    GetContainerSshKeysCallback callback) {
+  vm_tools::concierge::ContainerSshKeysRequest request;
+  request.set_vm_name(std::move(vm_name));
+  request.set_container_name(std::move(container_name));
+  request.set_cryptohome_id(std::move(cryptohome_id));
+
+  GetConciergeClient()->GetContainerSshKeys(
+      std::move(request),
+      base::BindOnce(&CrostiniManager::OnGetContainerSshKeys,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void CrostiniManager::LaunchContainerTerminal(
     Profile* profile,
     const std::string& vm_name,
@@ -898,6 +914,20 @@ void CrostiniManager::OnGetContainerAppIcons(
              .content = std::move(*icon.mutable_icon())});
   }
   std::move(callback).Run(ConciergeClientResult::SUCCESS, icons);
+}
+
+void CrostiniManager::OnGetContainerSshKeys(
+    GetContainerSshKeysCallback callback,
+    base::Optional<vm_tools::concierge::ContainerSshKeysResponse> reply) {
+  if (!reply.has_value()) {
+    LOG(ERROR) << "Failed to get ssh keys. Empty response.";
+    std::move(callback).Run(ConciergeClientResult::DBUS_ERROR, "", "");
+    return;
+  }
+  vm_tools::concierge::ContainerSshKeysResponse response = reply.value();
+  std::move(callback).Run(ConciergeClientResult::SUCCESS,
+                          response.container_public_key(),
+                          response.host_private_key());
 }
 
 void CrostiniManager::RemoveCrostini(Profile* profile,

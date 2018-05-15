@@ -194,6 +194,28 @@ class ConciergeClientImpl : public ConciergeClient {
     concierge_proxy_->WaitForServiceToBeAvailable(std::move(callback));
   }
 
+  void GetContainerSshKeys(
+      const vm_tools::concierge::ContainerSshKeysRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
+          callback) override {
+    dbus::MethodCall method_call(
+        vm_tools::concierge::kVmConciergeInterface,
+        vm_tools::concierge::kGetContainerSshKeysMethod);
+    dbus::MessageWriter writer(&method_call);
+
+    if (!writer.AppendProtoAsArrayOfBytes(request)) {
+      LOG(ERROR) << "Failed to encode ContainerSshKeysRequest protobuf";
+      std::move(callback).Run(base::nullopt);
+      return;
+    }
+
+    concierge_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
+                           vm_tools::concierge::ContainerSshKeysResponse>,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     concierge_proxy_ = bus->GetObjectProxy(

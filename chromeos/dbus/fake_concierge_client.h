@@ -87,6 +87,13 @@ class CHROMEOS_EXPORT FakeConciergeClient : public ConciergeClient {
   void WaitForServiceToBeAvailable(
       dbus::ObjectProxy::WaitForServiceToBeAvailableCallback callback) override;
 
+  // Fake version of the method that fetches ssh key information.
+  // |callback| is called after the method call finishes.
+  void GetContainerSshKeys(
+      const vm_tools::concierge::ContainerSshKeysRequest& request,
+      DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
+          callback) override;
+
   // Indicates whether CreateDiskImage has been called
   bool create_disk_image_called() const { return create_disk_image_called_; }
   // Indicates whether DestroyDiskImage has been called
