@@ -188,7 +188,7 @@ public class LocationBarLayout
     private Runnable mRequestSuggestions;
 
     private ViewGroup mOmniboxResultsContainer;
-    protected FadingBackgroundView mFadingView;
+    private FadingBackgroundView mFadingView;
 
     private boolean mSuggestionsShown;
     private boolean mUrlHasFocus;
@@ -1108,8 +1108,8 @@ public class LocationBarLayout
             listener.onUrlFocusChange(hasFocus);
         }
 
-        updateOmniboxResultsContainer();
-        if (hasFocus) updateFadingBackgroundView(true);
+        maybeShowOmniboxResultsContainer();
+        updateFadingBackgroundView(hasFocus, false);
     }
 
     /**
@@ -1713,7 +1713,7 @@ public class LocationBarLayout
                 mSuggestionList.setVisibility(GONE);
             }
         }
-        updateOmniboxResultsContainer();
+        maybeShowOmniboxResultsContainer();
     }
 
     /**
@@ -2291,12 +2291,10 @@ public class LocationBarLayout
         mOmniboxResultsContainer = (ViewGroup) overlayStub.inflate();
     }
 
-    private void updateOmniboxResultsContainer() {
+    private void maybeShowOmniboxResultsContainer() {
         if (mSuggestionsShown || mUrlHasFocus) {
             initOmniboxResultsContainer();
             updateOmniboxResultsContainerVisibility(true);
-        } else if (mOmniboxResultsContainer != null) {
-            updateFadingBackgroundView(false);
         }
     }
 
@@ -2313,21 +2311,10 @@ public class LocationBarLayout
         }
     }
 
-    /**
-     * Initialize the fading background for when the omnibox is focused.
-     */
-    protected void initFadingOverlayView() {
-        mFadingView =
-                (FadingBackgroundView) getRootView().findViewById(R.id.fading_focus_target);
-        mFadingView.addObserver(this);
-    }
-
     @Override
     public void onFadingViewClick() {
         setUrlBarFocus(false);
-
-        // If the bottom sheet is used, it will control the fading view.
-        if (mBottomSheet == null) updateFadingBackgroundView(false);
+        updateFadingBackgroundView(false, false);
     }
 
     @Override
@@ -2348,23 +2335,22 @@ public class LocationBarLayout
      * Update the fading background view that shows when the omnibox is focused. If Chrome Home is
      * enabled, this method is a no-op.
      * @param visible Whether the background should be made visible.
+     * @param ignoreNtpChecks Whether the checks for the ntp should be considered when updating the
+     *                        scrim.
      */
-    private void updateFadingBackgroundView(boolean visible) {
-        if (mFadingView == null) initFadingOverlayView();
-
-        // If Chrome Home is enabled (the bottom sheet is not null), it will be controlling the
-        // fading view, so block any updating here.
-        if (mToolbarDataProvider == null || mBottomSheet != null) return;
-
+    protected void updateFadingBackgroundView(boolean visible, boolean ignoreNtpChecks) {
+        if (mFadingView == null) mFadingView = getRootView().findViewById(R.id.fading_focus_target);
         NewTabPage ntp = mToolbarDataProvider.getNewTabPageForCurrentTab();
         boolean locationBarShownInNTP = ntp != null && ntp.isLocationBarShownInNTP();
 
-        if (visible && !locationBarShownInNTP) {
+        if (visible && (!locationBarShownInNTP || ignoreNtpChecks)) {
+            mFadingView.addObserver(this);
             // If the location bar is shown in the NTP, the toolbar will eventually trigger a
             // fade in.
             mFadingView.showFadingOverlay();
         } else {
             mFadingView.hideFadingOverlay(!locationBarShownInNTP);
+            mFadingView.removeObserver(this);
         }
     }
 
