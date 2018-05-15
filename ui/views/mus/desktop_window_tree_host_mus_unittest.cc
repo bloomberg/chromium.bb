@@ -23,6 +23,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/mus/mus_client.h"
+#include "ui/views/mus/screen_mus.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -365,6 +366,34 @@ TEST_F(DesktopWindowTreeHostMusTest, CreateFullscreenWidget) {
     EXPECT_TRUE(widget.IsFullscreen())
         << "Fullscreen creation failed for type=" << widget_type;
   }
+}
+
+TEST_F(DesktopWindowTreeHostMusTest, GetWindowBoundsInScreen) {
+  ScreenMus* screen = MusClient::Get()->screen();
+
+  // Add a second display to the right of the primary.
+  const int64_t kSecondDisplayId = 222;
+  screen->display_list().AddDisplay(
+      display::Display(kSecondDisplayId, gfx::Rect(800, 0, 640, 480)),
+      display::DisplayList::Type::NOT_PRIMARY);
+
+  // Verify bounds for a widget on the first display.
+  Widget widget1;
+  Widget::InitParams params1(Widget::InitParams::TYPE_WINDOW);
+  params1.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params1.bounds = gfx::Rect(0, 0, 100, 100);
+  widget1.Init(params1);
+  EXPECT_EQ(gfx::Rect(0, 0, 100, 100), widget1.GetWindowBoundsInScreen());
+
+  // Verify bounds for a widget on the secondary display.
+  Widget widget2;
+  Widget::InitParams params2(Widget::InitParams::TYPE_WINDOW);
+  params2.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params2.bounds = gfx::Rect(0, 0, 100, 100);
+  widget2.Init(params2);
+  aura::WindowTreeHostMus::ForWindow(widget2.GetNativeWindow())
+      ->set_display_id(kSecondDisplayId);
+  EXPECT_EQ(gfx::Rect(800, 0, 100, 100), widget2.GetWindowBoundsInScreen());
 }
 
 }  // namespace views
