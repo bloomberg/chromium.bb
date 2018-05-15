@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-FAIL e.style['image-resolution'] = "auto" should not set the property value assert_equals: expected "" but got "auto"
-FAIL e.style['image-resolution'] = "100%" should not set the property value assert_equals: expected "" but got "100%"
-FAIL e.style['image-resolution'] = "2" should not set the property value assert_equals: expected "" but got "2"
-FAIL e.style['image-resolution'] = "3dpi snap from-image" should not set the property value assert_equals: expected "" but got "3dpi snap from-image"
-FAIL e.style['image-resolution'] = "from-image snap 4dppx" should not set the property value assert_equals: expected "" but got "from-image snap 4dppx"
-Harness: the test ran to completion.
-

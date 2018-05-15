@@ -513,13 +513,13 @@ PASS Parsing: <http://example.org/test?%23%23> against <about:blank>
 PASS Parsing: <http://example.org/test?%GH> against <about:blank>
 PASS Parsing: <http://example.org/test?a#%EF> against <about:blank>
 PASS Parsing: <http://example.org/test?a#%GH> against <about:blank>
-FAIL Parsing: <test-a.html> against <a> assert_unreached: Expected URL to fail parsing Reached unreachable code
-FAIL Parsing: <test-a-slash.html> against <a/> assert_unreached: Expected URL to fail parsing Reached unreachable code
-FAIL Parsing: <test-a-slash-slash.html> against <a//> assert_unreached: Expected URL to fail parsing Reached unreachable code
+FAIL Parsing: <a> against <about:blank> assert_equals: failure should set href to input expected "a" but got ""
+FAIL Parsing: <a/> against <about:blank> assert_equals: failure should set href to input expected "a/" but got ""
+FAIL Parsing: <a//> against <about:blank> assert_equals: failure should set href to input expected "a//" but got ""
 FAIL Parsing: <test-a-colon.html> against <a:> assert_unreached: Expected URL to fail parsing Reached unreachable code
+FAIL Parsing: <test-a-colon-b.html> against <a:b> assert_unreached: Expected URL to fail parsing Reached unreachable code
 FAIL Parsing: <test-a-colon-slash.html> against <a:/> assert_equals: href expected "a:/test-a-colon-slash.html" but got "file:///A:/test-a-colon-slash.html"
 FAIL Parsing: <test-a-colon-slash-slash.html> against <a://> assert_equals: href expected "a:///test-a-colon-slash-slash.html" but got "file:///A://test-a-colon-slash-slash.html"
-FAIL Parsing: <test-a-colon-b.html> against <a:b> assert_unreached: Expected URL to fail parsing Reached unreachable code
 FAIL Parsing: <test-a-colon-slash-b.html> against <a:/b> assert_equals: href expected "a:/test-a-colon-slash-b.html" but got "file:///A:/test-a-colon-slash-b.html"
 FAIL Parsing: <test-a-colon-slash-slash-b.html> against <a://b> assert_equals: href expected "a://b/test-a-colon-slash-slash-b.html" but got "file:///A://test-a-colon-slash-slash-b.html"
 PASS Parsing: <http://example.org/test?a#b\0c> against <about:blank>
