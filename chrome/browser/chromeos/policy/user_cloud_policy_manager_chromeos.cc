@@ -68,11 +68,6 @@ const char kUMAInitialFetchOAuth2Error[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2Error";
 const char kUMAInitialFetchOAuth2NetworkError[] =
     "Enterprise.UserPolicyChromeOS.InitialFetch.OAuth2NetworkError";
-
-// Default frequency for uploading non-enterprise status reports.
-constexpr base::TimeDelta kDeviceStatusUploadFrequency =
-    base::TimeDelta::FromMinutes(10);
-
 }  // namespace
 
 UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
@@ -204,25 +199,6 @@ void UserCloudPolicyManagerChromeOS::Connect(
 
   app_install_event_log_uploader_ =
       std::make_unique<AppInstallEventLogUploader>(client());
-
-  // If non-enterprise device is registered with DMServer and has User Policy
-  // applied, it should upload device status to the server. For devices in
-  // enterprise mode status upload is controlled by
-  // DeviceCloudPolicyManagerChromeOS.
-  policy::BrowserPolicyConnectorChromeOS* connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  if (connector->GetDeviceMode() == DEVICE_MODE_CONSUMER) {
-    status_uploader_.reset(new StatusUploader(
-        client(),
-        std::make_unique<DeviceStatusCollector>(
-            local_state_, chromeos::system::StatisticsProvider::GetInstance(),
-            DeviceStatusCollector::VolumeInfoFetcher(),
-            DeviceStatusCollector::CPUStatisticsFetcher(),
-            DeviceStatusCollector::CPUTempFetcher(),
-            DeviceStatusCollector::AndroidStatusFetcher(),
-            false /* is_enterprise_device */),
-        task_runner_, kDeviceStatusUploadFrequency));
-  }
 }
 
 void UserCloudPolicyManagerChromeOS::OnAccessTokenAvailable(
