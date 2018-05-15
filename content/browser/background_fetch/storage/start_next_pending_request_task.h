@@ -48,9 +48,6 @@ class StartNextPendingRequestTask : public DatabaseTask {
 
   void StartDownload();
 
-  ServiceWorkerFetchRequest DeserializeFetchRequest(
-      const proto::ServiceWorkerFetchRequest& request);
-
   void DidDeletePendingRequest(ServiceWorkerStatusCode status);
 
   int64_t service_worker_registration_id_;

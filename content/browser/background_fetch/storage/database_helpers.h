@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 
@@ -52,10 +51,6 @@ std::string CompletedRequestKey(const std::string& unique_id,
 enum class DatabaseStatus { kOk, kFailed, kNotFound };
 
 DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status);
-
-void FillServiceWorkerFetchRequestProto(
-    const ServiceWorkerFetchRequest& request,
-    proto::ServiceWorkerFetchRequest* request_proto);
 
 }  // namespace background_fetch
 

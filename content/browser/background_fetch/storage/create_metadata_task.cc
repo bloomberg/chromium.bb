@@ -115,8 +115,7 @@ void CreateMetadataTask::StoreMetadata() {
     proto::BackgroundFetchPendingRequest pending_request_proto;
     pending_request_proto.set_unique_id(registration_id_.unique_id());
     pending_request_proto.set_request_index(i);
-    FillServiceWorkerFetchRequestProto(requests_[i],
-                                       pending_request_proto.mutable_request());
+    pending_request_proto.set_serialized_request(requests_[i].Serialize());
     entries.emplace_back(PendingRequestKey(registration_id_.unique_id(), i),
                          pending_request_proto.SerializeAsString());
   }

@@ -48,8 +48,8 @@ void MarkRequestCompleteTask::StoreResponse() {
 void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(bool succeeded) {
   completed_request_.set_unique_id(registration_id_.unique_id());
   completed_request_.set_request_index(request_info_->request_index());
-  FillServiceWorkerFetchRequestProto(request_info_->fetch_request(),
-                                     completed_request_.mutable_request());
+  completed_request_.set_serialized_request(
+      request_info_->fetch_request().Serialize());
   completed_request_.set_download_guid(request_info_->download_guid());
   completed_request_.set_succeeded(succeeded);
 

@@ -88,19 +88,6 @@ DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status) {
   return DatabaseStatus::kFailed;
 }
 
-void FillServiceWorkerFetchRequestProto(
-    const ServiceWorkerFetchRequest& request,
-    proto::ServiceWorkerFetchRequest* request_proto) {
-  DCHECK(request_proto);
-  request_proto->set_url(request.url.spec());
-  request_proto->set_method(request.method);
-  request_proto->mutable_headers()->insert(request.headers.begin(),
-                                           request.headers.end());
-  request_proto->mutable_referrer()->set_url(request.referrer.url.spec());
-  request_proto->mutable_referrer()->set_policy(request.referrer.policy);
-  request_proto->set_is_reload(request.is_reload);
-}
-
 }  // namespace background_fetch
 
 }  // namespace content
