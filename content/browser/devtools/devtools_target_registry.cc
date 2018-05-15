@@ -149,10 +149,12 @@ class DevToolsTargetRegistry::ContentsObserver : public ObserverBase,
   void WebContentsDestroyed() override {
     NOTREACHED() << "DevToolsTarget Registry clients should be destroyed "
                     "before WebContents";
+    registry_->UnregisterWebContents(web_contents());
   }
 
   ~ContentsObserver() override {
-    registry_->UnregisterWebContents(web_contents());
+    if (web_contents())
+      registry_->UnregisterWebContents(web_contents());
   }
 
   DevToolsTargetRegistry* registry_;
