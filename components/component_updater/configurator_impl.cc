@@ -9,7 +9,6 @@
 #include <algorithm>
 
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -55,9 +54,6 @@ const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
 // Disables background downloads.
 const char kSwitchDisableBackgroundDownloads[] = "disable-background-downloads";
 #endif  // defined(OS_WIN)
-
-const base::Feature kAlternateComponentUrls{"AlternateComponentUrls",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If there is an element of |vec| of the form |test|=.*, returns the right-
 // hand side of that assignment. Otherwise, returns an empty string.
@@ -134,20 +130,11 @@ int ConfiguratorImpl::UpdateDelay() const {
 }
 
 std::vector<GURL> ConfiguratorImpl::UpdateUrl() const {
-  std::vector<GURL> urls;
   if (url_source_override_.is_valid()) {
-    urls.push_back(GURL(url_source_override_));
-    return urls;
+    return {GURL(url_source_override_)};
   }
 
-  if (base::FeatureList::IsEnabled(kAlternateComponentUrls)) {
-    urls.push_back(GURL(kUpdaterDefaultUrlAlt));
-    urls.push_back(GURL(kUpdaterFallbackUrlAlt));
-  } else {
-    urls.push_back(GURL(kUpdaterDefaultUrl));
-    urls.push_back(GURL(kUpdaterFallbackUrl));
-  }
-
+  std::vector<GURL> urls{GURL(kUpdaterDefaultUrl), GURL(kUpdaterFallbackUrl)};
   if (require_encryption_)
     update_client::RemoveUnsecureUrls(&urls);
 
