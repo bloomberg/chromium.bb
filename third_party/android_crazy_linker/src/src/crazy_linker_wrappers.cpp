@@ -4,7 +4,6 @@
 
 #include "crazy_linker_wrappers.h"
 
-#include <dlfcn.h>
 #include <link.h>
 
 #include "crazy_linker_debug.h"
@@ -12,6 +11,7 @@
 #include "crazy_linker_library_list.h"
 #include "crazy_linker_library_view.h"
 #include "crazy_linker_shared_library.h"
+#include "crazy_linker_system_linker.h"
 #include "crazy_linker_thread.h"
 #include "crazy_linker_util.h"
 
@@ -75,7 +75,7 @@ int __aeabi_atexit(void* object, void (*destructor)(void*), void* dso_handle) {
 // Used to save the system dlerror() into our thread-specific data.
 void SaveSystemError() {
   ThreadData* data = GetThreadData();
-  data->SetError(::dlerror());
+  data->SetError(SystemLinker::Error());
 }
 
 char* WrapDlerror() {
@@ -105,11 +105,10 @@ void* WrapDlopen(const char* path, int mode) {
   }
 
   // Try to load the executable with the system dlopen() instead.
-  ::dlerror();
-  void* system_lib = ::dlopen(path, mode);
+  void* system_lib = SystemLinker::Open(path, mode);
   if (system_lib == NULL) {
     SaveSystemError();
-    return NULL;
+    return nullptr;
   }
 
   auto* wrap_lib = new LibraryView(system_lib, path ? path : "<executable>");
@@ -147,7 +146,7 @@ void* WrapDlsym(void* lib_handle, const char* symbol_name) {
   if (!globals->valid_handles()->Has(lib_handle)) {
     // Note: the handle was not opened with the crazy linker, so fall back
     // to the system linker. That can happen in rare cases.
-    void* result = ::dlsym(lib_handle, symbol_name);
+    void* result = SystemLinker::Resolve(lib_handle, symbol_name);
     if (!result) {
       SaveSystemError();
       LOG("dlsym: could not find symbol '%s' from foreign library\n",
@@ -158,9 +157,7 @@ void* WrapDlsym(void* lib_handle, const char* symbol_name) {
 
   auto* wrap_lib = reinterpret_cast<LibraryView*>(lib_handle);
   if (wrap_lib->IsSystem()) {
-    // Note: the system dlsym() only looks into the target library,
-    // while the GNU linker performs a breadth-first search.
-    void* result = ::dlsym(wrap_lib->GetSystem(), symbol_name);
+    void* result = SystemLinker::Resolve(wrap_lib->GetSystem(), symbol_name);
     if (!result) {
       SaveSystemError();
       LOG("dlsym:%s: could not find symbol '%s' from system library\n%s",
@@ -208,8 +205,7 @@ int WrapDladdr(void* address, Dl_info* info) {
     }
   }
   // Otherwise, use system version.
-  ::dlerror();
-  int ret = ::dladdr(address, info);
+  int ret = SystemLinker::AddressInfo(address, info);
   if (ret != 0)
     SaveSystemError();
   return ret;
@@ -225,7 +221,7 @@ int WrapDlclose(void* lib_handle) {
   if (!globals->valid_handles()->Remove(lib_handle)) {
     // This is a foreign handle that was not created by the crazy linker.
     // Fall-back to the system in this case.
-    if (::dlclose(lib_handle) != 0) {
+    if (SystemLinker::Close(lib_handle) != 0) {
       SaveSystemError();
       LOG("dlclose: could not close foreign library handle %p\n%s", lib_handle,
           GetThreadData()->GetError());

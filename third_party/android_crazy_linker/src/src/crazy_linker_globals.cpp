@@ -34,13 +34,6 @@ void InitGlobals() {
 }  // namespace
 
 Globals::Globals() {
-  // TODO(digit): Remove the need for a recursive mutex (which is often the
-  // symptom of something wrong in threaded code). This needs refactoring
-  // the deferred task management though.
-  pthread_mutexattr_t attr;
-  pthread_mutexattr_init(&attr);
-  pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
-  pthread_mutex_init(&lock_, &attr);
   search_paths_.ResetFromEnv("LD_LIBRARY_PATH");
 }
 
@@ -64,5 +57,8 @@ Globals* Globals::Get() {
 
 // static
 int Globals::sdk_build_version = 0;
+
+// static
+pthread_mutex_t ScopedLinkMapLocker::s_lock_ = PTHREAD_MUTEX_INITIALIZER;
 
 }  // namespace crazy

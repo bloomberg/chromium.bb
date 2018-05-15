@@ -196,6 +196,13 @@ void ScopedPageReadWriteRemapper::Release() {
 
 }  // namespace
 
+r_debug* RDebug::GetAddress() {
+  if (!init_) {
+    Init();
+  }
+  return r_debug_;
+}
+
 bool RDebug::Init() {
   // The address of '_r_debug' is in the DT_DEBUG entry of the current
   // executable.
@@ -410,7 +417,6 @@ void RDebug::WriteLinkMapField(link_map_t** link_pointer, link_map_t* entry) {
 }
 
 void RDebug::AddEntryImpl(link_map_t* entry) {
-  ScopedLockedGlobals globals;  // TODO(digit): Remove this lock.
   LOG("Adding: %s", entry->l_name);
   if (!init_)
     Init();
@@ -419,6 +425,9 @@ void RDebug::AddEntryImpl(link_map_t* entry) {
     LOG("Nothing to do");
     return;
   }
+
+  // Ensure modifications to the global link map are synchronized.
+  ScopedLinkMapLocker locker;
 
   // IMPORTANT: GDB expects the first entry in the list to correspond
   // to the executable. So add our new entry just after it. This is ok
@@ -468,10 +477,13 @@ void RDebug::AddEntryImpl(link_map_t* entry) {
 }
 
 void RDebug::DelEntryImpl(link_map_t* entry) {
-  ScopedLockedGlobals globals;  // TODO(digit): Remove this lock.
-  LOG("Deleting: %s", entry->l_name);
   if (!r_debug_)
     return;
+
+  LOG("Deleting: %s", entry->l_name);
+
+  // Ensure modifications to the global link map are synchronized.
+  ScopedLinkMapLocker locker;
 
   // Tell GDB the list is going to be modified.
   CallRBrk(RT_DELETE);
