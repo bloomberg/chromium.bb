@@ -86,16 +86,6 @@ HTMLOptionElement* HTMLOptionElement::CreateForJSConstructor(
   return element;
 }
 
-void HTMLOptionElement::AttachLayoutTree(AttachContext& context) {
-  AttachContext option_context(context);
-  if (!GetNonAttachedStyle() && ParentComputedStyle()) {
-    if (HTMLSelectElement* select = OwnerSelectElement())
-      select->UpdateListOnLayoutObject();
-    SetNonAttachedStyle(StyleForLayoutObject());
-  }
-  HTMLElement::AttachLayoutTree(option_context);
-}
-
 bool HTMLOptionElement::SupportsFocus() const {
   HTMLSelectElement* select = OwnerSelectElement();
   if (select && select->UsesMenuList())

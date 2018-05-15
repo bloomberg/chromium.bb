@@ -337,20 +337,6 @@ AtomicString HTMLSlotElement::GetName() const {
 }
 
 void HTMLSlotElement::AttachLayoutTree(AttachContext& context) {
-  if (!GetNonAttachedStyle() && ParentComputedStyle()) {
-    // The select/optgroup/option assumes computed style is stored on optgroup
-    // and option even when they are display:none to update selected indices
-    // correctly. See HTMLOptionElement::IsDisplayNone(). The select and
-    // optgroup elements use a UA shadow with slots for rendering. With slot
-    // elements in the flat tree, we need to ensure that also the slot element
-    // child of optgroups gets their ComputedStyle set in order to inherit and
-    // set the ComputedStyle of display:none option elements.
-    if (Element* host = ParentOrShadowHostElement()) {
-      if (IsHTMLOptGroupElement(host))
-        SetNonAttachedStyle(StyleForLayoutObject());
-    }
-  }
-
   HTMLElement::AttachLayoutTree(context);
 
   if (SupportsAssignment()) {
