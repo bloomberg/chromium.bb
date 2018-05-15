@@ -18,6 +18,7 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
@@ -361,11 +362,32 @@ void AutofillPopupViewNativeViews::Hide() {
 }
 
 gfx::Size AutofillPopupViewNativeViews::CalculatePreferredSize() const {
+  // The border of the input element should be aligned with the border of the
+  // dropdown when suggestions are not too wide.
+  int contents_width =
+      gfx::ToEnclosingRect(controller_->element_bounds()).width();
+
+  // Compute the internal width needed for the contents by discounting the
+  // width required for the border. This will ensure that, once added, the
+  // dropdown border aligns with the element's border.
+  contents_width -= GetWidget()->GetRootView()->GetInsets().width();
+
+  // Allow the dropdown to grow beyond the element width if it requires more
+  // horizontal space to render the suggestions.
   gfx::Size size = AutofillPopupBaseView::CalculatePreferredSize();
-  int width = size.width();
-  if (width % kDropdownWidthMultiple)
-    width = width + (kDropdownWidthMultiple - (width % kDropdownWidthMultiple));
-  size.set_width(std::max(kDropdownMinWidth, width));
+  if (contents_width < size.width()) {
+    contents_width = size.width();
+    // Use multiples of |kDropdownWidthMultiple| if the required width is larger
+    // than the element width.
+    if (contents_width % kDropdownWidthMultiple) {
+      contents_width +=
+          kDropdownWidthMultiple - (contents_width % kDropdownWidthMultiple);
+    }
+  }
+
+  // Notwithstanding all the above rules, enforce a hard minimum so the dropdown
+  // is not too small to interact with.
+  size.set_width(std::max(kDropdownMinWidth, contents_width));
   return size;
 }
 
