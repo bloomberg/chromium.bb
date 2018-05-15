@@ -1205,7 +1205,7 @@ void Tab::PaintSeparator(gfx::Canvas* canvas, SkColor inactive_color) {
 
   const int tab_height = GetContentsBounds().height();
   gfx::RectF separator_bounds;
-  separator_bounds.set_size(gfx::SizeF(1, 16));
+  separator_bounds.set_size(gfx::SizeF(1, 20));
   separator_bounds.set_origin(gfx::PointF(
       GetTabEndcapWidth() / 2, (tab_height - separator_bounds.height()) / 2));
   // The following will paint the separator using an opacity that should
