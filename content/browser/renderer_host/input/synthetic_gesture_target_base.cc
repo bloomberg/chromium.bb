@@ -18,6 +18,7 @@ using blink::WebTouchEvent;
 using blink::WebTouchPoint;
 using blink::WebMouseEvent;
 using blink::WebMouseWheelEvent;
+using blink::WebGestureEvent;
 
 namespace content {
 namespace {
@@ -85,6 +86,19 @@ void SyntheticGestureTargetBase::DispatchInputEventToPlatform(
       return;
     }
     DispatchWebMouseEventToPlatform(web_mouse, latency_info);
+  } else if (WebInputEvent::IsPinchGestureEventType(event.GetType())) {
+    const WebGestureEvent& web_pinch =
+        static_cast<const WebGestureEvent&>(event);
+    // Touchscreen pinches should be injected as touch events.
+    DCHECK_EQ(blink::kWebGestureDeviceTouchpad, web_pinch.SourceDevice());
+    if (event.GetType() == WebInputEvent::kGesturePinchBegin &&
+        !PointIsWithinContents(web_pinch.PositionInWidget().x,
+                               web_pinch.PositionInWidget().y)) {
+      LOG(WARNING)
+          << "Pinch coordinates are not within content bounds on PinchBegin.";
+      return;
+    }
+    DispatchWebGestureEventToPlatform(web_pinch, latency_info);
   } else {
     NOTREACHED();
   }
@@ -103,6 +117,12 @@ void SyntheticGestureTargetBase::DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo& latency_info) {
   host_->ForwardWheelEventWithLatencyInfo(web_wheel, latency_info);
+}
+
+void SyntheticGestureTargetBase::DispatchWebGestureEventToPlatform(
+    const blink::WebGestureEvent& web_gesture,
+    const ui::LatencyInfo& latency_info) {
+  host_->ForwardGestureEventWithLatencyInfo(web_gesture, latency_info);
 }
 
 void SyntheticGestureTargetBase::DispatchWebMouseEventToPlatform(

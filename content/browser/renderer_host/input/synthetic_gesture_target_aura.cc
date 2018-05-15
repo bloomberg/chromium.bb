@@ -98,6 +98,30 @@ void SyntheticGestureTargetAura::DispatchWebMouseWheelEventToPlatform(
     return;
 }
 
+void SyntheticGestureTargetAura::DispatchWebGestureEventToPlatform(
+    const blink::WebGestureEvent& web_gesture,
+    const ui::LatencyInfo& latency_info) {
+  DCHECK(blink::WebInputEvent::IsPinchGestureEventType(web_gesture.GetType()));
+  ui::EventType event_type = ui::WebEventTypeToEventType(web_gesture.GetType());
+  int flags = ui::WebEventModifiersToEventFlags(web_gesture.GetModifiers());
+
+  ui::GestureEventDetails pinch_details(event_type);
+  pinch_details.set_device_type(ui::GestureDeviceType::DEVICE_TOUCHPAD);
+  if (event_type == ui::ET_GESTURE_PINCH_UPDATE)
+    pinch_details.set_scale(web_gesture.data.pinch_update.scale);
+
+  ui::GestureEvent pinch_event(
+      web_gesture.PositionInWidget().x * device_scale_factor_,
+      web_gesture.PositionInWidget().y * device_scale_factor_, flags,
+      ui::EventTimeForNow(), pinch_details);
+
+  aura::Window* window = GetWindow();
+  pinch_event.ConvertLocationToTarget(window, window->GetRootWindow());
+
+  aura::EventInjector injector;
+  injector.Inject(window->GetHost(), &pinch_event);
+}
+
 void SyntheticGestureTargetAura::DispatchWebMouseEventToPlatform(
     const blink::WebMouseEvent& web_mouse_event,
     const ui::LatencyInfo& latency_info) {

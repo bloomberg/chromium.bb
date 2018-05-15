@@ -1457,13 +1457,15 @@ void RenderWidgetHostViewMac::OnNSViewForwardWheelEvent(
 }
 
 void RenderWidgetHostViewMac::OnNSViewGestureBegin(
-    blink::WebGestureEvent begin_event) {
+    blink::WebGestureEvent begin_event,
+    bool is_synthetically_injected) {
   gesture_begin_event_.reset(new WebGestureEvent(begin_event));
 
   // If the page is at the minimum zoom level, require a threshold be reached
-  // before the pinch has an effect.
+  // before the pinch has an effect. Synthetic pinches are not subject to this
+  // threshold.
   if (page_at_minimum_scale_) {
-    pinch_has_reached_zoom_threshold_ = false;
+    pinch_has_reached_zoom_threshold_ = is_synthetically_injected;
     pinch_unused_amount_ = 1;
   }
 }

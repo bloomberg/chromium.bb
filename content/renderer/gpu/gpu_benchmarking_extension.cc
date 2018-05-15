@@ -803,12 +803,12 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   float anchor_y;
   v8::Local<v8::Function> callback;
   float relative_pointer_speed_in_pixels_s = 800;
+  int gesture_source_type = SyntheticGestureParams::DEFAULT_INPUT;
 
-  if (!GetArg(args, &scale_factor) ||
-      !GetArg(args, &anchor_x) ||
-      !GetArg(args, &anchor_y) ||
-      !GetOptionalArg(args, &callback) ||
-      !GetOptionalArg(args, &relative_pointer_speed_in_pixels_s)) {
+  if (!GetArg(args, &scale_factor) || !GetArg(args, &anchor_x) ||
+      !GetArg(args, &anchor_y) || !GetOptionalArg(args, &callback) ||
+      !GetOptionalArg(args, &relative_pointer_speed_in_pixels_s) ||
+      !GetOptionalArg(args, &gesture_source_type)) {
     return false;
   }
 
@@ -825,6 +825,27 @@ bool GpuBenchmarking::PinchBy(gin::Arguments* args) {
   gesture_params.anchor.SetPoint(anchor_x, anchor_y);
   gesture_params.relative_pointer_speed_in_pixels_s =
       relative_pointer_speed_in_pixels_s;
+
+  if (gesture_source_type < 0 ||
+      gesture_source_type > SyntheticGestureParams::GESTURE_SOURCE_TYPE_MAX) {
+    args->ThrowTypeError("Unknown gesture source type");
+    return false;
+  }
+
+  gesture_params.gesture_source_type =
+      static_cast<SyntheticGestureParams::GestureSourceType>(
+          gesture_source_type);
+
+  switch (gesture_params.gesture_source_type) {
+    case SyntheticGestureParams::DEFAULT_INPUT:
+    case SyntheticGestureParams::TOUCH_INPUT:
+    case SyntheticGestureParams::MOUSE_INPUT:
+      break;
+    case SyntheticGestureParams::PEN_INPUT:
+      args->ThrowTypeError(
+          "Gesture is not implemented for the given source type");
+      return false;
+  }
 
   scoped_refptr<CallbackAndContext> callback_and_context =
       new CallbackAndContext(args->isolate(), callback,

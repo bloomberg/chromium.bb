@@ -82,7 +82,8 @@ class NoopClient : public RenderWidgetHostNSViewClient {
       const blink::WebMouseEvent& web_event) override {}
   void OnNSViewForwardWheelEvent(
       const blink::WebMouseWheelEvent& web_event) override {}
-  void OnNSViewGestureBegin(blink::WebGestureEvent begin_event) override {}
+  void OnNSViewGestureBegin(blink::WebGestureEvent begin_event,
+                            bool is_synthetically_injected) override {}
   void OnNSViewGestureUpdate(blink::WebGestureEvent update_event) override {}
   void OnNSViewGestureEnd(blink::WebGestureEvent end_event) override {}
   void OnNSViewSmartMagnify(
@@ -895,12 +896,13 @@ void ExtractUnderlines(NSAttributedString* string,
   }
 }
 
-- (void)handleBeginGestureWithEvent:(NSEvent*)event {
+- (void)handleBeginGestureWithEvent:(NSEvent*)event
+            isSyntheticallyInjected:(BOOL)isSyntheticallyInjected {
   [responderDelegate_ beginGestureWithEvent:event];
 
   WebGestureEvent gestureBeginEvent(WebGestureEventBuilder::Build(event, self));
 
-  client_->OnNSViewGestureBegin(gestureBeginEvent);
+  client_->OnNSViewGestureBegin(gestureBeginEvent, isSyntheticallyInjected);
 }
 
 - (void)handleEndGestureWithEvent:(NSEvent*)event {
@@ -931,7 +933,7 @@ void ExtractUnderlines(NSAttributedString* string,
 #endif
 
   if (shouldHandle) {
-    [self handleBeginGestureWithEvent:event];
+    [self handleBeginGestureWithEvent:event isSyntheticallyInjected:NO];
   }
 }
 
@@ -1015,7 +1017,7 @@ void ExtractUnderlines(NSAttributedString* string,
   // "end" phases.
   if (base::mac::IsAtLeastOS10_11()) {
     if (event.phase == NSEventPhaseBegan) {
-      [self handleBeginGestureWithEvent:event];
+      [self handleBeginGestureWithEvent:event isSyntheticallyInjected:NO];
     }
 
     if (event.phase == NSEventPhaseEnded ||
@@ -1064,7 +1066,7 @@ void ExtractUnderlines(NSAttributedString* string,
   // "end" phases.
   if (base::mac::IsAtLeastOS10_11()) {
     if (event.phase == NSEventPhaseBegan) {
-      [self handleBeginGestureWithEvent:event];
+      [self handleBeginGestureWithEvent:event isSyntheticallyInjected:NO];
       return;
     }
 

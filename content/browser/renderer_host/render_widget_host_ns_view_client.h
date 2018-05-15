@@ -109,7 +109,8 @@ class RenderWidgetHostNSViewClient {
       const blink::WebMouseWheelEvent& web_event) = 0;
 
   // Handling pinch gesture events.
-  virtual void OnNSViewGestureBegin(blink::WebGestureEvent begin_event) = 0;
+  virtual void OnNSViewGestureBegin(blink::WebGestureEvent begin_event,
+                                    bool is_synthetically_injected) = 0;
   virtual void OnNSViewGestureUpdate(blink::WebGestureEvent update_event) = 0;
   virtual void OnNSViewGestureEnd(blink::WebGestureEvent end_event) = 0;
   virtual void OnNSViewSmartMagnify(

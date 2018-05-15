@@ -17,6 +17,7 @@ namespace blink {
 class WebTouchEvent;
 class WebMouseEvent;
 class WebMouseWheelEvent;
+class WebGestureEvent;
 }
 
 namespace content {
@@ -34,6 +35,10 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
 
   virtual void DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
+      const ui::LatencyInfo& latency_info);
+
+  virtual void DispatchWebGestureEventToPlatform(
+      const blink::WebGestureEvent& web_gesture,
       const ui::LatencyInfo& latency_info);
 
   virtual void DispatchWebMouseEventToPlatform(
