@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
+#import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
@@ -25,6 +26,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeTextHeader,
   ItemTypeTextFooter,
   ItemTypeURLNoMetadata,
+  ItemTypeTextAccessoryImage,
+  ItemTypeTextAccessoryNoImage,
   ItemTypeURLWithTimestamp,
   ItemTypeURLWithSize,
 };
@@ -71,6 +74,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
   textItem.textAlignment = NSTextAlignmentCenter;
   textItem.textColor = TextItemColorBlack;
   [model addItem:textItem toSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewAccessoryItem* textAccessoryItem =
+      [[TableViewAccessoryItem alloc] initWithType:ItemTypeTextAccessoryImage];
+  textAccessoryItem.title = @"Text Accessory with History Image";
+  textAccessoryItem.image = [UIImage imageNamed:@"show_history"];
+  [model addItem:textAccessoryItem
+      toSectionWithIdentifier:SectionIdentifierText];
+
+  textAccessoryItem = [[TableViewAccessoryItem alloc]
+      initWithType:ItemTypeTextAccessoryNoImage];
+  textAccessoryItem.title = @"Text Accessory No Image";
+  [model addItem:textAccessoryItem
+      toSectionWithIdentifier:SectionIdentifierText];
 
   TableViewTextItem* textItemDefault =
       [[TableViewTextItem alloc] initWithType:ItemTypeText];

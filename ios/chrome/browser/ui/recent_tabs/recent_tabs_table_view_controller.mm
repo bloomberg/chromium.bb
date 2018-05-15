@@ -32,6 +32,7 @@
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
@@ -201,10 +202,10 @@ const int kRelativeTimeMaxHours = 4;
   [self addRecentlyClosedTabItems];
 
   // Add show full history item last.
-  TableViewURLItem* historyItem =
-      [[TableViewURLItem alloc] initWithType:ItemTypeShowFullHistory];
+  TableViewAccessoryItem* historyItem =
+      [[TableViewAccessoryItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
-  historyItem.favicon = [UIImage imageNamed:@"show_history"];
+  //  historyItem.image = [UIImage imageNamed:@"show_history"];
   [model addItem:historyItem
       toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
 }
