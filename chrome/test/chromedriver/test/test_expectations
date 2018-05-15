@@ -110,34 +110,12 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
 
 _OS_NEGATIVE_FILTER = {}
 _OS_NEGATIVE_FILTER['win'] = [
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=373
-    'RenderedWebElementTest.testHoverPersists',
-    'RenderedWebElementTest.canClickOnASuckerFishStyleMenu',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=416
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
 ]
 _OS_NEGATIVE_FILTER['linux'] = [
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=416
-    'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1148
-    'CombinedInputActionsTest.testCombiningShiftAndClickResultsInANewWindow',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1150
-    'BasicKeyboardInterfaceTest.testBasicKeyboardInputOnActiveElement',
 ]
 _OS_NEGATIVE_FILTER['mac'] = [
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=26
-    'AlertsTest.testAlertShouldNotAllowAdditionalCommandsIfDismissed',
-    'AlertsTest.testShouldAllowUsersToDismissAnAlertManually',
-    'FormHandlingTest.handleFormWithJavascriptAction',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=354
-    'AlertsTest.testShouldAllowUsersToAcceptAnAlertInAFrame',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=375
-    'PageLoadingTest.testShouldBeAbleToNavigateBackInTheBrowserHistoryInPresenceOfIframes',
     # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=416
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePage',
-    # Flaky: https://bugs.chromium.org/p/chromedriver/issues/detail?id=1149
-    'ChromeDriverTests.testShouldAllowTheUserToSwitchToAnIFrameAndRemainFocusedOnIt',
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1857
     'TakesScreenshotTest.testShouldCaptureScreenshot',
     'TakesScreenshotTest.testShouldCaptureScreenshotAtFramePageAfterSwitching',
