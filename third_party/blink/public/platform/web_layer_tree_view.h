@@ -67,7 +67,7 @@ class WebLayerTreeView {
     kDidNotSwapActivationFails = 4,
     kSwapResultMax,
   };
-  using ReportTimeCallback = base::Callback<void(SwapResult, double)>;
+  using ReportTimeCallback = base::Callback<void(SwapResult, base::TimeTicks)>;
 
   virtual ~WebLayerTreeView() = default;
 

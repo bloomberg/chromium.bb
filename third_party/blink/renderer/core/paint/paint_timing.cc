@@ -205,7 +205,7 @@ void PaintTiming::RegisterNotifySwapTime(PaintEvent event,
 
 void PaintTiming::ReportSwapTime(PaintEvent event,
                                  WebLayerTreeView::SwapResult result,
-                                 double timestamp) {
+                                 base::TimeTicks timestamp) {
   // If the swap fails for any reason, we use the timestamp when the SwapPromise
   // was broken. |result| == WebLayerTreeView::SwapResult::kDidNotSwapSwapFails
   // usually means the compositor decided not swap because there was no actual
@@ -218,20 +218,19 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
   //
   // TODO(crbug.com/738235): Consider not reporting any timestamp when failing
   // for reasons other than kDidNotSwapSwapFails.
-  TimeTicks time = TimeTicksFromSeconds(timestamp);
   ReportSwapResultHistogram(result);
   switch (event) {
     case PaintEvent::kFirstPaint:
-      SetFirstPaintSwap(time);
+      SetFirstPaintSwap(timestamp);
       return;
     case PaintEvent::kFirstContentfulPaint:
-      SetFirstContentfulPaintSwap(time);
+      SetFirstContentfulPaintSwap(timestamp);
       return;
     case PaintEvent::kFirstTextPaint:
-      SetFirstTextPaintSwap(time);
+      SetFirstTextPaintSwap(timestamp);
       return;
     case PaintEvent::kFirstImagePaint:
-      SetFirstImagePaintSwap(time);
+      SetFirstImagePaintSwap(timestamp);
       return;
     default:
       NOTREACHED();

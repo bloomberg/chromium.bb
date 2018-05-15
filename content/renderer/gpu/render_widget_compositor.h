@@ -56,9 +56,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
     : public blink::WebLayerTreeView,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient {
-  using ReportTimeCallback =
-      base::Callback<void(blink::WebLayerTreeView::SwapResult, double)>;
-
  public:
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.

@@ -99,13 +99,7 @@ namespace {
 const base::Feature kUnpremultiplyAndDitherLowBitDepthTiles = {
     "UnpremultiplyAndDitherLowBitDepthTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
-using ReportTimeCallback =
-    base::Callback<void(WebLayerTreeView::SwapResult, double)>;
-
-double MonotonicallyIncreasingTime() {
-  return static_cast<double>(base::TimeTicks::Now().ToInternalValue()) /
-         base::Time::kMicrosecondsPerSecond;
-}
+using ReportTimeCallback = RenderWidgetCompositor::ReportTimeCallback;
 
 class ReportTimeSwapPromise : public cc::SwapPromise {
  public:
@@ -140,7 +134,7 @@ void ReportTimeSwapPromise::DidSwap() {
   task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(callback_, WebLayerTreeView::SwapResult::kDidSwap,
-                     MonotonicallyIncreasingTime()));
+                     base::TimeTicks::Now()));
 }
 
 cc::SwapPromise::DidNotSwapAction ReportTimeSwapPromise::DidNotSwap(
@@ -161,8 +155,7 @@ cc::SwapPromise::DidNotSwapAction ReportTimeSwapPromise::DidNotSwap(
       break;
   }
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback_, result, MonotonicallyIncreasingTime()));
+      FROM_HERE, base::BindOnce(callback_, result, base::TimeTicks::Now()));
   return cc::SwapPromise::DidNotSwapAction::BREAK_PROMISE;
 }
 

@@ -50,7 +50,9 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void NotifyInputEvent();
   void NotifyPaint();
   void CheckNetworkStable();
-  void ReportSwapTime(PaintEvent, WebLayerTreeView::SwapResult, double);
+  void ReportSwapTime(PaintEvent,
+                      WebLayerTreeView::SwapResult,
+                      base::TimeTicks);
   void NotifyFirstContentfulPaint(TimeTicks swap_stamp);
 
   void Trace(blink::Visitor*);
