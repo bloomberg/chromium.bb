@@ -277,8 +277,15 @@ void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
 
   if (type == blink::WebInputEvent::kChar ||
       type == blink::WebInputEvent::kRawKeyDown) {
-    event->text[0] = key_code;
-    event->unmodified_text[0] = key_code;
+    // |key| is the only parameter that contains information about the case of
+    // the character. Use it to be able to generate lower case input.
+    if (key.IsCharacter()) {
+      event->text[0] = key.ToCharacter();
+      event->unmodified_text[0] = key.ToCharacter();
+    } else {
+      event->text[0] = key_code;
+      event->unmodified_text[0] = key_code;
+    }
   }
 }
 
