@@ -3170,6 +3170,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
                       defaultText:(NSString*)defaultText
                        completion:(void (^)(BOOL, NSString*))completionHandler {
   DCHECK(completionHandler);
+
+  // JavaScript dialogs should not be presented if there is no information about
+  // the requesting page's URL.
+  GURL requestURL = net::GURLWithNSURL(frame.request.URL);
+  if (!requestURL.is_valid()) {
+    completionHandler(NO, nil);
+    return;
+  }
+
+  // If dialogs have been explicitly suppressed using WebState's
+  // SetShouldSuppressDialogs(), suppress the dialog and notify observers.
   if (self.shouldSuppressDialogs) {
     _webStateImpl->OnDialogSuppressed();
     completionHandler(NO, nil);
@@ -3177,7 +3188,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   }
 
   self.webStateImpl->RunJavaScriptDialog(
-      net::GURLWithNSURL(frame.request.URL), type, message, defaultText,
+      requestURL, type, message, defaultText,
       base::BindBlockArc(^(bool success, NSString* input) {
         completionHandler(success, input);
       }));
