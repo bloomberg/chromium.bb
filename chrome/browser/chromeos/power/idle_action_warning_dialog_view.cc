@@ -6,7 +6,6 @@
 
 #include <algorithm>
 
-#include "ash/shell.h"
 #include "base/location.h"
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_dialogs.h"

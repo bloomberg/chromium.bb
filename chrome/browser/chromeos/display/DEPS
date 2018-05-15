@@ -4,4 +4,8 @@ specific_include_rules = {
     "+ash/display/display_prefs.h",
     "+ash/shell.h",
   ],
+  # TODO(mash): http://crbug.com/839265.
+  "output_protection_controller_ash\.cc": [
+    "+ash/shell.h",
+  ],
 }

@@ -9,7 +9,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
-#include "ash/wm/window_animations.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -42,6 +41,7 @@
 #include "extensions/common/extension.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/events/devices/input_device_manager.h"
+#include "ui/wm/core/window_animations.h"
 
 using ash::mojom::CloseLockScreenNoteReason;
 using ash::mojom::LockScreenNoteOrigin;

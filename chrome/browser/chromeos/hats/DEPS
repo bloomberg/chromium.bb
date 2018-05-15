@@ -1,6 +1,0 @@
-include_rules = [
-  # TODO(crbug.com/678705): Remove this explicit rule when all of
-  # //chrome/browser/chromeos/ is free of its +ash dependency.
-  "-ash",
-  "+ash/public",
-]

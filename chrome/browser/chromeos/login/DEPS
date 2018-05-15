@@ -1,6 +1,10 @@
 include_rules = [
-  "+ash/public/cpp",
-  "+ash/public/interfaces",
+  # TODO(crbug.com/678705): Convert to using mojo interfaces in
+  # //ash/public/interfaces and eliminate this.
+  "!ash",
+  # Public interfaces are OK.
+  "+ash/public",
+
   "+components/captive_portal",
   "+components/login",
   "+components/toolbar",

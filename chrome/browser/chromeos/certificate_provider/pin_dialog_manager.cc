@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 
-#include "ash/shell.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/profiles/profile_manager.h"
