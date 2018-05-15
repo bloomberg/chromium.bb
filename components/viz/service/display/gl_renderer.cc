@@ -1029,7 +1029,9 @@ bool GLRenderer::InitializeRPDQParameters(
 static GLuint GetGLTextureIDFromSkImage(const SkImage* image,
                                         GrSurfaceOrigin* origin = nullptr) {
   GrBackendTexture backend_texture = image->getBackendTexture(true, origin);
-  DCHECK(backend_texture.isValid());
+  if (!backend_texture.isValid()) {
+    return 0;
+  }
   GrGLTextureInfo info;
   bool result = backend_texture.getGLTextureInfo(&info);
   DCHECK(result);
@@ -1076,7 +1078,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
         if (params->background_image) {
           params->background_image_id =
               GetGLTextureIDFromSkImage(params->background_image.get());
-          DCHECK(params->background_image_id);
+          DCHECK(params->background_image_id || IsContextLost());
         }
       }
     }
@@ -1217,7 +1219,7 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
     GrSurfaceOrigin origin;
     GLuint filter_image_id =
         GetGLTextureIDFromSkImage(params->filter_image.get(), &origin);
-    DCHECK(filter_image_id);
+    DCHECK(filter_image_id || IsContextLost());
     DCHECK_EQ(GL_TEXTURE0, GetActiveTextureUnit(gl_));
     gl_->BindTexture(GL_TEXTURE_2D, filter_image_id);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
