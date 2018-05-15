@@ -3399,8 +3399,8 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(
     OutOfProcessServiceMap* services) {
 #if BUILDFLAG(ENABLE_PRINTING)
-  (*services)[printing::mojom::kServiceName] =
-      base::ASCIIToUTF16("PDF Compositor Service");
+  (*services)[printing::mojom::kServiceName] = l10n_util::GetStringUTF16(
+      IDS_UTILITY_PROCESS_PDF_COMPOSITOR_SERVICE_NAME);
 #endif
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW) || \
@@ -3410,7 +3410,7 @@ void ChromeContentBrowserClient::RegisterOutOfProcessServices(
 #endif
 
   (*services)[heap_profiling::mojom::kServiceName] =
-      base::ASCIIToUTF16("Profiling Service");
+      l10n_util::GetStringUTF16(IDS_UTILITY_PROCESS_PROFILING_SERVICE_NAME);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS) || defined(OS_ANDROID)
   (*services)[chrome::mojom::kMediaGalleryUtilServiceName] =
