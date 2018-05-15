@@ -1357,8 +1357,6 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
   nqe::internal::NetworkQuality network_quality =
       cached_network_quality.network_quality();
 
-  const base::TimeTicks now = tick_clock_->NowTicks();
-
   bool update_network_quality_store = false;
 
   // Populate |network_quality| with synthetic RTT and throughput observations
@@ -1387,25 +1385,25 @@ bool NetworkQualityEstimator::ReadCachedNetworkQualityEstimate() {
   }
 
   if (update_network_quality_store) {
-    network_quality_store_->Add(
-        current_network_id_,
-        nqe::internal::CachedNetworkQuality(now, network_quality,
-                                            effective_connection_type));
+    network_quality_store_->Add(current_network_id_,
+                                nqe::internal::CachedNetworkQuality(
+                                    tick_clock_->NowTicks(), network_quality,
+                                    effective_connection_type));
   }
 
   Observation http_rtt_observation(
-      network_quality.http_rtt().InMilliseconds(), now, INT32_MIN,
-      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
+      network_quality.http_rtt().InMilliseconds(), tick_clock_->NowTicks(),
+      INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
   AddAndNotifyObserversOfRTT(http_rtt_observation);
 
   Observation transport_rtt_observation(
-      network_quality.transport_rtt().InMilliseconds(), now, INT32_MIN,
-      NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE);
+      network_quality.transport_rtt().InMilliseconds(), tick_clock_->NowTicks(),
+      INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE);
   AddAndNotifyObserversOfRTT(transport_rtt_observation);
 
   Observation througphput_observation(
-      network_quality.downstream_throughput_kbps(), now, INT32_MIN,
-      NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
+      network_quality.downstream_throughput_kbps(), tick_clock_->NowTicks(),
+      INT32_MIN, NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE);
   AddAndNotifyObserversOfThroughput(througphput_observation);
 
   ComputeEffectiveConnectionType();
