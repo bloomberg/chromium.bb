@@ -54,6 +54,7 @@ enum VolumeType {
   VOLUME_TYPE_PROVIDED,  // File system provided by the FileSystemProvider API.
   VOLUME_TYPE_MTP,
   VOLUME_TYPE_MEDIA_VIEW,
+  VOLUME_TYPE_CROSTINI,
   // The enum values must be kept in sync with FileManagerVolumeType in
   // tools/metrics/histograms/histograms.xml. Since enums for histograms are
   // append-only (for keeping the number consistent across versions), new values
@@ -96,6 +97,8 @@ class Volume : public base::SupportsWeakPtr<Volume> {
                                               bool read_only);
   static std::unique_ptr<Volume> CreateForMediaView(
       const std::string& root_document_id);
+  static std::unique_ptr<Volume> CreateForSshfsCrostini(
+      const base::FilePath& crostini_path);
   static std::unique_ptr<Volume> CreateForTesting(
       const base::FilePath& path,
       VolumeType volume_type,
@@ -275,6 +278,9 @@ class VolumeManager : public KeyedService,
   // pointer is valid. It is invalidated as soon as the volume is removed from
   // the volume manager.
   base::WeakPtr<Volume> FindVolumeById(const std::string& volume_id);
+
+  // Add sshfs crostini volume mounted at specified path.
+  void AddSshfsCrostiniVolume(const base::FilePath& sshfs_mount_path);
 
   // For testing purpose, registers a native local file system pointing to
   // |path| with DOWNLOADS type, and adds its volume info.

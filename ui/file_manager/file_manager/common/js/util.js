@@ -1082,6 +1082,8 @@ util.getRootTypeLabel = function(locationInfo) {
       return str('DRIVE_RECENT_COLLECTION_LABEL');
     case VolumeManagerCommon.RootType.RECENT:
       return str('RECENT_ROOT_LABEL');
+    case VolumeManagerCommon.RootType.CROSTINI:
+      return str('LINUX_FILES_ROOT_LABEL');
     case VolumeManagerCommon.RootType.MEDIA_VIEW:
       var mediaViewRootType =
           VolumeManagerCommon.getMediaViewRootTypeFromVolumeId(

@@ -33,6 +33,7 @@ function VolumeInfoListImpl() {
 VolumeInfoListImpl.VOLUME_LIST_ORDER_ = [
   VolumeManagerCommon.VolumeType.DRIVE,
   VolumeManagerCommon.VolumeType.DOWNLOADS,
+  VolumeManagerCommon.VolumeType.CROSTINI,
   VolumeManagerCommon.VolumeType.ARCHIVE,
   VolumeManagerCommon.VolumeType.REMOVABLE,
   VolumeManagerCommon.VolumeType.MTP,

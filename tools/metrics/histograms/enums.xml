@@ -19590,6 +19590,7 @@ Called by update_net_error_codes.py.-->
   <int value="13" label="RECENT"/>
   <int value="14" label="DRIVE_FAKE_ROOT"/>
   <int value="15" label="ADD_NEW_SERVICES_MENU"/>
+  <int value="16" label="CROSTINI"/>
 </enum>
 
 <enum name="FileManagerTaskType">
@@ -19608,6 +19609,7 @@ Called by update_net_error_codes.py.-->
   <int value="4" label="FileSystemProvider API"/>
   <int value="5" label="MTP (Media Transfer Protocol) Device"/>
   <int value="6" label="Media View"/>
+  <int value="7" label="Crostini Linux Files"/>
 </enum>
 
 <enum name="FileManagerZipHandlerType">

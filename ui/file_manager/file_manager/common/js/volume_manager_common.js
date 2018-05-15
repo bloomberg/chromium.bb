@@ -103,8 +103,8 @@ VolumeManagerCommon.RootType = {
   // 'Add new services' menu item.
   ADD_NEW_SERVICES_MENU: 'add_new_services_menu',
 
-  // Fake root for SFTP Mount such as Linux Files.
-  SFTP_MOUNT: 'sftp_mount',
+  // Root for crostini 'Linux Files'.
+  CROSTINI: 'crostini',
 };
 Object.freeze(VolumeManagerCommon.RootType);
 
@@ -134,7 +134,7 @@ VolumeManagerCommon.RootTypesForUMA = [
   VolumeManagerCommon.RootType.RECENT,
   VolumeManagerCommon.RootType.DRIVE_FAKE_ROOT,
   VolumeManagerCommon.RootType.ADD_NEW_SERVICES_MENU,
-  VolumeManagerCommon.RootType.SFTP_MOUNT,
+  VolumeManagerCommon.RootType.CROSTINI,
 ];
 console.assert(
     Object.keys(VolumeManagerCommon.RootType).length ===
@@ -217,6 +217,7 @@ VolumeManagerCommon.VolumeType = {
   MTP: 'mtp',
   PROVIDED: 'provided',
   MEDIA_VIEW: 'media_view',
+  CROSTINI: 'crostini',
 };
 
 /**
@@ -272,6 +273,8 @@ VolumeManagerCommon.getVolumeTypeFromRootType = function(rootType) {
       return VolumeManagerCommon.VolumeType.PROVIDED;
     case VolumeManagerCommon.RootType.MEDIA_VIEW:
       return VolumeManagerCommon.VolumeType.MEDIA_VIEW;
+    case VolumeManagerCommon.RootType.CROSTINI:
+      return VolumeManagerCommon.VolumeType.CROSTINI;
   }
   assertNotReached('Unknown root type: ' + rootType);
 };

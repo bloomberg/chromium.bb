@@ -264,7 +264,7 @@ function NavigationListModel(
     this.linuxFilesItem_ = new NavigationModelSFTPMountItem(
         str('LINUX_FILES_ROOT_LABEL'), {
           isDirectory: true,
-          rootType: VolumeManagerCommon.RootType.SFTP_MOUNT,
+          rootType: VolumeManagerCommon.RootType.CROSTINI,
           toURL: function() {
             return 'fake-entry://linux-files';
           },
