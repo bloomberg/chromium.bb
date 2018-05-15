@@ -483,6 +483,10 @@
     "label": "//components/cronet/android:cronet_test_instrumentation_apk",
     "type": "additional_compile_target",
   },
+  "cros_vm_sanity_test": {
+    "label": "//chromeos:cros_vm_sanity_test",
+    "type": "raw",
+  },
   "crypto_unittests": {
     "label": "//crypto:crypto_unittests",
     "type": "console_test_launcher",
