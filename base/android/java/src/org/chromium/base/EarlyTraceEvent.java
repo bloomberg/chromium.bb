@@ -106,7 +106,8 @@ public class EarlyTraceEvent {
     @VisibleForTesting static volatile int sState = STATE_DISABLED;
     // Not final as these object are not likely to be used at all.
     @VisibleForTesting static List<Event> sCompletedEvents;
-    @VisibleForTesting static Map<String, Event> sPendingEvents;
+    @VisibleForTesting
+    static Map<String, Event> sPendingEventByKey;
     @VisibleForTesting static List<AsyncEvent> sAsyncEvents;
     @VisibleForTesting static List<String> sPendingAsyncEvents;
 
@@ -138,7 +139,7 @@ public class EarlyTraceEvent {
         synchronized (sLock) {
             if (sState != STATE_DISABLED) return;
             sCompletedEvents = new ArrayList<Event>();
-            sPendingEvents = new HashMap<String, Event>();
+            sPendingEventByKey = new HashMap<String, Event>();
             sAsyncEvents = new ArrayList<AsyncEvent>();
             sPendingAsyncEvents = new ArrayList<String>();
             sState = STATE_ENABLED;
@@ -183,7 +184,7 @@ public class EarlyTraceEvent {
         Event conflictingEvent;
         synchronized (sLock) {
             if (!enabled()) return;
-            conflictingEvent = sPendingEvents.put(name, event);
+            conflictingEvent = sPendingEventByKey.put(makeEventKeyForCurrentThread(name), event);
         }
         if (conflictingEvent != null) {
             throw new IllegalArgumentException(
@@ -196,7 +197,7 @@ public class EarlyTraceEvent {
         if (!isActive()) return;
         synchronized (sLock) {
             if (!isActive()) return;
-            Event event = sPendingEvents.remove(name);
+            Event event = sPendingEventByKey.remove(makeEventKeyForCurrentThread(name));
             if (event == null) return;
             event.end();
             sCompletedEvents.add(event);
@@ -231,7 +232,7 @@ public class EarlyTraceEvent {
     static void resetForTesting() {
         sState = EarlyTraceEvent.STATE_DISABLED;
         sCompletedEvents = null;
-        sPendingEvents = null;
+        sPendingEventByKey = null;
         sAsyncEvents = null;
         sPendingAsyncEvents = null;
     }
@@ -245,9 +246,9 @@ public class EarlyTraceEvent {
             dumpAsyncEvents(sAsyncEvents);
             sAsyncEvents.clear();
         }
-        if (sPendingEvents.isEmpty() && sPendingAsyncEvents.isEmpty()) {
+        if (sPendingEventByKey.isEmpty() && sPendingAsyncEvents.isEmpty()) {
             sState = STATE_FINISHED;
-            sPendingEvents = null;
+            sPendingEventByKey = null;
             sCompletedEvents = null;
             sPendingAsyncEvents = null;
             sAsyncEvents = null;
@@ -277,6 +278,16 @@ public class EarlyTraceEvent {
         long nativeNowNanos = TimeUtils.nativeGetTimeTicksNowUs() * 1000;
         long javaNowNanos = Event.elapsedRealtimeNanos();
         return nativeNowNanos - javaNowNanos;
+    }
+
+    /**
+     * Returns a key which consists of |name| and the ID of the current thread.
+     * The key is used with pending events making them thread-specific, thus avoiding
+     * an exception when similarly named events are started from multiple threads.
+     */
+    @VisibleForTesting
+    static String makeEventKeyForCurrentThread(String name) {
+        return name + "@" + Process.myTid();
     }
 
     private static native void nativeRecordEarlyEvent(String name, long beginTimNanos,

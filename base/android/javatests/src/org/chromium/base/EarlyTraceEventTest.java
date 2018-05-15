@@ -50,7 +50,7 @@ public class EarlyTraceEventTest {
         long afterNanos = Event.elapsedRealtimeNanos();
 
         Assert.assertEquals(1, EarlyTraceEvent.sCompletedEvents.size());
-        Assert.assertTrue(EarlyTraceEvent.sPendingEvents.isEmpty());
+        Assert.assertTrue(EarlyTraceEvent.sPendingEventByKey.isEmpty());
         Event event = EarlyTraceEvent.sCompletedEvents.get(0);
         Assert.assertEquals(EVENT_NAME, event.mName);
         Assert.assertEquals(myThreadId, event.mThreadId);
@@ -71,7 +71,7 @@ public class EarlyTraceEventTest {
         long afterNanos = Event.elapsedRealtimeNanos();
 
         Assert.assertEquals(2, EarlyTraceEvent.sAsyncEvents.size());
-        Assert.assertTrue(EarlyTraceEvent.sPendingEvents.isEmpty());
+        Assert.assertTrue(EarlyTraceEvent.sPendingEventByKey.isEmpty());
         AsyncEvent eventStart = EarlyTraceEvent.sAsyncEvents.get(0);
         AsyncEvent eventEnd = EarlyTraceEvent.sAsyncEvents.get(1);
         Assert.assertEquals(EVENT_NAME, eventStart.mName);
@@ -111,7 +111,7 @@ public class EarlyTraceEventTest {
         long afterNanos = Event.elapsedRealtimeNanos();
 
         Assert.assertEquals(1, EarlyTraceEvent.sCompletedEvents.size());
-        Assert.assertTrue(EarlyTraceEvent.sPendingEvents.isEmpty());
+        Assert.assertTrue(EarlyTraceEvent.sPendingEventByKey.isEmpty());
         Event event = EarlyTraceEvent.sCompletedEvents.get(0);
         Assert.assertEquals(EVENT_NAME, event.mName);
         Assert.assertEquals(myThreadId, event.mThreadId);
@@ -129,15 +129,16 @@ public class EarlyTraceEventTest {
         EarlyTraceEvent.begin(EVENT_NAME);
 
         Assert.assertTrue(EarlyTraceEvent.sCompletedEvents.isEmpty());
-        Assert.assertEquals(1, EarlyTraceEvent.sPendingEvents.size());
-        EarlyTraceEvent.Event event = EarlyTraceEvent.sPendingEvents.get(EVENT_NAME);
+        Assert.assertEquals(1, EarlyTraceEvent.sPendingEventByKey.size());
+        EarlyTraceEvent.Event event = EarlyTraceEvent.sPendingEventByKey.get(
+                EarlyTraceEvent.makeEventKeyForCurrentThread(EVENT_NAME));
         Assert.assertEquals(EVENT_NAME, event.mName);
     }
 
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testNoDuplicatePendingEvents() {
+    public void testNoDuplicatePendingEventsFromSameThread() {
         EarlyTraceEvent.enable();
         EarlyTraceEvent.begin(EVENT_NAME);
         try {
@@ -147,6 +148,21 @@ public class EarlyTraceEventTest {
             return;
         }
         Assert.fail();
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testDuplicatePendingEventsFromDifferentThreads() throws Exception {
+        EarlyTraceEvent.enable();
+
+        Thread otherThread = new Thread(() -> { EarlyTraceEvent.begin(EVENT_NAME); });
+        otherThread.start();
+        otherThread.join();
+
+        // At this point we have a pending event with EVENT_NAME name. But events are per
+        // thread, so we should be able to start EVENT_NAME event in a different thread.
+        EarlyTraceEvent.begin(EVENT_NAME);
     }
 
     @Test
@@ -182,7 +198,7 @@ public class EarlyTraceEventTest {
         EarlyTraceEvent.begin(EVENT_NAME2);
         EarlyTraceEvent.end(EVENT_NAME2);
 
-        Assert.assertEquals(1, EarlyTraceEvent.sPendingEvents.size());
+        Assert.assertEquals(1, EarlyTraceEvent.sPendingEventByKey.size());
         Assert.assertTrue(EarlyTraceEvent.sCompletedEvents.isEmpty());
     }
 
