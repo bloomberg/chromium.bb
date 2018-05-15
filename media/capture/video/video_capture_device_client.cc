@@ -333,6 +333,10 @@ void VideoCaptureDeviceClient::OnIncomingCapturedGfxBuffer(
   auto output_buffer =
       ReserveOutputBuffer(dimensions, PIXEL_FORMAT_I420, frame_feedback_id);
 
+  // Failed to reserve I420 output buffer, so drop the frame.
+  if (!output_buffer.is_valid())
+    return;
+
   uint8_t* y_plane_data;
   uint8_t* u_plane_data;
   uint8_t* v_plane_data;
