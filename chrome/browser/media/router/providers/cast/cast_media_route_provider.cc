@@ -6,6 +6,7 @@
 
 #include "base/stl_util.h"
 #include "chrome/common/media_router/providers/cast/cast_media_source.h"
+#include "components/cast_channel/cast_message_handler.h"
 #include "url/origin.h"
 
 namespace media_router {
@@ -34,11 +35,18 @@ std::vector<url::Origin> GetOrigins(const MediaSource::Id& source_id) {
 CastMediaRouteProvider::CastMediaRouteProvider(
     mojom::MediaRouteProviderRequest request,
     mojom::MediaRouterPtrInfo media_router,
+    MediaSinkServiceBase* media_sink_service,
     CastAppDiscoveryService* app_discovery_service,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : binding_(this), app_discovery_service_(app_discovery_service) {
+    cast_channel::CastMessageHandler* message_handler,
+    const scoped_refptr<base::SequencedTaskRunner>& task_runner)
+    : binding_(this),
+      media_sink_service_(media_sink_service),
+      app_discovery_service_(app_discovery_service),
+      message_handler_(message_handler) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK(media_sink_service_);
   DCHECK(app_discovery_service_);
+  DCHECK(message_handler_);
 
   task_runner->PostTask(
       FROM_HERE,
@@ -145,8 +153,9 @@ void CastMediaRouteProvider::StartObservingMediaSinks(
   // A broadcast request is not an actual sink query; it is used to send a
   // app precache message to receivers.
   if (cast_source->broadcast_request()) {
-    // TODO(crbug.com/809249): Implement broadcast, or figure out a re-design
-    // that does not use sink queries.
+    // TODO(imcheng): Add metric to record broadcast usage.
+    BroadcastMessageToSinks(cast_source->GetAppIds(),
+                            *cast_source->broadcast_request());
     return;
   }
 
@@ -225,6 +234,16 @@ void CastMediaRouteProvider::OnSinkQueryUpdated(
            << ", #sinks: " << sinks.size();
   media_router_->OnSinksReceived(MediaRouteProviderId::CAST, source_id, sinks,
                                  GetOrigins(source_id));
+}
+
+void CastMediaRouteProvider::BroadcastMessageToSinks(
+    const std::vector<std::string>& app_ids,
+    const cast_channel::BroadcastRequest& request) {
+  for (const auto& id_and_sink : media_sink_service_->GetSinks()) {
+    const MediaSinkInternal& sink = id_and_sink.second;
+    message_handler_->SendBroadcastMessage(sink.cast_data().cast_channel_id,
+                                           app_ids, request);
+  }
 }
 
 }  // namespace media_router

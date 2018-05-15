@@ -160,6 +160,11 @@ class MockCastMessageHandler : public CastMessageHandler {
                     const std::string&,
                     GetAppAvailabilityCallback&));
 
+  MOCK_METHOD3(SendBroadcastMessage,
+               void(int,
+                    const std::vector<std::string>&,
+                    const BroadcastRequest&));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCastMessageHandler);
 };

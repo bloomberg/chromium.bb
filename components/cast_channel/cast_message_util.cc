@@ -26,6 +26,7 @@ constexpr char kHeartbeatNamespace[] =
 constexpr char kConnectionNamespace[] =
     "urn:x-cast:com.google.cast.tp.connection";
 constexpr char kReceiverNamespace[] = "urn:x-cast:com.google.cast.receiver";
+constexpr char kBroadcastNamespace[] = "urn:x-cast:com.google.cast.broadcast";
 
 // Text payload keys.
 constexpr char kTypeNodeId[] = "type";
@@ -36,6 +37,7 @@ constexpr char kKeepAlivePingType[] = "PING";
 constexpr char kKeepAlivePongType[] = "PONG";
 constexpr char kGetAppAvailabilityRequestType[] = "GET_APP_AVAILABILITY";
 constexpr char kConnectionRequestType[] = "CONNECT";
+constexpr char kBroadcastRequestType[] = "APPLICATION_BROADCAST";
 
 // The value used for "sdkType" in a virtual connect request. Historically, this
 // value is used in the Media Router extension, but here it is reused in Chrome.
@@ -55,16 +57,20 @@ void FillCommonCastMessageFields(CastMessage* message,
   message->set_namespace_(message_namespace);
 }
 
+void SetJSONStringPayload(CastMessage* message, const Value& payload) {
+  message->set_payload_type(
+      CastMessage::PayloadType::CastMessage_PayloadType_STRING);
+  CHECK(base::JSONWriter::Write(payload, message->mutable_payload_utf8()));
+}
+
 CastMessage CreateKeepAliveMessage(const char* keep_alive_type) {
   CastMessage output;
   FillCommonCastMessageFields(&output, kPlatformSenderId, kPlatformReceiverId,
                               kHeartbeatNamespace);
-  output.set_payload_type(
-      CastMessage::PayloadType::CastMessage_PayloadType_STRING);
 
   base::DictionaryValue type_dict;
   type_dict.SetString(kTypeNodeId, keep_alive_type);
-  CHECK(base::JSONWriter::Write(type_dict, output.mutable_payload_utf8()));
+  SetJSONStringPayload(&output, type_dict);
   return output;
 }
 
@@ -223,8 +229,6 @@ CastMessage CreateVirtualConnectionRequest(
   CastMessage output;
   FillCommonCastMessageFields(&output, source_id, destination_id,
                               kConnectionNamespace);
-  output.set_payload_type(
-      CastMessage::PayloadType::CastMessage_PayloadType_STRING);
 
   // Parse system_version from user agent string. It contains platform, OS and
   // CPU info and is contained in the first set of parentheses of the user
@@ -254,7 +258,8 @@ CastMessage CreateVirtualConnectionRequest(
     sender_info.SetKey("systemVersion", Value(system_version));
 
   dict.SetKey("senderInfo", std::move(sender_info));
-  CHECK(base::JSONWriter::Write(dict, output.mutable_payload_utf8()));
+
+  SetJSONStringPayload(&output, dict);
   return output;
 }
 
@@ -264,8 +269,6 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
   CastMessage output;
   FillCommonCastMessageFields(&output, source_id, kPlatformReceiverId,
                               kReceiverNamespace);
-  output.set_payload_type(
-      CastMessage::PayloadType::CastMessage_PayloadType_STRING);
 
   Value dict(Value::Type::DICTIONARY);
   dict.SetKey(kTypeNodeId, Value(kGetAppAvailabilityRequestType));
@@ -273,7 +276,40 @@ CastMessage CreateGetAppAvailabilityRequest(const std::string& source_id,
   app_id_value.GetList().push_back(Value(app_id));
   dict.SetKey("appId", std::move(app_id_value));
   dict.SetKey(kRequestIdNodeId, Value(request_id));
-  CHECK(base::JSONWriter::Write(dict, output.mutable_payload_utf8()));
+
+  SetJSONStringPayload(&output, dict);
+  return output;
+}
+
+BroadcastRequest::BroadcastRequest(const std::string& broadcast_namespace,
+                                   const std::string& message)
+    : broadcast_namespace(broadcast_namespace), message(message) {}
+BroadcastRequest::~BroadcastRequest() = default;
+
+bool BroadcastRequest::operator==(const BroadcastRequest& other) const {
+  return broadcast_namespace == other.broadcast_namespace &&
+         message == other.message;
+}
+
+CastMessage CreateBroadcastRequest(const std::string& source_id,
+                                   int request_id,
+                                   const std::vector<std::string>& app_ids,
+                                   const BroadcastRequest& request) {
+  CastMessage output;
+  FillCommonCastMessageFields(&output, source_id, kPlatformReceiverId,
+                              kBroadcastNamespace);
+
+  Value dict(Value::Type::DICTIONARY);
+  dict.SetKey(kTypeNodeId, Value(kBroadcastRequestType));
+  std::vector<Value> app_ids_value;
+  for (const std::string& app_id : app_ids)
+    app_ids_value.push_back(Value(app_id));
+
+  dict.SetKey("appIds", Value(std::move(app_ids_value)));
+  dict.SetKey("namespace", Value(request.broadcast_namespace));
+  dict.SetKey("message", Value(request.message));
+
+  SetJSONStringPayload(&output, dict);
   return output;
 }
 

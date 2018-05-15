@@ -61,6 +61,17 @@ MockDialMediaSinkService::~MockDialMediaSinkService() = default;
 MockCastMediaSinkService::MockCastMediaSinkService() : CastMediaSinkService() {}
 MockCastMediaSinkService::~MockCastMediaSinkService() = default;
 
+MockCastAppDiscoveryService::MockCastAppDiscoveryService() {}
+MockCastAppDiscoveryService::~MockCastAppDiscoveryService() = default;
+
+CastAppDiscoveryService::Subscription
+MockCastAppDiscoveryService::StartObservingMediaSinks(
+    const CastMediaSource& source,
+    const CastAppDiscoveryService::SinkQueryCallback& callback) {
+  DoStartObservingMediaSinks(source);
+  return callbacks_.Add(callback);
+}
+
 MockDialAppDiscoveryService::MockDialAppDiscoveryService()
     : DialAppDiscoveryService(/*connector=*/nullptr) {}
 MockDialAppDiscoveryService::~MockDialAppDiscoveryService() = default;

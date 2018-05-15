@@ -35,11 +35,8 @@ class CastSocketService;
 
 namespace media_router {
 
-// Keeps track of sink queries and listens to CastMediaSinkServiceImpl for sink
-// updates, and issues app availability requests based on these signals. This
-// class may be created on any sequence. All other methods must be called on the
-// CastSocketService sequence.
-class CastAppDiscoveryService : public MediaSinkServiceBase::Observer {
+// Interface for app discovery for Cast MediaSinks.
+class CastAppDiscoveryService {
  public:
   using SinkQueryFunc = void(const MediaSource::Id& source_id,
                              const std::vector<MediaSinkInternal>& sinks);
@@ -47,27 +44,46 @@ class CastAppDiscoveryService : public MediaSinkServiceBase::Observer {
   using SinkQueryCallbackList = base::CallbackList<SinkQueryFunc>;
   using Subscription = std::unique_ptr<SinkQueryCallbackList::Subscription>;
 
-  CastAppDiscoveryService(cast_channel::CastMessageHandler* message_handler,
-                          cast_channel::CastSocketService* socket_service,
-                          MediaSinkServiceBase* media_sink_service,
-                          const base::TickClock* clock);
-  ~CastAppDiscoveryService() override;
+  virtual ~CastAppDiscoveryService() = default;
 
   // Adds a sink query for |source|. Results will be continuously returned via
   // |callback| until the returned Subscription is destroyed by the caller.
   // If there are cached results available, |callback| will be invoked before
   // this method returns.
-  Subscription StartObservingMediaSinks(const CastMediaSource& source,
-                                        const SinkQueryCallback& callback);
+  virtual Subscription StartObservingMediaSinks(
+      const CastMediaSource& source,
+      const SinkQueryCallback& callback) = 0;
 
-  // Reissues app availability requests for currently registered (sink, app_id)
-  // pairs whose status is kUnavailable or kUnknown. It is suitable to call
+  // Refreshes the state of app discovery in the service. It is suitable to call
   // this method when the user initiates a user gesture (such as opening the
   // Media Router dialog).
-  void Refresh();
+  virtual void Refresh() = 0;
+};
+
+// Keeps track of sink queries and listens to CastMediaSinkServiceImpl for sink
+// updates, and issues app availability requests based on these signals. This
+// class may be created on any sequence. All other methods must be called on the
+// CastSocketService sequence.
+class CastAppDiscoveryServiceImpl : public CastAppDiscoveryService,
+                                    public MediaSinkServiceBase::Observer {
+ public:
+  CastAppDiscoveryServiceImpl(cast_channel::CastMessageHandler* message_handler,
+                              cast_channel::CastSocketService* socket_service,
+                              MediaSinkServiceBase* media_sink_service,
+                              const base::TickClock* clock);
+  ~CastAppDiscoveryServiceImpl() override;
+
+  // CastAppDiscoveryService implementation.
+  Subscription StartObservingMediaSinks(
+      const CastMediaSource& source,
+      const SinkQueryCallback& callback) override;
+
+  // Reissues app availability requests for currently registered (sink, app_id)
+  // pairs whose status is kUnavailable or kUnknown.
+  void Refresh() override;
 
  private:
-  friend class CastAppDiscoveryServiceTest;
+  friend class CastAppDiscoveryServiceImplTest;
 
   // Called on construction. Registers an observer with |media_sink_service_|.
   void Init();
@@ -115,8 +131,8 @@ class CastAppDiscoveryService : public MediaSinkServiceBase::Observer {
   const base::TickClock* const clock_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<CastAppDiscoveryService> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(CastAppDiscoveryService);
+  base::WeakPtrFactory<CastAppDiscoveryServiceImpl> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(CastAppDiscoveryServiceImpl);
 };
 
 }  // namespace media_router

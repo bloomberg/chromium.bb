@@ -12,6 +12,8 @@
 #include "url/gurl.h"
 #include "url/url_util.h"
 
+using cast_channel::BroadcastRequest;
+
 namespace media_router {
 
 namespace {
@@ -76,6 +78,23 @@ std::unique_ptr<CastMediaSource> CastMediaSourceForDesktopMirroring(
 #endif
 }
 
+std::unique_ptr<CastMediaSource> CreateFromURLParams(
+    const MediaSource::Id& source_id,
+    const std::vector<CastAppInfo>& app_infos,
+    const std::string& broadcast_namespace,
+    const std::string& broadcast_message) {
+  if (app_infos.empty())
+    return nullptr;
+
+  auto cast_source = std::make_unique<CastMediaSource>(source_id, app_infos);
+  if (!broadcast_namespace.empty() && !broadcast_message.empty()) {
+    cast_source->set_broadcast_request(
+        BroadcastRequest(broadcast_namespace, broadcast_message));
+  }
+
+  return cast_source;
+}
+
 std::unique_ptr<CastMediaSource> ParseCastUrl(const MediaSource::Id& source_id,
                                               const GURL& url) {
   std::string app_id = url.path();
@@ -110,13 +129,8 @@ std::unique_ptr<CastMediaSource> ParseCastUrl(const MediaSource::Id& source_id,
     }
   }
 
-  auto parsed = std::make_unique<CastMediaSource>(source_id, app_info);
-  if (!broadcast_namespace.empty() && !broadcast_message.empty()) {
-    parsed->set_broadcast_request(
-        BroadcastRequest(broadcast_namespace, broadcast_message));
-  }
-
-  return parsed;
+  return CreateFromURLParams(source_id, {app_info}, broadcast_namespace,
+                             broadcast_message);
 }
 
 std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
@@ -173,9 +187,8 @@ std::unique_ptr<CastMediaSource> ParseLegacyCastUrl(
   if (app_infos.empty())
     return nullptr;
 
-  auto parsed =
-      std::make_unique<CastMediaSource>(source_id, std::move(app_infos));
-  return parsed;
+  return CreateFromURLParams(source_id, app_infos, broadcast_namespace,
+                             broadcast_message);
 }
 
 }  // namespace
@@ -184,11 +197,6 @@ CastAppInfo::CastAppInfo(const std::string& app_id) : app_id(app_id) {}
 CastAppInfo::~CastAppInfo() = default;
 
 CastAppInfo::CastAppInfo(const CastAppInfo& other) = default;
-
-BroadcastRequest::BroadcastRequest(const std::string& broadcast_namespace,
-                                   const std::string& message)
-    : broadcast_namespace(broadcast_namespace), message(message) {}
-BroadcastRequest::~BroadcastRequest() = default;
 
 // static
 std::unique_ptr<CastMediaSource> CastMediaSource::From(
@@ -240,4 +248,13 @@ bool CastMediaSource::ContainsAnyAppFrom(
       app_ids.begin(), app_ids.end(),
       [this](const std::string& app_id) { return ContainsApp(app_id); });
 }
+
+std::vector<std::string> CastMediaSource::GetAppIds() const {
+  std::vector<std::string> app_ids;
+  for (const auto& info : app_infos_)
+    app_ids.push_back(info.app_id);
+
+  return app_ids;
+}
+
 }  // namespace media_router

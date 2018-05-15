@@ -28,10 +28,10 @@ class CastAppDiscoveryServiceTest : public testing::Test {
         socket_service_(task_runner_),
         message_handler_(&socket_service_),
         app_discovery_service_(
-            std::make_unique<CastAppDiscoveryService>(&message_handler_,
-                                                      &socket_service_,
-                                                      &media_sink_service_,
-                                                      &clock_)),
+            std::make_unique<CastAppDiscoveryServiceImpl>(&message_handler_,
+                                                          &socket_service_,
+                                                          &media_sink_service_,
+                                                          &clock_)),
         source_a_1_(*CastMediaSource::From("cast:AAAAAAAA?clientId=1")),
         source_a_2_(*CastMediaSource::From("cast:AAAAAAAA?clientId=2")),
         source_b_1_(*CastMediaSource::From("cast:BBBBBBBB?clientId=1")) {

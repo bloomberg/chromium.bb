@@ -10,7 +10,10 @@
 namespace media_router {
 
 TEST(CastMediaSourceTest, FromCastURL) {
-  MediaSource::Id source_id("cast:ABCDEFAB?capabilities=video_out,audio_out");
+  MediaSource::Id source_id(
+      "cast:ABCDEFAB?capabilities=video_out,audio_out"
+      "&broadcastNamespace=namespace"
+      "&broadcastMessage=message");
   std::unique_ptr<CastMediaSource> source = CastMediaSource::From(source_id);
   ASSERT_TRUE(source);
   EXPECT_EQ(source_id, source->source_id());
@@ -20,11 +23,17 @@ TEST(CastMediaSourceTest, FromCastURL) {
   EXPECT_EQ(cast_channel::CastDeviceCapability::VIDEO_OUT |
                 cast_channel::CastDeviceCapability::AUDIO_OUT,
             app_info.required_capabilities);
+  const auto& broadcast_request = source->broadcast_request();
+  ASSERT_TRUE(broadcast_request);
+  EXPECT_EQ("namespace", broadcast_request->broadcast_namespace);
+  EXPECT_EQ("message", broadcast_request->message);
 }
 
 TEST(CastMediaSourceTest, FromLegacyCastURL) {
   MediaSource::Id source_id(
-      "https://google.com/cast#__castAppId__=ABCDEFAB(video_out,audio_out)");
+      "https://google.com/cast#__castAppId__=ABCDEFAB(video_out,audio_out)"
+      "/__castBroadcastNamespace__=namespace"
+      "/__castBroadcastMessage__=message");
   std::unique_ptr<CastMediaSource> source = CastMediaSource::From(source_id);
   ASSERT_TRUE(source);
   EXPECT_EQ(source_id, source->source_id());
@@ -34,6 +43,10 @@ TEST(CastMediaSourceTest, FromLegacyCastURL) {
   EXPECT_EQ(cast_channel::CastDeviceCapability::VIDEO_OUT |
                 cast_channel::CastDeviceCapability::AUDIO_OUT,
             app_info.required_capabilities);
+  const auto& broadcast_request = source->broadcast_request();
+  ASSERT_TRUE(broadcast_request);
+  EXPECT_EQ("namespace", broadcast_request->broadcast_namespace);
+  EXPECT_EQ("message", broadcast_request->message);
 }
 
 TEST(CastMediaSourceTest, FromPresentationURL) {
