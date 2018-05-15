@@ -47,7 +47,7 @@ public class ChromeSwitchPreference extends SwitchPreference {
      */
     public void setManagedPreferenceDelegate(ManagedPreferenceDelegate delegate) {
         mManagedPrefDelegate = delegate;
-        if (mManagedPrefDelegate != null) mManagedPrefDelegate.initPreference(this);
+        ManagedPreferencesUtils.initPreference(mManagedPrefDelegate, this);
     }
 
     /**
@@ -90,12 +90,12 @@ public class ChromeSwitchPreference extends SwitchPreference {
             summary.setVisibility(View.GONE);
         }
 
-        if (mManagedPrefDelegate != null) mManagedPrefDelegate.onBindViewToPreference(this, view);
+        ManagedPreferencesUtils.onBindViewToPreference(mManagedPrefDelegate, this, view);
     }
 
     @Override
     protected void onClick() {
-        if (mManagedPrefDelegate != null && mManagedPrefDelegate.onClickPreference(this)) return;
+        if (ManagedPreferencesUtils.onClickPreference(mManagedPrefDelegate, this)) return;
         super.onClick();
     }
 }
