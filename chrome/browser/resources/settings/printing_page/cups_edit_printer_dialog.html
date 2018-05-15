@@ -9,7 +9,11 @@
 
 <dom-module id="settings-cups-edit-printer-dialog">
   <template>
-    <style include="cups-printer-shared"></style>
+    <style include="cups-printer-shared">
+      #existingUserPPD {
+        padding-top: 10px;
+      }
+    </style>
     <add-printer-dialog>
       <div slot="dialog-title">$i18n{editPrinterDialogTitle}</div>
       <div slot="dialog-body">
@@ -119,15 +123,20 @@
             <div class="label">$i18n{selectDriver}</div>
             <div class="secondary">
               <paper-input class="browse-file-input" no-label-float readonly
-                  value="[[getBaseName_(activePrinter.printerPPDPath)]]"
+                  value="[[newUserPPD_]]"
                   error-message="$i18n{selectDriverErrorMessage}"
-                  invalid="[[invalidPPD]]">
+                  invalid="[[invalidPPD_]]">
                 <paper-button class="browse-button" slot="suffix"
                     on-click="onBrowseFile_">
                   $i18n{selectDriverButtonText}
                 </paper-button>
               </paper-input>
             </div>
+            <template is="dom-if" if="[[existingUserPPDMessage_]]">
+              <div class="secondary" id="existingUserPPD">
+                [[existingUserPPDMessage_]]
+              </div>
+            </template>
           </div>
         </div>
       </div>

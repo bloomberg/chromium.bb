@@ -21,6 +21,12 @@ Polymer({
      */
     needsReconfigured_: Boolean,
 
+    /**
+     * The current PPD in use by the printer.
+     * @private
+     */
+    existingUserPPDMessage_: String,
+
     networkProtocolActive_: {
       type: Boolean,
       computed: 'isNetworkProtocol_(activePrinter.printerProtocol)',
@@ -38,6 +44,11 @@ Polymer({
         .then(
             this.onGetPrinterPpdManufacturerAndModel_.bind(this),
             this.onGetPrinterPpdManufacturerAndModelFailed_.bind(this));
+    let basename = this.getBaseName(this.activePrinter.printerPPDPath);
+    if (basename) {
+      this.existingUserPPDMessage_ =
+          loadTimeData.getStringF('currentPpdMessage', basename);
+    }
   },
 
   /**

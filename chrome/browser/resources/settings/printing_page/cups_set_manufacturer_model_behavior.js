@@ -16,16 +16,26 @@ const SetManufacturerModelBehavior = {
       notify: true,
     },
 
-    invalidPPD: {
-      type: Boolean,
-      value: false,
-    },
-
     /** @type {?Array<string>} */
     manufacturerList: Array,
 
     /** @type {?Array<string>} */
     modelList: Array,
+
+    /**
+     * Whether the user selected PPD file is valid.
+     * @private
+     */
+    invalidPPD_: {
+      type: Boolean,
+      value: false,
+    },
+
+    /**
+     * The base name of a newly selected PPD file.
+     * @private
+     */
+    newUserPPD_: String,
   },
 
   observers: [
@@ -37,6 +47,18 @@ const SetManufacturerModelBehavior = {
     settings.CupsPrintersBrowserProxyImpl.getInstance()
         .getCupsPrinterManufacturersList()
         .then(this.manufacturerListChanged_.bind(this));
+  },
+
+  /**
+   * @param {string} path The full path of the file
+   * @return {string} The base name of the file
+   * @public
+   */
+  getBaseName: function(path) {
+    if (path && path.length > 0)
+      return path.substring(path.lastIndexOf('/') + 1);
+    else
+      return '';
   },
 
   /**
@@ -92,18 +114,7 @@ const SetManufacturerModelBehavior = {
    */
   printerPPDPathChanged_: function(path) {
     this.set('activePrinter.printerPPDPath', path);
-    this.invalidPPD = !path;
-  },
-
-  /**
-   * @param {string} path The full path of the file
-   * @return {string} The base name of the file
-   * @private
-   */
-  getBaseName_: function(path) {
-    if (path && path.length > 0)
-      return path.substring(path.lastIndexOf('/') + 1);
-    else
-      return '';
+    this.invalidPPD_ = !path;
+    this.newUserPPD_ = this.getBaseName(path);
   },
 };
