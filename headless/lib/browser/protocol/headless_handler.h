@@ -41,7 +41,6 @@ class HeadlessHandler : public DomainHandler,
                   Maybe<bool> no_display_updates,
                   Maybe<HeadlessExperimental::ScreenshotParams> screenshot,
                   std::unique_ptr<BeginFrameCallback> callback) override;
-  Response EnterDeterministicMode(Maybe<double> initial_date) override;
 
  private:
   content::WebContents* web_contents_;

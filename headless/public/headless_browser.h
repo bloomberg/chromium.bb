@@ -179,10 +179,6 @@ struct HEADLESS_EXPORT HeadlessBrowser::Options {
   // If true, then all pop-ups and calls to window.open will fail.
   bool block_new_web_contents = false;
 
-  // If set the renderer will be constructed with virtual time enabled and
-  // base::Time::Now will be overridden to initially return this value.
-  base::Optional<base::Time> initial_virtual_time;
-
   // Whether cookies are allowed. Enabled by default.
   bool allow_cookies = true;
 
@@ -277,7 +273,6 @@ class HEADLESS_EXPORT HeadlessBrowser::Options::Builder {
   Builder& SetIncognitoMode(bool incognito_mode);
   Builder& SetSitePerProcess(bool site_per_process);
   Builder& SetBlockNewWebContents(bool block_new_web_contents);
-  Builder& SetInitialVirtualTime(base::Time initial_virtual_time);
   Builder& SetAllowCookies(bool allow_cookies);
   Builder& SetOverrideWebPreferencesCallback(
       base::RepeatingCallback<void(WebPreferences*)> callback);

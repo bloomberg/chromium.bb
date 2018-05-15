@@ -307,8 +307,6 @@ void HeadlessRenderTest::CustomizeHeadlessBrowserContext(
   builder.SetOverrideWebPreferencesCallback(
       base::Bind(&HeadlessRenderTest::OverrideWebPreferences,
                  weak_ptr_factory_.GetWeakPtr()));
-  // Set an initial time to enable base::Time/TimeTicks overrides.
-  builder.SetInitialVirtualTime(base::Time::FromJsTime(100000.0));
 }
 
 bool HeadlessRenderTest::GetEnableBeginFrameControl() {

@@ -251,14 +251,5 @@ void HeadlessHandler::BeginFrame(Maybe<double> in_frame_time,
                      quality));
 }
 
-Response HeadlessHandler::EnterDeterministicMode(Maybe<double> initial_date) {
-  if (initial_date.isJust())
-    browser()->options()->initial_virtual_time =
-        base::Time::FromDoubleT(initial_date.fromJust());
-  else
-    browser()->options()->initial_virtual_time = base::nullopt;
-  return Response::OK();
-}
-
 }  // namespace protocol
 }  // namespace headless

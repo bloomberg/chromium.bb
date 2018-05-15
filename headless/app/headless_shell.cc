@@ -782,15 +782,6 @@ int HeadlessShellMain(int argc, const char** argv) {
     builder.SetIncognitoMode(false);
   }
 
-  if (command_line.HasSwitch(::switches::kInitialVirtualTime)) {
-    double initial_time;
-    if (base::StringToDouble(
-            command_line.GetSwitchValueASCII(::switches::kInitialVirtualTime),
-            &initial_time)) {
-      builder.SetInitialVirtualTime(base::Time::FromDoubleT(initial_time));
-    }
-  }
-
   if (command_line.HasSwitch(switches::kWindowSize)) {
     std::string window_size =
         command_line.GetSwitchValueASCII(switches::kWindowSize);

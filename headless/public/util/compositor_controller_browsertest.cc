@@ -161,13 +161,6 @@ class CompositorControllerBrowserTest
         features::kEnableSurfaceSynchronization);
   }
 
-  void CustomizeHeadlessBrowserContext(
-      HeadlessBrowserContext::Builder& builder) override {
-    // Set an initial time to enable base::Time/TimeTicks overrides and ensure
-    // deterministic timestamps.
-    builder.SetInitialVirtualTime(base::Time::FromJsTime(100000.0));
-  }
-
   bool GetEnableBeginFrameControl() override { return true; }
 
   void RunDevTooledTest() override {
@@ -185,6 +178,7 @@ class CompositorControllerBrowserTest
     devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
         emulation::SetVirtualTimePolicyParams::Builder()
             .SetPolicy(emulation::VirtualTimePolicy::PAUSE)
+            .SetInitialVirtualTime(100)
             .Build(),
         base::BindRepeating(
             &CompositorControllerBrowserTest::SetVirtualTimePolicyDone,
