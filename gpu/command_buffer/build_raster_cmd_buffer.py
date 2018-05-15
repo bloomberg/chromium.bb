@@ -313,6 +313,20 @@ _FUNCTION_INFO = {
   'OrderingBarrierCHROMIUM': {
     'type': 'NoCommand',
   },
+  'TraceBeginCHROMIUM': {
+    'type': 'Custom',
+    'impl_func': False,
+    'client_test': False,
+    'cmd_args': 'GLuint category_bucket_id, GLuint name_bucket_id',
+    'extension': 'CHROMIUM_trace_marker',
+  },
+  'TraceEndCHROMIUM': {
+    'impl_func': False,
+    'client_test': False,
+    'decoder_func': 'DoTraceEndCHROMIUM',
+    'unit_test': False,
+    'extension': 'CHROMIUM_trace_marker',
+  },
   'InsertFenceSyncCHROMIUM': {
     'type': 'Custom',
     'internal': True,

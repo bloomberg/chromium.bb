@@ -35,6 +35,7 @@ class ContextGroup;
 class ErrorState;
 class FeatureInfo;
 class GpuFenceManager;
+class Outputter;
 class Texture;
 struct ContextState;
 struct DisallowedFeatures;
@@ -218,6 +219,11 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface {
   //
   // Set to true to LOG every command.
   virtual void SetLogCommands(bool log_commands) = 0;
+
+  //
+  // Methods required by GpuTracer
+  //
+  virtual gles2::Outputter* outputter() const = 0;
 };
 
 }  // namespace gpu

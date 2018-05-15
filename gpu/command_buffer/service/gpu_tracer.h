@@ -16,15 +16,17 @@
 #include "base/containers/stack.h"
 #include "base/macros.h"
 #include "base/threading/thread.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/gpu_gles2_export.h"
 
 namespace gl {
 class GPUTimingClient;
 class GPUTimer;
-}
+}  // namespace gl
 
 namespace gpu {
+
+class DecoderContext;
+
 namespace gles2 {
 
 class Outputter;
@@ -36,7 +38,7 @@ enum GpuTracerSource {
 
   kTraceCHROMIUM,
   kTraceDecoder,
-  kTraceDisjoint, // Used internally.
+  kTraceDisjoint,  // Used internally.
 
   NUM_TRACER_SOURCES
 };
@@ -55,7 +57,7 @@ struct TraceMarker {
 // Traces GPU Commands.
 class GPU_GLES2_EXPORT GPUTracer {
  public:
-  explicit GPUTracer(GLES2Decoder* decoder);
+  explicit GPUTracer(DecoderContext* decoder);
   virtual ~GPUTracer();
 
   void Destroy(bool have_context);
@@ -95,7 +97,7 @@ class GPU_GLES2_EXPORT GPUTracer {
   Outputter* outputter_ = nullptr;
   std::vector<TraceMarker> markers_[NUM_TRACER_SOURCES];
   base::circular_deque<scoped_refptr<GPUTrace>> finished_traces_;
-  GLES2Decoder* decoder_;
+  DecoderContext* decoder_;
   int64_t disjoint_time_ = 0;
   bool gpu_executing_ = false;
   bool began_device_traces_ = false;

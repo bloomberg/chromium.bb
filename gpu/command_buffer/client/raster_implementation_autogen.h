@@ -103,4 +103,9 @@ void CopySubTexture(GLuint source_id,
                     GLsizei width,
                     GLsizei height) override;
 
+void TraceBeginCHROMIUM(const char* category_name,
+                        const char* trace_name) override;
+
+void TraceEndCHROMIUM() override;
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_RASTER_IMPLEMENTATION_AUTOGEN_H_

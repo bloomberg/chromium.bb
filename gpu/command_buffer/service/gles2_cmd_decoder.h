@@ -130,7 +130,7 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
   // Set to true to LOG every command.
   void SetLogCommands(bool log_commands) override;
 
-  Outputter* outputter() const { return outputter_; }
+  Outputter* outputter() const override;
 
   // Set the surface associated with the default FBO.
   virtual void SetSurface(const scoped_refptr<gl::GLSurface>& surface) = 0;

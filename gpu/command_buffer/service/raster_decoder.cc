@@ -45,6 +45,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_texture_chromium.h"
+#include "gpu/command_buffer/service/gpu_tracer.h"
 #include "gpu/command_buffer/service/image_factory.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/indexed_buffer_binding_host.h"
@@ -543,6 +544,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   void DoGetIntegerv(GLenum pname, GLint* params, GLsizei params_size);
   void DoTexParameteri(GLuint texture_id, GLenum pname, GLint param);
   void DoBindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
+  void DoTraceEndCHROMIUM();
   void DoProduceTextureDirect(GLuint texture, const volatile GLbyte* key);
   void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
   void TexStorage2DImage(TextureRef* texture_ref,
@@ -724,8 +726,6 @@ class RasterDecoderImpl final : public RasterDecoder,
   DecoderTextureState texture_state_;
   DecoderFramebufferState framebuffer_state_;
 
-  bool gpu_debug_commands_;
-
   // An optional behaviour to lose the context and group when OOM.
   bool lose_context_when_out_of_memory_ = false;
 
@@ -734,6 +734,12 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   std::unique_ptr<CopyTexImageResourceManager> copy_tex_image_blit_;
   std::unique_ptr<CopyTextureCHROMIUMResourceManager> copy_texture_chromium_;
+
+  std::unique_ptr<GPUTracer> gpu_tracer_;
+  const unsigned char* gpu_decoder_category_;
+  static constexpr int gpu_trace_level_ = 2;
+  bool gpu_trace_commands_ = false;
+  bool gpu_debug_commands_ = false;
 
   // Raster helpers.
   ServiceFontManager font_manager_;
@@ -770,11 +776,9 @@ RasterDecoder* RasterDecoder::Create(
                                group);
 }
 
-RasterDecoder::RasterDecoder(CommandBufferServiceBase* command_buffer_service)
-    : CommonDecoder(command_buffer_service),
-      initialized_(false),
-      debug_(false),
-      log_commands_(false) {}
+RasterDecoder::RasterDecoder(CommandBufferServiceBase* command_buffer_service,
+                             gles2::Outputter* outputter)
+    : CommonDecoder(command_buffer_service), outputter_(outputter) {}
 
 RasterDecoder::~RasterDecoder() {}
 
@@ -804,6 +808,10 @@ void RasterDecoder::SetLogCommands(bool log_commands) {
   log_commands_ = log_commands;
 }
 
+gles2::Outputter* RasterDecoder::outputter() const {
+  return outputter_;
+}
+
 base::StringPiece RasterDecoder::GetLogPrefix() {
   return GetLogger()->GetLogPrefix();
 }
@@ -813,7 +821,7 @@ RasterDecoderImpl::RasterDecoderImpl(
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
     ContextGroup* group)
-    : RasterDecoder(command_buffer_service),
+    : RasterDecoder(command_buffer_service, outputter),
       client_(client),
       logger_(&debug_marker_manager_, client),
       group_(group),
@@ -823,6 +831,8 @@ RasterDecoderImpl::RasterDecoderImpl(
       texture_state_(group_->feature_info()->workarounds()),
       service_logging_(
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
+      gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
+          TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
       font_manager_(this),
       weak_ptr_factory_(this) {}
 
@@ -858,6 +868,9 @@ ContextResult RasterDecoderImpl::Initialize(
 
   surface_ = surface;
   context_ = context;
+
+  // Create GPU Tracer for timing values.
+  gpu_tracer_.reset(new GPUTracer(this));
 
   // Save the loseContextWhenOutOfMemory context creation attribute.
   lose_context_when_out_of_memory_ =
@@ -1258,10 +1271,11 @@ void RasterDecoderImpl::ProcessPendingQueries(bool did_finish) {
 }
 
 bool RasterDecoderImpl::HasMoreIdleWork() const {
-  return false;
+  return gpu_tracer_->HasTracesToProcess();
 }
 
 void RasterDecoderImpl::PerformIdleWork() {
+  gpu_tracer_->ProcessTraces();
 }
 
 bool RasterDecoderImpl::HasPollingWork() const {
@@ -1368,10 +1382,14 @@ void RasterDecoderImpl::SetCopyTextureResourceManagerForTest(
 }
 
 void RasterDecoderImpl::BeginDecoding() {
-  gpu_debug_commands_ = log_commands() || debug();
+  gpu_tracer_->BeginDecoding();
+  gpu_trace_commands_ = gpu_tracer_->IsTracing() && *gpu_decoder_category_;
+  gpu_debug_commands_ = log_commands() || debug() || gpu_trace_commands_;
 }
 
-void RasterDecoderImpl::EndDecoding() {}
+void RasterDecoderImpl::EndDecoding() {
+  gpu_tracer_->EndDecoding();
+}
 
 const char* RasterDecoderImpl::GetCommandName(unsigned int command_id) const {
   if (command_id >= kFirstRasterCommand && command_id < kNumCommands) {
@@ -1431,9 +1449,22 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
           (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
+        bool doing_gpu_trace = false;
+        if (DebugImpl && gpu_trace_commands_) {
+          if (CMD_FLAG_GET_TRACE_LEVEL(info.cmd_flags) <= gpu_trace_level_) {
+            doing_gpu_trace = true;
+            gpu_tracer_->Begin(TRACE_DISABLED_BY_DEFAULT("gpu_decoder"),
+                               GetCommandName(command), kTraceDecoder);
+          }
+        }
+
         uint32_t immediate_data_size = (arg_count - info_arg_count) *
                                        sizeof(CommandBufferEntry);  // NOLINT
         result = (this->*info.cmd_handler)(immediate_data_size, cmd_data);
+
+        if (DebugImpl && doing_gpu_trace)
+          gpu_tracer_->End(kTraceDecoder);
+
         if (DebugImpl && debug() && !WasContextLost()) {
           GLenum error;
           while ((error = api()->glGetErrorFn()) != GL_NO_ERROR) {
@@ -2141,6 +2172,43 @@ void RasterDecoderImpl::DoReleaseTexImage2DCHROMIUM(GLuint client_id,
 
   texture_manager()->SetLevelImage(texture_ref, texture_metadata->target(), 0,
                                    nullptr, Texture::UNBOUND);
+}
+
+error::Error RasterDecoderImpl::HandleTraceBeginCHROMIUM(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile gles2::cmds::TraceBeginCHROMIUM& c =
+      *static_cast<const volatile gles2::cmds::TraceBeginCHROMIUM*>(cmd_data);
+  Bucket* category_bucket = GetBucket(c.category_bucket_id);
+  Bucket* name_bucket = GetBucket(c.name_bucket_id);
+  if (!category_bucket || category_bucket->size() == 0 || !name_bucket ||
+      name_bucket->size() == 0) {
+    return error::kInvalidArguments;
+  }
+
+  std::string category_name;
+  std::string trace_name;
+  if (!category_bucket->GetAsString(&category_name) ||
+      !name_bucket->GetAsString(&trace_name)) {
+    return error::kInvalidArguments;
+  }
+
+  debug_marker_manager_.PushGroup(trace_name);
+  if (!gpu_tracer_->Begin(category_name, trace_name, kTraceCHROMIUM)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTraceBeginCHROMIUM",
+                       "unable to create begin trace");
+    return error::kNoError;
+  }
+  return error::kNoError;
+}
+
+void RasterDecoderImpl::DoTraceEndCHROMIUM() {
+  debug_marker_manager_.PopGroup();
+  if (!gpu_tracer_->End(kTraceCHROMIUM)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTraceEndCHROMIUM",
+                       "no trace begin found");
+    return;
+  }
 }
 
 void RasterDecoderImpl::DoProduceTextureDirect(GLuint client_id,

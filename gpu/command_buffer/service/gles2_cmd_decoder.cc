@@ -560,6 +560,10 @@ void GLES2Decoder::SetLogCommands(bool log_commands) {
   log_commands_ = log_commands;
 }
 
+Outputter* GLES2Decoder::outputter() const {
+  return outputter_;
+}
+
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {

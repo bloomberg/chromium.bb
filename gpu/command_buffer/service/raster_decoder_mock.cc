@@ -11,7 +11,8 @@ namespace raster {
 
 MockRasterDecoder::MockRasterDecoder(
     CommandBufferServiceBase* command_buffer_service)
-    : RasterDecoder(command_buffer_service), weak_ptr_factory_(this) {
+    : RasterDecoder(command_buffer_service, /*outputter=*/nullptr),
+      weak_ptr_factory_(this) {
   ON_CALL(*this, MakeCurrent()).WillByDefault(testing::Return(true));
 }
 
