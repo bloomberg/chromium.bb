@@ -1224,8 +1224,7 @@ int HttpStreamFactory::Job::DoCreateStream() {
     // WebSocket over HTTP/2 is only allowed to use existing HTTP/2 connections.
     // Therefore |using_spdy_| could not have been set unless a connection had
     // already been found.
-    // TODO(bnc): Change to DCHECK once https://crbug.com/819101 is fixed.
-    CHECK(!try_websocket_over_http2_);
+    DCHECK(!try_websocket_over_http2_);
 
     session_->spdy_session_pool()->push_promise_index()->ClaimPushedStream(
         spdy_session_key_, origin_url_, request_info_, &existing_spdy_session_,
