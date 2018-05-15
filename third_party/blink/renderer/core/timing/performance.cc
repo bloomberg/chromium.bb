@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/timing/performance_event_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_long_task_timing.h"
+#include "third_party/blink/renderer/core/timing/performance_mark.h"
 #include "third_party/blink/renderer/core/timing/performance_measure.h"
 #include "third_party/blink/renderer/core/timing/performance_measure_options.h"
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
@@ -542,14 +543,14 @@ void Performance::AddLongTaskTiming(
   NotifyObserversOfEntry(*entry);
 }
 
-void Performance::mark(ScriptState* script_state,
-                       const String& mark_name,
-                       ExceptionState& exception_state) {
+PerformanceMark* Performance::mark(ScriptState* script_state,
+                                   const String& mark_name,
+                                   ExceptionState& exception_state) {
   DoubleOrPerformanceMarkOptions startOrOptions;
-  this->mark(script_state, mark_name, startOrOptions, exception_state);
+  return this->mark(script_state, mark_name, startOrOptions, exception_state);
 }
 
-void Performance::mark(
+PerformanceMark* Performance::mark(
     ScriptState* script_state,
     const String& mark_name,
     DoubleOrPerformanceMarkOptions& start_time_or_mark_options,
@@ -579,9 +580,11 @@ void Performance::mark(
   }
 
   // Pass in a null ScriptValue if the mark's detail doesn't exist.
-  if (PerformanceEntry* entry = user_timing_->Mark(
-          script_state, mark_name, start, detail, exception_state))
-    NotifyObserversOfEntry(*entry);
+  PerformanceMark* performance_mark = user_timing_->Mark(
+      script_state, mark_name, start, detail, exception_state);
+  if (performance_mark)
+    NotifyObserversOfEntry(*performance_mark);
+  return performance_mark;
 }
 
 void Performance::clearMarks(const String& mark_name) {
@@ -759,12 +762,9 @@ PerformanceMeasure* Performance::measureInternal(
   PerformanceMeasure* performance_measure =
       user_timing_->Measure(script_state, measure_name, original_start,
                             original_end, detail, exception_state);
-  if (performance_measure) {
-    PerformanceEntry* entry = performance_measure;
-    NotifyObserversOfEntry(*entry);
-    return performance_measure;
-  }
-  return nullptr;
+  if (performance_measure)
+    NotifyObserversOfEntry(*performance_measure);
+  return performance_measure;
 }
 
 void Performance::clearMeasures(const String& measure_name) {

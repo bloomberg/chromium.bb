@@ -47,11 +47,11 @@ class UserTiming final : public GarbageCollected<UserTiming> {
     return new UserTiming(performance);
   }
 
-  PerformanceEntry* Mark(ScriptState*,
-                         const String& mark_name,
-                         const DOMHighResTimeStamp& start_time,
-                         const ScriptValue& detail,
-                         ExceptionState&);
+  PerformanceMark* Mark(ScriptState*,
+                        const String& mark_name,
+                        const DOMHighResTimeStamp& start_time,
+                        const ScriptValue& detail,
+                        ExceptionState&);
   void ClearMarks(const String& mark_name);
 
   PerformanceMeasure* Measure(ScriptState*,
