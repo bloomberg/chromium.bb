@@ -74,8 +74,8 @@ def main(argv):
 
     # Create a directory for installing llvm-symbolizer and all of
     # its dependencies in the sysroot.
-    install_dir = os.path.join(sysroot_path, 'usr', 'libexec',
-                               'llvm-symbolizer')
+    install_path = os.path.join('usr', 'libexec', 'llvm-symbolizer')
+    install_dir = os.path.join(sysroot_path, install_path)
     cmd = ['mkdir', '-p', install_dir]
     cros_build_lib.SudoRunCommand(cmd)
 
@@ -89,8 +89,9 @@ def main(argv):
     cros_build_lib.SudoRunCommand(cmd)
 
     # Create a symlink to llvm-symbolizer in the sysroot.
-    src = os.path.join(install_dir, llvm_symbolizer)
+    rel_path = os.path.relpath(install_dir, dst)
+    link_path = os.path.join(rel_path, llvm_symbolizer)
     dest = os.path.join(sysroot_path, llvm_symbolizer)
     if not os.path.exists(dest):
-      cmd = ['ln', '-s', src, dest]
+      cmd = ['ln', '-s', link_path, '-t', dst]
       cros_build_lib.SudoRunCommand(cmd)
