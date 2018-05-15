@@ -111,6 +111,16 @@ def _Run(java_tests_src_dir, test_filter,
             os.path.abspath(chrome_path))
       st = os.stat(chrome_wrapper_path)
       os.chmod(chrome_wrapper_path, st.st_mode | stat.S_IEXEC)
+    elif util.IsMac():
+      # Use srgb color profile, otherwise the default color profile on Mac
+      # causes some color adjustments, so screenshots have unexpected colors.
+      chrome_wrapper_path = os.path.join(test_dir, 'chrome-wrapper')
+      with open(chrome_wrapper_path, 'w') as f:
+        f.write('#!/bin/sh\n')
+        f.write('exec %s --force-color-profile=srgb "$@"\n' %
+            os.path.abspath(chrome_path))
+      st = os.stat(chrome_wrapper_path)
+      os.chmod(chrome_wrapper_path, st.st_mode | stat.S_IEXEC)
     else:
       chrome_wrapper_path = os.path.abspath(chrome_path)
     sys_props += ['webdriver.chrome.binary=' + chrome_wrapper_path]
