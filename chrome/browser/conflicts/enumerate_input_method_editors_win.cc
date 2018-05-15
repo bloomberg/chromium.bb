@@ -48,7 +48,7 @@ bool IsMicrosoftIme(const wchar_t* ime_guid) {
       L"{fa445657-9379-11d6-b41a-00065b83ee53}",
   };
 
-  constexpr auto comp = [](const wchar_t* lhs, const wchar_t* rhs) -> bool {
+  auto comp = [](const wchar_t* lhs, const wchar_t* rhs) -> bool {
     return base::CompareCaseInsensitiveASCII(lhs, rhs) == -1;
   };
 
