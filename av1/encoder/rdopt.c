@@ -8136,6 +8136,9 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int plane_rate[MAX_MB_PLANE] = { 0 };
   int64_t plane_sse[MAX_MB_PLANE] = { 0 };
   int64_t plane_dist[MAX_MB_PLANE] = { 0 };
+  int64_t newmv_ret_val = INT64_MAX;
+  int_mv backup_mv[2] = { { 0 } };
+  int backup_rate_mv = 0;
 
   int comp_idx;
   const int search_jnt_comp = is_comp_pred & cm->seq_params.enable_jnt_comp &
@@ -8170,12 +8173,26 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       continue;
     }
     if (have_newmv_in_inter_mode(this_mode)) {
+      if (comp_idx == 0) {
+        cur_mv[0] = backup_mv[0];
+        cur_mv[1] = backup_mv[1];
+        rate_mv = backup_rate_mv;
+      }
+
       // when jnt_comp_skip_mv_search flag is on, new mv will be searched once
       if (!(search_jnt_comp && cpi->sf.jnt_comp_skip_mv_search &&
-            comp_idx == 0))
-        ret_val =
+            comp_idx == 0)) {
+        newmv_ret_val =
             handle_newmv(cpi, x, bsize, cur_mv, mi_row, mi_col, &rate_mv, args);
-      if (ret_val != 0) {
+
+        // Store cur_mv and rate_mv so that they can be restored in the next
+        // iteration of the loop
+        backup_mv[0] = cur_mv[0];
+        backup_mv[1] = cur_mv[1];
+        backup_rate_mv = rate_mv;
+      }
+
+      if (newmv_ret_val != 0) {
         early_terminate = INT64_MAX;
         continue;
       } else {
