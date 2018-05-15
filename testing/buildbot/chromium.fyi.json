@@ -5697,6 +5697,17 @@
             }
           ]
         },
+        "test": "media_blink_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho"
+            }
+          ]
+        },
         "test": "media_service_unittests"
       },
       {

@@ -1988,25 +1988,6 @@
     ],
   },
   'media_blink_unittests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
-      'KitKat Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x64 Device Tester',
-      'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroid x64',
-      # chromium.fyi
-      'Out of Process Profiling Android',
-    ],
     'modifications': {
       'Lollipop Tablet Tester': {
         'swarming': {
