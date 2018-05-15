@@ -835,6 +835,17 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
     base::TimeDelta delta = ready_to_commit_time_ - navigation_start_;
     LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit", transition_, delta,
                                     base::TimeDelta::FromSeconds(10));
+
+    if (IsInMainFrame()) {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.MainFrame",
+                                      transition_, delta,
+                                      base::TimeDelta::FromSeconds(10));
+    } else {
+      LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.Subframe",
+                                      transition_, delta,
+                                      base::TimeDelta::FromSeconds(10));
+    }
+
     if (is_same_process_) {
       LOG_NAVIGATION_TIMING_HISTOGRAM("TimeToReadyToCommit.SameProcess",
                                       transition_, delta,
