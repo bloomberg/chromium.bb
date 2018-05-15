@@ -39,8 +39,8 @@ struct AX_EXPORT AXRelativeBounds final {
 
   AXRelativeBounds(const AXRelativeBounds& other);
   AXRelativeBounds& operator=(AXRelativeBounds other);
-  bool operator!=(const AXRelativeBounds& other);
-  bool operator==(const AXRelativeBounds& other);
+  bool operator!=(const AXRelativeBounds& other) const;
+  bool operator==(const AXRelativeBounds& other) const;
 
   std::string ToString() const;
 
@@ -64,4 +64,4 @@ AX_EXPORT std::ostream& operator<<(std::ostream& stream,
 
 }  // namespace ui
 
-#endif  // UI_ACCESSIBILITY_AX_NODE_DATA_H_
+#endif  // UI_ACCESSIBILITY_AX_RELATIVE_BOUNDS_H_

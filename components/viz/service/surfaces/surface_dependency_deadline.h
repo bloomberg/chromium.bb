@@ -45,8 +45,8 @@ class VIZ_SERVICE_EXPORT SurfaceDependencyDeadline : public BeginFrameObserver {
   // Takes on the same BeginFrameSource and deadline as |other|.
   void InheritFrom(const SurfaceDependencyDeadline& other);
 
-  bool operator==(const SurfaceDependencyDeadline& other);
-  bool operator!=(const SurfaceDependencyDeadline& other) {
+  bool operator==(const SurfaceDependencyDeadline& other) const;
+  bool operator!=(const SurfaceDependencyDeadline& other) const {
     return !(*this == other);
   }
 

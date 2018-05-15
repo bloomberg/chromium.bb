@@ -576,8 +576,9 @@ void Surface::CommitSurfaceHierarchy(bool synchronized) {
   if (state_.input_region) {
     hit_test_region_ = *state_.input_region;
     hit_test_region_.Intersect(surface_hierarchy_content_bounds_);
-  } else
+  } else {
     hit_test_region_ = surface_hierarchy_content_bounds_;
+  }
 
   int outset = state_.input_outset;
   if (outset > 0) {
@@ -727,7 +728,7 @@ Surface::State::State() {}
 
 Surface::State::~State() = default;
 
-bool Surface::State::operator==(const State& other) {
+bool Surface::State::operator==(const State& other) const {
   return other.opaque_region == opaque_region &&
          other.input_region == input_region &&
          other.buffer_scale == buffer_scale &&
