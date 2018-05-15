@@ -416,9 +416,11 @@ static int read_skip_mode(AV1_COMMON *cm, const MACROBLOCKD *xd, int segment_id,
 
   if (!is_comp_ref_allowed(xd->mi[0]->sb_type)) return 0;
 
-  if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME) &&
-      get_segdata(&cm->seg, segment_id, SEG_LVL_REF_FRAME) == INTRA_FRAME) {
-    // This is an intra block, so skip_mode is implicitly 0.
+  if (segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME) ||
+      segfeature_active(&cm->seg, segment_id, SEG_LVL_GLOBALMV)) {
+    // These features imply single-reference mode, while skip mode implies
+    // compound reference. Hence, the two are mutually exclusive.
+    // In other words, skip_mode is implicitly 0 here.
     return 0;
   }
 
