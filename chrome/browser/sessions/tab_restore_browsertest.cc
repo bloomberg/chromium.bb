@@ -510,6 +510,10 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabFromClosedWindowByID) {
       static_cast<sessions::TabRestoreService::Window*>(entry);
   auto& tabs = entry_win->tabs;
   EXPECT_EQ(3u, tabs.size());
+  EXPECT_EQ(url::kAboutBlankURL, tabs[0]->navigations.front().virtual_url());
+  EXPECT_EQ(url1_, tabs[1]->navigations.front().virtual_url());
+  EXPECT_EQ(url2_, tabs[2]->navigations.front().virtual_url());
+  EXPECT_EQ(2, entry_win->selected_tab_index);
 
   // Find the Tab to restore.
   SessionID tab_id_to_restore = SessionID::InvalidValue();
@@ -541,6 +545,12 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabFromClosedWindowByID) {
   EXPECT_EQ(2, browser->tab_strip_model()->count());
   EXPECT_EQ(url1_,
             browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // Check that the window entry was adjusted.
+  EXPECT_EQ(2u, tabs.size());
+  EXPECT_EQ(url::kAboutBlankURL, tabs[0]->navigations.front().virtual_url());
+  EXPECT_EQ(url2_, tabs[1]->navigations.front().virtual_url());
+  EXPECT_EQ(1, entry_win->selected_tab_index);
 }
 
 // Tests that a duplicate history entry is not created when we restore a page
