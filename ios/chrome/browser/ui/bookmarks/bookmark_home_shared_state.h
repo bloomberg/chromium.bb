@@ -13,7 +13,6 @@
 
 @class BookmarkHomeSharedState;
 @class BookmarkTableCell;
-@class MDCFlexibleHeaderView;
 @class TableViewModel;
 
 namespace bookmarks {
@@ -44,7 +43,7 @@ typedef NS_ENUM(NSInteger, BookmarkHomeItemType) {
 // Models.
 
 // The model backing the table view.
-@property(nonatomic, readonly, strong) TableViewModel* tableViewModel;
+@property(nonatomic, strong) TableViewModel* tableViewModel;
 
 // The model holding bookmark data.
 @property(nonatomic, readonly, assign) bookmarks::BookmarkModel* bookmarkModel;
@@ -53,10 +52,6 @@ typedef NS_ENUM(NSInteger, BookmarkHomeItemType) {
 
 // The UITableView to show bookmarks.
 @property(nonatomic, strong) UITableView* tableView;
-
-// Header view to display the shadow below the app bar. It must be tracking the
-// |tableView|.
-@property(nonatomic, weak) MDCFlexibleHeaderView* headerView;
 
 // State variables.
 

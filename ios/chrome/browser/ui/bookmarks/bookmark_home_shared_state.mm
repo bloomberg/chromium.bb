@@ -41,7 +41,6 @@ const NSUInteger kMaxDownloadFaviconCount = 50;
 @synthesize editingFolderCell = _editingFolderCell;
 @synthesize editingFolderNode = _editingFolderNode;
 @synthesize faviconDownloadCount = _faviconDownloadCount;
-@synthesize headerView = _headerView;
 @synthesize observer = _observer;
 @synthesize promoVisible = _promoVisible;
 @synthesize tableView = _tableView;
@@ -52,7 +51,6 @@ const NSUInteger kMaxDownloadFaviconCount = 50;
                     displayedRootNode:
                         (const bookmarks::BookmarkNode*)displayedRootNode {
   if ((self = [super init])) {
-    _tableViewModel = [[TableViewModel alloc] init];
     _bookmarkModel = bookmarkModel;
     _tableViewDisplayedRootNode = displayedRootNode;
   }
