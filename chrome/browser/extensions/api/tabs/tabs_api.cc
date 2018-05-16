@@ -1367,8 +1367,9 @@ bool TabsUpdateFunction::RunAsync() {
 
   if (params->update_properties.auto_discardable.get()) {
     bool state = *params->update_properties.auto_discardable;
-    g_browser_process->GetTabManager()->SetTabAutoDiscardableState(contents,
-                                                                   state);
+    resource_coordinator::TabLifecycleUnitExternal::FromWebContents(
+        web_contents_)
+        ->SetAutoDiscardable(state);
   }
 
   if (!is_async) {

@@ -316,25 +316,6 @@ void TabManager::RemoveObserver(TabLifecycleObserver* observer) {
   TabLifecycleUnitExternal::RemoveTabLifecycleObserver(observer);
 }
 
-void TabManager::SetTabAutoDiscardableState(int32_t tab_id, bool state) {
-  for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
-    if (lifecycle_unit->GetID() == tab_id) {
-      TabLifecycleUnitExternal* tab_lifecycle_unit_external =
-          lifecycle_unit->AsTabLifecycleUnitExternal();
-      // For now, all LifecycleUnits are TabLifecycleUnitExternals.
-      DCHECK(tab_lifecycle_unit_external);
-      tab_lifecycle_unit_external->SetAutoDiscardable(state);
-      return;
-    }
-  }
-}
-
-void TabManager::SetTabAutoDiscardableState(content::WebContents* contents,
-                                            bool state) {
-  TabLifecycleUnitExternal::FromWebContents(contents)->SetAutoDiscardable(
-      state);
-}
-
 bool TabManager::CanPurgeBackgroundedRenderer(int render_process_id) const {
   for (LifecycleUnit* lifecycle_unit : lifecycle_units_) {
     TabLifecycleUnitExternal* tab_lifecycle_unit_external =

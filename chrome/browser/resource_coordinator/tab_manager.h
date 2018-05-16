@@ -126,10 +126,6 @@ class TabManager : public LifecycleUnitObserver,
   void AddObserver(TabLifecycleObserver* observer);
   void RemoveObserver(TabLifecycleObserver* observer);
 
-  // Sets/clears the auto-discardable state of the tab.
-  void SetTabAutoDiscardableState(int32_t tab_id, bool state);
-  void SetTabAutoDiscardableState(content::WebContents* contents, bool state);
-
   // Returns true when a given renderer can be purged if the specified
   // renderer is eligible for purging.
   bool CanPurgeBackgroundedRenderer(int render_process_id) const;
