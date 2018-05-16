@@ -35,7 +35,7 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
             @ChildAccountStatus.Status int childAccountStatus =
                     freProperties.getInt(AccountFirstRunFragment.CHILD_ACCOUNT_STATUS);
             mArguments = createArgumentsForForcedSigninFlow(
-                    SigninAccessPoint.START_PAGE, forceAccountTo, true, childAccountStatus);
+                    SigninAccessPoint.START_PAGE, forceAccountTo, childAccountStatus);
         }
 
         RecordUserAction.record("MobileFre.SignInShown");
