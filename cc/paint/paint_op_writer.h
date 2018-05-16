@@ -57,10 +57,9 @@ class CC_PAINT_EXPORT PaintOpWriter {
 
   void Write(const SkPath& path);
   void Write(const PaintFlags& flags);
-  void Write(const DrawImage& image);
   void Write(const sk_sp<SkData>& data);
   void Write(const SkColorSpace* data);
-  void Write(const PaintShader* shader);
+  void Write(const PaintShader* shader, SkFilterQuality quality);
   void Write(const PaintFilter* filter);
   void Write(const scoped_refptr<PaintTextBlob>& blob);
   void Write(SkColorType color_type);
@@ -91,6 +90,17 @@ class CC_PAINT_EXPORT PaintOpWriter {
     static_assert(sizeof(T) == 0,
                   "Attempted to call a non-existent sk_sp override.");
   }
+  template <typename T>
+  void Write(const T*) {
+    static_assert(sizeof(T) == 0,
+                  "Attempted to call a non-existent T* override.");
+  }
+
+  // Serializes the given |draw_image|.
+  // |scale_adjustment| is set to the scale applied to the serialized image.
+  // |quality| is set to the quality that should be used when rasterizing this
+  // image.
+  void Write(const DrawImage& draw_image, SkSize* scale_adjustment);
 
  private:
   template <typename T>
@@ -123,13 +133,20 @@ class CC_PAINT_EXPORT PaintOpWriter {
   void Write(const LightingPointPaintFilter& filter);
   void Write(const LightingSpotPaintFilter& filter);
 
+  // TODO(khushalsagar): These shouldn't be optional once we sort out
+  // PaintRecord filters.
   void Write(const PaintRecord* record,
              base::Optional<gfx::Rect> playback_rect = base::nullopt,
              base::Optional<gfx::SizeF> post_scale = base::nullopt);
-  void Write(const PaintImage& image);
   void Write(const SkRegion& region);
+  void WriteImage(uint32_t transfer_cache_entry_id);
 
   void EnsureBytes(size_t required_bytes);
+  sk_sp<PaintShader> TransformShaderIfNecessary(
+      const PaintShader* original,
+      SkFilterQuality quality,
+      uint32_t* paint_image_transfer_cache_entry_id,
+      gfx::SizeF* paint_record_post_scale);
 
   char* memory_ = nullptr;
   size_t size_ = 0u;

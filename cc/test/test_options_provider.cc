@@ -60,7 +60,7 @@ ImageProvider::ScopedDecodedDrawImage TestOptionsProvider::GetDecodedDrawImage(
   const EntryKey entry_key(TransferCacheEntryType::kImage, image_id);
   if (LockEntryDirect(entry_key)) {
     return ScopedDecodedDrawImage(
-        DecodedDrawImage(image_id, SkSize::MakeEmpty(), SkSize::Make(1u, 1u),
+        DecodedDrawImage(image_id, SkSize::MakeEmpty(), draw_image.scale(),
                          draw_image.filter_quality(), true));
   }
 
@@ -84,7 +84,7 @@ ImageProvider::ScopedDecodedDrawImage TestOptionsProvider::GetDecodedDrawImage(
   CreateEntryDirect(entry_key, base::span<uint8_t>(data.data(), data.size()));
 
   return ScopedDecodedDrawImage(
-      DecodedDrawImage(image_id, SkSize::MakeEmpty(), SkSize::Make(1u, 1u),
+      DecodedDrawImage(image_id, SkSize::MakeEmpty(), draw_image.scale(),
                        draw_image.filter_quality(), true));
 }
 

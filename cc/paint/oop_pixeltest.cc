@@ -309,6 +309,8 @@ class OopImagePixelTest : public OopPixelTest,
                           public ::testing::WithParamInterface<bool> {
  public:
   bool UseTooLargeImage() { return GetParam(); }
+  SkFilterQuality FilterQuality() { return kNone_SkFilterQuality; }
+
   gfx::Size GetImageSize() {
     const int kMaxSize = 20000;
     DCHECK_GT(kMaxSize, gles2_context_provider_->GrContext()->maxTextureSize());
@@ -405,6 +407,9 @@ TEST_F(OopPixelTest, DrawRect) {
 }
 
 TEST_P(OopImagePixelTest, DrawImage) {
+  SCOPED_TRACE(base::StringPrintf("UseTooLargeImage: %d, FilterQuality: %d\n",
+                                  UseTooLargeImage(), FilterQuality()));
+
   gfx::Rect rect(10, 10);
   gfx::Size image_size = GetImageSize();
 
@@ -427,7 +432,9 @@ TEST_P(OopImagePixelTest, DrawImage) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+  PaintFlags flags;
+  flags.setFilterQuality(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -438,7 +445,136 @@ TEST_P(OopImagePixelTest, DrawImage) {
   EXPECT_EQ(actual.getColor(0, 0), SK_ColorMAGENTA);
 }
 
+TEST_P(OopImagePixelTest, DrawImageScaled) {
+  SCOPED_TRACE(base::StringPrintf("UseTooLargeImage: %d, FilterQuality: %d\n",
+                                  UseTooLargeImage(), FilterQuality()));
+
+  gfx::Rect rect(10, 10);
+  gfx::Size image_size = GetImageSize();
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(image_size.width(), image_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorMAGENTA);
+  SkPaint green;
+  green.setColor(SK_ColorGREEN);
+  canvas.drawRect(SkRect::MakeXYWH(1, 2, 3, 4), green);
+
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+  auto builder = PaintImageBuilder::WithDefault().set_image(image, 0).set_id(
+      PaintImage::GetNextId());
+  auto paint_image = builder.TakePaintImage();
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<ScaleOp>(0.5f, 0.5f);
+  PaintFlags flags;
+  flags.setFilterQuality(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  display_item_list->EndPaintOfUnpaired(rect);
+  display_item_list->Finalize();
+
+  auto actual = Raster(display_item_list, rect.size());
+  auto expected = RasterExpectedBitmap(display_item_list, rect.size());
+  ExpectEquals(actual, expected);
+}
+
+TEST_P(OopImagePixelTest, DrawImageShaderScaled) {
+  SCOPED_TRACE(base::StringPrintf("UseTooLargeImage: %d, FilterQuality: %d\n",
+                                  UseTooLargeImage(), FilterQuality()));
+
+  gfx::Rect rect(10, 10);
+  gfx::Size image_size = GetImageSize();
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(image_size.width(), image_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorMAGENTA);
+  SkPaint green;
+  green.setColor(SK_ColorGREEN);
+  canvas.drawRect(SkRect::MakeXYWH(1, 2, 3, 4), green);
+
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+  auto builder = PaintImageBuilder::WithDefault().set_image(image, 0).set_id(
+      PaintImage::GetNextId());
+  auto paint_image = builder.TakePaintImage();
+  auto paint_image_shader =
+      PaintShader::MakeImage(paint_image, SkShader::kRepeat_TileMode,
+                             SkShader::kRepeat_TileMode, nullptr);
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<ScaleOp>(0.5f, 0.5f);
+  PaintFlags flags;
+  flags.setShader(paint_image_shader);
+  flags.setFilterQuality(FilterQuality());
+  display_item_list->push<DrawRectOp>(gfx::RectToSkRect(rect), flags);
+  display_item_list->EndPaintOfUnpaired(rect);
+  display_item_list->Finalize();
+
+  auto actual = Raster(display_item_list, rect.size());
+  auto expected = RasterExpectedBitmap(display_item_list, rect.size());
+  ExpectEquals(actual, expected);
+}
+
+TEST_P(OopImagePixelTest, DrawRecordShaderWithImageScaled) {
+  SCOPED_TRACE(base::StringPrintf("UseTooLargeImage: %d, FilterQuality: %d\n",
+                                  UseTooLargeImage(), FilterQuality()));
+
+  gfx::Rect rect(10, 10);
+  gfx::Size image_size = GetImageSize();
+
+  SkBitmap bitmap;
+  bitmap.allocPixelsFlags(
+      SkImageInfo::MakeN32Premul(image_size.width(), image_size.height()),
+      SkBitmap::kZeroPixels_AllocFlag);
+
+  SkCanvas canvas(bitmap);
+  canvas.drawColor(SK_ColorMAGENTA);
+  SkPaint green;
+  green.setColor(SK_ColorGREEN);
+  canvas.drawRect(SkRect::MakeXYWH(1, 2, 3, 4), green);
+
+  sk_sp<SkImage> image = SkImage::MakeFromBitmap(bitmap);
+  auto builder = PaintImageBuilder::WithDefault().set_image(image, 0).set_id(
+      PaintImage::GetNextId());
+  auto paint_image = builder.TakePaintImage();
+  auto paint_record = sk_make_sp<PaintOpBuffer>();
+  PaintFlags flags;
+  flags.setFilterQuality(FilterQuality());
+  paint_record->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
+  auto paint_record_shader = PaintShader::MakePaintRecord(
+      paint_record, gfx::RectToSkRect(rect), SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, nullptr);
+  // Set the shader has animated images so gpu also goes through cc's image
+  // upload stack, instead of using skia.
+  paint_record_shader->set_has_animated_images(true);
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<ScaleOp>(0.5f, 0.5f);
+  PaintFlags raster_flags;
+  raster_flags.setShader(paint_record_shader);
+  raster_flags.setFilterQuality(FilterQuality());
+  display_item_list->push<DrawRectOp>(gfx::RectToSkRect(rect), raster_flags);
+  display_item_list->EndPaintOfUnpaired(rect);
+  display_item_list->Finalize();
+
+  auto actual = Raster(display_item_list, rect.size());
+  auto expected = RasterExpectedBitmap(display_item_list, rect.size());
+  ExpectEquals(actual, expected);
+}
+
 TEST_P(OopImagePixelTest, DrawImageWithTargetColorSpace) {
+  SCOPED_TRACE(base::StringPrintf("UseTooLargeImage: %d, FilterQuality: %d\n",
+                                  UseTooLargeImage(), FilterQuality()));
+
   gfx::Rect rect(10, 10);
   gfx::Size image_size = GetImageSize();
 
@@ -461,7 +597,9 @@ TEST_P(OopImagePixelTest, DrawImageWithTargetColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+  PaintFlags flags;
+  flags.setFilterQuality(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -477,6 +615,9 @@ TEST_P(OopImagePixelTest, DrawImageWithTargetColorSpace) {
 }
 
 TEST_P(OopImagePixelTest, DrawImageWithSourceColorSpace) {
+  SCOPED_TRACE(base::StringPrintf("UseTooLargeImage: %d, FilterQuality: %d\n",
+                                  UseTooLargeImage(), FilterQuality()));
+
   gfx::Rect rect(10, 10);
   gfx::Size image_size = GetImageSize();
 
@@ -502,7 +643,9 @@ TEST_P(OopImagePixelTest, DrawImageWithSourceColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+  PaintFlags flags;
+  flags.setFilterQuality(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -517,6 +660,9 @@ TEST_P(OopImagePixelTest, DrawImageWithSourceColorSpace) {
 }
 
 TEST_P(OopImagePixelTest, DrawImageWithSourceAndTargetColorSpace) {
+  SCOPED_TRACE(base::StringPrintf("UseTooLargeImage: %d, FilterQuality: %d\n",
+                                  UseTooLargeImage(), FilterQuality()));
+
   gfx::Rect rect(10, 10);
 
   gfx::Size image_size = GetImageSize();
@@ -542,7 +688,9 @@ TEST_P(OopImagePixelTest, DrawImageWithSourceAndTargetColorSpace) {
 
   auto display_item_list = base::MakeRefCounted<DisplayItemList>();
   display_item_list->StartPaint();
-  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, nullptr);
+  PaintFlags flags;
+  flags.setFilterQuality(FilterQuality());
+  display_item_list->push<DrawImageOp>(paint_image, 0.f, 0.f, &flags);
   display_item_list->EndPaintOfUnpaired(rect);
   display_item_list->Finalize();
 
@@ -1087,6 +1235,37 @@ TEST_F(OopPixelTest, DrawTextBlob) {
   flags.setStyle(PaintFlags::kFill_Style);
   flags.setColor(SK_ColorGREEN);
   display_item_list->push<DrawTextBlobOp>(buildTextBlob(), 0u, 0u, flags);
+  display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
+  display_item_list->Finalize();
+
+  auto actual = Raster(display_item_list, options);
+  auto expected = RasterExpectedBitmap(display_item_list, options);
+  ExpectEquals(actual, expected);
+}
+
+TEST_F(OopPixelTest, DrawRecordShaderWithTextScaled) {
+  RasterOptions options;
+  options.resource_size = gfx::Size(100, 100);
+  options.content_size = options.resource_size;
+  options.full_raster_rect = gfx::Rect(options.content_size);
+  options.playback_rect = options.full_raster_rect;
+  options.color_space = gfx::ColorSpace::CreateSRGB();
+
+  auto paint_record = sk_make_sp<PaintOpBuffer>();
+  PaintFlags flags;
+  flags.setStyle(PaintFlags::kFill_Style);
+  flags.setColor(SK_ColorGREEN);
+  paint_record->push<DrawTextBlobOp>(buildTextBlob(), 0u, 0u, flags);
+  auto paint_record_shader = PaintShader::MakePaintRecord(
+      paint_record, SkRect::MakeWH(25, 25), SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, nullptr);
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<ScaleOp>(2.f, 2.f);
+  PaintFlags shader_flags;
+  shader_flags.setShader(paint_record_shader);
+  display_item_list->push<DrawRectOp>(SkRect::MakeWH(50, 50), shader_flags);
   display_item_list->EndPaintOfUnpaired(options.full_raster_rect);
   display_item_list->Finalize();
 

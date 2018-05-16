@@ -18,13 +18,10 @@ namespace cc {
 class CC_PAINT_EXPORT ScopedRasterFlags {
  public:
   // |flags| and |image_provider| must outlive this class.
-  // |is_rasterizing| is true if these flags are for direct rasterization
-  // and false if these flags are being used for serialization.
   ScopedRasterFlags(const PaintFlags* flags,
                     ImageProvider* image_provider,
                     const SkMatrix& ctm,
-                    uint8_t alpha,
-                    bool is_rasterizing);
+                    uint8_t alpha);
   ~ScopedRasterFlags();
 
   // The usage of these flags should not extend beyond the lifetime of this
@@ -38,7 +35,7 @@ class CC_PAINT_EXPORT ScopedRasterFlags {
 
  private:
   void DecodeImageShader(const SkMatrix& ctm);
-  void DecodeRecordShader(const SkMatrix& ctm, bool is_rasterizing);
+  void DecodeRecordShader(const SkMatrix& ctm);
   void DecodeFilter();
 
   void AdjustStrokeIfNeeded(const SkMatrix& ctm);

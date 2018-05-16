@@ -980,8 +980,7 @@ PaintFlagsPaintFilter::PaintFlagsPaintFilter(PaintFlags flags,
     : PaintFilter(kType, crop_rect, flags.HasDiscardableImages()),
       flags_(std::move(flags)) {
   if (image_provider) {
-    raster_flags_.emplace(&flags_, image_provider, SkMatrix::I(), 255u,
-                          true /* create_skia_shaders */);
+    raster_flags_.emplace(&flags_, image_provider, SkMatrix::I(), 255u);
   }
   cached_sk_filter_ = SkPaintImageFilter::Make(
       raster_flags_ ? raster_flags_->flags()->ToSkPaint() : flags_.ToSkPaint(),

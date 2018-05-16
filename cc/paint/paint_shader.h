@@ -170,11 +170,29 @@ class CC_PAINT_EXPORT PaintShader : public SkRefCnt {
   explicit PaintShader(Type type);
 
   sk_sp<SkShader> GetSkShader() const;
-  void CreateSkShader(ImageProvider* image_provider = nullptr);
+  void CreateSkShader(const gfx::SizeF* raster_scale = nullptr,
+                      ImageProvider* image_provider = nullptr);
 
-  sk_sp<PaintShader> CreateDecodedPaintRecord(
-      const SkMatrix& ctm,
-      ImageProvider* image_provider) const;
+  // Creates a PaintShader to be rasterized at the given ctm. |raster_scale| is
+  // set to the scale at which the record should be rasterized when the shader
+  // is used.
+  // Note that this does not create a skia backing for the shader.
+  // Valid only for PaintRecord backed shaders.
+  sk_sp<PaintShader> CreateScaledPaintRecord(const SkMatrix& ctm,
+                                             gfx::SizeF* raster_scale) const;
+
+  // Creates a PaintShader with images from |image_provider| to be rasterized
+  // at the given ctm.
+  // |transfer_cache_entry_id| is set to the transfer cache id for the image, if
+  // the decode is backed by the transfer cache.
+  // |raster_quality| is set to the filter quality the shader should be
+  // rasterized with.
+  // Valid only for PaintImage backed shaders.
+  sk_sp<PaintShader> CreateDecodedImage(const SkMatrix& ctm,
+                                        SkFilterQuality requested_quality,
+                                        ImageProvider* image_provider,
+                                        uint32_t* transfer_cache_entry_id,
+                                        SkFilterQuality* raster_quality) const;
 
   void SetColorsAndPositions(const SkColor* colors,
                              const SkScalar* positions,

@@ -26,6 +26,23 @@ DrawImage CreateDrawImage(const PaintImage& image,
                    flags ? flags->getFilterQuality() : kLow_SkFilterQuality,
                    matrix);
 }
+
+bool IsScaleAdjustmentIdentity(const SkSize& scale_adjustment) {
+  return std::abs(scale_adjustment.width() - 1.f) < FLT_EPSILON &&
+         std::abs(scale_adjustment.height() - 1.f) < FLT_EPSILON;
+}
+
+SkRect AdjustSrcRectForScale(SkRect original, SkSize scale_adjustment) {
+  if (IsScaleAdjustmentIdentity(scale_adjustment))
+    return original;
+
+  float x_scale = scale_adjustment.width();
+  float y_scale = scale_adjustment.height();
+  return SkRect::MakeXYWH(original.x() * x_scale, original.y() * y_scale,
+                          original.width() * x_scale,
+                          original.height() * y_scale);
+}
+
 }  // namespace
 
 #define TYPES(M)      \
@@ -406,9 +423,15 @@ size_t DrawImageOp::Serialize(const PaintOp* base_op,
   if (!serialized_flags)
     serialized_flags = &op->flags;
   helper.Write(*serialized_flags);
+
+  SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
   helper.Write(CreateDrawImage(op->image, serialized_flags,
-                               options.canvas->getTotalMatrix()));
+                               options.canvas->getTotalMatrix()),
+               &scale_adjustment);
   helper.AlignMemory(alignof(SkScalar));
+  helper.Write(scale_adjustment.width());
+  helper.Write(scale_adjustment.height());
+
   helper.Write(op->left);
   helper.Write(op->top);
   return helper.size();
@@ -424,8 +447,17 @@ size_t DrawImageRectOp::Serialize(const PaintOp* base_op,
   if (!serialized_flags)
     serialized_flags = &op->flags;
   helper.Write(*serialized_flags);
+
+  // Note that we don't request subsets here since the GpuImageCache has no
+  // optimizations for using subsets.
+  SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
   helper.Write(CreateDrawImage(op->image, serialized_flags,
-                               options.canvas->getTotalMatrix()));
+                               options.canvas->getTotalMatrix()),
+               &scale_adjustment);
+  helper.AlignMemory(alignof(SkScalar));
+  helper.Write(scale_adjustment.width());
+  helper.Write(scale_adjustment.height());
+
   helper.Write(op->src);
   helper.Write(op->dst);
   helper.Write(op->constraint);
@@ -768,8 +800,12 @@ PaintOp* DrawImageOp::Deserialize(const volatile void* input,
 
   PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
+
   helper.Read(&op->image);
   helper.AlignMemory(alignof(SkScalar));
+  helper.Read(&op->scale_adjustment.fWidth);
+  helper.Read(&op->scale_adjustment.fHeight);
+
   helper.Read(&op->left);
   helper.Read(&op->top);
   if (!helper.valid() || !op->IsValid()) {
@@ -790,7 +826,12 @@ PaintOp* DrawImageRectOp::Deserialize(const volatile void* input,
 
   PaintOpReader helper(input, input_size, options);
   helper.Read(&op->flags);
+
   helper.Read(&op->image);
+  helper.AlignMemory(alignof(SkScalar));
+  helper.Read(&op->scale_adjustment.fWidth);
+  helper.Read(&op->scale_adjustment.fHeight);
+
   helper.Read(&op->src);
   helper.Read(&op->dst);
   helper.Read(&op->constraint);
@@ -1119,6 +1160,12 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
   SkPaint paint = flags ? flags->ToSkPaint() : SkPaint();
 
   if (!params.image_provider) {
+    const bool needs_scale = !IsScaleAdjustmentIdentity(op->scale_adjustment);
+    SkAutoCanvasRestore save_restore(canvas, needs_scale);
+    if (needs_scale) {
+      canvas->scale(1.f / op->scale_adjustment.width(),
+                    1.f / op->scale_adjustment.height());
+    }
     canvas->drawImage(op->image.GetSkImage().get(), op->left, op->top, &paint);
     return;
   }
@@ -1137,17 +1184,18 @@ void DrawImageOp::RasterWithFlags(const DrawImageOp* op,
 
   DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().width()));
   DCHECK_EQ(0, static_cast<int>(decoded_image.src_rect_offset().height()));
-  bool need_scale = !decoded_image.is_scale_adjustment_identity();
-  if (need_scale) {
-    canvas->save();
-    canvas->scale(1.f / (decoded_image.scale_adjustment().width()),
-                  1.f / (decoded_image.scale_adjustment().height()));
-    }
-
-    paint.setFilterQuality(decoded_image.filter_quality());
-    canvas->drawImage(decoded_image.image().get(), op->left, op->top, &paint);
-    if (need_scale)
-      canvas->restore();
+  SkSize scale_adjustment = SkSize::Make(
+      op->scale_adjustment.width() * decoded_image.scale_adjustment().width(),
+      op->scale_adjustment.height() *
+          decoded_image.scale_adjustment().height());
+  const bool needs_scale = !IsScaleAdjustmentIdentity(scale_adjustment);
+  SkAutoCanvasRestore save_restore(canvas, needs_scale);
+  if (needs_scale) {
+    canvas->scale(1.f / scale_adjustment.width(),
+                  1.f / scale_adjustment.height());
+  }
+  paint.setFilterQuality(decoded_image.filter_quality());
+  canvas->drawImage(decoded_image.image().get(), op->left, op->top, &paint);
 }
 
 void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
@@ -1160,7 +1208,8 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
   SkPaint paint = flags ? flags->ToSkPaint() : SkPaint();
 
   if (!params.image_provider) {
-    canvas->drawImageRect(op->image.GetSkImage().get(), op->src, op->dst,
+    SkRect adjusted_src = AdjustSrcRectForScale(op->src, op->scale_adjustment);
+    canvas->drawImageRect(op->image.GetSkImage().get(), adjusted_src, op->dst,
                           &paint, skconstraint);
     return;
   }
@@ -1183,20 +1232,17 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
   const auto& decoded_image = scoped_decoded_draw_image.decoded_image();
   DCHECK(decoded_image.image());
 
+  SkSize scale_adjustment = SkSize::Make(
+      op->scale_adjustment.width() * decoded_image.scale_adjustment().width(),
+      op->scale_adjustment.height() *
+          decoded_image.scale_adjustment().height());
   SkRect adjusted_src =
       op->src.makeOffset(decoded_image.src_rect_offset().width(),
                          decoded_image.src_rect_offset().height());
-  if (!decoded_image.is_scale_adjustment_identity()) {
-    float x_scale = decoded_image.scale_adjustment().width();
-    float y_scale = decoded_image.scale_adjustment().height();
-    adjusted_src = SkRect::MakeXYWH(
-        adjusted_src.x() * x_scale, adjusted_src.y() * y_scale,
-        adjusted_src.width() * x_scale, adjusted_src.height() * y_scale);
-    }
-
-    paint.setFilterQuality(decoded_image.filter_quality());
-    canvas->drawImageRect(decoded_image.image().get(), adjusted_src, op->dst,
-                          &paint, skconstraint);
+  adjusted_src = AdjustSrcRectForScale(adjusted_src, scale_adjustment);
+  paint.setFilterQuality(decoded_image.filter_quality());
+  canvas->drawImageRect(decoded_image.image().get(), adjusted_src, op->dst,
+                        &paint, skconstraint);
 }
 
 void DrawIRectOp::RasterWithFlags(const DrawIRectOp* op,
@@ -1522,6 +1568,9 @@ bool DrawImageOp::AreEqual(const PaintOp* base_left,
     return false;
   if (!AreEqualEvenIfNaN(left->top, right->top))
     return false;
+
+  // scale_adjustment intentionally omitted because it is added during
+  // serialization based on raster scale.
   return true;
 }
 
@@ -1538,6 +1587,9 @@ bool DrawImageRectOp::AreEqual(const PaintOp* base_left,
     return false;
   if (!AreSkRectsEqual(left->dst, right->dst))
     return false;
+
+  // scale_adjustment intentionally omitted because it is added during
+  // serialization based on raster scale.
   return true;
 }
 
@@ -2278,10 +2330,9 @@ void PaintOpBuffer::Playback(SkCanvas* canvas,
 
     if (op->IsPaintOpWithFlags()) {
       const auto* flags_op = static_cast<const PaintOpWithFlags*>(op);
-      const bool is_rasterizing = true;
       const ScopedRasterFlags scoped_flags(
           &flags_op->flags, new_params.image_provider, canvas->getTotalMatrix(),
-          iter.alpha(), is_rasterizing);
+          iter.alpha());
       if (const auto* raster_flags = scoped_flags.flags())
         flags_op->RasterWithFlags(canvas, raster_flags, new_params);
     } else {

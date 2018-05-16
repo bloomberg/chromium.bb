@@ -2839,6 +2839,68 @@ TEST(PaintOpBufferTest, ReplacesImagesFromProvider) {
   buffer.Playback(&canvas, PlaybackParams(&image_provider));
 }
 
+TEST(PaintOpBufferTest, ReplacesImagesFromProviderOOP) {
+  PaintOpBuffer buffer;
+  SkSize expected_scale = SkSize::Make(0.2f, 0.5f);
+
+  SkRect rect = SkRect::MakeWH(10, 10);
+  PaintFlags flags;
+  flags.setFilterQuality(kLow_SkFilterQuality);
+  PaintImage paint_image = CreateDiscardablePaintImage(gfx::Size(10, 10));
+  buffer.push<ScaleOp>(expected_scale.width(), expected_scale.height());
+  buffer.push<DrawImageOp>(paint_image, 0.0f, 0.0f, &flags);
+  buffer.push<DrawImageRectOp>(
+      paint_image, rect, rect, &flags,
+      PaintCanvas::SrcRectConstraint::kFast_SrcRectConstraint);
+  flags.setShader(
+      PaintShader::MakeImage(paint_image, SkShader::TileMode::kRepeat_TileMode,
+                             SkShader::TileMode::kRepeat_TileMode, nullptr));
+  buffer.push<DrawOvalOp>(SkRect::MakeWH(10, 10), flags);
+
+  std::unique_ptr<char, base::AlignedFreeDeleter> memory(
+      static_cast<char*>(base::AlignedAlloc(PaintOpBuffer::kInitialBufferSize,
+                                            PaintOpBuffer::PaintOpAlign)));
+  TestOptionsProvider options_provider;
+  SimpleBufferSerializer serializer(
+      memory.get(), PaintOpBuffer::kInitialBufferSize,
+      options_provider.image_provider(),
+      options_provider.transfer_cache_helper(),
+      options_provider.strike_server(), options_provider.color_space(),
+      options_provider.can_use_lcd_text());
+  serializer.Serialize(&buffer);
+  ASSERT_NE(serializer.written(), 0u);
+
+  auto deserialized_buffer =
+      PaintOpBuffer::MakeFromMemory(memory.get(), serializer.written(),
+                                    options_provider.deserialize_options());
+  ASSERT_TRUE(deserialized_buffer);
+
+  for (auto* op : PaintOpBuffer::Iterator(deserialized_buffer.get())) {
+    testing::NiceMock<MockCanvas> canvas;
+    PlaybackParams params(nullptr);
+    testing::Sequence s;
+
+    if (op->GetType() == PaintOpType::DrawImage) {
+      // Save/scale/image/restore from DrawImageop.
+      EXPECT_CALL(canvas, willSave()).InSequence(s);
+      EXPECT_CALL(canvas, didConcat(MatchesInvScale(expected_scale)));
+      EXPECT_CALL(canvas, onDrawImage(NonLazyImage(), 0.0f, 0.0f, _));
+      EXPECT_CALL(canvas, willRestore()).InSequence(s);
+      op->Raster(&canvas, params);
+    } else if (op->GetType() == PaintOpType::DrawImageRect) {
+      EXPECT_CALL(canvas, onDrawImageRect(NonLazyImage(),
+                                          MatchesRect(rect, expected_scale),
+                                          SkRect::MakeWH(10, 10), _,
+                                          SkCanvas::kFast_SrcRectConstraint));
+      op->Raster(&canvas, params);
+    } else if (op->GetType() == PaintOpType::DrawOval) {
+      EXPECT_CALL(canvas, onDrawOval(SkRect::MakeWH(10, 10),
+                                     MatchesShader(flags, expected_scale)));
+      op->Raster(&canvas, params);
+    }
+  }
+}
+
 class PaintFilterSerializationTest : public ::testing::TestWithParam<bool> {};
 
 INSTANTIATE_TEST_CASE_P(PaintFilterSerializationTests,

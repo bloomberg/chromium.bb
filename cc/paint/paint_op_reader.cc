@@ -390,6 +390,7 @@ void PaintOpReader::Read(scoped_refptr<PaintTextBlob>* paint_blob) {
   if (!valid_)
     return;
 
+  DCHECK(options_.strike_client);
   SkDeserialProcs procs;
   TypefaceCtx typeface_ctx(options_.strike_client);
   procs.fTypefaceProc = &DeserializeTypeface;

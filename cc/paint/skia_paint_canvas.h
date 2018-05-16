@@ -142,9 +142,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
       PlaybackParams::CustomDataRasterCallback custom_raster_callback);
 
  private:
-  // We always need skia shaders since the ops will be played on an SkCanvas.
-  static const bool kIsRasterizing;
-
   void WrapCanvasInColorSpaceXformCanvas(
       sk_sp<SkColorSpace> target_color_space);
   void FlushAfterDrawIfNeeded();

@@ -5,6 +5,7 @@
 #include "cc/paint/paint_shader.h"
 
 #include "base/atomic_sequence_num.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/paint_record.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -24,6 +25,23 @@ sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record,
     canvas->scale(raster_scale->width(), raster_scale->height());
   record->Playback(canvas, PlaybackParams(image_provider));
   return recorder.finishRecordingAsPicture();
+}
+
+bool CompareMatrices(const SkMatrix& a,
+                     const SkMatrix& b,
+                     bool ignore_scaling_differences) {
+  if (!ignore_scaling_differences)
+    return PaintOp::AreSkMatricesEqual(a, b);
+
+  SkSize scale;
+  SkMatrix a_without_scale;
+  SkMatrix b_without_scale;
+  if (a.decomposeScale(&scale, &a_without_scale) !=
+      b.decomposeScale(&scale, &b_without_scale)) {
+    return false;
+  }
+
+  return PaintOp::AreSkMatricesEqual(a_without_scale, b_without_scale);
 }
 
 }  // namespace
@@ -241,9 +259,9 @@ bool PaintShader::GetRasterizationTileRect(const SkMatrix& ctm,
   return true;
 }
 
-sk_sp<PaintShader> PaintShader::CreateDecodedPaintRecord(
+sk_sp<PaintShader> PaintShader::CreateScaledPaintRecord(
     const SkMatrix& ctm,
-    ImageProvider* image_provider) const {
+    gfx::SizeF* raster_scale) const {
   DCHECK_EQ(shader_type_, Type::kPaintRecord);
 
   // For creating a decoded PaintRecord shader, we need to do the following:
@@ -272,21 +290,73 @@ sk_sp<PaintShader> PaintShader::CreateDecodedPaintRecord(
   shader->tx_ = tx_;
   shader->ty_ = ty_;
 
-  shader->tile_scale_ =
+  *raster_scale =
       gfx::SizeF(SkIntToScalar(tile_rect.width()) / tile_.width(),
                  SkIntToScalar(tile_rect.height()) / tile_.height());
   shader->local_matrix_ = GetLocalMatrix();
-  shader->local_matrix_->preScale(1 / shader->tile_scale_->width(),
-                                  1 / shader->tile_scale_->height());
+  shader->local_matrix_->preScale(1 / raster_scale->width(),
+                                  1 / raster_scale->height());
 
   return shader;
+}
+
+sk_sp<PaintShader> PaintShader::CreateDecodedImage(
+    const SkMatrix& ctm,
+    SkFilterQuality quality,
+    ImageProvider* image_provider,
+    uint32_t* transfer_cache_entry_id,
+    SkFilterQuality* raster_quality) const {
+  DCHECK_EQ(shader_type_, Type::kImage);
+  if (!image_)
+    return nullptr;
+
+  SkMatrix total_image_matrix = GetLocalMatrix();
+  total_image_matrix.preConcat(ctm);
+  SkRect src_rect = SkRect::MakeIWH(image_.width(), image_.height());
+  SkIRect int_src_rect;
+  src_rect.roundOut(&int_src_rect);
+  DrawImage draw_image(image_, int_src_rect, quality, total_image_matrix);
+  auto decoded_draw_image = image_provider->GetDecodedDrawImage(draw_image);
+  if (!decoded_draw_image)
+    return nullptr;
+
+  auto decoded_image = decoded_draw_image.decoded_image();
+  SkMatrix final_matrix = GetLocalMatrix();
+  bool need_scale = !decoded_image.is_scale_adjustment_identity();
+  if (need_scale) {
+    final_matrix.preScale(1.f / decoded_image.scale_adjustment().width(),
+                          1.f / decoded_image.scale_adjustment().height());
+  }
+
+  PaintImage decoded_paint_image;
+  if (decoded_image.transfer_cache_entry_id()) {
+    decoded_paint_image = image_;
+    *transfer_cache_entry_id = *decoded_image.transfer_cache_entry_id();
+  } else {
+    DCHECK(decoded_image.image());
+
+    sk_sp<SkImage> sk_image =
+        sk_ref_sp<SkImage>(const_cast<SkImage*>(decoded_image.image().get()));
+    decoded_paint_image =
+        PaintImageBuilder::WithDefault()
+            .set_id(image_.stable_id())
+            .set_image(std::move(sk_image), image_.content_id())
+            .TakePaintImage();
+  }
+
+  // TODO(khushalsagar): Remove filter quality from DecodedDrawImage. All we
+  // want to do is cap the filter quality used, but Gpu and Sw cache have
+  // different behaviour. D:
+  *raster_quality = decoded_image.filter_quality();
+  return PaintShader::MakeImage(decoded_paint_image, tx_, ty_, &final_matrix);
 }
 
 sk_sp<SkShader> PaintShader::GetSkShader() const {
   return cached_shader_;
 }
 
-void PaintShader::CreateSkShader(ImageProvider* image_provider) {
+void PaintShader::CreateSkShader(const gfx::SizeF* raster_scale,
+                                 ImageProvider* image_provider) {
   DCHECK(!cached_shader_);
 
   switch (shader_type_) {
@@ -332,7 +402,7 @@ void PaintShader::CreateSkShader(ImageProvider* image_provider) {
     case Type::kPaintRecord: {
       // Create a recording at the desired scale if this record has images which
       // have been decoded before raster.
-      auto picture = ToSkPicture(record_, tile_, tile_scale(), image_provider);
+      auto picture = ToSkPicture(record_, tile_, raster_scale, image_provider);
 
       switch (scaling_behavior_) {
         // For raster scale, we create a picture shader directly.
@@ -433,16 +503,20 @@ bool PaintShader::operator==(const PaintShader& other) const {
   if (shader_type_ != other.shader_type_)
     return false;
 
+  // Record and image shaders are scaled during serialization.
+  const bool ignore_scaling_differences =
+      shader_type_ == PaintShader::Type::kPaintRecord ||
+      shader_type_ == PaintShader::Type::kImage;
+
   // Variables that all shaders use.
-  if (local_matrix_) {
-    if (!other.local_matrix_.has_value())
-      return false;
-    if (!PaintOp::AreSkMatricesEqual(*local_matrix_, *other.local_matrix_))
-      return false;
-  } else {
-    if (other.local_matrix_.has_value())
-      return false;
+  const SkMatrix& local_matrix = local_matrix_ ? *local_matrix_ : SkMatrix::I();
+  const SkMatrix& other_local_matrix =
+      other.local_matrix_ ? *other.local_matrix_ : SkMatrix::I();
+  if (!CompareMatrices(local_matrix, other_local_matrix,
+                       ignore_scaling_differences)) {
+    return false;
   }
+
   if (fallback_color_ != other.fallback_color_)
     return false;
   if (flags_ != other.flags_)
@@ -451,7 +525,9 @@ bool PaintShader::operator==(const PaintShader& other) const {
     return false;
   if (ty_ != other.ty_)
     return false;
-  if (scaling_behavior_ != other.scaling_behavior_)
+
+  if (!ignore_scaling_differences &&
+      scaling_behavior_ != other.scaling_behavior_)
     return false;
 
   // Variables that only some shaders use.
@@ -494,10 +570,8 @@ bool PaintShader::operator==(const PaintShader& other) const {
       // aren't the same.
       if (!record_ != !other.record_)
         return false;
-      if (record_ && *record_ != *other.record_)
-        return false;
-      if (!PaintOp::AreSkRectsEqual(tile_, other.tile_))
-        return false;
+      // tile_ and record_ intentionally omitted since they are modified on the
+      // serialized shader based on the ctm.
       break;
     case Type::kShaderCount:
       break;
