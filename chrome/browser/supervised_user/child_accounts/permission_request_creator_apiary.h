@@ -5,14 +5,14 @@
 #ifndef CHROME_BROWSER_SUPERVISED_USER_CHILD_ACCOUNTS_PERMISSION_REQUEST_CREATOR_APIARY_H_
 #define CHROME_BROWSER_SUPERVISED_USER_CHILD_ACCOUNTS_PERMISSION_REQUEST_CREATOR_APIARY_H_
 
+#include <list>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/supervised_user/permission_request_creator.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "net/url_request/url_fetcher_delegate.h"
 
 class GURL;
 class Profile;
@@ -21,19 +21,17 @@ namespace base {
 class Time;
 }
 
-namespace net {
-class URLFetcher;
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 class PermissionRequestCreatorApiary : public PermissionRequestCreator,
-                                       public OAuth2TokenService::Consumer,
-                                       public net::URLFetcherDelegate {
+                                       public OAuth2TokenService::Consumer {
  public:
   PermissionRequestCreatorApiary(
       OAuth2TokenService* oauth2_token_service,
       const std::string& account_id,
-      net::URLRequestContextGetter* context);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PermissionRequestCreatorApiary() override;
 
   static std::unique_ptr<PermissionRequestCreator> CreateWithProfile(
@@ -48,11 +46,11 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   void CreateExtensionUpdateRequest(const std::string& id,
                                     SuccessCallback callback) override;
 
-  void set_url_fetcher_id_for_testing(int id) { url_fetcher_id_ = id; }
-
  private:
+  friend class PermissionRequestCreatorApiaryTest;
+
   struct Request;
-  using RequestIterator = std::vector<std::unique_ptr<Request>>::iterator;
+  using RequestList = std::list<std::unique_ptr<Request>>;
 
   // OAuth2TokenService::Consumer implementation:
   void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
@@ -61,8 +59,8 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   void OnGetTokenFailure(const OAuth2TokenService::Request* request,
                          const GoogleServiceAuthError& error) override;
 
-  // net::URLFetcherDelegate implementation.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleLoaderComplete(RequestList::iterator it,
+                              std::unique_ptr<std::string> response_body);
 
   GURL GetApiUrl() const;
   std::string GetApiScope() const;
@@ -75,14 +73,14 @@ class PermissionRequestCreatorApiary : public PermissionRequestCreator,
   // we restart when the returned access token has expired.
   void StartFetching(Request* request);
 
-  void DispatchResult(RequestIterator it, bool success);
+  void DispatchResult(RequestList::iterator it, bool success);
 
   OAuth2TokenService* oauth2_token_service_;
   std::string account_id_;
-  net::URLRequestContextGetter* context_;
-  int url_fetcher_id_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  bool retry_on_network_change_;
 
-  std::vector<std::unique_ptr<Request>> requests_;
+  RequestList requests_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionRequestCreatorApiary);
 };

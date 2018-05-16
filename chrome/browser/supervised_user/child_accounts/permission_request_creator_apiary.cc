@@ -22,16 +22,17 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
-
-using net::URLFetcher;
 
 const char kPermissionRequestApiPath[] = "people/me/permissionRequests";
 const char kPermissionRequestApiScope[] =
@@ -57,8 +58,7 @@ const char kIdKey[] = "id";
 struct PermissionRequestCreatorApiary::Request {
   Request(const std::string& request_type,
           const std::string& object_ref,
-          SuccessCallback callback,
-          int url_fetcher_id);
+          SuccessCallback callback);
   ~Request();
 
   std::string request_type;
@@ -67,33 +67,29 @@ struct PermissionRequestCreatorApiary::Request {
   std::unique_ptr<OAuth2TokenService::Request> access_token_request;
   std::string access_token;
   bool access_token_expired;
-  int url_fetcher_id;
-  std::unique_ptr<URLFetcher> url_fetcher;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
 };
 
 PermissionRequestCreatorApiary::Request::Request(
     const std::string& request_type,
     const std::string& object_ref,
-    SuccessCallback callback,
-    int url_fetcher_id)
+    SuccessCallback callback)
     : request_type(request_type),
       object_ref(object_ref),
       callback(std::move(callback)),
-      access_token_expired(false),
-      url_fetcher_id(url_fetcher_id) {}
+      access_token_expired(false) {}
 
 PermissionRequestCreatorApiary::Request::~Request() {}
 
 PermissionRequestCreatorApiary::PermissionRequestCreatorApiary(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
-    net::URLRequestContextGetter* context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : OAuth2TokenService::Consumer("permissions_creator"),
       oauth2_token_service_(oauth2_token_service),
       account_id_(account_id),
-      context_(context),
-      url_fetcher_id_(0) {
-}
+      url_loader_factory_(std::move(url_loader_factory)),
+      retry_on_network_change_(true) {}
 
 PermissionRequestCreatorApiary::~PermissionRequestCreatorApiary() {}
 
@@ -105,7 +101,8 @@ PermissionRequestCreatorApiary::CreateWithProfile(Profile* profile) {
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
   return base::WrapUnique(new PermissionRequestCreatorApiary(
       token_service, signin->GetAuthenticatedAccountId(),
-      profile->GetRequestContext()));
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess()));
 }
 
 bool PermissionRequestCreatorApiary::IsEnabled() const {
@@ -158,8 +155,8 @@ void PermissionRequestCreatorApiary::CreateRequest(
     const std::string& request_type,
     const std::string& object_ref,
     SuccessCallback callback) {
-  requests_.push_back(std::make_unique<Request>(
-      request_type, object_ref, std::move(callback), url_fetcher_id_));
+  requests_.push_back(
+      std::make_unique<Request>(request_type, object_ref, std::move(callback)));
   StartFetching(requests_.back().get());
 }
 
@@ -209,31 +206,36 @@ void PermissionRequestCreatorApiary::OnGetTokenSuccess(
             }
           }
         })");
-  (*it)->url_fetcher =
-      URLFetcher::Create((*it)->url_fetcher_id, GetApiUrl(), URLFetcher::POST,
-                         this, traffic_annotation);
-
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      (*it)->url_fetcher.get(),
-      data_use_measurement::DataUseUserData::SUPERVISED_USER);
-  (*it)->url_fetcher->SetRequestContext(context_);
-  (*it)->url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                   net::LOAD_DO_NOT_SAVE_COOKIES);
-  (*it)->url_fetcher->SetAutomaticallyRetryOnNetworkChanges(
-      kNumPermissionRequestRetries);
-  (*it)->url_fetcher->AddExtraRequestHeader(base::StringPrintf(
-      supervised_users::kAuthorizationHeaderFormat, access_token.c_str()));
 
   base::DictionaryValue dict;
   dict.SetKey(kEventTypeKey, base::Value((*it)->request_type));
   dict.SetKey(kObjectRefKey, base::Value((*it)->object_ref));
   dict.SetKey(kStateKey, base::Value(kState));
-
   std::string body;
   base::JSONWriter::Write(dict, &body);
-  (*it)->url_fetcher->SetUploadData("application/json", body);
 
-  (*it)->url_fetcher->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GetApiUrl();
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->method = "POST";
+  resource_request->headers.AddHeaderFromString(base::StringPrintf(
+      supervised_users::kAuthorizationHeaderFormat, access_token.c_str()));
+  (*it)->simple_url_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  (*it)->simple_url_loader->AttachStringForUpload(body, "application/json");
+  if (retry_on_network_change_) {
+    (*it)->simple_url_loader->SetRetryOptions(
+        kNumPermissionRequestRetries,
+        network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  }
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::SUPERVISED_USER
+  (*it)->simple_url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&PermissionRequestCreatorApiary::OnSimpleLoaderComplete,
+                     base::Unretained(this), std::move(it)));
 }
 
 void PermissionRequestCreatorApiary::OnGetTokenFailure(
@@ -250,65 +252,69 @@ void PermissionRequestCreatorApiary::OnGetTokenFailure(
   DispatchResult(it, false);
 }
 
-void PermissionRequestCreatorApiary::OnURLFetchComplete(
-    const URLFetcher* source) {
-  auto it = requests_.begin();
-  while (it != requests_.end()) {
-    if (source == (*it)->url_fetcher.get())
-      break;
-    ++it;
-  }
-  DCHECK(it != requests_.end());
-
-  const net::URLRequestStatus& status = source->GetStatus();
-  if (!status.is_success()) {
-    LOG(WARNING) << "Network error " << status.error();
-    DispatchResult(it, false);
-    return;
+void PermissionRequestCreatorApiary::OnSimpleLoaderComplete(
+    RequestList::iterator it,
+    std::unique_ptr<std::string> response_body) {
+  Request* request = it->get();
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      std::move(request->simple_url_loader);
+  int net_error = simple_url_loader->NetError();
+  int response_code = -1;
+  if (simple_url_loader->ResponseInfo() &&
+      simple_url_loader->ResponseInfo()->headers) {
+    response_code = simple_url_loader->ResponseInfo()->headers->response_code();
   }
 
-  int response_code = source->GetResponseCode();
-  if (response_code == net::HTTP_UNAUTHORIZED && !(*it)->access_token_expired) {
-    (*it)->access_token_expired = true;
+  if (response_code == net::HTTP_UNAUTHORIZED &&
+      !request->access_token_expired) {
+    request->access_token_expired = true;
     OAuth2TokenService::ScopeSet scopes;
     scopes.insert(GetApiScope());
     oauth2_token_service_->InvalidateAccessToken(account_id_, scopes,
-                                                 (*it)->access_token);
-    StartFetching(it->get());
+                                                 request->access_token);
+    StartFetching(request);
     return;
   }
 
   if (response_code != net::HTTP_OK) {
     LOG(WARNING) << "HTTP error " << response_code;
-    DispatchResult(it, false);
+    DispatchResult(std::move(it), false);
     return;
   }
 
-  std::string response_body;
-  source->GetResponseAsString(&response_body);
-  std::unique_ptr<base::Value> value = base::JSONReader::Read(response_body);
+  if (net_error != net::OK) {
+    LOG(WARNING) << "Network error " << net_error;
+    DispatchResult(std::move(it), false);
+    return;
+  }
+
+  std::string body;
+  if (response_body)
+    body = std::move(*response_body);
+
+  std::unique_ptr<base::Value> value = base::JSONReader::Read(body);
   base::DictionaryValue* dict = NULL;
   if (!value || !value->GetAsDictionary(&dict)) {
     LOG(WARNING) << "Invalid top-level dictionary";
-    DispatchResult(it, false);
+    DispatchResult(std::move(it), false);
     return;
   }
   base::DictionaryValue* permission_dict = NULL;
   if (!dict->GetDictionary(kPermissionRequestKey, &permission_dict)) {
     LOG(WARNING) << "Permission request not found";
-    DispatchResult(it, false);
+    DispatchResult(std::move(it), false);
     return;
   }
   std::string id;
   if (!permission_dict->GetString(kIdKey, &id)) {
     LOG(WARNING) << "ID not found";
-    DispatchResult(it, false);
+    DispatchResult(std::move(it), false);
     return;
   }
-  DispatchResult(it, true);
+  DispatchResult(std::move(it), true);
 }
 
-void PermissionRequestCreatorApiary::DispatchResult(RequestIterator it,
+void PermissionRequestCreatorApiary::DispatchResult(RequestList::iterator it,
                                                     bool success) {
   std::move((*it)->callback).Run(success);
   requests_.erase(it);
