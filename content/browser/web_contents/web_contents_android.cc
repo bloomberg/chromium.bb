@@ -142,17 +142,26 @@ std::string CompressAndSaveBitmap(const std::string& dir,
   base::AssertBlockingAllowed();
 
   std::vector<unsigned char> data;
-  if (!gfx::JPEGCodec::Encode(bitmap, 85, &data))
+  if (!gfx::JPEGCodec::Encode(bitmap, 85, &data)) {
+    LOG(ERROR) << "Failed to encode bitmap to JPEG";
     return std::string();
+  }
 
   base::FilePath screenshot_dir(dir);
   if (!base::DirectoryExists(screenshot_dir)) {
-    base::CreateDirectory(screenshot_dir);
+    if (!base::CreateDirectory(screenshot_dir)) {
+      LOG(ERROR) << "Failed to create screenshot directory";
+      return std::string();
+    }
   }
 
   base::FilePath screenshot_path;
   base::ScopedFILE out_file(
       base::CreateAndOpenTemporaryFileInDir(screenshot_dir, &screenshot_path));
+  if (!out_file) {
+    LOG(ERROR) << "Failed to create temporary screenshot file";
+    return std::string();
+  }
   unsigned int bytes_written =
       fwrite(reinterpret_cast<const char*>(data.data()), 1, data.size(),
              out_file.get());
@@ -160,6 +169,7 @@ std::string CompressAndSaveBitmap(const std::string& dir,
   // If there were errors, don't leave a partial file around.
   if (bytes_written != data.size()) {
     base::DeleteFile(screenshot_path, false);
+    LOG(ERROR) << "Error writing screenshot file to disk";
     return std::string();
   }
   return screenshot_path.value();
