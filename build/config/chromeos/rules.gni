@@ -29,6 +29,11 @@ template("generate_vm_runner_script") {
     ]
 
     data = [
+      # We use android test-runner's results libs to construct gtest output
+      # json.
+      "//build/android/pylib/__init__.py",
+      "//build/android/pylib/base/",
+      "//build/android/pylib/results/",
       invoker.generated_script,
       "//build/chromeos/",
       "//build/cros_cache/chrome-sdk/misc/",

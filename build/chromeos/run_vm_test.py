@@ -6,6 +6,7 @@
 
 import argparse
 import contextlib
+import json
 import logging
 import os
 import re
@@ -16,6 +17,13 @@ import sys
 
 CHROMIUM_SRC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..'))
+
+# Use the android test-runner's gtest results support library for generating
+# output json ourselves.
+sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'android'))
+from pylib.base import base_test_result
+from pylib.results import json_results
+
 CHROMITE_PATH = os.path.abspath(os.path.join(
     CHROMIUM_SRC_PATH, 'third_party', 'chromite'))
 # cros_vm is a tool for managing VMs.
@@ -152,8 +160,23 @@ def vm_test(args):
   if not env_copy.get('GN_ARGS'):
     env_copy['GN_ARGS'] = 'is_chromeos = true'
   env_copy['PATH'] = env_copy['PATH'] + ':' + os.path.join(CHROMITE_PATH, 'bin')
-  return subprocess.call(
+  rc = subprocess.call(
       cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr, env=env_copy)
+
+  # Create a simple json results file for the sanity test if needed. The results
+  # will contain only one test ('cros_vm_sanity_test'), and will either be a
+  # PASS or FAIL depending on the return code of cros_run_vm_test above.
+  if args.test_launcher_summary_output and is_sanity_test:
+    result = (base_test_result.ResultType.FAIL if rc else
+                  base_test_result.ResultType.PASS)
+    sanity_test_result = base_test_result.BaseTestResult(
+        'cros_vm_sanity_test', result)
+    run_results = base_test_result.TestRunResults()
+    run_results.AddResult(sanity_test_result)
+    with open(args.test_launcher_summary_output, 'w') as f:
+      json.dump(json_results.GenerateResultsDict([run_results]), f)
+
+  return rc
 
 
 def main():
