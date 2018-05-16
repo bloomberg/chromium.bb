@@ -467,11 +467,6 @@
       }
     ]
   },
-  "Android MIPS Builder (dbg)": {
-    "additional_compile_targets": [
-      "all"
-    ]
-  },
   "Android WebView L (dbg)": {
     "cts_tests": [
       {

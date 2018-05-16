@@ -444,8 +444,8 @@ class BBJSONGenerator(object):
       if 'args' not in result:
         result['args'] = []
       result['args'].append('--gs-results-bucket=chromium-result-details')
-      if result['swarming']['can_use_on_swarming_builders'] and not \
-         tester_config.get('skip_merge_script', False):
+      if (result['swarming']['can_use_on_swarming_builders'] and not
+          tester_config.get('skip_merge_script', False)):
         result['merge'] = {
           'args': [
             '--bucket',
@@ -453,7 +453,7 @@ class BBJSONGenerator(object):
             '--test-name',
             test_name
           ],
-          'script': '//build/android/pylib/results/presentation/' \
+          'script': '//build/android/pylib/results/presentation/'
             'test_results_presentation.py',
         } # pragma: no cover
       if not tester_config.get('skip_cipd_packages', False):
@@ -550,8 +550,8 @@ class BBJSONGenerator(object):
       if isinstance(value, list):
         for entry in value:
           if isinstance(self.test_suites[entry], list):
-            raise BBGenErr('Composition test suites may not refer to other ' \
-                           'composition test suites (error found while ' \
+            raise BBGenErr('Composition test suites may not refer to other '
+                           'composition test suites (error found while '
                            'processing %s)' % name)
 
   def resolve_composition_test_suites(self):
@@ -590,9 +590,13 @@ class BBJSONGenerator(object):
           suite_type, waterfall_name, bot_name),
       cause=cause)
 
+  def unknown_bot(self, bot_name, waterfall_name):
+    return BBGenErr(
+      'Unknown bot name "%s" on waterfall "%s"' % (bot_name, waterfall_name))
+
   def unknown_test_suite(self, suite_name, bot_name, waterfall_name):
     return BBGenErr(
-      'Test suite %s from machine %s on waterfall %s not present in ' \
+      'Test suite %s from machine %s on waterfall %s not present in '
       'test_suites.pyl' % (suite_name, bot_name, waterfall_name))
 
   def unknown_test_suite_type(self, suite_type, bot_name, waterfall_name):
@@ -640,9 +644,38 @@ class BBJSONGenerator(object):
         self.write_file(self.pyl_file_path(file_path),
                         self.generate_waterfall_json(waterfall))
 
+  def get_valid_bot_names(self):
+    # Extract bot names from infra/config/global/luci-milo.cfg.
+    bot_names = set()
+    for l in open(os.path.join(self.this_dir, '..', '..', 'infra', 'config',
+                               'global', 'luci-milo.cfg')).readlines():
+      if (not 'name: "buildbucket/luci.chromium.' in l and
+          not 'name: "buildbot/chromium.' in l):
+        continue
+      # l looks like `name: "buildbucket/luci.chromium.try/win_chromium_dbg_ng"`
+      # Extract win_chromium_dbg_ng part.
+      bot_names.add(l[l.rindex('/') + 1:l.rindex('"')])
+    return bot_names
+
   def check_input_file_consistency(self):
     self.load_configuration_files()
     self.check_composition_test_suites()
+
+    # All bots should exist.
+    bot_names = self.get_valid_bot_names()
+    for waterfall in self.waterfalls:
+      for bot_name in waterfall['machines']:
+        if bot_name not in bot_names:
+          if waterfall['name'] in ['chromium.android.fyi', 'chromium.fyi',
+                                   'chromium.lkgr', 'client.v8.chromium']:
+            # TODO(thakis): Remove this once these bots move to luci.
+            continue
+          if waterfall['name'] in ['tryserver.webrtc']:
+            # These waterfalls have their bot configs in a different repo.
+            # so we don't know about their bot names.
+            continue
+          raise self.unknown_bot(bot_name, waterfall['name'])
+
     # All test suites must be referenced.
     suites_seen = set()
     generator_map = self.get_test_generator_map()
@@ -682,12 +715,12 @@ class BBJSONGenerator(object):
         # name.
         all_bots.add(bot_name + ' ' + waterfall['name'])
     for exception in self.exceptions.itervalues():
-      for removal in exception.get('remove_from', []):
+      removals = (exception.get('remove_from', []) +
+                  exception.get('remove_gtest_from', []) +
+                  exception.get('modifications', {}).keys())
+      for removal in removals:
         if removal not in all_bots:
           missing_bots.add(removal)
-      for mod in exception.get('modifications', {}).iterkeys():
-        if mod not in all_bots:
-          missing_bots.add(mod)
     if missing_bots:
       raise BBGenErr('The following nonexistent machines were referenced in '
                      'the test suite exceptions: ' + str(missing_bots))

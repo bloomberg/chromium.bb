@@ -172,25 +172,6 @@
       }
     ]
   },
-  "CrWinGomaGCEStaging": {
-    "additional_compile_targets": [
-      "all"
-    ],
-    "gtest_tests": [
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "base_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "content_unittests"
-      }
-    ]
-  },
   "CrWinGomaStaging": {
     "additional_compile_targets": [
       "all"

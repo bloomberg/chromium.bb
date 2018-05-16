@@ -45,7 +45,6 @@
       'Android Cronet Marshmallow 64bit Perf': 'android_cronet_release_bot_minimal_symbols_arm64',
       'Android Cronet x86 Builder': 'android_cronet_release_bot_minimal_symbols_x86',
       'Android Cronet x86 Builder (dbg)': 'android_cronet_debug_static_bot_x86',
-      'Android MIPS Builder (dbg)': 'android_debug_static_bot_mipsel',
       'Android N5X Swarm Builder': 'android_release_bot_minimal_symbols_arm64',
       'Android arm Builder (dbg)': 'android_debug_static_bot',
       'Android arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
@@ -97,7 +96,6 @@
     'chromium.chromiumos': {
       'ChromiumOS amd64-generic Compile': 'cros_chrome_sdk',
       'ChromiumOS daisy Compile': 'cros_chrome_sdk',
-      'Linux ChromiumOS Builder': 'chromeos_with_codecs_release_bot',
       'Linux ChromiumOS Builder (dbg)': 'chromeos_with_codecs_debug_bot',
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
 
@@ -858,10 +856,6 @@
 
     'android_debug_static_bot_x86': [
       'android', 'debug_static_bot', 'x86',
-    ],
-
-    'android_debug_static_bot_mipsel': [
-      'android', 'debug_static_bot', 'minimal_symbols', 'mipsel', 'strip_debug_info',
     ],
 
     'android_debug_trybot': [

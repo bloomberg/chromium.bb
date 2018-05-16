@@ -59,11 +59,6 @@
           'cronet_package',
         ],
       },
-      'Android MIPS Builder (dbg)': {
-        'additional_compile_targets': [
-          'all',
-        ],
-      },
       'Android arm Builder (dbg)': {
         'additional_compile_targets': [
           'dump_syms',
@@ -520,51 +515,6 @@
     },
   },
   {
-    'name': 'chromium.angle',
-    'machines': {
-      'Linux Tests (ANGLE)': {
-        'test_suites': {
-          'gtest_tests': 'angle_gtests',
-        },
-      },
-      'Linux Tests (dbg) (ANGLE)': {
-        'test_suites': {
-          'gtest_tests': 'angle_gtests',
-        },
-      },
-      'Mac10.8 Tests (ANGLE)': {
-        'test_suites': {
-          'gtest_tests': 'angle_gtests',
-        },
-      },
-      'Mac10.8 Tests (dbg) (ANGLE)': {
-        'test_suites': {
-          'gtest_tests': 'angle_gtests',
-        },
-      },
-      'Win7 Tests (ANGLE)': {
-        'test_suites': {
-          'gtest_tests': 'angle_gtests',
-        },
-      },
-      'Win7 Tests (dbg) (ANGLE)': {
-        'test_suites': {
-          'gtest_tests': 'angle_gtests',
-        },
-      },
-      'Win7 Tests x64 (ANGLE)': {
-        'test_suites': {
-          'gtest_tests': 'angle_gtests',
-        },
-      },
-      'Win7 Tests x64 (dbg) (ANGLE)': {
-        'test_suites': {
-          'gtest_tests': 'angle_gtests',
-        },
-      },
-    },
-  },
-  {
     'name': 'chromium.chrome',
     'machines': {
     },
@@ -572,16 +522,6 @@
   {
     'name': 'chromium.chromiumos',
     'machines': {
-      'Linux ChromiumOS Builder': {
-        'additional_compile_targets': [
-          'gn_all',
-        ],
-      },
-      'Linux ChromiumOS Tests (dbg)(1)': {
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_dbg_gtests',
-        },
-      },
       'chromeos-amd64-generic-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -914,14 +854,6 @@
         },
       },
       'CrWinClangGomaGCEStaging': {
-        'additional_compile_targets': [
-          'all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'goma_gtests',
-        },
-      },
-      'CrWinGomaGCEStaging': {
         'additional_compile_targets': [
           'all',
         ],
