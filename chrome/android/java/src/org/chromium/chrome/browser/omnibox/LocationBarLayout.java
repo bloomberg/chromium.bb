@@ -1201,7 +1201,8 @@ public class LocationBarLayout
      * @return The margin to be applied to the URL bar based on the buttons currently visible next
      *         to it, used to avoid text overlapping the buttons and vice versa.
      */
-    protected int getUrlContainerMarginEnd() {
+    @Override
+    public int getUrlContainerMarginEnd() {
         // When Chrome Home is enabled, the URL actions container slides out of view during the
         // URL defocus animation. Adding margin during this animation creates a hole.
         boolean addMarginForActionsContainer =

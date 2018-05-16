@@ -187,4 +187,10 @@ public interface LocationBar extends UrlBarDelegate {
      * @return Whether the location bar is allowed to use Chrome modern design.
      */
     boolean useModernDesign();
+
+    /**
+     * @return The margin to be applied to the URL bar based on the buttons currently visible next
+     *         to it, used to avoid text overlapping the buttons and vice versa.
+     */
+    int getUrlContainerMarginEnd();
 }

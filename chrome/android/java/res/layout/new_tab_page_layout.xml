@@ -47,6 +47,7 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_marginStart="12dp"
+            android:layout_marginEnd="12dp"
             android:layout_weight="1"
             android:background="@null"
             android:drawableStart="@drawable/ic_logo_googleg_24dp"
@@ -63,7 +64,6 @@
             android:id="@+id/voice_search_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:layout_marginEnd="12dp"
             android:contentDescription="@string/accessibility_toolbar_btn_mic"
             android:src="@drawable/btn_mic" />
