@@ -15,8 +15,8 @@
 
 namespace {
 const uint64_t kMaximumLeb128CodedSize = 8;
-const uint8_t kLeb128PadByte = 0x80;                    // Binary: 10000000
-const uint64_t kMaximumLeb128Value = 0xFFFFFFFFFFFFFF;  // 2 ^ 56 - 1
+const uint8_t kLeb128PadByte = 0x80;  // Binary: 10000000
+const uint64_t kMaximumLeb128Value = UINT32_MAX;
 const uint32_t kSizeTestNumValues = 6;
 const uint32_t kSizeTestExpectedSizes[kSizeTestNumValues] = {
   1, 1, 2, 3, 4, 5
@@ -24,6 +24,9 @@ const uint32_t kSizeTestExpectedSizes[kSizeTestNumValues] = {
 const uint64_t kSizeTestInputs[kSizeTestNumValues] = {
   0, 0x7f, 0x3fff, 0x1fffff, 0xffffff, 0x10000000
 };
+
+const uint8_t kOutOfRangeLeb128Value[5] = { 0x80, 0x80, 0x80, 0x80,
+                                            0x10 };  // UINT32_MAX + 1
 }  // namespace
 
 TEST(AomLeb128, DecodeTest) {
@@ -138,15 +141,9 @@ TEST(AomLeb128, DecodeFailTest) {
             -1);
 
   // Test that LEB128 input that decodes to a value larger than 32-bits fails.
-  uint8_t encode_buffer[kMaximumLeb128CodedSize] = { 0 };
-  const uint64_t kTooLargeForDecode = static_cast<uint64_t>(UINT32_MAX) + 1;
-  ASSERT_GT(aom_uleb_size_in_bytes(kTooLargeForDecode), 4u);
-  size_t bytes_written = 0;
-  ASSERT_EQ(aom_uleb_encode(kTooLargeForDecode, kMaximumLeb128CodedSize,
-                            &encode_buffer[0], &bytes_written),
-            0);
   size_t value_size = 0;
-  ASSERT_EQ(aom_uleb_decode(&encode_buffer[0], bytes_written, &decoded_value,
+  ASSERT_EQ(aom_uleb_decode(&kOutOfRangeLeb128Value[0],
+                            sizeof(kOutOfRangeLeb128Value), &decoded_value,
                             &value_size),
             -1);
 }
