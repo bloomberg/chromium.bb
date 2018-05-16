@@ -4733,3 +4733,6 @@ crbug.com/810437 fast/events/hr-timestamp/input-events.html [ Pass Timeout ]
 
 # This will break for now
 crbug.com/841933 http/tests/webaudio/autoplay-crossorigin.html [ Skip ]
+
+# Sheriff 2018-05-16
+crbug.com/843691 fast/css/opacity-float.html [ Failure ]
