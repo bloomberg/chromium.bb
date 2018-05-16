@@ -1765,6 +1765,7 @@ test("ash_unittests") {
     "system/unified/feature_pods_container_view_unittest.cc",
     "system/unified/top_shortcuts_view_unittest.cc",
     "system/unified/unified_system_info_view_unittest.cc",
+    "system/unified/unified_system_tray_controller_unittest.cc",
     "system/update/tray_update_unittest.cc",
     "system/user/tray_user_unittest.cc",
     "test/ash_test_helper_unittest.cc",
