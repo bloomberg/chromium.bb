@@ -566,7 +566,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
   }
 
   peer_handler_ = Platform::Current()->CreateRTCPeerConnectionHandler(
-      this, document->GetTaskRunner(TaskType::kUnthrottled));
+      this, document->GetTaskRunner(TaskType::kInternalMedia));
   if (!peer_handler_) {
     closed_ = true;
     stopped_ = true;
@@ -1058,7 +1058,7 @@ ScriptPromise RTCPeerConnection::generateCertificate(
   // destruction as well as the resolver's destruction.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       ExecutionContext::From(script_state)
-          ->GetTaskRunner(blink::TaskType::kUnthrottled);
+          ->GetTaskRunner(blink::TaskType::kInternalMedia);
   if (!expires) {
     certificate_generator->GenerateCertificate(
         key_params.value(), std::move(certificate_observer), task_runner);

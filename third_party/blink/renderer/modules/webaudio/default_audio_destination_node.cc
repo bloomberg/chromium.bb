@@ -95,8 +95,9 @@ void DefaultAudioDestinationHandler::StartDestination() {
     // This task runner is only used to fire the audio render callback, so it
     // MUST not be throttled to avoid potential audio glitch.
     destination_->StartWithWorkletTaskRunner(
-        audio_worklet->GetMessagingProxy()->GetBackingWorkerThread()
-                     ->GetTaskRunner(TaskType::kUnthrottled));
+        audio_worklet->GetMessagingProxy()
+            ->GetBackingWorkerThread()
+            ->GetTaskRunner(TaskType::kInternalMedia));
   } else {
     destination_->Start();
   }

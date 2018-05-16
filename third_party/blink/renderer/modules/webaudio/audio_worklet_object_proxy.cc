@@ -42,7 +42,7 @@ void AudioWorkletObjectProxy::DidEvaluateModuleScript(bool success) {
     return;
 
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kUnthrottled),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalMedia),
       FROM_HERE,
       CrossThreadBind(
           &AudioWorkletMessagingProxy::SynchronizeWorkletProcessorInfoList,
