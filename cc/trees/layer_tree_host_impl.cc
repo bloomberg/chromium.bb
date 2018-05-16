@@ -3238,6 +3238,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
 
   browser_controls_offset_manager_->ScrollBegin();
 
+  TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode ScrollBeginImpl",
+                       TRACE_EVENT_SCOPE_THREAD, "isNull",
+                       scrolling_node ? false : true);
   active_tree_->SetCurrentlyScrollingNode(scrolling_node);
   // TODO(majidvp): get rid of wheel_scrolling_ and set is_direct_manipulation
   // in input_handler_proxy instead.
@@ -3856,8 +3859,13 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
       }
     }
   }
-  active_tree_->SetCurrentlyScrollingNode(
-      current_scroll_chain.empty() ? nullptr : current_scroll_chain.back());
+
+  scroll_node =
+      current_scroll_chain.empty() ? nullptr : current_scroll_chain.back();
+  TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode DistributeScrollDelta",
+                       TRACE_EVENT_SCOPE_THREAD, "isNull",
+                       scroll_node ? false : true);
+  active_tree_->SetCurrentlyScrollingNode(scroll_node);
   scroll_state->set_scroll_chain_and_layer_tree(current_scroll_chain,
                                                 active_tree());
   scroll_state->DistributeToScrollChainDescendant();
@@ -3928,6 +3936,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     // |scroll_node|.
     DCHECK(!provided_scroll_node || scroll_node == provided_scroll_node);
   } else {
+    TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode ScrollBy",
+                         TRACE_EVENT_SCOPE_THREAD, "isNull",
+                         provided_scroll_node ? false : true);
     active_tree_->SetCurrentlyScrollingNode(provided_scroll_node);
     scroll_node = scroll_tree.CurrentlyScrollingNode();
   }
@@ -3957,6 +3968,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
 
   ScrollNode* current_scrolling_node =
       scroll_state->current_native_scrolling_node();
+  TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode ApplyDelta",
+                       TRACE_EVENT_SCOPE_THREAD, "isNull",
+                       current_scrolling_node ? false : true);
   active_tree_->SetCurrentlyScrollingNode(current_scrolling_node);
   did_lock_scrolling_layer_ =
       scroll_state->delta_consumed_for_scroll_sequence();
@@ -4117,6 +4131,7 @@ bool LayerTreeHostImpl::GetSnapFlingInfo(
 }
 
 void LayerTreeHostImpl::ClearCurrentlyScrollingNode() {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::ClearCurrentlyScrollingNode");
   active_tree_->ClearCurrentlyScrollingNode();
   did_lock_scrolling_layer_ = false;
   scroll_affects_scroll_handler_ = false;
@@ -4246,6 +4261,9 @@ void LayerTreeHostImpl::PinchGestureBegin() {
   client_->RenewTreePriority();
   pinch_gesture_end_should_clear_scrolling_node_ = !CurrentlyScrollingNode();
 
+  TRACE_EVENT_INSTANT1("cc", "SetCurrentlyScrollingNode PinchGestureBegin",
+                       TRACE_EVENT_SCOPE_THREAD, "isNull",
+                       OuterViewportScrollNode() ? false : true);
   active_tree_->SetCurrentlyScrollingNode(OuterViewportScrollNode());
   browser_controls_offset_manager_->PinchBegin();
 }
@@ -5111,6 +5129,7 @@ void LayerTreeHostImpl::ElementIsAnimatingChanged(
 }
 
 void LayerTreeHostImpl::ScrollOffsetAnimationFinished() {
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::ScrollOffsetAnimationFinished");
   // TODO(majidvp): We should pass in the original starting scroll position here
   ScrollStateData scroll_state_data;
   ScrollState scroll_state(scroll_state_data);
