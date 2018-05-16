@@ -14,6 +14,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
@@ -364,14 +366,24 @@ class SuggestionsContainer : public views::View {
   }
 
   void AddSuggestions(const std::map<int, AssistantSuggestion*>& suggestions) {
-    // When adding a SuggestionChipView, we give the view the same id by which
-    // the interaction model identifies the corresponding suggestion. This
-    // allows us to look up the suggestion for the view during event handling.
     for (const std::pair<int, AssistantSuggestion*>& suggestion : suggestions) {
-      views::View* suggestion_chip_view = new app_list::SuggestionChipView(
-          base::UTF8ToUTF16(suggestion.second->text),
-          suggestion_chip_listener_);
+      app_list::SuggestionChipView::Params params;
+      params.text = base::UTF8ToUTF16(suggestion.second->text);
+
+      // TODO(dmblack): Here we are using a placeholder image for the suggestion
+      // chip icon but we need to handle the actual icon URL.
+      if (!suggestion.second->icon_url.is_empty())
+        params.icon = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_ASSISTANT_PLACEHOLDER_GREY300_20DP);
+
+      views::View* suggestion_chip_view =
+          new app_list::SuggestionChipView(params, suggestion_chip_listener_);
+
+      // When adding a SuggestionChipView, we give the view the same id by which
+      // the interaction model identifies the corresponding suggestion. This
+      // allows us to look up the suggestion for the view during event handling.
       suggestion_chip_view->set_id(suggestion.first);
+
       AddChildView(suggestion_chip_view);
     }
     PreferredSizeChanged();

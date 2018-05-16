@@ -6,10 +6,12 @@
 #define UI_APP_LIST_VIEWS_SUGGESTION_CHIP_VIEW_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/app_list/app_list_export.h"
 #include "ui/views/view.h"
 
 namespace views {
+class ImageView;
 class Label;
 }  // namespace views
 
@@ -30,11 +32,23 @@ class APP_LIST_EXPORT SuggestionChipListener {
 // View representing a suggestion chip.
 class APP_LIST_EXPORT SuggestionChipView : public views::View {
  public:
-  SuggestionChipView(const base::string16& text,
+  // Initialization parameters.
+  struct Params {
+    Params();
+    ~Params();
+
+    // Display text.
+    base::string16 text;
+    // Optional icon.
+    base::Optional<gfx::ImageSkia*> icon;
+  };
+
+  SuggestionChipView(const Params& params,
                      SuggestionChipListener* listener = nullptr);
-  ~SuggestionChipView() override = default;
+  ~SuggestionChipView() override;
 
   // views::View:
+  gfx::Size CalculatePreferredSize() const override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
@@ -42,8 +56,9 @@ class APP_LIST_EXPORT SuggestionChipView : public views::View {
   const base::string16& GetText() const;
 
  private:
-  void InitLayout();
+  void InitLayout(const Params& params);
 
+  views::ImageView* icon_view_;  // Owned by view hierarchy.
   views::Label* text_view_;  // Owned by view hierarchy.
   SuggestionChipListener* listener_;
 
