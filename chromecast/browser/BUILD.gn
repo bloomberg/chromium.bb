@@ -232,6 +232,8 @@ cast_source_set("browser") {
     sources += [
       "cast_extension_host.cc",
       "cast_extension_host.h",
+      "cast_extension_message_filter.cc",
+      "cast_extension_message_filter.h",
       "cast_web_view_extension.cc",
       "cast_web_view_extension.h",
       "extension_request_protocol_handler.cc",
@@ -280,14 +282,14 @@ cast_source_set("browser") {
     ]
     if (use_aura) {
       sources += [
+        "cast_web_view_extension.h",
+        "cast_web_view_extension.h",
         "ui/aura/accessibility/automation_manager_aura.cc",
         "ui/aura/accessibility/automation_manager_aura.h",
         "ui/aura/accessibility/ax_root_obj_wrapper.cc",
         "ui/aura/accessibility/ax_root_obj_wrapper.h",
         "ui/aura/accessibility/ax_tree_source_aura.cc",
         "ui/aura/accessibility/ax_tree_source_aura.h",
-        "cast_web_view_extension.h",
-        "cast_web_view_extension.h",
       ]
     }
 

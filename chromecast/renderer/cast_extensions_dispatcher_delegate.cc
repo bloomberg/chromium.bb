@@ -61,6 +61,9 @@ void CastExtensionsDispatcherDelegate::RegisterNativeHandlers(
       "automationInternal",
       std::make_unique<extensions::cast::AutomationInternalCustomBindings>(
           context, bindings_system));
+  module_system->RegisterNativeHandler(
+      "i18n", std::unique_ptr<NativeHandler>(
+                  new extensions::I18NCustomBindings(context)));
 }
 
 void CastExtensionsDispatcherDelegate::PopulateSourceMap(
