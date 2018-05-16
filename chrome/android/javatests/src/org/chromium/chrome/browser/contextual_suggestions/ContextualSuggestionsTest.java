@@ -17,6 +17,7 @@ import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.view.View.OnLayoutChangeListener;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -158,11 +159,14 @@ public class ContextualSuggestionsTest {
     @MediumTest
     @Feature({"ContextualSuggestions"})
     public void testOpenContextualSuggestionsBottomSheet() {
-        assertTrue("Bottom sheet should contain suggestions content",
-                mBottomSheet.getCurrentSheetContent()
-                                instanceof ContextualSuggestionsBottomSheetContent);
         assertEquals("Sheet should still be hidden.", BottomSheet.SHEET_STATE_HIDDEN,
                 mBottomSheet.getSheetState());
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mMediator.showContentInSheetForTesting(true, true);
+            mBottomSheet.endAnimations();
+        });
+
         assertEquals("Title text should be set.",
                 FakeContextualSuggestionsSource.TEST_TOOLBAR_TITLE, mModel.getTitle());
 
@@ -174,11 +178,6 @@ public class ContextualSuggestionsTest {
                 (ContextualSuggestionsBottomSheetContent) mBottomSheet.getCurrentSheetContent();
         RecyclerView recyclerView = (RecyclerView) content.getContentView();
         assertEquals("RecyclerView should be empty.", 0, recyclerView.getChildCount());
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mMediator.showContentInSheetForTesting(true, true);
-            mBottomSheet.endAnimations();
-        });
 
         assertEquals("Sheet should be peeked.", BottomSheet.SHEET_STATE_PEEK,
                 mBottomSheet.getSheetState());
@@ -327,6 +326,16 @@ public class ContextualSuggestionsTest {
                 mBottomSheet.getCurrentSheetContent().getToolbarView().findViewById(R.id.title);
         View menuButton =
                 mBottomSheet.getCurrentSheetContent().getToolbarView().findViewById(R.id.more);
+
+        CallbackHelper layoutHelper = new CallbackHelper();
+        title.addOnLayoutChangeListener(new OnLayoutChangeListener() {
+            @Override
+            public void onLayoutChange(View v, int left, int top, int right, int bottom,
+                    int oldLeft, int oldTop, int oldRight, int oldBottom) {
+                layoutHelper.notifyCalled();
+            }
+        });
+        layoutHelper.waitForCallback(0);
 
         int titleWidth = title.getWidth();
         // Menu button is not visible on peek state.
