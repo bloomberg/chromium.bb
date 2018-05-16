@@ -8,12 +8,15 @@
 #include "base/files/file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 class Profile;
 
 namespace chromeos {
 namespace settings {
+
+using smb_client::SmbMountResult;
 
 class SmbHandler : public ::settings::SettingsPageUIHandler {
  public:
@@ -29,7 +32,7 @@ class SmbHandler : public ::settings::SettingsPageUIHandler {
   void HandleSmbMount(const base::ListValue* args);
 
   // Callback handler for SmbMount.
-  void HandleSmbMountResponse(base::File::Error error);
+  void HandleSmbMountResponse(SmbMountResult result);
 
   Profile* const profile_;
   base::WeakPtrFactory<SmbHandler> weak_ptr_factory_;

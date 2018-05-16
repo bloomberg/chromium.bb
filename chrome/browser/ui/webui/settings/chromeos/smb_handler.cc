@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
-#include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -49,11 +48,11 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
                                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void SmbHandler::HandleSmbMountResponse(base::File::Error error) {
-  std::string result = error == base::File::FILE_OK ? "success" : "failure";
-
+void SmbHandler::HandleSmbMountResponse(SmbMountResult result) {
+  std::string status =
+      result == smb_client::SmbMountResult::SUCCESS ? "success" : "failure";
   AllowJavascript();
-  FireWebUIListener("on-add-smb-share", base::Value(result));
+  FireWebUIListener("on-add-smb-share", base::Value(status));
 }
 
 }  // namespace settings
