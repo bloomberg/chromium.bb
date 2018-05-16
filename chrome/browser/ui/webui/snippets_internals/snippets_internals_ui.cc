@@ -21,11 +21,12 @@ SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
       content::WebUIDataSource::Create(chrome::kChromeUISnippetsInternalsHost);
   source->AddResourcePath("snippets_internals.css", IDR_SNIPPETS_INTERNALS_CSS);
   source->AddResourcePath("snippets_internals.js", IDR_SNIPPETS_INTERNALS_JS);
-
+  source->AddResourcePath("snippets_internals.mojom.js",
+                          IDR_SNIPPETS_INTERNALS_MOJO_JS);
   source->SetDefaultResource(IDR_SNIPPETS_INTERNALS_HTML);
   source->UseGzip();
 
-  Profile* profile = Profile::FromWebUI(web_ui);
+    Profile* profile = Profile::FromWebUI(web_ui);
   content_suggestions_service_ =
       ContentSuggestionsServiceFactory::GetInstance()->GetForProfile(profile);
   pref_service_ = profile->GetPrefs();
@@ -39,6 +40,9 @@ SnippetsInternalsUI::~SnippetsInternalsUI() {}
 
 void SnippetsInternalsUI::BindSnippetsInternalsPageHandlerFactory(
     snippets_internals::mojom::PageHandlerFactoryRequest request) {
+  if (binding_.is_bound())
+    binding_.Unbind();
+
   binding_.Bind(std::move(request));
 }
 

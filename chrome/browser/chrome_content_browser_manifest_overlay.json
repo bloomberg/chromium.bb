@@ -99,7 +99,8 @@
           "mojom.PluginsPageHandler",
           "mojom.ResetPasswordHandler",
           "mojom.SiteEngagementDetailsProvider",
-          "mojom.UsbInternalsPageHandler"
+          "mojom.UsbInternalsPageHandler",
+          "snippets_internals.mojom.PageHandlerFactory"
         ],
         "multidevice_setup" : [
           "chromeos.multidevice_setup.mojom.MultiDeviceSetup"
