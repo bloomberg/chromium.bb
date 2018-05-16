@@ -391,11 +391,19 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
       retries = 1
       if self._test_instance.wait_for_java_debugger:
         timeout = None
+
+      flags = list(self._test_instance.flags)
+      flags.append('--gtest_list_tests')
+
       # TODO(crbug.com/726880): Remove retries when no longer necessary.
       for i in range(0, retries+1):
+        logging.info('flags:')
+        for f in flags:
+          logging.info('  %s', f)
+
         raw_test_list = crash_handler.RetryOnSystemCrash(
             lambda d: self._delegate.Run(
-                None, d, flags='--gtest_list_tests', timeout=timeout),
+                None, d, flags=' '.join(flags), timeout=timeout),
             device=dev)
         tests = gtest_test_instance.ParseGTestListTests(raw_test_list)
         if not tests:
