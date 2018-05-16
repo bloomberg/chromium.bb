@@ -71,6 +71,7 @@
 #include "third_party/blink/renderer/core/paint/box_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
+#include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/platform/geometry/double_rect.h"
@@ -6063,6 +6064,21 @@ float LayoutBox::VisualRectOutsetForRasterEffects() const {
   // edge of the effect may overflow the calculated visual rect. Expand visual
   // rect by one pixel in the case.
   return overflow_ && overflow_->HasSubpixelVisualEffectOutsets() ? 1 : 0;
+}
+
+TextDirection LayoutBox::ResolvedDirection() const {
+  if (IsInline() && IsAtomicInlineLevel()) {
+    const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    if (fragments.IsInLayoutNGInlineFormattingContext()) {
+      DCHECK(*fragments.begin()) << this;
+      const NGPaintFragment* fragment = *fragments.begin();
+      return fragment->PhysicalFragment().ResolvedDirection();
+    }
+
+    if (InlineBoxWrapper())
+      return InlineBoxWrapper()->Direction();
+  }
+  return Style()->Direction();
 }
 
 }  // namespace blink

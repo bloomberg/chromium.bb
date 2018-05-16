@@ -961,9 +961,12 @@ PositionWithAffinity LayoutReplaced::PositionForPoint(
         CaretMaxOffset());  // coordinates are below
 
   if (GetNode()) {
-    if (line_direction_position <= LogicalLeft() + (LogicalWidth() / 2))
-      return CreatePositionWithAffinity(0);
-    return CreatePositionWithAffinity(1);
+    const bool is_at_left_side =
+        line_direction_position <= LogicalLeft() + (LogicalWidth() / 2);
+    const bool is_at_start = is_at_left_side == IsLtr(ResolvedDirection());
+    // TODO(crbug.com/827923): Stop creating positions using int offsets on
+    // non-text nodes.
+    return CreatePositionWithAffinity(is_at_start ? 0 : 1);
   }
 
   return LayoutBox::PositionForPoint(point);
