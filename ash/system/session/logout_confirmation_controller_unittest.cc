@@ -214,6 +214,30 @@ TEST_F(LastWindowClosedTest, PublicSession) {
   EXPECT_TRUE(controller->dialog_for_testing());
 }
 
+// Test ARC++ window hierarchy where window minimize, restore and go in/out full
+// screen causes a window removing deep inside the top window hierarchy. Actions
+// above should no cause logout timer and only closing the last top window
+// triggers the logout timer.
+TEST_F(LastWindowClosedTest, PublicSessionComplexHierarchy) {
+  LogoutConfirmationController* controller =
+      Shell::Get()->logout_confirmation_controller();
+
+  StartPublicAccountSession();
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  std::unique_ptr<aura::Window> window = CreateToplevelTestWindow();
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  std::unique_ptr<aura::Window> window_child = CreateChildWindow(window.get());
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  window_child.reset();
+  EXPECT_FALSE(controller->dialog_for_testing());
+
+  window.reset();
+  EXPECT_TRUE(controller->dialog_for_testing());
+}
+
 TEST_F(LastWindowClosedTest, AlwaysOnTop) {
   LogoutConfirmationController* controller =
       Shell::Get()->logout_confirmation_controller();
