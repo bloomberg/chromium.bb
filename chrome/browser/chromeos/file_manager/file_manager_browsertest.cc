@@ -54,7 +54,7 @@ class FileManagerBrowserTest : public FileManagerBrowserTestBase,
   void SetUpCommandLine(base::CommandLine* command_line) override {
     FileManagerBrowserTestBase::SetUpCommandLine(command_line);
 
-    if (shouldEnableLegacyEventDispatch()) {
+    if (ShouldEnableLegacyEventDispatch()) {
       command_line->AppendSwitchASCII("disable-blink-features",
                                       "TrustedEventsDefaultAction");
     }
@@ -73,7 +73,7 @@ class FileManagerBrowserTest : public FileManagerBrowserTestBase,
   }
 
  private:
-  bool shouldEnableLegacyEventDispatch() {
+  bool ShouldEnableLegacyEventDispatch() {
     const std::string test_case_name = GetTestCaseName();
     // crbug.com/482121 crbug.com/480491
     return test_case_name.find("tabindex") != std::string::npos;
@@ -83,32 +83,6 @@ class FileManagerBrowserTest : public FileManagerBrowserTestBase,
 };
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
-  StartTest();
-}
-
-// FileManager browser test class for tests that rely on deprecated event
-// dispatch that send tests.
-// TODO(noel): get rid of this class, move what it needs into the
-// FileManagerBrowserTest class.  Add a |group_name| to TestCase to allow
-// detection of tests that need legacy event dispatch by loooking at their
-// group name.
-class FileManagerBrowserTestWithLegacyEventDispatch
-    : public FileManagerBrowserTest {
- public:
-  FileManagerBrowserTestWithLegacyEventDispatch() = default;
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    FileManagerBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII("disable-blink-features",
-                                    "TrustedEventsDefaultAction");
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FileManagerBrowserTestWithLegacyEventDispatch);
-};
-
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
   StartTest();
 }
 
@@ -324,38 +298,16 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     TabIndex, /* tab_index.js */
-    FileManagerBrowserTestWithLegacyEventDispatch,
-    ::testing::Values(
-        TestCase("tabindexSearchBoxFocus")));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexFocus, /* tab_index.js */
-    FileManagerBrowserTestWithLegacyEventDispatch,
-    ::testing::Values(TestCase("tabindexFocus")));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexFocusDownloads, /* tab_index.js */
-    FileManagerBrowserTestWithLegacyEventDispatch,
-    ::testing::Values(TestCase("tabindexFocusDownloads"),
-                      TestCase("tabindexFocusDownloads").InGuestMode()));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexFocusDirectorySelected, /* tab_index.js */
-    FileManagerBrowserTestWithLegacyEventDispatch,
-    ::testing::Values(TestCase("tabindexFocusDirectorySelected")));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexOpenDialog, /* tab_index.js */
     FileManagerBrowserTest,
     ::testing::Values(
+        TestCase("tabindexSearchBoxFocus"),
+        TestCase("tabindexFocus"),
+        TestCase("tabindexFocusDownloads"),
+        TestCase("tabindexFocusDownloads").InGuestMode(),
+        TestCase("tabindexFocusDirectorySelected"),
         TestCase("tabindexOpenDialogDrive"),
         TestCase("tabindexOpenDialogDownloads"),
-        TestCase("tabindexOpenDialogDownloads").InGuestMode()));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexSaveFileDialog, /* tab_index.js */
-    FileManagerBrowserTest,
-    ::testing::Values(
+        TestCase("tabindexOpenDialogDownloads").InGuestMode(),
         TestCase("tabindexSaveFileDialogDrive"),
         TestCase("tabindexSaveFileDialogDownloads"),
         TestCase("tabindexSaveFileDialogDownloads").InGuestMode()));
