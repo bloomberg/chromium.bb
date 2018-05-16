@@ -143,31 +143,7 @@ class BoxPainterBase {
   };
 
  protected:
-  FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
-      const LayoutRect& border_rect,
-      bool flow_box_has_multiple_fragments,
-      const LayoutSize& flow_box_size,
-      bool include_logical_left_edge,
-      bool include_logical_right_edge,
-      FloatRoundedRect background_rounded_rect) const;
-  FloatRoundedRect RoundedBorderRectForClip(
-      const FillLayerInfo&,
-      const FillLayer&,
-      const LayoutRect&,
-      bool flow_box_has_multiple_fragments,
-      const LayoutSize& flow_box_size,
-      BackgroundBleedAvoidance,
-      LayoutRectOutsets border_padding_insets) const;
-
-  void PaintFillLayerBackground(GraphicsContext&,
-                                const FillLayerInfo&,
-                                Image*,
-                                SkBlendMode,
-                                const BackgroundImageGeometry&,
-                                LayoutRect scrolled_paint_rect);
   LayoutRectOutsets BorderOutsets(const FillLayerInfo&) const;
-  LayoutRectOutsets PaddingOutsets(const FillLayerInfo&) const;
-
   void PaintFillLayerTextFillBox(GraphicsContext&,
                                  const FillLayerInfo&,
                                  Image*,
@@ -186,13 +162,6 @@ class BoxPainterBase {
   virtual FillLayerInfo GetFillLayerInfo(const Color&,
                                          const FillLayer&,
                                          BackgroundBleedAvoidance) const = 0;
-  FloatRoundedRect GetBackgroundRoundedRect(
-      const LayoutRect& border_rect,
-      bool flow_box_has_multiple_fragments,
-      const LayoutSize& flow_box_size,
-      bool include_logical_left_edge,
-      bool include_logical_right_edge) const;
-
   static void PaintInsetBoxShadow(const PaintInfo&,
                                   const FloatRoundedRect&,
                                   const ComputedStyle&,
@@ -204,8 +173,8 @@ class BoxPainterBase {
   Member<const Document> document_;
   const ComputedStyle& style_;
   Member<Node> node_;
-  LayoutRectOutsets border_;
-  LayoutRectOutsets padding_;
+  const LayoutRectOutsets border_;
+  const LayoutRectOutsets padding_;
   const PaintLayer* paint_layer_;
 };
 
