@@ -49,30 +49,26 @@ void ViewPainterTest::RunFixedBackgroundTest(
   layout_viewport->SetScrollOffset(scroll_offset, kUserScroll);
   frame_view->UpdateAllLifecyclePhases();
 
-  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
   bool v175 = RuntimeEnabledFeatures::SlimmingPaintV175Enabled();
   CompositedLayerMapping* clm =
       GetLayoutView().Layer()->GetCompositedLayerMapping();
 
   // If we prefer compositing to LCD text, the fixed background should go in a
   // different layer from the scrolling content; otherwise, it should go in the
-  // same layer.  With RLS, the scrolling content is in the scrolling contents
-  // layer; without RLS, the scrolling content is in the main GraphicsLayer.
+  // same layer (i.e., the scrolling contents layer).
   GraphicsLayer* layer_for_background;
   if (prefer_compositing_to_lcd_text) {
-    layer_for_background =
-        rls ? clm->MainGraphicsLayer() : clm->BackgroundLayer();
+    layer_for_background = clm->MainGraphicsLayer();
   } else {
-    layer_for_background =
-        rls ? clm->ScrollingContentsLayer() : clm->MainGraphicsLayer();
+    layer_for_background = clm->ScrollingContentsLayer();
   }
   const DisplayItemList& display_items =
       layer_for_background->GetPaintController().GetDisplayItemList();
   const DisplayItem& background =
-      display_items[rls && !prefer_compositing_to_lcd_text && !v175 ? 2 : 0];
+      display_items[!prefer_compositing_to_lcd_text && !v175 ? 2 : 0];
   EXPECT_EQ(background.GetType(), kDocumentBackgroundType);
   DisplayItemClient* expected_client;
-  if (rls && !prefer_compositing_to_lcd_text)
+  if (!prefer_compositing_to_lcd_text)
     expected_client = GetLayoutView().Layer()->GraphicsLayerBacking();
   else
     expected_client = &GetLayoutView();
@@ -109,13 +105,8 @@ TEST_P(ViewPainterTest, DocumentBackgroundWithScroll) {
 
   const DisplayItemClient* background_item_client;
   const DisplayItemClient* background_chunk_client;
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    background_item_client = GetLayoutView().Layer()->GraphicsLayerBacking();
-    background_chunk_client = background_item_client;
-  } else {
-    background_item_client = &GetLayoutView();
-    background_chunk_client = GetLayoutView().Layer();
-  }
+  background_item_client = GetLayoutView().Layer()->GraphicsLayerBacking();
+  background_chunk_client = background_item_client;
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
