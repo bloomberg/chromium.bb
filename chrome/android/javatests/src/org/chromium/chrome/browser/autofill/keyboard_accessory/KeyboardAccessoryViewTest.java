@@ -90,6 +90,16 @@ public class KeyboardAccessoryViewTest {
             public String getContentDescription() {
                 return contentDescription;
             }
+
+            @Override
+            public int getTabLayout() {
+                return R.layout.empty_accessory_sheet; // Unused.
+            }
+
+            @Override
+            public Listener getListener() {
+                return null; // Unused.
+            }
         };
     }
 

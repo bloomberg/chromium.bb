@@ -5,6 +5,9 @@
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.graphics.drawable.Drawable;
+import android.support.annotation.LayoutRes;
+import android.support.annotation.Nullable;
+import android.view.ViewGroup;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,6 +50,17 @@ public class KeyboardAccessoryData {
      */
     public interface Tab {
         /**
+         * A Tab's Listener get's notified when e.g. the Tab was assigned a view.
+         */
+        interface Listener {
+            /**
+             * Triggered when the tab was successfully created.
+             * @param view The newly created accessory sheet of the tab.
+             */
+            void onTabCreated(ViewGroup view);
+        }
+
+        /**
          * Provides the icon that will be displayed in the {@link KeyboardAccessoryCoordinator}.
          * @return The small icon that identifies this tab uniquely.
          */
@@ -57,6 +71,20 @@ public class KeyboardAccessoryData {
          * @return A short string describing the task of this tab.
          */
         String getContentDescription();
+
+        /**
+         * Returns the tab layout which allows to create the tab's view on demand.
+         * @return The layout resource that allows to create the view necessary for this tab.
+         */
+        @LayoutRes
+        int getTabLayout();
+
+        /**
+         * Returns the listener which might need to react on changes to this tab.
+         * @return A {@link Listener} to be called, e.g. when the tab is created.
+         */
+        @Nullable
+        Listener getListener();
     }
 
     /**
