@@ -70,6 +70,7 @@ test("device_unittests") {
     "fido/fido_ble_connection_unittest.cc",
     "fido/fido_ble_device_unittest.cc",
     "fido/fido_ble_frames_unittest.cc",
+    "fido/fido_cable_device_unittest.cc",
     "fido/fido_cable_discovery_unittest.cc",
     "fido/fido_discovery_unittest.cc",
     "fido/fido_hid_message_unittest.cc",

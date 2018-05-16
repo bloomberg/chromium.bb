@@ -52,12 +52,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
                       DeviceCallback callback) override;
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
- private:
+  virtual void OnResponseFrame(FrameCallback callback,
+                               base::Optional<FidoBleFrame> frame);
   void Transition();
   void AddToPendingFrames(FidoBleDeviceCommand cmd,
                           std::vector<uint8_t> request,
                           DeviceCallback callback);
+  void ResetTransaction();
 
+ private:
   void OnConnectionStatus(bool success);
   void OnStatusMessage(std::vector<uint8_t> data);
 
@@ -66,8 +69,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoBleDevice : public FidoDevice {
 
   void SendPendingRequestFrame();
   void SendRequestFrame(FidoBleFrame frame, FrameCallback callback);
-  void OnResponseFrame(FrameCallback callback,
-                       base::Optional<FidoBleFrame> frame);
 
   void StartTimeout();
   void StopTimeout();

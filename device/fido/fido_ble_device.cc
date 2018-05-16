@@ -84,6 +84,23 @@ base::WeakPtr<FidoDevice> FidoBleDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
+void FidoBleDevice::OnResponseFrame(FrameCallback callback,
+                                    base::Optional<FidoBleFrame> frame) {
+  // The request is done, time to reset |transaction_|.
+  ResetTransaction();
+
+  state_ = frame ? State::kReady : State::kDeviceError;
+  auto self = GetWeakPtr();
+  std::move(callback).Run(std::move(frame));
+  // Executing callbacks may free |this|. Check |self| first.
+  if (self)
+    Transition();
+}
+
+void FidoBleDevice::ResetTransaction() {
+  transaction_.reset();
+}
+
 void FidoBleDevice::Transition() {
   switch (state_) {
     case State::kInit:
@@ -163,19 +180,6 @@ void FidoBleDevice::SendRequestFrame(FidoBleFrame frame,
       std::move(frame),
       base::BindOnce(&FidoBleDevice::OnResponseFrame, base::Unretained(this),
                      std::move(callback)));
-}
-
-void FidoBleDevice::OnResponseFrame(FrameCallback callback,
-                                    base::Optional<FidoBleFrame> frame) {
-  // The request is done, time to reset |transaction_|.
-  transaction_.reset();
-
-  state_ = frame ? State::kReady : State::kDeviceError;
-  auto self = GetWeakPtr();
-  std::move(callback).Run(std::move(frame));
-  // Executing callbacks may free |this|. Check |self| first.
-  if (self)
-    Transition();
 }
 
 void FidoBleDevice::StartTimeout() {

@@ -14,8 +14,8 @@
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
 #include "device/bluetooth/bluetooth_uuid.h"
-#include "device/fido/fido_ble_device.h"
 #include "device/fido/fido_ble_uuids.h"
+#include "device/fido/fido_cable_device.h"
 #include "device/fido/fido_parsing_utils.h"
 
 namespace device {
@@ -79,8 +79,11 @@ std::unique_ptr<BluetoothAdvertisement::Data> ConstructAdvertisementData(
 
 FidoCableDiscovery::CableDiscoveryData::CableDiscoveryData(
     const EidArray& client_eid,
-    const EidArray& authenticator_eid)
-    : client_eid(client_eid), authenticator_eid(authenticator_eid) {}
+    const EidArray& authenticator_eid,
+    const SessionKeyArray& session_key)
+    : client_eid(client_eid),
+      authenticator_eid(authenticator_eid),
+      session_key(session_key) {}
 
 FidoCableDiscovery::CableDiscoveryData::CableDiscoveryData(
     const CableDiscoveryData& data) = default;
@@ -120,7 +123,7 @@ void FidoCableDiscovery::DeviceChanged(BluetoothAdapter* adapter,
 
 void FidoCableDiscovery::DeviceRemoved(BluetoothAdapter* adapter,
                                        BluetoothDevice* device) {
-  if (IsCableDevice(device) && IsExpectedCaBleDevice(device)) {
+  if (IsCableDevice(device) && GetFoundCableDiscoveryData(device)) {
     const auto& device_address = device->GetAddress();
     VLOG(2) << "Cable device removed: " << device_address;
     RemoveDevice(FidoBleDevice::GetId(device_address));
@@ -175,14 +178,27 @@ void FidoCableDiscovery::OnAdvertisementRegisterError(
 
 void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
                                           BluetoothDevice* device) {
-  if (!IsExpectedCaBleDevice(device))
+  const auto* found_cable_device_data = GetFoundCableDiscoveryData(device);
+  if (!found_cable_device_data)
     return;
 
   DVLOG(2) << "Found new Cable device.";
-  AddDevice(std::make_unique<FidoBleDevice>(device->GetAddress()));
+  // Nonce is embedded as first 8 bytes of client EID.
+  std::array<uint8_t, 8> nonce;
+  bool extract_success = fido_parsing_utils::ExtractArray(
+      found_cable_device_data->client_eid, 0, &nonce);
+  if (!extract_success)
+    return;
+
+  AddDevice(std::make_unique<FidoCableDevice>(
+      device->GetAddress(),
+      std::string(found_cable_device_data->session_key.begin(),
+                  found_cable_device_data->session_key.end()),
+      nonce));
 }
 
-bool FidoCableDiscovery::IsExpectedCaBleDevice(
+const FidoCableDiscovery::CableDiscoveryData*
+FidoCableDiscovery::GetFoundCableDiscoveryData(
     const BluetoothDevice* device) const {
   const auto* service_data =
       device->GetServiceDataForUUID(CableAdvertisementUUID());
@@ -192,13 +208,17 @@ bool FidoCableDiscovery::IsExpectedCaBleDevice(
   bool extract_success = fido_parsing_utils::ExtractArray(
       *service_data, 8, &received_authenticator_eid);
   if (!extract_success)
-    return false;
+    return nullptr;
 
-  return std::any_of(discovery_data_.cbegin(), discovery_data_.cend(),
-                     [&received_authenticator_eid](const auto& data) {
-                       return received_authenticator_eid ==
-                              data.authenticator_eid;
-                     });
+  auto discovery_data_iterator = std::find_if(
+      discovery_data_.begin(), discovery_data_.end(),
+      [&received_authenticator_eid](const auto& data) {
+        return received_authenticator_eid == data.authenticator_eid;
+      });
+
+  return discovery_data_iterator != discovery_data_.end()
+             ? &(*discovery_data_iterator)
+             : nullptr;
 }
 
 }  // namespace device
