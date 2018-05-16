@@ -63,11 +63,16 @@ class SubresourceFilterSafeBrowsingActivationThrottle
  private:
   void CheckCurrentUrl();
   void NotifyResult();
-  // Determines whether all of the results in check_results_ are finished.
   bool HasFinishedAllSafeBrowsingChecks();
-
-  ActivationDecision ComputeActivation(ActivationList matched_list,
-                                       Configuration* configuration);
+  // Gets the configuration with the highest priority among those activated.
+  // Returns it, or none if no valid activated configurations.
+  base::Optional<Configuration> GetHighestPriorityConfiguration(
+      ActivationList matched_list);
+  // Gets the ActivationDecision for the given Configuration.
+  // Returns it, or ACTIVATION_CONDITIONS_NOT_MET if no Configuration.
+  ActivationDecision GetActivationDecision(
+      const base::Optional<Configuration>& config,
+      bool warning);
 
   // Returns whether a main-frame navigation to the given |url| satisfies the
   // activation |conditions| of a given configuration, except for |priority|.
