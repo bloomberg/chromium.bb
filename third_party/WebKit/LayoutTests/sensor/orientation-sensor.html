@@ -27,7 +27,7 @@ function update_sensor_reading(buffer) {
   buffer.set(kQuaternion, 2);
 }
 
-async function checkPopulateMatrix(sensor, sensorType) {
+async function checkPopulateMatrix(sensor, sensorType, mojomSensorType) {
   let sensorObject = new sensorType();
 
   // Throws with insufficient buffer space.
@@ -43,7 +43,7 @@ async function checkPopulateMatrix(sensor, sensorType) {
 
   sensorObject.start();
 
-  let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+  let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
   await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
   await new Promise((resolve, reject) => {
     let wrapper = new CallbackWrapper(() => {
@@ -78,23 +78,31 @@ async function checkPopulateMatrix(sensor, sensorType) {
 
 runGenericSensorTests(
     AbsoluteOrientationSensor,
+    device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION,
     update_sensor_reading,
     verify_quat_sensor_reading.bind(null, kQuaternion),
     verify_quat_sensor_reading.bind(null, kMappedQuaternion),
     ['accelerometer', 'gyroscope', 'magnetometer']);
 
 sensor_test(sensor => {
-  return checkPopulateMatrix(sensor, AbsoluteOrientationSensor);
+  return checkPopulateMatrix(
+      sensor,
+      AbsoluteOrientationSensor,
+      device.mojom.SensorType.ABSOLUTE_ORIENTATION_QUATERNION);
 }, 'Test AbsoluteOrientationSensor.populateMatrix() method works correctly.');
 
 runGenericSensorTests(
     RelativeOrientationSensor,
+    device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION,
     update_sensor_reading,
     verify_quat_sensor_reading.bind(null, kQuaternion),
     verify_quat_sensor_reading.bind(null, kMappedQuaternion),
     ['accelerometer', 'gyroscope']);
 
 sensor_test(sensor => {
-  return checkPopulateMatrix(sensor, RelativeOrientationSensor);
+  return checkPopulateMatrix(
+      sensor,
+      RelativeOrientationSensor,
+      device.mojom.SensorType.RELATIVE_ORIENTATION_QUATERNION);
 }, 'Test RelativeOrientationSensor.populateMatrix() method works correctly.');
 </script>

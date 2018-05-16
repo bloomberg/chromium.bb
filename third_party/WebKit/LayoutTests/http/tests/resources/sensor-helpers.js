@@ -214,10 +214,10 @@ function sensorMocks() {
       let rv = Mojo.createSharedBuffer(this.sharedBufferSizeInBytes_);
       assert_equals(rv.result, Mojo.RESULT_OK, "Failed to create buffer");
       this.sharedBufferHandle_ = rv.handle;
-      this.activeSensor_ = null;
+      this.activeSensors_ = new Map();
+      this.resolveFuncs_ = new Map();
       this.getSensorShouldFail_ = false;
       this.permissionsDenied_ = false;
-      this.resolveFunc_ = null;
       this.isContinuous_ = false;
       this.maxFrequency_ = 60;
       this.minFrequency_ = 1;
@@ -250,12 +250,12 @@ function sensorMocks() {
       }
 
       let sensorPtr = new device.mojom.SensorPtr();
-      if (this.activeSensor_ == null) {
+      if (!this.activeSensors_.has(type)) {
         let mockSensor = new MockSensor(
             mojo.makeRequest(sensorPtr), this.sharedBufferHandle_, offset,
             this.readingSizeInBytes_, reportingMode);
-        this.activeSensor_ = mockSensor;
-        this.activeSensor_.client_ = new device.mojom.SensorClientPtr();
+        this.activeSensors_.set(type, mockSensor);
+        this.activeSensors_.get(type).client_ = new device.mojom.SensorClientPtr();
       }
 
       let rv = this.sharedBufferHandle_.duplicateBufferHandle();
@@ -273,7 +273,7 @@ function sensorMocks() {
 
       let initParams = new device.mojom.SensorInitParams({
         sensor: sensorPtr,
-        clientRequest: mojo.makeRequest(this.activeSensor_.client_),
+        clientRequest: mojo.makeRequest(this.activeSensors_.get(type).client_),
         memory: rv.handle,
         bufferOffset: offset,
         mode: reportingMode,
@@ -282,8 +282,11 @@ function sensorMocks() {
         maximumFrequency: this.maxFrequency_
       });
 
-      if (this.resolveFunc_ !== null) {
-        this.resolveFunc_(this.activeSensor_);
+      if (this.resolveFuncs_.has(type)) {
+        for (let resolveFunc of this.resolveFuncs_.get(type)) {
+          resolveFunc(this.activeSensors_.get(type));
+        }
+        this.resolveFuncs_.delete(type);
       }
 
       return {result: device.mojom.SensorCreationResult.SUCCESS,
@@ -302,14 +305,13 @@ function sensorMocks() {
 
     // Resets state of mock SensorProvider between test runs.
     reset() {
-      if (this.activeSensor_ != null) {
-        this.activeSensor_.reset();
-        this.activeSensor_ = null;
+      for (const sensor of this.activeSensors_.values()) {
+        sensor.reset();
       }
-
+      this.activeSensors_.clear();
+      this.resolveFuncs_.clear();
       this.getSensorShouldFail_ = false;
       this.permissionsDenied_ = false;
-      this.resolveFunc_ = null;
       this.maxFrequency_ = 60;
       this.minFrequency_ = 1;
       this.isContinuous_ = false;
@@ -328,13 +330,18 @@ function sensorMocks() {
     }
 
     // Returns mock sensor that was created in getSensor to the layout test.
-    getCreatedSensor() {
-      if (this.activeSensor_ != null) {
-        return Promise.resolve(this.activeSensor_);
+    getCreatedSensor(type) {
+      assert_equals(typeof type, "number", "A sensor type must be specified.");
+
+      if (this.activeSensors_.has(type)) {
+        return Promise.resolve(this.activeSensors_.get(type));
       }
 
       return new Promise((resolve, reject) => {
-        this.resolveFunc_ = resolve;
+        if (!this.resolveFuncs_.has(type)) {
+          this.resolveFuncs_.set(type, []);
+        }
+        this.resolveFuncs_.get(type).push(resolve);
       });
     }
 

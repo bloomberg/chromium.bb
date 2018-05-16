@@ -5,6 +5,7 @@
 // is called so that the value read in JavaScript are the values expected (the ones
 // sent by |updateReading|).
 function runGenericSensorTests(sensorType,
+                               mojomSensorType,
                                updateReading,
                                verifyReading,
                                verifyRemappedReading,
@@ -45,7 +46,7 @@ function runGenericSensorTests(sensorType,
     let sensorObject = new sensorType({frequency: 560});
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     mockSensor.setStartShouldFail(true);
     await mockSensor.addConfigurationCalled();
     await new Promise((resolve, reject) => {
@@ -64,7 +65,7 @@ function runGenericSensorTests(sensorType,
     let sensorObject = new sensorType();
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     mockSensor.setStartShouldFail(true);
     await mockSensor.addConfigurationCalled();
     return mockSensor.removeConfigurationCalled();
@@ -74,7 +75,7 @@ function runGenericSensorTests(sensorType,
     let sensorObject = new sensorType({frequency: 560});
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.addConfigurationCalled();
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
@@ -92,7 +93,7 @@ function runGenericSensorTests(sensorType,
   sensor_test(async sensor => {
     let sensorObject = new sensorType();
     sensorObject.start();
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.addConfigurationCalled();
     await new Promise((resolve, reject) => {
       sensorObject.onactivate = () => {
@@ -114,7 +115,7 @@ function runGenericSensorTests(sensorType,
     let sensorObject = new sensorType({frequency: 50});
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.addConfigurationCalled();
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
@@ -135,7 +136,7 @@ function runGenericSensorTests(sensorType,
     let sensorObject = new sensorType({frequency: -1});
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.addConfigurationCalled();
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
@@ -156,7 +157,7 @@ function runGenericSensorTests(sensorType,
     sensorObject.start();
     assert_false(sensorObject.activated);
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
         assert_true(sensorObject.activated);
@@ -174,7 +175,7 @@ function runGenericSensorTests(sensorType,
     let sensorObject = new sensorType();
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
         assert_true(sensorObject.activated);
@@ -193,7 +194,7 @@ function runGenericSensorTests(sensorType,
     let sensorObject = new sensorType({frequency: 60});
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.addConfigurationCalled();
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
@@ -213,7 +214,7 @@ function runGenericSensorTests(sensorType,
     sensorObject.start();
     assert_false(sensorObject.hasReading);
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.setUpdateSensorReadingFunction(updateReading);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
@@ -243,7 +244,7 @@ function runGenericSensorTests(sensorType,
     let sensorObject = new sensorType({frequency: 60});
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.setUpdateSensorReadingFunction(updateReading);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
@@ -274,7 +275,7 @@ function runGenericSensorTests(sensorType,
     let iframe = document.createElement('iframe');
     iframe.src = encodeURI(iframeSrc);
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.setUpdateSensorReadingFunction(updateReading);
 
     await new Promise((resolve, reject) => {
@@ -306,7 +307,7 @@ function runGenericSensorTests(sensorType,
     let sensor2 = new sensorType({frequency: 20});
     sensor2.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.setUpdateSensorReadingFunction(updateReading);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {
@@ -339,7 +340,7 @@ function runGenericSensorTests(sensorType,
 
     let slowSensor;  // To be initialized later.
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.setUpdateSensorReadingFunction(updateReading);
     await new Promise((resolve, reject) => {
       let fastSensorNotifiedCounter = 0;
@@ -449,7 +450,7 @@ function runGenericSensorTests(sensorType,
     let timestamp = 0;
     sensorObject.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.setUpdateSensorReadingFunction(updateReading);
     await new Promise((resolve, reject) => {
       let wrapper1 = new CallbackWrapper(() => {
@@ -492,7 +493,7 @@ function runGenericSensorTests(sensorType,
     sensor1.start();
     sensor2.start();
 
-    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor();
+    let mockSensor = await sensor.mockSensorProvider.getCreatedSensor(mojomSensorType);
     await mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
     await new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(() => {

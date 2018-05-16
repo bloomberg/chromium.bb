@@ -25,6 +25,7 @@ function verify_sensor_reading({illuminance, timestamp}, is_null) {
 }
 
 runGenericSensorTests(AmbientLightSensor,
+                      device.mojom.SensorType.AMBIENT_LIGHT,
                       update_sensor_reading,
                       verify_sensor_reading,
                       null,
