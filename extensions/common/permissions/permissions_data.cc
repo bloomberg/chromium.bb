@@ -31,7 +31,7 @@ namespace {
 
 PermissionsData::PolicyDelegate* g_policy_delegate = nullptr;
 
-struct DefaultRuntimePolicy {
+struct DefaultPolicyRestrictions {
   URLPatternSet blocked_hosts;
   URLPatternSet allowed_hosts;
 };
@@ -39,8 +39,8 @@ struct DefaultRuntimePolicy {
 // URLs an extension can't interact with. An extension can override these
 // settings by declaring its own list of blocked and allowed hosts using
 // policy_blocked_hosts and policy_allowed_hosts.
-base::LazyInstance<DefaultRuntimePolicy>::Leaky default_runtime_policy =
-    LAZY_INSTANCE_INITIALIZER;
+base::LazyInstance<DefaultPolicyRestrictions>::Leaky
+    default_policy_restrictions = LAZY_INSTANCE_INITIALIZER;
 
 class AutoLockOnValidThread {
  public:
@@ -150,11 +150,11 @@ bool PermissionsData::UsesDefaultPolicyHostRestrictions() const {
 }
 
 const URLPatternSet& PermissionsData::default_policy_blocked_hosts() {
-  return default_runtime_policy.Get().blocked_hosts;
+  return default_policy_restrictions.Get().blocked_hosts;
 }
 
 const URLPatternSet& PermissionsData::default_policy_allowed_hosts() {
-  return default_runtime_policy.Get().allowed_hosts;
+  return default_policy_restrictions.Get().allowed_hosts;
 }
 
 const URLPatternSet PermissionsData::policy_blocked_hosts() const {
@@ -195,11 +195,11 @@ void PermissionsData::SetPermissions(
 }
 
 void PermissionsData::SetPolicyHostRestrictions(
-    const URLPatternSet& runtime_blocked_hosts,
-    const URLPatternSet& runtime_allowed_hosts) const {
+    const URLPatternSet& policy_blocked_hosts,
+    const URLPatternSet& policy_allowed_hosts) const {
   AutoLockOnValidThread lock(runtime_lock_, thread_checker_.get());
-  policy_blocked_hosts_unsafe_ = runtime_blocked_hosts;
-  policy_allowed_hosts_unsafe_ = runtime_allowed_hosts;
+  policy_blocked_hosts_unsafe_ = policy_blocked_hosts;
+  policy_allowed_hosts_unsafe_ = policy_allowed_hosts;
   uses_default_policy_host_restrictions = false;
 }
 
@@ -210,10 +210,12 @@ void PermissionsData::SetUsesDefaultHostRestrictions() const {
 
 // static
 void PermissionsData::SetDefaultPolicyHostRestrictions(
-    const URLPatternSet& default_runtime_blocked_hosts,
-    const URLPatternSet& default_runtime_allowed_hosts) {
-  default_runtime_policy.Get().blocked_hosts = default_runtime_blocked_hosts;
-  default_runtime_policy.Get().allowed_hosts = default_runtime_allowed_hosts;
+    const URLPatternSet& default_policy_blocked_hosts,
+    const URLPatternSet& default_policy_allowed_hosts) {
+  default_policy_restrictions.Get().blocked_hosts =
+      default_policy_blocked_hosts;
+  default_policy_restrictions.Get().allowed_hosts =
+      default_policy_allowed_hosts;
 }
 
 void PermissionsData::SetActivePermissions(
@@ -285,7 +287,7 @@ URLPatternSet PermissionsData::GetEffectiveHostPermissions() const {
 bool PermissionsData::HasHostPermission(const GURL& url) const {
   base::AutoLock auto_lock(runtime_lock_);
   return active_permissions_unsafe_->HasExplicitAccessToOrigin(url) &&
-         !IsRuntimeBlockedHostUnsafe(url);
+         !IsPolicyBlockedHostUnsafe(url);
 }
 
 bool PermissionsData::HasEffectiveAccessToAllHosts() const {
@@ -437,7 +439,7 @@ const PermissionSet* PermissionsData::GetTabSpecificPermissions(
   return iter != tab_specific_permissions_.end() ? iter->second.get() : nullptr;
 }
 
-bool PermissionsData::IsRuntimeBlockedHostUnsafe(const GURL& url) const {
+bool PermissionsData::IsPolicyBlockedHostUnsafe(const GURL& url) const {
   runtime_lock_.AssertAcquired();
   return PolicyBlockedHostsUnsafe().MatchesURL(url) &&
          !PolicyAllowedHostsUnsafe().MatchesURL(url);
@@ -453,7 +455,7 @@ PermissionsData::PageAccess PermissionsData::CanRunOnPage(
     std::string* error) const {
   runtime_lock_.AssertAcquired();
   if (extension->location() != Manifest::COMPONENT &&
-      extension->permissions_data()->IsRuntimeBlockedHostUnsafe(document_url)) {
+      extension->permissions_data()->IsPolicyBlockedHostUnsafe(document_url)) {
     if (error)
       *error = extension_misc::kPolicyBlockedScripting;
     return PageAccess::kDenied;

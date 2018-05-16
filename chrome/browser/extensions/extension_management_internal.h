@@ -92,34 +92,34 @@ struct IndividualSettings {
 
   // This setting will provide a list of hosts that are blocked for each
   // extension at runtime. That is, if an extension attempts to use an API
-  // call which requires a host permission specified in runtime_blocked_hosts
+  // call which requires a host permission specified in policy_blocked_hosts
   // it will fail no matter which host permissions are declared in the
   // extension manifest. This setting will NOT merge from the default settings.
   // Either the default settings will be applied, or an extension specific
   // setting.
-  // If a URL is specified in the runtime_allowed_hosts, and in the
-  // runtime_blocked_hosts, the runtime_allowed_hosts wins and the call will be
+  // If a URL is specified in the policy_allowed_hosts, and in the
+  // policy_blocked_hosts, the policy_allowed_hosts wins and the call will be
   // allowed.
   // This setting is only supported per-extensions or default
   // (per-update-url not supported)
-  URLPatternSet runtime_blocked_hosts;
+  URLPatternSet policy_blocked_hosts;
 
   // This setting will provide a list of hosts that are exempted from the
-  // runtime_blocked_hosts setting and may be used at runtime. That is,
+  // policy_blocked_hosts setting and may be used at runtime. That is,
   // if an extension attempts to use an API call which requires a host
-  // permission that was blocked using runtime_blocked_hosts it will
+  // permission that was blocked using policy_blocked_hosts it will
   // fail unless also declared here.
-  // A generic pattern may be declared in runtime_blocked_hosts and a
+  // A generic pattern may be declared in policy_blocked_hosts and a
   // more specific pattern declared here. For example, if we block
-  // "*://*.example.com/*" with runtime_blocked_hosts we can then
-  // allow "http://good.example.com/*" in runtime_allowed_hosts.
+  // "*://*.example.com/*" with policy_blocked_hosts we can then
+  // allow "http://good.example.com/*" in policy_allowed_hosts.
   // This setting will NOT merge from the default settings. Either the
   // default settings will be applied, or an extension specific setting.
-  // If a URL is specified in runtime_blocked_hosts, and in
-  // runtime_allowed_hosts, the allowed list wins.
+  // If a URL is specified in policy_blocked_hosts, and in
+  // policy_allowed_hosts, the allowed list wins.
   // This setting is only supported per-extensions or default
   // (per-update-url not supported)
-  URLPatternSet runtime_allowed_hosts;
+  URLPatternSet policy_allowed_hosts;
 
   // Minimum version required for an extensions, applies to per-extension
   // settings only. Extension (with specified extension ID) with version older

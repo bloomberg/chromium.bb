@@ -293,8 +293,8 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
       }
     }
     // Host keys that don't support user defined paths.
-    const char* host_keys[] = {schema_constants::kRuntimeBlockedHosts,
-                               schema_constants::kRuntimeAllowedHosts};
+    const char* host_keys[] = {schema_constants::kPolicyBlockedHosts,
+                               schema_constants::kPolicyAllowedHosts};
     const int extension_scheme_mask =
         URLPattern::GetValidSchemeMaskForExtensions();
     for (const char* key : host_keys) {

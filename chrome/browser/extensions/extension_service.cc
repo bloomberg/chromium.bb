@@ -982,18 +982,18 @@ void ExtensionService::CheckManagementPolicy() {
   extensions::ExtensionManagement* management =
       extensions::ExtensionManagementFactory::GetForBrowserContext(profile());
   extensions::PermissionsUpdater(profile()).SetDefaultPolicyHostRestrictions(
-      management->GetDefaultRuntimeBlockedHosts(),
-      management->GetDefaultRuntimeAllowedHosts());
+      management->GetDefaultPolicyBlockedHosts(),
+      management->GetDefaultPolicyAllowedHosts());
   for (const auto& extension : registry_->enabled_extensions()) {
     bool uses_default =
-        management->UsesDefaultRuntimeHostRestrictions(extension.get());
+        management->UsesDefaultPolicyHostRestrictions(extension.get());
     if (uses_default) {
       extensions::PermissionsUpdater(profile()).SetUsesDefaultHostRestrictions(
           extension.get());
     } else {
       extensions::PermissionsUpdater(profile()).SetPolicyHostRestrictions(
-          extension.get(), management->GetRuntimeBlockedHosts(extension.get()),
-          management->GetRuntimeAllowedHosts(extension.get()));
+          extension.get(), management->GetPolicyBlockedHosts(extension.get()),
+          management->GetPolicyAllowedHosts(extension.get()));
     }
   }
 

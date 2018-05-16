@@ -1594,7 +1594,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   // means that the request to example.com will be seen by the extension.
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
-    pref.AddRuntimeBlockedHost("*", "*://notexample.com");
+    pref.AddPolicyBlockedHost("*", "*://notexample.com");
   }
 
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -1649,7 +1649,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   // will not be seen by the extension.
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
-    pref.AddRuntimeBlockedHost("*", "*://" + example_com);
+    pref.AddPolicyBlockedHost("*", "*://" + example_com);
   }
 
   // Wait until all remote Javascript files have been pulled down.
@@ -1675,7 +1675,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
 
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
-    pref.AddRuntimeBlockedHost("*", "*://" + protected_domain);
+    pref.AddPolicyBlockedHost("*", "*://" + protected_domain);
   }
 
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -1731,7 +1731,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
 
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
-    pref.AddRuntimeBlockedHost("*", "*://" + protected_domain);
+    pref.AddPolicyBlockedHost("*", "*://" + protected_domain);
   }
 
   ASSERT_TRUE(StartEmbeddedTestServer());
