@@ -183,7 +183,8 @@ public class MediaUrlResolver extends AsyncTask<Void, Void, MediaUrlResolver.Res
                 Log.e(TAG, "Server response is not valid: %d", responseCode);
                 uri = Uri.EMPTY;
             }
-        } catch (IOException e) {
+        } catch (IOException | IllegalArgumentException e) {
+            // IllegalArgumentException for SSL issue (https://b/78588631).
             recordResultHistogram(RESOLVE_RESULT_NETWORK_ERROR);
             Log.e(TAG, "Failed to fetch the final url", e);
             uri = Uri.EMPTY;
