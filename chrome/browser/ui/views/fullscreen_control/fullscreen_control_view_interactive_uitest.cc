@@ -16,11 +16,13 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/views/scoped_macviews_browser_mode.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/views/controls/button/button.h"
@@ -88,7 +90,7 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
   }
 
   FullscreenControlView* GetFullscreenControlView() {
-    return GetFullscreenControlHost()->fullscreen_control_view();
+    return GetFullscreenControlHost()->GetPopup()->control_view();
   }
 
   views::Button* GetFullscreenExitButton() {
@@ -106,6 +108,8 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
   content::WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
+
+  bool IsPopupCreated() { return GetFullscreenControlHost()->IsPopupCreated(); }
 
   void EnterActiveTabFullscreen() {
     FullscreenNotificationObserver fullscreen_observer;
@@ -145,6 +149,7 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  test::ScopedMacViewsBrowserMode views_mode_{true};
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::test::TestCursorClient> cursor_client_;
@@ -152,6 +157,18 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenControlViewTest);
 };
+
+// Creating the popup on Mac increases the memory use by ~2MB so it should be
+// lazily loaded only when necessary. This test verifies that the popup is not
+// immediately created when FullscreenControlHost is created.
+IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
+                       NoFullscreenPopupOnBrowserFullscreen) {
+  EnterActiveTabFullscreen();
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  DCHECK(browser_view);
+  ASSERT_TRUE(browser_view->IsFullscreen());
+  ASSERT_FALSE(IsPopupCreated());
+}
 
 #if defined(OS_MACOSX)
 // Entering fullscreen is flaky on Mac: http://crbug.com/824517
