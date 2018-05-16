@@ -13,13 +13,13 @@ async_test(t => {
     { width: 1441, expect: expectLarge },
     { width: 800, expect: expectMedium },
     { width: 2000, expect: expectLarge },
-    { width: 0, expect: expectTiny },
+    { width: 0, expect: expectSmall },
     { width: 641, expect: expectMedium },
     { width: 308, expect: expectSmall },
-    { width: 150, expect: expectTiny },
+    { width: 150, expect: expectSmall },
   ];
 
-  expectTiny();
+  expectSmall();
 
   runTestCase(0);
 
@@ -37,24 +37,19 @@ async_test(t => {
     }));
   }
 
-  function expectTiny() {
-    checkControlsHasClass(video, 'sizing-tiny');
-    checkControlsDoesNotHaveClasses(video, ['sizing-small', 'sizing-medium', 'sizing-large']);
-  }
-
   function expectSmall() {
     checkControlsHasClass(video, 'sizing-small');
-    checkControlsDoesNotHaveClasses(video, ['sizing-tiny', 'sizing-medium', 'sizing-large']);
+    checkControlsDoesNotHaveClasses(video, ['sizing-medium', 'sizing-large']);
   }
 
   function expectMedium() {
     checkControlsHasClass(video, 'sizing-medium');
-    checkControlsDoesNotHaveClasses(video, ['sizing-tiny', 'sizing-small', 'sizing-large']);
+    checkControlsDoesNotHaveClasses(video, ['sizing-small', 'sizing-large']);
   }
 
   function expectLarge() {
     checkControlsHasClass(video, 'sizing-large');
-    checkControlsDoesNotHaveClasses(video, ['sizing-tiny', 'sizing-small', 'sizing-medium']);
+    checkControlsDoesNotHaveClasses(video, ['sizing-small', 'sizing-medium']);
   }
 });
 </script>

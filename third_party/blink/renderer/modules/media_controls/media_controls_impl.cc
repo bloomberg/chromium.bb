@@ -128,13 +128,11 @@ const char kScrubbingMessageCSSClass[] = "scrubbing-message";
 const char kTestModeCSSClass[] = "test-mode";
 const char kImmersiveModeCSSClass[] = "immersive-mode";
 
-const char kSizingTinyCSSClass[] = "sizing-tiny";
 const char kSizingSmallCSSClass[] = "sizing-small";
 const char kSizingMediumCSSClass[] = "sizing-medium";
 const char kSizingLargeCSSClass[] = "sizing-large";
 
 // The minimum width in pixels to reach a given size.
-constexpr int kSizingSmallThreshold = 308;
 constexpr int kSizingMediumThreshold = 641;
 constexpr int kSizingLargeThreshold = 1441;
 
@@ -1306,12 +1304,13 @@ void MediaControlsImpl::UpdateScrubbingMessageFits() const {
 
 void MediaControlsImpl::UpdateSizingCSSClass() {
   int width = size_.Width();
-  SetClass(kSizingTinyCSSClass, width < kSizingSmallThreshold);
   SetClass(kSizingSmallCSSClass,
-           width >= kSizingSmallThreshold && width < kSizingMediumThreshold);
-  SetClass(kSizingMediumCSSClass,
-           width >= kSizingMediumThreshold && width < kSizingLargeThreshold);
-  SetClass(kSizingLargeCSSClass, width >= kSizingLargeThreshold);
+           ShouldShowVideoControls() && width < kSizingMediumThreshold);
+  SetClass(kSizingMediumCSSClass, ShouldShowVideoControls() &&
+                                      width >= kSizingMediumThreshold &&
+                                      width < kSizingLargeThreshold);
+  SetClass(kSizingLargeCSSClass,
+           ShouldShowVideoControls() && width >= kSizingLargeThreshold);
 }
 
 void MediaControlsImpl::MaybeToggleControlsFromTap() {
