@@ -69,6 +69,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // Clears and recreates the header view for this sheet.
   void UpdateHeaderView();
 
+  // Clears and recreates the header content separator view for this sheet.
+  void UpdateHeaderContentSeparatorView();
+
   // Update the focus to |focused_view|.
   void UpdateFocus(views::View* focused_view);
 
@@ -120,6 +123,10 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // header.
   virtual std::unique_ptr<views::View> CreateHeaderContentView();
 
+  // Creates and returns the view to be inserted in the header content separator
+  // container betweem header and content.
+  virtual views::View* CreateHeaderContentSeparatorView();
+
   // Returns the background to use for the header section of the sheet.
   virtual std::unique_ptr<views::Background> GetHeaderBackground();
 
@@ -141,6 +148,9 @@ class PaymentRequestSheetController : public views::ButtonListener {
   // Returns true if the subclass wants the content sheet to have an id, and
   // sets |sheet_id| to the desired value.
   virtual bool GetSheetId(DialogViewID* sheet_id);
+
+  // Returns true to display dynamic top and bottom border for hidden contents.
+  virtual bool DisplayDynamicBorderForHiddenContents();
 
   views::Button* primary_button() { return primary_button_.get(); }
 
@@ -172,6 +182,7 @@ class PaymentRequestSheetController : public views::ButtonListener {
   std::unique_ptr<views::Button> primary_button_;
   std::unique_ptr<views::Button> secondary_button_;
   std::unique_ptr<views::View> header_view_;
+  std::unique_ptr<views::View> header_content_separator_container_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentRequestSheetController);
 };

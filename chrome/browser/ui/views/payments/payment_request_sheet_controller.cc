@@ -19,6 +19,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/layout/grid_layout.h"
 #include "ui/views/painter.h"
 
@@ -237,6 +238,12 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   header_view_->set_owned_by_client();
   layout->AddView(header_view_.get());
 
+  layout->StartRow(0, 0);
+  header_content_separator_container_ = std::make_unique<views::View>();
+  header_content_separator_container_->set_owned_by_client();
+  layout->AddView(header_content_separator_container_.get());
+  UpdateHeaderContentSeparatorView();
+
   layout->StartRow(1, 0);
   // |content_view| will go into a views::ScrollView so it needs to be sized now
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
@@ -260,7 +267,9 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   pane_layout->AddView(content_view_);
   pane_->SizeToPreferredSize();
 
-  scroll_ = std::make_unique<BorderedScrollView>();
+  scroll_ = DisplayDynamicBorderForHiddenContents()
+                ? std::make_unique<BorderedScrollView>()
+                : std::make_unique<views::ScrollView>();
   scroll_->set_owned_by_client();
   scroll_->set_hide_horizontal_scrollbar(true);
   scroll_->SetContents(pane_);
@@ -290,6 +299,29 @@ void PaymentRequestSheetController::UpdateHeaderView() {
                           GetHeaderBackground());
   header_view_->Layout();
   header_view_->SchedulePaint();
+}
+
+void PaymentRequestSheetController::UpdateHeaderContentSeparatorView() {
+  header_content_separator_container_->RemoveAllChildViews(true);
+  views::View* separator = CreateHeaderContentSeparatorView();
+  if (separator) {
+    header_content_separator_container_->SetLayoutManager(
+        std::make_unique<views::FillLayout>());
+    header_content_separator_container_->AddChildView(separator);
+  }
+
+  // Relayout sheet view after updating header content separator.
+  DialogViewID sheet_id;
+  if (!GetSheetId(&sheet_id))
+    return;
+  SheetView* sheet_view = static_cast<SheetView*>(
+      dialog()->GetViewByID(static_cast<int>(sheet_id)));
+  // This will be null on first call since it's not been set until CreateView
+  // returns, and the first call to UpdateHeaderContentSeparatorView comes
+  // from CreateView.
+  if (sheet_view) {
+    sheet_view->Layout();
+  }
 }
 
 void PaymentRequestSheetController::UpdateFocus(views::View* focused_view) {
@@ -345,6 +377,10 @@ PaymentRequestSheetController::CreateHeaderContentView() {
   title_label->SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
 
   return title_label;
+}
+
+views::View* PaymentRequestSheetController::CreateHeaderContentSeparatorView() {
+  return nullptr;
 }
 
 std::unique_ptr<views::Background>
@@ -440,6 +476,10 @@ views::View* PaymentRequestSheetController::GetFirstFocusedView() {
 
 bool PaymentRequestSheetController::GetSheetId(DialogViewID* sheet_id) {
   return false;
+}
+
+bool PaymentRequestSheetController::DisplayDynamicBorderForHiddenContents() {
+  return true;
 }
 
 bool PaymentRequestSheetController::PerformPrimaryButtonAction() {
