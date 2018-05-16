@@ -27,8 +27,7 @@ NGInlineBoxFragmentPainter::NGInlineBoxFragmentPainter(
           &inline_box_fragment.GetLayoutObject()->GetDocument(),
           inline_box_fragment.GetLayoutObject()->GeneratingNode(),
           inline_box_fragment.Style(),
-          // FIXME(eae): Should be first-line style..
-          //           flow_box_.GetLineLayoutItem().StyleRef(flow_box_.IsFirstLineStyle())),
+          // TODO(layout-dev): Should be first-line style.
           inline_box_fragment.Style()),
       inline_box_fragment_(inline_box_fragment),
       box_painter_(NGBoxFragmentPainter(inline_box_fragment_)),
@@ -85,7 +84,6 @@ void NGInlineBoxFragmentPainter::PaintBackgroundBorderShadow(
 
   LayoutRect frame_rect =
       inline_box_fragment_.PhysicalFragment().LocalRect().ToLayoutRect();
-  // LayoutPoint adjusted_paint_offset = paint_offset + frame_rect.Location();
   LayoutPoint adjusted_paint_offset = paint_offset;
 
   LayoutRect adjusted_frame_rect =
