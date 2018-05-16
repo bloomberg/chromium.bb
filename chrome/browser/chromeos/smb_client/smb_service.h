@@ -49,7 +49,7 @@ using file_system_provider::Service;
 class SmbService : public KeyedService,
                    public base::SupportsWeakPtr<SmbService> {
  public:
-  using MountResponse = base::OnceCallback<void(base::File::Error error)>;
+  using MountResponse = base::OnceCallback<void(SmbMountResult result)>;
 
   explicit SmbService(Profile* profile);
   ~SmbService() override;

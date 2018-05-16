@@ -114,7 +114,8 @@ void SmbService::CallMount(const file_system_provider::MountOptions& options,
 
   SmbUrl parsed_url;
   if (!parsed_url.InitializeWithUrl(share_path.value())) {
-    std::move(callback).Run(base::File::Error::FILE_ERROR_INVALID_URL);
+    std::move(callback).Run(
+        TranslateErrorToMountResult(base::File::Error::FILE_ERROR_INVALID_URL));
     return;
   }
 
@@ -135,7 +136,7 @@ void SmbService::OnMountResponse(
     smbprovider::ErrorType error,
     int32_t mount_id) {
   if (error != smbprovider::ERROR_OK) {
-    std::move(callback).Run(TranslateToFileError(error));
+    std::move(callback).Run(TranslateErrorToMountResult(error));
     return;
   }
 
@@ -147,7 +148,7 @@ void SmbService::OnMountResponse(
   base::File::Error result =
       GetProviderService()->MountFileSystem(provider_id_, mount_options);
 
-  std::move(callback).Run(result);
+  std::move(callback).Run(TranslateErrorToMountResult(result));
 }
 
 base::File::Error SmbService::Unmount(
