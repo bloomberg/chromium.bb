@@ -11,38 +11,34 @@ Make sure you have followed
 build/android/gradle/generate_gradle.py --output-directory out/Debug
 ```
 
-This creates a project at `out/Debug/gradle`. To create elsewhere:
+Use the flag `--sdk AndroidStudioDefault` to create and use a custom sdk
+directory and avoid issues with `gclient sync` and to use emulators. This will
+become the default soon.
 
 ```shell
-build/android/gradle/generate_gradle.py --output-directory out/Debug --project-dir my-project
+build/android/gradle/generate_gradle.py --output-directory out/Debug --sdk AndroidStudioDefault
 ```
 
-If you are planning to use Android emulators use the
---sdk=AndroidStudioDefault or the --sdk-path option, since adding emulator
-images to the project sdk will modify the project sdk, hence causing problems
-when you next run gclient sync.
+The above commands create a project dir `gradle` under your output directory.
+Use `--project-dir <project-dir>` to change this.
 
 See [android_test_instructions.md](android_test_instructions.md#Using-Emulators)
 for more information about building and running emulators.
 
 For first-time Android Studio users:
-
 * Only run the setup wizard if you are planning to use emulators.
     * The wizard will force you to download SDK components that are only needed
       for emulation.
     * To skip it, select "Cancel" when it comes up.
 
 To import the project:
-
 * Use "Import Project", and select the directory containing the generated
-  project, by default `out/Debug/gradle`.
+  project, e.g. `out/Debug/gradle`.
 
 If you're asked to use Studio's Android SDK:
-
 * No. (Always use your project's SDK configured by generate_gradle.py)
 
 If you're asked to use Studio's Gradle wrapper:
-
 * Yes.
 
 You need to re-run `generate_gradle.py` whenever `BUILD.gn` files change.
@@ -96,17 +92,18 @@ includes `R.java`) and to remove some red underlines in java files.
 
 A new experimental option is now available to enable editing native C/C++ files
 with Android Studio. Pass in any number of `--native-target [target name]` flags
-in order to try it out. This will require `cmake` and `ndk` packages for your
-android SDK. This [crbug](https://crbug.com/840542) tracks adding those to our
-`android_tools` repository. For the interim accepting Android Studio's prompts
-should work. Example below.
+in order to try it out. This will require you to install `cmake` and `ndk` when
+prompted. Accept Android Studio's prompts for these SDK packages. Example:
 
 ```shell
 build/android/gradle/generate_gradle.py --native-target //chrome/android:monochrome
 ```
 
-## Android Studio Tips
+## Tips
 
+* Use environment variables to avoid having to specify `--output-directory`.
+    * Example: Append `export CHROMIUM_OUT_DIR=out; export BUILDTYPE=Debug` to
+      your `~/.bashrc` to always default to `out/Debug`.
 * Using the Java debugger is documented at [android_debugging_instructions.md#android-studio](android_debugging_instructions.md#android-studio).
 * Configuration instructions can be found
   [here](http://tools.android.com/tech-docs/configuration). One suggestions:
@@ -182,6 +179,7 @@ resources, native libraries, etc.
 [here](/docs/android_debugging_instructions.md#Android-Studio)).
 * Import resolution and refactoring across java files.
 * Correct lint and AndroidManifest when only one target is specified.
+* Emulators (more docs coming soon).
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
