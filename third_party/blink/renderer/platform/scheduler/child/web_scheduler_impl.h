@@ -19,7 +19,7 @@ namespace blink {
 namespace scheduler {
 
 class SingleThreadIdleTaskRunner;
-class TaskRunnerImpl;
+class TaskQueueWithTaskType;
 class WebThreadScheduler;
 
 class PLATFORM_EXPORT WebSchedulerImpl : public ThreadScheduler {
@@ -53,7 +53,7 @@ class PLATFORM_EXPORT WebSchedulerImpl : public ThreadScheduler {
 
   WebThreadScheduler* thread_scheduler_;  // NOT OWNED
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
-  scoped_refptr<TaskRunnerImpl> v8_task_runner_;
+  scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSchedulerImpl);
 };

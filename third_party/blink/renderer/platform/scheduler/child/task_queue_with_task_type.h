@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_TASK_RUNNER_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_TASK_RUNNER_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_TASK_QUEUE_WITH_TASK_TYPE_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_CHILD_TASK_QUEUE_WITH_TASK_TYPE_H_
 
 #include <memory>
 
@@ -24,9 +24,10 @@ class TaskQueue;
 namespace blink {
 namespace scheduler {
 
-class PLATFORM_EXPORT TaskRunnerImpl : public base::SingleThreadTaskRunner {
+class PLATFORM_EXPORT TaskQueueWithTaskType
+    : public base::SingleThreadTaskRunner {
  public:
-  static scoped_refptr<TaskRunnerImpl> Create(
+  static scoped_refptr<TaskQueueWithTaskType> Create(
       scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
       TaskType task_type);
 
@@ -42,14 +43,15 @@ class PLATFORM_EXPORT TaskRunnerImpl : public base::SingleThreadTaskRunner {
                                   base::TimeDelta) override;
 
  private:
-  TaskRunnerImpl(scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
-                 TaskType task_type);
-  ~TaskRunnerImpl() override;
+  TaskQueueWithTaskType(
+      scoped_refptr<base::sequence_manager::TaskQueue> task_queue,
+      TaskType task_type);
+  ~TaskQueueWithTaskType() override;
 
   scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
   TaskType task_type_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskRunnerImpl);
+  DISALLOW_COPY_AND_ASSIGN(TaskQueueWithTaskType);
 };
 
 }  // namespace scheduler

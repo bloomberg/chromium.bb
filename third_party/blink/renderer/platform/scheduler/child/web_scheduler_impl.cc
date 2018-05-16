@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 
@@ -21,8 +21,8 @@ WebSchedulerImpl::WebSchedulerImpl(
     : thread_scheduler_(thread_scheduler),
       idle_task_runner_(idle_task_runner),
       v8_task_runner_(
-          TaskRunnerImpl::Create(std::move(v8_task_runner),
-                                 TaskType::kMainThreadTaskQueueV8)) {}
+          TaskQueueWithTaskType::Create(std::move(v8_task_runner),
+                                        TaskType::kMainThreadTaskQueueV8)) {}
 
 WebSchedulerImpl::~WebSchedulerImpl() = default;
 

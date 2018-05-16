@@ -18,7 +18,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
@@ -67,12 +67,13 @@ class PageSchedulerImplTest : public testing::Test {
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> ThrottleableTaskRunner() {
-    return TaskRunnerImpl::Create(ThrottleableTaskQueue(),
-                                  TaskType::kInternalTest);
+    return TaskQueueWithTaskType::Create(ThrottleableTaskQueue(),
+                                         TaskType::kInternalTest);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> LoadingTaskRunner() {
-    return TaskRunnerImpl::Create(LoadingTaskQueue(), TaskType::kInternalTest);
+    return TaskQueueWithTaskType::Create(LoadingTaskQueue(),
+                                         TaskType::kInternalTest);
   }
 
   scoped_refptr<TaskQueue> ThrottleableTaskQueue() {

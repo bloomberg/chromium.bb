@@ -14,7 +14,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/child/default_params.h"
 #include "third_party/blink/renderer/platform/scheduler/child/page_visibility_state.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler_proxy.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
@@ -277,12 +277,12 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     case TaskType::kJavascriptTimer:
-      return TaskRunnerImpl::Create(ThrottleableTaskQueue(), type);
+      return TaskQueueWithTaskType::Create(ThrottleableTaskQueue(), type);
     case TaskType::kInternalLoading:
     case TaskType::kNetworking:
-      return TaskRunnerImpl::Create(LoadingTaskQueue(), type);
+      return TaskQueueWithTaskType::Create(LoadingTaskQueue(), type);
     case TaskType::kNetworkingControl:
-      return TaskRunnerImpl::Create(LoadingControlTaskQueue(), type);
+      return TaskQueueWithTaskType::Create(LoadingControlTaskQueue(), type);
     // Throttling following tasks may break existing web pages, so tentatively
     // these are unthrottled.
     // TODO(nhiroki): Throttle them again after we're convinced that it's safe
@@ -306,7 +306,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalDefault:
     case TaskType::kMiscPlatformAPI:
       // TODO(altimin): Move appropriate tasks to throttleable task queue.
-      return TaskRunnerImpl::Create(DeferrableTaskQueue(), type);
+      return TaskQueueWithTaskType::Create(DeferrableTaskQueue(), type);
     // PostedMessage can be used for navigation, so we shouldn't defer it
     // when expecting a user gesture.
     case TaskType::kPostedMessage:
@@ -319,7 +319,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalMedia:
     case TaskType::kInternalMediaRealTime:
     case TaskType::kInternalUserInteraction:
-      return TaskRunnerImpl::Create(PausableTaskQueue(), type);
+      return TaskQueueWithTaskType::Create(PausableTaskQueue(), type);
     case TaskType::kUnthrottled:
     case TaskType::kInternalTest:
     case TaskType::kInternalWebCrypto:
@@ -331,7 +331,7 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     // unthrottled and undeferred) not to prevent service workers that may
     // control browser navigation on multiple tabs.
     case TaskType::kInternalWorker:
-      return TaskRunnerImpl::Create(UnpausableTaskQueue(), type);
+      return TaskQueueWithTaskType::Create(UnpausableTaskQueue(), type);
     case TaskType::kDeprecatedNone:
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:

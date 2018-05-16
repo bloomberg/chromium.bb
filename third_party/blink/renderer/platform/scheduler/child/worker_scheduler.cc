@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/child/worker_scheduler.h"
 
-#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/public/non_main_thread_scheduler.h"
 
 namespace blink {
@@ -75,7 +75,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
       // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
       // move them into other task runners. See also comments in
       // Get(LocalFrame). (https://crbug.com/670534)
-      return TaskRunnerImpl::Create(task_queue_, type);
+      return TaskQueueWithTaskType::Create(task_queue_, type);
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
     case TaskType::kCount:
