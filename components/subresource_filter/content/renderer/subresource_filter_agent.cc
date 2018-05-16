@@ -4,6 +4,7 @@
 
 #include "components/subresource_filter/content/renderer/subresource_filter_agent.h"
 
+#include <utility>
 #include <vector>
 
 #include "base/feature_list.h"
@@ -67,6 +68,11 @@ void SubresourceFilterAgent::SendDocumentLoadStatistics(
     const DocumentLoadStatistics& statistics) {
   render_frame()->Send(new SubresourceFilterHostMsg_DocumentLoadStatistics(
       render_frame()->GetRoutingID(), statistics));
+}
+
+void SubresourceFilterAgent::SendFrameIsAdSubframe() {
+  render_frame()->Send(new SubresourceFilterHostMsg_FrameIsAdSubframe(
+      render_frame()->GetRoutingID()));
 }
 
 bool SubresourceFilterAgent::IsAdSubframe() {
@@ -164,6 +170,19 @@ void SubresourceFilterAgent::ResetInfoForNextCommit() {
 
 void SubresourceFilterAgent::OnDestruct() {
   delete this;
+}
+
+void SubresourceFilterAgent::DidCreateNewDocument() {
+  if (!first_document_)
+    return;
+  first_document_ = false;
+
+  // Local subframes will first navigate to kAboutBlankURL. Frames created by
+  // the browser initialize the LocalFrame before creating
+  // RenderFrameObservers, so the about:blank document isn't observed. We only
+  // care about local subframes.
+  if (IsAdSubframe() && GetDocumentURL() == url::kAboutBlankURL)
+    SendFrameIsAdSubframe();
 }
 
 void SubresourceFilterAgent::DidCommitProvisionalLoad(

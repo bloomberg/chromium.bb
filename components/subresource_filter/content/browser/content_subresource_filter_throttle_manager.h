@@ -111,6 +111,12 @@ class ContentSubresourceFilterThrottleManager
       LoadPolicy load_policy) override;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(ContentSubresourceFilterThrottleManagerTest,
+                           SubframeNavigationTaggedAsAdByRenderer);
+  FRIEND_TEST_ALL_PREFIXES(ContentSubresourceFilterThrottleManagerTest,
+                           GrandchildNavigationTaggedAsAdByRenderer);
+  FRIEND_TEST_ALL_PREFIXES(ContentSubresourceFilterThrottleManagerTest,
+                           AdTagCarriesAcrossProcesses);
   std::unique_ptr<SubframeNavigationFilteringThrottle>
   MaybeCreateSubframeNavigationFilteringThrottle(
       content::NavigationHandle* navigation_handle);
@@ -131,6 +137,10 @@ class ContentSubresourceFilterThrottleManager
   void DestroyRulesetHandleIfNoLongerUsed();
 
   void OnDocumentLoadStatistics(const DocumentLoadStatistics& statistics);
+
+  // Registers |render_frame_host| as an ad frame. If the frame later moves to
+  // a new process its RenderHost will be told that it's an ad.
+  void OnFrameIsAdSubframe(content::RenderFrameHost* render_frame_host);
 
   // The navigation handle ptr will be in an invalid state, do not access any
   // members on it. This method is only for debugging crbug.com/736249.
@@ -154,18 +164,23 @@ class ContentSubresourceFilterThrottleManager
   // For each ongoing navigation that requires activation state computation,
   // keeps track of the throttle that is carrying out that computation, so that
   // the result can be retrieved when the navigation is ready to commit.
-  // is_ad_subframe is set if SubframeNavigationFilteringThrottle finds that the
-  // subframe URL matches the ruleset.
+  // |navigating_to_ad_url| is set if SubframeNavigationFilteringThrottle
+  // finds that the navigation URL matches the ruleset.
   struct OngoingThrottleInfo {
     ActivationStateComputingNavigationThrottle* throttle = nullptr;
-    bool is_ad_subframe = false;
+    bool navigating_to_ad_url = false;
   };
 
   std::map<content::NavigationHandle*, OngoingThrottleInfo>
       ongoing_activation_throttles_;
 
-  // Set of frames that have been identified as ads, either through matching the
-  // ruleset or if their parent frame was an ad frame.
+  // Set of RenderFrameHosts that have been identified as ads. An RFH is an ad
+  // subframe if any of the following conditions are met:
+  // 1. Its navigation URL is in the filter list
+  // 2. Its parent is a known ad subframe
+  // 3. The RenderFrame declares the frame is an ad (see AdTracker in Blink)
+  // 4. It's the result of moving an old ad subframe RFH to a new RFH (e.g.,
+  //    OOPIF)
   std::set<content::RenderFrameHost*> ad_frames_;
 
   ScopedObserver<SubresourceFilterObserverManager, SubresourceFilterObserver>

@@ -50,6 +50,7 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   MOCK_METHOD0(OnSetSubresourceFilterForCommittedLoadCalled, void());
   MOCK_METHOD0(SignalFirstSubresourceDisallowedForCommittedLoad, void());
   MOCK_METHOD1(SendDocumentLoadStatistics, void(const DocumentLoadStatistics&));
+  MOCK_METHOD0(SendFrameIsAdSubframe, void());
 
   bool IsMainFrame() override { return true; }
 
@@ -177,6 +178,14 @@ class SubresourceFilterAgentTest : public ::testing::Test {
 
   void ExpectDocumentLoadStatisticsSent() {
     EXPECT_CALL(*agent(), SendDocumentLoadStatistics(::testing::_));
+  }
+
+  void ExpectSendFrameIsAdSubframe() {
+    EXPECT_CALL(*agent(), SendFrameIsAdSubframe());
+  }
+
+  void ExpectNoSendFrameIsAdSubframe() {
+    EXPECT_CALL(*agent(), SendFrameIsAdSubframe()).Times(0);
   }
 
   void ExpectLoadPolicy(
@@ -529,6 +538,7 @@ TEST_F(SubresourceFilterAgentTest,
        DryRun_IsAssociatedWithAdSubframeforDocumentOrDedicatedWorker) {
   ASSERT_NO_FATAL_FAILURE(
       SetTestRulesetToDisallowURLsWithPathSuffix(kTestFirstURLPathSuffix));
+
   ExpectSubresourceFilterGetsInjected();
   StartLoadAndSetActivationState(ActivationState(ActivationLevel::DRYRUN),
                                  true /* is_associated_with_ad_subframe */);
@@ -554,6 +564,23 @@ TEST_F(SubresourceFilterAgentTest, DryRun_FrameAlreadyTaggedAsAd) {
 
   EXPECT_TRUE(agent()->IsFilterAssociatedWithAdSubframe());
   EXPECT_TRUE(agent()->IsAdSubframe());
+}
+
+TEST_F(SubresourceFilterAgentTest, DryRun_SendsFrameIsAdSubframe) {
+  agent()->SetIsAdSubframe();
+  ExpectSendFrameIsAdSubframe();
+
+  // Call DidCreateNewDocument twice and verify that SendFrameIsAdSubframe is
+  // only called once.
+  EXPECT_CALL(*agent(), GetDocumentURL())
+      .WillOnce(::testing::Return(GURL("about:blank")));
+  agent_as_rfo()->DidCreateNewDocument();
+  agent_as_rfo()->DidCreateNewDocument();
+}
+
+TEST_F(SubresourceFilterAgentTest, DryRun_DoesNotSendFrameIsAdSubframe) {
+  ExpectNoSendFrameIsAdSubframe();
+  agent_as_rfo()->DidCreateNewDocument();
 }
 
 }  // namespace subresource_filter

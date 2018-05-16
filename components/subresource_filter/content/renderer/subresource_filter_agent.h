@@ -60,6 +60,9 @@ class SubresourceFilterAgent
   virtual void SendDocumentLoadStatistics(
       const DocumentLoadStatistics& statistics);
 
+  // Tells the browser that the frame is an ad subframe.
+  virtual void SendFrameIsAdSubframe();
+
   // True if the frame has been heuristically determined to be an ad subframe.
   virtual bool IsAdSubframe();
   virtual void SetIsAdSubframe();
@@ -78,6 +81,7 @@ class SubresourceFilterAgent
 
   // content::RenderFrameObserver:
   void OnDestruct() override;
+  void DidCreateNewDocument() override;
   void DidCommitProvisionalLoad(bool is_new_navigation,
                                 bool is_same_document_navigation) override;
   void DidFailProvisionalLoad(const blink::WebURLError& error) override;
@@ -89,6 +93,10 @@ class SubresourceFilterAgent
   UnverifiedRulesetDealer* ruleset_dealer_;
 
   ActivationState activation_state_for_next_commit_;
+
+  // If a document has been created for this frame before. The first document
+  // for a new local subframe should be about:blank.
+  bool first_document_ = true;
 
   base::WeakPtr<WebDocumentSubresourceFilterImpl>
       filter_for_last_committed_load_;
