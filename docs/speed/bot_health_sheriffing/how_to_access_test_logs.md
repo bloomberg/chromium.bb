@@ -10,29 +10,29 @@ When trying to understand a failure, it can be useful to inspect the test logs w
 
 Usually, Sheriff-o-matic will include a link directly in the alert to the most recent instance of the test failure. Just click on "shard #0 (failed)".
 
-![Sheriff-o-matic shard #0 failed link](som_shard_0.png)
+![Sheriff-o-matic shard #0 failed link](images/som_shard_0.png)
 
 ### Accessing the logs for older failures
 
 From the Sheriff-o-matic alert, click the "Examine" link to access a list of recent runs on the given bot.
 
-![Sheriff-o-matic open examine pane](som_examine.png)
+![Sheriff-o-matic open examine pane](images/som_examine.png)
 
 If the failure spans multiple platforms, you can select which platform you care about from the top of the new pane.
 
-![Sheriff-o-matic choose bot from examine pane](som_examine_choose_bot.png)
+![Sheriff-o-matic choose bot from examine pane](images/som_examine_choose_bot.png)
 
 This new pane shows all recent runs, not just runs where this benchmark failed, so it's often useful to use Ctrl+F and search for the failing benchmark name to highlight these runs.Next, click the build number for the run for which you want to access the logs. Once you've found the run you want the logs for, click the build number for the run for which you want to access the logs.
 
-![Sheriff-o-matic choose build number](som_choose_build_number.png)
+![Sheriff-o-matic choose build number](images/som_choose_build_number.png)
 
 Once at the build page listing all steps, we need to find the test step that failed. Start by selecting to show "Non-Green Only" steps at the top of the page.
 
-![Sheriff-o-matic choose non-green only](som_choose_non_green_only.png)
+![Sheriff-o-matic choose non-green only](images/som_choose_non_green_only.png)
 
 After doing this, search for your benchmark's name (in this case, "v8.browsing_desktop") until you find a step with a name like "<benchmark_name> on <platform>". Click the "shard #0 (failed)" link below that step to open the logs.
 
-![Sheriff-o-matic choose shard #0 failed link from test steps](som_test_steps_shard_0.png)
+![Sheriff-o-matic choose shard #0 failed link from test steps](images/som_test_steps_shard_0.png)
 
 ## Navigating log files
 

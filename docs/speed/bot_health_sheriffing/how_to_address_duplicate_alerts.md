@@ -10,17 +10,17 @@ First, decide which of your duplicate alerts is going to be your "main" alert. I
 
 Next, select all of the other alerts that you want to merge into this main alert. If there are any existing alert groups among these other alerts, you need to click "Ungroup all" and check all of the boxes in the dialog to ensure that the alerts are out of their existing groups.
 
-![Sheriff-o-matic ungroup all](ungroup_all.png)
+![Sheriff-o-matic ungroup all](images/ungroup_all.png)
 
-![Sheriff-o-matic bulk ungroup dialog](bulk_ungroup.png)
+![Sheriff-o-matic bulk ungroup dialog](images/bulk_ungroup.png)
 
 Once you've ungrouped all the alerts being merged into the main alert and selected all alerts being merged, including your primary alert, click the "Group all" button at the top of the screen.
 
-![Sheriff-o-matic group all](group_all.png)
+![Sheriff-o-matic group all](images/group_all.png)
 
 If the alert group still has an auto-generated name, it's a good idea to give it a name that clarifies the problem.
 
-![Changing the group name in Sheriff-o-matic](change_group_name.png)
+![Changing the group name in Sheriff-o-matic](images/change_group_name.png)
 
 Lastly, it may be necessary to broaden the scope of the existing bug. If, for example, the previous alert had the name "system_health.common_desktop failing on Mac Retina Perf" and you merged in a duplicate alert on Mac Air Perf, you should change the bug and alert names to "system_health.common_desktop failing on multiple Mac builders" and simultaneously add a comment to the bug to the effect of "I'm broadening this bug because the issue is also causing failures on Mac Air Perf".
 
