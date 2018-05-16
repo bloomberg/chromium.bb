@@ -17,7 +17,11 @@ using ::testing::_;
 
 namespace media {
 
-MockMediaCryptoContext::MockMediaCryptoContext() {
+MockMediaCryptoContext::MockMediaCryptoContext(bool has_media_crypto_context)
+    : has_media_crypto_context_(has_media_crypto_context) {
+  if (!has_media_crypto_context_)
+    return;
+
   // Provide some sane defaults.
   ON_CALL(*this, RegisterPlayer(_, _))
       .WillByDefault(DoAll(SaveArg<0>(&new_key_cb), SaveArg<1>(&cdm_unset_cb),
@@ -33,7 +37,7 @@ MockMediaCryptoContext::MockMediaCryptoContext() {
 MockMediaCryptoContext::~MockMediaCryptoContext() {}
 
 MediaCryptoContext* MockMediaCryptoContext::GetMediaCryptoContext() {
-  return this;
+  return has_media_crypto_context_ ? this : nullptr;
 }
 
 }  // namespace media

@@ -140,17 +140,16 @@ MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
   if (!media_crypto_context_)
     return;
 
-  DCHECK(cdm_registration_id_);
-
   // Cancel previously registered callback (if any).
   media_crypto_context_->SetMediaCryptoReadyCB(
       MediaCryptoContext::MediaCryptoReadyCB());
 
-  media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
+  if (cdm_registration_id_)
+    media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
 }
 
 void MediaCodecVideoDecoder::Destroy() {
-  DVLOG(2) << __func__;
+  DVLOG(1) << __func__;
   // Mojo callbacks require that they're run before destruction.
   if (reset_cb_)
     std::move(reset_cb_).Run();
@@ -168,8 +167,9 @@ void MediaCodecVideoDecoder::Initialize(
     const OutputCB& output_cb,
     const WaitingForDecryptionKeyCB& /* waiting_for_decryption_key_cb */) {
   const bool first_init = !decoder_config_.IsValidConfig();
-  DVLOG(2) << (first_init ? "Initializing" : "Reinitializing")
-           << " MCVD with config: " << config.AsHumanReadableString();
+  DVLOG(1) << (first_init ? "Initializing" : "Reinitializing")
+           << " MCVD with config: " << config.AsHumanReadableString()
+           << ", cdm_context = " << cdm_context;
 
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
   if (!ConfigSupported(config, device_info_)) {
@@ -192,9 +192,18 @@ void MediaCodecVideoDecoder::Initialize(
     ExtractSpsAndPps(config.extra_data(), &csd0_, &csd1_);
 #endif
 
-  // For encrypted content, defer signalling success until the Cdm is ready.
-  if (config.is_encrypted()) {
+  // We only support setting CDM at first initialization. Even if the initial
+  // config is clear, we'll still try to set CDM since we may switch to an
+  // encrypted config later.
+  if (first_init && cdm_context && cdm_context->GetMediaCryptoContext()) {
+    DCHECK(media_crypto_.is_null());
     SetCdm(cdm_context, init_cb);
+    return;
+  }
+
+  if (config.is_encrypted() && media_crypto_.is_null()) {
+    DVLOG(1) << "No MediaCrypto to handle encrypted config";
+    bound_init_cb.Run(false);
     return;
   }
 
@@ -204,23 +213,50 @@ void MediaCodecVideoDecoder::Initialize(
 
 void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
                                     const InitCB& init_cb) {
-  if (!cdm_context) {
-    LOG(ERROR) << "No CDM provided";
-    EnterTerminalState(State::kError);
-    init_cb.Run(false);
-    return;
-  }
+  DVLOG(1) << __func__;
+  DCHECK(cdm_context) << "No CDM provided";
+  DCHECK(cdm_context->GetMediaCryptoContext());
 
   media_crypto_context_ = cdm_context->GetMediaCryptoContext();
-  if (!media_crypto_context_) {
-    LOG(ERROR) << "MediaCryptoContext not supported";
-    EnterTerminalState(State::kError);
-    init_cb.Run(false);
-    return;
-  }
 
   // Register CDM callbacks. The callbacks registered will be posted back to
   // this thread via BindToCurrentLoop.
+  media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
+      base::Bind(&MediaCodecVideoDecoder::OnMediaCryptoReady,
+                 weak_factory_.GetWeakPtr(), init_cb)));
+}
+
+void MediaCodecVideoDecoder::OnMediaCryptoReady(
+    const InitCB& init_cb,
+    JavaObjectPtr media_crypto,
+    bool requires_secure_video_codec) {
+  DVLOG(1) << __func__
+           << ": requires_secure_video_codec = " << requires_secure_video_codec;
+
+  DCHECK(state_ == State::kInitializing);
+  DCHECK(media_crypto);
+
+  if (media_crypto->is_null()) {
+    media_crypto_context_->SetMediaCryptoReadyCB(
+        MediaCryptoContext::MediaCryptoReadyCB());
+    media_crypto_context_ = nullptr;
+
+    if (decoder_config_.is_encrypted()) {
+      LOG(ERROR) << "MediaCrypto is not available";
+      EnterTerminalState(State::kError);
+      init_cb.Run(false);
+      return;
+    }
+
+    // MediaCrypto is not available, but the stream is clear. So we can still
+    // play the current stream. But if we switch to an encrypted stream playback
+    // will fail.
+    init_cb.Run(true);
+    return;
+  }
+
+  media_crypto_ = *media_crypto;
+  requires_secure_codec_ = requires_secure_video_codec;
 
   // Since |this| holds a reference to the |cdm_|, by the time the CDM is
   // destructed, UnregisterPlayer() must have been called and |this| has been
@@ -231,29 +267,6 @@ void MediaCodecVideoDecoder::SetCdm(CdmContext* cdm_context,
       media::BindToCurrentLoop(base::Bind(&MediaCodecVideoDecoder::OnKeyAdded,
                                           weak_factory_.GetWeakPtr())),
       base::DoNothing());
-
-  media_crypto_context_->SetMediaCryptoReadyCB(media::BindToCurrentLoop(
-      base::Bind(&MediaCodecVideoDecoder::OnMediaCryptoReady,
-                 weak_factory_.GetWeakPtr(), init_cb)));
-}
-
-void MediaCodecVideoDecoder::OnMediaCryptoReady(
-    const InitCB& init_cb,
-    JavaObjectPtr media_crypto,
-    bool requires_secure_video_codec) {
-  DVLOG(1) << __func__;
-
-  DCHECK(state_ == State::kInitializing);
-
-  if (!media_crypto || media_crypto->is_null()) {
-    LOG(ERROR) << "MediaCrypto is not available";
-    EnterTerminalState(State::kError);
-    init_cb.Run(false);
-    return;
-  }
-
-  media_crypto_ = *media_crypto;
-  requires_secure_codec_ = requires_secure_video_codec;
 
   // Request a secure surface in all cases.  For L3, it's okay if we fall back
   // to TextureOwner rather than fail composition.  For L1, it's required.
@@ -449,7 +462,7 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
 
 void MediaCodecVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                                     const DecodeCB& decode_cb) {
-  DVLOG(2) << __func__ << ": " << buffer->AsHumanReadableString();
+  DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   if (state_ == State::kError) {
     decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -558,7 +571,10 @@ bool MediaCodecVideoDecoder::QueueInput() {
   PendingDecode& pending_decode = pending_decodes_.front();
   auto status = codec_->QueueInputBuffer(*pending_decode.buffer,
                                          decoder_config_.encryption_scheme());
-  DVLOG((status == CodecWrapper::QueueStatus::kTryAgainLater ? 3 : 2))
+  DVLOG((status == CodecWrapper::QueueStatus::kTryAgainLater ||
+                 status == CodecWrapper::QueueStatus::kOk
+             ? 3
+             : 2))
       << "QueueInput(" << pending_decode.buffer->AsHumanReadableString()
       << ") status=" << static_cast<int>(status);
 
@@ -622,7 +638,7 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
       EnterTerminalState(State::kError);
       return false;
   }
-  DVLOG(2) << "DequeueOutputBuffer(): pts="
+  DVLOG(3) << "DequeueOutputBuffer(): pts="
            << (eos ? "EOS"
                    : std::to_string(presentation_time.InMilliseconds()));
 

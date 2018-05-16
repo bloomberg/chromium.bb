@@ -750,7 +750,7 @@ void DecoderStream<StreamType>::ReinitializeDecoder() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::OnDecoderReinitialized(bool success) {
-  FUNCTION_DVLOG(2);
+  FUNCTION_DVLOG(2) << ": success = " << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(state_, STATE_REINITIALIZING_DECODER);
 
@@ -859,7 +859,7 @@ void DecoderStream<StreamType>::ClearOutputs() {
 
 template <DemuxerStream::Type StreamType>
 void DecoderStream<StreamType>::MaybePrepareAnotherOutput() {
-  FUNCTION_DVLOG(2);
+  FUNCTION_DVLOG(3);
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
          state_ == STATE_END_OF_STREAM ||
