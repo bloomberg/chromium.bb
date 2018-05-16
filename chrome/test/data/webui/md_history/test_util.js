@@ -87,10 +87,7 @@ function createSearchEntry(timestamp, urlStr) {
  * @return {!HistoryInfo}
  */
 function createHistoryInfo(searchTerm) {
-  return {
-    finished: true,
-    term: searchTerm || ''
-  };
+  return {finished: true, term: searchTerm || ''};
 }
 
 /**
@@ -112,7 +109,9 @@ function polymerSelectAll(element, selector) {
  */
 function waitForEvent(element, eventName, predicate) {
   if (!predicate)
-    predicate = function() { return true; };
+    predicate = function() {
+      return true;
+    };
 
   return new Promise(function(resolve) {
     const listener = function(e) {
@@ -188,9 +187,5 @@ function createWindow(tabUrls) {
     return {sessionId: 456, timestamp: 0, title: tabUrl, url: tabUrl};
   });
 
-  return {
-    tabs: tabs,
-    sessionId: '123',
-    userVisibleTimestamp: "A while ago"
-  };
+  return {tabs: tabs, sessionId: '123', userVisibleTimestamp: 'A while ago'};
 }

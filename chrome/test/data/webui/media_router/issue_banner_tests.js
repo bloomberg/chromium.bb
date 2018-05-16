@@ -62,14 +62,16 @@ cr.define('issue_banner', function() {
         if (issue) {
           checkElementText(issue.title, 'title');
 
-          checkElementText(loadTimeData.getString(
-              banner.actionTypeToButtonTextResource_[
-                  issue.defaultActionType]), 'default-button');
+          checkElementText(
+              loadTimeData.getString(banner.actionTypeToButtonTextResource_
+                                         [issue.defaultActionType]),
+              'default-button');
 
           if (issue.secondaryActionType) {
-            checkElementText(loadTimeData.getString(
-                banner.actionTypeToButtonTextResource_[
-                    issue.secondaryActionType]), 'opt-button');
+            checkElementText(
+                loadTimeData.getString(banner.actionTypeToButtonTextResource_
+                                           [issue.secondaryActionType]),
+                'opt-button');
           }
         } else {
           checkElementText('', 'title');
@@ -80,8 +82,9 @@ cr.define('issue_banner', function() {
 
       // Checks whether parts of the UI is visible.
       var checkButtonVisibility = function(optAction) {
-        assertEquals(!optAction, banner.$['buttons']
-            .querySelector('paper-button').hidden);
+        assertEquals(
+            !optAction,
+            banner.$['buttons'].querySelector('paper-button').hidden);
       };
 
       // Import issue_banner.html before running suite.
@@ -99,17 +102,17 @@ cr.define('issue_banner', function() {
 
         // Initialize issues.
         fakeBlockingIssueOne = new media_router.Issue(
-            1, 'Issue Title 1', 'Issue Message 1', 0, 1,
-            'route id 1', true, 1234);
+            1, 'Issue Title 1', 'Issue Message 1', 0, 1, 'route id 1', true,
+            1234);
         fakeBlockingIssueTwo = new media_router.Issue(
-            2, 'Issue Title 2', 'Issue Message 2', 0, undefined,
-            'route id 2', true, 1234);
+            2, 'Issue Title 2', 'Issue Message 2', 0, undefined, 'route id 2',
+            true, 1234);
         fakeNonBlockingIssueOne = new media_router.Issue(
-            3, 'Issue Title 3', 'Issue Message 3', 0, 1,
-            'route id 3', false, 1234);
+            3, 'Issue Title 3', 'Issue Message 3', 0, 1, 'route id 3', false,
+            1234);
         fakeNonBlockingIssueTwo = new media_router.Issue(
-            4, 'Issue Title 4', 'Issue Message 4', 0, undefined,
-            'route id 4', false, 1234);
+            4, 'Issue Title 4', 'Issue Message 4', 0, undefined, 'route id 4',
+            false, 1234);
 
         // Allow for the issue banner to be created and attached.
         setTimeout(done);
@@ -120,8 +123,7 @@ cr.define('issue_banner', function() {
       test('blocking issue default action click', function(done) {
         banner.issue = fakeBlockingIssueOne;
         banner.addEventListener('issue-action-click', function(data) {
-          checkDataFromEventFiring(fakeBlockingIssueOne,
-              data, true);
+          checkDataFromEventFiring(fakeBlockingIssueOne, data, true);
           done();
         });
         MockInteractions.tap(banner.$['default-button']);
@@ -132,8 +134,7 @@ cr.define('issue_banner', function() {
       test('blocking issue optional action click', function(done) {
         banner.issue = fakeBlockingIssueOne;
         banner.addEventListener('issue-action-click', function(data) {
-          checkDataFromEventFiring(fakeBlockingIssueOne,
-              data, false);
+          checkDataFromEventFiring(fakeBlockingIssueOne, data, false);
           done();
         });
         MockInteractions.tap(banner.$['opt-button']);
@@ -144,8 +145,7 @@ cr.define('issue_banner', function() {
       test('non-blocking issue default action click', function(done) {
         banner.issue = fakeNonBlockingIssueOne;
         banner.addEventListener('issue-action-click', function(data) {
-          checkDataFromEventFiring(fakeNonBlockingIssueOne,
-              data, true);
+          checkDataFromEventFiring(fakeNonBlockingIssueOne, data, true);
           done();
         });
         MockInteractions.tap(banner.$['default-button']);
@@ -156,8 +156,7 @@ cr.define('issue_banner', function() {
       test('non-blocking issue optional action click', function(done) {
         banner.issue = fakeNonBlockingIssueOne;
         banner.addEventListener('issue-action-click', function(data) {
-          checkDataFromEventFiring(fakeNonBlockingIssueOne,
-              data, false);
+          checkDataFromEventFiring(fakeNonBlockingIssueOne, data, false);
           done();
         });
         MockInteractions.tap(banner.$['opt-button']);

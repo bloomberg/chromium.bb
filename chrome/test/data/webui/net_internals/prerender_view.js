@@ -90,10 +90,10 @@ PrerenderTask.prototype = {
     assertTrue(prerenderInfo.enabled, 'Prerendering not enabled.');
 
     // Check number of rows in both tables.
-    NetInternalsTest.checkTbodyRows(PrerenderView.HISTORY_TABLE_ID,
-                                    prerenderInfo.history.length);
-    NetInternalsTest.checkTbodyRows(PrerenderView.ACTIVE_TABLE_ID,
-                                    prerenderInfo.active.length);
+    NetInternalsTest.checkTbodyRows(
+        PrerenderView.HISTORY_TABLE_ID, prerenderInfo.history.length);
+    NetInternalsTest.checkTbodyRows(
+        PrerenderView.ACTIVE_TABLE_ID, prerenderInfo.active.length);
 
     if (this.state_ == STATE.START_PRERENDERING) {
       this.startPrerendering_(prerenderInfo);
@@ -186,8 +186,7 @@ PrerenderTask.prototype = {
  */
 TEST_F('NetInternalsTest', 'netInternalsPrerenderViewSucceed', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(
-      new NetInternalsTest.GetTestServerURLTask('/title1.html'));
+  taskQueue.addTask(new NetInternalsTest.GetTestServerURLTask('/title1.html'));
   taskQueue.addTask(new PrerenderTask(true, 'Used'));
   taskQueue.run();
 });

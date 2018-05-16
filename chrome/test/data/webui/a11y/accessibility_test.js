@@ -95,8 +95,7 @@ AccessibilityTest.filterViolations_ = function(violations, filter) {
   for (let violation of violations) {
     if (violation.id in filter) {
       let exclusionRule = filter[violation.id];
-      violation.nodes = violation.nodes.filter(
-          (node) => !exclusionRule(node));
+      violation.nodes = violation.nodes.filter((node) => !exclusionRule(node));
     }
 
     if (violation.nodes.length > 0) {
@@ -120,8 +119,8 @@ AccessibilityTest.define = function(testFixture, testDef) {
   testDef.setup = testDef.setup || (() => {});
 
   // Define a test for each audit rule separately.
-  let rules = axeOptions.runOnly ?
-      axeOptions.runOnly.values : AccessibilityTest.ruleIds;
+  let rules = axeOptions.runOnly ? axeOptions.runOnly.values :
+                                   AccessibilityTest.ruleIds;
   rules.forEach((ruleId) => {
     // Skip rules disabled in axeOptions.
     if (axeOptions.rules && ruleId in axeOptions.rules &&
@@ -134,18 +133,16 @@ AccessibilityTest.define = function(testFixture, testDef) {
     // Replace hyphens, which break the build.
     newTestDef.name = newTestDef.name.replace(new RegExp('-', 'g'), '_');
     newTestDef.axeOptions = Object.assign({}, axeOptions);
-    newTestDef.axeOptions.runOnly = {
-      type: 'rule',
-      values: [ruleId]
-    };
+    newTestDef.axeOptions.runOnly = {type: 'rule', values: [ruleId]};
 
     TEST_F(testFixture, newTestDef.name, () => {
       // Define the mocha tests
       suite(newTestDef.name, () => {
         setup(newTestDef.setup.bind(newTestDef));
         for (let testMember in newTestDef.tests) {
-          test(testMember, AccessibilityTest.getMochaTest_(
-              testMember, newTestDef));
+          test(
+              testMember,
+              AccessibilityTest.getMochaTest_(testMember, newTestDef));
         }
       });
       mocha.grep(newTestDef.name).run();

@@ -60,7 +60,7 @@ function BrowserTestReporter(runner) {
     testDone([
       false,
       'Test Errors: ' + failures + '/' + (passes + failures) +
-      ' tests had failed assertions.'
+          ' tests had failed assertions.'
     ]);
   });
 }

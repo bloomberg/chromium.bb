@@ -58,9 +58,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
       return PolymerTest.flushTasks().then(() => {
         // Ensure the search bar is focused on load.
         assertTrue(
-            app.$.toolbar.$['main-toolbar']
-            .getSearchField()
-            .isSearchFocused());
+            app.$.toolbar.$['main-toolbar'].getSearchField().isSearchFocused());
       });
     });
 
@@ -70,11 +68,10 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
       historyResult(createHistoryInfo(), []);
       return PolymerTest.flushTasks().then(() => {
         // Ensure the search bar is focused on load.
-        assertFalse(
-            $('history-app')
-            .$.toolbar.$['main-toolbar']
-            .getSearchField()
-            .isSearchFocused());
+        assertFalse($('history-app')
+                        .$.toolbar.$['main-toolbar']
+                        .getSearchField()
+                        .isSearchFocused());
       });
     });
 
@@ -83,8 +80,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
       field.blur();
       assertFalse(field.showingSearch);
 
-      MockInteractions.pressAndReleaseKeyOn(
-          document.body, 191, '', '/');
+      MockInteractions.pressAndReleaseKeyOn(document.body, 191, '', '/');
       assertTrue(field.showingSearch);
       assertEquals(field.$.searchInput, field.root.activeElement);
 
@@ -97,8 +93,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
       if (cr.isMac)
         modifier = 'meta';
 
-      MockInteractions.pressAndReleaseKeyOn(
-          document.body, 70, modifier, 'f');
+      MockInteractions.pressAndReleaseKeyOn(document.body, 70, modifier, 'f');
       assertTrue(field.showingSearch);
       assertEquals(field.$.searchInput, field.root.activeElement);
     });
@@ -135,8 +130,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
         // Wait for next render to ensure that focus handlers have been
         // registered (see HistoryItemElement.attached).
         Polymer.RenderStatus.afterNextRender(this, function() {
-          MockInteractions.pressAndReleaseKeyOn(
-              focused, 39, [], 'ArrowRight');
+          MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
           focused = items[2].$.title;
           assertEquals(focused, element.lastFocused_);
           assertTrue(items[2].row_.isActive());
@@ -148,8 +142,7 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
           assertFalse(items[2].row_.isActive());
           assertTrue(items[3].row_.isActive());
 
-          MockInteractions.pressAndReleaseKeyOn(
-              focused, 39, [], 'ArrowRight');
+          MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
           focused = items[3].$['menu-button'];
           assertEquals(focused, element.lastFocused_);
           assertFalse(items[2].row_.isActive());
@@ -209,72 +202,78 @@ TEST_F('MaterialHistoryFocusTest', 'All', function() {
         lastFocused = e.currentTarget;
       };
 
-      return PolymerTest.flushTasks().then(function() {
-        cards = polymerSelectAll(element, 'history-synced-device-card');
+      return PolymerTest.flushTasks()
+          .then(function() {
+            cards = polymerSelectAll(element, 'history-synced-device-card');
 
-        focused = cards[0].$['menu-button'];
-        focused.focus();
+            focused = cards[0].$['menu-button'];
+            focused.focus();
 
-        // Go to the collapse button.
-        MockInteractions.pressAndReleaseKeyOn(focused, 39, [], 'ArrowRight');
-        focused = cards[0].$['collapse-button'];
-        assertEquals(focused, lastFocused);
+            // Go to the collapse button.
+            MockInteractions.pressAndReleaseKeyOn(
+                focused, 39, [], 'ArrowRight');
+            focused = cards[0].$['collapse-button'];
+            assertEquals(focused, lastFocused);
 
-        // Go to the first url.
-        MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-        focused = polymerSelectAll(cards[0], '.website-title')[0];
-        assertEquals(focused, lastFocused);
+            // Go to the first url.
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            focused = polymerSelectAll(cards[0], '.website-title')[0];
+            assertEquals(focused, lastFocused);
 
-        // Collapse the first card.
-        MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
-        focused = cards[0].$['collapse-button'];
-        assertEquals(focused, lastFocused);
-        MockInteractions.tap(focused);
-      }).then(function() {
-        // Pressing down goes to the next card.
-        MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-        focused = cards[1].$['collapse-button'];
-        assertEquals(focused, lastFocused);
+            // Collapse the first card.
+            MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
+            focused = cards[0].$['collapse-button'];
+            assertEquals(focused, lastFocused);
+            MockInteractions.tap(focused);
+          })
+          .then(function() {
+            // Pressing down goes to the next card.
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            focused = cards[1].$['collapse-button'];
+            assertEquals(focused, lastFocused);
 
-        // Expand the first card.
-        MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
-        focused = cards[0].$['collapse-button'];
-        assertEquals(focused, lastFocused);
-        MockInteractions.tap(focused);
-      }).then(function() {
-        // First card's urls are focusable again.
-        MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-        focused = polymerSelectAll(cards[0], '.website-title')[0];
-        assertEquals(focused, lastFocused);
+            // Expand the first card.
+            MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
+            focused = cards[0].$['collapse-button'];
+            assertEquals(focused, lastFocused);
+            MockInteractions.tap(focused);
+          })
+          .then(function() {
+            // First card's urls are focusable again.
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            focused = polymerSelectAll(cards[0], '.website-title')[0];
+            assertEquals(focused, lastFocused);
 
-        // Remove the second URL from the first card.
-        sessionList[0].windows[0].tabs.splice(1, 1);
-        element.sessionList = sessionList.slice();
-        return PolymerTest.flushTasks();
-      }).then(function() {
-        cards = polymerSelectAll(element, 'history-synced-device-card');
+            // Remove the second URL from the first card.
+            sessionList[0].windows[0].tabs.splice(1, 1);
+            element.sessionList = sessionList.slice();
+            return PolymerTest.flushTasks();
+          })
+          .then(function() {
+            cards = polymerSelectAll(element, 'history-synced-device-card');
 
-        // Go to the next card's menu buttons.
-        MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-        focused = cards[1].$['collapse-button'];
-        assertEquals(focused, lastFocused);
+            // Go to the next card's menu buttons.
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            focused = cards[1].$['collapse-button'];
+            assertEquals(focused, lastFocused);
 
-        MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
-        focused = polymerSelectAll(cards[0], '.website-title')[0];
-        assertEquals(focused, lastFocused);
+            MockInteractions.pressAndReleaseKeyOn(focused, 38, [], 'ArrowUp');
+            focused = polymerSelectAll(cards[0], '.website-title')[0];
+            assertEquals(focused, lastFocused);
 
-        // Remove the second card.
-        sessionList.splice(1, 1);
-        element.sessionList = sessionList.slice();
-        return PolymerTest.flushTasks();
-      }).then(function() {
-        cards = polymerSelectAll(element, 'history-synced-device-card');
+            // Remove the second card.
+            sessionList.splice(1, 1);
+            element.sessionList = sessionList.slice();
+            return PolymerTest.flushTasks();
+          })
+          .then(function() {
+            cards = polymerSelectAll(element, 'history-synced-device-card');
 
-        // Pressing down goes to the next card.
-        MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
-        focused = cards[1].$['collapse-button'];
-        assertEquals(focused, lastFocused);
-      });
+            // Pressing down goes to the next card.
+            MockInteractions.pressAndReleaseKeyOn(focused, 40, [], 'ArrowDown');
+            focused = cards[1].$['collapse-button'];
+            assertEquals(focused, lastFocused);
+          });
     });
   });
 

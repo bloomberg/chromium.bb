@@ -58,8 +58,7 @@ function assertDomElementIsSamplePrinter(device) {
   var deviceName = device.querySelector('.device-name').textContent;
   assertEquals('Sample device', deviceName);
 
-  var deviceDescription =
-        device.querySelector('.device-subline').textContent;
+  var deviceDescription = device.querySelector('.device-subline').textContent;
   assertEquals('Sample device description', deviceDescription);
 
   var button = device.querySelector('button');

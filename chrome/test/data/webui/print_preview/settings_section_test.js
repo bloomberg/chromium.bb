@@ -51,12 +51,14 @@ cr.define('settings_sections_tests', function() {
       document.body.appendChild(page);
 
       // Wait for initialization to complete.
-      return Promise.all([
-        nativeLayer.whenCalled('getInitialSettings'),
-        nativeLayer.whenCalled('getPrinterCapabilities')
-      ]).then(function() {
-        Polymer.dom.flush();
-      });
+      return Promise
+          .all([
+            nativeLayer.whenCalled('getInitialSettings'),
+            nativeLayer.whenCalled('getPrinterCapabilities')
+          ])
+          .then(function() {
+            Polymer.dom.flush();
+          });
     });
 
     /**
@@ -160,84 +162,93 @@ cr.define('settings_sections_tests', function() {
       // Each of these settings should not show the capability. The value should
       // be the default for settings with multiple options and the only
       // available option otherwise.
-      [
-        {
-          colorCap: null,
-          expectedValue: false,
-        },
-        {
-          colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
-          expectedValue: true,
-        },
-        {
-          colorCap: { option: [{type: 'STANDARD_COLOR', is_default: true},
-                               {type: 'CUSTOM_COLOR'}]},
-          expectedValue: true,
-        },
-        {
-          colorCap: { option: [{type: 'STANDARD_MONOCHROME', is_default: true},
-                               {type: 'CUSTOM_MONOCHROME'}]},
-          expectedValue: false,
-        },
-        {
-          colorCap: {option: [{type: 'STANDARD_MONOCHROME'}]},
-          expectedValue: false,
-        },
-        {
-          colorCap: {option: [{type: 'CUSTOM_MONOCHROME', vendor_id: '42'}]},
-          expectedValue: false,
-        },
-        {
-          colorCap: {option: [{type: 'CUSTOM_COLOR', vendor_id: '42'}]},
-          expectedValue: true,
-        }
-      ].forEach(capabilityAndValue => {
+      [{
+        colorCap: null,
+        expectedValue: false,
+      },
+       {
+         colorCap: {option: [{type: 'STANDARD_COLOR', is_default: true}]},
+         expectedValue: true,
+       },
+       {
+         colorCap: {
+           option: [
+             {type: 'STANDARD_COLOR', is_default: true},
+             {type: 'CUSTOM_COLOR'}
+           ]
+         },
+         expectedValue: true,
+       },
+       {
+         colorCap: {
+           option: [
+             {type: 'STANDARD_MONOCHROME', is_default: true},
+             {type: 'CUSTOM_MONOCHROME'}
+           ]
+         },
+         expectedValue: false,
+       },
+       {
+         colorCap: {option: [{type: 'STANDARD_MONOCHROME'}]},
+         expectedValue: false,
+       },
+       {
+         colorCap: {option: [{type: 'CUSTOM_MONOCHROME', vendor_id: '42'}]},
+         expectedValue: false,
+       },
+       {
+         colorCap: {option: [{type: 'CUSTOM_COLOR', vendor_id: '42'}]},
+         expectedValue: true,
+       }].forEach(capabilityAndValue => {
         capabilities =
             print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
         capabilities.printer.color = capabilityAndValue.colorCap;
         // Layout section should now be hidden.
         page.set('destination_.capabilities', capabilities);
         assertTrue(colorElement.hidden);
-        assertEquals(capabilityAndValue.expectedValue,
-                     page.getSettingValue('color'));
+        assertEquals(
+            capabilityAndValue.expectedValue, page.getSettingValue('color'));
       });
 
       // Each of these settings should show the capability with the default
       // value given by expectedValue.
-      [
-        {
-          colorCap: {
-            option: [{type: 'STANDARD_MONOCHROME', is_default: true},
-                     {type: 'STANDARD_COLOR'}]
-          },
-          expectedValue: false,
+      [{
+        colorCap: {
+          option: [
+            {type: 'STANDARD_MONOCHROME', is_default: true},
+            {type: 'STANDARD_COLOR'}
+          ]
         },
-        {
-          colorCap: {
-            option: [{type: 'STANDARD_MONOCHROME'},
-                     {type: 'STANDARD_COLOR', is_default: true}]
-          },
-          expectedValue: true,
-        },
-        {
-          colorCap: {
-            option: [
-              {type: 'CUSTOM_MONOCHROME', vendor_id: '42'},
-              {type: 'CUSTOM_COLOR', is_default: true, vendor_id: '43'}
-            ]
-          },
-          expectedValue: true,
-        }
-      ].forEach(capabilityAndValue => {
+        expectedValue: false,
+      },
+       {
+         colorCap: {
+           option: [
+             {type: 'STANDARD_MONOCHROME'},
+             {type: 'STANDARD_COLOR', is_default: true}
+           ]
+         },
+         expectedValue: true,
+       },
+       {
+         colorCap: {
+           option: [
+             {type: 'CUSTOM_MONOCHROME', vendor_id: '42'},
+             {type: 'CUSTOM_COLOR', is_default: true, vendor_id: '43'}
+           ]
+         },
+         expectedValue: true,
+       }].forEach(capabilityAndValue => {
         capabilities =
             print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
         capabilities.printer.color = capabilityAndValue.colorCap;
         page.set('destination_.capabilities', capabilities);
         assertFalse(colorElement.hidden);
-        assertEquals(capabilityAndValue.expectedValue ? 'color' : 'bw',
-                     colorElement.$$('select').value);
-        assertEquals(capabilityAndValue.expectedValue,
-                     page.getSettingValue('color'));
+        assertEquals(
+            capabilityAndValue.expectedValue ? 'color' : 'bw',
+            colorElement.$$('select').value);
+        assertEquals(
+            capabilityAndValue.expectedValue, page.getSettingValue('color'));
       });
     });
 
@@ -378,7 +389,7 @@ cr.define('settings_sections_tests', function() {
       let capabilities =
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
-      //assertTrue(optionsElement.hidden);
+      // assertTrue(optionsElement.hidden);
 
       // Expanding more settings will show the section.
       toggleMoreSettings();
@@ -446,15 +457,18 @@ cr.define('settings_sections_tests', function() {
       assertFalse(headerFooter.hidden);
 
       // Set margins to NONE
-      page.set('settings.margins.value',
-               print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
+      page.set(
+          'settings.margins.value',
+          print_preview.ticket_items.MarginsTypeValue.NO_MARGINS);
       assertTrue(headerFooter.hidden);
 
       // Custom margins of 0.
-      page.set('settings.margins.value',
-               print_preview.ticket_items.MarginsTypeValue.CUSTOM);
-      page.set('settings.customMargins.vaue',
-               {marginTop: 0, marginLeft: 0, marginRight: 0, marginBottom: 0});
+      page.set(
+          'settings.margins.value',
+          print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+      page.set(
+          'settings.customMargins.vaue',
+          {marginTop: 0, marginLeft: 0, marginRight: 0, marginBottom: 0});
       assertTrue(headerFooter.hidden);
 
       // Custom margins of 36 -> header/footer available
@@ -480,15 +494,24 @@ cr.define('settings_sections_tests', function() {
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       capabilities.printer.media_size = {
         'option': [
-          {'name': 'SmallLabel', 'width_microns': 38100,
-            'height_microns': 12700, 'is_default': false},
-          {'name': 'BigLabel', 'width_microns': 50800,
-            'height_microns': 76200, 'is_default': true}
+          {
+            'name': 'SmallLabel',
+            'width_microns': 38100,
+            'height_microns': 12700,
+            'is_default': false
+          },
+          {
+            'name': 'BigLabel',
+            'width_microns': 50800,
+            'height_microns': 76200,
+            'is_default': true
+          }
         ]
       };
       page.set('destination_.capabilities', capabilities);
-      page.set('settings.margins.value',
-               print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+      page.set(
+          'settings.margins.value',
+          print_preview.ticket_items.MarginsTypeValue.DEFAULT);
 
       // Header/footer should be available for default big label
       assertFalse(headerFooter.hidden);
@@ -534,39 +557,41 @@ cr.define('settings_sections_tests', function() {
       allRadio.dispatchEvent(new CustomEvent('change'));
       pagesInput.value = '1-2';
       pagesInput.dispatchEvent(new CustomEvent('input'));
-      return test_util.eventToPromise('input-change', pagesElement).then(
-          function() {
-        validateInputState(false, '1-2', true);
-        assertEquals(1, page.settings.ranges.value.length);
-        expectEquals(1, page.settings.ranges.value[0].from);
-        expectEquals(2, page.settings.ranges.value[0].to);
-        expectEquals(2, page.settings.pages.value.length);
-        assertTrue(page.settings.pages.valid);
+      return test_util.eventToPromise('input-change', pagesElement)
+          .then(function() {
+            validateInputState(false, '1-2', true);
+            assertEquals(1, page.settings.ranges.value.length);
+            expectEquals(1, page.settings.ranges.value[0].from);
+            expectEquals(2, page.settings.ranges.value[0].to);
+            expectEquals(2, page.settings.pages.value.length);
+            assertTrue(page.settings.pages.valid);
 
-        // Select pages 1 and 3
-        pagesInput.value = '1, 3';
-        pagesInput.dispatchEvent(new CustomEvent('input'));
-        return test_util.eventToPromise('input-change', pagesElement);
-      }).then(function() {
-        validateInputState(false, '1, 3', true);
-        assertEquals(2, page.settings.ranges.value.length);
-        expectEquals(1, page.settings.ranges.value[0].from);
-        expectEquals(1, page.settings.ranges.value[0].to);
-        expectEquals(3, page.settings.ranges.value[1].from);
-        expectEquals(3, page.settings.ranges.value[1].to);
-        expectEquals(2, page.settings.pages.value.length);
-        assertTrue(page.settings.pages.valid);
+            // Select pages 1 and 3
+            pagesInput.value = '1, 3';
+            pagesInput.dispatchEvent(new CustomEvent('input'));
+            return test_util.eventToPromise('input-change', pagesElement);
+          })
+          .then(function() {
+            validateInputState(false, '1, 3', true);
+            assertEquals(2, page.settings.ranges.value.length);
+            expectEquals(1, page.settings.ranges.value[0].from);
+            expectEquals(1, page.settings.ranges.value[0].to);
+            expectEquals(3, page.settings.ranges.value[1].from);
+            expectEquals(3, page.settings.ranges.value[1].to);
+            expectEquals(2, page.settings.pages.value.length);
+            assertTrue(page.settings.pages.valid);
 
-        // Enter an out of bounds value.
-        pagesInput.value = '5';
-        pagesInput.dispatchEvent(new CustomEvent('input'));
-        return test_util.eventToPromise('input-change', pagesElement);
-      }).then(function() {
-        // Now the pages settings value should be invalid, and the error
-        // message should be displayed.
-        validateInputState(false, '5', false);
-        assertFalse(page.settings.pages.valid);
-      });
+            // Enter an out of bounds value.
+            pagesInput.value = '5';
+            pagesInput.dispatchEvent(new CustomEvent('input'));
+            return test_util.eventToPromise('input-change', pagesElement);
+          })
+          .then(function() {
+            // Now the pages settings value should be invalid, and the error
+            // message should be displayed.
+            validateInputState(false, '5', false);
+            assertFalse(page.settings.pages.valid);
+          });
     });
 
     test(assert(TestNames.SetCopies), function() {
@@ -583,21 +608,21 @@ cr.define('settings_sections_tests', function() {
       // Change to 2
       copiesInput.value = '2';
       copiesInput.dispatchEvent(new CustomEvent('input'));
-      return test_util.eventToPromise('input-change', copiesElement).then(
-          function() {
-        expectEquals(2, page.settings.copies.value);
+      return test_util.eventToPromise('input-change', copiesElement)
+          .then(function() {
+            expectEquals(2, page.settings.copies.value);
 
-        // Collate is true by default.
-        const collateInput = copiesElement.$.collate;
-        assertTrue(collateInput.checked);
-        assertTrue(page.settings.collate.value);
+            // Collate is true by default.
+            const collateInput = copiesElement.$.collate;
+            assertTrue(collateInput.checked);
+            assertTrue(page.settings.collate.value);
 
-        // Uncheck the box.
-        MockInteractions.tap(collateInput);
-        assertFalse(collateInput.checked);
-        collateInput.dispatchEvent(new CustomEvent('change'));
-        assertFalse(page.settings.collate.value);
-      });
+            // Uncheck the box.
+            MockInteractions.tap(collateInput);
+            assertFalse(collateInput.checked);
+            collateInput.dispatchEvent(new CustomEvent('change'));
+            assertFalse(page.settings.collate.value);
+          });
     });
 
     test(assert(TestNames.SetLayout), function() {
@@ -713,15 +738,14 @@ cr.define('settings_sections_tests', function() {
       const scalingInput =
           scalingElement.$$('print-preview-number-settings-section')
               .$$('input');
-      const fitToPageCheckbox =
-          scalingElement.$$('#fit-to-page-checkbox');
+      const fitToPageCheckbox = scalingElement.$$('#fit-to-page-checkbox');
 
       const validateScalingState = (scalingValue, scalingValid, fitToPage) => {
         // Invalid scalings are always set directly in the input, so no need to
         // verify that the input matches them.
         if (scalingValid) {
-          const scalingDisplay =
-              fitToPage ? page.documentInfo_.fitToPageScaling.toString() :
+          const scalingDisplay = fitToPage ?
+              page.documentInfo_.fitToPageScaling.toString() :
               scalingValue;
           expectEquals(scalingDisplay, scalingInput.value);
         }
@@ -741,42 +765,44 @@ cr.define('settings_sections_tests', function() {
       // Change to 105
       scalingInput.value = '105';
       scalingInput.dispatchEvent(new CustomEvent('input'));
-      return test_util.eventToPromise('input-change', scalingElement).then(
-          function() {
-        validateScalingState('105', true, false);
+      return test_util.eventToPromise('input-change', scalingElement)
+          .then(function() {
+            validateScalingState('105', true, false);
 
-        // Change to fit to page. Should display fit to page scaling but not
-        // alter the scaling setting.
-        fitToPageCheckbox.checked = true;
-        fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
-        validateScalingState('105', true, true);
+            // Change to fit to page. Should display fit to page scaling but not
+            // alter the scaling setting.
+            fitToPageCheckbox.checked = true;
+            fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+            validateScalingState('105', true, true);
 
-        // Set scaling. Should uncheck fit to page and set the settings for
-        // scaling and fit to page.
-        scalingInput.value = '95';
-        scalingInput.dispatchEvent(new CustomEvent('input'));
-        return test_util.eventToPromise('input-change', scalingElement);
-      }).then(function() {
-        validateScalingState('95', true, false);
+            // Set scaling. Should uncheck fit to page and set the settings for
+            // scaling and fit to page.
+            scalingInput.value = '95';
+            scalingInput.dispatchEvent(new CustomEvent('input'));
+            return test_util.eventToPromise('input-change', scalingElement);
+          })
+          .then(function() {
+            validateScalingState('95', true, false);
 
-        // Set scaling to something invalid. Should change setting validity but
-        // not value.
-        scalingInput.value = '5';
-        scalingInput.dispatchEvent(new CustomEvent('input'));
-        return test_util.eventToPromise('input-change', scalingElement);
-      }).then(function() {
-        validateScalingState('95', false, false);
+            // Set scaling to something invalid. Should change setting validity
+            // but not value.
+            scalingInput.value = '5';
+            scalingInput.dispatchEvent(new CustomEvent('input'));
+            return test_util.eventToPromise('input-change', scalingElement);
+          })
+          .then(function() {
+            validateScalingState('95', false, false);
 
-        // Check fit to page. Should set scaling valid.
-        fitToPageCheckbox.checked = true;
-        fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
-        validateScalingState('95', true, true);
+            // Check fit to page. Should set scaling valid.
+            fitToPageCheckbox.checked = true;
+            fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+            validateScalingState('95', true, true);
 
-        // Uncheck fit to page. Should reset scaling to last valid.
-        fitToPageCheckbox.checked = false;
-        fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
-        validateScalingState('95', true, false);
-      });
+            // Uncheck fit to page. Should reset scaling to last valid.
+            fitToPageCheckbox.checked = false;
+            fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+            validateScalingState('95', true, false);
+          });
     });
 
     test(assert(TestNames.SetOther), function() {
@@ -797,12 +823,12 @@ cr.define('settings_sections_tests', function() {
       };
 
       // Check HTML settings
-      const ids =
-          ['headerFooter', 'duplex', 'cssBackground', 'selectionOnly'];
+      const ids = ['headerFooter', 'duplex', 'cssBackground', 'selectionOnly'];
       const defaults = [true, true, false, false];
-      const optionSettings =
-          [page.settings.headerFooter, page.settings.duplex,
-           page.settings.cssBackground, page.settings.selectionOnly];
+      const optionSettings = [
+        page.settings.headerFooter, page.settings.duplex,
+        page.settings.cssBackground, page.settings.selectionOnly
+      ];
 
       optionSettings.forEach((option, index) => {
         testOptionCheckbox(
@@ -845,8 +871,8 @@ cr.define('settings_sections_tests', function() {
       page.setSetting('duplex', print_preview_new.DuplexMode.SIMPLEX);
       const checkbox = optionsElement.$$('#duplex');
       assertFalse(checkbox.checked);
-      assertEquals(print_preview_new.DuplexMode.SIMPLEX,
-                   page.settings.duplex.value);
+      assertEquals(
+          print_preview_new.DuplexMode.SIMPLEX, page.settings.duplex.value);
 
       // Send a preset value of LONG_EDGE
       const duplex = print_preview_new.DuplexMode.LONG_EDGE;

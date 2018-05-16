@@ -34,8 +34,8 @@ CreateAndLoadLogTask.prototype = {
    * Starts creating the log dump.
    */
   start: function() {
-    log_util.createLogDumpAsync(this.userComments_,
-                                this.onLogDumpCreated.bind(this), true);
+    log_util.createLogDumpAsync(
+        this.userComments_, this.onLogDumpCreated.bind(this), true);
   },
 
   /**
@@ -51,8 +51,9 @@ CreateAndLoadLogTask.prototype = {
     // Make sure the DIV on the import tab containing the comments is visible
     // before checking the displayed text.
     expectTrue(NetInternalsTest.nodeIsVisible($(ImportView.LOADED_DIV_ID)));
-    expectEquals(this.userComments_,
-                 $(ImportView.LOADED_INFO_USER_COMMENTS_ID).innerText);
+    expectEquals(
+        this.userComments_,
+        $(ImportView.LOADED_INFO_USER_COMMENTS_ID).innerText);
 
     this.onTaskDone();
   }
@@ -88,13 +89,13 @@ WaitForConstantsTask.prototype = {
 };
 
 /**
-  * A Task that creates a log dump in the browser process, waits to receive it
-  * via IPC, and and then loads it as a string.
-  * @param {integer} truncate The number of bytes to truncate from the end of
-  *     the string, if any, to simulate a truncated log due to crash, or
-  *     quitting without properly shutting down the log writer.
-  * @extends {NetInternalsTest.Task}
-  */
+ * A Task that creates a log dump in the browser process, waits to receive it
+ * via IPC, and and then loads it as a string.
+ * @param {integer} truncate The number of bytes to truncate from the end of
+ *     the string, if any, to simulate a truncated log due to crash, or
+ *     quitting without properly shutting down the log writer.
+ * @extends {NetInternalsTest.Task}
+ */
 function GetNetLogFileContentsAndLoadLogTask(truncate) {
   NetInternalsTest.Task.call(this);
   this.setCompleteAsync(true);
@@ -224,9 +225,7 @@ TEST_F('NetInternalsTest', 'netInternalsLogUtilExportImport', function() {
  * Attempts to load a NetLog created by the browser. The log contents are
  * passed to Javascript via an IPC rather than drag and drop.
  */
-TEST_F('NetInternalsTest',
-    'netInternalsLogUtilImportNetLogFile',
-    function() {
+TEST_F('NetInternalsTest', 'netInternalsLogUtilImportNetLogFile', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new GetNetLogFileContentsAndLoadLogTask(0));
   taskQueue.addFunctionTask(checkViewsAfterNetLogFileLoaded);
@@ -237,13 +236,14 @@ TEST_F('NetInternalsTest',
  * Same as above, but it truncates the log to simulate the case of a crash when
  * creating a log.
  */
-TEST_F('NetInternalsTest', 'netInternalsLogUtilImportNetLogFileTruncated',
+TEST_F(
+    'NetInternalsTest', 'netInternalsLogUtilImportNetLogFileTruncated',
     function() {
-  var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new GetNetLogFileContentsAndLoadLogTask(20));
-  taskQueue.addFunctionTask(checkViewsAfterNetLogFileLoaded);
-  taskQueue.run(true);
-});
+      var taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new GetNetLogFileContentsAndLoadLogTask(20));
+      taskQueue.addFunctionTask(checkViewsAfterNetLogFileLoaded);
+      taskQueue.run(true);
+    });
 
 /**
  * Checks pressing the stop capturing button.
@@ -254,9 +254,8 @@ TEST_F('NetInternalsTest', 'netInternalsLogUtilStopCapturing', function() {
   // the constants.
   taskQueue.addTask(new WaitForConstantsTask());
 
-  taskQueue.addFunctionTask(
-      NetInternalsTest.expectStatusViewNodeVisible.bind(
-          null, HaltedStatusView.MAIN_BOX_ID));
+  taskQueue.addFunctionTask(NetInternalsTest.expectStatusViewNodeVisible.bind(
+      null, HaltedStatusView.MAIN_BOX_ID));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
   taskQueue.addFunctionTask(checkActiveView.bind(null, EventsView.TAB_ID));
   taskQueue.run();

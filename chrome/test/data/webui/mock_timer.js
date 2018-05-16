@@ -31,7 +31,7 @@ function MockTimer() {
    *                repeats: boolean}>}
    * @private
    */
-  this.timers_ =  [];
+  this.timers_ = [];
 
   /**
    * List of scheduled tasks.
@@ -99,12 +99,8 @@ MockTimer.prototype = {
    */
   createTimer_: function(callback, delayInMs, repeats) {
     var key = this.nextTimerKey_++;
-    var task = {
-      callback: callback,
-      delay: delayInMs,
-      key: key,
-      repeats: repeats
-    };
+    var task =
+        {callback: callback, delay: delayInMs, key: key, repeats: repeats};
     this.timers_[key] = task;
     this.scheduleTask_(task);
     return key;

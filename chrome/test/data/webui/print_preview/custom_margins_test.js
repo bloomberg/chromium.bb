@@ -43,9 +43,8 @@ cr.define('custom_margins_test', function() {
       // Other inputs needed by margin control container.
       const pageSize = new print_preview.Size(5100, 6600);
       const documentMargins = new print_preview.Margins(300, 300, 300, 300);
-      const measurementSystem =
-          new print_preview.MeasurementSystem(
-              ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
+      const measurementSystem = new print_preview.MeasurementSystem(
+          ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
 
       // Set up container
       container =
@@ -79,9 +78,8 @@ cr.define('custom_margins_test', function() {
        *     for all of the controls.
        */
       const getAllTransitions = function(controls) {
-        return Promise.all(
-            Array.from(controls).map(
-                control => test_util.eventToPromise('transitionend', control)));
+        return Promise.all(Array.from(controls).map(
+            control => test_util.eventToPromise('transitionend', control)));
       };
 
       let onTransitionEnd = getAllTransitions(controls);
@@ -91,41 +89,46 @@ cr.define('custom_margins_test', function() {
           print_preview.ticket_items.MarginsTypeValue.CUSTOM);
 
       // Wait for the opacity transitions to finish.
-      return onTransitionEnd.then(function() {
-        // Verify margins are correctly set based on previous value.
-        assertEquals(300, container.settings.customMargins.value.marginTop);
-        assertEquals(300, container.settings.customMargins.value.marginLeft);
-        assertEquals(300, container.settings.customMargins.value.marginRight);
-        assertEquals(300, container.settings.customMargins.value.marginBottom);
+      return onTransitionEnd
+          .then(function() {
+            // Verify margins are correctly set based on previous value.
+            assertEquals(300, container.settings.customMargins.value.marginTop);
+            assertEquals(
+                300, container.settings.customMargins.value.marginLeft);
+            assertEquals(
+                300, container.settings.customMargins.value.marginRight);
+            assertEquals(
+                300, container.settings.customMargins.value.marginBottom);
 
-        // Verify there is one control for each side and that controls are
-        // visible and positioned correctly.
-        const sides = [
-          print_preview.ticket_items.CustomMarginsOrientation.TOP,
-          print_preview.ticket_items.CustomMarginsOrientation.RIGHT,
-          print_preview.ticket_items.CustomMarginsOrientation.BOTTOM,
-          print_preview.ticket_items.CustomMarginsOrientation.LEFT
-        ];
-        controls.forEach((control, index) => {
-          assertFalse(control.invisible);
-          assertEquals('1', window.getComputedStyle(control).opacity);
-          assertEquals(sides[index], control.side);
-          assertEquals(300, control.getPositionInPts());
-        });
+            // Verify there is one control for each side and that controls are
+            // visible and positioned correctly.
+            const sides = [
+              print_preview.ticket_items.CustomMarginsOrientation.TOP,
+              print_preview.ticket_items.CustomMarginsOrientation.RIGHT,
+              print_preview.ticket_items.CustomMarginsOrientation.BOTTOM,
+              print_preview.ticket_items.CustomMarginsOrientation.LEFT
+            ];
+            controls.forEach((control, index) => {
+              assertFalse(control.invisible);
+              assertEquals('1', window.getComputedStyle(control).opacity);
+              assertEquals(sides[index], control.side);
+              assertEquals(300, control.getPositionInPts());
+            });
 
-        let onTransitionEnd = getAllTransitions(controls);
+            let onTransitionEnd = getAllTransitions(controls);
 
-        // Disappears when preview is loading or an error message is shown.
-        // Check that all the controls also disappear.
-        container.previewLoaded = false;
-        // Wait for the opacity transitions to finish.
-        return onTransitionEnd;
-      }).then(function() {
-        controls.forEach((control, index) => {
-          assertEquals('0', window.getComputedStyle(control).opacity);
-          assertTrue(control.invisible);
-        });
-      });
+            // Disappears when preview is loading or an error message is shown.
+            // Check that all the controls also disappear.
+            container.previewLoaded = false;
+            // Wait for the opacity transitions to finish.
+            return onTransitionEnd;
+          })
+          .then(function() {
+            controls.forEach((control, index) => {
+              assertEquals('0', window.getComputedStyle(control).opacity);
+              assertTrue(control.invisible);
+            });
+          });
     });
   });
 

@@ -44,8 +44,7 @@ cr.define('destination_dialog_test', function() {
       recentDestinations =
           [print_preview.makeRecentDestination(destinations[4])];
       destinationStore.init(
-          false /* isInAppKioskMode */,
-          'FooDevice' /* printerName */,
+          false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
           '' /* serializedDefaultDestinationSelectionRulesStr */,
           recentDestinations /* recentDestinations */);
       nativeLayer.setLocalDestinations(localDestinations);
@@ -57,19 +56,21 @@ cr.define('destination_dialog_test', function() {
       dialog.invitationStore = new print_preview.InvitationStore(userInfo);
       dialog.recentDestinations = recentDestinations;
       document.body.appendChild(dialog);
-      return nativeLayer.whenCalled('getPrinterCapabilities').then(function() {
-        destinationStore.startLoadAllDestinations();
-        dialog.show();
-        return nativeLayer.whenCalled('getPrinters');
-      }).then(function() {
-        Polymer.dom.flush();
-      });
+      return nativeLayer.whenCalled('getPrinterCapabilities')
+          .then(function() {
+            destinationStore.startLoadAllDestinations();
+            dialog.show();
+            return nativeLayer.whenCalled('getPrinters');
+          })
+          .then(function() {
+            Polymer.dom.flush();
+          });
     });
 
     // Test that destinations are correctly displayed in the lists.
     test(assert(TestNames.PrinterList), function() {
-      const lists = dialog.shadowRoot.querySelectorAll(
-          'print-preview-destination-list');
+      const lists =
+          dialog.shadowRoot.querySelectorAll('print-preview-destination-list');
       assertEquals(2, lists.length);
 
       const recentItems = lists[0].shadowRoot.querySelectorAll(
@@ -85,13 +86,13 @@ cr.define('destination_dialog_test', function() {
       // 5 printers + Save as PDF
       assertEquals(6, printerItems.length);
       // Save as PDF shows up first.
-      assertEquals(print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-                   getDisplayedName(printerItems[0]));
+      assertEquals(
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
+          getDisplayedName(printerItems[0]));
       // FooName will be second since it was updated by the capabilities fetch.
       assertEquals('FooName', getDisplayedName(printerItems[1]));
       Array.from(printerItems).slice(2).forEach((item, index) => {
-        assertEquals(destinations[index].displayName,
-                     getDisplayedName(item));
+        assertEquals(destinations[index].displayName, getDisplayedName(item));
       });
 
     });

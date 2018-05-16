@@ -65,12 +65,14 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
             null, [callbackId, !rejectPromises].concat(args.slice(1)));
       });
     });
-    teardown(function() { rejectPromises = false; });
+    teardown(function() {
+      rejectPromises = false;
+    });
 
     test('sendWithPromise_ResponseObject', function() {
       var expectedResponse = {'foo': 'bar'};
-      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse).then(
-          function(response) {
+      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse)
+          .then(function(response) {
             assertEquals(
                 JSON.stringify(expectedResponse), JSON.stringify(response));
           });
@@ -78,8 +80,8 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
 
     test('sendWithPromise_ResponseArray', function() {
       var expectedResponse = ['foo', 'bar'];
-      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse).then(
-          function(response) {
+      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse)
+          .then(function(response) {
             assertEquals(
                 JSON.stringify(expectedResponse), JSON.stringify(response));
           });
@@ -87,8 +89,8 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
 
     test('sendWithPromise_ResponsePrimitive', function() {
       var expectedResponse = 1234;
-      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse).then(
-          function(response) {
+      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse)
+          .then(function(response) {
             assertEquals(expectedResponse, response);
           });
     });
@@ -102,13 +104,14 @@ TEST_F('WebUIResourceAsyncTest', 'SendWithPromise', function() {
     test('sendWithPromise_Reject', function() {
       rejectPromises = true;
       var expectedResponse = 1234;
-      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse).then(
-          function() {
-            assertNotReached('should have rejected promise');
-          },
-          function(error) {
-            assertEquals(expectedResponse, error);
-          });
+      return cr.sendWithPromise(CHROME_SEND_NAME, expectedResponse)
+          .then(
+              function() {
+                assertNotReached('should have rejected promise');
+              },
+              function(error) {
+                assertEquals(expectedResponse, error);
+              });
     });
   });
 
@@ -156,8 +159,9 @@ TEST_F('WebUIResourceAsyncTest', 'WebUIListeners', function() {
           assertEquals(expectedObject, o);
           resolve();
         });
-        cr.webUIListenerCallback(EVENT_NAME, expectedString, expectedNumber,
-            expectedArray, expectedObject);
+        cr.webUIListenerCallback(
+            EVENT_NAME, expectedString, expectedNumber, expectedArray,
+            expectedObject);
       });
     });
 

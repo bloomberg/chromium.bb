@@ -124,7 +124,7 @@ MediaRouterElementsBrowserTest.prototype = {
     // deleted. The user will be unable to tab to it. Remove when there is a
     // long term fix.
     this.accessibilityAuditConfig.ignoreSelectors(
-       'focusableElementNotVisibleAndNotAriaHidden', '#focus-placeholder');
+        'focusableElementNotVisibleAndNotAriaHidden', '#focus-placeholder');
   },
 };
 
@@ -135,47 +135,46 @@ TEST_F('MediaRouterElementsBrowserTest', 'IssueBanner', function() {
 
 // The media-router-container tests are being split into multiple parts due to
 // timeout issues on bots.
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerCastModeList',
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MediaRouterContainerCastModeList',
     function() {
-  media_router_container_cast_mode_list.registerTests();
-  mocha.run();
-});
+      media_router_container_cast_mode_list.registerTests();
+      mocha.run();
+    });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerFirstRunFlow',
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MediaRouterContainerFirstRunFlow',
     function() {
-  media_router_container_first_run_flow.registerTests();
-  mocha.run();
-});
+      media_router_container_first_run_flow.registerTests();
+      mocha.run();
+    });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerRoute',
-    function() {
-  media_router_container_route.registerTests();
-  mocha.run();
-});
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MediaRouterContainerRoute', function() {
+      media_router_container_route.registerTests();
+      mocha.run();
+    });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerSearchPart1',
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MediaRouterContainerSearchPart1',
     function() {
-  media_router_container_search.registerTestsPart1();
-  mocha.run();
-});
+      media_router_container_search.registerTestsPart1();
+      mocha.run();
+    });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerSearchPart2',
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MediaRouterContainerSearchPart2',
     function() {
-  media_router_container_search.registerTestsPart2();
-  mocha.run();
-});
+      media_router_container_search.registerTestsPart2();
+      mocha.run();
+    });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerSinkList',
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MediaRouterContainerSinkList',
     function() {
-  media_router_container_sink_list.registerTests();
-  mocha.run();
-});
+      media_router_container_sink_list.registerTests();
+      mocha.run();
+    });
 
 // Disabling on Windows Debug due to flaky timeout on Win7 Tests (dbg)(1).
 // https://crbug.com/832947
@@ -187,31 +186,31 @@ GEN('#define MAYBE_MediaRouterContainerFilterPart1 \\');
 GEN('    MediaRouterContainerFilterPart1');
 GEN('#endif');
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MAYBE_MediaRouterContainerFilterPart1',
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MAYBE_MediaRouterContainerFilterPart1',
     function() {
-  media_router_container_filter.registerTestsPart1();
-  mocha.run();
-});
+      media_router_container_filter.registerTestsPart1();
+      mocha.run();
+    });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterContainerFilterPart2',
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MediaRouterContainerFilterPart2',
     function() {
-  media_router_container_filter.registerTestsPart2();
-  mocha.run();
-});
+      media_router_container_filter.registerTestsPart2();
+      mocha.run();
+    });
 
 TEST_F('MediaRouterElementsBrowserTest', 'MediaRouterHeader', function() {
   media_router_header.registerTests();
   mocha.run();
 });
 
-TEST_F('MediaRouterElementsBrowserTest',
-    'MediaRouterSearchHighlighter',
+TEST_F(
+    'MediaRouterElementsBrowserTest', 'MediaRouterSearchHighlighter',
     function() {
-  media_router_search_highlighter.registerTests();
-  mocha.run();
-});
+      media_router_search_highlighter.registerTests();
+      mocha.run();
+    });
 
 TEST_F(
     'MediaRouterElementsBrowserTest', 'MediaRouterRouteControls', function() {

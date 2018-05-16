@@ -4,8 +4,8 @@
 
 cr.define('print_preview', function() {
   /**
-  * Test version of the cloud print interface.
-  */
+   * Test version of the cloud print interface.
+   */
   class CloudPrintInterfaceStub extends cr.EventTarget {
     constructor() {
       super();
@@ -28,12 +28,12 @@ cr.define('print_preview', function() {
      * printers that have been set so far using setPrinter().
      */
     search() {
-      const searchDoneEvent = new Event(
-          cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE);
+      const searchDoneEvent =
+          new Event(cloudprint.CloudPrintInterfaceEventType.SEARCH_DONE);
       searchDoneEvent.origin = print_preview.DestinationOrigin.COOKIES;
       searchDoneEvent.printers = [];
       this.cloudPrintersMap_.forEach((value) => {
-          searchDoneEvent.printers.push(value);
+        searchDoneEvent.printers.push(value);
       });
       searchDoneEvent.isRecent = true;
       searchDoneEvent.user = 'foo@chromium.org';

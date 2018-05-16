@@ -114,13 +114,15 @@ PolymerTest.testIronIcons = function(e) {
     // set icon is valid for cases when we don't want to display anything.
     if (!icon.icon) {
       var rect = icon.getBoundingClientRect();
-      expectFalse(rect.width * rect.height > 0,
-                  'iron-icon with undefined "icon" is visible in the DOM.');
+      expectFalse(
+          rect.width * rect.height > 0,
+          'iron-icon with undefined "icon" is visible in the DOM.');
       return;
     }
     var svg = icon.$$('svg');
-    expectTrue(!!svg && svg.innerHTML != '',
-               'icon "' + icon.icon + '" is not present');
+    expectTrue(
+        !!svg && svg.innerHTML != '',
+        'icon "' + icon.icon + '" is not present');
   });
 };
 
@@ -165,8 +167,8 @@ PolymerTest.loadScript = function(src) {
  */
 PolymerTest.clearBody = function() {
   // Save the div where vulcanize inlines content before clearing the page.
-  var vulcanizeDiv = document.querySelector(
-      'body > div[hidden][by-polymer-bundler]');
+  var vulcanizeDiv =
+      document.querySelector('body > div[hidden][by-polymer-bundler]');
   document.body.innerHTML = '';
   if (vulcanizeDiv)
     document.body.appendChild(vulcanizeDiv);

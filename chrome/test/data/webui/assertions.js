@@ -27,17 +27,15 @@ TEST_F('WebUIAssertionsTest', 'testTwoIdenticalExpects', function() {
   }, []);
   resetTestState();
   assertFalse(result[0]);
-  assertEquals(2, result[1].match(
-      /message1: expected false to be true/g).length);
+  assertEquals(
+      2, result[1].match(/message1: expected false to be true/g).length);
 });
 
 TEST_F('WebUIAssertionsTest', 'testConstructedMessage', function() {
   var message = 'myErrorMessage';
-  var result = runTestFunction(
-      'testConstructMessage',
-      function() {
-        assertTrue(false, message);
-      }, []);
+  var result = runTestFunction('testConstructMessage', function() {
+    assertTrue(false, message);
+  }, []);
   resetTestState();
   assertNotEquals(
       -1, result[1].indexOf(message + ': expected false to be true'));

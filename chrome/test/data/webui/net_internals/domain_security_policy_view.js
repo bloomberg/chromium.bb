@@ -24,11 +24,7 @@ var INVALID_HASH = 'invalid';
  * Possible results of an HSTS query.
  * @enum {number}
  */
-var QueryResultType = {
-  SUCCESS: 0,
-  NOT_FOUND: 1,
-  ERROR: 2
-};
+var QueryResultType = {SUCCESS: 0, NOT_FOUND: 1, ERROR: 2};
 
 /**
  * A Task that waits for the results of a lookup query. Once the results are
@@ -245,8 +241,10 @@ AddHSTSPKPTask.prototype = {
   start: function() {
     $(DomainSecurityPolicyView.ADD_HSTS_PKP_INPUT_ID).value = this.domain_;
     $(DomainSecurityPolicyView.ADD_STS_CHECK_ID).checked = this.stsSubdomains_;
-    $(DomainSecurityPolicyView.ADD_PKP_CHECK_ID).checked = this.requestedPkpSubdomains_;
-    $(DomainSecurityPolicyView.ADD_PINS_ID).value = this.requestedPublicKeyHashes_;
+    $(DomainSecurityPolicyView.ADD_PKP_CHECK_ID).checked =
+        this.requestedPkpSubdomains_;
+    $(DomainSecurityPolicyView.ADD_PINS_ID).value =
+        this.requestedPublicKeyHashes_;
     $(DomainSecurityPolicyView.ADD_HSTS_PKP_SUBMIT_ID).click();
     CheckHSTSPKPQueryResultTask.prototype.start.call(this);
   }
@@ -444,7 +442,7 @@ GetTestReportURITask.prototype = {
    * Saves the received report-uri and completes the task.
    * @param {string} reportURI Report URI received from the browser process.
    */
-  onReportURIReceived_: function (reportURI) {
+  onReportURIReceived_: function(reportURI) {
     this.reportURI_ = reportURI;
     this.onTaskDone();
   },
@@ -452,7 +450,7 @@ GetTestReportURITask.prototype = {
   /**
    * Returns the saved report-uri received from the browser process.
    */
-  reportURI: function () {
+  reportURI: function() {
     return this.reportURI_;
   }
 };
@@ -497,117 +495,141 @@ SendTestReportTask.prototype = {
 /**
  * Checks that querying a domain that was never added fails.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryNotFound', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new QueryHSTSPKPTask(
-      'somewhere.com', false, false, now, now, '', QueryResultType.NOT_FOUND));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryNotFound',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(new QueryHSTSPKPTask(
+          'somewhere.com', false, false, now, now, '',
+          QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
 
 /**
  * Checks that querying a domain with an invalid name returns an error.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryError', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new QueryHSTSPKPTask(
-      '\u3024', false, false, now, now, '', QueryResultType.ERROR));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewQueryError',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(new QueryHSTSPKPTask(
+          '\u3024', false, false, now, now, '', QueryResultType.ERROR));
+      taskQueue.run();
+    });
 
 /**
  * Deletes a domain that was never added.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewDeleteNotFound', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewDeleteNotFound',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(
+          new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
 
 /**
  * Deletes a domain that returns an error on lookup.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewDeleteError', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new DeleteTask('\u3024', QueryResultType.ERROR));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewDeleteError',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new DeleteTask('\u3024', QueryResultType.ERROR));
+      taskQueue.run();
+    });
 
 /**
  * Adds a domain and then deletes it.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddDelete', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddHSTSPKPTask(
-      'somewhere.com', false, false, VALID_HASH, now, now,
-      QueryResultType.SUCCESS));
-  taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddDelete',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(new AddHSTSPKPTask(
+          'somewhere.com', false, false, VALID_HASH, now, now,
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
 
 /**
  * Tries to add a domain with an invalid name.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddFail', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddHSTSPKPTask(
-      '0123456789012345678901234567890' +
-          '012345678901234567890123456789012345',
-      false, false, '', now, now, QueryResultType.NOT_FOUND));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddFail',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(new AddHSTSPKPTask(
+          '0123456789012345678901234567890' +
+              '012345678901234567890123456789012345',
+          false, false, '', now, now, QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
 
 /**
  * Tries to add a domain with a name that errors out on lookup due to having
  * non-ASCII characters in it.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddError', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddHSTSPKPTask(
-      '\u3024', false, false, '', now, now, QueryResultType.ERROR));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddError',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(new AddHSTSPKPTask(
+          '\u3024', false, false, '', now, now, QueryResultType.ERROR));
+      taskQueue.run();
+    });
 
 /**
  * Adds a domain with an invalid hash.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddInvalidHash', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddHSTSPKPTask(
-      'somewhere.com', true, true, INVALID_HASH, now, now,
-      QueryResultType.SUCCESS));
-  taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddInvalidHash',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(new AddHSTSPKPTask(
+          'somewhere.com', true, true, INVALID_HASH, now, now,
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
 
 /**
  * Adds the same domain twice in a row, modifying some values the second time.
  */
-TEST_F('NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddOverwrite', function() {
-  NetInternalsTest.switchToView('hsts');
-  taskQueue = new NetInternalsTest.TaskQueue(true);
-  var now = new Date().getTime() / 1000.0;
-  taskQueue.addTask(new AddHSTSPKPTask(
-      'somewhere.com', true, true, VALID_HASH, now, now,
-      QueryResultType.SUCCESS));
-  taskQueue.addTask(new AddHSTSPKPTask(
-      'somewhere.com', false, false, '', now, now, QueryResultType.SUCCESS));
-  taskQueue.addTask(new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'netInternalsDomainSecurityPolicyViewAddOverwrite',
+    function() {
+      NetInternalsTest.switchToView('hsts');
+      taskQueue = new NetInternalsTest.TaskQueue(true);
+      var now = new Date().getTime() / 1000.0;
+      taskQueue.addTask(new AddHSTSPKPTask(
+          'somewhere.com', true, true, VALID_HASH, now, now,
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(new AddHSTSPKPTask(
+          'somewhere.com', false, false, '', now, now,
+          QueryResultType.SUCCESS));
+      taskQueue.addTask(
+          new DeleteTask('somewhere.com', QueryResultType.NOT_FOUND));
+      taskQueue.run();
+    });
 
 /**
  * Adds two different domains and then deletes them.

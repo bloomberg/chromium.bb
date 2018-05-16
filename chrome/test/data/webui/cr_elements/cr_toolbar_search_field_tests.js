@@ -39,7 +39,9 @@ cr.define('cr_toolbar_search_field', function() {
       // construction and initialization of the cr-toolbar-search-field element.
       test('no initial search-changed event', function() {
         let didFire = false;
-        const onSearchChanged = function () { didFire = true; };
+        const onSearchChanged = function() {
+          didFire = true;
+        };
 
         // Need to attach listener event before the element is created, to catch
         // the unnecessary initial event.

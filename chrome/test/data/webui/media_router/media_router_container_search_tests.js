@@ -20,7 +20,9 @@ cr.define('media_router_container_search', function() {
   var chainOnAnimationPromise = function(f) {
     setTimeout(function() {
       container.animationPromise_.then(f).catch(function(err) {
-        setTimeout(function() { throw err; });
+        setTimeout(function() {
+          throw err;
+        });
       });
     });
   };
@@ -448,8 +450,8 @@ cr.define('media_router_container_search', function() {
             searchResults =
                 container.$$('#search-results').querySelectorAll('paper-item');
             assertTrue(container.searchResultsToShow_.some(function(sink) {
-                  return sink.sinkItem.id == pseudoSink.id;
-                }));
+              return sink.sinkItem.id == pseudoSink.id;
+            }));
             done();
           });
         });

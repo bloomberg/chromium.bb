@@ -26,8 +26,10 @@ cr.define('extension_item_tests', function() {
     {selector: '#extension-id', text: `ID: ${extensionData.id}`},
     {selector: '#inspect-views'},
     {selector: '#inspect-views a[is="action-link"]', text: 'foo.html,'},
-    {selector: '#inspect-views a[is="action-link"]:nth-of-type(2)',
-     text: '1 more…'},
+    {
+      selector: '#inspect-views a[is="action-link"]:nth-of-type(2)',
+      text: '1 more…'
+    },
   ];
 
   /**
@@ -192,7 +194,9 @@ cr.define('extension_item_tests', function() {
       // This is a bit of a pain to verify because the promises finish
       // asynchronously, so we have to use setTimeout()s.
       var firedLoadError = false;
-      item.addEventListener('load-error', () => { firedLoadError = true; });
+      item.addEventListener('load-error', () => {
+        firedLoadError = true;
+      });
 
       // This is easier to test with a TestBrowserProxy-style delegate.
       var proxyDelegate = new extensions.TestService();
@@ -208,18 +212,21 @@ cr.define('extension_item_tests', function() {
       };
 
       MockInteractions.tap(item.$$('#dev-reload-button'));
-      return proxyDelegate.whenCalled('reloadItem').then(function(id) {
-        expectEquals(item.data.id, id);
-        return verifyEventPromise(false);
-      }).then(function() {
-        proxyDelegate.resetResolver('reloadItem');
-        proxyDelegate.setForceReloadItemError(true);
-        MockInteractions.tap(item.$$('#dev-reload-button'));
-        return proxyDelegate.whenCalled('reloadItem');
-      }).then(function(id) {
-        expectEquals(item.data.id, id);
-        return verifyEventPromise(true);
-      });
+      return proxyDelegate.whenCalled('reloadItem')
+          .then(function(id) {
+            expectEquals(item.data.id, id);
+            return verifyEventPromise(false);
+          })
+          .then(function() {
+            proxyDelegate.resetResolver('reloadItem');
+            proxyDelegate.setForceReloadItemError(true);
+            MockInteractions.tap(item.$$('#dev-reload-button'));
+            return proxyDelegate.whenCalled('reloadItem');
+          })
+          .then(function(id) {
+            expectEquals(item.data.id, id);
+            return verifyEventPromise(true);
+          });
     });
 
     test(assert(TestNames.Warnings), function() {

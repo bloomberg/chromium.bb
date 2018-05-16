@@ -10,8 +10,9 @@
 function MockMethod() {
   var fn = function() {
     var args = Array.prototype.slice.call(arguments);
-    var callbacks =
-        args.filter(function(arg) { return (typeof arg == 'function'); });
+    var callbacks = args.filter(function(arg) {
+      return (typeof arg == 'function');
+    });
 
     if (callbacks.length > 1) {
       console.error('Only support mocking function with at most one callback.');
@@ -79,12 +80,10 @@ MockMethod.prototype = {
    * the correct signature for each call.
    */
   verifyMock: function() {
-    var errorMessage =  'Number of method calls did not match expectation.';
+    var errorMessage = 'Number of method calls did not match expectation.';
     if (this.functionName)
       errorMessage = 'Error in ' + this.functionName + ':\n' + errorMessage;
-    assertEquals(this.expectations_.length,
-                 this.calls_.length,
-                 errorMessage);
+    assertEquals(this.expectations_.length, this.calls_.length, errorMessage);
     for (var i = 0; i < this.expectations_.length; i++) {
       this.validateCall(i, this.expectations_[i], this.calls_[i]);
     }

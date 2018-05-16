@@ -23,7 +23,7 @@ suite('<bookmarks-list>', function() {
     list = document.createElement('bookmarks-list');
     list.style.height = '100%';
     list.style.width = '100%';
-    list.style.position= 'absolute';
+    list.style.position = 'absolute';
 
     replaceBody(list);
     Polymer.dom.flush();

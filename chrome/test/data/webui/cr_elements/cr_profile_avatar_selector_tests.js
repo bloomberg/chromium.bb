@@ -18,10 +18,11 @@ cr.define('cr_profile_avatar_selector', function() {
       function createElement() {
         const avatarSelector =
             document.createElement('cr-profile-avatar-selector');
-        avatarSelector.avatars =
-            [{url: 'chrome://avatar1.png', label: 'avatar1'},
-             {url: 'chrome://avatar2.png', label: 'avatar2'},
-             {url: 'chrome://avatar3.png', label: 'avatar3'}];
+        avatarSelector.avatars = [
+          {url: 'chrome://avatar1.png', label: 'avatar1'},
+          {url: 'chrome://avatar2.png', label: 'avatar2'},
+          {url: 'chrome://avatar3.png', label: 'avatar3'}
+        ];
         return avatarSelector;
       }
 

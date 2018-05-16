@@ -44,8 +44,8 @@ cr.define('media_router_container_test_base', function() {
      * @param {?string} elementId Optional element id to display.
      */
     var checkElementVisible = function(visible, element, elementId) {
-      var elementVisible = !!element && !element.hidden &&
-          element.style.display != 'none';
+      var elementVisible =
+          !!element && !element.hidden && element.style.display != 'none';
       assertEquals(visible, elementVisible, elementId);
     };
 
@@ -77,8 +77,7 @@ cr.define('media_router_container_test_base', function() {
      * @type {!media_router.Issue}
      */
     var fakeBlockingIssue = new media_router.Issue(
-        1, 'Issue Title 1', 'Issue Message 1', 0, 1,
-        'route id 1', true, 1234);
+        1, 'Issue Title 1', 'Issue Message 1', 0, 1, 'route id 1', true, 1234);
 
     /**
      * The list of CastModes to show.
@@ -141,8 +140,7 @@ cr.define('media_router_container_test_base', function() {
      * @type {!media_router.Issue}
      */
     var fakeNonBlockingIssue = new media_router.Issue(
-        2, 'Issue Title 2', 'Issue Message 2', 0, 1,
-        'route id 2', false, 1234);
+        2, 'Issue Title 2', 'Issue Message 2', 0, 1, 'route id 2', false, 1234);
 
     /**
      * The list of current routes.
@@ -169,14 +167,14 @@ cr.define('media_router_container_test_base', function() {
      * @type {!Array<!media_router.Sink>}
      */
     var fakeSinkList = [
-      new media_router.Sink('sink id 1', 'Sink 1', null, null,
-          media_router.SinkIconType.CAST,
+      new media_router.Sink(
+          'sink id 1', 'Sink 1', null, null, media_router.SinkIconType.CAST,
           media_router.SinkStatus.ACTIVE, castModeBitset),
-      new media_router.Sink('sink id 2', 'Sink 2', null, null,
-          media_router.SinkIconType.CAST,
+      new media_router.Sink(
+          'sink id 2', 'Sink 2', null, null, media_router.SinkIconType.CAST,
           media_router.SinkStatus.ACTIVE, castModeBitset),
-      new media_router.Sink('sink id 3', 'Sink 3', null, null,
-          media_router.SinkIconType.CAST,
+      new media_router.Sink(
+          'sink id 3', 'Sink 3', null, null, media_router.SinkIconType.CAST,
           media_router.SinkStatus.PENDING, castModeBitset),
     ];
 

@@ -29,9 +29,8 @@ cr.define('model_test', function() {
         version: 2,
         recentDestinations: [],
         dpi: {},
-        mediaSize: {width_microns: 215900,
-                    height_microns: 279400},
-        marginsType: 0,  /* default */
+        mediaSize: {width_microns: 215900, height_microns: 279400},
+        marginsType: 0, /* default */
         scaling: '100',
         isHeaderFooterEnabled: true,
         isCssBackgroundEnabled: false,
@@ -47,9 +46,8 @@ cr.define('model_test', function() {
         version: 2,
         recentDestinations: [],
         dpi: {horizontal_dpi: 1000, vertical_dpi: 500},
-        mediaSize: {width_microns: 43180,
-                    height_microns: 21590},
-        marginsType: 2,  /* none */
+        mediaSize: {width_microns: 43180, height_microns: 21590},
+        marginsType: 2, /* none */
         scaling: '85',
         isHeaderFooterEnabled: false,
         isCssBackgroundEnabled: true,
@@ -80,8 +78,8 @@ cr.define('model_test', function() {
               let settings = JSON.parse(e.detail);
               for (let settingName in stickySettingsDefault) {
                 if (stickySettingsDefault.hasOwnProperty(settingName)) {
-                  let toCompare = settingName == field ?
-                      stickySettingsChange : stickySettingsDefault;
+                  let toCompare = settingName == field ? stickySettingsChange :
+                                                         stickySettingsDefault;
                   assertDeepEquals(
                       toCompare[settingName], settings[settingName]);
                 }
@@ -95,29 +93,40 @@ cr.define('model_test', function() {
       };
 
       model.initialized_ = true;
-      return testStickySetting('collate', 'isCollateEnabled').then(function() {
-        return testStickySetting('color', 'isColorEnabled');
-      }).then(function() {
-        return testStickySetting('cssBackground', 'isCssBackgroundEnabled');
-      }).then(function() {
-        return testStickySetting('dpi', 'dpi');
-      }).then(function() {
-        return testStickySetting('duplex', 'isDuplexEnabled');
-      }).then(function() {
-        return testStickySetting('fitToPage', 'isFitToPageEnabled');
-      }).then(function() {
-        return testStickySetting('headerFooter', 'isHeaderFooterEnabled');
-      }).then(function() {
-        return testStickySetting('layout', 'isLandscapeEnabled');
-      }).then(function() {
-        return testStickySetting('margins', 'marginsType');
-      }).then(function() {
-        return testStickySetting('mediaSize', 'mediaSize');
-      }).then(function() {
-        return testStickySetting('scaling', 'scaling');
-      }).then(function() {
-        return testStickySetting('fitToPage', 'isFitToPageEnabled');
-      });
+      return testStickySetting('collate', 'isCollateEnabled')
+          .then(function() {
+            return testStickySetting('color', 'isColorEnabled');
+          })
+          .then(function() {
+            return testStickySetting('cssBackground', 'isCssBackgroundEnabled');
+          })
+          .then(function() {
+            return testStickySetting('dpi', 'dpi');
+          })
+          .then(function() {
+            return testStickySetting('duplex', 'isDuplexEnabled');
+          })
+          .then(function() {
+            return testStickySetting('fitToPage', 'isFitToPageEnabled');
+          })
+          .then(function() {
+            return testStickySetting('headerFooter', 'isHeaderFooterEnabled');
+          })
+          .then(function() {
+            return testStickySetting('layout', 'isLandscapeEnabled');
+          })
+          .then(function() {
+            return testStickySetting('margins', 'marginsType');
+          })
+          .then(function() {
+            return testStickySetting('mediaSize', 'mediaSize');
+          })
+          .then(function() {
+            return testStickySetting('scaling', 'scaling');
+          })
+          .then(function() {
+            return testStickySetting('fitToPage', 'isFitToPageEnabled');
+          });
     });
   });
 

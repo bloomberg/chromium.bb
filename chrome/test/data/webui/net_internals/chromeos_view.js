@@ -46,22 +46,21 @@ ResultChecker.prototype = {
   }
 };
 
-TEST_F('NetInternalsTest',
-       'netInternalsChromeOSViewStoreDebugLogs',
-       function() {
-  if (!cr.isChromeOS) {
-    testDone();
-    return;
-  }
+TEST_F(
+    'NetInternalsTest', 'netInternalsChromeOSViewStoreDebugLogs', function() {
+      if (!cr.isChromeOS) {
+        testDone();
+        return;
+      }
 
-  // #chromeos-view-import-onc fails accessibility check.
-  this.runAccessibilityChecks = false;
-  NetInternalsTest.switchToView('chromeos');
+      // #chromeos-view-import-onc fails accessibility check.
+      this.runAccessibilityChecks = false;
+      NetInternalsTest.switchToView('chromeos');
 
-  var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new DebugLogsStatusWatcher());
-  taskQueue.addTask(new ResultChecker());
-  taskQueue.run();
-});
+      var taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new DebugLogsStatusWatcher());
+      taskQueue.addTask(new ResultChecker());
+      taskQueue.run();
+    });
 
 })();  // Anonymous namespace

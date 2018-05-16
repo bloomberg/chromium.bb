@@ -41,19 +41,19 @@ cr.define('extension_options_dialog_tests', function() {
       assertFalse(isDialogVisible());
       optionsDialog.show(data);
       const dialogElement = optionsDialog.$.dialog.getNative();
-      return test_util.whenAttributeIs(
-          dialogElement, 'open', '').then(function() {
-        assertTrue(isDialogVisible());
+      return test_util.whenAttributeIs(dialogElement, 'open', '')
+          .then(function() {
+            assertTrue(isDialogVisible());
 
-        const rect = dialogElement.getBoundingClientRect();
-        assertGE(rect.width, extensions.OptionsDialogMinWidth);
-        assertLE(rect.height, extensions.OptionsDialogMaxHeight);
+            const rect = dialogElement.getBoundingClientRect();
+            assertGE(rect.width, extensions.OptionsDialogMinWidth);
+            assertLE(rect.height, extensions.OptionsDialogMaxHeight);
 
-        assertEquals(
-            data.name,
-            assert(optionsDialog.$$('#icon-and-name-wrapper span'))
-                .textContent.trim());
-      });
+            assertEquals(
+                data.name,
+                assert(optionsDialog.$$('#icon-and-name-wrapper span'))
+                    .textContent.trim());
+          });
     });
   });
 

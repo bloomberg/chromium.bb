@@ -22,8 +22,7 @@ SysInternalsBrowserTest.prototype = {
 
   isAsync: true,
 
-  featureList:
-      ['features::kSysInternals', ''],
+  featureList: ['features::kSysInternals', ''],
 
   extraLibraries: [
     'api_test.js',

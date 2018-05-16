@@ -24,8 +24,10 @@ cr.define('user_manager.create_profile_tests', function() {
         // Replace real proxy with mock proxy.
         signin.ProfileBrowserProxyImpl.instance_ = browserProxy;
         browserProxy.setDefaultProfileInfo({name: 'profile name'});
-        browserProxy.setIcons([{url: 'icon1.png', label: 'icon1'},
-                               {url: 'icon2.png', label: 'icon2'}]);
+        browserProxy.setIcons([
+          {url: 'icon1.png', label: 'icon1'},
+          {url: 'icon2.png', label: 'icon2'}
+        ]);
 
         createProfileElement = createElement();
 
@@ -127,8 +129,8 @@ cr.define('user_manager.create_profile_tests', function() {
           // Create is no longer in progress.
           assertFalse(createProfileElement.createInProgress_);
           // Error message is set.
-          assertEquals('Error Message',
-                       createProfileElement.$.message.innerHTML);
+          assertEquals(
+              'Error Message', createProfileElement.$.message.innerHTML);
         });
       });
 
@@ -145,8 +147,8 @@ cr.define('user_manager.create_profile_tests', function() {
           // Create is no longer in progress.
           assertFalse(createProfileElement.createInProgress_);
           // Warning message is set.
-          assertEquals('Warning Message',
-                       createProfileElement.$.message.innerHTML);
+          assertEquals(
+              'Warning Message', createProfileElement.$.message.innerHTML);
         });
       });
     });

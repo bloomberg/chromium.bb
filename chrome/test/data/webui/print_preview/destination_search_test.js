@@ -37,8 +37,7 @@ cr.define('destination_search_test', function() {
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplate('FooDevice', 'FooName'));
       destinationStore.init(
-          false /* isInAppKioskMode */,
-          'FooDevice' /* printerName */,
+          false /* isInAppKioskMode */, 'FooDevice' /* printerName */,
           '' /* serializedDefaultDestinationSelectionRulesStr */,
           [] /* recentDestinations */);
 
@@ -80,12 +79,10 @@ cr.define('destination_search_test', function() {
      */
     function requestSetup(destId) {
       const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
-                                   print_preview.DestinationOrigin.LOCAL;
+                                     print_preview.DestinationOrigin.LOCAL;
 
-      const dest = new print_preview.Destination(destId,
-          print_preview.DestinationType.LOCAL,
-          origin,
-          'displayName',
+      const dest = new print_preview.Destination(
+          destId, print_preview.DestinationType.LOCAL, origin, 'displayName',
           print_preview.DestinationConnectionStatus.ONLINE);
 
       // Add the destination to the list.
@@ -116,8 +113,8 @@ cr.define('destination_search_test', function() {
       requestSetup(destId);
       const callback =
           cr.isChromeOS ? 'setupPrinter' : 'getPrinterCapabilities';
-      return Promise.all([nativeLayer.whenCalled(callback), waiter]).then(
-          function(results) {
+      return Promise.all([nativeLayer.whenCalled(callback), waiter])
+          .then(function(results) {
             const actualId =
                 cr.isChromeOS ? results[0] : results[0].destinationId;
             assertEquals(destId, actualId);
@@ -133,17 +130,15 @@ cr.define('destination_search_test', function() {
     test(assert(TestNames.ResolutionFails), function() {
       const destId = '001122DEADBEEF';
       const originalDestination = destinationStore.selectedDestination;
-      nativeLayer.setSetupPrinterResponse(true, {printerId: destId,
-                                                 success: false});
+      nativeLayer.setSetupPrinterResponse(
+          true, {printerId: destId, success: false});
       requestSetup(destId);
-      return nativeLayer.whenCalled('setupPrinter').then(
-          function(actualId) {
-            assertEquals(destId, actualId);
-            // The selected printer should not have changed, since a printer
-            // cannot be selected until setup succeeds.
-            assertEquals(originalDestination,
-                         destinationStore.selectedDestination);
-          });
+      return nativeLayer.whenCalled('setupPrinter').then(function(actualId) {
+        assertEquals(destId, actualId);
+        // The selected printer should not have changed, since a printer
+        // cannot be selected until setup succeeds.
+        assertEquals(originalDestination, destinationStore.selectedDestination);
+      });
     });
 
     // Test what happens when the setupPrinter request is resolved with a
@@ -159,13 +154,13 @@ cr.define('destination_search_test', function() {
       };
       nativeLayer.setSetupPrinterResponse(false, response);
       requestSetup(destId);
-      return nativeLayer.whenCalled('setupPrinter').then(
-          function (actualDestId) {
+      return nativeLayer.whenCalled('setupPrinter')
+          .then(function(actualDestId) {
             assertEquals(destId, actualDestId);
             // The selected printer should not have changed, since a printer
             // cannot be selected until setup succeeds.
-            assertEquals(originalDestination,
-                         destinationStore.selectedDestination);
+            assertEquals(
+                originalDestination, destinationStore.selectedDestination);
           });
     });
 
@@ -177,8 +172,8 @@ cr.define('destination_search_test', function() {
       nativeLayer.setLocalDestinationCapabilities(
           print_preview_test_utils.getCddTemplate(destId), true);
       requestSetup(destId);
-      return nativeLayer.whenCalled('getPrinterCapabilities').then(
-          function(args) {
+      return nativeLayer.whenCalled('getPrinterCapabilities')
+          .then(function(args) {
             assertEquals(destId, args.destinationId);
             // The destination is selected even though capabilities cannot be
             // retrieved.
@@ -191,10 +186,9 @@ cr.define('destination_search_test', function() {
       const printerId = 'cloud-printer-id';
 
       // Create cloud destination.
-      const cloudDest = new print_preview.Destination(printerId,
-          print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.DEVICE,
-          'displayName',
+      const cloudDest = new print_preview.Destination(
+          printerId, print_preview.DestinationType.GOOGLE,
+          print_preview.DestinationOrigin.DEVICE, 'displayName',
           print_preview.DestinationConnectionStatus.ONLINE);
       cloudDest.capabilities =
           print_preview_test_utils.getCddTemplate(printerId, 'displayName')

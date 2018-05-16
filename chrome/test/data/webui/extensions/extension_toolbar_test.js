@@ -21,8 +21,8 @@ cr.define('extension_toolbar_tests', function() {
     var toolbar;
 
     setup(function() {
-      toolbar = document.querySelector('extensions-manager').$$(
-          'extensions-toolbar');
+      toolbar =
+          document.querySelector('extensions-manager').$$('extensions-toolbar');
       mockDelegate = new extensions.TestService();
       toolbar.set('delegate', mockDelegate);
     });

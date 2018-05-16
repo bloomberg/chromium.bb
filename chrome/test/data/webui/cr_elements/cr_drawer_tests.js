@@ -22,25 +22,27 @@ suite('cr-drawer', function() {
     const drawer = createDrawer('ltr');
     drawer.openDrawer();
 
-    return test_util.eventToPromise('transitionend', drawer).then(() => {
-      assertTrue(drawer.open);
+    return test_util.eventToPromise('transitionend', drawer)
+        .then(() => {
+          assertTrue(drawer.open);
 
-      // Clicking the content does not close the drawer.
-      MockInteractions.tap(document.querySelector('.drawer-content'));
-      assertFalse(drawer.classList.contains('closing'));
+          // Clicking the content does not close the drawer.
+          MockInteractions.tap(document.querySelector('.drawer-content'));
+          assertFalse(drawer.classList.contains('closing'));
 
-      const whenClosed = test_util.eventToPromise('close', drawer);
-      drawer.$.dialog.dispatchEvent(new MouseEvent('click', {
-        bubbles: true,
-        cancelable: true,
-        clientX: 300,  // Must be larger than the drawer width (256px).
-        clientY: 300,
-      }));
+          const whenClosed = test_util.eventToPromise('close', drawer);
+          drawer.$.dialog.dispatchEvent(new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true,
+            clientX: 300,  // Must be larger than the drawer width (256px).
+            clientY: 300,
+          }));
 
-      return whenClosed;
-    }).then(() => {
-      assertFalse(drawer.open);
-    });
+          return whenClosed;
+        })
+        .then(() => {
+          assertFalse(drawer.open);
+        });
   });
 
   test('opened event', function() {

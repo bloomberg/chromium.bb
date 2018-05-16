@@ -127,10 +127,8 @@ suite('selection state', function() {
   });
 
   test('deselects items when they are moved to a different folder', function() {
-    const nodeMap = testTree(
-        createFolder('1', []),
-        createItem('2'),
-        createItem('3'));
+    const nodeMap =
+        testTree(createFolder('1', []), createItem('2'), createItem('3'));
 
     action = select(['2', '3'], '2', true, false);
     selection = bookmarks.SelectionState.updateSelection(selection, action);

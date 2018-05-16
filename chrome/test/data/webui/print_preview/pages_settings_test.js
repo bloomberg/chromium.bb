@@ -61,8 +61,8 @@ cr.define('pages_settings_test', function() {
 
       // Select custom
       pagesSection.$$('#custom-radio-button').checked = true;
-      pagesSection.$$('#all-radio-button').dispatchEvent(
-          new CustomEvent('change'));
+      pagesSection.$$('#all-radio-button')
+          .dispatchEvent(new CustomEvent('change'));
 
       // Set input string
       const input = pagesSection.$.pageSettingsCustomInput;
@@ -88,28 +88,35 @@ cr.define('pages_settings_test', function() {
       const oneToHundred = Array.from({length: 100}, (x, i) => i + 1);
       const tenToHundred = Array.from({length: 91}, (x, i) => i + 10);
 
-      return setupInput('1, 2, 3, 1, 56', 100).then(function() {
-        validateState([1, 2, 3, 56]);
-        return setupInput('1-3, 6-9, 6-10', 100);
-      }).then(function() {
-        validateState([1, 2, 3, 6, 7, 8, 9, 10]);
-        return setupInput('10-', 100);
-      }).then(function() {
-        validateState(tenToHundred);
-        return setupInput('10-100', 100);
-      }).then(function() {
-        validateState(tenToHundred);
-        return setupInput('-', 100);
-      }).then(function() {
-        validateState(oneToHundred);
-        // https://crbug.com/806165
-        return setupInput('1\u30012\u30013\u30011\u300156', 100);
-      }).then(function() {
-        validateState([1, 2, 3, 56]);
-        return setupInput('1,2,3\u30011\u300156', 100);
-      }).then(function() {
-        validateState([1, 2, 3, 56]);
-      });
+      return setupInput('1, 2, 3, 1, 56', 100)
+          .then(function() {
+            validateState([1, 2, 3, 56]);
+            return setupInput('1-3, 6-9, 6-10', 100);
+          })
+          .then(function() {
+            validateState([1, 2, 3, 6, 7, 8, 9, 10]);
+            return setupInput('10-', 100);
+          })
+          .then(function() {
+            validateState(tenToHundred);
+            return setupInput('10-100', 100);
+          })
+          .then(function() {
+            validateState(tenToHundred);
+            return setupInput('-', 100);
+          })
+          .then(function() {
+            validateState(oneToHundred);
+            // https://crbug.com/806165
+            return setupInput('1\u30012\u30013\u30011\u300156', 100);
+          })
+          .then(function() {
+            validateState([1, 2, 3, 56]);
+            return setupInput('1,2,3\u30011\u300156', 100);
+          })
+          .then(function() {
+            validateState([1, 2, 3, 56]);
+          });
     });
 
     // Tests that the correct error messages are shown for different user
@@ -121,34 +128,42 @@ cr.define('pages_settings_test', function() {
       /** @param {string} expectedMessage The expected error message. */
       const validateState = function(expectedMessage) {
         assertFalse(pagesSection.$$('.hint').hidden);
-        assertEquals(expectedMessage,
-                     pagesSection.$$('.hint').textContent.trim());
+        assertEquals(
+            expectedMessage, pagesSection.$$('.hint').textContent.trim());
       };
 
-      return setupInput('10-100000', 100).then(function() {
-        validateState(limitError + '100');
-        return setupInput('1, 100000', 100);
-      }).then(function() {
-        validateState(limitError + '100');
-        return setupInput('1, 2, 0, 56', 100);
-      }).then(function() {
-        validateState(syntaxError);
-        return setupInput('-1, 1, 2,, 56', 100);
-      }).then(function() {
-        validateState(syntaxError);
-        return setupInput('1,2,56-40', 100);
-      }).then(function() {
-        validateState(syntaxError);
-        return setupInput('101-110', 100);
-      }).then(function() {
-        validateState(limitError + '100');
-        return setupInput('1\u30012\u30010\u300156', 100);
-      }).then(function() {
-        validateState(syntaxError);
-        return setupInput('-1,1,2\u3001\u300156', 100);
-      }).then(function() {
-        validateState(syntaxError);
-      });
+      return setupInput('10-100000', 100)
+          .then(function() {
+            validateState(limitError + '100');
+            return setupInput('1, 100000', 100);
+          })
+          .then(function() {
+            validateState(limitError + '100');
+            return setupInput('1, 2, 0, 56', 100);
+          })
+          .then(function() {
+            validateState(syntaxError);
+            return setupInput('-1, 1, 2,, 56', 100);
+          })
+          .then(function() {
+            validateState(syntaxError);
+            return setupInput('1,2,56-40', 100);
+          })
+          .then(function() {
+            validateState(syntaxError);
+            return setupInput('101-110', 100);
+          })
+          .then(function() {
+            validateState(limitError + '100');
+            return setupInput('1\u30012\u30010\u300156', 100);
+          })
+          .then(function() {
+            validateState(syntaxError);
+            return setupInput('-1,1,2\u3001\u300156', 100);
+          })
+          .then(function() {
+            validateState(syntaxError);
+          });
     });
   });
 

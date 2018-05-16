@@ -17,7 +17,7 @@ cr.define('media_router_search_highlighter', function() {
       var checkTextContent = function(expected) {
         assertEquals(expected, searchHighlighter.$['text'].textContent);
         assertEquals(expected, searchHighlighter.text);
-      }
+      };
 
       // Computes the flat text string that should be displayed when the search
       // highlighter is given |data|.
@@ -32,7 +32,7 @@ cr.define('media_router_search_highlighter', function() {
           }
         }
         return answer;
-      }
+      };
 
       // Import media_router_search_highlighter.html before running suite.
       suiteSetup(function() {

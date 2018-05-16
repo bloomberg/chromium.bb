@@ -3,10 +3,7 @@
 // found in the LICENSE file.
 
 module.exports = {
-  'env': {
-    'browser': true,
-    'es6': true
-  },
+  'env': {'browser': true, 'es6': true},
   'rules': {
     'no-restricted-properties': 'off',
   },

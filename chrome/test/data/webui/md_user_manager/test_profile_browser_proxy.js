@@ -52,16 +52,17 @@ class TestProfileBrowserProxy extends TestBrowserProxy {
   getAvailableIcons() {
     this.methodCalled('getAvailableIcons');
     cr.webUIListenerCallback('profile-icons-received', this.icons_);
-    cr.webUIListenerCallback('profile-defaults-received',
-                             this.defaultProfileInfo_);
+    cr.webUIListenerCallback(
+        'profile-defaults-received', this.defaultProfileInfo_);
   }
 
   /** @override */
   createProfile(profileName, profileIconUrl, createShortcut) {
-    this.methodCalled('createProfile',
-                      {profileName: profileName,
-                       profileIconUrl: profileIconUrl,
-                       createShortcut: createShortcut});
+    this.methodCalled('createProfile', {
+      profileName: profileName,
+      profileIconUrl: profileIconUrl,
+      createShortcut: createShortcut
+    });
   }
 
   /** @override */

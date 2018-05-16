@@ -92,9 +92,8 @@ cr.define('media_router_container_sink_list', function() {
         container.allSinks = fakeSinkList;
 
         setTimeout(function() {
-          var sinkList =
-              container.shadowRoot.getElementById('sink-list')
-                  .querySelectorAll('paper-item');
+          var sinkList = container.shadowRoot.getElementById('sink-list')
+                             .querySelectorAll('paper-item');
           assertEquals(fakeSinkList.length, sinkList.length);
           for (var i = 0; i < fakeSinkList.length; i++) {
             checkElementText(fakeSinkList[i].name, sinkList[i]);
@@ -105,31 +104,30 @@ cr.define('media_router_container_sink_list', function() {
 
       // Tests that text shown for each sink matches their names.
       test('updated sink list', function(done) {
-        var sinkOne = new media_router.Sink('sink id 1', 'Sink 1',
-                null, null,
-                media_router.SinkIconType.GENERIC,
-                media_router.SinkStatus.IDLE, [1, 2, 3]);
-        var sinkTwo = new media_router.Sink('sink id 2', 'Sink 2',
-                null, 'example.com',
-                media_router.SinkIconType.GENERIC,
-                media_router.SinkStatus.IDLE, [1, 2, 3]);
-        var sinkThree = new media_router.Sink('sink id 3', 'Sink 3',
-                null, 'example.com',
-                media_router.SinkIconType.GENERIC,
-                media_router.SinkStatus.IDLE, [1, 2, 3]);
-        var sinkFour = new media_router.Sink('sink id 4', 'Sink 4',
-                null, 'example.com',
-                media_router.SinkIconType.GENERIC,
-                media_router.SinkStatus.IDLE, [1, 2, 3]);
+        var sinkOne = new media_router.Sink(
+            'sink id 1', 'Sink 1', null, null,
+            media_router.SinkIconType.GENERIC, media_router.SinkStatus.IDLE,
+            [1, 2, 3]);
+        var sinkTwo = new media_router.Sink(
+            'sink id 2', 'Sink 2', null, 'example.com',
+            media_router.SinkIconType.GENERIC, media_router.SinkStatus.IDLE,
+            [1, 2, 3]);
+        var sinkThree = new media_router.Sink(
+            'sink id 3', 'Sink 3', null, 'example.com',
+            media_router.SinkIconType.GENERIC, media_router.SinkStatus.IDLE,
+            [1, 2, 3]);
+        var sinkFour = new media_router.Sink(
+            'sink id 4', 'Sink 4', null, 'example.com',
+            media_router.SinkIconType.GENERIC, media_router.SinkStatus.IDLE,
+            [1, 2, 3]);
 
         // Set the initial sink list and check that the order corresponds.
         var listOne = [sinkOne, sinkTwo];
         var listOneExpected = [sinkOne, sinkTwo];
         container.allSinks = listOne;
         setTimeout(function() {
-          var sinkList =
-              container.shadowRoot.getElementById('sink-list')
-                  .querySelectorAll('paper-item');
+          var sinkList = container.shadowRoot.getElementById('sink-list')
+                             .querySelectorAll('paper-item');
           assertEquals(listOne.length, sinkList.length);
           for (var i = 0; i < listOneExpected.length; i++) {
             checkElementText(listOneExpected[i].name, sinkList[i]);
@@ -142,9 +140,8 @@ cr.define('media_router_container_sink_list', function() {
           var listTwoExpected = [sinkOne, sinkTwo, sinkThree];
           container.allSinks = listTwo;
           setTimeout(function() {
-            sinkList =
-                container.shadowRoot.getElementById('sink-list')
-                    .querySelectorAll('paper-item');
+            sinkList = container.shadowRoot.getElementById('sink-list')
+                           .querySelectorAll('paper-item');
             assertEquals(listTwo.length, sinkList.length);
             for (var i = 0; i < listTwoExpected.length; i++) {
               checkElementText(listTwoExpected[i].name, sinkList[i]);
@@ -156,9 +153,8 @@ cr.define('media_router_container_sink_list', function() {
             var listThreeExpected = [sinkOne, sinkFour];
             container.allSinks = listThree;
             setTimeout(function() {
-              sinkList =
-                  container.shadowRoot.getElementById('sink-list')
-                      .querySelectorAll('paper-item');
+              sinkList = container.shadowRoot.getElementById('sink-list')
+                             .querySelectorAll('paper-item');
               assertEquals(listThree.length, sinkList.length);
               for (var i = 0; i < listThreeExpected.length; i++) {
                 checkElementText(listThreeExpected[i].name, sinkList[i]);
@@ -174,21 +170,21 @@ cr.define('media_router_container_sink_list', function() {
         // Sink 1 - sink, no domain -> text = name
         // Sink 2 - sink, domain -> text = sink + domain
         container.allSinks = [
-            new media_router.Sink('sink id 1', 'Sink 1', null, null,
-                media_router.SinkIconType.HANGOUT,
-                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-            new media_router.Sink('sink id 2', 'Sink 2',
-                null, 'example.com',
-                media_router.SinkIconType.HANGOUT,
-                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+          new media_router.Sink(
+              'sink id 1', 'Sink 1', null, null,
+              media_router.SinkIconType.HANGOUT, media_router.SinkStatus.ACTIVE,
+              [1, 2, 3]),
+          new media_router.Sink(
+              'sink id 2', 'Sink 2', null, 'example.com',
+              media_router.SinkIconType.HANGOUT, media_router.SinkStatus.ACTIVE,
+              [1, 2, 3]),
         ];
 
         container.showDomain = true;
 
         setTimeout(function() {
-          var sinkList =
-              container.shadowRoot.getElementById('sink-list')
-                  .querySelectorAll('paper-item');
+          var sinkList = container.shadowRoot.getElementById('sink-list')
+                             .querySelectorAll('paper-item');
           assertEquals(2, sinkList.length);
 
           // |sinkList[0]| has sink name only.
@@ -196,8 +192,9 @@ cr.define('media_router_container_sink_list', function() {
           // |sinkList[1]| contains sink name and domain.
           assertTrue(sinkList[1].textContent.trim().startsWith(
               container.allSinks[1].name.trim()));
-          assertTrue(sinkList[1].textContent.trim().indexOf(
-              container.allSinks[1].domain.trim()) != -1);
+          assertTrue(
+              sinkList[1].textContent.trim().indexOf(
+                  container.allSinks[1].domain.trim()) != -1);
           done();
         });
       });
@@ -207,29 +204,30 @@ cr.define('media_router_container_sink_list', function() {
         // Sink 1 - sink, no domain -> text = name
         // Sink 2 - sink, domain -> text = sink + domain
         container.allSinks = [
-            new media_router.Sink('sink id 1', 'Sink 1', null, null,
-                media_router.SinkIconType.HANGOUT,
-                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-            new media_router.Sink('sink id 2', 'Sink 2',
-                null, 'example.com',
-                media_router.SinkIconType.HANGOUT,
-                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+          new media_router.Sink(
+              'sink id 1', 'Sink 1', null, null,
+              media_router.SinkIconType.HANGOUT, media_router.SinkStatus.ACTIVE,
+              [1, 2, 3]),
+          new media_router.Sink(
+              'sink id 2', 'Sink 2', null, 'example.com',
+              media_router.SinkIconType.HANGOUT, media_router.SinkStatus.ACTIVE,
+              [1, 2, 3]),
         ];
 
         container.showDomain = false;
 
         setTimeout(function() {
-          var sinkList =
-              container.shadowRoot.getElementById('sink-list')
-                  .querySelectorAll('paper-item');
+          var sinkList = container.shadowRoot.getElementById('sink-list')
+                             .querySelectorAll('paper-item');
           assertEquals(2, sinkList.length);
 
           // |sinkList[0]| has sink name only.
           checkElementText(container.allSinks[0].name, sinkList[0]);
           // |sinkList[1]| has sink name but domain should be hidden.
           checkElementText(container.allSinks[1].name, sinkList[1]);
-          assertTrue(sinkList[1].textContent.trim().indexOf(
-              container.allSinks[1].domain.trim()) == -1);
+          assertTrue(
+              sinkList[1].textContent.trim().indexOf(
+                  container.allSinks[1].domain.trim()) == -1);
           done();
         });
       });
@@ -237,16 +235,14 @@ cr.define('media_router_container_sink_list', function() {
       // Tests for expected visible UI when the view is SINK_LIST.
       test('sink list state visibility', function() {
         container.showSinkList_();
-        checkElementsVisibleWithId(['container-header',
-                                    'device-missing',
-                                    'sink-list-view']);
+        checkElementsVisibleWithId(
+            ['container-header', 'device-missing', 'sink-list-view']);
 
         // Set an non-empty sink list.
         container.allSinks = fakeSinkList;
         setTimeout(function() {
-          checkElementsVisibleWithId(['container-header',
-                                      'sink-list',
-                                      'sink-list-view']);
+          checkElementsVisibleWithId(
+              ['container-header', 'sink-list', 'sink-list-view']);
         });
       });
 
@@ -264,17 +260,15 @@ cr.define('media_router_container_sink_list', function() {
         container.issue = fakeNonBlockingIssue;
         setTimeout(function() {
           checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-          checkElementsVisibleWithId(['container-header',
-                                      'issue-banner',
-                                      'sink-list',
-                                      'sink-list-view']);
+          checkElementsVisibleWithId([
+            'container-header', 'issue-banner', 'sink-list', 'sink-list-view'
+          ]);
           // Replace issue with null.
           container.issue = null;
           setTimeout(function() {
             checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-            checkElementsVisibleWithId(['container-header',
-                                        'sink-list',
-                                        'sink-list-view']);
+            checkElementsVisibleWithId(
+                ['container-header', 'sink-list', 'sink-list-view']);
             done();
           });
         });
@@ -295,16 +289,14 @@ cr.define('media_router_container_sink_list', function() {
         container.issue = fakeBlockingIssue;
         setTimeout(function() {
           checkCurrentView(media_router.MediaRouterView.ISSUE);
-          checkElementsVisibleWithId(['container-header',
-                                      'issue-banner',
-                                      'sink-list']);
+          checkElementsVisibleWithId(
+              ['container-header', 'issue-banner', 'sink-list']);
           // Replace issue with null.
           container.issue = null;
           setTimeout(function() {
             checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-            checkElementsVisibleWithId(['container-header',
-                                        'sink-list',
-                                        'sink-list-view']);
+            checkElementsVisibleWithId(
+                ['container-header', 'sink-list', 'sink-list-view']);
             done();
           });
         });
@@ -313,35 +305,35 @@ cr.define('media_router_container_sink_list', function() {
       // Tests for expected visible UI when the view is SINK_LIST, and there is
       // a blocking issue. Also tests for expected visible UI when the issue is
       // cleared.
-      test('sink list visibility non-blocking replaced with blocking issue',
+      test(
+          'sink list visibility non-blocking replaced with blocking issue',
           function(done) {
-        container.showSinkList_();
-        checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+            container.showSinkList_();
+            checkCurrentView(media_router.MediaRouterView.SINK_LIST);
 
-        // Set an non-empty sink list.
-        container.allSinks = fakeSinkList;
+            // Set an non-empty sink list.
+            container.allSinks = fakeSinkList;
 
-        // Set a non-blocking issue. The issue should be shown.
-        container.issue = fakeNonBlockingIssue;
-        setTimeout(function() {
-          checkCurrentView(media_router.MediaRouterView.SINK_LIST);
-          checkElementsVisibleWithId(['container-header',
-                                      'issue-banner',
-                                      'sink-list',
-                                      'sink-list-view']);
+            // Set a non-blocking issue. The issue should be shown.
+            container.issue = fakeNonBlockingIssue;
+            setTimeout(function() {
+              checkCurrentView(media_router.MediaRouterView.SINK_LIST);
+              checkElementsVisibleWithId([
+                'container-header', 'issue-banner', 'sink-list',
+                'sink-list-view'
+              ]);
 
-          // Set a blocking issue. The issue should be shown, and everything
-          // else, hidden.
-          container.issue = fakeBlockingIssue;
-          setTimeout(function() {
-            checkCurrentView(media_router.MediaRouterView.ISSUE);
-            checkElementsVisibleWithId(['container-header',
-                                        'issue-banner',
-                                        'sink-list']);
-            done();
+              // Set a blocking issue. The issue should be shown, and everything
+              // else, hidden.
+              container.issue = fakeBlockingIssue;
+              setTimeout(function() {
+                checkCurrentView(media_router.MediaRouterView.ISSUE);
+                checkElementsVisibleWithId(
+                    ['container-header', 'issue-banner', 'sink-list']);
+                done();
+              });
+            });
           });
-        });
-      });
 
       // Tests all sinks are always shown in auto mode, and that the mode will
       // switch if the sinks support only 1 cast mode.
@@ -350,14 +342,13 @@ cr.define('media_router_container_sink_list', function() {
         setTimeout(function() {
           // Container is initially in auto mode since a cast mode has not been
           // selected.
-          assertEquals(media_router.AUTO_CAST_MODE.description,
-              container.headerText);
-          assertEquals(media_router.CastModeType.AUTO,
-              container.shownCastModeValue_);
+          assertEquals(
+              media_router.AUTO_CAST_MODE.description, container.headerText);
+          assertEquals(
+              media_router.CastModeType.AUTO, container.shownCastModeValue_);
           assertFalse(container.userHasSelectedCastMode_);
-          var sinkList =
-              container.shadowRoot.getElementById('sink-list')
-                  .querySelectorAll('paper-item');
+          var sinkList = container.shadowRoot.getElementById('sink-list')
+                             .querySelectorAll('paper-item');
 
           // All sinks are shown in auto mode.
           assertEquals(3, sinkList.length);
@@ -365,40 +356,43 @@ cr.define('media_router_container_sink_list', function() {
           // When sink list changes to only 1 compatible cast mode, the mode is
           // switched, and all sinks are shown.
           container.allSinks = [
-            new media_router.Sink('sink id 10', 'Sink 10', null, null,
-                media_router.SinkIconType.CAST,
-                media_router.SinkStatus.ACTIVE, 0x4),
-            new media_router.Sink('sink id 20', 'Sink 20', null, null,
-                media_router.SinkIconType.CAST,
-                media_router.SinkStatus.ACTIVE, 0x4),
-            new media_router.Sink('sink id 30', 'Sink 30', null, null,
-                media_router.SinkIconType.CAST,
-                media_router.SinkStatus.PENDING, 0x4),
+            new media_router.Sink(
+                'sink id 10', 'Sink 10', null, null,
+                media_router.SinkIconType.CAST, media_router.SinkStatus.ACTIVE,
+                0x4),
+            new media_router.Sink(
+                'sink id 20', 'Sink 20', null, null,
+                media_router.SinkIconType.CAST, media_router.SinkStatus.ACTIVE,
+                0x4),
+            new media_router.Sink(
+                'sink id 30', 'Sink 30', null, null,
+                media_router.SinkIconType.CAST, media_router.SinkStatus.PENDING,
+                0x4),
           ];
 
           setTimeout(function() {
             assertEquals(fakeCastModeList[2].description, container.headerText);
-            assertEquals(fakeCastModeList[2].type,
-                container.shownCastModeValue_);
+            assertEquals(
+                fakeCastModeList[2].type, container.shownCastModeValue_);
             assertFalse(container.userHasSelectedCastMode_);
 
-            var sinkList =
-                container.shadowRoot.getElementById('sink-list')
-                    .querySelectorAll('paper-item');
+            var sinkList = container.shadowRoot.getElementById('sink-list')
+                               .querySelectorAll('paper-item');
             assertEquals(3, sinkList.length);
 
             // When compatible cast modes size is no longer exactly 1, switch
             // back to auto mode, and all sinks are shown.
             container.allSinks = fakeSinkList;
             setTimeout(function() {
-              assertEquals(media_router.AUTO_CAST_MODE.description,
+              assertEquals(
+                  media_router.AUTO_CAST_MODE.description,
                   container.headerText);
-              assertEquals(media_router.CastModeType.AUTO,
+              assertEquals(
+                  media_router.CastModeType.AUTO,
                   container.shownCastModeValue_);
               assertFalse(container.userHasSelectedCastMode_);
-              var sinkList =
-                  container.shadowRoot.getElementById('sink-list')
-                      .querySelectorAll('paper-item');
+              var sinkList = container.shadowRoot.getElementById('sink-list')
+                                 .querySelectorAll('paper-item');
 
               // All sinks are shown in auto mode.
               assertEquals(3, sinkList.length);

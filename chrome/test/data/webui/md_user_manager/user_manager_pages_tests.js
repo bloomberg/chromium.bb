@@ -20,12 +20,10 @@ cr.define('user_manager.user_manager_pages_tests', function() {
       });
 
       test('User Pods page is the default visible page', function() {
-        assertTrue(
-          pagesElement.isPresentIn_(pagesElement.selectedPage_,
-                                    'user-pods-page'));
-        assertFalse(
-          pagesElement.isPresentIn_(pagesElement.selectedPage_,
-                                    'create-user-page'));
+        assertTrue(pagesElement.isPresentIn_(
+            pagesElement.selectedPage_, 'user-pods-page'));
+        assertFalse(pagesElement.isPresentIn_(
+            pagesElement.selectedPage_, 'create-user-page'));
       });
 
       test('Change page listener works', function() {

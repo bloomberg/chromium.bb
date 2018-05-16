@@ -33,9 +33,7 @@ function findByContentSubstring(elements, content, childSelector) {
 
 function testTargetListed(sectionSelector, populateFunctionName, url) {
   waitForElements(
-      sectionSelector + ' .row',
-      populateFunctionName,
-      function(elements) {
+      sectionSelector + ' .row', populateFunctionName, function(elements) {
         var urlElement = findByContentSubstring(elements, url, '.url');
         expectNotEquals(undefined, urlElement);
         testDone();
@@ -46,37 +44,37 @@ function testAdbTargetsListed() {
   waitForElements('.device', 'populateRemoteTargets', function(devices) {
     expectEquals(2, devices.length);
 
-    var offlineDevice = findByContentSubstring(
-        devices, 'Offline', '.device-name');
+    var offlineDevice =
+        findByContentSubstring(devices, 'Offline', '.device-name');
     expectNotEquals(undefined, offlineDevice);
 
-    var onlineDevice = findByContentSubstring(
-        devices, 'Nexus 6', '.device-name');
+    var onlineDevice =
+        findByContentSubstring(devices, 'Nexus 6', '.device-name');
     expectNotEquals(undefined, onlineDevice);
 
     var browsers = onlineDevice.querySelectorAll('.browser');
     expectEquals(4, browsers.length);
 
     var chromeBrowser = findByContentSubstring(
-       browsers, 'Chrome (32.0.1679.0)', '.browser-name');
+        browsers, 'Chrome (32.0.1679.0)', '.browser-name');
     expectNotEquals(undefined, chromeBrowser);
 
     var chromePages = chromeBrowser.querySelectorAll('.pages');
-    var chromiumPage = findByContentSubstring(
-       chromePages, 'http://www.chromium.org/', '.url');
+    var chromiumPage =
+        findByContentSubstring(chromePages, 'http://www.chromium.org/', '.url');
     expectNotEquals(undefined, chromiumPage);
 
     var pageById = {};
-    Array.prototype.forEach.call(devices, function (device) {
+    Array.prototype.forEach.call(devices, function(device) {
       var pages = device.querySelectorAll('.row');
-      Array.prototype.forEach.call(pages, function (page) {
+      Array.prototype.forEach.call(pages, function(page) {
         expectEquals(undefined, pageById[page.targetId]);
         pageById[page.targetId] = page;
       });
     });
 
     var webView = findByContentSubstring(
-       browsers, 'WebView in com.sample.feed (4.0)', '.browser-name');
+        browsers, 'WebView in com.sample.feed (4.0)', '.browser-name');
     expectNotEquals(undefined, webView);
 
     testDone();
