@@ -1778,6 +1778,109 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 }
 #endif  // !defined(OS_ANDROID)
 
+#if defined(OS_ANDROID)
+// The following test ensures that we don't get a crash if a tooltip is
+// triggered on Android. This test is nearly identical to
+// SitePerProcessHitTestBrowserTest.CrossProcessTooltipTestAndroid, except
+// it omits the tooltip monitor, and all dereferences of GetCursorManager().
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       CrossProcessTooltipTestAndroid) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+
+  EXPECT_EQ(
+      " Site A ------------ proxies for B\n"
+      "   +--Site B ------- proxies for A\n"
+      "Where A = http://a.com/\n"
+      "      B = http://b.com/",
+      DepictFrameTree(root));
+
+  FrameTreeNode* b_node = root->child_at(0);
+
+  RenderWidgetHostViewBase* rwhv_a = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  RenderWidgetHostViewBase* rwhv_b = static_cast<RenderWidgetHostViewBase*>(
+      b_node->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  // On Android we don't expect GetCursorManager() to return anything other
+  // than nullptr. If it did, this test would be unnecessary.
+  DCHECK(!rwhv_a->GetCursorManager());
+
+  WaitForChildFrameSurfaceReady(b_node->current_frame_host());
+
+  // Make sure the point_in_a_frame value is outside the default 8px margin
+  // for the body element.
+  gfx::Point point_in_a_frame(10, 10);
+  gfx::Point point_in_b_frame =
+      rwhv_b->TransformPointToRootCoordSpace(gfx::Point(25, 25));
+
+  // Create listeners for mouse events. These are used to verify that the
+  // RenderWidgetHostInputEventRouter is generating MouseLeave, etc for
+  // the right renderers.
+  RenderWidgetHostMouseEventMonitor a_frame_monitor(
+      root->current_frame_host()->GetRenderWidgetHost());
+  RenderWidgetHostMouseEventMonitor b_frame_monitor(
+      b_node->current_frame_host()->GetRenderWidgetHost());
+
+  // Add tooltip text to both the body and the iframe in A.
+  std::string script_a =
+      "body = document.body.setAttribute('title', 'body_a_tooltip');\n"
+      "iframe = document.getElementsByTagName('iframe')[0];\n"
+      "iframe.setAttribute('title','iframe_for_b');";
+  EXPECT_TRUE(ExecuteScript(root->current_frame_host(), script_a));
+  std::string script_b =
+      "body = document.body.setAttribute('title', 'body_b_tooltip');";
+  EXPECT_TRUE(ExecuteScript(b_node->current_frame_host(), script_b));
+
+  // Send mouse events to both A and B.
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseMove, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  auto* router = web_contents()->GetInputEventRouter();
+
+  // Alternate mouse moves between main frame and the cross-process iframe to
+  // test that the tool tip in the iframe can override the one set by the main
+  // frame renderer, even on a second entry into the iframe.
+  gfx::Point current_point;
+  for (int iteration = 0; iteration < 2; ++iteration) {
+    // The following is a bit of a hack to prevent hitting the same
+    // position/node check in ChromeClient::SetToolTip().
+    current_point = point_in_a_frame;
+    current_point.Offset(iteration, iteration);
+    SetWebEventPositions(&mouse_event, current_point, rwhv_a);
+    RouteMouseEventAndWaitUntilDispatch(router, rwhv_a, rwhv_a, &mouse_event);
+    EXPECT_TRUE(a_frame_monitor.EventWasReceived());
+    a_frame_monitor.ResetEventReceived();
+    // B will receive a mouseLeave on all but the first iteration.
+    EXPECT_EQ(iteration != 0, b_frame_monitor.EventWasReceived());
+    b_frame_monitor.ResetEventReceived();
+
+    // Next send a MouseMove to B frame, and A should receive a MouseMove event.
+    current_point = point_in_b_frame;
+    current_point.Offset(iteration, iteration);
+    SetWebEventPositions(&mouse_event, current_point, rwhv_a);
+    RouteMouseEventAndWaitUntilDispatch(router, rwhv_a, rwhv_b, &mouse_event);
+    EXPECT_TRUE(a_frame_monitor.EventWasReceived());
+    EXPECT_EQ(a_frame_monitor.event().GetType(),
+              blink::WebInputEvent::kMouseMove);
+    a_frame_monitor.ResetEventReceived();
+    EXPECT_TRUE(b_frame_monitor.EventWasReceived());
+    b_frame_monitor.ResetEventReceived();
+  }
+
+  // This is an (arbitrary) delay to allow the test to crash if it's going to.
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(), TestTimeouts::action_max_timeout());
+  run_loop.Run();
+}
+#endif  // defined(OS_ANDROID)
+
 // This test verifies that MouseEnter and MouseLeave events fire correctly
 // when the mouse cursor moves between processes.
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
