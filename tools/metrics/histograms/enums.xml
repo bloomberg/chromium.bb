@@ -18673,6 +18673,19 @@ Called by update_net_error_codes.py.-->
   <int value="2447" label="V8PictureInPictureWindow_Height_AttributeGetter"/>
   <int value="2448" label="V8PictureInPictureWindow_Width_AttributeGetter"/>
   <int value="2449" label="PictureInPictureWindowResizeEventListener"/>
+  <int value="2450" label="V8CookieStore_Delete_Method"/>
+  <int value="2451" label="V8CookieStore_Get_Method"/>
+  <int value="2452" label="V8CookieStore_GetAll_Method"/>
+  <int value="2453" label="V8CookieStore_GetChangeSubscriptions_Method"/>
+  <int value="2454" label="V8CookieStore_Has_Method"/>
+  <int value="2455" label="V8CookieStore_Set_Method"/>
+  <int value="2456" label="V8CookieStore_SubscribeToChanges_Method"/>
+  <int value="2457" label="V8CookieChangeEvent_Changed_AttributeGetter"/>
+  <int value="2458" label="V8CookieChangeEvent_Deleted_AttributeGetter"/>
+  <int value="2459"
+      label="V8ExtendableCookieChangeEvent_Changed_AttributeGetter"/>
+  <int value="2460"
+      label="V8ExtendableCookieChangeEvent_Deleted_AttributeGetter"/>
 </enum>
 
 <enum name="FeedbackSource">
