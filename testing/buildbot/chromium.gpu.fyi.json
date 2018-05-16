@@ -5199,6 +5199,31 @@
       }
     ]
   },
+  "Linux FYI dEQP Release (Intel HD 630)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_gles2_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912",
+              "os": "Ubuntu",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      }
+    ],
+    "isolated_scripts": []
+  },
   "Linux FYI dEQP Release (NVIDIA)": {
     "gtest_tests": [
       {
@@ -15372,6 +15397,31 @@
         }
       }
     ]
+  },
+  "Win10 FYI dEQP Release (Intel HD 630)": {
+    "gtest_tests": [
+      {
+        "args": [
+          "--test-launcher-batch-limit=400",
+          "--deqp-egl-display-type=angle-d3d11"
+        ],
+        "name": "angle_deqp_gles2_d3d11_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:5912-23.20.16.4877",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      }
+    ],
+    "isolated_scripts": []
   },
   "Win10 FYI dEQP Release (NVIDIA)": {
     "gtest_tests": [
