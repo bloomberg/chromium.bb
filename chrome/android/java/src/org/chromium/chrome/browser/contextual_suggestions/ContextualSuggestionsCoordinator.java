@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.content.Intent;
 import android.support.annotation.Nullable;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
@@ -32,6 +33,9 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetObserver;
  * They share a {@link ContextualSuggestionsMediator} and {@link ContextualSuggestionsModel}.
  */
 public class ContextualSuggestionsCoordinator {
+    private static final String FEEDBACK_CATEGORY =
+            "USER_INITIATED_FEEDBACK_REPORT_CONTEXTUAL_SUGGESTIONS";
+
     private final ChromeActivity mActivity;
     private final BottomSheetController mBottomSheetController;
     private final TabModelSelector mTabModelSelector;
@@ -168,8 +172,9 @@ public class ContextualSuggestionsCoordinator {
     /** Show the feedback page. */
     void showFeedback() {
         Tab currentTab = mActivity.getActivityTab();
-        HelpAndFeedback.getInstance(mActivity).showFeedback(
-                mActivity, mProfile, currentTab != null ? currentTab.getUrl() : null, null);
+        HelpAndFeedback.getInstance(mActivity).showFeedback(mActivity, mProfile,
+                currentTab != null ? currentTab.getUrl() : null,
+                ContextUtils.getApplicationContext().getPackageName() + "." + FEEDBACK_CATEGORY);
     }
 
     @VisibleForTesting
