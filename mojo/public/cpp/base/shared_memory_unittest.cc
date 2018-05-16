@@ -15,7 +15,7 @@ TEST(SharedMemoryMojomTest, ReadOnly) {
   memcpy(region.mapping.memory(), kTestData.data(), kTestData.size());
 
   base::ReadOnlySharedMemoryRegion read_only_out;
-  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<
               mojo_base::mojom::ReadOnlySharedMemoryRegion>(&region.region,
                                                             &read_only_out));
   base::ReadOnlySharedMemoryMapping mapping = read_only_out.Map();
@@ -29,7 +29,7 @@ TEST(SharedMemoryMojomTest, Writable) {
   memcpy(mapping.memory(), kTestData.data(), kTestData.size());
 
   base::WritableSharedMemoryRegion writable_out;
-  EXPECT_TRUE(mojo::test::SerializeAndDeserialize<
+  ASSERT_TRUE(mojo::test::SerializeAndDeserialize<
               mojo_base::mojom::WritableSharedMemoryRegion>(&region,
                                                             &writable_out));
 
@@ -44,7 +44,7 @@ TEST(SharedMemoryMojomTest, Unsafe) {
   memcpy(mapping.memory(), kTestData.data(), kTestData.size());
 
   base::UnsafeSharedMemoryRegion unsafe_out;
-  EXPECT_TRUE(
+  ASSERT_TRUE(
       mojo::test::SerializeAndDeserialize<
           mojo_base::mojom::UnsafeSharedMemoryRegion>(&region, &unsafe_out));
 
