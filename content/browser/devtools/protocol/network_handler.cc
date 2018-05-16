@@ -626,34 +626,45 @@ net::Error NetErrorFromString(const std::string& error, bool* ok) {
     return net::ERR_INTERNET_DISCONNECTED;
   if (error == Network::ErrorReasonEnum::AddressUnreachable)
     return net::ERR_ADDRESS_UNREACHABLE;
+  if (error == Network::ErrorReasonEnum::BlockedByClient)
+    return net::ERR_BLOCKED_BY_CLIENT;
+  if (error == Network::ErrorReasonEnum::BlockedByResponse)
+    return net::ERR_BLOCKED_BY_RESPONSE;
   *ok = false;
   return net::ERR_FAILED;
 }
 
 String NetErrorToString(int net_error) {
-  if (net_error == net::ERR_ABORTED)
-    return Network::ErrorReasonEnum::Aborted;
-  if (net_error == net::ERR_TIMED_OUT)
-    return Network::ErrorReasonEnum::TimedOut;
-  if (net_error == net::ERR_ACCESS_DENIED)
-    return Network::ErrorReasonEnum::AccessDenied;
-  if (net_error == net::ERR_CONNECTION_CLOSED)
-    return Network::ErrorReasonEnum::ConnectionClosed;
-  if (net_error == net::ERR_CONNECTION_RESET)
-    return Network::ErrorReasonEnum::ConnectionReset;
-  if (net_error == net::ERR_CONNECTION_REFUSED)
-    return Network::ErrorReasonEnum::ConnectionRefused;
-  if (net_error == net::ERR_CONNECTION_ABORTED)
-    return Network::ErrorReasonEnum::ConnectionAborted;
-  if (net_error == net::ERR_CONNECTION_FAILED)
-    return Network::ErrorReasonEnum::ConnectionFailed;
-  if (net_error == net::ERR_NAME_NOT_RESOLVED)
-    return Network::ErrorReasonEnum::NameNotResolved;
-  if (net_error == net::ERR_INTERNET_DISCONNECTED)
-    return Network::ErrorReasonEnum::InternetDisconnected;
-  if (net_error == net::ERR_ADDRESS_UNREACHABLE)
-    return Network::ErrorReasonEnum::AddressUnreachable;
-  return Network::ErrorReasonEnum::Failed;
+  switch (net_error) {
+    case net::ERR_ABORTED:
+      return Network::ErrorReasonEnum::Aborted;
+    case net::ERR_TIMED_OUT:
+      return Network::ErrorReasonEnum::TimedOut;
+    case net::ERR_ACCESS_DENIED:
+      return Network::ErrorReasonEnum::AccessDenied;
+    case net::ERR_CONNECTION_CLOSED:
+      return Network::ErrorReasonEnum::ConnectionClosed;
+    case net::ERR_CONNECTION_RESET:
+      return Network::ErrorReasonEnum::ConnectionReset;
+    case net::ERR_CONNECTION_REFUSED:
+      return Network::ErrorReasonEnum::ConnectionRefused;
+    case net::ERR_CONNECTION_ABORTED:
+      return Network::ErrorReasonEnum::ConnectionAborted;
+    case net::ERR_CONNECTION_FAILED:
+      return Network::ErrorReasonEnum::ConnectionFailed;
+    case net::ERR_NAME_NOT_RESOLVED:
+      return Network::ErrorReasonEnum::NameNotResolved;
+    case net::ERR_INTERNET_DISCONNECTED:
+      return Network::ErrorReasonEnum::InternetDisconnected;
+    case net::ERR_ADDRESS_UNREACHABLE:
+      return Network::ErrorReasonEnum::AddressUnreachable;
+    case net::ERR_BLOCKED_BY_CLIENT:
+      return Network::ErrorReasonEnum::BlockedByClient;
+    case net::ERR_BLOCKED_BY_RESPONSE:
+      return Network::ErrorReasonEnum::BlockedByResponse;
+    default:
+      return Network::ErrorReasonEnum::Failed;
+  }
 }
 
 bool AddInterceptedResourceType(
