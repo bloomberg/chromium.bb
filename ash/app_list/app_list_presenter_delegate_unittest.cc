@@ -22,6 +22,7 @@
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wallpaper/wallpaper_controller_test_api.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/root_window_finder.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -1205,6 +1206,55 @@ TEST_F(AppListPresenterDelegateHomeLauncherTest, VisibilityInOverviewMode) {
   // Disable overview mode.
   window_selector_controller->ToggleOverview();
   EXPECT_FALSE(window_selector_controller->IsSelecting());
+  GetAppListTestHelper()->CheckVisibility(true);
+}
+
+// Tests the app list visibility during wallpaper preview.
+TEST_F(AppListPresenterDelegateHomeLauncherTest,
+       VisibilityDuringWallpaperPreview) {
+  WallpaperControllerTestApi wallpaper_test_api(
+      Shell::Get()->wallpaper_controller());
+  std::unique_ptr<aura::Window> wallpaper_picker_window(
+      CreateTestWindow(gfx::Rect(0, 0, 100, 100)));
+
+  // The app list is hidden in the beginning.
+  GetAppListTestHelper()->CheckVisibility(false);
+  // Open wallpaper picker and start preview. Verify the app list remains
+  // hidden.
+  wm::GetWindowState(wallpaper_picker_window.get())->Activate();
+  wallpaper_test_api.StartWallpaperPreview();
+  GetAppListTestHelper()->CheckVisibility(false);
+  // Enable tablet mode. Verify the app list is still hidden because wallpaper
+  // preview is active.
+  EnableTabletMode(true);
+  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  // End preview by confirming the wallpaper. Verify the app list is shown.
+  wallpaper_test_api.EndWallpaperPreview(true /*confirm_preview_wallpaper=*/);
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Start preview again. Verify the app list is hidden.
+  wallpaper_test_api.StartWallpaperPreview();
+  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  // End preview by canceling the wallpaper. Verify the app list is shown.
+  wallpaper_test_api.EndWallpaperPreview(false /*confirm_preview_wallpaper=*/);
+  GetAppListTestHelper()->CheckVisibility(true);
+
+  // Start preview again and enable overview mode during the wallpaper preview.
+  // Verify the app list is hidden.
+  wallpaper_test_api.StartWallpaperPreview();
+  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  window_selector_controller->ToggleOverview();
+  EXPECT_TRUE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  // Disable overview mode. Verify the app list is still hidden because
+  // wallpaper preview is still active.
+  window_selector_controller->ToggleOverview();
+  EXPECT_FALSE(window_selector_controller->IsSelecting());
+  EXPECT_FALSE(GetAppListView()->GetWidget()->IsVisible());
+  // End preview by confirming the wallpaper. Verify the app list is shown.
+  wallpaper_test_api.EndWallpaperPreview(true /*confirm_preview_wallpaper=*/);
   GetAppListTestHelper()->CheckVisibility(true);
 }
 

@@ -38,8 +38,29 @@ SkColor WallpaperControllerTestApi::ApplyColorProducingWallpaper() {
 }
 
 void WallpaperControllerTestApi::StartWallpaperPreview() {
-  controller_->ShowWallpaperImage(CreateImageWithColor(SK_ColorBLUE),
-                                  kTestWallpaperInfo, true /*preview_mode=*/);
+  // Preview mode is considered active when the two callbacks have non-empty
+  // values. Their specific values don't matter for testing purpose.
+  controller_->confirm_preview_wallpaper_callback_ =
+      base::BindOnce(&WallpaperController::SetWallpaperFromInfo,
+                     controller_->weak_factory_.GetWeakPtr(),
+                     AccountId::FromUserEmail("user@test.com"),
+                     user_manager::USER_TYPE_REGULAR, kTestWallpaperInfo,
+                     true /*show_wallpaper=*/);
+  controller_->reload_preview_wallpaper_callback_ =
+      base::BindRepeating(&WallpaperController::ShowWallpaperImage,
+                          controller_->weak_factory_.GetWeakPtr(),
+                          CreateImageWithColor(SK_ColorBLUE),
+                          kTestWallpaperInfo, true /*preview_mode=*/);
+  // Show the preview wallpaper.
+  controller_->reload_preview_wallpaper_callback_.Run();
+}
+
+void WallpaperControllerTestApi::EndWallpaperPreview(
+    bool confirm_preview_wallpaper) {
+  if (confirm_preview_wallpaper)
+    controller_->ConfirmPreviewWallpaper();
+  else
+    controller_->CancelPreviewWallpaper();
 }
 
 }  // namespace ash

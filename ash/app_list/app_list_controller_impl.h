@@ -20,6 +20,7 @@
 #include "ash/public/interfaces/app_list.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/shell_observer.h"
+#include "ash/wallpaper/wallpaper_controller_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/scoped_observer.h"
 #include "components/sync/model/string_ordinal.h"
@@ -46,7 +47,8 @@ class ASH_EXPORT AppListControllerImpl
       public app_list::AppListModelObserver,
       public ash::ShellObserver,
       public TabletModeObserver,
-      public keyboard::KeyboardControllerObserver {
+      public keyboard::KeyboardControllerObserver,
+      public WallpaperControllerObserver {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   using SearchResultMetadataPtr = mojom::SearchResultMetadataPtr;
@@ -175,6 +177,10 @@ class ASH_EXPORT AppListControllerImpl
   // KeyboardControllerObserver:
   void OnKeyboardAvailabilityChanged(const bool is_available) override;
 
+  // WallpaperControllerObserver:
+  void OnWallpaperPreviewStarted() override;
+  void OnWallpaperPreviewEnded() override;
+
   bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
   // Returns true if the home launcher is enabled in tablet mode.
@@ -185,6 +191,10 @@ class ASH_EXPORT AppListControllerImpl
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
       AppListItemMetadataPtr metadata);
   app_list::AppListFolderItem* FindFolderItem(const std::string& folder_id);
+
+  // Update the visibility of the home launcher based on e.g. if the device is
+  // in overview mode.
+  void UpdateHomeLauncherVisibility();
 
   mojom::AppListClientPtr client_;
 
@@ -212,6 +222,14 @@ class ASH_EXPORT AppListControllerImpl
 
   // Whether the home launcher feature is enabled.
   const bool is_home_launcher_enabled_;
+
+  // Whether the device is in overview mode. The home launcher (if enabled)
+  // should be hidden during overview mode.
+  bool in_overview_mode_ = false;
+
+  // Whether the wallpaper is being previewed. The home launcher (if enabled)
+  // should be hidden during wallpaper preview.
+  bool in_wallpaper_preview_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };
