@@ -26,14 +26,14 @@ class Event;
 namespace ui {
 
 // Cross platform typedefs for native event types.
-#if defined(OS_WIN)
+#if defined(USE_OZONE)
+using PlatformEvent = ui::Event*;
+#elif defined(OS_WIN)
 using PlatformEvent = MSG;
 #elif defined(USE_X11)
 using PlatformEvent = XEvent*;
 #elif defined(OS_MACOSX)
 using PlatformEvent = NSEvent*;
-#elif defined(USE_OZONE)
-using PlatformEvent = ui::Event*;
 #else
 using PlatformEvent = void*;
 #endif

@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/native_widget_types.h"
@@ -112,7 +113,8 @@ LRESULT CALLBACK KeyboardHookWin::ProcessKeyEvent(int code,
     MSG msg = {nullptr, w_param, ll_hooks->vkCode,
                (ll_hooks->scanCode << 16) | (ll_hooks->flags & 0xFFFF),
                ll_hooks->time};
-    instance_->ForwardCapturedKeyEvent(std::make_unique<KeyEvent>(msg));
+    KeyEvent key_event = KeyEventFromMSG(msg);
+    instance_->ForwardCapturedKeyEvent(std::make_unique<KeyEvent>(key_event));
     return 1;
   }
   return CallNextHookEx(nullptr, code, w_param, l_param);

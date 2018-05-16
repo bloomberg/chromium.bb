@@ -74,7 +74,7 @@ LRESULT InputMethodWinBase::OnChar(HWND window_handle,
                                    UINT message,
                                    WPARAM wparam,
                                    LPARAM lparam,
-                                   const PlatformEvent& event,
+                                   const MSG& event,
                                    BOOL* handled) {
   *handled = TRUE;
 
@@ -92,7 +92,7 @@ LRESULT InputMethodWinBase::OnChar(HWND window_handle,
     // Conditionally ignore '\r' events to work around https://crbug.com/319100.
     // TODO(yukawa, IME): Figure out long-term solution.
     if (ch != kCarriageReturn || accept_carriage_return_) {
-      ui::KeyEvent char_event(event);
+      ui::KeyEvent char_event = ui::KeyEventFromMSG(event);
       GetTextInputClient()->InsertChar(char_event);
     }
   }

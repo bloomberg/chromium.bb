@@ -158,6 +158,8 @@ component("events") {
     "system_input_injector.cc",
     "system_input_injector.h",
     "win/events_win.cc",
+    "win/events_win_utils.cc",
+    "win/events_win_utils.h",
     "win/keyboard_hook_win.cc",
     "win/system_event_state_lookup.cc",
     "win/system_event_state_lookup.h",
@@ -199,6 +201,10 @@ component("events") {
 
   if (use_ozone) {
     sources += [ "events_default.cc" ]
+  }
+
+  if (is_win && use_ozone) {
+    sources -= [ "win/events_win.cc" ]
   }
 
   if (use_ozone) {
