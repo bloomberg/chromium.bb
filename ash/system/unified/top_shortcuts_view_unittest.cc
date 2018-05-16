@@ -43,7 +43,7 @@ class TopShortcutsViewTest : public NoSessionAshTestBase {
   }
 
   views::View* GetUserAvatar() {
-    return top_shortcuts_view_->user_avatar_view_;
+    return top_shortcuts_view_->user_avatar_button_;
   }
 
   views::Button* GetSignOutButton() {

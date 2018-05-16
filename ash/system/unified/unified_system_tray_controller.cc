@@ -6,6 +6,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/multi_profile_uma.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/audio/unified_volume_slider_controller.h"
@@ -30,6 +31,7 @@
 #include "ash/system/unified/quiet_mode_feature_pod_controller.h"
 #include "ash/system/unified/unified_system_tray_model.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ash/system/unified/user_chooser_view.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/ranges.h"
@@ -77,6 +79,29 @@ UnifiedSystemTrayView* UnifiedSystemTrayController::CreateView() {
   unified_view_->AddSliderView(brightness_slider_controller_->CreateView());
 
   return unified_view_;
+}
+
+void UnifiedSystemTrayController::HandleUserSwitch(int user_index) {
+  // Do not switch users when the log screen is presented.
+  SessionController* controller = Shell::Get()->session_controller();
+  if (controller->IsUserSessionBlocked())
+    return;
+
+  // |user_index| must be in range (0, number_of_user). Note 0 is excluded
+  // because it represents the active user and SwitchUser should not be called
+  // for such case.
+  DCHECK_GT(user_index, 0);
+  DCHECK_LT(user_index, controller->NumberOfLoggedInUsers());
+
+  MultiProfileUMA::RecordSwitchActiveUser(
+      MultiProfileUMA::SWITCH_ACTIVE_USER_BY_TRAY);
+  controller->SwitchActiveUser(
+      controller->GetUserSession(user_index)->user_info->account_id);
+}
+
+void UnifiedSystemTrayController::HandleAddUserAction() {
+  MultiProfileUMA::RecordSigninUser(MultiProfileUMA::SIGNIN_USER_BY_TRAY);
+  Shell::Get()->session_controller()->ShowMultiProfileLogin();
 }
 
 void UnifiedSystemTrayController::HandleSignOutAction() {
@@ -139,6 +164,25 @@ void UnifiedSystemTrayController::EndDrag(const gfx::Point& location) {
     animation_->Show();
     animation_->Hide();
   }
+}
+
+void UnifiedSystemTrayController::ShowUserChooserWidget() {
+  // Don't allow user add or switch when CancelCastingDialog is open.
+  // See http://crrev.com/291276 and http://crbug.com/353170.
+  if (Shell::IsSystemModalWindowOpen())
+    return;
+
+  // Don't allow at login, lock or when adding a multi-profile user.
+  SessionController* session = Shell::Get()->session_controller();
+  if (session->IsUserSessionBlocked())
+    return;
+
+  // Don't show if we cannot add or switch users.
+  if (session->GetAddUserPolicy() != AddUserSessionPolicy::ALLOWED &&
+      session->NumberOfLoggedInUsers() <= 1)
+    return;
+
+  unified_view_->SetDetailedView(new UserChooserView(this));
 }
 
 void UnifiedSystemTrayController::ShowNetworkDetailedView() {

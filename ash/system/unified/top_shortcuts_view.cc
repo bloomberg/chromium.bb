@@ -15,31 +15,28 @@
 #include "ash/system/unified/sign_out_button.h"
 #include "ash/system/unified/top_shortcut_button.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
-#include "ash/system/user/rounded_image_view.h"
+#include "ash/system/unified/user_chooser_view.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 
 namespace ash {
 
 namespace {
 
-views::View* CreateUserAvatarView() {
-  DCHECK(Shell::Get());
-  const mojom::UserSession* const user_session =
-      Shell::Get()->session_controller()->GetUserSession(0);
-  DCHECK(user_session);
+class UserAvatarButton : public views::Button {
+ public:
+  UserAvatarButton(views::ButtonListener* listener);
+  ~UserAvatarButton() override = default;
 
-  auto* image_view = new tray::RoundedImageView(kTrayItemSize / 2);
-  if (user_session->user_info->type == user_manager::USER_TYPE_GUEST) {
-    gfx::ImageSkia icon =
-        gfx::CreateVectorIcon(kSystemMenuGuestIcon, kMenuIconColor);
-    image_view->SetImage(icon, icon.size());
-  } else {
-    image_view->SetImage(user_session->user_info->avatar->image,
-                         gfx::Size(kTrayItemSize, kTrayItemSize));
-  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(UserAvatarButton);
+};
 
-  return image_view;
+UserAvatarButton::UserAvatarButton(views::ButtonListener* listener)
+    : Button(listener) {
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  AddChildView(CreateUserAvatarView(0 /* user_index */));
 }
 
 }  // namespace
@@ -55,8 +52,8 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
   if (Shell::Get()->session_controller()->login_status() !=
       LoginStatus::NOT_LOGGED_IN) {
-    user_avatar_view_ = CreateUserAvatarView();
-    AddChildView(user_avatar_view_);
+    user_avatar_button_ = new UserAvatarButton(this);
+    AddChildView(user_avatar_button_);
   }
 
   // Show the buttons in this row as disabled if the user is at the login
@@ -102,7 +99,9 @@ void TopShortcutsView::SetExpanded(bool expanded) {
 
 void TopShortcutsView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
-  if (sender == sign_out_button_)
+  if (sender == user_avatar_button_)
+    controller_->ShowUserChooserWidget();
+  else if (sender == sign_out_button_)
     controller_->HandleSignOutAction();
   else if (sender == lock_button_)
     controller_->HandleLockAction();
