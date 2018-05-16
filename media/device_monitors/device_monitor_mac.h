@@ -19,9 +19,7 @@ class DeviceMonitorMacImpl;
 
 namespace media {
 
-class AudioDeviceListenerMac;
-
-// Class to track audio/video devices removal or addition via callback to
+// Class to track video devices removal or addition via callback to
 // base::SystemMonitor ProcessDevicesChanged(). A single object of this class
 // is created from the browser main process and lives as long as this one.
 class MEDIA_EXPORT DeviceMonitorMac {
@@ -32,7 +30,7 @@ class MEDIA_EXPORT DeviceMonitorMac {
       scoped_refptr<base::SingleThreadTaskRunner> device_task_runner);
   ~DeviceMonitorMac();
 
-  // Registers the observers for the audio/video device removal, connection and
+  // Registers the observers for the video device removal, connection and
   // suspension. The AVFoundation library is also loaded and initialised if the
   // OS supports it.
   void StartMonitoring();
@@ -45,7 +43,6 @@ class MEDIA_EXPORT DeviceMonitorMac {
  private:
   scoped_refptr<base::SingleThreadTaskRunner> device_task_runner_;
   std::unique_ptr<DeviceMonitorMacImpl> device_monitor_impl_;
-  std::unique_ptr<AudioDeviceListenerMac> audio_device_listener_;
 
   // |thread_checker_| is used to check that constructor and StartMonitoring()
   // are called in the correct thread, the UI thread, that also owns the object.

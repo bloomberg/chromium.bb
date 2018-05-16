@@ -13,6 +13,7 @@
 #include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
+#include "build/build_config.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
 #include "services/audio/public/mojom/device_notifications.mojom.h"
 #include "services/audio/public/mojom/stream_factory.mojom.h"
@@ -26,6 +27,7 @@ class SystemMonitor;
 }
 
 namespace media {
+class AudioDeviceListenerMac;
 class AudioManager;
 }  // namespace media
 
@@ -56,12 +58,12 @@ class Service : public service_manager::Service {
 
   // Service will attempt to quit if there are no connections to it within
   // |quit_timeout| interval. If |quit_timeout| is base::TimeDelta() the
-  // service never quits. If |device_notifications_enabled| is true, the service
+  // service never quits. If |device_notifier_enabled| is true, the service
   // will make available a DeviceNotifier object that allows clients to
   // subscribe to notifications about device changes.
   Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
           base::TimeDelta quit_timeout,
-          bool device_notifications_enabled);
+          bool device_notifier_enabled);
   ~Service() final;
 
   // service_manager::Service implementation.
@@ -82,6 +84,13 @@ class Service : public service_manager::Service {
   void MaybeRequestQuitDelayed();
   void MaybeRequestQuit();
 
+  // Initializes a platform-specific device monitor for device-change
+  // notifications. If the client uses the DeviceNotifier interface to get
+  // notifications this function should be called before the DeviceMonitor is
+  // created. If the client uses base::SystemMonitor to get notifications,
+  // this function should be called on service startup.
+  void InitializeDeviceMonitor();
+
   // The thread Service runs on should be the same as the main thread of
   // AudioManager provided by AudioManagerAccessor.
   THREAD_CHECKER(thread_checker_);
@@ -93,8 +102,11 @@ class Service : public service_manager::Service {
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
-  const bool device_notifications_enabled_;
+  const bool device_notifier_enabled_;
   std::unique_ptr<base::SystemMonitor> system_monitor_;
+#if defined(OS_MACOSX)
+  std::unique_ptr<media::AudioDeviceListenerMac> audio_device_listener_mac_;
+#endif
   std::unique_ptr<SystemInfo> system_info_;
   std::unique_ptr<DebugRecording> debug_recording_;
   base::Optional<StreamFactory> stream_factory_;
