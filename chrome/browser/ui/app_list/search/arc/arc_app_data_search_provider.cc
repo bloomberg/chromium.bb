@@ -8,11 +8,9 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_result.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/connection_holder.h"
 
 namespace app_list {
 
@@ -30,10 +28,8 @@ bool IsValidResult(const arc::mojom::AppDataResult& result) {
 
 ArcAppDataSearchProvider::ArcAppDataSearchProvider(
     int max_results,
-    Profile* profile,
     AppListControllerDelegate* list_controller)
     : max_results_(max_results),
-      profile_(profile),
       list_controller_(list_controller),
       weak_ptr_factory_(this) {}
 
@@ -56,11 +52,10 @@ void ArcAppDataSearchProvider::Start(const base::string16& query) {
   app_instance->GetIcingGlobalQueryResults(
       base::UTF16ToUTF8(query), max_results_,
       base::BindOnce(&ArcAppDataSearchProvider::OnResults,
-                     weak_ptr_factory_.GetWeakPtr(), base::TimeTicks::Now()));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcAppDataSearchProvider::OnResults(
-    base::TimeTicks query_start_time,
     arc::mojom::AppDataRequestState state,
     std::vector<arc::mojom::AppDataResultPtr> results) {
   if (state != arc::mojom::AppDataRequestState::REQUEST_SUCCESS) {
@@ -77,7 +72,7 @@ void ArcAppDataSearchProvider::OnResults(
     }
 
     new_results.emplace_back(std::make_unique<ArcAppDataSearchResult>(
-        std::move(result), profile_, list_controller_));
+        std::move(result), list_controller_));
   }
   SwapResults(&new_results);
 }

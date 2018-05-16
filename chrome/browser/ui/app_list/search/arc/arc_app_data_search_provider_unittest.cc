@@ -36,7 +36,7 @@ class ArcAppDataSearchProviderTest : public AppListTestBase {
   }
 
   std::unique_ptr<ArcAppDataSearchProvider> CreateSearch(int max_results) {
-    return std::make_unique<ArcAppDataSearchProvider>(max_results, profile(),
+    return std::make_unique<ArcAppDataSearchProvider>(max_results,
                                                       controller_.get());
   }
 
