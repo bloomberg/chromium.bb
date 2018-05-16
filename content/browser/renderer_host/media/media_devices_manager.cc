@@ -452,7 +452,7 @@ void MediaDevicesManager::StartMonitoring() {
     return;
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
     DCHECK(!audio_service_device_listener_);
     if (!connector_) {
