@@ -476,12 +476,7 @@ void ExpireHistoryBackend::ExpireURLsForVisits(const VisitVector& visits,
                                       ui::PAGE_TRANSITION_RELOAD)) {
       cur.visit_count++;
     }
-    if (ui::PageTransitionIsNewNavigation(visits[i].transition) &&
-        ((ui::PageTransitionCoreTypeIs(visits[i].transition,
-                                       ui::PAGE_TRANSITION_TYPED) &&
-          !ui::PageTransitionIsRedirect(visits[i].transition)) ||
-         ui::PageTransitionCoreTypeIs(visits[i].transition,
-                                      ui::PAGE_TRANSITION_KEYWORD_GENERATED)))
+    if (visits[i].incremented_omnibox_typed_score)
       cur.typed_count++;
   }
 

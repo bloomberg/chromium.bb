@@ -648,8 +648,10 @@ TypedURLSyncBridge::MergeResult TypedURLSyncBridge::MergeUrls(
              new_visit->first > visit_ix->visit_time) {
         ++visit_ix;
       }
-      visit_ix = visits->insert(visit_ix, VisitRow(url.id(), new_visit->first,
-                                                   0, new_visit->second, 0));
+      visit_ix = visits->insert(
+          visit_ix,
+          VisitRow(url.id(), new_visit->first, 0, new_visit->second, 0,
+                   HistoryBackend::IsTypedIncrement(new_visit->second)));
       ++visit_ix;
     }
   }
@@ -1096,7 +1098,7 @@ bool TypedURLSyncBridge::FixupURLAndGetVisits(URLRow* url,
     }
 
     VisitRow visit(url->id(), url->last_visit(), 0, ui::PAGE_TRANSITION_TYPED,
-                   0);
+                   0, true);
     visits->push_back(visit);
   }
 

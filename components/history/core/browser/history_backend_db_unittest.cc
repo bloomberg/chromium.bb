@@ -1583,6 +1583,73 @@ TEST_F(HistoryBackendDBTest, MigrateDownloadSliceFinished) {
   }
 }
 
+// Test to verify the incremented_omnibox_typed_score column will be correctly
+// added to visits table during migration to version 40.
+TEST_F(HistoryBackendDBTest, MigrateVisitsWithoutIncrementedOmniboxTypedScore) {
+  ASSERT_NO_FATAL_FAILURE(CreateDBVersion(39));
+
+  const VisitID visit_id1 = 1;
+  const VisitID visit_id2 = 2;
+  const URLID url_id1 = 3;
+  const URLID url_id2 = 4;
+  const base::Time visit_time1(base::Time::Now());
+  const base::Time visit_time2(base::Time::Now());
+  const VisitID referring_visit1 = 0;
+  const VisitID referring_visit2 = 0;
+  const ui::PageTransition transition1 = ui::PAGE_TRANSITION_LINK;
+  const ui::PageTransition transition2 = ui::PAGE_TRANSITION_TYPED;
+  const SegmentID segment_id1 = 7;
+  const SegmentID segment_id2 = 8;
+  const base::TimeDelta visit_duration1(base::TimeDelta::FromSeconds(30));
+  const base::TimeDelta visit_duration2(base::TimeDelta::FromSeconds(45));
+
+  const char kInsertStatement[] =
+      "INSERT INTO visits "
+      "(id, url, visit_time, from_visit, transition, segment_id, "
+      "visit_duration) VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+  {
+    // Open the db for manual manipulation.
+    sql::Connection db;
+    ASSERT_TRUE(db.Open(history_dir_.Append(kHistoryFilename)));
+
+    // Add entries to visits.
+    {
+      sql::Statement s(db.GetUniqueStatement(kInsertStatement));
+      s.BindInt64(0, visit_id1);
+      s.BindInt64(1, url_id1);
+      s.BindInt64(2, visit_time1.ToDeltaSinceWindowsEpoch().InMicroseconds());
+      s.BindInt64(3, referring_visit1);
+      s.BindInt64(4, transition1);
+      s.BindInt64(5, segment_id1);
+      s.BindInt64(6, visit_duration1.InMicroseconds());
+      ASSERT_TRUE(s.Run());
+    }
+    {
+      sql::Statement s(db.GetUniqueStatement(kInsertStatement));
+      s.BindInt64(0, visit_id2);
+      s.BindInt64(1, url_id2);
+      s.BindInt64(2, visit_time2.ToDeltaSinceWindowsEpoch().InMicroseconds());
+      s.BindInt64(3, referring_visit2);
+      s.BindInt64(4, transition2);
+      s.BindInt64(5, segment_id2);
+      s.BindInt64(6, visit_duration2.InMicroseconds());
+      ASSERT_TRUE(s.Run());
+    }
+  }
+
+  // Re-open the db, triggering migration.
+  CreateBackendAndDatabase();
+
+  VisitRow visit_row1;
+  db_->GetRowForVisit(visit_id1, &visit_row1);
+  EXPECT_FALSE(visit_row1.incremented_omnibox_typed_score);
+
+  VisitRow visit_row2;
+  db_->GetRowForVisit(visit_id2, &visit_row2);
+  EXPECT_TRUE(visit_row2.incremented_omnibox_typed_score);
+}
+
 bool FilterURL(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS();
 }

@@ -70,7 +70,9 @@ void AddNewestVisit(ui::PageTransition transition,
                     URLRow* url,
                     VisitVector* visits) {
   base::Time time = base::Time::FromInternalValue(visit_time);
-  visits->insert(visits->begin(), VisitRow(url->id(), time, 0, transition, 0));
+  visits->insert(visits->begin(),
+                 VisitRow(url->id(), time, 0, transition, 0,
+                          HistoryBackend::IsTypedIncrement(transition)));
 
   if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED)) {
     url->set_typed_count(url->typed_count() + 1);
@@ -85,7 +87,8 @@ void AddOldestVisit(ui::PageTransition transition,
                     URLRow* url,
                     VisitVector* visits) {
   base::Time time = base::Time::FromInternalValue(visit_time);
-  visits->push_back(VisitRow(url->id(), time, 0, transition, 0));
+  visits->push_back(VisitRow(url->id(), time, 0, transition, 0,
+                             HistoryBackend::IsTypedIncrement(transition)));
 
   if (ui::PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED)) {
     url->set_typed_count(url->typed_count() + 1);
@@ -115,11 +118,11 @@ URLRow MakeTypedUrlRow(const std::string& url,
   if (typed_count > 0) {
     // Add a typed visit for time |last_visit|.
     visits->push_back(VisitRow(history_url.id(), last_visit_time, 0,
-                               ui::PAGE_TRANSITION_TYPED, 0));
+                               ui::PAGE_TRANSITION_TYPED, 0, true));
   } else {
     // Add a non-typed visit for time |last_visit|.
     visits->push_back(VisitRow(history_url.id(), last_visit_time, 0,
-                               ui::PAGE_TRANSITION_RELOAD, 0));
+                               ui::PAGE_TRANSITION_RELOAD, 0, false));
   }
 
   history_url.set_visit_count(visits->size());
@@ -413,7 +416,8 @@ class TypedURLSyncBridgeTest : public testing::Test {
   }
 
   static VisitRow CreateVisit(ui::PageTransition type, int64_t timestamp) {
-    return VisitRow(0, base::Time::FromInternalValue(timestamp), 0, type, 0);
+    return VisitRow(0, base::Time::FromInternalValue(timestamp), 0, type, 0,
+                    HistoryBackend::IsTypedIncrement(type));
   }
 
   static TypedURLSyncBridge::MergeResult MergeUrls(
@@ -1238,7 +1242,7 @@ TEST_F(TypedURLSyncBridgeTest, DiffVisitsSame) {
 
   for (int64_t visit : visits) {
     old_visits.push_back(VisitRow(0, base::Time::FromInternalValue(visit), 0,
-                                  ui::PAGE_TRANSITION_TYPED, 0));
+                                  ui::PAGE_TRANSITION_TYPED, 0, true));
     new_url.add_visits(visit);
     new_url.add_visit_transitions(ui::PAGE_TRANSITION_TYPED);
   }
@@ -1268,7 +1272,7 @@ TEST_F(TypedURLSyncBridgeTest, DiffVisitsRemove) {
 
   for (int64_t visit : visits_left) {
     old_visits.push_back(VisitRow(0, base::Time::FromInternalValue(visit), 0,
-                                  ui::PAGE_TRANSITION_TYPED, 0));
+                                  ui::PAGE_TRANSITION_TYPED, 0, true));
   }
 
   for (int64_t visit : visits_right) {
@@ -1302,7 +1306,7 @@ TEST_F(TypedURLSyncBridgeTest, DiffVisitsAdd) {
 
   for (int64_t visit : visits_left) {
     old_visits.push_back(VisitRow(0, base::Time::FromInternalValue(visit), 0,
-                                  ui::PAGE_TRANSITION_TYPED, 0));
+                                  ui::PAGE_TRANSITION_TYPED, 0, true));
   }
 
   for (int64_t visit : visits_right) {
@@ -1492,7 +1496,7 @@ TEST_F(TypedURLSyncBridgeTest, MergeUrlsAfterExpiration) {
   // First, create a history row that has two visits, with timestamps 2 and 3.
   VisitVector(history_visits);
   history_visits.push_back(VisitRow(0, base::Time::FromInternalValue(2), 0,
-                                    ui::PAGE_TRANSITION_TYPED, 0));
+                                    ui::PAGE_TRANSITION_TYPED, 0, true));
   URLRow history_url(
       MakeTypedUrlRow(kURL, kTitle, 2, 3, false, &history_visits));
 
