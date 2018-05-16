@@ -2181,6 +2181,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          # TODO(jdarpinian): Re-enable when http://crbug.com/841789 is fixed.
+          'Win10 FYI Exp Release (Intel HD 630)',
         ],
       },
     ],
@@ -2208,6 +2210,8 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          # TODO(jdarpinian): Re-enable when http://crbug.com/841789 is fixed.
+          'Win10 FYI Exp Release (Intel HD 630)',
         ],
       },
     ],
