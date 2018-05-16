@@ -27,6 +27,10 @@ class TestKeySystemProperties : public media::KeySystemProperties {
       media::EmeInitDataType init_data_type) const override {
     return false;
   }
+  bool IsEncryptionSchemeSupported(
+      media::EncryptionMode encryption_scheme) const override {
+    return false;
+  }
   media::SupportedCodecs GetSupportedCodecs() const override {
     return media::EME_CODEC_NONE;
   }

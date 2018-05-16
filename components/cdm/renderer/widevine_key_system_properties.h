@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_CDM_RENDERER_WIDEVINE_KEY_SYSTEM_PROPERTIES_H_
 #define COMPONENTS_CDM_RENDERER_WIDEVINE_KEY_SYSTEM_PROPERTIES_H_
 
+#include <string>
+#include <vector>
+
+#include "base/containers/flat_set.h"
 #include "build/build_config.h"
 #include "media/base/key_system_properties.h"
 
@@ -26,6 +30,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
   };
 
   WidevineKeySystemProperties(
+      base::flat_set<media::EncryptionMode> supported_encryption_schemes,
       media::SupportedCodecs supported_codecs,
 #if defined(OS_ANDROID)
       media::SupportedCodecs supported_secure_codecs,
@@ -36,10 +41,13 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
       media::EmeSessionTypeSupport persistent_release_message_support,
       media::EmeFeatureSupport persistent_state_support,
       media::EmeFeatureSupport distinctive_identifier_support);
+  ~WidevineKeySystemProperties() override;
 
   std::string GetKeySystemName() const override;
   bool IsSupportedInitDataType(
       media::EmeInitDataType init_data_type) const override;
+  bool IsEncryptionSchemeSupported(
+      media::EncryptionMode encryption_scheme) const override;
 
   media::SupportedCodecs GetSupportedCodecs() const override;
 #if defined(OS_ANDROID)
@@ -57,6 +65,7 @@ class WidevineKeySystemProperties : public media::KeySystemProperties {
   media::EmeFeatureSupport GetDistinctiveIdentifierSupport() const override;
 
  private:
+  const base::flat_set<media::EncryptionMode> supported_encryption_schemes_;
   const media::SupportedCodecs supported_codecs_;
 #if defined(OS_ANDROID)
   const media::SupportedCodecs supported_secure_codecs_;

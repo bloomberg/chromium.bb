@@ -57,6 +57,11 @@ class AndroidPlatformKeySystemProperties : public KeySystemProperties {
     return false;
   }
 
+  bool IsEncryptionSchemeSupported(
+      media::EncryptionMode encryption_scheme) const override {
+    return encryption_scheme == media::EncryptionMode::kCenc;
+  }
+
   SupportedCodecs GetSupportedCodecs() const override {
     return supported_codecs_;
   }
@@ -122,7 +127,14 @@ void AddAndroidWidevine(
 
   if (response.non_secure_codecs != media::EME_CODEC_NONE) {
     DVLOG(3) << __func__ << " Widevine supported.";
+
+    // TODO(crbug.com/813845): Determine 'cbcs' support, which may vary by
+    // Android version.
+    base::flat_set<media::EncryptionMode> supported_encryption_schemes = {
+        media::EncryptionMode::kCenc};
+
     concrete_key_systems->emplace_back(new WidevineKeySystemProperties(
+        supported_encryption_schemes,          // Encryption schemes.
         response.non_secure_codecs,            // Regular codecs.
         response.secure_codecs,                // Hardware-secure codecs.
         Robustness::HW_SECURE_CRYPTO,          // Max audio robustness.

@@ -102,6 +102,19 @@ class ClearKeyProperties : public KeySystemProperties {
            init_data_type == EmeInitDataType::KEYIDS;
   }
 
+  bool IsEncryptionSchemeSupported(
+      EncryptionMode encryption_scheme) const override {
+    switch (encryption_scheme) {
+      case EncryptionMode::kCenc:
+      case EncryptionMode::kCbcs:
+        return true;
+      case EncryptionMode::kUnencrypted:
+        break;
+    }
+    NOTREACHED();
+    return false;
+  }
+
   SupportedCodecs GetSupportedCodecs() const override {
     // On Android, Vorbis, VP8, AAC and AVC1 are supported in MediaCodec:
     // http://developer.android.com/guide/appendix/media-formats.html
@@ -200,6 +213,10 @@ class KeySystemsImpl : public KeySystems {
 
   bool IsSupportedInitDataType(const std::string& key_system,
                                EmeInitDataType init_data_type) const override;
+
+  bool IsEncryptionSchemeSupported(
+      const std::string& key_system,
+      EncryptionMode encryption_scheme) const override;
 
   EmeConfigRule GetContentTypeConfigRule(
       const std::string& key_system,
@@ -481,6 +498,21 @@ bool KeySystemsImpl::IsSupportedInitDataType(
     return false;
   }
   return key_system_iter->second->IsSupportedInitDataType(init_data_type);
+}
+
+bool KeySystemsImpl::IsEncryptionSchemeSupported(
+    const std::string& key_system,
+    EncryptionMode encryption_scheme) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  KeySystemPropertiesMap::const_iterator key_system_iter =
+      key_system_properties_map_.find(key_system);
+  if (key_system_iter == key_system_properties_map_.end()) {
+    NOTREACHED();
+    return false;
+  }
+  return key_system_iter->second->IsEncryptionSchemeSupported(
+      encryption_scheme);
 }
 
 std::string KeySystemsImpl::GetKeySystemNameForUMA(

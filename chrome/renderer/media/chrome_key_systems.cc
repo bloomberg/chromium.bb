@@ -243,7 +243,7 @@ static void AddWidevine(
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-      supported_codecs,
+      supported_encryption_schemes, supported_codecs,
 #if defined(OS_CHROMEOS)
       Robustness::HW_SECURE_ALL,             // Maximum audio robustness.
       Robustness::HW_SECURE_ALL,             // Maximum video robustness.

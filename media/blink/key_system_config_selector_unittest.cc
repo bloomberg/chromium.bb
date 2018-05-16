@@ -103,6 +103,14 @@ class FakeKeySystems : public KeySystems {
     return false;
   }
 
+  bool IsEncryptionSchemeSupported(
+      const std::string& key_system,
+      EncryptionMode encryption_scheme) const override {
+    // TODO(crbug.com/658026): Implement this once value passed from blink.
+    NOTREACHED();
+    return false;
+  }
+
   // TODO(sandersd): Secure codec simulation.
   EmeConfigRule GetContentTypeConfigRule(
       const std::string& key_system,

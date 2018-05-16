@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "media/base/decrypt_config.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 #include "media/media_buildflags.h"
@@ -34,6 +35,11 @@ class MEDIA_EXPORT KeySystems {
   virtual bool IsSupportedInitDataType(
       const std::string& key_system,
       EmeInitDataType init_data_type) const = 0;
+
+  // Returns whether |encryption_scheme| is supported by |key_system|.
+  virtual bool IsEncryptionSchemeSupported(
+      const std::string& key_system,
+      EncryptionMode encryption_scheme) const = 0;
 
   // Returns the configuration rule for supporting a container and list of
   // codecs.

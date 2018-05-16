@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/eme_constants.h"
 #include "media/base/key_systems.h"
 #include "media/base/media.h"
@@ -84,6 +85,12 @@ class AesKeySystemProperties : public TestKeySystemPropertiesBase {
 
   std::string GetKeySystemName() const override { return name_; }
 
+  bool IsEncryptionSchemeSupported(
+      EncryptionMode encryption_scheme) const override {
+    return encryption_scheme == EncryptionMode::kUnencrypted ||
+           encryption_scheme == EncryptionMode::kCenc;
+  }
+
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
@@ -105,6 +112,11 @@ class AesKeySystemProperties : public TestKeySystemPropertiesBase {
 class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
  public:
   std::string GetKeySystemName() const override { return kExternal; }
+
+  bool IsEncryptionSchemeSupported(
+      EncryptionMode encryption_scheme) const override {
+    return encryption_scheme != EncryptionMode::kUnencrypted;
+  }
 
 #if defined(OS_ANDROID)
   // We have hw-secure FOO_VIDEO codec support.
@@ -139,6 +151,12 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
     return EmeFeatureSupport::ALWAYS_ENABLED;
   }
 };
+
+static bool IsEncryptionSchemeSupported(const std::string& key_system,
+                                        EncryptionMode encryption_scheme) {
+  return KeySystems::GetInstance()->IsEncryptionSchemeSupported(
+      key_system, encryption_scheme);
+}
 
 static EmeConfigRule GetVideoContentTypeConfigRule(
     const std::string& mime_type,
@@ -570,6 +588,14 @@ TEST_F(KeySystemsTest,
       kAudioFoo, vorbis_codec(), kUsesAes));
 }
 
+TEST_F(KeySystemsTest,
+       IsSupportedKeySystem_UsesAesDecryptor_EncryptionSchemes) {
+  EXPECT_TRUE(
+      IsEncryptionSchemeSupported(kUsesAes, EncryptionMode::kUnencrypted));
+  EXPECT_TRUE(IsEncryptionSchemeSupported(kUsesAes, EncryptionMode::kCenc));
+  EXPECT_FALSE(IsEncryptionSchemeSupported(kUsesAes, EncryptionMode::kCbcs));
+}
+
 //
 // Non-AesDecryptor-based key system.
 //
@@ -690,6 +716,17 @@ TEST_F(
   // Non-container2 codec.
   EXPECT_FALSE(IsSupportedKeySystemWithAudioMimeType(
       kAudioFoo, vorbis_codec(), kExternal));
+}
+
+TEST_F(KeySystemsTest,
+       IsSupportedKeySystem_ExternalDecryptor_EncryptionSchemes) {
+  if (!CanRunExternalKeySystemTests())
+    return;
+
+  EXPECT_FALSE(
+      IsEncryptionSchemeSupported(kExternal, EncryptionMode::kUnencrypted));
+  EXPECT_TRUE(IsEncryptionSchemeSupported(kExternal, EncryptionMode::kCenc));
+  EXPECT_TRUE(IsEncryptionSchemeSupported(kExternal, EncryptionMode::kCbcs));
 }
 
 TEST_F(KeySystemsTest, KeySystemNameForUMA) {
