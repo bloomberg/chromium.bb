@@ -256,8 +256,7 @@ class ContextualSuggestionsMediator
             }
 
             if (clusters.size() > 0 && clusters.get(0).getSuggestions().size() > 0) {
-                preloadContentInSheet(
-                        generateClusterList(clusters), suggestionsResult.getPeekText());
+                prepareModel(generateClusterList(clusters), suggestionsResult.getPeekText());
                 // If the controls are already off-screen, show the suggestions immediately so they
                 // are available on reverse scroll.
                 maybeShowContentInSheet();
@@ -343,7 +342,7 @@ class ContextualSuggestionsMediator
         }
     }
 
-    private void preloadContentInSheet(ClusterList clusters, String title) {
+    private void prepareModel(ClusterList clusters, String title) {
         if (mSuggestionsSource == null) return;
 
         mModel.setClusterList(clusters);
@@ -362,7 +361,6 @@ class ContextualSuggestionsMediator
         mModel.setMenuButtonDelegate(this);
         mModel.setDefaultToolbarClickListener(view -> mCoordinator.expandBottomSheet());
         mModel.setTitle(title);
-        mCoordinator.preloadContentInSheet();
     }
 
     private void maybeShowContentInSheet() {

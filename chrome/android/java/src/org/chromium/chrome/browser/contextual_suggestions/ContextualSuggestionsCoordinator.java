@@ -80,33 +80,18 @@ public class ContextualSuggestionsCoordinator {
     }
 
     /**
-     * Preload the contextual suggestions content in the {@link BottomSheet}; the sheet won't
-     * actually be shown until {@link #showContentInSheet()} is called.
+     * Show the contextual suggestions content in the {@link BottomSheet}.
+     * Only the views needed for peeking the bottom sheet will be constructed. Another
+     * call to {@link #displaySuggestions()} is needed to finish inflating views for the
+     * suggestions cards.
      */
-    void preloadContentInSheet() {
+    void showContentInSheet() {
         mToolbarCoordinator =
                 new ToolbarCoordinator(mActivity, mBottomSheetController.getBottomSheet(), mModel);
         mContentCoordinator =
                 new ContentCoordinator(mActivity, mBottomSheetController.getBottomSheet());
         mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(
                 mContentCoordinator, mToolbarCoordinator);
-        // TODO(twellington): Handle the case where preload returns false.
-        mBottomSheetController.requestContentPreload(mBottomSheetContent);
-    }
-
-    /**
-     * Show the contextual suggestions content in the {@link BottomSheet}.
-     * {@link #preloadContentInSheet()} must be called prior to calling this method.
-     *
-     * Only the views needed for peeking the bottom sheet will be constructed. Another
-     * call to {@link #displaySuggestions()} is needed to finish inflating views for the
-     * suggestions cards.
-     */
-    void showContentInSheet() {
-        // #preloadContentInSheet will always be called before this method, regardless of
-        // whether content was actually put in the sheet (meaning mBottomSheetContent should never
-        // be null). If content is not successfully preloaded
-        // BottomSheetController#requestContentPreload will return false.
         assert mBottomSheetContent != null;
         mBottomSheetController.requestShowContent(mBottomSheetContent, false);
     }

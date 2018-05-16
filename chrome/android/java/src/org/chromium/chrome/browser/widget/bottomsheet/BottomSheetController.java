@@ -282,7 +282,7 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
      */
     public boolean requestShowContent(BottomSheetContent content, boolean animate) {
         // If pre-load failed, do nothing. The content will automatically be queued.
-        if (!requestContentPreload(content)) return false;
+        if (!loadInternal(content)) return false;
         if (!mBottomSheet.isSheetOpen() && !isOtherUIObscuring()) {
             mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, animate);
         }
@@ -291,13 +291,11 @@ public class BottomSheetController implements ApplicationStatus.ActivityStateLis
     }
 
     /**
-     * Request content start loading in the bottom sheet without actually showing the
-     * {@link BottomSheet}. Another call to {@link #requestShowContent(BottomSheetContent, boolean)}
-     * is required to actually make the sheet appear.
-     * @param content The content to pre-load.
+     * Handles loading or suppressing of content based on priority.
+     * @param content The content to load.
      * @return True if the content started loading.
      */
-    public boolean requestContentPreload(BottomSheetContent content) {
+    private boolean loadInternal(BottomSheetContent content) {
         if (content == mBottomSheet.getCurrentSheetContent()) return true;
         if (!canShowInLayout(mLayoutManager.getActiveLayout())) return false;
 
