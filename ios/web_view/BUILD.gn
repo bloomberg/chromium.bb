@@ -319,6 +319,7 @@ test("ios_web_view_unittests") {
     "internal/autofill/cwv_autofill_controller_unittest.mm",
     "internal/autofill/cwv_autofill_profile_unittest.mm",
     "internal/autofill/cwv_autofill_suggestion_unittest.mm",
+    "internal/autofill/cwv_credit_card_unittest.mm",
     "internal/cwv_html_element_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
     "internal/cwv_preview_element_info_unittest.mm",
