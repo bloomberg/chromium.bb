@@ -13,8 +13,6 @@
 #include "net/android/network_change_notifier_delegate_android.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
-#include "net/dns/dns_config_service.h"
-#include "net/dns/dns_protocol.h"
 #include "net/test/test_with_scoped_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,30 +100,6 @@ class NetworkChangeNotifierMaxBandwidthObserver
 
  private:
   int notifications_count_ = 0;
-};
-
-class DNSChangeObserver : public NetworkChangeNotifier::DNSObserver {
- public:
-  DNSChangeObserver()
-      : change_notifications_count_(0), initial_notifications_count_(0) {}
-
-  // NetworkChangeNotifier::DNSObserver:
-  void OnDNSChanged() override { change_notifications_count_++; }
-
-  void OnInitialDNSConfigRead() override {
-    initial_notifications_count_++;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
-  }
-
-  int change_notifications_count() const { return change_notifications_count_; }
-
-  int initial_notifications_count() const {
-    return initial_notifications_count_;
-  }
-
- private:
-  int change_notifications_count_;
-  int initial_notifications_count_;
 };
 
 // A NetworkObserver used for verifying correct notifications are sent.
@@ -296,10 +270,7 @@ TEST_F(BaseNetworkChangeNotifierAndroidTest,
 class NetworkChangeNotifierAndroidTest
     : public BaseNetworkChangeNotifierAndroidTest {
  protected:
-  void SetUp() override {
-    dns_config_.nameservers.push_back(
-        IPEndPoint(IPAddress(8, 8, 8, 8), dns_protocol::kDefaultPort));
-    notifier_.reset(new NetworkChangeNotifierAndroid(&delegate_, &dns_config_));
+  NetworkChangeNotifierAndroidTest() : notifier_(&delegate_) {
     NetworkChangeNotifier::AddConnectionTypeObserver(
         &connection_type_observer_);
     NetworkChangeNotifier::AddConnectionTypeObserver(
@@ -308,15 +279,14 @@ class NetworkChangeNotifierAndroidTest
   }
 
   void ForceNetworkHandlesSupportedForTesting() {
-    notifier_->ForceNetworkHandlesSupportedForTesting();
+    notifier_.ForceNetworkHandlesSupportedForTesting();
   }
 
   NetworkChangeNotifierObserver connection_type_observer_;
   NetworkChangeNotifierMaxBandwidthObserver max_bandwidth_observer_;
   NetworkChangeNotifierObserver other_connection_type_observer_;
   NetworkChangeNotifier::DisableForTest disable_for_test_;
-  DnsConfig dns_config_;
-  std::unique_ptr<NetworkChangeNotifierAndroid> notifier_;
+  NetworkChangeNotifierAndroid notifier_;
 };
 
 class NetworkChangeNotifierDelegateAndroidTest
@@ -363,7 +333,7 @@ TEST_F(NetworkChangeNotifierAndroidTest,
   RunTest(base::Bind(&NetworkChangeNotifierObserver::notifications_count,
                      base::Unretained(&connection_type_observer_)),
           base::Bind(&NetworkChangeNotifierAndroid::GetCurrentConnectionType,
-                     base::Unretained(notifier_.get())));
+                     base::Unretained(&notifier_)));
 }
 
 // When a NetworkChangeNotifierAndroid's connection state changes, it should
@@ -385,13 +355,13 @@ TEST_F(NetworkChangeNotifierAndroidTest, MaxBandwidth) {
   double max_bandwidth_mbps = 0.0;
   NetworkChangeNotifier::ConnectionType connection_type =
       NetworkChangeNotifier::CONNECTION_NONE;
-  notifier_->GetMaxBandwidthAndConnectionType(&max_bandwidth_mbps,
-                                              &connection_type);
+  notifier_.GetMaxBandwidthAndConnectionType(&max_bandwidth_mbps,
+                                             &connection_type);
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_UNKNOWN, connection_type);
   EXPECT_EQ(std::numeric_limits<double>::infinity(), max_bandwidth_mbps);
   SetOffline();
-  notifier_->GetMaxBandwidthAndConnectionType(&max_bandwidth_mbps,
-                                              &connection_type);
+  notifier_.GetMaxBandwidthAndConnectionType(&max_bandwidth_mbps,
+                                             &connection_type);
   EXPECT_EQ(NetworkChangeNotifier::CONNECTION_NONE, connection_type);
   EXPECT_EQ(0.0, max_bandwidth_mbps);
 }
@@ -421,19 +391,6 @@ TEST_F(NetworkChangeNotifierDelegateAndroidTest,
   EXPECT_EQ(2, delegate_observer_.bandwidth_notifications_count());
   SetOnline();
   EXPECT_EQ(2, delegate_observer_.bandwidth_notifications_count());
-}
-
-TEST_F(NetworkChangeNotifierAndroidTest, InitialSignal) {
-  DNSChangeObserver dns_change_observer;
-  NetworkChangeNotifier::AddDNSObserver(&dns_change_observer);
-  net::DnsConfig dns_config;
-  NetworkChangeNotifier::GetDnsConfig(&dns_config);
-  if (!dns_config.IsValid()) {
-    base::RunLoop().Run();
-    EXPECT_EQ(1, dns_change_observer.initial_notifications_count());
-    EXPECT_EQ(0, dns_change_observer.change_notifications_count());
-  }
-  NetworkChangeNotifier::RemoveDNSObserver(&dns_change_observer);
 }
 
 TEST_F(NetworkChangeNotifierAndroidTest, NetworkCallbacks) {

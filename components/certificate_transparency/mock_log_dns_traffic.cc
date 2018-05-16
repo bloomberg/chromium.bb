@@ -33,10 +33,6 @@ const net::MockRead kNoMoreData(net::SYNCHRONOUS, net::ERR_UNEXPECTED, 2);
 // Necessary to expose SetDnsConfig for testing.
 class DnsChangeNotifier : public net::NetworkChangeNotifier {
  public:
-  static void SetInitialDnsConfig(const net::DnsConfig& config) {
-    net::NetworkChangeNotifier::SetInitialDnsConfig(config);
-  }
-
   static void SetDnsConfig(const net::DnsConfig& config) {
     net::NetworkChangeNotifier::SetDnsConfig(config);
   }
@@ -312,7 +308,7 @@ void MockLogDnsTraffic::InitializeDnsConfig() {
   // IDs.
   dns_config.randomize_ports = false;
 
-  DnsChangeNotifier::SetInitialDnsConfig(dns_config);
+  DnsChangeNotifier::SetDnsConfig(dns_config);
 }
 
 void MockLogDnsTraffic::SetDnsConfig(const net::DnsConfig& config) {

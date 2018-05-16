@@ -68,8 +68,14 @@ class DnsConfigWatcher {
 #elif defined(OS_ANDROID)
 
 // On Android, assume DNS config may have changed on every network change.
-class DnsConfigWatcher {
+class DnsConfigWatcher : public NetworkChangeNotifier::NetworkChangeObserver {
  public:
+  DnsConfigWatcher() { NetworkChangeNotifier::AddNetworkChangeObserver(this); }
+
+  ~DnsConfigWatcher() override {
+    NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  }
+
   using CallbackType = base::Callback<void(bool succeeded)>;
 
   bool Watch(const CallbackType& callback) {
@@ -77,7 +83,8 @@ class DnsConfigWatcher {
     return true;
   }
 
-  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) {
+  // NetworkChangeNotifier::NetworkChangeObserver implementation:
+  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override {
     if (!callback_.is_null() && type != NetworkChangeNotifier::CONNECTION_NONE)
       callback_.Run(true);
   }
@@ -268,17 +275,8 @@ class DnsConfigServicePosix::Watcher {
     return success;
   }
 
-#if defined(OS_ANDROID)
-  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) {
-    config_watcher_.OnNetworkChanged(type);
-  }
-#endif  // defined(OS_ANDROID)
-
  private:
   void OnConfigChanged(bool succeeded) {
-#if defined(OS_ANDROID)
-    service_->seen_config_change_ = true;
-#endif  // defined(OS_ANDROID)
     // Ignore transient flutter of resolv.conf by delaying the signal a bit.
     const base::TimeDelta kDelay = base::TimeDelta::FromMilliseconds(50);
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
@@ -313,18 +311,11 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
  public:
   explicit ConfigReader(DnsConfigServicePosix* service)
       : service_(service), success_(false) {
-    const DnsConfig* test_config = service->dns_config_for_testing_;
-    if (test_config)
-      dns_config_for_testing_.reset(new DnsConfig(*test_config));
   }
 
   void DoWork() override {
     base::TimeTicks start_time = base::TimeTicks::Now();
     ConfigParsePosixResult result = ReadDnsConfig(&dns_config_);
-    if (dns_config_for_testing_) {
-      dns_config_ = *dns_config_for_testing_;
-      result = CONFIG_PARSE_POSIX_OK;
-    }
     switch (result) {
       case CONFIG_PARSE_POSIX_MISSING_OPTIONS:
       case CONFIG_PARSE_POSIX_UNHANDLED_OPTIONS:
@@ -359,8 +350,6 @@ class DnsConfigServicePosix::ConfigReader : public SerialWorker {
   // DoWork(), since service may be destroyed while SerialWorker is running
   // on worker thread.
   DnsConfigServicePosix* const service_;
-  // Dns config value to always return for testing.
-  std::unique_ptr<const DnsConfig> dns_config_for_testing_;
   // Written in DoWork, read in OnWorkFinished, no locking necessary.
   DnsConfig dns_config_;
   bool success_;
@@ -412,15 +401,8 @@ class DnsConfigServicePosix::HostsReader : public SerialWorker {
 
 DnsConfigServicePosix::DnsConfigServicePosix()
     : file_path_hosts_(kFilePathHosts),  // Must set before |hosts_reader_|
-      dns_config_for_testing_(nullptr),  // Must set before |config_reader_|
       config_reader_(new ConfigReader(this)),
-      hosts_reader_(new HostsReader(this))
-#if defined(OS_ANDROID)
-      ,
-      seen_config_change_(false)
-#endif  // defined(OS_ANDROID)
-{
-}
+      hosts_reader_(new HostsReader(this)) {}
 
 DnsConfigServicePosix::~DnsConfigServicePosix() {
   config_reader_->Cancel();
@@ -463,29 +445,6 @@ void DnsConfigServicePosix::OnHostsChanged(bool succeeded) {
     UMA_HISTOGRAM_ENUMERATION("AsyncDNS.WatchStatus",
                               DNS_CONFIG_WATCH_FAILED_HOSTS,
                               DNS_CONFIG_WATCH_MAX);
-  }
-}
-
-void DnsConfigServicePosix::SetDnsConfigForTesting(
-    const DnsConfig* dns_config) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  dns_config_for_testing_ = dns_config;
-  // Reset ConfigReader to bind new DnsConfig for testing.
-  config_reader_->Cancel();
-  config_reader_ = base::MakeRefCounted<ConfigReader>(this);
-}
-
-void DnsConfigServicePosix::SetHostsFilePathForTesting(
-    const base::FilePath::CharType* file_path) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  file_path_hosts_ = file_path;
-  // Reset HostsReader to bind new hosts file path.
-  hosts_reader_->Cancel();
-  hosts_reader_ = base::MakeRefCounted<HostsReader>(this);
-  // If watching, reset to bind new hosts file path and resume watching.
-  if (watcher_) {
-    watcher_.reset(new Watcher(this));
-    watcher_->Watch();
   }
 }
 
@@ -594,20 +553,6 @@ ConfigParsePosixResult ConvertResStateToDnsConfig(const struct __res_state& res,
   return CONFIG_PARSE_POSIX_OK;
 }
 
-#else   // defined(OS_ANDROID)
-
-bool DnsConfigServicePosix::SeenChangeSince(
-    const base::Time& since_time) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return seen_config_change_;
-}
-
-void DnsConfigServicePosix::OnNetworkChanged(
-    NetworkChangeNotifier::ConnectionType type) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(watcher_);
-  watcher_->OnNetworkChanged(type);
-}
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace internal

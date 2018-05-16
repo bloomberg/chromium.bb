@@ -16,7 +16,6 @@
 
 namespace net {
 
-struct DnsConfig;
 class NetworkChangeNotifierAndroidTest;
 class NetworkChangeNotifierFactoryAndroid;
 
@@ -88,8 +87,8 @@ class NET_EXPORT_PRIVATE NetworkChangeNotifierAndroid
   // Enable NetworkHandles support for tests.
   void ForceNetworkHandlesSupportedForTesting();
 
-  NetworkChangeNotifierAndroid(NetworkChangeNotifierDelegateAndroid* delegate,
-                               const DnsConfig* dns_config_for_testing);
+  explicit NetworkChangeNotifierAndroid(
+      NetworkChangeNotifierDelegateAndroid* delegate);
 
   static NetworkChangeCalculatorParams NetworkChangeCalculatorParamsAndroid();
 

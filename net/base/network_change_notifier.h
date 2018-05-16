@@ -555,11 +555,12 @@ class NET_EXPORT NetworkChangeNotifier {
   static void NotifyObserversOfSpecificNetworkChange(NetworkChangeType type,
                                                      NetworkHandle network);
 
-  // Stores |config| in NetworkState and notifies OnDNSChanged observers.
+  // Stores |config| in NetworkState and notifies observers. The first
+  // notification will be OnInitialDNSConfigRead, and after that OnDNSChanged.
   static void SetDnsConfig(const DnsConfig& config);
-  // Stores |config| in NetworkState and notifies OnInitialDNSConfigRead
-  // observers.
-  static void SetInitialDnsConfig(const DnsConfig& config);
+
+  // Clears previous DnsConfig, if any, to simulate the first one being set.
+  static void ClearDnsConfigForTesting();
 
   // Infer connection type from |GetNetworkList|. If all network interfaces
   // have the same type, return it, otherwise return CONNECTION_UNKNOWN.

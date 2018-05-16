@@ -197,13 +197,6 @@ TEST(DnsConfigServicePosixTest, DestroyWhileJobsWorking) {
 
 namespace internal {
 
-const char kTempHosts1[] = "127.0.0.1 localhost";
-// kTempHosts2 is only used by SeenChangeSinceHostsChange, which doesn't run
-// on Android.
-#if !defined(OS_ANDROID)
-const char kTempHosts2[] = "127.0.0.2 localhost";
-#endif  // !defined(OS_ANDROID)
-
 class DnsConfigServicePosixTest : public testing::Test {
  public:
   DnsConfigServicePosixTest() : seen_config_(false) {}
@@ -213,101 +206,19 @@ class DnsConfigServicePosixTest : public testing::Test {
     EXPECT_TRUE(config.IsValid());
     seen_config_ = true;
     real_config_ = config;
-    // run_loop_ will be nullptr if ExpectChange() was never called.
-    // ChangeConfigMultipleTimes can't call ExpectChange() because
-    // OnConfigChanged() will only be called when the DnsConfig is actually
-    // different. When the device has nameservers configured, that's true on the
-    // initial read, and OnConfigChanged() will be called, but when it doesn't,
-    // that's never true, and the Run() call in ExpectChange() would hang
-    // forever.
-    if (run_loop_)
-      run_loop_->QuitWhenIdle();
-  }
-
-  void WriteMockHostsFile(const char* hosts_string) {
-    ASSERT_EQ(base::WriteFile(temp_file_, hosts_string, strlen(hosts_string)),
-              static_cast<int>(strlen(hosts_string)));
-  }
-
-  void MockDNSConfig(const char* dns_server) {
-    IPAddress dns_address;
-    ASSERT_TRUE(dns_address.AssignFromIPLiteral(dns_server));
-    test_config_.nameservers.clear();
-    test_config_.nameservers.push_back(
-        IPEndPoint(dns_address, dns_protocol::kDefaultPort));
-    service_->SetDnsConfigForTesting(&test_config_);
-  }
-
-  void MockHostsFilePath(const char* file_path) {
-    service_->SetHostsFilePathForTesting(file_path);
   }
 
   void SetUp() override {
-    // TODO(pauljensen): Get rid of GetExternalStorageDirectory() when
-    // crbug.com/475568 is fixed.  For now creating a temp file in the
-    // default temp directory (/data/data/...) will cause FilePathWatcher
-    // to fail, so create the temp file in /sdcard.
-    base::FilePath parent_dir;
-    ASSERT_TRUE(base::android::GetExternalStorageDirectory(&parent_dir));
-    ASSERT_TRUE(base::CreateTemporaryFileInDir(parent_dir, &temp_file_));
-    WriteMockHostsFile(kTempHosts1);
-    // Set the time on the hosts file back so it appears older than the
-    // 1s safety offset in DnsConfigServicePosix::SeenChangeSince().
-    // TODO(pauljensen): Switch from Sleep() to TouchFile() when
-    // crbug.com/475568 is fixed.  For now TouchFile() will fail in /sdcard.
-    base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1100));
-    // // Copy real hosts file's last modified time to mock hosts file.
-    // base::File hosts(base::FilePath(DnsConfigServicePosix::kFilePathHosts),
-    //                 base::File::FLAG_OPEN | base::File::FLAG_READ);
-    // base::File::Info hosts_info;
-    // ASSERT_TRUE(hosts.GetInfo(&hosts_info));
-    // ASSERT_TRUE(base::TouchFile(temp_file_, hosts_info.last_modified,
-    //                            hosts_info.last_accessed));
-
-    creation_time_ = base::Time::Now();
     service_.reset(new DnsConfigServicePosix());
-    MockHostsFilePath(temp_file_.value().c_str());
   }
 
   void TearDown() override { ASSERT_TRUE(base::DeleteFile(temp_file_, false)); }
 
-  void StartWatching() {
-    seen_config_ = false;
-    service_->WatchConfig(base::Bind(
-        &DnsConfigServicePosixTest::OnConfigChanged, base::Unretained(this)));
-    ExpectChange();
-  }
-
-  void ExpectChange() {
-    EXPECT_FALSE(seen_config_);
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-    EXPECT_TRUE(seen_config_);
-    seen_config_ = false;
-  }
-
   bool seen_config_;
-  base::Time creation_time_;
   base::FilePath temp_file_;
   std::unique_ptr<DnsConfigServicePosix> service_;
-  DnsConfig test_config_;
   DnsConfig real_config_;
-  std::unique_ptr<base::RunLoop> run_loop_;
 };
-
-TEST_F(DnsConfigServicePosixTest, SeenChangeSinceNetworkChange) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
-
-  // Verify SeenChangeSince() returns false if no changes
-  MockDNSConfig("8.8.8.8");
-  StartWatching();
-  EXPECT_FALSE(service_->SeenChangeSince(creation_time_));
-  // Verify SeenChangeSince() returns true if network change
-  MockDNSConfig("8.8.4.4");
-  service_->OnNetworkChanged(NetworkChangeNotifier::CONNECTION_WIFI);
-  EXPECT_TRUE(service_->SeenChangeSince(creation_time_));
-  ExpectChange();
-}
 
 // Regression test for https://crbug.com/704662.
 TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
@@ -318,7 +229,7 @@ TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
   scoped_task_environment.RunUntilIdle();
 
   for (int i = 0; i < 5; i++) {
-    service_->OnNetworkChanged(NetworkChangeNotifier::CONNECTION_WIFI);
+    service_->OnConfigChanged(true);
     // Wait for config read after the change. OnConfigChanged() will only be
     // called if the new config is different from the old one, so this can't be
     // ExpectChange().

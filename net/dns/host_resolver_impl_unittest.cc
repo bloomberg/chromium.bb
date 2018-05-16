@@ -1750,7 +1750,8 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
   }
 
   void SetInitialDnsConfig(const DnsConfig& config) {
-    NetworkChangeNotifier::SetInitialDnsConfig(config);
+    NetworkChangeNotifier::ClearDnsConfigForTesting();
+    NetworkChangeNotifier::SetDnsConfig(config);
     // Notification is delivered asynchronously.
     base::RunLoop().RunUntilIdle();
   }
