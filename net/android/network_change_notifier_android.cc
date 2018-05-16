@@ -67,7 +67,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread.h"
 #include "net/base/address_tracker_linux.h"
-#include "net/dns/dns_config_service_posix.h"
+#include "net/dns/dns_config_service.h"
 
 namespace net {
 
@@ -85,13 +85,10 @@ enum NetId {
 // Thread on which we can run DnsConfigService, which requires a TYPE_IO
 // message loop to monitor /system/etc/hosts.
 class NetworkChangeNotifierAndroid::DnsConfigServiceThread
-    : public base::Thread,
-      public NetworkChangeNotifier::NetworkChangeObserver {
+    : public base::Thread {
  public:
-  explicit DnsConfigServiceThread(const DnsConfig* dns_config_for_testing)
+  DnsConfigServiceThread()
       : base::Thread("DnsConfigService"),
-        dns_config_for_testing_(dns_config_for_testing),
-        creation_time_(base::Time::Now()),
         address_tracker_(base::DoNothing(),
                          base::DoNothing(),
                          // We're only interested in tunnel interface changes.
@@ -99,23 +96,14 @@ class NetworkChangeNotifierAndroid::DnsConfigServiceThread
                          std::unordered_set<std::string>()) {}
 
   ~DnsConfigServiceThread() override {
-    NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
     Stop();
-  }
-
-  void InitAfterStart() {
-    DCHECK(IsRunning());
-    NetworkChangeNotifier::AddNetworkChangeObserver(this);
   }
 
   void Init() override {
     address_tracker_.Init();
-    dns_config_service_.reset(new internal::DnsConfigServicePosix());
-    if (dns_config_for_testing_)
-      dns_config_service_->SetDnsConfigForTesting(dns_config_for_testing_);
+    dns_config_service_ = DnsConfigService::CreateSystemService();
     dns_config_service_->WatchConfig(
-        base::Bind(&DnsConfigServiceThread::DnsConfigChangeCallback,
-                   base::Unretained(this)));
+        base::Bind(&NetworkChangeNotifier::SetDnsConfig));
   }
 
   void CleanUp() override { dns_config_service_.reset(); }
@@ -126,26 +114,7 @@ class NetworkChangeNotifierAndroid::DnsConfigServiceThread
   }
 
  private:
-  void DnsConfigChangeCallback(const DnsConfig& config) {
-    DCHECK(task_runner()->BelongsToCurrentThread());
-    if (dns_config_service_->SeenChangeSince(creation_time_)) {
-      NetworkChangeNotifier::SetDnsConfig(config);
-    } else {
-      NetworkChangeNotifier::SetInitialDnsConfig(config);
-    }
-  }
-
-  // NetworkChangeNotifier::NetworkChangeObserver implementation:
-  void OnNetworkChanged(NetworkChangeNotifier::ConnectionType type) override {
-    task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&internal::DnsConfigServicePosix::OnNetworkChanged,
-                   base::Unretained(dns_config_service_.get()), type));
-  }
-
-  const DnsConfig* dns_config_for_testing_;
-  const base::Time creation_time_;
-  std::unique_ptr<internal::DnsConfigServicePosix> dns_config_service_;
+  std::unique_ptr<DnsConfigService> dns_config_service_;
   // Used to detect tunnel state changes.
   internal::AddressTrackerLinux address_tracker_;
 
@@ -237,22 +206,16 @@ void NetworkChangeNotifierAndroid::OnNetworkMadeDefault(NetworkHandle network) {
 }
 
 NetworkChangeNotifierAndroid::NetworkChangeNotifierAndroid(
-    NetworkChangeNotifierDelegateAndroid* delegate,
-    const DnsConfig* dns_config_for_testing)
+    NetworkChangeNotifierDelegateAndroid* delegate)
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsAndroid()),
       delegate_(delegate),
-      dns_config_service_thread_(
-          new DnsConfigServiceThread(dns_config_for_testing)),
+      dns_config_service_thread_(new DnsConfigServiceThread()),
       force_network_handles_supported_for_testing_(false) {
   CHECK_EQ(NetId::INVALID, NetworkChangeNotifier::kInvalidNetworkHandle)
       << "kInvalidNetworkHandle doesn't match NetId::INVALID";
   delegate_->AddObserver(this);
   dns_config_service_thread_->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-  // Wait until Init is called on the DNS config thread before
-  // calling InitAfterStart.
-  dns_config_service_thread_->WaitUntilThreadStarted();
-  dns_config_service_thread_->InitAfterStart();
 }
 
 // static

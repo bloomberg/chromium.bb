@@ -209,12 +209,6 @@ TEST(NetworkContextCertTransparencyAuditingDisabledTest,
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   ASSERT_TRUE(https_server.Start());
 
-  // Flush any pending tasks, in particular, any configuration updates to
-  // the network or DNS configuration. This is because SCTs are only checked
-  // if DNS was used and the network config has not changed, for privacy
-  // reasons.
-  scoped_task_environment.RunUntilIdle();
-
   // Configure "localhost" to be treated as if it went through DNS. This
   // modifies the HostCache directly to simulate it being cached, rather than
   // indirecting through a scoped HostResolverProc, as queries that use
@@ -344,12 +338,6 @@ TEST(NetworkContextCertTransparencyAuditingEnabledTest,
   // simulate using a real certificate.
   net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
   ASSERT_TRUE(https_server.Start());
-
-  // Flush any pending tasks, in particular, any configuration updates to
-  // the network or DNS configuration. This is because SCTs are only checked
-  // if DNS was used and the network config has not changed, for privacy
-  // reasons.
-  scoped_task_environment.RunUntilIdle();
 
   // Configure "localhost" to be treated as if it went through DNS. This
   // modifies the HostCache directly to simulate it being cached, rather than
