@@ -36,7 +36,7 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
 
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
   gfx::Size size = MdTextButton::CalculatePreferredSize();
-  size.set_height(text_height_ + kVerticalPadding);
+  size.set_height(text_height_ + 2 * kVerticalPadding);
   const int horizontal_padding =
       GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
