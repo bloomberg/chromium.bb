@@ -5,13 +5,32 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_INLINE_BOX_TRAVERSAL_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EDITING_INLINE_BOX_TRAVERSAL_H_
 
+// TODO(xiaochengh): Rename this file to |bidi_adjustment.h|
+
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
 
 class InlineBox;
+struct InlineBoxPosition;
+enum class UnicodeBidi : unsigned;
+
+class BidiAdjustment final {
+  STATIC_ONLY(BidiAdjustment);
+
+ public:
+  // TODO(xiaochengh): Eliminate |unicode_bidi| from parameters.
+  static InlineBoxPosition AdjustForCaretPositionResolution(
+      const InlineBoxPosition&,
+      UnicodeBidi unicode_bidi);
+
+  // TODO(xiaochengh): Clients of InlineBoxTraversal should be wrapped into
+  // new member functions here.
+};
 
 // This class provides common traveral functions on list of |InlineBox|.
+// TODO(xiaochengh): Code using InlineBoxTraversal should be merged into the .cc
+// file and templatized to share code with NG bidi traversal.
 class InlineBoxTraversal final {
   STATIC_ONLY(InlineBoxTraversal);
 
