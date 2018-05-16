@@ -104,10 +104,14 @@ void ObtainAndSetContextProvider(
     base::OnceCallback<void(bool, viz::ContextProvider*)>
         set_context_provider_callback,
     std::pair<media::GpuVideoAcceleratorFactories*, bool> gpu_info) {
-  viz::ContextProvider* context_provider =
-      gpu_info.first->GetMediaContextProvider();
-  std::move(set_context_provider_callback)
-      .Run(gpu_info.second, context_provider);
+  if (gpu_info.first) {
+    viz::ContextProvider* context_provider =
+        gpu_info.first->GetMediaContextProvider();
+    std::move(set_context_provider_callback)
+        .Run(gpu_info.second, context_provider);
+  } else {
+    std::move(set_context_provider_callback).Run(false, nullptr);
+  }
 }
 
 // Obtains the media ContextProvider and calls the given callback on the same
