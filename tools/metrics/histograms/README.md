@@ -8,7 +8,39 @@ range and/or the range is not possible to specify a priori).
 
 [TOC]
 
-## Emitting to Histograms
+## Coding (Emitting to Histograms)
+
+### Don't Use the Same Histogram Logging Call in Multiple Places
+
+These logging macros and functions have long names and sometimes include extra
+parameters (defining the number of buckets for example).  Use a helper function
+if possible.  This leads to shorter, more readable code that's also more
+resilient to problems that could be introduced when making changes.  (One could,
+for example, erroneously change the bucketing of the histogram in one call but
+not the other.)
+
+### Use Fixed Strings When Using Histogram Macros
+
+When using histogram macros (calls such as `UMA_HISTOGRAM_ENUMERATION`), you're
+not allow to construct your string dynamically so that it can vary at a
+callsite.  At a given callsite (preferably you have only one), the string should
+be the same every time the macro is called.  If you need to use dynamic names,
+use the functions in histogram_functions.h instead of the macros.
+
+### Don't Use Same String in Multiple Places
+
+If you must use the histogram name in multiple places, use a compile-time
+constant of appropriate scope that can be referenced everywhere. Using inline
+strings in multiple places can lead to errors if you ever need to revise the
+name and you update one one location and forget another.
+
+### Efficiency
+
+Don't worry about it.  In general, the histogram code is highly optimized.  Do
+not be concerned about the processing cost of emitting to a histogram (unless
+you're using [sparse histograms](#When-To-Use-Sparse-Histograms)).
+
+## Picking Your Histogram Type
 
 ### Directly Measure What You Want
 
@@ -25,12 +57,6 @@ come with timestamps--we pair them up appropriately.  If you simply add up the
 two histograms to get the total histogram, you're implicitly assuming those
 values are independent, which may not be the case.  Directly measure what you
 care about; don't try to derive it from other data.
-
-### Efficiency
-
-In general, the histogram code is highly optimized.  Do not be concerned about
-the processing cost of emitting to a histogram (unless you're using [sparse
-histograms](#When-To-Use-Sparse-Histograms)).
 
 ### Enum Histograms
 
@@ -193,6 +219,17 @@ that buckets capture enough precision for your needs over the range.
 In addition to testing interactively, you can have unit tests examine the
 values emitted to histograms.  See [histogram_tester.h](https://cs.chromium.org/chromium/src/base/test/histogram_tester.h)
 for details.
+
+## Interpreting the Resulting Data
+
+The top of [go/uma-guide](http://go/uma-guide) has good advice on how to go
+about analyzing and interpreting the results of UMA data uploaded by users.  If
+you're reading this page, you've probably just finished adding a histogram to
+the Chromium source code and you're waiting for users to update their version of
+Chrome to a version that includes your code.  In this case, the best advice is
+to remind you that users who update frequently / quickly are biased.  Best take
+the initial statistics with a grain of salt; they're probably *mostly* right but
+not entirely so.
 
 ## Revising Histograms
 

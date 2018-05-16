@@ -11,12 +11,7 @@ enable different analyses.  They're complementary.
 
 [TOC]
 
-## Emitting to User Actions
-
-### Emit Once Per Action
-
-A user action should be tied to an actual action taken by a user.  Each
-meaningful unit of action should cause one emit.
+## Coding (Emitting to User Actions)
 
 ### Emit at a High-Level, not Deep in the Implementation
 
@@ -26,6 +21,34 @@ because that code may get reused (and thus called more times in more places) or
 may get called fewer times (due to caching for example).  In cases like this,
 the logged user action will not longer correspond with a meaningful action by
 the user.
+
+### Don't Use Same String in Multiple Places
+
+Generally a logged user action should correspond with a single, uh, action by
+the user. :-) As such, they should probably only appear in a single place in the
+code.  If the same user action needs to be logged in multiple places, consider
+whether you should be using different user action names for these separate call
+paths.
+
+That said, if you truly need to record the same user action in multiple places,
+that's okay.  Use a compile-time constant of appropriate scope that can be
+referenced everywhere.  Using inline strings in multiple places can lead to
+errors if you ever need to revise the name and you update one one location and
+forget another.
+
+### Efficiency
+
+Due to the practices about when and how often to emit a user action, actions
+should not be emitted often enough to cause efficiency issues.  (If actions are
+emitted often enough to cause a problem, they're not being emitted at
+appropriate times.  See advice below.)
+
+## Emitting Strategies
+
+### Emit Once Per Action
+
+A user action should be tied to an actual action taken by a user.  Each
+meaningful unit of action should cause one emit.
 
 ### Do Not Emit Redundantly
 
@@ -73,6 +96,17 @@ excessively (see [advice above](#Do-Not-Emit-Excessively)).
 In addition to testing interactively, you can have unit tests check the number
 of times a user action was emitted.  See [user_action_tester.h](https://cs.chromium.org/chromium/src/base/test/user_action_tester.h)
 for details.
+
+## Interpreting the Resulting Data
+
+The top of [go/uma-guide](http://go/uma-guide) has good advice on how to go
+about analyzing and interpreting the results of UMA data uploaded by users.  If
+you're reading this page, you've probably just finished adding a user action to
+the Chromium source code and you're waiting for users to update their version of
+Chrome to a version that includes your code.  In this case, the best advice is
+to remind you that users who update frequently / quickly are biased.  Best take
+the initial statistics with a grain of salt; they're probably *mostly* right but
+not entirely so.
 
 ## Revising User Actions
 
