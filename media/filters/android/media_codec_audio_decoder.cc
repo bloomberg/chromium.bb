@@ -178,7 +178,7 @@ void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 
   DCHECK(codec_loop_);
 
-  DVLOG(2) << __func__ << " " << buffer->AsHumanReadableString();
+  DVLOG(3) << __func__ << " " << buffer->AsHumanReadableString();
 
   DCHECK_EQ(state_, STATE_READY) << " unexpected state " << AsString(state_);
 
@@ -192,7 +192,7 @@ void MediaCodecAudioDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
 }
 
 void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
-  DVLOG(1) << __func__;
+  DVLOG(2) << __func__;
 
   ClearInputQueue(DecodeStatus::ABORTED);
 
@@ -287,7 +287,7 @@ bool MediaCodecAudioDecoder::IsAnyInputPending() const {
 }
 
 MediaCodecLoop::InputData MediaCodecAudioDecoder::ProvideInputData() {
-  DVLOG(2) << __func__;
+  DVLOG(3) << __func__;
 
   const DecoderBuffer* decoder_buffer = input_queue_.front().first.get();
 
@@ -338,7 +338,7 @@ void MediaCodecAudioDecoder::ClearInputQueue(DecodeStatus decode_status) {
 }
 
 void MediaCodecAudioDecoder::SetState(State new_state) {
-  DVLOG(1) << __func__ << ": " << AsString(state_) << "->"
+  DVLOG(3) << __func__ << ": " << AsString(state_) << "->"
            << AsString(new_state);
   state_ = new_state;
 }
@@ -376,7 +376,7 @@ bool MediaCodecAudioDecoder::OnDecodedEos(
 
 bool MediaCodecAudioDecoder::OnDecodedFrame(
     const MediaCodecLoop::OutputBuffer& out) {
-  DVLOG(2) << __func__ << " pts:" << out.pts;
+  DVLOG(3) << __func__ << " pts:" << out.pts;
 
   DCHECK_NE(out.size, 0U);
   DCHECK_NE(out.index, MediaCodecLoop::kInvalidBufferIndex);
