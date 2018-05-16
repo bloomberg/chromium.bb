@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/shadow.html">
 <link rel="import" href="../animation/animation.html">
 
@@ -28,7 +29,7 @@
       #card {
         @apply --shadow-elevation-2dp;
         background-color: white;
-        border-radius: 2px;
+        border-radius: var(--cr-card-border-radius);
         flex: 1;
       }
 
