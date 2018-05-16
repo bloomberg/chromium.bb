@@ -241,5 +241,46 @@ void SmbService::CompleteSetup() {
   RestoreMounts();
 }
 
+SmbMountResult SmbService::TranslateErrorToMountResult(
+    smbprovider::ErrorType error) const {
+  DCHECK_NE(smbprovider::ERROR_NONE, error);
+
+  switch (error) {
+    case smbprovider::ERROR_OK:
+      return SmbMountResult::SUCCESS;
+    case smbprovider::ERROR_EXISTS:
+    case smbprovider::ERROR_IN_USE:
+      return SmbMountResult::MOUNT_EXISTS;
+    case smbprovider::ERROR_NOT_FOUND:
+    case smbprovider::ERROR_NOT_A_DIRECTORY:
+    case smbprovider::ERROR_INVALID_URL:
+      return SmbMountResult::NOT_FOUND;
+    case smbprovider::ERROR_ACCESS_DENIED:
+    case smbprovider::ERROR_SECURITY:
+      return SmbMountResult::AUTHENTICATION_FAILED;
+    case smbprovider::ERROR_FAILED:
+    case smbprovider::ERROR_TOO_MANY_OPENED:
+    case smbprovider::ERROR_NO_MEMORY:
+    case smbprovider::ERROR_NO_SPACE:
+    case smbprovider::ERROR_INVALID_OPERATION:
+    case smbprovider::ERROR_ABORT:
+    case smbprovider::ERROR_NOT_A_FILE:
+    case smbprovider::ERROR_NOT_EMPTY:
+    case smbprovider::ERROR_IO:
+    case smbprovider::ERROR_DBUS_PARSE_FAILED:
+      return SmbMountResult::UNKNOWN_FAILURE;
+    default:
+      break;
+  }
+
+  NOTREACHED();
+  return SmbMountResult::UNKNOWN_FAILURE;
+}
+
+SmbMountResult SmbService::TranslateErrorToMountResult(
+    base::File::Error error) const {
+  return TranslateErrorToMountResult(TranslateToErrorType(error));
+}
+
 }  // namespace smb_client
 }  // namespace chromeos
