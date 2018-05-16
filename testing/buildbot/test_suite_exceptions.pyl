@@ -688,19 +688,6 @@
       'ToTLinuxASan',
     ],
   },
-  'components_background_task_scheduler_junit_tests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Phone Tester (dbg)',
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Phone Tester (rel)',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-    ],
-  },
   'components_browsertests': {
     'remove_from': [
       # chromium.chromiumos
