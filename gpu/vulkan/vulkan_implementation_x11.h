@@ -17,7 +17,7 @@ namespace gpu {
 class VULKAN_EXPORT VulkanImplementationX11 : public VulkanImplementation {
  public:
   VulkanImplementationX11();
-  VulkanImplementationX11(XDisplay* x_display);
+  explicit VulkanImplementationX11(XDisplay* x_display);
   ~VulkanImplementationX11() override;
 
   // VulkanImplementation:
