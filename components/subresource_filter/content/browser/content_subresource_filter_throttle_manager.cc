@@ -67,6 +67,25 @@ void ContentSubresourceFilterThrottleManager::RenderFrameDeleted(
 // of subframe navigations.
 void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
+  // Since the frame hasn't yet committed, GetCurrentRenderFrameHost() points
+  // to the initial RFH.
+  // TODO(crbug.com/843646): Use an API that NavigationHandle supports rather
+  // than trying to infer what the NavigationHandle is doing.
+  content::RenderFrameHost* previous_rfh =
+      navigation_handle->GetWebContents()->UnsafeFindFrameByFrameTreeNodeId(
+          navigation_handle->GetFrameTreeNodeId());
+
+  // If a known ad frame has moved to a new RenderFrameHost, update
+  // ad_frames_.
+  bool transferred_ad_frame = false;
+  if (previous_rfh && previous_rfh != navigation_handle->GetRenderFrameHost()) {
+    auto previous_rfh_it = ad_frames_.find(previous_rfh);
+    if (previous_rfh_it != ad_frames_.end()) {
+      ad_frames_.erase(previous_rfh_it);
+      ad_frames_.insert(navigation_handle->GetRenderFrameHost());
+      transferred_ad_frame = true;
+    }
+  }
   if (navigation_handle->GetNetErrorCode() != net::OK)
     return;
 
@@ -97,17 +116,19 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
 
   throttle->WillSendActivationToRenderer();
 
-  // is_ad_subframe is guaranteed to have the correct value at this point since
-  // the ruleset checking and its notification is done before the navigation is
-  // resumed.
-  bool is_ad_subframe = it->second.is_ad_subframe;
-  DCHECK(!is_ad_subframe || level == ActivationLevel::DRYRUN);
-  DCHECK(!is_ad_subframe || !navigation_handle->IsInMainFrame());
-
   content::RenderFrameHost* frame_host =
       navigation_handle->GetRenderFrameHost();
-  if (is_ad_subframe)
+  content::RenderFrameHost* parent_frame = navigation_handle->GetParentFrame();
+
+  bool known_ad_frame =
+      transferred_ad_frame || base::ContainsKey(ad_frames_, frame_host);
+  bool is_ad_subframe =
+      known_ad_frame || it->second.navigating_to_ad_url ||
+      (parent_frame && base::ContainsKey(ad_frames_, parent_frame));
+
+  if (is_ad_subframe && !known_ad_frame)
     ad_frames_.insert(frame_host);
+  DCHECK(!is_ad_subframe || !navigation_handle->IsInMainFrame());
 
   frame_host->Send(new SubresourceFilterMsg_ActivateForNextCommittedLoad(
       frame_host->GetRoutingID(), filter->activation_state(), is_ad_subframe));
@@ -186,6 +207,16 @@ bool ContentSubresourceFilterThrottleManager::OnMessageReceived(
     const IPC::Message& message,
     content::RenderFrameHost* render_frame_host) {
   bool handled = true;
+
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(ContentSubresourceFilterThrottleManager,
+                                   message, render_frame_host)
+    IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_FrameIsAdSubframe,
+                        OnFrameIsAdSubframe)
+    IPC_MESSAGE_UNHANDLED(handled = false)
+  IPC_END_MESSAGE_MAP()
+  if (handled)
+    return true;
+
   IPC_BEGIN_MESSAGE_MAP(ContentSubresourceFilterThrottleManager, message)
     IPC_MESSAGE_HANDLER(SubresourceFilterHostMsg_DidDisallowFirstSubresource,
                         MaybeCallFirstDisallowedLoad)
@@ -225,19 +256,10 @@ void ContentSubresourceFilterThrottleManager::OnSubframeNavigationEvaluated(
   if (it == ongoing_activation_throttles_.end())
     return;
 
-  // Note that is_ad_subframe is only relevant for
+  // Note that |navigating_to_ad_url| is only relevant for
   // LoadPolicy:WOULD_DISALLOW(dryrun mode), although also setting it for
   // DISALLOW for completeness.
-  it->second.is_ad_subframe = load_policy != LoadPolicy::ALLOW;
-
-  // If this frame was not identified as an ad via ruleset matching, tag it
-  // based on whether its parent frame is an ad or not.
-  if (!it->second.is_ad_subframe) {
-    content::RenderFrameHost* parent_frame =
-        navigation_handle->GetParentFrame();
-    if (parent_frame && base::ContainsKey(ad_frames_, parent_frame))
-      it->second.is_ad_subframe = true;
-  }
+  it->second.navigating_to_ad_url = load_policy != LoadPolicy::ALLOW;
 }
 
 void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
@@ -361,6 +383,13 @@ void ContentSubresourceFilterThrottleManager::OnDocumentLoadStatistics(
     const DocumentLoadStatistics& statistics) {
   if (statistics_)
     statistics_->OnDocumentLoadStatistics(statistics);
+}
+
+void ContentSubresourceFilterThrottleManager::OnFrameIsAdSubframe(
+    content::RenderFrameHost* render_frame_host) {
+  DCHECK(render_frame_host);
+
+  ad_frames_.insert(render_frame_host);
 }
 
 void ContentSubresourceFilterThrottleManager::OnActivationThrottleDestroyed(

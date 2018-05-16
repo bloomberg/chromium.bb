@@ -79,3 +79,9 @@ IPC_MESSAGE_ROUTED0(SubresourceFilterHostMsg_DidDisallowFirstSubresource)
 // if performance measurements were disabled for the load.
 IPC_MESSAGE_ROUTED1(SubresourceFilterHostMsg_DocumentLoadStatistics,
                     subresource_filter::DocumentLoadStatistics /* statistics */)
+
+// Sent to the browser when a RenderFrame is created and is tagged as an ad
+// subframe. The browser keeps track of this in case the frame later changes
+// processes, at which point it will inform the new RenderFrame that it has been
+// tagged as an ad via SubresourceFilterMsg_ActivateForNextCommittedLoad.
+IPC_MESSAGE_ROUTED0(SubresourceFilterHostMsg_FrameIsAdSubframe)

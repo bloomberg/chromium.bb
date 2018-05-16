@@ -9,6 +9,7 @@
 #include <tuple>
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
@@ -30,6 +31,7 @@
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/url_constants.h"
@@ -741,6 +743,107 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
                                  true /* is_ad_subframe */);
 }
 
+// If the RenderFrame determines that the frame is an ad, then any navigation
+// for that frame should be considered an ad.
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       SubframeNavigationTaggedAsAdByRenderer) {
+  NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
+  ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */,
+                                 false /* is_ad_subframe */);
+
+  content::RenderFrameHost* subframe = CreateSubframeWithTestNavigation(
+      GURL("https://www.example.com/allowed.html"), main_rfh());
+
+  EXPECT_FALSE(throttle_manager()->IsFrameTaggedAsAdForTesting(subframe));
+  throttle_manager()->OnFrameIsAdSubframe(subframe);
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(subframe));
+
+  SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
+
+  subframe =
+      SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  EXPECT_TRUE(subframe);
+
+  ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
+                                 true /* is_ad_subframe */);
+
+  // A non-ad navigation for the same frame should be considered an ad
+  // subframe as well.
+  CreateTestNavigation(GURL("https://example.com/allowed2.html"), subframe);
+  SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
+                                 true /* is_ad_subframe */);
+}
+
+// If the RenderFrame determines that the frame is an ad, and the frame changes
+// processes, then the new frame host should still be considered an ad.
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       AdTagCarriesAcrossProcesses) {
+  content::IsolateAllSitesForTesting(base::CommandLine::ForCurrentProcess());
+
+  NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
+  ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */,
+                                 false /* is_ad_subframe */);
+
+  // Create a subframe to a different site. It will start as a same-process
+  // frame but transition to a cross-process frame just before commit (after
+  // the throttle has marked the frame as an ad.)
+  content::RenderFrameHost* initial_subframe = CreateSubframeWithTestNavigation(
+      GURL("https://www.example2.com/allowed.html"), main_rfh());
+
+  // Simulate the render process telling the manager that the frame is an ad.
+  throttle_manager()->OnFrameIsAdSubframe(initial_subframe);
+  EXPECT_TRUE(
+      throttle_manager()->IsFrameTaggedAsAdForTesting(initial_subframe));
+
+  SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
+
+  content::RenderFrameHost* final_subframe =
+      SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  EXPECT_TRUE(final_subframe);
+  EXPECT_NE(initial_subframe, final_subframe);
+
+  EXPECT_TRUE(throttle_manager()->IsFrameTaggedAsAdForTesting(final_subframe));
+  EXPECT_FALSE(
+      throttle_manager()->IsFrameTaggedAsAdForTesting(initial_subframe));
+  ExpectActivationSignalForFrame(final_subframe, true /* expect_activation */,
+                                 true /* is_ad_subframe */);
+}
+
+// If the RenderFrame determines that the frame is an ad, then its child frames
+// should also be considered ads.
+TEST_P(ContentSubresourceFilterThrottleManagerTest,
+       GrandchildNavigationTaggedAsAdByRenderer) {
+  NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
+  ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */,
+                                 false /* is_ad_subframe */);
+
+  // Create a subframe that's marked as an ad by the render process.
+  content::RenderFrameHost* subframe = CreateSubframeWithTestNavigation(
+      GURL("https://www.example.com/allowed.html"), main_rfh());
+
+  // Simulate the render process telling the manager that the frame is an ad.
+  throttle_manager()->OnFrameIsAdSubframe(subframe);
+
+  SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
+
+  subframe =
+      SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
+                                 true /* is_ad_subframe */);
+
+  // Create a grandchild frame that is marked as an ad because its parent is.
+  content::RenderFrameHost* grandchild_frame = CreateSubframeWithTestNavigation(
+      GURL("https://www.example.com/foo/allowed.html"), subframe);
+  SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
+  grandchild_frame =
+      SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  ExpectActivationSignalForFrame(subframe, true /* expect_activation */,
+                                 true /* is_ad_subframe */);
+  EXPECT_TRUE(
+      throttle_manager()->IsFrameTaggedAsAdForTesting(grandchild_frame));
+}
+
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
        DryRun_FrameTaggingDeleted) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
@@ -793,7 +896,7 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
 }
 
 TEST_P(ContentSubresourceFilterThrottleManagerTest,
-       DryRun_AllowedsFrameNotTaggedAsAd) {
+       DryRun_AllowedFrameNotTaggedAsAd) {
   NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
   ExpectActivationSignalForFrame(main_rfh(), true /* expect_activation */);
 
