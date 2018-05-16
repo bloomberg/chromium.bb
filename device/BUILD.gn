@@ -285,6 +285,8 @@ test("device_unittests") {
       "bluetooth/bluetooth_low_energy_win_fake.h",
       "bluetooth/test/fake_bluetooth_adapter_winrt.cc",
       "bluetooth/test/fake_bluetooth_adapter_winrt.h",
+      "bluetooth/test/fake_device_information_winrt.cc",
+      "bluetooth/test/fake_device_information_winrt.h",
     ]
   }
 
