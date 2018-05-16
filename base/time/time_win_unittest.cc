@@ -309,6 +309,22 @@ TEST(TimeDelta, ConstexprInitialization) {
   EXPECT_EQ(kExpectedDeltaInMilliseconds, kConstexprTimeDelta.InMilliseconds());
 }
 
+TEST(TimeDelta, FromFileTime) {
+  FILETIME ft;
+  ft.dwLowDateTime = 1001;
+  ft.dwHighDateTime = 0;
+
+  // 100100 ns ~= 100 us.
+  EXPECT_EQ(TimeDelta::FromMicroseconds(100), TimeDelta::FromFileTime(ft));
+
+  ft.dwLowDateTime = 0;
+  ft.dwHighDateTime = 1;
+
+  // 2^32 * 100 ns ~= 2^32 * 10 us.
+  EXPECT_EQ(TimeDelta::FromMicroseconds((1ull << 32) / 10),
+            TimeDelta::FromFileTime(ft));
+}
+
 TEST(HighResolutionTimer, GetUsage) {
   EXPECT_EQ(0.0, Time::GetHighResolutionTimerUsage());
 

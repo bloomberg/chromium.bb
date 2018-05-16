@@ -127,10 +127,10 @@ ProcessMetrics::TaskVMInfo ProcessMetrics::GetTaskVMInfo() const {
   (r)->tv_usec = (a)->microseconds;       \
 } while (0)
 
-double ProcessMetrics::GetPlatformIndependentCPUUsage() {
+TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   mach_port_t task = TaskForPid(process_);
   if (task == MACH_PORT_NULL)
-    return 0;
+    return TimeDelta();
 
   // Libtop explicitly loops over the threads (libtop_pinfo_update_cpu_usage()
   // in libtop.c), but this is more concise and gives the same results:
@@ -142,12 +142,12 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
                                &thread_info_count);
   if (kr != KERN_SUCCESS) {
     // Most likely cause: |task| is a zombie.
-    return 0;
+    return TimeDelta();
   }
 
   task_basic_info_64 task_info_data;
   if (!GetTaskInfo(task, &task_info_data))
-    return 0;
+    return TimeDelta();
 
   /* Set total_time. */
   // thread info contains live time...
@@ -162,26 +162,7 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   timeradd(&user_timeval, &task_timeval, &task_timeval);
   timeradd(&system_timeval, &task_timeval, &task_timeval);
 
-  TimeTicks time = TimeTicks::Now();
-  int64_t task_time = TimeValToMicroseconds(task_timeval);
-
-  if (last_system_time_ == 0) {
-    // First call, just set the last values.
-    last_cpu_time_ = time;
-    last_system_time_ = task_time;
-    return 0;
-  }
-
-  int64_t system_time_delta = task_time - last_system_time_;
-  int64_t time_delta = (time - last_cpu_time_).InMicroseconds();
-  DCHECK_NE(0U, time_delta);
-  if (time_delta == 0)
-    return 0;
-
-  last_cpu_time_ = time;
-  last_system_time_ = task_time;
-
-  return static_cast<double>(system_time_delta * 100.0) / time_delta;
+  return TimeDelta::FromMicroseconds(TimeValToMicroseconds(task_timeval));
 }
 
 int ProcessMetrics::GetPackageIdleWakeupsPerSecond() {
@@ -220,7 +201,6 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 ProcessMetrics::ProcessMetrics(ProcessHandle process,
                                PortProvider* port_provider)
     : process_(process),
-      last_system_time_(0),
       last_absolute_idle_wakeups_(0),
       last_absolute_package_idle_wakeups_(0),
       port_provider_(port_provider) {}

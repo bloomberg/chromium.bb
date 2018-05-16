@@ -25,9 +25,9 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-double ProcessMetrics::GetPlatformIndependentCPUUsage() {
+TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   NOTIMPLEMENTED();
-  return 0;
+  return TimeDelta();
 }
 
 size_t GetMaxFds() {

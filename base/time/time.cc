@@ -110,6 +110,14 @@ int64_t TimeDelta::InMicroseconds() const {
   return delta_;
 }
 
+double TimeDelta::InMicrosecondsF() const {
+  if (is_max()) {
+    // Preserve max to prevent overflow.
+    return std::numeric_limits<double>::infinity();
+  }
+  return static_cast<double>(delta_);
+}
+
 int64_t TimeDelta::InNanoseconds() const {
   if (is_max()) {
     // Preserve max to prevent overflow.
