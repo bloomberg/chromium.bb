@@ -202,4 +202,9 @@ source_set("unit_tests") {
       "gcm_stats_recorder_impl_unittest.cc",
     ]
   }
+  deps += [
+    "//components/signin/core/browser",
+    "//components/signin/core/browser:test_support",
+    "//components/sync_preferences:test_support",
+  ]
 }

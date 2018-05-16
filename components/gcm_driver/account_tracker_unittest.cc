@@ -10,6 +10,11 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
+#include "components/signin/core/browser/fake_signin_manager.h"
+#include "components/signin/core/browser/test_signin_client.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "google_apis/gaia/fake_identity_provider.h"
 #include "google_apis/gaia/fake_oauth2_token_service.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
@@ -20,6 +25,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
+
+#if defined(OS_CHROMEOS)
+using SigninManagerForTest = FakeSigninManagerBase;
+#else
+using SigninManagerForTest = FakeSigninManager;
+#endif  // OS_CHROMEOS
 
 const char kPrimaryAccountKey[] = "primary_account@example.com";
 
@@ -242,13 +253,28 @@ class IdentityAccountTrackerTest : public testing::Test {
   ~IdentityAccountTrackerTest() override {}
 
   void SetUp() override {
-    fake_oauth2_token_service_.reset(new FakeOAuth2TokenService());
+    fake_oauth2_token_service_.reset(new FakeProfileOAuth2TokenService());
+
+    test_signin_client_.reset(new TestSigninClient(&pref_service_));
+#if defined(OS_CHROMEOS)
+    fake_signin_manager_.reset(new SigninManagerForTest(
+        test_signin_client_.get(), &account_tracker_service_));
+#else
+    fake_signin_manager_.reset(new SigninManagerForTest(
+        test_signin_client_.get(), fake_oauth2_token_service_.get(),
+        &account_tracker_service_, nullptr));
+#endif
+
+    AccountTrackerService::RegisterPrefs(pref_service_.registry());
+    SigninManagerBase::RegisterProfilePrefs(pref_service_.registry());
+    SigninManagerBase::RegisterPrefs(pref_service_.registry());
+    account_tracker_service_.Initialize(test_signin_client_.get());
 
     fake_identity_provider_.reset(
         new FakeIdentityProvider(fake_oauth2_token_service_.get()));
 
     account_tracker_.reset(new AccountTracker(
-        fake_identity_provider_.get(),
+        fake_signin_manager_.get(), fake_identity_provider_.get(),
         new net::TestURLRequestContextGetter(message_loop_.task_runner())));
     account_tracker_->AddObserver(&observer_);
   }
@@ -264,8 +290,15 @@ class IdentityAccountTrackerTest : public testing::Test {
 
   // Helpers to pass fake events to the tracker.
 
+  // Sets the primary account info but carries no guarantee of firing the
+  // callback that signin occurred (see NotifyLogin() below if exercising a
+  // true signin flow in a non-ChromeOS context).
   void SetActiveAccount(const std::string& account_key) {
-    identity_provider()->SetActiveUsername(account_key);
+#if defined(OS_CHROMEOS)
+    fake_signin_manager_->SignIn(account_key);
+#else
+    fake_signin_manager_->SignIn(account_key, account_key, "" /* password */);
+#endif
   }
 
 // NOTE: On ChromeOS, the login callback is never fired in production (since the
@@ -274,18 +307,29 @@ class IdentityAccountTrackerTest : public testing::Test {
 // on ChromeOS and should simply not run on that platform.
 #if !defined(OS_CHROMEOS)
   void NotifyLogin(const std::string& account_key) {
-    identity_provider()->LogIn(account_key);
+    fake_signin_manager_->SignIn(account_key, account_key, "" /* password */);
   }
 
-  void NotifyLogout() { identity_provider()->LogOut(); }
+  void NotifyLogoutOfPrimaryAccountOnly() {
+    fake_signin_manager_->SignOutAndKeepAllAccounts(
+        signin_metrics::SIGNOUT_TEST,
+        signin_metrics::SignoutDelete::IGNORE_METRIC);
+  }
+
+  void NotifyLogoutOfAllAccounts() {
+    fake_signin_manager_->SignOutAndRemoveAllAccounts(
+        signin_metrics::SIGNOUT_TEST,
+        signin_metrics::SignoutDelete::IGNORE_METRIC);
+  }
 #endif
 
   void NotifyTokenAvailable(const std::string& username) {
-    fake_oauth2_token_service_->AddAccount(username);
+    fake_oauth2_token_service_->UpdateCredentials(username,
+                                                  "fake_refresh_token");
   }
 
   void NotifyTokenRevoked(const std::string& username) {
-    fake_oauth2_token_service_->RemoveAccount(username);
+    fake_oauth2_token_service_->RevokeCredentials(username);
   }
 
   // Helpers to fake access token and user info fetching
@@ -326,7 +370,11 @@ class IdentityAccountTrackerTest : public testing::Test {
 
   base::MessageLoopForIO message_loop_;  // net:: stuff needs IO message loop.
   net::TestURLFetcherFactory test_fetcher_factory_;
-  std::unique_ptr<FakeOAuth2TokenService> fake_oauth2_token_service_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
+  AccountTrackerService account_tracker_service_;
+  std::unique_ptr<TestSigninClient> test_signin_client_;
+  std::unique_ptr<SigninManagerForTest> fake_signin_manager_;
+  std::unique_ptr<FakeProfileOAuth2TokenService> fake_oauth2_token_service_;
   std::unique_ptr<FakeIdentityProvider> fake_identity_provider_;
 
   std::unique_ptr<AccountTracker> account_tracker_;
@@ -367,7 +415,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryNoEventsBeforeLogin) {
 
 // Logout is not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
-  NotifyLogout();
+  NotifyLogoutOfAllAccounts();
 #endif
 
   EXPECT_TRUE(observer()->CheckEvents());
@@ -448,7 +496,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLogoutThenRevoke) {
   ReturnOAuthUrlFetchSuccess(kPrimaryAccountKey);
   observer()->Clear();
 
-  NotifyLogout();
+  NotifyLogoutOfAllAccounts();
   EXPECT_TRUE(
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey)));
 
@@ -460,7 +508,7 @@ TEST_F(IdentityAccountTrackerTest, PrimaryLogoutFetchCancelAvailable) {
   NotifyLogin(kPrimaryAccountKey);
   NotifyTokenAvailable(kPrimaryAccountKey);
   // TokenAvailable kicks off a fetch. Logout without satisfying it.
-  NotifyLogout();
+  NotifyLogoutOfAllAccounts();
   EXPECT_TRUE(observer()->CheckEvents());
 
   SetActiveAccount(kPrimaryAccountKey);
@@ -595,7 +643,9 @@ TEST_F(IdentityAccountTrackerTest, MultiSignOutSignIn) {
       observer()->CheckEvents(TrackingEvent(SIGN_IN, "alpha@example.com"),
                               TrackingEvent(SIGN_IN, "beta@example.com")));
 
-  NotifyLogout();
+  // Log out of the primary account only (allows for testing that the account
+  // tracker preserves knowledge of "beta@example.com").
+  NotifyLogoutOfPrimaryAccountOnly();
   observer()->SortEventsByUser();
   EXPECT_TRUE(
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, "alpha@example.com"),
@@ -640,7 +690,7 @@ TEST_F(IdentityAccountTrackerTest, MultiNoEventsBeforeLogin) {
 
 // Logout is not possible on ChromeOS.
 #if !defined(OS_CHROMEOS)
-  NotifyLogout();
+  NotifyLogoutOfAllAccounts();
 #endif
 
   EXPECT_TRUE(observer()->CheckEvents());
@@ -656,7 +706,7 @@ TEST_F(IdentityAccountTrackerTest, MultiLogoutRemovesAllAccounts) {
   ReturnOAuthUrlFetchSuccess("user@example.com");
   observer()->Clear();
 
-  NotifyLogout();
+  NotifyLogoutOfAllAccounts();
   observer()->SortEventsByUser();
   EXPECT_TRUE(
       observer()->CheckEvents(TrackingEvent(SIGN_OUT, kPrimaryAccountKey),

@@ -117,7 +117,7 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
     return;
 
   std::unique_ptr<AccountTracker> gaia_account_tracker(
-      new AccountTracker(identity_provider_, request_context));
+      new AccountTracker(signin_manager_, identity_provider_, request_context));
 
   gcm_account_tracker_.reset(
       new GCMAccountTracker(std::move(gaia_account_tracker), driver_));
