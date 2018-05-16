@@ -195,7 +195,8 @@ class WKBasedNavigationManagerImpl : public NavigationManagerImpl {
   NavigationItemImpl* GetPendingItemImpl() const override;
   NavigationItemImpl* GetTransientItemImpl() const override;
   void FinishGoToIndex(int index,
-                       NavigationInitiationType initiation_type) override;
+                       NavigationInitiationType initiation_type,
+                       bool has_user_gesture) override;
   void FinishReload() override;
   void FinishLoadURLWithParams() override;
   bool IsPlaceholderUrl(const GURL& url) const override;

@@ -812,8 +812,11 @@ void WebStateImpl::RecordPageStateInNavigationItem() {
 }
 
 void WebStateImpl::OnGoToIndexSameDocumentNavigation(
-    NavigationInitiationType type) {
-  [web_controller_ didFinishGoToIndexSameDocumentNavigationWithType:type];
+    NavigationInitiationType type,
+    bool has_user_gesture) {
+  [web_controller_
+      didFinishGoToIndexSameDocumentNavigationWithType:type
+                                        hasUserGesture:has_user_gesture];
 }
 
 void WebStateImpl::WillChangeUserAgentType() {

@@ -503,7 +503,8 @@ NavigationItemImpl* WKBasedNavigationManagerImpl::GetTransientItemImpl() const {
 
 void WKBasedNavigationManagerImpl::FinishGoToIndex(
     int index,
-    NavigationInitiationType type) {
+    NavigationInitiationType type,
+    bool has_user_gesture) {
   if (!web_view_cache_.IsAttachedToWebView()) {
     // GoToIndex from detached mode is equivalent to restoring history with
     // |last_committed_item_index| updated to |index|.

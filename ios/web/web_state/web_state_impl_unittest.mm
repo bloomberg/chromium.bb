@@ -410,8 +410,9 @@ TEST_F(WebStateImplTest, ObserverTest) {
   const GURL url("http://test");
   std::unique_ptr<web::NavigationContext> context =
       NavigationContextImpl::CreateNavigationContext(
-          web_state_.get(), url,
-          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK, true);
+          web_state_.get(), url, /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_AUTO_BOOKMARK,
+          /*is_renderer_initiated=*/true);
   web_state_->OnNavigationFinished(context.get());
   ASSERT_TRUE(observer->did_finish_navigation_info());
   EXPECT_EQ(web_state_.get(),

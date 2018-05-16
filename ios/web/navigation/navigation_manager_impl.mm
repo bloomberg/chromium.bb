@@ -195,9 +195,9 @@ void NavigationManagerImpl::UpdateCurrentItemForReplaceState(
   }
 }
 
-void NavigationManagerImpl::GoToIndex(
-    int index,
-    NavigationInitiationType initiation_type) {
+void NavigationManagerImpl::GoToIndex(int index,
+                                      NavigationInitiationType initiation_type,
+                                      bool has_user_gesture) {
   if (index < 0 || index >= GetItemCount()) {
     NOTREACHED();
     return;
@@ -222,11 +222,12 @@ void NavigationManagerImpl::GoToIndex(
     delegate_->WillChangeUserAgentType();
   }
 
-  FinishGoToIndex(index, initiation_type);
+  FinishGoToIndex(index, initiation_type, has_user_gesture);
 }
 
 void NavigationManagerImpl::GoToIndex(int index) {
-  GoToIndex(index, NavigationInitiationType::USER_INITIATED);
+  GoToIndex(index, NavigationInitiationType::USER_INITIATED,
+            /*has_user_gesture=*/true);
 }
 
 NavigationItem* NavigationManagerImpl::GetLastCommittedItem() const {

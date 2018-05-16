@@ -87,7 +87,9 @@ class LegacyNavigationManagerImpl : public NavigationManagerImpl {
   NavigationItemImpl* GetLastCommittedItemImpl() const override;
   NavigationItemImpl* GetPendingItemImpl() const override;
   NavigationItemImpl* GetTransientItemImpl() const override;
-  void FinishGoToIndex(int index, NavigationInitiationType type) override;
+  void FinishGoToIndex(int index,
+                       NavigationInitiationType type,
+                       bool has_user_gesture) override;
 
   // CRWSessionController that backs this instance.
   // TODO(stuartmorgan): Fold CRWSessionController into this class.

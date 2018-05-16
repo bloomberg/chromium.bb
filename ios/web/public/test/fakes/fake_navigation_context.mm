@@ -41,6 +41,10 @@ const GURL& FakeNavigationContext::GetUrl() const {
   return url_;
 }
 
+bool FakeNavigationContext::HasUserGesture() const {
+  return has_user_gesture_;
+}
+
 ui::PageTransition FakeNavigationContext::GetPageTransition() const {
   return page_transition_;
 }
@@ -79,6 +83,10 @@ void FakeNavigationContext::SetWebState(std::unique_ptr<WebState> web_state) {
 
 void FakeNavigationContext::SetUrl(const GURL& url) {
   url_ = url;
+}
+
+void FakeNavigationContext::SetHasUserGesture(bool has_user_gesture) {
+  has_user_gesture_ = has_user_gesture;
 }
 
 void FakeNavigationContext::SetPageTransition(ui::PageTransition transition) {

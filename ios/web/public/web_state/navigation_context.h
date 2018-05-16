@@ -36,6 +36,12 @@ class NavigationContext {
   // navigation when encountering a server redirect.
   virtual const GURL& GetUrl() const = 0;
 
+  // Whether the navigation was initiated by a user gesture. Note that this
+  // will return true for browser-initiated navigations (not a
+  // renderer-initiated navigation). May have false positives for
+  // renderer-initiated same-document or back-forward navigations.
+  virtual bool HasUserGesture() const = 0;
+
   // Returns the page transition type for this navigation.
   virtual ui::PageTransition GetPageTransition() const = 0;
 

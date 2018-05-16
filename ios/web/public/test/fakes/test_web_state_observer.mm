@@ -97,7 +97,8 @@ void TestWebStateObserver::DidStartNavigation(WebState* web_state,
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
           navigation->GetWebState(), navigation->GetUrl(),
-          navigation->GetPageTransition(), navigation->IsRendererInitiated());
+          navigation->HasUserGesture(), navigation->GetPageTransition(),
+          navigation->IsRendererInitiated());
   context->SetIsSameDocument(navigation->IsSameDocument());
   context->SetError(navigation->GetError());
   did_start_navigation_info_->context = std::move(context);
@@ -113,7 +114,8 @@ void TestWebStateObserver::DidFinishNavigation(WebState* web_state,
   std::unique_ptr<web::NavigationContextImpl> context =
       web::NavigationContextImpl::CreateNavigationContext(
           navigation->GetWebState(), navigation->GetUrl(),
-          navigation->GetPageTransition(), navigation->IsRendererInitiated());
+          navigation->HasUserGesture(), navigation->GetPageTransition(),
+          navigation->IsRendererInitiated());
   context->SetIsSameDocument(navigation->IsSameDocument());
   context->SetError(navigation->GetError());
   did_finish_navigation_info_->context = std::move(context);
