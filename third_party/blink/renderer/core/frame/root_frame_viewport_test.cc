@@ -150,9 +150,6 @@ class RootFrameViewStub : public ScrollableAreaStub {
   }
 
   LayoutRect DocumentToAbsolute(const LayoutRect& rect) const {
-    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-      return rect;
-
     LayoutRect ret = rect;
     ret.Move(LayoutSize(-GetScrollOffset()));
     return ret;
