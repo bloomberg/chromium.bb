@@ -103,9 +103,11 @@ def _merge_json_output(output_json, jsons_to_merge, perf_results_link,
   """
   merged_results = results_merger.merge_test_results(jsons_to_merge)
 
-  merged_results['links'] = {
-    perf_results_file_name: perf_results_link
-  }
+  # Only append the perf results link if present
+  if perf_results_link:
+    merged_results['links'] = {
+      perf_results_file_name: perf_results_link
+    }
 
   with open(output_json, 'w') as f:
     json.dump(merged_results, f)
@@ -113,9 +115,47 @@ def _merge_json_output(output_json, jsons_to_merge, perf_results_link,
   return 0
 
 
+def _handle_perf_json_test_results(
+    benchmark_directory_list, test_results_list):
+  benchmark_enabled_map = {}
+  for directory in benchmark_directory_list:
+    # Obtain the test name we are running
+    benchmark_name = _get_benchmark_name(directory)
+    is_ref = '.reference' in benchmark_name
+    enabled = True
+    with open(join(directory, 'test_results.json')) as json_data:
+      json_results = json.load(json_data)
+      if not json_results:
+        # Output is null meaning the test didn't produce any results.
+        # Want to output an error and continue loading the rest of the
+        # test results.
+        print 'No results produced for %s, skipping upload' % directory
+        continue
+      if json_results.get('version') == 3:
+        # Non-telemetry tests don't have written json results but
+        # if they are executing then they are enabled and will generate
+        # chartjson results.
+        if not bool(json_results.get('tests')):
+          enabled = False
+      if not is_ref:
+        # We don't need to upload reference build data to the
+        # flakiness dashboard since we don't monitor the ref build
+        test_results_list.append(json_results)
+    if not enabled:
+      # We don't upload disabled benchmarks or tests that are run
+      # as a smoke test
+      print 'Benchmark %s disabled' % benchmark_name
+    benchmark_enabled_map[benchmark_name] = enabled
+
+  return benchmark_enabled_map
+
+def _get_benchmark_name(directory):
+  return basename(directory).replace(" benchmark", "")
+
 def _process_perf_results(output_json, configuration_name,
                           service_account_file,
-                          build_properties, task_output_dir):
+                          build_properties, task_output_dir,
+                          smoke_test_mode):
   """Process one or more perf JSON results.
 
   Consists of merging the json-test-format output and uploading the perf test
@@ -139,8 +179,6 @@ def _process_perf_results(output_json, configuration_name,
       for f in listdir(join(task_output_dir, directory))
     ]
 
-  # We need to keep track of disabled benchmarks so we don't try to
-  # upload the results.
   test_results_list = []
   tmpfile_dir = tempfile.mkdtemp('resultscache')
   upload_failure = False
@@ -151,52 +189,38 @@ def _process_perf_results(output_json, configuration_name,
     configuration_name = build_properties['buildername']
 
   try:
+    # First obtain the list of json test results to merge
+    # and determine the status of each benchmark
+    benchmark_enabled_map = _handle_perf_json_test_results(
+        benchmark_directory_list, test_results_list)
+
+    # Upload all eligible benchmarks to the perf dashboard
     logdog_dict = {}
-    with oauth_api.with_access_token(service_account_file) as oauth_file:
-      for directory in benchmark_directory_list:
-        # Obtain the test name we are running
-        benchmark_name = basename(directory).replace(" benchmark", "")
-        is_ref = '.reference' in benchmark_name
-        disabled = False
-        with open(join(directory, 'test_results.json')) as json_data:
-          json_results = json.load(json_data)
-          if not json_results:
-            # Output is null meaning the test didn't produce any results.
-            # Want to output an error and continue loading the rest of the
-            # test results.
-            print 'No results produced for %s, skipping upload' % directory
+    logdog_stream = None
+    logdog_label = 'Results Dashboard'
+    if not smoke_test_mode:
+      with oauth_api.with_access_token(service_account_file) as oauth_file:
+        for directory in benchmark_directory_list:
+          benchmark_name = _get_benchmark_name(directory)
+          if not benchmark_enabled_map[benchmark_name]:
             continue
-          if json_results.get('version') == 3:
-            # Non-telemetry tests don't have written json results but
-            # if they are executing then they are enabled and will generate
-            # chartjson results.
-            if not bool(json_results.get('tests')):
-              disabled = True
-          if not is_ref:
-            # We don't need to upload reference build data to the
-            # flakiness dashboard since we don't monitor the ref build
-            test_results_list.append(json_results)
-        if disabled:
-          # We don't upload disabled benchmarks
-          print 'Benchmark %s disabled' % benchmark_name
-          continue
+          print 'Uploading perf results from %s benchmark' % benchmark_name
+          upload_fail = _upload_and_write_perf_data_to_logfile(
+              benchmark_name, directory, configuration_name, build_properties,
+              oauth_file, tmpfile_dir, logdog_dict,
+              ('.reference' in benchmark_name))
+          upload_failure = upload_failure or upload_fail
 
-        print 'Uploading perf results from %s benchmark' % benchmark_name
-
-        upload_fail = _upload_and_write_perf_data_to_logfile(
-            benchmark_name, directory, configuration_name, build_properties,
-            oauth_file, tmpfile_dir, logdog_dict, is_ref)
-        upload_failure = upload_failure or upload_fail
-
-      logdog_label = 'Results Dashboard'
       logdog_file_name = 'Results_Dashboard_' + str(uuid.uuid4())
+      logdog_stream = logdog_helper.text(logdog_file_name,
+          json.dumps(logdog_dict, sort_keys=True,
+              indent=4, separators=(',', ':')))
       if upload_failure:
         logdog_label += ' Upload Failure'
-      _merge_json_output(output_json, test_results_list,
-          logdog_helper.text(logdog_file_name,
-              json.dumps(logdog_dict, sort_keys=True,
-                  indent=4, separators=(',', ':'))),
-          logdog_label)
+
+    # Finally, merge all test results json and write out to output location
+    _merge_json_output(output_json, test_results_list,
+                       logdog_stream, logdog_label)
   finally:
     shutil.rmtree(tmpfile_dir)
   return upload_failure
@@ -259,13 +283,21 @@ def main():
   parser.add_argument('-o', '--output-json', required=True,
                       help=argparse.SUPPRESS)
   parser.add_argument('json_files', nargs='*', help=argparse.SUPPRESS)
+  parser.add_argument('--smoke-test-mode', required=False, default=False,
+                      help='This test should be run in smoke test mode'
+                      ' meaning it does not upload to the perf dashboard')
 
   args = parser.parse_args()
+
+  if not args.service_account_file and not args.smoke_test_mode:
+    raise Exception(
+        'Service account file must be specificed for dashboard upload')
 
   return _process_perf_results(
       args.output_json, args.configuration_name,
       args.service_account_file,
-      args.build_properties, args.task_output_dir)
+      args.build_properties, args.task_output_dir,
+      args.smoke_test_mode)
 
 
 if __name__ == '__main__':

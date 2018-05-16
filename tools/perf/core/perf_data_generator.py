@@ -970,7 +970,10 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
-          'extra_args': ['--run-ref-build'],
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+          ],
           'num_shards': 26
         },
         {
@@ -997,8 +1000,11 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'tests': [
         {
           'isolate': 'telemetry_perf_tests_without_chrome',
-          'extra_args': ['--xvfb',
-                         '--run-ref-build'],
+          'extra_args': [
+            '--xvfb',
+            '--run-ref-build',
+            '--test-shard-map-filename=benchmark_bot_map.json'
+          ],
           'num_shards': 3
         },
         {
@@ -1022,7 +1028,10 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
         {
           'name': 'performance_test_suite',
           'isolate': 'performance_test_suite',
-          'extra_args': ['--run-ref-build'],
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=benchmark_android_bot_map.json',
+          ],
           'num_shards': 14
         }
       ],
@@ -1040,6 +1049,9 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_webview_test_suite',
+          'extra_args': [
+            '--test-shard-map-filename=benchmark_android_bot_map.json',
+          ],
           'num_shards': 7
         }
       ],
@@ -1057,7 +1069,10 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
-          'extra_args': ['--run-ref-build'],
+          'extra_args': [
+            '--run-ref-build',
+            '--test-shard-map-filename=benchmark_android_bot_map.json',
+          ],
           'num_shards': 7
         }
       ],
@@ -1081,7 +1096,10 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
-          'extra_args': ['--run-ref-build'],
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+          ],
         },
         {
           'isolate': 'load_library_perf_tests',
@@ -1111,7 +1129,10 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         # Add views_perftests, crbug.com/811766
         {
           'isolate': 'performance_test_suite',
-          'extra_args': ['--run-ref-build'],
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=benchmark_desktop_bot_map.json',
+          ],
         },
         {
           'isolate': 'load_library_perf_tests',
@@ -1212,11 +1233,6 @@ def generate_telemetry_args(tester_config):
   if browser_name == 'android-webview':
     test_args.append(
         '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
-
-  # Appending testing=true if we only want to run a subset of benchmarks
-  # for quicker testing
-  if tester_config.get('testing', False):
-    test_args.append('--testing=true')
 
   return test_args
 

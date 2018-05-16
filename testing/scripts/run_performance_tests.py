@@ -80,30 +80,10 @@ BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
     'system_health.webview_startup',
 ]
 
-# We currently have two different sharding schemes for android
-# vs desktop.  When we are running at capacity we will have 26
-# desktop shards and 39 android.
-CURRENT_DESKTOP_NUM_SHARDS = 26
-CURRENT_ANDROID_NUM_SHARDS = 39
-
-def get_sharding_map_path(total_shards, testing):
-  # Determine if we want to do a test run of the benchmarks or run the
-  # full suite.
-  if not testing:
-    # Note: <= for testing purposes until we have all shards running
-    if int(total_shards) <= CURRENT_DESKTOP_NUM_SHARDS:
-      return os.path.join(
-          os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
-          'benchmark_desktop_bot_map.json')
-    else:
-      return os.path.join(
-          os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
-          'benchmark_android_bot_map.json')
-  else:
-    return os.path.join(
+def get_sharding_map_path(args):
+  return os.path.join(
       os.path.dirname(__file__), '..', '..', 'tools', 'perf', 'core',
-      'benchmark_bot_map.json')
-
+      args.test_shard_map_filename)
 
 def write_results(
     perf_test_name, perf_results, json_test_results, isolated_out_dir, encoded):
@@ -129,7 +109,7 @@ def execute_benchmark(benchmark, isolated_out_dir,
   is_histograms = append_output_format(benchmark, args, rest_args)
   # Insert benchmark name as first argument to run_benchmark call
   # which is the first argument in the rest_args.  Also need to append
-  # output format.
+  # output format and smoke test mode.
   per_benchmark_args = (rest_args[:1] + [benchmark] + rest_args[1:])
   benchmark_name = benchmark
   if is_reference:
@@ -200,12 +180,13 @@ def main():
   parser.add_argument('--xvfb', help='Start xvfb.', action='store_true')
   parser.add_argument('--non-telemetry',
                       help='Type of perf test', type=bool, default=False)
-  parser.add_argument('--testing', help='Test run, execute subset of tests',
-                      type=bool, default=False)
   parser.add_argument('--benchmarks',
                       help='Comma separated list of benchmark names'
                       ' to run in lieu of indexing into our benchmark bot maps',
                       required=False)
+  # Some executions may have a different sharding scheme and/or set of tests.
+  # These files must live in src/tools/perf/core/
+  parser.add_argument('--test-shard-map-filename', type=str, required=False)
   parser.add_argument('--output-format', action='append')
   parser.add_argument('--run-ref-build',
                       help='Run test on reference browser', action='store_true')
@@ -244,8 +225,7 @@ def main():
       if not (total_shards or shard_index):
         raise Exception('Shard indicators must be present for perf tests')
 
-      sharding_map_path = get_sharding_map_path(
-          total_shards, args.testing or False)
+      sharding_map_path = get_sharding_map_path(args)
       with open(sharding_map_path) as f:
         sharding_map = json.load(f)
       sharding = None
