@@ -13,7 +13,6 @@
 
 class ExclusiveAccessContext;
 class ExclusiveAccessBubbleViewsContext;
-class FullscreenControlView;
 
 namespace ui {
 class GestureEvent;
@@ -46,10 +45,6 @@ class FullscreenControlHost : public ui::EventHandler {
 
   bool IsVisible() const;
 
-  FullscreenControlView* fullscreen_control_view() {
-    return fullscreen_control_popup_.control_view();
-  }
-
  private:
   friend class FullscreenControlViewTest;
 
@@ -62,6 +57,9 @@ class FullscreenControlHost : public ui::EventHandler {
     TOUCH,       // A touch event caused the view to show.
   };
 
+  FullscreenControlPopup* GetPopup();
+  bool IsPopupCreated() const;
+  bool IsAnimating() const;
   void ShowForInputEntryMethod(InputEntryMethod input_entry_method);
   void OnVisibilityChanged();
   void StartPopupTimeout(InputEntryMethod expected_input_method);
@@ -76,7 +74,8 @@ class FullscreenControlHost : public ui::EventHandler {
   ExclusiveAccessContext* const exclusive_access_context_;
   ExclusiveAccessBubbleViewsContext* const bubble_views_context_;
 
-  FullscreenControlPopup fullscreen_control_popup_;
+  std::unique_ptr<FullscreenControlPopup> fullscreen_control_popup_;
+
   base::OneShotTimer popup_timeout_timer_;
   base::OneShotTimer key_press_delay_timer_;
 

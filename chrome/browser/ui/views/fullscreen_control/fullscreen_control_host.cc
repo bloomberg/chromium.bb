@@ -65,13 +65,7 @@ FullscreenControlHost::FullscreenControlHost(
     ExclusiveAccessContext* exclusive_access_context,
     ExclusiveAccessBubbleViewsContext* bubble_views_context)
     : exclusive_access_context_(exclusive_access_context),
-      bubble_views_context_(bubble_views_context),
-      fullscreen_control_popup_(
-          bubble_views_context->GetBubbleParentView(),
-          base::BindRepeating(&ExclusiveAccessContext::ExitFullscreen,
-                              base::Unretained(exclusive_access_context)),
-          base::BindRepeating(&FullscreenControlHost::OnVisibilityChanged,
-                              base::Unretained(this))) {}
+      bubble_views_context_(bubble_views_context) {}
 
 FullscreenControlHost::~FullscreenControlHost() = default;
 
@@ -141,8 +135,7 @@ void FullscreenControlHost::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void FullscreenControlHost::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() != ui::ET_MOUSE_MOVED ||
-      fullscreen_control_popup_.IsAnimating() ||
+  if (event->type() != ui::ET_MOUSE_MOVED || IsAnimating() ||
       (input_entry_method_ != InputEntryMethod::NOT_ACTIVE &&
        input_entry_method_ != InputEntryMethod::MOUSE)) {
     return;
@@ -176,8 +169,7 @@ void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
 
   // Hide the popup if the popup is showing and the user touches outside of the
   // popup.
-  if (event->type() == ui::ET_TOUCH_PRESSED &&
-      !fullscreen_control_popup_.IsAnimating()) {
+  if (event->type() == ui::ET_TOUCH_PRESSED && !IsAnimating()) {
     Hide(true);
   } else if (event->type() == ui::ET_TOUCH_RELEASED) {
     StartPopupTimeout(InputEntryMethod::TOUCH);
@@ -192,11 +184,33 @@ void FullscreenControlHost::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void FullscreenControlHost::Hide(bool animate) {
-  fullscreen_control_popup_.Hide(animate);
+  if (IsPopupCreated()) {
+    GetPopup()->Hide(animate);
+  }
 }
 
 bool FullscreenControlHost::IsVisible() const {
-  return fullscreen_control_popup_.IsVisible();
+  return IsPopupCreated() && fullscreen_control_popup_->IsVisible();
+}
+
+FullscreenControlPopup* FullscreenControlHost::GetPopup() {
+  if (!IsPopupCreated()) {
+    fullscreen_control_popup_ = std::make_unique<FullscreenControlPopup>(
+        bubble_views_context_->GetBubbleParentView(),
+        base::BindRepeating(&ExclusiveAccessContext::ExitFullscreen,
+                            base::Unretained(exclusive_access_context_)),
+        base::BindRepeating(&FullscreenControlHost::OnVisibilityChanged,
+                            base::Unretained(this)));
+  }
+  return fullscreen_control_popup_.get();
+}
+
+bool FullscreenControlHost::IsPopupCreated() const {
+  return fullscreen_control_popup_.get() != nullptr;
+}
+
+bool FullscreenControlHost::IsAnimating() const {
+  return IsPopupCreated() && fullscreen_control_popup_->IsAnimating();
 }
 
 void FullscreenControlHost::ShowForInputEntryMethod(
@@ -205,8 +219,7 @@ void FullscreenControlHost::ShowForInputEntryMethod(
   auto* bubble = exclusive_access_context_->GetExclusiveAccessBubble();
   if (bubble)
     bubble->HideImmediately();
-  fullscreen_control_popup_.Show(
-      bubble_views_context_->GetClientAreaBoundsInScreen());
+  GetPopup()->Show(bubble_views_context_->GetClientAreaBoundsInScreen());
 
   // Exit cooldown mode in case the exit UI is triggered by a different method.
   in_mouse_cooldown_mode_ = false;
@@ -234,11 +247,11 @@ void FullscreenControlHost::StartPopupTimeout(
 
 void FullscreenControlHost::OnPopupTimeout(
     InputEntryMethod expected_input_method) {
-  if (IsVisible() && !fullscreen_control_popup_.IsAnimating() &&
+  if (IsVisible() && !IsAnimating() &&
       input_entry_method_ == expected_input_method) {
     if (input_entry_method_ == InputEntryMethod::MOUSE)
       in_mouse_cooldown_mode_ = true;
-    fullscreen_control_popup_.Hide(true);
+    Hide(true);
   }
 }
 
