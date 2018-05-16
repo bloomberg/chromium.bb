@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VR_RENDERERS_GRADIENT_QUAD_RENDERER_H_
-#define CHROME_BROWSER_VR_RENDERERS_GRADIENT_QUAD_RENDERER_H_
+#ifndef CHROME_BROWSER_VR_RENDERERS_RADIAL_GRADIENT_QUAD_RENDERER_H_
+#define CHROME_BROWSER_VR_RENDERERS_RADIAL_GRADIENT_QUAD_RENDERER_H_
 
 #include "base/macros.h"
 #include "chrome/browser/vr/renderers/base_renderer.h"
@@ -20,10 +20,10 @@ namespace vr {
 
 struct CornerRadii;
 
-class GradientQuadRenderer : public BaseRenderer {
+class RadialGradientQuadRenderer : public BaseRenderer {
  public:
-  GradientQuadRenderer();
-  ~GradientQuadRenderer() override;
+  RadialGradientQuadRenderer();
+  ~RadialGradientQuadRenderer() override;
 
   void Draw(const gfx::Transform& model_view_proj_matrix,
             SkColor edge_color,
@@ -46,9 +46,9 @@ class GradientQuadRenderer : public BaseRenderer {
   GLuint edge_color_handle_;
   GLuint aspect_ratio_handle_;
 
-  DISALLOW_COPY_AND_ASSIGN(GradientQuadRenderer);
+  DISALLOW_COPY_AND_ASSIGN(RadialGradientQuadRenderer);
 };
 
 }  // namespace vr
 
-#endif  // CHROME_BROWSER_VR_RENDERERS_GRADIENT_QUAD_RENDERER_H_
+#endif  // CHROME_BROWSER_VR_RENDERERS_RADIAL_GRADIENT_QUAD_RENDERER_H_

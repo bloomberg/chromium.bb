@@ -13,7 +13,7 @@
 #include "chrome/browser/vr/renderers/base_quad_renderer.h"
 #include "chrome/browser/vr/renderers/base_renderer.h"
 #include "chrome/browser/vr/renderers/external_textured_quad_renderer.h"
-#include "chrome/browser/vr/renderers/gradient_quad_renderer.h"
+#include "chrome/browser/vr/renderers/radial_gradient_quad_renderer.h"
 #include "chrome/browser/vr/renderers/textured_quad_renderer.h"
 #include "chrome/browser/vr/renderers/transparent_quad_renderer.h"
 #include "chrome/browser/vr/renderers/web_vr_renderer.h"
@@ -41,7 +41,8 @@ void UiElementRenderer::Init() {
       std::make_unique<ExternalTexturedQuadRenderer>();
   transparent_quad_renderer_ = std::make_unique<TransparentQuadRenderer>();
   textured_quad_renderer_ = std::make_unique<TexturedQuadRenderer>();
-  gradient_quad_renderer_ = std::make_unique<GradientQuadRenderer>();
+  radial_gradient_quad_renderer_ =
+      std::make_unique<RadialGradientQuadRenderer>();
   webvr_renderer_ = std::make_unique<WebVrRenderer>();
   reticle_renderer_ = std::make_unique<Reticle::Renderer>();
   laser_renderer_ = std::make_unique<Laser::Renderer>();
@@ -83,7 +84,7 @@ void UiElementRenderer::DrawTexturedQuad(
                     corner_radius, blend);
 }
 
-void UiElementRenderer::DrawGradientQuad(
+void UiElementRenderer::DrawRadialGradientQuad(
     const gfx::Transform& model_view_proj_matrix,
     const SkColor edge_color,
     const SkColor center_color,
@@ -91,11 +92,11 @@ void UiElementRenderer::DrawGradientQuad(
     float opacity,
     const gfx::SizeF& element_size,
     const CornerRadii& radii) {
-  TRACE_EVENT0("gpu", "UiElementRenderer::DrawGradientQuad");
-  FlushIfNecessary(gradient_quad_renderer_.get());
-  gradient_quad_renderer_->Draw(model_view_proj_matrix, edge_color,
-                                center_color, clip_rect, opacity, element_size,
-                                radii);
+  TRACE_EVENT0("gpu", "UiElementRenderer::DrawRadialGradientQuad");
+  FlushIfNecessary(radial_gradient_quad_renderer_.get());
+  radial_gradient_quad_renderer_->Draw(model_view_proj_matrix, edge_color,
+                                       center_color, clip_rect, opacity,
+                                       element_size, radii);
 }
 
 void UiElementRenderer::DrawGradientGridQuad(

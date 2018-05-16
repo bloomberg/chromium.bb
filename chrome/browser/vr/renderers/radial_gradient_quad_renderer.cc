@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/vr/renderers/gradient_quad_renderer.h"
+#include "chrome/browser/vr/renderers/radial_gradient_quad_renderer.h"
 
 #include "chrome/browser/vr/elements/corner_radii.h"
 #include "chrome/browser/vr/renderers/textured_quad_renderer.h"
@@ -108,7 +108,7 @@ void SetCornerOffset(GLuint handle, float radius, const gfx::SizeF& size) {
 
 }  // namespace
 
-GradientQuadRenderer::GradientQuadRenderer()
+RadialGradientQuadRenderer::RadialGradientQuadRenderer()
     : BaseRenderer(kVertexShader, kFragmentShader) {
   model_view_proj_matrix_handle_ =
       glGetUniformLocation(program_handle_, "u_ModelViewProjMatrix");
@@ -129,15 +129,16 @@ GradientQuadRenderer::GradientQuadRenderer()
   aspect_ratio_handle_ = glGetUniformLocation(program_handle_, "u_AspectRatio");
 }
 
-GradientQuadRenderer::~GradientQuadRenderer() = default;
+RadialGradientQuadRenderer::~RadialGradientQuadRenderer() = default;
 
-void GradientQuadRenderer::Draw(const gfx::Transform& model_view_proj_matrix,
-                                SkColor edge_color,
-                                SkColor center_color,
-                                const gfx::RectF& clip_rect,
-                                float opacity,
-                                const gfx::SizeF& element_size,
-                                const CornerRadii& radii) {
+void RadialGradientQuadRenderer::Draw(
+    const gfx::Transform& model_view_proj_matrix,
+    SkColor edge_color,
+    SkColor center_color,
+    const gfx::RectF& clip_rect,
+    float opacity,
+    const gfx::SizeF& element_size,
+    const CornerRadii& radii) {
   DCHECK(opacity > 0.f);
   if (SkColorGetA(edge_color) == SK_AlphaTRANSPARENT &&
       SkColorGetA(center_color) == SK_AlphaTRANSPARENT) {
