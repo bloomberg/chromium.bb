@@ -4145,6 +4145,8 @@ static int ml_predict_tx_split(MACROBLOCK *x, BLOCK_SIZE bsize, int blk_row,
 
   float score = 0.0f;
   av1_nn_predict(features, nn_config, &score);
+  if (score > 8.0f) return 100;
+  if (score < -8.0f) return 0;
   score = 1.0f / (1.0f + (float)exp(-score));
   return (int)(score * 100);
 }
