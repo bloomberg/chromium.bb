@@ -7,6 +7,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -23,6 +24,9 @@
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
 #include "base/test/scoped_feature_list.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/network/network_handler.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 
 using session_manager::SessionState;
@@ -215,11 +219,38 @@ class UnifiedStatusAreaWidgetTest : public AshTestBase {
   // AshTestBase:
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(features::kSystemTrayUnified);
+
+    chromeos::DBusThreadManager::Initialize();
+    // Initializing NetworkHandler before ash is more like production.
+    chromeos::NetworkHandler::Initialize();
     AshTestBase::SetUp();
+    // Mash doesn't do this yet, so don't do it in tests either.
+    // http://crbug.com/718072
+    if (Shell::GetAshConfig() != Config::MASH) {
+      chromeos::NetworkHandler::Get()->InitializePrefServices(&profile_prefs_,
+                                                              &local_state_);
+    }
+    // Networking stubs may have asynchronous initialization.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void TearDown() override {
+    // This roughly matches production shutdown order.
+    if (Shell::GetAshConfig() != Config::MASH) {
+      chromeos::NetworkHandler::Get()->ShutdownPrefServices();
+    }
+    AshTestBase::TearDown();
+    chromeos::NetworkHandler::Shutdown();
+    chromeos::DBusThreadManager::Shutdown();
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  TestingPrefServiceSimple profile_prefs_;
+  TestingPrefServiceSimple local_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(UnifiedStatusAreaWidgetTest);
 };
 
 TEST_F(UnifiedStatusAreaWidgetTest, Basics) {
