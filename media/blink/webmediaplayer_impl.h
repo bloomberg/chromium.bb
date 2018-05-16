@@ -925,9 +925,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // Callback to pass updated information about the current surface info.
   WebMediaPlayerParams::PipSurfaceInfoCB pip_surface_info_cb_;
 
-  // Callback to signal Picture-in-Picture mode has ended.
-  WebMediaPlayerParams::ExitPipCB exit_pip_cb_;
-
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
 

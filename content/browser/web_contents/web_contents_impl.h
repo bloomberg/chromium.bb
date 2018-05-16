@@ -590,8 +590,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       mojom::ResourceLoadInfoPtr resource_load_information) override;
   void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
                                        const gfx::Size& natural_size) override;
-  void ExitPictureInPicture() override;
-
   // RenderViewHostDelegate ----------------------------------------------------
   RenderViewHostDelegateView* GetDelegateView() override;
   bool OnMessageReceived(RenderViewHostImpl* render_view_host,
@@ -939,6 +937,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Called by this WebContents's BrowserPluginGuest (if one exists) to indicate
   // that the guest will be detached.
   void BrowserPluginGuestWillDetach();
+
+  // Updates the Picture-in-Picture controller with a signal that
+  // Picture-in-Picture mode has ended.
+  void ExitPictureInPicture();
 
 #if defined(OS_ANDROID)
   // Called by FindRequestManager when all of the find match rects are in.

@@ -2392,11 +2392,6 @@ void RenderFrameHostImpl::OnUpdatePictureInPictureSurfaceId(
     delegate_->UpdatePictureInPictureSurfaceId(surface_id, natural_size);
 }
 
-void RenderFrameHostImpl::OnExitPictureInPicture() {
-  if (delegate_)
-    delegate_->ExitPictureInPicture();
-}
-
 void RenderFrameHostImpl::OnDidBlockFramebust(const GURL& url) {
   delegate_->OnDidBlockFramebust(url);
 }

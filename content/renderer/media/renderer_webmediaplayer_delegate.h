@@ -66,7 +66,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) override;
   void DidPlayerMutedStatusChange(int delegate_id, bool muted) override;
   void DidPictureInPictureSourceChange(int delegate_id) override;
-  void DidPictureInPictureModeEnd(int delegate_id) override;
+  void DidPictureInPictureModeEnd(int delegate_id, base::OnceClosure) override;
 
   // content::RenderFrameObserver overrides.
   void WasHidden() override;
@@ -97,6 +97,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void OnMediaDelegateVolumeMultiplierUpdate(int player_id, double multiplier);
   void OnMediaDelegateBecamePersistentVideo(int player_id, bool value);
   void OnPictureInPictureModeEnded(int player_id);
+  void OnPictureInPictureModeEndedAck(int player_id, int request_id);
 
   // Schedules UpdateTask() to run soon.
   void ScheduleUpdateTask();
@@ -162,6 +163,18 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   // Determined at construction time based on system information; determines
   // when the idle cleanup timer should be fired more aggressively.
   bool is_jelly_bean_;
+
+  // Map associating a callback with a request sent to the browser process. The
+  // index is used as a unique request id that is passed to the browser process
+  // and will then ACK with the same id which will be used to run the right
+  // callback.
+  using ExitPictureInPictureCallbackMap =
+      base::flat_map<int, base::OnceClosure>;
+  ExitPictureInPictureCallbackMap exit_picture_in_picture_callback_map_;
+
+  // Counter that is used to use unique request id associated with exit
+  // picture-in-picture callbacks. It is incremented every time it is used.
+  int next_exit_picture_in_picture_callback_id_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWebMediaPlayerDelegate);
 };

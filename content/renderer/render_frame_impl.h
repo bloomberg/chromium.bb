@@ -880,9 +880,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnPictureInPictureSurfaceIdUpdated(const viz::SurfaceId& surface_id,
                                           const gfx::Size& natural_size);
 
-  // Send signal that Picture-in-Picture mode has ended.
-  void OnExitPictureInPicture();
-
  protected:
   explicit RenderFrameImpl(CreateParams params);
 

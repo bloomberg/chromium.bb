@@ -330,7 +330,4 @@ interface FrameHost {
   OnUpdatePictureInPictureSurfaceId(
       viz.mojom.SurfaceId surface_id,
       gfx.mojom.Size natural_size);
-
-  // Sent by the renderer to signal that Picture-in-Picture mode has ended.
-  OnExitPictureInPicture();
 };

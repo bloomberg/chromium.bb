@@ -371,10 +371,6 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
                                                const gfx::Size& natural_size) {}
 
-  // Updates the Picture-in-Picture controller with a signal that
-  // Picture-in-Picture mode has ended.
-  virtual void ExitPictureInPicture() {}
-
  protected:
   virtual ~RenderFrameHostDelegate() {}
 };

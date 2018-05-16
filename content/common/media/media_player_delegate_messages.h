@@ -59,6 +59,14 @@ IPC_MESSAGE_ROUTED1(MediaPlayerDelegateMsg_EndPictureInPictureMode,
                     int /* delegate_id, distinguishes instances */)
 
 // ----------------------------------------------------------------------------
+// Messages from the browser to the renderer acknowledging changes happened.
+// ----------------------------------------------------------------------------
+
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK,
+                    int /* delegate id */,
+                    int /* request_id */)
+
+// ----------------------------------------------------------------------------
 // Messages from the renderer notifying the browser of playback state changes.
 // ----------------------------------------------------------------------------
 
@@ -92,7 +100,8 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
 IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged,
                     int /* delegate id */)
 
-IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
-                    int /* delegate id */)
+IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded,
+                    int /* delegate id */,
+                    int /* request_id */)
 
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_

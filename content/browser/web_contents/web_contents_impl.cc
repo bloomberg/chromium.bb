@@ -4192,11 +4192,6 @@ void WebContentsImpl::UpdatePictureInPictureSurfaceId(
     delegate_->UpdatePictureInPictureSurfaceId(surface_id, natural_size);
 }
 
-void WebContentsImpl::ExitPictureInPicture() {
-  if (delegate_)
-    delegate_->ExitPictureInPicture();
-}
-
 #if defined(OS_ANDROID)
 base::android::ScopedJavaLocalRef<jobject>
 WebContentsImpl::GetJavaRenderFrameHostDelegate() {
@@ -6102,6 +6097,11 @@ void WebContentsImpl::BrowserPluginGuestWillDetach() {
   WebContentsImpl* outermost = GetOutermostWebContents();
   if (this != outermost && ContainsOrIsFocusedWebContents())
     outermost->SetAsFocusedWebContentsIfNecessary();
+}
+
+void WebContentsImpl::ExitPictureInPicture() {
+  if (delegate_)
+    delegate_->ExitPictureInPicture();
 }
 
 #if defined(OS_ANDROID)

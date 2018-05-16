@@ -220,7 +220,8 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   }
 
   MOCK_METHOD1(DidPictureInPictureSourceChange, void(int));
-  MOCK_METHOD1(DidPictureInPictureModeEnd, void(int));
+  MOCK_METHOD2(DidPictureInPictureModeEnd,
+               void(int, blink::WebMediaPlayer::PipWindowClosedCallback));
 
   void ClearStaleFlag(int player_id) override {
     DCHECK_EQ(player_id_, player_id);
@@ -367,8 +368,7 @@ class WebMediaPlayerImplTest : public testing::Test {
             base::Unretained(this)),
         viz::TestContextProvider::Create(),
         base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo),
-        base::BindRepeating(pip_surface_info_cb_.Get()),
-        base::BindRepeating(exit_pip_cb_.Get()));
+        base::BindRepeating(pip_surface_info_cb_.Get()));
 
     auto compositor = std::make_unique<StrictMock<MockVideoFrameCompositor>>(
         params->video_frame_compositor_task_runner());
@@ -700,8 +700,6 @@ class WebMediaPlayerImplTest : public testing::Test {
   // Callback used for updating Picture-in-Picture about new Surface info.
   base::MockCallback<WebMediaPlayerParams::PipSurfaceInfoCB>
       pip_surface_info_cb_;
-
-  base::MockCallback<WebMediaPlayerParams::ExitPipCB> exit_pip_cb_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImplTest);
@@ -1348,25 +1346,19 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
 TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
 
-  // These calls should do nothing since there is no SurfaceId set.
-  wmpi_->EnterPictureInPicture(base::DoNothing());
-  wmpi_->ExitPictureInPicture(base::DoNothing());
+  EXPECT_CALL(client_, IsInPictureInPictureMode()).WillRepeatedly(Return(true));
 
-  EXPECT_CALL(client_, IsInPictureInPictureMode());
   wmpi_->OnSurfaceIdUpdated(surface_id_);
-  testing::Mock::VerifyAndClearExpectations(&client_);
 
   EXPECT_CALL(delegate_,
               DidPictureInPictureSourceChange(delegate_.player_id()));
   EXPECT_CALL(pip_surface_info_cb_, Run(surface_id_, GetNaturalSize()));
   // This call should trigger the callback since the SurfaceId is set.
   wmpi_->EnterPictureInPicture(base::DoNothing());
-  testing::Mock::VerifyAndClearExpectations(&client_);
 
   // Upon exiting Picture-in-Picture mode, functions to cleanup are expected to
   // be called. ~WMPI calls ExitPictureInPicture().
-  EXPECT_CALL(exit_pip_cb_, Run());
-  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id()));
+  EXPECT_CALL(delegate_, DidPictureInPictureModeEnd(delegate_.player_id(), _));
 }
 
 class WebMediaPlayerImplBackgroundBehaviorTest
@@ -1429,6 +1421,8 @@ class WebMediaPlayerImplBackgroundBehaviorTest
     if (IsPictureInPictureOn()) {
       EXPECT_CALL(client_, IsInPictureInPictureMode())
           .WillRepeatedly(Return(true));
+
+      wmpi_->OnSurfaceIdUpdated(surface_id_);
     }
 
     BackgroundPlayer();

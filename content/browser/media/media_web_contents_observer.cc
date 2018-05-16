@@ -299,8 +299,21 @@ void MediaWebContentsObserver::OnPictureInPictureSourceChanged(
 
 void MediaWebContentsObserver::OnPictureInPictureModeEnded(
     RenderFrameHost* render_frame_host,
-    int delegate_id) {
-  pip_player_.reset();
+    int delegate_id,
+    int request_id) {
+  // TODO(mlamouri): must be a DCHECK but can't at the moment because we do not
+  // correctly notify players when switching PIP video in the same tab.
+  if (pip_player_) {
+    web_contents_impl()->ExitPictureInPicture();
+
+    // Reset must happen after notifying the WebContents because it may interact
+    // with it.
+    pip_player_.reset();
+  }
+
+  render_frame_host->Send(
+      new MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK(
+          render_frame_host->GetRoutingID(), delegate_id, request_id));
 }
 
 void MediaWebContentsObserver::ClearWakeLocks(
