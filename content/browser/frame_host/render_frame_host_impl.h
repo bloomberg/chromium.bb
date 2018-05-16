@@ -935,7 +935,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnUpdatePictureInPictureSurfaceId(
       const viz::SurfaceId& surface_id,
       const gfx::Size& natural_size) override;
-  void OnExitPictureInPicture() override;
 
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();

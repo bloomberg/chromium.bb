@@ -251,8 +251,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       request_routing_token_cb_(params->request_routing_token_cb()),
       overlay_routing_token_(OverlayInfo::RoutingToken()),
       media_metrics_provider_(params->take_metrics_provider()),
-      pip_surface_info_cb_(params->pip_surface_info_cb()),
-      exit_pip_cb_(params->exit_pip_cb()) {
+      pip_surface_info_cb_(params->pip_surface_info_cb()) {
   DVLOG(1) << __func__;
   DCHECK(!adjust_allocated_memory_cb_.is_null());
   DCHECK(renderer_factory_selector_);
@@ -334,7 +333,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->MediaRemotingStopped(
       blink::WebLocalizedString::kMediaRemotingStopNoText);
 
-  ExitPictureInPicture(base::DoNothing());
+  if (client_->IsInPictureInPictureMode())
+    ExitPictureInPicture(base::DoNothing());
 
   if (!surface_layer_for_video_enabled_ && video_layer_) {
     video_layer_->StopUsingProvider();
@@ -794,11 +794,12 @@ void WebMediaPlayerImpl::SetVolume(double volume) {
 
 void WebMediaPlayerImpl::EnterPictureInPicture(
     blink::WebMediaPlayer::PipWindowSizeCallback callback) {
-  // TODO(crbug.com/806249): Use Picture-in-Picture window size.
-  std::move(callback).Run(WebSize(pipeline_metadata_.natural_size));
-
-  if (!pip_surface_id_.is_valid())
+  if (!pip_surface_id_.is_valid()) {
+    // TODO(crbug.com/806249): Use Picture-in-Picture window size.
+    // TODO(mlamouri): should this be a DCHECK?
+    std::move(callback).Run(WebSize(pipeline_metadata_.natural_size));
     return;
+  }
 
   // Updates the MediaWebContentsObserver with |delegate_id_| to track which
   // media player is in Picture-in-Picture mode.
@@ -810,23 +811,21 @@ void WebMediaPlayerImpl::EnterPictureInPicture(
 
   if (client_)
     client_->PictureInPictureStarted();
+
+  // TODO(crbug.com/806249): Use Picture-in-Picture window size.
+  std::move(callback).Run(WebSize(pipeline_metadata_.natural_size));
 }
 
 void WebMediaPlayerImpl::ExitPictureInPicture(
     blink::WebMediaPlayer::PipWindowClosedCallback callback) {
-  // TODO(crbug.com/806249): Run callback when Picture-in-Picture window closes.
-  std::move(callback).Run();
+  DCHECK(pip_surface_id_.is_valid());
 
-  // Do not clear |pip_surface_id_| in case we enter Picture-in-Picture mode
-  // again.
-  if (!pip_surface_id_.is_valid())
-    return;
+  // Notifies the browser process that Picture-in-Picture has ended. It will
+  // clear out the states and close the window.
+  delegate_->DidPictureInPictureModeEnd(delegate_id_, std::move(callback));
 
+  // Internal cleanups.
   OnPictureInPictureModeEnded();
-
-  // Signals that Picture-in-Picture has ended. This lets the
-  // content::PictureInPictureWindowController know the window should be closed.
-  exit_pip_cb_.Run();
 }
 
 void WebMediaPlayerImpl::SetSinkId(
@@ -2101,10 +2100,6 @@ void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
   // Picture-in-Picture mode, or in ExitPictureInPicture(), which already checks
   // for validity.
   DCHECK(pip_surface_id_.is_valid());
-
-  // Updates the MediaWebContentsObserver with |delegate_id_| to clear the
-  // tracked media player that is in Picture-in-Picture mode.
-  delegate_->DidPictureInPictureModeEnd(delegate_id_);
 
   if (client_)
     client_->PictureInPictureStopped();

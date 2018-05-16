@@ -124,9 +124,13 @@ void RendererWebMediaPlayerDelegate::DidPictureInPictureSourceChange(
 }
 
 void RendererWebMediaPlayerDelegate::DidPictureInPictureModeEnd(
-    int delegate_id) {
-  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded(routing_id(),
-                                                                  delegate_id));
+    int delegate_id,
+    base::OnceClosure callback) {
+  int request_id = next_exit_picture_in_picture_callback_id_++;
+  exit_picture_in_picture_callback_map_.insert(
+      std::make_pair(request_id, std::move(callback)));
+  Send(new MediaPlayerDelegateHostMsg_OnPictureInPictureModeEnded(
+      routing_id(), delegate_id, request_id));
 }
 
 void RendererWebMediaPlayerDelegate::DidPause(int player_id) {
@@ -249,6 +253,8 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateBecamePersistentVideo)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_EndPictureInPictureMode,
                         OnPictureInPictureModeEnded)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK,
+                        OnPictureInPictureModeEndedAck)
     IPC_MESSAGE_UNHANDLED(return false)
   IPC_END_MESSAGE_MAP()
   return true;
@@ -358,6 +364,16 @@ void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEnded(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnPictureInPictureModeEnded();
+}
+
+void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEndedAck(
+    int player_id,
+    int request_id) {
+  auto iter = exit_picture_in_picture_callback_map_.find(request_id);
+  DCHECK(iter != exit_picture_in_picture_callback_map_.end());
+
+  std::move(iter->second).Run();
+  exit_picture_in_picture_callback_map_.erase(iter);
 }
 
 void RendererWebMediaPlayerDelegate::ScheduleUpdateTask() {

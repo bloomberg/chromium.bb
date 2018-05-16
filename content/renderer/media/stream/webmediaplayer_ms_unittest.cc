@@ -80,7 +80,9 @@ class FakeWebMediaPlayerDelegate
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
-  void DidPictureInPictureModeEnd(int delegate_id) override {
+  void DidPictureInPictureModeEnd(
+      int delegate_id,
+      blink::WebMediaPlayer::PipWindowClosedCallback) override {
     EXPECT_EQ(delegate_id_, delegate_id);
   }
 
