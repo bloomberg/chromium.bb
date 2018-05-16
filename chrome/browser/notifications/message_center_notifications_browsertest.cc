@@ -12,12 +12,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/message_center_notification_manager.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
@@ -62,7 +64,9 @@ class TestAddObserver : public message_center::MessageCenterObserver {
 
 class MessageCenterNotificationsTest : public InProcessBrowserTest {
  public:
-  MessageCenterNotificationsTest() {}
+  MessageCenterNotificationsTest() {
+    feature_list_.InitAndDisableFeature(features::kNativeNotifications);
+  }
 
   MessageCenterNotificationManager* manager() {
     return static_cast<MessageCenterNotificationManager*>(
@@ -140,6 +144,8 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
     base::RunLoop loop;
     loop.RunUntilIdle();
   }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(MessageCenterNotificationsTest, RetrieveBaseParts) {

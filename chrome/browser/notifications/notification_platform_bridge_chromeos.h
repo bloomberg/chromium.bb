@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/notifications/profile_notification.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 
 class ChromeAshMessageCenterClient;
 
@@ -76,8 +77,15 @@ class NotificationPlatformBridgeChromeOs
   void DisableNotification(const std::string& id) override;
 
  private:
+  // Gets the ProfileNotification for the given identifier which has been
+  // mutated to uniquely identify the profile. This may return null if the
+  // notification has already been closed due to profile shutdown. Ash may
+  // asynchronously inform |this| of actions on notificationafter their
+  // associated profile has already been destroyed.
   ProfileNotification* GetProfileNotification(
       const std::string& profile_notification_id);
+
+  void OnProfileDestroying(Profile* profile);
 
   std::unique_ptr<ChromeAshMessageCenterClient> impl_;
 
@@ -86,6 +94,10 @@ class NotificationPlatformBridgeChromeOs
   // the permuted ID.
   std::map<std::string, std::unique_ptr<ProfileNotification>>
       active_notifications_;
+
+  std::map<Profile*,
+           std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>>
+      profile_shutdown_subscriptions_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationPlatformBridgeChromeOs);
 };
