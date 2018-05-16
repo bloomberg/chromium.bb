@@ -3068,14 +3068,13 @@ def _CheckForIncludeGuards(input_api, output_api):
 
     expected_guard = replace_special_with_underscore(
       file_with_path.upper() + '_')
-    expected_guard_if_blink = base_file_name + '_h'
 
     # For "path/elem/file_name.h" we should really only accept
-    # PATH_ELEM_FILE_NAME_H_ per coding style or, if Blink,
-    # file_name_h.  Unfortunately there are too many (1000+) files
-    # with slight deviations from the coding style. Since the most
-    # important part is that the include guard is there, and that it's
-    # unique, not the name, this check is forgiving for existing files.
+    # PATH_ELEM_FILE_NAME_H_ per coding style.  Unfortunately there
+    # are too many (1000+) files with slight deviations from the
+    # coding style. The most important part is that the include guard
+    # is there, and that it's unique, not the name so this check is
+    # forgiving for existing files.
     #
     # As code becomes more uniform, this could be made stricter.
 
@@ -3083,7 +3082,7 @@ def _CheckForIncludeGuards(input_api, output_api):
       # Anything with the right suffix (maybe with an extra _).
       r'\w+_H__?',
 
-      # To cover include guards with Blink style.
+      # To cover include guards with old Blink style.
       r'\w+_h',
 
       # Anything including the uppercase name of the file.
@@ -3105,22 +3104,22 @@ def _CheckForIncludeGuards(input_api, output_api):
           guard_name = match.group(1)
           guard_line_number = line_number
 
-          # We allow existing files to use slightly wrong include
-          # guards, but new files should get it right.
-          if not f.OldContents():
-            is_in_blink = file_with_path.startswith(input_api.os_path.join(
-              'third_party', 'WebKit'))
-            if not (guard_name == expected_guard or
-                    is_in_blink and guard_name == expected_guard_if_blink):
-              if is_in_blink:
-                expected_text = "%s or %s" % (expected_guard,
-                                              expected_guard_if_blink)
-              else:
-                expected_text = expected_guard
+          # We allow existing files to use include guards whose names
+          # don't match the chromium style guide, but new files
+          # (outside third_party) should get it right. The only part
+          # of third_party we check is blink.
+          should_check_strict_guard_name = (
+            not f.OldContents() and
+            (not file_with_path.startswith('third_party') or
+                file_with_path.startswith(
+                  input_api.os_path.join('third_party', 'blink'))))
+
+          if should_check_strict_guard_name:
+            if guard_name != expected_guard:
               errors.append(output_api.PresubmitPromptWarning(
                 'Header using the wrong include guard name %s' % guard_name,
                 ['%s:%d' % (f.LocalPath(), line_number + 1)],
-                'Expected: %r\nFound: %r' % (expected_text, guard_name)))
+                'Expected: %r\nFound: %r' % (expected_guard, guard_name)))
       else:
         # The line after #ifndef should have a #define of the same name.
         if line_number == guard_line_number + 1:

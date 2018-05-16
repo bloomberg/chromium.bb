@@ -906,22 +906,23 @@ class IncludeGuardTest(unittest.TestCase):
           'struct McBoatFace;',
           '#endif  // NotInBlink_h',
         ]),
-        # Using a Blink style include guard in Blink is ok for now.
-        MockAffectedFile('third_party/WebKit/InBlink.h', [
+        # Using a Blink style include guard in Blink is no longer ok.
+        MockAffectedFile('third_party/blink/InBlink.h', [
           '#ifndef InBlink_h',
           '#define InBlink_h',
           'struct McBoatFace;',
           '#endif  // InBlink_h',
         ]),
         # Using a bad include guard in Blink is not ok.
-        MockAffectedFile('third_party/WebKit/AlsoInBlink.h', [
+        MockAffectedFile('third_party/blink/AlsoInBlink.h', [
           '#ifndef WrongInBlink_h',
           '#define WrongInBlink_h',
           'struct McBoatFace;',
           '#endif  // WrongInBlink_h',
         ]),
-        # Using a bad include guard in Blink is accepted if it's an old file.
-        MockAffectedFile('third_party/WebKit/StillInBlink.h', [
+        # Using a bad include guard in Blink is not accepted even if
+        # it's an old file.
+        MockAffectedFile('third_party/blink/StillInBlink.h', [
           '// New contents',
           '#ifndef AcceptedInBlink_h',
           '#define AcceptedInBlink_h',
@@ -934,10 +935,18 @@ class IncludeGuardTest(unittest.TestCase):
           'struct McBoatFace;',
           '#endif  // AcceptedInBlink_h',
         ]),
+        # Using a non-Chromium include guard in third_party
+        # (outside blink) is accepted.
+        MockAffectedFile('third_party/foo/some_file.h', [
+          '#ifndef REQUIRED_RPCNDR_H_',
+          '#define REQUIRED_RPCNDR_H_',
+          'struct SomeFileFoo;',
+          '#endif  // REQUIRED_RPCNDR_H_',
+        ]),
       ]
     msgs = PRESUBMIT._CheckForIncludeGuards(
         mock_input_api, mock_output_api)
-    expected_fail_count = 6
+    expected_fail_count = 7
     self.assertEqual(expected_fail_count, len(msgs),
                      'Expected %d items, found %d: %s'
                      % (expected_fail_count, len(msgs), msgs))
@@ -965,8 +974,13 @@ class IncludeGuardTest(unittest.TestCase):
                      'Header using the wrong include guard name '
                      'NotInBlink_h')
 
-    self.assertEqual(msgs[5].items, [ 'third_party/WebKit/AlsoInBlink.h:1' ])
+    self.assertEqual(msgs[5].items, [ 'third_party/blink/InBlink.h:1' ])
     self.assertEqual(msgs[5].message,
+                     'Header using the wrong include guard name '
+                     'InBlink_h')
+
+    self.assertEqual(msgs[6].items, [ 'third_party/blink/AlsoInBlink.h:1' ])
+    self.assertEqual(msgs[6].message,
                      'Header using the wrong include guard name '
                      'WrongInBlink_h')
 
