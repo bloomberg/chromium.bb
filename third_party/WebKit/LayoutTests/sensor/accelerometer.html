@@ -21,6 +21,7 @@ function update_sensor_reading(buffer) {
 
 runGenericSensorTests(
     Accelerometer,
+    device.mojom.SensorType.ACCELEROMETER,
     update_sensor_reading,
     verify_xyz_sensor_reading.bind(null, kDefaultReading),
     verify_xyz_sensor_reading.bind(null, kMappedReading),
@@ -28,6 +29,7 @@ runGenericSensorTests(
 
 runGenericSensorTests(
     LinearAccelerationSensor,
+    device.mojom.SensorType.LINEAR_ACCELERATION,
     update_sensor_reading,
     verify_xyz_sensor_reading.bind(null, kDefaultReading),
     verify_xyz_sensor_reading.bind(null, kMappedReading),

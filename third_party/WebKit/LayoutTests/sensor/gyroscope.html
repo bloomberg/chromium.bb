@@ -21,6 +21,7 @@ function update_sensor_reading(buffer) {
 
 runGenericSensorTests(
     Gyroscope,
+    device.mojom.SensorType.GYROSCOPE,
     update_sensor_reading,
     verify_xyz_sensor_reading.bind(null, kDefaultReading),
     verify_xyz_sensor_reading.bind(null, kMappedReading),
