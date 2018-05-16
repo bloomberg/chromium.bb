@@ -27,7 +27,7 @@ class UnifiedVolumeSliderController : public UnifiedSliderListener {
                           views::SliderChangeReason reason) override;
 
  private:
-  UnifiedSliderView* slider_;
+  UnifiedSliderView* slider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedVolumeSliderController);
 };

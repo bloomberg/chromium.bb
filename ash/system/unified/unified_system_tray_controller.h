@@ -82,6 +82,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   UnifiedSystemTrayModel* model() { return model_; }
 
  private:
+  friend class UnifiedSystemTrayControllerTest;
+
   // How the expanded state is toggled. The enum is used to back an UMA
   // histogram and should be treated as append-only.
   enum ToggleExpandedType {

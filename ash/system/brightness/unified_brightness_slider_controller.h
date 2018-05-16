@@ -29,8 +29,8 @@ class UnifiedBrightnessSliderController : public UnifiedSliderListener {
                           views::SliderChangeReason reason) override;
 
  private:
-  UnifiedSystemTrayModel* model_;
-  UnifiedSliderView* slider_;
+  UnifiedSystemTrayModel* const model_;
+  UnifiedSliderView* slider_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedBrightnessSliderController);
 };
