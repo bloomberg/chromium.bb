@@ -26,6 +26,8 @@ class LocalTraceMeasurement(
   def Measure(self, platform, results):
     """Collect all possible metrics and add them to results."""
     # Extract the file name without the "file:/" prefix.
+    assert results.current_page.name.startswith("file:/"), \
+        "current page path should start with file:/"
     filename = results.current_page.name[len("file:/"):]
 
     metrics = self._tbm_options.GetTimelineBasedMetrics()
