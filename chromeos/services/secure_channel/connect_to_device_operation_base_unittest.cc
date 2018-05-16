@@ -10,8 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
-#include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/fake_secure_channel.h"
+#include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -122,8 +121,8 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
     return test_operation_.get();
   }
 
-  const cryptauth::SecureChannel* last_secure_channel() const {
-    return last_secure_channel_.get();
+  const AuthenticatedChannel* last_authenticated_channel() const {
+    return last_authenticated_channel_.get();
   }
 
   const std::string& last_failure_detail() const {
@@ -134,8 +133,8 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
 
  private:
   void OnSuccessfulConnectionAttempt(
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel) {
-    last_secure_channel_ = std::move(secure_channel);
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
+    last_authenticated_channel_ = std::move(authenticated_channel);
   }
 
   void OnFailedConnectionAttempt(std::string failure_detail) {
@@ -147,7 +146,7 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const cryptauth::RemoteDevice test_device_;
 
-  std::unique_ptr<cryptauth::SecureChannel> last_secure_channel_;
+  std::unique_ptr<AuthenticatedChannel> last_authenticated_channel_;
   std::string last_failure_detail_;
   bool destructor_callback_called_ = false;
 
@@ -157,13 +156,12 @@ class SecureChannelConnectToDeviceOperationBaseTest : public testing::Test {
 };
 
 TEST_F(SecureChannelConnectToDeviceOperationBaseTest, Success) {
-  auto fake_secure_channel = std::make_unique<cryptauth::FakeSecureChannel>(
-      std::make_unique<cryptauth::FakeConnection>(test_device()),
-      nullptr /* cryptauth_service */);
-  auto* fake_secure_channel_raw = fake_secure_channel.get();
+  auto fake_authenticated_channel =
+      std::make_unique<FakeAuthenticatedChannel>();
+  auto* fake_authenticated_channel_raw = fake_authenticated_channel.get();
   test_operation()->OnSuccessfulConnectionAttempt(
-      std::move(fake_secure_channel));
-  EXPECT_EQ(fake_secure_channel_raw, last_secure_channel());
+      std::move(fake_authenticated_channel));
+  EXPECT_EQ(fake_authenticated_channel_raw, last_authenticated_channel());
 }
 
 TEST_F(SecureChannelConnectToDeviceOperationBaseTest, Failure) {

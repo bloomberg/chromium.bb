@@ -10,13 +10,11 @@
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
 
-namespace cryptauth {
-class SecureChannel;
-}  // namespace cryptauth
-
 namespace chromeos {
 
 namespace secure_channel {
+
+class AuthenticatedChannel;
 
 // ConnectionAttempt represents an ongoing attempt to connect to a given device
 // over a given medium. Each ConnectionAttempt is comprised of one or
@@ -64,7 +62,7 @@ class ConnectionAttempt {
       std::unique_ptr<PendingConnectionRequest<FailureDetailType>> request) = 0;
 
   void OnConnectionAttemptSucceeded(
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel) {
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
     if (has_notified_delegate_) {
       PA_LOG(ERROR) << "ConnectionAttempt::OnConnectionAttemptSucceeded(): "
                     << "Tried to alert delegate of a successful connection, "
@@ -74,7 +72,7 @@ class ConnectionAttempt {
 
     has_notified_delegate_ = true;
     delegate_->OnConnectionAttemptSucceeded(attempt_id_,
-                                            std::move(secure_channel));
+                                            std::move(authenticated_channel));
   }
 
   void OnConnectionAttemptFinishedWithoutConnection() {

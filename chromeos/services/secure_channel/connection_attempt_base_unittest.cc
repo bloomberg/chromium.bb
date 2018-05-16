@@ -9,14 +9,12 @@
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
+#include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation_factory.h"
 #include "chromeos/services/secure_channel/fake_connection_attempt_delegate.h"
 #include "chromeos/services/secure_channel/fake_pending_connection_request.h"
 #include "chromeos/services/secure_channel/pending_connection_request_delegate.h"
-#include "components/cryptauth/fake_connection.h"
-#include "components/cryptauth/fake_secure_channel.h"
-#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -50,10 +48,7 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   ~SecureChannelConnectionAttemptBaseTest() override = default;
 
   void SetUp() override {
-    fake_secure_channel_ = std::make_unique<cryptauth::FakeSecureChannel>(
-        std::make_unique<cryptauth::FakeConnection>(
-            cryptauth::CreateRemoteDeviceForTest()),
-        nullptr /* cryptauth_service */);
+    fake_authenticated_channel_ = std::make_unique<FakeAuthenticatedChannel>();
 
     auto factory = std::make_unique<FakeConnectToDeviceOperationFactory>();
     fake_operation_factory_ = factory.get();
@@ -150,16 +145,19 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   }
 
   void FinishOperationSuccessfully(FakeConnectToDeviceOperation* operation) {
-    EXPECT_TRUE(fake_secure_channel_);
-    auto* fake_secure_channel_raw = fake_secure_channel_.get();
+    EXPECT_TRUE(fake_authenticated_channel_);
+    auto* fake_authenticated_channel_raw = fake_authenticated_channel_.get();
 
     EXPECT_EQ(active_operation_, operation);
-    operation->OnSuccessfulConnectionAttempt(std::move(fake_secure_channel_));
+    operation->OnSuccessfulConnectionAttempt(
+        std::move(fake_authenticated_channel_));
     active_operation_ = nullptr;
 
-    // |fake_delegate_|'s delegate should have received the SecureChannel.
+    // |fake_delegate_|'s delegate should have received the
+    // AuthenticatedChannel.
     EXPECT_EQ(connection_attempt_->attempt_id(), fake_delegate_->attempt_id());
-    EXPECT_EQ(fake_secure_channel_raw, fake_delegate_->secure_channel());
+    EXPECT_EQ(fake_authenticated_channel_raw,
+              fake_delegate_->authenticated_channel());
   }
 
   void RunNextOperationTask() {
@@ -174,9 +172,9 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
 
   void VerifyDelegateNotifiedOfFailure() {
     // |fake_delegate_| should have received the failing attempt's ID but no
-    // SecureChannel.
+    // AuthenticatedChannel.
     EXPECT_EQ(connection_attempt_->attempt_id(), fake_delegate_->attempt_id());
-    EXPECT_FALSE(fake_delegate_->secure_channel());
+    EXPECT_FALSE(fake_delegate_->authenticated_channel());
   }
 
  private:
@@ -190,7 +188,7 @@ class SecureChannelConnectionAttemptBaseTest : public testing::Test {
   std::unique_ptr<FakeConnectionAttemptDelegate> fake_delegate_;
   scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
-  std::unique_ptr<cryptauth::FakeSecureChannel> fake_secure_channel_;
+  std::unique_ptr<FakeAuthenticatedChannel> fake_authenticated_channel_;
   std::set<FakePendingConnectionRequest*> active_requests_;
   FakeConnectToDeviceOperation* active_operation_ = nullptr;
   bool was_active_operation_canceled_in_teardown_ = false;

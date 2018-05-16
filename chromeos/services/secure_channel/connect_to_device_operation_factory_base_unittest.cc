@@ -8,6 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/test/gtest_util.h"
+#include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/fake_connect_to_device_operation.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/secure_channel.h"

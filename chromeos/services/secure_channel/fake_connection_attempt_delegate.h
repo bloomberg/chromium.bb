@@ -10,21 +10,19 @@
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/connection_attempt_delegate.h"
 
-namespace cryptauth {
-class SecureChannel;
-}  // namespace cryptauth
-
 namespace chromeos {
 
 namespace secure_channel {
+
+class AuthenticatedChannel;
 
 class FakeConnectionAttemptDelegate : public ConnectionAttemptDelegate {
  public:
   FakeConnectionAttemptDelegate();
   ~FakeConnectionAttemptDelegate() override;
 
-  const cryptauth::SecureChannel* secure_channel() const {
-    return secure_channel_.get();
+  const AuthenticatedChannel* authenticated_channel() const {
+    return authenticated_channel_.get();
   }
 
   const std::string& attempt_id() const { return attempt_id_; }
@@ -33,12 +31,12 @@ class FakeConnectionAttemptDelegate : public ConnectionAttemptDelegate {
   // ConnectionAttemptDelegate:
   void OnConnectionAttemptSucceeded(
       const std::string& attempt_id,
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel) override;
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel) override;
   void OnConnectionAttemptFinishedWithoutConnection(
       const std::string& attempt_id) override;
 
   std::string attempt_id_;
-  std::unique_ptr<cryptauth::SecureChannel> secure_channel_;
+  std::unique_ptr<AuthenticatedChannel> authenticated_channel_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeConnectionAttemptDelegate);
 };
