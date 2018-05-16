@@ -6,6 +6,7 @@
 #include <string>
 
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
@@ -66,11 +67,29 @@ class LoadingPredictorConfigTest : public testing::Test {
 LoadingPredictorConfigTest::LoadingPredictorConfigTest()
     : profile_(new TestingProfile()) {}
 
-TEST_F(LoadingPredictorConfigTest, IsDisabledByDefault) {
+TEST_F(LoadingPredictorConfigTest, Enabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(predictors::kSpeculativePreconnectFeature);
+
+  LoadingPredictorConfig config;
+  EXPECT_TRUE(MaybeEnableSpeculativePreconnect(&config));
+
+  EXPECT_TRUE(config.IsLearningEnabled());
+  EXPECT_TRUE(config.should_disable_other_preconnects);
+  EXPECT_FALSE(IsNetPredictorEnabled());
+  EXPECT_TRUE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
+}
+
+TEST_F(LoadingPredictorConfigTest, Disabled) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(predictors::kSpeculativePreconnectFeature);
+
   LoadingPredictorConfig config;
   EXPECT_FALSE(MaybeEnableSpeculativePreconnect(&config));
 
   EXPECT_FALSE(config.IsLearningEnabled());
+  EXPECT_FALSE(config.should_disable_other_preconnects);
+  EXPECT_TRUE(IsNetPredictorEnabled());
   EXPECT_FALSE(config.IsPreconnectEnabledForSomeOrigin(profile_.get()));
 }
 
