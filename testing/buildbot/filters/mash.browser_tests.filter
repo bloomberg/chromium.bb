@@ -84,10 +84,6 @@
 -SAMLPolicyTest.TransferCookiesAffiliated
 -SmartSessionRestoreTest.*
 
-# Flaky: private_api_file_system.cc(811) Check failed: external_backend->CanHandleType(file_system_url.type()).
--DefaultTaskDialog/FileManagerBrowserTest.*
--QuickView/FileManagerBrowserTest.*
-
 # ash::Shell access for LogoutConfirmationController
 -DeviceLocalAccountTest.*
 
@@ -310,16 +306,16 @@
 -OpenAudioFiles/FileManagerBrowserTest.*
 -OpenImageFiles/FileManagerBrowserTest.*
 -Delete/FileManagerBrowserTest.*
+-QuickView/FileManagerBrowserTest.*
 -SortColumns/FileManagerBrowserTest.*
 -KeyboardOperations/FileManagerBrowserTest.*
 -Transfer/FileManagerBrowserTest.*
--GenericTask/FileManagerBrowserTest.*
+-Tasks/FileManagerBrowserTest.*
 -RestorePrefs/FileManagerBrowserTest.*
 -ShowGridView/FileManagerBrowserTest.*
 -Providers/FileManagerBrowserTest.*
 -OpenFileDialog/FileManagerBrowserTest.*
 -FileDisplay/FileManagerBrowserTest.*
--ExecuteDefaultTaskOnDownloads/FileManagerBrowserTest.*
 -OpenFileDialog/FileManagerBrowserTest.*
 -GearMenu/FileManagerBrowserTest.Test/3
 -GearMenu/FileManagerBrowserTest.Test/0
