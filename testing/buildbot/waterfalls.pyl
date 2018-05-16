@@ -1082,6 +1082,14 @@
           'isolated_scripts': 'linux_viz_isolated_scripts',
         },
       },
+      'linux-blink-gen-property-trees': {
+        'test_suites': {
+          'isolated_scripts': 'webkit_layout_tests_isolated_scripts',
+        },
+        'args': [
+          '--additional-driver-flag=--enable-blink-gen-property-trees',
+        ],
+      },
       'linux-blink-heap-verification': {
         'test_suites': {
           'gtest_tests': 'chromium_gtests',
