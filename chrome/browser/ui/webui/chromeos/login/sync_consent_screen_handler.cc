@@ -37,6 +37,39 @@ void SyncConsentScreenHandler::DeclareLocalizedValues(
       IDS_LOGIN_SYNC_CONSENT_SCREEN_PERSONALIZE_GOOGLE_SERVICES_DESCRIPTION);
   builder->Add("syncConsentReviewSyncOptionsText",
                IDS_LOGIN_SYNC_CONSENT_SCREEN_REVIEW_SYNC_OPTIONS_LATER);
+
+  builder->Add("syncConsentNewScreenTitle",
+               IDS_LOGIN_SYNC_CONSENT_GET_GOOGLE_SMARTS);
+  builder->Add("syncConsentNewBookmarksDesc",
+               IDS_LOGIN_SYNC_CONSENT_YOUR_BOOKMARKS_ON_ALL_DEVICES);
+  builder->Add("syncConsentNewServicesDesc",
+               IDS_LOGIN_SYNC_CONSENT_PERSONALIZED_GOOGLE_SERVICES);
+  builder->Add("syncConsentNewImproveChrome",
+               IDS_LOGIN_SYNC_CONSENT_IMPROVE_CHROME);
+  builder->Add("syncConsentNewGoogleMayUse",
+               IDS_LOGIN_SYNC_CONSENT_GOOGLE_MAY_USE);
+  builder->Add("syncConsentNewMoreOptions",
+               IDS_LOGIN_SYNC_CONSENT_MORE_OPTIONS);
+  builder->Add("syncConsentNewYesIAmIn", IDS_LOGIN_SYNC_CONSENT_YES_I_AM_IN);
+  builder->Add("syncConsentNewSyncOptions",
+               IDS_LOGIN_SYNC_CONSENT_SYNC_OPTIONS);
+  builder->Add("syncConsentNewSyncOptionsSubtitle",
+               IDS_LOGIN_SYNC_CONSENT_SYNC_OPTIONS_SUBTITLE);
+  builder->Add("syncConsentNewChooseOption",
+               IDS_LOGIN_SYNC_CONSENT_CHOOSE_OPTION);
+  builder->Add("syncConsentNewOptionReview",
+               IDS_LOGIN_SYNC_CONSENT_OPTION_REVIEW);
+  builder->Add("syncConsentNewOptionReviewDsc",
+               IDS_LOGIN_SYNC_CONSENT_OPTION_REVIEW_DSC);
+  builder->Add("syncConsentNewOptionJustSync",
+               IDS_LOGIN_SYNC_CONSENT_OPTION_JUST_SYNC);
+  builder->Add("syncConsentNewOptionJustSyncDsc",
+               IDS_LOGIN_SYNC_CONSENT_OPTION_JUST_SYNC_DSC);
+  builder->Add("syncConsentNewOptionSyncAndPersonalization",
+               IDS_LOGIN_SYNC_CONSENT_OPTION_SYNC_AND_PERSONALIZATION);
+  builder->Add("syncConsentNewOptionSyncAndPersonalizationDsc",
+               IDS_LOGIN_SYNC_CONSENT_OPTION_SYNC_AND_PERSONALIZATION_DSC);
+
   builder->Add("syncConsentAcceptAndContinue",
                IDS_LOGIN_SYNC_CONSENT_SCREEN_ACCEPT_AND_CONTINUE);
 }
@@ -53,5 +86,12 @@ void SyncConsentScreenHandler::Show() {
 void SyncConsentScreenHandler::Hide() {}
 
 void SyncConsentScreenHandler::Initialize() {}
+
+void SyncConsentScreenHandler::GetAdditionalParameters(
+    base::DictionaryValue* parameters) {
+  parameters->Set("syncConsentMakeBetter",
+                  std::make_unique<base::Value>(false));
+  BaseScreenHandler::GetAdditionalParameters(parameters);
+}
 
 }  // namespace chromeos

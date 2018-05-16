@@ -26,6 +26,13 @@ login.createScreen('SyncConsentScreen', 'sync-consent', function() {
     },
 
     /**
+     * This is called after resources are updated.
+     */
+    updateLocalizedContent: function() {
+      $('sync-consent-impl').updateLocalizedContent();
+    },
+
+    /**
      * This is called once user sync preferences are known.
      * @param {boolean} sync_everything Whether sync_everything is enabled.
      * @param {boolean} is_managed Whether sync preferences are managed.
