@@ -44,7 +44,7 @@ Polymer({
     },
 
     /**
-     * Authhentication token used when calling setModes, returned by
+     * Authentication token used when calling setModes, returned by
      * quickUnlockPrivate.getAuthToken. Reflected to lock-screen.
      * @private
      */
@@ -52,6 +52,13 @@ Polymer({
       type: String,
       notify: true,
     },
+
+    /**
+     * Helper property which marks whether the confirm button should be enabled
+     * or disabled.
+     * @private
+     */
+    confirmEnabled_: Boolean,
 
     /**
      * Helper property which marks password as valid/invalid.
@@ -165,8 +172,8 @@ Polymer({
   },
 
   /** @private */
-  enableConfirm_: function() {
-    return !!this.$.passwordInput.value && !this.passwordInvalid_;
+  onValueChanged_: function() {
+    this.confirmEnabled_ = this.$.passwordInput.value && !this.passwordInvalid_;
   },
 });
 })();

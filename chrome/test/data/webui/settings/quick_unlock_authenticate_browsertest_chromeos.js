@@ -164,6 +164,18 @@ cr.define('settings_people_page_quick_unlock', function() {
           done();
         }, 0);
       });
+
+      // Tests that he confirm button is diabled when there is nothing entered.
+      test('ConfirmButtonDisabled', function() {
+        let confirmButton = testElement.$$('#confirmButton');
+        assertTrue(!!confirmButton);
+        assertTrue(confirmButton.disabled);
+
+        passwordElement.value = 'foo';
+        assertFalse(!!confirmButton.disabled);
+        passwordElement.value = '';
+        assertTrue(confirmButton.disabled);
+      });
     });
   }
 
