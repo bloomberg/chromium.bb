@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <unistd.h>
 
+extern "C"
 // LLVM's demangler is large, and we have no need of it.  Overriding it with
 // our own stub version here stops a lot of code being pulled in from libc++.
 // More here:
@@ -15,7 +16,7 @@ __attribute__((visibility("default")))
 // This is a weak symbol to let android_crazy_linker override it in
 // //base/android/linker:chromium_android_linker.
 __attribute__((weak))
-extern "C" char* __cxa_demangle(const char* mangled_name,
+char* __cxa_demangle(const char* mangled_name,
                                 char* buf,
                                 size_t* n,
                                 int* status) {
