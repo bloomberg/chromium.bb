@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -60,7 +61,6 @@ public abstract class SigninFragmentBase
 
     private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
     private static final String ARGUMENT_ACCOUNT_NAME = "SigninFragmentBase.AccountName";
-    private static final String ARGUMENT_IS_DEFAULT_ACCOUNT = "SigninFragmentBase.IsDefaultAccount";
     private static final String ARGUMENT_CHILD_ACCOUNT_STATUS =
             "SigninFragmentBase.ChildAccountStatus";
 
@@ -77,7 +77,9 @@ public abstract class SigninFragmentBase
     private ConsentTextTracker mConsentTextTracker;
     private @StringRes int mCancelButtonTextId = R.string.cancel;
 
-    private boolean mPreselectedAccount;
+    private boolean mAccountSelectionPending;
+    private @Nullable String mRequestedAccountName;
+
     private String mSelectedAccountName;
     private boolean mIsDefaultAccountSelected;
     private AccountsChangeObserver mAccountsChangedObserver;
@@ -109,16 +111,13 @@ public abstract class SigninFragmentBase
      * Creates an argument bundle for a custom SigninFragmentBase flow.
      * @param accessPoint The access point for starting signin flow.
      * @param accountName The account to preselect.
-     * @param isDefaultAccount Whether the selected account is the default one.
      * @param childAccountStatus Whether the selected account is a child one.
      */
     protected static Bundle createArgumentsForForcedSigninFlow(@SigninAccessPoint int accessPoint,
-            String accountName, boolean isDefaultAccount,
-            @ChildAccountStatus.Status int childAccountStatus) {
+            String accountName, @ChildAccountStatus.Status int childAccountStatus) {
         Bundle result = new Bundle();
         result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
-        result.putBoolean(ARGUMENT_IS_DEFAULT_ACCOUNT, isDefaultAccount);
         result.putInt(ARGUMENT_CHILD_ACCOUNT_STATUS, childAccountStatus);
         return result;
     }
@@ -162,12 +161,14 @@ public abstract class SigninFragmentBase
 
         Bundle arguments = getSigninArguments();
         initAccessPoint(arguments.getInt(ARGUMENT_ACCESS_POINT, -1));
-
-        mSelectedAccountName = arguments.getString(ARGUMENT_ACCOUNT_NAME, null);
-        mIsDefaultAccountSelected = arguments.getBoolean(ARGUMENT_IS_DEFAULT_ACCOUNT, false);
+        mRequestedAccountName = arguments.getString(ARGUMENT_ACCOUNT_NAME, null);
         mChildAccountStatus =
                 arguments.getInt(ARGUMENT_CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
-        mForceSignin = mSelectedAccountName != null;
+        mForceSignin = mRequestedAccountName != null;
+
+        // Don't have a selected account now, onResume will trigger the selection.
+        // TODO(https://crbug.com/814728): Disable controls until an account is selected.
+        mAccountSelectionPending = true;
 
         mConsentTextTracker = new ConsentTextTracker(getResources());
 
@@ -183,9 +184,6 @@ public abstract class SigninFragmentBase
         }
         mProfileDataCache = new ProfileDataCache(getActivity(),
                 getResources().getDimensionPixelSize(R.dimen.user_picture_size), badgeConfig);
-
-        // TODO(https://crbug.com/814728): Disable controls until account is preselected.
-        mPreselectedAccount = false;
     }
 
     private void initAccessPoint(@SigninAccessPoint int accessPoint) {
@@ -454,7 +452,15 @@ public abstract class SigninFragmentBase
             if (accountPickerFragment != null) {
                 accountPickerFragment.dismiss();
             }
-            // TODO(https://crbug.com/814728): Select the added account.
+
+            String addedAccountName = data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+            if (addedAccountName == null) return;
+            // Wait for the account cache to be updated and select newly-added account.
+            AccountManagerFacade.get().waitForPendingUpdates(() -> {
+                mAccountSelectionPending = true;
+                mRequestedAccountName = addedAccountName;
+                triggerUpdateAccounts();
+            });
         }
     }
 
@@ -508,9 +514,13 @@ public abstract class SigninFragmentBase
             return;
         }
 
-        if (!mPreselectedAccount) {
-            selectAccount(mAccountNames.get(0), true);
-            mPreselectedAccount = true;
+        if (mAccountSelectionPending) {
+            String defaultAccount = mAccountNames.get(0);
+            String accountToSelect =
+                    mRequestedAccountName != null ? mRequestedAccountName : defaultAccount;
+            selectAccount(accountToSelect, accountToSelect.equals(defaultAccount));
+            mAccountSelectionPending = false;
+            mRequestedAccountName = null;
         }
 
         if (mSelectedAccountName != null && mAccountNames.contains(mSelectedAccountName)) return;
