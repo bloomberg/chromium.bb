@@ -130,6 +130,10 @@ static_library("test_support") {
     "prefetch_task_test_base.h",
     "store/prefetch_store_test_util.cc",
     "store/prefetch_store_test_util.h",
+    "test_download_client.cc",
+    "test_download_client.h",
+    "test_download_service.cc",
+    "test_download_service.h",
     "test_offline_metrics_collector.h",
     "test_prefetch_dispatcher.cc",
     "test_prefetch_dispatcher.h",
@@ -141,12 +145,14 @@ static_library("test_support") {
     "test_prefetch_importer.h",
     "test_prefetch_network_request_factory.cc",
     "test_prefetch_network_request_factory.h",
+    "test_util.cc",
   ]
 
   deps = [
     ":prefetch",
     "//base",
     "//components/download/public/background_service:public",
+    "//components/download/public/background_service/test:test_support",
     "//components/gcm_driver/instance_id",
     "//components/keyed_service/core",
     "//components/offline_pages/core",
@@ -206,8 +212,6 @@ source_set("unit_tests") {
     "store/prefetch_store_schema_unittest.cc",
     "store/prefetch_store_unittest.cc",
     "suggested_articles_observer_unittest.cc",
-    "test_download_client.cc",
-    "test_download_client.h",
   ]
 
   deps = [
