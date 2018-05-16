@@ -682,15 +682,16 @@ void ShutdownSDK() {
   TearDownV8();
 }
 
-std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client) {
-  return std::make_unique<PDFiumEngine>(client);
+std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client,
+                                             bool enable_javascript) {
+  return std::make_unique<PDFiumEngine>(client, enable_javascript);
 }
 
-PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
+PDFiumEngine::PDFiumEngine(PDFEngine::Client* client, bool enable_javascript)
     : client_(client),
       mouse_down_state_(PDFiumPage::NONSELECTABLE_AREA,
                         PDFiumPage::LinkTarget()),
-      form_filler_(this),
+      form_filler_(this, enable_javascript),
       print_(this) {
   find_factory_.Initialize(this);
   password_factory_.Initialize(this);

@@ -160,7 +160,7 @@ class FindTextTest : public testing::Test {
 TEST_F(FindTextTest, FindText) {
   pp::URLLoader dummy_loader;
   TestClient client;
-  PDFiumEngine engine(&client);
+  PDFiumEngine engine(&client, true);
   ASSERT_TRUE(engine.New("https://chromium.org/dummy.pdf", ""));
   ASSERT_TRUE(engine.HandleDocumentLoad(dummy_loader));
 
