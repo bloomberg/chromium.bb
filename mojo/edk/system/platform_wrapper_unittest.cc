@@ -83,7 +83,7 @@ TEST_F(PlatformWrapperTest, WrapPlatformHandle) {
     os_file.value =
         PlatformHandleValueFromPlatformFile(file.TakePlatformFile());
     EXPECT_EQ(MOJO_RESULT_OK,
-              MojoWrapPlatformHandle(&os_file, &wrapped_handle));
+              MojoWrapPlatformHandle(&os_file, nullptr, &wrapped_handle));
 
     WriteMessageWithHandles(h, kMessage, &wrapped_handle, 1);
   });
@@ -98,8 +98,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformFile, PlatformWrapperTest, h) {
 
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = sizeof(MojoPlatformHandle);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            MojoUnwrapPlatformHandle(wrapped_handle, &platform_handle));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoUnwrapPlatformHandle(wrapped_handle, nullptr,
+                                                     &platform_handle));
   EXPECT_EQ(SIMPLE_PLATFORM_HANDLE_TYPE, platform_handle.type);
   base::File file(PlatformFileFromPlatformHandleValue(platform_handle.value));
 
@@ -110,7 +110,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformFile, PlatformWrapperTest, h) {
   EXPECT_TRUE(std::equal(message.begin(), message.end(), data.begin()));
 }
 
-TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
+TEST_F(PlatformWrapperTest, WrapPlatformSharedMemoryRegion) {
   // Allocate a new platform shared buffer and write a message into it.
   const std::string kMessage = "Hello, world!";
   base::SharedMemory buffer;
@@ -142,10 +142,11 @@ TEST_F(PlatformWrapperTest, WrapPlatformSharedBufferHandle) {
     mojo_guid.low = guid.GetLowForSerialization();
 
     MojoHandle wrapped_handle;
-    ASSERT_EQ(MOJO_RESULT_OK, MojoWrapPlatformSharedBufferHandle(
-                                  &os_buffer, kMessage.size(), &mojo_guid,
-                                  MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE,
-                                  &wrapped_handle));
+    ASSERT_EQ(MOJO_RESULT_OK,
+              MojoWrapPlatformSharedMemoryRegion(
+                  &os_buffer, 1, kMessage.size(), &mojo_guid,
+                  MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_UNSAFE,
+                  nullptr, &wrapped_handle));
     WriteMessageWithHandles(h, kMessage, &wrapped_handle, 1);
 
     // As a sanity check, send the GUID explicitly in a second message. We'll
@@ -170,14 +171,14 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer,
   // works as expected.
   MojoPlatformHandle os_buffer;
   os_buffer.struct_size = sizeof(MojoPlatformHandle);
-  size_t size;
+  uint32_t num_handles = 1;
+  uint64_t size;
   MojoSharedBufferGuid mojo_guid;
-  MojoPlatformSharedBufferHandleFlags flags;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            MojoUnwrapPlatformSharedBufferHandle(wrapped_handle, &os_buffer,
-                                                 &size, &mojo_guid, &flags));
-  bool read_only = flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE;
-  EXPECT_FALSE(read_only);
+  MojoPlatformSharedMemoryRegionAccessMode access_mode;
+  ASSERT_EQ(MOJO_RESULT_OK, MojoUnwrapPlatformSharedMemoryRegion(
+                                wrapped_handle, nullptr, &os_buffer,
+                                &num_handles, &size, &mojo_guid, &access_mode));
+  EXPECT_EQ(MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_UNSAFE, access_mode);
 
   base::UnguessableToken guid =
       base::UnguessableToken::Deserialize(mojo_guid.high, mojo_guid.low);
@@ -200,7 +201,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformSharedBuffer,
       guid);
 #endif
 
-  base::SharedMemory memory(memory_handle, read_only);
+  base::SharedMemory memory(memory_handle, false);
   memory.Map(message.size());
   ASSERT_TRUE(memory.memory());
 
@@ -228,9 +229,9 @@ TEST_F(PlatformWrapperTest, InvalidHandle) {
   invalid_handle.struct_size = sizeof(MojoPlatformHandle);
   invalid_handle.type = MOJO_PLATFORM_HANDLE_TYPE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWrapPlatformHandle(&invalid_handle, &wrapped_handle));
+            MojoWrapPlatformHandle(&invalid_handle, nullptr, &wrapped_handle));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoUnwrapPlatformHandle(wrapped_handle, &invalid_handle));
+            MojoUnwrapPlatformHandle(wrapped_handle, nullptr, &invalid_handle));
   EXPECT_EQ(MOJO_PLATFORM_HANDLE_TYPE_INVALID, invalid_handle.type);
 }
 
@@ -240,7 +241,7 @@ TEST_F(PlatformWrapperTest, InvalidArgument) {
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = 0;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWrapPlatformHandle(&platform_handle, &wrapped_handle));
+            MojoWrapPlatformHandle(&platform_handle, nullptr, &wrapped_handle));
 }
 
 }  // namespace

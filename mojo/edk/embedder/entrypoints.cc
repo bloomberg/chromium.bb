@@ -245,34 +245,44 @@ MojoResult MojoArmTrapImpl(MojoHandle trap_handle,
                          ready_triggers, ready_results, ready_signals_states);
 }
 
-MojoResult MojoWrapPlatformHandleImpl(const MojoPlatformHandle* platform_handle,
-                                      MojoHandle* mojo_handle) {
-  return g_core->WrapPlatformHandle(platform_handle, mojo_handle);
-}
-
-MojoResult MojoUnwrapPlatformHandleImpl(MojoHandle mojo_handle,
-                                        MojoPlatformHandle* platform_handle) {
-  return g_core->UnwrapPlatformHandle(mojo_handle, platform_handle);
-}
-
-MojoResult MojoWrapPlatformSharedBufferHandleImpl(
+MojoResult MojoWrapPlatformHandleImpl(
     const MojoPlatformHandle* platform_handle,
-    size_t num_bytes,
-    const MojoSharedBufferGuid* guid,
-    MojoPlatformSharedBufferHandleFlags flags,
+    const MojoWrapPlatformHandleOptions* options,
     MojoHandle* mojo_handle) {
-  return g_core->WrapPlatformSharedBufferHandle(platform_handle, num_bytes,
-                                                guid, flags, mojo_handle);
+  return g_core->WrapPlatformHandle(platform_handle, options, mojo_handle);
 }
 
-MojoResult MojoUnwrapPlatformSharedBufferHandleImpl(
+MojoResult MojoUnwrapPlatformHandleImpl(
     MojoHandle mojo_handle,
-    MojoPlatformHandle* platform_handle,
-    size_t* num_bytes,
+    const MojoUnwrapPlatformHandleOptions* options,
+    MojoPlatformHandle* platform_handle) {
+  return g_core->UnwrapPlatformHandle(mojo_handle, options, platform_handle);
+}
+
+MojoResult MojoWrapPlatformSharedMemoryRegionImpl(
+    const MojoPlatformHandle* platform_handles,
+    uint32_t num_platform_handles,
+    uint64_t num_bytes,
+    const MojoSharedBufferGuid* guid,
+    MojoPlatformSharedMemoryRegionAccessMode access_mode,
+    const MojoWrapPlatformSharedMemoryRegionOptions* options,
+    MojoHandle* mojo_handle) {
+  return g_core->WrapPlatformSharedMemoryRegion(
+      platform_handles, num_platform_handles, num_bytes, guid, access_mode,
+      options, mojo_handle);
+}
+
+MojoResult MojoUnwrapPlatformSharedMemoryRegionImpl(
+    MojoHandle mojo_handle,
+    const MojoUnwrapPlatformSharedMemoryRegionOptions* options,
+    MojoPlatformHandle* platform_handles,
+    uint32_t* num_platform_handles,
+    uint64_t* num_bytes,
     MojoSharedBufferGuid* guid,
-    MojoPlatformSharedBufferHandleFlags* flags) {
-  return g_core->UnwrapPlatformSharedBufferHandle(mojo_handle, platform_handle,
-                                                  num_bytes, guid, flags);
+    MojoPlatformSharedMemoryRegionAccessMode* access_mode) {
+  return g_core->UnwrapPlatformSharedMemoryRegion(
+      mojo_handle, options, platform_handles, num_platform_handles, num_bytes,
+      guid, access_mode);
 }
 
 }  // extern "C"
@@ -312,8 +322,8 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoArmTrapImpl,
                              MojoWrapPlatformHandleImpl,
                              MojoUnwrapPlatformHandleImpl,
-                             MojoWrapPlatformSharedBufferHandleImpl,
-                             MojoUnwrapPlatformSharedBufferHandleImpl};
+                             MojoWrapPlatformSharedMemoryRegionImpl,
+                             MojoUnwrapPlatformSharedMemoryRegionImpl};
 
 }  // namespace
 

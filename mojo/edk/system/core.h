@@ -281,21 +281,28 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/platform_handle.h".
   MojoResult WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
+                                const MojoWrapPlatformHandleOptions* options,
                                 MojoHandle* mojo_handle);
-  MojoResult UnwrapPlatformHandle(MojoHandle mojo_handle,
-                                  MojoPlatformHandle* platform_handle);
-  MojoResult WrapPlatformSharedBufferHandle(
-      const MojoPlatformHandle* platform_handle,
-      size_t size,
-      const MojoSharedBufferGuid* guid,
-      MojoPlatformSharedBufferHandleFlags flags,
-      MojoHandle* mojo_handle);
-  MojoResult UnwrapPlatformSharedBufferHandle(
+  MojoResult UnwrapPlatformHandle(
       MojoHandle mojo_handle,
-      MojoPlatformHandle* platform_handle,
-      size_t* size,
+      const MojoUnwrapPlatformHandleOptions* options,
+      MojoPlatformHandle* platform_handle);
+  MojoResult WrapPlatformSharedMemoryRegion(
+      const MojoPlatformHandle* platform_handles,
+      uint32_t num_platform_handles,
+      uint64_t size,
+      const MojoSharedBufferGuid* guid,
+      MojoPlatformSharedMemoryRegionAccessMode access_mode,
+      const MojoWrapPlatformSharedMemoryRegionOptions* options,
+      MojoHandle* mojo_handle);
+  MojoResult UnwrapPlatformSharedMemoryRegion(
+      MojoHandle mojo_handle,
+      const MojoUnwrapPlatformSharedMemoryRegionOptions* options,
+      MojoPlatformHandle* platform_handles,
+      uint32_t* num_platform_handles,
+      uint64_t* size,
       MojoSharedBufferGuid* guid,
-      MojoPlatformSharedBufferHandleFlags* flags);
+      MojoPlatformSharedMemoryRegionAccessMode* access_mode);
 
   void GetActiveHandlesForTest(std::vector<MojoHandle>* handles);
 

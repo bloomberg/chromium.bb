@@ -35,7 +35,8 @@ StructTraits<mojo_base::mojom::PlatformSharedMemoryHandleDataView,
   platform_handle.value = static_cast<uint64_t>(handle.fd.release());
 #endif
   MojoHandle mojo_handle;
-  MojoResult result = MojoWrapPlatformHandle(&platform_handle, &mojo_handle);
+  MojoResult result =
+      MojoWrapPlatformHandle(&platform_handle, nullptr, &mojo_handle);
   if (result != MOJO_RESULT_OK)
     return mojo::ScopedHandle();
   return mojo::ScopedHandle(mojo::Handle(mojo_handle));
@@ -57,7 +58,8 @@ StructTraits<mojo_base::mojom::PlatformSharedMemoryHandleDataView,
   platform_handle.value = static_cast<uint64_t>(handle.readonly_fd.release());
 
   MojoHandle mojo_handle;
-  MojoResult result = MojoWrapPlatformHandle(&platform_handle, &mojo_handle);
+  MojoResult result =
+      MojoWrapPlatformHandle(&platform_handle, nullptr, &mojo_handle);
   if (result != MOJO_RESULT_OK)
     return mojo::ScopedHandle();
 
@@ -76,8 +78,8 @@ bool StructTraits<
 
   MojoPlatformHandle platform_handle;
   platform_handle.struct_size = sizeof(platform_handle);
-  MojoResult result =
-      MojoUnwrapPlatformHandle(mojo_handle.release().value(), &platform_handle);
+  MojoResult result = MojoUnwrapPlatformHandle(mojo_handle.release().value(),
+                                               nullptr, &platform_handle);
   if (result != MOJO_RESULT_OK)
     return false;
 
@@ -110,8 +112,9 @@ bool StructTraits<
   readonly_platform_handle.struct_size = sizeof(readonly_platform_handle);
   readonly_platform_handle.type = MOJO_PLATFORM_HANDLE_TYPE_INVALID;
   if (readonly_mojo_handle.is_valid()) {
-    MojoResult result = MojoUnwrapPlatformHandle(
-        readonly_mojo_handle.release().value(), &readonly_platform_handle);
+    MojoResult result =
+        MojoUnwrapPlatformHandle(readonly_mojo_handle.release().value(),
+                                 nullptr, &readonly_platform_handle);
     if (result != MOJO_RESULT_OK ||
         readonly_platform_handle.type !=
             MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR) {

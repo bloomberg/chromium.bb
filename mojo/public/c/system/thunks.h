@@ -153,22 +153,28 @@ struct MojoSystemThunks {
   // Platform handle API.
   MojoResult (*WrapPlatformHandle)(
       const struct MojoPlatformHandle* platform_handle,
+      const struct MojoWrapPlatformHandleOptions* options,
       MojoHandle* mojo_handle);
   MojoResult (*UnwrapPlatformHandle)(
       MojoHandle mojo_handle,
+      const MojoUnwrapPlatformHandleOptions* options,
       struct MojoPlatformHandle* platform_handle);
-  MojoResult (*WrapPlatformSharedBufferHandle)(
-      const struct MojoPlatformHandle* platform_handle,
-      size_t num_bytes,
+  MojoResult (*WrapPlatformSharedMemoryRegion)(
+      const struct MojoPlatformHandle* platform_handles,
+      uint32_t num_platform_handles,
+      uint64_t num_bytes,
       const struct MojoSharedBufferGuid* guid,
-      MojoPlatformSharedBufferHandleFlags flags,
+      MojoPlatformSharedMemoryRegionAccessMode access_mode,
+      const struct MojoWrapPlatformSharedMemoryRegionOptions* options,
       MojoHandle* mojo_handle);
-  MojoResult (*UnwrapPlatformSharedBufferHandle)(
+  MojoResult (*UnwrapPlatformSharedMemoryRegion)(
       MojoHandle mojo_handle,
-      struct MojoPlatformHandle* platform_handle,
-      size_t* num_bytes,
+      const struct MojoUnwrapPlatformSharedMemoryRegionOptions* options,
+      struct MojoPlatformHandle* platform_handles,
+      uint32_t* num_platform_handles,
+      uint64_t* num_bytes,
       struct MojoSharedBufferGuid* guid,
-      MojoPlatformSharedBufferHandleFlags* flags);
+      MojoPlatformSharedMemoryRegionAccessMode* access_mode);
 };
 #pragma pack(pop)
 
