@@ -474,7 +474,10 @@ class CC_PAINT_EXPORT DrawImageOp final : public PaintOpWithFlags {
                               const PaintFlags* flags,
                               SkCanvas* canvas,
                               const PlaybackParams& params);
-  bool IsValid() const { return flags.IsValid(); }
+  bool IsValid() const {
+    return flags.IsValid() && SkScalarIsFinite(scale_adjustment.width()) &&
+           SkScalarIsFinite(scale_adjustment.height());
+  }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   bool HasDiscardableImages() const;
   bool HasNonAAPaint() const { return false; }
@@ -486,6 +489,10 @@ class CC_PAINT_EXPORT DrawImageOp final : public PaintOpWithFlags {
 
  private:
   DrawImageOp();
+
+  // Scale that has already been applied to the decoded image during
+  // serialization. Used with OOP raster.
+  SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
 };
 
 class CC_PAINT_EXPORT DrawImageRectOp final : public PaintOpWithFlags {
@@ -503,7 +510,9 @@ class CC_PAINT_EXPORT DrawImageRectOp final : public PaintOpWithFlags {
                               SkCanvas* canvas,
                               const PlaybackParams& params);
   bool IsValid() const {
-    return flags.IsValid() && src.isFinite() && dst.isFinite();
+    return flags.IsValid() && src.isFinite() && dst.isFinite() &&
+           SkScalarIsFinite(scale_adjustment.width()) &&
+           SkScalarIsFinite(scale_adjustment.height());
   }
   static bool AreEqual(const PaintOp* left, const PaintOp* right);
   bool HasDiscardableImages() const;
@@ -516,6 +525,10 @@ class CC_PAINT_EXPORT DrawImageRectOp final : public PaintOpWithFlags {
 
  private:
   DrawImageRectOp();
+
+  // Scale that has already been applied to the decoded image during
+  // serialization. Used with OOP raster.
+  SkSize scale_adjustment = SkSize::Make(1.f, 1.f);
 };
 
 class CC_PAINT_EXPORT DrawIRectOp final : public PaintOpWithFlags {
