@@ -317,6 +317,7 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time,
   bool did_animate = false;
 
   if (NeedsTickAnimations()) {
+    TRACE_EVENT_INSTANT0("cc", "NeedsTickAnimations", TRACE_EVENT_SCOPE_THREAD);
     AnimationsList ticking_animations_copy = ticking_animations_;
     for (auto& it : ticking_animations_copy)
       it->Tick(monotonic_time);
