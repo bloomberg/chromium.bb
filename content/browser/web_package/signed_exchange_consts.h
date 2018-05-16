@@ -16,11 +16,14 @@ enum class SignedExchangeVersion { kB0, kB1 };
 // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#application-signed-exchange
 
 constexpr char kCertSha256Key[] = "certSha256";
+constexpr char kCertUrl[] = "certUrl";
 constexpr char kDateKey[] = "date";
 constexpr char kExpiresKey[] = "expires";
 constexpr char kHeadersKey[] = "headers";
+constexpr char kIntegrity[] = "integrity";
 constexpr char kMethodKey[] = ":method";
 constexpr char kSignature[] = "signature";
+constexpr char kSig[] = "sig";
 constexpr char kStatusKey[] = ":status";
 constexpr char kUrlKey[] = ":url";
 constexpr char kValidityUrlKey[] = "validityUrl";
