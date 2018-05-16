@@ -177,6 +177,10 @@
       <include name="IDR_CRYPTOTOKEN_CRYPTOTOKENAPPROVEDORIGIN_JS" file="cryptotoken/cryptotokenapprovedorigins.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_CRYPTOTOKENORIGINCHECK_JS" file="cryptotoken/cryptotokenorigincheck.js" type="BINDATA" />
       <include name="IDR_CRYPTOTOKEN_CRYPTOTOKENBACKGROUND_JS" file="cryptotoken/cryptotokenbackground.js" type="BINDATA" />
+      <!-- Assessment Assistant -->
+      <if expr="chromeos">
+        <include name="IDR_ASSESSMENT_ASSISTANT_MAIN_JS" file="chromeos\assessmentassistant\main.js" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>

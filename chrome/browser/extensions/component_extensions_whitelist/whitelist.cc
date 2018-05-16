@@ -81,6 +81,7 @@ bool IsComponentExtensionWhitelisted(int manifest_resource_id) {
 #if defined(OS_CHROMEOS)
     // Separate ChromeOS list, as it is quite large.
     case IDR_ARC_SUPPORT_MANIFEST:
+    case IDR_ASSESSMENT_ASSISTANT_MANIFEST:
     case IDR_AUDIO_PLAYER_MANIFEST:
     case IDR_CHROME_APPS_WEBSTORE_WIDGET_MANIFEST:
     case IDR_CONNECTIVITY_DIAGNOSTICS_LAUNCHER_MANIFEST:

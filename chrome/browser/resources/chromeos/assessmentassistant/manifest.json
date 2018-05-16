@@ -1,0 +1,11 @@
+{
+  "name": "Assessment Assistant",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlEuN/ppO6kRHOwL9ghpr/aNpF/82Rhk3Z4UDyWvkkOaAuyetStAakuzS31J3Exl6A/z1zpHBu3n/8a/v1Pup/eMRA0kRNa6N8pZOvR8GM4H0/SA1OjrRhfHkj5DWAZedh/J7HDMjp+IFQ+bhIkuBXl7JQqdaGS8CQTNOgQ0HAHexfoITVWyt1yJd9RF6SVHQ2NC0joxCJqwq/iNBaKF1ktZx180BgrvGF2xvYerfVl9GouhsRI5rUafN2jO+JQWk2mQkwVlk+pgy8el1EZg8JqPJQpiRe1D3EyORypnQ163CGGZO+K0CRr87KtNHmVxfok+aSn1Nbtah6hxH/5Ho3wIDAQAB",
+  "description": "This extension is part of a Google Forms feature to allow teachers to give quizzes to students on managed Chrome OS devices",
+  "manifest_version": 2,
+  "version": "1.2",
+  "background": {
+    "scripts": ["main.js"],
+    "persistent": false
+  }
+}
