@@ -392,7 +392,7 @@ static void SetupScrollbarLayer(
     return;
   }
   scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
-      scrolling_layer->GetElementId());
+      scrolling_layer->element_id());
   scrollbar_graphics_layer->SetContentsToPlatformLayer(
       scrollbar_layer_group->web_layer.get(),
       /*prevent_contents_opaque_changes=*/false);
@@ -489,7 +489,7 @@ bool ScrollingCoordinator::UpdateCompositedScrollOffset(
   if (!web_layer)
     return false;
 
-  web_layer->SetScrollPosition(
+  web_layer->SetScrollOffset(
       static_cast<gfx::ScrollOffset>(scrollable_area->ScrollPosition()));
   return true;
 }
@@ -508,11 +508,10 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
   WebLayer* web_layer = toWebLayer(scrollable_area->LayerForScrolling());
   WebLayer* container_layer = toWebLayer(scrollable_area->LayerForContainer());
   if (web_layer) {
-    web_layer->SetScrollable(container_layer->Bounds());
+    web_layer->SetScrollable(container_layer->bounds());
     FloatPoint scroll_position(scrollable_area->ScrollOrigin() +
                                scrollable_area->GetScrollOffset());
-    web_layer->SetScrollPosition(
-        static_cast<gfx::ScrollOffset>(scroll_position));
+    web_layer->SetScrollOffset(static_cast<gfx::ScrollOffset>(scroll_position));
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
     LayoutSize subpixel_accumulation =
@@ -530,13 +529,13 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
             .Size();
     // The scrolling contents layer must be at least as large as the clip.
     scroll_contents_size = scroll_contents_size.ExpandedTo(IntSize(
-        container_layer->Bounds().width(), container_layer->Bounds().height()));
+        container_layer->bounds().width(), container_layer->bounds().height()));
     web_layer->SetBounds(static_cast<gfx::Size>(scroll_contents_size));
     // VisualViewport scrolling may involve pinch zoom and gets routed through
     // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
     // since it needs to be set in tandem with the page scale delta.
     if (scrollable_area != &page_->GetVisualViewport()) {
-      web_layer->SetScrollCallback(WTF::BindRepeating(
+      web_layer->set_did_scroll_callback(WTF::BindRepeating(
           &ScrollingCoordinator::DidScroll, WrapWeakPersistent(this)));
     }
   }
@@ -848,7 +847,7 @@ void ScrollingCoordinator::SetTouchEventTargetRects(
 
   for (const auto& layer_rect : graphics_layer_rects) {
     const GraphicsLayer* graphics_layer = layer_rect.key;
-    graphics_layer->PlatformLayer()->SetTouchEventHandlerRegion(
+    graphics_layer->PlatformLayer()->SetTouchActionRegion(
         TouchActionRect::BuildRegion(layer_rect.value));
   }
 }
@@ -1283,7 +1282,7 @@ bool ScrollingCoordinator::FrameScrollerIsDirty(
                      : nullptr) {
     return static_cast<gfx::Size>(
                frame_view->LayoutViewportScrollableArea()->ContentsSize()) !=
-           scroll_layer->Bounds();
+           scroll_layer->bounds();
   }
   return false;
 }

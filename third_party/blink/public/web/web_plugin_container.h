@@ -33,6 +33,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_CONTAINER_H_
 
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -43,7 +44,6 @@ class WebPlugin;
 class WebString;
 class WebURL;
 class WebURLRequest;
-class WebLayer;
 class WebDOMMessageEvent;
 struct WebPoint;
 struct WebRect;

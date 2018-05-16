@@ -10,6 +10,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -23,7 +24,6 @@ class SurfaceInfo;
 
 namespace blink {
 
-class WebLayer;
 class WebLayerTreeView;
 
 // The SurfaceLayerBridge facilitates communication about changes to a Surface

@@ -13,12 +13,9 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/render_widget.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
-
-namespace blink {
-class WebLayer;
-}
 
 namespace content {
 class CompositorDependencies;

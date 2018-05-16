@@ -3421,8 +3421,8 @@ static void CollectDrawableLayersForLayerListRecursively(
                          RoundedIntSize(layer->Size()));
     }
     if (contents_layer) {
-      auto position = contents_layer->GetPosition();
-      auto size = contents_layer->Bounds();
+      auto position = contents_layer->position();
+      auto size = contents_layer->bounds();
       RecordForeignLayer(context, *layer,
                          DisplayItem::kForeignLayerContentsWrapper,
                          contents_layer,
@@ -5882,7 +5882,7 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
           LayoutViewportScrollableArea()->LayerForScrolling()) {
     if (WebLayer* platform_layer = layer_for_scrolling->PlatformLayer()) {
       String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-                        platform_layer->MainThreadScrollingReasons())
+                        platform_layer->main_thread_scrolling_reasons())
                         .c_str());
       return result;
     }

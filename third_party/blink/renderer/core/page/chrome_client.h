@@ -30,6 +30,7 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_event_listener_properties.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
@@ -81,7 +82,6 @@ class PagePopupClient;
 class PopupOpeningObserver;
 class WebDragData;
 class WebImage;
-class WebLayer;
 class WebLayerTreeView;
 class WebViewImpl;
 

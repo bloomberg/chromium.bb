@@ -32,6 +32,7 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
@@ -60,7 +61,6 @@ class Canvas2DLayerBridgeTest;
 class CanvasResourceProvider;
 class SharedContextRateLimiter;
 class StaticBitmapImage;
-class WebLayer;
 
 #if defined(OS_MACOSX)
 // Canvas hibernation is currently disabled on MacOS X due to a bug that causes

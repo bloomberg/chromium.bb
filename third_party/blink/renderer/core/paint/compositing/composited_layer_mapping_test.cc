@@ -2421,7 +2421,7 @@ TEST_P(CompositedLayerMappingTest, CompositedStickyConstraintRemovedAndAdded) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
   EXPECT_TRUE(sticky_layer->GraphicsLayerBacking()
                   ->PlatformLayer()
-                  ->StickyPositionConstraint()
+                  ->sticky_position_constraint()
                   .is_sticky);
 
   // Make the scroller no longer scrollable.
@@ -2435,7 +2435,7 @@ TEST_P(CompositedLayerMappingTest, CompositedStickyConstraintRemovedAndAdded) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
   EXPECT_FALSE(sticky_layer->GraphicsLayerBacking()
                    ->PlatformLayer()
-                   ->StickyPositionConstraint()
+                   ->sticky_position_constraint()
                    .is_sticky);
 
   // Make the scroller scrollable again.
@@ -2447,7 +2447,7 @@ TEST_P(CompositedLayerMappingTest, CompositedStickyConstraintRemovedAndAdded) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("sticky"))->Layer();
   EXPECT_TRUE(sticky_layer->GraphicsLayerBacking()
                   ->PlatformLayer()
-                  ->StickyPositionConstraint()
+                  ->sticky_position_constraint()
                   .is_sticky);
 }
 
@@ -2479,22 +2479,22 @@ TEST_P(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
 
   WebLayer* scrolling_layer =
       scrollable_area->LayerForScrolling()->PlatformLayer();
-  EXPECT_EQ(0, scrolling_layer->ScrollPosition().y());
-  EXPECT_EQ(150, scrolling_layer->Bounds().height());
-  EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height());
+  EXPECT_EQ(0, scrolling_layer->scroll_offset().y());
+  EXPECT_EQ(150, scrolling_layer->bounds().height());
+  EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
 
   scrollerElement->setScrollTop(300);
   scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 25px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(50, scrolling_layer->ScrollPosition().y());
-  EXPECT_EQ(150, scrolling_layer->Bounds().height());
-  EXPECT_EQ(25, scrolling_layer->ScrollContainerBoundsForTesting().height());
+  EXPECT_EQ(50, scrolling_layer->scroll_offset().y());
+  EXPECT_EQ(150, scrolling_layer->bounds().height());
+  EXPECT_EQ(25, scrolling_layer->scroll_container_bounds().height());
 
   scrollerElement->setAttribute(HTMLNames::styleAttr, "max-height: 300px;");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(50, scrolling_layer->ScrollPosition().y());
-  EXPECT_EQ(150, scrolling_layer->Bounds().height());
-  EXPECT_EQ(100, scrolling_layer->ScrollContainerBoundsForTesting().height());
+  EXPECT_EQ(50, scrolling_layer->scroll_offset().y());
+  EXPECT_EQ(150, scrolling_layer->bounds().height());
+  EXPECT_EQ(100, scrolling_layer->scroll_container_bounds().height());
 }
 
 TEST_P(CompositedLayerMappingTest, MainFrameLayerBackgroundColor) {
@@ -2723,7 +2723,6 @@ TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayer) {
                          ->Layer()
                          ->GraphicsLayerBacking()
                          ->PlatformLayer()
-                         ->CcLayer()
                          ->filters());
 }
 
@@ -2739,7 +2738,6 @@ TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayerUpdated) {
                 ->Layer()
                 ->GraphicsLayerBacking()
                 ->PlatformLayer()
-                ->CcLayer()
                 ->filters());
   ToLayoutImage(GetLayoutObjectByElementId("image"))
       ->UpdateShouldInvertColor(false);
@@ -2749,7 +2747,6 @@ TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayerUpdated) {
                 ->Layer()
                 ->GraphicsLayerBacking()
                 ->PlatformLayer()
-                ->CcLayer()
                 ->filters());
 }
 

@@ -5,9 +5,7 @@
 #ifndef CONTENT_RENDERER_CHILD_FRAME_COMPOSITOR_H_
 #define CONTENT_RENDERER_CHILD_FRAME_COMPOSITOR_H_
 
-namespace blink {
-class WebLayer;
-}  // namespace blink
+#include "third_party/blink/public/platform/web_layer.h"
 
 namespace cc {
 class Layer;

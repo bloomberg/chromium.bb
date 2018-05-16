@@ -34,6 +34,7 @@
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_event_listener_properties.h"
 #include "third_party/blink/public/platform/web_float_point.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -48,7 +49,6 @@ class PaintImage;
 
 namespace blink {
 
-class WebLayer;
 struct WebPoint;
 class WebSelection;
 
@@ -67,7 +67,8 @@ class WebLayerTreeView {
     kDidNotSwapActivationFails = 4,
     kSwapResultMax,
   };
-  using ReportTimeCallback = base::Callback<void(SwapResult, base::TimeTicks)>;
+  using ReportTimeCallback =
+      base::OnceCallback<void(SwapResult, base::TimeTicks)>;
 
   virtual ~WebLayerTreeView() = default;
 

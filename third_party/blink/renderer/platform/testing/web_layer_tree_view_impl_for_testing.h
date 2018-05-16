@@ -9,6 +9,7 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
@@ -19,8 +20,6 @@ class LayerTreeSettings;
 }
 
 namespace blink {
-
-class WebLayer;
 
 // Dummy WeblayerTeeView that does not support any actual compositing.
 class WebLayerTreeViewImplForTesting

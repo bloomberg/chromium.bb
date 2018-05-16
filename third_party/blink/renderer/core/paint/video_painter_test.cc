@@ -101,7 +101,7 @@ TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
   const WebLayer* layer = player->GetWebLayer();
   ASSERT_TRUE(layer);
   EXPECT_TRUE(HasLayerAttached(*layer));
-  EXPECT_EQ(gfx::Size(300, 200), layer->Bounds());
+  EXPECT_EQ(gfx::Size(300, 200), layer->bounds());
 }
 
 }  // namespace

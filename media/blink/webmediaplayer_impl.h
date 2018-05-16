@@ -43,6 +43,7 @@
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "url/gurl.h"
@@ -53,7 +54,6 @@
 #endif
 
 namespace blink {
-class WebLayer;
 class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;

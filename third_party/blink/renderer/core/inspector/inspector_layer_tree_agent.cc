@@ -68,7 +68,7 @@ using protocol::Response;
 unsigned InspectorLayerTreeAgent::last_snapshot_id_;
 
 inline String IdForLayer(const GraphicsLayer* graphics_layer) {
-  return String::Number(graphics_layer->PlatformLayer()->Id());
+  return String::Number(graphics_layer->PlatformLayer()->id());
 }
 
 static std::unique_ptr<protocol::DOM::Rect> BuildObjectForRect(
@@ -100,14 +100,14 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
       Array<protocol::LayerTree::ScrollRect>::create();
   WebLayer* web_layer = graphics_layer->PlatformLayer();
   const cc::Region& non_fast_scrollable_rects =
-      web_layer->NonFastScrollableRegion();
+      web_layer->non_fast_scrollable_region();
   for (const gfx::Rect& rect : non_fast_scrollable_rects) {
     scroll_rects->addItem(BuildScrollRect(
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
   }
   const cc::Region& touch_event_handler_region =
-      web_layer->TouchEventHandlerRegion().region();
+      web_layer->touch_action_region().region();
 
   for (const gfx::Rect& rect : touch_event_handler_region) {
     scroll_rects->addItem(BuildScrollRect(
@@ -117,8 +117,8 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
   if (report_wheel_scrollers) {
     scroll_rects->addItem(BuildScrollRect(
         // TODO(yutak): This truncates the floating point position to integers.
-        gfx::Rect(web_layer->GetPosition().x(), web_layer->GetPosition().y(),
-                  web_layer->Bounds().width(), web_layer->Bounds().height()),
+        gfx::Rect(web_layer->position().x(), web_layer->position().y(),
+                  web_layer->bounds().width(), web_layer->bounds().height()),
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
   return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
@@ -128,7 +128,7 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
 // property tree once blink is able to access them. https://crbug.com/754339
 static GraphicsLayer* FindLayerByElementId(GraphicsLayer* root,
                                            CompositorElementId element_id) {
-  if (root->PlatformLayer()->GetElementId() == element_id)
+  if (root->PlatformLayer()->element_id() == element_id)
     return root;
   for (size_t i = 0, size = root->Children().size(); i < size; ++i) {
     if (GraphicsLayer* layer =
@@ -141,7 +141,7 @@ static GraphicsLayer* FindLayerByElementId(GraphicsLayer* root,
 static std::unique_ptr<protocol::LayerTree::StickyPositionConstraint>
 BuildStickyInfoForLayer(GraphicsLayer* root, WebLayer* layer) {
   cc::LayerStickyPositionConstraint constraints =
-      layer->StickyPositionConstraint();
+      layer->sticky_position_constraint();
   if (!constraints.is_sticky)
     return nullptr;
 
@@ -163,14 +163,14 @@ BuildStickyInfoForLayer(GraphicsLayer* root, WebLayer* layer) {
         FindLayerByElementId(root,
                              constraints.nearest_element_shifting_sticky_box)
             ->PlatformLayer()
-            ->Id()));
+            ->id()));
   }
   if (constraints.nearest_element_shifting_containing_block) {
     constraints_obj->setNearestLayerShiftingContainingBlock(String::Number(
         FindLayerByElementId(
             root, constraints.nearest_element_shifting_containing_block)
             ->PlatformLayer()
-            ->Id()));
+            ->id()));
   }
 
   return constraints_obj;
@@ -185,10 +185,10 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
   std::unique_ptr<protocol::LayerTree::Layer> layer_object =
       protocol::LayerTree::Layer::create()
           .setLayerId(IdForLayer(graphics_layer))
-          .setOffsetX(web_layer->GetPosition().x())
-          .setOffsetY(web_layer->GetPosition().y())
-          .setWidth(web_layer->Bounds().width())
-          .setHeight(web_layer->Bounds().height())
+          .setOffsetX(web_layer->position().x())
+          .setOffsetY(web_layer->position().y())
+          .setWidth(web_layer->bounds().width())
+          .setHeight(web_layer->bounds().height())
           .setPaintCount(graphics_layer->PaintCount())
           .setDrawsContent(web_layer->DrawsContent())
           .build();
@@ -211,15 +211,15 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     layer_object->setTransform(std::move(transform_array));
     const FloatPoint3D& transform_origin = graphics_layer->TransformOrigin();
     // FIXME: rename these to setTransformOrigin*
-    if (web_layer->Bounds().width() > 0) {
+    if (web_layer->bounds().width() > 0) {
       layer_object->setAnchorX(transform_origin.X() /
-                               web_layer->Bounds().width());
+                               web_layer->bounds().width());
     } else {
       layer_object->setAnchorX(0.f);
     }
-    if (web_layer->Bounds().height() > 0) {
+    if (web_layer->bounds().height() > 0) {
       layer_object->setAnchorY(transform_origin.Y() /
-                               web_layer->Bounds().height());
+                               web_layer->bounds().height());
     } else {
       layer_object->setAnchorY(0.f);
     }
@@ -309,7 +309,7 @@ InspectorLayerTreeAgent::BuildLayerTree() {
                                   ->LayoutViewportScrollableArea()
                                   ->LayerForScrolling();
   int scrolling_layer_id =
-      layer_for_scrolling ? layer_for_scrolling->PlatformLayer()->Id() : 0;
+      layer_for_scrolling ? layer_for_scrolling->PlatformLayer()->id() : 0;
   bool have_blocking_wheel_event_handlers =
       inspected_frames_->Root()->GetChromeClient().EventListenerProperties(
           inspected_frames_->Root(), WebEventListenerClass::kMouseWheel) ==
@@ -327,7 +327,7 @@ void InspectorLayerTreeAgent::BuildLayerIdToNodeIdMap(
     if (Node* node = root->GetLayoutObject().GeneratingNode()) {
       GraphicsLayer* graphics_layer =
           root->GetCompositedLayerMapping()->ChildForSuperlayers();
-      layer_id_to_node_id_map.Set(graphics_layer->PlatformLayer()->Id(),
+      layer_id_to_node_id_map.Set(graphics_layer->PlatformLayer()->id(),
                                   IdForNode(node));
     }
   }
@@ -359,7 +359,7 @@ void InspectorLayerTreeAgent::GatherGraphicsLayers(
     int scrolling_layer_id) {
   if (client_->IsInspectorLayer(layer))
     return;
-  int layer_id = layer->PlatformLayer()->Id();
+  int layer_id = layer->PlatformLayer()->id();
   layers->addItem(BuildObjectForLayer(
       RootGraphicsLayer(), layer, layer_id_to_node_id_map.at(layer_id),
       has_wheel_event_handlers && layer_id == scrolling_layer_id));
@@ -387,7 +387,7 @@ GraphicsLayer* InspectorLayerTreeAgent::RootGraphicsLayer() {
 }
 
 static GraphicsLayer* FindLayerById(GraphicsLayer* root, int layer_id) {
-  if (root->PlatformLayer()->Id() == layer_id)
+  if (root->PlatformLayer()->id() == layer_id)
     return root;
   for (size_t i = 0, size = root->Children().size(); i < size; ++i) {
     if (GraphicsLayer* layer = FindLayerById(root->Children()[i], layer_id))

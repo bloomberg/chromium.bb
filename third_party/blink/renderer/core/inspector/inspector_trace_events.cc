@@ -977,7 +977,7 @@ std::unique_ptr<TracedValue> InspectorPaintEvent::Data(
   CreateQuad(value.get(), "clip", quad);
   SetGeneratingNodeInfo(value.get(), layout_object, "nodeId");
   int graphics_layer_id =
-      graphics_layer ? graphics_layer->PlatformLayer()->Id() : 0;
+      graphics_layer ? graphics_layer->PlatformLayer()->id() : 0;
   value->SetInteger("layerId", graphics_layer_id);
   SetCallStack(value.get());
   return value;

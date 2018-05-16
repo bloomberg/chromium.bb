@@ -5,11 +5,10 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_LINK_HIGHLIGHT_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_LINK_HIGHLIGHT_H_
 
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
 namespace blink {
-
-class WebLayer;
 
 class PLATFORM_EXPORT LinkHighlight {
  public:

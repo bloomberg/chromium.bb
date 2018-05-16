@@ -5,8 +5,9 @@
 #ifndef CONTENT_RENDERER_PEPPER_FULLSCREEN_CONTAINER_H_
 #define CONTENT_RENDERER_PEPPER_FULLSCREEN_CONTAINER_H_
 
+#include "third_party/blink/public/platform/web_layer.h"
+
 namespace blink {
-class WebLayer;
 struct WebCursorInfo;
 struct WebRect;
 }  // namespace blink

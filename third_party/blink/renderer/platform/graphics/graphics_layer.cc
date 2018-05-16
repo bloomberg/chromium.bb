@@ -449,7 +449,7 @@ void GraphicsLayer::UpdateLayerIsDrawable() {
 
   layer_->SetIsDrawable(draws_content_ && contents_visible_);
   if (WebLayer* contents_layer = ContentsLayerIfRegistered())
-    contents_layer->SetDrawsContent(contents_visible_);
+    contents_layer->SetIsDrawable(contents_visible_);
 
   if (draws_content_) {
     layer_->SetNeedsDisplay();
@@ -505,14 +505,14 @@ static HashSet<int>* g_registered_layer_set;
 void GraphicsLayer::RegisterContentsLayer(WebLayer* layer) {
   if (!g_registered_layer_set)
     g_registered_layer_set = new HashSet<int>;
-  CHECK(!g_registered_layer_set->Contains(layer->Id()));
-  g_registered_layer_set->insert(layer->Id());
+  CHECK(!g_registered_layer_set->Contains(layer->id()));
+  g_registered_layer_set->insert(layer->id());
 }
 
 void GraphicsLayer::UnregisterContentsLayer(WebLayer* layer) {
   DCHECK(g_registered_layer_set);
-  CHECK(g_registered_layer_set->Contains(layer->Id()));
-  g_registered_layer_set->erase(layer->Id());
+  CHECK(g_registered_layer_set->Contains(layer->id()));
+  g_registered_layer_set->erase(layer->id());
   layer->SetLayerClient(nullptr);
 }
 
@@ -521,8 +521,8 @@ void GraphicsLayer::SetContentsTo(WebLayer* layer,
   bool children_changed = false;
   if (layer) {
     DCHECK(g_registered_layer_set);
-    CHECK(g_registered_layer_set->Contains(layer->Id()));
-    if (contents_layer_id_ != layer->Id()) {
+    CHECK(g_registered_layer_set->Contains(layer->id()));
+    if (contents_layer_id_ != layer->id()) {
       SetupContentsLayer(layer);
       children_changed = true;
     }
@@ -548,10 +548,10 @@ void GraphicsLayer::SetupContentsLayer(WebLayer* contents_layer) {
   contents_layer_->SetTransformOrigin(FloatPoint3D());
   contents_layer_->SetUseParentBackfaceVisibility(true);
 
-  // It is necessary to call setDrawsContent as soon as we receive the new
-  // contentsLayer, for the correctness of early exit conditions in
-  // setDrawsContent() and setContentsVisible().
-  contents_layer_->SetDrawsContent(contents_visible_);
+  // It is necessary to call SetDrawsContent() as soon as we receive the new
+  // contents_layer, for the correctness of early exit conditions in
+  // SetDrawsContent() and SetContentsVisible().
+  contents_layer_->SetIsDrawable(contents_visible_);
 
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
@@ -562,7 +562,7 @@ void GraphicsLayer::SetupContentsLayer(WebLayer* contents_layer) {
           : nullptr;
   contents_layer_->SetMaskLayer(border_web_layer);
 
-  contents_layer_->SetRenderingContext(rendering_context3d_);
+  contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 
 void GraphicsLayer::ClearContentsLayerIfUnregistered() {
@@ -585,7 +585,7 @@ void GraphicsLayer::SetContentsLayer(WebLayer* contents_layer) {
     return;
   }
   contents_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
-  contents_layer_id_ = contents_layer_->Id();
+  contents_layer_id_ = contents_layer_->id();
 }
 
 GraphicsLayerDebugInfo& GraphicsLayer::DebugInfo() {
@@ -1065,7 +1065,7 @@ void GraphicsLayer::SetRenderingContext(int context) {
   layer_->Set3dSortingContextId(context);
 
   if (contents_layer_)
-    contents_layer_->SetRenderingContext(rendering_context3d_);
+    contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 
 bool GraphicsLayer::MasksToBounds() const {
@@ -1078,8 +1078,8 @@ void GraphicsLayer::SetMasksToBounds(bool masks_to_bounds) {
 
 void GraphicsLayer::SetDrawsContent(bool draws_content) {
   // NOTE: This early-exit is only correct because we also properly call
-  // WebLayer::setDrawsContent() whenever |m_contentsLayer| is set to a new
-  // layer in setupContentsLayer().
+  // cc::Layer::SetIsDrawable() whenever |contents_layer_| is set to a new
+  // layer in SetupContentsLayer().
   if (draws_content == draws_content_)
     return;
 
@@ -1126,7 +1126,7 @@ void GraphicsLayer::SetContentsOpaque(bool opaque) {
   layer_->SetContentsOpaque(contents_opaque_);
   ClearContentsLayerIfUnregistered();
   if (contents_layer_ && !prevent_contents_opaque_changes_)
-    contents_layer_->SetOpaque(opaque);
+    contents_layer_->SetContentsOpaque(opaque);
 }
 
 void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
@@ -1189,7 +1189,7 @@ void GraphicsLayer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
 
 void GraphicsLayer::SetContentsNeedsDisplay() {
   if (WebLayer* contents_layer = ContentsLayerIfRegistered()) {
-    contents_layer->Invalidate();
+    contents_layer->SetNeedsDisplay();
     TrackRasterInvalidation(*this, contents_rect_,
                             PaintInvalidationReason::kFull);
   }
@@ -1355,7 +1355,7 @@ GraphicsLayer::TakeDebugInfo(cc::Layer* layer) {
 
 void GraphicsLayer::didUpdateMainThreadScrollingReasons() {
   debug_info_.SetMainThreadScrollingReasons(
-      PlatformLayer()->MainThreadScrollingReasons());
+      PlatformLayer()->main_thread_scrolling_reasons());
 }
 
 void GraphicsLayer::didChangeScrollbarsHiddenIfOverlay(bool hidden) {
@@ -1382,7 +1382,7 @@ void GraphicsLayer::SetElementId(const CompositorElementId& id) {
 
 CompositorElementId GraphicsLayer::GetElementId() const {
   if (WebLayer* layer = PlatformLayer())
-    return layer->GetElementId();
+    return layer->element_id();
   return CompositorElementId();
 }
 

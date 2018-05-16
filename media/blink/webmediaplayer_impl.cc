@@ -401,7 +401,7 @@ void WebMediaPlayerImpl::OnWebLayerUpdated() {}
 
 void WebMediaPlayerImpl::RegisterContentsLayer(blink::WebLayer* web_layer) {
   DCHECK(bridge_);
-  bridge_->GetWebLayer()->SetOpaque(opaque_);
+  bridge_->GetWebLayer()->SetContentsOpaque(opaque_);
   client_->SetWebLayer(web_layer);
 }
 
@@ -1637,8 +1637,8 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
       video_layer_ = cc::VideoLayer::Create(
           compositor_.get(),
           pipeline_metadata_.video_decoder_config.video_rotation());
+      video_layer_->SetContentsOpaque(opaque_);
       video_weblayer_ = std::make_unique<blink::WebLayer>(video_layer_.get());
-      video_weblayer_->SetOpaque(opaque_);
       client_->SetWebLayer(video_weblayer_.get());
     } else {
       vfc_task_runner_->PostTask(
@@ -1905,10 +1905,10 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
 
   opaque_ = opaque;
   if (!surface_layer_for_video_enabled_) {
-    if (video_weblayer_)
-      video_weblayer_->SetOpaque(opaque_);
+    if (video_layer_)
+      video_layer_->SetContentsOpaque(opaque_);
   } else if (bridge_->GetWebLayer()) {
-    bridge_->GetWebLayer()->SetOpaque(opaque_);
+    bridge_->GetWebLayer()->SetContentsOpaque(opaque_);
   }
 }
 
@@ -2211,12 +2211,12 @@ gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
     if (!video_weblayer_)
       return pipeline_metadata_.natural_size;
 
-    return video_weblayer_->Bounds();
+    return video_weblayer_->bounds();
   }
   if (!bridge_->GetWebLayer())
     return pipeline_metadata_.natural_size;
 
-  return bridge_->GetWebLayer()->Bounds();
+  return bridge_->GetWebLayer()->bounds();
 }
 
 void WebMediaPlayerImpl::SetDeviceScaleFactor(float scale_factor) {

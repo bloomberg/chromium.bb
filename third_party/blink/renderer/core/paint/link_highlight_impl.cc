@@ -389,7 +389,7 @@ void LinkHighlightImpl::UpdateGeometry() {
 
       if (current_graphics_layer_) {
         gfx::Rect rect = gfx::ToEnclosingRect(
-            gfx::RectF(Layer()->GetPosition(), gfx::SizeF(Layer()->Bounds())));
+            gfx::RectF(Layer()->position(), gfx::SizeF(Layer()->bounds())));
         current_graphics_layer_->TrackRasterInvalidation(
             LinkHighlightDisplayItemClientForTracking(), IntRect(rect),
             PaintInvalidationReason::kFull);

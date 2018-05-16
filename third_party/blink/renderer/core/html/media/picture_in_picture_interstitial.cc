@@ -63,7 +63,7 @@ void PictureInPictureInterstitial::Show() {
                                    FROM_HERE);
 
   DCHECK(GetVideoElement().PlatformLayer());
-  GetVideoElement().PlatformLayer()->SetDrawsContent(false);
+  GetVideoElement().PlatformLayer()->SetIsDrawable(false);
 }
 
 void PictureInPictureInterstitial::Hide() {
@@ -79,7 +79,7 @@ void PictureInPictureInterstitial::Hide() {
                                    FROM_HERE);
 
   if (GetVideoElement().PlatformLayer())
-    GetVideoElement().PlatformLayer()->SetDrawsContent(true);
+    GetVideoElement().PlatformLayer()->SetIsDrawable(true);
 }
 
 void PictureInPictureInterstitial::ToggleInterstitialTimerFired(TimerBase*) {

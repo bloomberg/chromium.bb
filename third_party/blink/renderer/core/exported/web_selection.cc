@@ -30,7 +30,7 @@ static WebSelectionBound GetWebSelectionBound(
   }
 
   WebSelectionBound result(type);
-  result.layer_id = bound.layer->PlatformLayer()->Id();
+  result.layer_id = bound.layer->PlatformLayer()->id();
   result.edge_top_in_layer = RoundedIntPoint(bound.edge_top_in_layer);
   result.edge_bottom_in_layer = RoundedIntPoint(bound.edge_bottom_in_layer);
   result.is_text_direction_rtl = bound.is_text_direction_rtl;

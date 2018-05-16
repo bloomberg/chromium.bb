@@ -995,8 +995,8 @@ void WebMediaPlayerMS::OnOpacityChanged(bool is_opaque) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Opacity can be changed during the session without resetting
-  // |video_weblayer_|.
-  video_weblayer_->SetOpaque(is_opaque);
+  // |video_layer_|.
+  video_layer_->SetContentsOpaque(is_opaque);
 }
 
 void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,

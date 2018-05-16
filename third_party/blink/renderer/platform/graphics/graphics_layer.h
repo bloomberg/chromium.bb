@@ -33,6 +33,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -69,7 +70,6 @@ class LinkHighlight;
 class PaintController;
 class RasterInvalidationTracking;
 class ScrollableArea;
-class WebLayer;
 
 typedef Vector<GraphicsLayer*, 64> GraphicsLayerVector;
 

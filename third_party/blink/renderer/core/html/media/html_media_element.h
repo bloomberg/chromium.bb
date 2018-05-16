@@ -30,6 +30,7 @@
 #include <memory>
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
@@ -74,7 +75,6 @@ class VideoTrack;
 class VideoTrackList;
 class WebAudioSourceProvider;
 class WebInbandTextTrack;
-class WebLayer;
 class WebRemotePlaybackClient;
 
 class CORE_EXPORT HTMLMediaElement
