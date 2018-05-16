@@ -21,10 +21,6 @@ CXXFLAGS += -std=c++14
 CFLAGS   += -std=c99
 LIBS     += -shared -lcutils -lhardware -lsync $(LIBDRM_LIBS)
 
-ifdef DRV_AMDGPU
-	LIBS += -lamdgpuaddr
-endif
-
 OBJS =  $(foreach source, $(SOURCES), $(addsuffix .o, $(basename $(source))))
 
 OBJECTS = $(addprefix $(TARGET_DIR), $(notdir $(OBJS)))
