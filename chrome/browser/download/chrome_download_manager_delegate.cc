@@ -165,6 +165,7 @@ base::FilePath GetPlatformDownloadPath(Profile* profile,
 //   * DANGEROUS_URL, if the URL is a known malware site.
 //   * MAYBE_DANGEROUS_CONTENT, if the content will be scanned for
 //         malware. I.e. |is_content_check_supported| is true.
+//   * WHITELISTED_BY_POLICY, if the download matches enterprise whitelist.
 //   * NOT_DANGEROUS.
 void CheckDownloadUrlDone(
     const DownloadTargetDeterminerDelegate::CheckDownloadUrlCallback& callback,
@@ -180,6 +181,9 @@ void CheckDownloadUrlDone(
       danger_type = download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT;
     else
       danger_type = download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+  } else if (result ==
+             safe_browsing::DownloadCheckResult::WHITELISTED_BY_POLICY) {
+    danger_type = download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY;
   } else {
     // If the URL is malicious, we'll use that as the danger type. The results
     // of the content check, if one is performed, will be ignored.
@@ -1017,6 +1021,9 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
         break;
       case safe_browsing::DownloadCheckResult::POTENTIALLY_UNWANTED:
         danger_type = download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED;
+        break;
+      case safe_browsing::DownloadCheckResult::WHITELISTED_BY_POLICY:
+        danger_type = download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY;
         break;
     }
     DCHECK_NE(danger_type,

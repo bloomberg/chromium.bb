@@ -1025,6 +1025,7 @@ gfx::ImageSkia DownloadItemView::GetWarningIcon() {
     case download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS:
     case download::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT:
     case download::DOWNLOAD_DANGER_TYPE_USER_VALIDATED:
+    case download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY:
     case download::DOWNLOAD_DANGER_TYPE_MAX:
       NOTREACHED();
       break;

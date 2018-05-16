@@ -247,6 +247,9 @@ class DownloadProtectionService {
       bool has_user_gesture,
       ClientDownloadRequest* out_request);
 
+  void OnDangerousDownloadOpened(const download::DownloadItem* item,
+                                 Profile* profile);
+
   SafeBrowsingService* sb_service_;
   // These pointers may be NULL if SafeBrowsing is disabled.
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;

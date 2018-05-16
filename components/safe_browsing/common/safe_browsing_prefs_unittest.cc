@@ -438,8 +438,6 @@ TEST_F(SafeBrowsingPrefsTest, IsExtendedReportingPolicyManaged) {
 }
 
 TEST_F(SafeBrowsingPrefsTest, VerifyIsURLWhitelistedByPolicy) {
-  EnableEnterprisePasswordProtectionFeature();
-
   GURL target_url("https://www.foo.com");
   // When PrefMember is null, URL is not whitelisted.
   EXPECT_FALSE(IsURLWhitelistedByPolicy(target_url, nullptr));

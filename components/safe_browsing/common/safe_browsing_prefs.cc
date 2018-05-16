@@ -529,10 +529,9 @@ void CanonicalizeDomainList(
 bool IsURLWhitelistedByPolicy(const GURL& url,
                               StringListPrefMember* pref_member) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (!pref_member ||
-      !base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1)) {
+  if (!pref_member)
     return false;
-  }
+
   std::vector<std::string> sb_whitelist_domains = pref_member->GetValue();
   return std::find_if(sb_whitelist_domains.begin(), sb_whitelist_domains.end(),
                       [&url](const std::string& domain) {
@@ -542,9 +541,6 @@ bool IsURLWhitelistedByPolicy(const GURL& url,
 
 bool IsURLWhitelistedByPolicy(const GURL& url, const PrefService& pref) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(kEnterprisePasswordProtectionV1))
-    return false;
-
   if (!pref.HasPrefPath(prefs::kSafeBrowsingWhitelistDomains))
     return false;
   const base::ListValue* whitelist =

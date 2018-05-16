@@ -147,6 +147,8 @@ std::string GetDownloadDangerNames(DownloadDangerType type) {
       return "DANGEROUS_HOST";
     case DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return "POTENTIALLY_UNWANTED";
+    case DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY:
+      return "WHITELISTED_BY_POLICY";
     default:
       NOTREACHED();
       return "UNKNOWN_DANGER_TYPE";
@@ -2236,7 +2238,8 @@ void DownloadItemImpl::SetDangerType(DownloadDangerType danger_type) {
   if ((danger_type_ == DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS ||
        danger_type_ == DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
        danger_type_ == DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT ||
-       danger_type_ == DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT) &&
+       danger_type_ == DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT ||
+       danger_type_ == DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY) &&
       (danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST ||
        danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_URL ||
        danger_type == DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||

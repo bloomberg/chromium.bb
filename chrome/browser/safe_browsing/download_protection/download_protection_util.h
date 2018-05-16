@@ -19,7 +19,8 @@ enum class DownloadCheckResult {
   DANGEROUS,
   UNCOMMON,
   DANGEROUS_HOST,
-  POTENTIALLY_UNWANTED
+  POTENTIALLY_UNWANTED,
+  WHITELISTED_BY_POLICY,
 };
 
 // Enum to keep track why a particular download verdict was chosen.
