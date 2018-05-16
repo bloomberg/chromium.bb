@@ -239,6 +239,11 @@ void RunLoop::QuitCurrentWhenIdleDeprecated() {
   tls_delegate.Get().Get()->active_run_loops_.top()->QuitWhenIdle();
 }
 
+// static
+Closure RunLoop::QuitCurrentWhenIdleClosureDeprecated() {
+  return Bind(&RunLoop::QuitCurrentWhenIdleDeprecated);
+}
+
 #if DCHECK_IS_ON()
 RunLoop::ScopedDisallowRunningForTesting::ScopedDisallowRunningForTesting()
     : current_delegate_(tls_delegate.Get().Get()),
