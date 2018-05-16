@@ -141,6 +141,13 @@ TEST_F(OmniboxEditModelTest, AdjustTextForCopy) {
       {"a.com", 0, "https://b.com/foo", true, "b.com/foo", "https://b.com/foo",
        true, "https://b.com/foo"},
 
+      // Even if the popup is open, if the input text doesn't correspond to the
+      // current match, ignore the current match.
+      {"a.com/foo", 0, "https://b.com/foo", true, "a.com/foo", "a.com/foo",
+       false, "a.com/foo"},
+      {"https://b.com/foo", 0, "https://b.com/foo", true, "https://b.co",
+       "https://b.co", false, "https://b.co"},
+
       // Verifies that no scheme is inserted if there is no valid match.
       {"a.com", 0, "", true, "b.com/foo", "b.com/foo", false, ""},
 
