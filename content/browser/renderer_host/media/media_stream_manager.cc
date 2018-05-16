@@ -628,7 +628,7 @@ void MediaStreamManager::GenerateStream(
     // The test callback is responsible to verify whether the |controls| is
     // as expected. Then we need to finish getUserMedia and let Javascript
     // access the result.
-    if (generate_stream_test_callback_.Run(controls)) {
+    if (std::move(generate_stream_test_callback_).Run(controls)) {
       FinalizeGenerateStream(label, request);
     } else {
       FinalizeRequestFailed(label, request, MEDIA_DEVICE_INVALID_STATE);

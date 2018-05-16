@@ -98,7 +98,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Callback for testing.
   using GenerateStreamTestCallback =
-      base::Callback<bool(const StreamControls&)>;
+      base::OnceCallback<bool(const StreamControls&)>;
 
   // Adds |message| to native logs for outstanding device requests, for use by
   // render processes hosts whose corresponding render processes are requesting

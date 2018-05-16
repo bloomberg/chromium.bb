@@ -648,13 +648,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
       BrowserMainLoop::GetInstance()->media_stream_manager();
 
   manager->SetGenerateStreamCallbackForTesting(
-      base::Bind(&VerifyDisableLocalEcho, false));
+      base::BindOnce(&VerifyDisableLocalEcho, false));
   std::string call = GenerateGetUserMediaWithDisableLocalEcho(
       "getUserMediaAndExpectSuccess", "false");
   ExecuteJavascriptAndWaitForOk(call);
 
   manager->SetGenerateStreamCallbackForTesting(
-      base::Bind(&VerifyDisableLocalEcho, true));
+      base::BindOnce(&VerifyDisableLocalEcho, true));
   call = GenerateGetUserMediaWithDisableLocalEcho(
       "getUserMediaAndExpectSuccess", "true");
   ExecuteJavascriptAndWaitForOk(call);
