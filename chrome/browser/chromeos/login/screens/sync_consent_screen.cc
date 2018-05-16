@@ -20,6 +20,10 @@ namespace {
 constexpr const char kUserActionConinueAndReview[] = "continue-and-review";
 constexpr const char kUserActionContinueWithDefaults[] =
     "continue-with-defaults";
+constexpr const char kUserActionContinueWithSyncOnly[] =
+    "continue-with-sync-only";
+constexpr const char kUserActionContinueWithSyncAndPersonalization[] =
+    "continue-with-sync-and-personalization";
 
 browser_sync::ProfileSyncService* GetSyncService(Profile* profile) {
   if (ProfileSyncServiceFactory::HasProfileSyncService(profile))
@@ -75,6 +79,16 @@ void SyncConsentScreen::OnUserAction(const std::string& action_id) {
     return;
   }
   if (action_id == kUserActionContinueWithDefaults) {
+    Finish(ScreenExitCode::SYNC_CONSENT_FINISHED);
+    return;
+  }
+  if (action_id == kUserActionContinueWithSyncOnly) {
+    // TODO(alemate) https://crbug.com/822889
+    Finish(ScreenExitCode::SYNC_CONSENT_FINISHED);
+    return;
+  }
+  if (action_id == kUserActionContinueWithSyncAndPersonalization) {
+    // TODO(alemate) https://crbug.com/822889
     Finish(ScreenExitCode::SYNC_CONSENT_FINISHED);
     return;
   }
