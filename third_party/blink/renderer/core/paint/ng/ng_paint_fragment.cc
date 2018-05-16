@@ -226,4 +226,28 @@ const NGPaintFragment* NGPaintFragment::ContainerLineBox() const {
   return nullptr;
 }
 
+NGPaintFragment* NGPaintFragment::FirstLineBox() const {
+  for (auto& child : children_) {
+    if (child->PhysicalFragment().IsLineBox())
+      return child.get();
+  }
+  return nullptr;
+}
+
+void NGPaintFragment::SetShouldDoFullPaintInvalidationRecursively() {
+  if (LayoutObject* layout_object = GetLayoutObject())
+    layout_object->SetShouldDoFullPaintInvalidation();
+
+  for (auto& child : children_)
+    child->SetShouldDoFullPaintInvalidationRecursively();
+}
+
+void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() {
+  DCHECK(PhysicalFragment().IsBox() && GetLayoutObject() &&
+         GetLayoutObject()->IsLayoutBlockFlow());
+
+  if (NGPaintFragment* line_box = FirstLineBox())
+    line_box->SetShouldDoFullPaintInvalidationRecursively();
+}
+
 }  // namespace blink

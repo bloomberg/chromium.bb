@@ -50,6 +50,9 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
     return children_;
   }
 
+  // Returns the first line box for a block-level container.
+  NGPaintFragment* FirstLineBox() const;
+
   // Returns the container line box for inline fragments.
   const NGPaintFragment* ContainerLineBox() const;
 
@@ -79,6 +82,14 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   }
 
   LayoutRect PartialInvalidationRect() const override;
+
+  // Set ShouldDoFullPaintInvalidation flag in the corresponding LayoutObject
+  // recursively.
+  void SetShouldDoFullPaintInvalidationRecursively();
+
+  // Set ShouldDoFullPaintInvalidation flag to all objects in the first line of
+  // this block-level fragment.
+  void SetShouldDoFullPaintInvalidationForFirstLine();
 
   // Paint all descendant inline box fragments that belong to the specified
   // LayoutObject.
