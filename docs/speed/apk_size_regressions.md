@@ -116,6 +116,8 @@ bug (if it was not linked in the bug, see above).
 ### Growth is from Native Resources (pak files)
 
  * Ensure `compress="gzip"` is used for all `chrome:` pages.
+ * Use [//tools/binary_size/diagnose_bloat.py](https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/README.md)
+   to show a diff of pak entries.
 
 ### Growth is from Images
 
@@ -139,11 +141,8 @@ to show a diff of ELF symbols.
 
 ### Growth is from Java code
 
- * Use [tools/android/dexdiffer/dexdiffer.py](https://cs.chromium.org/chromium/src/tools/android/dexdiffer/dexdiffer.py).
-    * This currently just shows a list of symbols added / removed rather than
-      taking into account method body sizes.
-    * Enhancements to this tool tracked at
-      [crbug/678044](https://bugs.chromium.org/p/chromium/issues/detail?id=678044).
+ * Use [//tools/binary_size/diagnose_bloat.py](https://chromium.googlesource.com/chromium/src/+/master/tools/binary_size/README.md)
+   to show a diff of DEX symbols.
 
 ### Growth is from "other lib size" or "Unknown files size"
 
