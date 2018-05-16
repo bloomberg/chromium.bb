@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRAY_BUBBLE_WRAPPER_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/tray/tray_bubble_base.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
 #include "ui/views/widget/widget_observer.h"
@@ -19,8 +20,9 @@ namespace ash {
 class TrayBackgroundView;
 
 // Creates and manages the Widget and EventFilter components of a bubble.
-
-class ASH_EXPORT TrayBubbleWrapper : public views::WidgetObserver,
+// TODO(tetsui): Remove this and use TrayBubbleBase for all bubbles.
+class ASH_EXPORT TrayBubbleWrapper : public TrayBubbleBase,
+                                     public views::WidgetObserver,
                                      public aura::WindowObserver,
                                      public ::wm::ActivationChangeObserver {
  public:
@@ -28,6 +30,11 @@ class ASH_EXPORT TrayBubbleWrapper : public views::WidgetObserver,
                     views::TrayBubbleView* bubble_view,
                     bool is_persistent);
   ~TrayBubbleWrapper() override;
+
+  // TrayBubbleBase overrides:
+  TrayBackgroundView* GetTray() const override;
+  views::TrayBubbleView* GetBubbleView() const override;
+  views::Widget* GetBubbleWidget() const override;
 
   // views::WidgetObserver overrides:
   void OnWidgetClosing(views::Widget* widget) override;
@@ -46,12 +53,9 @@ class ASH_EXPORT TrayBubbleWrapper : public views::WidgetObserver,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  const TrayBackgroundView* tray() const { return tray_; }
   TrayBackgroundView* tray() { return tray_; }
   views::TrayBubbleView* bubble_view() { return bubble_view_; }
-  const views::TrayBubbleView* bubble_view() const { return bubble_view_; }
   views::Widget* bubble_widget() { return bubble_widget_; }
-  const views::Widget* bubble_widget() const { return bubble_widget_; }
 
  private:
   TrayBackgroundView* tray_;

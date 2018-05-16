@@ -827,6 +827,7 @@ component("ash") {
     "system/tray/time_to_click_recorder.h",
     "system/tray/tray_background_view.cc",
     "system/tray/tray_background_view.h",
+    "system/tray/tray_bubble_base.h",
     "system/tray/tray_bubble_wrapper.cc",
     "system/tray/tray_bubble_wrapper.h",
     "system/tray/tray_constants.cc",

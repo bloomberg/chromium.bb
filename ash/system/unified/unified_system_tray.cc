@@ -144,7 +144,9 @@ base::string16 UnifiedSystemTray::GetAccessibleNameForTray() {
 void UnifiedSystemTray::HideBubbleWithView(
     const views::TrayBubbleView* bubble_view) {}
 
-void UnifiedSystemTray::ClickedOutsideBubble() {}
+void UnifiedSystemTray::ClickedOutsideBubble() {
+  CloseBubble();
+}
 
 void UnifiedSystemTray::ShowBubbleInternal(bool show_by_click) {
   bubble_ = std::make_unique<UnifiedSystemTrayBubble>(this, show_by_click);

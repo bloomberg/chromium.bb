@@ -30,7 +30,7 @@ TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
   tray_->UpdateBubbleViewArrow(bubble_view_);
   bubble_view_->InitializeAndShowBubble();
 
-  tray->tray_event_filter()->AddWrapper(this);
+  tray->tray_event_filter()->AddBubble(this);
 
   bubble_widget_->GetNativeWindow()->GetRootWindow()->AddObserver(this);
 
@@ -42,7 +42,7 @@ TrayBubbleWrapper::~TrayBubbleWrapper() {
   if (!is_persistent_)
     Shell::Get()->activation_client()->RemoveObserver(this);
 
-  tray_->tray_event_filter()->RemoveWrapper(this);
+  tray_->tray_event_filter()->RemoveBubble(this);
   if (bubble_widget_) {
     auto* transient_manager = ::wm::TransientWindowManager::GetOrCreate(
         bubble_widget_->GetNativeWindow());
@@ -54,6 +54,18 @@ TrayBubbleWrapper::~TrayBubbleWrapper() {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->Close();
   }
+}
+
+TrayBackgroundView* TrayBubbleWrapper::GetTray() const {
+  return tray_;
+}
+
+views::TrayBubbleView* TrayBubbleWrapper::GetBubbleView() const {
+  return bubble_view_;
+}
+
+views::Widget* TrayBubbleWrapper::GetBubbleWidget() const {
+  return bubble_widget_;
 }
 
 void TrayBubbleWrapper::OnWidgetClosing(views::Widget* widget) {

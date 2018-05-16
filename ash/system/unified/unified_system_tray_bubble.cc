@@ -7,6 +7,7 @@
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/tray_constants.h"
+#include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
@@ -40,41 +41,56 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray,
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
 
-  auto* bubble_view = new views::TrayBubbleView(init_params);
+  bubble_view_ = new views::TrayBubbleView(init_params);
   int max_height = tray->shelf()->GetUserWorkAreaBounds().height() -
                    kPaddingFromScreenTop -
-                   bubble_view->GetBorderInsets().height();
+                   bubble_view_->GetBorderInsets().height();
   auto* unified_view = controller_->CreateView();
   time_to_click_recorder_ =
       std::make_unique<TimeToClickRecorder>(this, unified_view);
   unified_view->SetMaxHeight(max_height);
-  bubble_view->SetMaxHeight(max_height);
-  bubble_view->AddChildView(unified_view);
-  bubble_view->set_anchor_view_insets(
+  bubble_view_->SetMaxHeight(max_height);
+  bubble_view_->AddChildView(unified_view);
+  bubble_view_->set_anchor_view_insets(
       tray->shelf()->GetSystemTrayAnchor()->GetBubbleAnchorInsets());
-  bubble_view->set_color(SK_ColorTRANSPARENT);
-  bubble_view->layer()->SetFillsBoundsOpaquely(false);
+  bubble_view_->set_color(SK_ColorTRANSPARENT);
+  bubble_view_->layer()->SetFillsBoundsOpaquely(false);
 
-  bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view);
+  bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
 
   TrayBackgroundView::InitializeBubbleAnimations(bubble_widget_);
-  bubble_view->InitializeAndShowBubble();
+  bubble_view_->InitializeAndShowBubble();
   if (app_list::features::IsBackgroundBlurEnabled()) {
     // ClientView's layer (See TrayBubbleView::InitializeAndShowBubble())
-    bubble_view->layer()->parent()->SetBackgroundBlur(
+    bubble_view_->layer()->parent()->SetBackgroundBlur(
         kUnifiedMenuBackgroundBlur);
   }
 
   bubble_widget_->widget_delegate()->set_can_activate(true);
   bubble_widget_->Activate();
+
+  tray->tray_event_filter()->AddBubble(this);
 }
 
 UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
+  tray_->tray_event_filter()->RemoveBubble(this);
   if (bubble_widget_) {
     bubble_widget_->RemoveObserver(this);
     bubble_widget_->Close();
   }
+}
+
+TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {
+  return tray_;
+}
+
+views::TrayBubbleView* UnifiedSystemTrayBubble::GetBubbleView() const {
+  return bubble_view_;
+}
+
+views::Widget* UnifiedSystemTrayBubble::GetBubbleWidget() const {
+  return bubble_widget_;
 }
 
 void UnifiedSystemTrayBubble::OnWidgetDestroying(views::Widget* widget) {
