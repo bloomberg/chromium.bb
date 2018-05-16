@@ -15,6 +15,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/test/ash_test_base.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 
@@ -43,27 +44,18 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
 
   AccountId id = AccountId::FromUserEmail("user1@test.com");
 
-  // We hardcode the hashed password. This is fine because the password hash
-  // algorithm should never accidentally change; if it does we will need to
-  // have cryptohome migration code and one failing test isn't a problem.
   std::string password = "password";
-  std::string hashed_password = "40c7b00f3bccc7675ec5b732de4bfbe4";
-  EXPECT_NE(password, hashed_password);
-
   // Verify AuthenticateUser mojo call is run with the same account id, a
   // (hashed) password, and the correct PIN state.
-  EXPECT_CALL(*client, AuthenticateUser_(id, hashed_password, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUser_(id, password, false, _));
   base::Optional<bool> callback_result;
   base::RunLoop run_loop1;
   controller->AuthenticateUser(
       id, password, false,
-      base::BindOnce(
-          [](base::Optional<bool>* result, base::RunLoop* run_loop1,
-             base::Optional<bool> did_auth) {
-            *result = *did_auth;
-            run_loop1->Quit();
-          },
-          &callback_result, &run_loop1));
+      base::BindLambdaForTesting([&](base::Optional<bool> did_auth) {
+        callback_result = did_auth;
+        run_loop1.Quit();
+      }));
   run_loop1.Run();
 
   EXPECT_TRUE(callback_result.has_value());
@@ -74,24 +66,15 @@ TEST_F(LoginScreenControllerTest, RequestAuthentication) {
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   EXPECT_TRUE(prefs->FindPreference(prefs::kQuickUnlockPinSalt));
 
-  // We hardcode the hashed PIN. This is fine because the PIN hash algorithm
-  // should never accidentally change; if it does we will need to have migration
-  // code and one failing test isn't a problem.
   std::string pin = "123456";
-  std::string hashed_pin = "cqgMB9rwrcE35iFxm+4vP2toO6qkzW+giCnCcEou92Y=";
-  EXPECT_NE(pin, hashed_pin);
-
+  EXPECT_CALL(*client, AuthenticateUser_(id, pin, true, _));
   base::RunLoop run_loop2;
-  EXPECT_CALL(*client, AuthenticateUser_(id, hashed_pin, _, true, _));
   controller->AuthenticateUser(
       id, pin, true,
-      base::BindOnce(
-          [](base::Optional<bool>* result, base::RunLoop* run_loop2,
-             base::Optional<bool> did_auth) {
-            *result = *did_auth;
-            run_loop2->Quit();
-          },
-          &callback_result, &run_loop2));
+      base::BindLambdaForTesting([&](base::Optional<bool> did_auth) {
+        callback_result = did_auth;
+        run_loop2.Quit();
+      }));
   run_loop2.Run();
 
   EXPECT_TRUE(callback_result.has_value());

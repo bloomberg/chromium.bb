@@ -682,9 +682,9 @@ TEST_F(LockContentsViewUnitTest, ShowErrorBubbleOnAuthFailure) {
   // Password submit runs mojo.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client,
-              AuthenticateUser_(users()[0]->basic_user_info->account_id, _, _,
-                                false, _));
+  EXPECT_CALL(
+      *client,
+      AuthenticateUser_(users()[0]->basic_user_info->account_id, _, false, _));
 
   // Submit password.
   ui::test::EventGenerator& generator = GetEventGenerator();
@@ -768,7 +768,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleOnUntrustedDetachableBase) {
   // after they authenticate - test for this.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(true);
-  EXPECT_CALL(*client, AuthenticateUser_(kFirstUserAccountId, _, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUser_(kFirstUserAccountId, _, false, _));
 
   // Submit password.
   primary_test_api.password_view()->RequestFocus();
@@ -830,7 +830,7 @@ TEST_F(LockContentsViewUnitTest, ErrorBubbleForUnauthenticatedDetachableBase) {
   // user authentication.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(true);
-  EXPECT_CALL(*client, AuthenticateUser_(kSecondUserAccountId, _, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUser_(kSecondUserAccountId, _, false, _));
 
   // Submit password.
   secondary_test_api.password_view()->RequestFocus();
@@ -909,7 +909,7 @@ TEST_F(LockContentsViewUnitTest, DetachableBaseErrorClearsAuthError) {
   // Attempt and fail user auth - an auth error is expected to be shown.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client, AuthenticateUser_(kUserAccountId, _, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUser_(kUserAccountId, _, false, _));
 
   // Submit password.
   generator.PressKey(ui::KeyboardCode::VKEY_A, 0);
@@ -968,7 +968,7 @@ TEST_F(LockContentsViewUnitTest, AuthErrorDoesNotRemoveDetachableBaseError) {
   // Detachable base error should not be hidden.
   std::unique_ptr<MockLoginScreenClient> client = BindMockLoginScreenClient();
   client->set_authenticate_user_callback_result(false);
-  EXPECT_CALL(*client, AuthenticateUser_(kUserAccountId, _, _, false, _));
+  EXPECT_CALL(*client, AuthenticateUser_(kUserAccountId, _, false, _));
 
   // Submit password.
   LoginAuthUserView::TestApi(test_api.primary_big_view()->auth_user())

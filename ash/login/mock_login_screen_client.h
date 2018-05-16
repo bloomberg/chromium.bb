@@ -19,11 +19,9 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
 
   mojom::LoginScreenClientPtr CreateInterfacePtrAndBind();
 
-  MOCK_METHOD5(AuthenticateUser_,
+  MOCK_METHOD4(AuthenticateUser_,
                void(const AccountId& account_id,
                     const std::string& password,
-                    const password_manager::PasswordHashData&
-                        sync_password_hash_data_unused,
                     bool authenticated_by_pin,
                     AuthenticateUserCallback& callback));
 
@@ -43,7 +41,6 @@ class MockLoginScreenClient : public mojom::LoginScreenClient {
   void AuthenticateUser(
       const AccountId& account_id,
       const std::string& password,
-      const password_manager::PasswordHashData& sync_password_hash_data,
       bool authenticated_by_pin,
       AuthenticateUserCallback callback) override;
   MOCK_METHOD1(AttemptUnlock, void(const AccountId& account_id));

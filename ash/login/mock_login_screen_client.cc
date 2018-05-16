@@ -24,11 +24,9 @@ mojom::LoginScreenClientPtr MockLoginScreenClient::CreateInterfacePtrAndBind() {
 void MockLoginScreenClient::AuthenticateUser(
     const AccountId& account_id,
     const std::string& password,
-    const password_manager::PasswordHashData& sync_password_hash_data,
     bool authenticated_by_pin,
     AuthenticateUserCallback callback) {
-  AuthenticateUser_(account_id, password, sync_password_hash_data,
-                    authenticated_by_pin, callback);
+  AuthenticateUser_(account_id, password, authenticated_by_pin, callback);
   if (authenticate_user_callback_storage_)
     *authenticate_user_callback_storage_ = std::move(callback);
   else

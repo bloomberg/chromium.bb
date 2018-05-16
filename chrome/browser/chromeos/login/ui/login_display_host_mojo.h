@@ -66,12 +66,10 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   const user_manager::UserList GetUsers() override;
 
   // LoginScreenClient::Delegate:
-  void HandleAuthenticateUser(
-      const AccountId& account_id,
-      const std::string& hashed_password,
-      const password_manager::PasswordHashData& sync_password_hash_data,
-      bool authenticated_by_pin,
-      AuthenticateUserCallback callback) override;
+  void HandleAuthenticateUser(const AccountId& account_id,
+                              const std::string& password,
+                              bool authenticated_by_pin,
+                              AuthenticateUserCallback callback) override;
   void HandleAttemptUnlock(const AccountId& account_id) override;
   void HandleHardlockPod(const AccountId& account_id) override;
   void HandleRecordClickOnLockIcon(const AccountId& account_id) override;

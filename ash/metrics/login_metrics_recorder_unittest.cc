@@ -125,8 +125,8 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
   EXPECT_NE(nullptr, test_api.primary_big_view()->auth_user());
   EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
             auth_method);
-  EXPECT_CALL(*client, AuthenticateUser_(primary_user, testing::_, testing::_,
-                                         false, testing::_));
+  EXPECT_CALL(*client,
+              AuthenticateUser_(primary_user, testing::_, false, testing::_));
   EXPECT_CALL(*client, OnFocusPod(primary_user));
 
   // Authentication attempt with password "abc1";
@@ -151,8 +151,8 @@ TEST_F(LoginMetricsRecorderTest, UnlockAttempts) {
       auth_method | LoginAuthUserView::AUTH_PIN);
   EXPECT_EQ(test_api.primary_big_view()->auth_user()->auth_methods(),
             (auth_method | LoginAuthUserView::AUTH_PIN));
-  EXPECT_CALL(*client, AuthenticateUser_(primary_user, testing::_, testing::_,
-                                         true, testing::_));
+  EXPECT_CALL(*client,
+              AuthenticateUser_(primary_user, testing::_, true, testing::_));
   generator.PressKey(ui::KeyboardCode::VKEY_1, 0);
   generator.PressKey(ui::KeyboardCode::VKEY_1, 0);
   generator.PressKey(ui::KeyboardCode::VKEY_1, 0);

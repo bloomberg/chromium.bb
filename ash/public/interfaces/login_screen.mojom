@@ -7,7 +7,6 @@ module ash.mojom;
 import "ash/public/interfaces/user_info.mojom";
 import "ash/public/interfaces/login_user_info.mojom";
 import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
-import "components/password_manager/public/interfaces/password_hash_data.mojom";
 import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
@@ -126,18 +125,14 @@ interface LoginScreenClient {
   // chrome will hide the lock screen and clear any displayed error messages.
   // If auth fails:
   // chrome will request lock screen to show error messages.
-  // |account_id|:           The account id of the user we are authenticating.
-  // |hashed_password|:      The hashed password of the user.
-  // |sync_password_hash_data|: Password hash data of sync password, used for
-  //                            password reuse detection.
+  // |account_id|: The AccountId to authenticate against.
+  // |password|: The submitted password.
   // |authenticated_by_pin|: True if we are using pin to authenticate.
   //
   // The result will be set to true if auth was successful, false if not.
-  AuthenticateUser(
-      signin.mojom.AccountId account_id,
-      string hashed_password,
-      password_manager.mojom.PasswordHashData sync_password_hash_data,
-      bool authenticated_by_pin) => (bool auth_success);
+  AuthenticateUser(signin.mojom.AccountId account_id,
+                   string password,
+                   bool authenticated_by_pin) => (bool auth_success);
 
   // Request to attempt easy unlock in chrome.
   // |account_id|:   The account id of the user we are authenticating.

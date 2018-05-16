@@ -1,4 +1,0 @@
-# Allow the typemaps to access their dependencies.
-include_rules = [
-  "+components/password_manager/core/browser/hash_password_manager.h",
-]

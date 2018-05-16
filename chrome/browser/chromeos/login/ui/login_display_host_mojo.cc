@@ -205,8 +205,7 @@ const user_manager::UserList LoginDisplayHostMojo::GetUsers() {
 
 void LoginDisplayHostMojo::HandleAuthenticateUser(
     const AccountId& account_id,
-    const std::string& hashed_password,
-    const password_manager::PasswordHashData& sync_password_hash_data,
+    const std::string& password,
     bool authenticated_by_pin,
     AuthenticateUserCallback callback) {
   DCHECK(!authenticated_by_pin);
@@ -219,9 +218,8 @@ void LoginDisplayHostMojo::HandleAuthenticateUser(
       user_manager::UserManager::Get()->FindUser(account_id);
   DCHECK(user);
   UserContext user_context(*user);
-  user_context.SetKey(Key(chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
-                          std::string(), hashed_password));
-  user_context.SetSyncPasswordData(sync_password_hash_data);
+  user_context.SetKey(
+      Key(chromeos::Key::KEY_TYPE_PASSWORD_PLAIN, "" /*salt*/, password));
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
       (user_context.GetUserType() !=
        user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY)) {

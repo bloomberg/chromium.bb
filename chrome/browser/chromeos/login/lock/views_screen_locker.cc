@@ -29,6 +29,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
+#include "chromeos/login/auth/authpolicy_login_helper.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/version_info/version_info.h"
@@ -176,8 +177,7 @@ content::WebContents* ViewsScreenLocker::GetWebContents() {
 
 void ViewsScreenLocker::HandleAuthenticateUser(
     const AccountId& account_id,
-    const std::string& hashed_password,
-    const password_manager::PasswordHashData& sync_password_hash_data,
+    const std::string& password,
     bool authenticated_by_pin,
     AuthenticateUserCallback callback) {
   DCHECK_EQ(account_id.GetUserEmail(),
@@ -193,12 +193,12 @@ void ViewsScreenLocker::HandleAuthenticateUser(
       user_manager::UserManager::Get()->FindUser(account_id);
   DCHECK(user);
   UserContext user_context(*user);
-  Key::KeyType key_type =
-      authenticated_by_pin ? chromeos::Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234
-                           : chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF;
-  user_context.SetKey(Key(key_type, std::string(), hashed_password));
+  user_context.SetKey(
+      Key(chromeos::Key::KEY_TYPE_PASSWORD_PLAIN, std::string(), password));
   user_context.SetIsUsingPin(authenticated_by_pin);
-  user_context.SetSyncPasswordData(sync_password_hash_data);
+  user_context.SetSyncPasswordData(password_manager::PasswordHashData(
+      account_id.GetUserEmail(), base::UTF8ToUTF16(password),
+      false /*force_update*/));
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
       (user_context.GetUserType() !=
        user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY)) {

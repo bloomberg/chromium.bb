@@ -63,16 +63,13 @@ ash::mojom::LoginScreenPtr& LoginScreenClient::login_screen() {
   return login_screen_;
 }
 
-void LoginScreenClient::AuthenticateUser(
-    const AccountId& account_id,
-    const std::string& hashed_password,
-    const password_manager::PasswordHashData& sync_password_hash_data,
-    bool authenticated_by_pin,
-    AuthenticateUserCallback callback) {
+void LoginScreenClient::AuthenticateUser(const AccountId& account_id,
+                                         const std::string& password,
+                                         bool authenticated_by_pin,
+                                         AuthenticateUserCallback callback) {
   if (delegate_) {
     delegate_->HandleAuthenticateUser(
-        account_id, hashed_password, sync_password_hash_data,
-        authenticated_by_pin, std::move(callback));
+        account_id, password, authenticated_by_pin, std::move(callback));
   } else {
     LOG(ERROR) << "Returning failed authentication attempt; no delegate";
     std::move(callback).Run(false);

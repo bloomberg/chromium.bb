@@ -7,7 +7,6 @@
 
 #include "ash/public/interfaces/login_screen.mojom.h"
 #include "base/macros.h"
-#include "components/password_manager/public/interfaces/password_hash_data.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
@@ -26,7 +25,6 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
     virtual void HandleAuthenticateUser(
         const AccountId& account_id,
         const std::string& hashed_password,
-        const password_manager::PasswordHashData& sync_password_hash_data,
         bool authenticated_by_pin,
         AuthenticateUserCallback callback) = 0;
     virtual void HandleAttemptUnlock(const AccountId& account_id) = 0;
@@ -59,12 +57,10 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   ash::mojom::LoginScreenPtr& login_screen();
 
   // ash::mojom::LoginScreenClient:
-  void AuthenticateUser(
-      const AccountId& account_id,
-      const std::string& hashed_password,
-      const password_manager::PasswordHashData& sync_password_hash_data,
-      bool authenticated_by_pin,
-      AuthenticateUserCallback callback) override;
+  void AuthenticateUser(const AccountId& account_id,
+                        const std::string& password,
+                        bool authenticated_by_pin,
+                        AuthenticateUserCallback callback) override;
   void AttemptUnlock(const AccountId& account_id) override;
   void HardlockPod(const AccountId& account_id) override;
   void RecordClickOnLockIcon(const AccountId& account_id) override;

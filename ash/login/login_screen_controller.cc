@@ -15,24 +15,12 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
-#include "chromeos/login/auth/authpolicy_login_helper.h"
-#include "chromeos/login/auth/user_context.h"
-#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 
 namespace ash {
 
 namespace {
-
-std::string CalculateHash(const std::string& password,
-                          const std::string& salt,
-                          chromeos::Key::KeyType key_type) {
-  chromeos::Key key(password);
-  key.Transform(key_type, salt);
-  return key.GetSecret();
-}
 
 enum class SystemTrayVisibility {
   kNone,     // Tray not visible anywhere.
@@ -399,37 +387,13 @@ void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
   int dummy_value;
   bool is_pin =
       authenticated_by_pin && base::StringToInt(password, &dummy_value);
-  std::string hashed_password = CalculateHash(
-      password, system_salt, chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF);
-
-  // Used for GAIA password reuse detection.
-  password_manager::PasswordHashData sync_password_hash_data(
-      account_id.GetUserEmail(), base::UTF8ToUTF16(password),
-      false /*force_update*/);
-
-  PrefService* prefs =
-      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
-  if (is_pin && prefs) {
-    hashed_password =
-        CalculateHash(password, prefs->GetString(prefs::kQuickUnlockPinSalt),
-                      chromeos::Key::KEY_TYPE_SALTED_PBKDF2_AES256_1234);
-  }
-
-  if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY && !is_pin) {
-    // Try to get kerberos TGT while we have user's password typed on the lock
-    // screen. Using invalid/bad password is fine. Failure to get TGT here is OK
-    // - that could mean e.g. Active Directory server is not reachable.
-    // AuthPolicyCredentialsManager regularly checks TGT status inside the user
-    // session.
-    chromeos::AuthPolicyLoginHelper::TryAuthenticateUser(
-        account_id.GetUserEmail(), account_id.GetObjGuid(), password);
-  }
 
   Shell::Get()->metrics()->login_metrics_recorder()->SetAuthMethod(
       is_pin ? LoginMetricsRecorder::AuthMethod::kPin
              : LoginMetricsRecorder::AuthMethod::kPassword);
+
   login_screen_client_->AuthenticateUser(
-      account_id, hashed_password, sync_password_hash_data, is_pin,
+      account_id, password, is_pin,
       base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
                      weak_factory_.GetWeakPtr(), base::Passed(&callback)));
 }
