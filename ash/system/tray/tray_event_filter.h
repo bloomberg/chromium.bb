@@ -20,7 +20,7 @@ class PointerEvent;
 }
 
 namespace ash {
-class TrayBubbleWrapper;
+class TrayBubbleBase;
 
 // Handles events for a tray bubble, e.g. to close the system tray bubble when
 // the user clicks outside it.
@@ -29,8 +29,8 @@ class ASH_EXPORT TrayEventFilter : public views::PointerWatcher {
   TrayEventFilter();
   ~TrayEventFilter() override;
 
-  void AddWrapper(TrayBubbleWrapper* wrapper);
-  void RemoveWrapper(TrayBubbleWrapper* wrapper);
+  void AddBubble(TrayBubbleBase* bubble);
+  void RemoveBubble(TrayBubbleBase* bubble);
 
   // views::PointerWatcher:
   void OnPointerEventObserved(const ui::PointerEvent& event,
@@ -41,7 +41,7 @@ class ASH_EXPORT TrayEventFilter : public views::PointerWatcher {
   void ProcessPressedEvent(const gfx::Point& location_in_screen,
                            gfx::NativeView target);
 
-  std::set<TrayBubbleWrapper*> wrappers_;
+  std::set<TrayBubbleBase*> bubbles_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayEventFilter);
 };
