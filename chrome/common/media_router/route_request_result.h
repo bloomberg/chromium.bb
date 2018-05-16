@@ -35,7 +35,7 @@ class RouteRequestResult {
   // - RouteRequestResultCode in media_router.mojom
   // - MediaRouteProviderResult enum in tools/metrics/histograms.xml
   // - mr.RouteRequestResultCode in route_request_error.js
-  // - RouteRequestResultCodeFromMojo in media_router_type_converters.cc
+  // - media_router_struct_traits.h
   enum ResultCode {
     UNKNOWN_ERROR = 0,
     OK = 1,
@@ -46,9 +46,10 @@ class RouteRequestResult {
     INCOGNITO_MISMATCH = 6,
     NO_SUPPORTED_PROVIDER = 7,
     CANCELLED = 8,
+    ROUTE_ALREADY_EXISTS = 9,
     // New values must be added here.
 
-    TOTAL_COUNT = 9  // The total number of values.
+    TOTAL_COUNT = 10  // The total number of values.
   };
 
   static std::unique_ptr<RouteRequestResult> FromSuccess(

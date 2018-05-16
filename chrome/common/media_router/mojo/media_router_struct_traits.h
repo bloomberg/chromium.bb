@@ -473,6 +473,9 @@ struct EnumTraits<media_router::mojom::RouteRequestResultCode,
             NO_SUPPORTED_PROVIDER;
       case media_router::RouteRequestResult::CANCELLED:
         return media_router::mojom::RouteRequestResultCode::CANCELLED;
+      case media_router::RouteRequestResult::ROUTE_ALREADY_EXISTS:
+        return media_router::mojom::RouteRequestResultCode::
+            ROUTE_ALREADY_EXISTS;
       default:
         NOTREACHED() << "Unknown RouteRequestResultCode "
                      << static_cast<int>(code);
@@ -509,6 +512,9 @@ struct EnumTraits<media_router::mojom::RouteRequestResultCode,
         return true;
       case media_router::mojom::RouteRequestResultCode::CANCELLED:
         *output = media_router::RouteRequestResult::CANCELLED;
+        return true;
+      case media_router::mojom::RouteRequestResultCode::ROUTE_ALREADY_EXISTS:
+        *output = media_router::RouteRequestResult::ROUTE_ALREADY_EXISTS;
         return true;
     }
     return false;
