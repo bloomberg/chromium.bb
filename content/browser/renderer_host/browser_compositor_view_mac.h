@@ -108,7 +108,7 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   viz::ScopedSurfaceIdAllocator GetScopedRendererSurfaceIdAllocator(
       base::OnceCallback<void()> allocation_task);
   const viz::LocalSurfaceId& GetRendererLocalSurfaceId();
-  void UpdateRendererLocalSurfaceIdFromChild(
+  bool UpdateRendererLocalSurfaceIdFromChild(
       const viz::LocalSurfaceId& child_allocated_local_surface_id);
 
   // Indicate that the recyclable compositor should be destroyed, and no future

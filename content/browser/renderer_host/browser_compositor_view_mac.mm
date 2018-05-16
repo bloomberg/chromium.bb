@@ -597,9 +597,9 @@ const viz::LocalSurfaceId& BrowserCompositorMac::GetRendererLocalSurfaceId() {
   return dfh_local_surface_id_allocator_.GenerateId();
 }
 
-void BrowserCompositorMac::UpdateRendererLocalSurfaceIdFromChild(
+bool BrowserCompositorMac::UpdateRendererLocalSurfaceIdFromChild(
     const viz::LocalSurfaceId& child_allocated_local_surface_id) {
-  dfh_local_surface_id_allocator_.UpdateFromChild(
+  return dfh_local_surface_id_allocator_.UpdateFromChild(
       child_allocated_local_surface_id);
 }
 

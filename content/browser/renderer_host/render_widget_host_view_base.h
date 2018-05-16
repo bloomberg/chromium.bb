@@ -636,6 +636,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   bool use_viz_hit_test_ = false;
 
  private:
+  void SynchronizeVisualProperties();
+
 #if defined(USE_AURA)
   void OnDidScheduleEmbed(int routing_id,
                           int embed_id,

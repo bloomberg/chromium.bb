@@ -380,7 +380,10 @@ RenderWidgetHostViewBase::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
   // This doesn't suppress allocation. Derived classes that need suppression
   // should override this function.
-  return viz::ScopedSurfaceIdAllocator(base::DoNothing());
+  base::OnceCallback<void()> allocation_task =
+      base::BindOnce(&RenderWidgetHostViewBase::SynchronizeVisualProperties,
+                     weak_factory_.GetWeakPtr());
+  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
 bool RenderWidgetHostViewBase::IsLocalSurfaceIdAllocationSuppressed() const {
@@ -661,6 +664,11 @@ void RenderWidgetHostViewBase::OnChildFrameDestroyed(int routing_id) {
     render_widget_window_tree_client_->DestroyFrame(routing_id);
 }
 #endif
+
+void RenderWidgetHostViewBase::SynchronizeVisualProperties() {
+  if (host())
+    host()->SynchronizeVisualProperties();
+}
 
 #if defined(USE_AURA)
 void RenderWidgetHostViewBase::OnDidScheduleEmbed(

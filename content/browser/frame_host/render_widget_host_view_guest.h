@@ -165,6 +165,9 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void SendSurfaceInfoToEmbedderImpl(
       const viz::SurfaceInfo& surface_info) override;
 
+  void OnDidUpdateVisualPropertiesComplete(
+      const cc::RenderFrameMetadata& metadata);
+
   RenderWidgetHostViewGuest(
       RenderWidgetHost* widget,
       BrowserPluginGuest* guest,
