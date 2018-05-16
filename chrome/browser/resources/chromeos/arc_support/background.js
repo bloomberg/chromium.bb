@@ -239,16 +239,17 @@ class MetricsPreferenceCheckbox extends PreferenceCheckbox {
         'click', (event) => this.onLearnMoreLinkClicked(event));
     learnMoreLink.addEventListener(
         'keydown', (event) => this.suppressKeyDown(event));
+    // settings-link is used only in privacy section.
     var settingsLink = label.querySelector('#settings-link');
     settingsLink.addEventListener(
-        'click', (event) => this.onSettingsLinkClicked(event));
+        'click', (event) => this.onPrivacySettingsLinkClicked(event));
     settingsLink.addEventListener(
         'keydown', (event) => this.suppressKeyDown(event));
   }
 
-  /** Called when "settings" link is clicked. */
-  onSettingsLinkClicked(event) {
-    sendNativeMessage('onOpenSettingsPageClicked');
+  /** Called when "privacy settings" link is clicked. */
+  onPrivacySettingsLinkClicked(event) {
+    sendNativeMessage('onOpenPrivacySettingsPageClicked');
     event.stopPropagation();
   }
 }

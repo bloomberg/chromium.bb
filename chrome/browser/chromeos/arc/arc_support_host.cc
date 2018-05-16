@@ -108,8 +108,10 @@ constexpr char kEventOnRetryClicked[] = "onRetryClicked";
 // "onSendFeedbackClicked" is fired when a user clicks "Send Feedback" button.
 constexpr char kEventOnSendFeedbackClicked[] = "onSendFeedbackClicked";
 
-// "onOpenSettingsPageClicked" is fired when a user clicks settings link.
-constexpr char kEventOnOpenSettingsPageClicked[] = "onOpenSettingsPageClicked";
+// "onOpenPrivacySettingsPageClicked" is fired when a user clicks privacy
+// settings link.
+constexpr char kEventOnOpenPrivacySettingsPageClicked[] =
+    "onOpenPrivacySettingsPageClicked";
 
 void RequestOpenApp(Profile* profile) {
   const extensions::Extension* extension =
@@ -694,8 +696,8 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
   } else if (event == kEventOnSendFeedbackClicked) {
     DCHECK(error_delegate_);
     error_delegate_->OnSendFeedbackClicked();
-  } else if (event == kEventOnOpenSettingsPageClicked) {
-    chrome::ShowSettingsSubPageForProfile(profile_, std::string());
+  } else if (event == kEventOnOpenPrivacySettingsPageClicked) {
+    chrome::ShowSettingsSubPageForProfile(profile_, "privacy");
   } else {
     LOG(ERROR) << "Unknown message: " << event;
     NOTREACHED();
