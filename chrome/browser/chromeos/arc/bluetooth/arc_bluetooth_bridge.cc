@@ -108,11 +108,11 @@ constexpr uint32_t kBluetoothComputerClass = 0x100;
 // Bluetooth Service in Java space, so the signaling to Chrome about the
 // to-be-happen sleep cannot be done. This timeout tries to ensure the validity
 // and the order of toggles on power state sent to Android.
-// If Android takes more than 5 seconds to complete the intent initiated by
+// If Android takes more than 8 seconds to complete the intent initiated by
 // Chrome, Chrome will take EnableAdapter/DisableAdapter calls as a request from
 // Android to toggle the power state. The power state will be synced on both
 // Chrome and Android, but as a result, Bluetooth will be off.
-constexpr base::TimeDelta kPowerIntentTimeout = base::TimeDelta::FromSeconds(5);
+constexpr base::TimeDelta kPowerIntentTimeout = base::TimeDelta::FromSeconds(8);
 
 using GattReadCallback =
     base::OnceCallback<void(arc::mojom::BluetoothGattValuePtr)>;
