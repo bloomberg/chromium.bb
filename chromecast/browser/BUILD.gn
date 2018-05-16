@@ -341,7 +341,7 @@ cast_source_set("public") {
 # This target generates an "overlay" interface spec, allowing the Cast build to
 # declare specific behavior and requirements for the "content_browser" service.
 # This is accomplished by generating a JSON file, which is packed into
-# cast_shell.pak, and loaded at runtime. This can be used to host addtional
+# cast_shell.pak, and loaded at runtime. This can be used to host additional
 # interfaces in "content_browser".
 #
 # NOTE: Do not add packaged_services here! packaged_services should instead be
@@ -353,6 +353,15 @@ service_manifest("cast_content_browser_manifest_overlay") {
   if (chromecast_branding != "public") {
     overlays = [ "//chromecast/internal/shell/browser:cast_content_browser_internal_manifest_overlay" ]
   }
+}
+
+# This target generates an "overlay" interface spec, allowing the Cast build to
+# declare specific behavior and requirements for the "content_renderer" service.
+# This is accomplished by generating a JSON file, which is packed into
+# cast_shell.pak, and loaded at runtime. This can be used to host additional
+# interfaces in "content_renderer".
+service_manifest("cast_content_renderer_manifest_overlay") {
+  source = "cast_content_renderer_manifest_overlay.json"
 }
 
 # This target is for packaged services that will run in the main (browser)
@@ -392,6 +401,7 @@ grit("resources") {
   deps = [
     ":cast_content_browser_manifest_overlay",
     ":cast_content_packaged_services_manifest_overlay",
+    ":cast_content_renderer_manifest_overlay",
   ]
 }
 

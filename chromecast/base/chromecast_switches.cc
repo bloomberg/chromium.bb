@@ -29,9 +29,6 @@ const char kOverrideMetricsUploadUrl[] = "override-metrics-upload-url";
 // Disable features that require WiFi management.
 const char kNoWifi[] = "no-wifi";
 
-// Allows media playback for hidden WebContents
-const char kAllowHiddenMediaPlayback[] = "allow-hidden-media-playback";
-
 // Pass the app id information to the renderer process, to be used for logging.
 // last-launched-app should be the app that just launched and is spawning the
 // renderer.

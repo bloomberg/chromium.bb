@@ -28,9 +28,6 @@ extern const char kOverrideMetricsUploadUrl[];
 // Network switches
 extern const char kNoWifi[];
 
-// App switches
-extern const char kAllowHiddenMediaPlayback[];
-
 // Switches to communicate app state information
 extern const char kLastLaunchedApp[];
 extern const char kPreviousApp[];
