@@ -413,6 +413,23 @@ html[dir=rtl] #fakebox-microphone {
   right: auto;
 }
 
+#edit-background {
+  background-color: rgb(241, 243, 244);
+  border-radius: 8px;
+  bottom: 16px;
+  height: 28px;
+  position: fixed;
+  right: 16px;
+  width: 28px;
+}
+
+#edit-background-gear {
+  background: url(../../../../ui/webui/resources/images/icon_settings.svg) no-repeat center;
+  background-size: 16px 16px;
+  height: 100%;
+  width: 100%;
+}
+
 @keyframes blink {
   0% {
     opacity: 1;

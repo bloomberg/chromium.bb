@@ -261,6 +261,9 @@ function renderTheme() {
   document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
   updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
   setCustomThemeStyle(info);
+
+  $('edit-background').hidden =
+      !configData.isCustomBackgroundsEnabled || !info.usingDefaultTheme;
 }
 
 /**
