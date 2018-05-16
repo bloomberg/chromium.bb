@@ -3150,6 +3150,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.asan,
       site_config.templates.incremental,
       site_config.templates.no_hwtest_builder,
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       boards=['amd64-generic'],
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
@@ -3171,6 +3172,7 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.incremental,
       site_config.templates.no_hwtest_builder,
       site_config.templates.internal,
+      display_label=config_lib.DISPLAY_LABEL_INFORMATIONAL,
       boards=['betty'],
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
