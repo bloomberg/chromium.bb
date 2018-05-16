@@ -42,21 +42,14 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/url_test_helpers.h"
 
 namespace blink {
 
-typedef bool TestParamRootLayerScrolling;
-class LayoutGeometryMapTest
-    : public testing::Test,
-      public testing::WithParamInterface<TestParamRootLayerScrolling>,
-      private ScopedRootLayerScrollingForTest {
+class LayoutGeometryMapTest : public testing::Test {
  public:
-  LayoutGeometryMapTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        base_url_("http://www.test.com/") {}
+  LayoutGeometryMapTest() : base_url_("http://www.test.com/") {}
 
   void TearDown() override {
     Platform::Current()
@@ -171,9 +164,7 @@ class LayoutGeometryMapTest
   const std::string base_url_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, LayoutGeometryMapTest, testing::Bool());
-
-TEST_P(LayoutGeometryMapTest, SimpleGeometryMapTest) {
+TEST_F(LayoutGeometryMapTest, SimpleGeometryMapTest) {
   RegisterMockedHttpURLLoad("rgm_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view =
@@ -213,9 +204,9 @@ TEST_P(LayoutGeometryMapTest, SimpleGeometryMapTest) {
 // Fails on Windows due to crbug.com/391457. When run through the transform the
 // position on windows differs by a pixel
 #if defined(OS_WIN)
-TEST_P(LayoutGeometryMapTest, DISABLED_TransformedGeometryTest)
+TEST_F(LayoutGeometryMapTest, DISABLED_TransformedGeometryTest)
 #else
-TEST_P(LayoutGeometryMapTest, TransformedGeometryTest)
+TEST_F(LayoutGeometryMapTest, TransformedGeometryTest)
 #endif
 {
   RegisterMockedHttpURLLoad("rgm_transformed_test.html");
@@ -276,7 +267,7 @@ TEST_P(LayoutGeometryMapTest, TransformedGeometryTest)
             rgm.MapToAncestor(rect, nullptr).BoundingBox());
 }
 
-TEST_P(LayoutGeometryMapTest, FixedGeometryTest) {
+TEST_F(LayoutGeometryMapTest, FixedGeometryTest) {
   RegisterMockedHttpURLLoad("rgm_fixed_position_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view = web_view_helper.InitializeAndLoad(
@@ -314,7 +305,7 @@ TEST_P(LayoutGeometryMapTest, FixedGeometryTest) {
             rgm.MapToAncestor(rect, nullptr));
 }
 
-TEST_P(LayoutGeometryMapTest, ContainsFixedPositionTest) {
+TEST_F(LayoutGeometryMapTest, ContainsFixedPositionTest) {
   RegisterMockedHttpURLLoad("rgm_contains_fixed_position_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view = web_view_helper.InitializeAndLoad(
@@ -361,7 +352,7 @@ TEST_P(LayoutGeometryMapTest, ContainsFixedPositionTest) {
   rgm.PopMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
 }
 
-TEST_P(LayoutGeometryMapTest, IframeTest) {
+TEST_F(LayoutGeometryMapTest, IframeTest) {
   RegisterMockedHttpURLLoad("rgm_iframe_test.html");
   RegisterMockedHttpURLLoad("rgm_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
@@ -458,7 +449,7 @@ TEST_P(LayoutGeometryMapTest, IframeTest) {
             rgm_no_frame.MapToAncestor(rect, nullptr));
 }
 
-TEST_P(LayoutGeometryMapTest, ColumnTest) {
+TEST_F(LayoutGeometryMapTest, ColumnTest) {
   RegisterMockedHttpURLLoad("rgm_column_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view =
@@ -507,7 +498,7 @@ TEST_P(LayoutGeometryMapTest, ColumnTest) {
   EXPECT_EQ(3.0f, RectFromQuad(rgm.MapToAncestor(rect, nullptr)).Height());
 }
 
-TEST_P(LayoutGeometryMapTest, FloatUnderInlineLayer) {
+TEST_F(LayoutGeometryMapTest, FloatUnderInlineLayer) {
   RegisterMockedHttpURLLoad("rgm_float_under_inline.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view = web_view_helper.InitializeAndLoad(
