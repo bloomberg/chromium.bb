@@ -2145,7 +2145,7 @@ class GetAllNodesRequestHelper
  public:
   GetAllNodesRequestHelper(
       syncer::ModelTypeSet requested_types,
-      const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback);
+      base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback);
 
   void OnReceivedNodesForType(const syncer::ModelType type,
                               std::unique_ptr<base::ListValue> node_list);
@@ -2156,18 +2156,18 @@ class GetAllNodesRequestHelper
 
   std::unique_ptr<base::ListValue> result_accumulator_;
   syncer::ModelTypeSet awaiting_types_;
-  base::Callback<void(std::unique_ptr<base::ListValue>)> callback_;
-  base::ThreadChecker thread_checker_;
+  base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(GetAllNodesRequestHelper);
 };
 
 GetAllNodesRequestHelper::GetAllNodesRequestHelper(
     syncer::ModelTypeSet requested_types,
-    const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback)
-    : result_accumulator_(new base::ListValue()),
+    base::OnceCallback<void(std::unique_ptr<base::ListValue>)> callback)
+    : result_accumulator_(std::make_unique<base::ListValue>()),
       awaiting_types_(requested_types),
-      callback_(callback) {}
+      callback_(std::move(callback)) {}
 
 GetAllNodesRequestHelper::~GetAllNodesRequestHelper() {
   if (!awaiting_types_.Empty()) {
@@ -2185,17 +2185,17 @@ void GetAllNodesRequestHelper::OnReceivedNodesForType(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Add these results to our list.
-  std::unique_ptr<base::DictionaryValue> type_dict(new base::DictionaryValue());
-  type_dict->SetString("type", ModelTypeToString(type));
-  type_dict->Set("nodes", std::move(node_list));
-  result_accumulator_->Append(std::move(type_dict));
+  base::DictionaryValue type_dict;
+  type_dict.SetKey("type", base::Value(ModelTypeToString(type)));
+  type_dict.SetKey("nodes",
+                   base::Value::FromUniquePtrValue(std::move(node_list)));
+  result_accumulator_->GetList().push_back(std::move(type_dict));
 
   // Remember that this part of the request is satisfied.
   awaiting_types_.Remove(type);
 
   if (awaiting_types_.Empty()) {
-    callback_.Run(std::move(result_accumulator_));
-    callback_.Reset();
+    std::move(callback_).Run(std::move(result_accumulator_));
   }
 }
 
@@ -2204,31 +2204,30 @@ void GetAllNodesRequestHelper::OnReceivedNodesForType(
 void ProfileSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // If the engine isn't initialized yet, then there are no nodes to return.
+  if (!engine_initialized_) {
+    callback.Run(std::make_unique<base::ListValue>());
+    return;
+  }
+
   ModelTypeSet all_types = GetActiveDataTypes();
   all_types.PutAll(syncer::ControlTypes());
   scoped_refptr<GetAllNodesRequestHelper> helper =
       new GetAllNodesRequestHelper(all_types, callback);
 
-  if (!engine_initialized_) {
-    // If there's no engine available to fulfill the request, handle it here.
-    for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
-      helper->OnReceivedNodesForType(it.Get(),
-                                     std::make_unique<base::ListValue>());
-    }
-    return;
-  }
-
   for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
-    const auto& dtc_iter = data_type_controllers_.find(it.Get());
+    ModelType type = it.Get();
+    const auto dtc_iter = data_type_controllers_.find(type);
     if (dtc_iter != data_type_controllers_.end()) {
       dtc_iter->second->GetAllNodes(base::BindRepeating(
           &GetAllNodesRequestHelper::OnReceivedNodesForType, helper));
     } else {
-      // Control Types
+      // Control Types.
       helper->OnReceivedNodesForType(
-          it.Get(),
+          type,
           syncer::DirectoryDataTypeController::GetAllNodesForTypeFromDirectory(
-              it.Get(), GetUserShare()->directory.get()));
+              type, GetUserShare()->directory.get()));
     }
   }
 }
