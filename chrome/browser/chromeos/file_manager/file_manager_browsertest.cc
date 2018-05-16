@@ -297,29 +297,15 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("traverseDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    ExecuteDefaultTaskOnDownloads, /* tasks.js */
+    Tasks, /* tasks.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("executeDefaultTaskDownloads"),
-        TestCase("executeDefaultTaskDownloads").InGuestMode()));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    ExecuteDefaultTaskOnDrive, /* tasks.js */
-    FileManagerBrowserTest,
-    ::testing::Values(TestCase("executeDefaultTaskDrive")));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DefaultTaskDialog, /* tasks.js */
-    FileManagerBrowserTest,
-    ::testing::Values(
+        TestCase("executeDefaultTaskDownloads").InGuestMode(),
+        TestCase("executeDefaultTaskDrive"),
         TestCase("defaultTaskDialogDownloads"),
         TestCase("defaultTaskDialogDownloads").InGuestMode(),
-        TestCase("defaultTaskDialogDrive")));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    GenericTask, /* tasks.js */
-    FileManagerBrowserTest,
-    ::testing::Values(
+        TestCase("defaultTaskDialogDrive"),
         TestCase("genericTaskIsNotExecuted"),
         TestCase("genericTaskAndNonGenericTask")));
 
