@@ -54,12 +54,13 @@ TEST_F('NTP4WebUITest', 'DISABLED_NTPHasNavDots', function() {
 // http://crbug.com/118514
 TEST_F('NTP4WebUITest', 'DISABLED_NTPHasSelectedPageAndDot', function() {
   var selectedDot = document.querySelectorAll('.dot.selected');
-  assertEquals(1, selectedDot.length,
-               'There should be exactly one selected dot.');
+  assertEquals(
+      1, selectedDot.length, 'There should be exactly one selected dot.');
 
   var selectedTilePage = document.querySelectorAll('.tile-page.selected-card');
-  assertEquals(1, selectedTilePage.length,
-               'There should be exactly one selected tile page.');
+  assertEquals(
+      1, selectedTilePage.length,
+      'There should be exactly one selected tile page.');
 });
 
 TEST_F('NTP4WebUITest', 'DISABLED_NTPHasNoLoginNameWhenSignedOut', function() {
@@ -89,12 +90,16 @@ NTP4LoggedInWebUITest.prototype = {
 // The following test is irrelevant to Chrome on Chrome OS.
 GEN('#if !defined(OS_CHROMEOS)');
 
-TEST_F('NTP4LoggedInWebUITest', 'DISABLED_NTPHasLoginNameWhenSignedIn',
+TEST_F(
+    'NTP4LoggedInWebUITest', 'DISABLED_NTPHasLoginNameWhenSignedIn',
     function() {
-  var userName = document.querySelector('#login-status-header .profile-name');
-  assertNotEquals(userName, null, 'The logged-in user name can\'t be found.');
-  assertEquals('user@gmail.com', userName.textContent,
-               'The user name should be present on the new tab.');
-});
+      var userName =
+          document.querySelector('#login-status-header .profile-name');
+      assertNotEquals(
+          userName, null, 'The logged-in user name can\'t be found.');
+      assertEquals(
+          'user@gmail.com', userName.textContent,
+          'The user name should be present on the new tab.');
+    });
 
 GEN('#endif');

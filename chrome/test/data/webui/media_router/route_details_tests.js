@@ -48,9 +48,7 @@ cr.define('route_details', function() {
       // Checks whether |expected| and the text in the element in the
       // |elementId| element are equal.
       var checkElementText = function(expected, elementId) {
-        assertEquals(
-            expected,
-            details.$$('#' + elementId).innerText);
+        assertEquals(expected, details.$$('#' + elementId).innerText);
       };
 
       // Checks the default route view is shown.
@@ -90,8 +88,8 @@ cr.define('route_details', function() {
         fakeRouteOne = new media_router.Route(
             'route id 1', 'sink id 1', 'Video 1', 1, true, false,
             fakeRouteOneControllerPath);
-        fakeRouteTwo = new media_router.Route('route id 2', 'sink id 2',
-            'Video 2', 2, false, true);
+        fakeRouteTwo = new media_router.Route(
+            'route id 2', 'sink id 2', 'Video 2', 2, false, true);
         fakeSinkOne = new media_router.Sink(
             'sink id 1', 'sink 1', 'description', null,
             media_router.SinkIconType.CAST, media_router.SinkStatus.ACTIVE,
@@ -153,7 +151,9 @@ cr.define('route_details', function() {
       // 'start-casting-to-route-button' button is clicked when the current
       // route is joinable.
       test('start casting to route button click', function(done) {
-        details.addEventListener('join-route-click', function() { done(); });
+        details.addEventListener('join-route-click', function() {
+          done();
+        });
         details.route = fakeRouteTwo;
         MockInteractions.tap(details.$$('#start-casting-to-route-button'));
       });
@@ -162,8 +162,9 @@ cr.define('route_details', function() {
       // 'start-casting-to-route-button' button is clicked when the current
       // route is not joinable.
       test('start casting button click replaces route', function(done) {
-        details.addEventListener(
-            'change-route-source-click', function() { done(); });
+        details.addEventListener('change-route-source-click', function() {
+          done();
+        });
         details.route = fakeRouteOne;
         details.availableCastModes = 1;
         MockInteractions.tap(details.$$('#start-casting-to-route-button'));
@@ -172,8 +173,9 @@ cr.define('route_details', function() {
       // Tests the initial expected text.
       test('initial text setting', function() {
         // <paper-button> text is styled as upper case.
-        checkSpanText(loadTimeData.getString('stopCastingButtonText')
-            .toUpperCase(), 'close-route-button');
+        checkSpanText(
+            loadTimeData.getString('stopCastingButtonText').toUpperCase(),
+            'close-route-button');
         checkSpanText(
             loadTimeData.getString('startCastingButtonText').toUpperCase(),
             'start-casting-to-route-button');

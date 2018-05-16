@@ -8,8 +8,8 @@
 var ROOT_PATH = '../../../../../';
 
 // Polymer BrowserTest fixture.
-GEN_INCLUDE([
-    ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN_INCLUDE(
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 GEN('#include "chrome/browser/ui/webui/extensions/' +
     'extension_settings_browsertest.h"');
 GEN('#include "chrome/common/chrome_features.h"');
@@ -226,11 +226,9 @@ TEST_F('CrExtensionsDetailViewTest', 'LayoutSource', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.LayoutSource);
 });
 
-TEST_F(
-    'CrExtensionsDetailViewTest', 'ClickableElements', function() {
-      this.runMochaTest(
-          extension_detail_view_tests.TestNames.ClickableElements);
-    });
+TEST_F('CrExtensionsDetailViewTest', 'ClickableElements', function() {
+  this.runMochaTest(extension_detail_view_tests.TestNames.ClickableElements);
+});
 
 TEST_F('CrExtensionsDetailViewTest', 'IndicatorTest', function() {
   this.runMochaTest(extension_detail_view_tests.TestNames.Indicator);

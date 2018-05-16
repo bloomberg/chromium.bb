@@ -44,18 +44,21 @@ cr.define('system_dialog_browsertest', function() {
       previewArea.plugin_ = new print_preview.PDFPluginStub(
           previewArea.onPluginLoad_.bind(previewArea));
       document.body.appendChild(page);
-      return Promise.all([
-        nativeLayer.whenCalled('getInitialSettings'),
-        nativeLayer.whenCalled('getPrinterCapabilities'),
-      ]).then(function() {
-        return nativeLayer.whenCalled('getPreview');
-      }).then(function() {
-        assertEquals('FooDevice', page.destination_.id);
-        link = cr.isWindows ?
-            linkContainer.$.systemDialogLink :
-            linkContainer.$.openPdfInPreviewLink;
-        printTicketKey = cr.isWindows ? 'showSystemDialog' : 'OpenPDFInPreview';
-      });
+      return Promise
+          .all([
+            nativeLayer.whenCalled('getInitialSettings'),
+            nativeLayer.whenCalled('getPrinterCapabilities'),
+          ])
+          .then(function() {
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function() {
+            assertEquals('FooDevice', page.destination_.id);
+            link = cr.isWindows ? linkContainer.$.systemDialogLink :
+                                  linkContainer.$.openPdfInPreviewLink;
+            printTicketKey =
+                cr.isWindows ? 'showSystemDialog' : 'OpenPDFInPreview';
+          });
     });
 
     test(assert(TestNames.LinkTriggersLocalPrint), function() {
@@ -79,8 +82,8 @@ cr.define('system_dialog_browsertest', function() {
 
       // Set page settings to a bad value
       pageSettings.$$('#custom-radio-button').checked = true;
-      pageSettings.$$('#all-radio-button').dispatchEvent(
-        new CustomEvent('change'));
+      pageSettings.$$('#all-radio-button')
+          .dispatchEvent(new CustomEvent('change'));
       const pageSettingsInput = pageSettings.$$('.user-value');
       pageSettingsInput.value = 'abc';
       pageSettingsInput.dispatchEvent(new CustomEvent('input'));
@@ -90,8 +93,8 @@ cr.define('system_dialog_browsertest', function() {
         assertTrue(false);
       });
 
-      return test_util.eventToPromise('input-change', pageSettings).then(
-          function() {
+      return test_util.eventToPromise('input-change', pageSettings)
+          .then(function() {
             // Expect disabled print button and Pdf in preview link
             const header = page.$$('print-preview-header');
             const printButton = header.$$('.print');

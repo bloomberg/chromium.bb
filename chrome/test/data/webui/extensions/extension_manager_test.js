@@ -13,7 +13,9 @@ cr.define('extension_manager_tests', function() {
   };
 
   function getDataByName(list, name) {
-    return assert(list.find(function(el) { return el.name == name; }));
+    return assert(list.find(function(el) {
+      return el.name == name;
+    }));
   }
 
   var suiteName = 'ExtensionManagerTest';

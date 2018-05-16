@@ -211,15 +211,17 @@ suite('CrActionMenu', function() {
     items[1].setAttribute('role', 'checkbox');
     menu.showAt(dots);
 
-    return PolymerTest.flushTasks().then(() => {
-      assertEquals('menuitem', items[0].getAttribute('role'));
-      assertEquals('checkbox', items[1].getAttribute('role'));
+    return PolymerTest.flushTasks()
+        .then(() => {
+          assertEquals('menuitem', items[0].getAttribute('role'));
+          assertEquals('checkbox', items[1].getAttribute('role'));
 
-      menu.insertBefore(newItem, items[0]);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      assertEquals('menuitem', newItem.getAttribute('role'));
-    });
+          menu.insertBefore(newItem, items[0]);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          assertEquals('menuitem', newItem.getAttribute('role'));
+        });
   });
 
   test('positioning', function() {

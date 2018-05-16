@@ -84,111 +84,123 @@ suite('Metrics', function() {
         createHistoryEntry('2015-01-01', 'http://www.google.com');
     historyEntry.starred = true;
     app.historyResult(createHistoryInfo(), [
-      createHistoryEntry('2015-01-01', 'http://www.example.com'),
-      historyEntry
+      createHistoryEntry('2015-01-01', 'http://www.example.com'), historyEntry
     ]);
 
-    return PolymerTest.flushTasks().then(() => {
-      const items = polymerSelectAll(app.$.history, 'history-item');
-      MockInteractions.tap(items[1].$$('#bookmark-star'));
-      assertEquals(1, actionMap['BookmarkStarClicked']);
-      MockInteractions.tap(items[1].$.title);
-      assertEquals(1, actionMap['EntryLinkClick']);
-      assertEquals(1, histogramMap['HistoryPage.ClickPosition'][1]);
-      assertEquals(1, histogramMap['HistoryPage.ClickPositionSubset'][1]);
+    return PolymerTest.flushTasks()
+        .then(() => {
+          const items = polymerSelectAll(app.$.history, 'history-item');
+          MockInteractions.tap(items[1].$$('#bookmark-star'));
+          assertEquals(1, actionMap['BookmarkStarClicked']);
+          MockInteractions.tap(items[1].$.title);
+          assertEquals(1, actionMap['EntryLinkClick']);
+          assertEquals(1, histogramMap['HistoryPage.ClickPosition'][1]);
+          assertEquals(1, histogramMap['HistoryPage.ClickPositionSubset'][1]);
 
-      app.fire('change-query', {search: 'goog'});
-      assertEquals(1, actionMap['Search']);
-      app.set('queryState_.incremental', true);
-      app.historyResult(createHistoryInfo('goog'), [
-        createHistoryEntry('2015-01-01', 'http://www.google.com'),
-        createHistoryEntry('2015-01-01', 'http://www.google.com'),
-        createHistoryEntry('2015-01-01', 'http://www.google.com')
-      ]);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      items = polymerSelectAll(app.$.history, 'history-item');
-      MockInteractions.tap(items[0].$.title);
-      assertEquals(1, actionMap['SearchResultClick']);
-      assertEquals(1, histogramMap['HistoryPage.ClickPosition'][0]);
-      assertEquals(1, histogramMap['HistoryPage.ClickPositionSubset'][0]);
-      MockInteractions.tap(items[0].$.checkbox);
-      MockInteractions.tap(items[4].$.checkbox);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      app.$.toolbar.deleteSelectedItems();
-      assertEquals(1, actionMap['RemoveSelected']);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      MockInteractions.tap(app.$.history.$$('.cancel-button'));
-      assertEquals(1, actionMap['CancelRemoveSelected']);
-      app.$.toolbar.deleteSelectedItems();
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      MockInteractions.tap(app.$.history.$$('.action-button'));
-      assertEquals(1, actionMap['ConfirmRemoveSelected']);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      items = polymerSelectAll(app.$.history, 'history-item');
-      MockInteractions.tap(items[0].$['menu-button']);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      MockInteractions.tap(app.$.history.$$('#menuRemoveButton'));
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      assertEquals(1, histogramMap['HistoryPage.RemoveEntryPosition'][0]);
-      assertEquals(1, histogramMap['HistoryPage.RemoveEntryPositionSubset'][0]);
-    });
+          app.fire('change-query', {search: 'goog'});
+          assertEquals(1, actionMap['Search']);
+          app.set('queryState_.incremental', true);
+          app.historyResult(createHistoryInfo('goog'), [
+            createHistoryEntry('2015-01-01', 'http://www.google.com'),
+            createHistoryEntry('2015-01-01', 'http://www.google.com'),
+            createHistoryEntry('2015-01-01', 'http://www.google.com')
+          ]);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          items = polymerSelectAll(app.$.history, 'history-item');
+          MockInteractions.tap(items[0].$.title);
+          assertEquals(1, actionMap['SearchResultClick']);
+          assertEquals(1, histogramMap['HistoryPage.ClickPosition'][0]);
+          assertEquals(1, histogramMap['HistoryPage.ClickPositionSubset'][0]);
+          MockInteractions.tap(items[0].$.checkbox);
+          MockInteractions.tap(items[4].$.checkbox);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          app.$.toolbar.deleteSelectedItems();
+          assertEquals(1, actionMap['RemoveSelected']);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          MockInteractions.tap(app.$.history.$$('.cancel-button'));
+          assertEquals(1, actionMap['CancelRemoveSelected']);
+          app.$.toolbar.deleteSelectedItems();
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          MockInteractions.tap(app.$.history.$$('.action-button'));
+          assertEquals(1, actionMap['ConfirmRemoveSelected']);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          items = polymerSelectAll(app.$.history, 'history-item');
+          MockInteractions.tap(items[0].$['menu-button']);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          MockInteractions.tap(app.$.history.$$('#menuRemoveButton'));
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          assertEquals(1, histogramMap['HistoryPage.RemoveEntryPosition'][0]);
+          assertEquals(
+              1, histogramMap['HistoryPage.RemoveEntryPositionSubset'][0]);
+        });
   });
 
   test('synced-device-manager', function() {
     app.selectedPage_ = 'syncedTabs';
     let histogram;
     let menuButton;
-    return PolymerTest.flushTasks().then(() => {
-      histogram = histogramMap[SYNCED_TABS_HISTOGRAM_NAME];
-      assertEquals(1, histogram[SyncedTabsHistogram.INITIALIZED]);
+    return PolymerTest.flushTasks()
+        .then(() => {
+          histogram = histogramMap[SYNCED_TABS_HISTOGRAM_NAME];
+          assertEquals(1, histogram[SyncedTabsHistogram.INITIALIZED]);
 
-      const sessionList = [
-        createSession(
-            'Nexus 5',
-            [createWindow(['http://www.google.com', 'http://example.com'])]
-        ),
-        createSession(
-            'Nexus 6',
-            [
-              createWindow(['http://test.com']),
-              createWindow(['http://www.gmail.com', 'http://badssl.com'])
-            ]
-        ),
-      ];
-      setForeignSessions(sessionList);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      assertEquals(1, histogram[SyncedTabsHistogram.HAS_FOREIGN_DATA]);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      cards = polymerSelectAll(
-          app.$$('#synced-devices'), 'history-synced-device-card');
-      MockInteractions.tap(cards[0].$['card-heading']);
-      assertEquals(1, histogram[SyncedTabsHistogram.COLLAPSE_SESSION]);
-      MockInteractions.tap(cards[0].$['card-heading']);
-      assertEquals(1, histogram[SyncedTabsHistogram.EXPAND_SESSION]);
-      MockInteractions.tap(polymerSelectAll(cards[0], '.website-title')[0]);
-      assertEquals(1, histogram[SyncedTabsHistogram.LINK_CLICKED]);
+          const sessionList = [
+            createSession('Nexus 5', [createWindow([
+                            'http://www.google.com', 'http://example.com'
+                          ])]),
+            createSession(
+                'Nexus 6',
+                [
+                  createWindow(['http://test.com']),
+                  createWindow(['http://www.gmail.com', 'http://badssl.com'])
+                ]),
+          ];
+          setForeignSessions(sessionList);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          assertEquals(1, histogram[SyncedTabsHistogram.HAS_FOREIGN_DATA]);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          cards = polymerSelectAll(
+              app.$$('#synced-devices'), 'history-synced-device-card');
+          MockInteractions.tap(cards[0].$['card-heading']);
+          assertEquals(1, histogram[SyncedTabsHistogram.COLLAPSE_SESSION]);
+          MockInteractions.tap(cards[0].$['card-heading']);
+          assertEquals(1, histogram[SyncedTabsHistogram.EXPAND_SESSION]);
+          MockInteractions.tap(polymerSelectAll(cards[0], '.website-title')[0]);
+          assertEquals(1, histogram[SyncedTabsHistogram.LINK_CLICKED]);
 
-      menuButton = cards[0].$['menu-button'];
-      MockInteractions.tap(menuButton);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      MockInteractions.tap(app.$$('#synced-devices').$$('#menuOpenButton'));
-      assertEquals(1, histogram[SyncedTabsHistogram.OPEN_ALL]);
+          menuButton = cards[0].$['menu-button'];
+          MockInteractions.tap(menuButton);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          MockInteractions.tap(app.$$('#synced-devices').$$('#menuOpenButton'));
+          assertEquals(1, histogram[SyncedTabsHistogram.OPEN_ALL]);
 
-      MockInteractions.tap(menuButton);
-      return PolymerTest.flushTasks();
-    }).then(() => {
-      MockInteractions.tap(app.$$('#synced-devices').$$('#menuDeleteButton'));
-      assertEquals(1, histogram[SyncedTabsHistogram.HIDE_FOR_NOW]);
-    });
+          MockInteractions.tap(menuButton);
+          return PolymerTest.flushTasks();
+        })
+        .then(() => {
+          MockInteractions.tap(
+              app.$$('#synced-devices').$$('#menuDeleteButton'));
+          assertEquals(1, histogram[SyncedTabsHistogram.HIDE_FOR_NOW]);
+        });
   });
 });

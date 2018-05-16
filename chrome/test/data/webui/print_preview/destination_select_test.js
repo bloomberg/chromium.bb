@@ -67,7 +67,7 @@ cr.define('destination_select_test', function() {
           print_preview.makeRecentDestination(destinations[0]);
       initialSettings.serializedAppStateStr = JSON.stringify({
         version: 2,
-        recentDestinations: [ recentDestination ],
+        recentDestinations: [recentDestination],
       });
 
       return setInitialSettings().then(function(argsArray) {
@@ -91,27 +91,30 @@ cr.define('destination_select_test', function() {
         recentDestinations: recentDestinations,
       });
 
-      return setInitialSettings().then(function(argsArray) {
-        // Should have loaded ID1 as the selected printer, since it was most
-        // recent.
-        assertEquals('ID1', argsArray[1].destinationId);
-        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
-        assertEquals('ID1', page.destination_.id);
+      return setInitialSettings()
+          .then(function(argsArray) {
+            // Should have loaded ID1 as the selected printer, since it was most
+            // recent.
+            assertEquals('ID1', argsArray[1].destinationId);
+            assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+            assertEquals('ID1', page.destination_.id);
 
-        // Load all local destinations.
-        page.destinationStore_.startLoadDestinations(
-            print_preview.PrinterType.LOCAL_PRINTER);
-        return nativeLayer.whenCalled('getPrinters');
-      }).then(function() {
-        // Verify the correct printers are marked as recent in the store.
-        const reportedPrinters = page.destinationStore_.destinations();
-        destinations.forEach((destination, index) => {
-          const match = reportedPrinters.find((reportedPrinter) => {
-              return reportedPrinter.id == destination.id;});
-          assertFalse(typeof match === "undefined");
-          assertEquals(index < 3, match.isRecent);
-        });
-      });
+            // Load all local destinations.
+            page.destinationStore_.startLoadDestinations(
+                print_preview.PrinterType.LOCAL_PRINTER);
+            return nativeLayer.whenCalled('getPrinters');
+          })
+          .then(function() {
+            // Verify the correct printers are marked as recent in the store.
+            const reportedPrinters = page.destinationStore_.destinations();
+            destinations.forEach((destination, index) => {
+              const match = reportedPrinters.find((reportedPrinter) => {
+                return reportedPrinter.id == destination.id;
+              });
+              assertFalse(typeof match === 'undefined');
+              assertEquals(index < 3, match.isRecent);
+            });
+          });
     });
 
     /**
@@ -129,31 +132,33 @@ cr.define('destination_select_test', function() {
         recentDestinations: recentDestinations,
       });
 
-      return setInitialSettings().then(function(argsArray) {
-        // Should have loaded ID1 as the selected printer, since it was most
-        // recent.
-        assertEquals('ID1', argsArray[1].destinationId);
-        assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
-        assertEquals('ID1', page.destination_.id);
+      return setInitialSettings()
+          .then(function(argsArray) {
+            // Should have loaded ID1 as the selected printer, since it was most
+            // recent.
+            assertEquals('ID1', argsArray[1].destinationId);
+            assertEquals(print_preview.PrinterType.LOCAL, argsArray[1].type);
+            assertEquals('ID1', page.destination_.id);
 
-        return nativeLayer.whenCalled('getPreview');
-      }).then(function(previewArgs) {
-        const ticket = JSON.parse(previewArgs.printTicket);
-        assertEquals(0, ticket.requestID);
-        assertEquals('ID1', ticket.deviceName);
+            return nativeLayer.whenCalled('getPreview');
+          })
+          .then(function(previewArgs) {
+            const ticket = JSON.parse(previewArgs.printTicket);
+            assertEquals(0, ticket.requestID);
+            assertEquals('ID1', ticket.deviceName);
 
-        // None of the other printers should have been loaded. Should only have
-        // ID1 and Save as PDF. They will be loaded when the dialog is opened
-        // and startLoadDestinations() is called.
-        const reportedPrinters = page.destinationStore_.destinations();
-        assertEquals(2, reportedPrinters.length);
-        destinations.forEach((destination, index) => {
-          if (destination.id == 'ID1')
-            return;
+            // None of the other printers should have been loaded. Should only
+            // have ID1 and Save as PDF. They will be loaded when the dialog is
+            // opened and startLoadDestinations() is called.
+            const reportedPrinters = page.destinationStore_.destinations();
+            assertEquals(2, reportedPrinters.length);
+            destinations.forEach((destination, index) => {
+              if (destination.id == 'ID1')
+                return;
 
-          assertFalse(reportedPrinters.some(p => p.id == destination.id));
-        });
-      });
+              assertFalse(reportedPrinters.some(p => p.id == destination.id));
+            });
+          });
     });
 
     /**

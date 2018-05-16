@@ -168,7 +168,8 @@ cr.define('extension_error_page_tests', function() {
       errorPage.push('data.runtimeErrors', nextRuntimeError);
       Polymer.dom.flush();
 
-      var errorElements = errorPage.querySelectorAll('* /deep/ .error-item .start');
+      var errorElements =
+          errorPage.querySelectorAll('* /deep/ .error-item .start');
       var ironCollapses = errorPage.querySelectorAll('* /deep/ iron-collapse');
       expectEquals(2, errorElements.length);
       expectEquals(2, ironCollapses.length);
@@ -198,7 +199,8 @@ cr.define('extension_error_page_tests', function() {
       expectFalse(ironCollapses[0].opened);
 
       // Tapping the button sends the right parameter to open dev tool.
-      expectTrue(ironCollapses[1].querySelector('li').classList.contains('selected'));
+      expectTrue(
+          ironCollapses[1].querySelector('li').classList.contains('selected'));
       MockInteractions.tap(ironCollapses[1].querySelector('paper-button'));
       expectDeepEquals(mockDelegate.openDevToolsArgs, {
         renderProcessId: 111,

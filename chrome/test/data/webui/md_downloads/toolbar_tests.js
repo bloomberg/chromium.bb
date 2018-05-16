@@ -8,7 +8,8 @@ suite('toolbar tests', function() {
 
   setup(function() {
     class TestSearchService extends downloads.SearchService {
-      loadMore() { /* Prevent chrome.send(). */ }
+      loadMore() { /* Prevent chrome.send(). */
+      }
     }
 
     toolbar = document.createElement('downloads-toolbar');

@@ -22,13 +22,15 @@ suite('extensions-toggle-row', function() {
   test('TestToggleByLabelTap', function() {
     var whenChanged = test_util.eventToPromise('change', row);
     MockInteractions.tap(row.getLabel());
-    return whenChanged.then(function() {
-      assertTrue(row.checked);
-      whenChanged = test_util.eventToPromise('change', row);
-      MockInteractions.tap(row.getLabel());
-      return whenChanged;
-    }).then(function() {
-      assertFalse(row.checked);
-    });
+    return whenChanged
+        .then(function() {
+          assertTrue(row.checked);
+          whenChanged = test_util.eventToPromise('change', row);
+          MockInteractions.tap(row.getLabel());
+          return whenChanged;
+        })
+        .then(function() {
+          assertFalse(row.checked);
+        });
   });
 });

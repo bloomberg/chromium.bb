@@ -42,7 +42,7 @@ cr.define('md_history.history_routing_test', function() {
         assertEquals('syncedTabs', app.selectedPage_);
         assertEquals('chrome://history/syncedTabs', window.location.href);
 
-        MockInteractions.keyDownOn(menu.children[0], 32, '', "Space");
+        MockInteractions.keyDownOn(menu.children[0], 32, '', 'Space');
         assertEquals('history', app.selectedPage_);
         assertEquals('chrome://history/', window.location.href);
       });
@@ -82,9 +82,7 @@ cr.define('md_history.history_routing_test', function() {
       });
     });
   }
-  return {
-    registerTests: registerTests
-  };
+  return {registerTests: registerTests};
 });
 
 cr.define('md_history.history_routing_test_with_query_param', function() {
@@ -120,7 +118,5 @@ cr.define('md_history.history_routing_test_with_query_param', function() {
       });
     });
   }
-  return {
-    registerTests: registerTests
-  };
+  return {registerTests: registerTests};
 });

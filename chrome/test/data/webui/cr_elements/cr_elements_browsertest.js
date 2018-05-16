@@ -58,9 +58,8 @@ CrElementsLazyRenderTest.prototype = {
       'chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html',
 
   /** @override */
-  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat([
-    'cr_lazy_render_tests.js'
-  ]),
+  extraLibraries: CrElementsBrowserTest.prototype.extraLibraries.concat(
+      ['cr_lazy_render_tests.js']),
 };
 
 TEST_F('CrElementsLazyRenderTest', 'All', function() {
@@ -77,8 +76,7 @@ CrElementsProfileAvatarSelectorTest.prototype = {
   __proto__: CrElementsBrowserTest.prototype,
 
   /** @override */
-  browsePreload:
-      'chrome://resources/cr_elements/cr_profile_avatar_selector/' +
+  browsePreload: 'chrome://resources/cr_elements/cr_profile_avatar_selector/' +
       'cr_profile_avatar_selector.html',
 
   /** @override */

@@ -120,14 +120,13 @@ cr.define('media_router_container_route', function() {
         container.allSinks = fakeSinkList;
 
         setTimeout(function() {
-          var sinkList =
-              container.shadowRoot.getElementById('sink-list')
-                  .querySelectorAll('paper-item');
+          var sinkList = container.shadowRoot.getElementById('sink-list')
+                             .querySelectorAll('paper-item');
           container.addEventListener('create-route', function(data) {
             // Container is initially in auto mode since a cast mode has not
             // been selected.
-            assertEquals(media_router.CastModeType.AUTO,
-                container.shownCastModeValue_);
+            assertEquals(
+                media_router.CastModeType.AUTO, container.shownCastModeValue_);
             assertEquals(fakeSinkList[2].id, data.detail.sinkId);
 
             // The preferred compatible cast mode on the sink is used, since
@@ -149,9 +148,8 @@ cr.define('media_router_container_route', function() {
         container.routeList = fakeRouteList;
 
         setTimeout(function() {
-          var sinkList =
-              container.shadowRoot.getElementById('sink-list')
-                  .querySelectorAll('paper-item');
+          var sinkList = container.shadowRoot.getElementById('sink-list')
+                             .querySelectorAll('paper-item');
 
           // Start from the SINK_LIST view.
           container.showSinkList_();
@@ -169,45 +167,44 @@ cr.define('media_router_container_route', function() {
         // Sink 3 - no sink description, route -> subtext = route description
         // Sink 4 - sink description, route -> subtext = route description
         container.allSinks = [
-            new media_router.Sink('sink id 1', 'Sink 1', null, null,
-                media_router.SinkIconType.CAST,
-                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-            new media_router.Sink('sink id 2', 'Sink 2',
-                'Sink 2 description', null,
-                media_router.SinkIconType.CAST,
-                media_router.SinkStatus.ACTIVE, [1, 2, 3]),
-            new media_router.Sink('sink id 3', 'Sink 3', null, null,
-                media_router.SinkIconType.CAST,
-                media_router.SinkStatus.PENDING, [1, 2, 3]),
-            new media_router.Sink('sink id 4', 'Sink 4',
-                'Sink 4 description', null,
-                media_router.SinkIconType.CAST,
-                media_router.SinkStatus.PENDING, [1, 2, 3])
+          new media_router.Sink(
+              'sink id 1', 'Sink 1', null, null, media_router.SinkIconType.CAST,
+              media_router.SinkStatus.ACTIVE, [1, 2, 3]),
+          new media_router.Sink(
+              'sink id 2', 'Sink 2', 'Sink 2 description', null,
+              media_router.SinkIconType.CAST, media_router.SinkStatus.ACTIVE,
+              [1, 2, 3]),
+          new media_router.Sink(
+              'sink id 3', 'Sink 3', null, null, media_router.SinkIconType.CAST,
+              media_router.SinkStatus.PENDING, [1, 2, 3]),
+          new media_router.Sink(
+              'sink id 4', 'Sink 4', 'Sink 4 description', null,
+              media_router.SinkIconType.CAST, media_router.SinkStatus.PENDING,
+              [1, 2, 3])
         ];
 
         container.routeList = [
-            new media_router.Route('id 3', 'sink id 3', 'Title 3', 0, true),
-            new media_router.Route('id 4', 'sink id 4', 'Title 4', 1, false),
+          new media_router.Route('id 3', 'sink id 3', 'Title 3', 0, true),
+          new media_router.Route('id 4', 'sink id 4', 'Title 4', 1, false),
         ];
 
         setTimeout(function() {
-          var sinkSubtextList =
-              container.shadowRoot.getElementById('sink-list')
-                  .querySelectorAll('.sink-subtext');
+          var sinkSubtextList = container.shadowRoot.getElementById('sink-list')
+                                    .querySelectorAll('.sink-subtext');
 
           // There will only be 3 sink subtext entries, because Sink 1 does not
           // have any subtext.
           assertEquals(3, sinkSubtextList.length);
 
-          checkElementText(container.allSinks[1].description,
-              sinkSubtextList[0]);
+          checkElementText(
+              container.allSinks[1].description, sinkSubtextList[0]);
 
           // Route description overrides sink description for subtext.
-          checkElementText(container.routeList[0].description,
-              sinkSubtextList[1]);
+          checkElementText(
+              container.routeList[0].description, sinkSubtextList[1]);
 
-          checkElementText(container.routeList[1].description,
-              sinkSubtextList[2]);
+          checkElementText(
+              container.routeList[1].description, sinkSubtextList[2]);
           done();
         });
       });
@@ -257,9 +254,8 @@ cr.define('media_router_container_route', function() {
         container.showRouteDetails_(
             new media_router.Route('id 3', 'sink id 3', 'Title 3', 0, true));
         setTimeout(function() {
-          checkElementsVisibleWithId(['container-header',
-                                      'device-missing',
-                                      'route-details']);
+          checkElementsVisibleWithId(
+              ['container-header', 'device-missing', 'route-details']);
           done();
         });
       });
@@ -301,9 +297,8 @@ cr.define('media_router_container_route', function() {
         // Set a non-blocking issue. The issue should be shown.
         container.issue = fakeNonBlockingIssue;
         setTimeout(function() {
-          checkElementsVisibleWithId(['container-header',
-                                      'device-missing',
-                                      'route-details']);
+          checkElementsVisibleWithId(
+              ['container-header', 'device-missing', 'route-details']);
           done();
         });
       });
@@ -318,11 +313,10 @@ cr.define('media_router_container_route', function() {
         // else, hidden.
         container.issue = fakeBlockingIssue;
         setTimeout(function() {
-          checkElementsVisibleWithId(['container-header',
-                                      'device-missing',
-                                      'issue-banner']);
+          checkElementsVisibleWithId(
+              ['container-header', 'device-missing', 'issue-banner']);
           done();
-         });
+        });
       });
 
       test('creating route with selected cast mode', function(done) {
@@ -336,14 +330,13 @@ cr.define('media_router_container_route', function() {
           MockInteractions.tap(castModeList[1]);
           assertEquals(fakeCastModeList[1].description, container.headerText);
           setTimeout(function() {
-            var sinkList =
-                container.shadowRoot.getElementById('sink-list')
-                    .querySelectorAll('paper-item');
+            var sinkList = container.shadowRoot.getElementById('sink-list')
+                               .querySelectorAll('paper-item');
             container.addEventListener('create-route', function(data) {
               assertEquals(fakeSinkList[2].id, data.detail.sinkId);
               // Cast mode 2 is used, since we selected it explicitly.
-              assertEquals(fakeCastModeList[1].type,
-                           data.detail.selectedCastModeValue);
+              assertEquals(
+                  fakeCastModeList[1].type, data.detail.selectedCastModeValue);
               done();
             });
             // All sinks are compatible with cast mode 2.
@@ -369,17 +362,19 @@ cr.define('media_router_container_route', function() {
             MockInteractions.tap(sinkList[0]);
             setTimeout(function() {
               checkElementVisible(
-                  false, container.$$('#route-details')
-                             .$$('#start-casting-to-route-button'),
+                  false,
+                  container.$$('#route-details')
+                      .$$('#start-casting-to-route-button'),
                   'start-casting-to-route-button');
               // The other sink stopped launching, due to route failure, so the
               // cast button should now appear.
-              container.onCreateRouteResponseReceived(fakeSinkList[0].id, null,
-                                                      true);
+              container.onCreateRouteResponseReceived(
+                  fakeSinkList[0].id, null, true);
               setTimeout(function() {
                 checkElementVisible(
-                    true, container.$$('#route-details')
-                               .$$('#start-casting-to-route-button'),
+                    true,
+                    container.$$('#route-details')
+                        .$$('#start-casting-to-route-button'),
                     'start-casting-to-route-button');
                 done();
               });
@@ -400,8 +395,9 @@ cr.define('media_router_container_route', function() {
           setTimeout(function() {
             assertEquals(undefined, container.currentRoute_.currentCastMode);
             checkElementVisible(
-                true, container.$$('#route-details')
-                           .$$('#start-casting-to-route-button'),
+                true,
+                container.$$('#route-details')
+                    .$$('#start-casting-to-route-button'),
                 'start-casting-to-route-button');
             done();
           });
@@ -429,8 +425,9 @@ cr.define('media_router_container_route', function() {
                 container.$$('#sink-list').querySelectorAll('paper-item')[0]);
             setTimeout(function() {
               checkElementVisible(
-                  true, container.$$('#route-details')
-                             .$$('#start-casting-to-route-button'),
+                  true,
+                  container.$$('#route-details')
+                      .$$('#start-casting-to-route-button'),
                   'start-casting-to-route-button');
               done();
             });
@@ -458,8 +455,9 @@ cr.define('media_router_container_route', function() {
                 container.$$('#sink-list').querySelectorAll('paper-item')[0]);
             setTimeout(function() {
               checkElementVisible(
-                  false, container.$$('#route-details')
-                             .$$('#start-casting-to-route-button'),
+                  false,
+                  container.$$('#route-details')
+                      .$$('#start-casting-to-route-button'),
                   'start-casting-to-route-button');
               done();
             });
@@ -485,8 +483,9 @@ cr.define('media_router_container_route', function() {
               container.$$('#sink-list').querySelectorAll('paper-item')[0]);
           setTimeout(function() {
             checkElementVisible(
-                false, container.$$('#route-details')
-                           .$$('#start-casting-to-route-button'),
+                false,
+                container.$$('#route-details')
+                    .$$('#start-casting-to-route-button'),
                 'start-casting-to-route-button');
             done();
           });
@@ -506,8 +505,9 @@ cr.define('media_router_container_route', function() {
         container.showRouteDetails_(fakeRouteList[0]);
         setTimeout(function() {
           checkElementVisible(
-              false, container.$$('#route-details')
-                         .$$('#start-casting-to-route-button'),
+              false,
+              container.$$('#route-details')
+                  .$$('#start-casting-to-route-button'),
               'start-casting-to-route-button');
           done();
         });

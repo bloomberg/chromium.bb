@@ -207,12 +207,10 @@ cr.define('extension_detail_view_tests', function() {
       mockDelegate.testClickingCalls(
           item.$$('#remove-extension'), 'deleteItem', [extensionData.id]);
       mockDelegate.testClickingCalls(
-          item.$$('#load-path > a[is=\'action-link\']'),
-          'showInFolder', [extensionData.id]);
+          item.$$('#load-path > a[is=\'action-link\']'), 'showInFolder',
+          [extensionData.id]);
       mockDelegate.testClickingCalls(
-          item.$$('#reload-button'),
-          'reloadItem',
-          [extensionData.id],
+          item.$$('#reload-button'), 'reloadItem', [extensionData.id],
           Promise.resolve());
     });
 

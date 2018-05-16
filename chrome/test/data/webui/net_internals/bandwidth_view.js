@@ -68,8 +68,8 @@ BandwidthTask.prototype = {
    * Returns the float value the specified cell of the bandwidth table.
    */
   getBandwidthTableCell_: function(row, col) {
-    return parseFloat(NetInternalsTest.getTbodyText(
-        BandwidthView.STATS_BOX_ID, row, col));
+    return parseFloat(
+        NetInternalsTest.getTbodyText(BandwidthView.STATS_BOX_ID, row, col));
   },
 
   /**
@@ -210,8 +210,7 @@ DataReductionProxyTask.prototype = {
    * @param {object} info State of the data reduction proxy.
    */
   onDataReductionProxyInfoChanged: function(info) {
-    if (this.isDone() ||
-        this.dataReductionProxyInfoVerified_ ||
+    if (this.isDone() || this.dataReductionProxyInfoVerified_ ||
         !this.proxySettingsReceived_) {
       return;
     }
@@ -219,11 +218,11 @@ DataReductionProxyTask.prototype = {
     if (info) {
       expectEquals(this.enabled_, info.enabled);
       if (this.enabled_) {
-        expectEquals("Enabled", $(BandwidthView.ENABLED_ID).innerText);
+        expectEquals('Enabled', $(BandwidthView.ENABLED_ID).innerText);
         expectNotEquals('', $(BandwidthView.PRIMARY_PROXY_ID).innerText);
         expectNotEquals('', $(BandwidthView.SECONDARY_PROXY_ID).innerText);
       } else {
-        expectEquals("Disabled", $(BandwidthView.ENABLED_ID).innerText);
+        expectEquals('Disabled', $(BandwidthView.ENABLED_ID).innerText);
         expectEquals('', $(BandwidthView.PRIMARY_PROXY_ID).innerText);
         expectEquals('', $(BandwidthView.SECONDARY_PROXY_ID).innerText);
         // Each event results in 2 rows, and we get 2 events since the startup
@@ -244,8 +243,7 @@ DataReductionProxyTask.prototype = {
  */
 TEST_F('NetInternalsTest', 'netInternalsSessionBandwidthSucceed', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(
-      new NetInternalsTest.GetTestServerURLTask('/title1.html'));
+  taskQueue.addTask(new NetInternalsTest.GetTestServerURLTask('/title1.html'));
   // Load a page with a content length of 66 bytes and a 45-byte favicon.
   taskQueue.addTask(new BandwidthTask(66, 45));
   taskQueue.run();
@@ -254,23 +252,23 @@ TEST_F('NetInternalsTest', 'netInternalsSessionBandwidthSucceed', function() {
 /**
  * Checks data reduction proxy info when it is enabled.
  */
-TEST_F('NetInternalsTest',
-       'DISABLED_netInternalsDataReductionProxyEnabled',
-       function() {
-  var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new DataReductionProxyTask(true));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'DISABLED_netInternalsDataReductionProxyEnabled',
+    function() {
+      var taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new DataReductionProxyTask(true));
+      taskQueue.run();
+    });
 
 /**
  * Checks data reduction proxy info when it is disabled.
  */
-TEST_F('NetInternalsTest',
-       'DISABLED_netInternalsDataReductionProxyDisabled',
-       function() {
-  var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new DataReductionProxyTask(false));
-  taskQueue.run();
-});
+TEST_F(
+    'NetInternalsTest', 'DISABLED_netInternalsDataReductionProxyDisabled',
+    function() {
+      var taskQueue = new NetInternalsTest.TaskQueue(true);
+      taskQueue.addTask(new DataReductionProxyTask(false));
+      taskQueue.run();
+    });
 
 })();  // Anonymous namespace

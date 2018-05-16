@@ -19,13 +19,12 @@ cr.define('extension_test_util', function() {
      *     expected to be called with.
      * @param {*=} opt_returnValue The value to return from the function call.
      */
-    testClickingCalls: function(element, callName, opt_expectedArgs,
-                                opt_returnValue) {
+    testClickingCalls: function(
+        element, callName, opt_expectedArgs, opt_returnValue) {
       var mock = new MockController();
       var mockMethod = mock.createFunctionMock(this, callName);
       mockMethod.returnValue = opt_returnValue;
-      MockMethod.prototype.addExpectation.apply(
-          mockMethod, opt_expectedArgs);
+      MockMethod.prototype.addExpectation.apply(mockMethod, opt_expectedArgs);
       MockInteractions.tap(element);
       mock.verifyMocks();
     },
@@ -69,8 +68,10 @@ cr.define('extension_test_util', function() {
      */
     addListener: function(target, eventName, opt_eventArgs) {
       assert(!this.listeners_.hasOwnProperty(eventName));
-      this.listeners_[eventName] =
-          {args: opt_eventArgs || {}, satisfied: false};
+      this.listeners_[eventName] = {
+        args: opt_eventArgs || {},
+        satisfied: false
+      };
       target.addEventListener(eventName, this.onEvent_.bind(this, eventName));
     },
 
@@ -144,7 +145,7 @@ cr.define('extension_test_util', function() {
    */
   function isElementVisible(element) {
     var rect = element.getBoundingClientRect();
-    return rect.width * rect.height > 0; // Width and height is never negative.
+    return rect.width * rect.height > 0;  // Width and height is never negative.
   }
 
   /**
@@ -158,8 +159,8 @@ cr.define('extension_test_util', function() {
    * @return {boolean}
    */
   function isVisible(parentEl, selector, checkLightDom) {
-    var element = (checkLightDom ? parentEl.querySelector : parentEl.$$).call(
-                      parentEl, selector);
+    var element = (checkLightDom ? parentEl.querySelector : parentEl.$$)
+                      .call(parentEl, selector);
     var rect = element ? element.getBoundingClientRect() : null;
     return !!rect && rect.width * rect.height > 0;
   }
@@ -190,7 +191,8 @@ cr.define('extension_test_util', function() {
    */
   function createExtensionInfo(opt_properties) {
     var id = opt_properties && opt_properties.hasOwnProperty('id') ?
-        opt_properties[id] : 'a'.repeat(32);
+        opt_properties[id] :
+        'a'.repeat(32);
     var baseUrl = 'chrome-extension://' + id + '/';
     return Object.assign(
         {
@@ -229,10 +231,11 @@ cr.define('extension_test_util', function() {
    */
   function testIcons(e) {
     e.querySelectorAll('* /deep/ iron-icon').forEach(function(icon) {
-      if(isElementVisible(icon)) {
+      if (isElementVisible(icon)) {
         var svg = icon.$$('svg');
-        expectTrue(!!svg && svg.innerHTML != '',
-                   'icon "' + icon.icon + '" is not present');
+        expectTrue(
+            !!svg && svg.innerHTML != '',
+            'icon "' + icon.icon + '" is not present');
       }
     });
 

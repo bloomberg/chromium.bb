@@ -33,7 +33,7 @@ suite('history-list supervised-user', function() {
 
   test('deletion disabled for supervised user', function() {
     // Make sure that removeVisits is not being called.
-    registerMessageCallback('removeVisits', this, function (toBeRemoved) {
+    registerMessageCallback('removeVisits', this, function(toBeRemoved) {
       assertNotReached();
     });
 

@@ -71,8 +71,8 @@ var continueTest;
 var continueTest2;
 
 TEST_F('WebUIBrowserAsyncGenTest', 'TestPreloadOnceOnNavigate', function() {
-  window.addEventListener('hashchange', this.continueTest(
-      WhenTestDone.DEFAULT, function() {
+  window.addEventListener(
+      'hashchange', this.continueTest(WhenTestDone.DEFAULT, function() {
         testDone();
       }));
   window.location = DUMMY_URL + '#anchor';
@@ -106,47 +106,47 @@ TEST_F('WebUIBrowserAsyncGenTest', 'TestContinue', function() {
 // Test that runAllActionsAsync can be called with multiple functions, and with
 // bound, saved, or mixed arguments.
 TEST_F('WebUIBrowserAsyncGenTest', 'TestRunAllActionsAsyncMock', function() {
-  this.makeAndRegisterMockHandler(['testBoundArgs',
-                                   'testSavedArgs',
-                                   'testMixedArgs',
-                                   ]);
+  this.makeAndRegisterMockHandler([
+    'testBoundArgs',
+    'testSavedArgs',
+    'testMixedArgs',
+  ]);
   // Bind some arguments.
   var var1, var2;
-  this.mockHandler.expects(once()).testBoundArgs().
-      will(runAllActionsAsync(WhenTestDone.DEFAULT,
-                              callFunction(function(args) {
-                                var1 = args[0];
-                              }, ['val1']),
-                              callFunction(function(args) {
-                                var2 = args[0];
-                              }, ['val2'])));
+  this.mockHandler.expects(once()).testBoundArgs().will(
+      runAllActionsAsync(WhenTestDone.DEFAULT, callFunction(function(args) {
+                           var1 = args[0];
+                         }, ['val1']), callFunction(function(args) {
+                           var2 = args[0];
+                         }, ['val2'])));
 
   // Receive some saved arguments.
   var var3, var4;
   var savedArgs = new SaveMockArguments();
   var savedArgs2 = new SaveMockArguments();
-  this.mockHandler.expects(once()).testSavedArgs(
-      savedArgs.match(savedArgs2.match(eq(['passedVal1'])))).
-      will(runAllActionsAsync(
+  this.mockHandler.expects(once())
+      .testSavedArgs(savedArgs.match(savedArgs2.match(eq(['passedVal1']))))
+      .will(runAllActionsAsync(
           WhenTestDone.DEFAULT,
           callFunctionWithSavedArgs(savedArgs, function(args) {
             var3 = args[0];
-          }),
-          callFunctionWithSavedArgs(savedArgs2, function(args) {
+          }), callFunctionWithSavedArgs(savedArgs2, function(args) {
             var4 = args[0];
           })));
 
   // Receive some saved arguments and some bound arguments.
   var var5, var6, var7, var8;
-  this.mockHandler.expects(once()).testMixedArgs(
-      savedArgs.match(savedArgs2.match(eq('passedVal2')))).
-      will(runAllActionsAsync(
+  this.mockHandler.expects(once())
+      .testMixedArgs(savedArgs.match(savedArgs2.match(eq('passedVal2'))))
+      .will(runAllActionsAsync(
           WhenTestDone.DEFAULT,
           callFunctionWithSavedArgs(
-              savedArgs, function(passedArgs, boundArgs) {
+              savedArgs,
+              function(passedArgs, boundArgs) {
                 var5 = passedArgs[0];
                 var6 = boundArgs[0];
-              }, ['val6']),
+              },
+              ['val6']),
           callFunctionWithSavedArgs(
               savedArgs2, function(passedArgs, boundArgs) {
                 var7 = passedArgs[0];
@@ -194,13 +194,11 @@ TEST_F('WebUIBrowserAsyncGenTest', 'TestRegisterMockGlobals', function() {
   this.makeAndRegisterMockGlobals(['setTestRanTrue']);
 
   // Mock the setTestRanTrue global function.
-  this.mockGlobals.expects(once()).setTestRanTrue().
-      will(runAllActionsAsync(
-          WhenTestDone.ALWAYS,
-          callGlobalWithSavedArgs(null, 'setTestRanTrue'),
-          callFunction(function() {
-            assertTrue(testRan);
-          })));
+  this.mockGlobals.expects(once()).setTestRanTrue().will(runAllActionsAsync(
+      WhenTestDone.ALWAYS, callGlobalWithSavedArgs(null, 'setTestRanTrue'),
+      callFunction(function() {
+        assertTrue(testRan);
+      })));
 
   // Cause setTestRanTrue to be invoked asynchronously.
   chrome.send('callJS', ['setTestRanTrue']);
@@ -272,19 +270,18 @@ WebUIBrowserAsyncGenDeferredToGlobalTest.prototype = {
   /** @inheritDoc */
   setUp: function() {
     this.makeAndRegisterMockGlobals(['setTestRanTrue']);
-    this.mockGlobals.expects(once()).setTestRanTrue().
-        will(runAllActionsAsync(
-            WhenTestDone.ALWAYS,
-            callGlobalWithSavedArgs(null, 'setTestRanTrue'),
-            callFunction(deferRunTest)));
+    this.mockGlobals.expects(once()).setTestRanTrue().will(runAllActionsAsync(
+        WhenTestDone.ALWAYS, callGlobalWithSavedArgs(null, 'setTestRanTrue'),
+        callFunction(deferRunTest)));
 
     // Cause setTestRanTrue to be invoked asynchronously.
     chrome.send('callJS', ['setTestRanTrue']);
   },
 };
 
-TEST_F('WebUIBrowserAsyncGenDeferredToGlobalTest', 'TestDeferRunTestToGlobal',
-       function() {
-  this.ranTest_ = true;
-  assertTrue(testRan);
-});
+TEST_F(
+    'WebUIBrowserAsyncGenDeferredToGlobalTest', 'TestDeferRunTestToGlobal',
+    function() {
+      this.ranTest_ = true;
+      assertTrue(testRan);
+    });

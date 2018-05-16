@@ -52,31 +52,30 @@ cr.define('print_preview_test_utils', function() {
           },
           duplex: {
             option: [
-              {type: 'NO_DUPLEX', is_default: true},
-              {type: 'LONG_EDGE'},
+              {type: 'NO_DUPLEX', is_default: true}, {type: 'LONG_EDGE'},
               {type: 'SHORT_EDGE'}
             ]
           },
           page_orientation: {
             option: [
-              {type: 'PORTRAIT', is_default: true},
-              {type: 'LANDSCAPE'},
+              {type: 'PORTRAIT', is_default: true}, {type: 'LANDSCAPE'},
               {type: 'AUTO'}
             ]
           },
           media_size: {
             option: [
-              { name: 'NA_LETTER',
+              {
+                name: 'NA_LETTER',
                 width_microns: 215900,
                 height_microns: 279400,
                 is_default: true,
-                custom_display_name: "Letter",
+                custom_display_name: 'Letter',
               },
               {
                 name: 'CUSTOM_SQUARE',
                 width_microns: 215900,
                 height_microns: 215900,
-                custom_display_name: "CUSTOM_SQUARE",
+                custom_display_name: 'CUSTOM_SQUARE',
               }
             ]
           }
@@ -116,16 +115,16 @@ cr.define('print_preview_test_utils', function() {
 
     // Add new capability.
     template.capabilities.printer.vendor_capability.push({
-        display_name: 'Paper Type',
-        id: 'Paper Type',
-        type: 'SELECT',
-        select_cap: {
-            option: [
-                {display_name: 'Standard', value: 0, is_default: true},
-                {display_name: 'Recycled', value: 1},
-                {display_name: 'Special', value: 2}
-            ]
-        }
+      display_name: 'Paper Type',
+      id: 'Paper Type',
+      type: 'SELECT',
+      select_cap: {
+        option: [
+          {display_name: 'Standard', value: 0, is_default: true},
+          {display_name: 'Recycled', value: 1},
+          {display_name: 'Special', value: 2}
+        ]
+      }
     });
     return template;
   }
@@ -160,8 +159,10 @@ cr.define('print_preview_test_utils', function() {
   function getDefaultMediaSize(device) {
     const size = device.capabilities.printer.media_size.option.find(
         opt => opt.is_default);
-    return { width_microns: size.width_microns,
-             height_microns: size.height_microns };
+    return {
+      width_microns: size.width_microns,
+      height_microns: size.height_microns
+    };
   }
 
   /**
@@ -170,8 +171,9 @@ cr.define('print_preview_test_utils', function() {
    * @return {string} The default orientation.
    */
   function getDefaultOrientation(device) {
-    return device.capabilities.printer.page_orientation.option.find(
-        opt => opt.is_default).type;
+    return device.capabilities.printer.page_orientation.option
+        .find(opt => opt.is_default)
+        .type;
   }
 
   /**
@@ -186,19 +188,18 @@ cr.define('print_preview_test_utils', function() {
     const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
                                    print_preview.DestinationOrigin.LOCAL;
     // Five destinations. FooDevice is the system default.
-    [ { id: 'ID1', name: 'One' },
-      { id: 'ID2', name: 'Two' },
-      { id: 'ID3', name: 'Three'},
-      { id: 'ID4', name: 'Four'},
-      { id: 'FooDevice', name: 'FooName' }].forEach((info, index) => {
-      const destination = new print_preview.Destination(
-        info.id, print_preview.DestinationType.LOCAL, origin, info.name,
-        false, print_preview.DestinationConnectionStatus.ONLINE);
-      nativeLayer.setLocalDestinationCapabilities(
-          print_preview_test_utils.getCddTemplate(info.id, info.name));
-      localDestinations.push({ printerName: info.name, deviceName: info.id });
-      destinations.push(destination);
-    });
+    [{id: 'ID1', name: 'One'}, {id: 'ID2', name: 'Two'},
+     {id: 'ID3', name: 'Three'}, {id: 'ID4', name: 'Four'},
+     {id: 'FooDevice', name: 'FooName'}]
+        .forEach((info, index) => {
+          const destination = new print_preview.Destination(
+              info.id, print_preview.DestinationType.LOCAL, origin, info.name,
+              false, print_preview.DestinationConnectionStatus.ONLINE);
+          nativeLayer.setLocalDestinationCapabilities(
+              print_preview_test_utils.getCddTemplate(info.id, info.name));
+          localDestinations.push({printerName: info.name, deviceName: info.id});
+          destinations.push(destination);
+        });
     return destinations;
   }
 
@@ -212,17 +213,16 @@ cr.define('print_preview_test_utils', function() {
 
     return {
       option: [
-        { name: 'CUSTOM',
+        {
+          name: 'CUSTOM',
           width_microns: 15900,
           height_microns: 79400,
           is_default: true,
-          custom_display_name_localized: [
-            { locale: navigator.language,
-              value: customLocalizedMediaName
-            }
-          ]
+          custom_display_name_localized:
+              [{locale: navigator.language, value: customLocalizedMediaName}]
         },
-        { name: 'CUSTOM',
+        {
+          name: 'CUSTOM',
           width_microns: 15900,
           height_microns: 79400,
           custom_display_name: customMediaName

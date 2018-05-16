@@ -72,16 +72,16 @@ suite('cr-toggle', function() {
     // Need to provide a valid |pointerId| for setPointerCapture() to not throw
     // an error.
     const xStart = 100;
-    toggle.dispatchEvent(new PointerEvent(
-        'pointerdown', {pointerId: 1, clientX: xStart}));
+    toggle.dispatchEvent(
+        new PointerEvent('pointerdown', {pointerId: 1, clientX: xStart}));
     let xEnd = xStart;
     if (moveDirection) {
       xEnd = moveDirection > 0 ? xStart + diff : xStart - diff;
-      toggle.dispatchEvent(new PointerEvent(
-          'pointermove', {pointerId: 1, clientX: xEnd}));
+      toggle.dispatchEvent(
+          new PointerEvent('pointermove', {pointerId: 1, clientX: xEnd}));
     }
-    toggle.dispatchEvent(new PointerEvent(
-        'pointerup', {pointerId: 1, clientX: xEnd}));
+    toggle.dispatchEvent(
+        new PointerEvent('pointerup', {pointerId: 1, clientX: xEnd}));
     MockInteractions.tap(toggle);
   }
 
@@ -106,14 +106,16 @@ suite('cr-toggle', function() {
   test('ToggleByPointerTap', function() {
     let whenChanged = test_util.eventToPromise('change', toggle);
     triggerPointerDownMoveUpTapSequence(0 /* no pointermove */);
-    return whenChanged.then(function() {
-      assertChecked();
-      whenChanged = test_util.eventToPromise('change', toggle);
-      triggerPointerDownMoveUpTapSequence(0 /* no pointermove */);
-      return whenChanged;
-    }).then(function() {
-      assertNotChecked();
-    });
+    return whenChanged
+        .then(function() {
+          assertChecked();
+          whenChanged = test_util.eventToPromise('change', toggle);
+          triggerPointerDownMoveUpTapSequence(0 /* no pointermove */);
+          return whenChanged;
+        })
+        .then(function() {
+          assertNotChecked();
+        });
   });
 
   // Test that the control is toggled if the user moves the pointer by a
@@ -122,15 +124,17 @@ suite('cr-toggle', function() {
     let whenChanged = test_util.eventToPromise('change', toggle);
     triggerPointerDownMoveUpTapSequence(
         1 /* right */, toggle.MOVE_THRESHOLD_PX - 1);
-    return whenChanged.then(function() {
-      assertChecked();
-      whenChanged = test_util.eventToPromise('change', toggle);
-      triggerPointerDownMoveUpTapSequence(
-          1 /* right */, toggle.MOVE_THRESHOLD_PX - 1);
-      return whenChanged;
-    }).then(function() {
-      assertNotChecked();
-    });
+    return whenChanged
+        .then(function() {
+          assertChecked();
+          whenChanged = test_util.eventToPromise('change', toggle);
+          triggerPointerDownMoveUpTapSequence(
+              1 /* right */, toggle.MOVE_THRESHOLD_PX - 1);
+          return whenChanged;
+        })
+        .then(function() {
+          assertNotChecked();
+        });
   });
 
   // Test that the control is toggled when the user moves the pointer while
@@ -139,22 +143,25 @@ suite('cr-toggle', function() {
     let whenChanged = test_util.eventToPromise('change', toggle);
     triggerPointerDownMoveUpTapSequence(
         1 /* right */, toggle.MOVE_THRESHOLD_PX);
-    return whenChanged.then(function() {
-      assertChecked();
-      whenChanged = test_util.eventToPromise('change', toggle);
-      triggerPointerDownMoveUpTapSequence(
-          -1 /* left */, toggle.MOVE_THRESHOLD_PX);
-      return whenChanged;
-    }).then(function() {
-      assertNotChecked();
-      whenChanged = test_util.eventToPromise('change', toggle);
+    return whenChanged
+        .then(function() {
+          assertChecked();
+          whenChanged = test_util.eventToPromise('change', toggle);
+          triggerPointerDownMoveUpTapSequence(
+              -1 /* left */, toggle.MOVE_THRESHOLD_PX);
+          return whenChanged;
+        })
+        .then(function() {
+          assertNotChecked();
+          whenChanged = test_util.eventToPromise('change', toggle);
 
-      // Test simple tapping after having dragged.
-      triggerPointerDownMoveUpTapSequence(0 /* no pointermove */);
-      return whenChanged;
-    }).then(function() {
-      assertChecked();
-    });
+          // Test simple tapping after having dragged.
+          triggerPointerDownMoveUpTapSequence(0 /* no pointermove */);
+          return whenChanged;
+        })
+        .then(function() {
+          assertChecked();
+        });
   });
 
   // Test that the control is toggled when the user presses the 'Enter' or

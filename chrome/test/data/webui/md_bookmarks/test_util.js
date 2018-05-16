@@ -151,7 +151,8 @@ function findFolderNode(rootNode, id) {
     if (node.itemId == id)
       return node;
 
-    node.root.querySelectorAll('bookmarks-folder-node')
-        .forEach((x) => {nodes.unshift(x);});
+    node.root.querySelectorAll('bookmarks-folder-node').forEach((x) => {
+      nodes.unshift(x);
+    });
   }
 }

@@ -63,11 +63,8 @@ cr.define('extension_view_manager_tests', function() {
 
       var fired = {};
 
-      [
-        'view-enter-start',
-        'view-enter-finish',
-        'view-exit-start',
-        'view-exit-finish',
+      ['view-enter-start', 'view-enter-finish', 'view-exit-start',
+       'view-exit-finish',
       ].forEach(type => {
         viewOne.addEventListener(type, () => {
           fired[type] = true;

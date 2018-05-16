@@ -43,14 +43,16 @@ suite('<bookmarks-router>', function() {
     store.data.selectedFolder = '2';
     store.notifyObservers();
 
-    return Promise.resolve().then(function() {
-      assertEquals('chrome://bookmarks/?id=2', window.location.href);
-      store.data.selectedFolder = '1';
-      store.notifyObservers();
-    }).then(function() {
-      // Selecting Bookmarks bar clears route.
-      assertEquals('chrome://bookmarks/', window.location.href);
-    });
+    return Promise.resolve()
+        .then(function() {
+          assertEquals('chrome://bookmarks/?id=2', window.location.href);
+          store.data.selectedFolder = '1';
+          store.notifyObservers();
+        })
+        .then(function() {
+          // Selecting Bookmarks bar clears route.
+          assertEquals('chrome://bookmarks/', window.location.href);
+        });
   });
 
   test('route updates from search', function() {

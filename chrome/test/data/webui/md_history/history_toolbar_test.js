@@ -55,7 +55,7 @@ suite('history-toolbar', function() {
     toolbar.$$('cr-toolbar').fire('search-changed', 'Test');
   });
 
-  test('spinner is active on search' , function(done) {
+  test('spinner is active on search', function(done) {
     app.queryState_.queryingDisabled = false;
     registerMessageCallback('queryHistory', this, function(info) {
       PolymerTest.flushTasks().then(function() {

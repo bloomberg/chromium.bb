@@ -5,7 +5,7 @@
 const ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
-        [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+    [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
 
 /**
  * Test fixture for DestinationSearch of Print Preview.
@@ -25,14 +25,14 @@ PrintPreviewDestinationSearchTest.prototype = {
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
-      ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
-      'native_layer_stub.js',
-      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
-    ]),
+    ROOT_PATH + 'chrome/test/data/webui/test_browser_proxy.js',
+    'native_layer_stub.js',
+    ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+  ]),
 
 };
 
-TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
+TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
   suite('DestinationSearchTest', function() {
     let root_;
 
@@ -92,12 +92,10 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
 
     function requestSetup(destId, destinationSearch) {
       const origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
-                                   print_preview.DestinationOrigin.LOCAL;
+                                     print_preview.DestinationOrigin.LOCAL;
 
-      const dest = new print_preview.Destination(destId,
-          print_preview.DestinationType.LOCAL,
-          origin,
-          "displayName",
+      const dest = new print_preview.Destination(
+          destId, print_preview.DestinationType.LOCAL, origin, 'displayName',
           print_preview.DestinationConnectionStatus.ONLINE);
 
       // Add the destination to the list.
@@ -126,28 +124,32 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
     });
 
     test('ResolutionFails', function() {
-      const destId = "001122DEADBEEF";
+      const destId = '001122DEADBEEF';
       if (cr.isChromeOS) {
-        nativeLayer_.setSetupPrinterResponse(true, {printerId: destId,
-                                                    success: false,});
+        nativeLayer_.setSetupPrinterResponse(true, {
+          printerId: destId,
+          success: false,
+        });
       } else {
-        nativeLayer_.setLocalDestinationCapabilities({printer: {
-                                                          deviceName: destId,
-                                                      },
-                                                      capabilities: getCaps()},
-                                                     true);
+        nativeLayer_.setLocalDestinationCapabilities(
+            {
+              printer: {
+                deviceName: destId,
+              },
+              capabilities: getCaps()
+            },
+            true);
       }
       requestSetup(destId, destinationSearch_);
       const callback =
           cr.isChromeOS ? 'setupPrinter' : 'getPrinterCapabilities';
-      return nativeLayer_.whenCalled(callback).then(
-          function(args) {
-            assertEquals(destId, cr.isChromeOS ? args : args.destinationId);
-          });
+      return nativeLayer_.whenCalled(callback).then(function(args) {
+        assertEquals(destId, cr.isChromeOS ? args : args.destinationId);
+      });
     });
 
     test('ReceiveSuccessfulSetup', function() {
-      const destId = "00112233DEADBEEF";
+      const destId = '00112233DEADBEEF';
       const response = {
         printerId: destId,
         capabilities: getCaps(),
@@ -156,10 +158,12 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
       if (cr.isChromeOS)
         nativeLayer_.setSetupPrinterResponse(false, response);
       else
-        nativeLayer_.setLocalDestinationCapabilities({printer: {
-                                                          deviceName: destId,
-                                                      },
-                                                      capabilities: getCaps()});
+        nativeLayer_.setLocalDestinationCapabilities({
+          printer: {
+            deviceName: destId,
+          },
+          capabilities: getCaps()
+        });
 
       const waiter = test_util.eventToPromise(
           print_preview.DestinationStore.EventType.DESTINATION_SELECT,
@@ -167,8 +171,8 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
       requestSetup(destId, destinationSearch_);
       const callback =
           cr.isChromeOS ? 'setupPrinter' : 'getPrinterCapabilities';
-      return Promise.all([nativeLayer_.whenCalled(callback), waiter]).then(
-          function(results) {
+      return Promise.all([nativeLayer_.whenCalled(callback), waiter])
+          .then(function(results) {
             const actualId =
                 cr.isChromeOS ? results[0] : results[0].destinationId;
             assertEquals(destId, actualId);
@@ -189,8 +193,8 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
         };
         nativeLayer_.setSetupPrinterResponse(false, response);
         requestSetup(destId, destinationSearch_);
-        return nativeLayer_.whenCalled('setupPrinter').then(
-            function (actualDestId) {
+        return nativeLayer_.whenCalled('setupPrinter')
+            .then(function(actualDestId) {
               // Selection should not change on ChromeOS.
               assertEquals(destId, actualDestId);
               assertEquals(null, destinationStore_.selectedDestination);
@@ -202,10 +206,9 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function(){
       const printerId = 'cloud-printer-id';
 
       // Create cloud destination.
-      const cloudDest = new print_preview.Destination(printerId,
-          print_preview.DestinationType.GOOGLE,
-          print_preview.DestinationOrigin.DEVICE,
-          "displayName",
+      const cloudDest = new print_preview.Destination(
+          printerId, print_preview.DestinationType.GOOGLE,
+          print_preview.DestinationOrigin.DEVICE, 'displayName',
           print_preview.DestinationConnectionStatus.ONLINE);
       cloudDest.capabilities = getCaps();
 

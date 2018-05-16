@@ -14,8 +14,9 @@ GEN_INCLUDE(['net_internals_test.js']);
  * @param {object} hostResolverInfo Results from a host resolver info query.
  */
 function checkDisplay(hostResolverInfo) {
-  expectEquals(hostResolverInfo.cache.capacity,
-               parseInt($(DnsView.CAPACITY_SPAN_ID).innerText));
+  expectEquals(
+      hostResolverInfo.cache.capacity,
+      parseInt($(DnsView.CAPACITY_SPAN_ID).innerText));
 
   var entries = hostResolverInfo.cache.entries;
 
@@ -88,10 +89,7 @@ AddCacheEntryTask.prototype = {
    */
   start: function() {
     var addCacheEntryParams = [
-      this.hostname_,
-      this.ipAddress_,
-      this.netError_,
-      this.expired_ ? -2 : 2
+      this.hostname_, this.ipAddress_, this.netError_, this.expired_ ? -2 : 2
     ];
     chrome.send('addCacheEntry', addCacheEntryParams);
     g_browser.addHostResolverInfoObserver(this, false);
@@ -180,10 +178,10 @@ NetworkChangeTask.prototype = {
 
       // Look for an entry that's expired due to a network change.
       for (var row = 0; row < entries.length; ++row) {
-          var text = NetInternalsTest.getTbodyText(tableId, row, 5);
+        var text = NetInternalsTest.getTbodyText(tableId, row, 5);
         if (/expired/i.test(text)) {
-            foundExpired = true;
-        };
+          foundExpired = true;
+        }
       }
 
       if (foundExpired) {
@@ -258,8 +256,8 @@ WaitForEntryDestructionTask.prototype = {
 TEST_F('NetInternalsTest', 'netInternalsDnsViewSuccess', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new AddCacheEntryTask(
-      'somewhere.com', '1.2.3.4', 0, false));
+  taskQueue.addTask(
+      new AddCacheEntryTask('somewhere.com', '1.2.3.4', 0, false));
   taskQueue.addTask(new ClearCacheTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
   taskQueue.run(true);
@@ -284,8 +282,7 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewFail', function() {
 TEST_F('NetInternalsTest', 'netInternalsDnsViewExpired', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new AddCacheEntryTask(
-      'somewhere.com', '1.2.3.4', 0, true));
+  taskQueue.addTask(new AddCacheEntryTask('somewhere.com', '1.2.3.4', 0, true));
   taskQueue.addTask(new ClearCacheTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
   taskQueue.run(true);
@@ -298,8 +295,8 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewAddTwoTwice', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   for (var i = 0; i < 2; ++i) {
-    taskQueue.addTask(new AddCacheEntryTask(
-        'somewhere.com', '1.2.3.4', 0, false));
+    taskQueue.addTask(
+        new AddCacheEntryTask('somewhere.com', '1.2.3.4', 0, false));
     taskQueue.addTask(new AddCacheEntryTask(
         'nowhere.com', '', NetError.ERR_NAME_NOT_RESOLVED, true));
     taskQueue.addTask(new ClearCacheTask());
@@ -318,8 +315,7 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewIncognitoClears', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new NetInternalsTest.CreateIncognitoBrowserTask());
-  taskQueue.addTask(new AddCacheEntryTask(
-      'somewhere.com', '1.2.3.4', 0, true));
+  taskQueue.addTask(new AddCacheEntryTask('somewhere.com', '1.2.3.4', 0, true));
   taskQueue.addTask(NetInternalsTest.getCloseIncognitoBrowserTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));
   taskQueue.run(true);
@@ -332,8 +328,8 @@ TEST_F('NetInternalsTest', 'netInternalsDnsViewIncognitoClears', function() {
 TEST_F('NetInternalsTest', 'netInternalsDnsViewNetworkChanged', function() {
   NetInternalsTest.switchToView('dns');
   var taskQueue = new NetInternalsTest.TaskQueue(true);
-  taskQueue.addTask(new AddCacheEntryTask(
-      'somewhere.com', '1.2.3.4', 0, false));
+  taskQueue.addTask(
+      new AddCacheEntryTask('somewhere.com', '1.2.3.4', 0, false));
   taskQueue.addTask(new NetworkChangeTask());
   taskQueue.addTask(new ClearCacheTask());
   taskQueue.addTask(new WaitForEntryDestructionTask('somewhere.com'));

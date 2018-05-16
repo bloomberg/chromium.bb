@@ -111,8 +111,7 @@ class TestBrowserProxy {
     // Tip: check that the |methodName| is being passed to |this.constructor|.
     const methodData = this.resolverMap_.get(methodName);
     assert(
-        !!methodData,
-        `Method '${methodName}' not found in TestBrowserProxy.`);
+        !!methodData, `Method '${methodName}' not found in TestBrowserProxy.`);
     return methodData;
   }
 
@@ -123,7 +122,6 @@ class TestBrowserProxy {
    */
   createMethodData_(methodName) {
     this.resolverMap_.set(
-        methodName,
-        {resolver: new PromiseResolver(), callCount: 0});
+        methodName, {resolver: new PromiseResolver(), callCount: 0});
   }
 }

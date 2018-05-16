@@ -43,9 +43,8 @@ WebUIAccessibilityAuditBrowserTest.prototype = {
   /** @override */
   setUp: function() {
     this.accessibilityAuditConfig.auditRulesToIgnore = [];
-    this.accessibilityAuditConfig.auditRulesToRun = ['lowContrastElements',
-                                                     'badAriaRole',
-                                                     'controlsWithoutLabel'];
+    this.accessibilityAuditConfig.auditRulesToRun =
+        ['lowContrastElements', 'badAriaRole', 'controlsWithoutLabel'];
   },
 
   tearDown: function() {
@@ -90,7 +89,7 @@ function addAuditFailures() {
   // Contrast ratio
   var style = document.createElement('style');
   style.innerText = 'body { background-color: #ffff }\n' +
-                    'p { color: #ffffff }';
+      'p { color: #ffffff }';
   document.head.appendChild(style);
 
   // Bad ARIA role
@@ -166,36 +165,37 @@ function expectAuditWillRun(times, auditConfig) {
 
 // Test that an audit failure causes a test failure, if both
 // |runAccessibilityChecks| and |accessibilityIssuesAreErrors| are true.
-TEST_F('WebUIAccessibilityAuditBrowserTest_ShouldFail', 'testWithAuditFailures',
-       function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig);
-  addAuditFailures();
-});
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_ShouldFail', 'testWithAuditFailures',
+    function() {
+      expectAuditWillRun(1, this.accessibilityAuditConfig);
+      addAuditFailures();
+    });
 
 // Test that the accessibility audit does not run if |runAccessibilityChecks|
 // is false.
-TEST_F('WebUIAccessibilityAuditBrowserTest',
-       'testWithAuditFailures_a11yChecksDisabled',
-       function() {
-  expectAuditWillNotRun();
-  this.disableAccessibilityChecks();
-  addAuditFailures();
-});
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest',
+    'testWithAuditFailures_a11yChecksDisabled', function() {
+      expectAuditWillNotRun();
+      this.disableAccessibilityChecks();
+      addAuditFailures();
+    });
 
 // Tests that the accessibility audit will run but not cause a test failure when
 // accessibilityIssuesAreErrors(false) is called in the test function
-TEST_F('WebUIAccessibilityAuditBrowserTest',
-       'testWithAuditFailures_a11yIssuesAreWarnings',
-        function() {
-  this.accessibilityIssuesAreErrors = false;
-  expectAuditWillRun(1, this.accessibilityAuditConfig);
-  expectReportConsoleWarning();
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest',
+    'testWithAuditFailures_a11yIssuesAreWarnings', function() {
+      this.accessibilityIssuesAreErrors = false;
+      expectAuditWillRun(1, this.accessibilityAuditConfig);
+      expectReportConsoleWarning();
 
-  this.expectedWarnings = 1;
-  this.expectedErrors = 2;
-  this.enableAccessibilityChecks();
-  addAuditFailures();
-});
+      this.expectedWarnings = 1;
+      this.expectedErrors = 2;
+      this.enableAccessibilityChecks();
+      addAuditFailures();
+    });
 
 /**
  * Test fixture with |runAccessibilityChecks| set to false.
@@ -217,11 +217,11 @@ WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture.prototype = {
  * @constructor
  * @extends {WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture}
  */
-function WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail()
-{}
+function
+WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail() {}
 
-WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail.prototype =
-{
+WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail
+    .prototype = {
   __proto__:
       WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture.prototype,
 
@@ -232,50 +232,51 @@ WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail.prototype =
 
 // Test that the accessibility audit does not run when |runAccessibilityChecks|
 // is set to false in the test fixture.
-TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
-       'testWithAuditFailures_a11yChecksNotEnabled',
-       function() {
-  expectAuditWillNotRun();
-  addAuditFailures();
-});
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
+    'testWithAuditFailures_a11yChecksNotEnabled', function() {
+      expectAuditWillNotRun();
+      addAuditFailures();
+    });
 
 // Test that the accessibility audit does run if the enableAccessibilityChecks()
 // method is called in the test function.
-TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail',
-       'testWithAuditFailures',
-       function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig);
-  this.enableAccessibilityChecks();
-  addAuditFailures();
-});
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail',
+    'testWithAuditFailures', function() {
+      expectAuditWillRun(1, this.accessibilityAuditConfig);
+      this.enableAccessibilityChecks();
+      addAuditFailures();
+    });
 
 // Test that the accessibility audit runs when the expectAccessibilityOk()
 // method is called.
-TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
-       'testRunningAuditManually_noErrors',
-       function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig);
-  expectAccessibilityOk();
-});
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
+    'testRunningAuditManually_noErrors', function() {
+      expectAuditWillRun(1, this.accessibilityAuditConfig);
+      expectAccessibilityOk();
+    });
 
 // Test that calling expectAccessibilityOk() when there are accessibility issues
 // on the page causes the test to fail.
-TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail',
-       'testRunningAuditManually_withErrors',
-       function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig);
-  addAuditFailures();
-  expectAccessibilityOk();
-});
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture_ShouldFail',
+    'testRunningAuditManually_withErrors', function() {
+      expectAuditWillRun(1, this.accessibilityAuditConfig);
+      addAuditFailures();
+      expectAccessibilityOk();
+    });
 
 // Test that calling expectAccessibilityOk() multiple times will cause the
 // accessibility audit to run multiple times.
-TEST_F('WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
-       'testRunningAuditManuallySeveralTimes', function() {
-  expectAuditWillRun(2, this.accessibilityAuditConfig);
-  expectAccessibilityOk();
-  expectAccessibilityOk();
-});
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture',
+    'testRunningAuditManuallySeveralTimes', function() {
+      expectAuditWillRun(2, this.accessibilityAuditConfig);
+      expectAccessibilityOk();
+      expectAccessibilityOk();
+    });
 
 /**
  * Test fixture with |accessibilityIssuesAreErrors| set to false.
@@ -307,75 +308,75 @@ WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings_ShouldFail.prototype = {
 
 // Tests that the accessibility audit will run but not cause a test failure when
 // |accessibilityIssuesAreErrors| is false in the test fixture.
-TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
-       'testWithAuditFailures',
-        function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig);
-  expectReportConsoleWarning();
-  this.expectedWarnings = 1;
-  this.expectedErrors = 2;
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
+    'testWithAuditFailures', function() {
+      expectAuditWillRun(1, this.accessibilityAuditConfig);
+      expectReportConsoleWarning();
+      this.expectedWarnings = 1;
+      this.expectedErrors = 2;
 
-  this.enableAccessibilityChecks();
-  addAuditFailures();
-});
+      this.enableAccessibilityChecks();
+      addAuditFailures();
+    });
 
 // Tests that the accessibility audit will run and call a test failure when
 // accessibilityIssuesAreErrors(true) is called in the test function.
-TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings_ShouldFail',
-       'testWithAuditFailuresAndIssuesAreErrors',
-        function() {
-  expectAuditWillRun(1, this.accessibilityAuditConfig);
-  this.expectedWarnings = 1;
-  this.expectedErrors = 2;
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings_ShouldFail',
+    'testWithAuditFailuresAndIssuesAreErrors', function() {
+      expectAuditWillRun(1, this.accessibilityAuditConfig);
+      this.expectedWarnings = 1;
+      this.expectedErrors = 2;
 
-  this.accessibilityIssuesAreErrors = true;
-  this.enableAccessibilityChecks();
+      this.accessibilityIssuesAreErrors = true;
+      this.enableAccessibilityChecks();
 
-  addAuditFailures();
-});
+      addAuditFailures();
+    });
 
 // Tests that the accessibility audit will run twice if expectAccessibilityOk()
 // is called during the test function and |runAccessibilityChecks| is true in
 // the test fixture.
-TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
-       'testWithAuditFailuresAndExpectA11yOk',
-        function() {
-  expectAuditWillRun(2, this.accessibilityAuditConfig);
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
+    'testWithAuditFailuresAndExpectA11yOk', function() {
+      expectAuditWillRun(2, this.accessibilityAuditConfig);
 
-  expectAccessibilityOk();
+      expectAccessibilityOk();
 
-  this.expectedWarnings = 1;
-  this.expectedErrors = 2;
-  expectReportConsoleWarning();
+      this.expectedWarnings = 1;
+      this.expectedErrors = 2;
+      expectReportConsoleWarning();
 
-  this.enableAccessibilityChecks();
+      this.enableAccessibilityChecks();
 
-  addAuditFailures();
-});
+      addAuditFailures();
+    });
 
 // Tests that parts of the page can be ignored on a per-audit rule basis.
-TEST_F('WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
-       'testCanIgnoreSelectors',
-        function() {
-  this.disableAccessibilityChecks();
-  addAuditFailures();
-  var accessibilityResults = [];
-  try {
-    assertAccessibilityOk(accessibilityResults);
-  } catch (e) {
-    // Expected error from assertion
-  }
-  expectEquals(3, accessibilityResults.length);
+TEST_F(
+    'WebUIAccessibilityAuditBrowserTest_IssuesAreWarnings',
+    'testCanIgnoreSelectors', function() {
+      this.disableAccessibilityChecks();
+      addAuditFailures();
+      var accessibilityResults = [];
+      try {
+        assertAccessibilityOk(accessibilityResults);
+      } catch (e) {
+        // Expected error from assertion
+      }
+      expectEquals(3, accessibilityResults.length);
 
-  accessibilityResults.length = 0;
-  this.accessibilityAuditConfig.ignoreSelectors('lowContrastElements', '*');
-  try {
-    assertAccessibilityOk(accessibilityResults);
-  } catch (e) {
-    // Expected error from assertion
-  }
-  expectEquals(2, accessibilityResults.length);
-  for (var i = 0; i < accessibilityResults.length; i++) {
-    expectFalse(accessibilityResults[i].rule.name == 'lowContrastElements');
-  }
-});
+      accessibilityResults.length = 0;
+      this.accessibilityAuditConfig.ignoreSelectors('lowContrastElements', '*');
+      try {
+        assertAccessibilityOk(accessibilityResults);
+      } catch (e) {
+        // Expected error from assertion
+      }
+      expectEquals(2, accessibilityResults.length);
+      for (var i = 0; i < accessibilityResults.length; i++) {
+        expectFalse(accessibilityResults[i].rule.name == 'lowContrastElements');
+      }
+    });

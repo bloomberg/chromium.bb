@@ -67,40 +67,24 @@ PrintPreviewUIBrowserTest.prototype = {
 };
 
 // Run each mocha test in isolation (within a new TEST_F() call).
-[
-  'PrinterList',
-  'RestoreLocalDestination',
-  'RestoreMultipleDestinations',
-  'SaveAppState',
-  'DefaultDestinationSelectionRules',
-  'SystemDialogLinkIsHiddenInAppKioskMode',
-  'SectionsDisabled',
-  'PrintToPDFSelectedCapabilities',
-  'SourceIsHTMLCapabilities',
-  'SourceIsPDFCapabilities',
-  'ScalingUnchecksFitToPage',
-  'CheckNumCopiesPrintPreset',
-  'CheckDuplexPrintPreset',
-  'CustomMarginsControlsCheck',
-  'PageLayoutHasNoMarginsHideHeaderFooter',
-  'PageLayoutHasMarginsShowHeaderFooter',
-  'ZeroTopAndBottomMarginsHideHeaderFooter',
-  'ZeroTopAndNonZeroBottomMarginShowHeaderFooter',
-  'SmallPaperSizeHeaderFooter',
-  'ColorSettingsMonochrome',
-  'ColorSettingsCustomMonochrome',
-  'ColorSettingsColor',
-  'ColorSettingsCustomColor',
-  'ColorSettingsBothStandardDefaultColor',
-  'ColorSettingsBothStandardDefaultMonochrome',
-  'ColorSettingsBothCustomDefaultColor',
-  'DuplexSettingsTrue',
-  'DuplexSettingsFalse',
-  'PrinterChangeUpdatesPreview',
-  'NoPDFPluginErrorMessage',
-  'CustomPaperNames',
-  'InitIssuesOneRequest',
-  'InvalidSettingsError',
+['PrinterList', 'RestoreLocalDestination', 'RestoreMultipleDestinations',
+ 'SaveAppState', 'DefaultDestinationSelectionRules',
+ 'SystemDialogLinkIsHiddenInAppKioskMode', 'SectionsDisabled',
+ 'PrintToPDFSelectedCapabilities', 'SourceIsHTMLCapabilities',
+ 'SourceIsPDFCapabilities', 'ScalingUnchecksFitToPage',
+ 'CheckNumCopiesPrintPreset', 'CheckDuplexPrintPreset',
+ 'CustomMarginsControlsCheck', 'PageLayoutHasNoMarginsHideHeaderFooter',
+ 'PageLayoutHasMarginsShowHeaderFooter',
+ 'ZeroTopAndBottomMarginsHideHeaderFooter',
+ 'ZeroTopAndNonZeroBottomMarginShowHeaderFooter', 'SmallPaperSizeHeaderFooter',
+ 'ColorSettingsMonochrome', 'ColorSettingsCustomMonochrome',
+ 'ColorSettingsColor', 'ColorSettingsCustomColor',
+ 'ColorSettingsBothStandardDefaultColor',
+ 'ColorSettingsBothStandardDefaultMonochrome',
+ 'ColorSettingsBothCustomDefaultColor', 'DuplexSettingsTrue',
+ 'DuplexSettingsFalse', 'PrinterChangeUpdatesPreview',
+ 'NoPDFPluginErrorMessage', 'CustomPaperNames', 'InitIssuesOneRequest',
+ 'InvalidSettingsError',
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
     runMochaTest(print_preview_test.suiteName, testName);
@@ -108,21 +92,16 @@ PrintPreviewUIBrowserTest.prototype = {
 });
 
 // Disable accessibility errors for some tests.
-[
-  'RestoreAppState',
-  'AdvancedSettings1Option',
-  'AdvancedSettings2Options',
-].forEach(function(testName) {
-  TEST_F('PrintPreviewUIBrowserTest', testName, function() {
-    this.accessibilityIssuesAreErrors = false;
-    runMochaTest(print_preview_test.suiteName, testName);
-  });
-});
+['RestoreAppState', 'AdvancedSettings1Option', 'AdvancedSettings2Options', ]
+    .forEach(function(testName) {
+      TEST_F('PrintPreviewUIBrowserTest', testName, function() {
+        this.accessibilityIssuesAreErrors = false;
+        runMochaTest(print_preview_test.suiteName, testName);
+      });
+    });
 
-[
-  'InvalidCertificateError',
-  'InvalidCertificateErrorReselectDestination',
-  'InvalidCertificateErrorNoPreview',
+['InvalidCertificateError', 'InvalidCertificateErrorReselectDestination',
+ 'InvalidCertificateErrorNoPreview',
 ].forEach(function(testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
     loadTimeData.overrideValues({isEnterpriseManaged: false});
@@ -139,10 +118,8 @@ TEST_F('PrintPreviewUIBrowserTest', 'SystemDefaultPrinterPolicy', function() {
 GEN('#endif');
 
 GEN('#if defined(OS_MACOSX)');
-[
-  'MacOpenPDFInPreview',
-  'MacOpenPDFInPreviewBadPrintTicket',
-].forEach(function(testName) {
+['MacOpenPDFInPreview', 'MacOpenPDFInPreviewBadPrintTicket', ].forEach(function(
+    testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
     runMochaTest(print_preview_test.suiteName, testName);
   });
@@ -150,10 +127,8 @@ GEN('#if defined(OS_MACOSX)');
 GEN('#endif');
 
 GEN('#if defined(OS_WIN)');
-[
-  'WinSystemDialogLink',
-  'WinSystemDialogLinkBadPrintTicket',
-].forEach(function(testName) {
+['WinSystemDialogLink', 'WinSystemDialogLinkBadPrintTicket', ].forEach(function(
+    testName) {
   TEST_F('PrintPreviewUIBrowserTest', testName, function() {
     runMochaTest(print_preview_test.suiteName, testName);
   });

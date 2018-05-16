@@ -12,9 +12,9 @@ const TEST_HISTORY_RESULTS = [
 ];
 
 const SEARCH_HISTORY_RESULTS = [
-  createSearchEntry('2016-03-16', "http://www.google.com"),
-  createSearchEntry('2016-03-14 11:00', "http://calendar.google.com"),
-  createSearchEntry('2016-03-14 10:00', "http://mail.google.com")
+  createSearchEntry('2016-03-16', 'http://www.google.com'),
+  createSearchEntry('2016-03-14 11:00', 'http://calendar.google.com'),
+  createSearchEntry('2016-03-14 10:00', 'http://mail.google.com')
 ];
 
 suite('<history-item> unit test', function() {
@@ -122,22 +122,24 @@ suite('<history-item> integration test', function() {
 
   test('remove bookmarks', function() {
     element.addNewResults(TEST_HISTORY_RESULTS);
-    return PolymerTest.flushTasks().then(function() {
-      element.set('historyData_.1.starred', true);
-      element.set('historyData_.5.starred', true);
-      return PolymerTest.flushTasks();
-    }).then(function() {
+    return PolymerTest.flushTasks()
+        .then(function() {
+          element.set('historyData_.1.starred', true);
+          element.set('historyData_.5.starred', true);
+          return PolymerTest.flushTasks();
+        })
+        .then(function() {
 
-      items = Polymer.dom(element.root).querySelectorAll('history-item');
+          items = Polymer.dom(element.root).querySelectorAll('history-item');
 
-      items[1].$$('#bookmark-star').focus();
-      MockInteractions.tap(items[1].$$('#bookmark-star'));
+          items[1].$$('#bookmark-star').focus();
+          MockInteractions.tap(items[1].$$('#bookmark-star'));
 
-      // Check that focus is shifted to overflow menu icon.
-      assertEquals(items[1].root.activeElement, items[1].$['menu-button']);
-      // Check that all items matching this url are unstarred.
-      assertEquals(element.historyData_[1].starred, false);
-      assertEquals(element.historyData_[5].starred, false);
-    });
+          // Check that focus is shifted to overflow menu icon.
+          assertEquals(items[1].root.activeElement, items[1].$['menu-button']);
+          // Check that all items matching this url are unstarred.
+          assertEquals(element.historyData_[1].starred, false);
+          assertEquals(element.historyData_[5].starred, false);
+        });
   });
 });
