@@ -166,7 +166,6 @@ const char kPlayBooksAppId[] = "cafegjnmmjpfibnlddppihpnkbkgicbg";
 const char kPlayGamesAppId[] = "nplnnjkbeijcggmpdcecpabgbjgeiedc";
 const char kPlayMoviesAppId[] = "dbbihmicnlldbflflckpafphlekmjfnm";
 const char kPlayMusicAppId[] = "ophbaopahelaolbjliokocojjbgfadfn";
-const char kLegacyPlayStoreAppId[] = "gpkmicpkkebkmabiaedjognfppcchdfa";
 const char kPlayStorePackage[] = "com.android.vending";
 const char kPlayStoreActivity[] = "com.android.vending.AssetBrowserActivity";
 const char kSettingsAppId[] = "mconboelelhjpkbdhhiijkgcimoangdj";
