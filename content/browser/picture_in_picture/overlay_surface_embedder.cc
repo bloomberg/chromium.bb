@@ -51,15 +51,19 @@ void OverlaySurfaceEmbedder::UpdateLayerBounds() {
 }
 
 void OverlaySurfaceEmbedder::AddControlsLayers() {
+  // These control layers are expected to be set up by |window_|.
   controls_background_layer_ = window_->GetControlsBackgroundLayer();
+  DCHECK(controls_background_layer_);
   controls_background_layer_->SetBounds(
       gfx::Rect(gfx::Point(0, 0), window_->GetBounds().size()));
 
   close_controls_layer_ = window_->GetCloseControlsLayer();
+  DCHECK(close_controls_layer_);
   close_controls_layer_->SetFillsBoundsOpaquely(false);
   close_controls_layer_->SetBounds(window_->GetCloseControlsBounds());
 
   play_pause_controls_layer_ = window_->GetPlayPauseControlsLayer();
+  DCHECK(play_pause_controls_layer_);
   play_pause_controls_layer_->SetFillsBoundsOpaquely(false);
   play_pause_controls_layer_->SetBounds(window_->GetPlayPauseControlsBounds());
 
