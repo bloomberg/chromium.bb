@@ -46621,9 +46621,7 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True",
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build67-a7\"}]"
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
@@ -46664,9 +46662,7 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True",
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build70-a7\"}]"
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
@@ -46707,9 +46703,7 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True",
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build68-a7\"}]"
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
@@ -46753,9 +46747,7 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True",
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build67-a7\"}, {\"id\": \"build68-a7\"}, {\"id\": \"build69-a7\"}, {\"id\": \"build70-a7\"}, {\"id\": \"build71-a7\"}, {\"id\": \"build72-a7\"}, {\"id\": \"build73-a7\"}, {\"id\": \"build74-a7\"}, {\"id\": \"build75-a7\"}, {\"id\": \"build76-a7\"}, {\"id\": \"build77-a7\"}, {\"id\": \"build78-a7\"}, {\"id\": \"build79-a7\"}, {\"id\": \"build80-a7\"}, {\"id\": \"build81-a7\"}, {\"id\": \"build82-a7\"}, {\"id\": \"build83-a7\"}, {\"id\": \"build84-a7\"}, {\"id\": \"build85-a7\"}, {\"id\": \"build86-a7\"}, {\"id\": \"build87-a7\"}, {\"id\": \"build88-a7\"}, {\"id\": \"build89-a7\"}, {\"id\": \"build90-a7\"}, {\"id\": \"build91-a7\"}, {\"id\": \"build92-a7\"}]"
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
@@ -46796,9 +46788,7 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True",
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build69-a7\"}]"
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
@@ -46843,9 +46833,7 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True",
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build41-a7\"}]"
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }
@@ -46889,9 +46877,7 @@
         "trigger_script": {
           "args": [
             "--multiple-dimension-script-verbose",
-            "True",
-            "--multiple-trigger-configs",
-            "[{\"id\": \"build41-a7\"}, {\"id\": \"build42-a7\"}, {\"id\": \"build43-a7\"}, {\"id\": \"build44-a7\"}, {\"id\": \"build45-a7\"}, {\"id\": \"build46-a7\"}, {\"id\": \"build47-a7\"}, {\"id\": \"build48-a7\"}, {\"id\": \"build49-a7\"}, {\"id\": \"build50-a7\"}, {\"id\": \"build51-a7\"}, {\"id\": \"build52-a7\"}, {\"id\": \"build53-a7\"}, {\"id\": \"build54-a7\"}, {\"id\": \"build55-a7\"}, {\"id\": \"build56-a7\"}, {\"id\": \"build57-a7\"}, {\"id\": \"build58-a7\"}, {\"id\": \"build59-a7\"}, {\"id\": \"build60-a7\"}, {\"id\": \"build61-a7\"}, {\"id\": \"build62-a7\"}, {\"id\": \"build63-a7\"}, {\"id\": \"build64-a7\"}, {\"id\": \"build65-a7\"}, {\"id\": \"build66-a7\"}]"
+            "True"
           ],
           "script": "//testing/trigger_scripts/perf_device_trigger.py"
         }

@@ -1124,6 +1124,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
       'tests': [
         {
           'isolate': 'performance_test_suite',
+          'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=benchmark_desktop_bot_map.json',
@@ -1131,7 +1132,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         },
         {
           'isolate': 'load_library_perf_tests',
-          'shards': [0],
+          'num_shards': 1,
           'telemetry': False,
         }
       ],
@@ -1141,22 +1142,14 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         'os': 'Mac-10.12',
         'gpu': '8086:1626'
       },
-      'shards': 26,
-      'device_ids': [
-          'build41-a7', 'build42-a7', 'build43-a7', 'build44-a7',
-          'build45-a7', 'build46-a7', 'build47-a7', 'build48-a7',
-          'build49-a7', 'build50-a7', 'build51-a7', 'build52-a7',
-          'build53-a7', 'build54-a7', 'build55-a7', 'build56-a7',
-          'build57-a7', 'build58-a7', 'build59-a7', 'build60-a7',
-          'build61-a7', 'build62-a7', 'build63-a7', 'build64-a7',
-          'build65-a7', 'build66-a7'
-      ],
+      'device_ids': [],
     },
     'linux-perf': {
       'tests': [
         # Add views_perftests, crbug.com/811766
         {
           'isolate': 'performance_test_suite',
+          'num_shards': 26,
           'extra_args': [
               '--run-ref-build',
               '--test-shard-map-filename=benchmark_desktop_bot_map.json',
@@ -1164,22 +1157,22 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         },
         {
           'isolate': 'load_library_perf_tests',
-          'shards': [0],
+          'num_shards': 1,
           'telemetry': False,
         },
         {
           'isolate': 'net_perftests',
-          'shards': [1],
+          'num_shards': 1,
           'telemetry': False,
         },
         {
           'isolate': 'tracing_perftests',
-          'shards': [2],
+          'num_shards': 1,
           'telemetry': False,
         },
         {
           'isolate': 'media_perftests',
-          'shards': [3],
+          'num_shards': 1,
           'telemetry': False,
         }
       ],
@@ -1189,15 +1182,7 @@ NEW_PERF_RECIPE_MIGRATED_TESTERS = {
         'os': 'Ubuntu-14.04',
         'pool': 'chrome.tests.perf',
       },
-      'device_ids': [
-          'build67-a7', 'build68-a7', 'build69-a7', 'build70-a7',
-          'build71-a7', 'build72-a7', 'build73-a7', 'build74-a7',
-          'build75-a7', 'build76-a7', 'build77-a7', 'build78-a7',
-          'build79-a7', 'build80-a7', 'build81-a7', 'build82-a7',
-          'build83-a7', 'build84-a7', 'build85-a7', 'build86-a7',
-          'build87-a7', 'build88-a7', 'build89-a7', 'build90-a7',
-          'build91-a7', 'build92-a7'
-      ],
+      'device_ids': [],
     }
   }
 }
