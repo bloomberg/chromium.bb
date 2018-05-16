@@ -11,12 +11,36 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "ash/system/toast/toast_data.h"
+#include "ash/system/toast/toast_manager.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "ui/snapshot/snapshot.h"
 
 namespace ash {
+
+namespace {
+
+// Toast -----------------------------------------------------------------------
+
+constexpr int kToastDurationMs = 2500;
+constexpr char kUnboundServiceToastId[] =
+    "assistant_controller_unbound_service";
+
+// TODO(b/77638210): Localize string.
+constexpr char kSomethingWentWrong[] =
+    "Something went wrong. Try again in a few seconds.";
+
+void ShowToast(const std::string& id, const std::string& text) {
+  ToastData toast(id, base::UTF8ToUTF16(text), kToastDurationMs, base::nullopt);
+  Shell::Get()->toast_manager()->Show(toast);
+}
+
+}  // namespace
+
+// AssistantController ---------------------------------------------------------
 
 AssistantController::AssistantController()
     : assistant_controller_binding_(this),
@@ -114,6 +138,10 @@ void AssistantController::RemoveInteractionModelObserver(
 }
 
 void AssistantController::StartInteraction() {
+  if (!assistant_) {
+    ShowToast(kUnboundServiceToastId, kSomethingWentWrong);
+    return;
+  }
   OnInteractionStarted();
 }
 
