@@ -77,10 +77,9 @@ bool operator!=(const PartPaintingParams& a, const PartPaintingParams& b) {
   return !(a == b);
 }
 
-PartPaintingParams ButtonPartPaintingParams(
-    const ScrollbarThemeClient& scrollbar,
-    float position,
-    ScrollbarPart part) {
+PartPaintingParams ButtonPartPaintingParams(const Scrollbar& scrollbar,
+                                            float position,
+                                            ScrollbarPart part) {
   WebThemeEngine::Part paint_part;
   WebThemeEngine::State state = WebThemeEngine::kStateNormal;
   bool check_min = false;
@@ -156,16 +155,15 @@ int ScrollbarThemeAura::ScrollbarThickness(ScrollbarControlSize control_size) {
   return scrollbar_size.Width();
 }
 
-bool ScrollbarThemeAura::HasThumb(const ScrollbarThemeClient& scrollbar) {
+bool ScrollbarThemeAura::HasThumb(const Scrollbar& scrollbar) {
   // This method is just called as a paint-time optimization to see if
   // painting the thumb can be skipped. We don't have to be exact here.
   return ThumbLength(scrollbar) > 0;
 }
 
-IntRect ScrollbarThemeAura::BackButtonRect(
-    const ScrollbarThemeClient& scrollbar,
-    ScrollbarPart part,
-    bool) {
+IntRect ScrollbarThemeAura::BackButtonRect(const Scrollbar& scrollbar,
+                                           ScrollbarPart part,
+                                           bool) {
   // Windows and Linux just have single arrows.
   if (part == kBackButtonEndPart)
     return IntRect();
@@ -174,10 +172,9 @@ IntRect ScrollbarThemeAura::BackButtonRect(
   return IntRect(scrollbar.X(), scrollbar.Y(), size.Width(), size.Height());
 }
 
-IntRect ScrollbarThemeAura::ForwardButtonRect(
-    const ScrollbarThemeClient& scrollbar,
-    ScrollbarPart part,
-    bool) {
+IntRect ScrollbarThemeAura::ForwardButtonRect(const Scrollbar& scrollbar,
+                                              ScrollbarPart part,
+                                              bool) {
   // Windows and Linux just have single arrows.
   if (part == kForwardButtonStartPart)
     return IntRect();
@@ -194,8 +191,7 @@ IntRect ScrollbarThemeAura::ForwardButtonRect(
   return IntRect(x, y, size.Width(), size.Height());
 }
 
-IntRect ScrollbarThemeAura::TrackRect(const ScrollbarThemeClient& scrollbar,
-                                      bool) {
+IntRect ScrollbarThemeAura::TrackRect(const Scrollbar& scrollbar, bool) {
   // The track occupies all space between the two buttons.
   IntSize bs = ButtonSize(scrollbar);
   if (scrollbar.Orientation() == kHorizontalScrollbar) {
@@ -210,8 +206,7 @@ IntRect ScrollbarThemeAura::TrackRect(const ScrollbarThemeClient& scrollbar,
                  scrollbar.Height() - 2 * bs.Height());
 }
 
-int ScrollbarThemeAura::MinimumThumbLength(
-    const ScrollbarThemeClient& scrollbar) {
+int ScrollbarThemeAura::MinimumThumbLength(const Scrollbar& scrollbar) {
   if (scrollbar.Orientation() == kVerticalScrollbar) {
     return Platform::Current()
         ->ThemeEngine()
@@ -317,7 +312,7 @@ bool ScrollbarThemeAura::ShouldRepaintAllPartsOnInvalidation() const {
 }
 
 ScrollbarPart ScrollbarThemeAura::InvalidateOnThumbPositionChange(
-    const ScrollbarThemeClient& scrollbar,
+    const Scrollbar& scrollbar,
     float old_position,
     float new_position) const {
   ScrollbarPart invalid_parts = kNoPart;
@@ -343,7 +338,7 @@ bool ScrollbarThemeAura::HasScrollbarButtons(
               .IsEmpty();
 };
 
-IntSize ScrollbarThemeAura::ButtonSize(const ScrollbarThemeClient& scrollbar) {
+IntSize ScrollbarThemeAura::ButtonSize(const Scrollbar& scrollbar) {
   if (!HasScrollbarButtons(scrollbar.Orientation()))
     return IntSize(0, 0);
 

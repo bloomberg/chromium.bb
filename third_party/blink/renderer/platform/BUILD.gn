@@ -1317,7 +1317,6 @@ jumbo_component("platform") {
     "scroll/scrollbar_theme_android.cc",
     "scroll/scrollbar_theme_aura.cc",
     "scroll/scrollbar_theme_aura.h",
-    "scroll/scrollbar_theme_client.h",
     "scroll/scrollbar_theme_mac.h",
     "scroll/scrollbar_theme_mac.mm",
     "scroll/scrollbar_theme_mock.cc",

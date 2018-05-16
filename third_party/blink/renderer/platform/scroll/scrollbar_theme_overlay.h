@@ -49,7 +49,7 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   bool ShouldRepaintAllPartsOnInvalidation() const override;
 
   ScrollbarPart InvalidateOnThumbPositionChange(
-      const ScrollbarThemeClient&,
+      const Scrollbar&,
       float old_position,
       float new_position) const override;
 
@@ -59,30 +59,29 @@ class PLATFORM_EXPORT ScrollbarThemeOverlay : public ScrollbarTheme {
   double OverlayScrollbarFadeOutDelaySeconds() const override;
   double OverlayScrollbarFadeOutDurationSeconds() const override;
 
-  int ThumbLength(const ScrollbarThemeClient&) override;
+  int ThumbLength(const Scrollbar&) override;
 
-  bool HasButtons(const ScrollbarThemeClient&) override { return false; }
-  bool HasThumb(const ScrollbarThemeClient&) override;
+  bool HasButtons(const Scrollbar&) override { return false; }
+  bool HasThumb(const Scrollbar&) override;
 
-  IntRect BackButtonRect(const ScrollbarThemeClient&,
+  IntRect BackButtonRect(const Scrollbar&,
                          ScrollbarPart,
                          bool painting = false) override;
-  IntRect ForwardButtonRect(const ScrollbarThemeClient&,
+  IntRect ForwardButtonRect(const Scrollbar&,
                             ScrollbarPart,
                             bool painting = false) override;
-  IntRect TrackRect(const ScrollbarThemeClient&,
-                    bool painting = false) override;
-  int ThumbThickness(const ScrollbarThemeClient&) override;
+  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
+  int ThumbThickness(const Scrollbar&) override;
   int ThumbThickness() { return thumb_thickness_; }
 
   void PaintThumb(GraphicsContext&, const Scrollbar&, const IntRect&) override;
-  ScrollbarPart HitTest(const ScrollbarThemeClient&, const IntPoint&) override;
+  ScrollbarPart HitTest(const Scrollbar&, const IntPoint&) override;
 
   bool UsesNinePatchThumbResource() const override;
-  IntSize NinePatchThumbCanvasSize(const ScrollbarThemeClient&) const override;
-  IntRect NinePatchThumbAperture(const ScrollbarThemeClient&) const override;
+  IntSize NinePatchThumbCanvasSize(const Scrollbar&) const override;
+  IntRect NinePatchThumbAperture(const Scrollbar&) const override;
 
-  int MinimumThumbLength(const ScrollbarThemeClient&) override;
+  int MinimumThumbLength(const Scrollbar&) override;
 
   bool IsMobileTheme() const;
 

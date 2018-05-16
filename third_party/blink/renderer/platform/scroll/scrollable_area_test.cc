@@ -30,7 +30,7 @@ class ScrollbarThemeWithMockInvalidation : public ScrollbarThemeMock {
  public:
   MOCK_CONST_METHOD0(ShouldRepaintAllPartsOnInvalidation, bool());
   MOCK_CONST_METHOD3(InvalidateOnThumbPositionChange,
-                     ScrollbarPart(const ScrollbarThemeClient&, float, float));
+                     ScrollbarPart(const Scrollbar&, float, float));
 };
 
 }  // namespace

@@ -29,7 +29,6 @@
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/scroll/scrollbar_theme_client.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 
@@ -45,7 +44,6 @@ class WebGestureEvent;
 class WebMouseEvent;
 
 class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
-                                  public ScrollbarThemeClient,
                                   public DisplayItemClient {
  public:
   static Scrollbar* Create(ScrollableArea* scrollable_area,
@@ -66,41 +64,40 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   ~Scrollbar() override;
 
-  // ScrollbarThemeClient implementation.
-  int X() const override { return frame_rect_.X(); }
-  int Y() const override { return frame_rect_.Y(); }
-  int Width() const override { return frame_rect_.Width(); }
-  int Height() const override { return frame_rect_.Height(); }
-  IntSize Size() const override { return frame_rect_.Size(); }
-  IntPoint Location() const override { return frame_rect_.Location(); }
+  int X() const { return frame_rect_.X(); }
+  int Y() const { return frame_rect_.Y(); }
+  int Width() const { return frame_rect_.Width(); }
+  int Height() const { return frame_rect_.Height(); }
+  IntSize Size() const { return frame_rect_.Size(); }
+  IntPoint Location() const { return frame_rect_.Location(); }
 
-  void SetFrameRect(const IntRect&) override;
-  IntRect FrameRect() const override { return frame_rect_; }
+  void SetFrameRect(const IntRect&);
+  const IntRect& FrameRect() const { return frame_rect_; }
 
-  ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const override;
-  void GetTickmarks(Vector<IntRect>&) const override;
-  bool IsScrollableAreaActive() const override;
+  ScrollbarOverlayColorTheme GetScrollbarOverlayColorTheme() const;
+  void GetTickmarks(Vector<IntRect>&) const;
+  bool IsScrollableAreaActive() const;
 
-  IntPoint ConvertFromRootFrame(const IntPoint&) const override;
+  IntPoint ConvertFromRootFrame(const IntPoint&) const;
 
-  bool IsCustomScrollbar() const override { return false; }
-  ScrollbarOrientation Orientation() const override { return orientation_; }
-  bool IsLeftSideVerticalScrollbar() const override;
+  virtual bool IsCustomScrollbar() const { return false; }
+  ScrollbarOrientation Orientation() const { return orientation_; }
+  bool IsLeftSideVerticalScrollbar() const;
 
-  int Value() const override { return lroundf(current_pos_); }
-  float CurrentPos() const override { return current_pos_; }
-  int VisibleSize() const override { return visible_size_; }
-  int TotalSize() const override { return total_size_; }
-  int Maximum() const override { return total_size_ - visible_size_; }
-  ScrollbarControlSize GetControlSize() const override { return control_size_; }
+  int Value() const { return lroundf(current_pos_); }
+  float CurrentPos() const { return current_pos_; }
+  int VisibleSize() const { return visible_size_; }
+  int TotalSize() const { return total_size_; }
+  int Maximum() const { return total_size_ - visible_size_; }
+  ScrollbarControlSize GetControlSize() const { return control_size_; }
 
-  ScrollbarPart PressedPart() const override { return pressed_part_; }
-  ScrollbarPart HoveredPart() const override { return hovered_part_; }
+  ScrollbarPart PressedPart() const { return pressed_part_; }
+  ScrollbarPart HoveredPart() const { return hovered_part_; }
 
-  void StyleChanged() override {}
-  void SetScrollbarsHiddenIfOverlay(bool) override;
-  bool Enabled() const override { return enabled_; }
-  void SetEnabled(bool) override;
+  virtual void StyleChanged() {}
+  void SetScrollbarsHiddenIfOverlay(bool);
+  bool Enabled() const { return enabled_; }
+  virtual void SetEnabled(bool);
 
   // This returns device-scale-factor-aware pixel value.
   // e.g. 15 in dsf=1.0, 30 in dsf=2.0.
@@ -125,7 +122,7 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   void Paint(GraphicsContext&, const CullRect&) const;
 
-  bool IsOverlayScrollbar() const override;
+  virtual bool IsOverlayScrollbar() const;
   bool ShouldParticipateInHitTesting();
 
   bool IsWindowActive() const;
@@ -155,8 +152,8 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
 
   void MoveThumb(int pos, bool dragging_document = false);
 
-  float ElasticOverscroll() const override { return elastic_overscroll_; }
-  void SetElasticOverscroll(float elastic_overscroll) override {
+  float ElasticOverscroll() const { return elastic_overscroll_; }
+  void SetElasticOverscroll(float elastic_overscroll) {
     elastic_overscroll_ = elastic_overscroll;
   }
 
@@ -234,11 +231,6 @@ class PLATFORM_EXPORT Scrollbar : public GarbageCollectedFinalized<Scrollbar>,
   float elastic_overscroll_;
 
  private:
-  void Invalidate() override { SetNeedsPaintInvalidation(kAllParts); }
-  void InvalidateRect(const IntRect&) override {
-    SetNeedsPaintInvalidation(kAllParts);
-  }
-
   float ScrollableAreaCurrentPos() const;
   float ScrollableAreaTargetPos() const;
   bool ThumbWillBeUnderMouse() const;

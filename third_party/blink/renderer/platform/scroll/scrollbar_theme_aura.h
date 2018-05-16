@@ -41,18 +41,17 @@ class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
   int ScrollbarThickness(ScrollbarControlSize) override;
 
  protected:
-  bool HasButtons(const ScrollbarThemeClient&) override { return true; }
-  bool HasThumb(const ScrollbarThemeClient&) override;
+  bool HasButtons(const Scrollbar&) override { return true; }
+  bool HasThumb(const Scrollbar&) override;
 
-  IntRect BackButtonRect(const ScrollbarThemeClient&,
+  IntRect BackButtonRect(const Scrollbar&,
                          ScrollbarPart,
                          bool painting = false) override;
-  IntRect ForwardButtonRect(const ScrollbarThemeClient&,
+  IntRect ForwardButtonRect(const Scrollbar&,
                             ScrollbarPart,
                             bool painting = false) override;
-  IntRect TrackRect(const ScrollbarThemeClient&,
-                    bool painting = false) override;
-  int MinimumThumbLength(const ScrollbarThemeClient&) override;
+  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
+  int MinimumThumbLength(const Scrollbar&) override;
 
   void PaintTrackBackground(GraphicsContext&,
                             const Scrollbar&,
@@ -69,7 +68,7 @@ class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
 
   bool ShouldRepaintAllPartsOnInvalidation() const override;
   ScrollbarPart InvalidateOnThumbPositionChange(
-      const ScrollbarThemeClient&,
+      const Scrollbar&,
       float old_position,
       float new_position) const override;
 
@@ -79,7 +78,7 @@ class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
   FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, NoButtonsReturnsSize0);
 
   virtual bool HasScrollbarButtons(ScrollbarOrientation) const;
-  IntSize ButtonSize(const ScrollbarThemeClient&);
+  IntSize ButtonSize(const Scrollbar&);
 };
 
 }  // namespace blink

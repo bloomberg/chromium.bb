@@ -58,12 +58,12 @@ class PLATFORM_EXPORT ScrollbarThemeOverlayMock : public ScrollbarThemeOverlay {
     ScrollbarThemeOverlay::PaintThumb(gc, scrollbar, rect);
   }
 
-  bool ShouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar,
+  bool ShouldSnapBackToDragOrigin(const Scrollbar& scrollbar,
                                   const WebMouseEvent& evt) override {
     return false;
   }
 
-  int MinimumThumbLength(const ScrollbarThemeClient&) override { return 7; }
+  int MinimumThumbLength(const Scrollbar&) override { return 7; }
 
  private:
   double delay_in_seconds_;

@@ -63,7 +63,7 @@ bool ScrollbarThemeOverlay::ShouldRepaintAllPartsOnInvalidation() const {
 }
 
 ScrollbarPart ScrollbarThemeOverlay::InvalidateOnThumbPositionChange(
-    const ScrollbarThemeClient&,
+    const Scrollbar&,
     float old_position,
     float new_position) const {
   return kNoPart;
@@ -103,7 +103,7 @@ double ScrollbarThemeOverlay::OverlayScrollbarFadeOutDurationSeconds() const {
   return style.fade_out_duration_seconds;
 }
 
-int ScrollbarThemeOverlay::ThumbLength(const ScrollbarThemeClient& scrollbar) {
+int ScrollbarThemeOverlay::ThumbLength(const Scrollbar& scrollbar) {
   int track_len = TrackLength(scrollbar);
 
   if (!scrollbar.TotalSize())
@@ -117,24 +117,23 @@ int ScrollbarThemeOverlay::ThumbLength(const ScrollbarThemeClient& scrollbar) {
   return length;
 }
 
-bool ScrollbarThemeOverlay::HasThumb(const ScrollbarThemeClient& scrollbar) {
+bool ScrollbarThemeOverlay::HasThumb(const Scrollbar& scrollbar) {
   return true;
 }
 
-IntRect ScrollbarThemeOverlay::BackButtonRect(const ScrollbarThemeClient&,
+IntRect ScrollbarThemeOverlay::BackButtonRect(const Scrollbar&,
                                               ScrollbarPart,
                                               bool) {
   return IntRect();
 }
 
-IntRect ScrollbarThemeOverlay::ForwardButtonRect(const ScrollbarThemeClient&,
+IntRect ScrollbarThemeOverlay::ForwardButtonRect(const Scrollbar&,
                                                  ScrollbarPart,
                                                  bool) {
   return IntRect();
 }
 
-IntRect ScrollbarThemeOverlay::TrackRect(const ScrollbarThemeClient& scrollbar,
-                                         bool) {
+IntRect ScrollbarThemeOverlay::TrackRect(const Scrollbar& scrollbar, bool) {
   IntRect rect = scrollbar.FrameRect();
   if (scrollbar.Orientation() == kHorizontalScrollbar)
     rect.InflateX(-scrollbar_margin_);
@@ -143,7 +142,7 @@ IntRect ScrollbarThemeOverlay::TrackRect(const ScrollbarThemeClient& scrollbar,
   return rect;
 }
 
-int ScrollbarThemeOverlay::ThumbThickness(const ScrollbarThemeClient&) {
+int ScrollbarThemeOverlay::ThumbThickness(const Scrollbar&) {
   return thumb_thickness_;
 }
 
@@ -204,9 +203,8 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
     canvas->restore();
 }
 
-ScrollbarPart ScrollbarThemeOverlay::HitTest(
-    const ScrollbarThemeClient& scrollbar,
-    const IntPoint& position) {
+ScrollbarPart ScrollbarThemeOverlay::HitTest(const Scrollbar& scrollbar,
+                                             const IntPoint& position) {
   if (allow_hit_test_ == kDisallowHitTest)
     return kNoPart;
 
@@ -247,7 +245,7 @@ bool ScrollbarThemeOverlay::UsesNinePatchThumbResource() const {
 }
 
 IntSize ScrollbarThemeOverlay::NinePatchThumbCanvasSize(
-    const ScrollbarThemeClient& scrollbar) const {
+    const Scrollbar& scrollbar) const {
   DCHECK(UsesNinePatchThumbResource());
 
   WebThemeEngine::Part part =
@@ -260,7 +258,7 @@ IntSize ScrollbarThemeOverlay::NinePatchThumbCanvasSize(
 }
 
 IntRect ScrollbarThemeOverlay::NinePatchThumbAperture(
-    const ScrollbarThemeClient& scrollbar) const {
+    const Scrollbar& scrollbar) const {
   DCHECK(UsesNinePatchThumbResource());
 
   WebThemeEngine::Part part = WebThemeEngine::kPartScrollbarHorizontalThumb;
@@ -271,8 +269,7 @@ IntRect ScrollbarThemeOverlay::NinePatchThumbAperture(
   return Platform::Current()->ThemeEngine()->NinePatchAperture(part);
 }
 
-int ScrollbarThemeOverlay::MinimumThumbLength(
-    const ScrollbarThemeClient& scrollbar) {
+int ScrollbarThemeOverlay::MinimumThumbLength(const Scrollbar& scrollbar) {
   if (scrollbar.Orientation() == kVerticalScrollbar) {
     return Platform::Current()
         ->ThemeEngine()
