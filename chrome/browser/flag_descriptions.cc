@@ -2558,10 +2558,6 @@ const char kAppWindowCyclingDescription[] =
     "browser window, and browser windows will not be cycled when a Chrome App "
     "is active.";
 
-const char kCreditCardAutofillTouchBarName[] = "Credit Card Autofill Touch Bar";
-const char kCreditCardAutofillTouchBarDescription[] =
-    "Shows Credit Card Autofill Suggestions on the Touch Bar.";
-
 const char kFullscreenToolbarRevealName[] =
     "Enables the toolbar in fullscreen to reveal itself.";
 const char kFullscreenToolbarRevealDescription[] =
