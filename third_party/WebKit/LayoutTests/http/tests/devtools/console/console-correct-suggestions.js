@@ -19,6 +19,7 @@
     function shouldNotFindThisFunction() { }
     function shouldFindThisFunction() { }
     window["should not find this"] = true;
+    window._foo = true;
     var myMap = new Map([['first', 1], ['second', 2], ['third', 3], ['shouldNotFindThis', 4]]);
     var complicatedObject = {
         'foo-bar': true,
@@ -104,6 +105,9 @@
   sequential([
     () => ConsoleTestRunner.waitUntilConsoleEditorLoaded().then(
         e => consoleEditor = e),
+    () => testCompletions('window.|foo', ['_foo']),
+    () => testCompletions('window._|foo', ['_foo'], false),
+    () => testCompletions('window._|foo', ['_foo'], true),
     () => testCompletions('window.do', ['document']),
     () => testCompletions('win', ['window']),
     () => testCompletions('window["doc', ['"document"]']),
@@ -150,6 +154,8 @@
     () => testCompletions('document[   [win', ['window']),
     () => testCompletions('document[   [  win', ['window']),
     () => testCompletions('I|mag', ['Image', 'Infinity']),
+    () => testCompletions('I|mage', ['Image', 'Infinity'], false),
+    () => testCompletions('I|mage', ['Image', 'Infinity'], true),
     () => testCompletions('var x = (do|);', ['document']),
     () => testCompletions('complicatedObject["foo', ['"foo-bar"]']),
     () => testCompletions('complicatedObject["foo-', ['"foo-bar"]']),

@@ -1,5 +1,14 @@
 Tests that console correctly finds suggestions in complicated cases.
 
+Checking 'window.|foo'
+Found: _foo
+
+Checking 'window._|foo'
+Not Found: _foo
+
+Checking 'window._|foo' forcefully
+Found: _foo
+
 Checking 'window.do'
 Found: document
 
@@ -125,6 +134,14 @@ Checking 'document[   [  win'
 Found: window
 
 Checking 'I|mag'
+Found: Image
+Found: Infinity
+
+Checking 'I|mage'
+Not Found: Image
+Not Found: Infinity
+
+Checking 'I|mage' forcefully
 Found: Image
 Found: Infinity
 
