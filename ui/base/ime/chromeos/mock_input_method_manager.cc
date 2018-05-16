@@ -232,7 +232,7 @@ void MockInputMethodManager::AddObserver(
 void MockInputMethodManager::RemoveObserver(
     ui::InputMethodKeyboardControllerObserver* observer) {}
 
-bool MockInputMethodManager::IsKeyboardVisible() const {
+bool MockInputMethodManager::IsKeyboardVisible() {
   return false;
 }
 

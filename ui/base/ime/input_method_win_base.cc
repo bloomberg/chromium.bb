@@ -16,8 +16,10 @@
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/base/ime/win/on_screen_keyboard_display_manager_input_pane.h"
 #include "ui/base/ime/win/on_screen_keyboard_display_manager_tab_tip.h"
 #include "ui/base/ime/win/tsf_input_scope.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
@@ -34,7 +36,11 @@ constexpr size_t kExtraNumberOfChars = 20;
 
 std::unique_ptr<InputMethodKeyboardController> CreateKeyboardController(
     HWND toplevel_window_handle) {
-  if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
+  if (base::FeatureList::IsEnabled(features::kInputPaneOnScreenKeyboard) &&
+      base::win::GetVersion() >= base::win::VERSION_WIN10_RS1) {
+    return std::make_unique<OnScreenKeyboardDisplayManagerInputPane>(
+        toplevel_window_handle);
+  } else if (base::win::GetVersion() >= base::win::VERSION_WIN8) {
     return std::make_unique<OnScreenKeyboardDisplayManagerTabTip>(
         toplevel_window_handle);
   }

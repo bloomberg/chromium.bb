@@ -7005,24 +7005,25 @@ TEST_F(RenderWidgetHostViewAuraTest, FocusReasonMultipleEventsOnSameNode) {
 }
 
 #if defined(OS_WIN)
-class MockInputMethodKeyboardController
+class MockInputMethodKeyboardController final
     : public ui::InputMethodKeyboardController {
  public:
   MockInputMethodKeyboardController() = default;
-  bool DisplayVirtualKeyboard() final { return true; }
+  bool DisplayVirtualKeyboard() override { return true; }
 
-  void DismissVirtualKeyboard() final {}
+  void DismissVirtualKeyboard() override {}
 
-  void AddObserver(ui::InputMethodKeyboardControllerObserver* observer) final {
+  void AddObserver(
+      ui::InputMethodKeyboardControllerObserver* observer) override {
     observer_count_++;
   }
 
   void RemoveObserver(
-      ui::InputMethodKeyboardControllerObserver* observer) final {
+      ui::InputMethodKeyboardControllerObserver* observer) override {
     observer_count_--;
   }
 
-  bool IsKeyboardVisible() const final { return false; }
+  bool IsKeyboardVisible() override { return false; }
 
   size_t observer_count() const { return observer_count_; }
 

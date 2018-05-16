@@ -877,7 +877,7 @@ void KeyboardController::RemoveObserver(
   // TODO: Implement me
 }
 
-bool KeyboardController::IsKeyboardVisible() const {
+bool KeyboardController::IsKeyboardVisible() {
   return keyboard_visible();
 }
 

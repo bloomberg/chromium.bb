@@ -27,6 +27,7 @@ UI_BASE_EXPORT bool IsTouchableAppContextMenuEnabled();
 
 #if defined(OS_WIN)
 UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
+UI_BASE_EXPORT extern const base::Feature kInputPaneOnScreenKeyboard;
 UI_BASE_EXPORT extern const base::Feature kPointerEventsForTouch;
 UI_BASE_EXPORT extern const base::Feature kPrecisionTouchpad;
 UI_BASE_EXPORT extern const base::Feature kPrecisionTouchpadScrollPhase;

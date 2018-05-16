@@ -21,18 +21,18 @@ class OnScreenKeyboardDetector;
 // This class provides an implementation of the InputMethodKeyboardController
 // that uses heuristics and the TabTip.exe to display the on screen keyboard.
 // Used on Windows > 7 and Windows < 10.0.10240.0
-class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerTabTip
+class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerTabTip final
     : public InputMethodKeyboardController {
  public:
   OnScreenKeyboardDisplayManagerTabTip(HWND hwnd);
   ~OnScreenKeyboardDisplayManagerTabTip() override;
 
   // InputMethodKeyboardController overrides.
-  bool DisplayVirtualKeyboard() final;
-  void DismissVirtualKeyboard() final;
-  void AddObserver(InputMethodKeyboardControllerObserver* observer) final;
-  void RemoveObserver(InputMethodKeyboardControllerObserver* observer) final;
-  bool IsKeyboardVisible() const final;
+  bool DisplayVirtualKeyboard() override;
+  void DismissVirtualKeyboard() override;
+  void AddObserver(InputMethodKeyboardControllerObserver* observer) override;
+  void RemoveObserver(InputMethodKeyboardControllerObserver* observer) override;
+  bool IsKeyboardVisible() override;
 
   // Returns the path of the on screen keyboard exe (TabTip.exe) in the
   // |osk_path| parameter.
