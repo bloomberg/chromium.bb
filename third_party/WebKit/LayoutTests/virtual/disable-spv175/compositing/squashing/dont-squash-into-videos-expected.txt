@@ -24,7 +24,7 @@
       "backgroundColor": "#ADD8E6"
     },
     {
-      "name": "LayoutFlexibleBox (relative positioned) DIV class='phase-pre-ready state-no-source sizing-tiny'",
+      "name": "LayoutFlexibleBox (relative positioned) DIV class='phase-pre-ready state-no-source sizing-small'",
       "bounds": [100, 100]
     },
     {
