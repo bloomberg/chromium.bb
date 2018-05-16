@@ -126,6 +126,14 @@ struct CHROMEOS_EXPORT KeyDefinition {
     std::unique_ptr<std::string> bytes;
   };
 
+  struct Policy {
+    bool operator==(const Policy& other) const;
+    bool operator!=(const Policy& other) const;
+
+    bool low_entropy_credential = false;
+    bool auth_locked = false;
+  };
+
   // Creates an instance with the TYPE_PASSWORD type.
   static KeyDefinition CreateForPassword(const std::string& secret,
                                          const std::string& label,
@@ -147,6 +155,7 @@ struct CHROMEOS_EXPORT KeyDefinition {
   std::string label;
   // Privileges associated with key. Combination of |AuthKeyPrivileges| values.
   int privileges = 0;
+  Policy policy;
   int revision = 0;
   std::string secret;
   std::vector<chromeos::ChallengeResponseKey> challenge_response_keys;

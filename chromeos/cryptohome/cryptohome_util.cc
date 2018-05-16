@@ -170,6 +170,11 @@ std::vector<KeyDefinition> GetKeyDataReplyToKeyDefinitions(
     if (privileges.authorized_update())
       key_definition.privileges |= PRIV_AUTHORIZED_UPDATE;
 
+    // Extract |policy|.
+    key_definition.policy.low_entropy_credential =
+        it->policy().low_entropy_credential();
+    key_definition.policy.auth_locked = it->policy().auth_locked();
+
     // Extract |authorization_data|.
     for (RepeatedPtrField<KeyAuthorizationData>::const_iterator auth_it =
              it->authorization_data().begin();

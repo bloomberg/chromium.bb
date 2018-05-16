@@ -200,6 +200,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
       DBusMethodCallback<cryptohome::BaseReply> callback) override;
   void NeedsDircryptoMigration(const cryptohome::Identification& cryptohome_id,
                                DBusMethodCallback<bool> callback) override;
+  void GetSupportedKeyPolicies(
+      const cryptohome::GetSupportedKeyPoliciesRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override;
 
   /////////// Test helpers ////////////
 
@@ -243,6 +246,14 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
 
   void set_tpm_attestation_does_key_exist_should_succeed(bool should_succeed) {
     tpm_attestation_does_key_exist_should_succeed_ = should_succeed;
+  }
+
+  void set_supports_low_entropy_credentials(bool supports) {
+    supports_low_entropy_credentials_ = supports;
+  }
+
+  void set_enable_auth_check(bool enable_auth_check) {
+    enable_auth_check_ = enable_auth_check;
   }
 
   void SetTpmAttestationUserCertificate(
@@ -321,6 +332,11 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   // Loads install attributes from the stub file.
   bool LoadInstallAttributes();
 
+  // Finds a key matching the given label. Wildcard labels are supported.
+  std::map<std::string, cryptohome::Key>::const_iterator FindKey(
+      const std::map<std::string, cryptohome::Key>& keys,
+      const std::string& label);
+
   bool service_is_available_;
   base::ObserverList<Observer> observer_list_;
 
@@ -336,7 +352,8 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   std::map<std::string, std::vector<uint8_t>> install_attrs_;
   bool locked_;
 
-  std::map<cryptohome::Identification, cryptohome::KeyData> key_data_map_;
+  std::map<cryptohome::Identification, std::map<std::string, cryptohome::Key>>
+      key_data_map_;
 
   // User attestation certificate mapped by cryptohome_id and key_name.
   std::map<std::pair<cryptohome::Identification, std::string>, std::string>
@@ -355,6 +372,9 @@ class CHROMEOS_EXPORT FakeCryptohomeClient : public CryptohomeClient {
   bool tpm_attestation_is_enrolled_ = true;
   bool tpm_attestation_is_prepared_ = true;
   bool tpm_attestation_does_key_exist_should_succeed_ = true;
+  bool supports_low_entropy_credentials_ = false;
+  // Controls if CheckKeyEx actually checks the key.
+  bool enable_auth_check_ = false;
 
   // MountEx fields.
   cryptohome::CryptohomeErrorCode cryptohome_error_ =
