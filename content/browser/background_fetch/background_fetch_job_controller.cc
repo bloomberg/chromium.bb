@@ -147,7 +147,15 @@ void BackgroundFetchJobController::Abort(bool cancel_download) {
   for (const auto& pair : active_request_download_bytes_)
     aborted_guids.push_back(pair.first);
   request_manager_->OnJobAborted(registration_id(), std::move(aborted_guids));
-  Finish(true /* aborted */);
+  if (!cancel_download) {
+    // Don't call Finish() here, so that we don't mark data for deletion while
+    // there are active fetches.
+    // Once the controller finishes processing, this function will be called
+    // again. (BackgroundFetchScheduler's finished_callback_ will call
+    // BackgroundFetchJobController::Abort() with |cancel_download| set to
+    // true.)
+    Finish(true /* aborted */);
+  }
 }
 
 }  // namespace content

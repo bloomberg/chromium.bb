@@ -21,6 +21,7 @@ BackgroundFetchScheduler::Controller::~Controller() = default;
 
 void BackgroundFetchScheduler::Controller::Finish(bool abort) {
   DCHECK(abort || !HasMoreRequests());
+
   std::move(finished_callback_).Run(registration_id_, abort);
 }
 
