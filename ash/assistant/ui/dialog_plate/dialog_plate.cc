@@ -42,9 +42,15 @@ DialogPlate::DialogPlate(AssistantController* assistant_controller)
       textfield_(new views::Textfield()),
       action_view_(new ActionView(assistant_controller, this)) {
   InitLayout();
+
+  // The Assistant controller indirectly owns the view hierarchy to which
+  // DialogPlate belongs so is guaranteed to outlive it.
+  assistant_controller_->AddInteractionModelObserver(this);
 }
 
-DialogPlate::~DialogPlate() = default;
+DialogPlate::~DialogPlate() {
+  assistant_controller_->RemoveInteractionModelObserver(this);
+}
 
 gfx::Size DialogPlate::CalculatePreferredSize() const {
   return gfx::Size(INT_MAX, kPreferredHeightDip);
@@ -82,6 +88,14 @@ void DialogPlate::InitLayout() {
 
   // Action.
   AddChildView(action_view_);
+}
+
+void DialogPlate::OnInteractionStateChanged(
+    InteractionState interaction_state) {
+  // When the Assistant interaction becomes inactive we need to clear the
+  // dialog plate so that text does not persist across Assistant entries.
+  if (interaction_state == InteractionState::kInactive)
+    textfield_->SetText(base::string16());
 }
 
 void DialogPlate::OnActionPressed() {
