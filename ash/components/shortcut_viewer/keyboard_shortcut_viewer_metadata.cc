@@ -26,6 +26,20 @@ namespace keyboard_shortcut_viewer {
 
 namespace {
 
+// Get all DomCodes to construct the reverse mapping from DomCode to VKEY
+// and DomKey. We want to map a VKEY value to a text label, i.e. VKEY -> DomKey.
+// But VKEY and DomKey are both outputs of layout, so we only have
+// DomCode -> (VKEY, DomKey) by KeyboardLayoutEngine::Lookup(). We need to
+// iterate over the full list of DomCodes in order to look up a corresponding
+// DomKey for a KeyboardCode we want to get the string representation for.
+// keycode_converter.cc does not expose this list, so we need to generate it
+// here.
+#define USB_KEYMAP(usb, evdev, xkb, win, mac, code, id) usb
+#define USB_KEYMAP_DECLARATION constexpr uint32_t kDomCodes[] =
+#include "ui/events/keycodes/dom/keycode_converter_data.inc"
+#undef USB_KEYMAP
+#undef USB_KEYMAP_DECLARATION
+
 // Gets the keyboard codes for modifiers.
 ui::KeyboardCode GetKeyCodeForModifier(ui::EventFlags modifier) {
   switch (modifier) {
@@ -125,23 +139,21 @@ base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
   if (key_label)
     return key_label.value();
 
-  ui::DomCode dom_code = ui::UsLayoutKeyboardCodeToDomCode(key_code);
   ui::DomKey dom_key;
-  ui::KeyboardCode keycode_ignored;
-  if (ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
-          dom_code, 0 /* flags */, &dom_key, &keycode_ignored)) {
-    if (dom_key.IsValid() && dom_key.IsDeadKey())
-      return base::string16();
+  ui::KeyboardCode key_code_to_compare = ui::VKEY_UNKNOWN;
+  for (const auto& code : kDomCodes) {
+    const ui::DomCode dom_code = static_cast<ui::DomCode>(code);
+    if (!ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
+            dom_code, /*flags=*/ui::EF_NONE, &dom_key, &key_code_to_compare)) {
+      continue;
+    }
+    if (key_code_to_compare != key_code || !dom_key.IsValid() ||
+        dom_key.IsDeadKey()) {
+      continue;
+    }
     return base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
   }
-
-  // Fall back to US keyboard layout.
-  const bool has_mapping = ui::DomCodeToUsLayoutDomKey(
-      dom_code, 0 /* flags */, &dom_key, &keycode_ignored);
-  DCHECK(has_mapping);
-  if (dom_key.IsValid() && dom_key.IsDeadKey())
-    return base::string16();
-  return base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
+  return base::string16();
 }
 
 const gfx::VectorIcon* GetVectorIconForKeyboardCode(ui::KeyboardCode key_code) {

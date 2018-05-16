@@ -255,6 +255,9 @@ void KeyboardShortcutView::InitViews() {
   AddChildView(search_results_container_);
 
   // Init views of KeyboardShortcutItemView.
+  // TODO(https://crbug.com/843394): Observe changes in keyboard layout and
+  // clear the cache.
+  KeyboardShortcutItemView::ClearKeycodeToString16Cache();
   for (const auto& item : GetKeyboardShortcutItemList()) {
     for (auto category : item.categories) {
       shortcut_views_.emplace_back(
