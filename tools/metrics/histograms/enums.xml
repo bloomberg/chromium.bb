@@ -39033,6 +39033,8 @@ Called by update_net_trust_anchors.py.-->
   <int value="34" label="InternalAnimation"/>
   <int value="35" label="InternalAccessibility"/>
   <int value="36" label="InternalWorker"/>
+  <int value="37" label="MainThreadTaskQueueV8"/>
+  <int value="38" label="MainThreadTaskQueueCompositor"/>
 </enum>
 
 <enum name="RendererSchedulerTaskUseCase">

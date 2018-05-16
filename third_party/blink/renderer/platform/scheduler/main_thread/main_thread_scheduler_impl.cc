@@ -186,6 +186,10 @@ const char* TaskTypeToString(TaskType task_type) {
       return "InternalInspector";
     case TaskType::kInternalWorker:
       return "InternalWorker";
+    case TaskType::kMainThreadTaskQueueV8:
+      return "MainThreadTaskQueueV8";
+    case TaskType::kMainThreadTaskQueueCompositor:
+      return "MainThreadTaskQueueCompositor";
     case TaskType::kCount:
       return "Count";
   }

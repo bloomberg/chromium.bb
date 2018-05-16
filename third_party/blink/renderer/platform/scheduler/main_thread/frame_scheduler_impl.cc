@@ -315,6 +315,8 @@ scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
     case TaskType::kInternalWorker:
       return TaskRunnerImpl::Create(UnpausableTaskQueue(), type);
     case TaskType::kDeprecatedNone:
+    case TaskType::kMainThreadTaskQueueV8:
+    case TaskType::kMainThreadTaskQueueCompositor:
     case TaskType::kCount:
       NOTREACHED();
       break;
