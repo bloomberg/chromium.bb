@@ -35,6 +35,10 @@ constexpr base::TimeDelta kMinimalBackgroundThrottlingDurationToReport =
 // We do not throttle anything while audio is played and shortly after that.
 constexpr base::TimeDelta kRecentAudioDelay = base::TimeDelta::FromSeconds(5);
 
+// Delay for fully throttling the page after backgrounding.
+constexpr base::TimeDelta kThrottlingDelayAfterBackgrounding =
+    base::TimeDelta::FromSeconds(10);
+
 // Values coming from the field trial config are interpreted as follows:
 //   -1 is "not set". Scheduler should use a reasonable default.
 //   0 corresponds to base::nullopt.
@@ -109,10 +113,13 @@ PageSchedulerImpl::PageSchedulerImpl(
       has_active_connection_(false),
       nested_runloop_(false),
       is_main_frame_local_(false),
+      is_throttled_(false),
       background_time_budget_pool_(nullptr),
       delegate_(delegate),
       weak_factory_(this) {
   main_thread_scheduler->AddPageScheduler(this);
+  on_page_throttled_closure_.Reset(base::BindRepeating(
+      &PageSchedulerImpl::OnPageThrottled, base::Unretained(this)));
   on_audio_silent_closure_.Reset(base::BindRepeating(
       &PageSchedulerImpl::OnAudioSilent, base::Unretained(this)));
 }
@@ -140,11 +147,17 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
 
   page_visibility_ = page_visibility;
 
-  UpdateBackgroundThrottlingState();
-
   // Visible pages should not be frozen.
-  if (page_visibility_ == PageVisibilityState::kVisible && is_frozen_)
-    SetPageFrozen(false);
+  if (page_visibility_ == PageVisibilityState::kVisible) {
+    is_throttled_ = false;
+    if (is_frozen_)
+      SetPageFrozen(false);
+  }
+
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+    frame_scheduler->SetPageVisibility(page_visibility_);
+
+  UpdateBackgroundThrottlingState();
 }
 
 void PageSchedulerImpl::SetPageFrozen(bool frozen) {
@@ -291,8 +304,16 @@ bool PageSchedulerImpl::IsAudioPlaying() const {
          audio_state_ == AudioState::kRecentlyAudible;
 }
 
+bool PageSchedulerImpl::IsPageVisible() const {
+  return page_visibility_ == PageVisibilityState::kVisible;
+}
+
 bool PageSchedulerImpl::IsFrozen() const {
   return is_frozen_;
+}
+
+bool PageSchedulerImpl::IsThrottled() const {
+  return is_throttled_;
 }
 
 void PageSchedulerImpl::OnConnectionUpdated() {
@@ -303,8 +324,7 @@ void PageSchedulerImpl::OnConnectionUpdated() {
 
   if (has_active_connection_ != has_active_connection) {
     has_active_connection_ = has_active_connection;
-    UpdateFramePolicies();
-    UpdateBackgroundThrottlingState();
+    UpdateBackgroundBudgetPoolThrottlingState();
   }
 }
 
@@ -392,8 +412,25 @@ void PageSchedulerImpl::OnThrottlingReported(
 }
 
 void PageSchedulerImpl::UpdateBackgroundThrottlingState() {
-  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
-    frame_scheduler->SetPageVisibility(page_visibility_);
+  if (page_visibility_ == PageVisibilityState::kVisible) {
+    is_throttled_ = false;
+    on_page_throttled_closure_.Cancel();
+    UpdateBackgroundBudgetPoolThrottlingState();
+  } else {
+    main_thread_scheduler_->ControlTaskQueue()->PostDelayedTask(
+        FROM_HERE, on_page_throttled_closure_.GetCallback(),
+        kThrottlingDelayAfterBackgrounding);
+  }
+  // Do not call UpdateFramePolicies here because it's already been triggered
+  // by FrameScheduler::SetPageVisible.
+  // TODO(altimin): Remove FrameScheduler::SetPageVisible and call
+  // UpdateFramePolicies here.
+}
+
+void PageSchedulerImpl::OnPageThrottled() {
+  on_page_throttled_closure_.Cancel();
+  is_throttled_ = true;
+  UpdateFramePolicies();
   UpdateBackgroundBudgetPoolThrottlingState();
 }
 
@@ -403,11 +440,10 @@ void PageSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
 
   base::sequence_manager::LazyNow lazy_now(
       main_thread_scheduler_->tick_clock());
-  if (page_visibility_ == PageVisibilityState::kVisible ||
-      has_active_connection_) {
-    background_time_budget_pool_->DisableThrottling(&lazy_now);
-  } else {
+  if (is_throttled_ && !has_active_connection_) {
     background_time_budget_pool_->EnableThrottling(&lazy_now);
+  } else {
+    background_time_budget_pool_->DisableThrottling(&lazy_now);
   }
 }
 

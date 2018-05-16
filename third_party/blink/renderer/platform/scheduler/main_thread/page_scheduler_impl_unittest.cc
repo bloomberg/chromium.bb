@@ -978,11 +978,13 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
   InitializeTrialParams();
   page_scheduler_.reset(
       new PageSchedulerImpl(nullptr, scheduler_.get(), false));
+  EXPECT_FALSE(page_scheduler_->IsThrottled());
 
   std::vector<base::TimeTicks> run_times;
   frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
       nullptr, FrameScheduler::FrameType::kSubframe);
   page_scheduler_->SetPageVisible(true);
+  EXPECT_FALSE(page_scheduler_->IsThrottled());
 
   mock_task_runner_->RunUntilTime(base::TimeTicks() +
                                   base::TimeDelta::FromMilliseconds(2500));
@@ -1006,6 +1008,12 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
   run_times.clear();
 
   page_scheduler_->SetPageVisible(false);
+  EXPECT_FALSE(page_scheduler_->IsThrottled());
+
+  // Ensure that the page is fully throttled.
+  mock_task_runner_->RunUntilTime(base::TimeTicks() +
+                                  base::TimeDelta::FromSeconds(15));
+  EXPECT_TRUE(page_scheduler_->IsThrottled());
 
   ThrottleableTaskQueue()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&ExpensiveTestTask, &clock_, &run_times),
@@ -1019,7 +1027,7 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
   // Check that tasks are aligned and throttled.
   EXPECT_THAT(
       run_times,
-      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(4),
+      ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(16),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(26)));
 
   base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
@@ -1242,6 +1250,10 @@ TEST_F(PageSchedulerImplTest, AudiblePagesAreNotThrottled) {
   mock_task_runner_->RunUntilIdle();
   EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(
       ThrottleableTaskQueue().get()));
+}
+
+TEST_F(PageSchedulerImplTest, BudgetBasedThrottlingForPageScheduler) {
+  page_scheduler_->SetPageVisible(false);
 }
 
 }  // namespace page_scheduler_impl_unittest

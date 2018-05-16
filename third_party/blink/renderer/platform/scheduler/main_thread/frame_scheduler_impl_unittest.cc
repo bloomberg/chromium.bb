@@ -105,24 +105,34 @@ namespace {
 class MockThrottlingObserver final : public FrameScheduler::Observer {
  public:
   MockThrottlingObserver()
-      : throttled_count_(0u), not_throttled_count_(0u), stopped_count_(0u) {}
+      : not_throttled_count_(0u),
+        hidden_count_(0u),
+        throttled_count_(0u),
+        stopped_count_(0u) {}
 
-  void CheckObserverState(size_t throttled_count_expectation,
-                          size_t not_throttled_count_expectation,
-                          size_t stopped_count_expectation) {
-    EXPECT_EQ(throttled_count_expectation, throttled_count_);
-    EXPECT_EQ(not_throttled_count_expectation, not_throttled_count_);
-    EXPECT_EQ(stopped_count_expectation, stopped_count_);
+  inline void CheckObserverState(base::Location from,
+                                 size_t not_throttled_count_expectation,
+                                 size_t hidden_count_expectation,
+                                 size_t throttled_count_expectation,
+                                 size_t stopped_count_expectation) {
+    EXPECT_EQ(not_throttled_count_expectation, not_throttled_count_)
+        << from.ToString();
+    EXPECT_EQ(hidden_count_expectation, hidden_count_) << from.ToString();
+    EXPECT_EQ(throttled_count_expectation, throttled_count_) << from.ToString();
+    EXPECT_EQ(stopped_count_expectation, stopped_count_) << from.ToString();
   }
 
   void OnThrottlingStateChanged(
       FrameScheduler::ThrottlingState state) override {
     switch (state) {
-      case FrameScheduler::ThrottlingState::kThrottled:
-        throttled_count_++;
-        break;
       case FrameScheduler::ThrottlingState::kNotThrottled:
         not_throttled_count_++;
+        break;
+      case FrameScheduler::ThrottlingState::kHidden:
+        hidden_count_++;
+        break;
+      case FrameScheduler::ThrottlingState::kThrottled:
+        throttled_count_++;
         break;
       case FrameScheduler::ThrottlingState::kStopped:
         stopped_count_++;
@@ -132,8 +142,9 @@ class MockThrottlingObserver final : public FrameScheduler::Observer {
   }
 
  private:
-  size_t throttled_count_;
   size_t not_throttled_count_;
+  size_t hidden_count_;
+  size_t throttled_count_;
   size_t stopped_count_;
 };
 
@@ -426,12 +437,13 @@ TEST_F(FrameSchedulerImplTest, ThrottlingObserver) {
   std::unique_ptr<MockThrottlingObserver> observer =
       std::make_unique<MockThrottlingObserver>();
 
-  size_t throttled_count = 0u;
   size_t not_throttled_count = 0u;
+  size_t hidden_count = 0u;
+  size_t throttled_count = 0u;
   size_t stopped_count = 0u;
 
-  observer->CheckObserverState(throttled_count, not_throttled_count,
-                               stopped_count);
+  observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
+                               throttled_count, stopped_count);
 
   auto observer_handle = frame_scheduler_->AddThrottlingObserver(
       FrameScheduler::ObserverType::kLoader, observer.get());
@@ -439,36 +451,48 @@ TEST_F(FrameSchedulerImplTest, ThrottlingObserver) {
   // Initial state should be synchronously notified here.
   // We assume kNotThrottled is notified as an initial state, but it could
   // depend on implementation details and can be changed.
-  observer->CheckObserverState(throttled_count, ++not_throttled_count,
-                               stopped_count);
+  observer->CheckObserverState(FROM_HERE, ++not_throttled_count, hidden_count,
+                               throttled_count, stopped_count);
 
   // Once the page gets to be invisible, it should notify the observer of
-  // kThrottled synchronously.
+  // kHidden synchronously.
   page_scheduler_->SetPageVisible(false);
-  observer->CheckObserverState(++throttled_count, not_throttled_count,
-                               stopped_count);
+  observer->CheckObserverState(FROM_HERE, not_throttled_count, ++hidden_count,
+                               throttled_count, stopped_count);
 
-  // When no state has changed, observers are not called.
+  // We do not issue new notifications without actually changing visibility
+  // state.
   page_scheduler_->SetPageVisible(false);
-  observer->CheckObserverState(throttled_count, not_throttled_count,
-                               stopped_count);
+  observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
+                               throttled_count, stopped_count);
+
+  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(30));
+
+  // The frame gets throttled after some time in background.
+  observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
+                               ++throttled_count, stopped_count);
+
+  // We shouldn't issue new notifications for kThrottled state as well.
+  page_scheduler_->SetPageVisible(false);
+  observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
+                               throttled_count, stopped_count);
 
   // Setting background page to STOPPED, notifies observers of kStopped.
   page_scheduler_->SetPageFrozen(true);
-  observer->CheckObserverState(throttled_count, not_throttled_count,
-                               ++stopped_count);
+  observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
+                               throttled_count, ++stopped_count);
 
   // When page is not in the STOPPED state, then page visibility is used,
   // notifying observer of kThrottled.
   page_scheduler_->SetPageFrozen(false);
-  observer->CheckObserverState(++throttled_count, not_throttled_count,
-                               stopped_count);
+  observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
+                               ++throttled_count, stopped_count);
 
   // Going back to visible state should notify the observer of kNotThrottled
   // synchronously.
   page_scheduler_->SetPageVisible(true);
-  observer->CheckObserverState(throttled_count, ++not_throttled_count,
-                               stopped_count);
+  observer->CheckObserverState(FROM_HERE, ++not_throttled_count, hidden_count,
+                               throttled_count, stopped_count);
 
   // Remove from the observer list, and see if any other callback should not be
   // invoked when the condition is changed.
@@ -479,8 +503,8 @@ TEST_F(FrameSchedulerImplTest, ThrottlingObserver) {
   clock_.Advance(base::TimeDelta::FromSeconds(100));
   mock_task_runner_->RunUntilIdle();
 
-  observer->CheckObserverState(throttled_count, not_throttled_count,
-                               stopped_count);
+  observer->CheckObserverState(FROM_HERE, not_throttled_count, hidden_count,
+                               throttled_count, stopped_count);
 }
 
 TEST_F(FrameSchedulerImplTest, DefaultThrottlingState) {
