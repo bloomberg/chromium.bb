@@ -123,7 +123,11 @@ class TestGpuService : public mojom::GpuService {
 
   void DestroyAllChannels() override {}
 
+  void OnBackgroundCleanup() override {}
+
   void OnBackgrounded() override {}
+
+  void OnForegrounded() override {}
 
   void Crash() override {}
 

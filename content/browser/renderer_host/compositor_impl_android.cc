@@ -427,6 +427,28 @@ class VulkanOutputSurface : public viz::OutputSurface {
 };
 #endif
 
+void SendOnBackgroundedToGpuService() {
+  content::GpuProcessHost::CallOnIO(
+      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      false /* force_create */,
+      base::BindRepeating([](content::GpuProcessHost* host) {
+        if (host) {
+          host->gpu_service()->OnBackgrounded();
+        }
+      }));
+}
+
+void SendOnForegroundedToGpuService() {
+  content::GpuProcessHost::CallOnIO(
+      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      false /* force_create */,
+      base::BindRepeating([](content::GpuProcessHost* host) {
+        if (host) {
+          host->gpu_service()->OnForegrounded();
+        }
+      }));
+}
+
 static bool g_initialized = false;
 
 }  // anonymous namespace
@@ -660,12 +682,14 @@ void CompositorImpl::SetVisible(bool visible) {
           root_window_->GetBeginFrameSource());
     }
     display_.reset();
+    SendOnBackgroundedToGpuService();
     EnqueueLowEndBackgroundCleanup();
   } else {
     host_->SetVisible(true);
     has_submitted_frame_since_became_visible_ = false;
     if (layer_tree_frame_sink_request_pending_)
       HandlePendingLayerTreeFrameSinkRequest();
+    SendOnForegroundedToGpuService();
     low_end_background_cleanup_task_.Cancel();
   }
 }
@@ -784,9 +808,12 @@ void CompositorImpl::OnGpuChannelEstablished(
     return;
   }
 
-  // We don't need the context anymore if we are invisible.
-  if (!host_->IsVisible())
+  // We don't need the context anymore if we are invisible. Additionally, we
+  // should notify the channel that we are invisible.
+  if (!host_->IsVisible()) {
+    SendOnBackgroundedToGpuService();
     return;
+  }
 
   DCHECK(window_);
   DCHECK_NE(surface_handle_, gpu::kNullSurfaceHandle);
@@ -1041,7 +1068,7 @@ void CompositorImpl::DoLowEndBackgroundCleanup() {
       false /* force_create */,
       base::BindRepeating([](content::GpuProcessHost* host) {
         if (host) {
-          host->gpu_service()->OnBackgrounded();
+          host->gpu_service()->OnBackgroundCleanup();
         }
       }));
 }
