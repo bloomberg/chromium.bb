@@ -96,18 +96,6 @@ const GURL kOrigin4(kTestOrigin4);
 const GURL kOriginExt(kTestOriginExt);
 const GURL kOriginDevTools(kTestOriginDevTools);
 
-const base::FilePath::CharType kDomStorageOrigin1[] =
-    FILE_PATH_LITERAL("http_host1_1.localstorage");
-
-const base::FilePath::CharType kDomStorageOrigin2[] =
-    FILE_PATH_LITERAL("http_host2_1.localstorage");
-
-const base::FilePath::CharType kDomStorageOrigin3[] =
-    FILE_PATH_LITERAL("http_host3_1.localstorage");
-
-const base::FilePath::CharType kDomStorageExt[] = FILE_PATH_LITERAL(
-    "chrome-extension_abcdefghijklmnopqrstuvwxyz_0.localstorage");
-
 struct StoragePartitionRemovalData {
   StoragePartitionRemovalData()
       : remove_mask(0),
@@ -288,67 +276,6 @@ bool FilterMatchesCookie(const CookieDeletionFilterPtr& filter,
 
 // Testers -------------------------------------------------------------------
 
-class RemoveCookieTester {
- public:
-  RemoveCookieTester() {}
-
-  // Returns true, if the given cookie exists in the cookie store.
-  bool ContainsCookie() {
-    scoped_refptr<MessageLoopRunner> message_loop_runner =
-        new MessageLoopRunner();
-    quit_closure_ = message_loop_runner->QuitClosure();
-    get_cookie_success_ = false;
-    cookie_store_->GetCookieListWithOptionsAsync(
-        kOrigin1, net::CookieOptions(),
-        base::BindOnce(&RemoveCookieTester::GetCookieListCallback,
-                       base::Unretained(this)));
-    message_loop_runner->Run();
-    return get_cookie_success_;
-  }
-
-  void AddCookie() {
-    scoped_refptr<MessageLoopRunner> message_loop_runner =
-        new MessageLoopRunner();
-    quit_closure_ = message_loop_runner->QuitClosure();
-    cookie_store_->SetCookieWithOptionsAsync(
-        kOrigin1, "A=1", net::CookieOptions(),
-        base::BindOnce(&RemoveCookieTester::SetCookieCallback,
-                       base::Unretained(this)));
-    message_loop_runner->Run();
-  }
-
- protected:
-  void SetCookieStore(net::CookieStore* cookie_store) {
-    cookie_store_ = cookie_store;
-  }
-
- private:
-  void GetCookieListCallback(const net::CookieList& cookie_list) {
-    std::string cookie_line =
-        net::CanonicalCookie::BuildCookieLine(cookie_list);
-    if (cookie_line == std::string("A=1")) {
-      get_cookie_success_ = true;
-    } else {
-      EXPECT_EQ("", cookie_line);
-      get_cookie_success_ = false;
-    }
-    quit_closure_.Run();
-  }
-
-  void SetCookieCallback(bool result) {
-    ASSERT_TRUE(result);
-    quit_closure_.Run();
-  }
-
-  bool get_cookie_success_ = false;
-  base::Closure quit_closure_;
-
-  // CookieStore must out live |this|.
-  net::CookieStore* cookie_store_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveCookieTester);
-};
-
 class RemoveChannelIDTester : public net::SSLConfigService::Observer {
  public:
   explicit RemoveChannelIDTester(BrowserContext* browser_context) {
@@ -409,78 +336,6 @@ class RemoveChannelIDTester : public net::SSLConfigService::Observer {
   int ssl_config_changed_count_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(RemoveChannelIDTester);
-};
-
-class RemoveLocalStorageTester {
- public:
-  explicit RemoveLocalStorageTester(BrowserContext* browser_context)
-      : browser_context_(browser_context) {
-    dom_storage_context_ =
-        BrowserContext::GetDefaultStoragePartition(browser_context_)
-            ->GetDOMStorageContext();
-  }
-
-  // Returns true, if the given origin URL exists.
-  bool DOMStorageExistsForOrigin(const GURL& origin) {
-    scoped_refptr<MessageLoopRunner> message_loop_runner =
-        new MessageLoopRunner();
-    quit_closure_ = message_loop_runner->QuitClosure();
-    GetLocalStorageUsage();
-    message_loop_runner->Run();
-    for (size_t i = 0; i < infos_.size(); ++i) {
-      if (origin == infos_[i].origin)
-        return true;
-    }
-    return false;
-  }
-
-  void AddDOMStorageTestData() {
-    // Note: This test depends on details of how the dom_storage library
-    // stores data in the host file system.
-    base::FilePath storage_path =
-        browser_context_->GetPath().AppendASCII("Local Storage");
-    base::CreateDirectory(storage_path);
-
-    // Write some files.
-    base::WriteFile(storage_path.Append(kDomStorageOrigin1), nullptr, 0);
-    base::WriteFile(storage_path.Append(kDomStorageOrigin2), nullptr, 0);
-    base::WriteFile(storage_path.Append(kDomStorageOrigin3), nullptr, 0);
-    base::WriteFile(storage_path.Append(kDomStorageExt), nullptr, 0);
-
-    // Tweak their dates.
-    base::Time now = base::Time::Now();
-    base::TouchFile(storage_path.Append(kDomStorageOrigin1), now, now);
-
-    base::Time one_day_ago = now - base::TimeDelta::FromDays(1);
-    base::TouchFile(storage_path.Append(kDomStorageOrigin2), one_day_ago,
-                    one_day_ago);
-
-    base::Time sixty_days_ago = now - base::TimeDelta::FromDays(60);
-    base::TouchFile(storage_path.Append(kDomStorageOrigin3), sixty_days_ago,
-                    sixty_days_ago);
-
-    base::TouchFile(storage_path.Append(kDomStorageExt), now, now);
-  }
-
- private:
-  void GetLocalStorageUsage() {
-    dom_storage_context_->GetLocalStorageUsage(
-        base::Bind(&RemoveLocalStorageTester::OnGotLocalStorageUsage,
-                   base::Unretained(this)));
-  }
-  void OnGotLocalStorageUsage(const std::vector<LocalStorageUsageInfo>& infos) {
-    infos_ = infos;
-    quit_closure_.Run();
-  }
-
-  // We don't own these pointers.
-  BrowserContext* browser_context_;
-  DOMStorageContext* dom_storage_context_ = nullptr;
-
-  std::vector<LocalStorageUsageInfo> infos_;
-  base::Closure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(RemoveLocalStorageTester);
 };
 
 class RemoveDownloadsTester {
