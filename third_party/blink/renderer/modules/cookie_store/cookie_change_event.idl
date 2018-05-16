@@ -13,6 +13,6 @@
   RuntimeEnabled=AsyncCookies,
   Constructor(DOMString type, optional CookieChangeEventInit eventInitDict)
 ] interface CookieChangeEvent : Event {
-  readonly attribute CookieList changed;
-  readonly attribute CookieList deleted;
+  [Measure] readonly attribute CookieList changed;
+  [Measure] readonly attribute CookieList deleted;
 };

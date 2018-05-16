@@ -1920,6 +1920,17 @@ enum WebFeature {
   kV8PictureInPictureWindow_Height_AttributeGetter = 2447,
   kV8PictureInPictureWindow_Width_AttributeGetter = 2448,
   kPictureInPictureWindowResizeEventListener = 2449,
+  kV8CookieStore_Delete_Method = 2450,
+  kV8CookieStore_Get_Method = 2451,
+  kV8CookieStore_GetAll_Method = 2452,
+  kV8CookieStore_GetChangeSubscriptions_Method = 2453,
+  kV8CookieStore_Has_Method = 2454,
+  kV8CookieStore_Set_Method = 2455,
+  kV8CookieStore_SubscribeToChanges_Method = 2456,
+  kV8CookieChangeEvent_Changed_AttributeGetter = 2457,
+  kV8CookieChangeEvent_Deleted_AttributeGetter = 2458,
+  kV8ExtendableCookieChangeEvent_Changed_AttributeGetter = 2459,
+  kV8ExtendableCookieChangeEvent_Deleted_AttributeGetter = 2460,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
