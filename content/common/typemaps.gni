@@ -4,6 +4,7 @@
 
 typemaps = [
   "//content/common/background_fetch/background_fetch_types.typemap",
+  "//content/common/cache_storage/cache_storage.typemap",
   "//content/common/frame.typemap",
   "//content/common/frame_messages.typemap",
   "//content/common/input/synchronous_compositor.typemap",

@@ -230,23 +230,23 @@ void CacheStorageManager::MatchCache(
     CacheStorageOwner owner,
     const std::string& cache_name,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
-    blink::mojom::QueryParamsPtr match_params,
+    const CacheStorageCacheQueryParams& match_params,
     CacheStorageCache::ResponseCallback callback) {
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
 
-  cache_storage->MatchCache(cache_name, std::move(request),
-                            std::move(match_params), std::move(callback));
+  cache_storage->MatchCache(cache_name, std::move(request), match_params,
+                            std::move(callback));
 }
 
 void CacheStorageManager::MatchAllCaches(
     const url::Origin& origin,
     CacheStorageOwner owner,
     std::unique_ptr<ServiceWorkerFetchRequest> request,
-    blink::mojom::QueryParamsPtr match_params,
+    const CacheStorageCacheQueryParams& match_params,
     CacheStorageCache::ResponseCallback callback) {
   CacheStorage* cache_storage = FindOrCreateCacheStorage(origin, owner);
 
-  cache_storage->MatchAllCaches(std::move(request), std::move(match_params),
+  cache_storage->MatchAllCaches(std::move(request), match_params,
                                 std::move(callback));
 }
 
