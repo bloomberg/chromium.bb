@@ -22,18 +22,17 @@ import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content_public.browser.SpeechRecognition;
 import org.chromium.content_public.common.SpeechRecognitionErrorCode;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * This class uses Android's SpeechRecognizer to perform speech recognition for the Web Speech API
- * on Android. Using Android's platform recognizer offers several benefits, like good quality and
- * good local fallback when no data connection is available.
+ * Implementation of {@link SpeechRecognition}.
  */
 @JNINamespace("content")
-public class SpeechRecognition {
+public class SpeechRecognitionImpl {
     private static final String TAG = "SpeechRecog";
 
     // Constants describing the speech recognition provider we depend on.
@@ -204,7 +203,7 @@ public class SpeechRecognition {
         return false;
     }
 
-    private SpeechRecognition(long nativeSpeechRecognizerImplAndroid) {
+    private SpeechRecognitionImpl(long nativeSpeechRecognizerImplAndroid) {
         mContinuous = false;
         mNativeSpeechRecognizerImplAndroid = nativeSpeechRecognizerImplAndroid;
         mListener = new Listener();
@@ -255,9 +254,9 @@ public class SpeechRecognition {
     }
 
     @CalledByNative
-    private static SpeechRecognition createSpeechRecognition(
+    private static SpeechRecognitionImpl createSpeechRecognition(
             long nativeSpeechRecognizerImplAndroid) {
-        return new SpeechRecognition(nativeSpeechRecognizerImplAndroid);
+        return new SpeechRecognitionImpl(nativeSpeechRecognizerImplAndroid);
     }
 
     @CalledByNative
