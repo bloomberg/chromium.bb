@@ -121,7 +121,7 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
   INSTANTIATE_TEST_CASE_P(prefix, test_class, generator)
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    FileDisplay,
+    FileDisplay,  /* file_display.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("fileDisplayDownloads"),
                       TestCase("fileDisplayDownloads").InGuestMode(),
@@ -132,7 +132,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("fileSearchNotFound")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    OpenVideoFiles,
+    OpenVideoFiles,  /* open_video_files.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("videoOpenDownloads").InGuestMode(),
                       TestCase("videoOpenDownloads"),
@@ -145,7 +145,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_OpenAudioFiles OpenAudioFiles
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_OpenAudioFiles,
+    MAYBE_OpenAudioFiles, /* open_audio_files.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("audioOpenDownloads").InGuestMode(),
@@ -166,14 +166,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 #define MAYBE_OpenImageFiles OpenImageFiles
 #endif
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    MAYBE_OpenImageFiles,
+    MAYBE_OpenImageFiles, /* open_image_files.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("imageOpenDownloads").InGuestMode(),
                       TestCase("imageOpenDownloads"),
                       TestCase("imageOpenDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    CreateNewFolder,
+    CreateNewFolder, /* create_new_folder.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("selectCreateFolderDownloads"),
@@ -182,7 +182,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("createFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    KeyboardOperations,
+    KeyboardOperations, /* keyboard_operations.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("keyboardDeleteDownloads").InGuestMode(),
@@ -199,20 +199,20 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("renameNewFolderDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    Delete,
+    Delete, /* delete.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("deleteMenuItemNoEntrySelected"),
         TestCase("deleteEntryWithToolbar")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    QuickView,
+    QuickView, /* quick_view.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("openQuickView"),
                       TestCase("closeQuickView")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DirectoryTreeContextMenu,
+    DirectoryTreeContextMenu, /* directory_tree_context_menu.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("dirCopyWithContextMenu"),
@@ -242,7 +242,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("dirCreateWithoutChangingCurrent")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DriveSpecific,
+    DriveSpecific, /* drive_specific.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("driveOpenSidebarOffline"),
@@ -253,7 +253,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("drivePressEnterToSearch")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    Transfer,
+    Transfer, /* transfer.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("transferFromDriveToDownloads"),
@@ -264,7 +264,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("transferFromOfflineToDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    RestorePrefs,
+    RestorePrefs, /* restore_prefs.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("restoreSortColumn").InGuestMode(),
                       TestCase("restoreSortColumn"),
@@ -272,44 +272,44 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("restoreCurrentView")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    ShareDialog,
-    FileManagerBrowserTest,
-    ::testing::Values(TestCase("shareFile"),
-                      TestCase("shareDirectory")));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    RestoreGeometry,
+    RestoreGeometry, /* restore_geometry.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("restoreGeometry"),
                       TestCase("restoreGeometry").InGuestMode(),
                       TestCase("restoreGeometryMaximized")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    Traverse,
+    ShareDialog, /* share_dialog.js */
+    FileManagerBrowserTest,
+    ::testing::Values(TestCase("shareFile"),
+                      TestCase("shareDirectory")));
+
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    SuggestAppDialog, /* suggest_app_dialog.js */
+    FileManagerBrowserTest,
+    ::testing::Values(TestCase("suggestAppDialog")));
+
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    Traverse, /* traverse.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("traverseDownloads").InGuestMode(),
                       TestCase("traverseDownloads"),
                       TestCase("traverseDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    SuggestAppDialog,
-    FileManagerBrowserTest,
-    ::testing::Values(TestCase("suggestAppDialog")));
-
-WRAPPED_INSTANTIATE_TEST_CASE_P(
-    ExecuteDefaultTaskOnDownloads,
+    ExecuteDefaultTaskOnDownloads, /* tasks.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("executeDefaultTaskDownloads"),
         TestCase("executeDefaultTaskDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    ExecuteDefaultTaskOnDrive,
+    ExecuteDefaultTaskOnDrive, /* tasks.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("executeDefaultTaskDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DefaultTaskDialog,
+    DefaultTaskDialog, /* tasks.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("defaultTaskDialogDownloads"),
@@ -317,49 +317,49 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("defaultTaskDialogDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    GenericTask,
+    GenericTask, /* tasks.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("genericTaskIsNotExecuted"),
         TestCase("genericTaskAndNonGenericTask")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    FolderShortcuts,
+    FolderShortcuts, /* folder_shortcuts.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("traverseFolderShortcuts"),
         TestCase("addRemoveFolderShortcuts")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    SortColumns,
+    SortColumns, /* sort_columns.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("sortColumns"),
                       TestCase("sortColumns").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabIndex,
+    TabIndex, /* tab_index.js */
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(
         TestCase("tabindexSearchBoxFocus")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexFocus,
+    TabindexFocus, /* tab_index.js */
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestCase("tabindexFocus")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexFocusDownloads,
+    TabindexFocusDownloads, /* tab_index.js */
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestCase("tabindexFocusDownloads"),
                       TestCase("tabindexFocusDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexFocusDirectorySelected,
+    TabindexFocusDirectorySelected, /* tab_index.js */
     FileManagerBrowserTestWithLegacyEventDispatch,
     ::testing::Values(TestCase("tabindexFocusDirectorySelected")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexOpenDialog,
+    TabindexOpenDialog, /* tab_index.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("tabindexOpenDialogDrive"),
@@ -367,7 +367,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("tabindexOpenDialogDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    TabindexSaveFileDialog,
+    TabindexSaveFileDialog, /* tab_index.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("tabindexSaveFileDialogDrive"),
@@ -375,7 +375,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("tabindexSaveFileDialogDownloads").InGuestMode()));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    OpenFileDialog,
+    OpenFileDialog, /* file_dialog.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("openFileDialogDownloads"),
                       TestCase("openFileDialogDownloads").InGuestMode(),
@@ -386,7 +386,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 
 // Test does too much? Flaky on all bots: http://crbug.com/500966
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    DISABLED_CopyBetweenWindows,
+    DISABLED_CopyBetweenWindows, /* copy_between_windows.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("copyBetweenWindowsLocalToDrive"),
@@ -397,14 +397,14 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("copyBetweenWindowsUsbToLocal")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    ShowGridView,
+    ShowGridView, /* grid_view.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("showGridViewDownloads"),
                       TestCase("showGridViewDownloads").InGuestMode(),
                       TestCase("showGridViewDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    Providers,
+    Providers, /* providers.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("requestMount"),
@@ -413,7 +413,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
         TestCase("requestMountSourceFile")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    GearMenu,
+    GearMenu, /* gear_menu.js */
     FileManagerBrowserTest,
     ::testing::Values(
         TestCase("showHiddenFilesDownloads"),
