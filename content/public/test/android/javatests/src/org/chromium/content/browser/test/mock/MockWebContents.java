@@ -127,9 +127,6 @@ public class MockWebContents implements WebContents {
     }
 
     @Override
-    public void showInterstitialPage(String url, long interstitialPageDelegateAndroid) {}
-
-    @Override
     public boolean isShowingInterstitialPage() {
         return false;
     }

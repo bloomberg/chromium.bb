@@ -52,6 +52,20 @@ shared_library("libcontent_shell_content_view") {
   ]
 }
 
+shared_library("libcontent_native_test") {
+  testonly = true
+  deps = [
+    ":content_test_jni_registration",
+    "//base",
+    "//content/public/test/android:content_native_test_support",
+    "//content/shell:content_shell_lib",
+  ]
+
+  sources = [
+    "shell_test_library_loader.cc",
+  ]
+}
+
 android_resources("content_shell_java_resources") {
   testonly = true
   resource_dirs = [ "java/res" ]
@@ -197,6 +211,13 @@ android_library("content_shell_test_java") {
   ]
 }
 
+generate_jni_registration("content_test_jni_registration") {
+  testonly = true
+  target = ":content_shell_test_apk__apk"
+  output = "$root_gen_dir/content/shell/android/${target_name}.h"
+  exception_files = jni_exception_files
+}
+
 instrumentation_test_apk("content_shell_test_apk") {
   deps = [
     "//base:base_java_test_support",
@@ -207,6 +228,7 @@ instrumentation_test_apk("content_shell_test_apk") {
   ]
   apk_under_test = ":content_shell_apk"
   apk_name = "ContentShellTest"
+  shared_libraries = [ ":libcontent_native_test" ]
   android_manifest = "javatests/AndroidManifest.xml"
 }
 

@@ -17,6 +17,7 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.UrlUtils;
+import org.chromium.content.browser.test.InterstitialPageDelegateAndroid;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TouchCommon;
@@ -117,8 +118,7 @@ public class InterstitialPageTest {
                 new Callable<TestWebContentsObserver>() {
                     @Override
                     public TestWebContentsObserver call() throws Exception {
-                        mActivityTestRule.getWebContents().showInterstitialPage(
-                                URL, delegate.getNative());
+                        delegate.showInterstitialPage(URL, mActivityTestRule.getWebContents());
                         return new TestWebContentsObserver(mActivityTestRule.getWebContents());
                     }
                 });

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_ANDROID_INTERSTITIAL_PAGE_DELEGATE_ANDROID_H_
-#define CONTENT_BROWSER_ANDROID_INTERSTITIAL_PAGE_DELEGATE_ANDROID_H_
+#ifndef CONTENT_PUBLIC_TEST_ANDROID_INTERSTITIAL_PAGE_DELEGATE_ANDROID_H_
+#define CONTENT_PUBLIC_TEST_ANDROID_INTERSTITIAL_PAGE_DELEGATE_ANDROID_H_
 
 #include <jni.h>
 #include <string>
@@ -11,7 +11,6 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "content/common/content_export.h"
 #include "content/public/browser/interstitial_page_delegate.h"
 
 namespace content {
@@ -33,6 +32,11 @@ class InterstitialPageDelegateAndroid : public InterstitialPageDelegate {
   void Proceed(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
   void DontProceed(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj);
+  void ShowInterstitialPage(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jurl,
+      const base::android::JavaParamRef<jobject>& jweb_contents);
 
   // Implementation of InterstitialPageDelegate
   std::string GetHTMLContents() override;
@@ -51,4 +55,4 @@ class InterstitialPageDelegateAndroid : public InterstitialPageDelegate {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_ANDROID_INTERSTITIAL_PAGE_DELEGATE_ANDROID_H_
+#endif  // CONTENT_PUBLIC_TEST_ANDROID_INTERSTITIAL_PAGE_DELEGATE_ANDROID_H_
