@@ -42,11 +42,14 @@ import java.util.List;
 public class AccountPickerDialogFragment extends DialogFragment {
     public interface Callback {
         /**
-         * Notifies that user has selected an account.
+         * Notifies that the user has selected an account.
          * @param accountName The email of the selected account.
          * @param isDefaultAccount Whether the selected account is the first in the account list.
          */
         void onAccountSelected(String accountName, boolean isDefaultAccount);
+
+        /** Notifies that the user has clicked "Add account" button. */
+        void addAccount();
     }
 
     @Retention(RetentionPolicy.SOURCE)
@@ -140,7 +143,7 @@ public class AccountPickerDialogFragment extends DialogFragment {
                     return;
                 case ViewType.NEW_ACCOUNT:
                     // "Add account" row is immutable.
-                    // TODO(https://crbug.com/814728): Add click listener.
+                    holder.itemView.setOnClickListener(view -> getCallback().addAccount());
                     return;
                 default:
                     assert false : "Unexpected view type!";
