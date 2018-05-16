@@ -9,7 +9,6 @@
 #include <limits>
 
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
@@ -107,7 +106,6 @@ class PluginDataRemoverImpl::Context
     }
 
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    remove_start_time_ = base::Time::Now();
     is_removing_ = true;
 
     // Balanced in OnPpapiChannelOpened.
@@ -219,8 +217,6 @@ class PluginDataRemoverImpl::Context
   void OnPpapiClearSiteDataResult(uint32_t request_id, bool success) {
     DCHECK_EQ(0u, request_id);
     LOG_IF(ERROR, !success) << "ClearSiteData returned error";
-    UMA_HISTOGRAM_TIMES("ClearPluginData.time",
-                        base::Time::Now() - remove_start_time_);
     SignalDone();
   }
 
@@ -235,8 +231,6 @@ class PluginDataRemoverImpl::Context
   }
 
   std::unique_ptr<base::WaitableEvent> event_;
-  // The point in time when we start removing data.
-  base::Time remove_start_time_;
   // The point in time from which on we remove data.
   base::Time begin_time_;
   bool is_removing_;
