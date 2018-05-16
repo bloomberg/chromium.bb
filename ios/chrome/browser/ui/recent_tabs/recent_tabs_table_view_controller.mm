@@ -31,12 +31,14 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #include "ios/chrome/browser/ui/ntp/recent_tabs/synced_sessions.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_presenter.h"
+#import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
 #import "ios/chrome/browser/ui/signin_interaction/public/signin_presenter.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_activity_indicator_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_disclosure_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_signin_promo_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -91,6 +93,7 @@ const int kRelativeTimeMaxHours = 4;
 @interface RecentTabsTableViewController ()<SigninPromoViewConsumer,
                                             SigninPresenter,
                                             SyncPresenter,
+                                            TextButtonItemDelegate,
                                             UIGestureRecognizerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
 }
@@ -418,12 +421,8 @@ const int kRelativeTimeMaxHours = 4;
       NOTREACHED();
       return;
     case SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF:
-      dummyCell =
-          [[TableViewTextItem alloc] initWithType:ItemTypeOtherDevicesSyncOff];
-      dummyCell.text =
-          l10n_util::GetNSString(IDS_IOS_OPEN_TABS_ENABLE_SYNC_MOBILE);
-      dummyCell.textAlignment = NSTextAlignmentCenter;
-      break;
+      [self addUserSignedSyncOffItem];
+      return;
     case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
       dummyCell = [[TableViewTextItem alloc]
           initWithType:ItemTypeOtherDevicesNoSessions];
@@ -440,6 +439,18 @@ const int kRelativeTimeMaxHours = 4;
       return;
   }
   [self.tableViewModel addItem:dummyCell
+       toSectionWithIdentifier:SectionIdentifierOtherDevices];
+}
+
+- (void)addUserSignedSyncOffItem {
+  TableViewTextButtonItem* signinSyncOffItem = [[TableViewTextButtonItem alloc]
+      initWithType:ItemTypeOtherDevicesSyncOff];
+  signinSyncOffItem.text =
+      l10n_util::GetNSString(IDS_IOS_OPEN_TABS_SYNC_IS_OFF_MOBILE);
+  signinSyncOffItem.buttonText =
+      l10n_util::GetNSString(IDS_IOS_OPEN_TABS_ENABLE_SYNC_MOBILE);
+  signinSyncOffItem.delegate = self;
+  [self.tableViewModel addItem:signinSyncOffItem
        toSectionWithIdentifier:SectionIdentifierOtherDevices];
 }
 
@@ -1051,6 +1062,20 @@ const int kRelativeTimeMaxHours = 4;
 
 - (void)showSyncPassphraseSettings {
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
+}
+
+#pragma mark - TextButtonItemDelegate
+
+- (void)performButtonAction {
+  SyncSetupService::SyncServiceState syncState =
+      GetSyncStateForBrowserState(_browserState);
+  if (ShouldShowSyncSignin(syncState)) {
+    [self showReauthenticateSignin];
+  } else if (ShouldShowSyncSettings(syncState)) {
+    [self showSyncSettings];
+  } else if (ShouldShowSyncPassphraseSettings(syncState)) {
+    [self showSyncPassphraseSettings];
+  }
 }
 
 #pragma mark - SigninPresenter

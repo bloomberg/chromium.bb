@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/settings/table_cell_catalog_view_controller.h"
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_accessory_item.h"
+#import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
@@ -25,6 +26,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeText = kItemTypeEnumZero,
   ItemTypeTextHeader,
   ItemTypeTextFooter,
+  ItemTypeTextButton,
   ItemTypeURLNoMetadata,
   ItemTypeTextAccessoryImage,
   ItemTypeTextAccessoryNoImage,
@@ -97,6 +99,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeTextFooter];
   textHeaderFooterItem.text = @"Simple Text Footer";
   [model setFooter:textHeaderFooterItem
+      forSectionWithIdentifier:SectionIdentifierText];
+
+  TableViewTextButtonItem* textActionButtonItem =
+      [[TableViewTextButtonItem alloc] initWithType:ItemTypeTextButton];
+  textActionButtonItem.text = @"Hello, you should do something.";
+  textActionButtonItem.buttonText = @"Do something";
+  [model setFooter:textActionButtonItem
       forSectionWithIdentifier:SectionIdentifierText];
 
   // SectionIdentifierURL.
