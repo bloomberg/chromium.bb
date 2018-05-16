@@ -1064,7 +1064,15 @@ TEST_F(UpdateClientTest, TwoCrxUpdateDownloadTimeout) {
         .Times(AtLeast(1));
     EXPECT_CALL(observer, OnEvent(Events::COMPONENT_UPDATE_ERROR,
                                   "jebgalgnebhfojomionfpkfelancnnkf"))
-        .Times(1);
+        .Times(1)
+        .WillOnce(Invoke([&update_client](Events event, const std::string& id) {
+          CrxUpdateItem item;
+          update_client->GetCrxUpdateState(id, &item);
+          EXPECT_EQ(ComponentState::kUpdateError, item.state);
+          EXPECT_EQ(1, item.error_category);
+          EXPECT_EQ(-118, item.error_code);
+          EXPECT_EQ(0, item.extra_code1);
+        }));
   }
   {
     InSequence seq;
@@ -1588,7 +1596,7 @@ TEST_F(UpdateClientTest, OneCrxInstallError) {
       EXPECT_EQ("jebgalgnebhfojomionfpkfelancnnkf", ping_data[0].id);
       EXPECT_EQ(base::Version("0.9"), ping_data[0].previous_version);
       EXPECT_EQ(base::Version("1.0"), ping_data[0].next_version);
-      EXPECT_EQ(3, ping_data[0].error_category);  // kInstallError.
+      EXPECT_EQ(3, ping_data[0].error_category);  // kInstall.
       EXPECT_EQ(9, ping_data[0].error_code);      // kInstallerError.
     }
   };
@@ -3103,9 +3111,11 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
       const std::string id = "jebgalgnebhfojomionfpkfelancnnkf";
       EXPECT_EQ(id, ids_to_check.front());
       EXPECT_EQ(1u, components.count(id));
-
+      constexpr int update_check_error = -1;
+      components.at(id)->set_update_check_error(update_check_error);
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::BindOnce(std::move(update_check_callback), -1, 0));
+          FROM_HERE, base::BindOnce(std::move(update_check_callback),
+                                    update_check_error, 0));
     }
   };
 
@@ -3149,6 +3159,9 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
         CrxUpdateItem item;
         update_client->GetCrxUpdateState(id, &item);
         EXPECT_EQ(ComponentState::kUpdateError, item.state);
+        EXPECT_EQ(5, item.error_category);
+        EXPECT_EQ(-1, item.error_code);
+        EXPECT_EQ(0, item.extra_code1);
       }));
 
   update_client->AddObserver(&observer);

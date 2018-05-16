@@ -23,11 +23,12 @@ enum class Error {
 // These errors are sent in pings. Add new values only to the bottom of
 // the enums below; the order must be kept stable.
 enum class ErrorCategory {
-  kErrorNone = 0,
-  kNetworkError,
-  kUnpackError,
-  kInstallError,
-  kServiceError,  // Runtime errors which occur in the service itself.
+  kNone = 0,
+  kDownload,
+  kUnpack,
+  kInstall,
+  kService,  // Runtime errors which occur in the service itself.
+  kUpdateCheck,
 };
 
 // These errors are returned with the |kNetworkError| error category. This
@@ -44,7 +45,7 @@ enum class CrxDownloaderError {
   GENERIC_ERROR = -1
 };
 
-// These errors are returned with the |kUnpackError| error category and
+// These errors are returned with the |kUnpack| error category and
 // indicate unpacker or patcher error.
 enum class UnpackerError {
   kNone = 0,
@@ -67,7 +68,7 @@ enum class UnpackerError {
   // kFingerprintWriteFailed = 17,    // Deprecated. Don't use.
 };
 
-// These errors are returned with the |kServiceError| error category and
+// These errors are returned with the |kService| error category and
 // are returned by the component installers.
 enum class InstallError {
   NONE = 0,
@@ -84,7 +85,7 @@ enum class InstallError {
   CUSTOM_ERROR_BASE = 100,  // Specific installer errors go above this value.
 };
 
-// These errors are returned with the |kInstallError| error category and
+// These errors are returned with the |kInstall| error category and
 // indicate critical or configuration errors in the update service.
 enum class ServiceError {
   NONE = 0,
