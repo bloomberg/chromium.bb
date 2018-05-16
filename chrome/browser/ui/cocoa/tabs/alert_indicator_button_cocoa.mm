@@ -83,7 +83,7 @@ class FadeAnimationDelegate : public gfx::AnimationDelegate {
 - (void)updateIconForState:(TabAlertState)aState {
   if (aState != TabAlertState::NONE) {
     TabView* const tabView = base::mac::ObjCCast<TabView>([self superview]);
-    SkColor iconColor = [tabView iconColor];
+    SkColor iconColor = [tabView alertIndicatorColorForState:aState];
     NSImage* tabIndicatorImage =
         chrome::GetTabAlertIndicatorImage(aState, iconColor).ToNSImage();
     NSImage* affordanceImage =

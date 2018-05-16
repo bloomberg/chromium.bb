@@ -12,6 +12,7 @@
 #include "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/themed_window.h"
+#include "chrome/browser/ui/tabs/tab_utils.h"
 
 namespace tabs {
 
@@ -95,9 +96,12 @@ const SkColor kDefaultTabTextColor = SkColorSetARGB(0xA0, 0x00, 0x00, 0x00);
 // user to click to select/activate the tab.
 - (int)widthOfLargestSelectableRegion;
 
-// Returns the Material Design color of the icons. Used by the alert indicator,
-// the "x", and the default favicon.
+// Returns the Material Design color of the icons. Used by the "x" and the
+// default favicon.
 - (SkColor)iconColor;
+
+// Returns the Material Design color of the alert indicator.
+- (SkColor)alertIndicatorColorForState:(TabAlertState)state;
 
 // Called when systemwide accessibility options change.
 - (void)accessibilityOptionsDidChange:(id)ignored;
