@@ -128,14 +128,7 @@ class WorkingSetInformationBuffer {
 
 }  // namespace
 
-static uint64_t FileTimeToUTC(const FILETIME& ftime) {
-  LARGE_INTEGER li;
-  li.LowPart = ftime.dwLowDateTime;
-  li.HighPart = ftime.dwHighDateTime;
-  return li.QuadPart;
-}
-
-double ProcessMetrics::GetPlatformIndependentCPUUsage() {
+TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
   FILETIME creation_time;
   FILETIME exit_time;
   FILETIME kernel_time;
@@ -146,37 +139,18 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
     // We don't assert here because in some cases (such as in the Task Manager)
     // we may call this function on a process that has just exited but we have
     // not yet received the notification.
-    return 0;
-  }
-  int64_t system_time = FileTimeToUTC(kernel_time) + FileTimeToUTC(user_time);
-  TimeTicks time = TimeTicks::Now();
-
-  if (last_system_time_ == 0) {
-    // First call, just set the last values.
-    last_system_time_ = system_time;
-    last_cpu_time_ = time;
-    return 0;
+    return TimeDelta();
   }
 
-  int64_t system_time_delta = system_time - last_system_time_;
-  // FILETIME is in 100-nanosecond units, so this needs microseconds times 10.
-  int64_t time_delta = (time - last_cpu_time_).InMicroseconds() * 10;
-  DCHECK_NE(0U, time_delta);
-  if (time_delta == 0)
-    return 0;
-
-
-  last_system_time_ = system_time;
-  last_cpu_time_ = time;
-
-  return static_cast<double>(system_time_delta * 100) / time_delta;
+  return TimeDelta::FromFileTime(kernel_time) +
+         TimeDelta::FromFileTime(user_time);
 }
 
 bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
   return GetProcessIoCounters(process_.Get(), io_counters) != FALSE;
 }
 
-ProcessMetrics::ProcessMetrics(ProcessHandle process) : last_system_time_(0) {
+ProcessMetrics::ProcessMetrics(ProcessHandle process) {
   if (process) {
     HANDLE duplicate_handle = INVALID_HANDLE_VALUE;
     BOOL result = ::DuplicateHandle(::GetCurrentProcess(), process,

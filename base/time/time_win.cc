@@ -729,4 +729,9 @@ TimeDelta TimeDelta::FromQPCValue(LONGLONG qpc_value) {
   return QPCValueToTimeDelta(qpc_value);
 }
 
+// static
+TimeDelta TimeDelta::FromFileTime(FILETIME ft) {
+  return TimeDelta::FromMicroseconds(FileTimeToMicroseconds(ft));
+}
+
 }  // namespace base

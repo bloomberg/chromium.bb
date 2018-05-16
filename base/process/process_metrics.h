@@ -143,6 +143,12 @@ class BASE_EXPORT ProcessMetrics {
   // first call, and an actual value only on the second and subsequent calls.
   double GetPlatformIndependentCPUUsage();
 
+  // Returns the cumulative CPU usage across all threads of the process since
+  // process start. In case of multi-core processors, a process can consume CPU
+  // at a rate higher than wall-clock time, e.g. two cores at full utilization
+  // will result in a time delta of 2 seconds/per 1 wall-clock second.
+  TimeDelta GetCumulativeCPUUsage();
+
   // Returns the number of average idle cpu wakeups per second since the last
   // call.
   int GetIdleWakeupsPerSecond();
@@ -219,8 +225,8 @@ class BASE_EXPORT ProcessMetrics {
   // Used to store the previous times and CPU usage counts so we can
   // compute the CPU usage between calls.
   TimeTicks last_cpu_time_;
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  int64_t last_system_time_;
+#if !defined(OS_FREEBSD) || !defined(OS_POSIX)
+  TimeDelta last_cumulative_cpu_;
 #endif
 
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
@@ -241,10 +247,7 @@ class BASE_EXPORT ProcessMetrics {
   mach_port_t TaskForPid(ProcessHandle process) const;
 
   PortProvider* port_provider_;
-#elif defined(OS_POSIX)
-  // Jiffie count at the last_cpu_time_ we updated.
-  uint64_t last_cpu_;
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_MACOSX)
 #endif  // !defined(OS_IOS)
 
   DISALLOW_COPY_AND_ASSIGN(ProcessMetrics);

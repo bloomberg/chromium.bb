@@ -97,6 +97,32 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateCurrentProcessMetrics() {
 #endif  // !defined(OS_MACOSX) || defined(OS_IOS)
 }
 
+#if !defined(OS_FREEBSD) || !defined(OS_POSIX)
+double ProcessMetrics::GetPlatformIndependentCPUUsage() {
+  TimeDelta cumulative_cpu = GetCumulativeCPUUsage();
+  TimeTicks time = TimeTicks::Now();
+
+  if (last_cumulative_cpu_.is_zero()) {
+    // First call, just set the last values.
+    last_cumulative_cpu_ = cumulative_cpu;
+    last_cpu_time_ = time;
+    return 0;
+  }
+
+  TimeDelta system_time_delta = cumulative_cpu - last_cumulative_cpu_;
+  TimeDelta time_delta = time - last_cpu_time_;
+  DCHECK(!time_delta.is_zero());
+  if (time_delta.is_zero())
+    return 0;
+
+  last_cumulative_cpu_ = cumulative_cpu;
+  last_cpu_time_ = time;
+
+  return 100.0 * system_time_delta.InMicrosecondsF() /
+         time_delta.InMicrosecondsF();
+}
+#endif
+
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
 int ProcessMetrics::CalculateIdleWakeupsPerSecond(
     uint64_t absolute_idle_wakeups) {

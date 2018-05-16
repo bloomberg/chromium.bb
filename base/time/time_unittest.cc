@@ -1447,6 +1447,14 @@ TEST(TimeDelta, Overflows) {
   EXPECT_TRUE((large_delta / 0.5).is_max());
   EXPECT_TRUE((large_delta / -0.5).is_min());
 
+  // Test that double conversions overflow to infinity.
+  EXPECT_EQ((large_delta + kOneSecond).InSecondsF(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ((large_delta + kOneSecond).InMillisecondsF(),
+            std::numeric_limits<double>::infinity());
+  EXPECT_EQ((large_delta + kOneSecond).InMicrosecondsF(),
+            std::numeric_limits<double>::infinity());
+
   // Test +=, -=, *= and /= operators.
   TimeDelta delta = large_delta;
   delta += kOneSecond;

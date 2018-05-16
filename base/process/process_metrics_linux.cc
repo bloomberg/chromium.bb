@@ -198,40 +198,8 @@ size_t ProcessMetrics::GetResidentSetSize() const {
       getpagesize();
 }
 
-double ProcessMetrics::GetPlatformIndependentCPUUsage() {
-  TimeTicks time = TimeTicks::Now();
-
-  if (last_cpu_ == 0) {
-    // First call, just set the last values.
-    last_cpu_time_ = time;
-    last_cpu_ = GetProcessCPU(process_);
-    return 0.0;
-  }
-
-  TimeDelta time_delta = time - last_cpu_time_;
-  if (time_delta.is_zero()) {
-    NOTREACHED();
-    return 0.0;
-  }
-
-  int64_t cpu = GetProcessCPU(process_);
-
-  // The number of jiffies in the time period.  Convert to percentage.
-  // Note: this means this will go *over* 100 in the case where multiple threads
-  // are together adding to more than one CPU's worth.
-  TimeDelta cpu_time = internal::ClockTicksToTimeDelta(cpu);
-  TimeDelta last_cpu_time = internal::ClockTicksToTimeDelta(last_cpu_);
-
-  // The cumulative CPU time should be monotonically increasing.
-  DCHECK_LE(last_cpu_time, cpu_time);
-
-  double percentage =
-      100.0 * (cpu_time - last_cpu_time).InSecondsF() / time_delta.InSecondsF();
-
-  last_cpu_time_ = time;
-  last_cpu_ = cpu;
-
-  return percentage;
+TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
+  return internal::ClockTicksToTimeDelta(GetProcessCPU(process_));
 }
 
 // For the /proc/self/io file to exist, the Linux kernel must have
@@ -332,13 +300,12 @@ int ProcessMetrics::GetOpenFdSoftLimit() const {
   return -1;
 }
 
-ProcessMetrics::ProcessMetrics(ProcessHandle process)
-    : process_(process),
 #if defined(OS_LINUX) || defined(OS_AIX)
-      last_absolute_idle_wakeups_(0),
+ProcessMetrics::ProcessMetrics(ProcessHandle process)
+    : process_(process), last_absolute_idle_wakeups_(0) {}
+#else
+ProcessMetrics::ProcessMetrics(ProcessHandle process) : process_(process) {}
 #endif
-      last_cpu_(0) {
-}
 
 #if defined(OS_CHROMEOS)
 // Private, Shared and Proportional working set sizes are obtained from

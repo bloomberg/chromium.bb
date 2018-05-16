@@ -127,6 +127,7 @@ class BASE_EXPORT TimeDelta {
 #endif
 #if defined(OS_WIN)
   static TimeDelta FromQPCValue(LONGLONG qpc_value);
+  static TimeDelta FromFileTime(FILETIME ft);
 #endif
 
   // Converts an integer value representing TimeDelta to a class. This is used
@@ -195,6 +196,7 @@ class BASE_EXPORT TimeDelta {
   int64_t InMilliseconds() const;
   int64_t InMillisecondsRoundedUp() const;
   int64_t InMicroseconds() const;
+  double InMicrosecondsF() const;
   int64_t InNanoseconds() const;
 
   constexpr TimeDelta& operator=(TimeDelta other) {

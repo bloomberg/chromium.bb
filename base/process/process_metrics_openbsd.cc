@@ -45,27 +45,23 @@ static int GetProcessCPU(pid_t pid) {
 double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   TimeTicks time = TimeTicks::Now();
 
-  if (last_cpu_ == 0) {
+  if (last_cpu_time_.is_zero()) {
     // First call, just set the last values.
     last_cpu_time_ = time;
-    last_cpu_ = GetProcessCPU(process_);
     return 0;
   }
-
-  int64_t time_delta = (time - last_cpu_time_).InMicroseconds();
-  DCHECK_NE(time_delta, 0);
-
-  if (time_delta == 0)
-    return 0;
 
   int cpu = GetProcessCPU(process_);
 
   last_cpu_time_ = time;
-  last_cpu_ = cpu;
-
   double percentage = static_cast<double>((cpu * 100.0) / FSCALE);
 
   return percentage;
+}
+
+TimeDelta ProcessMetrics::GetCumulativeCPUUsage() {
+  NOTREACHED();
+  return TimeDelta();
 }
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
