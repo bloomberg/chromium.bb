@@ -161,6 +161,10 @@ class IdentityManager : public SigninManagerBase::Observer,
 
 #if !defined(OS_CHROMEOS)
   // SigninManager::DiagnosticsClient:
+  // Override these to update |primary_account_info_| before any observers of
+  // SigninManager are notified of the signin state change, ensuring that any
+  // such observer flows that eventually interact with IdentityManager observe
+  // its state as being consistent with that of SigninManager.
   void WillFireGoogleSigninSucceeded(const AccountInfo& account_info) override;
   void WillFireGoogleSignedOut(const AccountInfo& account_info) override;
 #endif
@@ -176,16 +180,6 @@ class IdentityManager : public SigninManagerBase::Observer,
       const std::string& account_id,
       const OAuth2TokenService::ScopeSet& scopes,
       const std::string& access_token);
-
-  // Updates |primary_account_info_| and notifies observers. Invoked
-  // asynchronously from GoogleSigninSucceeded() to mimic the effect of
-  // receiving this call asynchronously from the Identity Service.
-  void HandleGoogleSigninSucceeded(const AccountInfo& account_info);
-
-  // Clears |primary_account_info_| and notifies observers. Invoked
-  // asynchronously from GoogleSignedOut() to mimic the effect of
-  // receiving this call asynchronously from the Identity Service.
-  void HandleGoogleSignedOut(const AccountInfo& account_info);
 
   // Notifies diagnostics observers. Invoked asynchronously from
   // OnAccessTokenRequested() to mimic the effect of receiving this call
