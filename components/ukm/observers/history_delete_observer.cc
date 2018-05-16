@@ -21,11 +21,8 @@ void HistoryDeleteObserver::ObserveServiceForDeletions(
 
 void HistoryDeleteObserver::OnURLsDeleted(
     history::HistoryService* history_service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
-  if (!expired)
+    const history::DeletionInfo& deletion_info) {
+  if (!deletion_info.is_from_expiration())
     OnHistoryDeleted();
 }
 

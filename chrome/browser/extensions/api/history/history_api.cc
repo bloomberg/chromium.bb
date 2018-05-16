@@ -149,16 +149,14 @@ void HistoryEventRouter::OnURLVisited(history::HistoryService* history_service,
                 api::history::OnVisited::kEventName, std::move(args));
 }
 
-void HistoryEventRouter::OnURLsDeleted(history::HistoryService* history_service,
-                                       bool all_history,
-                                       bool expired,
-                                       const history::URLRows& deleted_rows,
-                                       const std::set<GURL>& favicon_urls) {
+void HistoryEventRouter::OnURLsDeleted(
+    history::HistoryService* history_service,
+    const history::DeletionInfo& deletion_info) {
   OnVisitRemoved::Removed removed;
-  removed.all_history = all_history;
+  removed.all_history = deletion_info.IsAllHistory();
 
   std::vector<std::string>* urls = new std::vector<std::string>();
-  for (const auto& row : deleted_rows)
+  for (const auto& row : deletion_info.deleted_rows())
     urls->push_back(row.url().spec());
   removed.urls.reset(urls);
 
