@@ -288,10 +288,11 @@ class TestRunCommand(cros_test_lib.MockTestCase):
 
     # Verify various kwargs are passed down to the real command.
     pkwargs = self.popen_mock.call_args[1]
-    for key in ('cwd', 'stdin', 'stdout', 'stderr'):
+    for key in ('cwd', 'stdin'):
       kwargs.setdefault(key, None)
+    for key in ('env', 'stdout', 'stderr'):
+      kwargs.setdefault('env', mock.ANY)
     kwargs.setdefault('shell', False)
-    kwargs.setdefault('env', mock.ANY)
     kwargs['close_fds'] = True
     self.longMessage = True
     for key in kwargs.keys():
@@ -332,8 +333,6 @@ class TestRunCommand(cros_test_lib.MockTestCase):
 
     expected_result = cros_build_lib.CommandResult()
     expected_result.cmd = real_cmd
-    expected_result.error = self.error
-    expected_result.output = self.output
     expected_result.returncode = self.proc_mock.returncode
 
     arg_dict = dict()
@@ -418,7 +417,7 @@ class TestRunCommand(cros_test_lib.MockTestCase):
     self.proc_mock.communicate = mock.MagicMock(side_effect=ValueError)
     with self._MockChecker(cmd, ignore_sigint=ignore_sigint):
       self.assertRaises(ValueError, cros_build_lib.RunCommand, cmd,
-                        ignore_sigint=ignore_sigint)
+                        capture_output=True, ignore_sigint=ignore_sigint)
 
   def testSignalRestoreExceptionCase(self):
     """Test RunCommand() properly sets/restores sigint.  Exception case."""
@@ -609,7 +608,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertIs(ret.error, None)
 
 
-  def _CaptureRunCommand(self, command, mute_output):
+  def _CaptureRunCommand(self, command, **kwargs):
     """Capture a RunCommand() output with the specified |mute_output|.
 
     Args:
@@ -622,7 +621,7 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     with self.OutputCapturer() as output:
       cros_build_lib.RunCommand(command,
                                 debug_level=logging.DEBUG,
-                                mute_output=mute_output)
+                                **kwargs)
     return (output.GetStdout(), output.GetStderr())
 
   @_ForceLoggingLevel
@@ -675,15 +674,18 @@ class TestRunCommandOutput(cros_test_lib.TempDirTestCase,
     self.assertEquals(self._CaptureLogOutput(cmd, shell=True, log_output=True),
                       log_output)
 
-  @_ForceLoggingLevel
-  def testStreamLog(self):
-    """Streaming log_output, stdout and stderr interwoven in order."""
+  def testStreamingOutput(self):
+    """Test streaming output.
+
+    subprocess's stdout/stderr should be output to parent's stdout/stderr.
+    """
     cmd = 'echo Greece; echo Italy >&2; echo Spain'
-    log_output = ("RunCommand: /bin/bash -c "
-                  "'echo Greece; echo Italy >&2; echo Spain'\n"
-                  "(stdout/stderr):\n\nGreece\nItaly\nSpain\n")
-    self.assertEquals(self._CaptureLogOutput(cmd, shell=True, stream_log=True),
-                      log_output)
+    with self.OutputCapturer() as output:
+      result = cros_build_lib.RunCommand(cmd, mute_output=False, shell=True)
+      self.assertEqual(output.GetStdout(), 'Greece\nSpain\n')
+      self.assertEqual(output.GetStderr(), 'Italy\n')
+      self.assertEqual(result.output, None)
+      self.assertEqual(result.error, None)
 
 
 class TestTimedSection(cros_test_lib.TestCase):
