@@ -328,7 +328,6 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
       // If the popup is open and a valid match is selected, treat that as the
       // current page, since the URL in the Omnibox will be from that match.
       current_page_url = current_match.destination_url;
-      *url_from_text = current_match.destination_url;
     }
   }
 
@@ -352,6 +351,11 @@ void OmniboxEditModel::AdjustTextForCopy(int sel_min,
     if (!base::StartsWith(*text, http, base::CompareCase::INSENSITIVE_ASCII) &&
         !base::StartsWith(*text, https, base::CompareCase::INSENSITIVE_ASCII)) {
       *text = current_page_url_prefix + *text;
+
+      // Amend the copied URL to match the prefixed string.
+      GURL::Replacements replace_scheme;
+      replace_scheme.SetSchemeStr(current_page_url.scheme_piece());
+      *url_from_text = url_from_text->ReplaceComponents(replace_scheme);
     }
   }
 }
