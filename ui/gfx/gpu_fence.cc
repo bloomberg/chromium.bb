@@ -6,6 +6,10 @@
 
 #include "base/logging.h"
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include <sync/sync.h>
+#endif
+
 namespace gfx {
 
 GpuFence::GpuFence(const GpuFenceHandle& handle) : type_(handle.type) {
@@ -49,6 +53,24 @@ ClientGpuFence GpuFence::AsClientGpuFence() {
 // static
 GpuFence* GpuFence::FromClientGpuFence(ClientGpuFence gpu_fence) {
   return reinterpret_cast<GpuFence*>(gpu_fence);
+}
+
+void GpuFence::Wait() {
+  switch (type_) {
+    case GpuFenceHandleType::kEmpty:
+      break;
+    case GpuFenceHandleType::kAndroidNativeFenceSync:
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+      static const int kInfiniteSyncWaitTimeout = -1;
+      DCHECK_GE(owned_fd_.get(), 0);
+      if (sync_wait(owned_fd_.get(), kInfiniteSyncWaitTimeout) < 0) {
+        LOG(FATAL) << "Failed while waiting for gpu fence fd";
+      }
+#else
+      NOTREACHED();
+#endif
+      break;
+  }
 }
 
 }  // namespace gfx
