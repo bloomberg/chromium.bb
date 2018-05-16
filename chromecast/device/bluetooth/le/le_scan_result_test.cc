@@ -240,18 +240,26 @@ TEST(LeScanResultTest, CompleteListOf128BitServiceUuid) {
   static const bluetooth_v2_shlib::Uuid kUuid2 = {
       {0xa8, 0x22, 0xc8, 0x85, 0xaf, 0x02, 0xc7, 0x80, 0x9d, 0x4d, 0xbd, 0x9a,
        0x1f, 0xa0, 0x6d, 0x93}};
+  static const bluetooth_v2_shlib::Uuid kUuid3 = {
+      {0xaa, 0x22, 0xc8, 0x85, 0xaf, 0x02, 0xc7, 0x80, 0x9d, 0x4d, 0xbd, 0x9a,
+       0x1f, 0xa0, 0x6d, 0x93}};
 
   LeScanResult scan_result;
   scan_result.type_to_data[LeScanResult::kGapComplete128BitServiceUuids]
       .emplace_back(kUuid1.rbegin(), kUuid1.rend());
   scan_result.type_to_data[LeScanResult::kGapComplete128BitServiceUuids]
       .emplace_back(kUuid2.rbegin(), kUuid2.rend());
+  auto& end =
+      scan_result.type_to_data[LeScanResult::kGapComplete128BitServiceUuids]
+          .back();
+  end.insert(end.end(), kUuid3.rbegin(), kUuid3.rend());
 
   auto uuids = scan_result.CompleteListOf128BitServiceUuids();
   ASSERT_TRUE(uuids);
-  ASSERT_EQ(2ul, uuids->size());
+  ASSERT_EQ(3ul, uuids->size());
   EXPECT_EQ(kUuid1, (*uuids)[0]);
   EXPECT_EQ(kUuid2, (*uuids)[1]);
+  EXPECT_EQ(kUuid3, (*uuids)[2]);
 }
 
 TEST(LeScanResultTest, AllServiceData) {

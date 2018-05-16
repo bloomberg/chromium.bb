@@ -95,13 +95,6 @@ class BluetoothDeviceCast : public BluetoothDevice {
   // connection state changed as a result.
   bool SetConnected(bool connected);
 
-  // Called by BluetoothAdapterCast when the GATT services for this device are
-  // updated. Updates the services in this devices to reflect |services|.
-  // Returns true if a service was added or removed.
-  bool UpdateServices(
-      std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>>
-          services);
-
   // Called by BluetoothAdapterCast when the value of a characteristic in one of
   // this device's services has changed, resulting in a notification to the
   // device. Locate the characteristc and update the underluing value. If the
@@ -131,6 +124,11 @@ class BluetoothDeviceCast : public BluetoothDevice {
 
   // Called back from disconnect requests.
   void OnDisconnect(bool success);
+
+  // Called in response to GetServices
+  void OnGetServices(
+      std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>>
+          services);
 
   bool connected_;
   bool pending_connect_ = false;

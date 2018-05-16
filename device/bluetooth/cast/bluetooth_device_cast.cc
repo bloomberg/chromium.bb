@@ -14,6 +14,7 @@
 #include "chromecast/device/bluetooth/bluetooth_util.h"
 #include "chromecast/device/bluetooth/le/remote_characteristic.h"
 #include "chromecast/device/bluetooth/le/remote_service.h"
+#include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_characteristic_cast.h"
 #include "device/bluetooth/cast/bluetooth_remote_gatt_service_cast.h"
 #include "device/bluetooth/cast/bluetooth_utils.h"
@@ -60,7 +61,12 @@ BluetoothDeviceCast::BluetoothDeviceCast(
       connected_(device->IsConnected()),
       remote_device_(std::move(device)),
       address_(GetCanonicalBluetoothAddress(remote_device_->addr())),
-      weak_factory_(this) {}
+      weak_factory_(this) {
+  if (connected_) {
+    remote_device_->GetServices(base::BindOnce(
+        &BluetoothDeviceCast::OnGetServices, weak_factory_.GetWeakPtr()));
+  }
+}
 
 BluetoothDeviceCast::~BluetoothDeviceCast() {}
 
@@ -286,6 +292,8 @@ bool BluetoothDeviceCast::SetConnected(bool connected) {
   // fired.
   if (!was_connected && connected) {
     DidConnectGatt();
+    remote_device_->GetServices(base::BindOnce(
+        &BluetoothDeviceCast::OnGetServices, weak_factory_.GetWeakPtr()));
   } else if (was_connected && !connected) {
     DidDisconnectGatt();
   }
@@ -294,43 +302,23 @@ bool BluetoothDeviceCast::SetConnected(bool connected) {
   return was_connected != connected;
 }
 
-bool BluetoothDeviceCast::UpdateServices(
+void BluetoothDeviceCast::OnGetServices(
     std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>> services) {
   DVLOG(2) << __func__;
-  bool changed = false;
-
-  // Create a look-up for the updated list of services.
-  std::unordered_set<std::string> new_service_uuids;
-  for (const auto& service : services)
-    new_service_uuids.insert(GetCanonicalBluetoothUuid(service->uuid()));
-
-  // Remove any services in |gatt_services_| that are not present in |services|.
-  for (auto it = gatt_services_.cbegin(); it != gatt_services_.cend();) {
-    if (new_service_uuids.find(it->first) == new_service_uuids.end()) {
-      gatt_services_.erase(it++);
-      changed = true;
-    } else {
-      ++it;
-    }
-  }
+  gatt_services_.clear();
 
   // Add new services.
   for (auto& service : services) {
     auto key = GetCanonicalBluetoothUuid(service->uuid());
-
-    if (gatt_services_.find(key) != gatt_services_.end())
-      continue;
-
     auto cast_service = std::make_unique<BluetoothRemoteGattServiceCast>(
         this, std::move(service));
     DCHECK_EQ(key, cast_service->GetIdentifier());
     gatt_services_[key] = std::move(cast_service);
-    changed = true;
   }
 
-  if (changed)
-    device_uuids_.ReplaceServiceUUIDs(gatt_services_);
-  return changed;
+  device_uuids_.ReplaceServiceUUIDs(gatt_services_);
+  SetGattServicesDiscoveryComplete(true);
+  adapter_->NotifyGattServicesDiscovered(this);
 }
 
 bool BluetoothDeviceCast::UpdateCharacteristicValue(
@@ -375,18 +363,14 @@ void BluetoothDeviceCast::DisconnectGatt() {
 void BluetoothDeviceCast::OnConnect(bool success) {
   DVLOG(2) << __func__ << " success:" << success;
   pending_connect_ = false;
-  if (success)
-    SetConnected(true);
-  else
+  if (!success)
     DidFailToConnectGatt(ERROR_FAILED);
 }
 
 void BluetoothDeviceCast::OnDisconnect(bool success) {
   DVLOG(2) << __func__ << " success:" << success;
   pending_disconnect_ = false;
-  if (success)
-    SetConnected(false);
-  else
+  if (!success)
     LOG(ERROR) << "Request to DisconnectGatt() failed!";
 }
 

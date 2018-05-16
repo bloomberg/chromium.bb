@@ -58,9 +58,9 @@ base::Optional<LeScanResult::UuidList> GetUuidsAsUuid(
       return base::nullopt;
     }
 
-    ret.emplace_back();
     for (size_t i = 0; i < field.size();
          i += sizeof(bluetooth_v2_shlib::Uuid)) {
+      ret.emplace_back();
       // GAP UUIDs are little endian and bluetooth_v2_shlib::Uuid is big endian.
       std::reverse_copy(field.begin() + i,
                         field.begin() + i + sizeof(bluetooth_v2_shlib::Uuid),
