@@ -9,7 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 
@@ -22,9 +22,9 @@ RendererWebSchedulerImpl::RendererWebSchedulerImpl(
                        main_thread_scheduler->IdleTaskRunner(),
                        main_thread_scheduler->V8TaskQueue()),
       main_thread_scheduler_(main_thread_scheduler),
-      compositor_task_runner_(
-          TaskRunnerImpl::Create(main_thread_scheduler_->CompositorTaskQueue(),
-                                 TaskType::kMainThreadTaskQueueCompositor)) {}
+      compositor_task_runner_(TaskQueueWithTaskType::Create(
+          main_thread_scheduler_->CompositorTaskQueue(),
+          TaskType::kMainThreadTaskQueueCompositor)) {}
 
 RendererWebSchedulerImpl::~RendererWebSchedulerImpl() = default;
 

@@ -13,7 +13,7 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
@@ -610,9 +610,10 @@ TEST_F(TimerTest, UserSuppliedTaskRunner) {
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskRunnerImpl> task_runner_impl =
-      scheduler::TaskRunnerImpl::Create(task_runner, TaskType::kInternalTest);
-  TimerForTest<TimerTest> timer(task_runner_impl, this,
+  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type =
+      scheduler::TaskQueueWithTaskType::Create(task_runner,
+                                               TaskType::kInternalTest);
+  TimerForTest<TimerTest> timer(task_queue_with_task_type, this,
                                 &TimerTest::CountingTask);
   timer.StartOneShot(TimeDelta(), FROM_HERE);
 
@@ -706,21 +707,23 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskRunnerImpl> task_runner_impl1 =
-      scheduler::TaskRunnerImpl::Create(task_runner1, TaskType::kInternalTest);
-  TaskObserver task_observer1(task_runner_impl1, &run_order);
+  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type1 =
+      scheduler::TaskQueueWithTaskType::Create(task_runner1,
+                                               TaskType::kInternalTest);
+  TaskObserver task_observer1(task_queue_with_task_type1, &run_order);
   task_runner1->AddTaskObserver(&task_observer1);
 
   scoped_refptr<TaskQueue> task_runner2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskRunnerImpl> task_runner_impl2 =
-      scheduler::TaskRunnerImpl::Create(task_runner2, TaskType::kInternalTest);
-  TaskObserver task_observer2(task_runner_impl2, &run_order);
+  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type2 =
+      scheduler::TaskQueueWithTaskType::Create(task_runner2,
+                                               TaskType::kInternalTest);
+  TaskObserver task_observer2(task_queue_with_task_type2, &run_order);
   task_runner2->AddTaskObserver(&task_observer2);
 
-  TimerForTest<TimerTest> timer(task_runner_impl1, this,
+  TimerForTest<TimerTest> timer(task_queue_with_task_type1, this,
                                 &TimerTest::CountingTask);
 
   double start_time = CurrentTimeTicksInSeconds();
@@ -729,13 +732,13 @@ TEST_F(TimerTest, MoveToNewTaskRunnerOneShot) {
 
   platform_->RunForPeriodSeconds(0.5);
 
-  timer.MoveToNewTaskRunner(task_runner_impl2);
+  timer.MoveToNewTaskRunner(task_queue_with_task_type2);
 
   platform_->RunUntilIdle();
 
   EXPECT_THAT(run_times_, ElementsAre(start_time + 1.0));
 
-  EXPECT_THAT(run_order, ElementsAre(task_runner_impl2));
+  EXPECT_THAT(run_order, ElementsAre(task_queue_with_task_type2));
 
   EXPECT_TRUE(task_runner1->IsEmpty());
   EXPECT_TRUE(task_runner2->IsEmpty());
@@ -748,21 +751,23 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskRunnerImpl> task_runner_impl1 =
-      scheduler::TaskRunnerImpl::Create(task_runner1, TaskType::kInternalTest);
-  TaskObserver task_observer1(task_runner_impl1, &run_order);
+  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type1 =
+      scheduler::TaskQueueWithTaskType::Create(task_runner1,
+                                               TaskType::kInternalTest);
+  TaskObserver task_observer1(task_queue_with_task_type1, &run_order);
   task_runner1->AddTaskObserver(&task_observer1);
 
   scoped_refptr<TaskQueue> task_runner2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskRunnerImpl> task_runner_impl2 =
-      scheduler::TaskRunnerImpl::Create(task_runner2, TaskType::kInternalTest);
-  TaskObserver task_observer2(task_runner_impl2, &run_order);
+  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type2 =
+      scheduler::TaskQueueWithTaskType::Create(task_runner2,
+                                               TaskType::kInternalTest);
+  TaskObserver task_observer2(task_queue_with_task_type2, &run_order);
   task_runner2->AddTaskObserver(&task_observer2);
 
-  TimerForTest<TimerTest> timer(task_runner_impl1, this,
+  TimerForTest<TimerTest> timer(task_queue_with_task_type1, this,
                                 &TimerTest::CountingTask);
 
   double start_time = CurrentTimeTicksInSeconds();
@@ -771,15 +776,17 @@ TEST_F(TimerTest, MoveToNewTaskRunnerRepeating) {
 
   platform_->RunForPeriodSeconds(2.5);
 
-  timer.MoveToNewTaskRunner(task_runner_impl2);
+  timer.MoveToNewTaskRunner(task_queue_with_task_type2);
 
   platform_->RunForPeriodSeconds(2);
 
   EXPECT_THAT(run_times_, ElementsAre(start_time + 1.0, start_time + 2.0,
                                       start_time + 3.0, start_time + 4.0));
 
-  EXPECT_THAT(run_order, ElementsAre(task_runner_impl1, task_runner_impl1,
-                                     task_runner_impl2, task_runner_impl2));
+  EXPECT_THAT(
+      run_order,
+      ElementsAre(task_queue_with_task_type1, task_queue_with_task_type1,
+                  task_queue_with_task_type2, task_queue_with_task_type2));
 
   EXPECT_TRUE(task_runner1->IsEmpty());
   EXPECT_FALSE(task_runner2->IsEmpty());
@@ -792,17 +799,19 @@ TEST_F(TimerTest, MoveToNewTaskRunnerWithoutTasks) {
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskRunnerImpl> task_runner_impl1 =
-      scheduler::TaskRunnerImpl::Create(task_runner1, TaskType::kInternalTest);
+  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type1 =
+      scheduler::TaskQueueWithTaskType::Create(task_runner1,
+                                               TaskType::kInternalTest);
 
   scoped_refptr<TaskQueue> task_runner2(
       platform_->GetMainThreadScheduler()->NewTimerTaskQueue(
           scheduler::MainThreadTaskQueue::QueueType::kFrameThrottleable,
           nullptr));
-  scoped_refptr<scheduler::TaskRunnerImpl> task_runner_impl2 =
-      scheduler::TaskRunnerImpl::Create(task_runner2, TaskType::kInternalTest);
+  scoped_refptr<scheduler::TaskQueueWithTaskType> task_queue_with_task_type2 =
+      scheduler::TaskQueueWithTaskType::Create(task_runner2,
+                                               TaskType::kInternalTest);
 
-  TimerForTest<TimerTest> timer(task_runner_impl1, this,
+  TimerForTest<TimerTest> timer(task_queue_with_task_type1, this,
                                 &TimerTest::CountingTask);
 
   platform_->RunUntilIdle();

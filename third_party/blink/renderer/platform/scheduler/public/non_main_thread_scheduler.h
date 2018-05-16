@@ -19,7 +19,7 @@
 
 namespace blink {
 namespace scheduler {
-class TaskRunnerImpl;
+class TaskQueueWithTaskType;
 class WorkerSchedulerProxy;
 
 // TODO(yutak): Remove the dependency to WebThreadScheduler. We want to
@@ -91,7 +91,7 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
 
  private:
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
-  scoped_refptr<TaskRunnerImpl> v8_task_runner_;
+  scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(NonMainThreadScheduler);
 };

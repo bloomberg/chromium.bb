@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "third_party/blink/renderer/platform/scheduler/child/task_runner_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 
 namespace blink {
@@ -33,8 +33,8 @@ void NonMainThreadScheduler::Init() {
   // DefaultTaskQueue() is a virtual function, so it can't be called in the
   // constructor. Also, DefaultTaskQueue() checks if InitImpl() is called.
   // Therefore, v8_task_runner_ needs to be initialized here.
-  v8_task_runner_ = TaskRunnerImpl::Create(DefaultTaskQueue(),
-                                           TaskType::kMainThreadTaskQueueV8);
+  v8_task_runner_ = TaskQueueWithTaskType::Create(
+      DefaultTaskQueue(), TaskType::kMainThreadTaskQueueV8);
 }
 
 scoped_refptr<WorkerTaskQueue> NonMainThreadScheduler::CreateTaskRunner() {
