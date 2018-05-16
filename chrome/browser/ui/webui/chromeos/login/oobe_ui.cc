@@ -125,6 +125,7 @@ const char kProductLogoPath[] = "product-logo.png";
 #if defined(GOOGLE_CHROME_BUILD)
 const char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
 const char kLogo24PX2XSvgPath[] = "logo_24px-2x.svg";
+const char kSyncConsentIcons[] = "sync-consent-icons.html";
 #endif
 
 // Creates a WebUIDataSource for chrome://oobe
@@ -168,6 +169,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
 #if defined(GOOGLE_CHROME_BUILD)
   source->AddResourcePath(kLogo24PX1XSvgPath, IDR_PRODUCT_LOGO_24PX_1X);
   source->AddResourcePath(kLogo24PX2XSvgPath, IDR_PRODUCT_LOGO_24PX_2X);
+  source->AddResourcePath(kSyncConsentIcons,
+                          IDR_PRODUCT_CHROMEOS_SYNC_CONSENT_SCREEN_ICONS);
   // No #else section here as Sync Settings screen is Chrome-specific.
 #endif
 
