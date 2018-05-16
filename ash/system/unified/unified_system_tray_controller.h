@@ -39,6 +39,10 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Create the view. The created view is unowned.
   UnifiedSystemTrayView* CreateView();
 
+  // Switch the active user to |user_index|. Called from the view.
+  void HandleUserSwitch(int user_index);
+  // Show multi profile login UI. Called from the view.
+  void HandleAddUserAction();
   // Sign out from the current user. Called from the view.
   void HandleSignOutAction();
   // Show lock screen which asks the user password. Called from the view.
@@ -55,6 +59,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void UpdateDrag(const gfx::Point& location);
   void EndDrag(const gfx::Point& location);
 
+  // Show user selector popup widget. Called from the view.
+  void ShowUserChooserWidget();
   // Show the detailed view of network. Called from the view.
   void ShowNetworkDetailedView();
   // Show the detailed view of bluetooth. Called from the view.

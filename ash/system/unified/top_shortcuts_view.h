@@ -36,7 +36,7 @@ class ASH_EXPORT TopShortcutsView : public views::View,
   UnifiedSystemTrayController* controller_;
 
   // Owned by views hierarchy.
-  views::View* user_avatar_view_ = nullptr;
+  views::Button* user_avatar_button_ = nullptr;
   SignOutButton* sign_out_button_ = nullptr;
   TopShortcutButton* lock_button_ = nullptr;
   TopShortcutButton* settings_button_ = nullptr;
