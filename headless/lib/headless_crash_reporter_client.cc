@@ -23,7 +23,7 @@ HeadlessCrashReporterClient::~HeadlessCrashReporterClient() = default;
 void HeadlessCrashReporterClient::GetProductNameAndVersion(
     const char** product_name,
     const char** version) {
-  *product_name = "HeadlessChrome";
+  *product_name = "Chrome";
   *version = PRODUCT_VERSION;
 }
 

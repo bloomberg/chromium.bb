@@ -19,8 +19,11 @@
 #include "headless/public/headless_export.h"
 
 namespace base {
+namespace debug {
+struct CrashKeyString;
+}  // namespace debug
 class CommandLine;
-}
+}  // namespace base
 
 namespace headless {
 
@@ -66,6 +69,7 @@ class HEADLESS_EXPORT HeadlessContentMainDelegate
   HeadlessPlatformEventSource platform_event_source_;
 
   std::unique_ptr<HeadlessBrowserImpl> browser_;
+  base::debug::CrashKeyString* headless_crash_key_;  // Note: never deallocated.
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessContentMainDelegate);
 };
