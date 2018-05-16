@@ -214,7 +214,7 @@ void OverlayWindowViews::SetUpViews() {
                             kPlayPauseIconSize.width(), SK_ColorWHITE);
   play_pause_controls_view_->SetToggledImage(views::Button::STATE_NORMAL,
                                              &pause_icon);
-  play_pause_controls_view_->SetToggled(controller_->IsPlayerActive());
+  play_pause_controls_view_->SetToggled(!controller_->IsPlayerActive());
 
   // Paint to ui::Layers to use in the OverlaySurfaceEmbedder.
   video_view_->SetPaintToLayer(ui::LAYER_TEXTURED);
