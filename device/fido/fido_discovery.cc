@@ -64,9 +64,10 @@ FidoDiscovery::~FidoDiscovery() = default;
 void FidoDiscovery::Start() {
   DCHECK_EQ(state_, State::kIdle);
   state_ = State::kStarting;
+  // TODO(hongjunchoi): Fix so that NotifiyStarted() is never called
+  // synchronously after StartInternal().
+  // See: https://crbug.com/823686
   StartInternal();
-  // StartInternal should never synchronously call NotifyStarted().
-  DCHECK_EQ(state_, State::kStarting);
 }
 
 void FidoDiscovery::NotifyDiscoveryStarted(bool success) {
