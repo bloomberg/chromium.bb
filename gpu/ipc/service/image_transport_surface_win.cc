@@ -64,8 +64,9 @@ scoped_refptr<gl::GLSurface> ImageTransportSurface::CreateNativeSurface(
         return nullptr;
       surface = egl_surface;
     } else {
-      surface = gl::init::CreateNativeViewGLSurfaceEGL(
-          surface_handle, std::move(vsync_provider));
+      surface = gl::InitializeGLSurface(
+          base::MakeRefCounted<gl::NativeViewGLSurfaceEGL>(
+              surface_handle, std::move(vsync_provider)));
       if (!surface)
         return nullptr;
       // This is unnecessary with DirectComposition because that doesn't block
