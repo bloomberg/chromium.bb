@@ -23,7 +23,6 @@ class CancellationFlag;
 }  // namespace base
 
 namespace google_apis {
-class AboutResource;
 class ChangeList;
 class FileList;
 class TeamDriveList;
@@ -42,13 +41,14 @@ class ResourceMetadata;
 // This object is copyable.
 class DirectoryFetchInfo {
  public:
-  DirectoryFetchInfo() : changestamp_(0) {}
+  DirectoryFetchInfo() = default;
+
   DirectoryFetchInfo(const std::string& local_id,
                      const std::string& resource_id,
-                     int64_t changestamp)
+                     const std::string& start_page_token)
       : local_id_(local_id),
         resource_id_(resource_id),
-        changestamp_(changestamp) {}
+        start_page_token_(start_page_token) {}
 
   // Returns true if the object is empty.
   bool empty() const { return local_id_.empty(); }
@@ -59,9 +59,9 @@ class DirectoryFetchInfo {
   // Resource ID of the directory.
   const std::string& resource_id() const { return resource_id_; }
 
-  // Changestamp of the directory. The changestamp is used to determine if
-  // the directory contents should be fetched.
-  int64_t changestamp() const { return changestamp_; }
+  // Start Page Token of the directory. The start page token is used to
+  // determine if the directory contents should be fetched.
+  const std::string& start_page_token() const { return start_page_token_; }
 
   // Returns a string representation of this object.
   std::string ToString() const;
@@ -69,7 +69,7 @@ class DirectoryFetchInfo {
  private:
   const std::string local_id_;
   const std::string resource_id_;
-  const int64_t changestamp_;
+  const std::string start_page_token_;
 };
 
 // Class to represent a change list.
@@ -90,17 +90,20 @@ class ChangeList {
     return &parent_resource_ids_;
   }
   const GURL& next_url() const { return next_url_; }
-  int64_t largest_changestamp() const { return largest_changestamp_; }
 
-  void set_largest_changestamp(int64_t largest_changestamp) {
-    largest_changestamp_ = largest_changestamp;
+  const std::string& new_start_page_token() const {
+    return new_start_page_token_;
+  }
+
+  void set_new_start_page_token(const std::string& start_page_token) {
+    new_start_page_token_ = start_page_token;
   }
 
  private:
   std::vector<ResourceEntry> entries_;
   std::vector<std::string> parent_resource_ids_;
   GURL next_url_;
-  int64_t largest_changestamp_;
+  std::string new_start_page_token_;
 
   DISALLOW_COPY_AND_ASSIGN(ChangeList);
 };
@@ -122,20 +125,10 @@ class ChangeListProcessor {
   //
   // Must be run on the same task runner as |resource_metadata_| uses.
   FileError ApplyUserChangeList(
-      std::unique_ptr<google_apis::AboutResource> about_resource,
+      const std::string& start_page_token,
+      const std::string& root_resource_id,
       std::vector<std::unique_ptr<ChangeList>> change_lists,
       bool is_delta_update);
-
-  // Applies Team Drive's change lists to |resource_metadata_|.
-  //
-  // |change_lists| must not be an empty list, although it can consist of a
-  // single ChangeList object whose |items_| is emtpy.
-  // |team_drive_id| is the Team Drive's ID which gave the change lists.
-  //
-  // Must be run on the same task runner as |resource_metadata_| uses.
-  FileError ApplyTeamDriveChangeList(
-      const std::string& team_drive_id,
-      std::vector<std::unique_ptr<ChangeList>> change_lists);
 
   // The set of changed files as a result of change list processing.
   const FileChange& changed_files() const { return *changed_files_; }
@@ -165,7 +158,7 @@ class ChangeListProcessor {
   // Applies the |change_lists| to |resource_metadta_|.
   FileError ApplyChangeListInternal(
       std::vector<std::unique_ptr<ChangeList>> change_lists,
-      int64_t largest_changestamp,
+      const std::string& start_page_token,
       ResourceEntry* root,
       ChangeListToEntryMapUMAStats* uma_stats);
 
@@ -173,7 +166,7 @@ class ChangeListProcessor {
   // to be applied by ApplyEntryMap() later.
   void ConvertChangeListsToMap(
       std::vector<std::unique_ptr<ChangeList>> change_lists,
-      int64_t largest_changestamp,
+      const std::string& start_page_token,
       ChangeListToEntryMapUMAStats* uma_stats);
 
   // Applies the pre-processed metadata from entry_map_ onto the resource
@@ -185,10 +178,6 @@ class ChangeListProcessor {
 
   // Adds the directories changed by the update on |entry| to |changed_dirs_|.
   void UpdateChangedDirs(const ResourceEntry& entry);
-
-  // Sets the largest changestamp of a Team Drive's change list.
-  FileError SetTeamDriveLargestChangestamp(const std::string& team_drive_id,
-                                           int64_t value);
 
   ResourceMetadata* resource_metadata_;  // Not owned.
   base::CancellationFlag* in_shutdown_;  // Not owned.

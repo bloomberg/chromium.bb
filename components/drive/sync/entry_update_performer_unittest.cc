@@ -265,8 +265,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
   const std::string kTestFileContent = "I'm being uploaded! Yay!";
   EXPECT_EQ(FILE_ERROR_OK, StoreAndMarkDirty(local_id, kTestFileContent));
 
-  int64_t original_changestamp =
-      fake_service()->about_resource().largest_change_id();
+  const std::string original_start_page_token =
+      fake_service()->start_page_token().start_page_token();
 
   // The callback will be called upon completion of UpdateEntry().
   FileError error = FILE_ERROR_FAILED;
@@ -278,8 +278,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdate) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Check that the server has received an update.
-  EXPECT_LT(original_changestamp,
-            fake_service()->about_resource().largest_change_id());
+  EXPECT_NE(original_start_page_token,
+            fake_service()->start_page_token().start_page_token());
 
   // Check that the file size is updated to that of the updated content.
   google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
@@ -309,8 +309,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
   const std::string kTestFileContent = "I'm being uploaded! Yay!";
   EXPECT_EQ(FILE_ERROR_OK, StoreAndMarkDirty(local_id, kTestFileContent));
 
-  int64_t original_changestamp =
-      fake_service()->about_resource().largest_change_id();
+  std::string original_start_page_token =
+      fake_service()->start_page_token().start_page_token();
 
   // The callback will be called upon completion of UpdateEntry().
   FileError error = FILE_ERROR_FAILED;
@@ -322,8 +322,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Check that the server has received an update.
-  EXPECT_LT(original_changestamp,
-            fake_service()->about_resource().largest_change_id());
+  EXPECT_NE(original_start_page_token,
+            fake_service()->start_page_token().start_page_token());
 
   // Check that the file size is updated to that of the updated content.
   google_apis::DriveApiErrorCode gdata_error = google_apis::DRIVE_OTHER_ERROR;
@@ -360,7 +360,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
   // And call UpdateEntry again.
   // In this case, although the file is marked as dirty, but the content
   // hasn't been changed. Thus, the actual uploading should be skipped.
-  original_changestamp = fake_service()->about_resource().largest_change_id();
+  original_start_page_token =
+      fake_service()->start_page_token().start_page_token();
   error = FILE_ERROR_FAILED;
   performer_->UpdateEntry(
       local_id,
@@ -369,8 +370,8 @@ TEST_F(EntryUpdatePerformerTest, UpdateEntry_ContentUpdateMd5Check) {
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
 
-  EXPECT_EQ(original_changestamp,
-            fake_service()->about_resource().largest_change_id());
+  EXPECT_EQ(original_start_page_token,
+            fake_service()->start_page_token().start_page_token());
 
   // Make sure that the cache is no longer dirty.
   EXPECT_EQ(FILE_ERROR_OK, GetLocalResourceEntry(kFilePath, &entry));

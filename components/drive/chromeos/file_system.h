@@ -45,6 +45,7 @@ class DirectoryLoader;
 class FileCache;
 class LoaderController;
 class ResourceMetadata;
+class StartPageTokenLoader;
 class SyncClient;
 }  // namespace internal
 
@@ -269,6 +270,9 @@ class FileSystem : public FileSystemInterface,
 
   // Used to load about resource.
   std::unique_ptr<internal::AboutResourceLoader> about_resource_loader_;
+
+  // Used to load the start page token for the users default corpus
+  std::unique_ptr<internal::StartPageTokenLoader> start_page_token_loader_;
 
   // Used to control ChangeListLoader.
   std::unique_ptr<internal::LoaderController> loader_controller_;

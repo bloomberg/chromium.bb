@@ -21,6 +21,7 @@
 #include "components/drive/chromeos/file_cache.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/chromeos/start_page_token_loader.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_change.h"
 #include "components/drive/file_system_core_util.h"
@@ -110,14 +111,13 @@ class ChangeListLoaderTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
+    start_page_token_loader_.reset(new StartPageTokenLoader(
+        drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get()));
     loader_controller_.reset(new LoaderController);
-    change_list_loader_.reset(
-        new ChangeListLoader(logger_.get(),
-                             base::ThreadTaskRunnerHandle::Get().get(),
-                             metadata_.get(),
-                             scheduler_.get(),
-                             about_resource_loader_.get(),
-                             loader_controller_.get()));
+    change_list_loader_.reset(new ChangeListLoader(
+        logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
+        metadata_.get(), scheduler_.get(), about_resource_loader_.get(),
+        start_page_token_loader_.get(), loader_controller_.get()));
   }
 
   void SetUpForTeamDrives() {
@@ -154,6 +154,7 @@ class ChangeListLoaderTest : public testing::Test {
   std::unique_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   std::unique_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   std::unique_ptr<AboutResourceLoader> about_resource_loader_;
+  std::unique_ptr<StartPageTokenLoader> start_page_token_loader_;
   std::unique_ptr<LoaderController> loader_controller_;
   std::unique_ptr<ChangeListLoader> change_list_loader_;
 };
@@ -174,9 +175,9 @@ TEST_F(ChangeListLoaderTest, Load) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  int64_t changestamp = 0;
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_LT(0, changestamp);
+  std::string start_page_token;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_FALSE(start_page_token.empty());
   EXPECT_EQ(0, drive_service_->team_drive_list_load_count());
   EXPECT_EQ(1, drive_service_->file_list_load_count());
   EXPECT_EQ(1, drive_service_->about_resource_load_count());
@@ -218,9 +219,9 @@ TEST_F(ChangeListLoaderTest, LoadWithTeamDriveEnabled) {
   EXPECT_EQ(FILE_ERROR_OK, error);
 
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  int64_t changestamp = 0;
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_LT(0, changestamp);
+  std::string start_page_token;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_FALSE(start_page_token.empty());
   EXPECT_EQ(1, drive_service_->team_drive_list_load_count());
   EXPECT_EQ(1, drive_service_->file_list_load_count());
   EXPECT_EQ(1, drive_service_->about_resource_load_count());
@@ -253,13 +254,12 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
 
   // Reset loader.
   about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
-  change_list_loader_.reset(
-      new ChangeListLoader(logger_.get(),
-                           base::ThreadTaskRunnerHandle::Get().get(),
-                           metadata_.get(),
-                           scheduler_.get(),
-                           about_resource_loader_.get(),
-                           loader_controller_.get()));
+  start_page_token_loader_.reset(new StartPageTokenLoader(
+      drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get()));
+  change_list_loader_.reset(new ChangeListLoader(
+      logger_.get(), base::ThreadTaskRunnerHandle::Get().get(), metadata_.get(),
+      scheduler_.get(), about_resource_loader_.get(),
+      start_page_token_loader_.get(), loader_controller_.get()));
 
   // Add a file to the service.
   std::unique_ptr<google_apis::FileResource> gdata_entry =
@@ -282,9 +282,10 @@ TEST_F(ChangeListLoaderTest, Load_LocalMetadataAvailable) {
   EXPECT_EQ(1, observer.initial_load_complete_count());
 
   // Update should be checked by Load().
-  int64_t changestamp = 0;
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_EQ(drive_service_->about_resource().largest_change_id(), changestamp);
+  std::string start_page_token;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_EQ(drive_service_->start_page_token().start_page_token(),
+            start_page_token);
   EXPECT_EQ(1, drive_service_->change_list_load_count());
   EXPECT_EQ(1, observer.load_from_server_complete_count());
   EXPECT_TRUE(
@@ -307,9 +308,9 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_FAILED,
             check_for_updates_error);  // Callback was not run.
-  int64_t changestamp = 0;
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_EQ(0, changestamp);
+  std::string start_page_token;
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_TRUE(start_page_token.empty());
   EXPECT_EQ(0, drive_service_->file_list_load_count());
   EXPECT_EQ(0, drive_service_->about_resource_load_count());
 
@@ -328,13 +329,11 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
   EXPECT_EQ(FILE_ERROR_OK, load_error);
   EXPECT_EQ(FILE_ERROR_OK, check_for_updates_error);
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_LT(0, changestamp);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_FALSE(start_page_token.empty());
   EXPECT_EQ(1, drive_service_->file_list_load_count());
 
-  int64_t previous_changestamp = 0;
-  EXPECT_EQ(FILE_ERROR_OK,
-            metadata_->GetLargestChangestamp(&previous_changestamp));
+  std::string previous_start_page_token = start_page_token;
   // CheckForUpdates() results in no update.
   change_list_loader_->CheckForUpdates(
       google_apis::test_util::CreateCopyResultCallback(
@@ -342,8 +341,8 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_EQ(previous_changestamp, changestamp);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_EQ(previous_start_page_token, start_page_token);
 
   // Add a file to the service.
   std::unique_ptr<google_apis::FileResource> gdata_entry =
@@ -358,8 +357,8 @@ TEST_F(ChangeListLoaderTest, CheckForUpdates) {
   EXPECT_TRUE(change_list_loader_->IsRefreshing());
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(change_list_loader_->IsRefreshing());
-  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetLargestChangestamp(&changestamp));
-  EXPECT_LT(previous_changestamp, changestamp);
+  EXPECT_EQ(FILE_ERROR_OK, metadata_->GetStartPageToken(&start_page_token));
+  EXPECT_NE(previous_start_page_token, start_page_token);
   EXPECT_EQ(1, observer.load_from_server_complete_count());
   EXPECT_TRUE(
       observer.changed_files().CountDirectory(util::GetDriveMyDriveRootPath()));

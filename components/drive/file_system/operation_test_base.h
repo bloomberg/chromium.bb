@@ -36,6 +36,7 @@ class FileCache;
 class LoaderController;
 class ResourceMetadata;
 class ResourceMetadataStorage;
+class StartPageTokenLoader;
 }  // namespace internal
 
 namespace file_system {
@@ -157,6 +158,7 @@ class OperationTestBase : public testing::Test {
   std::unique_ptr<internal::ResourceMetadata, test_util::DestroyHelperForTests>
       metadata_;
   std::unique_ptr<internal::AboutResourceLoader> about_resource_loader_;
+  std::unique_ptr<internal::StartPageTokenLoader> start_page_token_loader_;
   std::unique_ptr<internal::LoaderController> loader_controller_;
   std::unique_ptr<internal::ChangeListLoader> change_list_loader_;
 };

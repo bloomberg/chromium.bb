@@ -28,6 +28,7 @@ class Time;
 
 namespace google_apis {
 class AboutResource;
+class StartPageToken;
 }  // namespace google_apis
 
 namespace drive {
@@ -43,6 +44,7 @@ class ChangeListLoaderObserver;
 class ChangeListProcessor;
 class LoaderController;
 class ResourceMetadata;
+class StartPageTokenLoader;
 
 // ChangeListLoader is used to load the change list, the full resource list,
 // and directory contents, from Google Drive API.  The class also updates the
@@ -63,6 +65,7 @@ class ChangeListLoader {
                    ResourceMetadata* resource_metadata,
                    JobScheduler* scheduler,
                    AboutResourceLoader* about_resource_loader,
+                   StartPageTokenLoader* start_page_token_loader,
                    LoaderController* apply_task_controller);
   ~ChangeListLoader();
 
@@ -93,45 +96,53 @@ class ChangeListLoader {
  private:
   // Starts the resource metadata loading and calls |callback| when it's done.
   void Load(const FileOperationCallback& callback);
-  void LoadAfterGetLargestChangestamp(bool is_initial_load,
-                                      const int64_t* local_changestamp,
-                                      FileError error);
+  void LoadAfterGetLocalStartPageToken(
+      bool is_initial_load,
+      const std::string* local_start_page_token,
+      FileError error);
   void LoadAfterGetAboutResource(
-      int64_t local_changestamp,
+      const std::string& local_start_page_token,
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::AboutResource> about_resource);
+
+  void LoadAfterGetStartPageToken(
+      const std::string& local_start_page_token,
+      const std::string& root_folder_id,
+      google_apis::DriveApiErrorCode status,
+      std::unique_ptr<google_apis::StartPageToken> start_page_token);
 
   // Part of Load().
   // This function should be called when the change list load is complete.
   // Flushes the callbacks for change list loading and all directory loading.
   void OnChangeListLoadComplete(FileError error);
 
-  // Called when the loading about_resource_loader_->UpdateAboutResource is
-  // completed.
-  void OnAboutResourceUpdated(
+  // Called when loading the start page token is completed.
+  void OnStartPageTokenLoaderUpdated(
       google_apis::DriveApiErrorCode error,
-      std::unique_ptr<google_apis::AboutResource> resource);
+      std::unique_ptr<google_apis::StartPageToken> start_page_token);
 
   // ================= Implementation for change list loading =================
 
   // Part of LoadFromServerIfNeeded().
-  // Starts loading the change list since |local_changestamp|, or the full
-  // resource list if |start_changestamp| is zero. If there's no changes since
-  // then, and there are no new team drives changes to apply from
+  // Starts loading the change list since |local_start_page_token|, or the full
+  // resource list if |local_start_page_token| is empty. If there's no changes
+  // since then, and there are no new team drives changes to apply from
   // team_drives_change_lists, finishes early.
   // TODO(sashab): Currently, team_drives_change_lists always contains all of
   // the team drives. Update this so team_drives_change_lists is only filled
   // when the TD flag is newly turned on or local data cleared. crbug.com/829154
   void LoadChangeListFromServer(
-      std::unique_ptr<google_apis::AboutResource> about_resource,
-      int64_t local_changestamp,
+      const std::string& remote_start_page_token,
+      const std::string& local_start_page_token,
+      const std::string& root_resource_id,
       FileError error,
       std::vector<std::unique_ptr<ChangeList>> team_drives_change_lists);
 
   // Part of LoadChangeListFromServer().
   // Called when the entire change list is loaded.
   void LoadChangeListFromServerAfterLoadChangeList(
-      std::unique_ptr<google_apis::AboutResource> about_resource,
+      const std::string& start_page_token,
+      const std::string& root_resource_id,
       bool is_delta_update,
       std::vector<std::unique_ptr<ChangeList>> team_drives_change_lists,
       FileError error,
@@ -151,12 +162,15 @@ class ChangeListLoader {
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   AboutResourceLoader* about_resource_loader_;  // Not owned.
+  StartPageTokenLoader* start_page_token_loader_;  // Not owned.
   LoaderController* loader_controller_;  // Not owned.
   base::ObserverList<ChangeListLoaderObserver> observers_;
   std::vector<FileOperationCallback> pending_load_callback_;
   FileOperationCallback pending_update_check_callback_;
 
   // Running feed fetcher.
+  // TODO(slangley): Do not make this stateful by changing the feed_fetcher
+  // to be base::Owned by the callback.
   std::unique_ptr<FeedFetcher> change_feed_fetcher_;
 
   // True if the full resource list is loaded (i.e. the resource metadata is

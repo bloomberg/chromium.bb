@@ -119,6 +119,21 @@ std::string ConvertChangestampToStartPageToken(int64_t changestamp) {
   return base::NumberToString(changestamp + 1);
 }
 
+// Convers a start page token to a numerical changestamp
+bool ConvertStartPageTokenToChangestamp(const std::string& start_page_token,
+                                        int64_t* changestamp) {
+  DCHECK(changestamp);
+  int64_t result;
+  if (base::StringToInt64(start_page_token, &result)) {
+    // The minimum valid start_page_token is 1.
+    if (result > 0) {
+      *changestamp = result - 1;
+      return true;
+    }
+  }
+  return false;
+}
+
 std::string NormalizeFileName(const std::string& input) {
   DCHECK(base::IsStringUTF8(input));
 

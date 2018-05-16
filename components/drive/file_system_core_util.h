@@ -36,6 +36,9 @@ const char kDriveOtherDirName[] = "other";
 const char kDriveTeamDrivesDirName[] = "team_drives";
 const char kDriveTrashDirName[] = "trash";
 
+// The team_drive_id value that signifies the users default corpus.
+constexpr char kTeamDriveIdDefaultCorpus[] = "";
+
 // Returns the path of the top root of the pseudo tree.
 const base::FilePath& GetDriveGrandRootPath();
 
@@ -55,6 +58,10 @@ std::string UnescapeCacheFileName(const std::string& filename);
 
 // Converts a numerical changestamp value to a start page token.
 std::string ConvertChangestampToStartPageToken(int64_t changestamp);
+
+// Convers a start page token to a numerical changestamp
+bool ConvertStartPageTokenToChangestamp(const std::string& stat_page_token,
+                                        int64_t* changestamp);
 
 // Converts the given string to a form suitable as a file name. Specifically,
 // - Normalizes in Unicode Normalization Form C.

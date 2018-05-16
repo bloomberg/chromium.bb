@@ -23,6 +23,7 @@
 #include "components/drive/chromeos/file_system/remove_operation.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/chromeos/start_page_token_loader.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_change.h"
@@ -137,14 +138,13 @@ class SyncClientTest : public testing::Test {
     ASSERT_EQ(FILE_ERROR_OK, metadata_->Initialize());
 
     about_resource_loader_.reset(new AboutResourceLoader(scheduler_.get()));
+    start_page_token_loader_.reset(new StartPageTokenLoader(
+        drive::util::kTeamDriveIdDefaultCorpus, scheduler_.get()));
     loader_controller_.reset(new LoaderController);
     change_list_loader_.reset(new ChangeListLoader(
-        logger_.get(),
-        base::ThreadTaskRunnerHandle::Get().get(),
-        metadata_.get(),
-        scheduler_.get(),
-        about_resource_loader_.get(),
-        loader_controller_.get()));
+        logger_.get(), base::ThreadTaskRunnerHandle::Get().get(),
+        metadata_.get(), scheduler_.get(), about_resource_loader_.get(),
+        start_page_token_loader_.get(), loader_controller_.get()));
     ASSERT_NO_FATAL_FAILURE(SetUpTestData());
 
     sync_client_.reset(
@@ -261,6 +261,7 @@ class SyncClientTest : public testing::Test {
   std::unique_ptr<FileCache, test_util::DestroyHelperForTests> cache_;
   std::unique_ptr<ResourceMetadata, test_util::DestroyHelperForTests> metadata_;
   std::unique_ptr<AboutResourceLoader> about_resource_loader_;
+  std::unique_ptr<StartPageTokenLoader> start_page_token_loader_;
   std::unique_ptr<LoaderController> loader_controller_;
   std::unique_ptr<ChangeListLoader> change_list_loader_;
   std::unique_ptr<SyncClient> sync_client_;

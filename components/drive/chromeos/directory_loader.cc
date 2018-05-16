@@ -21,6 +21,7 @@
 #include "components/drive/chromeos/change_list_processor.h"
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/resource_metadata.h"
+#include "components/drive/chromeos/start_page_token_loader.h"
 #include "components/drive/drive_api_util.h"
 #include "components/drive/event_logger.h"
 #include "components/drive/file_system_core_util.h"
@@ -34,13 +35,14 @@ namespace internal {
 namespace {
 
 // Minimum changestamp gap required to start loading directory.
-const int kMinimumChangestampGap = 50;
+constexpr int kMinimumChangestampGap = 50;
 
 FileError CheckLocalState(ResourceMetadata* resource_metadata,
-                          const google_apis::AboutResource& about_resource,
+                          const std::string& root_folder_id,
                           const std::string& local_id,
                           ResourceEntry* entry,
-                          int64_t* local_changestamp) {
+                          std::string* start_page_token) {
+  DCHECK(start_page_token);
   // Fill My Drive resource ID.
   ResourceEntry mydrive;
   FileError error = resource_metadata->GetResourceEntryByPath(
@@ -49,7 +51,7 @@ FileError CheckLocalState(ResourceMetadata* resource_metadata,
     return error;
 
   if (mydrive.resource_id().empty()) {
-    mydrive.set_resource_id(about_resource.root_folder_id());
+    mydrive.set_resource_id(root_folder_id);
     error = resource_metadata->RefreshEntry(mydrive);
     if (error != FILE_ERROR_OK)
       return error;
@@ -60,14 +62,14 @@ FileError CheckLocalState(ResourceMetadata* resource_metadata,
   if (error != FILE_ERROR_OK)
     return error;
 
-  // Get the local changestamp.
-  return resource_metadata->GetLargestChangestamp(local_changestamp);
+  // Get the local start page token..
+  return resource_metadata->GetStartPageToken(start_page_token);
 }
 
-FileError UpdateChangestamp(ResourceMetadata* resource_metadata,
-                            const DirectoryFetchInfo& directory_fetch_info,
-                            base::FilePath* directory_path) {
-  // Update the directory changestamp.
+FileError UpdateStartPageToken(ResourceMetadata* resource_metadata,
+                               const DirectoryFetchInfo& directory_fetch_info,
+                               base::FilePath* directory_path) {
+  // Update the directory start page token.
   ResourceEntry directory;
   FileError error = resource_metadata->GetResourceEntryById(
       directory_fetch_info.local_id(), &directory);
@@ -77,8 +79,8 @@ FileError UpdateChangestamp(ResourceMetadata* resource_metadata,
   if (!directory.file_info().is_directory())
     return FILE_ERROR_NOT_A_DIRECTORY;
 
-  directory.mutable_directory_specific_info()->set_changestamp(
-      directory_fetch_info.changestamp());
+  directory.mutable_directory_specific_info()->set_start_page_token(
+      directory_fetch_info.start_page_token());
   error = resource_metadata->RefreshEntry(directory);
   if (error != FILE_ERROR_OK)
     return error;
@@ -201,15 +203,16 @@ DirectoryLoader::DirectoryLoader(
     ResourceMetadata* resource_metadata,
     JobScheduler* scheduler,
     AboutResourceLoader* about_resource_loader,
+    StartPageTokenLoader* start_page_token_loader,
     LoaderController* loader_controller)
     : logger_(logger),
       blocking_task_runner_(blocking_task_runner),
       resource_metadata_(resource_metadata),
       scheduler_(scheduler),
       about_resource_loader_(about_resource_loader),
+      start_page_token_loader_(start_page_token_loader),
       loader_controller_(loader_controller),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 DirectoryLoader::~DirectoryLoader() = default;
 
@@ -281,9 +284,8 @@ void DirectoryLoader::ReadDirectoryAfterGetEntry(
   }
 
   DirectoryFetchInfo directory_fetch_info(
-      entry->local_id(),
-      entry->resource_id(),
-      entry->directory_specific_info().changestamp());
+      entry->local_id(), entry->resource_id(),
+      entry->directory_specific_info().start_page_token());
 
   // Register the callback function to be called when it is loaded.
   const std::string& local_id = directory_fetch_info.local_id();
@@ -345,28 +347,48 @@ void DirectoryLoader::ReadDirectoryAfterGetAboutResource(
 
   DCHECK(about_resource);
 
+  start_page_token_loader_->GetStartPageToken(
+      base::Bind(&DirectoryLoader::ReadDirectoryAfterGetStartPageToken,
+                 weak_ptr_factory_.GetWeakPtr(), local_id,
+                 about_resource->root_folder_id()));
+}
+
+void DirectoryLoader::ReadDirectoryAfterGetStartPageToken(
+    const std::string& local_id,
+    const std::string& root_folder_id,
+    google_apis::DriveApiErrorCode status,
+    std::unique_ptr<google_apis::StartPageToken> start_page_token) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  FileError error = GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
+    OnDirectoryLoadComplete(local_id, error);
+    return;
+  }
+
+  DCHECK(start_page_token);
+
   // Check the current status of local metadata, and start loading if needed.
-  google_apis::AboutResource* about_resource_ptr = about_resource.get();
   ResourceEntry* entry = new ResourceEntry;
-  int64_t* local_changestamp = new int64_t;
+  std::string* local_start_page_token = new std::string();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&CheckLocalState, resource_metadata_, *about_resource_ptr,
-                     local_id, entry, local_changestamp),
+      base::BindOnce(&CheckLocalState, resource_metadata_, root_folder_id,
+                     local_id, entry, local_start_page_token),
       base::BindOnce(&DirectoryLoader::ReadDirectoryAfterCheckLocalState,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(about_resource),
-                     local_id, base::Owned(entry),
-                     base::Owned(local_changestamp)));
+                     weak_ptr_factory_.GetWeakPtr(),
+                     start_page_token->start_page_token(), local_id,
+                     base::Owned(entry), base::Owned(local_start_page_token)));
 }
 
 void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
-    std::unique_ptr<google_apis::AboutResource> about_resource,
+    const std::string& remote_start_page_token,
     const std::string& local_id,
     const ResourceEntry* entry,
-    const int64_t* local_changestamp,
+    const std::string* local_start_page_token,
     FileError error) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(about_resource);
+  DCHECK(local_start_page_token);
 
   if (error != FILE_ERROR_OK) {
     OnDirectoryLoadComplete(local_id, error);
@@ -378,21 +400,54 @@ void DirectoryLoader::ReadDirectoryAfterCheckLocalState(
     return;
   }
 
-  int64_t remote_changestamp = about_resource->largest_change_id();
+  // Start loading the directory.
+  const std::string& directory_start_page_token =
+      entry->directory_specific_info().start_page_token();
+
+  DirectoryFetchInfo directory_fetch_info(local_id, entry->resource_id(),
+                                          remote_start_page_token);
+
+  int64_t directory_changestamp = 0;
+  // The directory_specific_info may be enpty, so default changestamp to 0.
+  if (!directory_start_page_token.empty() &&
+      !drive::util::ConvertStartPageTokenToChangestamp(
+          directory_start_page_token, &directory_changestamp)) {
+    logger_->Log(
+        logging::LOG_ERROR,
+        "Unable to covert directory start page tokens to changestamps, will "
+        "load directory from server %s; directory start page token: %s ",
+        directory_fetch_info.ToString().c_str(),
+        directory_start_page_token.c_str());
+    LoadDirectoryFromServer(directory_fetch_info);
+    return;
+  }
+
+  int64_t remote_changestamp = 0;
+  int64_t local_changestamp = 0;
+  if (!drive::util::ConvertStartPageTokenToChangestamp(remote_start_page_token,
+                                                       &remote_changestamp) ||
+      !drive::util::ConvertStartPageTokenToChangestamp(*local_start_page_token,
+                                                       &local_changestamp)) {
+    logger_->Log(
+        logging::LOG_ERROR,
+        "Unable to covert start page tokens to changestamps, will load "
+        "directory from server %s; local start page token: %s; "
+        "remove start page token: %s",
+        directory_fetch_info.ToString().c_str(),
+        local_start_page_token->c_str(), remote_start_page_token.c_str());
+    LoadDirectoryFromServer(directory_fetch_info);
+    return;
+  }
 
   // Start loading the directory.
-  int64_t directory_changestamp = std::max(
-      entry->directory_specific_info().changestamp(), *local_changestamp);
-
-  DirectoryFetchInfo directory_fetch_info(
-      local_id, entry->resource_id(), remote_changestamp);
+  directory_changestamp = std::max(directory_changestamp, local_changestamp);
 
   // If the directory's changestamp is up to date or the global changestamp of
   // the metadata DB is new enough (which means the normal changelist loading
   // should finish very soon), just schedule to run the callback, as there is no
   // need to fetch the directory.
   if (directory_changestamp >= remote_changestamp ||
-      *local_changestamp + kMinimumChangestampGap > remote_changestamp) {
+      local_changestamp + kMinimumChangestampGap > remote_changestamp) {
     OnDirectoryLoadComplete(local_id, FILE_ERROR_OK);
   } else {
     // Start fetching the directory content, and mark it with the changestamp
@@ -483,15 +538,18 @@ void DirectoryLoader::LoadDirectoryFromServer(
   DCHECK(!directory_fetch_info.empty());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
+  const google_apis::StartPageToken* start_page_token =
+      start_page_token_loader_->cached_start_page_token();
+  DCHECK(start_page_token);
+
+  logger_->Log(logging::LOG_INFO,
+               "Fast-fetch start: %s; Server start page token: %s",
+               directory_fetch_info.ToString().c_str(),
+               start_page_token->start_page_token().c_str());
+
   const google_apis::AboutResource* about_resource =
       about_resource_loader_->cached_about_resource();
   DCHECK(about_resource);
-
-  logger_->Log(logging::LOG_INFO,
-               "Fast-fetch start: %s; Server changestamp: %s",
-               directory_fetch_info.ToString().c_str(),
-               base::Int64ToString(
-                   about_resource->largest_change_id()).c_str());
 
   FeedFetcher* fetcher = new FeedFetcher(this,
                                          directory_fetch_info,
@@ -532,23 +590,19 @@ void DirectoryLoader::LoadDirectoryFromServerAfterLoad(
     return;
   }
 
-  // Update changestamp and get the directory path.
+  // Update start page token and get the directory path.
   base::FilePath* directory_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(
-      blocking_task_runner_.get(),
-      FROM_HERE,
-      base::Bind(&UpdateChangestamp,
-                 resource_metadata_,
-                 directory_fetch_info,
-                 directory_path),
+      blocking_task_runner_.get(), FROM_HERE,
+      base::Bind(&UpdateStartPageToken, resource_metadata_,
+                 directory_fetch_info, directory_path),
       base::Bind(
-          &DirectoryLoader::LoadDirectoryFromServerAfterUpdateChangestamp,
-          weak_ptr_factory_.GetWeakPtr(),
-          directory_fetch_info,
+          &DirectoryLoader::LoadDirectoryFromServerAfterUpdateStartPageToken,
+          weak_ptr_factory_.GetWeakPtr(), directory_fetch_info,
           base::Owned(directory_path)));
 }
 
-void DirectoryLoader::LoadDirectoryFromServerAfterUpdateChangestamp(
+void DirectoryLoader::LoadDirectoryFromServerAfterUpdateStartPageToken(
     const DirectoryFetchInfo& directory_fetch_info,
     const base::FilePath* directory_path,
     FileError error) {
