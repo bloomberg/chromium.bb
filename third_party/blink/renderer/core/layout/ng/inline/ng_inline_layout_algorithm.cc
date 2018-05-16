@@ -43,8 +43,12 @@ struct NGLineAlign {
   NGLineAlign(const NGLineInfo&);
   NGLineAlign() = delete;
 
+  // The space to align or justify. This includes trailing spaces if exists.
   LayoutUnit space;
+
+  // The end offset with trailing spaces excluded.
   unsigned end_offset;
+  LayoutUnit trailing_spaces_width;
 };
 
 NGLineAlign::NGLineAlign(const NGLineInfo& line_info) {
@@ -56,14 +60,16 @@ NGLineAlign::NGLineAlign(const NGLineInfo& line_info) {
     const NGInlineItemResult& item_result = *it;
     if (!item_result.has_only_trailing_spaces) {
       end_offset = item_result.end_offset;
+      space += trailing_spaces_width;
       return;
     }
-    space += item_result.inline_size;
+    trailing_spaces_width += item_result.inline_size;
   }
 
   // An empty line, or only trailing spaces.
   DCHECK_EQ(space, line_info.AvailableWidth() - line_info.TextIndent());
   end_offset = line_info.StartOffset();
+  space += trailing_spaces_width;
 }
 
 }  // namespace
@@ -516,8 +522,9 @@ LayoutUnit NGInlineLayoutAlgorithm::OffsetForTextAlign(
   // Justification is applied in earlier phase, see PlaceItems().
   DCHECK_NE(text_align, ETextAlign::kJustify);
 
+  NGLineAlign align(line_info);
   return LineOffsetForTextAlign(text_align, line_info.BaseDirection(),
-                                NGLineAlign(line_info).space);
+                                align.space, align.trailing_spaces_width);
 }
 
 LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(

@@ -242,7 +242,7 @@ NGLogicalOffset NGBlockLayoutAlgorithm::CalculateLogicalOffset(
   if (child.IsInline()) {
     LayoutUnit offset =
         LineOffsetForTextAlign(Style().GetTextAlign(), Style().Direction(),
-                               child_available_size_.inline_size);
+                               child_available_size_.inline_size, LayoutUnit());
     if (IsRtl(Style().Direction()))
       offset = child_available_size_.inline_size - offset;
     inline_offset += offset;
@@ -1272,7 +1272,7 @@ NGBfcOffset NGBlockLayoutAlgorithm::PositionEmptyChildWithParentBfc(
   if (child.IsInline()) {
     child_bfc_offset.line_offset +=
         LineOffsetForTextAlign(Style().GetTextAlign(), Style().Direction(),
-                               child_available_size_.inline_size);
+                               child_available_size_.inline_size, LayoutUnit());
   }
 
   AdjustToClearance(child_space.ClearanceOffset(), &child_bfc_offset);

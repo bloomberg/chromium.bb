@@ -634,7 +634,8 @@ void ApplyAutoMargins(const ComputedStyle& style,
 
 LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
                                   TextDirection direction,
-                                  LayoutUnit space_left) {
+                                  LayoutUnit space_left,
+                                  LayoutUnit trailing_spaces_width) {
   bool is_ltr = IsLtr(direction);
   if (text_align == ETextAlign::kStart || text_align == ETextAlign::kJustify)
     text_align = is_ltr ? ETextAlign::kLeft : ETextAlign::kRight;
@@ -653,19 +654,25 @@ LayoutUnit LineOffsetForTextAlign(ETextAlign text_align,
     }
     case ETextAlign::kRight:
     case ETextAlign::kWebkitRight: {
+      // In RTL, trailing spaces appear on the left of the line.
+      if (UNLIKELY(!is_ltr))
+        return space_left - trailing_spaces_width;
       // Wide lines spill out of the block based off direction.
       // So even if text-align is right, if direction is LTR, wide lines
       // should overflow out of the right side of the block.
-      if (space_left > LayoutUnit() || !is_ltr)
+      if (space_left > LayoutUnit())
         return space_left;
       return LayoutUnit();
     }
     case ETextAlign::kCenter:
     case ETextAlign::kWebkitCenter: {
-      if (is_ltr || space_left > LayoutUnit())
+      if (is_ltr)
         return (space_left / 2).ClampNegativeToZero();
+      // In RTL, trailing spaces appear on the left of the line.
+      if (space_left > LayoutUnit())
+        return (space_left / 2).ClampNegativeToZero() - trailing_spaces_width;
       // In RTL, wide lines should spill out to the left, same as kRight.
-      return space_left;
+      return space_left - trailing_spaces_width;
     }
     default:
       NOTREACHED();
