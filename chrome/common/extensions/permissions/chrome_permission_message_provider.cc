@@ -35,6 +35,11 @@ class ComparablePermission {
     return msg_->submessages() < rhs.msg_->submessages();
   }
 
+  bool operator==(const ComparablePermission& rhs) const {
+    return msg_->message() == rhs.msg_->message() &&
+           msg_->submessages() == rhs.msg_->submessages();
+  }
+
  private:
   const PermissionMessage* msg_;
 };
@@ -88,13 +93,15 @@ PermissionMessages ChromePermissionMessageProvider::GetPermissionMessages(
 }
 
 bool ChromePermissionMessageProvider::IsPrivilegeIncrease(
-    const PermissionSet& old_permissions,
-    const PermissionSet& new_permissions,
+    const PermissionSet& granted_permissions,
+    const PermissionSet& requested_permissions,
     Manifest::Type extension_type) const {
-  if (IsHostPrivilegeIncrease(old_permissions, new_permissions, extension_type))
+  if (IsHostPrivilegeIncrease(granted_permissions, requested_permissions,
+                              extension_type))
     return true;
 
-  if (IsAPIOrManifestPrivilegeIncrease(old_permissions, new_permissions))
+  if (IsAPIOrManifestPrivilegeIncrease(granted_permissions,
+                                       requested_permissions))
     return true;
 
   return false;
@@ -164,18 +171,22 @@ void ChromePermissionMessageProvider::AddHostPermissions(
 }
 
 bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
-    const PermissionSet& old_permissions,
-    const PermissionSet& new_permissions) const {
-  PermissionIDSet old_ids;
-  AddAPIPermissions(old_permissions, &old_ids);
-  AddManifestPermissions(old_permissions, &old_ids);
-  PermissionIDSet new_ids;
-  AddAPIPermissions(new_permissions, &new_ids);
-  AddManifestPermissions(new_permissions, &new_ids);
+    const PermissionSet& granted_permissions,
+    const PermissionSet& requested_permissions) const {
+  PermissionIDSet granted_ids;
+  AddAPIPermissions(granted_permissions, &granted_ids);
+  AddManifestPermissions(granted_permissions, &granted_ids);
+
+  // We compare |granted_ids| against the set of permissions that would be
+  // granted if the requested permissions are allowed.
+  PermissionIDSet potential_total_ids = granted_ids;
+  AddAPIPermissions(requested_permissions, &potential_total_ids);
+  AddManifestPermissions(requested_permissions, &potential_total_ids);
 
   // Ugly hack: Before M46 beta, we didn't store the parameter for settings
-  // override permissions in prefs (which is where |old_permissions| is coming
-  // from). To avoid a spurious permission increase warning, drop the parameter.
+  // override permissions in prefs (which is where |granted_permissions| is
+  // coming from). To avoid a spurious permission increase warning, drop the
+  // parameter.
   // See crbug.com/533086 and crbug.com/619759.
   // TODO(treib,devlin): Remove this for M56, when hopefully all users will have
   // updated prefs.
@@ -183,67 +194,77 @@ bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
       APIPermission::kHomepage, APIPermission::kSearchProvider,
       APIPermission::kStartupPages};
   for (auto id : kSettingsOverrideIDs) {
-    DropPermissionParameter(id, &old_ids);
-    DropPermissionParameter(id, &new_ids);
+    DropPermissionParameter(id, &granted_ids);
+    DropPermissionParameter(id, &potential_total_ids);
   }
 
   // For M62, we added a new permission ID for new tab page overrides. Consider
   // the addition of this permission to not result in a privilege increase for
   // the time being.
   // TODO(robertshield): Remove this once most of the population is on M62+
-  new_ids.erase(APIPermission::kNewTabPageOverride);
+  granted_ids.erase(APIPermission::kNewTabPageOverride);
+  potential_total_ids.erase(APIPermission::kNewTabPageOverride);
 
   // If all the IDs were already there, it's not a privilege increase.
-  if (old_ids.Includes(new_ids))
+  if (granted_ids.Includes(potential_total_ids))
     return false;
 
   // Otherwise, check the actual messages - not all IDs result in a message,
   // and some messages can suppress others.
-  PermissionMessages old_messages = GetPermissionMessages(old_ids);
-  PermissionMessages new_messages = GetPermissionMessages(new_ids);
+  PermissionMessages granted_messages = GetPermissionMessages(granted_ids);
+  PermissionMessages total_messages =
+      GetPermissionMessages(potential_total_ids);
 
-  ComparablePermissions old_strings(old_messages.begin(), old_messages.end());
-  ComparablePermissions new_strings(new_messages.begin(), new_messages.end());
+  ComparablePermissions granted_strings(granted_messages.begin(),
+                                        granted_messages.end());
+  ComparablePermissions total_strings(total_messages.begin(),
+                                      total_messages.end());
 
-  std::sort(old_strings.begin(), old_strings.end());
-  std::sort(new_strings.begin(), new_strings.end());
+  std::sort(granted_strings.begin(), granted_strings.end());
+  std::sort(total_strings.begin(), total_strings.end());
 
-  return !base::STLIncludes(old_strings, new_strings);
+  // TODO(devlin): I *think* we can just use strict-equals here, since we should
+  // never have more strings in granted than in total (unless there was a
+  // significant difference - e.g., going from two lower warnings to a single
+  // scarier warning because of adding a new permission). But let's be overly
+  // conservative for now.
+  return !base::STLIncludes(granted_strings, total_strings);
 }
 
 bool ChromePermissionMessageProvider::IsHostPrivilegeIncrease(
-    const PermissionSet& old_permissions,
-    const PermissionSet& new_permissions,
+    const PermissionSet& granted_permissions,
+    const PermissionSet& requested_permissions,
     Manifest::Type extension_type) const {
   // Platform apps host permission changes do not count as privilege increases.
   // Note: this must remain consistent with AddHostPermissions.
   if (extension_type == Manifest::TYPE_PLATFORM_APP)
     return false;
 
-  // If the old permission set can access any host, then it can't be elevated.
-  if (old_permissions.HasEffectiveAccessToAllHosts())
+  // If the granted permission set can access any host, then it can't be
+  // elevated.
+  if (granted_permissions.HasEffectiveAccessToAllHosts())
     return false;
 
-  // Likewise, if the new permission set has full host access, then it must be
-  // a privilege increase.
-  if (new_permissions.HasEffectiveAccessToAllHosts())
+  // Likewise, if the requested permission set has full host access, then it
+  // must be a privilege increase.
+  if (requested_permissions.HasEffectiveAccessToAllHosts())
     return true;
 
-  const URLPatternSet& old_list = old_permissions.effective_hosts();
-  const URLPatternSet& new_list = new_permissions.effective_hosts();
+  const URLPatternSet& granted_list = granted_permissions.effective_hosts();
+  const URLPatternSet& requested_list = requested_permissions.effective_hosts();
 
   // TODO(jstritar): This is overly conservative with respect to subdomains.
   // For example, going from *.google.com to www.google.com will be
   // considered an elevation, even though it is not (http://crbug.com/65337).
-  std::set<std::string> new_hosts_set(
-      permission_message_util::GetDistinctHosts(new_list, false, false));
-  std::set<std::string> old_hosts_set(
-      permission_message_util::GetDistinctHosts(old_list, false, false));
-  std::set<std::string> new_hosts_only =
-      base::STLSetDifference<std::set<std::string> >(new_hosts_set,
-                                                     old_hosts_set);
+  std::set<std::string> requested_hosts_set(
+      permission_message_util::GetDistinctHosts(requested_list, false, false));
+  std::set<std::string> granted_hosts_set(
+      permission_message_util::GetDistinctHosts(granted_list, false, false));
+  std::set<std::string> requested_hosts_only =
+      base::STLSetDifference<std::set<std::string>>(requested_hosts_set,
+                                                    granted_hosts_set);
 
-  return !new_hosts_only.empty();
+  return !requested_hosts_only.empty();
 }
 
 }  // namespace extensions
