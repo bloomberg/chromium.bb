@@ -4169,6 +4169,25 @@
             ]
         }
     ],
+    "VizHitTestDrawQuad": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "VizHitTestDrawQuad"
+                    ]
+                }
+            ]
+        }
+    ],
     "VsyncAlignedInput": [
         {
             "platforms": [
