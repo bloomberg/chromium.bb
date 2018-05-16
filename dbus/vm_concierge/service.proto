@@ -412,3 +412,23 @@ message ContainerSshKeysResponse {
   // be the same for all VMs/containers.
   string host_private_key = 2;
 }
+
+// Launch vshd request.
+message LaunchVshdRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target.
+  string container_name = 2;
+
+  // The port for vshd to connect to.
+  uint32 port = 3;
+}
+
+// Response sent back by vm_concierge when it receives a LaunchVshd
+// call.
+message LaunchVshdResponse {
+  bool success = 1;
+
+  string failure_reason = 2;
+}
