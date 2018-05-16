@@ -100,6 +100,7 @@
 #endif  // defined(USE_ALSA)
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
+#include "chromecast/browser/cast_extension_message_filter.h"  // nogncheck
 #include "extensions/browser/extension_message_filter.h"  // nogncheck
 #include "extensions/browser/extension_registry.h"        // nogncheck
 #include "extensions/browser/extension_system.h"          // nogncheck
@@ -319,6 +320,8 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
   host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(
       render_process_id, browser_context));
   host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));
+  host->AddFilter(
+      new CastExtensionMessageFilter(render_process_id, browser_context));
 #endif
 }
 
