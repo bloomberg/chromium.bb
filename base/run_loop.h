@@ -234,12 +234,13 @@ class BASE_EXPORT RunLoop {
 
   // Quits the active RunLoop (when idle) -- there must be one. These were
   // introduced as prefered temporary replacements to the long deprecated
-  // MessageLoop::Quit(WhenIdle) methods. Callers should properly plumb a
-  // reference to the appropriate RunLoop instance (or its QuitClosure) instead
-  // of using these in order to link Run()/Quit() to a single RunLoop instance
-  // and increase readability.
+  // MessageLoop::Quit(WhenIdle)(Closure) methods. Callers should properly plumb
+  // a reference to the appropriate RunLoop instance (or its QuitClosure)
+  // instead of using these in order to link Run()/Quit() to a single RunLoop
+  // instance and increase readability.
   static void QuitCurrentDeprecated();
   static void QuitCurrentWhenIdleDeprecated();
+  static Closure QuitCurrentWhenIdleClosureDeprecated();
 
   // Run() will DCHECK if called while there's a ScopedDisallowRunningForTesting
   // in scope on its thread. This is useful to add safety to some test
