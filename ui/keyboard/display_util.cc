@@ -19,10 +19,6 @@ namespace keyboard {
 
 DisplayUtil::DisplayUtil() {}
 
-int64_t DisplayUtil::GetNearestDisplayIdToWindow(aura::Window* window) const {
-  return GetNearestDisplayToWindow(window).id();
-}
-
 display::Display DisplayUtil::GetNearestDisplayToWindow(
     aura::Window* window) const {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(window);

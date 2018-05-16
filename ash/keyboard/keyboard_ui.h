@@ -11,6 +11,10 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 
+namespace display {
+class Display;
+}
+
 namespace ash {
 
 class KeyboardUIObserver;
@@ -23,7 +27,7 @@ class ASH_EXPORT KeyboardUI {
 
   static std::unique_ptr<KeyboardUI> Create();
 
-  virtual void ShowInDisplay(const int64_t display_id) = 0;
+  virtual void ShowInDisplay(const display::Display& display) = 0;
   virtual void Hide() = 0;
 
   // Returns true if the keyboard is enabled.

@@ -17,6 +17,9 @@
 namespace service_manager {
 class Connector;
 }
+namespace display {
+class Display;
+}
 
 namespace ash {
 
@@ -32,7 +35,7 @@ class KeyboardUIMash : public KeyboardUI,
 
   // KeyboardUI:
   void Hide() override;
-  void ShowInDisplay(const int64_t display_id) override;
+  void ShowInDisplay(const display::Display& display) override;
   bool IsEnabled() override;
 
   // keyboard::mojom::KeyboardObserver:

@@ -70,10 +70,9 @@ void VirtualKeyboardTray::ClickedOutsideBubble() {}
 bool VirtualKeyboardTray::PerformAction(const ui::Event& event) {
   UserMetricsRecorder::RecordUserClickOnTray(
       LoginMetricsRecorder::TrayClickTarget::kVirtualKeyboardTray);
-  const int64_t display_id = display::Screen::GetScreen()
-                                 ->GetDisplayNearestWindow(shelf_->GetWindow())
-                                 .id();
-  Shell::Get()->keyboard_ui()->ShowInDisplay(display_id);
+  Shell::Get()->keyboard_ui()->ShowInDisplay(
+      display::Screen::GetScreen()->GetDisplayNearestWindow(
+          shelf_->GetWindow()));
   // Normally, active status is set when virtual keyboard is shown/hidden,
   // however, showing virtual keyboard happens asynchronously and, especially
   // the first time, takes some time. We need to set active status here to

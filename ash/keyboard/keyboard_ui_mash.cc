@@ -30,7 +30,7 @@ void KeyboardUIMash::Hide() {
     keyboard_->Hide();
 }
 
-void KeyboardUIMash::ShowInDisplay(const int64_t display_id) {
+void KeyboardUIMash::ShowInDisplay(const display::Display& display) {
   // TODO(yhanada): Send display id after adding a display_id argument to
   // |Keyboard::Show()| in keyboard.mojom. See crbug.com/585253.
   if (keyboard_)
