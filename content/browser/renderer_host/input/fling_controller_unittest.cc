@@ -505,8 +505,7 @@ TEST_F(FlingControllerTest, MiddleClickAutoScrollFling) {
   EXPECT_FALSE(FlingInProgress());
 }
 
-TEST_F(FlingControllerTest,
-       NoShowPressOrLongPressSuppressionAfterTapDownSuppression) {
+TEST_F(FlingControllerTest, NoLongPressSuppressionAfterTapDownSuppression) {
   base::TimeTicks progress_time = base::TimeTicks::Now();
   SimulateFlingStart(blink::kWebGestureDeviceTouchscreen,
                      gfx::Vector2dF(1000, 0));
@@ -527,13 +526,6 @@ TEST_F(FlingControllerTest,
                            blink::kWebGestureDeviceTouchscreen);
   EXPECT_TRUE(fling_controller_->FilterGestureEvent(
       GestureEventWithLatencyInfo(tap_down)));
-
-  // The GestureShowPress shouldn't get filtered.
-  WebGestureEvent show_press(WebInputEvent::kGestureShowPress, 0,
-                             base::TimeTicks::Now(),
-                             blink::kWebGestureDeviceTouchscreen);
-  EXPECT_FALSE(fling_controller_->FilterGestureEvent(
-      GestureEventWithLatencyInfo(show_press)));
 
   // The GestureLongPress shouldn't get filtered.
   WebGestureEvent long_press(WebInputEvent::kGestureLongPress, 0,
