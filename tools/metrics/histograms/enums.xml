@@ -45495,6 +45495,7 @@ Full version information for the fingerprint enum values:
   <int value="6" label="Extension URLs disabled"/>
   <int value="7" label="Extension not synced"/>
   <int value="8" label="Not matched"/>
+  <int value="9" label="Empty URL"/>
 </enum>
 
 <enum name="UkmSyncDisableInfo">

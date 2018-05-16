@@ -97,6 +97,7 @@ enum class DroppedDataReason {
   EXTENSION_URLS_DISABLED = 6,
   EXTENSION_NOT_SYNCED = 7,
   NOT_MATCHED = 8,
+  EMPTY_URL = 9,
   NUM_DROPPED_DATA_REASONS
 };
 
@@ -342,6 +343,11 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
     return;
   }
 
+  if (unsanitized_url.is_empty()) {
+    RecordDroppedSource(DroppedDataReason::EMPTY_URL);
+    return;
+  }
+
   source_counts_.observed++;
   if (GetSourceIdType(source_id) == SourceIdType::NAVIGATION_ID)
     source_counts_.navigation_sources++;
@@ -350,6 +356,8 @@ void UkmRecorderImpl::UpdateSourceURL(SourceId source_id,
 
   if (!HasSupportedScheme(url)) {
     RecordDroppedSource(DroppedDataReason::UNSUPPORTED_URL_SCHEME);
+    DVLOG(2) << "Dropped Unsupported UKM URL:" << source_id << ":"
+             << url.spec();
     return;
   }
 
