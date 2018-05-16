@@ -120,10 +120,6 @@ using views::View;
 
 namespace {
 
-bool InTouchableMode() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-}
-
 // Returns true when a views::FocusRing should be used.
 bool ShouldUseFocusRingView(bool show_focus_ring) {
   return (show_focus_ring && LocationBarView::IsRounded()) ||
@@ -815,7 +811,7 @@ void LocationBarView::RefreshBackground() {
   SkColor background_color = GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
   SkColor border_color = GetBorderColor();
 
-  if (InTouchableMode()) {
+  if (IsRounded()) {
     // When the omnibox dropdown is open, match its color and remove the focus
     // ring.
     if (GetOmniboxPopupView()->IsOpen()) {
@@ -939,7 +935,9 @@ bool LocationBarView::RefreshFindBarIcon() {
 
 void LocationBarView::RefreshClearAllButtonIcon() {
   const gfx::VectorIcon& icon =
-      InTouchableMode() ? omnibox::kTouchableClearIcon : kTabCloseNormalIcon;
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+          ? omnibox::kTouchableClearIcon
+          : kTabCloseNormalIcon;
   SetImageFromVectorIcon(clear_all_button_, icon,
                          GetColor(OmniboxPart::LOCATION_BAR_CLEAR_ALL));
   clear_all_button_->SetBorder(views::CreateEmptyBorder(
