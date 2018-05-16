@@ -10,13 +10,15 @@
 #include "base/observer_list.h"
 #include "base/unguessable_token.h"
 
+namespace gfx {
+class Size;
+}  // namespace gfx
+
 class GURL;
 
 namespace app_list {
-class AnswerCardResult;
-}
 
-namespace app_list {
+class AnswerCardResult;
 
 // Abstract source of contents for AnswerCardSearchProvider.
 class AnswerCardContents {
@@ -49,13 +51,19 @@ class AnswerCardContents {
 
   // Loads contents from |url|.
   virtual void LoadURL(const GURL& url) = 0;
+
   // Returns the token associated with the contents.
   virtual const base::UnguessableToken& GetToken() const = 0;
 
+  // Returns the preferred contents size.
+  virtual gfx::Size GetPreferredSize() const = 0;
+
   // Sets the delegate to process contents-related events.
   void SetDelegate(Delegate* delegate);
+
   // Registers a result that will be notified of input events for the view.
   void RegisterResult(AnswerCardResult* result);
+
   // Unregisters a result.
   void UnregisterResult(AnswerCardResult* result);
 

@@ -109,6 +109,13 @@ void ChromeSearchResult::SetAnswerCardContentsToken(
     updater->SetSearchResultMetadata(id(), CloneMetadata());
 }
 
+void ChromeSearchResult::SetAnswerCardSize(const gfx::Size& size) {
+  metadata_->answer_card_size = size;
+  AppListModelUpdater* updater = model_updater();
+  if (updater)
+    updater->SetSearchResultMetadata(id(), CloneMetadata());
+}
+
 void ChromeSearchResult::SetPercentDownloaded(int percent_downloaded) {
   AppListModelUpdater* updater = model_updater();
   if (updater)

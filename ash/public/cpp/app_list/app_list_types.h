@@ -46,6 +46,7 @@ enum class SearchResultType {
   kWebStoreSearch,  // A search query in WebStore.
   kOmnibox,         // Results from Omnibox.
   kLauncher,        // Results from launcher search (currently only from Files).
+  kAnswerCard,      // WebContents based answer card.
   // Add new values here.
 };
 

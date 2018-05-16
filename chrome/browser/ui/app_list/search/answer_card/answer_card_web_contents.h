@@ -34,6 +34,7 @@ class AnswerCardWebContents : public AnswerCardContents,
   // AnswerCardContents overrides:
   void LoadURL(const GURL& url) override;
   const base::UnguessableToken& GetToken() const override;
+  gfx::Size GetPreferredSize() const override;
 
   // content::WebContentsDelegate overrides:
   void ResizeDueToAutoResize(content::WebContents* web_contents,
@@ -75,6 +76,9 @@ class AnswerCardWebContents : public AnswerCardContents,
   // with AnswerCardContentsRegistry. On mash, it is the embedding token for
   // the native window of |web_contents_|.
   base::UnguessableToken token_;
+
+  // Preferred size of web contents.
+  gfx::Size preferred_size_;
 
   // Helper to prepare the native view of |web_contents_| to be embedded under
   // mash.

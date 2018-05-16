@@ -79,6 +79,10 @@ class APP_LIST_MODEL_EXPORT SearchResult {
     metadata_->answer_card_contents_token = token;
   }
 
+  gfx::Size answer_card_size() const {
+    return metadata_->answer_card_size.value_or(gfx::Size());
+  }
+
   const std::string& id() const { return metadata_->id; }
 
   double display_score() const { return metadata_->display_score; }

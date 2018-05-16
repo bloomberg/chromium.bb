@@ -72,6 +72,7 @@ class ChromeSearchResult {
   void SetActions(const Actions& actions);
   void SetIsOmniboxSearch(bool is_omnibox_search);
   void SetAnswerCardContentsToken(const base::UnguessableToken& token);
+  void SetAnswerCardSize(const gfx::Size& size);
   void SetIsInstalling(bool is_installing);
   void SetIcon(const gfx::ImageSkia& icon);
   void SetBadgeIcon(const gfx::ImageSkia& badge_icon);

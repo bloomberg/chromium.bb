@@ -80,20 +80,24 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   }
 
   bool SetSearchResult(SearchResult* search_result) {
-    views::View* const old_result_view = child_count() ? child_at(0) : nullptr;
-    views::View* const new_result_view =
-        search_result
-            ? GetViewByToken(search_result->answer_card_contents_token())
-            : nullptr;
+    const base::Optional<base::UnguessableToken> old_token =
+        search_result_ ? search_result_->answer_card_contents_token()
+                       : base::nullopt;
+    const base::Optional<base::UnguessableToken> new_token =
+        search_result ? search_result->answer_card_contents_token()
+                      : base::nullopt;
 
-    if (old_result_view != new_result_view) {
-      if (old_result_view != nullptr)
-        RemoveChildView(old_result_view);
-      if (new_result_view != nullptr)
-        AddChildView(new_result_view);
+    views::View* result_view = child_count() ? child_at(0) : nullptr;
+    if (old_token != new_token) {
+      RemoveAllChildViews(true /* delete_children */);
+
+      result_view = GetViewByToken(new_token);
+      if (result_view)
+        AddChildView(result_view);
     }
 
-    base::string16 old_title, new_title;
+    base::string16 old_title;
+    base::string16 new_title;
     if (search_result_) {
       search_result_->RemoveObserver(this);
       old_title = search_result_->title();
@@ -101,6 +105,9 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     search_result_ = search_result;
     if (search_result_) {
       search_result_->AddObserver(this);
+      if (result_view)
+        result_view->SetPreferredSize(search_result_->answer_card_size());
+
       new_title = search_result_->title();
       SetAccessibleName(new_title);
     }
@@ -153,7 +160,10 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   }
 
   // SearchResultObserver overrides:
-  void OnResultDestroying() override { search_result_ = nullptr; }
+  void OnResultDestroying() override {
+    RemoveAllChildViews(true /* delete_children */);
+    search_result_ = nullptr;
+  }
 
  private:
   AppListViewDelegate* const view_delegate_;  // Not owned.

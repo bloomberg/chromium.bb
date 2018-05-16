@@ -22,11 +22,13 @@ AnswerCardResult::AnswerCardResult(Profile* profile,
       contents_(contents) {
   DCHECK(!stripped_result_url.empty());
   SetDisplayType(ash::SearchResultDisplayType::kCard);
+  SetResultType(ash::SearchResultType::kAnswerCard);
   set_id(result_url);
   set_comparable_id(stripped_result_url);
   set_relevance(1);
   SetAnswerCardContentsToken(contents ? contents->GetToken()
                                       : base::UnguessableToken());
+  SetAnswerCardSize(contents ? contents->GetPreferredSize() : gfx::Size());
   SetTitle(result_title);
 
   if (contents)
