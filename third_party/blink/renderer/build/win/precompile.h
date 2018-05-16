@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#if defined(WinPrecompile_h_)
+#ifdef THIRD_PARTY_BLINK_RENDERER_BUILD_WIN_PRECOMPILE_H_
 #error You shouldn't include the precompiled header file more than once.
 #endif
-#define WinPrecompile_h_
+
+#define THIRD_PARTY_BLINK_RENDERER_BUILD_WIN_PRECOMPILE_H_
 
 // Precompiled header for Blink when built on Windows using
 // GYP-generated project files.  Not used by other build

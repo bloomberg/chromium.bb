@@ -23,6 +23,12 @@
  * build without this header, although we rarely test that.
  */
 
+#ifdef THIRD_PARTY_BLINK_RENDERER_BUILD_MAC_PREFIX_H_
+#error You shouldn't include the precompiled header file more than once.
+#endif
+
+#define THIRD_PARTY_BLINK_RENDERER_BUILD_MAC_PREFIX_H_
+
 #include <pthread.h>
 #include <sys/types.h>
 #include <fcntl.h>
