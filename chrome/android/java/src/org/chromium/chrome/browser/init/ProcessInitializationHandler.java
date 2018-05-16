@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.photo_picker.PhotoPickerDialog;
-import org.chromium.chrome.browser.physicalweb.PhysicalWeb;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.ProfileManagerUtils;
@@ -302,14 +301,6 @@ public class ProcessInitializationHandler {
                 startModerateBindingManagementIfNeeded(application);
 
                 recordKeyboardLocaleUma(application);
-            }
-        });
-
-        deferredStartupHandler.addDeferredTask(new Runnable() {
-            @Override
-            public void run() {
-                // Start or stop Physical Web
-                PhysicalWeb.onChromeStart();
             }
         });
 
