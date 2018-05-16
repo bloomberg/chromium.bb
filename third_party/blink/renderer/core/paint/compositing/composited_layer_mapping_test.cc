@@ -2715,7 +2715,7 @@ transform'></div>
 TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayer) {
   SetBodyInnerHTML("<img id='image' style='will-change: transform;' src='x'>");
   ToLayoutImage(GetLayoutObjectByElementId("image"))
-      ->UpdateShouldInvertColor(true);
+      ->UpdateShouldInvertColorForTest(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
   cc::FilterOperations filters;
   filters.Append(cc::FilterOperation::CreateInvertFilter(1.0f));
@@ -2729,7 +2729,7 @@ TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayer) {
 TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayerUpdated) {
   SetBodyInnerHTML("<img id='image' style='will-change: transform;' src='x'>");
   ToLayoutImage(GetLayoutObjectByElementId("image"))
-      ->UpdateShouldInvertColor(true);
+      ->UpdateShouldInvertColorForTest(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
   cc::FilterOperations filters0, filters1;
   filters0.Append(cc::FilterOperation::CreateInvertFilter(1.0f));
@@ -2740,7 +2740,7 @@ TEST_P(CompositedLayerMappingTest, ImageWithInvertFilterLayerUpdated) {
                 ->PlatformLayer()
                 ->filters());
   ToLayoutImage(GetLayoutObjectByElementId("image"))
-      ->UpdateShouldInvertColor(false);
+      ->UpdateShouldInvertColorForTest(false);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(filters1,
             ToLayoutBoxModelObject(GetLayoutObjectByElementId("image"))

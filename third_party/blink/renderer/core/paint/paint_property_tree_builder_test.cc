@@ -5467,7 +5467,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageWithInvertFilter) {
     <img id='img' src='x'>
   )HTML");
   ToLayoutImage(GetLayoutObjectByElementId("img"))
-      ->UpdateShouldInvertColor(true);
+      ->UpdateShouldInvertColorForTest(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto* filters = PaintPropertiesForElement("img")->Filter();
   ASSERT_NE(nullptr, filters);
@@ -5482,7 +5482,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageWithInvertFilterUpdated) {
   )HTML");
 
   ToLayoutImage(GetLayoutObjectByElementId("img"))
-      ->UpdateShouldInvertColor(true);
+      ->UpdateShouldInvertColorForTest(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto* filters = PaintPropertiesForElement("img")->Filter();
   ASSERT_NE(nullptr, filters);
@@ -5490,7 +5490,7 @@ TEST_P(PaintPropertyTreeBuilderTest, ImageWithInvertFilterUpdated) {
   filters_expect.AppendInvertFilter(1.0f);
   EXPECT_EQ(filters_expect, filters->Filter());
   ToLayoutImage(GetLayoutObjectByElementId("img"))
-      ->UpdateShouldInvertColor(false);
+      ->UpdateShouldInvertColorForTest(false);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(nullptr, PaintPropertiesForElement("img"));
 }
@@ -5500,7 +5500,7 @@ TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilter) {
     <img id='img' style='position: relative;' src='x'>
   )HTML");
   ToLayoutImage(GetLayoutObjectByElementId("img"))
-      ->UpdateShouldInvertColor(true);
+      ->UpdateShouldInvertColorForTest(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto* filters = PaintPropertiesForElement("img")->Filter();
   ASSERT_NE(nullptr, filters);
@@ -5515,7 +5515,7 @@ TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilterUpdated) {
   )HTML");
 
   ToLayoutImage(GetLayoutObjectByElementId("img"))
-      ->UpdateShouldInvertColor(true);
+      ->UpdateShouldInvertColorForTest(true);
   GetDocument().View()->UpdateAllLifecyclePhases();
   const auto* filters = PaintPropertiesForElement("img")->Filter();
   ASSERT_NE(nullptr, filters);
@@ -5523,7 +5523,7 @@ TEST_P(PaintPropertyTreeBuilderTest, LayeredImageWithInvertFilterUpdated) {
   filters_expect.AppendInvertFilter(1.0f);
   EXPECT_EQ(filters_expect, filters->Filter());
   ToLayoutImage(GetLayoutObjectByElementId("img"))
-      ->UpdateShouldInvertColor(false);
+      ->UpdateShouldInvertColorForTest(false);
   GetDocument().View()->UpdateAllLifecyclePhases();
   EXPECT_EQ(nullptr, PaintPropertiesForElement("img"));
 }

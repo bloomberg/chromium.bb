@@ -46,8 +46,9 @@
 namespace blink {
 
 namespace {
+constexpr float kmax_downscaling_ratio = 2.0f;
 
-void CheckForOptimizedImagePolicy(const LocalFrame& frame,
+bool CheckForOptimizedImagePolicy(const LocalFrame& frame,
                                   LayoutImage* layout_image,
                                   ImageResourceContent* new_image) {
   // Invert the image if the document does not have the 'legacy-image-formats'
@@ -57,8 +58,7 @@ void CheckForOptimizedImagePolicy(const LocalFrame& frame,
       !frame.IsFeatureEnabled(
           mojom::FeaturePolicyFeature::kLegacyImageFormats)) {
     if (!new_image->IsAcceptableContentType()) {
-      layout_image->UpdateShouldInvertColor(true);
-      return;
+      return true;
     }
   }
   // Invert the image if the document does not have the image-compression'
@@ -67,8 +67,34 @@ void CheckForOptimizedImagePolicy(const LocalFrame& frame,
           mojom::FeaturePolicyFeature::kImageCompression) &&
       !frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kImageCompression)) {
     if (!new_image->IsAcceptableCompressionRatio())
-      layout_image->UpdateShouldInvertColor(true);
+      return true;
   }
+  return false;
+}
+
+bool CheckForMaxDownscalingImagePolicy(const LocalFrame& frame,
+                                       HTMLImageElement* element,
+                                       LayoutImage* layout_image) {
+  if (!IsSupportedInFeaturePolicy(
+          mojom::FeaturePolicyFeature::kMaxDownscalingImage) ||
+      frame.IsFeatureEnabled(mojom::FeaturePolicyFeature::kMaxDownscalingImage))
+    return false;
+  // Invert the image if the image's size is more than 2 times bigger than the
+  // size it is being laid-out by.
+  LayoutUnit layout_width = layout_image->ContentBoxRect().Width();
+  LayoutUnit layout_height = layout_image->ContentBoxRect().Height();
+  auto image_width = element->naturalWidth();
+  auto image_height = element->naturalHeight();
+  if (layout_width > 0 && layout_height > 0 && image_width > 0 &&
+      image_height > 0) {
+    double device_pixel_ratio = frame.DevicePixelRatio();
+    if (LayoutUnit(image_width / kmax_downscaling_ratio * device_pixel_ratio) >
+            layout_width ||
+        LayoutUnit(image_height / kmax_downscaling_ratio * device_pixel_ratio) >
+            layout_height)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -80,7 +106,8 @@ LayoutImage::LayoutImage(Element* element)
       did_increment_visually_non_empty_pixel_count_(false),
       is_generated_content_(false),
       image_device_pixel_ratio_(1.0f),
-      should_invert_color_(false) {}
+      is_legacy_format_or_compressed_image_(false),
+      is_downscaled_image_(false) {}
 
 LayoutImage* LayoutImage::CreateAnonymous(PseudoElement& pseudo) {
   LayoutImage* image = new LayoutImage(nullptr);
@@ -230,8 +257,11 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
 
   // Check for optimized image policies.
   if (View() && View()->GetFrameView()) {
-    CheckForOptimizedImagePolicy(View()->GetFrameView()->GetFrame(), this,
-                                 new_image);
+    bool old_flag = ShouldInvertColor();
+    is_legacy_format_or_compressed_image_ = CheckForOptimizedImagePolicy(
+        View()->GetFrameView()->GetFrame(), this, new_image);
+    if (old_flag != ShouldInvertColor())
+      UpdateShouldInvertColor();
   }
 
   if (new_image == image_resource_->CachedImage()) {
@@ -395,16 +425,32 @@ LayoutReplaced* LayoutImage::EmbeddedReplacedContent() const {
 }
 
 bool LayoutImage::ShouldInvertColor() const {
-  return should_invert_color_;
+  return is_downscaled_image_ || is_legacy_format_or_compressed_image_;
 }
 
-void LayoutImage::UpdateShouldInvertColor(bool value) {
-  if (should_invert_color_ != value) {
-    should_invert_color_ = value;
-    SetNeedsPaintPropertyUpdate();
-    // If composited image, update compositing layer.
-    if (Layer())
-      Layer()->SetNeedsCompositingInputsUpdate();
+void LayoutImage::UpdateShouldInvertColor() {
+  SetNeedsPaintPropertyUpdate();
+  // If composited image, update compositing layer.
+  if (Layer())
+    Layer()->SetNeedsCompositingInputsUpdate();
+}
+
+void LayoutImage::UpdateShouldInvertColorForTest(bool value) {
+  is_downscaled_image_ = value;
+  is_legacy_format_or_compressed_image_ = value;
+  UpdateShouldInvertColor();
+}
+
+void LayoutImage::UpdateAfterLayout() {
+  LayoutBox::UpdateAfterLayout();
+  Node* node = GetNode();
+  // Check for optimized image policies.
+  if (IsHTMLImageElement(node) && View() && View()->GetFrameView()) {
+    bool old_flag = ShouldInvertColor();
+    is_downscaled_image_ = CheckForMaxDownscalingImagePolicy(
+        View()->GetFrameView()->GetFrame(), ToHTMLImageElement(node), this);
+    if (old_flag != ShouldInvertColor())
+      UpdateShouldInvertColor();
   }
 }
 
