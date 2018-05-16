@@ -563,4 +563,7 @@
     <item type="dimen" name="dialog_fixed_width_minor">100%</item>
     <item type="dimen" name="dialog_fixed_height_major">100%</item>
     <item type="dimen" name="dialog_fixed_height_minor">100%</item>
+
+    <!-- Chip list dimensions -->
+    <dimen name="chip_list_padding">2.5dp</dimen>
 </resources>
