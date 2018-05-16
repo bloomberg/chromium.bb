@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/i18n/case_conversion.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
@@ -454,6 +455,32 @@ bool IsEnabledPasswordFieldPresent(const std::vector<FormFieldData>& fields) {
              }) != fields.end();
 }
 
+// Find the first element in |username_predictions| (i.e. the most reliable
+// prediction) that occurs in |possible_usernames|. If the element is found, the
+// method saves it to |username_element| and returns true.
+bool FindUsernameInPredictions(
+    const std::vector<blink::WebInputElement>& username_predictions,
+    const std::vector<blink::WebInputElement>& possible_usernames,
+    WebInputElement* username_element) {
+  // To speed-up the matching for-loop below, convert |possible_usernames| to a
+  // set. Creating is O(N log N) for N=possible_usernames.size(). Retrieval is
+  // O(log N), so the whole for-loop is O(M log N) for
+  // M=username_predictions.size(). Use flat_set, because of cache locality (the
+  // M and N are likely small, so this can make a difference) and less heap
+  // allocations.
+  const base::flat_set<blink::WebInputElement> usernames(
+      possible_usernames.begin(), possible_usernames.end());
+
+  for (const blink::WebInputElement& prediction : username_predictions) {
+    auto iter = usernames.find(prediction);
+    if (iter != usernames.end()) {
+      *username_element = *iter;
+      return true;
+    }
+  }
+  return false;
+}
+
 // Get information about a login form encapsulated in a PasswordForm struct.
 // If an element of |form| has an entry in |nonscript_modified_values|, the
 // associated string is used instead of the element's value to create
@@ -464,6 +491,8 @@ bool GetPasswordForm(
     const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
     const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache) {
+  DCHECK(!form.control_elements.empty());
+
   // Early exit if no passwords to be typed into.
   if (!IsEnabledPasswordFieldPresent(password_form->form_data.fields))
     return false;
@@ -632,9 +661,21 @@ bool GetPasswordForm(
     // Call HTML based username detector only if neither server predictions nor
     // autocomplete attributes were useful to detect the username.
     if (predicted_username_element.IsNull() && username_by_attribute.IsNull()) {
-      GetUsernameFieldBasedOnHtmlAttributes(
-          form.control_elements, plausible_usernames, password_form->form_data,
-          &username_element_by_context, username_detector_cache);
+      // Dummy cache stores the predictions in case no real cache was passed to
+      // here.
+      UsernameDetectorCache dummy_cache;
+      if (!username_detector_cache)
+        username_detector_cache = &dummy_cache;
+
+      const std::vector<blink::WebInputElement>& username_predictions =
+          GetPredictionsFieldBasedOnHtmlAttributes(form.control_elements,
+                                                   password_form->form_data,
+                                                   username_detector_cache);
+
+      if (!FindUsernameInPredictions(username_predictions, plausible_usernames,
+                                     &username_element_by_context)) {
+        username_element_by_context.Reset();
+      }
     }
   }
 

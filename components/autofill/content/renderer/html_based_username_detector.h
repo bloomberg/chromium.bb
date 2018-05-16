@@ -19,21 +19,20 @@ using UsernameDetectorCache =
     std::map<blink::WebFormElement, std::vector<blink::WebInputElement>>;
 
 // Classifier for getting username field by analyzing HTML attribute values.
-// The algorithm looks for words that are likely to point to username field
-// (ex. "username", "loginid" etc.), in the attribute values. When the first
-// match is found, the currently analyzed field is saved in |username_element|,
-// and the algorithm ends. By searching for words in order of their probability
-// to be username words, it is sure that the first match will also be the best
-// one. The function returns true if username element was found.
+// The algorithm looks for words that are likely to point to username field (ex.
+// "username", "loginid" etc.), in the attribute values. When the first match is
+// found, the currently analyzed field is saved in |username_element|, and the
+// algorithm ends. By searching for words in order of their probability to be
+// username words, it is sure that the first match will also be the best one.
 // If detector's outcome for the given form is cached in
 // |username_detector_cache|, then |username_element| is set based on the cached
 // data. Otherwise, the detector will be run and the outcome will be saved to
-// the cache. |username_detector_cache| can be null.
-bool GetUsernameFieldBasedOnHtmlAttributes(
+// the cache. The function returns a reference to the vector of predictions,
+// which is stored in the cache.
+const std::vector<blink::WebInputElement>&
+GetPredictionsFieldBasedOnHtmlAttributes(
     const std::vector<blink::WebFormControlElement>& all_control_elements,
-    const std::vector<blink::WebInputElement>& possible_usernames,
     const FormData& form_data,
-    blink::WebInputElement* username_element,
     UsernameDetectorCache* username_detector_cache);
 
 }  // namespace autofill
