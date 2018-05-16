@@ -385,7 +385,7 @@ class DiffHunk(object):
 
     def prettify(self):
         result_html = ('<tr><td class=hunkheader>@@<td class=hunkheader>@@'
-                       '<td class=hunkheader>{}</tr>\n').format(self._context)
+                       '<td class=hunkheader>{}</tr>\n').format(cgi.escape(self._context))
         old_lineno = self._old_start
         new_lineno = self._new_start
         for i, line in enumerate(self._lines):

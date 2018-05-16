@@ -176,6 +176,11 @@ class TestDiffHunk(unittest.TestCase):
         self.assertEquals(self._annotate(['+', '+abc', ' de'], 0, 0, 2),
                           [[(0, 0)], [(0, 2)], None])
 
+    def test_prettify_header_context_escape(self):
+        hunk = DiffHunk(2, 2, '<h3>Constructing form data set</h3>', [])
+        self.assertNotIn('<h3>', hunk.prettify())
+        self.assertIn('&lt;h3&gt;', hunk.prettify())
+
 
 class TestBinaryHunk(unittest.TestCase):
 
