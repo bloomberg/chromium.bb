@@ -510,6 +510,19 @@ class PDFiumEngine : public PDFEngine,
   bool getting_password_ = false;
   int password_tries_remaining_ = 0;
 
+  // Used to manage timers that form fill API needs. The key is the timer id.
+  // The value holds the timer period and the callback function.
+  struct FormFillTimerData {
+    FormFillTimerData(base::TimeDelta period, TimerCallback callback);
+
+    base::TimeDelta timer_period;
+    TimerCallback timer_callback;
+  };
+
+  // Needs to be above pages_, as destroying a page may stop timers.
+  std::map<int, const FormFillTimerData> formfill_timers_;
+  int next_formfill_timer_id_ = 0;
+
   // Interface structure to provide access to document stream.
   FPDF_FILEACCESS file_access_;
 
@@ -599,17 +612,6 @@ class PDFiumEngine : public PDFEngine,
   int permissions_handler_revision_ = -1;
 
   pp::Size default_page_size_;
-
-  // Used to manage timers that form fill API needs. The key is the timer id.
-  // The value holds the timer period and the callback function.
-  struct FormFillTimerData {
-    FormFillTimerData(base::TimeDelta period, TimerCallback callback);
-
-    base::TimeDelta timer_period;
-    TimerCallback timer_callback;
-  };
-  std::map<int, const FormFillTimerData> formfill_timers_;
-  int next_formfill_timer_id_ = 0;
 
   // Used to manage timers for touch long press.
   std::map<int, pp::TouchInputEvent> touch_timers_;
