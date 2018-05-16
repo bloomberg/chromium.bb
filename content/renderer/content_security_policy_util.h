@@ -17,6 +17,13 @@ namespace content {
 ContentSecurityPolicy BuildContentSecurityPolicy(
     const blink::WebContentSecurityPolicy&);
 
+// Convert a WebContentSecurityPolicyList into a list of ContentSecurityPolicy.
+std::vector<ContentSecurityPolicy> BuildContentSecurityPolicyList(
+    const blink::WebContentSecurityPolicyList&);
+
+CSPSource BuildCSPSource(
+    const blink::WebContentSecurityPolicySourceExpression&);
+
 // Convert a CSPViolationParams into a WebContentSecurityPolicyViolation. These
 // two classes represent the exact same thing, but one is in content, the other
 // is in blink.

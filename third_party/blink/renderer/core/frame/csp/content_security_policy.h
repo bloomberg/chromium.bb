@@ -100,6 +100,7 @@ class CORE_EXPORT ContentSecurityPolicy
     kImgSrc,
     kManifestSrc,
     kMediaSrc,
+    kNavigateTo,
     kObjectSrc,
     kPluginTypes,
     kPrefetchSrc,
@@ -447,6 +448,12 @@ class CORE_EXPORT ContentSecurityPolicy
 
   // Returns the 'wasm-eval' source is supported.
   bool SupportsWasmEval() const { return supports_wasm_eval_; }
+
+  // Sometimes we don't know the initiator or it might be destroyed already
+  // for certain navigational checks. We create a string version of the relevant
+  // CSP directives to be passed around with the request. This allows us to
+  // perform these checks in NavigationRequest::CheckContentSecurityPolicy.
+  WebContentSecurityPolicyList ExposeForNavigationalChecks() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ContentSecurityPolicyTest, NonceInline);

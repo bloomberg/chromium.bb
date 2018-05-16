@@ -49,8 +49,10 @@ class CONTENT_EXPORT CSPContext {
   bool IsAllowedByCsp(CSPDirective::Name directive_name,
                       const GURL& url,
                       bool is_redirect,
+                      bool is_response_check,
                       const SourceLocation& source_location,
-                      CheckCSPDisposition check_csp_disposition);
+                      CheckCSPDisposition check_csp_disposition,
+                      bool is_form_submission);
 
   // Returns true if the request URL needs to be modified (e.g. upgraded to
   // HTTPS) according to the CSP. If true, |new_url| will contain the new URL
@@ -60,6 +62,7 @@ class CONTENT_EXPORT CSPContext {
                                     GURL* new_url);
 
   void SetSelf(const url::Origin origin);
+  void SetSelf(const CSPSource& self_source);
 
   // When a CSPSourceList contains 'self', the url is allowed when it match the
   // CSPSource returned by this function.

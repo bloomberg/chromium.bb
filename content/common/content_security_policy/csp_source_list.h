@@ -18,6 +18,7 @@ struct CONTENT_EXPORT CSPSourceList {
   CSPSourceList();
   CSPSourceList(bool allow_self,
                 bool allow_star,
+                bool allow_redirects,
                 std::vector<CSPSource> source_list);
   CSPSourceList(const CSPSourceList&);
   ~CSPSourceList();
@@ -26,6 +27,7 @@ struct CONTENT_EXPORT CSPSourceList {
   // on the source list itself.
   bool allow_self;
   bool allow_star;
+  bool allow_redirects;
   std::vector<CSPSource> sources;
 
   std::string ToString() const;
@@ -37,7 +39,8 @@ struct CONTENT_EXPORT CSPSourceList {
   static bool Allow(const CSPSourceList& source_list,
                     const GURL& url,
                     CSPContext* context,
-                    bool is_redirect = false);
+                    bool is_redirect = false,
+                    bool is_response_check = false);
 };
 
 }  // namespace content

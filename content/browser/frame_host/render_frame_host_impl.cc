@@ -3402,7 +3402,9 @@ void RenderFrameHostImpl::NavigateToInterstitialURL(const GURL& data_url) {
       GURL(), GURL(), PREVIEWS_OFF, base::TimeTicks::Now(), "GET", nullptr,
       base::Optional<SourceLocation>(),
       CSPDisposition::CHECK /* should_check_main_world_csp */,
-      false /* started_from_context_menu */, false /* has_user_gesture */);
+      false /* started_from_context_menu */, false /* has_user_gesture */,
+      std::vector<ContentSecurityPolicy>() /* initiator_csp */,
+      CSPSource() /* initiator_self_source */);
   CommitNavigation(nullptr, network::mojom::URLLoaderClientEndpointsPtr(),
                    common_params, RequestNavigationParams(), false,
                    base::nullopt, base::nullopt /* subresource_overrides */,

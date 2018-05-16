@@ -214,6 +214,12 @@ bool SourceListDirective::ParseSource(
     return true;
   }
 
+  if (EqualIgnoringASCIICase("'unsafe-allow-redirects'", token) &&
+      DirectiveName() == "navigate-to") {
+    AddSourceUnsafeAllowRedirects();
+    return true;
+  }
+
   if (policy_->SupportsWasmEval() &&
       EqualIgnoringASCIICase("'wasm-eval'", token)) {
     AddSourceWasmEval();
@@ -606,6 +612,10 @@ void SourceListDirective::AddSourceStar() {
   allow_star_ = true;
 }
 
+void SourceListDirective::AddSourceUnsafeAllowRedirects() {
+  allow_redirects_ = true;
+}
+
 void SourceListDirective::AddSourceUnsafeInline() {
   allow_inline_ = true;
 }
@@ -775,6 +785,7 @@ SourceListDirective::ExposeForNavigationalChecks() const {
   WebContentSecurityPolicySourceList source_list;
   source_list.allow_self = allow_self_;
   source_list.allow_star = allow_star_;
+  source_list.allow_redirects = allow_redirects_;
   WebVector<WebContentSecurityPolicySourceExpression> list(list_.size());
   for (size_t i = 0; i < list_.size(); ++i)
     list[i] = list_[i]->ExposeForNavigationalChecks();

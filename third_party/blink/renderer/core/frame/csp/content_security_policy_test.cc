@@ -1003,6 +1003,7 @@ TEST_F(ContentSecurityPolicyTest, DirectiveType) {
       {ContentSecurityPolicy::DirectiveType::kImgSrc, "img-src"},
       {ContentSecurityPolicy::DirectiveType::kManifestSrc, "manifest-src"},
       {ContentSecurityPolicy::DirectiveType::kMediaSrc, "media-src"},
+      {ContentSecurityPolicy::DirectiveType::kNavigateTo, "navigate-to"},
       {ContentSecurityPolicy::DirectiveType::kObjectSrc, "object-src"},
       {ContentSecurityPolicy::DirectiveType::kPluginTypes, "plugin-types"},
       {ContentSecurityPolicy::DirectiveType::kReportURI, "report-uri"},

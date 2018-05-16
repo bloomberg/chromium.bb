@@ -126,6 +126,7 @@ ResourceRequest::ResourceRequest(CrossThreadResourceRequestData* data)
   redirect_status_ = data->redirect_status_;
   suggested_filename_ = data->suggested_filename_;
   is_ad_resource_ = data->is_ad_resource_;
+  SetInitiatorCSP(data->navigation_csp_);
 }
 
 ResourceRequest::ResourceRequest(const ResourceRequest&) = default;
@@ -169,6 +170,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
   request->SetCORSPreflightPolicy(CORSPreflightPolicy());
   if (IsAdResource())
     request->SetIsAdResource();
+  request->SetInitiatorCSP(GetInitiatorCSP());
 
   return request;
 }
@@ -220,6 +222,8 @@ std::unique_ptr<CrossThreadResourceRequestData> ResourceRequest::CopyData()
   data->redirect_status_ = redirect_status_;
   data->suggested_filename_ = suggested_filename_;
   data->is_ad_resource_ = is_ad_resource_;
+  data->navigation_csp_ = initiator_csp_;
+
   return data;
 }
 

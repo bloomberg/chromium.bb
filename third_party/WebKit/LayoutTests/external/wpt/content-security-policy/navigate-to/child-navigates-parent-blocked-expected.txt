@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test that the child can't navigate the parent because the relevant policy belongs to the navigation initiator (in this case the child) assert_equals: expected "fail" but got "success"
-Harness: the test ran to completion.
-

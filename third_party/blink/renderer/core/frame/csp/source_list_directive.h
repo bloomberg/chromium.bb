@@ -97,6 +97,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
 
   void AddSourceSelf();
   void AddSourceStar();
+  void AddSourceUnsafeAllowRedirects();
   void AddSourceUnsafeInline();
   void AddSourceUnsafeEval();
   void AddSourceWasmEval();
@@ -132,6 +133,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   bool allow_wasm_eval_;
   bool allow_dynamic_;
   bool allow_hashed_attributes_;
+  bool allow_redirects_;
   bool report_sample_;
   HashSet<String> nonces_;
   HashSet<CSPHashValue> hashes_;

@@ -56,6 +56,7 @@ struct WebContentSecurityPolicySourceExpression {
 struct WebContentSecurityPolicySourceList {
   bool allow_self;
   bool allow_star;
+  bool allow_redirects;
   WebVector<WebContentSecurityPolicySourceExpression> sources;
 };
 
@@ -71,6 +72,11 @@ struct WebContentSecurityPolicy {
   WebVector<WebString> report_endpoints;
   WebString header;
   bool use_reporting_api;
+};
+
+struct WebContentSecurityPolicyList {
+  WebVector<WebContentSecurityPolicy> policies;
+  base::Optional<WebContentSecurityPolicySourceExpression> self_source;
 };
 
 struct WebContentSecurityPolicyViolation {

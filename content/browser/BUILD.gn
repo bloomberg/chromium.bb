@@ -956,6 +956,8 @@ jumbo_source_set("browser") {
     "indexed_db/leveldb/leveldb_write_batch.cc",
     "indexed_db/leveldb/leveldb_write_batch.h",
     "indexed_db/list_set.h",
+    "initiator_csp_context.cc",
+    "initiator_csp_context.h",
     "installedapp/installed_app_provider_impl_default.cc",
     "installedapp/installed_app_provider_impl_default.h",
     "interface_provider_filtering.cc",

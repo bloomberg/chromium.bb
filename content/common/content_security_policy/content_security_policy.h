@@ -45,8 +45,10 @@ struct CONTENT_EXPORT ContentSecurityPolicy {
                     CSPDirective::Name directive,
                     const GURL& url,
                     bool is_redirect,
+                    bool is_response_check,
                     CSPContext* context,
-                    const SourceLocation& source_location);
+                    const SourceLocation& source_location,
+                    bool is_form_submission);
 
   // Returns true if |policy| specifies that an insecure HTTP request should be
   // upgraded to HTTPS.
