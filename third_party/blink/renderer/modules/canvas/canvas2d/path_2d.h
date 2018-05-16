@@ -28,6 +28,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_PATH_2D_H_
 
+#include "third_party/blink/renderer/core/geometry/dom_matrix.h"
+#include "third_party/blink/renderer/core/geometry/dom_matrix_2d_init.h"
 #include "third_party/blink/renderer/core/svg/svg_matrix_tear_off.h"
 #include "third_party/blink/renderer/core/svg/svg_path_utilities.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_path.h"
@@ -51,12 +53,17 @@ class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
 
   const Path& GetPath() const { return path_; }
 
-  void addPath(Path2D* path) { addPath(path, nullptr); }
+  void addPath(Path2D* path) {
+    DOMMatrix2DInit transform;
+    addPath(path, transform);
+  }
 
-  void addPath(Path2D* path, SVGMatrixTearOff* transform) {
+  void addPath(Path2D* path, DOMMatrix2DInit& transform) {
     Path src = path->GetPath();
-    path_.AddPath(src, transform ? transform->Value()
-                                 : AffineTransform(1, 0, 0, 1, 0, 0));
+    DOMMatrixReadOnly* m = nullptr;
+    m = DOMMatrixReadOnly::fromMatrix2D(transform);
+    path_.AddPath(
+        src, m ? m->GetAffineTransform() : AffineTransform(1, 0, 0, 1, 0, 0));
   }
 
   ~Path2D() override = default;

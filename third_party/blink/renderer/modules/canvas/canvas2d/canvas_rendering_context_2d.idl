@@ -54,7 +54,6 @@ interface CanvasRenderingContext2D {
     void restore(); // pop state stack and restore state
 
     // transformations (default transform is the identity matrix)
-    [RuntimeEnabled=CanvasTransformations] attribute SVGMatrix currentTransform;
     void scale(unrestricted double x, unrestricted double y);
     void rotate(unrestricted double angle);
     void translate(unrestricted double x, unrestricted double y);

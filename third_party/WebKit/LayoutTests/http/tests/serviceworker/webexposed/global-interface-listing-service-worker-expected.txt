@@ -136,6 +136,7 @@ interface CanvasGradient
 interface CanvasPattern
     attribute @@toStringTag
     method constructor
+    method setTransform
 interface Client
     attribute @@toStringTag
     getter frameType

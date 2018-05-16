@@ -189,10 +189,6 @@
       status: "experimental",
     },
     {
-      name: "CanvasTransformations",
-      status: "experimental",
-    },
-    {
       name: "ClickRetargetting",
       status: "experimental",
     },

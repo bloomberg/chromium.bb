@@ -35,7 +35,7 @@
     Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures, PaintWorklet CSSPaintAPI)
 ] interface Path2D {
 
-    [RuntimeEnabled=CanvasTransformations] void addPath(Path2D path, optional SVGMatrix? transform);
+    void addPath(Path2D path, optional DOMMatrix2DInit transform);
 };
 
 Path2D implements CanvasPath;

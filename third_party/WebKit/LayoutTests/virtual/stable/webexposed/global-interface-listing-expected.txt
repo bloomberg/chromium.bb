@@ -675,6 +675,7 @@ interface CanvasGradient
 interface CanvasPattern
     attribute @@toStringTag
     method constructor
+    method setTransform
 interface CanvasRenderingContext2D
     attribute @@toStringTag
     getter canvas
@@ -4243,6 +4244,7 @@ interface PasswordCredential : Credential
     method constructor
 interface Path2D
     attribute @@toStringTag
+    method addPath
     method arc
     method arcTo
     method bezierCurveTo

@@ -12,7 +12,7 @@ test(function(t) {
     p1.rect(0,0,100,100);
     var p2 = new Path2D();
     p2.rect(0,100,100,100);
-    var m = ctx.currentTransform;
+    var m = new DOMMatrix();
     p1.addPath(p2, m);
     ctx.fillStyle = 'yellow';
     ctx.fill(p1);
@@ -53,12 +53,8 @@ test(function(t) {
     var p8 = new Path2D();
     p8.rect(100,100,100,100);
     p7.addPath(p8, null);
-    assert_throws(new TypeError(), function() {
-      p7.addPath(p8, []);
-    });
-    assert_throws(new TypeError(), function() {
-      p7.addPath(p8, {});
-    });
+    p7.addPath(p8, []);
+    p7.addPath(p8, {});
     ctx.fillStyle = 'red';
     ctx.fill(p7);
     assert_array_equals(ctx.getImageData(101, 100, 1, 1).data, [255, 0, 0, 255]);
