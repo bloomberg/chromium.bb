@@ -62,6 +62,12 @@ struct SearchResultMetadata {
                               // empty before initialized. It's illegal to pass
                               // an empty UnguessableToken across processes. So
                               // we use a null value when it's empty here.
+  gfx.mojom.Size? answer_card_size;  // Preferred size of answer card. It is
+                                     // unset for non-answer-card results. For
+                                     // answer card results, it is set when
+                                     // the answer card WebContents finishes
+                                     // loading and its renderer notifies it
+                                     // about a new contents size.
   gfx.mojom.ImageSkia? icon;  // The icon of this result.
   gfx.mojom.ImageSkia? badge_icon;  // The badge icon of this result that
                                     // indicates its type, e.g. installable from
@@ -103,6 +109,7 @@ enum SearchResultType {
   kWebStoreSearch,  // A search query in WebStore.
   kOmnibox,         // Results from Omninbox.
   kLauncher,        // Results from launcher search (currently only from Files).
+  kAnswerCard,      // WebContents based answer card.
   // Add new values here.
 };
 

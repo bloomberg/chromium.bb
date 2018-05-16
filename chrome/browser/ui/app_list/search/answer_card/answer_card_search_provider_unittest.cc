@@ -63,6 +63,7 @@ class MockAnswerCardContents : public AnswerCardContents {
   // AnswerCardContents overrides:
   MOCK_METHOD1(LoadURL, void(const GURL& url));
   MOCK_CONST_METHOD0(GetToken, const base::UnguessableToken&());
+  MOCK_CONST_METHOD0(GetPreferredSize, gfx::Size());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAnswerCardContents);

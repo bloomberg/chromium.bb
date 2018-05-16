@@ -31,6 +31,7 @@ class AnswerCardTestContents : public AnswerCardContents {
   // AnswerCardContents overrides:
   void LoadURL(const GURL& url) override { NOTREACHED(); }
   const base::UnguessableToken& GetToken() const override { return token_; }
+  gfx::Size GetPreferredSize() const override { return gfx::Size(); }
 
  private:
   base::UnguessableToken token_;
