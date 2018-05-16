@@ -195,6 +195,7 @@ TEST(JSONReaderTest, InvalidNAN) {
 TEST(JSONReaderTest, InvalidNumbers) {
   EXPECT_FALSE(JSONReader().ReadToValue("4.3.1"));
   EXPECT_FALSE(JSONReader().ReadToValue("4e3.1"));
+  EXPECT_FALSE(JSONReader().ReadToValue("4.a"));
 }
 
 TEST(JSONReader, SimpleString) {
@@ -415,8 +416,10 @@ TEST(JSONReaderTest, InvalidDictionaries) {
   // No closing brace.
   EXPECT_FALSE(JSONReader::Read("{\"a\": true"));
 
-  // Keys must be quoted.
+  // Keys must be quoted strings.
   EXPECT_FALSE(JSONReader::Read("{foo:true}"));
+  EXPECT_FALSE(JSONReader::Read("{1234: false}"));
+  EXPECT_FALSE(JSONReader::Read("{:false}"));
 
   // Trailing comma.
   EXPECT_FALSE(JSONReader::Read("{\"a\":true,}"));
@@ -504,8 +507,12 @@ TEST(JSONReaderTest, InvalidUTF16Escapes) {
       "\"\\uzz89\"",         // Invalid scalar.
       "\"\\ud83d\\udca\"",   // Invalid lower surrogate.
       "\"\\ud83d\\ud83d\"",  // Invalid lower surrogate.
+      "\"\\ud83d\\uaaaZ\""   // Invalid lower surrogate.
       "\"\\ud83foo\"",       // No lower surrogate.
-      "\"\\ud83\\foo\""      // No lower surrogate.
+      "\"\\ud83d\\foo\""     // No lower surrogate.
+      "\"\\ud83\\foo\""      // Invalid upper surrogate.
+      "\"\\ud83d\\u1\""      // No lower surrogate.
+      "\"\\ud83\\u1\""       // Invalid upper surrogate.
   };
   std::unique_ptr<Value> root;
   for (size_t i = 0; i < arraysize(cases); ++i) {

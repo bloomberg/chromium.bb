@@ -438,8 +438,10 @@ TEST_F(JSONParserTest, UnterminatedInputs) {
       "tru",
       "fals",
       "nul",
+      "\"\\x",
       "\"\\x2",
       "\"\\u123",
+      "\"\\uD803\\u",
       "\"\\",
       "\"\\/",
       // clang-format on
