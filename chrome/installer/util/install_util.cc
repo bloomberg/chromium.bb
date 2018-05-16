@@ -584,19 +584,20 @@ std::wstring InstallUtil::GetMachineLevelUserCloudPolicyEnrollmentToken() {
                                                             &value_name);
 
   RegKey key;
-  LONG result = key.Open(HKEY_LOCAL_MACHINE, key_path.c_str(), KEY_READ);
+  LONG result = key.Open(HKEY_LOCAL_MACHINE, key_path.c_str(), KEY_QUERY_VALUE);
   if (result != ERROR_SUCCESS) {
-    LOG(ERROR) << "Unable to create registry key HKLM\\" << key_path
-               << " for reading result=" << result;
+    if (result != ERROR_FILE_NOT_FOUND) {
+      ::SetLastError(result);
+      PLOG(ERROR) << "Failed to open HKLM\\" << key_path;
+    }
     return std::wstring();
   }
 
   std::wstring value;
   result = key.ReadValue(value_name.c_str(), &value);
   if (result != ERROR_SUCCESS) {
-    LOG(ERROR) << "Unable to read registry value HKLM\\" << key_path
-               << "\\" << value_name << " for writing result=" << result;
-    return std::wstring();
+    ::SetLastError(result);
+    PLOG(ERROR) << "Failed to read HKLM\\" << key_path << "\\" << value_name;
   }
 
   return value;
