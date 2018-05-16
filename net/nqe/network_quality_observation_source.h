@@ -60,9 +60,20 @@ const char* GetNameForObservationSource(NetworkQualityObservationSource source);
 // Different categories to which an observation source can belong to. Each
 // observation source belongs to exactly one category.
 enum ObservationCategory {
+  // HTTP RTT observations measure the RTT from this device taken at the
+  // HTTP layer. If a HTTP-layer proxy is in use, then the RTT observations
+  // would measure the RTT from this device to the proxy.
   OBSERVATION_CATEGORY_HTTP = 0,
+  // Transport RTT observations measure the RTT from this device taken at the
+  // transport layer. If a transport-layer proxy (e.g., TCP proxy) is in use,
+  // then the RTT observations would measure the RTT from this device to the
+  // proxy.
   OBSERVATION_CATEGORY_TRANSPORT = 1,
-  OBSERVATION_CATEGORY_COUNT = 2
+  // End to end RTT observations measure the RTT from this device to the remote
+  // web server. Currently, this only includes RTT observations taken from the
+  // QUIC connections.
+  OBSERVATION_CATEGORY_END_TO_END = 2,
+  OBSERVATION_CATEGORY_COUNT = 3
 };
 
 }  // namespace internal

@@ -1002,11 +1002,12 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
 
   base::TimeDelta http_rtt = nqe::internal::InvalidRTT();
   base::TimeDelta transport_rtt = nqe::internal::InvalidRTT();
+  base::TimeDelta end_to_end_rtt = nqe::internal::InvalidRTT();
   int32_t downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
 
   effective_connection_type_ =
       GetRecentEffectiveConnectionTypeAndNetworkQuality(
-          base::TimeTicks(), &http_rtt, &transport_rtt,
+          base::TimeTicks(), &http_rtt, &transport_rtt, &end_to_end_rtt,
           &downstream_throughput_kbps,
           &transport_rtt_observation_count_last_ect_computation_);
 
@@ -1025,6 +1026,10 @@ void NetworkQualityEstimator::ComputeEffectiveConnectionType() {
   if (network_quality_.transport_rtt() != nqe::internal::InvalidRTT()) {
     UMA_HISTOGRAM_TIMES("NQE.TransportRTT.OnECTComputation",
                         network_quality_.transport_rtt());
+  }
+
+  if (end_to_end_rtt != nqe::internal::InvalidRTT()) {
+    UMA_HISTOGRAM_TIMES("NQE.EndToEndRTT.OnECTComputation", end_to_end_rtt);
   }
 
   if (network_quality_.downstream_throughput_kbps() !=
@@ -1064,11 +1069,13 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionType(
 
   base::TimeDelta http_rtt = nqe::internal::InvalidRTT();
   base::TimeDelta transport_rtt = nqe::internal::InvalidRTT();
+  base::TimeDelta end_to_end_rtt = nqe::internal::InvalidRTT();
+
   int32_t downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
 
   return GetRecentEffectiveConnectionTypeAndNetworkQuality(
-      start_time, &http_rtt, &transport_rtt, &downstream_throughput_kbps,
-      nullptr);
+      start_time, &http_rtt, &transport_rtt, &end_to_end_rtt,
+      &downstream_throughput_kbps, nullptr);
 }
 
 EffectiveConnectionType
@@ -1076,20 +1083,20 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
     const base::TimeTicks& start_time,
     base::TimeDelta* http_rtt,
     base::TimeDelta* transport_rtt,
+    base::TimeDelta* end_to_end_rtt,
     int32_t* downstream_throughput_kbps,
     size_t* transport_rtt_observation_count) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-    return GetRecentEffectiveConnectionTypeUsingMetrics(
-        start_time,
-        NetworkQualityEstimator::MetricUsage::
-            MUST_BE_USED /* http_rtt_metric */,
-        NetworkQualityEstimator::MetricUsage::
-            DO_NOT_USE /* transport_rtt_metric */,
-        NetworkQualityEstimator::MetricUsage::
-            USE_IF_AVAILABLE /* downstream_throughput_kbps_metric */,
-        http_rtt, transport_rtt, downstream_throughput_kbps,
-        transport_rtt_observation_count);
+  return GetRecentEffectiveConnectionTypeUsingMetrics(
+      start_time,
+      NetworkQualityEstimator::MetricUsage::MUST_BE_USED /* http_rtt_metric */,
+      NetworkQualityEstimator::MetricUsage::
+          DO_NOT_USE /* transport_rtt_metric */,
+      NetworkQualityEstimator::MetricUsage::
+          USE_IF_AVAILABLE /* downstream_throughput_kbps_metric */,
+      http_rtt, transport_rtt, end_to_end_rtt, downstream_throughput_kbps,
+      transport_rtt_observation_count);
 }
 
 EffectiveConnectionType
@@ -1100,12 +1107,14 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
     NetworkQualityEstimator::MetricUsage downstream_throughput_kbps_metric,
     base::TimeDelta* http_rtt,
     base::TimeDelta* transport_rtt,
+    base::TimeDelta* end_to_end_rtt,
     int32_t* downstream_throughput_kbps,
     size_t* transport_rtt_observation_count) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   *http_rtt = nqe::internal::InvalidRTT();
   *transport_rtt = nqe::internal::InvalidRTT();
+  *end_to_end_rtt = nqe::internal::InvalidRTT();
   *downstream_throughput_kbps = nqe::internal::INVALID_RTT_THROUGHPUT;
 
   auto forced_ect =
@@ -1135,6 +1144,11 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeUsingMetrics(
   if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT, start_time,
                     transport_rtt, transport_rtt_observation_count)) {
     *transport_rtt = nqe::internal::InvalidRTT();
+  }
+
+  if (!GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_END_TO_END, start_time,
+                    end_to_end_rtt, nullptr)) {
+    *end_to_end_rtt = nqe::internal::InvalidRTT();
   }
 
   if (*http_rtt != nqe::internal::InvalidRTT() &&
@@ -1296,6 +1310,7 @@ base::TimeDelta NetworkQualityEstimator::GetRTTEstimateInternal(
   switch (observation_category) {
     case nqe::internal::OBSERVATION_CATEGORY_HTTP:
     case nqe::internal::OBSERVATION_CATEGORY_TRANSPORT:
+    case nqe::internal::OBSERVATION_CATEGORY_END_TO_END:
       return base::TimeDelta::FromMilliseconds(
           rtt_ms_observations_[observation_category]
               .GetPercentile(start_time, current_network_id_.signal_strength,
@@ -1458,8 +1473,12 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfRTT(
       &rtt_ms_observations_[nqe::internal::OBSERVATION_CATEGORY_TRANSPORT]);
   ++new_rtt_observations_since_last_ect_computation_;
 
-  rtt_ms_observations_[observation.GetObservationCategory()].AddObservation(
-      observation);
+  std::vector<nqe::internal::ObservationCategory> observation_categories =
+      observation.GetObservationCategories();
+  for (nqe::internal::ObservationCategory observation_category :
+       observation_categories) {
+    rtt_ms_observations_[observation_category].AddObservation(observation);
+  }
 
   if (observation.source() == NETWORK_QUALITY_OBSERVATION_SOURCE_TCP ||
       observation.source() == NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC) {
@@ -1490,8 +1509,9 @@ void NetworkQualityEstimator::AddAndNotifyObserversOfThroughput(
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_NE(nqe::internal::INVALID_RTT_THROUGHPUT, observation.value());
   DCHECK_GT(NETWORK_QUALITY_OBSERVATION_SOURCE_MAX, observation.source());
+  DCHECK_EQ(1u, observation.GetObservationCategories().size());
   DCHECK_EQ(nqe::internal::OBSERVATION_CATEGORY_HTTP,
-            observation.GetObservationCategory());
+            observation.GetObservationCategories().front());
 
   if (!ShouldAddObservation(observation))
     return;

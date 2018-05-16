@@ -564,6 +564,7 @@ TEST_F(NetworkQualityEstimatorTest, QuicObservations) {
                                      NETWORK_QUALITY_OBSERVATION_SOURCE_TCP, 1);
   histogram_tester.ExpectBucketCount(
       "NQE.RTT.ObservationSource", NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC, 1);
+  histogram_tester.ExpectTotalCount("NQE.EndToEndRTT.OnECTComputation", 1);
   histogram_tester.ExpectTotalCount("NQE.RTT.ObservationSource", 2);
 }
 
@@ -1651,6 +1652,7 @@ TEST_F(NetworkQualityEstimatorTest,
 }
 
 TEST_F(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
+  base::HistogramTester histogram_tester;
   TestRTTObserver rtt_observer;
   TestThroughputObserver throughput_observer;
 
@@ -1751,6 +1753,12 @@ TEST_F(NetworkQualityEstimatorTest, TestRttThroughputObservers) {
   EXPECT_TRUE(
       estimator.GetRecentRTT(nqe::internal::OBSERVATION_CATEGORY_TRANSPORT,
                              base::TimeTicks(), &rtt, nullptr));
+
+  const std::vector<base::Bucket> end_to_end_rtt_samples =
+      histogram_tester.GetAllSamples("NQE.EndToEndRTT.OnECTComputation");
+  EXPECT_FALSE(end_to_end_rtt_samples.empty());
+  for (const auto& bucket : end_to_end_rtt_samples)
+    EXPECT_EQ(quic_rtt.InMilliseconds(), bucket.min);
 }
 
 TEST_F(NetworkQualityEstimatorTest, TestGlobalSocketWatcherThrottle) {

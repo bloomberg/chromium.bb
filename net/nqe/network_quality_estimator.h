@@ -269,6 +269,7 @@ class NET_EXPORT NetworkQualityEstimator
       const base::TimeTicks& start_time,
       base::TimeDelta* http_rtt,
       base::TimeDelta* transport_rtt,
+      base::TimeDelta* end_to_end_rtt,
       int32_t* downstream_throughput_kbps,
       size_t* transport_rtt_observation_count) const;
 
@@ -461,6 +462,7 @@ class NET_EXPORT NetworkQualityEstimator
       MetricUsage downstream_throughput_kbps_metric,
       base::TimeDelta* http_rtt,
       base::TimeDelta* transport_rtt,
+      base::TimeDelta* end_to_end_rtt,
       int32_t* downstream_throughput_kbps,
       size_t* transport_rtt_observation_count) const;
 
