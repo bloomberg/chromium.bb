@@ -389,7 +389,6 @@ cr.define('settings_sections_tests', function() {
       let capabilities =
           print_preview_test_utils.getCddTemplate('FooPrinter').capabilities;
       page.set('destination_.capabilities', capabilities);
-      // assertTrue(optionsElement.hidden);
 
       // Expanding more settings will show the section.
       toggleMoreSettings();
