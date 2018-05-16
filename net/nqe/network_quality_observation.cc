@@ -36,24 +36,34 @@ Observation& Observation::operator=(const Observation& other) = default;
 
 Observation::~Observation() = default;
 
-ObservationCategory Observation::GetObservationCategory() const {
+std::vector<ObservationCategory> Observation::GetObservationCategories() const {
+  std::vector<ObservationCategory> observation_categories;
   switch (source_) {
     case NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP:
     case NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE:
     case NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM:
     case DEPRECATED_NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE:
-      return ObservationCategory::OBSERVATION_CATEGORY_HTTP;
+      observation_categories.push_back(
+          ObservationCategory::OBSERVATION_CATEGORY_HTTP);
+      return observation_categories;
     case NETWORK_QUALITY_OBSERVATION_SOURCE_TRANSPORT_CACHED_ESTIMATE:
     case NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_TRANSPORT_FROM_PLATFORM:
     case NETWORK_QUALITY_OBSERVATION_SOURCE_TCP:
+      observation_categories.push_back(
+          ObservationCategory::OBSERVATION_CATEGORY_TRANSPORT);
+      return observation_categories;
     case NETWORK_QUALITY_OBSERVATION_SOURCE_QUIC:
-      return ObservationCategory::OBSERVATION_CATEGORY_TRANSPORT;
+      observation_categories.push_back(
+          ObservationCategory::OBSERVATION_CATEGORY_TRANSPORT);
+      observation_categories.push_back(
+          ObservationCategory::OBSERVATION_CATEGORY_END_TO_END);
+      return observation_categories;
     case NETWORK_QUALITY_OBSERVATION_SOURCE_MAX:
       NOTREACHED();
-      return ObservationCategory::OBSERVATION_CATEGORY_HTTP;
+      return observation_categories;
   }
   NOTREACHED();
-  return ObservationCategory::OBSERVATION_CATEGORY_HTTP;
+  return observation_categories;
 }
 
 }  // namespace internal

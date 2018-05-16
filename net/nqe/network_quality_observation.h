@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
@@ -56,8 +58,8 @@ class NET_EXPORT_PRIVATE Observation {
   // A unique identifier for the remote host which was used for the measurement.
   base::Optional<IPHash> host() const { return host_; }
 
-  // Returns the observation category of this observation.
-  ObservationCategory GetObservationCategory() const;
+  // Returns the observation categories to which this observation belongs to.
+  std::vector<ObservationCategory> GetObservationCategories() const;
 
  private:
   int32_t value_;

@@ -105,6 +105,7 @@ class TestNetworkQualityEstimator : public NetworkQualityEstimator {
       const base::TimeTicks& start_time,
       base::TimeDelta* http_rtt,
       base::TimeDelta* transport_rtt,
+      base::TimeDelta* end_to_end_rtt,
       int32_t* downstream_throughput_kbps,
       size_t* observations_count) const override;
 
