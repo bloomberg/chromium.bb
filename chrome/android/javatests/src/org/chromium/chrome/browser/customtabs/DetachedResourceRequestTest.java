@@ -37,8 +37,12 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
+import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.net.test.EmbeddedTestServer;
+
+import java.util.concurrent.TimeoutException;
 
 /** Tests for detached resource requests. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -177,50 +181,67 @@ public class DetachedResourceRequestTest {
         Assert.assertEquals("\"acookie\"", content);
     }
 
-    /** Tests that cached detached resource requests that are forbidden by SafeBrowsing don't end up
-     *  in the content area.
+    /**
+     * Tests that cached detached resource requests that are forbidden by SafeBrowsing don't end up
+     * in the content area, for a main resource.
      */
     @Test
     @SmallTest
     @EnableFeatures(ChromeFeatureList.CCT_PARALLEL_REQUEST)
-    public void testSafeBrowsing() throws Exception {
+    public void testSafeBrowsingMainResource() throws Exception {
         SafeBrowsingApiBridge.setSafeBrowsingHandlerType(
                 new MockSafeBrowsingApiHandler().getClass());
         CustomTabsSessionToken session = prepareSession();
-
-        // Count the number of times data is read from the socket.
-        // We expect:
-        // - 1 read for the detached request
-        // - 0 from the page load, as the response comes from the cache, and SafeBrowsing blocks it.
-        //
-        // Cannot count connections as Chrome opens multiple sockets at page load time.
-        CallbackHelper readFromSocketCallback = new CallbackHelper();
-        setUpTestServerWithListener(new EmbeddedTestServer.ConnectionListener() {
-            @Override
-            public void readFromSocket(long socketId) {
-                readFromSocketCallback.notifyCalled();
-            }
-        });
-
-        Uri url = Uri.parse(mServer.getURL("/cachetime")); // Cacheable response.
-        String urlString = url.toString();
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            Assert.assertEquals(CustomTabsConnection.PARALLEL_REQUEST_SUCCESS,
-                    mConnection.handleParallelRequest(session, prepareIntent(url, ORIGIN)));
-        });
-        readFromSocketCallback.waitForCallback(0, 1);
+        String cacheable = "/cachetime";
+        CallbackHelper readFromSocketCallback = waitForDetachedRequest(session, cacheable);
+        Uri url = Uri.parse(mServer.getURL(cacheable));
 
         try {
             MockSafeBrowsingApiHandler.addMockResponse(
-                    urlString, "{\"matches\":[{\"threat_type\":\"5\"}]}");
+                    url.toString(), "{\"matches\":[{\"threat_type\":\"5\"}]}");
 
-            Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, urlString);
+            Intent intent =
+                    CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, url.toString());
             mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
 
             Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
             ThreadUtils.runOnUiThreadBlocking(
                     () -> Assert.assertTrue(tab.getWebContents().isShowingInterstitialPage()));
+            // 1 read from the detached request, and 0 from the page load, as
+            // the response comes from the cache, and SafeBrowsing blocks it.
             Assert.assertEquals(1, readFromSocketCallback.getCallCount());
+        } finally {
+            MockSafeBrowsingApiHandler.clearMockResponses();
+        }
+    }
+
+    /**
+     * Tests that cached detached resource requests that are forbidden by SafeBrowsing don't end up
+     * in the content area, for a subresource.
+     */
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.CCT_PARALLEL_REQUEST)
+    public void testSafeBrowsingSubresource() throws Exception {
+        SafeBrowsingApiBridge.setSafeBrowsingHandlerType(
+                new MockSafeBrowsingApiHandler().getClass());
+        CustomTabsSessionToken session = prepareSession();
+        String cacheable = "/cachetime";
+        waitForDetachedRequest(session, cacheable);
+        Uri url = Uri.parse(mServer.getURL(cacheable));
+
+        try {
+            MockSafeBrowsingApiHandler.addMockResponse(
+                    url.toString(), "{\"matches\":[{\"threat_type\":\"5\"}]}");
+
+            String pageUrl = mServer.getURL("/chrome/test/data/android/cacheable_subresource.html");
+            Intent intent = CustomTabsTestUtils.createMinimalCustomTabIntent(mContext, pageUrl);
+            mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+
+            Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+            WebContents webContents = tab.getWebContents();
+            // Need to poll as the subresource request is async.
+            CriteriaHelper.pollUiThread(() -> webContents.isShowingInterstitialPage());
         } finally {
             MockSafeBrowsingApiHandler.clearMockResponses();
         }
@@ -309,6 +330,28 @@ public class DetachedResourceRequestTest {
         mServer.setConnectionListener(listener);
         mServer.addDefaultHandlers("");
         Assert.assertTrue(mServer.start());
+    }
+
+    private CallbackHelper waitForDetachedRequest(CustomTabsSessionToken session,
+            String relativeUrl) throws InterruptedException, TimeoutException {
+        // Count the number of times data is read from the socket.
+        // We expect 1 for the detached request.
+        // Cannot count connections as Chrome opens multiple sockets at page load time.
+        CallbackHelper readFromSocketCallback = new CallbackHelper();
+        setUpTestServerWithListener(new EmbeddedTestServer.ConnectionListener() {
+            @Override
+            public void readFromSocket(long socketId) {
+                readFromSocketCallback.notifyCalled();
+            }
+        });
+        Uri url = Uri.parse(mServer.getURL(relativeUrl));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(CustomTabsConnection.PARALLEL_REQUEST_SUCCESS,
+                    mConnection.handleParallelRequest(session, prepareIntent(url, ORIGIN)));
+        });
+        readFromSocketCallback.waitForCallback(0);
+        return readFromSocketCallback;
     }
 
     private static Intent prepareIntent(Uri url, Uri referrer) {
