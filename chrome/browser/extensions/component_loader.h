@@ -110,6 +110,7 @@ class ComponentLoader {
                                         const std::string& name_string,
                                         const std::string& description_string);
 
+  void AddAssessmentAssistantExtension();
   void AddChromeOsSpeechSynthesisExtension();
 #endif
 

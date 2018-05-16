@@ -655,6 +655,10 @@
       <if expr="not is_android">
         <include name="IDR_TAB_RANKER_EXAMPLE_PREPROCESSOR_CONFIG_PB" file="resource_coordinator\tab_ranker\example_preprocessor_config.pb" type="BINDATA" />
       </if>
+      <!-- Assessment Assistant -->
+      <if expr="chromeos">
+        <include name="IDR_ASSESSMENT_ASSISTANT_MANIFEST" file="resources\chromeos\assessmentassistant\manifest.json" type="BINDATA" />
+      </if>
     </includes>
   </release>
 </grit>
