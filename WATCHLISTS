@@ -133,8 +133,10 @@
       'filepath': 'ash/',
     },
     'assistant': {
-      'filepath': 'chromeos/assistant/'\
-                  '|chromeos/services/assistant/'
+      'filepath': 'ash/assistant/'\
+                  '|chromeos/assistant/'\
+                  '|chromeos/services/assistant/'\
+                  '|chrome/browser/ui/ash/assistant/'
     },
     'audio_service': {
       'filepath': 'services/audio/'
