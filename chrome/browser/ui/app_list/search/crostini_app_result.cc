@@ -11,6 +11,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 
 namespace app_list {
 
@@ -29,7 +30,8 @@ CrostiniAppResult::CrostiniAppResult(Profile* profile,
 CrostiniAppResult::~CrostiniAppResult() = default;
 
 void CrostiniAppResult::Open(int event_flags) {
-  LaunchCrostiniApp(profile(), app_id());
+  ChromeLauncherController::instance()->ActivateApp(
+      id(), ash::LAUNCH_FROM_APP_LIST_SEARCH, event_flags);
 }
 
 void CrostiniAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
