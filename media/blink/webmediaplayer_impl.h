@@ -77,6 +77,7 @@ class GLES2Interface;
 namespace media {
 class CdmContextRef;
 class ChunkDemuxer;
+class EncryptionScheme;
 class VideoDecodeStatsReporter;
 class MediaLog;
 class UrlIndex;
@@ -573,6 +574,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // #key.EME. The SRC and MSE ones are mutually exclusive based on the presence
   // of |chunk_demuxer_|, while the EME one is only recorded if |is_encrypted_|.
   void RecordTimingUMA(const std::string& key, base::TimeDelta elapsed);
+
+  // Records the encryption scheme used by the stream |stream_name|. This is
+  // only recorded when metadata is available.
+  void RecordEncryptionScheme(const std::string& stream_name,
+                              const EncryptionScheme& encryption_scheme);
 
   blink::WebLocalFrame* const frame_;
 
