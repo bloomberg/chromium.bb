@@ -6,7 +6,7 @@ declare_args() {
   # The svn revisions that belong to the git hashes in DEPS. Used to cause full
   # rebuilds on libc++ rolls.
   clang_format_svn_revision = "302580"
-  libcxx_svn_revision =       "329375"
+  libcxx_svn_revision =       "332543"
   libcxxabi_svn_revision =    "331450"
-  libunwind_svn_revision =    "329340"
+  libunwind_svn_revision =    "332513"
 }

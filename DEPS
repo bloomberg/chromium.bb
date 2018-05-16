@@ -5,9 +5,9 @@ vars = {
 
   # When changing these, also update the svn revisions in deps_revisions.gni
   "clang_format_revision": "0653eee0c81ea04715c635dd0885e8096ff6ba6d",
-  "libcxx_revision":       "ece1de8658d749e19c12cacd4458cc330eca94e3",
+  "libcxx_revision":       "85a7702b4cc5d69402791fe685f151cf3076be71",
   "libcxxabi_revision":    "05a73941f3fb177c4a891d4ff2a4ed5785e3b80c",
-  "libunwind_revision":    "0f3cbe4123f8afacd646bd4f5414aa6528ef8129",
+  "libunwind_revision":    "1e1c6b739595098ba5c466bfe9d58b993e646b48",
 }
 
 deps = {
