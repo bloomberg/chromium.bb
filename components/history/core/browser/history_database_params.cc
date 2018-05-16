@@ -7,10 +7,7 @@
 namespace history {
 
 HistoryDatabaseParams::HistoryDatabaseParams()
-    : history_dir(),
-      download_interrupt_reason_none(0),
-      download_interrupt_reason_crash(0) {
-}
+    : download_interrupt_reason_none(0), download_interrupt_reason_crash(0) {}
 
 HistoryDatabaseParams::HistoryDatabaseParams(
     const base::FilePath& history_dir,

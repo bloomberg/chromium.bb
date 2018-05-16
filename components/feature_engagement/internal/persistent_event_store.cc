@@ -83,7 +83,7 @@ void PersistentEventStore::OnLoadComplete(
     const OnLoadedCallback& callback,
     bool success,
     std::unique_ptr<std::vector<Event>> entries) {
-  stats::RecordEventDbLoadEvent(success, *entries.get());
+  stats::RecordEventDbLoadEvent(success, *entries);
   ready_ = success;
   callback.Run(success, std::move(entries));
 }

@@ -22,7 +22,7 @@ class ScreenContextTest : public testing::Test {
   void TearDown() override {}
 
  protected:
-  ScreenContext& context() { return *context_.get(); }
+  ScreenContext& context() { return *context_; }
 
  private:
   std::unique_ptr<ScreenContext> context_;

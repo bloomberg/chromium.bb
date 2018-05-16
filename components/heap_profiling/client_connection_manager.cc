@@ -53,8 +53,7 @@ class ProfilingClientBinder {
   mojom::ProfilingClientPtr take() { return std::move(memlog_client_); }
 
  private:
-  ProfilingClientBinder()
-      : memlog_client_(), request_(mojo::MakeRequest(&memlog_client_)) {}
+  ProfilingClientBinder() : request_(mojo::MakeRequest(&memlog_client_)) {}
 
   mojom::ProfilingClientPtr memlog_client_;
   mojom::ProfilingClientRequest request_;

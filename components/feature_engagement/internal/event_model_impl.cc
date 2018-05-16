@@ -24,8 +24,7 @@ namespace feature_engagement {
 EventModelImpl::EventModelImpl(
     std::unique_ptr<EventStore> store,
     std::unique_ptr<EventStorageValidator> storage_validator)
-    : EventModel(),
-      store_(std::move(store)),
+    : store_(std::move(store)),
       storage_validator_(std::move(storage_validator)),
       ready_(false),
       weak_factory_(this) {}

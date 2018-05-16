@@ -305,7 +305,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalGCMRegistration) {
   // non-InstanceID GCM registration.
 
   // Non-InstanceID callers pass an empty string for authorized_entity.
-  std::string authorized_entity_gcm = "";
+  std::string authorized_entity_gcm;
   std::string authorized_entity_1 = kExampleAuthorizedEntity + std::string("1");
   std::string authorized_entity_2 = kExampleAuthorizedEntity + std::string("2");
 
@@ -361,7 +361,7 @@ TEST_F(GCMEncryptionProviderTest, VerifiesKeyRemovalInstanceIDToken) {
   // affect an InstanceID token.
 
   // Non-InstanceID callers pass an empty string for authorized_entity.
-  std::string authorized_entity_gcm = "";
+  std::string authorized_entity_gcm;
   std::string authorized_entity_1 = kExampleAuthorizedEntity + std::string("1");
   std::string authorized_entity_2 = kExampleAuthorizedEntity + std::string("2");
 

@@ -11,7 +11,7 @@
 
 class JSONSchemaValidatorCPPTest : public JSONSchemaValidatorTestBase {
  public:
-  JSONSchemaValidatorCPPTest() : JSONSchemaValidatorTestBase() {}
+  JSONSchemaValidatorCPPTest() {}
 
  protected:
   void ExpectValid(const std::string& test_source,

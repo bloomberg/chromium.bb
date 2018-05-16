@@ -61,8 +61,7 @@ class TestDataUseAggregator : public DataUseAggregator {
 class TestNetworkChangeNotifier : public net::NetworkChangeNotifier {
  public:
   explicit TestNetworkChangeNotifier(TestDataUseAggregator* data_use_aggregator)
-      : net::NetworkChangeNotifier(),
-        data_use_aggregator_(data_use_aggregator),
+      : data_use_aggregator_(data_use_aggregator),
         connection_type_to_return_(
             net::NetworkChangeNotifier::CONNECTION_UNKNOWN) {}
 

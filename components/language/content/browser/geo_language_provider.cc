@@ -22,8 +22,7 @@ constexpr base::TimeDelta kMinUpdatePeriod = base::TimeDelta::FromDays(1);
 }  // namespace
 
 GeoLanguageProvider::GeoLanguageProvider()
-    : languages_(),
-      creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+    : creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {
@@ -33,8 +32,7 @@ GeoLanguageProvider::GeoLanguageProvider()
 
 GeoLanguageProvider::GeoLanguageProvider(
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
-    : languages_(),
-      creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),
+    : creation_task_runner_(base::SequencedTaskRunnerHandle::Get()),
       background_task_runner_(background_task_runner) {
   // Constructor is not required to run on |background_task_runner_|:
   DETACH_FROM_SEQUENCE(background_sequence_checker_);

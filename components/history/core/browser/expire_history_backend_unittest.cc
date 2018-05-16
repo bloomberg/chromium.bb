@@ -226,7 +226,7 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
 // added to the given arrays.
 void ExpireHistoryTest::AddExampleData(URLID url_ids[3],
                                        base::Time visit_times[4]) {
-  if (!main_db_.get())
+  if (!main_db_)
     return;
 
   // Four times for each visit.
@@ -326,7 +326,7 @@ void ExpireHistoryTest::AddExampleSourceData(const GURL& url, URLID* id) {
 }
 
 bool ExpireHistoryTest::HasFavicon(favicon_base::FaviconID favicon_id) {
-  if (!thumb_db_.get() || favicon_id == 0)
+  if (!thumb_db_ || favicon_id == 0)
     return false;
   return thumb_db_->GetFaviconHeader(favicon_id, nullptr, nullptr);
 }

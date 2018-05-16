@@ -899,7 +899,7 @@ void HistoryService::Cleanup() {
     history_client_->Shutdown();
 
   // Unload the backend.
-  if (history_backend_.get()) {
+  if (history_backend_) {
     // Get rid of the in-memory backend.
     in_memory_backend_.reset();
 

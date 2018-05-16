@@ -69,8 +69,7 @@ TiclInvalidationService::TiclInvalidationService(
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       network_channel_type_(GCM_NETWORK_CHANNEL),
       gcm_driver_(gcm_driver),
-      request_context_(request_context),
-      logger_() {}
+      request_context_(request_context) {}
 
 TiclInvalidationService::~TiclInvalidationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -344,7 +343,7 @@ bool TiclInvalidationService::IsReadyToStart() {
 }
 
 bool TiclInvalidationService::IsStarted() const {
-  return invalidator_.get() != nullptr;
+  return invalidator_ != nullptr;
 }
 
 void TiclInvalidationService::StartInvalidator(

@@ -35,7 +35,7 @@ class P2PInvalidatorTestDelegate {
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {
     DCHECK(!fake_push_client_);
-    DCHECK(!invalidator_.get());
+    DCHECK(!invalidator_);
     fake_push_client_ = new notifier::FakePushClient();
     invalidator_.reset(new P2PInvalidator(base::WrapUnique(fake_push_client_),
                                           invalidator_client_id,

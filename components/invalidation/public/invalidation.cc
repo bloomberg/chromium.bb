@@ -114,7 +114,7 @@ void Invalidation::SetAckHandler(
 }
 
 bool Invalidation::SupportsAcknowledgement() const {
-  return !!ack_handler_task_runner_.get();
+  return !!ack_handler_task_runner_;
 }
 
 void Invalidation::Acknowledge() const {
@@ -155,7 +155,7 @@ std::string Invalidation::ToString() const {
   std::string output;
   JSONStringValueSerializer serializer(&output);
   serializer.set_pretty_print(true);
-  serializer.Serialize(*ToValue().get());
+  serializer.Serialize(*ToValue());
   return output;
 }
 

@@ -46,7 +46,7 @@ base::Value* LoadValue(const std::string& filename) {
 
 base::Value* LoadValue(const std::string& filename, base::Value::Type type) {
   std::unique_ptr<base::Value> result(LoadValue(filename));
-  if (!result.get())
+  if (!result)
     return nullptr;
   if (result->type() != type) {
     ADD_FAILURE() << "Expected type " << type << ", got: " << result->type();

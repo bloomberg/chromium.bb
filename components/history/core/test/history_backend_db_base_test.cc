@@ -111,7 +111,7 @@ void HistoryBackendDBBaseTest::CreateDBVersion(int version) {
 }
 
 void HistoryBackendDBBaseTest::DeleteBackend() {
-  if (backend_.get()) {
+  if (backend_) {
     backend_->Closing();
     backend_ = nullptr;
   }

@@ -216,7 +216,7 @@ bool UnackedInvalidationSet::ResetListFromValue(
       DLOG(WARNING) << "Failed to parse invalidation at index " << i;
       return false;
     }
-    invalidations_.insert(*invalidation.get());
+    invalidations_.insert(*invalidation);
   }
   return true;
 }

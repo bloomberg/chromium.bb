@@ -281,7 +281,7 @@ void TypedURLSyncBridge::GetData(StorageKeyList storage_keys,
       continue;
     std::unique_ptr<syncer::EntityData> entity_data =
         CreateEntityData(url_row, visits_vector);
-    if (!entity_data.get()) {
+    if (!entity_data) {
       // Cannot create EntityData, ex. no TYPED visits.
       continue;
     }
@@ -311,7 +311,7 @@ void TypedURLSyncBridge::GetAllData(DataCallback callback) {
       continue;
     std::unique_ptr<syncer::EntityData> entity_data =
         CreateEntityData(url, visits_vector);
-    if (!entity_data.get()) {
+    if (!entity_data) {
       // Cannot create EntityData, ex. no TYPED visits.
       continue;
     }
@@ -1202,7 +1202,7 @@ void TypedURLSyncBridge::SendTypedURLToProcessor(
 
   std::unique_ptr<syncer::EntityData> entity_data =
       CreateEntityData(row, visits);
-  if (!entity_data.get()) {
+  if (!entity_data) {
     // Cannot create EntityData, ex. no TYPED visits.
     return;
   }

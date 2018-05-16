@@ -38,7 +38,7 @@ class InvalidationNotifierTestDelegate {
       const std::string& initial_state,
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {
-    DCHECK(!invalidator_.get());
+    DCHECK(!invalidator_);
     std::unique_ptr<notifier::PushClient> push_client(
         new notifier::FakePushClient());
     std::unique_ptr<SyncNetworkChannel> network_channel(

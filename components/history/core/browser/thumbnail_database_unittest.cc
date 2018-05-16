@@ -928,7 +928,7 @@ TEST_F(ThumbnailDatabaseTest, HasMappingFor) {
 // Test loading version 3 database.
 TEST_F(ThumbnailDatabaseTest, Version3) {
   std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v3.sql");
-  ASSERT_TRUE(db.get() != nullptr);
+  ASSERT_TRUE(db);
   VerifyTablesAndColumns(&db->db_);
 
   // Version 3 is deprecated, the data should all be gone.
@@ -938,7 +938,7 @@ TEST_F(ThumbnailDatabaseTest, Version3) {
 // Test loading version 4 database.
 TEST_F(ThumbnailDatabaseTest, Version4) {
   std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v4.sql");
-  ASSERT_TRUE(db.get() != nullptr);
+  ASSERT_TRUE(db);
   VerifyTablesAndColumns(&db->db_);
 
   // Version 4 is deprecated, the data should all be gone.
@@ -948,7 +948,7 @@ TEST_F(ThumbnailDatabaseTest, Version4) {
 // Test loading version 5 database.
 TEST_F(ThumbnailDatabaseTest, Version5) {
   std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v5.sql");
-  ASSERT_TRUE(db.get() != nullptr);
+  ASSERT_TRUE(db);
   VerifyTablesAndColumns(&db->db_);
 
   // Version 5 is deprecated, the data should all be gone.
@@ -958,7 +958,7 @@ TEST_F(ThumbnailDatabaseTest, Version5) {
 // Test loading version 6 database.
 TEST_F(ThumbnailDatabaseTest, Version6) {
   std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v6.sql");
-  ASSERT_TRUE(db.get() != nullptr);
+  ASSERT_TRUE(db);
   VerifyTablesAndColumns(&db->db_);
 
   // Version 6 is deprecated, the data should all be gone.
@@ -968,7 +968,7 @@ TEST_F(ThumbnailDatabaseTest, Version6) {
 // Test loading version 7 database.
 TEST_F(ThumbnailDatabaseTest, Version7) {
   std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v7.sql");
-  ASSERT_TRUE(db.get() != nullptr);
+  ASSERT_TRUE(db);
   VerifyTablesAndColumns(&db->db_);
 
   EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl1,
@@ -988,7 +988,7 @@ TEST_F(ThumbnailDatabaseTest, Version7) {
 // Test loading version 8 database.
 TEST_F(ThumbnailDatabaseTest, Version8) {
   std::unique_ptr<ThumbnailDatabase> db = LoadFromGolden("Favicons.v8.sql");
-  ASSERT_TRUE(db.get() != nullptr);
+  ASSERT_TRUE(db);
   VerifyTablesAndColumns(&db->db_);
 
   EXPECT_TRUE(CheckPageHasIcon(db.get(), kPageUrl1,

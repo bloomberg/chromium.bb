@@ -354,7 +354,7 @@ TEST_P(GCMMessageCryptographerTest, RoundTrip) {
 
 TEST_P(GCMMessageCryptographerTest, RoundTripEmptyMessage) {
   const std::string salt = GenerateRandomSalt();
-  const std::string message = "";
+  const std::string message;
 
   size_t record_size = 0;
 

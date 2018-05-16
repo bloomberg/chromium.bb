@@ -35,7 +35,7 @@ class NonBlockingInvalidatorTestDelegate {
       const std::string& initial_state,
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {
-    DCHECK(!invalidator_.get());
+    DCHECK(!invalidator_);
     base::Thread::Options options;
     options.message_loop_type = base::MessageLoop::TYPE_IO;
     io_thread_.StartWithOptions(options);

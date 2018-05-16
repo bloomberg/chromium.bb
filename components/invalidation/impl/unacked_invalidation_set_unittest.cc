@@ -194,7 +194,7 @@ class UnackedInvalidationSetSerializationTest
     std::unique_ptr<base::DictionaryValue> value =
         unacked_invalidations_.ToValue();
     UnackedInvalidationSet deserialized(kObjectId_);
-    deserialized.ResetFromValue(*value.get());
+    deserialized.ResetFromValue(*value);
     return deserialized;
   }
 };

@@ -57,7 +57,7 @@ class GuestViewManager::EmbedderRenderProcessHostObserver
   }
 
   void RenderProcessHostDestroyed(RenderProcessHost* host) override {
-    if (guest_view_manager_.get())
+    if (guest_view_manager_)
       guest_view_manager_->EmbedderProcessDestroyed(id_);
     delete this;
   }

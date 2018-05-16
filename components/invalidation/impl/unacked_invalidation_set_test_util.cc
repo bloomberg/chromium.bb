@@ -151,7 +151,7 @@ void PrintTo(const UnackedInvalidationSet& invalidations,
   std::string output;
   JSONStringValueSerializer serializer(&output);
   serializer.set_pretty_print(true);
-  serializer.Serialize(*value.get());
+  serializer.Serialize(*value);
 
   (*os) << output;
 }
@@ -166,7 +166,7 @@ void PrintTo(const UnackedInvalidationsMap& map, ::std::ostream* os) {
   std::string output;
   JSONStringValueSerializer serializer(&output);
   serializer.set_pretty_print(true);
-  serializer.Serialize(*list.get());
+  serializer.Serialize(*list);
 
   (*os) << output;
 }

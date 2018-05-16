@@ -108,7 +108,7 @@ bool ObjectIdInvalidationMap::ResetFromValue(const base::ListValue& value) {
     if (!invalidation) {
       return false;
     }
-    Insert(*invalidation.get());
+    Insert(*invalidation);
   }
   return true;
 }
@@ -117,7 +117,7 @@ std::string ObjectIdInvalidationMap::ToString() const {
   std::string output;
   JSONStringValueSerializer serializer(&output);
   serializer.set_pretty_print(true);
-  serializer.Serialize(*ToValue().get());
+  serializer.Serialize(*ToValue());
   return output;
 }
 
