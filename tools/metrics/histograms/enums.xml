@@ -25939,6 +25939,14 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="1" label="Delete Failure"/>
 </enum>
 
+<enum name="LibraryLoaderPrefetchDetailedStatus">
+  <int value="0" label="Success"/>
+  <int value="1" label="Code ordering is incorrect"/>
+  <int value="2" label="Cannot fork() a child process"/>
+  <int value="3" label="The child process has crashed"/>
+  <int value="4" label="The child process has been killed"/>
+</enum>
+
 <enum name="LibraryLoadFromApkStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Not supported">obsolete</int>

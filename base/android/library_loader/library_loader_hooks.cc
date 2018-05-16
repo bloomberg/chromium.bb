@@ -195,19 +195,18 @@ void LibraryLoaderExitHook() {
   }
 }
 
-static jboolean JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
+static void JNI_LibraryLoader_ForkAndPrefetchNativeLibrary(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
 #if BUILDFLAG(SUPPORTS_CODE_ORDERING)
   if (!ShouldDoOrderfileMemoryOptimization() ||
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceNativePrefetch)) {
-    return NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(
+    NativeLibraryPrefetcher::ForkAndPrefetchNativeLibrary(
         CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kNativePrefetchOrderedOnly));
   }
 #endif
-  return false;
 }
 
 static jint JNI_LibraryLoader_PercentageOfResidentNativeLibraryCode(
