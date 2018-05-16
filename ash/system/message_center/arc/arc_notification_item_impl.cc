@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/arc_notification_item_impl.h"
+#include "ash/system/message_center/arc/arc_notification_item_impl.h"
 
 #include <utility>
 #include <vector>
 
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
 #include "ash/shelf/shelf_constants.h"  // nogncheck
+#include "ash/system/message_center/arc/arc_notification_delegate.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "ui/arc/notification/arc_notification_delegate.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -19,7 +19,10 @@
 #include "ui/message_center/public/cpp/notification_types.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
 
-namespace arc {
+using arc::mojom::ArcNotificationExpandState;
+using arc::mojom::ArcNotificationPriority;
+
+namespace ash {
 
 namespace {
 
@@ -31,17 +34,17 @@ constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
 // _HIGH to -2 and 0 respectively to adjust the value with keeping the order
 // among _LOW, _DEFAULT and _HIGH. static
 // TODO(yoshiki): rewrite this conversion as typemap
-int ConvertAndroidPriority(mojom::ArcNotificationPriority android_priority) {
+int ConvertAndroidPriority(ArcNotificationPriority android_priority) {
   switch (android_priority) {
-    case mojom::ArcNotificationPriority::NONE:
-    case mojom::ArcNotificationPriority::MIN:
+    case ArcNotificationPriority::NONE:
+    case ArcNotificationPriority::MIN:
       return message_center::MIN_PRIORITY;
-    case mojom::ArcNotificationPriority::LOW:
-    case mojom::ArcNotificationPriority::DEFAULT:
+    case ArcNotificationPriority::LOW:
+    case ArcNotificationPriority::DEFAULT:
       return message_center::LOW_PRIORITY;
-    case mojom::ArcNotificationPriority::HIGH:
+    case ArcNotificationPriority::HIGH:
       return message_center::HIGH_PRIORITY;
-    case mojom::ArcNotificationPriority::MAX:
+    case ArcNotificationPriority::MAX:
       return message_center::MAX_PRIORITY;
   }
 
@@ -70,9 +73,9 @@ ArcNotificationItemImpl::~ArcNotificationItemImpl() {
 }
 
 void ArcNotificationItemImpl::OnUpdatedFromAndroid(
-    mojom::ArcNotificationDataPtr data,
+    arc::mojom::ArcNotificationDataPtr data,
     const std::string& app_id) {
-  DCHECK(CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_EQ(notification_key_, data->key);
 
   message_center::RichNotificationData rich_data;
@@ -90,7 +93,7 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
 
   message_center::NotifierId notifier_id(
       message_center::NotifierId::ARC_APPLICATION,
-      app_id.empty() ? ash::kDefaultArcNotifierId : app_id);
+      app_id.empty() ? kDefaultArcNotifierId : app_id);
   notifier_id.profile_id = profile_id_.GetUserEmail();
 
   auto notification = std::make_unique<message_center::Notification>(
@@ -103,8 +106,8 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
       new ArcNotificationDelegate(weak_ptr_factory_.GetWeakPtr()));
   notification->set_timestamp(base::Time::FromJavaTime(data->time));
 
-  if (expand_state_ != mojom::ArcNotificationExpandState::FIXED_SIZE &&
-      data->expand_state != mojom::ArcNotificationExpandState::FIXED_SIZE &&
+  if (expand_state_ != ArcNotificationExpandState::FIXED_SIZE &&
+      data->expand_state != ArcNotificationExpandState::FIXED_SIZE &&
       expand_state_ != data->expand_state) {
     // Assuming changing the expand status on Android-side is manually tiggered
     // by user.
@@ -119,7 +122,7 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
 
   notification->set_never_timeout(
       data->remote_input_state ==
-      mojom::ArcNotificationRemoteInputState::OPENED);
+      arc::mojom::ArcNotificationRemoteInputState::OPENED);
 
   if (!data->snapshot_image || data->snapshot_image->isNull()) {
     snapshot_ = gfx::ImageSkia();
@@ -158,22 +161,18 @@ void ArcNotificationItemImpl::OpenSettings() {
 
 void ArcNotificationItemImpl::ToggleExpansion() {
   switch (expand_state_) {
-    case mojom::ArcNotificationExpandState::EXPANDED:
-      expand_state_ = mojom::ArcNotificationExpandState::COLLAPSED;
+    case ArcNotificationExpandState::EXPANDED:
+      expand_state_ = ArcNotificationExpandState::COLLAPSED;
       break;
-    case mojom::ArcNotificationExpandState::COLLAPSED:
-      expand_state_ = mojom::ArcNotificationExpandState::EXPANDED;
+    case ArcNotificationExpandState::COLLAPSED:
+      expand_state_ = ArcNotificationExpandState::EXPANDED;
       break;
-    case mojom::ArcNotificationExpandState::FIXED_SIZE:
+    case ArcNotificationExpandState::FIXED_SIZE:
       // Do not change the state.
       break;
   }
 
   manager_->SendNotificationToggleExpansionOnChrome(notification_key_);
-}
-
-bool ArcNotificationItemImpl::CalledOnValidThread() const {
-  return thread_checker_.CalledOnValidThread();
 }
 
 void ArcNotificationItemImpl::AddObserver(Observer* observer) {
@@ -201,13 +200,12 @@ const gfx::ImageSkia& ArcNotificationItemImpl::GetSnapshot() const {
   return snapshot_;
 }
 
-mojom::ArcNotificationType ArcNotificationItemImpl::GetNotificationType()
+arc::mojom::ArcNotificationType ArcNotificationItemImpl::GetNotificationType()
     const {
   return type_;
 }
 
-mojom::ArcNotificationExpandState ArcNotificationItemImpl::GetExpandState()
-    const {
+ArcNotificationExpandState ArcNotificationItemImpl::GetExpandState() const {
   return expand_state_;
 }
 
@@ -215,8 +213,8 @@ bool ArcNotificationItemImpl::IsManuallyExpandedOrCollapsed() const {
   return manually_expanded_or_collapsed_;
 }
 
-mojom::ArcNotificationShownContents ArcNotificationItemImpl::GetShownContents()
-    const {
+arc::mojom::ArcNotificationShownContents
+ArcNotificationItemImpl::GetShownContents() const {
   return shown_contents_;
 }
 
@@ -232,4 +230,4 @@ const std::string& ArcNotificationItemImpl::GetNotificationId() const {
   return notification_id_;
 }
 
-}  // namespace arc
+}  // namespace ash

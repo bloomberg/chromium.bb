@@ -1204,7 +1204,6 @@
     'chromeos_components_unittests': {},
     'chromeos_unittests': {},
     'nacl_helper_nonsfi_unittests': {},
-    'ui_arc_unittests': {},
     'ui_chromeos_unittests': {},
   },
 

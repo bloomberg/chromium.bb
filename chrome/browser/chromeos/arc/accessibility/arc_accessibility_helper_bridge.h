@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "ash/system/message_center/arc/arc_notification_surface_manager.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/arc/accessibility/ax_tree_source_arc.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -17,7 +18,6 @@
 #include "components/arc/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "ui/accessibility/ax_host_delegate.h"
-#include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/wm/public/activation_change_observer.h"
 
 class Profile;
@@ -41,7 +41,7 @@ class ArcAccessibilityHelperBridge
       public wm::ActivationChangeObserver,
       public AXTreeSourceArc::Delegate,
       public ArcAppListPrefs::Observer,
-      public ArcNotificationSurfaceManager::Observer {
+      public ash::ArcNotificationSurfaceManager::Observer {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -82,8 +82,10 @@ class ArcAccessibilityHelperBridge
   void OnTaskDestroyed(int32_t task_id) override;
 
   // ArcNotificationSurfaceManager::Observer overrides.
-  void OnNotificationSurfaceAdded(ArcNotificationSurface* surface) override;
-  void OnNotificationSurfaceRemoved(ArcNotificationSurface* surface) override{};
+  void OnNotificationSurfaceAdded(
+      ash::ArcNotificationSurface* surface) override;
+  void OnNotificationSurfaceRemoved(
+      ash::ArcNotificationSurface* surface) override {}
 
   const std::map<int32_t, std::unique_ptr<AXTreeSourceArc>>&
   task_id_to_tree_for_test() const {

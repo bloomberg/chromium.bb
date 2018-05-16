@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_IMPL_H_
-#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_IMPL_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_IMPL_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_IMPL_H_
 
 #include <memory>
 
-#include "ui/arc/notification/arc_notification_surface.h"
+#include "ash/system/message_center/arc/arc_notification_surface.h"
 
 namespace exo {
 class NotificationSurface;
 }
 
-namespace arc {
+namespace ash {
 
 // Handles notification surface role of a given surface.
 class ArcNotificationSurfaceImpl : public ArcNotificationSurface {
@@ -45,6 +45,6 @@ class ArcNotificationSurfaceImpl : public ArcNotificationSurface {
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationSurfaceImpl);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_IMPL_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_IMPL_H_

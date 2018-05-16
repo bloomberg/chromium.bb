@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/arc_notification_surface_impl.h"
+#include "ash/system/message_center/arc/arc_notification_surface_impl.h"
 
 #include "base/logging.h"
 #include "components/exo/notification_surface.h"
@@ -14,7 +14,7 @@
 #include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/widget/widget.h"
 
-namespace arc {
+namespace ash {
 
 namespace {
 
@@ -151,4 +151,4 @@ int32_t ArcNotificationSurfaceImpl::GetAXTreeId() const {
   return ax_tree_id_;
 }
 
-}  // namespace arc
+}  // namespace ash

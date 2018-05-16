@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/arc_notification_delegate.h"
+#include "ash/system/message_center/arc/arc_notification_delegate.h"
 
-#include "ui/arc/notification/arc_notification_content_view.h"
-#include "ui/arc/notification/arc_notification_item.h"
-#include "ui/arc/notification/arc_notification_view.h"
+#include "ash/system/message_center/arc/arc_notification_content_view.h"
+#include "ash/system/message_center/arc/arc_notification_item.h"
+#include "ash/system/message_center/arc/arc_notification_view.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/views/message_view.h"
 
-namespace arc {
+namespace ash {
 
 ArcNotificationDelegate::ArcNotificationDelegate(
     base::WeakPtr<ArcNotificationItem> item)
@@ -45,4 +45,4 @@ void ArcNotificationDelegate::SettingsClick() {
   item_->OpenSettings();
 }
 
-}  // namespace arc
+}  // namespace ash

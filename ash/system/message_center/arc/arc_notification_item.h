@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_H_
-#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_ITEM_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_ITEM_H_
 
 #include "base/macros.h"
 #include "components/arc/common/notifications.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace arc {
+namespace ash {
 
 class ArcNotificationItem {
  public:
@@ -29,7 +29,7 @@ class ArcNotificationItem {
   virtual void OnClosedFromAndroid() = 0;
   // Called when the notification is updated on Android-side. This is called
   // from ArcNotificationManager.
-  virtual void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
+  virtual void OnUpdatedFromAndroid(arc::mojom::ArcNotificationDataPtr data,
                                     const std::string& app_id) = 0;
 
   // Called when the notification is closed on Chrome-side. This is called from
@@ -62,14 +62,14 @@ class ArcNotificationItem {
   // Returns the current snapshot.
   virtual const gfx::ImageSkia& GetSnapshot() const = 0;
   // Returns the current expand state.
-  virtual mojom::ArcNotificationType GetNotificationType() const = 0;
+  virtual arc::mojom::ArcNotificationType GetNotificationType() const = 0;
   // Returns the current expand state.
-  virtual mojom::ArcNotificationExpandState GetExpandState() const = 0;
+  virtual arc::mojom::ArcNotificationExpandState GetExpandState() const = 0;
 
   virtual bool IsManuallyExpandedOrCollapsed() const = 0;
 
   // Returns the current type of shown contents.
-  virtual mojom::ArcNotificationShownContents GetShownContents() const = 0;
+  virtual arc::mojom::ArcNotificationShownContents GetShownContents() const = 0;
   // Returns the rect for which Android wants to handle all swipe events.
   // Defaults to the empty rectangle.
   virtual gfx::Rect GetSwipeInputRect() const = 0;
@@ -79,6 +79,6 @@ class ArcNotificationItem {
   virtual const std::string& GetNotificationId() const = 0;
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_ITEM_H_

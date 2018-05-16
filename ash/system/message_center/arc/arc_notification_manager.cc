@@ -2,25 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/arc_notification_manager.h"
+#include "ash/system/message_center/arc/arc_notification_manager.h"
 
 #include <memory>
 #include <utility>
 
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
-#include "ash/login_status.h"                             // nogncheck
-#include "ash/session/session_controller.h"               // nogncheck
-#include "ash/shell.h"                                    // nogncheck
+#include "ash/login_status.h"                // nogncheck
+#include "ash/session/session_controller.h"  // nogncheck
+#include "ash/shell.h"                       // nogncheck
+#include "ash/system/message_center/arc/arc_notification_delegate.h"
+#include "ash/system/message_center/arc/arc_notification_item_impl.h"
+#include "ash/system/message_center/arc/arc_notification_view.h"
 #include "ash/system/message_center/notification_tray.h"  // nogncheck
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/mojo_channel.h"
-#include "ui/arc/notification/arc_notification_delegate.h"
-#include "ui/arc/notification/arc_notification_item_impl.h"
-#include "ui/arc/notification/arc_notification_view.h"
 #include "ui/message_center/views/message_view_factory.h"
 
-namespace arc {
+using arc::ConnectionHolder;
+using arc::MojoChannel;
+using arc::mojom::ArcNotificationData;
+using arc::mojom::ArcNotificationDataPtr;
+using arc::mojom::ArcNotificationEvent;
+using arc::mojom::ArcNotificationPriority;
+using arc::mojom::NotificationsHost;
+using arc::mojom::NotificationsInstance;
+using arc::mojom::NotificationsInstancePtr;
+
+namespace ash {
 namespace {
 
 constexpr char kPlayStorePackageName[] = "com.android.vending";
@@ -35,12 +45,12 @@ std::unique_ptr<message_center::MessageView> CreateCustomMessageView(
 }
 
 bool IsPublicSessionOrKiosk() {
-  const ash::LoginStatus login_status =
-      ash::Shell::Get()->session_controller()->login_status();
+  const LoginStatus login_status =
+      Shell::Get()->session_controller()->login_status();
 
-  return login_status == ash::LoginStatus::PUBLIC ||
-         login_status == ash::LoginStatus::KIOSK_APP ||
-         login_status == ash::LoginStatus::ARC_KIOSK_APP;
+  return login_status == LoginStatus::PUBLIC ||
+         login_status == LoginStatus::KIOSK_APP ||
+         login_status == LoginStatus::ARC_KIOSK_APP;
 }
 
 }  // namespace
@@ -50,12 +60,12 @@ class ArcNotificationManager::InstanceOwner {
   InstanceOwner() = default;
   ~InstanceOwner() = default;
 
-  void SetInstancePtr(mojom::NotificationsInstancePtr instance_ptr) {
+  void SetInstancePtr(NotificationsInstancePtr instance_ptr) {
     DCHECK(!channel_);
 
-    channel_ = std::make_unique<
-        MojoChannel<mojom::NotificationsInstance, mojom::NotificationsHost>>(
-        &holder_, std::move(instance_ptr));
+    channel_ =
+        std::make_unique<MojoChannel<NotificationsInstance, NotificationsHost>>(
+            &holder_, std::move(instance_ptr));
 
     // Using base::Unretained because |this| owns |channel_|.
     channel_->set_connection_error_handler(
@@ -63,18 +73,15 @@ class ArcNotificationManager::InstanceOwner {
     channel_->QueryVersion();
   }
 
-  ConnectionHolder<mojom::NotificationsInstance, mojom::NotificationsHost>*
-  holder() {
+  ConnectionHolder<NotificationsInstance, NotificationsHost>* holder() {
     return &holder_;
   }
 
  private:
   void OnDisconnected() { channel_.reset(); }
 
-  ConnectionHolder<mojom::NotificationsInstance, mojom::NotificationsHost>
-      holder_;
-  std::unique_ptr<
-      MojoChannel<mojom::NotificationsInstance, mojom::NotificationsHost>>
+  ConnectionHolder<NotificationsInstance, NotificationsHost> holder_;
+  std::unique_ptr<MojoChannel<NotificationsInstance, NotificationsHost>>
       channel_;
 
   DISALLOW_COPY_AND_ASSIGN(InstanceOwner);
@@ -83,7 +90,7 @@ class ArcNotificationManager::InstanceOwner {
 // static
 void ArcNotificationManager::SetCustomNotificationViewFactory() {
   message_center::MessageViewFactory::SetCustomNotificationViewFactory(
-      base::Bind(&CreateCustomMessageView));
+      base::BindRepeating(&CreateCustomMessageView));
 }
 
 ArcNotificationManager::ArcNotificationManager(
@@ -106,12 +113,11 @@ ArcNotificationManager::~ArcNotificationManager() {
   instance_owner_.reset();
 }
 
-void ArcNotificationManager::SetInstance(
-    mojom::NotificationsInstancePtr instance) {
+void ArcNotificationManager::SetInstance(NotificationsInstancePtr instance) {
   instance_owner_->SetInstancePtr(std::move(instance));
 }
 
-ConnectionHolder<mojom::NotificationsInstance, mojom::NotificationsHost>*
+ConnectionHolder<NotificationsInstance, NotificationsHost>*
 ArcNotificationManager::GetConnectionHolderForTest() {
   return instance_owner_->holder();
 }
@@ -133,8 +139,7 @@ void ArcNotificationManager::OnConnectionClosed() {
   ready_ = false;
 }
 
-void ArcNotificationManager::OnNotificationPosted(
-    mojom::ArcNotificationDataPtr data) {
+void ArcNotificationManager::OnNotificationPosted(ArcNotificationDataPtr data) {
   if (ShouldIgnoreNotification(data.get())) {
     VLOG(3) << "Posted notification was ignored.";
     return;
@@ -160,7 +165,7 @@ void ArcNotificationManager::OnNotificationPosted(
 }
 
 void ArcNotificationManager::OnNotificationUpdated(
-    mojom::ArcNotificationDataPtr data) {
+    ArcNotificationDataPtr data) {
   if (ShouldIgnoreNotification(data.get())) {
     VLOG(3) << "Updated notification was ignored.";
     return;
@@ -219,7 +224,7 @@ void ArcNotificationManager::SendNotificationRemovedFromChrome(
   }
 
   notifications_instance->SendNotificationEventToAndroid(
-      key, mojom::ArcNotificationEvent::CLOSED);
+      key, ArcNotificationEvent::CLOSED);
 }
 
 void ArcNotificationManager::SendNotificationClickedOnChrome(
@@ -241,7 +246,7 @@ void ArcNotificationManager::SendNotificationClickedOnChrome(
   }
 
   notifications_instance->SendNotificationEventToAndroid(
-      key, mojom::ArcNotificationEvent::BODY_CLICKED);
+      key, ArcNotificationEvent::BODY_CLICKED);
 }
 
 void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
@@ -263,22 +268,22 @@ void ArcNotificationManager::SendNotificationButtonClickedOnChrome(
     return;
   }
 
-  mojom::ArcNotificationEvent command;
+  ArcNotificationEvent command;
   switch (button_index) {
     case 0:
-      command = mojom::ArcNotificationEvent::BUTTON_1_CLICKED;
+      command = ArcNotificationEvent::BUTTON_1_CLICKED;
       break;
     case 1:
-      command = mojom::ArcNotificationEvent::BUTTON_2_CLICKED;
+      command = ArcNotificationEvent::BUTTON_2_CLICKED;
       break;
     case 2:
-      command = mojom::ArcNotificationEvent::BUTTON_3_CLICKED;
+      command = ArcNotificationEvent::BUTTON_3_CLICKED;
       break;
     case 3:
-      command = mojom::ArcNotificationEvent::BUTTON_4_CLICKED;
+      command = ArcNotificationEvent::BUTTON_4_CLICKED;
       break;
     case 4:
-      command = mojom::ArcNotificationEvent::BUTTON_5_CLICKED;
+      command = ArcNotificationEvent::BUTTON_5_CLICKED;
       break;
     default:
       VLOG(3) << "Invalid button index (key: " << key
@@ -361,12 +366,12 @@ void ArcNotificationManager::SendNotificationToggleExpansionOnChrome(
   }
 
   notifications_instance->SendNotificationEventToAndroid(
-      key, mojom::ArcNotificationEvent::TOGGLE_EXPANSION);
+      key, ArcNotificationEvent::TOGGLE_EXPANSION);
 }
 
 bool ArcNotificationManager::ShouldIgnoreNotification(
-    arc::mojom::ArcNotificationData* data) {
-  if (data->priority == mojom::ArcNotificationPriority::NONE)
+    ArcNotificationData* data) {
+  if (data->priority == ArcNotificationPriority::NONE)
     return true;
 
   // Notifications from Play Store are ignored in Public Session and Kiosk mode.
@@ -390,7 +395,7 @@ void ArcNotificationManager::GetAppId(const std::string& package_name,
   get_app_id_callback_.Run(package_name, std::move(callback));
 }
 
-void ArcNotificationManager::OnGotAppId(mojom::ArcNotificationDataPtr data,
+void ArcNotificationManager::OnGotAppId(ArcNotificationDataPtr data,
                                         const std::string& app_id) {
   const std::string& key = data->key;
   auto it = items_.find(key);
@@ -400,4 +405,4 @@ void ArcNotificationManager::OnGotAppId(mojom::ArcNotificationDataPtr data,
   it->second->OnUpdatedFromAndroid(std::move(data), app_id);
 }
 
-}  // namespace arc
+}  // namespace ash

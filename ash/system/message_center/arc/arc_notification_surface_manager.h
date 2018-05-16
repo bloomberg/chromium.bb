@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_MANAGER_H_
-#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_MANAGER_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_MANAGER_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_MANAGER_H_
 
 #include <string>
 
 #include "base/macros.h"
 
-namespace arc {
+namespace ash {
 
 class ArcNotificationSurface;
 
@@ -47,6 +47,6 @@ class ArcNotificationSurfaceManager {
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationSurfaceManager);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_MANAGER_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_MANAGER_H_

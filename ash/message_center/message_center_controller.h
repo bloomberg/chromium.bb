@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/ash_message_center_controller.mojom.h"
+#include "ash/system/message_center/arc/arc_notification_manager.h"
 #include "ash/system/message_center/fullscreen_notification_blocker.h"
 #include "ash/system/message_center/inactive_user_notification_blocker.h"
 #include "ash/system/message_center/session_state_notification_blocker.h"
@@ -14,7 +15,6 @@
 #include "components/arc/common/notifications.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "ui/arc/notification/arc_notification_manager.h"
 
 namespace message_center {
 struct NotifierId;
@@ -81,7 +81,7 @@ class ASH_EXPORT MessageCenterController
   // Handles get app id calls from ArcNotificationManager.
   void GetArcAppIdByPackageName(
       const std::string& package_name,
-      arc::ArcNotificationManager::GetAppIdResponseCallback callback);
+      ArcNotificationManager::GetAppIdResponseCallback callback);
 
   std::unique_ptr<FullscreenNotificationBlocker>
       fullscreen_notification_blocker_;
@@ -97,7 +97,7 @@ class ASH_EXPORT MessageCenterController
 
   mojom::AshMessageCenterClientAssociatedPtr client_;
 
-  std::unique_ptr<arc::ArcNotificationManager> arc_notification_manager_;
+  std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterController);
 };

@@ -187,10 +187,23 @@ source_set("connection_holder") {
   ]
 }
 
-static_library("arc_test_support") {
+static_library("notification_test_support") {
   testonly = true
   sources = [
     "test/connection_holder_util.h",
+    "test/fake_notifications_instance.cc",
+    "test/fake_notifications_instance.h",
+  ]
+
+  public_deps = [
+    ":connection_holder",
+    "//components/arc/common:notifications",
+  ]
+}
+
+static_library("arc_test_support") {
+  testonly = true
+  sources = [
     "test/fake_accessibility_helper_instance.cc",
     "test/fake_accessibility_helper_instance.h",
     "test/fake_app_instance.cc",
@@ -207,8 +220,6 @@ static_library("arc_test_support") {
     "test/fake_file_system_instance.h",
     "test/fake_intent_helper_instance.cc",
     "test/fake_intent_helper_instance.h",
-    "test/fake_notifications_instance.cc",
-    "test/fake_notifications_instance.h",
     "test/fake_policy_instance.cc",
     "test/fake_policy_instance.h",
     "test/fake_power_instance.cc",
@@ -227,6 +238,7 @@ static_library("arc_test_support") {
 
   public_deps = [
     ":arc",
+    ":notification_test_support",
   ]
 
   deps = [

@@ -9,10 +9,6 @@
 
 #include "base/macros.h"
 
-namespace arc {
-class ArcNotificationSurfaceManagerImpl;
-}  // namespace arc
-
 namespace exo {
 class Display;
 class FileHelper;
@@ -23,6 +19,8 @@ class Server;
 }  // namespace exo
 
 namespace ash {
+
+class ArcNotificationSurfaceManagerImpl;
 
 class WaylandServerController {
  public:
@@ -43,7 +41,7 @@ class WaylandServerController {
   class WaylandWatcher;
   std::unique_ptr<WaylandWatcher> wayland_watcher_;
 
-  std::unique_ptr<arc::ArcNotificationSurfaceManagerImpl>
+  std::unique_ptr<ArcNotificationSurfaceManagerImpl>
       arc_notification_surface_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandServerController);

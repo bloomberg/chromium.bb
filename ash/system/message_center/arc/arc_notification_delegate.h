@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_CUSTOM_DELEGATE_H_
-#define UI_ARC_NOTIFICATION_ARC_CUSTOM_DELEGATE_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_DELEGATE_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_DELEGATE_H_
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -16,7 +16,7 @@ class Notification;
 
 }  // namespace message_center
 
-namespace arc {
+namespace ash {
 
 class ArcNotificationItem;
 
@@ -48,6 +48,6 @@ class ArcNotificationDelegate : public message_center::NotificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationDelegate);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_CUSTOM_DELEGATE_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_DELEGATE_H_

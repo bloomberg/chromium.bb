@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/arc_notification_content_view.h"
+#include "ash/system/message_center/arc/arc_notification_content_view.h"
 
+#include "ash/system/message_center/arc/arc_notification_surface.h"
+#include "ash/system/message_center/arc/arc_notification_view.h"
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
 #include "ash/wm/window_util.h"  // nogncheck
 #include "base/auto_reset.h"
 #include "components/exo/notification_surface.h"
 #include "components/exo/surface.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/arc/notification/arc_notification_surface.h"
-#include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/events/event_handler.h"
@@ -28,13 +28,14 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/window_util.h"
 
-namespace arc {
+namespace ash {
 
 namespace {
 
 SkColor GetControlButtonBackgroundColor(
-    const mojom::ArcNotificationShownContents& shown_contents) {
-  if (shown_contents == mojom::ArcNotificationShownContents::CONTENTS_SHOWN)
+    const arc::mojom::ArcNotificationShownContents& shown_contents) {
+  if (shown_contents ==
+      arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN)
     return message_center::kControlButtonBackgroundColor;
   else
     return SK_ColorTRANSPARENT;
@@ -102,7 +103,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
     // 1. Touches, because View should no longer receive touch events.
     //    See View::OnTouchEvent.
     // 2. Tap gestures are handled on the Android side, so ignore them.
-    //    See crbug.com/709911.
+    //    See https://crbug.com/709911.
     // 3. Key events. These are already forwarded by NotificationSurface's
     //    WindowDelegate.
     if (event->IsLocatedEvent()) {
@@ -207,7 +208,7 @@ class ArcNotificationContentView::SlideHelper
   }
 
  private:
-  // This is a temporary hack to address crbug.com/718965
+  // This is a temporary hack to address https://crbug.com/718965
   ui::Layer* GetSlideOutLayer() {
     ui::Layer* layer = owner_->parent()->layer();
     return layer ? layer : owner_->GetWidget()->GetLayer();
@@ -466,7 +467,7 @@ void ArcNotificationContentView::AttachSurface() {
   // The texture for this window can be placed at subpixel position
   // with fractional scale factor. Force to align it at the pixel
   // boundary here, and when layout is updated in Layout().
-  ash::wm::SnapWindowToPixelBoundary(surface_->GetWindow());
+  wm::SnapWindowToPixelBoundary(surface_->GetWindow());
 
   // Creates slide helper after this view is added to its parent.
   slide_helper_.reset(new SlideHelper(this));
@@ -565,7 +566,7 @@ void ArcNotificationContentView::Layout() {
 
   UpdateControlButtonsVisibility();
 
-  ash::wm::SnapWindowToPixelBoundary(surface_->GetWindow());
+  wm::SnapWindowToPixelBoundary(surface_->GetWindow());
 }
 
 void ArcNotificationContentView::OnPaint(gfx::Canvas* canvas) {
@@ -716,4 +717,4 @@ void ArcNotificationContentView::OnNotificationSurfaceRemoved(
   SetSurface(nullptr);
 }
 
-}  // namespace arc
+}  // namespace ash

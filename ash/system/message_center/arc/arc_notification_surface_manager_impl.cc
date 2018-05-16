@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/arc_notification_surface_manager_impl.h"
+#include "ash/system/message_center/arc/arc_notification_surface_manager_impl.h"
 
 #include <string>
 #include <utility>
 
+#include "ash/system/message_center/arc/arc_notification_surface_impl.h"
 #include "components/exo/notification_surface.h"
-#include "ui/arc/notification/arc_notification_surface_impl.h"
 
-namespace arc {
+namespace ash {
 
 ArcNotificationSurfaceManagerImpl::ArcNotificationSurfaceManagerImpl() =
     default;
@@ -66,4 +66,4 @@ void ArcNotificationSurfaceManagerImpl::RemoveSurface(
     observer.OnNotificationSurfaceRemoved(arc_surface.get());
 }
 
-}  // namespace arc
+}  // namespace ash
