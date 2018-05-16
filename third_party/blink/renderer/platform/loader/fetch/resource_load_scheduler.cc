@@ -654,22 +654,8 @@ void ResourceLoadScheduler::MaybeRun() {
     return;
 
   while (!pending_requests_.empty()) {
-    // TODO(yhirano): Consider using a unified value.
-    const auto num_requests =
-        frame_scheduler_throttling_state_ ==
-                FrameScheduler::ThrottlingState::kNotThrottled
-            ? running_throttlable_requests_.size()
-            : running_requests_.size();
-
-    const bool has_enough_running_requets =
-        num_requests >= GetOutstandingLimit();
-
     if (IsThrottablePriority(pending_requests_.begin()->priority) &&
-        has_enough_running_requets) {
-      break;
-    }
-    if (IsThrottablePriority(pending_requests_.begin()->priority) &&
-        has_enough_running_requets) {
+        running_throttlable_requests_.size() >= GetOutstandingLimit()) {
       break;
     }
 
