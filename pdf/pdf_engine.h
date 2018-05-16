@@ -282,7 +282,8 @@ class PDFEngine {
   };
 
   // Factory method to create an instance of the PDF Engine.
-  static std::unique_ptr<PDFEngine> Create(Client* client);
+  static std::unique_ptr<PDFEngine> Create(Client* client,
+                                           bool enable_javascript);
 
   virtual ~PDFEngine() {}
 

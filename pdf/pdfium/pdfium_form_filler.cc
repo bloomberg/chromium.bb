@@ -21,13 +21,13 @@ std::string WideStringToString(FPDF_WIDESTRING wide_string) {
 
 }  // namespace
 
-PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine) : engine_(engine) {
+PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript)
+    : engine_(engine) {
   // Initialize FPDF_FORMFILLINFO member variables.  Deriving from this struct
   // allows the static callbacks to be able to cast the FPDF_FORMFILLINFO in
   // callbacks to ourself instead of maintaining a map of them to
   // PDFiumEngine.
   FPDF_FORMFILLINFO::version = 1;
-  FPDF_FORMFILLINFO::m_pJsPlatform = this;
   FPDF_FORMFILLINFO::Release = nullptr;
   FPDF_FORMFILLINFO::FFI_Invalidate = Form_Invalidate;
   FPDF_FORMFILLINFO::FFI_OutputSelectedRect = Form_OutputSelectedRect;
@@ -62,16 +62,21 @@ PDFiumFormFiller::PDFiumFormFiller(PDFiumEngine* engine) : engine_(engine) {
   FPDF_FORMFILLINFO::FFI_GetLanguage = Form_GetLanguage;
 #endif  // defined(PDF_ENABLE_XFA)
 
-  IPDF_JSPLATFORM::version = 3;
-  IPDF_JSPLATFORM::app_alert = Form_Alert;
-  IPDF_JSPLATFORM::app_beep = Form_Beep;
-  IPDF_JSPLATFORM::app_response = Form_Response;
-  IPDF_JSPLATFORM::Doc_getFilePath = Form_GetFilePath;
-  IPDF_JSPLATFORM::Doc_mail = Form_Mail;
-  IPDF_JSPLATFORM::Doc_print = Form_Print;
-  IPDF_JSPLATFORM::Doc_submitForm = Form_SubmitForm;
-  IPDF_JSPLATFORM::Doc_gotoPage = Form_GotoPage;
-  IPDF_JSPLATFORM::Field_browse = nullptr;
+  if (enable_javascript) {
+    FPDF_FORMFILLINFO::m_pJsPlatform = this;
+    IPDF_JSPLATFORM::version = 3;
+    IPDF_JSPLATFORM::app_alert = Form_Alert;
+    IPDF_JSPLATFORM::app_beep = Form_Beep;
+    IPDF_JSPLATFORM::app_response = Form_Response;
+    IPDF_JSPLATFORM::Doc_getFilePath = Form_GetFilePath;
+    IPDF_JSPLATFORM::Doc_mail = Form_Mail;
+    IPDF_JSPLATFORM::Doc_print = Form_Print;
+    IPDF_JSPLATFORM::Doc_submitForm = Form_SubmitForm;
+    IPDF_JSPLATFORM::Doc_gotoPage = Form_GotoPage;
+    IPDF_JSPLATFORM::Field_browse = nullptr;
+  } else {
+    FPDF_FORMFILLINFO::m_pJsPlatform = nullptr;
+  }
 }
 
 // static

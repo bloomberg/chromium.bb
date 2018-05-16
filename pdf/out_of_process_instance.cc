@@ -412,7 +412,6 @@ OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
       accessibility_state_(ACCESSIBILITY_STATE_OFF),
       is_print_preview_(false) {
   callback_factory_.Initialize(this);
-  engine_ = PDFEngine::Create(this);
   pp::Module::Get()->AddPluginInterface(kPPPPdfInterface, &ppp_private);
   AddPerInstanceObject(kPPPPdfInterface, this);
 
@@ -440,6 +439,7 @@ bool OutOfProcessInstance::Init(uint32_t argc,
   pp::Var document_url_var = pp::URLUtil_Dev::Get()->GetDocumentURL(this);
   if (!document_url_var.is_string())
     return false;
+
   std::string document_url = document_url_var.AsString();
   base::StringPiece document_url_piece(document_url);
   is_print_preview_ = IsPrintPreviewUrl(document_url_piece);
@@ -479,7 +479,6 @@ bool OutOfProcessInstance::Init(uint32_t argc,
       success =
           base::StringToInt(argv[i], &top_toolbar_height_in_viewport_coords_);
     }
-
     if (!success)
       return false;
   }
@@ -489,6 +488,8 @@ bool OutOfProcessInstance::Init(uint32_t argc,
 
   if (!stream_url)
     stream_url = original_url;
+
+  engine_ = PDFEngine::Create(this, true);
 
   // If we're in print preview mode we don't need to load the document yet.
   // A |kJSResetPrintPreviewModeType| message will be sent to the plugin letting
@@ -684,7 +685,7 @@ void OutOfProcessInstance::HandleMessage(const pp::Var& message) {
     document_load_state_ = LOAD_STATE_LOADING;
     LoadUrl(url_, /*is_print_preview=*/false);
     preview_engine_.reset();
-    engine_ = PDFEngine::Create(this);
+    engine_ = PDFEngine::Create(this, false);
     engine_->SetGrayscale(dict.Get(pp::Var(kJSPrintPreviewGrayscale)).AsBool());
     engine_->New(url_.c_str(), nullptr /* empty header */);
 
@@ -1202,7 +1203,7 @@ void OutOfProcessInstance::DidOpen(int32_t result) {
 void OutOfProcessInstance::DidOpenPreview(int32_t result) {
   if (result == PP_OK) {
     preview_client_ = std::make_unique<PreviewModeClient>(this);
-    preview_engine_ = PDFEngine::Create(preview_client_.get());
+    preview_engine_ = PDFEngine::Create(preview_client_.get(), false);
     preview_engine_->HandleDocumentLoad(embed_preview_loader_);
   } else {
     NOTREACHED();

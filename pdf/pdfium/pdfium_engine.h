@@ -43,7 +43,7 @@ class PDFiumEngine : public PDFEngine,
                      public DocumentLoader::Client,
                      public IFSDK_PAUSE {
  public:
-  explicit PDFiumEngine(PDFEngine::Client* client);
+  PDFiumEngine(PDFEngine::Client* client, bool enable_javascript);
   ~PDFiumEngine() override;
 
   using CreateDocumentLoaderFunction =

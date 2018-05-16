@@ -14,7 +14,7 @@ class PDFiumEngine;
 
 class PDFiumFormFiller : public FPDF_FORMFILLINFO, public IPDF_JSPLATFORM {
  public:
-  explicit PDFiumFormFiller(PDFiumEngine* engine);
+  PDFiumFormFiller(PDFiumEngine* engine, bool enable_javascript);
 
  private:
   // FPDF_FORMFILLINFO callbacks.
