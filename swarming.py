@@ -1533,7 +1533,8 @@ def CMDquery_list(parser, args):
             print '- %s.%s: %s' % (
                 resource_name, method_name, method['path'])
             print('\n'.join(
-                '  ' + l for l in textwrap.wrap(method['description'], 78)))
+                '  ' + l for l in textwrap.wrap(
+                    method.get('description', 'No description'), 78)))
             print '  %s%s%s' % (help_url, api['servicePath'], method['id'])
       else:
         # New.
