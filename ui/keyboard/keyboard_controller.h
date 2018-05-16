@@ -132,7 +132,7 @@ class KEYBOARD_EXPORT KeyboardController
 
   // Force the keyboard to show up in the specific display if not showing and
   // lock the keyboard
-  void ShowKeyboardInDisplay(const int64_t display_id);
+  void ShowKeyboardInDisplay(const display::Display& display);
 
   // Sets the active keyboard controller. KeyboardController takes ownership of
   // the instance. Calling ResetIntance with a new instance destroys the
@@ -242,8 +242,9 @@ class KEYBOARD_EXPORT KeyboardController
                           const bool contents_loaded);
 
   // Show virtual keyboard immediately with animation.
-  void ShowKeyboardInternal(int64_t display_id);
-  void PopulateKeyboardContent(int64_t display_id, bool show_keyboard);
+  void ShowKeyboardInternal(const display::Display& display);
+  void PopulateKeyboardContent(const display::Display& display,
+                               bool show_keyboard);
 
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;

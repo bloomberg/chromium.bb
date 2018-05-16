@@ -25,13 +25,13 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
       Shell::Get()->accessibility_controller()->RemoveObserver(this);
   }
 
-  void ShowInDisplay(const int64_t display_id) override {
+  void ShowInDisplay(const display::Display& display) override {
     keyboard::KeyboardController* controller =
         keyboard::KeyboardController::GetInstance();
     // Controller may not exist if keyboard has been disabled. crbug.com/749989
     if (!controller)
       return;
-    controller->ShowKeyboardInDisplay(display_id);
+    controller->ShowKeyboardInDisplay(display);
   }
   void Hide() override {
     // Do nothing as this is called from ash::Shell, which also calls through

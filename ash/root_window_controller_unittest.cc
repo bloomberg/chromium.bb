@@ -898,8 +898,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   ASSERT_TRUE(vk_container_in_primary->Contains(vk_window));
   ASSERT_FALSE(vk_container_in_secondary->Contains(vk_window));
 
-  const int64_t secondary_display_id = secondary_display.id();
-  controller->ShowKeyboardInDisplay(secondary_display_id);
+  controller->ShowKeyboardInDisplay(secondary_display);
 
   EXPECT_FALSE(vk_container_in_primary->Contains(vk_window));
   EXPECT_TRUE(vk_container_in_secondary->Contains(vk_window));
@@ -1109,7 +1108,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 
   // Move the keyboard into the secondary display and check that the keyboard
   // doesn't cover the window on the primary screen.
-  keyboard_controller->ShowKeyboardInDisplay(secondary_display_id);
+  keyboard_controller->ShowKeyboardInDisplay(GetSecondaryDisplay());
   contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       secondary_root_window->bounds(), keyboard_height));
 

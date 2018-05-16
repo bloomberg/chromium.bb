@@ -312,7 +312,7 @@ void KeyboardController::SetContainerBounds(const gfx::Rect& new_bounds,
         // Do not move the keyboard to another display after switch to an IME in
         // a different extension.
         ShowKeyboardInDisplay(
-            display_util_.GetNearestDisplayIdToWindow(GetContainerWindow()));
+            display_util_.GetNearestDisplayToWindow(GetContainerWindow()));
       } else {
         ShowKeyboard(false /* lock */);
       }
@@ -428,7 +428,7 @@ void KeyboardController::HideAnimationFinished() {
     }
 
     if (queued_display_change_) {
-      ShowKeyboardInDisplay(queued_display_change_->new_display().id());
+      ShowKeyboardInDisplay(queued_display_change_->new_display());
       container_->SetBounds(queued_display_change_->new_bounds_in_local());
       queued_display_change_ = nullptr;
     }
@@ -459,12 +459,13 @@ void KeyboardController::SetContainerBehaviorInternal(
 
 void KeyboardController::ShowKeyboard(bool lock) {
   set_keyboard_locked(lock);
-  ShowKeyboardInternal(display::kInvalidDisplayId);
+  ShowKeyboardInternal(display::Display());
 }
 
-void KeyboardController::ShowKeyboardInDisplay(int64_t display_id) {
+void KeyboardController::ShowKeyboardInDisplay(
+    const display::Display& display) {
   set_keyboard_locked(true);
-  ShowKeyboardInternal(display_id);
+  ShowKeyboardInternal(display);
 }
 
 bool KeyboardController::IsKeyboardWindowCreated() {
@@ -575,7 +576,7 @@ void KeyboardController::ShowKeyboardIfWithinTransientBlurThreshold() {
 void KeyboardController::OnShowImeIfNeeded() {
   // Calling |ShowKeyboardInternal| may move the keyboard to another display.
   if (IsKeyboardEnabled() && !keyboard_locked())
-    ShowKeyboardInternal(display::kInvalidDisplayId);
+    ShowKeyboardInternal(display::Display());
 }
 
 void KeyboardController::LoadKeyboardUiInBackground() {
@@ -589,24 +590,25 @@ void KeyboardController::LoadKeyboardUiInBackground() {
   // |Shell::CreateKeyboard| was called.
   DCHECK(container_.get());
 
-  PopulateKeyboardContent(display::kInvalidDisplayId, false);
+  PopulateKeyboardContent(display::Display(), false);
 }
 
-void KeyboardController::ShowKeyboardInternal(int64_t display_id) {
+void KeyboardController::ShowKeyboardInternal(const display::Display& display) {
   DCHECK(container_.get());
   keyboard::MarkKeyboardLoadStarted();
-  PopulateKeyboardContent(display_id, true);
+  PopulateKeyboardContent(display, true);
 }
 
-void KeyboardController::PopulateKeyboardContent(int64_t display_id,
-                                                 bool show_keyboard) {
+void KeyboardController::PopulateKeyboardContent(
+    const display::Display& display,
+    bool show_keyboard) {
   DCHECK(show_keyboard || state_ == KeyboardControllerState::INITIAL);
 
   TRACE_EVENT0("vk", "PopulateKeyboardContent");
 
   if (layout_delegate_ != nullptr) {
-    if (display_id != display::kInvalidDisplayId)
-      layout_delegate_->MoveKeyboardToDisplay(display_id);
+    if (display.is_valid())
+      layout_delegate_->MoveKeyboardToDisplay(display.id());
     else
       layout_delegate_->MoveKeyboardToTouchableDisplay();
   }
@@ -855,7 +857,7 @@ bool KeyboardController::SetDraggableArea(const gfx::Rect& rect) {
 bool KeyboardController::DisplayVirtualKeyboard() {
   // Calling |ShowKeyboardInternal| may move the keyboard to another display.
   if (IsKeyboardEnabled() && !keyboard_locked()) {
-    ShowKeyboardInternal(display::kInvalidDisplayId);
+    ShowKeyboardInternal(display::Display());
     return true;
   }
   return false;
