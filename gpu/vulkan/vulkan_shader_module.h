@@ -22,7 +22,7 @@ class VULKAN_EXPORT VulkanShaderModule {
     FRAGMENT,
   };
 
-  VulkanShaderModule(VulkanDeviceQueue* device_queue);
+  explicit VulkanShaderModule(VulkanDeviceQueue* device_queue);
   ~VulkanShaderModule();
 
   bool InitializeGLSL(ShaderType type,
