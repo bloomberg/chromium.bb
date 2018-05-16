@@ -141,7 +141,7 @@ bool ScrollbarTheme::Paint(const Scrollbar& scrollbar,
   return true;
 }
 
-ScrollbarPart ScrollbarTheme::HitTest(const ScrollbarThemeClient& scrollbar,
+ScrollbarPart ScrollbarTheme::HitTest(const Scrollbar& scrollbar,
                                       const IntPoint& position_in_root_frame) {
   ScrollbarPart result = kNoPart;
   if (!scrollbar.Enabled())
@@ -209,7 +209,7 @@ void ScrollbarTheme::PaintScrollCorner(
 #endif
 }
 
-bool ScrollbarTheme::ShouldCenterOnThumb(const ScrollbarThemeClient& scrollbar,
+bool ScrollbarTheme::ShouldCenterOnThumb(const Scrollbar& scrollbar,
                                          const WebMouseEvent& evt) {
   return Platform::Current()->ScrollbarBehavior()->ShouldCenterOnThumb(
       evt.button, evt.GetModifiers() & WebInputEvent::kShiftKey,
@@ -260,9 +260,8 @@ void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
 #endif
 }
 
-bool ScrollbarTheme::ShouldSnapBackToDragOrigin(
-    const ScrollbarThemeClient& scrollbar,
-    const WebMouseEvent& evt) {
+bool ScrollbarTheme::ShouldSnapBackToDragOrigin(const Scrollbar& scrollbar,
+                                                const WebMouseEvent& evt) {
   IntPoint mouse_position = scrollbar.ConvertFromRootFrame(
       FlooredIntPoint(evt.PositionInRootFrame()));
   mouse_position.Move(scrollbar.X(), scrollbar.Y());
@@ -281,7 +280,7 @@ double ScrollbarTheme::OverlayScrollbarFadeOutDurationSeconds() const {
   return 0.0;
 }
 
-int ScrollbarTheme::ThumbPosition(const ScrollbarThemeClient& scrollbar,
+int ScrollbarTheme::ThumbPosition(const Scrollbar& scrollbar,
                                   float scroll_position) {
   if (scrollbar.Enabled()) {
     float size = scrollbar.TotalSize() - scrollbar.VisibleSize();
@@ -296,7 +295,7 @@ int ScrollbarTheme::ThumbPosition(const ScrollbarThemeClient& scrollbar,
   return 0;
 }
 
-int ScrollbarTheme::ThumbLength(const ScrollbarThemeClient& scrollbar) {
+int ScrollbarTheme::ThumbLength(const Scrollbar& scrollbar) {
   if (!scrollbar.Enabled())
     return 0;
 
@@ -315,7 +314,7 @@ int ScrollbarTheme::ThumbLength(const ScrollbarThemeClient& scrollbar) {
   return length;
 }
 
-int ScrollbarTheme::TrackPosition(const ScrollbarThemeClient& scrollbar) {
+int ScrollbarTheme::TrackPosition(const Scrollbar& scrollbar) {
   IntRect constrained_track_rect =
       ConstrainTrackRectToTrackPieces(scrollbar, TrackRect(scrollbar));
   return (scrollbar.Orientation() == kHorizontalScrollbar)
@@ -323,7 +322,7 @@ int ScrollbarTheme::TrackPosition(const ScrollbarThemeClient& scrollbar) {
              : constrained_track_rect.Y() - scrollbar.Y();
 }
 
-int ScrollbarTheme::TrackLength(const ScrollbarThemeClient& scrollbar) {
+int ScrollbarTheme::TrackLength(const Scrollbar& scrollbar) {
   IntRect constrained_track_rect =
       ConstrainTrackRectToTrackPieces(scrollbar, TrackRect(scrollbar));
   return (scrollbar.Orientation() == kHorizontalScrollbar)
@@ -331,7 +330,7 @@ int ScrollbarTheme::TrackLength(const ScrollbarThemeClient& scrollbar) {
              : constrained_track_rect.Height();
 }
 
-IntRect ScrollbarTheme::ThumbRect(const ScrollbarThemeClient& scrollbar) {
+IntRect ScrollbarTheme::ThumbRect(const Scrollbar& scrollbar) {
   if (!HasThumb(scrollbar))
     return IntRect();
 
@@ -344,13 +343,13 @@ IntRect ScrollbarTheme::ThumbRect(const ScrollbarThemeClient& scrollbar) {
   return thumb_rect;
 }
 
-int ScrollbarTheme::ThumbThickness(const ScrollbarThemeClient& scrollbar) {
+int ScrollbarTheme::ThumbThickness(const Scrollbar& scrollbar) {
   IntRect track = TrackRect(scrollbar);
   return scrollbar.Orientation() == kHorizontalScrollbar ? track.Height()
                                                          : track.Width();
 }
 
-void ScrollbarTheme::SplitTrack(const ScrollbarThemeClient& scrollbar,
+void ScrollbarTheme::SplitTrack(const Scrollbar& scrollbar,
                                 const IntRect& unconstrained_track_rect,
                                 IntRect& before_thumb_rect,
                                 IntRect& thumb_rect,

@@ -41,8 +41,8 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
  public:
   ~ScrollbarThemeMac() override;
 
-  void RegisterScrollbar(ScrollbarThemeClient&) override;
-  void UnregisterScrollbar(ScrollbarThemeClient&) override;
+  void RegisterScrollbar(Scrollbar&) override;
+  void UnregisterScrollbar(Scrollbar&) override;
   void PreferencesChanged(float initial_button_delay,
                           float autoscroll_button_delay,
                           NSScrollerStyle preferred_scroller_style,
@@ -66,17 +66,17 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
 
   bool ShouldRepaintAllPartsOnInvalidation() const override { return false; }
   ScrollbarPart InvalidateOnThumbPositionChange(
-      const ScrollbarThemeClient&,
+      const Scrollbar&,
       float old_position,
       float new_position) const override;
-  void UpdateEnabledState(const ScrollbarThemeClient&) override;
+  void UpdateEnabledState(const Scrollbar&) override;
   int ScrollbarThickness(ScrollbarControlSize = kRegularScrollbar) override;
   bool UsesOverlayScrollbars() const override;
-  void UpdateScrollbarOverlayColorTheme(const ScrollbarThemeClient&) override;
+  void UpdateScrollbarOverlayColorTheme(const Scrollbar&) override;
   WebScrollbarButtonsPlacement ButtonsPlacement() const override;
 
-  void SetNewPainterForScrollbar(ScrollbarThemeClient&, ScrollbarPainter);
-  ScrollbarPainter PainterForScrollbar(const ScrollbarThemeClient&) const;
+  void SetNewPainterForScrollbar(Scrollbar&, ScrollbarPainter);
+  ScrollbarPainter PainterForScrollbar(const Scrollbar&) const;
 
   void PaintTrackBackground(GraphicsContext&,
                             const Scrollbar&,
@@ -92,32 +92,31 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
     PaintThumbInternal(context, scrollbar, rect, ThumbOpacity(scrollbar));
   }
 
-  float ThumbOpacity(const ScrollbarThemeClient&) const override;
+  float ThumbOpacity(const Scrollbar&) const override;
 
   static NSScrollerStyle RecommendedScrollerStyle();
 
  protected:
   int MaxOverlapBetweenPages() override { return 40; }
 
-  bool ShouldDragDocumentInsteadOfThumb(const ScrollbarThemeClient&,
+  bool ShouldDragDocumentInsteadOfThumb(const Scrollbar&,
                                         const WebMouseEvent&) override;
   int ScrollbarPartToHIPressedState(ScrollbarPart);
 
   virtual void UpdateButtonPlacement(WebScrollbarButtonsPlacement) {}
 
-  IntRect TrackRect(const ScrollbarThemeClient&,
-                    bool painting = false) override;
-  IntRect BackButtonRect(const ScrollbarThemeClient&,
+  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
+  IntRect BackButtonRect(const Scrollbar&,
                          ScrollbarPart,
                          bool painting = false) override;
-  IntRect ForwardButtonRect(const ScrollbarThemeClient&,
+  IntRect ForwardButtonRect(const Scrollbar&,
                             ScrollbarPart,
                             bool painting = false) override;
 
-  bool HasButtons(const ScrollbarThemeClient&) override { return false; }
-  bool HasThumb(const ScrollbarThemeClient&) override;
+  bool HasButtons(const Scrollbar&) override { return false; }
+  bool HasThumb(const Scrollbar&) override;
 
-  int MinimumThumbLength(const ScrollbarThemeClient&) override;
+  int MinimumThumbLength(const Scrollbar&) override;
 
   int TickmarkBorderWidth() override { return 1; }
 

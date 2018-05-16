@@ -99,7 +99,7 @@ class LayoutScrollbar final : public Scrollbar {
 };
 
 DEFINE_TYPE_CASTS(LayoutScrollbar,
-                  ScrollbarThemeClient,
+                  Scrollbar,
                   scrollbar,
                   scrollbar->IsCustomScrollbar(),
                   scrollbar.IsCustomScrollbar());

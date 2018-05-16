@@ -38,21 +38,20 @@ class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
   bool UsesOverlayScrollbars() const override;
 
  protected:
-  bool HasButtons(const ScrollbarThemeClient&) override { return false; }
-  bool HasThumb(const ScrollbarThemeClient&) override { return true; }
+  bool HasButtons(const Scrollbar&) override { return false; }
+  bool HasThumb(const Scrollbar&) override { return true; }
 
-  IntRect BackButtonRect(const ScrollbarThemeClient&,
+  IntRect BackButtonRect(const Scrollbar&,
                          ScrollbarPart,
                          bool /*painting*/ = false) override {
     return IntRect();
   }
-  IntRect ForwardButtonRect(const ScrollbarThemeClient&,
+  IntRect ForwardButtonRect(const Scrollbar&,
                             ScrollbarPart,
                             bool /*painting*/ = false) override {
     return IntRect();
   }
-  IntRect TrackRect(const ScrollbarThemeClient&,
-                    bool painting = false) override;
+  IntRect TrackRect(const Scrollbar&, bool painting = false) override;
 
   void PaintTrackBackground(GraphicsContext&,
                             const Scrollbar&,
@@ -63,7 +62,7 @@ class PLATFORM_EXPORT ScrollbarThemeMock : public ScrollbarTheme {
                          const DisplayItemClient&,
                          const IntRect& corner_rect) override;
 
-  int MinimumThumbLength(const ScrollbarThemeClient&) override;
+  int MinimumThumbLength(const Scrollbar&) override;
 
  private:
   bool IsMockTheme() const final { return true; }

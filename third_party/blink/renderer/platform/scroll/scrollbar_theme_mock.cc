@@ -42,8 +42,7 @@ bool ScrollbarThemeMock::UsesOverlayScrollbars() const {
   return RuntimeEnabledFeatures::OverlayScrollbarsEnabled();
 }
 
-IntRect ScrollbarThemeMock::TrackRect(const ScrollbarThemeClient& scrollbar,
-                                      bool) {
+IntRect ScrollbarThemeMock::TrackRect(const Scrollbar& scrollbar, bool) {
   return scrollbar.FrameRect();
 }
 
@@ -85,8 +84,7 @@ void ScrollbarThemeMock::PaintScrollCorner(GraphicsContext& context,
   context.FillRect(corner_rect, Color::kWhite);
 }
 
-int ScrollbarThemeMock::MinimumThumbLength(
-    const ScrollbarThemeClient& scrollbar) {
+int ScrollbarThemeMock::MinimumThumbLength(const Scrollbar& scrollbar) {
   return ScrollbarThickness(scrollbar.GetControlSize());
 }
 
