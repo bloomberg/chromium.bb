@@ -15,4 +15,8 @@ bool IsBrowserSideNavigationEnabled() {
   return true;
 }
 
+bool IsPerNavigationMojoInterfaceEnabled() {
+  return base::FeatureList::IsEnabled(features::kPerNavigationMojoInterface);
+}
+
 }  // namespace content
