@@ -166,15 +166,23 @@ class IntegrationTest(unittest.TestCase):
           path = path_without_ext
 
         def check_result(response):
+          is_ok = response.status == 200;
+          is_redirect = response.status == 302;
           # TODO(dbertoni@chromium.org): Explore following redirects and/or
           # keeping an explicit list of files that expect 200 vs. 302.
-          self.assertTrue(response.status == 200 or response.status == 302,
+          self.assertTrue(is_ok or is_redirect,
                           'Got %s when rendering %s' % (response.status, path))
 
+          self.assertTrue(is_redirect or len(response.content),
+              'Rendered content length was 0 when rendering %s' % path)
+
           # This is reaaaaally rough since usually these will be tiny templates
-          # that render large files. At least it'll catch zero-length responses.
-          self.assertTrue(len(response.content) >= len(content) or
-                          response.status == 302,
+          # that render large files.
+          self.assertTrue(is_redirect or
+                          len(response.content) >= len(content) or
+                          # Zip files may be served differently than stored
+                          # locally.
+                          path.endswith('.zip'),
               'Rendered content length was %s vs template content length %s '
               'when rendering %s' % (len(response.content), len(content), path))
 
