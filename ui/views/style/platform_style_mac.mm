@@ -44,6 +44,7 @@ const bool PlatformStyle::kShouldElideBookmarksInBookmarksBar = true;
 const bool PlatformStyle::kUseRipples = false;
 const float PlatformStyle::kFocusHaloThickness = 4.f;
 const float PlatformStyle::kFocusHaloInset = -2.f;
+const bool PlatformStyle::kPreferFocusRings = true;
 
 const Button::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     Button::NOTIFY_ON_PRESS;

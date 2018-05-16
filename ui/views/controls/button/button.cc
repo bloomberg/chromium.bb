@@ -22,6 +22,7 @@
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/button/radio_button.h"
 #include "ui/views/controls/button/toggle_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/painter.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
@@ -424,6 +425,8 @@ void Button::OnFocus() {
   InkDropHostView::OnFocus();
   if (focus_painter_)
     SchedulePaint();
+  if (install_focus_ring_on_focus_)
+    FocusRing::Install(this);
 }
 
 void Button::OnBlur() {
@@ -439,11 +442,13 @@ void Button::OnBlur() {
   }
   if (focus_painter_)
     SchedulePaint();
+  if (install_focus_ring_on_focus_)
+    FocusRing::Uninstall(this);
 }
 
 std::unique_ptr<InkDrop> Button::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop = CreateDefaultInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(true);
+  ink_drop->SetShowHighlightOnFocus(!install_focus_ring_on_focus_);
   ink_drop->SetAutoHighlightModeForPlatform();
   return std::move(ink_drop);
 }

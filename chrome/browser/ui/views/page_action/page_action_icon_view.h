@@ -89,6 +89,8 @@ class PageActionIconView : public views::InkDropHostView {
   virtual void OnPressed(bool activated) {}
 
   // views::InkDropHostView:
+  void OnFocus() override;
+  void OnBlur() override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;

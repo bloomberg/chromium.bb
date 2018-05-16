@@ -24,6 +24,7 @@
 #include "ui/views/controls/menu/menu_item_view.h"
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 
 ToolbarButton::ToolbarButton(Profile* profile,
@@ -38,6 +39,7 @@ ToolbarButton::ToolbarButton(Profile* profile,
   SetInkDropMode(InkDropMode::ON);
   SetFocusPainter(nullptr);
   SetLeadingMargin(0);
+  set_install_focus_ring_on_focus(views::PlatformStyle::kPreferFocusRings);
 
   if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
     set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
