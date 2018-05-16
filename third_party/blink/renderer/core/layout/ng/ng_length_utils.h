@@ -159,7 +159,8 @@ CORE_EXPORT void ApplyAutoMargins(const ComputedStyle& child_style,
 // text-align, direction and amount of unused space.
 CORE_EXPORT LayoutUnit LineOffsetForTextAlign(ETextAlign,
                                               TextDirection,
-                                              LayoutUnit space_left);
+                                              LayoutUnit space_left,
+                                              LayoutUnit trailing_spaces_width);
 
 CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
                                          base::Optional<LayoutUnit> min,
