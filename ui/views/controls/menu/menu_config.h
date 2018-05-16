@@ -189,6 +189,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Vertical padding for touchable menus.
   int vertical_touchable_menu_item_padding;
 
+  // Left margin of padded separator (ui::PADDED_SEPARATOR).
+  int padded_separator_left_margin;
+
   // Whether arrow keys should wrap around the end of the menu when selecting.
   bool arrow_key_selection_wraps;
 

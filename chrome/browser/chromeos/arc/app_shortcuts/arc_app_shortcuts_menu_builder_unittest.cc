@@ -80,9 +80,12 @@ TEST_F(ArcAppShortcutsMenuBuilderTest, Basic) {
   int i = 0;
   EXPECT_EQ(first_item_label, menu->GetLabelAt(i++));
   EXPECT_EQ(ui::DOUBLE_SEPARATOR, menu->GetSeparatorTypeAt(i++));
-  for (; i < menu->GetItemCount(); ++i) {
-    EXPECT_EQ(base::StringPrintf("ShortLabel %d", i - 2),
-              base::UTF16ToUTF8(menu->GetLabelAt(i)));
+  // There is a separator between each app shortcut.
+  for (int shortcut_index = 0; i < menu->GetItemCount(); ++i) {
+    EXPECT_EQ(base::StringPrintf("ShortLabel %d", shortcut_index++),
+              base::UTF16ToUTF8(menu->GetLabelAt(i++)));
+    if (i < menu->GetItemCount())
+      EXPECT_EQ(ui::PADDED_SEPARATOR, menu->GetSeparatorTypeAt(i));
   }
 }
 

@@ -79,6 +79,8 @@ struct EnumTraits<ash::mojom::MenuSeparatorType, ui::MenuSeparatorType> {
         return ash::mojom::MenuSeparatorType::SPACING_SEPARATOR;
       case ui::MenuSeparatorType::VERTICAL_SEPARATOR:
         return ash::mojom::MenuSeparatorType::VERTICAL_SEPARATOR;
+      case ui::MenuSeparatorType::PADDED_SEPARATOR:
+        return ash::mojom::MenuSeparatorType::PADDED_SEPARATOR;
     }
     NOTREACHED();
     return ash::mojom::MenuSeparatorType::NORMAL_SEPARATOR;
@@ -104,6 +106,9 @@ struct EnumTraits<ash::mojom::MenuSeparatorType, ui::MenuSeparatorType> {
         return true;
       case ash::mojom::MenuSeparatorType::VERTICAL_SEPARATOR:
         *out = ui::MenuSeparatorType::VERTICAL_SEPARATOR;
+        return true;
+      case ash::mojom::MenuSeparatorType::PADDED_SEPARATOR:
+        *out = ui::MenuSeparatorType::PADDED_SEPARATOR;
         return true;
     }
     NOTREACHED();

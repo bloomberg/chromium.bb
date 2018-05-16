@@ -37,7 +37,9 @@ void MenuSeparator::OnPaint(gfx::Canvas* canvas) {
   }
 
   gfx::Rect paint_rect(0, pos, width(), separator_thickness);
-  if (menu_config.use_outer_border)
+  if (type_ == ui::PADDED_SEPARATOR)
+    paint_rect.Inset(menu_config.padded_separator_left_margin, 0, 0, 0);
+  else if (menu_config.use_outer_border)
     paint_rect.Inset(1, 0);
 
 #if defined(OS_WIN)
@@ -74,6 +76,9 @@ gfx::Size MenuSeparator::CalculatePreferredSize() const {
       break;
     case ui::DOUBLE_SEPARATOR:
       height = menu_config.double_separator_height;
+      break;
+    case ui::PADDED_SEPARATOR:
+      height = menu_config.separator_thickness;
       break;
     default:
       height = menu_config.separator_height;
