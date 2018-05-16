@@ -179,7 +179,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_send_alarm, true)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_mspc, true)
 
 // If true, simplify pacing sender logic.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_pacing_sender, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_simplify_pacing_sender, true)
 
 // Number of packets that the pacing sender allows in bursts during pacing.
 QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 1)
@@ -194,7 +194,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_respect_ietf_header, true)
 // If true, detect losses from last largest lost packet number.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_incremental_loss_detection,
-          false)
+          true)
 
 // If true, enable fast path in QuicStreamSendBuffer::FreeMemSlices.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fast_free_mem_slice, true)
@@ -208,7 +208,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_ack_decimation, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_early_retransmit_detects_in_flight_packet_lost,
-    false)
+    true)
 
 // Enables the 1RTO connection option which only sends one packet on QUIC
 // retransmission timeout, instead of 2.
