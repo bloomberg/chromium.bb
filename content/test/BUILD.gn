@@ -829,7 +829,6 @@ test("content_browsertests") {
     "../browser/web_contents_binding_set_browsertest.cc",
     "../browser/web_package/web_package_request_handler_browsertest.cc",
     "../browser/webkit_browsertest.cc",
-    "../browser/webrtc/webrtc_add_stream_no_deadlock_browsertest.cc",
     "../browser/webrtc/webrtc_audio_browsertest.cc",
     "../browser/webrtc/webrtc_audio_debug_recordings_browsertest.cc",
     "../browser/webrtc/webrtc_browsertest.cc",
