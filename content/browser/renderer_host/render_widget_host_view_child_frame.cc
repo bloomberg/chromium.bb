@@ -1177,6 +1177,7 @@ void RenderWidgetHostViewChildFrame::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
   if (frame_connector_)
     frame_connector_->DidUpdateVisualProperties(metadata);
+  host()->SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewChildFrame::DidNavigate() {

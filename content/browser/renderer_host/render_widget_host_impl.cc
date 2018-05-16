@@ -2189,20 +2189,16 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
       NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_VISUAL_PROPERTIES,
       Source<RenderWidgetHost>(this), NotificationService::NoDetails());
 
-  // If we got an ack, then perhaps we have another change of visual properties
-  // to send?
-  if (!is_hidden_)
-    SynchronizeVisualProperties();
+  if (!view_ || is_hidden_)
+    return;
 
-  if (auto_resize_enabled_ && view_) {
-    viz::ScopedSurfaceIdAllocator scoped_allocator =
-        view_->DidUpdateVisualProperties(metadata);
+  viz::ScopedSurfaceIdAllocator scoped_allocator =
+      view_->DidUpdateVisualProperties(metadata);
 
-    if (delegate_) {
-      gfx::Size viewport_size_in_dip = gfx::ScaleToCeiledSize(
-          metadata.viewport_size_in_pixels, 1.f / metadata.device_scale_factor);
-      delegate_->ResizeDueToAutoResize(this, viewport_size_in_dip);
-    }
+  if (auto_resize_enabled_ && delegate_) {
+    gfx::Size viewport_size_in_dip = gfx::ScaleToCeiledSize(
+        metadata.viewport_size_in_pixels, 1.f / metadata.device_scale_factor);
+    delegate_->ResizeDueToAutoResize(this, viewport_size_in_dip);
   }
 }
 

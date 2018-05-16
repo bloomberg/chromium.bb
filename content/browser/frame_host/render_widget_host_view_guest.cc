@@ -377,6 +377,13 @@ void RenderWidgetHostViewGuest::SendSurfaceInfoToEmbedderImpl(
     guest_->SetChildFrameSurface(surface_info);
 }
 
+void RenderWidgetHostViewGuest::OnDidUpdateVisualPropertiesComplete(
+    const cc::RenderFrameMetadata& metadata) {
+  if (guest_)
+    guest_->DidUpdateVisualProperties(metadata);
+  host()->SynchronizeVisualProperties();
+}
+
 void RenderWidgetHostViewGuest::OnAttached() {
   RegisterFrameSinkId();
 #if defined(USE_AURA)
@@ -705,7 +712,8 @@ viz::ScopedSurfaceIdAllocator
 RenderWidgetHostViewGuest::DidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
   base::OnceCallback<void()> allocation_task = base::BindOnce(
-      &BrowserPluginGuest::DidUpdateVisualProperties, guest_, metadata);
+      &RenderWidgetHostViewGuest::OnDidUpdateVisualPropertiesComplete,
+      weak_ptr_factory_.GetWeakPtr(), metadata);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
 }
 
