@@ -8,7 +8,9 @@ suite('cr-radio-button', function() {
   setup(function() {
     PolymerTest.clearBody();
     document.body.innerHTML = `
-      <cr-radio-button>label</cr-radio-button>
+      <cr-radio-button>
+        label <a>link</a>
+      </cr-radio-button>
     `;
 
     radioButton = document.querySelector('cr-radio-button');
@@ -71,5 +73,15 @@ suite('cr-radio-button', function() {
     assertTrue(radioButton.$$('paper-ripple').holdDown);
     radioButton.fire('pointerup');
     assertFalse(radioButton.$$('paper-ripple').holdDown);
+  });
+
+  test('Click on links does not propagate', function(done) {
+    document.body.addEventListener('click', () => {
+      assertTrue(false);
+    });
+
+    const link = document.querySelector('a');
+    link.click();
+    setTimeout(done);
   });
 });

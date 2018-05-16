@@ -37,15 +37,6 @@ Polymer({
   receivedMouseSwapButtonsDown_: false,
 
   /**
-   * Prevents the link from activating its parent paper-radio-button.
-   * @param {!Event} e
-   * @private
-   */
-  onLearnMoreLinkActivated_: function(e) {
-    settings.DevicePageBrowserProxyImpl.getInstance().handleLinkEvent(e);
-  },
-
-  /**
    * Mouse and touchpad sections are only subsections if they are both present.
    * @param {boolean} hasMouse
    * @param {boolean} hasTouchpad
