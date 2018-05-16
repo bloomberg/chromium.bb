@@ -341,8 +341,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
   browser_controls_offset_manager_ = BrowserControlsOffsetManager::Create(
       this, settings.top_controls_show_threshold,
       settings.top_controls_hide_threshold);
-
-  tile_manager_.SetDecodedImageTracker(&decoded_image_tracker_);
 }
 
 LayerTreeHostImpl::~LayerTreeHostImpl() {
@@ -2329,7 +2327,7 @@ bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {
 void LayerTreeHostImpl::DidFinishImplFrame() {
   impl_thread_phase_ = ImplThreadPhase::IDLE;
   current_begin_frame_tracker_.Finish();
-  decoded_image_tracker_.NotifyFrameFinished();
+  tile_manager_.decoded_image_tracker().NotifyFrameFinished();
 }
 
 void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
@@ -2807,7 +2805,7 @@ void LayerTreeHostImpl::QueueImageDecode(int request_id,
                image.GetKeyForFrame(image.frame_index()).ToString());
   // Optimistically specify the current raster color space, since we assume that
   // it won't change.
-  decoded_image_tracker_.QueueImageDecode(
+  tile_manager_.decoded_image_tracker().QueueImageDecode(
       image, GetRasterColorSpace().color_space,
       base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
                  base::Unretained(this), request_id));

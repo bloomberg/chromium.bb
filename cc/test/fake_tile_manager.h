@@ -27,7 +27,6 @@ class FakeTileManager : public TileManager {
 
  private:
   SoftwareImageDecodeCache image_decode_cache_;
-  DecodedImageTracker decoded_image_tracker_;
 };
 
 }  // namespace cc

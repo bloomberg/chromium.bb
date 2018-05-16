@@ -260,8 +260,6 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
                              ResourcePool::InUsePoolResource resource,
                              bool was_canceled);
 
-  void SetDecodedImageTracker(DecodedImageTracker* decoded_image_tracker);
-
   // CheckerImageTrackerClient implementation.
   void NeedsInvalidationForCheckerImagedTiles() override;
 
@@ -277,6 +275,9 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
 
   CheckerImageTracker& checker_image_tracker() {
     return checker_image_tracker_;
+  }
+  DecodedImageTracker& decoded_image_tracker() {
+    return decoded_image_tracker_;
   }
 
   const std::vector<DrawImage>& decode_tasks_for_testing(Tile::Id id) {
@@ -414,6 +415,7 @@ class CC_EXPORT TileManager : CheckerImageTrackerClient {
   bool did_oom_on_last_assign_;
 
   ImageController image_controller_;
+  DecodedImageTracker decoded_image_tracker_;
   CheckerImageTracker checker_image_tracker_;
 
   RasterTaskCompletionStats raster_task_completion_stats_;

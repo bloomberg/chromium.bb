@@ -24,7 +24,7 @@ namespace cc {
 // are silently ignored.
 class CC_EXPORT DecodedImageTracker {
  public:
-  DecodedImageTracker();
+  explicit DecodedImageTracker(ImageController* controller);
   ~DecodedImageTracker();
 
   // Request that the given image be decoded. This issues a callback upon
@@ -36,18 +36,13 @@ class CC_EXPORT DecodedImageTracker {
   void NotifyFrameFinished();
 
  private:
-  friend class TileManager;
   friend class DecodedImageTrackerTest;
-
-  void set_image_controller(ImageController* controller) {
-    image_controller_ = controller;
-  }
 
   void ImageDecodeFinished(const base::Callback<void(bool)>& callback,
                            ImageController::ImageDecodeRequestId id,
                            ImageController::ImageDecodeResult result);
 
-  ImageController* image_controller_ = nullptr;
+  ImageController* image_controller_;
   std::vector<std::pair<ImageController::ImageDecodeRequestId, int>>
       locked_images_;
 

@@ -359,6 +359,7 @@ TileManager::TileManager(
       did_oom_on_last_assign_(false),
       image_controller_(origin_task_runner,
                         std::move(image_worker_task_runner)),
+      decoded_image_tracker_(&image_controller_),
       checker_image_tracker_(&image_controller_,
                              this,
                              tile_manager_settings_.enable_checker_imaging,
@@ -1281,13 +1282,6 @@ void TileManager::OnRasterTaskCompleted(
     draw_info.set_resource_ready_for_draw();
     client_->NotifyTileStateChanged(tile);
   }
-}
-
-void TileManager::SetDecodedImageTracker(
-    DecodedImageTracker* decoded_image_tracker) {
-  // TODO(vmpstr): If the tile manager needs to request out-of-raster decodes,
-  // it should retain and use |decoded_image_tracker| here.
-  decoded_image_tracker->set_image_controller(&image_controller_);
 }
 
 std::unique_ptr<Tile> TileManager::CreateTile(const Tile::CreateInfo& info,
