@@ -146,8 +146,8 @@ TEST(AomLeb128, DecodeFailTest) {
                             &encode_buffer[0], &bytes_written),
             0);
   size_t value_size = 0;
-  ASSERT_EQ(aom_uleb_decode(&encode_buffer[0], kMaximumLeb128CodedSize,
-                            &decoded_value, &value_size),
+  ASSERT_EQ(aom_uleb_decode(&encode_buffer[0], bytes_written, &decoded_value,
+                            &value_size),
             -1);
 }
 
