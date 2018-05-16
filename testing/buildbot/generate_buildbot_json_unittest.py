@@ -27,6 +27,9 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
   def write_file(self, relative_path, contents):
     self.files[relative_path] = contents
 
+  def get_valid_bot_names(self):
+    return set(['Fake Tester'])
+
 
 FOO_GTESTS_WATERFALL = """\
 [
@@ -292,6 +295,21 @@ ANDROID_WATERFALL = """\
         },
         'os_type': 'android',
         'use_swarming': False,
+        'test_suites': {
+          'gtest_tests': 'foo_tests',
+        },
+      },
+    },
+  },
+]
+"""
+
+UNKNOWN_BOT_GTESTS_WATERFALL = """\
+[
+  {
+    'name': 'chromium.test',
+    'machines': {
+      'Unknown Bot': {
         'test_suites': {
           'gtest_tests': 'foo_tests',
         },
@@ -1181,6 +1199,13 @@ class UnitTest(unittest.TestCase):
     fbb.check_input_file_consistency()
     fbb.files['relative/path/chromium.test.json'] = VARIATION_GTEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
+
+  def test_nonexistent_bot_raises(self):
+    fbb = FakeBBGen(UNKNOWN_BOT_GTESTS_WATERFALL,
+                    FOO_TEST_SUITE,
+                    NONEXISTENT_KEY_REMOVAL)
+    with self.assertRaises(generate_buildbot_json.BBGenErr):
+      fbb.check_input_file_consistency()
 
 
 if __name__ == '__main__':

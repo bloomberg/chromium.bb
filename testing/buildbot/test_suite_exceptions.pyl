@@ -153,7 +153,6 @@
   'boringssl_crypto_tests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # On chromium.mac, unclear why these aren't run on "Mac10.12 Tests".
@@ -163,7 +162,6 @@
   'boringssl_ssl_tests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # On chromium.mac, unclear why these aren't run on "Mac10.12 Tests".
@@ -203,11 +201,6 @@
     ],
     'modifications': {
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 20,
@@ -342,7 +335,6 @@
   'cast_unittests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # Unclear why these largely aren't run on Android.
@@ -357,7 +349,6 @@
   'cc_unittests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
     ],
@@ -659,7 +650,6 @@
   'chromedriver_unittests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
     ],
@@ -667,7 +657,6 @@
   'components_browsertests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # chromium.fyi
@@ -871,11 +860,6 @@
         },
       },
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
       'Linux TSan Tests': {
         'swarming': {
           'shards': 5,
@@ -1311,7 +1295,6 @@
   'gin_unittests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # chromium.clang
@@ -1624,11 +1607,6 @@
         },
       },
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)': {
-        'swarming': {
-          'shards': 3,
-        },
-      },
       'linux-chromeos-dbg': {
         'swarming': {
           'shards': 3,
@@ -1813,7 +1791,6 @@
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
     ],
@@ -2054,7 +2031,6 @@
   'printing_unittests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
     ],
   },
@@ -2084,7 +2060,6 @@
       'x64 Device Tester',
       'x86 Cloud Tester',
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # chromium.clang
@@ -2156,7 +2131,6 @@
       'x64 Device Tester',
       'x86 Cloud Tester',
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # chromium.clang
@@ -2212,11 +2186,6 @@
           'hard_timeout': 60,
         },
       },
-      'Linux ChromiumOS Tests (dbg)(1)': {
-        'args': [
-          '--test-launcher-print-test-stdio=always',
-        ],
-      },
       'linux-chromeos-dbg': {
         'args': [
           '--test-launcher-print-test-stdio=always',
@@ -2247,7 +2216,6 @@
   'service_manager_unittests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # chromium.fyi
@@ -2453,7 +2421,6 @@
   'snapshot_unittests': {
     'remove_from': [
       # chromium.chromiumos
-      'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
       # chromium.fyi
