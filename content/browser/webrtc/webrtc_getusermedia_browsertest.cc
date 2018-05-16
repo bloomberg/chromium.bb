@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/json/json_reader.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -15,6 +16,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/webrtc/webrtc_content_browsertest_base.h"
 #include "content/browser/webrtc/webrtc_internals.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -158,6 +160,24 @@ class WebRtcGetUserMediaBrowserTest : public WebRtcContentBrowserTestBase {
     ASSERT_FALSE(audio_ids->empty());
     ASSERT_FALSE(video_ids->empty());
   }
+};
+
+// Muting tests doesn't work with the out of process audio service, so we need
+// another test fixture to force the audio service to be in process.
+// TODO(https://crbug.com/843490): Figure out a nicer way to do this.
+class WebRtcGetUserMediaBrowserTestWithAudioServiceForcedIntoBrowserProcess
+    : public WebRtcGetUserMediaBrowserTest {
+ public:
+  WebRtcGetUserMediaBrowserTestWithAudioServiceForcedIntoBrowserProcess() {
+    disable_out_of_process_audio.InitAndDisableFeature(
+        features::kAudioServiceOutOfProcess);
+  }
+
+  ~WebRtcGetUserMediaBrowserTestWithAudioServiceForcedIntoBrowserProcess()
+      override {}
+
+ private:
+  base::test::ScopedFeatureList disable_out_of_process_audio;
 };
 
 // These tests will all make a getUserMedia call with different constraints and
@@ -666,56 +686,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   ExecuteJavascriptAndWaitForOk("getAudioSettingsDeviceId()");
 }
 
-
-IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       GetAudioStreamAndCheckMutingInitiallyUnmuted) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
-  NavigateToURL(shell(), url);
-
-  // Expect stream to initially not be muted
-  media::FakeAudioInputStream::SetGlobalMutedState(false);
-  ExecuteJavascriptAndWaitForOk(
-      base::StringPrintf("%s(false);", kGetUserMediaForAudioMutingTest));
-
-  // Mute
-  media::FakeAudioInputStream::SetGlobalMutedState(true);
-  EXPECT_EQ("onmute: muted=true, readyState=live",
-            ExecuteJavascriptAndReturnResult(
-                "failTestAfterTimeout('Got no mute event', 1500);"));
-  // Unmute
-  media::FakeAudioInputStream::SetGlobalMutedState(false);
-  EXPECT_EQ("onunmute: muted=false, readyState=live",
-            ExecuteJavascriptAndReturnResult(
-                "failTestAfterTimeout('Got no unmute event', 1500);"));
-}
-
-IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
-                       GetAudioStreamAndCheckMutingInitiallyMuted) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
-  NavigateToURL(shell(), url);
-
-  // Expect stream to initially be muted
-  media::FakeAudioInputStream::SetGlobalMutedState(true);
-  ExecuteJavascriptAndWaitForOk(
-      base::StringPrintf("%s(true);", kGetUserMediaForAudioMutingTest));
-
-  // Unmute
-  media::FakeAudioInputStream::SetGlobalMutedState(false);
-  EXPECT_EQ("onunmute: muted=false, readyState=live",
-            ExecuteJavascriptAndReturnResult(
-                "failTestAfterTimeout('Got no unmute event', 1500);"));
-
-  // Mute
-  media::FakeAudioInputStream::SetGlobalMutedState(true);
-  EXPECT_EQ("onmute: muted=true, readyState=live",
-            ExecuteJavascriptAndReturnResult(
-                "failTestAfterTimeout('Got no mute event', 1500);"));
-}
-
 IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest, SrcObjectAddVideoTrack) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -805,6 +775,57 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
   ExecuteJavascriptAndWaitForOk("getUserMediaEchoCancellationOnAndOff()");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcGetUserMediaBrowserTestWithAudioServiceForcedIntoBrowserProcess,
+    GetAudioStreamAndCheckMutingInitiallyUnmuted) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  // Expect stream to initially not be muted
+  media::FakeAudioInputStream::SetGlobalMutedState(false);
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s(false);", kGetUserMediaForAudioMutingTest));
+
+  // Mute
+  media::FakeAudioInputStream::SetGlobalMutedState(true);
+  EXPECT_EQ("onmute: muted=true, readyState=live",
+            ExecuteJavascriptAndReturnResult(
+                "failTestAfterTimeout('Got no mute event', 1500);"));
+  // Unmute
+  media::FakeAudioInputStream::SetGlobalMutedState(false);
+  EXPECT_EQ("onunmute: muted=false, readyState=live",
+            ExecuteJavascriptAndReturnResult(
+                "failTestAfterTimeout('Got no unmute event', 1500);"));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    WebRtcGetUserMediaBrowserTestWithAudioServiceForcedIntoBrowserProcess,
+    GetAudioStreamAndCheckMutingInitiallyMuted) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
+  NavigateToURL(shell(), url);
+
+  // Expect stream to initially be muted
+  media::FakeAudioInputStream::SetGlobalMutedState(true);
+  ExecuteJavascriptAndWaitForOk(
+      base::StringPrintf("%s(true);", kGetUserMediaForAudioMutingTest));
+
+  // Unmute
+  media::FakeAudioInputStream::SetGlobalMutedState(false);
+  EXPECT_EQ("onunmute: muted=false, readyState=live",
+            ExecuteJavascriptAndReturnResult(
+                "failTestAfterTimeout('Got no unmute event', 1500);"));
+
+  // Mute
+  media::FakeAudioInputStream::SetGlobalMutedState(true);
+  EXPECT_EQ("onmute: muted=true, readyState=live",
+            ExecuteJavascriptAndReturnResult(
+                "failTestAfterTimeout('Got no mute event', 1500);"));
 }
 
 }  // namespace content
