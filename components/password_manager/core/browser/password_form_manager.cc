@@ -386,6 +386,8 @@ void PasswordFormManager::Save() {
 
   metrics_util::LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
       submitted_form_->submission_event);
+  metrics_recorder_->SetSubmissionIndicatorEvent(
+      submitted_form_->submission_event);
 
   if ((user_action_ == UserAction::kNone) &&
       DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
@@ -420,6 +422,8 @@ void PasswordFormManager::Save() {
 void PasswordFormManager::Update(
     const autofill::PasswordForm& credentials_to_update) {
   metrics_util::LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
+      submitted_form_->submission_event);
+  metrics_recorder_->SetSubmissionIndicatorEvent(
       submitted_form_->submission_event);
   if (observed_form_.IsPossibleChangePasswordForm()) {
     FormStructure form_structure(credentials_to_update.form_data);
