@@ -44,9 +44,9 @@ void Rect::Render(UiElementRenderer* renderer, const CameraModel& model) const {
   float opacity = computed_opacity() * local_opacity_;
   if (opacity <= 0.f)
     return;
-  renderer->DrawGradientQuad(model.view_proj_matrix * world_space_transform(),
-                             edge_color_, center_color_, clip_rect(), opacity,
-                             size(), corner_radii());
+  renderer->DrawRadialGradientQuad(
+      model.view_proj_matrix * world_space_transform(), edge_color_,
+      center_color_, clip_rect(), opacity, size(), corner_radii());
 }
 
 void Rect::SetLocalOpacity(float opacity) {
