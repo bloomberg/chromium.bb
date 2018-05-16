@@ -3,7 +3,7 @@
 <div id="containPaint" style="contain:paint;">
     <div id="test1"></div>
 </div>
-<!-- contain:layout does NOT establish a containing block for out-of-flow positioned descendants. -->
+<!-- contain:layout establishes a containing block for out-of-flow positioned descendants. -->
 <div id="containLayout" style="contain:layout;">
     <div id="test2"></div>
 </div>
@@ -22,7 +22,7 @@
        assert_equals(document.getElementById("test1").offsetParent, document.getElementById("containPaint"));
     }, "inside contain:paint");
     test(function() {
-       assert_equals(document.getElementById("test2").offsetParent, document.body);
+       assert_equals(document.getElementById("test2").offsetParent, document.getElementById("containLayout"));
     }, "inside contain:layout");
     test(function() {
        assert_equals(document.getElementById("test3").offsetParent, document.body);

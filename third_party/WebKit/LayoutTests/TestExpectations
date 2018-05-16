@@ -277,6 +277,16 @@ crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-gi
 crbug.com/708345 external/wpt/css/css-tables/height-distribution/extra-height-given-to-all-row-groups-005.html [ Failure ]
 crbug.com/694374 external/wpt/css/css-tables/anonymous-table-ws-001.html [ Failure ]
 
+# [css-contain]
+
+crbug.com/843329 external/wpt/css/css-contain/contain-layout-005.html [ Failure ]
+crbug.com/843329 external/wpt/css/css-contain/contain-paint-002.html [ Failure ]
+crbug.com/843329 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
+crbug.com/843329 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
+crbug.com/843329 external/wpt/css/css-contain/contain-paint-007.html [ Failure ]
+crbug.com/843329 external/wpt/css/css-contain/contain-paint-008.html [ Failure ]
+crbug.com/843329 external/wpt/css/css-contain/contain-size-005.html [ Failure ]
+
 # ====== Layout team owned tests to here ======
 
 crbug.com/819617 [ Linux ] fast/text/descent-clip-in-scaled-page.html [ Failure ]
@@ -2887,11 +2897,6 @@ crbug.com/626703 external/wpt/css/css-text/overflow-wrap/overflow-wrap-break-wor
 crbug.com/626703 external/wpt/css/css-contain/counter-scoping-002.html [ Failure ]
 crbug.com/626703 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/contain-layout-breaks-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-paint-005.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-paint-002.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-paint-008.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-size-005.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-paint-006.html [ Failure ]
 crbug.com/626703 virtual/off-main-thread-websocket/external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/quote-scoping-004.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/quote-scoping-003.html [ Failure ]
@@ -2899,7 +2904,6 @@ crbug.com/626703 external/wpt/css/css-contain/contain-size-breaks-001.html [ Fai
 crbug.com/626703 external/wpt/payment-request/PaymentRequestUpdateEvent/updateWith-incremental-update-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.html [ Timeout ]
 crbug.com/626703 external/wpt/css/css-contain/counter-scoping-001.html [ Failure ]
-crbug.com/626703 external/wpt/css/css-contain/contain-paint-007.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/quote-scoping-001.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-contain/quote-scoping-002.html [ Failure ]
 crbug.com/626703 external/wpt/websockets/Create-Secure-extensions-empty.any.worker.html [ Timeout ]
