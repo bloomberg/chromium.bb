@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/resource_coordinator/resource_coordinator_web_contents_observer.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager_web_contents_data.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -29,6 +30,12 @@ using ::testing::ElementsAre;
 using WebContents = content::WebContents;
 
 namespace resource_coordinator {
+
+using LoadingState = TabLoadTracker::LoadingState;
+
+constexpr TabLoadTracker::LoadingState UNLOADED = TabLoadTracker::UNLOADED;
+constexpr TabLoadTracker::LoadingState LOADING = TabLoadTracker::LOADING;
+constexpr TabLoadTracker::LoadingState LOADED = TabLoadTracker::LOADED;
 
 class TabManagerStatsCollectorTest : public ChromeRenderViewHostTestHarness {
  protected:
@@ -120,11 +127,11 @@ class TabManagerStatsCollectorTabSwitchTest
   TabManagerStatsCollectorTabSwitchTest() = default;
   ~TabManagerStatsCollectorTabSwitchTest() override = default;
 
-  void SetForegroundTabLoadingState(TabLoadingState state) {
+  void SetForegroundTabLoadingState(LoadingState state) {
     GetWebContentsData(foreground_tab_)->SetTabLoadingState(state);
   }
 
-  void SetBackgroundTabLoadingState(TabLoadingState state) {
+  void SetBackgroundTabLoadingState(LoadingState state) {
     GetWebContentsData(background_tab_)->SetTabLoadingState(state);
   }
 
@@ -139,12 +146,12 @@ class TabManagerStatsCollectorTabSwitchTest
   }
 
   void FinishLoadingForegroundTab() {
-    SetForegroundTabLoadingState(TAB_IS_LOADED);
+    SetForegroundTabLoadingState(LOADED);
     tab_manager_stats_collector()->OnTabIsLoaded(foreground_tab_);
   }
 
   void FinishLoadingBackgroundTab() {
-    SetBackgroundTabLoadingState(TAB_IS_LOADED);
+    SetBackgroundTabLoadingState(LOADED);
     tab_manager_stats_collector()->OnTabIsLoaded(background_tab_);
   }
 
@@ -184,39 +191,36 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsSwitchToTab) {
   if (should_test_background_tab_opening_)
     StartBackgroundTabOpeningSession();
 
-  SetBackgroundTabLoadingState(TAB_IS_NOT_LOADING);
-  SetForegroundTabLoadingState(TAB_IS_NOT_LOADING);
+  SetBackgroundTabLoadingState(UNLOADED);
+  SetForegroundTabLoadingState(UNLOADED);
   SwitchToBackgroundTab();
   SwitchToBackgroundTab();
   for (const auto& param : histogram_parameters) {
     if (param.enabled && !IsTestingOverlappedSession()) {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 2);
-      histogram_tester_.ExpectBucketCount(param.histogram_name,
-                                          TAB_IS_NOT_LOADING, 2);
+      histogram_tester_.ExpectBucketCount(param.histogram_name, UNLOADED, 2);
     } else {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 0);
     }
   }
 
-  SetBackgroundTabLoadingState(TAB_IS_LOADING);
-  SetForegroundTabLoadingState(TAB_IS_LOADING);
+  SetBackgroundTabLoadingState(LOADING);
+  SetForegroundTabLoadingState(LOADING);
   SwitchToBackgroundTab();
   SwitchToBackgroundTab();
   SwitchToBackgroundTab();
   for (const auto& param : histogram_parameters) {
     if (param.enabled && !IsTestingOverlappedSession()) {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 5);
-      histogram_tester_.ExpectBucketCount(param.histogram_name,
-                                          TAB_IS_NOT_LOADING, 2);
-      histogram_tester_.ExpectBucketCount(param.histogram_name, TAB_IS_LOADING,
-                                          3);
+      histogram_tester_.ExpectBucketCount(param.histogram_name, UNLOADED, 2);
+      histogram_tester_.ExpectBucketCount(param.histogram_name, LOADING, 3);
     } else {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 0);
     }
   }
 
-  SetBackgroundTabLoadingState(TAB_IS_LOADED);
-  SetForegroundTabLoadingState(TAB_IS_LOADED);
+  SetBackgroundTabLoadingState(LOADED);
+  SetForegroundTabLoadingState(LOADED);
   SwitchToBackgroundTab();
   SwitchToBackgroundTab();
   SwitchToBackgroundTab();
@@ -224,12 +228,9 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsSwitchToTab) {
   for (const auto& param : histogram_parameters) {
     if (param.enabled && !IsTestingOverlappedSession()) {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 9);
-      histogram_tester_.ExpectBucketCount(param.histogram_name,
-                                          TAB_IS_NOT_LOADING, 2);
-      histogram_tester_.ExpectBucketCount(param.histogram_name, TAB_IS_LOADING,
-                                          3);
-      histogram_tester_.ExpectBucketCount(param.histogram_name, TAB_IS_LOADED,
-                                          4);
+      histogram_tester_.ExpectBucketCount(param.histogram_name, UNLOADED, 2);
+      histogram_tester_.ExpectBucketCount(param.histogram_name, LOADING, 3);
+      histogram_tester_.ExpectBucketCount(param.histogram_name, LOADED, 4);
     } else {
       histogram_tester_.ExpectTotalCount(param.histogram_name, 0);
     }
@@ -246,8 +247,8 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
   if (should_test_background_tab_opening_)
     StartBackgroundTabOpeningSession();
 
-  SetBackgroundTabLoadingState(TAB_IS_NOT_LOADING);
-  SetForegroundTabLoadingState(TAB_IS_LOADED);
+  SetBackgroundTabLoadingState(UNLOADED);
+  SetForegroundTabLoadingState(LOADED);
   SwitchToBackgroundTab();
   FinishLoadingForegroundTab();
   histogram_tester_.ExpectTotalCount(
@@ -258,7 +259,7 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
       should_test_background_tab_opening_ && !IsTestingOverlappedSession() ? 1
                                                                            : 0);
 
-  SetBackgroundTabLoadingState(TAB_IS_LOADING);
+  SetBackgroundTabLoadingState(LOADING);
   SwitchToBackgroundTab();
   FinishLoadingForegroundTab();
   histogram_tester_.ExpectTotalCount(
@@ -271,8 +272,8 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
 
   // Metrics aren't recorded when the foreground tab has not finished loading
   // and the user switches to a different tab.
-  SetBackgroundTabLoadingState(TAB_IS_LOADING);
-  SetForegroundTabLoadingState(TAB_IS_LOADED);
+  SetBackgroundTabLoadingState(UNLOADED);
+  SetForegroundTabLoadingState(LOADED);
   SwitchToBackgroundTab();
   // Foreground tab is currently loading and being tracked.
   SwitchToBackgroundTab();
@@ -294,8 +295,8 @@ TEST_P(TabManagerStatsCollectorTabSwitchTest, HistogramsTabSwitchLoadTime) {
   if (should_test_background_tab_opening_)
     FinishBackgroundTabOpeningSession();
 
-  SetBackgroundTabLoadingState(TAB_IS_NOT_LOADING);
-  SetForegroundTabLoadingState(TAB_IS_LOADED);
+  SetBackgroundTabLoadingState(UNLOADED);
+  SetForegroundTabLoadingState(LOADED);
   SwitchToBackgroundTab();
   FinishLoadingForegroundTab();
   histogram_tester_.ExpectTotalCount(

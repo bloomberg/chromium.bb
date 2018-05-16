@@ -80,6 +80,7 @@ class TabManagerStatsCollector;
 // TODO(fdoray): Rename to LifecycleManager. https://crbug.com/775644
 class TabManager : public LifecycleUnitObserver,
                    public LifecycleUnitSourceObserver,
+                   public TabLoadTracker::Observer,
                    public TabStripModelObserver {
  public:
   // Forward declaration of resource coordinator signal observer.
@@ -147,10 +148,6 @@ class TabManager : public LifecycleUnitObserver,
   // before.
   void OnDidFinishNavigation(content::NavigationHandle* navigation_handle);
 
-  // Called by TabManager::WebContentsData to notify TabManager that one tab is
-  // considered loaded. TabManager can decide which tab to load next.
-  void OnTabIsLoaded(content::WebContents* contents);
-
   // Notifies TabManager that one tab WebContents has been destroyed. TabManager
   // needs to clean up data related to that tab.
   void OnWebContentsDestroyed(content::WebContents* contents);
@@ -183,67 +180,62 @@ class TabManager : public LifecycleUnitObserver,
   // non-zero only during session restore.
   int restored_tab_count() const;
 
-  // Accessor for the tab load tracker. This lets interested external classes
-  // add themselves as observers.
-  TabLoadTracker& tab_load_tracker() { return tab_load_tracker_; }
-  const TabLoadTracker& tab_load_tracker() const { return tab_load_tracker_; }
-
  private:
   friend class TabManagerStatsCollectorTest;
   friend class TabManagerWithProactiveDiscardExperimentEnabledTest;
 
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PurgeBackgroundRenderer);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ActivateTabResetPurgeState);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ShouldPurgeAtDefaultTime);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DefaultTimeToPurgeInCorrectRange);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, AutoDiscardable);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingMode);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingSlots);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabsLoadingOrdering);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, CanOnlyDiscardOnce);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ChildProcessNotifications);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, DefaultTimeToPurgeInCorrectRange);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, EnablePageAlmostIdleSignal);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FreezeTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, InvalidOrEmptyURL);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInBackgroundTabOpeningSession);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInternalPage);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsTabRestoredInForeground);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, MaybeThrottleNavigation);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDelayedTabSelected);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDidFinishNavigation);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnTabIsLoaded);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnWebContentsDestroyed);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OomPressureListener);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PauseAndResumeBackgroundTabOpening);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           ProactiveFastShutdownSharedTabProcess);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           ProactiveFastShutdownSingleTabProcess);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           ProactiveFastShutdownWithBeforeunloadHandler);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           ProactiveFastShutdownWithUnloadHandler);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectPDFPages);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectRecentlyUsedTabs);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ProtectVideoTabs);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PurgeBackgroundRenderer);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           SessionRestoreAfterBackgroundTabOpeningSession);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           SessionRestoreBeforeBackgroundTabOpeningSession);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, ShouldPurgeAtDefaultTime);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerBasics);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TabManagerWasDiscarded);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            TabManagerWasDiscardedCrossSiteSubFrame);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, MaybeThrottleNavigation);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDidFinishNavigation);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnTabIsLoaded);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnWebContentsDestroyed);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, OnDelayedTabSelected);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest, TimeoutWhenLoadingBackgroundTabs);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingMode);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabLoadingSlots);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, BackgroundTabsLoadingOrdering);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, PauseAndResumeBackgroundTabOpening);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsInBackgroundTabOpeningSession);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerWithExperimentDisabledTest,
-                           IsInBackgroundTabOpeningSession);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           SessionRestoreBeforeBackgroundTabOpeningSession);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           SessionRestoreAfterBackgroundTabOpeningSession);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownSingleTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownSingleTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownSharedTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownSharedTabProcess);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownWithUnloadHandler);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownWithUnloadHandler);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           ProactiveFastShutdownWithBeforeunloadHandler);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
-                           UrgentFastShutdownWithBeforeunloadHandler);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, IsTabRestoredInForeground);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, EnablePageAlmostIdleSignal);
-  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, FreezeTab);
   FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
                            TrackingNumberOfLoadedLifecycleUnits);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownSharedTabProcess);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownSingleTabProcess);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest,
+                           UrgentFastShutdownWithBeforeunloadHandler);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerTest, UrgentFastShutdownWithUnloadHandler);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWithExperimentDisabledTest,
+                           IsInBackgroundTabOpeningSession);
   FRIEND_TEST_ALL_PREFIXES(TabManagerWithProactiveDiscardExperimentEnabledTest,
                            GetTimeInBackgroundBeforeProactiveDiscardTest);
 
@@ -316,6 +308,14 @@ class TabManager : public LifecycleUnitObserver,
                      content::WebContents* old_contents,
                      content::WebContents* new_contents,
                      int index) override;
+
+  // TabLoadTracker::Observer implementation:
+  void OnStartTracking(content::WebContents* web_contents,
+                       LoadingState loading_state) override;
+  void OnLoadingStateChange(content::WebContents* web_contents,
+                            LoadingState loading_state) override;
+  void OnStopTracking(content::WebContents* web_contents,
+                      LoadingState loading_state) override;
 
   // Returns the WebContentsData associated with |contents|. Also takes care of
   // creating one if needed.
@@ -485,10 +485,6 @@ class TabManager : public LifecycleUnitObserver,
   // Records UMAs for tab and system-related events and properties during
   // session restore.
   std::unique_ptr<TabManagerStatsCollector> stats_collector_;
-
-  // Tracks tab loads, taking into account PageAlmostIdle, NavigationThrottles
-  // and other complications.
-  TabLoadTracker tab_load_tracker_;
 
   // Weak pointer factory used for posting delayed tasks.
   base::WeakPtrFactory<TabManager> weak_ptr_factory_;

@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/observer_list.h"
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
@@ -33,8 +34,7 @@ class TabManagerResourceCoordinatorSignalObserverHelper;
 // thread.
 //
 // This class is intended to be created in early startup and persists as a
-// singleton in the browser process, owned by the TabManager. It is deliberately
-// leaked at shutdown.
+// singleton in the browser process. It is deliberately leaked at shutdown.
 //
 // This class isn't directly an observer of anything. An external source must
 // invoke the callbacks in the protected section of the class. In the case of
@@ -47,13 +47,15 @@ class TabLoadTracker {
   // state changes.
   class Observer;
 
-  // Indicates the loading state of a WebContents.
+  // Indicates the loading state of a WebContents. These values are written to
+  // logs and histograms. New enum values can be added, but existing enums must
+  // never be renumbered or deleted and reused.
   enum LoadingState {
     // An initially constructed WebContents with no loaded content is UNLOADED.
     // A WebContents that started loading but that errored out before receiving
     // sufficient content to render is also considered UNLOADED.
     // Can only transition from here to LOADING.
-    UNLOADED,
+    UNLOADED = 0,
     // A WebContents with an ongoing main-frame navigation (to a new document)
     // is in a loading state. More precisely, it is considered loading once
     // network data has started to be transmitted, and not simply when the
@@ -61,21 +63,23 @@ class TabLoadTracker {
     // loading, and will only transition to loading once the throttle has been
     // removed.
     // Can transition from here to UNLOADED or LOADED.
-    LOADING,
+    LOADING = 1,
     // A WebContents with a committed navigation whose
     // DidStopLoading/PageAlmostIdle event (depending on mode) or DidFailLoad
     // event has fired is no longer considered to be LOADING. If any content has
     // been rendered prior to the failure the document is considered LOADED,
     // otherwise it is considered UNLOADED.
     // Can transition from here to LOADING.
-    LOADED,
+    LOADED = 2,
 
     // This must be last.
     LOADING_STATE_MAX
   };
 
-  TabLoadTracker();
   ~TabLoadTracker();
+
+  // Returns the singleton TabLoadTracker instance.
+  static TabLoadTracker* Get();
 
   // Allows querying the state of a tab. The provided |web_contents| must be
   // actively tracked.
@@ -95,12 +99,22 @@ class TabLoadTracker {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  // Exposed so that state transitions can be simulated in tests.
+  void TransitionStateForTesting(content::WebContents* web_contents,
+                                 LoadingState loading_state);
+
  protected:
-  // This allows the various bits of TabManager plubming to forward
-  // notifications to the TabLoadTracker.
+  // This allows the singleton constructor access to the protected constructor.
+  friend class base::NoDestructor<TabLoadTracker>;
+
+  // These declarations allows the various bits of TabManager plumbing to
+  // forward notifications to the TabLoadTracker.
   friend class ::ResourceCoordinatorWebContentsObserver;
   friend class ::resource_coordinator::
       TabManagerResourceCoordinatorSignalObserverHelper;
+
+  // This class is a singleton so the constructor is protected.
+  TabLoadTracker();
 
   // Initiates tracking of a WebContents. This is fully able to determine the
   // initial state of the WebContents, even if it was created long ago
@@ -144,8 +158,12 @@ class TabLoadTracker {
   void MaybeTransitionToLoaded(content::WebContents* web_contents);
 
   // Transitions a web contents to the given state. This updates the various
-  // |state_counts_| and |tabs_| data.
-  void TransitionState(TabMap::iterator it, LoadingState loading_state);
+  // |state_counts_| and |tabs_| data. Setting |validate_transition| to false
+  // means that valid state machine transitions aren't enforced via checks; this
+  // is only used by state transitions forced via TransitionStateForTesting.
+  void TransitionState(TabMap::iterator it,
+                       LoadingState loading_state,
+                       bool validate_transition);
 
   // The list of known WebContents and their states.
   TabMap tabs_;
