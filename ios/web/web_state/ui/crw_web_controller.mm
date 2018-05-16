@@ -577,6 +577,10 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // If YES, the page should be closed if it successfully redirects to a native
 // application, for example if a new tab redirects to the App Store.
 - (BOOL)shouldClosePageOnNativeApplicationLoad;
+// Discards non committed items, only if the last committed URL was not loaded
+// in native view. But if it was a native view, no discard will happen to avoid
+// an ugly animation where the web view is inserted and quickly removed.
+- (void)discardNonCommittedItemsIfLastCommittedWasNotNativeView;
 // Updates URL for navigation context and navigation item.
 - (void)didReceiveRedirectForNavigation:(web::NavigationContextImpl*)context
                                 withURL:(const GURL&)URL;
@@ -2193,6 +2197,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
     return;
   if (itemUserAgentType != userAgentType)
     [self requirePageReconstruction];
+}
+
+- (void)discardNonCommittedItemsIfLastCommittedWasNotNativeView {
+  GURL lastCommittedURL = self.webState->GetLastCommittedURL();
+  BOOL previousItemWasLoadedInNativeView =
+      [self shouldLoadURLInNativeView:lastCommittedURL];
+  if (!previousItemWasLoadedInNativeView)
+    self.navigationManagerImpl->DiscardNonCommittedItems();
 }
 
 #pragma mark -
@@ -4260,6 +4272,9 @@ registerLoadRequestForURL:(const GURL&)requestURL
       action.request, transition, [self isMainFrameNavigationAction:action]);
   if (!allowLoad && action.targetFrame.mainFrame) {
     [_pendingNavigationInfo setCancelled:YES];
+    // Discard the pending item to ensure that the current URL is not
+    // different from what is displayed on the view.
+    [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
   }
 
   if (allowLoad)
@@ -4344,14 +4359,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if (isPassKit ||
         base::FeatureList::IsEnabled(web::features::kNewFileDownload)) {
       // Discard the pending item to ensure that the current URL is not
-      // different from what is displayed on the view. URL loaded in a native
-      // view should be excluded to avoid an ugly animation where the web view
-      // is inserted and quickly removed.
-      GURL lastCommittedURL = self.webState->GetLastCommittedURL();
-      BOOL previousItemWasLoadedInNativeView =
-          [self shouldLoadURLInNativeView:lastCommittedURL];
-      if (!previousItemWasLoadedInNativeView)
-        self.navigationManagerImpl->DiscardNonCommittedItems();
+      // different from what is displayed on the view.
+      [self discardNonCommittedItemsIfLastCommittedWasNotNativeView];
     }
     _webStateImpl->SetIsLoading(false);
   }
