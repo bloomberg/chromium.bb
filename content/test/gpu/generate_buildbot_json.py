@@ -404,6 +404,19 @@ FYI_WATERFALL = {
       'swarming': True,
       'os_type': 'win',
     },
+    'Win10 FYI dEQP Release (Intel HD 630)': {
+      'swarming_dimensions': [
+        {
+          'gpu': WIN10_INTEL_HD_630_STABLE_DRIVER,
+          'os': 'Windows-10',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'win',
+      'type': Types.DEQP,
+    },
     'Win7 FYI x64 Release (NVIDIA)': {
       'swarming_dimensions': [
         {
@@ -670,6 +683,19 @@ FYI_WATERFALL = {
       'build_config': 'Release',
       'swarming': True,
       'os_type': 'linux',
+    },
+    'Linux FYI dEQP Release (Intel HD 630)': {
+      'swarming_dimensions': [
+        {
+          'gpu': INTEL_HD_630,
+          'os': 'Ubuntu',
+          'pool': 'Chrome-GPU',
+        },
+      ],
+      'build_config': 'Release',
+      'swarming': True,
+      'os_type': 'linux',
+      'type': Types.DEQP,
     },
     'Linux FYI Release (AMD R7 240)': {
       'swarming_dimensions': [
@@ -1173,6 +1199,11 @@ COMMON_GTESTS = {
             'gpu': '1002:6613',
             'os': 'Windows-2008ServerR2-SP1'
           },
+          # Intel Win 10
+          {
+            'gpu': WIN10_INTEL_HD_630_STABLE_DRIVER,
+            'os': 'Windows-10',
+          },
         ],
       },
     ],
@@ -1201,6 +1232,11 @@ COMMON_GTESTS = {
           # Linux NVIDIA Quadro P400
           {
             'gpu': LINUX_QUADRO_P400_STABLE_DRIVER,
+            'os': 'Ubuntu'
+          },
+          # Linux Intel HD 630
+          {
+            'gpu': INTEL_HD_630,
             'os': 'Ubuntu'
           },
           # Mac Intel
