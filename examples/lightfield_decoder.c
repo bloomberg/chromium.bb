@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
   aom_codec_control_(&codec, AV1_SET_DECODE_TILE_ROW, tile_t);
   aom_codec_control_(&codec, AV1_SET_DECODE_TILE_COL, tile_s);
   aom_codec_err_t aom_status =
-      aom_codec_decode(&codec, frame, (unsigned int)frame_size, NULL);
+      aom_codec_decode(&codec, frame, frame_size, NULL);
   if (aom_status) die_codec(&codec, "Failed to decode tile.");
   aom_codec_iter_t iter = NULL;
   aom_image_t *img = aom_codec_get_frame(&codec, &iter);

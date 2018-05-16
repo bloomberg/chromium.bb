@@ -1718,7 +1718,7 @@ static void get_cx_data(struct stream_state *stream,
 #if CONFIG_AV1_DECODER
         if (global->test_decode != TEST_DECODE_OFF && !stream->mismatch_seen) {
           aom_codec_decode(&stream->decoder, pkt->data.frame.buf,
-                           (unsigned int)pkt->data.frame.sz, NULL);
+                           pkt->data.frame.sz, NULL);
           if (stream->decoder.err) {
             warn_or_exit_on_error(&stream->decoder,
                                   global->test_decode == TEST_DECODE_FATAL,

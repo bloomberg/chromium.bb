@@ -841,7 +841,7 @@ static int main_loop(int argc, const char **argv_) {
     }
 
     aom_usec_timer_mark(&timer);
-    dx_time += (unsigned int)aom_usec_timer_elapsed(&timer);
+    dx_time += aom_usec_timer_elapsed(&timer);
 
     if (aom_codec_control(&decoder, AOMD_GET_FRAME_CORRUPTED, &corrupted)) {
       warn("Failed AOM_GET_FRAME_CORRUPTED: %s", aom_codec_error(&decoder));

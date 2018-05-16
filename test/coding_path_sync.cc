@@ -152,7 +152,7 @@ class Decoder {
 
   std::vector<int16_t> decode(const aom_codec_cx_pkt_t *pkt) {
     aom_codec_decode(&dec_, static_cast<uint8_t *>(pkt->data.frame.buf),
-                     static_cast<unsigned int>(pkt->data.frame.sz), NULL);
+                     pkt->data.frame.sz, NULL);
 
     aom_codec_iter_t iter = NULL;
     return Serialize(aom_codec_get_frame(&dec_, &iter));

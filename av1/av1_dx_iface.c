@@ -155,15 +155,6 @@ static aom_codec_err_t decoder_destroy(aom_codec_alg_priv_t *ctx) {
   return AOM_CODEC_OK;
 }
 
-static size_t get_obu_length_field_size(const uint8_t *data, size_t data_sz) {
-  const size_t max_bytes = AOMMIN(sizeof(uint64_t), data_sz);
-  size_t length_field_size = 1;
-  for (size_t i = 0; i < max_bytes && (data[i] & 0x80); ++i) {
-    ++length_field_size;
-  }
-  return length_field_size;
-}
-
 static void parse_operating_points(struct aom_read_bit_buffer *rb,
                                    int is_reduced_header,
                                    aom_codec_stream_info_t *si) {
@@ -239,7 +230,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
     // Skip any associated payload (there shouldn't be one, but just in case)
     if (data_sz < bytes_read + payload_size) return AOM_CODEC_CORRUPT_FRAME;
     data += bytes_read + payload_size;
-    data_sz -= (uint32_t)(bytes_read + payload_size);
+    data_sz -= bytes_read + payload_size;
 
     status = aom_read_obu_header_and_size(
         data, data_sz, si->is_annexb, &obu_header, &payload_size, &bytes_read);
@@ -251,7 +242,7 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
 
   // Read a few values from the sequence header payload
   data += bytes_read;
-  data_sz -= (uint32_t)bytes_read;
+  data_sz -= bytes_read;
   struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
 
   av1_read_profile(&rb);  // profile
@@ -558,8 +549,6 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     } else {
       frame_size = (uint64_t)(data_end - data_start);
     }
-
-    if (frame_size > UINT32_MAX) return AOM_CODEC_CORRUPT_FRAME;
 
     res = decode_one(ctx, &data_start, (size_t)frame_size, user_priv);
     if (res != AOM_CODEC_OK) return res;
