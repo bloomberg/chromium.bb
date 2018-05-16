@@ -77,6 +77,23 @@
 }
 
 - (UICollectionViewLayoutAttributes*)
+initialLayoutAttributesForAppearingItemAtIndexPath:(NSIndexPath*)itemIndexPath {
+  UICollectionViewLayoutAttributes* attributes =
+      [super initialLayoutAttributesForAppearingItemAtIndexPath:itemIndexPath];
+  // TODO(crbug.com/820410) : Polish the animation, and put constants where they
+  // belong.
+  // Cells being inserted start faded out, scaled down, and drop downwards
+  // slightly.
+  attributes.alpha = 0.0;
+  CGAffineTransform transform =
+      CGAffineTransformScale(attributes.transform, /*sx=*/0.9, /*sy=*/0.9);
+  transform = CGAffineTransformTranslate(transform, /*tx=*/0,
+                                         /*ty=*/attributes.size.height * 0.1);
+  attributes.transform = transform;
+  return attributes;
+}
+
+- (UICollectionViewLayoutAttributes*)
 finalLayoutAttributesForDisappearingItemAtIndexPath:
     (NSIndexPath*)itemIndexPath {
   UICollectionViewLayoutAttributes* attributes =

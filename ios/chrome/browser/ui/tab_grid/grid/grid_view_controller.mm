@@ -43,6 +43,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 // The gesture recognizer used for interactive item reordering.
 @property(nonatomic, strong)
     UILongPressGestureRecognizer* itemReorderRecognizer;
+// Animator to show or hide the empty state.
+@property(nonatomic, strong) UIViewPropertyAnimator* emptyStateAnimator;
 @end
 
 @implementation GridViewController
@@ -50,11 +52,13 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize theme = _theme;
 @synthesize delegate = _delegate;
 @synthesize imageDataSource = _imageDataSource;
+@synthesize emptyStateView = _emptyStateView;
 // Private properties.
 @synthesize collectionView = _collectionView;
 @synthesize items = _items;
 @synthesize selectedItemID = _selectedItemID;
 @synthesize itemReorderRecognizer = _itemReorderRecognizer;
+@synthesize emptyStateAnimator = _emptyStateAnimator;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -72,7 +76,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
       forCellWithReuseIdentifier:kCellIdentifier];
   collectionView.dataSource = self;
   collectionView.delegate = self;
-  collectionView.backgroundColor = UIColorFromRGB(kGridBackgroundColor);
+  collectionView.backgroundView = [[UIView alloc] init];
+  collectionView.backgroundView.backgroundColor =
+      UIColorFromRGB(kGridBackgroundColor);
   if (@available(iOS 11, *))
     collectionView.contentInsetAdjustmentBehavior =
         UIScrollViewContentInsetAdjustmentAlways;
@@ -93,7 +99,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self.collectionView reloadData];
-  self.emptyStateView.hidden = (self.items.count > 0);
   // Selection is invalid if there are no items.
   if (self.items.count == 0)
     return;
@@ -111,14 +116,17 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)setEmptyStateView:(UIView*)emptyStateView {
-  self.collectionView.backgroundView = emptyStateView;
-  // The emptyStateView is hidden when there are items, and shown when the
-  // collectionView is empty.
-  self.collectionView.backgroundView.hidden = (self.items.count > 0);
-}
-
-- (UIView*)emptyStateView {
-  return self.collectionView.backgroundView;
+  if (_emptyStateView)
+    [_emptyStateView removeFromSuperview];
+  _emptyStateView = emptyStateView;
+  emptyStateView.translatesAutoresizingMaskIntoConstraints = NO;
+  [self.collectionView.backgroundView addSubview:emptyStateView];
+  [NSLayoutConstraint activateConstraints:@[
+    [self.collectionView.backgroundView.centerXAnchor
+        constraintEqualToAnchor:emptyStateView.centerXAnchor],
+    [self.collectionView.backgroundView.centerYAnchor
+        constraintEqualToAnchor:emptyStateView.centerYAnchor]
+  ]];
 }
 
 - (BOOL)isGridEmpty {
@@ -266,7 +274,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   }
   auto performAllUpdates = ^{
     performDataSourceUpdates();
-    self.emptyStateView.hidden = YES;
+    [self animateEmptyStateOut];
     [self.collectionView insertItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
   };
   auto completion = ^(BOOL finished) {
@@ -296,7 +304,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     performDataSourceUpdates();
     [self.collectionView deleteItemsAtIndexPaths:@[ CreateIndexPath(index) ]];
     if (self.items.count == 0) {
-      [self animateEmptyStateIntoView];
+      [self animateEmptyStateIn];
     }
   };
   auto completion = ^(BOOL finished) {
@@ -419,25 +427,34 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 // Animates the empty state into view.
-- (void)animateEmptyStateIntoView {
+- (void)animateEmptyStateIn {
   // TODO(crbug.com/820410) : Polish the animation, and put constants where they
   // belong.
-  CGFloat scale = 0.8f;
-  CGAffineTransform originalTransform = self.emptyStateView.transform;
-  self.emptyStateView.transform =
-      CGAffineTransformScale(self.emptyStateView.transform, scale, scale);
-  self.emptyStateView.alpha = 0.0f;
-  self.emptyStateView.hidden = NO;
-  [UIView animateWithDuration:1.0f
-                        delay:0.0f
-       usingSpringWithDamping:1.0f
-        initialSpringVelocity:0.7f
-                      options:UIViewAnimationCurveEaseOut
-                   animations:^{
-                     self.emptyStateView.alpha = 1.0f;
-                     self.emptyStateView.transform = originalTransform;
-                   }
-                   completion:nil];
+  [self.emptyStateAnimator stopAnimation:YES];
+  self.emptyStateAnimator = [[UIViewPropertyAnimator alloc]
+      initWithDuration:1.0 - self.emptyStateView.alpha
+          dampingRatio:1.0
+            animations:^{
+              self.emptyStateView.alpha = 1.0;
+              self.emptyStateView.transform = CGAffineTransformIdentity;
+            }];
+  [self.emptyStateAnimator startAnimation];
+}
+
+// Animates the empty state out of view.
+- (void)animateEmptyStateOut {
+  // TODO(crbug.com/820410) : Polish the animation, and put constants where they
+  // belong.
+  [self.emptyStateAnimator stopAnimation:YES];
+  self.emptyStateAnimator = [[UIViewPropertyAnimator alloc]
+      initWithDuration:self.emptyStateView.alpha
+          dampingRatio:1.0
+            animations:^{
+              self.emptyStateView.alpha = 0.0;
+              self.emptyStateView.transform = CGAffineTransformScale(
+                  CGAffineTransformIdentity, /*sx=*/0.9, /*sy=*/0.9);
+            }];
+  [self.emptyStateAnimator startAnimation];
 }
 
 // Handle the long-press gesture used to reorder cells in the collection view.
