@@ -238,6 +238,8 @@ cast_source_set("browser") {
       "cast_web_view_extension.h",
       "extension_request_protocol_handler.cc",
       "extension_request_protocol_handler.h",
+      "extensions/api/accessibility_private/accessibility_extension_api.cc",
+      "extensions/api/accessibility_private/accessibility_extension_api.h",
       "extensions/api/automation_internal/automation_event_router.cc",
       "extensions/api/automation_internal/automation_event_router.h",
       "extensions/api/automation_internal/automation_internal_api.cc",
