@@ -8,8 +8,10 @@
 #include <vector>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/memory/weak_ptr.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/image_transport_surface.h"
+#include "ui/gfx/presentation_feedback.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_switching_observer.h"
@@ -80,6 +82,8 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
                                       const PresentationCallback& callback);
   void ApplyBackpressure(base::TimeTicks* before_flush_time,
                          base::TimeTicks* after_flush_before_commit_time);
+  void BufferPresented(const PresentationCallback& callback,
+                       const gfx::PresentationFeedback& feedback);
 
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
 
@@ -100,6 +104,7 @@ class ImageTransportSurfaceOverlayMac : public gl::GLSurface,
   // The renderer ID that all contexts made current to this surface should be
   // targeting.
   GLint gl_renderer_id_;
+  base::WeakPtrFactory<ImageTransportSurfaceOverlayMac> weak_ptr_factory_;
 };
 
 }  // namespace gpu

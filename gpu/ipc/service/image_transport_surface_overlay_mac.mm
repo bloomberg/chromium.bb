@@ -42,7 +42,8 @@ ImageTransportSurfaceOverlayMac::ImageTransportSurfaceOverlayMac(
     : delegate_(delegate),
       use_remote_layer_api_(ui::RemoteLayerAPISupported()),
       scale_factor_(1),
-      gl_renderer_id_(0) {
+      gl_renderer_id_(0),
+      weak_ptr_factory_(this) {
   ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
 
   static bool av_disabled_at_command_line =
@@ -182,6 +183,15 @@ void ImageTransportSurfaceOverlayMac::ApplyBackpressure(
   }
 }
 
+void ImageTransportSurfaceOverlayMac::BufferPresented(
+    const PresentationCallback& callback,
+    const gfx::PresentationFeedback& feedback) {
+  DCHECK(!callback.is_null());
+  callback.Run(feedback);
+  if (delegate_)
+    delegate_->BufferPresented(feedback);
+}
+
 gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
     const gfx::Rect& pixel_damage_rect,
     const PresentationCallback& callback) {
@@ -250,7 +260,9 @@ gfx::SwapResult ImageTransportSurfaceOverlayMac::SwapBuffersInternal(
       base::TimeDelta::FromMicroseconds(kRefreshIntervalInMicroseconds),
       0 /* flags */);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, std::move(feedback)));
+      FROM_HERE,
+      base::BindOnce(&ImageTransportSurfaceOverlayMac::BufferPresented,
+                     weak_ptr_factory_.GetWeakPtr(), callback, feedback));
   return gfx::SwapResult::SWAP_ACK;
 }
 
