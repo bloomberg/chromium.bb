@@ -115,7 +115,6 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
   client.VerifyNotPainting();
 #endif
   layer_ = cc::PictureLayer::Create(this);
-  web_layer_ = std::make_unique<WebLayer>(layer_.get());
   layer_->SetIsDrawable(draws_content_ && contents_visible_);
   layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
 
@@ -420,7 +419,7 @@ bool GraphicsLayer::PaintWithoutCommit(
 }
 
 void GraphicsLayer::UpdateChildList() {
-  WebLayer* child_host = web_layer_.get();
+  WebLayer* child_host = layer_.get();
   child_host->RemoveAllChildren();
 
   ClearContentsLayerIfUnregistered();
@@ -468,7 +467,7 @@ void GraphicsLayer::UpdateContentsRect() {
   if (!image_layer_) {
     contents_layer->SetBounds(static_cast<gfx::Size>(contents_rect_.Size()));
   } else {
-    DCHECK_EQ(web_image_layer_.get(), contents_layer_);
+    DCHECK_EQ(image_layer_.get(), contents_layer_);
     // The image_layer_ has fixed bounds, and we apply bounds changes via the
     // transform instead. Since we never change the transform on the
     // |image_layer_| otherwise, we can assume it is identity and just apply
@@ -555,7 +554,7 @@ void GraphicsLayer::SetupContentsLayer(WebLayer* contents_layer) {
 
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
-  layer_->InsertChild(contents_layer_->CcLayer(), 0);
+  layer_->InsertChild(contents_layer_, 0);
   WebLayer* border_web_layer =
       contents_clipping_mask_layer_
           ? contents_clipping_mask_layer_->PlatformLayer()
@@ -977,16 +976,12 @@ String GraphicsLayer::GetLayerTreeAsTextForTesting(LayerTreeFlags flags) const {
   return LayerTreeAsJSON(flags)->ToPrettyJSONString();
 }
 
-static const cc::Layer* CcLayerForWebLayer(const WebLayer* web_layer) {
-  return web_layer ? web_layer->CcLayer() : nullptr;
-}
-
 String GraphicsLayer::DebugName(cc::Layer* layer) const {
   if (layer->id() == contents_layer_id_)
     return "ContentsLayer for " + client_.DebugName(this);
 
   for (size_t i = 0; i < link_highlights_.size(); ++i) {
-    if (layer == CcLayerForWebLayer(link_highlights_[i]->Layer())) {
+    if (layer == link_highlights_[i]->Layer()) {
       return "LinkHighlight[" + String::Number(i) + "] for " +
              client_.DebugName(this);
     }
@@ -1105,12 +1100,12 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
 
 void GraphicsLayer::SetClipParent(WebLayer* parent) {
   has_clip_parent_ = !!parent;
-  layer_->SetClipParent(parent ? parent->CcLayer() : nullptr);
+  layer_->SetClipParent(parent);
 }
 
 void GraphicsLayer::SetScrollParent(WebLayer* parent) {
   has_scroll_parent_ = !!parent;
-  layer_->SetScrollParent(parent ? parent->CcLayer() : nullptr);
+  layer_->SetScrollParent(parent);
 }
 
 void GraphicsLayer::SetBackgroundColor(const Color& color) {
@@ -1134,8 +1129,7 @@ void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
     return;
 
   mask_layer_ = mask_layer;
-  layer_->SetMaskLayer(mask_layer_ ? mask_layer_->PlatformLayer()->CcLayer()
-                                   : nullptr);
+  layer_->SetMaskLayer(mask_layer_ ? mask_layer_->PlatformLayer() : nullptr);
 }
 
 void GraphicsLayer::SetContentsClippingMaskLayer(
@@ -1276,25 +1270,23 @@ void GraphicsLayer::SetContentsToImage(
             .TakePaintImage();
     if (!image_layer_) {
       image_layer_ = cc::PictureImageLayer::Create();
-      web_image_layer_ = std::make_unique<WebLayer>(image_layer_.get());
-      RegisterContentsLayer(web_image_layer_.get());
+      RegisterContentsLayer(image_layer_.get());
     }
     image_layer_->SetImage(std::move(paint_image), matrix,
                            image_orientation.UsesWidthAsHeight());
     image_layer_->SetContentsOpaque(image->CurrentFrameKnownToBeOpaque());
     UpdateContentsRect();
   } else if (image_layer_) {
-    UnregisterContentsLayer(web_image_layer_.get());
+    UnregisterContentsLayer(image_layer_.get());
     image_layer_ = nullptr;
-    web_image_layer_ = nullptr;
   }
 
-  SetContentsTo(web_image_layer_.get(),
+  SetContentsTo(image_layer_.get(),
                 /*prevent_contents_opaque_changes=*/true);
 }
 
 WebLayer* GraphicsLayer::PlatformLayer() const {
-  return web_layer_.get();
+  return layer_.get();
 }
 
 void GraphicsLayer::SetFilters(CompositorFilterOperations filters) {

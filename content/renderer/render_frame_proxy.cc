@@ -865,16 +865,14 @@ void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
 #endif
 
 blink::WebLayer* RenderFrameProxy::GetLayer() {
-  return web_layer_.get();
+  return embedded_layer_.get();
 }
 
 void RenderFrameProxy::SetLayer(scoped_refptr<cc::Layer> layer,
                                 bool prevent_contents_opaque_changes) {
-  auto web_layer = std::make_unique<blink::WebLayer>(layer.get());
   if (web_frame())
-    web_frame()->SetWebLayer(web_layer.get(), prevent_contents_opaque_changes);
+    web_frame()->SetWebLayer(layer.get(), prevent_contents_opaque_changes);
   embedded_layer_ = std::move(layer);
-  web_layer_ = std::move(web_layer);
 }
 
 SkBitmap* RenderFrameProxy::GetSadPageBitmap() {

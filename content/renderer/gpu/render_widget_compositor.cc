@@ -786,7 +786,7 @@ viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
 }
 
 void RenderWidgetCompositor::SetRootLayer(blink::WebLayer* layer) {
-  layer_tree_host_->SetRootLayer(layer->CcLayer());
+  layer_tree_host_->SetRootLayer(layer);
 }
 
 void RenderWidgetCompositor::ClearRootLayer() {
@@ -864,26 +864,21 @@ void RenderWidgetCompositor::RegisterViewportLayers(
   // like overscroll elasticity may still be nullptr until VisualViewport
   // registers its layers.
   if (layers.overscroll_elasticity) {
-    viewport_layers.overscroll_elasticity =
-        layers.overscroll_elasticity->CcLayer();
+    viewport_layers.overscroll_elasticity = layers.overscroll_elasticity;
   }
-  viewport_layers.page_scale = layers.page_scale->CcLayer();
+  viewport_layers.page_scale = layers.page_scale;
   if (layers.inner_viewport_container) {
-    viewport_layers.inner_viewport_container =
-        layers.inner_viewport_container->CcLayer();
+    viewport_layers.inner_viewport_container = layers.inner_viewport_container;
   }
   if (layers.outer_viewport_container) {
-    viewport_layers.outer_viewport_container =
-        layers.outer_viewport_container->CcLayer();
+    viewport_layers.outer_viewport_container = layers.outer_viewport_container;
   }
-  viewport_layers.inner_viewport_scroll =
-      layers.inner_viewport_scroll->CcLayer();
+  viewport_layers.inner_viewport_scroll = layers.inner_viewport_scroll;
   // TODO(bokan): This check can probably be removed now, but it looks
   // like overscroll elasticity may still be nullptr until VisualViewport
   // registers its layers.
   if (layers.outer_viewport_scroll) {
-    viewport_layers.outer_viewport_scroll =
-        layers.outer_viewport_scroll->CcLayer();
+    viewport_layers.outer_viewport_scroll = layers.outer_viewport_scroll;
   }
   layer_tree_host_->RegisterViewportLayers(viewport_layers);
 }

@@ -317,7 +317,6 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
 
   // The layer used to embed the out-of-process content.
   scoped_refptr<cc::Layer> embedded_layer_;
-  std::unique_ptr<blink::WebLayer> web_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderFrameProxy);
 };

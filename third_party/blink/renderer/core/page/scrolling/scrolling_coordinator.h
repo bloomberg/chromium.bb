@@ -76,8 +76,6 @@ class CORE_EXPORT ScrollingCoordinator final
     // The compositor layer for the scrollbar. It can be one of a few
     // concrete types, so we store the base type.
     scoped_refptr<cc::Layer> layer;
-    // A wrapper for the |layer| for use in blink core.
-    std::unique_ptr<WebLayer> web_layer;
     // An interface shared by all scrollbar layer types since we don't know
     // the concrete |layer| type.
     cc::ScrollbarLayerInterface* scrollbar_layer = nullptr;

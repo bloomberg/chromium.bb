@@ -24,7 +24,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
   StubWebMediaPlayer(WebMediaPlayerClient* client) : client_(client) {}
 
-  const WebLayer* GetWebLayer() { return web_layer_.get(); }
+  const WebLayer* GetWebLayer() { return layer_.get(); }
 
   // WebMediaPlayer
   void Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {
@@ -34,8 +34,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
     client_->ReadyStateChanged();
     layer_ = cc::Layer::Create();
     layer_->SetIsDrawable(true);
-    web_layer_ = std::make_unique<WebLayer>(layer_.get());
-    client_->SetWebLayer(web_layer_.get());
+    client_->SetWebLayer(layer_.get());
   }
   NetworkState GetNetworkState() const override { return network_state_; }
   ReadyState GetReadyState() const override { return ready_state_; }
@@ -43,7 +42,6 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
  private:
   WebMediaPlayerClient* client_;
   scoped_refptr<cc::Layer> layer_;
-  std::unique_ptr<WebLayer> web_layer_;
   NetworkState network_state_ = kNetworkStateEmpty;
   ReadyState ready_state_ = kReadyStateHaveNothing;
 };

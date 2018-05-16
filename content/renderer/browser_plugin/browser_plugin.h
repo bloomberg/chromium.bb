@@ -285,7 +285,6 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 
   // The layer used to embed the out-of-process content.
   scoped_refptr<cc::Layer> embedded_layer_;
-  std::unique_ptr<blink::WebLayer> web_layer_;
 
   // Weak factory used in v8 |MakeWeak| callback, since the v8 callback might
   // get called after BrowserPlugin has been destroyed.

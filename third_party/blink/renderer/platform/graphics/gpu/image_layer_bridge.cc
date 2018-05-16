@@ -33,8 +33,7 @@ ImageLayerBridge::ImageLayerBridge(OpacityMode opacity_mode)
     layer_->SetContentsOpaque(true);
     layer_->SetBlendBackgroundColor(false);
   }
-  web_layer_ = std::make_unique<WebLayer>(layer_.get());
-  GraphicsLayer::RegisterContentsLayer(web_layer_.get());
+  GraphicsLayer::RegisterContentsLayer(layer_.get());
 }
 
 ImageLayerBridge::~ImageLayerBridge() {
@@ -76,9 +75,8 @@ void ImageLayerBridge::SetUV(const FloatPoint& left_top,
 
 void ImageLayerBridge::Dispose() {
   if (layer_) {
-    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
+    GraphicsLayer::UnregisterContentsLayer(layer_.get());
     layer_->ClearTexture();
-    web_layer_ = nullptr;
     layer_ = nullptr;
   }
   image_ = nullptr;
@@ -233,7 +231,7 @@ void ImageLayerBridge::ResourceReleasedSoftware(
 }
 
 WebLayer* ImageLayerBridge::PlatformLayer() const {
-  return web_layer_.get();
+  return layer_.get();
 }
 
 ImageLayerBridge::RegisteredBitmap::RegisteredBitmap() = default;

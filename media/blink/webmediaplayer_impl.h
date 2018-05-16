@@ -727,7 +727,6 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // The compositor layer for displaying the video content when using composited
   // playback.
   scoped_refptr<cc::VideoLayer> video_layer_;
-  std::unique_ptr<blink::WebLayer> video_weblayer_;
 
   std::unique_ptr<blink::WebContentDecryptionModuleResult> set_cdm_result_;
 

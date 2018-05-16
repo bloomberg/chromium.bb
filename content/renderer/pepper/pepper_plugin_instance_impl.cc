@@ -2218,7 +2218,6 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
       container_->SetWebLayer(nullptr, false);
     else if (fullscreen_container_)
       fullscreen_container_->SetLayer(nullptr);
-    web_layer_.reset();
     if (texture_layer_) {
       texture_layer_->ClearClient();
       texture_layer_ = nullptr;
@@ -2226,6 +2225,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     compositor_layer_ = nullptr;
   }
 
+  cc::Layer* either_layer = nullptr;
   if (want_texture_layer) {
     bool opaque = false;
     if (want_3d_layer) {
@@ -2247,21 +2247,19 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
     // wmode=transparent was specified.
     opaque = opaque || fullscreen_container_;
     texture_layer_->SetContentsOpaque(opaque);
-    web_layer_ = std::make_unique<blink::WebLayer>(texture_layer_.get());
+    either_layer = texture_layer_.get();
   } else if (want_compositor_layer) {
     compositor_layer_ = bound_compositor_->layer();
-    web_layer_ = std::make_unique<blink::WebLayer>(compositor_layer_.get());
+    either_layer = compositor_layer_.get();
   }
 
-  if (web_layer_) {
-    if (fullscreen_container_) {
-      fullscreen_container_->SetLayer(web_layer_.get());
-    } else {
-      container_->SetWebLayer(web_layer_.get(), true);
-    }
-    if (is_flash_plugin_) {
-      web_layer_->SetMayContainVideo(true);
-    }
+  if (either_layer) {
+    if (fullscreen_container_)
+      fullscreen_container_->SetLayer(either_layer);
+    else
+      container_->SetWebLayer(either_layer, true);
+    if (is_flash_plugin_)
+      either_layer->SetMayContainVideo(true);
   }
 
   layer_bound_to_fullscreen_ = !!fullscreen_container_;

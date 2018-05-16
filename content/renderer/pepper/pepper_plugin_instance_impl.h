@@ -713,7 +713,6 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   blink::WebPluginContainer* container_;
   scoped_refptr<cc::Layer> compositor_layer_;
   scoped_refptr<cc::TextureLayer> texture_layer_;
-  std::unique_ptr<blink::WebLayer> web_layer_;
   bool layer_bound_to_fullscreen_;
   bool layer_is_hardware_;
 

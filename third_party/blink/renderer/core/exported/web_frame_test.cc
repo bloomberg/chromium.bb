@@ -12840,13 +12840,7 @@ class SlimmingPaintWebFrameTest : public PaintTestConfigurations,
         ->scroll_hit_test_layers.size();
   }
 
-  std::unique_ptr<WebLayer> ContentLayerAt(unsigned index) {
-    return paint_artifact_compositor()
-        ->GetExtraDataForTesting()
-        ->ContentWebLayerAt(index);
-  }
-
-  std::unique_ptr<WebLayer> ScrollHitTestLayerAt(unsigned index) {
+  cc::Layer* ScrollHitTestLayerAt(unsigned index) {
     return paint_artifact_compositor()
         ->GetExtraDataForTesting()
         ->ScrollHitTestWebLayerAt(index);

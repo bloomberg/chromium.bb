@@ -78,7 +78,7 @@ using blink::WebVector;
 
 namespace {
 
-WebLayer* toWebLayer(blink::GraphicsLayer* layer) {
+WebLayer* GraphicsLayerToWebLayer(blink::GraphicsLayer* layer) {
   return layer ? layer->PlatformLayer() : nullptr;
 }
 
@@ -105,7 +105,7 @@ void ScrollingCoordinator::Trace(blink::Visitor* visitor) {
 void ScrollingCoordinator::SetShouldHandleScrollGestureOnMainThreadRegion(
     const Region& region,
     LocalFrameView* frame_view) {
-  if (WebLayer* scroll_layer = toWebLayer(
+  if (WebLayer* scroll_layer = GraphicsLayerToWebLayer(
           frame_view->LayoutViewportScrollableArea()->LayerForScrolling())) {
     scroll_layer->SetNonFastScrollableRegion(RegionToCCRegion(region));
   }
@@ -226,7 +226,8 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
   frame_view->ClearFrameIsScrollableDidChange();
 
   if (frame_view && !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    if (WebLayer* scroll_layer = toWebLayer(frame_view->LayerForScrolling())) {
+    if (WebLayer* scroll_layer =
+            GraphicsLayerToWebLayer(frame_view->LayerForScrolling())) {
       UpdateUserInputScrollable(frame_view);
       scroll_layer->SetBounds(
           static_cast<gfx::Size>(frame_view->ContentsSize()));
@@ -245,7 +246,7 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
       if (!frame_view || frame_view->ShouldThrottleRendering())
         continue;
       if (WebLayer* scroll_layer =
-              toWebLayer(frame_view->LayerForScrolling())) {
+              GraphicsLayerToWebLayer(frame_view->LayerForScrolling())) {
         scroll_layer->SetBounds(
             static_cast<gfx::Size>(frame_view->ContentsSize()));
       }
@@ -255,8 +256,10 @@ void ScrollingCoordinator::UpdateAfterCompositingChangeIfNeeded(
 
 static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
                                                   GraphicsLayer* except) {
-  if (layer && layer != except && toWebLayer(layer))
-    toWebLayer(layer)->SetPositionConstraint(cc::LayerPositionConstraint());
+  if (layer && layer != except && GraphicsLayerToWebLayer(layer)) {
+    GraphicsLayerToWebLayer(layer)->SetPositionConstraint(
+        cc::LayerPositionConstraint());
+  }
 }
 
 static cc::LayerPositionConstraint ComputePositionConstraint(
@@ -298,7 +301,7 @@ void ScrollingCoordinator::UpdateLayerPositionConstraint(PaintLayer* layer) {
   ClearPositionConstraintExceptForLayer(
       composited_layer_mapping->MainGraphicsLayer(), main_layer);
 
-  if (WebLayer* scrollable_layer = toWebLayer(main_layer))
+  if (WebLayer* scrollable_layer = GraphicsLayerToWebLayer(main_layer))
     scrollable_layer->SetPositionConstraint(ComputePositionConstraint(layer));
 }
 
@@ -316,8 +319,7 @@ void ScrollingCoordinator::RemoveScrollbarLayerGroup(
                                  : vertical_scrollbars_;
   if (std::unique_ptr<ScrollbarLayerGroup> scrollbar_layer_group =
           scrollbars.Take(scrollable_area)) {
-    GraphicsLayer::UnregisterContentsLayer(
-        scrollbar_layer_group->web_layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar_layer_group->layer.get());
   }
 }
 
@@ -345,8 +347,7 @@ CreateScrollbarLayer(Scrollbar& scrollbar, float device_scale_factor) {
     layer_group->layer = std::move(scrollbar_layer);
   }
 
-  layer_group->web_layer = std::make_unique<WebLayer>(layer_group->layer.get());
-  GraphicsLayer::RegisterContentsLayer(layer_group->web_layer.get());
+  GraphicsLayer::RegisterContentsLayer(layer_group->layer.get());
 
   return layer_group;
 }
@@ -368,8 +369,7 @@ ScrollingCoordinator::CreateSolidColorScrollbarLayer(
   auto layer_group = std::make_unique<ScrollbarLayerGroup>();
   layer_group->scrollbar_layer = scrollbar_layer.get();
   layer_group->layer = std::move(scrollbar_layer);
-  layer_group->web_layer = std::make_unique<WebLayer>(layer_group->layer.get());
-  GraphicsLayer::RegisterContentsLayer(layer_group->web_layer.get());
+  GraphicsLayer::RegisterContentsLayer(layer_group->layer.get());
 
   return layer_group;
 }
@@ -394,7 +394,7 @@ static void SetupScrollbarLayer(
   scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
       scrolling_layer->element_id());
   scrollbar_graphics_layer->SetContentsToPlatformLayer(
-      scrollbar_layer_group->web_layer.get(),
+      scrollbar_layer_group->layer.get(),
       /*prevent_contents_opaque_changes=*/false);
   scrollbar_graphics_layer->SetDrawsContent(false);
 }
@@ -465,7 +465,8 @@ void ScrollingCoordinator::ScrollableAreaScrollbarLayerDidChange(
       AddScrollbarLayerGroup(scrollable_area, orientation, std::move(group));
     }
 
-    WebLayer* scroll_layer = toWebLayer(scrollable_area->LayerForScrolling());
+    WebLayer* scroll_layer =
+        GraphicsLayerToWebLayer(scrollable_area->LayerForScrolling());
     SetupScrollbarLayer(scrollbar_graphics_layer, scrollbar_layer_group,
                         scroll_layer);
 
@@ -485,7 +486,8 @@ bool ScrollingCoordinator::UpdateCompositedScrollOffset(
   if (!scroll_layer || scroll_layer->GetScrollableArea() != scrollable_area)
     return false;
 
-  WebLayer* web_layer = toWebLayer(scrollable_area->LayerForScrolling());
+  WebLayer* web_layer =
+      GraphicsLayerToWebLayer(scrollable_area->LayerForScrolling());
   if (!web_layer)
     return false;
 
@@ -505,8 +507,10 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
 
   UpdateUserInputScrollable(scrollable_area);
 
-  WebLayer* web_layer = toWebLayer(scrollable_area->LayerForScrolling());
-  WebLayer* container_layer = toWebLayer(scrollable_area->LayerForContainer());
+  WebLayer* web_layer =
+      GraphicsLayerToWebLayer(scrollable_area->LayerForScrolling());
+  WebLayer* container_layer =
+      GraphicsLayerToWebLayer(scrollable_area->LayerForContainer());
   if (web_layer) {
     web_layer->SetScrollable(container_layer->bounds());
     FloatPoint scroll_position(scrollable_area->ScrollOrigin() +
@@ -771,7 +775,8 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
 
 void ScrollingCoordinator::UpdateUserInputScrollable(
     ScrollableArea* scrollable_area) {
-  WebLayer* web_layer = toWebLayer(scrollable_area->LayerForScrolling());
+  WebLayer* web_layer =
+      GraphicsLayerToWebLayer(scrollable_area->LayerForScrolling());
   if (web_layer) {
     bool can_scroll_x =
         scrollable_area->UserInputScrollable(kHorizontalScrollbar);
@@ -783,9 +788,9 @@ void ScrollingCoordinator::UpdateUserInputScrollable(
 
 void ScrollingCoordinator::Reset(LocalFrame* frame) {
   for (const auto& scrollbar : horizontal_scrollbars_)
-    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->web_layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->layer.get());
   for (const auto& scrollbar : vertical_scrollbars_)
-    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->web_layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->layer.get());
 
   horizontal_scrollbars_.clear();
   vertical_scrollbars_.clear();
@@ -884,7 +889,7 @@ void ScrollingCoordinator::UpdateScrollParentForGraphicsLayer(
     const PaintLayer* parent) {
   WebLayer* scroll_parent_web_layer = nullptr;
   if (parent && parent->HasCompositedLayerMapping())
-    scroll_parent_web_layer = toWebLayer(
+    scroll_parent_web_layer = GraphicsLayerToWebLayer(
         parent->GetCompositedLayerMapping()->ScrollingContentsLayer());
 
   child->SetScrollParent(scroll_parent_web_layer);
@@ -894,9 +899,10 @@ void ScrollingCoordinator::UpdateClipParentForGraphicsLayer(
     GraphicsLayer* child,
     const PaintLayer* parent) {
   WebLayer* clip_parent_web_layer = nullptr;
-  if (parent && parent->HasCompositedLayerMapping())
-    clip_parent_web_layer =
-        toWebLayer(parent->GetCompositedLayerMapping()->ParentForSublayers());
+  if (parent && parent->HasCompositedLayerMapping()) {
+    clip_parent_web_layer = GraphicsLayerToWebLayer(
+        parent->GetCompositedLayerMapping()->ParentForSublayers());
+  }
 
   child->SetClipParent(clip_parent_web_layer);
 }
@@ -915,10 +921,11 @@ void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
     MainThreadScrollingReasons main_thread_scrolling_reasons) {
   GraphicsLayer* visual_viewport_layer =
       frame->GetPage()->GetVisualViewport().ScrollLayer();
-  WebLayer* visual_viewport_scroll_layer = toWebLayer(visual_viewport_layer);
+  WebLayer* visual_viewport_scroll_layer =
+      GraphicsLayerToWebLayer(visual_viewport_layer);
   GraphicsLayer* layer =
       frame->View()->LayoutViewportScrollableArea()->LayerForScrolling();
-  if (WebLayer* scroll_layer = toWebLayer(layer)) {
+  if (WebLayer* scroll_layer = GraphicsLayerToWebLayer(layer)) {
     if (main_thread_scrolling_reasons) {
       ScrollableArea* scrollable_area = layer->GetScrollableArea();
       if (scrollable_area) {
@@ -1004,9 +1011,9 @@ void ScrollingCoordinator::WillBeDestroyed() {
 
   page_ = nullptr;
   for (const auto& scrollbar : horizontal_scrollbars_)
-    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->web_layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->layer.get());
   for (const auto& scrollbar : vertical_scrollbars_)
-    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->web_layer.get());
+    GraphicsLayer::UnregisterContentsLayer(scrollbar.value->layer.get());
 }
 
 bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
@@ -1277,8 +1284,9 @@ bool ScrollingCoordinator::FrameScrollerIsDirty(
     return true;
 
   if (WebLayer* scroll_layer =
-          frame_view ? toWebLayer(frame_view->LayoutViewportScrollableArea()
-                                      ->LayerForScrolling())
+          frame_view ? GraphicsLayerToWebLayer(
+                           frame_view->LayoutViewportScrollableArea()
+                               ->LayerForScrolling())
                      : nullptr) {
     return static_cast<gfx::Size>(
                frame_view->LayoutViewportScrollableArea()->ContentsSize()) !=

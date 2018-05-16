@@ -1633,13 +1633,12 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
     }
 
     if (!surface_layer_for_video_enabled_) {
-      DCHECK(!video_weblayer_);
+      DCHECK(!video_layer_);
       video_layer_ = cc::VideoLayer::Create(
           compositor_.get(),
           pipeline_metadata_.video_decoder_config.video_rotation());
       video_layer_->SetContentsOpaque(opaque_);
-      video_weblayer_ = std::make_unique<blink::WebLayer>(video_layer_.get());
-      client_->SetWebLayer(video_weblayer_.get());
+      client_->SetWebLayer(video_layer_.get());
     } else {
       vfc_task_runner_->PostTask(
           FROM_HERE,
@@ -2208,10 +2207,10 @@ void WebMediaPlayerImpl::SuspendForRemote() {
 
 gfx::Size WebMediaPlayerImpl::GetCanvasSize() const {
   if (!surface_layer_for_video_enabled_) {
-    if (!video_weblayer_)
+    if (!video_layer_)
       return pipeline_metadata_.natural_size;
 
-    return video_weblayer_->bounds();
+    return video_layer_->bounds();
   }
   if (!bridge_->GetWebLayer())
     return pipeline_metadata_.natural_size;

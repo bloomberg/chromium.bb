@@ -41,7 +41,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   void OnFirstSurfaceActivation(const viz::SurfaceInfo&) override;
 
   // Implementation of WebSurfaceLayerBridge.
-  WebLayer* GetWebLayer() const override { return web_layer_.get(); }
+  WebLayer* GetWebLayer() const override { return cc_layer_.get(); }
   void ClearSurfaceId() override;
 
   const viz::FrameSinkId& GetFrameSinkId() const override {
@@ -50,7 +50,6 @@ class PLATFORM_EXPORT SurfaceLayerBridge
 
  private:
   scoped_refptr<cc::Layer> cc_layer_;
-  std::unique_ptr<WebLayer> web_layer_;
 
   WebSurfaceLayerBridgeObserver* observer_;
 

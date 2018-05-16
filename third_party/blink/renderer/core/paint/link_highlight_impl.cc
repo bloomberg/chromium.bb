@@ -92,9 +92,6 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
   clip_layer_->SetTransformOrigin(FloatPoint3D());
   clip_layer_->AddChild(content_layer_);
 
-  web_content_layer_ = std::make_unique<WebLayer>(content_layer_.get());
-  web_clip_layer_ = std::make_unique<WebLayer>(clip_layer_.get());
-
   compositor_animation_ = CompositorAnimation::Create();
   DCHECK(compositor_animation_);
   compositor_animation_->SetAnimationDelegate(this);
@@ -127,7 +124,7 @@ cc::PictureLayer* LinkHighlightImpl::ContentLayer() {
 }
 
 WebLayer* LinkHighlightImpl::ClipLayer() {
-  return web_clip_layer_.get();
+  return clip_layer_.get();
 }
 
 void LinkHighlightImpl::ReleaseResources() {

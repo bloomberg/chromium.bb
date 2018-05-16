@@ -563,7 +563,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
   scoped_refptr<cc::TextureLayer> layer_;
-  std::unique_ptr<WebLayer> web_layer_;  // Wrapper for |layer_|.
 
   // Mailboxes that were released by the compositor can be used again by this
   // DrawingBuffer.

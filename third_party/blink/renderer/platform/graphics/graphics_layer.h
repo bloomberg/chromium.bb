@@ -421,9 +421,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   int paint_count_;
 
   scoped_refptr<cc::PictureLayer> layer_;
-  std::unique_ptr<WebLayer> web_layer_;  // Wraps |layer_|.
   scoped_refptr<cc::PictureImageLayer> image_layer_;
-  std::unique_ptr<WebLayer> web_image_layer_;
   IntSize image_size_;
   WebLayer* contents_layer_;
   // We don't have ownership of contents_layer_, but we do want to know if a
