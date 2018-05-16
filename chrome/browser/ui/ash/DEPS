@@ -1,9 +1,6 @@
 include_rules = [
   # Code under //ash runs out-of-process in mash so it must be accessed via mojo
   # interfaces in //ash/public/interfaces. See //ash/README.md.
-  # TODO(mash): Remove. http://crbug.com/678705
-  "!ash",
-
   "+ash/public",
 
   # Use //ui/wm/core/window_util.h when manipulating chrome browser windows.
@@ -22,8 +19,63 @@ include_rules = [
 ]
 
 specific_include_rules = {
+  ".*test.*": [
+   "!ash",
+  ],
   # AshShellInit supports CLASSIC and MUS modes so allow ash/ includes.
   "ash_shell_init\.cc": [
     "+ash",
+  ],
+  # https://crbug.com/843315
+  "ash_util\.cc": [
+    "+ash/accelerators/accelerator_controller.h",
+    "+ash/shell.h",
+  ],
+  # https://crbug.com/826370
+  "auto_connect_notifier\.cc": [
+    "+ash/system/network/network_icon.h",
+  ],
+  # For ash::Shell::SetIsBrowserProcessWithMash()
+  "chrome_browser_main_extra_parts_ash\.cc": [
+    "+ash/shell.h",
+  ],
+  # https://crbug.com/843332
+  "chrome_keyboard_ui\.cc": [
+    "+ash/root_window_controller.h",
+    "+ash/shell.h",
+  ],
+  # https://crbug.com/557406
+  "chrome_launcher_controller\.cc": [
+    "+ash/shell.h",
+    "+ash/strings/grit/ash_strings.h",
+  ],
+  # https://crbug.com/124222
+  "chrome_new_window_client\.cc": [
+    "+ash/content/keyboard_overlay/keyboard_overlay_view.h",
+  ],
+  # https://crbug.com/706246
+  "chrome_screenshot_grabber.*": [
+    "+ash/screenshot_delegate.h",
+    "+ash/shell.h",
+  ],
+  # https://crbug.com/672277
+  "chrome_shell_content_state\.h": [
+    "+ash/content/shell_content_state.h",
+  ],
+  # https://crbug.com/665064
+  "chrome_shell_delegate.*": [
+    "+ash",
+  ],
+  # https://crbug.com/672277
+  "session_util\.cc": [
+    "+ash/content/shell_content_state.h",
+  ],
+  # For ash::Shell::GetContainer (!mash)
+  "system_tray_client\.cc": [
+    "+ash/shell.h",
+  ],
+  # https://crbug.com/796366
+  "tab_scrubber\.cc": [
+    "+ash/shell.h",
   ],
 }
