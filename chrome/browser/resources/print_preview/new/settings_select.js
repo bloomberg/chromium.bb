@@ -17,7 +17,7 @@ print_preview_new.SelectOption;
 Polymer({
   is: 'print-preview-settings-select',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
 
   properties: {
     /** @type {{ option: Array<!print_preview_new.SelectOption> }} */
@@ -75,15 +75,15 @@ Polymer({
     return displayName || option.name || '';
   },
 
-  /** @private */
-  onChange_: function() {
-    let value = null;
+  /** @param {string} value The new select value. */
+  onProcessSelectChange: function(value) {
+    let newValue = null;
     try {
-      value = JSON.parse(this.$$('select').value);
+      newValue = JSON.parse(value);
     } catch (e) {
       assertNotReached();
       return;
     }
-    this.setSetting(this.settingName, /** @type {Object} */ (value));
+    this.setSetting(this.settingName, /** @type {Object} */ (newValue));
   },
 });

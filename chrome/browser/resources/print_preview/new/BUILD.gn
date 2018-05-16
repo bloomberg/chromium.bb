@@ -36,6 +36,7 @@ js_type_check("closure_compile") {
     ":print_preview_search_box",
     ":provisional_destination_resolver",
     ":scaling_settings",
+    ":select_behavior",
     ":settings_behavior",
     ":settings_select",
     ":state",
@@ -119,12 +120,14 @@ js_library("copies_settings") {
 
 js_library("layout_settings") {
   deps = [
+    ":select_behavior",
     ":settings_behavior",
   ]
 }
 
 js_library("color_settings") {
   deps = [
+    ":select_behavior",
     ":settings_behavior",
   ]
 }
@@ -138,6 +141,7 @@ js_library("media_size_settings") {
 
 js_library("margins_settings") {
   deps = [
+    ":select_behavior",
     ":settings_behavior",
   ]
 }
@@ -153,6 +157,7 @@ js_library("dpi_settings") {
 
 js_library("pages_per_sheet_settings") {
   deps = [
+    ":select_behavior",
     ":settings_behavior",
   ]
 }
@@ -194,6 +199,7 @@ js_library("number_settings_section") {
 
 js_library("settings_select") {
   deps = [
+    ":select_behavior",
     ":settings_behavior",
     "..:print_preview_utils",
     "//ui/webui/resources/js:cr",
@@ -211,6 +217,10 @@ js_library("input_behavior") {
   deps = [
     "//ui/webui/resources/js:cr",
   ]
+}
+
+js_library("select_behavior") {
+  deps = []
 }
 
 js_library("link_container") {
