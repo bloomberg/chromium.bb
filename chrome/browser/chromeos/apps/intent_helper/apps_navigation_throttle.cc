@@ -199,6 +199,15 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
       }
       break;
     case AppType::INVALID:
+      // TODO(crbug.com/826982): This workaround can be removed when preferences
+      // are no longer persisted within the ARC container, it was necessary
+      // since chrome browser is neither a PWA or ARC app.
+      if (close_reason == chromeos::IntentPickerCloseReason::STAY_IN_CHROME &&
+          should_persist) {
+        arc::ArcNavigationThrottle::MaybeLaunchOrPersistArcApp(
+            url, launch_name, /*should_launch_app=*/false,
+            /*should_persist=*/true);
+      }
       // We reach here if the picker was closed without an app being chosen,
       // e.g. due to the tab being closed. We don't want to do anything.
       break;

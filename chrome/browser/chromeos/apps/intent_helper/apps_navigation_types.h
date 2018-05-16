@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_APPS_INTENT_HELPER_APPS_NAVIGATION_TYPES_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
@@ -41,6 +42,22 @@ enum class IntentPickerCloseReason {
 
   // The user chose to open an app.
   OPEN_APP,
+};
+
+// Describes what's the preferred platform for this navigation, if any.
+enum class PreferredPlatform {
+  // Either there was an error or there is no preferred app at all.
+  NONE,
+
+  // The preferred app is Chrome.
+  NATIVE_CHROME,
+
+  // The preferred app is an ARC app.
+  ARC,
+
+  // TODO(crbug.com/826982) Not needed until app registry is in use.
+  // The preferred app is a PWA app.
+  PWA,
 };
 
 enum class AppsNavigationAction {
