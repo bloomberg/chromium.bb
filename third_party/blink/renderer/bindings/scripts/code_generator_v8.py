@@ -217,7 +217,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
         header_path, cpp_path = self.output_paths(interface_name)
-        template_context['this_include_header_path'] = posixpath.basename(header_path)
+        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
         header_template = self.jinja_env.get_template(header_template_filename)
         cpp_template = self.jinja_env.get_template(cpp_template_filename)
         header_text, cpp_text = self.render_templates(
@@ -244,7 +244,7 @@ class CodeGeneratorV8(CodeGeneratorV8Base):
             template_context['header_includes'].add(self.info_provider.include_path_for_export)
             template_context['exported'] = self.info_provider.specifier_for_export
         header_path, cpp_path = self.output_paths(dictionary_name)
-        template_context['this_include_header_path'] = posixpath.basename(header_path)
+        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
         header_text, cpp_text = self.render_templates(
             include_paths, header_template, cpp_template, template_context)
         return (
@@ -283,7 +283,7 @@ class CodeGeneratorDictionaryImpl(CodeGeneratorV8Base):
         template_context['header_includes'].update(
             interface_info.get('additional_header_includes', []))
         header_path, cpp_path = self.output_paths(definition_name, interface_info)
-        template_context['this_include_header_path'] = posixpath.basename(header_path)
+        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
         header_text, cpp_text = self.render_templates(
             include_paths, header_template, cpp_template, template_context)
         return (
@@ -314,15 +314,14 @@ class CodeGeneratorUnionType(CodeGeneratorBase):
         union_type = union_type.resolve_typedefs(self.typedefs)
         header_template = self.jinja_env.get_template('union_container.h.tmpl')
         cpp_template = self.jinja_env.get_template('union_container.cpp.tmpl')
-        template_context = v8_union.container_context(
-            union_type, self.info_provider)
+        template_context = v8_union.container_context(union_type, self.info_provider)
         template_context['header_includes'].append(
             self.info_provider.include_path_for_export)
         template_context['exported'] = self.info_provider.specifier_for_export
         snake_base_name = to_snake_case(shorten_union_name(union_type))
-        template_context['this_include_header_path'] = snake_base_name + '.h'
         header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)
         cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
+        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
         header_text, cpp_text = self.render_templates(
             [], header_template, cpp_template, template_context)
         return (
@@ -381,12 +380,12 @@ class CodeGeneratorCallbackFunction(CodeGeneratorBase):
                 template_context['header_includes'].append(
                     self.info_provider.include_path_for_union_types(argument.idl_type))
 
-        template_context['code_generator'] = MODULE_PYNAME
-        header_text, cpp_text = self.render_templates(
-            [], header_template, cpp_template, template_context)
         snake_base_name = to_snake_case('V8%s' % callback_function.name)
         header_path = posixpath.join(self.output_dir, '%s.h' % snake_base_name)
         cpp_path = posixpath.join(self.output_dir, '%s.cc' % snake_base_name)
+        template_context['this_include_header_path'] = self.normalize_this_header_path(header_path)
+        header_text, cpp_text = self.render_templates(
+            [], header_template, cpp_template, template_context)
         return (
             (header_path, header_text),
             (cpp_path, cpp_text),

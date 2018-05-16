@@ -7,7 +7,6 @@
 Design doc: http://www.chromium.org/developers/design-documents/idl-compiler
 """
 
-from utilities import to_snake_case
 from v8_globals import includes
 
 CALLBACK_FUNCTION_H_INCLUDES = frozenset([
@@ -45,7 +44,6 @@ def callback_function_context(callback_function):
         'header_includes': sorted(CALLBACK_FUNCTION_H_INCLUDES),
         'idl_type': idl_type_str,
         'return_cpp_type': idl_type.cpp_type,
-        'this_include_header_path': to_snake_case('V8%s' % callback_function.name) + '.h',
     }
 
     if idl_type_str != 'void':

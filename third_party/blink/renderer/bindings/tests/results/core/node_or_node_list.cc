@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "node_or_node_list.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/node_or_node_list.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"

@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "test_dictionary_derived.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/test_dictionary_derived.h"
 
 namespace blink {
 

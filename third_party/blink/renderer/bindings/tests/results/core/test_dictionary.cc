@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "test_dictionary.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/test_dictionary.h"
 
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_garbage_collected.h"
 #include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_implementation.h"

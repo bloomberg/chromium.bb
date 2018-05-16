@@ -64,6 +64,7 @@ def secure_context_if(code, secure_context_test):
         return code
     return generate_indented_conditional(code, secure_context_test)
 
+
 # [OriginTrialEnabled]
 def origin_trial_enabled_if(code, origin_trial_feature_name, execution_context=None):
     if not origin_trial_feature_name:
@@ -81,6 +82,7 @@ def runtime_enabled_if(code, name):
 
     function = v8_utilities.runtime_enabled_function(name)
     return generate_indented_conditional(code, function)
+
 
 def initialize_jinja_env(cache_dir):
     jinja_env = jinja2.Environment(
@@ -175,6 +177,11 @@ class CodeGeneratorBase(object):
         """
         # This should be implemented in subclasses.
         raise NotImplementedError()
+
+    def normalize_this_header_path(self, header_path):
+        match = re.search('(third_party/blink/.*)$', header_path)
+        assert match, 'Unkown style of path to output: ' + header_path
+        return match.group(1)
 
 
 def main(argv):

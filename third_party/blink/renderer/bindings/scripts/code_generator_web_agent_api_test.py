@@ -272,7 +272,7 @@ class InterfaceContextBuilderTest(unittest.TestCase):
         builder.set_inheritance(None)
         self.assertEqual({
             'code_generator': 'test',
-            'header_includes': set(['platform/heap/handle.h']),
+            'header_includes': set(['third_party/blink/renderer/platform/heap/handle.h']),
         }, builder.build())
 
     def test_add_attribute(self):

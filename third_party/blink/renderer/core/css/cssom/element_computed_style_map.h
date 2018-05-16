@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/cssom/computed_style_property_map.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 
 namespace blink {
 

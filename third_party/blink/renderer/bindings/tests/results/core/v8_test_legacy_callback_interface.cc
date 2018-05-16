@@ -9,7 +9,7 @@
 
 // clang-format off
 
-#include "v8_test_legacy_callback_interface.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/v8_test_legacy_callback_interface.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"

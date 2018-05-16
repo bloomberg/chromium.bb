@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "long_sequence_or_event.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/long_sequence_or_event.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"

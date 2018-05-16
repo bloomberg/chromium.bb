@@ -23,7 +23,7 @@ import os
 import posixpath
 import sys
 
-from code_generator import CodeGeneratorBase, render_template
+from code_generator import CodeGeneratorBase, render_template, normalize_and_sort_includes
 # TODO(dglazkov): Move TypedefResolver to code_generator.py
 from code_generator_v8 import TypedefResolver
 
@@ -33,7 +33,7 @@ from blinkbuild.name_style_converter import NameStyleConverter
 
 MODULE_PYNAME = os.path.splitext(os.path.basename(__file__))[0] + '.py'
 
-STRING_INCLUDE_PATH = 'platform/wtf/text/wtf_string.h'
+STRING_INCLUDE_PATH = 'third_party/blink/renderer/platform/wtf/text/wtf_string.h'
 WEB_AGENT_API_IDL_ATTRIBUTE = 'WebAgentAPI'
 
 
@@ -84,7 +84,7 @@ class TypeResolver(object):
         return idl_definition.idl_type.base_type
 
     def base_class_includes(self):
-        return set(['platform/heap/handle.h'])
+        return set(['third_party/blink/renderer/platform/heap/handle.h'])
 
 
 class MethodOverloadSplitter(object):
@@ -235,6 +235,10 @@ class InterfaceContextBuilder(object):
         }
 
     def build(self):
+        if 'cpp_includes' in self.result:
+            self.result['cpp_includes'] = set(normalize_and_sort_includes(self.result['cpp_includes']))
+        if 'header_includes' in self.result:
+            self.result['header_includes'] = set(normalize_and_sort_includes(self.result['header_includes']))
         return self.result
 
 
