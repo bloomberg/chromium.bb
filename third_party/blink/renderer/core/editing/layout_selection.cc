@@ -679,15 +679,21 @@ static bool IsBeforeLineBreak(const NGPaintFragment& fragment) {
   return physical_line_box.BaseDirection() == shape_result->Direction();
 }
 
+// FrameSelection holds selection offsets in layout block flow at
+// LayoutSelection::Commit() if selection starts/ends within Text that
+// each LayoutObject::SelectionState indicates.
+// These offset can be out of |text_fragment| because SelectionState is of each
+// LayoutText and not of each NGPhysicalTextFragment for it.
 LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const NGPaintFragment& fragment) const {
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment());
-  // FrameSelection holds selection offsets in layout block flow at
-  // LayoutSelection::Commit() if selection starts/ends within Text that
-  // each LayoutObject::SelectionState indicates.
-  // These offset can out of |text_fragment| because SelectionState is of each
-  // LayoutText and not |text_fragment|.
+  // For BR, WBR, no selection painting.
+  if (fragment.GetNode() && !fragment.GetNode()->IsTextNode())
+    return {0, 0, SelectLineBreak::kNotSelected};
+  if (text_fragment.IsLineBreak())
+    return {0, 0, SelectLineBreak::kNotSelected};
+
   switch (text_fragment.GetLayoutObject()->GetSelectionState()) {
     case SelectionState::kStart: {
       DCHECK(SelectionStart().has_value());
