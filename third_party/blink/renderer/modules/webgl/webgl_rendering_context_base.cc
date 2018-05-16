@@ -4881,10 +4881,6 @@ void WebGLRenderingContextBase::TexImageHelperImageData(
         adjusted_source_image_rect.Height(), format, type, bytes);
   } else {
     GLint upload_height = adjusted_source_image_rect.Height();
-    if (unpack_image_height) {
-      // GL_UNPACK_IMAGE_HEIGHT overrides the passed-in height.
-      upload_height = unpack_image_height;
-    }
     if (function_id == kTexImage3D) {
       ContextGL()->TexImage3D(target, level, internalformat,
                               adjusted_source_image_rect.Width(), upload_height,
