@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/zygote/zygote_main.h"
+#include "services/service_manager/zygote/zygote_main.h"
 
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -19,7 +19,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/memory/protected_memory.h"
 #include "base/memory/protected_memory_cfi.h"
@@ -30,24 +29,25 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "build/build_config.h"
-#include "content/common/zygote_commands_linux.h"
-#include "content/public/common/common_sandbox_support_linux.h"
-#include "content/public/common/content_descriptors.h"
-#include "content/public/common/zygote_fork_delegate_linux.h"
-#include "content/zygote/zygote_linux.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/init_process_reaper.h"
 #include "sandbox/linux/services/libc_interceptor.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/thread_helpers.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
+#include "services/service_manager/embedder/descriptors.h"
+#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/linux/sandbox_debug_handling_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
+#include "services/service_manager/zygote/common/zygote_commands_linux.h"
+#include "services/service_manager/zygote/common/zygote_fork_delegate_linux.h"
+#include "services/service_manager/zygote/zygote_linux.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
-namespace content {
+namespace service_manager {
 
 namespace {
 
@@ -108,11 +108,11 @@ static bool EnterSuidSandbox(sandbox::SetuidSandboxClient* setuid_sandbox,
   // be enabled by the process later.
 
   if (!setuid_sandbox->IsSuidSandboxUpToDate()) {
-    LOG(WARNING) <<
-        "You are using a wrong version of the setuid binary!\n"
-        "Please read "
-        "https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox_development.md."
-        "\n\n";
+    LOG(WARNING) << "You are using a wrong version of the setuid binary!\n"
+                    "Please read "
+                    "https://chromium.googlesource.com/chromium/src/+/master/"
+                    "docs/linux_suid_sandbox_development.md."
+                    "\n\n";
   }
 
   if (!setuid_sandbox->ChrootMe())
@@ -182,7 +182,8 @@ bool ZygoteMain(
 
   auto* linux_sandbox = service_manager::SandboxLinux::GetInstance();
 
-  // Skip pre-initializing sandbox under --no-sandbox for crbug.com/444900.
+  // Skip pre-initializing sandbox when sandbox is disabled for
+  // https://crbug.com/444900.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           service_manager::switches::kNoSandbox)) {
     // This will pre-initialize the various sandboxes that need it.
@@ -207,7 +208,7 @@ bool ZygoteMain(
             std::vector<int>())) {
       // This is not a CHECK failure because the browser process could either
       // crash or quickly exit while the zygote is starting. In either case a
-      // zygote crash is not useful. http://crbug.com/692227
+      // zygote crash is not useful. https://crbug.com/692227
       PLOG(ERROR) << "Failed sending zygote boot message";
       _exit(1);
     }
@@ -241,4 +242,4 @@ bool ZygoteMain(
   return zygote.ProcessRequests();
 }
 
-}  // namespace content
+}  // namespace service_manager

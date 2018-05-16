@@ -83,12 +83,13 @@ std::unique_ptr<PosixFileDescriptorInfo> CreateDefaultPosixFilesToMap(
   base::SharedMemoryHandle shm = base::FieldTrialList::GetFieldTrialHandle();
   if (shm.IsValid()) {
     files_to_register->Share(
-        kFieldTrialDescriptor,
+        service_manager::kFieldTrialDescriptor,
         base::SharedMemory::GetFdFromSharedMemoryHandle(shm));
   }
 
   DCHECK(mojo_client_handle.is_valid());
-  files_to_register->Share(kMojoIPCChannel, mojo_client_handle.handle);
+  files_to_register->Share(service_manager::kMojoIPCChannel,
+                           mojo_client_handle.handle);
 
   // TODO(jcivelli): remove this "if defined" by making
   // GetAdditionalMappedFilesForChildProcess a no op on Mac.

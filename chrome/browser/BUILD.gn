@@ -3081,6 +3081,7 @@ jumbo_split_static_library("browser") {
       configs += [ "//build/config/linux:x11" ]
       deps += [ "//ui/gfx/x" ]
     }
+    deps += [ "//services/service_manager/zygote" ]
   }
 
   if (is_desktop_linux) {

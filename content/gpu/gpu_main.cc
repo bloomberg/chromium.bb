@@ -80,9 +80,9 @@
 #if defined(OS_LINUX)
 #include "content/common/font_config_ipc_linux.h"
 #include "content/gpu/gpu_sandbox_hook_linux.h"
-#include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/sandbox_init.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
+#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #endif
 
@@ -343,7 +343,8 @@ int GpuMain(const MainFunctionParams& parameters) {
     SkGraphics::Init();
 #if defined(OS_LINUX)
     // Set up the font IPC so that the GPU process can create typefaces.
-    SkFontConfigInterface::SetGlobal(sk_make_sp<FontConfigIPC>(GetSandboxFD()));
+    SkFontConfigInterface::SetGlobal(
+        sk_make_sp<FontConfigIPC>(service_manager::GetSandboxFD()));
 #endif
   }
 

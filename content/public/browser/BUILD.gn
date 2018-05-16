@@ -309,7 +309,6 @@ jumbo_source_set("browser_sources") {
     "websocket_handshake_request_info.h",
     "webvr_service_provider.cc",
     "webvr_service_provider.h",
-    "zygote_host_linux.h",
   ]
   configs += [
     "//build/config:precompiled_headers",
@@ -348,6 +347,7 @@ jumbo_source_set("browser_sources") {
     "//media/capture",
     "//net",
     "//ppapi/c",
+    "//services/service_manager/embedder:embedder_result_codes",
     "//ui/accessibility",
     "//ui/base",
     "//ui/events",

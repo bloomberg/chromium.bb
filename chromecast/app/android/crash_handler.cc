@@ -19,6 +19,7 @@
 #include "components/crash/content/app/crash_reporter_client.h"
 #include "content/public/common/content_switches.h"
 #include "jni/CastCrashHandler_jni.h"
+#include "services/service_manager/embedder/switches.h"
 #include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
 #include "third_party/breakpad/breakpad/src/client/linux/handler/minidump_descriptor.h"
 
@@ -81,7 +82,7 @@ void CrashHandler::Initialize() {
     return;
   }
 
-  if (process_type_ != switches::kZygoteProcess) {
+  if (process_type_ != service_manager::switches::kZygoteProcess) {
     breakpad::InitNonBrowserCrashReporterForAndroid(process_type_);
   }
 }

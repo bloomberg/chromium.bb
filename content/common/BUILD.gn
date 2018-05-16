@@ -261,7 +261,6 @@ source_set("common") {
     "sandbox_init_mac.cc",
     "sandbox_init_win.cc",
     "savable_subframe.h",
-    "send_zygote_child_ping_linux.cc",
     "service_manager/service_manager_connection_impl.cc",
     "service_manager/service_manager_connection_impl.h",
     "service_worker/service_worker_loader_helpers.cc",
@@ -297,7 +296,6 @@ source_set("common") {
     "view_messages.h",
     "visual_properties.cc",
     "visual_properties.h",
-    "zygote_commands_linux.h",
   ]
 
   configs += [
@@ -332,7 +330,6 @@ source_set("common") {
     "//content/common/service_worker:service_worker_types_proto",
     "//content/public/common:interfaces",
     "//content/public/common:service_names",
-    "//content/public/common:zygote_buildflags",
     "//device/base/synchronization",
     "//device/bluetooth",
     "//gpu",
@@ -368,6 +365,7 @@ source_set("common") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/service_manager/runner/common",
+    "//services/service_manager/zygote:zygote_buildflags",
     "//services/ui/public/interfaces",
     "//services/video_capture/public/mojom",
     "//services/viz/public/interfaces",

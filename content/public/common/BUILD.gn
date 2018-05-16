@@ -7,7 +7,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//build/config/ui.gni")
-import("//content/public/common/zygote_features.gni")
+import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
@@ -30,6 +30,10 @@ group("common") {
 source_set("result_codes") {
   sources = [
     "result_codes.h",
+  ]
+
+  deps = [
+    "//services/service_manager/embedder:embedder_result_codes",
   ]
 }
 
@@ -69,12 +73,10 @@ config("static_switches_defines") {
 source_set("static_switches") {
   public = [
     "content_switches.h",
-    "mojo_channel_switches.h",
   ]
   sources = [
     "//content/common/content_export.h",
     "content_switches.cc",
-    "mojo_channel_switches.cc",
   ]
 
   public_configs = [ ":static_switches_defines" ]
@@ -169,8 +171,6 @@ jumbo_source_set("common_sources") {
     "menu_item.h",
     "mhtml_generation_params.cc",
     "mhtml_generation_params.h",
-    "mojo_channel_switches.cc",
-    "mojo_channel_switches.h",
     "network_connection_tracker.cc",
     "network_connection_tracker.h",
     "notification_resources.cc",
@@ -210,7 +210,6 @@ jumbo_source_set("common_sources") {
     "screen_info.cc",
     "screen_info.h",
     "screen_orientation_values.h",
-    "send_zygote_child_ping_linux.h",
     "service_manager_connection.h",
     "simple_connection_filter.cc",
     "simple_connection_filter.h",
@@ -239,7 +238,6 @@ jumbo_source_set("common_sources") {
     "webplugininfo_param_traits.h",
     "webrtc_ip_handling_policy.cc",
     "webrtc_ip_handling_policy.h",
-    "zygote_fork_delegate_linux.h",
   ]
 
   configs += [
@@ -252,7 +250,6 @@ jumbo_source_set("common_sources") {
   public_deps = [
     ":interfaces",
     ":service_names",
-    ":zygote_buildflags",
     "//content/common",
     "//ipc",
     "//media/capture:capture_base",
@@ -280,7 +277,9 @@ jumbo_source_set("common_sources") {
     "//ppapi/buildflags",
     "//ppapi/c",
     "//services/network/public/cpp",
+    "//services/service_manager/embedder:embedder_result_codes",
     "//services/service_manager/public/cpp",
+    "//services/service_manager/zygote:zygote_buildflags",
     "//skia",
     "//storage/common",
     "//third_party/blink/public/common",
@@ -302,6 +301,10 @@ jumbo_source_set("common_sources") {
     deps += [ "//content/public/android:jni" ]
   }
 
+  if (is_linux) {
+    deps += [ "//services/service_manager/zygote" ]
+  }
+
   # //content/common needs to include public headers.
   allow_circular_includes_from = [
     ":interfaces",
@@ -314,10 +317,6 @@ jumbo_source_set("common_sources") {
       "pepper_plugin_info.cc",
       "pepper_plugin_info.h",
     ]
-  }
-
-  if (use_zygote_handle) {
-    sources += [ "zygote_handle.h" ]
   }
 }
 
@@ -336,11 +335,6 @@ source_set("feature_h264_with_openh264_ffmpeg") {
     "feature_h264_with_openh264_ffmpeg.cc",
     "feature_h264_with_openh264_ffmpeg.h",
   ]
-}
-
-buildflag_header("zygote_buildflags") {
-  header = "zygote_buildflags.h"
-  flags = [ "USE_ZYGOTE_HANDLE=$use_zygote_handle" ]
 }
 
 mojom("interfaces") {

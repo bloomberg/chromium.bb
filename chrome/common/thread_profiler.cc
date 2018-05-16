@@ -20,6 +20,7 @@
 #include "components/metrics/child_call_stack_profile_collector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace {
@@ -59,7 +60,7 @@ metrics::CallStackProfileParams::Process GetProcess() {
     return metrics::CallStackProfileParams::GPU_PROCESS;
   if (process_type == switches::kUtilityProcess)
     return metrics::CallStackProfileParams::UTILITY_PROCESS;
-  if (process_type == switches::kZygoteProcess)
+  if (process_type == service_manager::switches::kZygoteProcess)
     return metrics::CallStackProfileParams::ZYGOTE_PROCESS;
   if (process_type == switches::kPpapiPluginProcess)
     return metrics::CallStackProfileParams::PPAPI_PLUGIN_PROCESS;

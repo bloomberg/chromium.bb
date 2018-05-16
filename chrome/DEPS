@@ -33,6 +33,9 @@ include_rules = [
   "-webkit",
   "-tools",
 
+  # Required for process launching.
+  "+services/service_manager",
+
   # Allow inclusion of WebKit API files.
   "+third_party/blink/public/common",
   "+third_party/blink/public/platform",
