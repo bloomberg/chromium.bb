@@ -225,6 +225,30 @@ config("skia_library_config") {
   }
 }
 
+import("//third_party/skia/third_party/skcms/skcms.gni")
+config("skcms_public") {
+  include_dirs = [ "//third_party/skia/third_party/skcms" ]
+}
+source_set("skcms") {
+  public_configs = [ ":skcms_public" ]
+
+  cflags = []
+  if (!is_win || is_clang) {
+    cflags += [
+      "-w",
+      "-std=c11",
+    ]
+  }
+
+  defines = [ "SKCMS_LEGACY_POWF" ]
+
+  public = [
+    "//third_party/skia/third_party/skcms/skcms.h",
+  ]
+  sources =
+      rebase_path(skcms_sources, ".", "//third_party/skia/third_party/skcms")
+}
+
 component("skia") {
   deps = []
   sources = [
@@ -553,12 +577,8 @@ component("skia") {
   }
 
   # skcms
-  deps += [ "//third_party/skia/third_party/skcms" ]
+  deps += [ ":skcms" ]
   sources += [ "//third_party/skia/src/core/SkColorSpaceXform_skcms.cpp" ]
-}
-
-config("chromium_specific_config_for_skcms") {
-  defines = [ "SKCMS_LEGACY_POWF" ]
 }
 
 # Template for things that are logically part of :skia, but need to be split out
