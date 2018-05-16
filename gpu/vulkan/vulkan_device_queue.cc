@@ -8,16 +8,12 @@
 #include <vector>
 
 #include "gpu/vulkan/vulkan_command_pool.h"
-#include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_platform.h"
-
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-#include "ui/gfx/x/x11_types.h"
-#endif  // defined(VK_USE_PLATFORM_XLIB_KHR)
 
 namespace gpu {
 
-VulkanDeviceQueue::VulkanDeviceQueue() {}
+VulkanDeviceQueue::VulkanDeviceQueue(VkInstance vk_instance)
+    : vk_instance_(vk_instance) {}
 
 VulkanDeviceQueue::~VulkanDeviceQueue() {
   DCHECK_EQ(static_cast<VkPhysicalDevice>(VK_NULL_HANDLE), vk_physical_device_);
@@ -25,9 +21,9 @@ VulkanDeviceQueue::~VulkanDeviceQueue() {
   DCHECK_EQ(static_cast<VkQueue>(VK_NULL_HANDLE), vk_queue_);
 }
 
-bool VulkanDeviceQueue::Initialize(uint32_t options) {
-  vk_instance_ = gpu::GetVulkanInstance();
-
+bool VulkanDeviceQueue::Initialize(
+    uint32_t options,
+    const GetPresentationSupportCallback& get_presentation_support) {
   if (VK_NULL_HANDLE == vk_instance_)
     return false;
 
@@ -45,12 +41,6 @@ bool VulkanDeviceQueue::Initialize(uint32_t options) {
     DLOG(ERROR) << "vkEnumeratePhysicalDevices() failed: " << result;
     return false;
   }
-
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
-  Display* xdisplay = gfx::GetXDisplay();
-  VisualID visual_id =
-      XVisualIDFromVisual(DefaultVisual(xdisplay, DefaultScreen(xdisplay)));
-#endif  // defined(VK_USE_PLATFORM_XLIB_KHR)
 
   VkQueueFlags queue_flags = 0;
   if (options & DeviceQueueOption::GRAPHICS_QUEUE_FLAG)
@@ -70,19 +60,10 @@ bool VulkanDeviceQueue::Initialize(uint32_t options) {
         if ((queue_properties[n].queueFlags & queue_flags) != queue_flags)
           continue;
 
-#if defined(VK_USE_PLATFORM_XLIB_KHR)
         if (options & DeviceQueueOption::PRESENTATION_SUPPORT_QUEUE_FLAG &&
-            !vkGetPhysicalDeviceXlibPresentationSupportKHR(device, n, xdisplay,
-                                                           visual_id)) {
+            !get_presentation_support.Run(device, queue_properties, n)) {
           continue;
         }
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-// On Android, all physical devices and queue families must be capable of
-// presentation with any native window.
-// As a result there is no Android-specific query for these capabilities.
-#else
-#error Non-Supported Vulkan implementation.
-#endif
 
         queue_index = static_cast<int>(n);
         break;

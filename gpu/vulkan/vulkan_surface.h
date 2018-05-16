@@ -5,11 +5,12 @@
 #ifndef GPU_VULKAN_VULKAN_SURFACE_H_
 #define GPU_VULKAN_VULKAN_SURFACE_H_
 
-#include <memory>
+#include <vulkan/vulkan.h>
 
+#include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_export.h"
+#include "gpu/vulkan/vulkan_swap_chain.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/swap_result.h"
 
 namespace gpu {
@@ -28,26 +29,28 @@ class VULKAN_EXPORT VulkanSurface {
     DEFAULT_SURFACE_FORMAT = FORMAT_RGBA_32
   };
 
-  virtual ~VulkanSurface() = 0;
+  VulkanSurface(VkInstance vk_instance, VkSurfaceKHR surface);
 
-  virtual bool Initialize(VulkanDeviceQueue* device_queue,
-                          VulkanSurface::Format format) = 0;
-  virtual void Destroy() = 0;
+  ~VulkanSurface();
 
-  virtual gfx::SwapResult SwapBuffers() = 0;
+  bool Initialize(VulkanDeviceQueue* device_queue,
+                  VulkanSurface::Format format);
+  void Destroy();
 
-  virtual VulkanSwapChain* GetSwapChain() = 0;
+  gfx::SwapResult SwapBuffers();
 
-  virtual void Finish() = 0;
+  VulkanSwapChain* GetSwapChain();
 
-  // Create a surface that render directlys into a surface.
-  static std::unique_ptr<VulkanSurface> CreateViewSurface(
-      gfx::AcceleratedWidget window);
-
- protected:
-  VulkanSurface();
+  void Finish();
 
  private:
+  const VkInstance vk_instance_;
+  gfx::Size size_;
+  VkSurfaceKHR surface_ = VK_NULL_HANDLE;
+  VkSurfaceFormatKHR surface_format_ = {};
+  VulkanDeviceQueue* device_queue_ = nullptr;
+  VulkanSwapChain swap_chain_;
+
   DISALLOW_COPY_AND_ASSIGN(VulkanSurface);
 };
 

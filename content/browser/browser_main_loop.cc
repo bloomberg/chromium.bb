@@ -108,7 +108,6 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/zygote_buildflags.h"
 #include "device/gamepad/gamepad_service.h"
-#include "gpu/vulkan/buildflags.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_system.h"
 #include "media/audio/audio_thread_impl.h"
@@ -231,10 +230,6 @@
 
 #if defined(USE_NSS_CERTS)
 #include "crypto/nss_util.h"
-#endif
-
-#if BUILDFLAG(ENABLE_VULKAN)
-#include "gpu/vulkan/vulkan_implementation.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MUS)
@@ -1201,11 +1196,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)
   // Up the priority of the UI thread.
   base::PlatformThread::SetCurrentThreadPriority(base::ThreadPriority::DISPLAY);
-#endif
-
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (parsed_command_line_.HasSwitch(switches::kEnableVulkan))
-    gpu::InitializeVulkan();
 #endif
 
   // Initialize the GPU shader cache. This needs to be initialized before

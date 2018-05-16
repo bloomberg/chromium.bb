@@ -66,9 +66,6 @@ viz_component("common") {
     "gpu/raster_context_provider.h",
     "gpu/texture_allocation.cc",
     "gpu/texture_allocation.h",
-    "gpu/vulkan_context_provider.h",
-    "gpu/vulkan_in_process_context_provider.cc",
-    "gpu/vulkan_in_process_context_provider.h",
     "hit_test/aggregated_hit_test_region.h",
     "quads/compositor_frame.cc",
     "quads/compositor_frame.h",
@@ -177,8 +174,13 @@ viz_component("common") {
   ]
 
   if (enable_vulkan) {
+    sources += [
+      "gpu/vulkan_context_provider.h",
+      "gpu/vulkan_in_process_context_provider.cc",
+      "gpu/vulkan_in_process_context_provider.h",
+    ]
     configs = [ "//third_party/vulkan:vulkan_config" ]
-    deps += [ "//gpu/vulkan" ]
+    deps += [ "//gpu/vulkan/init" ]
   }
 
   if (is_win) {

@@ -15,8 +15,7 @@
 namespace gpu {
 
 TEST_F(BasicVulkanTest, BasicVulkanSurface) {
-  std::unique_ptr<VulkanSurface> surface =
-      VulkanSurface::CreateViewSurface(window());
+  std::unique_ptr<VulkanSurface> surface = CreateViewSurface(window());
   EXPECT_TRUE(surface);
   EXPECT_TRUE(surface->Initialize(GetDeviceQueue(),
                                   VulkanSurface::DEFAULT_SURFACE_FORMAT));
@@ -24,8 +23,7 @@ TEST_F(BasicVulkanTest, BasicVulkanSurface) {
 }
 
 TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
-  std::unique_ptr<VulkanSurface> surface =
-      VulkanSurface::CreateViewSurface(window());
+  std::unique_ptr<VulkanSurface> surface = CreateViewSurface(window());
   ASSERT_TRUE(surface);
   ASSERT_TRUE(surface->Initialize(GetDeviceQueue(),
                                   VulkanSurface::DEFAULT_SURFACE_FORMAT));
@@ -42,8 +40,7 @@ TEST_F(BasicVulkanTest, EmptyVulkanSwaps) {
 }
 
 TEST_F(BasicVulkanTest, BasicRenderPass) {
-  std::unique_ptr<VulkanSurface> surface =
-      VulkanSurface::CreateViewSurface(window());
+  std::unique_ptr<VulkanSurface> surface = CreateViewSurface(window());
   ASSERT_TRUE(surface);
   ASSERT_TRUE(surface->Initialize(GetDeviceQueue(),
                                   VulkanSurface::DEFAULT_SURFACE_FORMAT));

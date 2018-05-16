@@ -12,6 +12,7 @@ class GrContext;
 
 namespace gpu {
 class VulkanDeviceQueue;
+class VulkanImplementation;
 }
 
 namespace viz {
@@ -20,6 +21,7 @@ namespace viz {
 class VIZ_COMMON_EXPORT VulkanContextProvider
     : public base::RefCountedThreadSafe<VulkanContextProvider> {
  public:
+  virtual gpu::VulkanImplementation* GetVulkanImplementation() = 0;
   virtual gpu::VulkanDeviceQueue* GetDeviceQueue() = 0;
   virtual GrContext* GetGrContext() = 0;
 

@@ -6,6 +6,7 @@
 #define GPU_VULKAN_TESTS_BASIC_VULKAN_TEST_H_
 
 #include "gpu/vulkan/vulkan_device_queue.h"
+#include "gpu/vulkan/vulkan_implementation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_widget_types.h"
 
@@ -13,14 +14,24 @@ namespace gpu {
 
 class BasicVulkanTest : public testing::Test {
  public:
+  BasicVulkanTest();
+  ~BasicVulkanTest() override;
+
   void SetUp() override;
   void TearDown() override;
 
   gfx::AcceleratedWidget window() const { return window_; }
-  VulkanDeviceQueue* GetDeviceQueue() { return &device_queue_; }
+  VulkanImplementation* GetVulkanImplementation() {
+    return vulkan_implementation_.get();
+  }
+  VulkanDeviceQueue* GetDeviceQueue() { return device_queue_.get(); }
+  std::unique_ptr<VulkanSurface> CreateViewSurface(
+      gfx::AcceleratedWidget window);
 
  private:
-  VulkanDeviceQueue device_queue_;
+  std::unique_ptr<VulkanImplementation> vulkan_implementation_;
+  std::unique_ptr<VulkanDeviceQueue> device_queue_;
+
   gfx::AcceleratedWidget window_ = gfx::kNullAcceleratedWidget;
 };
 

@@ -2355,6 +2355,7 @@ jumbo_source_set("browser") {
         "compositor/vulkan_browser_compositor_output_surface.cc",
         "compositor/vulkan_browser_compositor_output_surface.h",
       ]
+      deps += [ "//gpu/vulkan/init" ]
     }
     deps += [
       "//components/viz/service",

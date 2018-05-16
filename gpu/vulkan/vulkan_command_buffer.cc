@@ -7,7 +7,6 @@
 #include "base/logging.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
-#include "gpu/vulkan/vulkan_implementation.h"
 
 namespace gpu {
 

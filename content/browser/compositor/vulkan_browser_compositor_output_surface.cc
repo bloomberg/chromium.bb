@@ -7,6 +7,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/service/display/output_surface_client.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
+#include "gpu/vulkan/vulkan_implementation.h"
 #include "gpu/vulkan/vulkan_surface.h"
 
 namespace content {
@@ -25,8 +26,9 @@ VulkanBrowserCompositorOutputSurface::~VulkanBrowserCompositorOutputSurface() {
 bool VulkanBrowserCompositorOutputSurface::Initialize(
     gfx::AcceleratedWidget widget) {
   DCHECK(!surface_);
-  std::unique_ptr<gpu::VulkanSurface> surface(
-      gpu::VulkanSurface::CreateViewSurface(widget));
+  std::unique_ptr<gpu::VulkanSurface> surface =
+      vulkan_context_provider()->GetVulkanImplementation()->CreateViewSurface(
+          widget);
   if (!surface->Initialize(vulkan_context_provider()->GetDeviceQueue(),
                            gpu::VulkanSurface::DEFAULT_SURFACE_FORMAT)) {
     return false;

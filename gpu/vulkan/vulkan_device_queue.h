@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/callback.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "gpu/vulkan/vulkan_export.h"
@@ -24,10 +25,17 @@ class VULKAN_EXPORT VulkanDeviceQueue {
     PRESENTATION_SUPPORT_QUEUE_FLAG = 0x02,
   };
 
-  VulkanDeviceQueue();
+  explicit VulkanDeviceQueue(VkInstance vk_instance);
   ~VulkanDeviceQueue();
 
-  bool Initialize(uint32_t option);
+  using GetPresentationSupportCallback =
+      base::RepeatingCallback<bool(VkPhysicalDevice,
+                                   const std::vector<VkQueueFamilyProperties>&,
+                                   uint32_t queue_family_index)>;
+  bool Initialize(
+      uint32_t options,
+      const GetPresentationSupportCallback& get_presentation_support);
+
   void Destroy();
 
   VkPhysicalDevice GetVulkanPhysicalDevice() const {
@@ -57,7 +65,7 @@ class VULKAN_EXPORT VulkanDeviceQueue {
   VkDevice vk_device_ = VK_NULL_HANDLE;
   VkQueue vk_queue_ = VK_NULL_HANDLE;
   uint32_t vk_queue_index_ = 0;
-  VkInstance vk_instance_ = VK_NULL_HANDLE;
+  const VkInstance vk_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(VulkanDeviceQueue);
 };

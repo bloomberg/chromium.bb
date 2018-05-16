@@ -84,6 +84,10 @@
 #include "ui/gl/gl_utils.h"
 #include "ui/latency/latency_tracker.h"
 
+namespace gpu {
+class VulkanSurface;
+}
+
 namespace content {
 
 namespace {
@@ -419,7 +423,9 @@ class VulkanOutputSurface : public viz::OutputSurface {
  private:
   void SwapBuffersAck() { client_->DidReceiveSwapBuffersAck(); }
 
+#if BUILDFLAG(ENABLE_VULKAN)
   std::unique_ptr<gpu::VulkanSurface> surface_;
+#endif
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   base::WeakPtrFactory<VulkanOutputSurface> weak_ptr_factory_;
 
