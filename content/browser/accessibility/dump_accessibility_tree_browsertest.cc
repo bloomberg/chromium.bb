@@ -371,6 +371,11 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
 #endif
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityAriaAnyUnignored) {
+  RunAriaTest(FILE_PATH_LITERAL("aria-any-unignored.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
                        AccessibilityAriaApplication) {
   RunAriaTest(FILE_PATH_LITERAL("aria-application.html"));
 }
