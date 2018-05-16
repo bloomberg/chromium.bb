@@ -12,17 +12,13 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/smb_client/smb_service.h"
 #include "chrome/browser/profiles/profile.h"
-
-namespace {
-void DoNothingCallback(base::File::Error error) {
-  return;
-}
-}  // namespace
+#include "content/public/browser/web_ui_message_handler.h"
 
 namespace chromeos {
 namespace settings {
 
-SmbHandler::SmbHandler(Profile* profile) : profile_(profile) {}
+SmbHandler::SmbHandler(Profile* profile)
+    : profile_(profile), weak_ptr_factory_(this) {}
 
 SmbHandler::~SmbHandler() = default;
 
@@ -49,7 +45,15 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
   mo.writable = true;
 
   service->Mount(mo, base::FilePath(mountUrl), username, password,
-                 base::BindOnce(&DoNothingCallback));
+                 base::BindOnce(&SmbHandler::HandleSmbMountResponse,
+                                weak_ptr_factory_.GetWeakPtr()));
+}
+
+void SmbHandler::HandleSmbMountResponse(base::File::Error error) {
+  std::string result = error == base::File::FILE_OK ? "success" : "failure";
+
+  AllowJavascript();
+  FireWebUIListener("on-add-smb-share", base::Value(result));
 }
 
 }  // namespace settings

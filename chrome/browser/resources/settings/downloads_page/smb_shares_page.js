@@ -5,9 +5,16 @@
 Polymer({
   is: 'settings-smb-shares-page',
 
+  behaviors: [WebUIListenerBehavior],
+
   properties: {
     /** @private */
     showAddSmbDialog_: Boolean,
+  },
+
+  /** @override */
+  attached: function() {
+    this.addWebUIListener('on-add-smb-share', this.onAddShare_.bind(this));
   },
 
   /** @private */
@@ -18,6 +25,17 @@ Polymer({
   /** @private */
   onAddSmbDialogClosed_: function() {
     this.showAddSmbDialog_ = false;
+  },
+
+  /**
+   * @param {string} error_status
+   * @private
+   */
+  onAddShare_: function(error_status) {
+    this.$.addShareDoneMessage.textContent = error_status == 'success' ?
+        loadTimeData.getString('smbShareAddedSuccessfulMessage') :
+        loadTimeData.getString('smbShareAddedErrorMessage');
+    this.$.errorToast.show();
   },
 
 });

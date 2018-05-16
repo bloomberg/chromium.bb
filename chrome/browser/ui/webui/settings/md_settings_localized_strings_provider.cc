@@ -810,6 +810,10 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
     {"smbShareUrl", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_URL},
     {"smbShareUsername", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_USERNAME},
     {"smbSharePassword", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_PASSWORD},
+    {"smbShareAddedSuccessfulMessage",
+     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_SUCCESS_MESSAGE},
+    {"smbShareAddedErrorMessage",
+     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_ERROR_MESSAGE},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

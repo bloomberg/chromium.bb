@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SMB_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_SMB_HANDLER_H_
 
+#include "base/files/file.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 class Profile;
@@ -26,7 +28,11 @@ class SmbHandler : public ::settings::SettingsPageUIHandler {
   // WebUI call to mount an Smb Filesystem.
   void HandleSmbMount(const base::ListValue* args);
 
+  // Callback handler for SmbMount.
+  void HandleSmbMountResponse(base::File::Error error);
+
   Profile* const profile_;
+  base::WeakPtrFactory<SmbHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SmbHandler);
 };

@@ -1365,14 +1365,20 @@
     <message name="IDS_SETTINGS_DOWNLOADS_SMB_SHARES_ADD_SHARE" desc="In SMB shares settings subpage, text for the link to add a new SMB share.">
       Add File Share
     </message>
-    <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_URL" desc="Title for the input that lets users specify the name of an SMB Url.">
-      File Share Url
+    <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_URL" desc="Title for the input that lets users specify the name of an SMB URL.">
+      File Share URL
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_USERNAME" desc="Title for the input that lets users specify their username for an SMB share.">
       Username
     </message>
     <message name="IDS_SETTINGS_DOWNLOADS_ADD_SHARE_PASSWORD" desc="Title for the input that lets users specify their password for an SMB Share.">
       Password
+    </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_SUCCESS_MESSAGE" desc="The message shown when a new SMB share is successfully mounted.">
+      Share mounted successfully.
+    </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_ERROR_MESSAGE" desc="The message shown when mounting a new SMB share fails.">
+      Error mounting share. Check the file share URL and try again.
     </message>
 
     <!-- Date/Time Page -->
