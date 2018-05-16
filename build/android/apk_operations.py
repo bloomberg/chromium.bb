@@ -210,11 +210,15 @@ def _PrintPerDeviceOutput(devices, results, single_line=False):
     yield result
 
 
-def _RunMemUsage(devices, package_name):
+def _RunMemUsage(devices, package_name, query_app=False):
+  cmd_args = ['dumpsys', 'meminfo']
+  if not query_app:
+    cmd_args.append('--local')
+
   def mem_usage_helper(d):
     ret = []
     for process in sorted(_GetPackageProcesses(d, package_name)):
-      meminfo = d.RunShellCommand(['dumpsys', 'meminfo', str(process.pid)])
+      meminfo = d.RunShellCommand(cmd_args + [str(process.pid)])
       ret.append((process.name, '\n'.join(meminfo)))
     return ret
 
@@ -1052,8 +1056,15 @@ class _MemUsageCommand(_Command):
   needs_package_name = True
   all_devices_by_default = True
 
+  def _RegisterExtraArgs(self, group):
+    group.add_argument('--query-app', action='store_true',
+        help='Do not add --local to "dumpsys meminfo". This will output '
+             'additional metrics (e.g. Context count), but also cause memory '
+             'to be used in order to gather the metrics.')
+
   def Run(self):
-    _RunMemUsage(self.devices, self.args.package_name)
+    _RunMemUsage(self.devices, self.args.package_name,
+                 query_app=self.args.query_app)
 
 
 class _ShellCommand(_Command):
