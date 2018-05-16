@@ -442,6 +442,7 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  protected:
   const int kCharacterWidth = 10;
+  const base::string16 kFullUrl = base::ASCIIToUTF16("https://www.example.com");
 
   void SetUp() override {
     scoped_feature_list_.InitAndEnableFeature(
@@ -453,8 +454,7 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     clock_.Advance(base::TimeDelta::FromSeconds(5));
     ui::SetEventTickClockForTesting(&clock_);
 
-    toolbar_model()->set_formatted_full_url(
-        base::ASCIIToUTF16("https://example.com"));
+    toolbar_model()->set_formatted_full_url(kFullUrl);
     toolbar_model()->set_url_for_display(base::ASCIIToUTF16("example.com"));
 
     gfx::test::RenderTextTestApi render_text_test_api(
@@ -476,10 +476,14 @@ class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
     ASSERT_FALSE(omnibox_view()->HasFocus());
   }
 
-  bool IsFullUrlDisplayed() {
-    return omnibox_view()->text() ==
-               base::ASCIIToUTF16("https://example.com") &&
-           omnibox_view()->model()->user_input_in_progress();
+  void ExpectFullUrlDisplayed() {
+    EXPECT_EQ(kFullUrl, omnibox_view()->text());
+    EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
+
+    // We test the user text stored in the model has been updated as well. The
+    // model user text is used to populate the text in the Omnibox after some
+    // state transitions, such as the ZeroSuggest popup opening.
+    EXPECT_EQ(kFullUrl, omnibox_view()->model()->GetUserTextForTesting());
   }
 
   bool IsElidedUrlDisplayed() {
@@ -527,11 +531,11 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
   // Right key should unelide and move the cursor to the end.
   omnibox_textfield_view()->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_RIGHT, 0));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(19U, start);
-  EXPECT_EQ(19U, end);
+  EXPECT_EQ(23U, start);
+  EXPECT_EQ(23U, end);
 
   // Blur to restore the elided URL, then click on the Omnibox again to refocus.
   BlurOmnibox();
@@ -541,10 +545,10 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnArrowKey) {
   // part.
   omnibox_textfield_view()->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_LEFT, 0));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
   omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(8U, start);
-  EXPECT_EQ(8U, end);
+  EXPECT_EQ(12U, start);
+  EXPECT_EQ(12U, end);
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnHomeKey) {
@@ -554,7 +558,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, UnelideOnHomeKey) {
   // unelided URL.
   omnibox_textfield_view()->OnKeyPressed(
       ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_HOME, 0));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(0U, start);
@@ -577,7 +581,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, GestureTaps) {
 
   // Unelide on second tap (cursor placement).
   omnibox_textfield_view()->OnGestureEvent(&tap);
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, FirstMouseClickFocusesOnly) {
@@ -622,15 +626,15 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, CaretPlacementByMouse) {
   EXPECT_TRUE(IsElidedUrlDisplayed());
   omnibox_view()->OnMouseReleased(CreateMouseEvent(
       ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 
-  // Verify the cursor position is https://ex|ample.com. It should be between
-  // 'x' and 'a', because the click was after the second character of the
-  // unelided text "example.com".
+  // Verify the cursor position is https://www.ex|ample.com. It should be
+  // between 'x' and 'a', because the click was after the second character of
+  // the unelided text "example.com".
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(10U, start);
-  EXPECT_EQ(10U, end);
+  EXPECT_EQ(14U, start);
+  EXPECT_EQ(14U, end);
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClick) {
@@ -640,14 +644,14 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClick) {
   // should do a single word selection and unelide the text on mousedown.
   omnibox_view()->OnMousePressed(CreateMouseEvent(
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 
-  // Verify that the selection is https://|example|.com, since the double-click
-  // after the fourth character of the unelided text "example.com".
+  // Verify that the selection is https://www.|example|.com, since the
+  // double-click after the fourth character of the unelided text "example.com".
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(8U, start);
-  EXPECT_EQ(15U, end);
+  EXPECT_EQ(12U, start);
+  EXPECT_EQ(19U, end);
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseTripleClick) {
@@ -655,14 +659,14 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseTripleClick) {
   SendMouseClick(4 * kCharacterWidth);
   SendMouseClick(4 * kCharacterWidth);
 
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 
   // Verify that the whole full URL is selected.
   EXPECT_TRUE(omnibox_view()->IsSelectAll());
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(0U, start);
-  EXPECT_EQ(19U, end);
+  EXPECT_EQ(23U, end);
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
@@ -675,7 +679,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
       ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
   EXPECT_TRUE(IsElidedUrlDisplayed());
 
-  // Expect that ex|am|ple.com is the drag selected portion.
+  // Expect that ex|am|ple.com is the drag selected portion while dragging.
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
   EXPECT_EQ(2U, start);
@@ -683,43 +687,45 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseClickDrag) {
 
   omnibox_view()->OnMouseReleased(CreateMouseEvent(
       ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 
-  // Expect that https://ex|am|ple.com is the drag selected portion.
+  // Expect that https://www.ex|am|ple.com is the selected portion after the
+  // user releases the mouse.
   omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(10U, start);
-  EXPECT_EQ(12U, end);
+  EXPECT_EQ(14U, start);
+  EXPECT_EQ(16U, end);
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, MouseDoubleClickDrag) {
   // Expect that after a double-click after the third character of the elided
-  // text, the text is unelided, and https://|example|.com is selected.
+  // text, the text is unelided, and https://www.|example|.com is selected.
   SendMouseClick(4 * kCharacterWidth);
   omnibox_view()->OnMousePressed(CreateMouseEvent(
       ui::ET_MOUSE_PRESSED, GetPointInTextAtXOffset(4 * kCharacterWidth)));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
   size_t start, end;
   omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(8U, start);
-  EXPECT_EQ(15U, end);
+  EXPECT_EQ(12U, start);
+  EXPECT_EQ(19U, end);
 
   // Expect that dragging to the fourth character of the full URL (between the
-  // the 'p' and the 's' of https), will word-select the scheme and domain, so
-  // the new selection will be |https://example|.com. The expected selection is
-  // backwards, since we are dragging the mouse from the domain to the scheme.
+  // the 'p' and the 's' of https), will word-select the scheme, subdomain, and
+  // domain, so the new selection will be |https://www.example|.com. The
+  // expected selection is backwards, since we are dragging the mouse from the
+  // domain to the scheme.
   omnibox_view()->OnMouseDragged(CreateMouseEvent(
       ui::ET_MOUSE_DRAGGED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
   omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(15U, start);
+  EXPECT_EQ(19U, start);
   EXPECT_EQ(0U, end);
 
   // Expect the selection to stay the same after mouse-release.
   omnibox_view()->OnMouseReleased(CreateMouseEvent(
       ui::ET_MOUSE_RELEASED, GetPointInTextAtXOffset(2 * kCharacterWidth)));
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
   omnibox_view()->GetSelectionBounds(&start, &end);
-  EXPECT_EQ(15U, start);
+  EXPECT_EQ(19U, start);
   EXPECT_EQ(0U, end);
 }
 
@@ -727,7 +733,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, ReelideOnBlur) {
   // Double-click should unelide the URL by making a partial selection.
   SendMouseClick(4 * kCharacterWidth);
   SendMouseClick(4 * kCharacterWidth);
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 
   BlurOmnibox();
   EXPECT_TRUE(IsElidedUrlDisplayed());
@@ -737,19 +743,19 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest, DontReelideOnBlurIfEdited) {
   // Double-click should unelide the URL by making a partial selection.
   SendMouseClick(4 * kCharacterWidth);
   SendMouseClick(4 * kCharacterWidth);
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 
   // Since the domain word is selected, pressing 'a' should replace the domain.
   ui::KeyEvent char_event(ui::ET_KEY_PRESSED, ui::VKEY_A, ui::DomCode::US_A, 0,
                           ui::DomKey::FromCharacter('a'),
                           ui::EventTimeForNow());
   omnibox_textfield()->InsertChar(char_event);
-  EXPECT_EQ(base::ASCIIToUTF16("https://a.com"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.a.com"), omnibox_view()->text());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 
   // Now that we've edited the text, blurring should not re-elide the URL.
   BlurOmnibox();
-  EXPECT_EQ(base::ASCIIToUTF16("https://a.com"), omnibox_view()->text());
+  EXPECT_EQ(base::ASCIIToUTF16("https://www.a.com"), omnibox_view()->text());
   EXPECT_TRUE(omnibox_view()->model()->user_input_in_progress());
 }
 
@@ -757,7 +763,7 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
        DontReelideOnBlurIfWidgetDeactivated) {
   SendMouseClick(0);
   SendMouseClick(0);
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 
   // Create a different Widget that will take focus away from the test widget
   // containing our test Omnibox.
@@ -768,10 +774,10 @@ TEST_F(OmniboxViewViewsSteadyStateElisionsTest,
   params.bounds = gfx::Rect(0, 0, 100, 100);
   other_widget->Init(params);
   other_widget->Show();
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 
   omnibox_view()->GetWidget()->Activate();
-  EXPECT_TRUE(IsFullUrlDisplayed());
+  ExpectFullUrlDisplayed();
 }
 
 TEST_F(OmniboxViewViewsSteadyStateElisionsTest, SaveSelectAllOnBlurAndRefocus) {

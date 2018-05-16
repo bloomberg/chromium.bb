@@ -576,9 +576,8 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(bool home_key_pressed) {
   if (IsSelectAll() && !home_key_pressed)
     return false;
 
-  model()->SetInputInProgress(true);
-
-  base::string16 full_url = model()->GetCurrentPermanentUrlText();
+  base::string16 full_url =
+      controller()->GetToolbarModel()->GetFormattedFullURL();
   size_t start, end;
   GetSelectionBounds(&start, &end);
 
@@ -597,6 +596,7 @@ bool OmniboxViewViews::UnapplySteadyStateElisions(bool home_key_pressed) {
 
   // Update the text to the full unelided URL. The caret is positioned at 0, as
   // otherwise we will spuriously scroll the text to the end of the new string.
+  model()->SetUserText(full_url);
   SetWindowTextAndCaretPos(full_url, 0, false, false);
   SelectRange(gfx::Range(start, end));
   return true;

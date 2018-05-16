@@ -349,6 +349,9 @@ class OmniboxEditModel {
   // Called when the current match has changed in the OmniboxController.
   void OnCurrentMatchChanged();
 
+  // Used for testing purposes only.
+  base::string16 GetUserTextForTesting() const { return user_text_; }
+
   // Name of the histogram tracking cut or copy omnibox commands.
   static const char kCutOrCopyAllTextHistogram[];
 
