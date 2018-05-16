@@ -435,6 +435,11 @@ public class DownloadUtils {
             shareIntent.putExtra(Intent.EXTRA_TEXT, offlinePagesString.toString());
         }
 
+        if (items.size() == 1) {
+            shareIntent.putExtra(
+                    Intent.EXTRA_SUBJECT, new File(items.get(0).getFilePath()).getName());
+        }
+
         shareIntent.setAction(intentAction);
         shareIntent.setType(intentMimeType);
         shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -5,17 +5,30 @@
 package org.chromium.chrome.browser.download;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
+import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Tests of {@link DownloadUtils}.
@@ -23,6 +36,21 @@ import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
 @RunWith(ChromeJUnit4ClassRunner.class)
 public class DownloadUtilsTest {
     private static final int MILLIS_PER_SECOND = 1000;
+    private static final String OFFLINE_ITEM_TITLE = "Some Web Page Title.mhtml";
+    private static final String OFFLINE_ITEM_DESCRIPTION = "Our web page";
+    private static final String FILE_PATH = "/fake_sd_card/Download/Some Web Page Title.mhtml";
+    private static final String MULTIPART_RELATED = "multipart/related";
+    private static final String ITEM_ID = "42";
+
+    @Before
+    public void setUp() throws Exception {
+        RecordHistogram.setDisabledForTests(true);
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        RecordHistogram.setDisabledForTests(false);
+    }
 
     /**
      * Test {@link DownloadUtils#getAbbrieviatedFileName()} method.
@@ -111,5 +139,34 @@ public class DownloadUtilsTest {
         progress = new Progress(5, Long.valueOf(5), OfflineItemProgressUnit.FILES);
         Assert.assertEquals(100, progress.getPercentage());
         Assert.assertEquals("0 files left", DownloadUtils.formatRemainingFiles(context, progress));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Download"})
+    public void testCreateShareIntentHasTitle() {
+        // Create an item list with a single item.
+        List<DownloadHistoryItemWrapper> items = new ArrayList<DownloadHistoryItemWrapper>();
+        OfflineItem offlineItem = new OfflineItem();
+        offlineItem.title = OFFLINE_ITEM_TITLE;
+        offlineItem.description = OFFLINE_ITEM_DESCRIPTION;
+        offlineItem.filePath = FILE_PATH;
+        offlineItem.mimeType = MULTIPART_RELATED;
+        OfflineItemWrapper itemWrapper =
+                OfflineItemWrapper.createOfflineItemWrapperForTest(offlineItem);
+        items.add(itemWrapper);
+
+        // Create a map matching the id to a filename.
+        Map<String, String> offlineFilePathMap = new HashMap<String, String>();
+        offlineFilePathMap.put(ITEM_ID, FILE_PATH);
+
+        // Call the share function.
+        Intent shareIntent = DownloadUtils.createShareIntent(items, offlineFilePathMap);
+
+        // Check that the resulting share intent has extra subject set for the title.
+        Bundle extras = shareIntent.getExtras();
+        Assert.assertNotNull(extras);
+        String subject = extras.getString(Intent.EXTRA_SUBJECT);
+        Assert.assertEquals(OFFLINE_ITEM_TITLE, subject);
     }
 }
