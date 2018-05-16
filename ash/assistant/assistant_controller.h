@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace base {
 class UnguessableToken;
@@ -117,6 +118,8 @@ class AssistantController
       chromeos::assistant::mojom::AssistantPtr assistant) override;
   void SetAssistantCardRenderer(
       mojom::AssistantCardRendererPtr assistant_card_renderer) override;
+  void RequestScreenshot(const gfx::Rect& rect,
+                         RequestScreenshotCallback callback) override;
 
  private:
   mojo::Binding<mojom::AssistantController> assistant_controller_binding_;

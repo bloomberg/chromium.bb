@@ -1323,6 +1323,7 @@ component("ash") {
     "//ui/ozone",
     "//ui/platform_window",
     "//ui/platform_window/stub",
+    "//ui/snapshot",
     "//ui/wm/public",
     "//url",
   ]
