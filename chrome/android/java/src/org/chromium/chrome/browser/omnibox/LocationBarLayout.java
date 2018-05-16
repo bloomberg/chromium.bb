@@ -16,8 +16,6 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
-import android.graphics.Rect;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -79,7 +77,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.KeyNavigationUtil;
-import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -110,11 +107,6 @@ public class LocationBarLayout
     // Delay triggering the omnibox results upon key press to allow the location bar to repaint
     // with the new characters.
     private static final long OMNIBOX_SUGGESTION_START_DELAY_MS = 30;
-
-    private static final int OMNIBOX_RESULTS_BG_COLOR = 0xFFF5F5F6;
-    private static final int OMNIBOX_RESULTS_CHROME_MODERN_BG_COLOR = 0xFFFFFFFF;
-    private static final int OMNIBOX_INCOGNITO_RESULTS_BG_COLOR = 0xFF323232;
-    private static final int OMNIBOX_INCOGNITO_RESULTS_CHROME_MODERN_BG_COLOR = 0xFF3C4043;
 
     // Unicode "Left-To-Right Mark" (LRM) character.
     private static final char LRM = '\u200E';
@@ -404,227 +396,6 @@ public class LocationBarLayout
     public static final int BUTTON_TYPE_SECURITY_ICON = 1;
     /** Navigation button should be shown. */
     public static final int BUTTON_TYPE_NAVIGATION_ICON = 2;
-
-    /**
-     * A widget for showing a list of omnibox suggestions.
-     */
-    @VisibleForTesting
-    public class OmniboxSuggestionsList extends ListView {
-        private final int mSuggestionHeight;
-        private final int mSuggestionAnswerHeight;
-        private final int mSuggestionDefinitionHeight;
-        private final View mAnchorView;
-
-        private final int[] mTempPosition = new int[2];
-        private final Rect mTempRect = new Rect();
-
-        private final int mBackgroundVerticalPadding;
-
-        private float mMaxRequiredWidth;
-        private float mMaxMatchContentsWidth;
-
-        /**
-         * Constructs a new list designed for containing omnibox suggestions.
-         * @param context Context used for contained views.
-         */
-        public OmniboxSuggestionsList(Context context) {
-            super(context, null, android.R.attr.dropDownListViewStyle);
-
-            setDivider(null);
-            setFocusable(true);
-            setFocusableInTouchMode(true);
-
-            mSuggestionHeight = context.getResources().getDimensionPixelOffset(
-                    R.dimen.omnibox_suggestion_height);
-            mSuggestionAnswerHeight = context.getResources().getDimensionPixelOffset(
-                    R.dimen.omnibox_suggestion_answer_height);
-            mSuggestionDefinitionHeight = context.getResources().getDimensionPixelOffset(
-                    R.dimen.omnibox_suggestion_definition_height);
-
-            int paddingTop = useModernDesign()
-                    ? 0
-                    : context.getResources().getDimensionPixelOffset(
-                              R.dimen.omnibox_suggestion_list_padding_top);
-            int paddingBottom = context.getResources().getDimensionPixelOffset(
-                    R.dimen.omnibox_suggestion_list_padding_bottom);
-            ApiCompatibilityUtils.setPaddingRelative(this, 0, paddingTop, 0, paddingBottom);
-
-            Drawable background = getSuggestionPopupBackground();
-            setBackground(background);
-            background.getPadding(mTempRect);
-
-            mBackgroundVerticalPadding =
-                    mTempRect.top + mTempRect.bottom + getPaddingTop() + getPaddingBottom();
-
-            mAnchorView = LocationBarLayout.this.getRootView().findViewById(R.id.toolbar);
-        }
-
-        private void show() {
-            updateLayoutParams();
-            if (getVisibility() != VISIBLE) {
-                mIgnoreOmniboxItemSelection = true;  // Reset to default value.
-                setVisibility(VISIBLE);
-                if (getSelectedItemPosition() != 0) setSelection(0);
-            }
-        }
-
-        /**
-         * Invalidates all of the suggestion views in the list.  Only applicable when this
-         * is visible.
-         */
-        public void invalidateSuggestionViews() {
-            if (!isShown()) return;
-            ListView suggestionsList = mSuggestionList;
-            for (int i = 0; i < suggestionsList.getChildCount(); i++) {
-                if (suggestionsList.getChildAt(i) instanceof SuggestionView) {
-                    suggestionsList.getChildAt(i).postInvalidateOnAnimation();
-                }
-            }
-        }
-
-        /**
-         * Updates the maximum widths required to render the suggestions.
-         * This is needed for infinite suggestions where we try to vertically align the leading
-         * ellipsis.
-         */
-        public void resetMaxTextWidths() {
-            mMaxRequiredWidth = 0;
-            mMaxMatchContentsWidth = 0;
-        }
-
-        /**
-         * Updates the max text width values for the suggestions.
-         * @param requiredWidth a new required width.
-         * @param matchContentsWidth a new match contents width.
-         */
-        public void updateMaxTextWidths(float requiredWidth, float matchContentsWidth) {
-            mMaxRequiredWidth = Math.max(mMaxRequiredWidth, requiredWidth);
-            mMaxMatchContentsWidth = Math.max(mMaxMatchContentsWidth, matchContentsWidth);
-        }
-
-        /**
-         * @return max required width for the suggestions.
-         */
-        public float getMaxRequiredWidth() {
-            return mMaxRequiredWidth;
-        }
-
-        /**
-         * @return max match contents width for the suggestions.
-         */
-        public float getMaxMatchContentsWidth() {
-            return mMaxMatchContentsWidth;
-        }
-
-        private void updateLayoutParams() {
-            boolean updateLayout = false;
-            FrameLayout.LayoutParams layoutParams = (FrameLayout.LayoutParams) getLayoutParams();
-            if (layoutParams == null) {
-                layoutParams = new FrameLayout.LayoutParams(0, 0);
-                setLayoutParams(layoutParams);
-            }
-
-            // Compare the relative positions of the anchor view to the list parent view to
-            // determine the offset to apply to the suggestions list.  By using layout positioning,
-            // this avoids issues where getLocationInWindow can be inaccurate on certain devices.
-            View contentView =
-                    LocationBarLayout.this.getRootView().findViewById(android.R.id.content);
-            ViewUtils.getRelativeLayoutPosition(contentView, mAnchorView, mTempPosition);
-            int anchorX = mTempPosition[0];
-            int anchorY = mTempPosition[1];
-
-            ViewUtils.getRelativeLayoutPosition(contentView, (View) getParent(), mTempPosition);
-            int parentY = mTempPosition[1];
-
-            int anchorBottomRelativeToContent = anchorY + mAnchorView.getMeasuredHeight();
-            int desiredTopMargin = anchorBottomRelativeToContent - parentY;
-            if (layoutParams.topMargin != desiredTopMargin) {
-                layoutParams.topMargin = desiredTopMargin;
-                updateLayout = true;
-            }
-
-            int contentLeft = contentView.getLeft();
-            int anchorLeftRelativeToContent = anchorX - contentLeft;
-            if (layoutParams.leftMargin != anchorLeftRelativeToContent) {
-                layoutParams.leftMargin = anchorLeftRelativeToContent;
-                updateLayout = true;
-            }
-
-            getWindowDelegate().getWindowVisibleDisplayFrame(mTempRect);
-            int decorHeight = getWindowDelegate().getDecorViewHeight();
-            int additionalHeightForBottomNavMenu =
-                    mBottomSheet != null ? mBottomSheet.getToolbarShadowHeight() : 0;
-            int availableViewportHeight =
-                    Math.min(mTempRect.height(), decorHeight) + additionalHeightForBottomNavMenu;
-            int availableListHeight = availableViewportHeight - anchorBottomRelativeToContent;
-            // The suggestions should consume all available space in Modern on phone.
-            int desiredHeight = useModernDesign() && !mIsTablet
-                    ? availableListHeight
-                    : Math.min(availableListHeight, getIdealHeight());
-            if (layoutParams.height != desiredHeight) {
-                layoutParams.height = desiredHeight;
-                updateLayout = true;
-            }
-
-            int desiredWidth = getDesiredWidth();
-            if (layoutParams.width != desiredWidth) {
-                layoutParams.width = desiredWidth;
-                updateLayout = true;
-            }
-
-            if (updateLayout) requestLayout();
-        }
-
-        private int getIdealHeight() {
-            int idealListSize = mBackgroundVerticalPadding;
-            for (int i = 0; i < mSuggestionItems.size(); i++) {
-                OmniboxResultItem item = mSuggestionItems.get(i);
-                if (!TextUtils.isEmpty(item.getSuggestion().getAnswerContents())) {
-                    int num = SuggestionView.parseNumAnswerLines(
-                            item.getSuggestion().getAnswer().getSecondLine().getTextFields());
-                    if (num > 1) {
-                        idealListSize += mSuggestionDefinitionHeight;
-                    } else {
-                        idealListSize += mSuggestionAnswerHeight;
-                    }
-                } else {
-                    idealListSize += mSuggestionHeight;
-                }
-            }
-            return idealListSize;
-        }
-
-        private int getDesiredWidth() {
-            return mAnchorView.getWidth();
-        }
-
-        @Override
-        protected void layoutChildren() {
-            super.layoutChildren();
-            // In ICS, the selected view is not marked as selected despite calling setSelection(0),
-            // so we bootstrap this after the children have been laid out.
-            if (!isInTouchMode() && getSelectedView() != null) {
-                getSelectedView().setSelected(true);
-            }
-        }
-
-        private void updateSuggestionsLayoutDirection(int layoutDirection) {
-            if (!isShown()) return;
-
-            for (int i = 0; i < getChildCount(); i++) {
-                View childView = getChildAt(i);
-                if (!(childView instanceof SuggestionView)) continue;
-                ApiCompatibilityUtils.setLayoutDirection(childView, layoutDirection);
-            }
-        }
-
-        /**
-         * @return Whether or not the suggestions list is scrolled any amount.
-         */
-        private int getVerticalScroll() {
-            return computeVerticalScrollOffset();
-        }
-    }
 
     public LocationBarLayout(Context context, AttributeSet attrs) {
         this(context, attrs, R.layout.location_bar);
@@ -1576,7 +1347,39 @@ public class LocationBarLayout
         getRootView().findViewById(R.id.control_container)
                 .addOnLayoutChangeListener(suggestionListResizer);
 
-        mSuggestionList = new OmniboxSuggestionsList(getContext());
+        OmniboxSuggestionsList.OmniboxSuggestionListEmbedder embedder =
+                new OmniboxSuggestionsList.OmniboxSuggestionListEmbedder() {
+                    @Override
+                    public boolean useModernDesign() {
+                        return LocationBarLayout.this.useModernDesign();
+                    }
+
+                    @Override
+                    public boolean isTablet() {
+                        return mIsTablet;
+                    }
+
+                    @Override
+                    public boolean isIncognito() {
+                        return mToolbarDataProvider.isIncognito();
+                    }
+
+                    @Override
+                    public WindowDelegate getWindowDelegate() {
+                        return mWindowDelegate;
+                    }
+
+                    @Override
+                    public BottomSheet getBottomSheet() {
+                        return mBottomSheet;
+                    }
+
+                    @Override
+                    public View getAnchorView() {
+                        return getRootView().findViewById(R.id.toolbar);
+                    }
+                };
+        mSuggestionList = new OmniboxSuggestionsList(getContext(), embedder);
 
         // Ensure the results container is initialized and add the suggestion list to it.
         initOmniboxResultsContainer();
@@ -1665,41 +1468,6 @@ public class LocationBarLayout
     }
 
     /**
-     * @return The view that the suggestion popup should be anchored below.
-     */
-    protected View getSuggestionPopupAnchorView() {
-        return this;
-    }
-
-    /**
-     * @return The background for the omnibox suggestions popup.
-     */
-    protected Drawable getSuggestionPopupBackground() {
-        int omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_BG_COLOR;
-        int omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_BG_COLOR;
-        if (useModernDesign()) {
-            omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_CHROME_MODERN_BG_COLOR;
-            if (!mIsTablet) {
-                omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_CHROME_MODERN_BG_COLOR;
-            }
-        }
-
-        int color = mToolbarDataProvider.isIncognito() ? omniboxResultsColorForIncognito
-                                                       : omniboxResultsColorForNonIncognito;
-        if (!isHardwareAccelerated()) {
-            // When HW acceleration is disabled, changing mSuggestionList' items somehow erases
-            // mOmniboxResultsContainer' background from the area not covered by mSuggestionList.
-            // To make sure mOmniboxResultsContainer is always redrawn, we make list background
-            // color slightly transparent. This makes mSuggestionList.isOpaque() to return false,
-            // and forces redraw of the parent view (mOmniboxResultsContainer).
-            if (Color.alpha(color) == 255) {
-                color = Color.argb(254, Color.red(color), Color.green(color), Color.blue(color));
-            }
-        }
-        return new ColorDrawable(color);
-    }
-
-    /**
      * Handles showing/hiding the suggestions list.
      * @param visible Whether the suggestions list should be visible.
      */
@@ -1708,6 +1476,7 @@ public class LocationBarLayout
         if (mSuggestionList != null) {
             final boolean isShowing = mSuggestionList.isShown();
             if (visible && !isShowing) {
+                mIgnoreOmniboxItemSelection = true; // Reset to default value.
                 mSuggestionList.show();
             } else if (!visible && isShowing) {
                 mSuggestionList.setVisibility(GONE);
@@ -2423,7 +2192,7 @@ public class LocationBarLayout
         mUrlBar.setUseDarkTextColors(mUseDarkColors);
 
         if (mSuggestionList != null) {
-            mSuggestionList.setBackground(getSuggestionPopupBackground());
+            mSuggestionList.refreshPopupBackground();
         }
         mSuggestionListAdapter.setUseDarkColors(mUseDarkColors);
     }
