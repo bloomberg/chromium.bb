@@ -132,8 +132,6 @@ Profile::Delegate::~Delegate() {
 
 // static
 const char Profile::kProfileKey[] = "__PROFILE__";
-// This must be a string which can never be a valid domain.
-const char Profile::kNoHostedDomainFound[] = "NO_HOSTED_DOMAIN";
 
 // static
 void Profile::RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {

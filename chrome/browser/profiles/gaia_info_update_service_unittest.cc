@@ -198,8 +198,9 @@ TEST_F(GAIAInfoUpdateServiceTest, DownloadSuccess) {
   EXPECT_EQ(given_name, entry->GetGAIAGivenName());
   EXPECT_TRUE(gfx::test::AreImagesEqual(image, *entry->GetGAIAPicture()));
   EXPECT_EQ(url, service()->GetCachedPictureURL());
-  EXPECT_EQ(Profile::kNoHostedDomainFound, profile()->GetPrefs()->
-      GetString(prefs::kGoogleServicesHostedDomain));
+  EXPECT_EQ(
+      AccountTrackerService::kNoHostedDomainFound,
+      profile()->GetPrefs()->GetString(prefs::kGoogleServicesHostedDomain));
 }
 
 TEST_F(GAIAInfoUpdateServiceTest, DownloadFailure) {

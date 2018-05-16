@@ -102,8 +102,6 @@ class Profile : public content::BrowserContext {
 
   // Key used to bind profile to the widget with which it is associated.
   static const char kProfileKey[];
-  // Value representing no hosted domain in the kProfileHostedDomain preference.
-  static const char kNoHostedDomainFound[];
 
   Profile();
   ~Profile() override;

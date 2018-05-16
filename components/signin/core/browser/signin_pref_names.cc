@@ -33,17 +33,14 @@ const char kGaiaCookieChangedTime[] = "gaia_cookie.changed_time";
 // double that should be converted into base::Time.
 const char kGaiaCookiePeriodicReportTime[] = "gaia_cookie.periodic_report_time";
 
-// The profile's hosted domain; empty if unset;
-// AccountTrackerService::kNoHostedDomainFound if there is none.
-
 // Typically contains an obfuscated gaiaid and will match the value of
 // kGoogleServicesUserAccountId. Some platforms and legacy clients may have
 // an email stored in this preference instead. This is transitional and will
 // eventually be fixed, allowing the removal of kGoogleServicesUserAccountId.
 const char kGoogleServicesAccountId[] = "google.services.account_id";
 
-// The profile's hosted domain; empty if unset; Profile::kNoHostedDomainFound
-// if there is none.
+// The profile's hosted domain; empty if unset;
+// AccountTrackerService::kNoHostedDomainFound if there is none.
 const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";
 
 // Similar to kGoogleServicesLastUsername, this is the corresponding version of

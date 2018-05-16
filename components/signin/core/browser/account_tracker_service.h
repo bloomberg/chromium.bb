@@ -40,9 +40,8 @@ class AccountTrackerService : public KeyedService {
   // tracked by this service.
   static const char kAccountInfoPref[];
 
-  // TODO(mlerman): Remove all references to Profile::kNoHostedDomainFound in
-  // favour of this.
-  // Value representing no hosted domain in the kProfileHostedDomain preference.
+  // Value representing no hosted domain in the kGoogleServicesHostedDomain
+  // preference.
   static const char kNoHostedDomainFound[];
 
   // Value representing no picture URL associated with an account.
