@@ -68,7 +68,9 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
       client_(client),
       begin_frame_source_(this),
       enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()) {
+          features::IsSurfaceSynchronizationEnabled()),
+      enable_viz_(
+          base::FeatureList::IsEnabled(features::kVizDisplayCompositor)) {
   DCHECK(view_);
   DCHECK(client_);
 
@@ -89,6 +91,8 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
     const viz::LocalSurfaceId& local_surface_id,
     viz::CompositorFrame frame,
     viz::mojom::HitTestRegionListPtr hit_test_region_list) {
+  DCHECK(!enable_viz_);
+
   if (local_surface_id != surface_info_.id().local_surface_id()) {
     DestroyDelegatedContent();
     DCHECK(!content_layer_);
@@ -120,6 +124,7 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
 
 void DelegatedFrameHostAndroid::DidNotProduceFrame(
     const viz::BeginFrameAck& ack) {
+  DCHECK(!enable_viz_);
   support_->DidNotProduceFrame(ack);
 }
 
@@ -171,6 +176,7 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
+  // TODO(ericrk): Handle Viz cases here.
   return support_ && surface_info_.is_valid() && view_->GetWindowAndroid() &&
          view_->GetWindowAndroid()->GetCompositor();
 }
@@ -204,19 +210,21 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
     WindowAndroidCompositor* compositor) {
   if (registered_parent_compositor_)
     DetachFromCompositor();
-  // If this is the first frame since the compositor became visible, we want to
+  // If this is the first frame after the compositor became visible, we want to
   // take the compositor lock, preventing compositor frames from being produced
   // until all delegated frames are ready. This improves the resume transition,
   // preventing flashes. Set a 5 second timeout to prevent locking up the
   // browser in cases where the renderer hangs or another factor prevents a
   // frame from being produced. If we already have delegated content, no need
   // to take the lock.
-  if (compositor->IsDrawingFirstVisibleFrame() && !HasDelegatedContent()) {
+  if (!enable_viz_ && compositor->IsDrawingFirstVisibleFrame() &&
+      !HasDelegatedContent()) {
     compositor_attach_until_frame_lock_ = compositor->GetCompositorLock(
         this, base::TimeDelta::FromSeconds(kFirstFrameTimeoutSeconds));
   }
   compositor->AddChildFrameSink(frame_sink_id_);
-  client_->SetBeginFrameSource(&begin_frame_source_);
+  if (!enable_viz_)
+    client_->SetBeginFrameSource(&begin_frame_source_);
   registered_parent_compositor_ = compositor;
 }
 
@@ -225,21 +233,36 @@ void DelegatedFrameHostAndroid::DetachFromCompositor() {
     return;
   compositor_attach_until_frame_lock_.reset();
   compositor_pending_resize_lock_.reset();
-  client_->SetBeginFrameSource(nullptr);
-  support_->SetNeedsBeginFrame(false);
+  if (!enable_viz_) {
+    client_->SetBeginFrameSource(nullptr);
+    support_->SetNeedsBeginFrame(false);
+  }
   registered_parent_compositor_->RemoveChildFrameSink(frame_sink_id_);
   registered_parent_compositor_ = nullptr;
 }
 
-void DelegatedFrameHostAndroid::SynchronizeVisualProperties() {
+void DelegatedFrameHostAndroid::SynchronizeVisualProperties(gfx::Size size) {
   local_surface_id_allocator_.GenerateId();
-  // TODO(ericrk): We should handle updating our surface layer with the new
-  // ID if surface synchronization is enabled. See similar behavior in
-  // delegated_frame_host.cc. https://crbug.com/801350
+
+  if (enable_viz_) {
+    DestroyDelegatedContent();
+    DCHECK(!content_layer_);
+
+    // TODO(ericrk): Do we need to handle transparency in Viz?
+    bool is_transparent = true;
+    content_layer_ = CreateSurfaceLayer(
+        viz::SurfaceId(frame_sink_id_,
+                       local_surface_id_allocator_.GetCurrentLocalSurfaceId()),
+        size, is_transparent);
+    view_->GetLayer()->AddChild(content_layer_);
+  }
 }
 
 void DelegatedFrameHostAndroid::PixelSizeWillChange(
     const gfx::Size& pixel_size) {
+  if (enable_surface_synchronization_)
+    return;
+
   // We never take the resize lock unless we're on O+, as previous versions of
   // Android won't wait for us to produce the correct sized frame and will end
   // up looking worse.
@@ -278,6 +301,10 @@ void DelegatedFrameHostAndroid::DidDiscardCompositorFrame(
 }
 
 void DelegatedFrameHostAndroid::OnBeginFrame(const viz::BeginFrameArgs& args) {
+  if (enable_viz_) {
+    NOTREACHED();
+    return;
+  }
   begin_frame_source_.OnBeginFrame(args);
 }
 
@@ -291,13 +318,35 @@ void DelegatedFrameHostAndroid::OnBeginFramePausedChanged(bool paused) {
 }
 
 void DelegatedFrameHostAndroid::OnNeedsBeginFrames(bool needs_begin_frames) {
+  DCHECK(!enable_viz_);
   support_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 void DelegatedFrameHostAndroid::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
-  // TODO(fsamuel): Once surface synchronization is turned on, the fallback
-  // surface should be set here.
+  if (!enable_viz_)
+    return;
+
+  uint32_t parent_sequence_number =
+      surface_info.id().local_surface_id().parent_sequence_number();
+
+  // TODO(ericrk): Handle errors due to wrapping.
+  if (parent_sequence_number < parent_sequence_number_at_navigation_) {
+    // TODO(ericrk): Drop reference from HostFrameSinkManager.
+    return;
+  }
+
+  if (!received_frame_after_navigation_) {
+    client_->DidReceiveFirstFrameAfterNavigation();
+    received_frame_after_navigation_ = true;
+  }
+
+  if (!content_layer_) {
+    // TODO(ericrk): Drop reference from HostFrameSinkManager.
+    return;
+  }
+
+  content_layer_->SetFallbackSurfaceId(surface_info.id());
 }
 
 void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {
@@ -307,6 +356,9 @@ void DelegatedFrameHostAndroid::OnFrameTokenChanged(uint32_t frame_token) {
 void DelegatedFrameHostAndroid::CompositorLockTimedOut() {}
 
 void DelegatedFrameHostAndroid::CreateNewCompositorFrameSinkSupport() {
+  if (enable_viz_)
+    return;
+
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;
   support_.reset();
@@ -332,6 +384,16 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
                          other->content_layer_->bounds(),
                          other->content_layer_->contents_opaque());
   view_->GetLayer()->AddChild(content_layer_);
+}
+
+void DelegatedFrameHostAndroid::DidNavigate() {
+  if (!enable_surface_synchronization_)
+    return;
+
+  received_frame_after_navigation_ = false;
+  parent_sequence_number_at_navigation_ =
+      local_surface_id_allocator_.GetCurrentLocalSurfaceId()
+          .parent_sequence_number();
 }
 
 }  // namespace ui

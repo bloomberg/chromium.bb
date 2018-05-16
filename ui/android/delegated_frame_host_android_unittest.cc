@@ -34,6 +34,7 @@ class MockDelegatedFrameHostAndroidClient
   MOCK_METHOD1(ReclaimResources,
                void(const std::vector<viz::ReturnedResource>&));
   MOCK_METHOD1(OnFrameTokenChanged, void(uint32_t));
+  MOCK_METHOD0(DidReceiveFirstFrameAfterNavigation, void());
 };
 
 class MockWindowAndroidCompositor : public WindowAndroidCompositor {
