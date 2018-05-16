@@ -96,6 +96,8 @@ jumbo_component("ime") {
     "ui_base_ime_export.h",
     "win/imm32_manager.cc",
     "win/imm32_manager.h",
+    "win/on_screen_keyboard_display_manager_input_pane.cc",
+    "win/on_screen_keyboard_display_manager_input_pane.h",
     "win/on_screen_keyboard_display_manager_tab_tip.cc",
     "win/on_screen_keyboard_display_manager_tab_tip.h",
     "win/tsf_bridge.cc",

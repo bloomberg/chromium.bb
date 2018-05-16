@@ -31,7 +31,7 @@ class UI_BASE_IME_EXPORT InputMethodKeyboardController {
       InputMethodKeyboardControllerObserver* observer) = 0;
 
   // Returns true if the virtual keyboard is currently visible.
-  virtual bool IsKeyboardVisible() const = 0;
+  virtual bool IsKeyboardVisible() = 0;
 
  protected:
   InputMethodKeyboardController() = default;

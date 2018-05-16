@@ -361,7 +361,7 @@ bool OnScreenKeyboardDisplayManagerTabTip::GetOSKPath(
   return !osk_path->empty();
 }
 
-bool OnScreenKeyboardDisplayManagerTabTip::IsKeyboardVisible() const {
+bool OnScreenKeyboardDisplayManagerTabTip::IsKeyboardVisible() {
   return OnScreenKeyboardDetector::IsKeyboardVisible();
 }
 

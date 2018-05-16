@@ -23,7 +23,7 @@ void InputMethodKeyboardControllerStub::AddObserver(
 void InputMethodKeyboardControllerStub::RemoveObserver(
     InputMethodKeyboardControllerObserver* observer) {}
 
-bool InputMethodKeyboardControllerStub::IsKeyboardVisible() const {
+bool InputMethodKeyboardControllerStub::IsKeyboardVisible() {
   return false;
 }
 

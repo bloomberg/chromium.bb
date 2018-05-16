@@ -70,6 +70,10 @@ const base::Feature kUiCompositorScrollWithLayers = {
 const base::Feature kDirectManipulationStylus = {
     "DirectManipulationStylus", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Enables InputPane API for controlling on screen keyboard.
+const base::Feature kInputPaneOnScreenKeyboard = {
+    "InputPaneOnScreenKeyboard", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables using WM_POINTER instead of WM_TOUCH for touch events.
 const base::Feature kPointerEventsForTouch = {"PointerEventsForTouch",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

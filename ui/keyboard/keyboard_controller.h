@@ -204,7 +204,7 @@ class KEYBOARD_EXPORT KeyboardController
       ui::InputMethodKeyboardControllerObserver* observer) override;
   void RemoveObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override;
-  bool IsKeyboardVisible() const override;
+  bool IsKeyboardVisible() override;
 
  private:
   // For access to Observer methods for simulation.

@@ -126,7 +126,7 @@ class UI_BASE_IME_EXPORT MockInputMethodManager
       ui::InputMethodKeyboardControllerObserver* observer) override;
   void RemoveObserver(
       ui::InputMethodKeyboardControllerObserver* observer) override;
-  bool IsKeyboardVisible() const override;
+  bool IsKeyboardVisible() override;
 
  private:
   uint32_t features_enabled_state_;
