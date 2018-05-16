@@ -383,8 +383,14 @@ def GeneratePatchedOrderfile(unpatched_orderfile, native_lib_filename,
     # Make sure the anchor functions are located in the right place, here and
     # after everything else.
     # See the comment in //base/android/library_loader/anchor_functions.cc.
-    for prefix in _PREFIXES:
-      f.write(prefix + 'dummy_function_start_of_ordered_text\n')
+    #
+    # __cxx_global_var_init is one of the largest symbols (~38kB as of May
+    # 2018), called extremely early, and not instrumented.
+    first_sections = ('dummy_function_start_of_ordered_text',
+                      '__cxx_global_var_init')
+    for section in first_sections:
+      for prefix in _PREFIXES:
+        f.write(prefix + section + '\n')
 
     for section in expanded_sections:
       f.write(section + '\n')
