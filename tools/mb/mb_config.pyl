@@ -601,6 +601,7 @@
       'fuchsia_x64_cast_audio': 'release_trybot_fuchsia_cast_audio',
       'layout_test_leak_detection': 'release_trybot',
       'leak_detection_linux': 'release_trybot',
+      'linux-blink-gen-property-trees': 'release_trybot',
       'linux-blink-heap-incremental-marking': 'debug_trybot_enable_blink_heap_incremental_marking',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
       'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',

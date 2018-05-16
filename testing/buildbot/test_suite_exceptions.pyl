@@ -2984,6 +2984,11 @@
           'shards': 12,
         },
       },
+      'linux-blink-gen-property-trees': {
+        'args': [
+          '--additional-driver-flag=--enable-blink-gen-property-trees',
+        ],
+      },
       'linux-blink-heap-incremental-marking': {
         'args': [
           '--debug',
