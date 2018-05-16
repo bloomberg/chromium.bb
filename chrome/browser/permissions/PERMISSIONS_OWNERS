@@ -1,6 +1,3 @@
-# PermissionContext subclasses require a Security UX review by one of the
-# following:
-
 benwells@chromium.org
 dominickn@chromium.org
 raymes@chromium.org
