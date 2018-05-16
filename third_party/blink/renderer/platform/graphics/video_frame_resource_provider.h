@@ -9,6 +9,7 @@
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/common/resources/shared_bitmap_reporter.h"
 #include "media/base/video_frame.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -30,7 +31,7 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
 
   virtual ~VideoFrameResourceProvider();
 
-  virtual void Initialize(viz::ContextProvider*);
+  virtual void Initialize(viz::ContextProvider*, viz::SharedBitmapReporter*);
   virtual void AppendQuads(viz::RenderPass*,
                            scoped_refptr<media::VideoFrame>,
                            media::VideoRotation);

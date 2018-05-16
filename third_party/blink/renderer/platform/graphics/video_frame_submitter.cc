@@ -21,8 +21,21 @@
 namespace blink {
 
 namespace {
+
+// TODO(danakj): One day the gpu::mojom::Mailbox type should be shared with
+// blink directly and we won't need to use gpu::mojom::blink::Mailbox, nor the
+// conversion through WTF::Vector.
+gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
+    const viz::SharedBitmapId& id) {
+  WTF::Vector<int8_t> name(GL_MAILBOX_SIZE_CHROMIUM);
+  for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i)
+    name[i] = id.name[i];
+  return {base::in_place, name};
+}
+
 // Delay to retry getting the context_provider.
 constexpr int kGetContextProviderRetryMS = 150;
+
 }  // namespace
 
 VideoFrameSubmitter::VideoFrameSubmitter(
@@ -132,10 +145,12 @@ void VideoFrameSubmitter::OnReceivedContextProvider(
   }
 
   context_provider_ = context_provider;
-  resource_provider_->Initialize(context_provider);
-
-  if (context_provider_)
+  if (use_gpu_compositing) {
     context_provider_->AddObserver(this);
+    resource_provider_->Initialize(context_provider, nullptr);
+  } else {
+    resource_provider_->Initialize(nullptr, this);
+  }
 
   if (frame_sink_id_.is_valid())
     StartSubmitting();
@@ -275,4 +290,19 @@ void VideoFrameSubmitter::DidPresentCompositorFrame(
 
 void VideoFrameSubmitter::DidDiscardCompositorFrame(
     uint32_t presentation_token) {}
+
+void VideoFrameSubmitter::DidAllocateSharedBitmap(
+    mojo::ScopedSharedBufferHandle buffer,
+    const viz::SharedBitmapId& id) {
+  DCHECK(compositor_frame_sink_);
+  compositor_frame_sink_->DidAllocateSharedBitmap(
+      std::move(buffer), SharedBitmapIdToGpuMailboxPtr(id));
+}
+
+void VideoFrameSubmitter::DidDeleteSharedBitmap(const viz::SharedBitmapId& id) {
+  DCHECK(compositor_frame_sink_);
+  compositor_frame_sink_->DidDeleteSharedBitmap(
+      SharedBitmapIdToGpuMailboxPtr(id));
+}
+
 }  // namespace blink

@@ -8,8 +8,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/gpu/context_provider.h"
+#include "components/viz/common/quads/shared_bitmap.h"
+#include "components/viz/common/resources/shared_bitmap_reporter.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/system/buffer.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/renderer/platform/graphics/video_frame_resource_provider.h"
@@ -26,6 +29,7 @@ namespace blink {
 class PLATFORM_EXPORT VideoFrameSubmitter
     : public WebVideoFrameSubmitter,
       public viz::ContextLostObserver,
+      public viz::SharedBitmapReporter,
       public viz::mojom::blink::CompositorFrameSinkClient {
  public:
   explicit VideoFrameSubmitter(WebContextProviderCallback,
@@ -71,6 +75,11 @@ class PLATFORM_EXPORT VideoFrameSubmitter
   void OnBeginFramePausedChanged(bool paused) override {}
   void ReclaimResources(
       const WTF::Vector<viz::ReturnedResource>& resources) override;
+
+  // viz::SharedBitmapReporter implementation.
+  void DidAllocateSharedBitmap(mojo::ScopedSharedBufferHandle,
+                               const viz::SharedBitmapId&) override;
+  void DidDeleteSharedBitmap(const viz::SharedBitmapId&) override;
 
  private:
   void StartSubmitting();
