@@ -18,7 +18,7 @@
 #include "content/public/browser/speech_recognition_session_config.h"
 #include "content/public/common/speech_recognition_grammar.h"
 #include "content/public/common/speech_recognition_result.h"
-#include "jni/SpeechRecognition_jni.h"
+#include "jni/SpeechRecognitionImpl_jni.h"
 
 using base::android::AppendJavaStringArrayToStringVector;
 using base::android::AttachCurrentThread;
@@ -58,9 +58,9 @@ void SpeechRecognizerImplAndroid::StartRecognitionOnUIThread(
     bool interim_results) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
-  j_recognition_.Reset(Java_SpeechRecognition_createSpeechRecognition(
+  j_recognition_.Reset(Java_SpeechRecognitionImpl_createSpeechRecognition(
       env, reinterpret_cast<intptr_t>(this)));
-  Java_SpeechRecognition_startRecognition(
+  Java_SpeechRecognitionImpl_startRecognition(
       env, j_recognition_, ConvertUTF8ToJavaString(env, language), continuous,
       interim_results);
 }
@@ -75,7 +75,7 @@ void SpeechRecognizerImplAndroid::AbortRecognition() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   if (!j_recognition_.is_null())
-    Java_SpeechRecognition_abortRecognition(env, j_recognition_);
+    Java_SpeechRecognitionImpl_abortRecognition(env, j_recognition_);
 }
 
 void SpeechRecognizerImplAndroid::StopAudioCapture() {
@@ -87,7 +87,7 @@ void SpeechRecognizerImplAndroid::StopAudioCapture() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
   if (!j_recognition_.is_null())
-    Java_SpeechRecognition_stopRecognition(env, j_recognition_);
+    Java_SpeechRecognitionImpl_stopRecognition(env, j_recognition_);
 }
 
 bool SpeechRecognizerImplAndroid::IsActive() const {
