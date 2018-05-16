@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 #include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator.h"
 #include "third_party/blink/renderer/core/page/scrolling/snap_coordinator.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
@@ -5492,6 +5493,20 @@ LayoutPoint LayoutBox::FlipForWritingModeForChild(
   return LayoutPoint(point.X() + Size().Width() - child->Size().Width() -
                          (2 * child->Location().X()),
                      point.Y());
+}
+
+LayoutPoint LayoutBox::FlipForWritingModeForChildForPaint(
+    const LayoutBox* child,
+    const LayoutPoint& point) const {
+  // Do nothing unless in FlippedBlocks(). Fast path optimization
+  if (!Style()->IsFlippedBlocksWritingMode())
+    return point;
+  // If child will be painted by LayoutNG, and will use fragment.Offset(),
+  // flip is not needed.
+  if (!AdjustPaintOffsetScope::WillUseLegacyLocation(child))
+    return point;
+
+  return FlipForWritingModeForChild(child, point);
 }
 
 LayoutBox* LayoutBox::LocationContainer() const {

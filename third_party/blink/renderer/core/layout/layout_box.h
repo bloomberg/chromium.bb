@@ -1154,6 +1154,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutPoint FlipForWritingModeForChild(const LayoutBox* child,
                                          const LayoutPoint&) const;
+
+  // NG: Like FlipForWritingModeForChild, except that it will not flip
+  // if LayoutBox will be painted by NG using fragment.Offset.
+  LayoutPoint FlipForWritingModeForChildForPaint(const LayoutBox* child,
+                                                 const LayoutPoint&) const;
+
   WARN_UNUSED_RESULT LayoutUnit FlipForWritingMode(LayoutUnit position) const {
     // The offset is in the block direction (y for horizontal writing modes, x
     // for vertical writing modes).
