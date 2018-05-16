@@ -39,7 +39,15 @@ const char kPreconnectMode[] = "preconnect";
 const char kNoPreconnectMode[] = "no-preconnect";
 
 const base::Feature kSpeculativePreconnectFeature{
-    kSpeculativePreconnectFeatureName, base::FEATURE_DISABLED_BY_DEFAULT};
+  kSpeculativePreconnectFeatureName,
+// TODO(https://crbug.com/839886): Enable the feature on ChromeOS after disk I/O
+// flakes are fixed.
+#if defined(OS_CHROMEOS)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 bool MaybeEnableSpeculativePreconnect(LoadingPredictorConfig* config) {
   if (!base::FeatureList::IsEnabled(kSpeculativePreconnectFeature))
@@ -47,6 +55,9 @@ bool MaybeEnableSpeculativePreconnect(LoadingPredictorConfig* config) {
 
   std::string mode_value = base::GetFieldTrialParamValueByFeature(
       kSpeculativePreconnectFeature, kModeParamName);
+  if (mode_value.empty())
+    mode_value = kPreconnectMode;
+
   if (mode_value == kLearningMode) {
     if (config) {
       config->mode |= LoadingPredictorConfig::LEARNING;
