@@ -374,7 +374,7 @@ class PluginPowerSaverBrowserTest : public InProcessBrowserTest {
 
     GetActiveWebContents()->GetMainFrame()->InsertVisualStateCallback(
         base::Bind(&VerifyVisualStateUpdated,
-                   base::MessageLoop::QuitWhenIdleClosure()));
+                   base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
     content::RunMessageLoop();
 
     content::RenderWidgetHost* rwh =

@@ -64,7 +64,7 @@ class PortForwardingTest: public InProcessBrowserTest {
       if (status.empty() && skip_empty_devices_)
         return;
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+          FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     }
 
     void set_skip_empty_devices(bool skip_empty_devices) {

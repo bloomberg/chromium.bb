@@ -262,8 +262,8 @@ class MessageLoopTaskRunnerThreadingTest : public testing::Test {
   }
 
   void Quit() const {
-    loop_.task_runner()->PostTask(FROM_HERE,
-                                  MessageLoop::QuitWhenIdleClosure());
+    loop_.task_runner()->PostTask(
+        FROM_HERE, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   void AssertOnIOThread() const {

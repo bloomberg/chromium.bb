@@ -149,7 +149,7 @@ class TestClientRunner {
       proxy.channel()->Send(message.release());
     }
 
-    driver->RequestQuit(base::MessageLoop::QuitWhenIdleClosure());
+    driver->RequestQuit(base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 
     base::RunLoop(base::RunLoop::Type::kNestableTasksAllowed).Run();
 

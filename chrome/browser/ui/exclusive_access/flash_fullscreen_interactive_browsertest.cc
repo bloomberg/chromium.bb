@@ -45,7 +45,7 @@ bool RunLoopUntil(const base::Callback<bool()>& condition) {
     }
 
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
         base::TimeDelta::FromMilliseconds(20));
     content::RunMessageLoop();
   }

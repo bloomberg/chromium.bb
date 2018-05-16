@@ -5,6 +5,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/buildflag.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -45,9 +46,9 @@ void ClickOnView(const Browser* browser, ViewID vid) {
   views::View* view =
       BrowserView::GetBrowserViewForBrowser(browser)->GetViewByID(vid);
   DCHECK(view);
-  MoveMouseToCenterAndPress(view, ui_controls::LEFT,
-                            ui_controls::DOWN | ui_controls::UP,
-                            base::MessageLoop::QuitWhenIdleClosure());
+  MoveMouseToCenterAndPress(
+      view, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   content::RunMessageLoop();
 }
 

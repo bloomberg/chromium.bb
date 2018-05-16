@@ -744,8 +744,9 @@ class CaptivePortalBrowserTest : public InProcessBrowserTest {
     DCHECK(!num_jobs_to_wait_for_);
     EXPECT_LE(static_cast<int>(ongoing_mock_requests_.size()), num_jobs);
     if (num_jobs == static_cast<int>(ongoing_mock_requests_.size())) {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::MessageLoop::QuitWhenIdleClosure());
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     } else {
       num_jobs_to_wait_for_ = num_jobs;
     }
@@ -932,8 +933,9 @@ bool CaptivePortalBrowserTest::OnIntercept(
         if (num_jobs_to_wait_for_ ==
             static_cast<int>(ongoing_mock_requests_.size())) {
           num_jobs_to_wait_for_ = 0;
-          BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                  base::MessageLoop::QuitWhenIdleClosure());
+          BrowserThread::PostTask(
+              BrowserThread::UI, FROM_HERE,
+              base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
         }
       }
     } else {

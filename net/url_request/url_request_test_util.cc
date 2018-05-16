@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -228,7 +228,7 @@ void TestDelegate::OnReceivedRedirect(URLRequest* request,
   if (quit_on_redirect_) {
     *defer_redirect = true;
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   } else if (cancel_in_rr_) {
     request->Cancel();
   }
@@ -239,7 +239,7 @@ void TestDelegate::OnAuthRequired(URLRequest* request,
   auth_required_ = true;
   if (quit_on_auth_required_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     return;
   }
   if (!credentials_.Empty()) {
@@ -313,7 +313,7 @@ void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
       // If bytes_read is 0, won't get a notification on cancelation.
       if (bytes_read == 0 && quit_on_complete_) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+            FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
       }
       return;
     }
@@ -339,7 +339,7 @@ void TestDelegate::OnResponseCompleted(URLRequest* request) {
   response_completed_ = true;
   if (quit_on_complete_)
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 TestNetworkDelegate::TestNetworkDelegate()

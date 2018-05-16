@@ -5,6 +5,7 @@
 #include "base/callback.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -93,7 +94,7 @@ class ConstrainedWebDialogBrowserTest : public InProcessBrowserTest {
       }
 
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+          FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
           base::TimeDelta::FromMilliseconds(20));
       content::RunMessageLoop();
     }

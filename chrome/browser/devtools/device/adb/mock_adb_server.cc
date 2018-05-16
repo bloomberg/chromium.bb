@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -625,13 +626,14 @@ void StartMockAdbServer(FlushMode flush_mode) {
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&StartMockAdbServerOnIOThread, flush_mode),
-      base::MessageLoop::QuitWhenIdleClosure());
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   content::RunMessageLoop();
 }
 
 void StopMockAdbServer() {
-  BrowserThread::PostTaskAndReply(BrowserThread::IO, FROM_HERE,
-                                  base::BindOnce(&StopMockAdbServerOnIOThread),
-                                  base::MessageLoop::QuitWhenIdleClosure());
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&StopMockAdbServerOnIOThread),
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   content::RunMessageLoop();
 }

@@ -882,7 +882,7 @@ IN_PROC_BROWSER_TEST_F(PredictorBrowserTest,
   // Flood with delayed requests, then wait.
   FloodResolveRequestsOnUIThread(names);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       base::TimeDelta::FromMilliseconds(500));
   base::RunLoop().Run();
 

@@ -67,7 +67,8 @@ MATCHER_P(HasValidDelay, value, "") {
 // Used to terminate a loop from a different thread than the loop belongs to.
 // |task_runner| should be a SingleThreadTaskRunner.
 ACTION_P(QuitLoop, task_runner) {
-  task_runner->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+  task_runner->PostTask(FROM_HERE,
+                        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 // This audio source implementation should be used for manual tests only since
@@ -382,7 +383,7 @@ TEST_F(WASAPIAudioOutputStreamTest, ValidPacketSize) {
 
   aos->Start(&source);
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TestTimeouts::action_timeout());
   base::RunLoop().Run();
   aos->Stop();
@@ -572,7 +573,7 @@ TEST_F(WASAPIAudioOutputStreamTest,
 
   aos->Start(&source);
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TestTimeouts::action_timeout());
   base::RunLoop().Run();
   aos->Stop();
@@ -606,7 +607,7 @@ TEST_F(WASAPIAudioOutputStreamTest,
 
   aos->Start(&source);
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TestTimeouts::action_timeout());
   base::RunLoop().Run();
   aos->Stop();

@@ -5,6 +5,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/test_timeouts.h"
@@ -427,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
       if (alert_state != last_alert_state_) {
         last_alert_state_ = alert_state;
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+            FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
       }
     }
 

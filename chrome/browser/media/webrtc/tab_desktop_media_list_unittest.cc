@@ -104,7 +104,7 @@ ACTION_P2(CheckListSize, list, expected_list_size) {
 
 ACTION(QuitMessageLoop) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 class TabDesktopMediaListTest : public testing::Test {

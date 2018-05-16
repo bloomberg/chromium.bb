@@ -42,7 +42,7 @@ const char kTestChannelName2[] = "test2";
 
 void QuitCurrentThread() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 class MockConnectCallback {

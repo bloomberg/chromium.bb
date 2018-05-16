@@ -85,7 +85,8 @@ class NotificationCollector
 
     // Check whether all delegates have been signaled.
     if (signaled_ == delegates_)
-      task_runner_->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+      task_runner_->PostTask(FROM_HERE,
+                             RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   // Set of registered delegates.
@@ -279,8 +280,8 @@ class Deleter : public TestDelegateBase {
 
   void OnFileChanged(const FilePath&, bool) override {
     watcher_.reset();
-    loop_->task_runner()->PostTask(FROM_HERE,
-                                   MessageLoop::QuitWhenIdleClosure());
+    loop_->task_runner()->PostTask(
+        FROM_HERE, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   FilePathWatcher* watcher() const { return watcher_.get(); }
@@ -853,9 +854,9 @@ TEST_F(FilePathWatcherTest, DirAttributesChanged) {
   // We should not get notified in this case as it hasn't affected our ability
   // to access the file.
   ASSERT_TRUE(ChangeFilePermissions(test_dir1, Read, false));
-  loop_.task_runner()->PostDelayedTask(FROM_HERE,
-                                       MessageLoop::QuitWhenIdleClosure(),
-                                       TestTimeouts::tiny_timeout());
+  loop_.task_runner()->PostDelayedTask(
+      FROM_HERE, RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+      TestTimeouts::tiny_timeout());
   ASSERT_FALSE(WaitForEvents());
   ASSERT_TRUE(ChangeFilePermissions(test_dir1, Read, true));
 

@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -428,7 +427,8 @@ class InputRouterImplTest : public testing::Test {
 
   static void RunTasksAndWait(base::TimeDelta delay) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(), delay);
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+        delay);
     base::RunLoop().Run();
   }
 

@@ -17,7 +17,7 @@
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -227,8 +227,8 @@ CFDictionaryRef MockLaunchd::CopyDictionaryByCheckingIn(CFErrorRef* error) {
 
 bool MockLaunchd::RemoveJob(CFStringRef label, CFErrorRef* error) {
   remove_called_ = true;
-  main_task_runner_->PostTask(FROM_HERE,
-                              base::MessageLoop::QuitWhenIdleClosure());
+  main_task_runner_->PostTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   return true;
 }
 
@@ -237,8 +237,8 @@ bool MockLaunchd::RestartJob(Domain domain,
                              CFStringRef name,
                              CFStringRef session_type) {
   restart_called_ = true;
-  main_task_runner_->PostTask(FROM_HERE,
-                              base::MessageLoop::QuitWhenIdleClosure());
+  main_task_runner_->PostTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   return true;
 }
 

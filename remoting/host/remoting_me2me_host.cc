@@ -1727,9 +1727,9 @@ int HostProcessMain() {
   // Create the main message loop and start helper threads.
   base::MessageLoopForUI message_loop;
   std::unique_ptr<ChromotingHostContext> context =
-      ChromotingHostContext::Create(
-          new AutoThreadTaskRunner(message_loop.task_runner(),
-                                   base::MessageLoop::QuitWhenIdleClosure()));
+      ChromotingHostContext::Create(new AutoThreadTaskRunner(
+          message_loop.task_runner(),
+          base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
   if (!context)
     return kInitializationFailed;
 

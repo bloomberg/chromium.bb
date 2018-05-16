@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
@@ -298,7 +297,8 @@ class Request {
   int WaitForResult() {
     if (completed())
       return result_;
-    base::CancelableClosure closure(base::MessageLoop::QuitWhenIdleClosure());
+    base::CancelableClosure closure(
+        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, closure.callback(), TestTimeouts::action_max_timeout());
     quit_on_complete_ = true;
@@ -916,7 +916,7 @@ TEST_F(HostResolverImplTest, DeleteWithinCallback) {
       // Quit after returning from OnCompleted (to give it a chance at
       // incorrectly running the cancelled tasks).
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+          FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     }
   };
   set_handler(new MyHandler());
@@ -942,7 +942,7 @@ TEST_F(HostResolverImplTest, DeleteWithinAbortedCallback) {
       // Quit after returning from OnCompleted (to give it a chance at
       // incorrectly running the cancelled tasks).
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+          FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     }
   };
   set_handler(new MyHandler());

@@ -38,12 +38,12 @@ const double kMaxVolume = 1.0;
 constexpr base::TimeDelta kOnMuteWaitTimeout =
     base::TimeDelta::FromMilliseconds(1500);
 
-// Posts base::MessageLoop::QuitWhenIdleClosure() on specified message loop
-// after a certain number of calls given by |limit|.
+// Posts base::RunLoop::QuitCurrentWhenIdleClosureDeprecated() on specified
+// message loop after a certain number of calls given by |limit|.
 ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop_or_proxy) {
   if (++*count >= limit) {
-    loop_or_proxy->PostTask(FROM_HERE,
-                            base::MessageLoop::QuitWhenIdleClosure());
+    loop_or_proxy->PostTask(
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 }
 
@@ -140,7 +140,7 @@ class AudioInputControllerTest : public testing::TestWithParam<bool> {
       return;
     }
 
-    controller_->Close(base::MessageLoop::QuitWhenIdleClosure());
+    controller_->Close(base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     base::RunLoop().Run();
   }
 

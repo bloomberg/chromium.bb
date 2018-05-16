@@ -53,7 +53,7 @@ ACTION(PostCallback) {
 
 ACTION(PostQuitWhenIdle) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 class RendererImplTest : public ::testing::Test {

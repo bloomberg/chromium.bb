@@ -60,7 +60,7 @@ IN_PROC_BROWSER_TEST_F(OOPBrowserTest, Basic) {
   NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
   shell()->web_contents()->GetMainFrame()->InsertVisualStateCallback(base::Bind(
       &OOPBrowserTest::VerifyVisualStateUpdated, base::Unretained(this),
-      base::MessageLoop::QuitWhenIdleClosure()));
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
   content::RunMessageLoop();
 
   auto* rwh = shell()->web_contents()->GetRenderViewHost()->GetWidget();

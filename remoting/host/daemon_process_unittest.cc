@@ -211,7 +211,7 @@ void DaemonProcessTest::DeleteDaemonProcess() {
 
 void DaemonProcessTest::QuitMessageLoop() {
   message_loop_.task_runner()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 void DaemonProcessTest::StartDaemonProcess() {
