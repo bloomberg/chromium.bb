@@ -27,6 +27,7 @@
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
+#include "gpu/command_buffer/service/raster_decoder.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -227,6 +228,7 @@ struct Config {
     bool es3 = it.GetBit();
     attrib_helper.context_type =
         es3 ? CONTEXT_TYPE_OPENGLES3 : CONTEXT_TYPE_OPENGLES2;
+    attrib_helper.enable_oop_rasterization = it.GetBit();
 
 #if defined(GPU_FUZZER_USE_STUB)
     std::vector<base::StringPiece> enabled_extensions;
@@ -251,7 +253,7 @@ struct Config {
 #undef GPU_OP
 
     return it.consumed_bytes();
-  };
+  }
 
   GpuDriverBugWorkarounds workarounds;
   ContextCreationAttribs attrib_helper;
@@ -281,6 +283,12 @@ class CommandBufferSetup {
 
     auto* command_line = base::CommandLine::ForCurrentProcess();
     ALLOW_UNUSED_LOCAL(command_line);
+
+#if defined(GPU_FUZZER_USE_RASTER_DECODER)
+    // TODO(backer): Remove this. Currently used to set
+    // |chromium_raster_transport| features flag (https://crbug.com/786591).
+    command_line->AppendSwitch(switches::kEnableOOPRasterization);
+#endif
 
 #if defined(GPU_FUZZER_USE_ANGLE)
     command_line->AppendSwitchASCII(switches::kUseGL,
@@ -330,9 +338,15 @@ class CommandBufferSetup {
     command_buffer_.reset(new CommandBufferDirect(
         context_group->transfer_buffer_manager(), &sync_point_manager_));
 
+#if defined(GPU_FUZZER_USE_RASTER_DECODER)
+    decoder_.reset(raster::RasterDecoder::Create(
+        command_buffer_.get(), command_buffer_->service(), &outputter_,
+        context_group.get()));
+#else
     decoder_.reset(gles2::GLES2Decoder::Create(
         command_buffer_.get(), command_buffer_->service(), &outputter_,
         context_group.get()));
+#endif
 
     decoder_->GetLogger()->set_log_synthesized_gl_errors(false);
 
@@ -351,6 +365,7 @@ class CommandBufferSetup {
   }
 
   void ResetDecoder() {
+#if !defined(GPU_FUZZER_USE_RASTER_DECODER)
     // Keep a reference to the translators, which keeps them in the cache even
     // after the decoder is reset. They are expensive to initialize, but they
     // don't keep state.
@@ -361,6 +376,7 @@ class CommandBufferSetup {
     translator = decoder_->GetTranslator(GL_FRAGMENT_SHADER);
     if (translator)
       translator->AddRef();
+#endif
     decoder_->Destroy(true);
     decoder_.reset();
     if (recreate_context_) {
@@ -483,7 +499,11 @@ class CommandBufferSetup {
 
   std::unique_ptr<CommandBufferDirect> command_buffer_;
 
+#if defined(GPU_FUZZER_USE_RASTER_DECODER)
+  std::unique_ptr<raster::RasterDecoder> decoder_;
+#else
   std::unique_ptr<gles2::GLES2Decoder> decoder_;
+#endif
 
   scoped_refptr<Buffer> buffer_;
   int32_t buffer_id_ = 0;
