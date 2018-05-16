@@ -46719,7 +46719,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build"
+          "--run-ref-build",
+          "--test-shard-map-filename=benchmark_desktop_bot_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
@@ -46854,7 +46855,8 @@
           "-v",
           "--browser=release",
           "--upload-results",
-          "--run-ref-build"
+          "--run-ref-build",
+          "--test-shard-map-filename=benchmark_desktop_bot_map.json"
         ],
         "isolate_name": "performance_test_suite",
         "merge": {
