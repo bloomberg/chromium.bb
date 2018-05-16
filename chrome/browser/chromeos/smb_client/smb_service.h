@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/file_system_provider/provider_interface.h"
 #include "chrome/browser/chromeos/file_system_provider/service.h"
+#include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/temp_file_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/smb_provider_client.h"
@@ -25,6 +26,17 @@ class FilePath;
 
 namespace chromeos {
 namespace smb_client {
+
+// These values are written to logs. New enum values may be added, but existing
+// enums must never be runumbered or deleted and reused.
+enum SmbMountResult {
+  SUCCESS = 0,                // Mount succeeded
+  UNKNOWN_FAILURE = 1,        // Mount failed in an unrecognized way
+  AUTHENTICATION_FAILED = 2,  // Authentication to the share failed
+  NOT_FOUND = 3,              // The specified share was not found
+  UNSUPPORTED_DEVICE = 4,     // The specified share is not supported
+  MOUNT_EXISTS = 5            // The specified share is already mounted
+};
 
 using file_system_provider::Capabilities;
 using file_system_provider::ProvidedFileSystemInfo;
@@ -112,6 +124,11 @@ class SmbService : public KeyedService,
 
   // Handles the response from attempting to setup Kerberos.
   void OnSetupKerberosResponse(bool success);
+
+  // Translates an error |error| into an SmbMountResult.
+  SmbMountResult TranslateErrorToMountResult(
+      smbprovider::ErrorType error) const;
+  SmbMountResult TranslateErrorToMountResult(base::File::Error error) const;
 
   const ProviderId provider_id_;
   Profile* profile_;

@@ -16,6 +16,10 @@ namespace smb_client {
 // map directly are logged and mapped to the generic failed error.
 base::File::Error TranslateToFileError(smbprovider::ErrorType error);
 
+// Translates a base::File::Error to an smbprovider::ErrorType. There is an
+// explicit smbprovider::ErrorType for each base::File::Error.
+smbprovider::ErrorType TranslateToErrorType(base::File::Error error);
+
 }  // namespace smb_client
 }  // namespace chromeos
 
