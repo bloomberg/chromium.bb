@@ -334,6 +334,20 @@ bool LayoutImage::NodeAtPoint(HitTestResult& result,
 
 void LayoutImage::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  if (LayoutReplaced* content_layout_object = EmbeddedReplacedContent()) {
+    content_layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+
+    // Handle zoom & vertical writing modes here, as the embedded document
+    // doesn't know about them.
+    intrinsic_sizing_info.size.Scale(Style()->EffectiveZoom());
+    if (Style()->GetObjectFit() != EObjectFit::kScaleDown)
+      intrinsic_sizing_info.size.Scale(ImageDevicePixelRatio());
+
+    if (!IsHorizontalWritingMode())
+      intrinsic_sizing_info.Transpose();
+    return;
+  }
+
   LayoutReplaced::ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
 
   // Our intrinsicSize is empty if we're laying out generated images with
@@ -364,15 +378,6 @@ bool LayoutImage::NeedsPreferredWidthsRecalculation() const {
   if (LayoutReplaced::NeedsPreferredWidthsRecalculation())
     return true;
   return EmbeddedReplacedContent();
-}
-
-bool LayoutImage::GetNestedIntrinsicSizingInfo(
-    IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (LayoutReplaced* content_layout_object = EmbeddedReplacedContent()) {
-    content_layout_object->ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
-    return true;
-  }
-  return false;
 }
 
 LayoutReplaced* LayoutImage::EmbeddedReplacedContent() const {

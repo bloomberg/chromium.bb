@@ -38,8 +38,9 @@ void LayoutNGListMarkerImage::ComputeSVGIntrinsicSizingInfoByDefaultSize(
       font_data->GetFontMetrics().Ascent() / LayoutUnit(2);
   FloatSize default_size(bullet_width, bullet_width);
   default_size.Scale(1 / Style()->EffectiveZoom());
-  LayoutSize svg_image_size =
-      RoundedLayoutSize(ToSVGImage(image)->ConcreteObjectSize(default_size));
+  FloatSize concrete_size = ToSVGImage(image)->ConcreteObjectSize(default_size);
+  concrete_size.Scale(Style()->EffectiveZoom() * ImageDevicePixelRatio());
+  LayoutSize svg_image_size(RoundedLayoutSize(concrete_size));
 
   intrinsic_sizing_info.size.SetWidth(svg_image_size.Width());
   intrinsic_sizing_info.size.SetHeight(svg_image_size.Height());
@@ -47,19 +48,21 @@ void LayoutNGListMarkerImage::ComputeSVGIntrinsicSizingInfoByDefaultSize(
   intrinsic_sizing_info.has_height = true;
 }
 
-bool LayoutNGListMarkerImage::GetNestedIntrinsicSizingInfo(
+void LayoutNGListMarkerImage::ComputeIntrinsicSizingInfo(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (!LayoutImage::GetNestedIntrinsicSizingInfo(intrinsic_sizing_info))
-    return false;
+  LayoutImage::ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
 
-  // For SVG image, if GetNestedIntrinsicSizingInfo successfully and the size is
-  // empty, we need to compute the intrinsic size by setting a default size.
+  // If this is an SVG image without intrinsic width and height,
+  // compute an intrinsic size using the concrete object size resolved
+  // with a default object size of 1em x 1em.
+  // TODO(fs): Apply this more generally to all images (CSS <image> values)
+  // that have no intrinsic width or height. I.e just always compute the
+  // concrete object size here.
   if (intrinsic_sizing_info.size.IsEmpty() && CachedImage()) {
     Image* image = CachedImage()->GetImage();
     if (image && image->IsSVGImage())
       ComputeSVGIntrinsicSizingInfoByDefaultSize(intrinsic_sizing_info);
   }
-  return true;
 }
 
 }  // namespace blink

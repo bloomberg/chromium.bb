@@ -104,13 +104,6 @@ class CORE_EXPORT LayoutReplaced : public LayoutBox {
   void ComputeIntrinsicLogicalWidths(LayoutUnit& min_logical_width,
                                      LayoutUnit& max_logical_width) const final;
 
-  // Extract intrinsic sizing info from a potential nested layout
-  // context. Returns true if successful, and populates the IntrinsicSizingInfo
-  // structure if so.
-  virtual bool GetNestedIntrinsicSizingInfo(IntrinsicSizingInfo&) const {
-    return false;
-  }
-
   // This function calculates the placement of the replaced contents. It takes
   // intrinsic size of the replaced contents, stretch to fit CSS content box
   // according to object-fit.

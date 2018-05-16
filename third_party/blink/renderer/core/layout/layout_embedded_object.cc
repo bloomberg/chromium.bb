@@ -148,18 +148,27 @@ CompositingReasons LayoutEmbeddedObject::AdditionalCompositingReasons() const {
   return CompositingReason::kNone;
 }
 
+void LayoutEmbeddedObject::ComputeIntrinsicSizingInfo(
+    IntrinsicSizingInfo& intrinsic_sizing_info) const {
+  FrameView* frame_view = ChildFrameView();
+  if (frame_view && frame_view->GetIntrinsicSizingInfo(intrinsic_sizing_info)) {
+    // Handle zoom & vertical writing modes here, as the embedded document
+    // doesn't know about them.
+    intrinsic_sizing_info.size.Scale(Style()->EffectiveZoom());
+
+    if (!IsHorizontalWritingMode())
+      intrinsic_sizing_info.Transpose();
+    return;
+  }
+
+  LayoutEmbeddedContent::ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
+}
+
 bool LayoutEmbeddedObject::NeedsPreferredWidthsRecalculation() const {
   if (LayoutEmbeddedContent::NeedsPreferredWidthsRecalculation())
     return true;
   FrameView* frame_view = ChildFrameView();
   return frame_view && frame_view->HasIntrinsicSizingInfo();
-}
-
-bool LayoutEmbeddedObject::GetNestedIntrinsicSizingInfo(
-    IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (FrameView* frame_view = ChildFrameView())
-    return frame_view->GetIntrinsicSizingInfo(intrinsic_sizing_info);
-  return false;
 }
 
 }  // namespace blink
