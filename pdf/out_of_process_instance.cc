@@ -54,6 +54,8 @@ const char kChromeExtension[] =
 // Constants used in handling postMessage() messages.
 const char kType[] = "type";
 const char kJSId[] = "id";
+// Beep messge arguments. (Plugin -> Page).
+const char kJSBeepType[] = "beep";
 // Viewport message arguments. (Page -> Plugin).
 const char kJSViewportType[] = "viewport";
 const char kJSUserInitiated[] = "userInitiated";
@@ -1435,6 +1437,12 @@ void OutOfProcessInstance::GetDocumentPassword(
       std::make_unique<pp::CompletionCallbackWithOutput<pp::Var>>(callback);
   pp::VarDictionary message;
   message.Set(pp::Var(kType), pp::Var(kJSGetPasswordType));
+  PostMessage(message);
+}
+
+void OutOfProcessInstance::Beep() {
+  pp::VarDictionary message;
+  message.Set(pp::Var(kType), pp::Var(kJSBeepType));
   PostMessage(message);
 }
 

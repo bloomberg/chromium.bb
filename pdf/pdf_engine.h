@@ -181,6 +181,9 @@ class PDFEngine {
     virtual void GetDocumentPassword(
         pp::CompletionCallbackWithOutput<pp::Var> callback) {}
 
+    // Play a "beeping" sound.
+    virtual void Beep() {}
+
     // Puts up an alert with the given message.
     virtual void Alert(const std::string& message) {}
 

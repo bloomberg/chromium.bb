@@ -514,6 +514,10 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, WhitespaceTitle) {
   RunTestsInFile("whitespace_title_test.js", "test-whitespace-title.pdf");
 }
 
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, Beep) {
+  RunTestsInFile("beep_test.js", "test-beep.pdf");
+}
+
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, PageChange) {
   RunTestsInFile("page_change_test.js", "test-bookmarks.pdf");
 }
