@@ -376,6 +376,11 @@ void ManagePasswordsUIController::NeverSavePassword() {
   // The state stays the same.
 }
 
+void ManagePasswordsUIController::OnPasswordsRevealed() {
+  DCHECK(passwords_data_.form_manager());
+  passwords_data_.form_manager()->OnPasswordsRevealed();
+}
+
 void ManagePasswordsUIController::SavePassword(const base::string16& username,
                                                const base::string16& password) {
   const auto& pending_credentials =

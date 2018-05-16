@@ -328,6 +328,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
   EXPECT_FALSE(model()->IsCurrentStateUpdate());
 
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*controller(), OnPasswordsRevealed()).Times(0);
   EXPECT_CALL(*controller(), SavePassword(pending_password().username_value,
                                           pending_password().password_value));
   EXPECT_CALL(*controller(), NeverSavePassword()).Times(0);
@@ -397,6 +398,7 @@ TEST_F(ManagePasswordsBubbleModelTest, ClickUpdate) {
   EXPECT_TRUE(model()->IsCurrentStateUpdate());
 
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
+  EXPECT_CALL(*controller(), OnPasswordsRevealed()).Times(0);
   EXPECT_CALL(*controller(), SavePassword(pending_password().username_value,
                                           pending_password().password_value));
   EXPECT_CALL(*controller(), NeverSavePassword()).Times(0);
@@ -790,6 +792,23 @@ TEST_F(ManagePasswordsBubbleModelTest, EyeIcon_BubbleReopenedAfterAuth) {
 
   EXPECT_FALSE(model()->password_revealing_requires_reauth());
   EXPECT_TRUE(model()->RevealPasswords());
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, PasswordsRevealedReported) {
+  PretendPasswordWaiting();
+
+  EXPECT_CALL(*controller(), OnPasswordsRevealed());
+  EXPECT_TRUE(model()->RevealPasswords());
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, PasswordsRevealedReportedAfterReauth) {
+  // The bubble is opened after reauthentication and the passwords are revealed.
+  pending_password().form_has_autofilled_value = true;
+  // After successful authentication this value is set to true.
+  EXPECT_CALL(*controller(), ArePasswordsRevealedWhenBubbleIsOpened())
+      .WillOnce(Return(true));
+  EXPECT_CALL(*controller(), OnPasswordsRevealed());
+  PretendPasswordWaiting(ManagePasswordsBubbleModel::USER_ACTION);
 }
 
 TEST_F(ManagePasswordsBubbleModelTest, DisableEditing) {

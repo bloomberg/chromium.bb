@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -243,6 +244,11 @@ class FormStructure {
   // Returns the possible form types.
   std::set<FormType> GetFormTypes() const;
 
+  bool passwords_were_revealed() const { return passwords_were_revealed_; }
+  void set_passwords_were_revealed(bool passwords_were_revealed) {
+    passwords_were_revealed_ = passwords_were_revealed;
+  }
+
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -372,6 +378,10 @@ class FormStructure {
 
   // If phone number rationalization has been performed for a given section.
   std::map<std::string, bool> phone_rationalized_;
+
+  // True iff the form is a password form and the user has seen the password
+  // value before accepting the prompt to save. Used for crowdsourcing.
+  bool passwords_were_revealed_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };

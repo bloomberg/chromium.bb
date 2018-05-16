@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 #define CHROME_BROWSER_UI_PASSWORDS_MANAGE_PASSWORDS_UI_CONTROLLER_H_
 
+#include <map>
 #include <memory>
 #include <vector>
 
@@ -118,6 +119,7 @@ class ManagePasswordsUIController
   void OnNoInteraction() override;
   void OnNopeUpdateClicked() override;
   void NeverSavePassword() override;
+  void OnPasswordsRevealed() override;
   void SavePassword(const base::string16& username,
                     const base::string16& password) override;
   void UpdatePassword(const autofill::PasswordForm& password_form) override;

@@ -39,7 +39,7 @@ message AutofillQueryResponseContents {
 
 // This message contains information about the field types in a single form.
 // It is sent by the toolbar to contribute to the field type statistics.
-// Next available id: 24
+// Next available id: 25
 message AutofillUploadContents {
   required string client_version = 1;
   required fixed64 form_signature = 2;
@@ -134,4 +134,7 @@ message AutofillUploadContents {
 
   // The form name.
   optional string form_name = 16;
+
+  // True iff the the non-obfuscated password values were shown to the user.
+  optional bool passwords_revealed = 24;
 }
