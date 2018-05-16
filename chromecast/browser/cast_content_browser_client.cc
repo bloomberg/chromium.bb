@@ -416,7 +416,6 @@ void CastContentBrowserClient::AppendExtraCommandLineSwitches(
     // Any browser command-line switches that should be propagated to
     // the renderer go here.
     static const char* const kForwardSwitches[] = {
-        switches::kAllowHiddenMediaPlayback,
         switches::kForceMediaResolutionHeight,
         switches::kForceMediaResolutionWidth};
     command_line->CopySwitchesFrom(*browser_command_line, kForwardSwitches,
@@ -677,12 +676,15 @@ CastContentBrowserClient::GetServiceManifestOverlay(
     base::StringPiece service_name) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int id = -1;
-  if (service_name == content::mojom::kBrowserServiceName)
+  if (service_name == content::mojom::kBrowserServiceName) {
     id = IDR_CAST_CONTENT_BROWSER_MANIFEST_OVERLAY;
-  else if (service_name == content::mojom::kPackagedServicesServiceName)
+  } else if (service_name == content::mojom::kPackagedServicesServiceName) {
     id = IDR_CAST_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY;
-  else
+  } else if (service_name == content::mojom::kRendererServiceName) {
+    id = IDR_CAST_CONTENT_RENDERER_MANIFEST_OVERLAY;
+  } else {
     return nullptr;
+  }
   base::StringPiece manifest_contents =
       rb.GetRawDataResourceForScale(id, ui::ScaleFactor::SCALE_FACTOR_NONE);
   return base::JSONReader::Read(manifest_contents);

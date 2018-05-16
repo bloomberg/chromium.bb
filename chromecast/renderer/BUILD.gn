@@ -28,8 +28,8 @@ cast_source_set("renderer") {
   sources = [
     "cast_content_renderer_client.cc",
     "cast_content_renderer_client.h",
-    "cast_render_frame_action_deferrer.cc",
-    "cast_render_frame_action_deferrer.h",
+    "cast_media_load_deferrer.cc",
+    "cast_media_load_deferrer.h",
     "tts_dispatcher.cc",
     "tts_dispatcher.h",
   ]

@@ -103,7 +103,6 @@ class CastContentRendererClient
       guest_view_container_dispatcher_;
 #endif
 
-  const bool allow_hidden_media_playback_;
   int supported_bitstream_audio_codecs_;
 
   DISALLOW_COPY_AND_ASSIGN(CastContentRendererClient);

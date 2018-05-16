@@ -13,7 +13,7 @@
 #include "chromecast/media/base/media_codec_support.h"
 #include "chromecast/media/base/supported_codec_profile_levels_memo.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
-#include "chromecast/renderer/cast_render_frame_action_deferrer.h"
+#include "chromecast/renderer/cast_media_load_deferrer.h"
 #include "chromecast/renderer/media/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "chromecast/renderer/tts_dispatcher.h"
@@ -60,9 +60,6 @@ namespace shell {
 CastContentRendererClient::CastContentRendererClient()
     : supported_profiles_(new media::SupportedCodecProfileLevelsMemo()),
       app_media_capabilities_observer_binding_(this),
-      allow_hidden_media_playback_(
-          base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kAllowHiddenMediaPlayback)),
       supported_bitstream_audio_codecs_(kBitstreamAudioCodecNone) {
 #if defined(OS_ANDROID)
   DCHECK(::media::MediaCodecUtil::IsMediaCodecAvailable())
@@ -150,6 +147,9 @@ void CastContentRendererClient::RenderViewCreated(
 void CastContentRendererClient::RenderFrameCreated(
     content::RenderFrame* render_frame) {
   DCHECK(render_frame);
+  // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
+  new CastMediaLoadDeferrer(render_frame);
+
   if (!app_media_capabilities_observer_binding_.is_bound()) {
     mojom::ApplicationMediaCapabilitiesObserverPtr observer;
     app_media_capabilities_observer_binding_.Bind(mojo::MakeRequest(&observer));
@@ -274,24 +274,15 @@ void CastContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
     bool render_frame_has_played_media_before,
     const base::Closure& closure) {
-  if (allow_hidden_media_playback_) {
-    closure.Run();
-    return;
-  }
-
   RunWhenInForeground(render_frame, closure);
 }
 
 void CastContentRendererClient::RunWhenInForeground(
     content::RenderFrame* render_frame,
     const base::Closure& closure) {
-  if (!render_frame->IsHidden()) {
-    closure.Run();
-    return;
-  }
-
-  // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
-  new CastRenderFrameActionDeferrer(render_frame, closure);
+  auto* media_load_deferrer = CastMediaLoadDeferrer::Get(render_frame);
+  DCHECK(media_load_deferrer);
+  media_load_deferrer->RunWhenInForeground(closure);
 }
 
 bool CastContentRendererClient::AllowIdleMediaSuspend() {

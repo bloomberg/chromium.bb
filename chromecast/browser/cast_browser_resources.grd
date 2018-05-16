@@ -14,6 +14,9 @@
       <include name="IDR_CAST_CONTENT_PACKAGED_SERVICES_MANIFEST_OVERLAY"
                file="gen\chromecast\browser\cast_content_packaged_services_manifest_overlay.json"
                use_base_dir="false" type="BINDATA" />
+      <include name="IDR_CAST_CONTENT_RENDERER_MANIFEST_OVERLAY"
+               file="gen\chromecast\browser\cast_content_renderer_manifest_overlay.json"
+               use_base_dir="fase" type="BINDATA" />
     </includes>
   </release>
 </grit>
