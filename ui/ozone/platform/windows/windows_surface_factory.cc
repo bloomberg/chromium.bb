@@ -16,33 +16,15 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_surface_egl.h"
-#include "ui/gl/gl_surface_osmesa_win.h"
 #include "ui/gl/vsync_provider_win.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
-#include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/windows/windows_window.h"
 #include "ui/ozone/platform/windows/windows_window_manager.h"
 
 namespace ui {
 
 namespace {
-
-class GLOzoneOSMesaWindows : public GLOzoneOSMesa {
- public:
-  GLOzoneOSMesaWindows() = default;
-  ~GLOzoneOSMesaWindows() override = default;
-
-  // GLOzone:
-  scoped_refptr<gl::GLSurface> CreateViewGLSurface(
-      gfx::AcceleratedWidget window) override {
-    return gl::InitializeGLSurface(new gl::GLSurfaceOSMesaWin(window));
-  }
-
-  // TODO(camurcu): Implement CreateOffscreenGLSurface().
-
-  DISALLOW_COPY_AND_ASSIGN(GLOzoneOSMesaWindows);
-};
 
 class GLOzoneEGLWindows : public GLOzoneEGL {
  public:
@@ -52,31 +34,19 @@ class GLOzoneEGLWindows : public GLOzoneEGL {
   // GLOzone:
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gfx::AcceleratedWidget window) override {
-    std::unique_ptr<gfx::VSyncProvider> sync_provider(
-        new gl::VSyncProviderWin(window));
-    return CreateNativeViewGLSurfaceEGL(window, std::move(sync_provider));
-  }
-
-  scoped_refptr<gl::GLSurface> CreateNativeViewGLSurfaceEGL(
-      gfx::AcceleratedWidget window,
-      std::unique_ptr<gfx::VSyncProvider> sync_provider) {
-    DCHECK_EQ(gl::kGLImplementationEGLGLES2, gl::GetGLImplementation());
-    DCHECK(window != gfx::kNullAcceleratedWidget);
-
-    return gl::InitializeGLSurface(
-        new gl::NativeViewGLSurfaceEGL(window, std::move(sync_provider)));
+    return InitializeGLSurface(base::MakeRefCounted<gl::NativeViewGLSurfaceEGL>(
+        window, std::make_unique<gl::VSyncProviderWin>(window)));
   }
 
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       const gfx::Size& size) override {
-    return gl::InitializeGLSurface(new gl::PbufferGLSurfaceEGL(size));
+    return gl::InitializeGLSurface(
+        base::MakeRefCounted<gl::PbufferGLSurfaceEGL>(size));
   }
 
  protected:
   // GLOzoneEGL:
   HDC GetNativeDisplay() override {
-    // TODO(camurcu): Probably won't work with multiple AcceleratedWidgets.
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/dd144947.aspx
     return GetWindowDC(nullptr);
   }
 
@@ -91,15 +61,13 @@ class GLOzoneEGLWindows : public GLOzoneEGL {
 }  // namespace
 
 WindowsSurfaceFactory::WindowsSurfaceFactory()
-    : egl_implementation_(std::make_unique<GLOzoneEGLWindows>()),
-      osmesa_implementation_(std::make_unique<GLOzoneOSMesaWindows>()) {}
+    : egl_implementation_(std::make_unique<GLOzoneEGLWindows>()) {}
 
 WindowsSurfaceFactory::~WindowsSurfaceFactory() = default;
 
 std::vector<gl::GLImplementation>
 WindowsSurfaceFactory::GetAllowedGLImplementations() {
   return std::vector<gl::GLImplementation>{gl::kGLImplementationEGLGLES2,
-                                           gl::kGLImplementationOSMesaGL,
                                            gl::kGLImplementationSwiftShaderGL};
 }
 
@@ -109,8 +77,6 @@ GLOzone* WindowsSurfaceFactory::GetGLOzone(
     case gl::kGLImplementationSwiftShaderGL:
     case gl::kGLImplementationEGLGLES2:
       return egl_implementation_.get();
-    case gl::kGLImplementationOSMesaGL:
-      return osmesa_implementation_.get();
     default:
       return nullptr;
   }

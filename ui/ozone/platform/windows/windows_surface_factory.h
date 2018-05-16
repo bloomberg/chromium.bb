@@ -27,8 +27,6 @@ class WindowsSurfaceFactory : public SurfaceFactoryOzone {
 
  private:
   std::unique_ptr<GLOzone> egl_implementation_;
-  // TODO(camurcu): remove osmesa.
-  std::unique_ptr<GLOzone> osmesa_implementation_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowsSurfaceFactory);
 };

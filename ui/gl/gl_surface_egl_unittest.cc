@@ -72,8 +72,8 @@ TEST(GLSurfaceEGLTest, FixedSizeExtension) {
   gfx::Size window_size(400, 500);
   ui::WinWindow window(&platform_delegate, gfx::Rect(window_size));
 
-  scoped_refptr<GLSurface> surface =
-      init::CreateNativeViewGLSurfaceEGL(window.hwnd(), nullptr);
+  scoped_refptr<GLSurface> surface = InitializeGLSurface(
+      base::MakeRefCounted<NativeViewGLSurfaceEGL>(window.hwnd(), nullptr));
   ASSERT_TRUE(surface);
   EXPECT_EQ(window_size, surface->GetSize());
 
