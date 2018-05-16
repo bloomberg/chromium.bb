@@ -462,98 +462,6 @@ void EventProcessorTest::SetUp() {
   test_event_dispatcher_delegate_->set_root(root_window_.get());
 }
 
-class EventProcessorVizTargeterTest
-    : public testing::TestWithParam<bool>,
-      public TestEventProcessorDelegate::Delegate {
- public:
-  EventProcessorVizTargeterTest() {}
-  ~EventProcessorVizTargeterTest() override {}
-
-  ServerWindow* root_window() { return root_window_.get(); }
-  TestEventProcessorDelegate* test_event_dispatcher_delegate() {
-    return test_event_dispatcher_delegate_.get();
-  }
-  EventProcessor* event_dispatcher() { return event_dispatcher_.get(); }
-  VizHostProxy* viz_host_proxy() {
-    return ws_test_helper_.window_server()->GetVizHostProxy();
-  }
-
-  void SendHitTestData();
-
-  void DispatchEvent(EventProcessor* dispatcher,
-                     const ui::Event& event,
-                     EventProcessor::AcceleratorMatchPhase match_phase) {
-    dispatcher->ProcessEvent(event, EventLocationFromEvent(event), match_phase);
-
-    if (!is_event_processing_async())
-      return;
-
-    base::RunLoop runloop;
-    runloop.RunUntilIdle();
-  }
-
-  std::unique_ptr<ServerWindow> CreateChildWindow(const viz::FrameSinkId& id) {
-    std::unique_ptr<ServerWindow> child(
-        new ServerWindow(window_delegate_.get(), id));
-    root_window_->Add(child.get());
-    child->SetVisible(true);
-    return child;
-  }
-
- protected:
-  bool is_event_processing_async() const { return GetParam(); }
-
-  // testing::TestWithParam<bool>:
-  void SetUp() override;
-
-  std::vector<viz::AggregatedHitTestRegion> active_hit_test_data_;
-
- private:
-  // TestEventProcessorDelegate::Delegate:
-  void ReleaseCapture() override {
-    event_dispatcher_->SetCaptureWindow(nullptr, kInvalidClientId);
-  }
-
-  base::test::ScopedFeatureList feature_list_;
-  WindowServerTestHelper ws_test_helper_;
-
-  std::unique_ptr<TestServerWindowDelegate> window_delegate_;
-  std::unique_ptr<ServerWindow> root_window_;
-  std::unique_ptr<TestEventProcessorDelegate> test_event_dispatcher_delegate_;
-  std::unique_ptr<EventProcessor> event_dispatcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(EventProcessorVizTargeterTest);
-};
-
-void EventProcessorVizTargeterTest::SendHitTestData() {
-  test_event_dispatcher_delegate_->hit_test_query()
-      ->OnAggregatedHitTestRegionListUpdated(active_hit_test_data_);
-}
-
-void EventProcessorVizTargeterTest::SetUp() {
-  feature_list_.InitAndEnableFeature(features::kEnableVizHitTestDrawQuad);
-  if (is_event_processing_async()) {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kUseAsyncEventTargeting);
-  }
-  testing::Test::SetUp();
-
-  window_delegate_ =
-      std::make_unique<TestServerWindowDelegate>(viz_host_proxy());
-  root_window_ = std::make_unique<ServerWindow>(window_delegate_.get(),
-                                                viz::FrameSinkId(1, 2));
-  root_window_->set_is_activation_parent(true);
-  window_delegate_->set_root_window(root_window_.get());
-  root_window_->SetVisible(true);
-
-  test_event_dispatcher_delegate_ =
-      std::make_unique<TestEventProcessorDelegate>(this);
-  event_dispatcher_ =
-      std::make_unique<EventProcessor>(test_event_dispatcher_delegate_.get(),
-                                       test_event_dispatcher_delegate_.get());
-  test_event_dispatcher_delegate_->set_root(root_window_.get());
-}
-
 TEST_P(EventProcessorTest, ProcessEvent) {
   std::unique_ptr<ServerWindow> child =
       CreateChildWindow(viz::FrameSinkId(1, 3));
@@ -2422,48 +2330,7 @@ TEST_P(EventProcessorTest, DontQueryWhileMouseIsDown) {
   EXPECT_FALSE(event_dispatcher()->IsProcessingEvent());
 }
 
-TEST_P(EventProcessorVizTargeterTest, ProcessEvent) {
-  std::unique_ptr<ServerWindow> child =
-      CreateChildWindow(viz::FrameSinkId(1, 3));
-
-  root_window()->SetBounds(gfx::Rect(0, 0, 100, 100));
-  child->SetBounds(gfx::Rect(10, 10, 20, 20));
-  test_event_dispatcher_delegate()->AddWindow(root_window());
-  test_event_dispatcher_delegate()->AddWindow(child.get());
-  active_hit_test_data_.push_back(viz::AggregatedHitTestRegion(
-      root_window()->frame_sink_id(),
-      viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse,
-      root_window()->bounds(), root_window()->transform(), 1));  // root_window
-  active_hit_test_data_.push_back(viz::AggregatedHitTestRegion(
-      child->frame_sink_id(),
-      viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse, child->bounds(),
-      child->transform(), 0));  // child
-  SendHitTestData();
-
-  // Send event that is over child.
-  const ui::PointerEvent ui_event(ui::MouseEvent(
-      ui::ET_MOUSE_PRESSED, gfx::Point(20, 25), gfx::Point(20, 25),
-      base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  DispatchEvent(event_dispatcher(), ui_event,
-                EventProcessor::AcceleratorMatchPhase::ANY);
-
-  std::unique_ptr<DispatchedEventDetails> details =
-      test_event_dispatcher_delegate()->GetAndAdvanceDispatchedEventDetails();
-  ASSERT_TRUE(details);
-  ASSERT_EQ(child.get(), details->window);
-
-  ASSERT_TRUE(details->event);
-  ASSERT_TRUE(details->event->IsPointerEvent());
-
-  ui::PointerEvent* dispatched_event = details->event->AsPointerEvent();
-  EXPECT_EQ(gfx::Point(20, 25), dispatched_event->root_location());
-  EXPECT_EQ(gfx::Point(10, 15), dispatched_event->location());
-}
-
 INSTANTIATE_TEST_CASE_P(/* no prefix */, EventProcessorTest, testing::Bool());
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        EventProcessorVizTargeterTest,
-                        testing::Bool());
 
 }  // namespace test
 }  // namespace ws

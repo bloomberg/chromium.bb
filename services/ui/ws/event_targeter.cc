@@ -47,32 +47,9 @@ void EventTargeter::FindTargetForLocationNow(
   ServerWindow* root = event_targeter_delegate_->GetRootWindowForDisplay(
       event_location.display_id);
   DeepestWindow deepest_window;
-  if (!features::IsVizHitTestingEnabled()) {
-    if (root) {
-      deepest_window = ui::ws::FindDeepestVisibleWindowForLocation(
-          root, event_source, gfx::ToFlooredPoint(event_location.raw_location));
-    }
-  } else {
-    viz::HitTestQuery* hit_test_query =
-        event_targeter_delegate_->GetHitTestQueryForDisplay(
-            event_location.display_id);
-    if (hit_test_query) {
-      viz::Target target = hit_test_query->FindTargetForLocation(
-          event_source, event_location.raw_location);
-      if (target.frame_sink_id.is_valid()) {
-        ServerWindow* target_window =
-            event_targeter_delegate_->GetWindowFromFrameSinkId(
-                target.frame_sink_id);
-        if (!target_window) {
-          // TODO(riajiang): Investigate when this would be a security fault.
-          // http://crbug.com/746470
-          base::RecordAction(
-              base::UserMetricsAction("EventTargeting_DeletedTarget"));
-        }
-        deepest_window.window = target_window;
-        // TODO(riajiang): use |target.location_in_target|.
-      }
-    }
+  if (root) {
+    deepest_window = ui::ws::FindDeepestVisibleWindowForLocation(
+        root, event_source, gfx::ToFlooredPoint(event_location.raw_location));
   }
   std::move(callback).Run(event_location, deepest_window);
 }
