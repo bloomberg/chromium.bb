@@ -1485,17 +1485,11 @@ class DeclarativeNetRequestResourceTypeBrowserTest
         {"block_websocket.com", 7, {"websocket"}, {}},
         {"block_image_and_stylesheet.com", 8, {"image", "stylesheet"}, {}},
         {"block_subframe_and_xhr.com", 11, {"sub_frame", "xmlhttprequest"}, {}},
-        // With renderer side navigation, the main frame origin serves as the
-        // initiator for main frame page loads. Hence to ensure that the main
-        // frame page load is not blocked, also exclude the "other" resource
-        // type, which is used for main frame requests currently.
-        // TODO(crbug.com/696822): Change "other" to "main_frame" once it is
-        // implemented.
-        {"block_all.com", 9, {}, {"other"}},
+        {"block_all.com", 9, {}, {}},
         {"block_all_but_xhr_and_script.com",
          10,
          {},
-         {"xmlhttprequest", "script", "other"}},
+         {"xmlhttprequest", "script"}},
     };
 
     std::vector<TestRule> rules;
