@@ -259,7 +259,7 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
     if (font->IsLowPriorityLoadingAllowedForRemoteFont()) {
       font_selector_->GetExecutionContext()->AddConsoleMessage(
           ConsoleMessage::Create(
-              kOtherMessageSource, kInfoMessageLevel,
+              kInterventionMessageSource, kInfoMessageLevel,
               "Slow network is detected. See "
               "https://www.chromestatus.com/feature/5636954674692096 for more "
               "details. Fallback font will be used while loading: " +
