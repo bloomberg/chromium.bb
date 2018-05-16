@@ -60,22 +60,6 @@ MediaSource GetSourceForRouteObserver(const std::vector<MediaSource>& sources) {
 
 }  // namespace
 
-MediaRouterUIBase::UIMediaRoutesObserver::UIMediaRoutesObserver(
-    MediaRouter* router,
-    const MediaSource::Id& source_id,
-    const RoutesUpdatedCallback& callback)
-    : MediaRoutesObserver(router, source_id), callback_(callback) {
-  DCHECK(!callback_.is_null());
-}
-
-MediaRouterUIBase::UIMediaRoutesObserver::~UIMediaRoutesObserver() {}
-
-void MediaRouterUIBase::UIMediaRoutesObserver::OnRoutesUpdated(
-    const std::vector<MediaRoute>& routes,
-    const std::vector<MediaRoute::Id>& joinable_route_ids) {
-  callback_.Run(routes, joinable_route_ids);
-}
-
 MediaRouterUIBase::MediaRouterUIBase()
     : current_route_request_id_(-1),
       route_request_counter_(0),
@@ -152,9 +136,123 @@ void MediaRouterUIBase::InitWithStartPresentationContext(
       start_presentation_context_->presentation_request());
 }
 
+bool MediaRouterUIBase::CreateRoute(const MediaSink::Id& sink_id,
+                                    MediaCastMode cast_mode) {
+  base::Optional<RouteParameters> params =
+      GetRouteParameters(sink_id, cast_mode);
+  if (!params)
+    return false;
+
+  GetMediaRouter()->CreateRoute(params->source_id, sink_id, params->origin,
+                                initiator_,
+                                std::move(params->route_response_callbacks),
+                                params->timeout, params->incognito);
+  return true;
+}
+
+void MediaRouterUIBase::TerminateRoute(const MediaRoute::Id& route_id) {
+  GetMediaRouter()->TerminateRoute(route_id);
+}
+
+void MediaRouterUIBase::MaybeReportCastingSource(
+    MediaCastMode cast_mode,
+    const RouteRequestResult& result) {
+  if (result.result_code() == RouteRequestResult::OK)
+    MediaRouterMetrics::RecordMediaRouterCastingSource(cast_mode);
+}
+
+std::vector<MediaSinkWithCastModes> MediaRouterUIBase::GetEnabledSinks() const {
+#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!display_observer_)
+    return sinks_;
+
+  // Filter out the wired display sink for the display that the dialog is on.
+  // This is not the best place to do this because MRUI should not perform a
+  // provider-specific behavior, but we currently do not have a way to
+  // communicate dialog-specific information to/from the
+  // WiredDisplayMediaRouteProvider.
+  std::vector<MediaSinkWithCastModes> enabled_sinks;
+  const std::string display_sink_id =
+      WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(
+          display_observer_->GetCurrentDisplay());
+  for (const MediaSinkWithCastModes& sink : sinks_) {
+    if (sink.sink.id() != display_sink_id)
+      enabled_sinks.push_back(sink);
+  }
+  return enabled_sinks;
+#else
+  return sinks_;
+#endif
+}
+
+std::string MediaRouterUIBase::GetTruncatedPresentationRequestSourceName()
+    const {
+  GURL gurl = GetFrameURL();
+  CHECK(initiator());
+  return gurl.SchemeIs(extensions::kExtensionScheme)
+             ? GetExtensionName(gurl, extensions::ExtensionRegistry::Get(
+                                          initiator()->GetBrowserContext()))
+             : TruncateHost(GetHostFromURL(gurl));
+}
+
 std::vector<MediaSource> MediaRouterUIBase::GetSourcesForCastMode(
     MediaCastMode cast_mode) const {
   return query_result_manager_->GetSourcesForCastMode(cast_mode);
+}
+
+void MediaRouterUIBase::OnResultsUpdated(
+    const std::vector<MediaSinkWithCastModes>& sinks) {
+  sinks_ = sinks;
+
+  const icu::Collator* collator_ptr = collator_.get();
+  std::sort(sinks_.begin(), sinks_.end(),
+            [collator_ptr](const MediaSinkWithCastModes& sink1,
+                           const MediaSinkWithCastModes& sink2) {
+              return sink1.sink.CompareUsingCollator(sink2.sink, collator_ptr);
+            });
+  UpdateSinks();
+}
+
+void MediaRouterUIBase::OnRoutesUpdated(
+    const std::vector<MediaRoute>& routes,
+    const std::vector<MediaRoute::Id>& joinable_route_ids) {
+  routes_.clear();
+
+  for (const MediaRoute& route : routes) {
+    if (route.for_display()) {
+#ifndef NDEBUG
+      for (const MediaRoute& existing_route : routes_) {
+        if (existing_route.media_sink_id() == route.media_sink_id()) {
+          DVLOG(2) << "Received another route for display with the same sink"
+                   << " id as an existing route. " << route.media_route_id()
+                   << " has the same sink id as "
+                   << existing_route.media_sink_id() << ".";
+        }
+      }
+#endif
+      routes_.push_back(route);
+    }
+  }
+}
+
+void MediaRouterUIBase::OnRouteResponseReceived(
+    int route_request_id,
+    const MediaSink::Id& sink_id,
+    MediaCastMode cast_mode,
+    const base::string16& presentation_request_source_name,
+    const RouteRequestResult& result) {
+  DVLOG(1) << "OnRouteResponseReceived";
+  // If we receive a new route that we aren't expecting, do nothing.
+  if (route_request_id != current_route_request_id_)
+    return;
+
+  const MediaRoute* route = result.route();
+  if (!route) {
+    // The provider will handle sending an issue for a failed route request.
+    DVLOG(1) << "MediaRouteResponse returned error: " << result.error();
+  }
+
+  current_route_request_id_ = -1;
 }
 
 void MediaRouterUIBase::HandleCreateSessionRequestRouteResponse(
@@ -325,123 +423,25 @@ base::Optional<RouteParameters> MediaRouterUIBase::GetRouteParameters(
   return base::make_optional(std::move(params));
 }
 
-bool MediaRouterUIBase::CreateRoute(const MediaSink::Id& sink_id,
-                                    MediaCastMode cast_mode) {
-  base::Optional<RouteParameters> params =
-      GetRouteParameters(sink_id, cast_mode);
-  if (!params)
-    return false;
-
-  GetMediaRouter()->CreateRoute(params->source_id, sink_id, params->origin,
-                                initiator_,
-                                std::move(params->route_response_callbacks),
-                                params->timeout, params->incognito);
-  return true;
-}
-
-void MediaRouterUIBase::TerminateRoute(const MediaRoute::Id& route_id) {
-  GetMediaRouter()->TerminateRoute(route_id);
-}
-
-void MediaRouterUIBase::OnResultsUpdated(
-    const std::vector<MediaSinkWithCastModes>& sinks) {
-  sinks_ = sinks;
-
-  const icu::Collator* collator_ptr = collator_.get();
-  std::sort(sinks_.begin(), sinks_.end(),
-            [collator_ptr](const MediaSinkWithCastModes& sink1,
-                           const MediaSinkWithCastModes& sink2) {
-              return sink1.sink.CompareUsingCollator(sink2.sink, collator_ptr);
-            });
-  UpdateSinks();
-}
-
-void MediaRouterUIBase::OnRoutesUpdated(
-    const std::vector<MediaRoute>& routes,
-    const std::vector<MediaRoute::Id>& joinable_route_ids) {
-  routes_.clear();
-
-  for (const MediaRoute& route : routes) {
-    if (route.for_display()) {
-#ifndef NDEBUG
-      for (const MediaRoute& existing_route : routes_) {
-        if (existing_route.media_sink_id() == route.media_sink_id()) {
-          DVLOG(2) << "Received another route for display with the same sink"
-                   << " id as an existing route. " << route.media_route_id()
-                   << " has the same sink id as "
-                   << existing_route.media_sink_id() << ".";
-        }
-      }
-#endif
-      routes_.push_back(route);
-    }
-  }
-}
-
-void MediaRouterUIBase::OnRouteResponseReceived(
-    int route_request_id,
-    const MediaSink::Id& sink_id,
-    MediaCastMode cast_mode,
-    const base::string16& presentation_request_source_name,
-    const RouteRequestResult& result) {
-  DVLOG(1) << "OnRouteResponseReceived";
-  // If we receive a new route that we aren't expecting, do nothing.
-  if (route_request_id != current_route_request_id_)
-    return;
-
-  const MediaRoute* route = result.route();
-  if (!route) {
-    // The provider will handle sending an issue for a failed route request.
-    DVLOG(1) << "MediaRouteResponse returned error: " << result.error();
-  }
-
-  current_route_request_id_ = -1;
-}
-
-void MediaRouterUIBase::MaybeReportCastingSource(
-    MediaCastMode cast_mode,
-    const RouteRequestResult& result) {
-  if (result.result_code() == RouteRequestResult::OK)
-    MediaRouterMetrics::RecordMediaRouterCastingSource(cast_mode);
-}
-
 GURL MediaRouterUIBase::GetFrameURL() const {
   return presentation_request_ ? presentation_request_->frame_origin.GetURL()
                                : GURL();
 }
 
-std::vector<MediaSinkWithCastModes> MediaRouterUIBase::GetEnabledSinks() const {
-#if !defined(OS_MACOSX) || BUILDFLAG(MAC_VIEWS_BROWSER)
-  if (!display_observer_)
-    return sinks_;
-
-  // Filter out the wired display sink for the display that the dialog is on.
-  // This is not the best place to do this because MRUI should not perform a
-  // provider-specific behavior, but we currently do not have a way to
-  // communicate dialog-specific information to/from the
-  // WiredDisplayMediaRouteProvider.
-  std::vector<MediaSinkWithCastModes> enabled_sinks;
-  const std::string display_sink_id =
-      WiredDisplayMediaRouteProvider::GetSinkIdForDisplay(
-          display_observer_->GetCurrentDisplay());
-  for (const MediaSinkWithCastModes& sink : sinks_) {
-    if (sink.sink.id() != display_sink_id)
-      enabled_sinks.push_back(sink);
-  }
-  return enabled_sinks;
-#else
-  return sinks_;
-#endif
+MediaRouterUIBase::UIMediaRoutesObserver::UIMediaRoutesObserver(
+    MediaRouter* router,
+    const MediaSource::Id& source_id,
+    const RoutesUpdatedCallback& callback)
+    : MediaRoutesObserver(router, source_id), callback_(callback) {
+  DCHECK(!callback_.is_null());
 }
 
-std::string MediaRouterUIBase::GetTruncatedPresentationRequestSourceName()
-    const {
-  GURL gurl = GetFrameURL();
-  CHECK(initiator());
-  return gurl.SchemeIs(extensions::kExtensionScheme)
-             ? GetExtensionName(gurl, extensions::ExtensionRegistry::Get(
-                                          initiator()->GetBrowserContext()))
-             : TruncateHost(GetHostFromURL(gurl));
+MediaRouterUIBase::UIMediaRoutesObserver::~UIMediaRoutesObserver() {}
+
+void MediaRouterUIBase::UIMediaRoutesObserver::OnRoutesUpdated(
+    const std::vector<MediaRoute>& routes,
+    const std::vector<MediaRoute::Id>& joinable_route_ids) {
+  callback_.Run(routes, joinable_route_ids);
 }
 
 MediaRouter* MediaRouterUIBase::GetMediaRouter() const {
