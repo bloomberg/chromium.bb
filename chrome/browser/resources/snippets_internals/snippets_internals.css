@@ -80,10 +80,12 @@ td.title-link {
 }
 
 button {
+  display: block;
   min-height: 30px;
 }
 
 .vertical-buttons > button {
+  display: inline-block;
   float: left;
   margin-right: 5px;
   max-width: 100px;
