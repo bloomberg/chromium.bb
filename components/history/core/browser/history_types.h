@@ -73,7 +73,8 @@ class VisitRow {
            base::Time arg_visit_time,
            VisitID arg_referring_visit,
            ui::PageTransition arg_transition,
-           SegmentID arg_segment_id);
+           SegmentID arg_segment_id,
+           bool arg_incremented_omnibox_typed_score);
   ~VisitRow();
 
   // ID of this row (visit ID, used a a referrer for other visits).
@@ -100,6 +101,9 @@ class VisitRow {
   // This includes both active and inactive time as long as
   // the visit was present.
   base::TimeDelta visit_duration;
+
+  // Records whether the visit incremented the omnibox typed score.
+  bool incremented_omnibox_typed_score = false;
 
   // Compares two visits based on dates, for sorting.
   bool operator<(const VisitRow& other) const {

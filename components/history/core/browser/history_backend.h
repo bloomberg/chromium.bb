@@ -161,6 +161,9 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
     virtual void DBLoaded() = 0;
   };
 
+  // Check if the transition should increment the typed_count of a visit.
+  static bool IsTypedIncrement(ui::PageTransition transition);
+
   // Init must be called to complete object creation. This object can be
   // constructed on any thread, but all other functions including Init() must
   // be called on the history thread.

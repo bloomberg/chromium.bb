@@ -20,12 +20,14 @@ VisitRow::VisitRow(URLID arg_url_id,
                    base::Time arg_visit_time,
                    VisitID arg_referring_visit,
                    ui::PageTransition arg_transition,
-                   SegmentID arg_segment_id)
+                   SegmentID arg_segment_id,
+                   bool arg_incremented_omnibox_typed_score)
     : url_id(arg_url_id),
       visit_time(arg_visit_time),
       referring_visit(arg_referring_visit),
       transition(arg_transition),
-      segment_id(arg_segment_id) {}
+      segment_id(arg_segment_id),
+      incremented_omnibox_typed_score(arg_incremented_omnibox_typed_score) {}
 
 VisitRow::~VisitRow() {
 }

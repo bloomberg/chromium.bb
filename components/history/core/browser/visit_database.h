@@ -216,14 +216,19 @@ class VisitDatabase {
   // don't have visit_duration column yet.
   bool MigrateVisitsWithoutDuration();
 
+  // Called by the derived classes to migrate the older visits table which
+  // don't have incremented_omnibox_typed_score column yet.
+  bool MigrateVisitsWithoutIncrementedOmniboxTypedScore();
+
  private:
 
   DISALLOW_COPY_AND_ASSIGN(VisitDatabase);
 };
 
-// Rows, in order, of the visit table.
-#define HISTORY_VISIT_ROW_FIELDS \
-    " id,url,visit_time,from_visit,transition,segment_id,visit_duration "
+// Columns, in order, of the visit table.
+#define HISTORY_VISIT_ROW_FIELDS                                        \
+  " id,url,visit_time,from_visit,transition,segment_id,visit_duration," \
+  "incremented_omnibox_typed_score "
 
 }  // namespace history
 
