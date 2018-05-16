@@ -4,6 +4,10 @@
 
 #include "media/base/encryption_scheme.h"
 
+#include <ostream>
+
+#include "base/logging.h"
+
 namespace media {
 
 EncryptionScheme::EncryptionScheme() = default;
@@ -28,6 +32,28 @@ const EncryptionPattern& EncryptionScheme::pattern() const {
 
 bool EncryptionScheme::Matches(const EncryptionScheme& other) const {
   return mode_ == other.mode_ && pattern_ == other.pattern_;
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const EncryptionScheme& encryption_scheme) {
+  if (!encryption_scheme.is_encrypted())
+    return os << "Unencrypted";
+
+  bool pattern_in_effect = encryption_scheme.pattern().IsInEffect();
+
+  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CTR &&
+      !pattern_in_effect) {
+    return os << "CENC";
+  }
+
+  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC &&
+      pattern_in_effect) {
+    return os << "CBCS";
+  }
+
+  NOTREACHED();
+  return os << "Unknown (mode = " << encryption_scheme.mode()
+            << ", pattern_in_effect = " << pattern_in_effect << ")";
 }
 
 }  // namespace media
