@@ -29,6 +29,11 @@
 #include "content/public/browser/background_tracing_config.h"
 #include "content/public/browser/browser_thread.h"
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#endif
+
 namespace {
 
 const int kMinDaysUntilNextUpload = 7;
@@ -43,6 +48,8 @@ ChromeTracingDelegate::ChromeTracingDelegate() : incognito_launched_(false) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 #if !defined(OS_ANDROID)
   BrowserList::AddObserver(this);
+#else
+  TabModelList::AddObserver(this);
 #endif
 }
 
@@ -50,15 +57,29 @@ ChromeTracingDelegate::~ChromeTracingDelegate() {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 #if !defined(OS_ANDROID)
   BrowserList::RemoveObserver(this);
+#else
+  TabModelList::RemoveObserver(this);
 #endif
 }
 
+#if defined(OS_ANDROID)
+void ChromeTracingDelegate::OnTabModelAdded() {
+  for (TabModelList::const_iterator i = TabModelList::begin();
+       i != TabModelList::end(); i++) {
+    if ((*i)->IsOffTheRecord())
+      incognito_launched_ = true;
+  }
+}
+
+void ChromeTracingDelegate::OnTabModelRemoved() {}
+
+#else
+
 void ChromeTracingDelegate::OnBrowserAdded(Browser* browser) {
-#if !defined(OS_ANDROID)
   if (browser->profile()->IsOffTheRecord())
     incognito_launched_ = true;
-#endif
 }
+#endif  // defined(OS_ANDROID)
 
 std::unique_ptr<content::TraceUploader> ChromeTracingDelegate::GetTraceUploader(
     net::URLRequestContextGetter* request_context) {

@@ -7,13 +7,24 @@
 
 #include <memory>
 
-#include "chrome/browser/ui/browser_list_observer.h"
+#include "build/build_config.h"
 #include "content/public/browser/tracing_delegate.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/ui/android/tab_model/tab_model_list_observer.h"
+#else
+#include "chrome/browser/ui/browser_list_observer.h"
+#endif
 
 class PrefRegistrySimple;
 
 class ChromeTracingDelegate : public content::TracingDelegate,
-                              public BrowserListObserver {
+#if defined(OS_ANDROID)
+                              public TabModelListObserver
+#else
+                              public BrowserListObserver
+#endif
+{
  public:
   ChromeTracingDelegate();
   ~ChromeTracingDelegate() override;
@@ -38,8 +49,14 @@ class ChromeTracingDelegate : public content::TracingDelegate,
   content::MetadataFilterPredicate GetMetadataFilterPredicate() override;
 
  private:
+#if defined(OS_ANDROID)
+  // TabModelListObserver implementation.
+  void OnTabModelAdded() override;
+  void OnTabModelRemoved() override;
+#else
   // BrowserListObserver implementation.
   void OnBrowserAdded(Browser* browser) override;
+#endif
 
   bool incognito_launched_;
 };
