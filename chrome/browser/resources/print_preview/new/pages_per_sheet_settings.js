@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-pages-per-sheet-settings',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
 
   properties: {
     disabled: Boolean,
@@ -21,8 +21,8 @@ Polymer({
     this.$$('select').value = /** @type {number} */ (value).toString();
   },
 
-  /** @private */
-  onChange_: function() {
-    this.setSetting('pagesPerSheet', parseInt(this.$$('select').value, 10));
+  /** @param {string} value The new select value. */
+  onProcessSelectChange: function(value) {
+    this.setSetting('pagesPerSheet', parseInt(value, 10));
   },
 });

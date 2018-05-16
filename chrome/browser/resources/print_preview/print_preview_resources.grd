@@ -175,6 +175,12 @@
       <structure name="IDR_PRINT_PREVIEW_NEW_INPUT_BEHAVIOR_JS"
                  file="new/input_behavior.js"
                  type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_SELECT_BEHAVIOR_HTML"
+                 file="new/select_behavior.html"
+                 type="chrome_html" />
+      <structure name="IDR_PRINT_PREVIEW_NEW_SELECT_BEHAVIOR_JS"
+                 file="new/select_behavior.js"
+                 type="chrome_html" />
       <structure name="IDR_PRINT_PREVIEW_NEW_STATE_HTML"
                  file="new/state.html"
                  type="chrome_html" />

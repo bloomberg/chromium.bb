@@ -637,7 +637,10 @@ cr.define('settings_sections_tests', function() {
       // Change to landscape
       layoutInput.value = 'landscape';
       layoutInput.dispatchEvent(new CustomEvent('change'));
-      assertTrue(page.settings.layout.value);
+      return test_util.eventToPromise('process-select-change', layoutElement)
+          .then(function() {
+            assertTrue(page.settings.layout.value);
+          });
     });
 
     test(assert(TestNames.SetColor), function() {
@@ -652,7 +655,10 @@ cr.define('settings_sections_tests', function() {
       // Change to black and white.
       colorInput.value = 'bw';
       colorInput.dispatchEvent(new CustomEvent('change'));
-      assertFalse(page.settings.color.value);
+      return test_util.eventToPromise('process-select-change', colorElement)
+          .then(function() {
+            assertFalse(page.settings.color.value);
+          });
     });
 
     test(assert(TestNames.SetMediaSize), function() {
@@ -675,7 +681,11 @@ cr.define('settings_sections_tests', function() {
       mediaSizeInput.value = squareOption;
       mediaSizeInput.dispatchEvent(new CustomEvent('change'));
 
-      expectEquals(squareOption, JSON.stringify(page.settings.mediaSize.value));
+      return test_util.eventToPromise('process-select-change', mediaSizeElement)
+          .then(function() {
+            expectEquals(
+                squareOption, JSON.stringify(page.settings.mediaSize.value));
+          });
     });
 
     test(assert(TestNames.SetDpi), function() {
@@ -703,8 +713,12 @@ cr.define('settings_sections_tests', function() {
           JSON.stringify(dpiElement.capabilityWithLabels_.option[1]);
       dpiInput.dispatchEvent(new CustomEvent('change'));
 
-      expectTrue(isDpiEqual(lowQualityOption, JSON.parse(dpiInput.value)));
-      expectTrue(isDpiEqual(lowQualityOption, page.settings.dpi.value));
+      return test_util.eventToPromise('process-select-change', dpiElement)
+          .then(function() {
+            expectTrue(isDpiEqual(
+                lowQualityOption, JSON.parse(dpiInput.value)));
+            expectTrue(isDpiEqual(lowQualityOption, page.settings.dpi.value));
+          });
     });
 
     test(assert(TestNames.SetMargins), function() {
@@ -725,9 +739,12 @@ cr.define('settings_sections_tests', function() {
       marginsInput.value =
           print_preview.ticket_items.MarginsTypeValue.MINIMUM.toString();
       marginsInput.dispatchEvent(new CustomEvent('change'));
-      expectEquals(
-          print_preview.ticket_items.MarginsTypeValue.MINIMUM,
-          page.settings.margins.value);
+      return test_util.eventToPromise('process-select-change', marginsElement)
+          .then(function() {
+            expectEquals(
+                print_preview.ticket_items.MarginsTypeValue.MINIMUM,
+                page.settings.margins.value);
+          });
     });
 
     test(assert(TestNames.SetScaling), function() {

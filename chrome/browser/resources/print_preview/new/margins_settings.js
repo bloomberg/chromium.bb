@@ -5,7 +5,7 @@
 Polymer({
   is: 'print-preview-margins-settings',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, print_preview_new.SelectBehavior],
 
   properties: {
     disabled: Boolean,
@@ -21,8 +21,8 @@ Polymer({
     this.$$('select').value = /** @type {string} */ (value).toString();
   },
 
-  /** @private */
-  onChange_: function() {
-    this.setSetting('margins', parseInt(this.$$('select').value, 10));
+  /** @param {string} value The new select value. */
+  onProcessSelectChange: function(value) {
+    this.setSetting('margins', parseInt(value, 10));
   },
 });
