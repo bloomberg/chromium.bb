@@ -33,9 +33,8 @@ void NonMainThreadScheduler::Init() {
   // DefaultTaskQueue() is a virtual function, so it can't be called in the
   // constructor. Also, DefaultTaskQueue() checks if InitImpl() is called.
   // Therefore, v8_task_runner_ needs to be initialized here.
-  // TODO(kraynov): Ditch kDeprecatedNone here.
-  v8_task_runner_ =
-      TaskRunnerImpl::Create(DefaultTaskQueue(), TaskType::kDeprecatedNone);
+  v8_task_runner_ = TaskRunnerImpl::Create(DefaultTaskQueue(),
+                                           TaskType::kMainThreadTaskQueueV8);
 }
 
 scoped_refptr<WorkerTaskQueue> NonMainThreadScheduler::CreateTaskRunner() {

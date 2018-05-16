@@ -76,6 +76,8 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
       // move them into other task runners. See also comments in
       // Get(LocalFrame). (https://crbug.com/670534)
       return TaskRunnerImpl::Create(task_queue_, type);
+    case TaskType::kMainThreadTaskQueueV8:
+    case TaskType::kMainThreadTaskQueueCompositor:
     case TaskType::kCount:
       NOTREACHED();
       break;

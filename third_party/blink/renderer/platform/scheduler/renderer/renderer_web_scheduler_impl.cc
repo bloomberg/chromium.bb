@@ -16,7 +16,6 @@
 namespace blink {
 namespace scheduler {
 
-// TODO(kraynov): Ditch kDeprecatedNone here.
 RendererWebSchedulerImpl::RendererWebSchedulerImpl(
     MainThreadSchedulerImpl* main_thread_scheduler)
     : WebSchedulerImpl(main_thread_scheduler,
@@ -25,7 +24,7 @@ RendererWebSchedulerImpl::RendererWebSchedulerImpl(
       main_thread_scheduler_(main_thread_scheduler),
       compositor_task_runner_(
           TaskRunnerImpl::Create(main_thread_scheduler_->CompositorTaskQueue(),
-                                 TaskType::kDeprecatedNone)) {}
+                                 TaskType::kMainThreadTaskQueueCompositor)) {}
 
 RendererWebSchedulerImpl::~RendererWebSchedulerImpl() = default;
 
