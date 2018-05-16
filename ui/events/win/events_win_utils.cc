@@ -75,7 +75,7 @@ bool IsClientMouseMessage(UINT message) {
          (message >= WM_MOUSEFIRST && message <= WM_MOUSELAST);
 }
 
-bool IsClientMouseEvent(const PlatformEvent& native_event) {
+bool IsClientMouseEvent(const MSG& native_event) {
   return IsClientMouseMessage(native_event.message);
 }
 
@@ -84,7 +84,7 @@ bool IsNonClientMouseMessage(UINT message) {
          (message >= WM_NCMOUSEMOVE && message <= WM_NCXBUTTONDBLCLK);
 }
 
-bool IsNonClientMouseEvent(const PlatformEvent& native_event) {
+bool IsNonClientMouseEvent(const MSG& native_event) {
   return IsNonClientMouseMessage(native_event.message);
 }
 
