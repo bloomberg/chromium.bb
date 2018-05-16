@@ -6,6 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
@@ -101,7 +102,13 @@ class CastDialogViewTest : public ChromeViewsTestBase {
   CastDialogView* dialog_ = nullptr;
 };
 
-TEST_F(CastDialogViewTest, ShowAndHideDialog) {
+// Flaky on Mac. https://crbug.com/843599
+#if defined(OS_MACOSX)
+#define MAYBE_ShowAndHideDialog DISABLED_ShowAndHideDialog
+#else
+#define MAYBE_ShowAndHideDialog ShowAndHideDialog
+#endif
+TEST_F(CastDialogViewTest, MAYBE_ShowAndHideDialog) {
   EXPECT_FALSE(CastDialogView::IsShowing());
   EXPECT_EQ(nullptr, CastDialogView::GetCurrentDialogWidget());
 
