@@ -555,7 +555,9 @@ void Histogram::ValidateHistogramContents() const {
     // entire memory page was cleared. Check that this is true.
     // TODO(bcwhite): Remove this.
     // https://bugs.chromium.org/p/chromium/issues/detail?id=836875
-    const size_t page_size = SysInfo::VMAllocationGranularity();
+    size_t page_size = SysInfo::VMAllocationGranularity();
+    if (page_size == 0)
+      page_size = 1024;
     const int* address = reinterpret_cast<const int*>(
         reinterpret_cast<uintptr_t>(logged_samples_->meta()) &
         ~(page_size - 1));
