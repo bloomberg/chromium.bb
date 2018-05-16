@@ -976,10 +976,6 @@ def DefaultSettings():
       # Use SDK as opposed to building the chroot from source.
       use_sdk=True,
 
-      # List this config when user runs cbuildbot with --list option without
-      # the --all flag.
-      trybot_list=False,
-
       # The description string to print out for config when user runs --list.
       description=None,
 

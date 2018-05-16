@@ -1051,7 +1051,6 @@ def GeneralTemplates(site_config, ge_build_config):
       archive_build_debug=True,
       images=['base', 'recovery', 'test', 'factory_install'],
       git_sync=True,
-      trybot_list=True,
       description='Full Builds',
       image_test=True,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
@@ -1070,7 +1069,6 @@ def GeneralTemplates(site_config, ge_build_config):
       overlays=constants.PUBLIC_OVERLAYS,
       prebuilts=constants.PUBLIC,
       manifest_version=True,
-      trybot_list=True,
       description='Commit Queue',
       upload_standalone_images=False,
       images=['base', 'test'],
@@ -1430,7 +1428,6 @@ def GeneralTemplates(site_config, ge_build_config):
       uprev=True,
       overlays=constants.BOTH_OVERLAYS,
       push_overlays=constants.BOTH_OVERLAYS,
-      trybot_list=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Chrome-PFQ',
       active_waterfall=waterfall.WATERFALL_RELEASE)
@@ -1538,7 +1535,6 @@ def GeneralTemplates(site_config, ge_build_config):
                 hw_test_list.SharedPoolCanary()),
       paygen=True,
       signer_tests=True,
-      trybot_list=True,
       hwqual=True,
       description="Release Builds (canary) (internal)",
       chrome_sdk=True,
@@ -1553,7 +1549,6 @@ def GeneralTemplates(site_config, ge_build_config):
       'release_afdo',
       site_config.templates.release,
       suite_scheduling=False,
-      trybot_list=False,
       hw_tests=(
           hw_test_list.DefaultList(pool=constants.HWTEST_SUITES_POOL) +
           hw_test_list.AFDOList()
@@ -1635,7 +1630,6 @@ def GeneralTemplates(site_config, ge_build_config):
       paygen=False,
       signer_tests=False,
       sign_types=['factory'],
-      trybot_list=False,
       upload_hw_test_artifacts=False,
       upload_symbols=False,
   )
@@ -1659,7 +1653,6 @@ def GeneralTemplates(site_config, ge_build_config):
       upload_symbols=False,
       useflags=append_useflags(['chromeless_tty']),
       signer_tests=False,
-      trybot_list=False,
       paygen=False,
       image_test=False,
       sign_types=['firmware'],
@@ -1866,7 +1859,6 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       manifest=constants.OFFICIAL_MANIFEST,
       manifest_version=True,
       git_sync=False,
-      trybot_list=False,
       description="Toolchain Builds (internal)",
   )
   site_config.AddTemplate(
@@ -2045,7 +2037,6 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       build_type=constants.PRE_CQ_LAUNCHER_TYPE,
       active_waterfall=waterfall.WATERFALL_SWARMING,
       description='Launcher for Pre-CQ builders',
-      trybot_list=False,
       manifest_version=False,
       doc='http://www.chromium.org/chromium-os/build/builder-overview#'
           'TOC-Pre-CQ',
@@ -2674,7 +2665,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       # build_internals/masters/master.chromeos/board_config.py.
       # TODO(mtennant): Fix this.  There should be some amount of auto-
       # configuration in the board_config.py code.
-      trybot_list=False,
       auto_reboot=True,  # TODO(dgarrett): Disable chroot.img stable.
   )
 
@@ -2949,7 +2939,6 @@ def IncrementalBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.incremental,
       site_config.templates.beaglebone,
       boards=['beaglebone'],
-      trybot_list=True,
       description='Incremental Beaglebone Builder',
   )
 
@@ -3165,7 +3154,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
-      trybot_list=True,
   )
 
   site_config.Add(
@@ -3186,7 +3174,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build with Address Sanitizer (Clang)',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
-      trybot_list=True,
   )
 
   site_config.Add(
@@ -3205,7 +3192,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       description='Build for fuzzing testing',
       # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
       disk_layout='4gb-rootfs',
-      trybot_list=True,
   )
 
   site_config.Add(
@@ -3230,7 +3216,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       _chrome_perf_boards,
       internal_board_configs,
       site_config.templates.chrome_perf,
-      trybot_list=True,
   )
 
   site_config.AddForBoards(
@@ -3979,7 +3964,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
       builder_class_name='sdk_builders.ChrootSdkBuilder',
       use_sdk=False,
-      trybot_list=True,
       prebuilts=constants.PUBLIC,
       build_timeout=18 * 60 * 60,
       description='Build the SDK and all the cross-compilers',

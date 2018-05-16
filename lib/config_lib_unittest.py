@@ -48,7 +48,6 @@ def MockSiteConfig():
       important=True,
       manifest_version=True,
       prebuilts='public',
-      trybot_list=True,
       upload_standalone_images=False,
       vm_tests=[config_lib.VMTestConfig('smoke_suite')],
   )
