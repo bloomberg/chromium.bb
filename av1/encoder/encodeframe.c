@@ -2437,6 +2437,9 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   (void)*tp_orig;
   (void)split_rd;
 
+  av1_zero(pc_tree->pc_tree_stats);
+  pc_tree->pc_tree_stats.valid = 1;
+
   // Override partition costs at the edges of the frame in the same
   // way as in read_partition (see decodeframe.c)
   if (!(has_rows && has_cols)) {
@@ -2493,6 +2496,10 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
 
     rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, &this_rdc,
                      PARTITION_NONE, bsize, ctx_none, best_rdc.rdcost);
+
+    pc_tree->pc_tree_stats.rdcost = ctx_none->rdcost;
+    pc_tree->pc_tree_stats.skip = ctx_none->skip;
+
     if (none_rd) *none_rd = this_rdc.rdcost;
     if (this_rdc.rate != INT_MAX) {
       if (bsize_at_least_8x8) {
@@ -2573,6 +2580,10 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
                             temp_best_rdcost - sum_rdc.rdcost,
                             pc_tree->split[idx], p_split_rd);
 
+      pc_tree->pc_tree_stats.sub_block_rdcost[idx] = this_rdc.rdcost;
+      pc_tree->pc_tree_stats.sub_block_skip[idx] =
+          pc_tree->split[idx]->none.skip;
+
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
         break;
@@ -2625,6 +2636,14 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
     restore_context(x, &x_ctx, mi_row, mi_col, bsize, num_planes);
   }  // if (do_split)
 
+  pc_tree->pc_tree_stats.split = pc_tree->partitioning == PARTITION_SPLIT;
+  if (do_square_split) {
+    for (int i = 0; i < 4; ++i) {
+      pc_tree->pc_tree_stats.sub_block_split[i] =
+          pc_tree->split[i]->partitioning == PARTITION_SPLIT;
+    }
+  }
+
   // TODO(jbb): This code added so that we avoid static analysis
   // warning related to the fact that best_rd isn't used after this
   // point.  This code should be refactored so that the duplicate
@@ -2657,6 +2676,87 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
     assert(tp_orig == *tp);
   }
 }
+
+#define FEATURE_SIZE 19
+static const float two_pass_split_partition_weights_128[FEATURE_SIZE + 1] = {
+  2.683936f, -0.193620f, -4.106470f, -0.141320f, -0.282289f,
+  0.125296f, -1.134961f, 0.862757f,  -0.418799f, -0.637666f,
+  0.016232f, 0.345013f,  0.018823f,  -0.393394f, -1.130700f,
+  0.695357f, 0.112569f,  -0.341975f, -0.513882f, 5.7488966f,
+};
+
+static const float two_pass_split_partition_weights_64[FEATURE_SIZE + 1] = {
+  2.990993f,  0.423273f,  -0.926544f, 0.454646f,  -0.292698f,
+  -1.311632f, -0.284432f, 0.717141f,  -0.419257f, -0.574760f,
+  -0.674444f, 0.669047f,  -0.374255f, 0.380624f,  -0.804036f,
+  0.264021f,  0.004163f,  1.896802f,  0.924287f,  0.13490619f,
+};
+
+static const float two_pass_split_partition_weights_32[FEATURE_SIZE + 1] = {
+  2.795181f,  -0.136943f, -0.924842f, 0.405330f,  -0.463505f,
+  -0.584076f, -0.831472f, 0.382985f,  -0.597544f, -0.138915f,
+  -1.354350f, 0.466035f,  -0.553961f, 0.213202f,  -1.166429f,
+  0.010776f,  -0.096236f, 2.335084f,  1.699857f,  -0.58178353f,
+};
+
+static const float two_pass_split_partition_weights_16[FEATURE_SIZE + 1] = {
+  1.987888f,  -0.431100f, -1.687703f, 0.262602f,  -0.425298f,
+  -0.463870f, -1.493457f, 0.470917f,  -0.528457f, -0.087700f,
+  -1.815092f, 0.152883f,  -0.337908f, 0.093679f,  -1.548267f,
+  -0.042387f, -0.000861f, 2.556746f,  1.619192f,  0.03643292f,
+};
+
+static const float two_pass_split_partition_weights_8[FEATURE_SIZE + 1] = {
+  2.188344f,  -0.817528f, -2.119219f, 0.000000f,  -0.348167f,
+  -0.658074f, -1.960362f, 0.000000f,  -0.403080f, 0.282699f,
+  -2.061088f, 0.000000f,  -0.431919f, -0.127960f, -1.099550f,
+  0.000000f,  0.121622f,  2.017455f,  2.058228f,  -0.15475988f,
+};
+
+// out_score indicates confidence of picking split partition.
+// Returns if the score is valid.
+static int ml_prune_2pass_split_partition(const PC_TREE_STATS *pc_tree_stats,
+                                          BLOCK_SIZE bsize, int *out_score) {
+  if (!pc_tree_stats->valid) return 0;
+  const float *weights = NULL;
+  switch (bsize) {
+    case BLOCK_4X4: break;
+    case BLOCK_8X8: weights = two_pass_split_partition_weights_8; break;
+    case BLOCK_16X16: weights = two_pass_split_partition_weights_16; break;
+    case BLOCK_32X32: weights = two_pass_split_partition_weights_32; break;
+    case BLOCK_64X64: weights = two_pass_split_partition_weights_64; break;
+    case BLOCK_128X128: weights = two_pass_split_partition_weights_128; break;
+    default: assert(0 && "Unexpected bsize.");
+  }
+  if (!weights) return 0;
+
+  float features[FEATURE_SIZE];
+  int feature_index = 0;
+  features[feature_index++] = (float)pc_tree_stats->split;
+  features[feature_index++] = (float)pc_tree_stats->skip;
+  const int rdcost = (int)AOMMIN(INT_MAX, pc_tree_stats->rdcost);
+  const int rd_valid = rdcost > 0 && rdcost < 1000000000;
+  features[feature_index++] = (float)rd_valid;
+  for (int i = 0; i < 4; ++i) {
+    features[feature_index++] = (float)pc_tree_stats->sub_block_split[i];
+    features[feature_index++] = (float)pc_tree_stats->sub_block_skip[i];
+    const int sub_rdcost =
+        (int)AOMMIN(INT_MAX, pc_tree_stats->sub_block_rdcost[i]);
+    const int sub_rd_valid = sub_rdcost > 0 && sub_rdcost < 1000000000;
+    features[feature_index++] = (float)sub_rd_valid;
+    // Ratio between the sub-block RD and the whole-block RD.
+    float rd_ratio = 1.0f;
+    if (rd_valid && sub_rd_valid && sub_rdcost < rdcost)
+      rd_ratio = (float)sub_rdcost / (float)rdcost;
+    features[feature_index++] = rd_ratio;
+  }
+  assert(feature_index == FEATURE_SIZE);
+  float score = weights[FEATURE_SIZE];
+  for (int i = 0; i < FEATURE_SIZE; ++i) score += features[i] * weights[i];
+  *out_score = (int)(score * 100);
+  return 1;
+}
+#undef FEATURE_SIZE
 
 // TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
@@ -2790,17 +2890,31 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     partition_vert_allowed &= !has_cols;
   }
 
-  if (x->use_cb_search_range && cpi->sf.auto_min_max_partition_size == 0) {
-    if (pc_tree->cb_search_range == SPLIT_PLANE) {
-      partition_none_allowed = 0;
-      partition_horz_allowed = 0;
-      partition_vert_allowed = 0;
+  if (bsize > BLOCK_4X4 && x->use_cb_search_range &&
+      cpi->sf.auto_min_max_partition_size == 0) {
+    int split_score = 0;
+    const int split_score_valid = ml_prune_2pass_split_partition(
+        &pc_tree->pc_tree_stats, bsize, &split_score);
+    if (split_score_valid) {
+      const int only_split_thresh = 300;
+      const int no_none_thresh = 250;
+      const int no_split_thresh = 0;
+      if (split_score > only_split_thresh) {
+        partition_none_allowed = 0;
+        partition_horz_allowed = 0;
+        partition_vert_allowed = 0;
+      } else if (split_score > no_none_thresh) {
+        partition_none_allowed = 0;
+      }
+      if (split_score < no_split_thresh) do_square_split = 0;
+    } else {
+      if (pc_tree->cb_search_range == SPLIT_PLANE) {
+        partition_none_allowed = 0;
+        partition_horz_allowed = 0;
+        partition_vert_allowed = 0;
+      }
+      if (pc_tree->cb_search_range == SEARCH_SAME_PLANE) do_square_split = 0;
     }
-
-    if (pc_tree->cb_search_range == SEARCH_SAME_PLANE) {
-      do_square_split = 0;
-    }
-
     if (pc_tree->cb_search_range == NONE_PARTITION_PLANE) {
       do_square_split = 0;
       partition_horz_allowed = 0;
