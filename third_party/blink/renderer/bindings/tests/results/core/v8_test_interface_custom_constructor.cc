@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "v8_test_interface_custom_constructor.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/v8_test_interface_custom_constructor.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"

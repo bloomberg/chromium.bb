@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "test_permissive_dictionary.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/test_permissive_dictionary.h"
 
 namespace blink {
 

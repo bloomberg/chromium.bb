@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "test_interface_2_or_uint8_array.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/test_interface_2_or_uint8_array.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/to_v8_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_2.h"

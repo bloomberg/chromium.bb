@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "element_sequence_or_byte_string_double_or_string_record.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/element_sequence_or_byte_string_double_or_string_record.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/double_or_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"

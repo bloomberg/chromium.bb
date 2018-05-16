@@ -9,7 +9,7 @@
 
 // clang-format off
 
-#include "v8_string_sequence_callback_function_long_sequence_arg.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/v8_string_sequence_callback_function_long_sequence_arg.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"

@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "v8_test_not_enumerable_named_getter.h"
+#include "third_party/blink/renderer/bindings/tests/results/modules/v8_test_not_enumerable_named_getter.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"

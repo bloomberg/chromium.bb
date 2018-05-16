@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "string_or_array_buffer_or_array_buffer_view.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/string_or_array_buffer_or_array_buffer_view.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h"

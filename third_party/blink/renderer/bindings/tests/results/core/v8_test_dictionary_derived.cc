@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "v8_test_dictionary_derived.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/v8_test_dictionary_derived.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"

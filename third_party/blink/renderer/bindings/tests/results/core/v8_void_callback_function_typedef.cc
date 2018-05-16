@@ -9,7 +9,7 @@
 
 // clang-format off
 
-#include "v8_void_callback_function_typedef.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/v8_void_callback_function_typedef.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/generated_code_helper.h"

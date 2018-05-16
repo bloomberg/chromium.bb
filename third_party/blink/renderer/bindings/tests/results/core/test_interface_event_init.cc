@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "test_interface_event_init.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/test_interface_event_init.h"
 
 namespace blink {
 

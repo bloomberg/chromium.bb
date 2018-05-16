@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "v8_test_variadic_constructor_arguments.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/v8_test_variadic_constructor_arguments.h"
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"

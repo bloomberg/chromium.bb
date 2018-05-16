@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "double_or_long_or_boolean_sequence.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/double_or_long_or_boolean_sequence.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/long_or_boolean.h"

@@ -12,7 +12,7 @@
 #ifndef WEB_API_TEST_INTERFACE_3_H
 #define WEB_API_TEST_INTERFACE_3_H
 
-#include "platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 class TestInterface3;

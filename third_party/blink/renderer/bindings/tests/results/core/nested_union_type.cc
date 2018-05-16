@@ -8,7 +8,7 @@
 // DO NOT MODIFY!
 
 // clang-format off
-#include "nested_union_type.h"
+#include "third_party/blink/renderer/bindings/tests/results/core/nested_union_type.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/byte_string_or_node_list.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"

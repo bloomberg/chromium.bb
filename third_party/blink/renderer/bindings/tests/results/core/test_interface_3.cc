@@ -12,8 +12,8 @@
 #include "web/api/test_interface_3.h"
 
 // TODO(dglazkov): Properly sort the includes.
-#include "bindings/tests/idls/core/test_interface_3.h"
-#include "platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/bindings/tests/idls/core/test_interface_3.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace web {
 
