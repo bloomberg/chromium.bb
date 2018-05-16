@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -866,6 +867,33 @@ TEST_F(KeyboardControllerTest, TextInputMode) {
 
   SetFocus(&input_client);
   EXPECT_TRUE(keyboard_container->IsVisible());
+}
+
+// Checks that floating keyboard does not cause focused window to move upwards.
+// Refer to crbug.com/838731.
+TEST_F(KeyboardControllerAnimationTest, FloatingKeyboardEnsureCaretInWorkArea) {
+  // Mock TextInputClient to intercept calls to EnsureCaretNotInRect.
+  struct MockTextInputClient : public ui::DummyTextInputClient {
+    MockTextInputClient() : DummyTextInputClient(ui::TEXT_INPUT_TYPE_TEXT) {}
+    MOCK_METHOD1(EnsureCaretNotInRect, void(const gfx::Rect&));
+  };
+
+  // Floating keyboard should call EnsureCaretNotInRect with the empty rect.
+  MockTextInputClient mock_input_client;
+  EXPECT_CALL(mock_input_client, EnsureCaretNotInRect(gfx::Rect())).Times(1);
+
+  ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
+  controller()->SetContainerType(keyboard::ContainerType::FLOATING,
+                                 base::nullopt, base::DoNothing());
+  ASSERT_EQ(keyboard::ContainerType::FLOATING,
+            controller()->GetActiveContainerType());
+
+  // Ensure keyboard ui is populated
+  ui::Layer* layer = keyboard_container()->layer();
+  SetFocus(&mock_input_client);
+  RunAnimationForLayer(layer);
+
+  EXPECT_TRUE(keyboard_container()->IsVisible());
 }
 
 }  // namespace keyboard

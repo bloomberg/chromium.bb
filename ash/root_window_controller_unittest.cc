@@ -1057,7 +1057,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest, EnsureCaretInWorkArea) {
       root_window->bounds(), keyboard_height));
   contents_window->Show();
 
-  ui->EnsureCaretInWorkArea();
+  ui->EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
   ASSERT_EQ(root_window->bounds().width(),
             text_input_client.caret_exclude_rect().width());
   ASSERT_EQ(keyboard_height, text_input_client.caret_exclude_rect().height());
@@ -1098,7 +1098,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
       primary_root_window->bounds(), keyboard_height));
   contents_window->Show();
 
-  ui->EnsureCaretInWorkArea();
+  ui->EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
   EXPECT_TRUE(primary_root_window->GetBoundsInScreen().Contains(
       text_input_client.caret_exclude_rect()));
   EXPECT_EQ(primary_root_window->GetBoundsInScreen().width(),
@@ -1112,7 +1112,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
   contents_window->SetBounds(keyboard::KeyboardBoundsFromRootBounds(
       secondary_root_window->bounds(), keyboard_height));
 
-  ui->EnsureCaretInWorkArea();
+  ui->EnsureCaretInWorkArea(contents_window->GetBoundsInScreen());
   EXPECT_FALSE(primary_root_window->GetBoundsInScreen().Contains(
       text_input_client.caret_exclude_rect()));
   EXPECT_TRUE(secondary_root_window->GetBoundsInScreen().Contains(

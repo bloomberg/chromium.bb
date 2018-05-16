@@ -391,7 +391,7 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 
       for (KeyboardControllerObserver& observer : observer_list_)
         observer.OnKeyboardHidden();
-      ui_->EnsureCaretInWorkArea();
+      ui_->EnsureCaretInWorkArea(gfx::Rect());
 
       break;
     }
@@ -708,7 +708,9 @@ void KeyboardController::
   // Notify observers after animation finished to prevent reveal desktop
   // background during animation.
   NotifyContentsBoundsChanging(container_->bounds());
-  ui_->EnsureCaretInWorkArea();
+  ui_->EnsureCaretInWorkArea(container_behavior_->BoundsObscureUsableRegion()
+                                 ? current_keyboard_bounds_
+                                 : gfx::Rect());
 }
 
 void KeyboardController::NotifyKeyboardConfigChanged() {
