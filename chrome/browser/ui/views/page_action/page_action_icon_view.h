@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
-#define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_VIEW_H_
+#define CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_VIEW_H_
 
 #include <memory>
 
@@ -29,20 +29,21 @@ namespace views {
 class BubbleDialogDelegateView;
 }
 
-// Represents an icon on the omnibox that shows a bubble when clicked.
+// Represents an inbuilt (as opposed to an extension) page action icon that
+// shows a bubble when clicked.
 // TODO(spqchan): Convert this to subclass Button.
-class BubbleIconView : public views::InkDropHostView {
+class PageActionIconView : public views::InkDropHostView {
  public:
   class Delegate {
    public:
-    virtual content::WebContents* GetWebContentsForBubbleIconView() = 0;
+    virtual content::WebContents* GetWebContentsForPageActionIconView() = 0;
     virtual OmniboxTint GetTint() = 0;
   };
 
   void Init();
 
-  // Invoked when a bubble for this icon is created. The BubbleIconView changes
-  // highlights based on this widget's visibility.
+  // Invoked when a bubble for this icon is created. The PageActionIconView
+  // changes highlights based on this widget's visibility.
   void OnBubbleWidgetCreated(views::Widget* bubble_widget);
 
   // Returns the bubble instance for the icon.
@@ -59,10 +60,10 @@ class BubbleIconView : public views::InkDropHostView {
     EXECUTE_SOURCE_GESTURE,
   };
 
-  BubbleIconView(CommandUpdater* command_updater,
-                 int command_id,
-                 Delegate* delegate);
-  ~BubbleIconView() override;
+  PageActionIconView(CommandUpdater* command_updater,
+                     int command_id,
+                     Delegate* delegate);
+  ~PageActionIconView() override;
 
   // Returns true if a related bubble is showing.
   bool IsBubbleShowing() const;
@@ -141,7 +142,7 @@ class BubbleIconView : public views::InkDropHostView {
  private:
   class WidgetObserver : public views::WidgetObserver {
    public:
-    explicit WidgetObserver(BubbleIconView* parent);
+    explicit WidgetObserver(PageActionIconView* parent);
     ~WidgetObserver() override;
 
     void SetWidget(views::Widget* widget);
@@ -152,7 +153,7 @@ class BubbleIconView : public views::InkDropHostView {
     void OnWidgetVisibilityChanged(views::Widget* widget,
                                    bool visible) override;
 
-    BubbleIconView* const parent_;
+    PageActionIconView* const parent_;
     ScopedObserver<views::Widget, views::WidgetObserver> scoped_observer_;
     DISALLOW_COPY_AND_ASSIGN(WidgetObserver);
   };
@@ -185,7 +186,7 @@ class BubbleIconView : public views::InkDropHostView {
   // prevent the bubble from reshowing.
   bool suppress_mouse_released_action_;
 
-  DISALLOW_COPY_AND_ASSIGN(BubbleIconView);
+  DISALLOW_COPY_AND_ASSIGN(PageActionIconView);
 };
 
-#endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_BUBBLE_ICON_VIEW_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_PAGE_ACTION_PAGE_ACTION_ICON_VIEW_H_

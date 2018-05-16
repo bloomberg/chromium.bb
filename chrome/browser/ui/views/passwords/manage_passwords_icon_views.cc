@@ -16,8 +16,8 @@
 
 ManagePasswordsIconViews::ManagePasswordsIconViews(
     CommandUpdater* updater,
-    BubbleIconView::Delegate* delegate)
-    : BubbleIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE, delegate),
+    PageActionIconView::Delegate* delegate)
+    : PageActionIconView(updater, IDC_MANAGE_PASSWORDS_FOR_PAGE, delegate),
       state_(password_manager::ui::INACTIVE_STATE) {
   DCHECK(delegate);
 #if defined(OS_MACOSX)
@@ -69,10 +69,10 @@ bool ManagePasswordsIconViews::Refresh() {
 }
 
 void ManagePasswordsIconViews::OnExecuting(
-    BubbleIconView::ExecuteSource source) {}
+    PageActionIconView::ExecuteSource source) {}
 
 bool ManagePasswordsIconViews::OnMousePressed(const ui::MouseEvent& event) {
-  bool result = BubbleIconView::OnMousePressed(event);
+  bool result = PageActionIconView::OnMousePressed(event);
   PasswordBubbleViewBase::CloseCurrentBubble();
   return result;
 }
@@ -88,7 +88,7 @@ bool ManagePasswordsIconViews::OnKeyPressed(const ui::KeyEvent& event) {
     // If it still somehow got this key event, the bubble shouldn't be reopened.
     return true;
   }
-  return BubbleIconView::OnKeyPressed(event);
+  return PageActionIconView::OnKeyPressed(event);
 }
 
 const gfx::VectorIcon& ManagePasswordsIconViews::GetVectorIcon() const {

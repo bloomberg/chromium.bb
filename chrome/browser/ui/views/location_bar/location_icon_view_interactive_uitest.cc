@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(LocationIconViewTest,
                                     translate::TRANSLATE_STEP_AFTER_TRANSLATE,
                                     translate::TranslateErrors::NONE, true);
 
-  BubbleIconView* icon_view = location_bar_view->translate_icon_view();
+  PageActionIconView* icon_view = location_bar_view->translate_icon_view();
   ASSERT_TRUE(icon_view);
   EXPECT_TRUE(icon_view->visible());
 

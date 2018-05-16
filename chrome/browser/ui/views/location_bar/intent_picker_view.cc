@@ -20,8 +20,8 @@ class WebContents;
 }
 
 IntentPickerView::IntentPickerView(Browser* browser,
-                                   BubbleIconView::Delegate* delegate)
-    : BubbleIconView(nullptr, 0, delegate), browser_(browser) {
+                                   PageActionIconView::Delegate* delegate)
+    : PageActionIconView(nullptr, 0, delegate), browser_(browser) {
   if (browser_) {
     intent_picker_controller_ =
         std::make_unique<arc::IntentPickerController>(browser_);
@@ -36,11 +36,11 @@ void IntentPickerView::SetVisible(bool visible) {
   if (!visible)
     IntentPickerBubbleView::CloseCurrentBubble();
 
-  BubbleIconView::SetVisible(visible);
+  PageActionIconView::SetVisible(visible);
 }
 
 void IntentPickerView::OnExecuting(
-    BubbleIconView::ExecuteSource execute_source) {
+    PageActionIconView::ExecuteSource execute_source) {
   if (browser_ && !browser_->profile()->IsGuestSession() &&
       !IsIncognitoMode()) {
     SetVisible(true);

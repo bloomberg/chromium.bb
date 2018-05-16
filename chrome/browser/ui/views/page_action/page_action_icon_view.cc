@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -23,7 +23,7 @@
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 
-void BubbleIconView::Init() {
+void PageActionIconView::Init() {
   AddChildView(image_);
   image_->set_can_process_events_within_subtree(false);
   image_->EnableCanvasFlippingForRTLUI(true);
@@ -31,9 +31,9 @@ void BubbleIconView::Init() {
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 }
 
-BubbleIconView::BubbleIconView(CommandUpdater* command_updater,
-                               int command_id,
-                               BubbleIconView::Delegate* delegate)
+PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
+                                       int command_id,
+                                       PageActionIconView::Delegate* delegate)
     : widget_observer_(this),
       image_(new views::ImageView()),
       command_updater_(command_updater),
@@ -50,69 +50,69 @@ BubbleIconView::BubbleIconView(CommandUpdater* command_updater,
   }
 }
 
-BubbleIconView::~BubbleIconView() {}
+PageActionIconView::~PageActionIconView() {}
 
-bool BubbleIconView::IsBubbleShowing() const {
+bool PageActionIconView::IsBubbleShowing() const {
   // If the bubble is being destroyed, it's considered showing though it may be
   // already invisible currently.
   return GetBubble() != nullptr;
 }
 
-bool BubbleIconView::SetCommandEnabled(bool enabled) const {
+bool PageActionIconView::SetCommandEnabled(bool enabled) const {
   DCHECK(command_updater_);
   command_updater_->UpdateCommandEnabled(command_id_, enabled);
   return command_updater_->IsCommandEnabled(command_id_);
 }
 
-void BubbleIconView::SetImage(const gfx::ImageSkia* image_skia) {
+void PageActionIconView::SetImage(const gfx::ImageSkia* image_skia) {
   image_->SetImage(image_skia);
 }
 
-const gfx::ImageSkia& BubbleIconView::GetImage() const {
+const gfx::ImageSkia& PageActionIconView::GetImage() const {
   return image_->GetImage();
 }
 
-void BubbleIconView::SetHighlighted(bool bubble_visible) {
+void PageActionIconView::SetHighlighted(bool bubble_visible) {
   AnimateInkDrop(bubble_visible ? views::InkDropState::ACTIVATED
                                 : views::InkDropState::DEACTIVATED,
                  nullptr);
 }
 
-void BubbleIconView::OnBubbleWidgetCreated(views::Widget* bubble_widget) {
+void PageActionIconView::OnBubbleWidgetCreated(views::Widget* bubble_widget) {
   widget_observer_.SetWidget(bubble_widget);
 
   if (bubble_widget->IsVisible())
     SetHighlighted(true);
 }
 
-bool BubbleIconView::Refresh() {
+bool PageActionIconView::Refresh() {
   return false;
 }
 
-void BubbleIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
   node_data->SetName(GetTextForTooltipAndAccessibleName());
 }
 
-bool BubbleIconView::GetTooltipText(const gfx::Point& p,
-                                    base::string16* tooltip) const {
+bool PageActionIconView::GetTooltipText(const gfx::Point& p,
+                                        base::string16* tooltip) const {
   if (IsBubbleShowing())
     return false;
   *tooltip = GetTextForTooltipAndAccessibleName();
   return true;
 }
 
-gfx::Size BubbleIconView::CalculatePreferredSize() const {
+gfx::Size PageActionIconView::CalculatePreferredSize() const {
   gfx::Size image_rect(image_->GetPreferredSize());
   image_rect.Enlarge(GetInsets().width(), GetInsets().height());
   return image_rect;
 }
 
-void BubbleIconView::Layout() {
+void PageActionIconView::Layout() {
   image_->SetBoundsRect(GetContentsBounds());
 }
 
-bool BubbleIconView::OnMousePressed(const ui::MouseEvent& event) {
+bool PageActionIconView::OnMousePressed(const ui::MouseEvent& event) {
   // If the bubble is showing then don't reshow it when the mouse is released.
   suppress_mouse_released_action_ = IsBubbleShowing();
   if (!suppress_mouse_released_action_ && event.IsOnlyLeftMouseButton())
@@ -123,7 +123,7 @@ bool BubbleIconView::OnMousePressed(const ui::MouseEvent& event) {
   return true;
 }
 
-void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
+void PageActionIconView::OnMouseReleased(const ui::MouseEvent& event) {
   // If this is the second click on this view then the bubble was showing on the
   // mouse pressed event and is hidden now. Prevent the bubble from reshowing by
   // doing nothing here.
@@ -144,7 +144,7 @@ void BubbleIconView::OnMouseReleased(const ui::MouseEvent& event) {
   OnPressed(activated);
 }
 
-bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
+bool PageActionIconView::OnKeyPressed(const ui::KeyEvent& event) {
   if (event.key_code() != ui::VKEY_RETURN && event.key_code() != ui::VKEY_SPACE)
     return false;
 
@@ -156,7 +156,7 @@ bool BubbleIconView::OnKeyPressed(const ui::KeyEvent& event) {
   return true;
 }
 
-bool BubbleIconView::OnKeyReleased(const ui::KeyEvent& event) {
+bool PageActionIconView::OnKeyReleased(const ui::KeyEvent& event) {
   if (event.key_code() != ui::VKEY_SPACE)
     return false;
 
@@ -164,40 +164,40 @@ bool BubbleIconView::OnKeyReleased(const ui::KeyEvent& event) {
   return true;
 }
 
-void BubbleIconView::ViewHierarchyChanged(
+void PageActionIconView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
   View::ViewHierarchyChanged(details);
   if (details.is_add && GetNativeTheme())
     UpdateIcon();
 }
 
-void BubbleIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+void PageActionIconView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
   UpdateIcon();
 }
 
-void BubbleIconView::OnThemeChanged() {
+void PageActionIconView::OnThemeChanged() {
   UpdateIcon();
 }
 
-void BubbleIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+void PageActionIconView::AddInkDropLayer(ui::Layer* ink_drop_layer) {
   image_->SetPaintToLayer();
   image_->layer()->SetFillsBoundsOpaquely(false);
   views::InkDropHostView::AddInkDropLayer(ink_drop_layer);
 }
 
-void BubbleIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
+void PageActionIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   views::InkDropHostView::RemoveInkDropLayer(ink_drop_layer);
   image_->DestroyLayer();
 }
 
-std::unique_ptr<views::InkDrop> BubbleIconView::CreateInkDrop() {
+std::unique_ptr<views::InkDrop> PageActionIconView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       CreateDefaultFloodFillInkDropImpl();
   ink_drop->SetShowHighlightOnFocus(true);
   return std::move(ink_drop);
 }
 
-std::unique_ptr<views::InkDropRipple> BubbleIconView::CreateInkDropRipple()
+std::unique_ptr<views::InkDropRipple> PageActionIconView::CreateInkDropRipple()
     const {
   return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
@@ -205,7 +205,7 @@ std::unique_ptr<views::InkDropRipple> BubbleIconView::CreateInkDropRipple()
 }
 
 std::unique_ptr<views::InkDropHighlight>
-BubbleIconView::CreateInkDropHighlight() const {
+PageActionIconView::CreateInkDropHighlight() const {
   std::unique_ptr<views::InkDropHighlight> highlight =
       CreateDefaultInkDropHighlight(
           gfx::RectF(GetMirroredRect(GetContentsBounds())).CenterPoint(),
@@ -217,7 +217,7 @@ BubbleIconView::CreateInkDropHighlight() const {
   return highlight;
 }
 
-SkColor BubbleIconView::GetInkDropBaseColor() const {
+SkColor PageActionIconView::GetInkDropBaseColor() const {
   const SkColor ink_color_opaque = GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_TextfieldDefaultColor);
   if (ui::MaterialDesignController::IsNewerMaterialUi()) {
@@ -227,14 +227,15 @@ SkColor BubbleIconView::GetInkDropBaseColor() const {
   return color_utils::DeriveDefaultIconColor(ink_color_opaque);
 }
 
-std::unique_ptr<views::InkDropMask> BubbleIconView::CreateInkDropMask() const {
+std::unique_ptr<views::InkDropMask> PageActionIconView::CreateInkDropMask()
+    const {
   if (!LocationBarView::IsRounded())
     return nullptr;
   return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::Insets(),
                                                        height() / 2.f);
 }
 
-void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
+void PageActionIconView::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_TAP) {
     AnimateInkDrop(views::InkDropState::ACTIVATED, event);
     ExecuteCommand(EXECUTE_SOURCE_GESTURE);
@@ -242,20 +243,20 @@ void BubbleIconView::OnGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-void BubbleIconView::ExecuteCommand(ExecuteSource source) {
+void PageActionIconView::ExecuteCommand(ExecuteSource source) {
   OnExecuting(source);
   if (command_updater_)
     command_updater_->ExecuteCommand(command_id_);
 }
 
-void BubbleIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+void PageActionIconView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   views::BubbleDialogDelegateView* bubble = GetBubble();
   if (bubble)
     bubble->OnAnchorBoundsChanged();
   InkDropHostView::OnBoundsChanged(previous_bounds);
 }
 
-void BubbleIconView::UpdateIcon() {
+void PageActionIconView::UpdateIcon() {
   const ui::NativeTheme* theme = GetNativeTheme();
   SkColor icon_color =
       active_ ? theme->GetSystemColor(
@@ -267,32 +268,33 @@ void BubbleIconView::UpdateIcon() {
       GetVectorIcon(), GetLayoutConstant(LOCATION_BAR_ICON_SIZE), icon_color));
 }
 
-void BubbleIconView::SetActiveInternal(bool active) {
+void PageActionIconView::SetActiveInternal(bool active) {
   if (active_ == active)
     return;
   active_ = active;
   UpdateIcon();
 }
 
-content::WebContents* BubbleIconView::GetWebContents() const {
-  return delegate_->GetWebContentsForBubbleIconView();
+content::WebContents* PageActionIconView::GetWebContents() const {
+  return delegate_->GetWebContentsForPageActionIconView();
 }
 
-BubbleIconView::WidgetObserver::WidgetObserver(BubbleIconView* parent)
+PageActionIconView::WidgetObserver::WidgetObserver(PageActionIconView* parent)
     : parent_(parent), scoped_observer_(this) {}
 
-BubbleIconView::WidgetObserver::~WidgetObserver() = default;
+PageActionIconView::WidgetObserver::~WidgetObserver() = default;
 
-void BubbleIconView::WidgetObserver::SetWidget(views::Widget* widget) {
+void PageActionIconView::WidgetObserver::SetWidget(views::Widget* widget) {
   scoped_observer_.RemoveAll();
   scoped_observer_.Add(widget);
 }
 
-void BubbleIconView::WidgetObserver::OnWidgetDestroying(views::Widget* widget) {
+void PageActionIconView::WidgetObserver::OnWidgetDestroying(
+    views::Widget* widget) {
   scoped_observer_.Remove(widget);
 }
 
-void BubbleIconView::WidgetObserver::OnWidgetVisibilityChanged(
+void PageActionIconView::WidgetObserver::OnWidgetVisibilityChanged(
     views::Widget* widget,
     bool visible) {
   // |widget| is a bubble that has just got shown / hidden.

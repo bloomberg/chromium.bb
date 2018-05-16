@@ -6,18 +6,18 @@
 #define CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_FIND_BAR_ICON_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
 // The find icon to show when the find bar is visible.
-class FindBarIcon : public BubbleIconView {
+class FindBarIcon : public PageActionIconView {
  public:
-  explicit FindBarIcon(BubbleIconView::Delegate* delegate);
+  explicit FindBarIcon(PageActionIconView::Delegate* delegate);
   ~FindBarIcon() override;
 
   void SetActive(bool activate, bool should_animate);
 
  protected:
-  // BubbleIconView:
+  // PageActionIconView:
   void OnExecuting(ExecuteSource execute_source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;

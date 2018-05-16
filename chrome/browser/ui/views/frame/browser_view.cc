@@ -1192,7 +1192,7 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
     autofill::SaveCardBubbleController* controller,
     bool user_gesture) {
   LocationBarView* location_bar = GetLocationBarView();
-  BubbleIconView* card_view = location_bar->save_credit_card_icon_view();
+  PageActionIconView* card_view = location_bar->save_credit_card_icon_view();
 
   views::View* anchor_view = location_bar;
   if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {

@@ -7,17 +7,17 @@
 
 #include "base/macros.h"
 #include "base/scoped_observer.h"
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
 class Browser;
 class CommandUpdater;
 
 // The star icon to show a bookmark bubble.
-class StarView : public BubbleIconView, public views::WidgetObserver {
+class StarView : public PageActionIconView, public views::WidgetObserver {
  public:
   StarView(CommandUpdater* command_updater,
            Browser* browser,
-           BubbleIconView::Delegate* delegate);
+           PageActionIconView::Delegate* delegate);
   ~StarView() override;
 
   // Toggles the star on or off.
@@ -27,8 +27,8 @@ class StarView : public BubbleIconView, public views::WidgetObserver {
   void ShowPromo();
 
  protected:
-  // BubbleIconView:
-  void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
+  // PageActionIconView:
+  void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   void ExecuteCommand(ExecuteSource source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   SkColor GetInkDropBaseColor() const override;
