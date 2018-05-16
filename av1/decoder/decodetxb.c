@@ -27,7 +27,7 @@ static int read_golomb(MACROBLOCKD *xd, aom_reader *r) {
   while (!i) {
     i = aom_read_bit(r, ACCT_STR);
     ++length;
-    if (length >= 32) {
+    if (length > 20) {
       aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                          "Invalid length in read_golomb");
       break;
