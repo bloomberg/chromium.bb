@@ -89,8 +89,9 @@ std::string AudioDecoderConfig::AsHumanReadableString() const {
     << " bytes_per_frame: " << bytes_per_frame()
     << " seek_preroll: " << seek_preroll().InMilliseconds() << "ms"
     << " codec_delay: " << codec_delay() << " has extra data? "
-    << (extra_data().empty() ? "false" : "true") << " encrypted? "
-    << (is_encrypted() ? "true" : "false") << " discard decoder delay? "
+    << (extra_data().empty() ? "false" : "true")
+    << " encryption scheme: " << encryption_scheme()
+    << " discard decoder delay? "
     << (should_discard_decoder_delay() ? "true" : "false");
   return s.str();
 }

@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <iosfwd>
+
 #include "media/base/encryption_pattern.h"
 #include "media/base/media_export.h"
 
@@ -44,6 +46,11 @@ class MEDIA_EXPORT EncryptionScheme {
 
   // Allow copy and assignment.
 };
+
+// For logging use only.
+MEDIA_EXPORT std::ostream& operator<<(
+    std::ostream& os,
+    const EncryptionScheme& encryption_scheme);
 
 }  // namespace media
 
