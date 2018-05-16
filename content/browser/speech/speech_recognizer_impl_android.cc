@@ -41,15 +41,17 @@ void SpeechRecognizerImplAndroid::StartRecognition(
     const std::string& device_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(xians): Open the correct device for speech on Android.
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &SpeechRecognitionEventListener::OnRecognitionStart,
-      base::Unretained(listener()),
-      session_id()));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&SpeechRecognitionEventListener::OnRecognitionStart,
+                     base::Unretained(listener()), session_id()));
   SpeechRecognitionSessionConfig config =
       SpeechRecognitionManager::GetInstance()->GetSessionConfig(session_id());
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-      &content::SpeechRecognizerImplAndroid::StartRecognitionOnUIThread, this,
-      config.language, config.continuous, config.interim_results));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(
+          &content::SpeechRecognizerImplAndroid::StartRecognitionOnUIThread,
+          this, config.language, config.continuous, config.interim_results));
 }
 
 void SpeechRecognizerImplAndroid::StartRecognitionOnUIThread(
@@ -68,8 +70,10 @@ void SpeechRecognizerImplAndroid::StartRecognitionOnUIThread(
 void SpeechRecognizerImplAndroid::AbortRecognition() {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     state_ = STATE_IDLE;
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &content::SpeechRecognizerImplAndroid::AbortRecognition, this));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&content::SpeechRecognizerImplAndroid::AbortRecognition,
+                       this));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -80,8 +84,10 @@ void SpeechRecognizerImplAndroid::AbortRecognition() {
 
 void SpeechRecognizerImplAndroid::StopAudioCapture() {
   if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
-        &content::SpeechRecognizerImplAndroid::StopAudioCapture, this));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&content::SpeechRecognizerImplAndroid::StopAudioCapture,
+                       this));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -106,8 +112,8 @@ void SpeechRecognizerImplAndroid::OnAudioStart(
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SpeechRecognizerImplAndroid::OnAudioStart, this, nullptr,
-                   nullptr));
+        base::BindOnce(&SpeechRecognizerImplAndroid::OnAudioStart, this,
+                       nullptr, nullptr));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -121,8 +127,8 @@ void SpeechRecognizerImplAndroid::OnSoundStart(
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SpeechRecognizerImplAndroid::OnSoundStart, this, nullptr,
-                   nullptr));
+        base::BindOnce(&SpeechRecognizerImplAndroid::OnSoundStart, this,
+                       nullptr, nullptr));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -132,9 +138,10 @@ void SpeechRecognizerImplAndroid::OnSoundStart(
 void SpeechRecognizerImplAndroid::OnSoundEnd(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&SpeechRecognizerImplAndroid::OnSoundEnd,
-                                       this, nullptr, nullptr));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&SpeechRecognizerImplAndroid::OnSoundEnd, this, nullptr,
+                       nullptr));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -144,9 +151,10 @@ void SpeechRecognizerImplAndroid::OnSoundEnd(JNIEnv* env,
 void SpeechRecognizerImplAndroid::OnAudioEnd(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::Bind(&SpeechRecognizerImplAndroid::OnAudioEnd,
-                                       this, nullptr, nullptr));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&SpeechRecognizerImplAndroid::OnAudioEnd, this, nullptr,
+                       nullptr));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -176,9 +184,11 @@ void SpeechRecognizerImplAndroid::OnRecognitionResults(
         options[i], static_cast<double>(scores[i])));
   }
   result.is_provisional = provisional;
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE, base::Bind(
-      &SpeechRecognizerImplAndroid::OnRecognitionResultsOnIOThread,
-      this, results));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
+          &SpeechRecognizerImplAndroid::OnRecognitionResultsOnIOThread, this,
+          results));
 }
 
 void SpeechRecognizerImplAndroid::OnRecognitionResultsOnIOThread(
@@ -194,8 +204,8 @@ void SpeechRecognizerImplAndroid::OnRecognitionError(
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SpeechRecognizerImplAndroid::OnRecognitionError, this,
-                   nullptr, nullptr, error));
+        base::BindOnce(&SpeechRecognizerImplAndroid::OnRecognitionError, this,
+                       nullptr, nullptr, error));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -210,8 +220,8 @@ void SpeechRecognizerImplAndroid::OnRecognitionEnd(
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(&SpeechRecognizerImplAndroid::OnRecognitionEnd, this,
-                   nullptr, nullptr));
+        base::BindOnce(&SpeechRecognizerImplAndroid::OnRecognitionEnd, this,
+                       nullptr, nullptr));
     return;
   }
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
