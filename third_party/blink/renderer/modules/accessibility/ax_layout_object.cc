@@ -697,6 +697,7 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // not ignored, rather than just images.
   if (!GetAttribute(aria_helpAttr).IsEmpty() ||
       !GetAttribute(aria_describedbyAttr).IsEmpty() ||
+      !GetAttribute(aria_detailsAttr).IsEmpty() ||
       !GetAttribute(altAttr).IsEmpty() || !GetAttribute(titleAttr).IsEmpty())
     return false;
 
