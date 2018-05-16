@@ -232,6 +232,7 @@ void ExtensionSyncData::ToAppSpecifics(sync_pb::AppSpecifics* specifics) const {
   for (const auto& linked_icon : linked_icons_) {
     sync_pb::LinkedAppIconInfo* linked_app_icon_info =
         specifics->add_linked_app_icons();
+    DCHECK(linked_icon.url.is_valid());
     linked_app_icon_info->set_url(linked_icon.url.spec());
     linked_app_icon_info->set_size(linked_icon.size);
   }
