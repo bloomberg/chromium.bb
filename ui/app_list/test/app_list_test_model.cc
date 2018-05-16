@@ -105,10 +105,8 @@ AppListFolderItem* AppListTestModel::CreateAndPopulateFolderWithApps(int n) {
   return static_cast<AppListFolderItem*>(merged_item);
 }
 
-AppListFolderItem* AppListTestModel::CreateAndAddOemFolder(
-    const std::string& id) {
-  AppListFolderItem* folder =
-      new AppListFolderItem(id, AppListFolderItem::FOLDER_TYPE_OEM);
+AppListFolderItem* AppListTestModel::CreateAndAddOemFolder() {
+  AppListFolderItem* folder = new AppListFolderItem(ash::kOemFolderId);
   return static_cast<AppListFolderItem*>(AddItem(folder));
 }
 

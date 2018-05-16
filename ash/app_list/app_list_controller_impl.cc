@@ -292,16 +292,13 @@ void AppListControllerImpl::GetIdToAppListIndexMap(
 }
 
 void AppListControllerImpl::FindOrCreateOemFolder(
-    const std::string& oem_folder_id,
     const std::string& oem_folder_name,
     const syncer::StringOrdinal& preferred_oem_position,
     FindOrCreateOemFolderCallback callback) {
-  app_list::AppListFolderItem* oem_folder =
-      model_.FindFolderItem(oem_folder_id);
+  app_list::AppListFolderItem* oem_folder = model_.FindFolderItem(kOemFolderId);
   if (!oem_folder) {
-    std::unique_ptr<app_list::AppListFolderItem> new_folder(
-        new app_list::AppListFolderItem(
-            oem_folder_id, app_list::AppListFolderItem::FOLDER_TYPE_OEM));
+    std::unique_ptr<app_list::AppListFolderItem> new_folder =
+        std::make_unique<app_list::AppListFolderItem>(kOemFolderId);
     syncer::StringOrdinal oem_position = preferred_oem_position.IsValid()
                                              ? preferred_oem_position
                                              : GetOemFolderPos();
@@ -316,11 +313,10 @@ void AppListControllerImpl::FindOrCreateOemFolder(
 }
 
 void AppListControllerImpl::ResolveOemFolderPosition(
-    const std::string& oem_folder_id,
     const syncer::StringOrdinal& preferred_oem_position,
     ResolveOemFolderPositionCallback callback) {
   // In ash:
-  app_list::AppListFolderItem* ash_oem_folder = FindFolderItem(oem_folder_id);
+  app_list::AppListFolderItem* ash_oem_folder = FindFolderItem(kOemFolderId);
   ash::mojom::AppListItemMetadataPtr metadata = nullptr;
   if (ash_oem_folder) {
     const syncer::StringOrdinal& oem_folder_pos =
@@ -671,11 +667,7 @@ std::unique_ptr<app_list::AppListItem> AppListControllerImpl::CreateAppListItem(
     AppListItemMetadataPtr metadata) {
   std::unique_ptr<app_list::AppListItem> app_list_item =
       metadata->is_folder
-          ? std::make_unique<app_list::AppListFolderItem>(
-                metadata->id,
-                metadata->id == kOemFolderId
-                    ? app_list::AppListFolderItem::FOLDER_TYPE_OEM
-                    : app_list::AppListFolderItem::FOLDER_TYPE_NORMAL)
+          ? std::make_unique<app_list::AppListFolderItem>(metadata->id)
           : std::make_unique<app_list::AppListItem>(metadata->id);
   app_list_item->SetMetadata(std::move(metadata));
   return app_list_item;

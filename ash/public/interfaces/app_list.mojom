@@ -247,25 +247,21 @@ interface AppListController {
   // These interfaces are called while dealing with the OEM folder in the
   // AppListSyncableService in Chrome.
   // Finds the OEM folder or creates one if it doesn't exist.
-  // |oem_folder_id|: the expected id of the OEM folder.
   // |oem_folder_name|: the expected name of the OEM folder while creating.
   // |preferred_oem_position|: the preferred position of the OEM folder while
   //                           creating; if it's invalid then the final position
   //                           is determined in Ash.
   // |oem_folder|: the meta data of the existing/created OEM folder.
   FindOrCreateOemFolder(
-      string oem_folder_id,
       string oem_folder_name,
       syncer.mojom.StringOrdinal preferred_oem_position)
       => (AppListItemMetadata oem_folder);
   // Resolves the position of the OEM folder.
-  // |oem_folder_id|: the id of the OEM folder.
   // |preferred_oem_position|: the preferred position of the OEM folder; if it's
   //                           invalid then the final position is determined in
   //                           Ash.
   // |oem_folder|: the meta data of the OEM folder, or null if it doesn't exist.
   ResolveOemFolderPosition(
-      string oem_folder_id,
       syncer.mojom.StringOrdinal preferred_oem_position)
       => (AppListItemMetadata? oem_folder);
 

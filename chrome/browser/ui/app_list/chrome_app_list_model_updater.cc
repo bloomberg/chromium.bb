@@ -376,34 +376,31 @@ void ChromeAppListModelUpdater::ContextMenuItemSelected(const std::string& id,
 // Methods for AppListSyncableService
 
 void ChromeAppListModelUpdater::ResolveOemFolderPosition(
-    const std::string& oem_folder_id,
     const syncer::StringOrdinal& preferred_oem_position,
     ResolveOemFolderPositionCallback callback) {
   if (!app_list_controller_)
     return;
   app_list_controller_->ResolveOemFolderPosition(
-      oem_folder_id, preferred_oem_position,
+      preferred_oem_position,
       base::BindOnce(
           [](base::WeakPtr<ChromeAppListModelUpdater> self,
-             const std::string& oem_folder_id,
              ResolveOemFolderPositionCallback callback,
              ash::mojom::AppListItemMetadataPtr folder_data) {
             if (!self)
               return;
             ChromeAppListItem* chrome_oem_folder = nullptr;
             if (folder_data) {
-              chrome_oem_folder = self->FindFolderItem(oem_folder_id);
+              chrome_oem_folder = self->FindFolderItem(ash::kOemFolderId);
               chrome_oem_folder->SetMetadata(std::move(folder_data));
             }
             std::move(callback).Run(chrome_oem_folder);
           },
-          weak_ptr_factory_.GetWeakPtr(), oem_folder_id, std::move(callback)));
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 void ChromeAppListModelUpdater::AddItemToOemFolder(
     std::unique_ptr<ChromeAppListItem> item,
     app_list::AppListSyncableService::SyncItem* oem_sync_item,
-    const std::string& oem_folder_id,
     const std::string& oem_folder_name,
     const syncer::StringOrdinal& preferred_oem_position) {
   syncer::StringOrdinal position_to_try = preferred_oem_position;
@@ -413,25 +410,25 @@ void ChromeAppListModelUpdater::AddItemToOemFolder(
 
   if (app_list_controller_) {
     app_list_controller_->FindOrCreateOemFolder(
-        oem_folder_id, oem_folder_name, position_to_try,
+        oem_folder_name, position_to_try,
         base::BindOnce(
             [](base::WeakPtr<ChromeAppListModelUpdater> self,
                std::unique_ptr<ChromeAppListItem> item,
-               const std::string& oem_folder_id,
                ash::mojom::AppListItemMetadataPtr /* oem_folder */) {
               if (!self)
                 return;
-              self->AddItemToFolder(std::move(item), oem_folder_id);
+              self->AddItemToFolder(std::move(item), ash::kOemFolderId);
             },
-            weak_ptr_factory_.GetWeakPtr(), std::move(item), oem_folder_id));
+            weak_ptr_factory_.GetWeakPtr(), std::move(item)));
   } else {
     ChromeAppListItem* item_added = AddChromeItem(std::move(item));
-    item_added->SetChromeFolderId(oem_folder_id);
+    item_added->SetChromeFolderId(ash::kOemFolderId);
     // If we don't have an OEM folder in Chrome, create one first.
-    ChromeAppListItem* oem_folder = FindFolderItem(oem_folder_id);
+    ChromeAppListItem* oem_folder = FindFolderItem(ash::kOemFolderId);
     if (!oem_folder) {
       std::unique_ptr<ChromeAppListItem> new_oem_folder =
-          std::make_unique<ChromeAppListItem>(profile_, oem_folder_id, this);
+          std::make_unique<ChromeAppListItem>(profile_, ash::kOemFolderId,
+                                              this);
       oem_folder = AddChromeItem(std::move(new_oem_folder));
       oem_folder->SetChromeIsFolder(true);
     }

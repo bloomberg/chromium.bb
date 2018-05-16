@@ -57,7 +57,7 @@ class AppListTestModel : public AppListModel {
   // Creates and populate a folder with |n| test apps in it.
   AppListFolderItem* CreateAndPopulateFolderWithApps(int n);
 
-  AppListFolderItem* CreateAndAddOemFolder(const std::string& id);
+  AppListFolderItem* CreateAndAddOemFolder();
 
   AppListFolderItem* CreateSingleItemFolder(const std::string& folder_id,
                                             const std::string& item_id);

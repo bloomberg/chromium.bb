@@ -99,12 +99,10 @@ class ASH_EXPORT AppListControllerImpl
 
   void GetIdToAppListIndexMap(GetIdToAppListIndexMapCallback callback) override;
   void FindOrCreateOemFolder(
-      const std::string& oem_folder_id,
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preferred_oem_position,
       FindOrCreateOemFolderCallback callback) override;
   void ResolveOemFolderPosition(
-      const std::string& oem_folder_id,
       const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) override;
 
