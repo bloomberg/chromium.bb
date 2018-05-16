@@ -10,7 +10,11 @@ namespace {
 const int kNumFramesToLock = 2;
 }  // namespace
 
-DecodedImageTracker::DecodedImageTracker() = default;
+DecodedImageTracker::DecodedImageTracker(ImageController* controller)
+    : image_controller_(controller) {
+  DCHECK(image_controller_);
+}
+
 DecodedImageTracker::~DecodedImageTracker() {
   for (auto& pair : locked_images_)
     image_controller_->UnlockImageDecode(pair.first);

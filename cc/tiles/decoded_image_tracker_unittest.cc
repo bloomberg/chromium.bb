@@ -63,9 +63,7 @@ class TestImageController : public ImageController {
 
 class DecodedImageTrackerTest : public testing::Test {
  public:
-  void SetUp() override {
-    decoded_image_tracker_.set_image_controller(image_controller());
-  }
+  DecodedImageTrackerTest() : decoded_image_tracker_(&image_controller_) {}
 
   TestImageController* image_controller() { return &image_controller_; }
   DecodedImageTracker* decoded_image_tracker() {
