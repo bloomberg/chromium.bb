@@ -3278,10 +3278,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"dialog-touchbar", flag_descriptions::kDialogTouchBarName,
      flag_descriptions::kDialogTouchBarDescription, kOsMac,
      FEATURE_VALUE_TYPE(features::kDialogTouchBar)},
-    {"credit-card-autofill-touchbar",
-     flag_descriptions::kCreditCardAutofillTouchBarName,
-     flag_descriptions::kCreditCardAutofillTouchBarDescription, kOsMac,
-     FEATURE_VALUE_TYPE(autofill::kCreditCardAutofillTouchBar)},
 #endif  // defined(OS_MACOSX)
 
 #if defined(TOOLKIT_VIEWS)

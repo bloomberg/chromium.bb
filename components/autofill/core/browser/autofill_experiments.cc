@@ -88,8 +88,6 @@ const char kAutofillCreditCardLastUsedDateShowExpirationDateKey[] =
     "show_expiration_date";
 
 #if defined(OS_MACOSX)
-const base::Feature kCreditCardAutofillTouchBar{
-    "CreditCardAutofillTouchBar", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kMacViewsAutofillPopup{"MacViewsAutofillPopup",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_MACOSX)
@@ -283,10 +281,6 @@ bool IsAutofillUpstreamUpdatePromptExplanationExperimentEnabled() {
 }
 
 #if defined(OS_MACOSX)
-bool IsCreditCardAutofillTouchBarExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kCreditCardAutofillTouchBar);
-}
-
 bool IsMacViewsAutofillPopupExperimentEnabled() {
 #if BUILDFLAG(MAC_VIEWS_BROWSER)
   if (!features::IsViewsBrowserCocoa())

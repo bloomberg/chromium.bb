@@ -8,7 +8,6 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/tab_contents/tab_contents_controller.h"
 #import "chrome/browser/ui/cocoa/web_textfield_touch_bar_controller.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 
@@ -58,9 +57,6 @@ AutofillPopupControllerImplMac::~AutofillPopupControllerImplMac() {}
 void AutofillPopupControllerImplMac::Show(
     const std::vector<autofill::Suggestion>& suggestions) {
   AutofillPopupControllerImpl::Show(suggestions);
-
-  if (!autofill::IsCreditCardAutofillTouchBarExperimentEnabled())
-    return;
 
   if (!GetLineCount() || !is_credit_card_popup_)
     return;

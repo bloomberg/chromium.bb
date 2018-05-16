@@ -9,7 +9,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/autofill/autofill_popup_controller.h"
 #include "chrome/browser/ui/autofill/autofill_popup_layout_model.h"
-#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
 #include "components/grit/components_scaled_resources.h"
@@ -64,9 +63,6 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!autofill::IsCreditCardAutofillTouchBarExperimentEnabled())
-    return nil;
-
   if (!controller_->GetLineCount() ||
       !controller_->layout_model().is_credit_card_popup()) {
     return nil;

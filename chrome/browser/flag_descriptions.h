@@ -1564,9 +1564,6 @@ extern const char kFullscreenToolbarRevealDescription[];
 extern const char kContentFullscreenName[];
 extern const char kContentFullscreenDescription[];
 
-extern const char kCreditCardAutofillTouchBarName[];
-extern const char kCreditCardAutofillTouchBarDescription[];
-
 extern const char kDialogTouchBarName[];
 extern const char kDialogTouchBarDescription[];
 
