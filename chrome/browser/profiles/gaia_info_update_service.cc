@@ -19,6 +19,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "components/signin/core/browser/signin_pref_names.h"
 #include "content/public/browser/notification_details.h"
@@ -131,9 +132,10 @@ void GAIAInfoUpdateService::OnProfileDownloadSuccess(
   }
 
   const base::string16 hosted_domain = downloader->GetProfileHostedDomain();
-  profile_->GetPrefs()->SetString(prefs::kGoogleServicesHostedDomain,
-      (hosted_domain.empty() ? Profile::kNoHostedDomainFound :
-                               base::UTF16ToUTF8(hosted_domain)));
+  profile_->GetPrefs()->SetString(
+      prefs::kGoogleServicesHostedDomain,
+      (hosted_domain.empty() ? AccountTrackerService::kNoHostedDomainFound
+                             : base::UTF16ToUTF8(hosted_domain)));
 }
 
 void GAIAInfoUpdateService::OnProfileDownloadFailure(

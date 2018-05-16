@@ -422,7 +422,7 @@ bool IsLockAvailable(Profile* profile) {
   }
   // TODO(mlerman): Prohibit only users who authenticate using SAML. Until then,
   // prohibited users who use hosted domains (aside from google.com).
-  if (hosted_domain != Profile::kNoHostedDomainFound &&
+  if (hosted_domain != AccountTrackerService::kNoHostedDomainFound &&
       hosted_domain != "google.com") {
     return false;
   }
