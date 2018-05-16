@@ -120,10 +120,9 @@ static INLINE void variance16_avx2(const uint8_t *src, const int src_stride,
                                    const uint8_t *ref, const int ref_stride,
                                    const int h, __m256i *const vsse,
                                    __m256i *const vsum) {
-  int i;
   *vsum = _mm256_setzero_si256();
 
-  for (i = 0; i < h; i += 2) {
+  for (int i = 0; i < h; i += 2) {
     variance16_kernel_avx2(src, src_stride, ref, ref_stride, vsse, vsum);
     src += 2 * src_stride;
     ref += 2 * ref_stride;
@@ -134,10 +133,9 @@ static INLINE void variance32_avx2(const uint8_t *src, const int src_stride,
                                    const uint8_t *ref, const int ref_stride,
                                    const int h, __m256i *const vsse,
                                    __m256i *const vsum) {
-  int i;
   *vsum = _mm256_setzero_si256();
 
-  for (i = 0; i < h; i++) {
+  for (int i = 0; i < h; i++) {
     variance32_kernel_avx2(src, ref, vsse, vsum);
     src += src_stride;
     ref += ref_stride;
@@ -148,10 +146,9 @@ static INLINE void variance64_avx2(const uint8_t *src, const int src_stride,
                                    const uint8_t *ref, const int ref_stride,
                                    const int h, __m256i *const vsse,
                                    __m256i *const vsum) {
-  int i;
   *vsum = _mm256_setzero_si256();
 
-  for (i = 0; i < h; i++) {
+  for (int i = 0; i < h; i++) {
     variance32_kernel_avx2(src + 0, ref + 0, vsse, vsum);
     variance32_kernel_avx2(src + 32, ref + 32, vsse, vsum);
     src += src_stride;
@@ -163,10 +160,9 @@ static INLINE void variance128_avx2(const uint8_t *src, const int src_stride,
                                     const uint8_t *ref, const int ref_stride,
                                     const int h, __m256i *const vsse,
                                     __m256i *const vsum) {
-  int i;
   *vsum = _mm256_setzero_si256();
 
-  for (i = 0; i < h; i++) {
+  for (int i = 0; i < h; i++) {
     variance32_kernel_avx2(src + 0, ref + 0, vsse, vsum);
     variance32_kernel_avx2(src + 32, ref + 32, vsse, vsum);
     variance32_kernel_avx2(src + 64, ref + 64, vsse, vsum);
@@ -220,10 +216,10 @@ AOM_VAR_NO_LOOP_AVX2(64, 32, 11, 2048);
     return *sse - (unsigned int)(((int64_t)sum * sum) >> bits);               \
   }
 
-AOM_VAR_LOOP_AVX2(64, 64, 12, 32);
-AOM_VAR_LOOP_AVX2(64, 128, 13, 32);
-AOM_VAR_LOOP_AVX2(128, 64, 13, 16);
-AOM_VAR_LOOP_AVX2(128, 128, 14, 16);
+AOM_VAR_LOOP_AVX2(64, 64, 12, 32);    // 64x32 * ( 64/32)
+AOM_VAR_LOOP_AVX2(64, 128, 13, 32);   // 64x32 * (128/32)
+AOM_VAR_LOOP_AVX2(128, 64, 13, 16);   // 128x16 * ( 64/16)
+AOM_VAR_LOOP_AVX2(128, 128, 14, 16);  // 128x16 * (128/16)
 
 unsigned int aom_mse16x16_avx2(const uint8_t *src, int src_stride,
                                const uint8_t *ref, int ref_stride,

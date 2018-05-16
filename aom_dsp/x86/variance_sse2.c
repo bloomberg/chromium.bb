@@ -277,13 +277,13 @@ AOM_VAR_NO_LOOP_SSE2(32, 8, 8, 256);
 AOM_VAR_NO_LOOP_SSE2(32, 16, 9, 512);
 AOM_VAR_NO_LOOP_SSE2(32, 32, 10, 1024);
 
-#define AOM_VAR_LOOP_SSE2(bw, bh, bits, uh, cnt)                              \
+#define AOM_VAR_LOOP_SSE2(bw, bh, bits, uh)                                   \
   unsigned int aom_variance##bw##x##bh##_sse2(                                \
       const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
       unsigned int *sse) {                                                    \
     __m128i vsse = _mm_setzero_si128();                                       \
     __m128i vsum = _mm_setzero_si128();                                       \
-    for (int i = 0; i < cnt; ++i) {                                           \
+    for (int i = 0; i < (bh / uh); ++i) {                                     \
       __m128i vsum16;                                                         \
       variance##bw##_sse2(src, src_stride, ref, ref_stride, uh, &vsse,        \
                           &vsum16);                                           \
@@ -298,15 +298,15 @@ AOM_VAR_NO_LOOP_SSE2(32, 32, 10, 1024);
     return *sse - (uint32_t)(((int64_t)sum * sum) >> bits);                   \
   }
 
-AOM_VAR_LOOP_SSE2(32, 64, 11, 32, 2);  // 32x32 x 2
+AOM_VAR_LOOP_SSE2(32, 64, 11, 32);  // 32x32 * ( 64/32 )
 
 AOM_VAR_NO_LOOP_SSE2(64, 16, 10, 1024);
-AOM_VAR_LOOP_SSE2(64, 32, 11, 16, 2);   // 64x16 x 2
-AOM_VAR_LOOP_SSE2(64, 64, 12, 16, 4);   // 64x16 x 4
-AOM_VAR_LOOP_SSE2(64, 128, 13, 16, 8);  // 64x16 x 8
+AOM_VAR_LOOP_SSE2(64, 32, 11, 16);   // 64x16 * ( 32/16 )
+AOM_VAR_LOOP_SSE2(64, 64, 12, 16);   // 64x16 * ( 64/16 )
+AOM_VAR_LOOP_SSE2(64, 128, 13, 16);  // 64x16 * ( 128/16 )
 
-AOM_VAR_LOOP_SSE2(128, 64, 13, 8, 8);    // 128x8 x 8
-AOM_VAR_LOOP_SSE2(128, 128, 14, 8, 16);  // 128x8 x 16
+AOM_VAR_LOOP_SSE2(128, 64, 13, 8);   // 128x8 * ( 64/8 )
+AOM_VAR_LOOP_SSE2(128, 128, 14, 8);  // 128x8 * ( 128/8 )
 
 unsigned int aom_mse8x8_sse2(const uint8_t *src, int src_stride,
                              const uint8_t *ref, int ref_stride,
