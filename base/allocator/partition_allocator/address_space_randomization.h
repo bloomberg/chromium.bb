@@ -88,10 +88,21 @@ constexpr uintptr_t AslrMask(uintptr_t bits) {
 
     #elif defined(ARCH_CPU_ARM64)
 
+      #if defined(OS_ANDROID)
+
+      // Restrict the address range on Android to avoid a large performance
+      // regression in single-process WebViews. See https://crbug.com/837640.
+      constexpr uintptr_t kASLRMask = AslrMask(30);
+      constexpr uintptr_t kASLROffset = AslrAddress(0x20000000ULL);
+
+      #else
+
       // ARM64 on Linux has 39-bit user space. Use 38 bits since kASLROffset
       // could cause a carry.
       constexpr uintptr_t kASLRMask = AslrMask(38);
       constexpr uintptr_t kASLROffset = AslrAddress(0x1000000000ULL);
+
+      #endif
 
     #elif defined(ARCH_CPU_PPC64)
 
@@ -167,7 +178,8 @@ constexpr uintptr_t AslrMask(uintptr_t bits) {
 
       #endif  // !defined(OS_SOLARIS) && !defined(OS_AIX)
 
-    #endif  // !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_PPC64) && !defined(ARCH_CPU_S390X) && !defined(ARCH_CPU_S390)
+    #endif  // !defined(ARCH_CPU_X86_64) && !defined(ARCH_CPU_PPC64) &&
+            // !defined(ARCH_CPU_S390X) && !defined(ARCH_CPU_S390)
 
   #endif  // defined(OS_POSIX)
 
