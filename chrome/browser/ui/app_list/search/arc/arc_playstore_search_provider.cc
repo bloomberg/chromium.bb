@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 

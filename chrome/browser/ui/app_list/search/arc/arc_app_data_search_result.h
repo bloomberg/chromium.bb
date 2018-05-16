@@ -15,7 +15,6 @@
 #include "components/arc/common/app.mojom.h"
 
 class AppListControllerDelegate;
-class Profile;
 
 namespace arc {
 class IconDecodeRequest;
@@ -26,7 +25,6 @@ namespace app_list {
 class ArcAppDataSearchResult : public ChromeSearchResult {
  public:
   ArcAppDataSearchResult(arc::mojom::AppDataResultPtr data,
-                         Profile* profile,
                          AppListControllerDelegate* list_controller);
   ~ArcAppDataSearchResult() override;
 
@@ -48,9 +46,7 @@ class ArcAppDataSearchResult : public ChromeSearchResult {
   arc::mojom::AppDataResultPtr data_;
   std::unique_ptr<arc::IconDecodeRequest> icon_decode_request_;
 
-  // |list_controller_| is owned by AppListServiceAsh and lives until the
-  // service finishes.
-  AppListControllerDelegate* const list_controller_;
+  AppListControllerDelegate* const list_controller_;  // Owned by AppListClient.
 
   base::WeakPtrFactory<ArcAppDataSearchResult> weak_ptr_factory_;
 

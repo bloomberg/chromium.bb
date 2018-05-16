@@ -124,7 +124,7 @@ std::unique_ptr<SearchController> CreateSearchController(
       controller->AddGroup(kMaxAppDataResults, 1.0, kBoostOfApps);
   controller->AddProvider(app_data_api_group_id,
                           std::make_unique<ArcAppDataSearchProvider>(
-                              kMaxAppDataResults, profile, list_controller));
+                              kMaxAppDataResults, list_controller));
 
   if (features::IsSettingsShortcutSearchEnabled()) {
     size_t settings_shortcut_group_id = controller->AddGroup(

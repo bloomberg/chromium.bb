@@ -76,7 +76,6 @@ class AvatarImageSource : public gfx::CanvasImageSource {
 
 ArcAppDataSearchResult::ArcAppDataSearchResult(
     arc::mojom::AppDataResultPtr data,
-    Profile* profile,
     AppListControllerDelegate* list_controller)
     : data_(std::move(data)),
       list_controller_(list_controller),
