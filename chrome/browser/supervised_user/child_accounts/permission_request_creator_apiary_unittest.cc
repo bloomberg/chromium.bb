@@ -13,8 +13,10 @@
 #include "base/values.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "net/http/http_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,11 +39,13 @@ std::string BuildResponse() {
 class PermissionRequestCreatorApiaryTest : public testing::Test {
  public:
   PermissionRequestCreatorApiaryTest()
-      : request_context_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
+      : test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)),
         permission_creator_(&token_service_,
                             kAccountId,
-                            request_context_.get()) {
+                            test_shared_loader_factory_) {
+    permission_creator_.retry_on_network_change_ = false;
     token_service_.UpdateCredentials(kAccountId, "refresh_token");
   }
 
@@ -59,64 +63,52 @@ class PermissionRequestCreatorApiaryTest : public testing::Test {
         GoogleServiceAuthError::FromServiceError("Error!"));
   }
 
-  void CreateRequest(int url_fetcher_id, const GURL& url) {
-    permission_creator_.set_url_fetcher_id_for_testing(url_fetcher_id);
+  void SetupResponse(net::Error error, const std::string& response) {
+    network::ResourceResponseHead head;
+    std::string headers("HTTP/1.1 200 OK\n\n");
+    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+    network::URLLoaderCompletionStatus status(error);
+    status.decoded_body_length = response.size();
+    test_url_loader_factory_.AddResponse(permission_creator_.GetApiUrl(), head,
+                                         response, status);
+  }
+
+  void CreateRequest(const GURL& url) {
     permission_creator_.CreateURLAccessRequest(
         url,
-        base::Bind(&PermissionRequestCreatorApiaryTest::OnRequestCreated,
-                   base::Unretained(this)));
+        base::BindOnce(&PermissionRequestCreatorApiaryTest::OnRequestCreated,
+                       base::Unretained(this)));
   }
 
-  net::TestURLFetcher* GetURLFetcher(int id) {
-    net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(id);
-    EXPECT_TRUE(url_fetcher);
-    return url_fetcher;
-  }
-
-  void SendResponse(int url_fetcher_id,
-                    net::Error error,
-                    const std::string& response) {
-    net::TestURLFetcher* url_fetcher = GetURLFetcher(url_fetcher_id);
-    url_fetcher->set_status(net::URLRequestStatus::FromError(error));
-    url_fetcher->set_response_code(net::HTTP_OK);
-    url_fetcher->SetResponseString(response);
-    url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
-  }
-
-  void SendValidResponse(int url_fetcher_id) {
-    SendResponse(url_fetcher_id, net::OK, BuildResponse());
-  }
-
-  void SendFailedResponse(int url_fetcher_id) {
-    SendResponse(url_fetcher_id, net::ERR_ABORTED, std::string());
-  }
+  void WaitForResponse() { base::RunLoop().RunUntilIdle(); }
 
   MOCK_METHOD1(OnRequestCreated, void(bool success));
 
   base::MessageLoop message_loop_;
   FakeProfileOAuth2TokenService token_service_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   PermissionRequestCreatorApiary permission_creator_;
 };
 
 TEST_F(PermissionRequestCreatorApiaryTest, Success) {
-  CreateRequest(0, GURL("http://randomurl.com"));
-  CreateRequest(1, GURL("http://anotherurl.com"));
+  CreateRequest(GURL("http://randomurl.com"));
+  CreateRequest(GURL("http://anotherurl.com"));
 
   // We should have gotten a request for an access token.
   EXPECT_GT(token_service_.GetPendingRequests().size(), 0U);
 
   IssueAccessTokens();
 
-  EXPECT_CALL(*this, OnRequestCreated(true));
-  SendValidResponse(0);
-  EXPECT_CALL(*this, OnRequestCreated(true));
-  SendValidResponse(1);
+  EXPECT_CALL(*this, OnRequestCreated(true)).Times(2);
+  SetupResponse(net::OK, BuildResponse());
+  SetupResponse(net::OK, BuildResponse());
+  WaitForResponse();
 }
 
 TEST_F(PermissionRequestCreatorApiaryTest, AccessTokenError) {
-  CreateRequest(0, GURL("http://randomurl.com"));
+  CreateRequest(GURL("http://randomurl.com"));
 
   // We should have gotten a request for an access token.
   EXPECT_EQ(1U, token_service_.GetPendingRequests().size());
@@ -127,7 +119,8 @@ TEST_F(PermissionRequestCreatorApiaryTest, AccessTokenError) {
 }
 
 TEST_F(PermissionRequestCreatorApiaryTest, NetworkError) {
-  CreateRequest(0, GURL("http://randomurl.com"));
+  const GURL& url = GURL("http://randomurl.com");
+  CreateRequest(url);
 
   // We should have gotten a request for an access token.
   EXPECT_EQ(1U, token_service_.GetPendingRequests().size());
@@ -136,5 +129,7 @@ TEST_F(PermissionRequestCreatorApiaryTest, NetworkError) {
 
   // Our callback should get called on an error.
   EXPECT_CALL(*this, OnRequestCreated(false));
-  SendFailedResponse(0);
+
+  SetupResponse(net::ERR_ABORTED, std::string());
+  WaitForResponse();
 }
