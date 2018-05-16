@@ -37,4 +37,7 @@ message ApplicationList {
 
   string vm_name = 2;
   string container_name = 3;
+
+  // The owner of the vm and container.
+  string owner_id = 4;
 }

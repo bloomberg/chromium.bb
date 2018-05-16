@@ -109,6 +109,9 @@ message StartVmResponse {
 message StopVmRequest {
   // The name of the VM to be stopped.
   string name = 1;
+
+  // The owner of the vm.
+  string owner_id = 2;
 }
 
 // Response sent back by vm_concierge when it receives a StopVm dbus message.
@@ -124,6 +127,9 @@ message StopVmResponse {
 message GetVmInfoRequest {
   // The name of the VM to query.
   string name = 1;
+
+  // The owner of the vm.
+  string owner_id = 2;
 }
 
 // Response sent back by vm_concierge for a GetVmInfo dbus message.
@@ -247,6 +253,9 @@ message ContainerStartedSignal {
 
   // Name of the container within the VM.
   string container_name = 2;
+
+  // The owner of the vm and container.
+  string owner_id = 3;
 }
 
 // Request to start a specified container image within a VM. If the container
@@ -316,6 +325,9 @@ message LaunchContainerApplicationRequest {
   // ID of the application to launch, should map to the desktop_file_id that
   // is in the application list sent back from the container.
   string desktop_file_id = 3;
+
+  // The owner of the vm and container.
+  string owner_id = 4;
 }
 
 // Response sent back by vm_concierge when it receives a
@@ -348,6 +360,9 @@ message ContainerAppIconRequest {
   // The target scale of this icon. This is the scale at which this icon is
   // designed to be used.
   int32 scale = 5;
+
+  // The owner of the vm and container.
+  string owner_id = 6;
 }
 
 // One desktop file ID with its icon.
