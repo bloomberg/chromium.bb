@@ -34,5 +34,6 @@ source_set("headless") {
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
     "//ui/platform_window",
+    "//ui/platform_window/stub",
   ]
 }

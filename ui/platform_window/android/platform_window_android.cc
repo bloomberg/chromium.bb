@@ -50,11 +50,7 @@ ui::EventType MotionEventActionToEventType(jint action) {
 // PlatformWindowAndroid, public:
 
 PlatformWindowAndroid::PlatformWindowAndroid(PlatformWindowDelegate* delegate)
-    : delegate_(delegate),
-      window_(NULL),
-      id_generator_(0),
-      weak_factory_(this) {
-}
+    : StubWindow(delegate, false), window_(nullptr) {}
 
 PlatformWindowAndroid::~PlatformWindowAndroid() {
   if (window_)
@@ -69,7 +65,7 @@ PlatformWindowAndroid::~PlatformWindowAndroid() {
 
 void PlatformWindowAndroid::Destroy(JNIEnv* env,
                                     const JavaParamRef<jobject>& obj) {
-  delegate_->OnClosed();
+  delegate()->OnClosed();
 }
 
 void PlatformWindowAndroid::SurfaceCreated(
@@ -84,13 +80,13 @@ void PlatformWindowAndroid::SurfaceCreated(
     base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
     window_ = ANativeWindow_fromSurface(env, jsurface);
   }
-  delegate_->OnAcceleratedWidgetAvailable(window_, device_pixel_ratio);
+  delegate()->OnAcceleratedWidgetAvailable(window_, device_pixel_ratio);
 }
 
 void PlatformWindowAndroid::SurfaceDestroyed(JNIEnv* env,
                                              const JavaParamRef<jobject>& obj) {
   DCHECK(window_);
-  delegate_->OnAcceleratedWidgetDestroyed();
+  delegate()->OnAcceleratedWidgetDestroyed();
   ReleaseWindow();
 }
 
@@ -100,7 +96,7 @@ void PlatformWindowAndroid::SurfaceSetSize(JNIEnv* env,
                                            jint height,
                                            jfloat density) {
   size_ = gfx::Size(static_cast<int>(width), static_cast<int>(height));
-  delegate_->OnBoundsChanged(gfx::Rect(size_));
+  delegate()->OnBoundsChanged(gfx::Rect(size_));
 }
 
 bool PlatformWindowAndroid::TouchEvent(JNIEnv* env,
@@ -127,7 +123,7 @@ bool PlatformWindowAndroid::TouchEvent(JNIEnv* env,
       ui::EF_NONE, orientation);
   touch.set_location_f(gfx::PointF(x, y));
   touch.set_root_location_f(gfx::PointF(x, y));
-  delegate_->DispatchEvent(&touch);
+  delegate()->DispatchEvent(&touch);
   return true;
 }
 
@@ -138,11 +134,11 @@ bool PlatformWindowAndroid::KeyEvent(JNIEnv* env,
                                      jint unicode_character) {
   ui::KeyEvent key_event(pressed ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED,
                          ui::KeyboardCodeFromAndroidKeyCode(key_code), 0);
-  delegate_->DispatchEvent(&key_event);
+  delegate()->DispatchEvent(&key_event);
   if (pressed && unicode_character) {
     ui::KeyEvent char_event(unicode_character,
                             ui::KeyboardCodeFromAndroidKeyCode(key_code), 0);
-    delegate_->DispatchEvent(&char_event);
+    delegate()->DispatchEvent(&char_event);
   }
   return true;
 }
@@ -170,63 +166,12 @@ void PlatformWindowAndroid::Hide() {
   // Nothing to do. View is always visible.
 }
 
-void PlatformWindowAndroid::Close() {
-  delegate_->OnCloseRequest();
-}
-
-void PlatformWindowAndroid::PrepareForShutdown() {}
-
 void PlatformWindowAndroid::SetBounds(const gfx::Rect& bounds) {
   NOTIMPLEMENTED();
 }
 
 gfx::Rect PlatformWindowAndroid::GetBounds() {
   return gfx::Rect(size_);
-}
-
-void PlatformWindowAndroid::SetTitle(const base::string16& title) {
-  NOTIMPLEMENTED();
-}
-
-void PlatformWindowAndroid::SetCapture() {
-  NOTIMPLEMENTED();
-}
-
-void PlatformWindowAndroid::ReleaseCapture() {
-  NOTIMPLEMENTED();
-}
-
-bool PlatformWindowAndroid::HasCapture() const {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-void PlatformWindowAndroid::ToggleFullscreen() {
-  NOTIMPLEMENTED();
-}
-
-void PlatformWindowAndroid::Maximize() {
-  NOTIMPLEMENTED();
-}
-
-void PlatformWindowAndroid::Minimize() {
-  NOTIMPLEMENTED();
-}
-
-void PlatformWindowAndroid::Restore() {
-  NOTIMPLEMENTED();
-}
-
-void PlatformWindowAndroid::SetCursor(PlatformCursor cursor) {
-  NOTIMPLEMENTED();
-}
-
-void PlatformWindowAndroid::MoveCursorTo(const gfx::Point& location) {
-  NOTIMPLEMENTED();
-}
-
-void PlatformWindowAndroid::ConfineCursorToBounds(const gfx::Rect& bounds) {
-  NOTIMPLEMENTED();
 }
 
 PlatformImeController* PlatformWindowAndroid::GetPlatformImeController() {

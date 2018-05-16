@@ -8,44 +8,22 @@
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/stub/stub_window.h"
 
 namespace ui {
 
 class PlatformWindowDelegate;
 class HeadlessWindowManager;
 
-class HeadlessWindow : public PlatformWindow {
+class HeadlessWindow : public StubWindow {
  public:
   HeadlessWindow(PlatformWindowDelegate* delegate,
                  HeadlessWindowManager* manager,
                  const gfx::Rect& bounds);
   ~HeadlessWindow() override;
 
-  // PlatformWindow:
-  gfx::Rect GetBounds() override;
-  void SetBounds(const gfx::Rect& bounds) override;
-  void SetTitle(const base::string16& title) override;
-  void Show() override;
-  void Hide() override;
-  void Close() override;
-  void PrepareForShutdown() override;
-  void SetCapture() override;
-  void ReleaseCapture() override;
-  bool HasCapture() const override;
-  void ToggleFullscreen() override;
-  void Maximize() override;
-  void Minimize() override;
-  void Restore() override;
-  void SetCursor(PlatformCursor cursor) override;
-  void MoveCursorTo(const gfx::Point& location) override;
-  void ConfineCursorToBounds(const gfx::Rect& bounds) override;
-  PlatformImeController* GetPlatformImeController() override;
-
  private:
-  PlatformWindowDelegate* delegate_;
   HeadlessWindowManager* manager_;
-  gfx::Rect bounds_;
   gfx::AcceleratedWidget widget_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWindow);

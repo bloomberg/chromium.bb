@@ -30,6 +30,7 @@ jumbo_component("android") {
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/platform_window",
+    "//ui/platform_window/stub",
   ]
 
   libs = [ "android" ]

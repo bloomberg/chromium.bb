@@ -16,13 +16,13 @@ namespace ui {
 HeadlessWindow::HeadlessWindow(PlatformWindowDelegate* delegate,
                                HeadlessWindowManager* manager,
                                const gfx::Rect& bounds)
-    : delegate_(delegate), manager_(manager), bounds_(bounds) {
+    : StubWindow(delegate, false, bounds), manager_(manager) {
 #if defined(OS_WIN)
   widget_ = reinterpret_cast<gfx::AcceleratedWidget>(manager_->AddWindow(this));
 #else
   widget_ = manager_->AddWindow(this);
 #endif
-  delegate_->OnAcceleratedWidgetAvailable(widget_, 1.f);
+  delegate->OnAcceleratedWidgetAvailable(widget_, 1.f);
 }
 
 HeadlessWindow::~HeadlessWindow() {
@@ -31,51 +31,6 @@ HeadlessWindow::~HeadlessWindow() {
 #else
   manager_->RemoveWindow(widget_, this);
 #endif
-}
-
-gfx::Rect HeadlessWindow::GetBounds() {
-  return bounds_;
-}
-
-void HeadlessWindow::SetBounds(const gfx::Rect& bounds) {
-  bounds_ = bounds;
-  delegate_->OnBoundsChanged(bounds);
-}
-
-void HeadlessWindow::SetTitle(const base::string16& title) {}
-
-void HeadlessWindow::Show() {}
-
-void HeadlessWindow::Hide() {}
-
-void HeadlessWindow::Close() {}
-
-void HeadlessWindow::PrepareForShutdown() {}
-
-void HeadlessWindow::SetCapture() {}
-
-void HeadlessWindow::ReleaseCapture() {}
-
-bool HeadlessWindow::HasCapture() const {
-  return false;
-}
-
-void HeadlessWindow::ToggleFullscreen() {}
-
-void HeadlessWindow::Maximize() {}
-
-void HeadlessWindow::Minimize() {}
-
-void HeadlessWindow::Restore() {}
-
-void HeadlessWindow::SetCursor(PlatformCursor cursor) {}
-
-void HeadlessWindow::MoveCursorTo(const gfx::Point& location) {}
-
-void HeadlessWindow::ConfineCursorToBounds(const gfx::Rect& bounds) {}
-
-PlatformImeController* HeadlessWindow::GetPlatformImeController() {
-  return nullptr;
 }
 
 }  // namespace ui
