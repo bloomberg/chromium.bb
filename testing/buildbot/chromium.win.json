@@ -2906,6 +2906,13 @@
     ],
     "isolated_scripts": [
       {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "args": [
           "--smoke-test-mode",
           "--test-shard-map-filename=smoke_test_benchmark_shard_map.json"

@@ -1316,12 +1316,6 @@
           'gtest_tests': 'site_isolation_win_fyi_gtests',
         },
       },
-      'ThinLTO Linux ToT': {
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
-        },
-        'use_swarming': False,
-      },
       'VR Linux': {
         'additional_compile_targets': [
           'vr_common_perftests',

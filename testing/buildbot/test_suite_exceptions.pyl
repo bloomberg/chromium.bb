@@ -122,11 +122,6 @@
   },
   'blink_heap_unittests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'ToTLinuxMSan',
       # chromium.memory
       'Linux TSan Tests',  # https://crbug.com/831674
     ],
@@ -154,15 +149,6 @@
         },
       },
     },
-  },
-  'blink_platform_unittests': {
-    'remove_from': [
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'ToTLinuxMSan',
-    ],
   },
   'boringssl_crypto_tests': {
     'remove_from': [
@@ -248,12 +234,6 @@
         'swarming': {
           'shards': 5,
         },
-      },
-      'ThinLTO Linux ToT': {
-        # TODO(kbr): remove this spurious filter.
-        'args': [
-          '--gtest_filter=-SaveType/SavePageMultiFrameBrowserTest.ObjectElements/0',
-        ],
       },
       'Mac10.11 Tests': {
         'args': [
@@ -372,8 +352,6 @@
       # chromium.clang
       'ToTAndroidCFI',
       'ToTLinuxThinLTO',
-      # chromium.fyi
-      'ThinLTO Linux ToT',
     ],
   },
   'cc_unittests': {
@@ -684,8 +662,6 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
-      # chromium.clang
-      'ToTLinuxASan',
     ],
   },
   'components_browsertests': {
@@ -694,12 +670,6 @@
       'Linux ChromiumOS Tests (dbg)(1)',
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
-      # chromium.clang
-      'ToTLinux',
-      'ToTLinuxASan',
-      'ToTLinuxMSan',
-      'ToTMac',
-      'ToTMacASan',
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -746,9 +716,6 @@
   },
   'components_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinuxUBSanVptr',
-      'UBSanVptr Linux',
       # On chromium.linux, unclear why these aren't run on the Cast bots.
       'Cast Audio Linux',
       'Cast Linux',
@@ -991,8 +958,6 @@
   },
   'content_shell_crash_test': {
     'remove_from': [
-      # chromium.clang
-      'ToTMac',
       # chromium.fyi
       'Chromium Mac 10.11',
       'Chromium Mac 10.13',
@@ -1189,11 +1154,7 @@
   'crashpad_tests': {
     'remove_from': [
       # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'linux-win_cross-rel',
-      'ToTMacASan',
+      'linux-win_cross-rel', # https://crbug.com/762167
       # chromium.fyi
       'Chromium Win 10 GCE Tests',
     ],
@@ -1242,17 +1203,12 @@
   },
   'dbus_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinuxASan',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
   },
   'device_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTMac',
-      'ToTMacASan',
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -1308,10 +1264,6 @@
     ],
   },
   'events_unittests': {
-    'remove_from': [
-      # chromium.clang
-      'ToTLinuxASan',
-    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
@@ -1332,10 +1284,6 @@
   },
   'extensions_browsertests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinux',
-      'ToTMac',
-      'ToTMacASan',
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -1408,7 +1356,6 @@
       'UBSanVptr Linux',
       # chromium.fyi
       'Out of Process Profiling Linux',
-      'ThinLTO Linux ToT',
       # chromium.memory
       # Can't run on MSAN because gl_tests uses the hardware driver,
       # which isn't instrumented.
@@ -1582,11 +1529,6 @@
   },
   'gn_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinux',
-      'ToTLinuxASan',
-      'ToTLinuxMSan',
-      'ToTLinuxUBSanVptr',
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -1838,19 +1780,10 @@
       'Unswarmed N5X Tests Dummy Builder',
       'x64 Device Tester',
       'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroid x64',
-      'ToTLinux',
-      'ToTLinuxASan',
-      'ToTLinuxThinLTO',
-      'ToTLinuxUBSanVptr',
-      'UBSanVptr Linux',
       # chromium.fyi
       'Out of Process Profiling Android',
       'Out of Process Profiling Linux',
-      'ThinLTO Linux ToT',
       # On chromium.linux, unclear why these aren't run.
-      'Linux Tests',
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
     ],
@@ -1903,9 +1836,6 @@
   },
   'mac_installer_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTMac',
-      'ToTMacASan',
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -1963,19 +1893,10 @@
   },
   'metrics_python_tests': {
     'remove_from': [
-      # chromium.clang
-      'ToTMac',
       # chromium.fyi
       'Chromium Mac 10.11',
       'Chromium Mac 10.13',
       'Out of Process Profiling Mac',
-      # On chromium.mac, unclear why these only run on "Mac10.13 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.13 Tests (dbg)',
-      # chromium.win
-      'Win7 Tests (dbg)(1)',
     ],
   },
   'midi_unittests': {
@@ -2046,27 +1967,8 @@
       },
     },
   },
-  'nacl_helper_nonsfi_unittests': {
-    'remove_from': [
-      # chromium.clang
-      'CFI Linux (icall)',
-      'CFI Linux ToT',
-      'ToTLinux (dbg)',
-      'ToTLinuxASan',
-      'ToTLinuxMSan',
-      'ToTLinuxThinLTO',
-      'ToTLinuxUBSanVptr',
-      'UBSanVptr Linux',
-      # chromium.fyi
-      'ThinLTO Linux ToT',
-      # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)',
-    ],
-  },
   'nacl_loader_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinuxASan',
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
@@ -2080,17 +1982,12 @@
   },
   'native_theme_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinuxASan',
-      'ToTMacASan',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
   },
   'net_unittests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsanCov',
       # chromium.fyi
       'Fuchsia (dbg)',
       'Fuchsia ARM64',
@@ -2389,20 +2286,12 @@
       'x64 Device Tester',
       'x86 Cloud Tester',
       # chromium.clang
-      'CFI Linux (icall)',
-      'CFI Linux ToT',
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'ToTAndroidASan',
-      'ToTLinuxMSan',
-      'ToTLinuxThinLTO',
+      'ToTLinuxMSan',  # https://crbug.com/831676
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.11',
       'Chromium Mac 10.11 Force Mac Toolchain',
       'Chromium Mac 10.13',
-      'ThinLTO Linux ToT',
       'Win 10 Fast Ring',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
@@ -2606,14 +2495,8 @@
   },
   'storage_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinuxASan',
-      'ToTLinuxThinLTO',
-      'ToTLinuxUBSanVptr',
-      'UBSanVptr Linux',
       # chromium.fyi
       'Out of Process Profiling Mac',
-      'ThinLTO Linux ToT',
     ],
     'modifications': {
       # chromium.android
@@ -2835,10 +2718,6 @@
     },
   },
   'ui_touch_selection_unittests': {
-    'remove_from': [
-      # chromium.clang
-      'ToTLinuxASan',
-    ],
     'modifications': {
       'KitKat Tablet Tester': {
         'swarming': {
@@ -2854,8 +2733,6 @@
   },
   'unit_tests': {
     'remove_from': [
-      # chromium.clang
-      'CrWinAsanCov',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -2977,9 +2854,6 @@
   },
   'views_unittests': {
     'remove_from': [
-      # chromium.clang
-      'ToTLinuxASan',
-      'ToTMacASan',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)',
     ],
@@ -3004,16 +2878,6 @@
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
       'Nougat Phone Tester',
-      # chromium.clang
-      'CFI Linux (icall)',
-      'CFI Linux ToT',
-      'ToTAndroid x64',
-      'ToTAndroidASan',
-      'ToTLinux',
-      'ToTLinuxASan',
-      'ToTLinuxThinLTO',
-      'ToTLinuxUBSanVptr',
-      'UBSanVptr Linux',
        # chromium.android.fyi
       'Jelly Bean Tester',
       'Lollipop Consumer Tester',
@@ -3026,7 +2890,6 @@
       'Chromium Win 10 GCE Tests',
       'Out of Process Profiling Android',
       'Out of Process Profiling Linux',
-      'ThinLTO Linux ToT',
       # chromium.win
       'Win10 Tests x64',
     ],
@@ -3134,8 +2997,6 @@
   },
   'webkit_layout_tests': {
     'remove_from': [
-      # chromium.clang
-      'ToTMac',
       # chromium.fyi
       'Chromium Mac 10.11',
       'Out of Process Profiling Mac',
@@ -3436,12 +3297,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'ToTLinuxMSan',
-      'ToTLinuxThinLTO',
       # chromium.chromiumos
       'linux-chromeos-rel',  # crbug.com/795440
     ],
@@ -3569,11 +3424,6 @@
       'Unswarmed N5 Tests Dummy Builder',
       'Unswarmed N5X Tests Dummy Builder',
       'x86 Cloud Tester',
-      # chromium.clang
-      'CrWinAsan',
-      'CrWinAsan(dll)',
-      'CrWinAsanCov',
-      'ToTLinuxMSan',
     ],
   },
   'zucchini_unittests': {
