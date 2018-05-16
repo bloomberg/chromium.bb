@@ -12,7 +12,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -20,8 +19,10 @@ namespace autofill {
 
 SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
                                    Browser* browser,
-                                   BubbleIconView::Delegate* delegate)
-    : BubbleIconView(command_updater, IDC_SAVE_CREDIT_CARD_FOR_PAGE, delegate),
+                                   PageActionIconView::Delegate* delegate)
+    : PageActionIconView(command_updater,
+                         IDC_SAVE_CREDIT_CARD_FOR_PAGE,
+                         delegate),
       browser_(browser) {
   DCHECK(delegate);
   set_id(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
@@ -54,7 +55,7 @@ bool SaveCardIconView::Refresh() {
 }
 
 void SaveCardIconView::OnExecuting(
-    BubbleIconView::ExecuteSource execute_source) {}
+    PageActionIconView::ExecuteSource execute_source) {}
 
 const gfx::VectorIcon& SaveCardIconView::GetVectorIcon() const {
   return kCreditCardIcon;

@@ -46,7 +46,6 @@
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
@@ -57,6 +56,7 @@
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_view.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "chrome/browser/ui/views/page_info/page_info_bubble_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
@@ -245,32 +245,32 @@ void LocationBarView::Init() {
   }
 
   zoom_view_ = new ZoomView(delegate_, this);
-  bubble_icons_.push_back(zoom_view_);
+  page_action_icons_.push_back(zoom_view_);
   manage_passwords_icon_view_ =
       new ManagePasswordsIconViews(command_updater(), this);
-  bubble_icons_.push_back(manage_passwords_icon_view_);
+  page_action_icons_.push_back(manage_passwords_icon_view_);
 
   if (browser_) {
     save_credit_card_icon_view_ =
         new autofill::SaveCardIconView(command_updater(), browser_, this);
-    bubble_icons_.push_back(save_credit_card_icon_view_);
+    page_action_icons_.push_back(save_credit_card_icon_view_);
   }
   translate_icon_view_ = new TranslateIconView(command_updater(), this);
-  bubble_icons_.push_back(translate_icon_view_);
+  page_action_icons_.push_back(translate_icon_view_);
 
 #if defined(OS_CHROMEOS)
   if (browser_)
-    bubble_icons_.push_back(intent_picker_view_ =
-                                new IntentPickerView(browser_, this));
+    page_action_icons_.push_back(intent_picker_view_ =
+                                     new IntentPickerView(browser_, this));
 #endif
-  bubble_icons_.push_back(find_bar_icon_ = new FindBarIcon(this));
+  page_action_icons_.push_back(find_bar_icon_ = new FindBarIcon(this));
   if (browser_) {
-    bubble_icons_.push_back(
+    page_action_icons_.push_back(
         star_view_ = new StarView(command_updater(), browser_, this));
   }
 
-  std::for_each(bubble_icons_.begin(), bubble_icons_.end(),
-                [this](BubbleIconView* icon_view) -> void {
+  std::for_each(page_action_icons_.begin(), page_action_icons_.end(),
+                [this](PageActionIconView* icon_view) -> void {
                   icon_view->Init();
                   icon_view->SetVisible(false);
                   AddChildView(icon_view);
@@ -649,16 +649,16 @@ void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 void LocationBarView::Update(const WebContents* contents) {
   RefreshContentSettingViews();
 
-  // TODO(calamity): Refactor Update to use BubbleIconView::Refresh.
+  // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
   RefreshZoomView();
 
-  RefreshBubbleIconViews();
+  RefreshPageActionIconViews();
 
-  // TODO(calamity): Refactor Update to use BubbleIconView::Refresh.
+  // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
   RefreshFindBarIcon();
 
   if (star_view_) {
-    // TODO(calamity): Refactor Update to use BubbleIconView::Refresh.
+    // TODO(calamity): Refactor Update to use PageActionIconView::Refresh.
     UpdateBookmarkStarVisibility();
   }
 
@@ -680,7 +680,8 @@ void LocationBarView::ResetTabState(WebContents* contents) {
 
 bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
   auto result = std::find_if(
-      bubble_icons_.begin(), bubble_icons_.end(), [](BubbleIconView* view) {
+      page_action_icons_.begin(), page_action_icons_.end(),
+      [](PageActionIconView* view) {
         if (!view || !view->visible() || !view->GetBubble())
           return false;
 
@@ -688,10 +689,10 @@ bool LocationBarView::ActivateFirstInactiveBubbleForAccessibility() {
         return widget && widget->IsVisible() && !widget->IsActive();
       });
 
-  if (result != bubble_icons_.end())
+  if (result != page_action_icons_.end())
     (*result)->GetBubble()->GetWidget()->Show();
 
-  return result != bubble_icons_.end();
+  return result != page_action_icons_.end();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -722,8 +723,8 @@ LocationBarView::GetContentSettingBubbleModelDelegate() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// LocationBarView, public BubbleIconView::Delegate implementation:
-WebContents* LocationBarView::GetWebContentsForBubbleIconView() {
+// LocationBarView, public PageActionIconView::Delegate implementation:
+WebContents* LocationBarView::GetWebContentsForPageActionIconView() {
   return GetWebContents();
 }
 
@@ -880,7 +881,7 @@ bool LocationBarView::RefreshContentSettingViews() {
   return visibility_changed;
 }
 
-bool LocationBarView::RefreshBubbleIconViews() {
+bool LocationBarView::RefreshPageActionIconViews() {
   if (extensions::HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
           browser_)) {
     // For hosted apps, the location bar is normally hidden and icons appear in
@@ -889,7 +890,7 @@ bool LocationBarView::RefreshBubbleIconViews() {
   }
 
   bool visibility_changed = false;
-  for (auto* v : bubble_icons_) {
+  for (auto* v : page_action_icons_) {
     visibility_changed |= v->Refresh();
   }
   return visibility_changed;

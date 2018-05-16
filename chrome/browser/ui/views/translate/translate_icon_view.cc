@@ -19,8 +19,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 TranslateIconView::TranslateIconView(CommandUpdater* command_updater,
-                                     BubbleIconView::Delegate* delegate)
-    : BubbleIconView(command_updater, IDC_TRANSLATE_PAGE, delegate) {
+                                     PageActionIconView::Delegate* delegate)
+    : PageActionIconView(command_updater, IDC_TRANSLATE_PAGE, delegate) {
   DCHECK(delegate);
   set_id(VIEW_ID_TRANSLATE_BUTTON);
 }
@@ -51,7 +51,7 @@ bool TranslateIconView::Refresh() {
 }
 
 void TranslateIconView::OnExecuting(
-    BubbleIconView::ExecuteSource execute_source) {}
+    PageActionIconView::ExecuteSource execute_source) {}
 
 void TranslateIconView::OnPressed(bool activated) {
   translate::ReportUiAction(activated

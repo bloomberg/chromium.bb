@@ -299,7 +299,7 @@ void ToolbarView::ShowBookmarkBubble(
     bool already_bookmarked,
     bookmarks::BookmarkBubbleObserver* observer) {
   views::View* anchor_view = location_bar();
-  BubbleIconView* const star_view = location_bar()->star_view();
+  PageActionIconView* const star_view = location_bar()->star_view();
   if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     if (star_view && star_view->visible())
       anchor_view = star_view;
@@ -322,7 +322,8 @@ void ToolbarView::ShowTranslateBubble(
     translate::TranslateErrors::Type error_type,
     bool is_user_gesture) {
   views::View* anchor_view = location_bar();
-  BubbleIconView* translate_icon_view = location_bar()->translate_icon_view();
+  PageActionIconView* translate_icon_view =
+      location_bar()->translate_icon_view();
   if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     if (translate_icon_view && translate_icon_view->visible())
       anchor_view = translate_icon_view;

@@ -22,8 +22,8 @@
 
 StarView::StarView(CommandUpdater* command_updater,
                    Browser* browser,
-                   BubbleIconView::Delegate* delegate)
-    : BubbleIconView(command_updater, IDC_BOOKMARK_PAGE, delegate),
+                   PageActionIconView::Delegate* delegate)
+    : PageActionIconView(command_updater, IDC_BOOKMARK_PAGE, delegate),
       browser_(browser),
       bookmark_promo_observer_(this) {
   set_id(VIEW_ID_STAR_BUTTON);
@@ -33,7 +33,7 @@ StarView::StarView(CommandUpdater* command_updater,
 StarView::~StarView() {}
 
 void StarView::SetToggled(bool on) {
-  BubbleIconView::SetActiveInternal(on);
+  PageActionIconView::SetActiveInternal(on);
 }
 
 void StarView::ShowPromo() {
@@ -49,8 +49,7 @@ void StarView::ShowPromo() {
   }
 }
 
-void StarView::OnExecuting(
-    BubbleIconView::ExecuteSource execute_source) {
+void StarView::OnExecuting(PageActionIconView::ExecuteSource execute_source) {
   BookmarkEntryPoint entry_point = BOOKMARK_ENTRY_POINT_STAR_MOUSE;
   switch (execute_source) {
     case EXECUTE_SOURCE_MOUSE:
@@ -73,7 +72,7 @@ void StarView::ExecuteCommand(ExecuteSource source) {
     OnExecuting(source);
     chrome::BookmarkCurrentPageIgnoringExtensionOverrides(browser_);
   } else {
-    BubbleIconView::ExecuteCommand(source);
+    PageActionIconView::ExecuteCommand(source);
   }
 }
 
@@ -94,7 +93,7 @@ SkColor StarView::GetInkDropBaseColor() const {
   return bookmark_promo_observer_.IsObservingSources()
              ? GetNativeTheme()->GetSystemColor(
                    ui::NativeTheme::kColorId_ProminentButtonColor)
-             : BubbleIconView::GetInkDropBaseColor();
+             : PageActionIconView::GetInkDropBaseColor();
 }
 
 void StarView::OnWidgetDestroying(views::Widget* widget) {

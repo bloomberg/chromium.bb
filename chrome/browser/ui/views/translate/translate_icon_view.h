@@ -6,25 +6,25 @@
 #define CHROME_BROWSER_UI_VIEWS_TRANSLATE_TRANSLATE_ICON_VIEW_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
 class CommandUpdater;
 
 // The location bar icon to show the Translate bubble where the user can have
 // the page translated.
-class TranslateIconView : public BubbleIconView {
+class TranslateIconView : public PageActionIconView {
  public:
   TranslateIconView(CommandUpdater* command_updater,
-                    BubbleIconView::Delegate* delegate);
+                    PageActionIconView::Delegate* delegate);
   ~TranslateIconView() override;
 
-  // BubbleIconView:
+  // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   bool Refresh() override;
 
  protected:
-  // BubbleIconView:
-  void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
+  // PageActionIconView:
+  void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   void OnPressed(bool activated) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;

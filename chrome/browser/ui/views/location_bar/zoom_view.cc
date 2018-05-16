@@ -17,8 +17,8 @@
 #include "ui/gfx/geometry/size.h"
 
 ZoomView::ZoomView(LocationBarView::Delegate* location_bar_delegate,
-                   BubbleIconView::Delegate* delegate)
-    : BubbleIconView(nullptr, 0, delegate),
+                   PageActionIconView::Delegate* delegate)
+    : PageActionIconView(nullptr, 0, delegate),
       location_bar_delegate_(location_bar_delegate),
       icon_(&kZoomMinusIcon) {
   Update(nullptr);
@@ -50,7 +50,7 @@ void ZoomView::Update(zoom::ZoomController* zoom_controller) {
   SetVisible(true);
 }
 
-void ZoomView::OnExecuting(BubbleIconView::ExecuteSource source) {
+void ZoomView::OnExecuting(PageActionIconView::ExecuteSource source) {
   ZoomBubbleView::ShowBubble(location_bar_delegate_->GetWebContents(),
                              gfx::Point(), ZoomBubbleView::USER_GESTURE);
 }

@@ -8,27 +8,27 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/passwords/manage_passwords_icon_view.h"
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "ui/views/controls/image_view.h"
 
 class CommandUpdater;
 
 // View for the password icon in the Omnibox.
 class ManagePasswordsIconViews : public ManagePasswordsIconView,
-                                 public BubbleIconView {
+                                 public PageActionIconView {
  public:
   ManagePasswordsIconViews(CommandUpdater* updater,
-                           BubbleIconView::Delegate* delegate);
+                           PageActionIconView::Delegate* delegate);
   ~ManagePasswordsIconViews() override;
 
   // ManagePasswordsIconView:
   void SetState(password_manager::ui::State state) override;
 
-  // BubbleIconView:
+  // PageActionIconView:
   views::BubbleDialogDelegateView* GetBubble() const override;
   bool Refresh() override;
-  void OnExecuting(BubbleIconView::ExecuteSource source) override;
+  void OnExecuting(PageActionIconView::ExecuteSource source) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   const gfx::VectorIcon& GetVectorIcon() const override;

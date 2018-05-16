@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 
 namespace arc {
 class IntentPickerController;
@@ -17,17 +17,17 @@ class IntentPickerController;
 class Browser;
 
 // The entry point for the intent picker.
-class IntentPickerView : public BubbleIconView {
+class IntentPickerView : public PageActionIconView {
  public:
-  IntentPickerView(Browser* browser, BubbleIconView::Delegate* delegate);
+  IntentPickerView(Browser* browser, PageActionIconView::Delegate* delegate);
   ~IntentPickerView() override;
 
-  // BubbleIconView:
+  // PageActionIconView:
   void SetVisible(bool visible) override;
 
  protected:
-  // BubbleIconView:
-  void OnExecuting(BubbleIconView::ExecuteSource execute_source) override;
+  // PageActionIconView:
+  void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;

@@ -21,9 +21,9 @@
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
-#include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_event_manager_observer.h"
@@ -80,7 +80,7 @@ class LocationBarView : public LocationBar,
                         public zoom::ZoomEventManagerObserver,
                         public views::ButtonListener,
                         public ContentSettingImageView::Delegate,
-                        public BubbleIconView::Delegate {
+                        public PageActionIconView::Delegate {
  public:
   class Delegate {
    public:
@@ -303,11 +303,10 @@ class LocationBarView : public LocationBar,
   // of at least one of the views in |content_setting_views_| changed.
   bool RefreshContentSettingViews();
 
-  // Updates the visibility state of the BubbleIconView (page action) icons
-  // to reflect what actions are available on the current page.
-  // Returns true if the visibility of at least one of the views in
-  // |bubble_icons_| changed.
-  bool RefreshBubbleIconViews();
+  // Updates the visibility state of the PageActionIconViews to reflect what
+  // actions are available on the current page. Returns true if the visibility
+  // of at least one of the views in |page_action_icons_| changed.
+  bool RefreshPageActionIconViews();
 
   // Updates the view for the zoom icon based on the current tab's zoom. Returns
   // true if the visibility of the view changed.
@@ -377,8 +376,8 @@ class LocationBarView : public LocationBar,
                            const gfx::Point& press_pt,
                            const gfx::Point& p) override;
 
-  // BubbleIconView::Delegate:
-  content::WebContents* GetWebContentsForBubbleIconView() override;
+  // PageActionIconView::Delegate:
+  content::WebContents* GetWebContentsForPageActionIconView() override;
   OmniboxTint GetTint() override;
 
   // gfx::AnimationDelegate:
@@ -480,8 +479,8 @@ class LocationBarView : public LocationBar,
   // Tracks this preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
 
-  // A list of all bubble descendants ordered by focus.
-  std::vector<BubbleIconView*> bubble_icons_;
+  // A list of all page action icons ordered by focus.
+  std::vector<PageActionIconView*> page_action_icons_;
 
   PageActionIconContainerView* page_action_icon_container_view_ = nullptr;
 
