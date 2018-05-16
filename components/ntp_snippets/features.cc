@@ -32,8 +32,7 @@ const base::Feature* const kAllFeatures[] = {
     &kKeepPrefetchedContentSuggestions,
     &kNotificationsFeature,
     &kPublisherFaviconsFromNewServerFeature,
-    &kRemoteSuggestionsBackendFeature,
-    nullptr};
+    &kRemoteSuggestionsBackendFeature};
 
 const base::Feature kArticleSuggestionsExpandableHeader{
     "NTPArticleSuggestionsExpandableHeader", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -160,5 +159,11 @@ const base::Feature kKeepPrefetchedContentSuggestions{
 
 const base::Feature kContentSuggestionsDebugLog{
     "ContentSuggestionsDebugLog", base::FEATURE_DISABLED_BY_DEFAULT};
+
+std::vector<const base::Feature*> GetAllFeatures() {
+  // Skip the last feature as it's a nullptr.
+  return std::vector<const base::Feature*>(
+      kAllFeatures, kAllFeatures + arraysize(kAllFeatures));
+}
 
 }  // namespace ntp_snippets

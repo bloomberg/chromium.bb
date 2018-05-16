@@ -4579,6 +4579,10 @@ grit("resources") {
     deps += [ "//chrome/browser/ui/webui/discards:mojo_bindings_js" ]
   }
 
+  if (is_android) {
+    deps += [ "//chrome/browser/ui/webui/snippets_internals:mojo_bindings_js" ]
+  }
+
   if (optimize_webui) {
     deps += [
       "//chrome/browser/resources/md_bookmarks:build",
