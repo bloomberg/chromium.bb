@@ -10,6 +10,7 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/views/controls/progress_bar.h"
+#include "ui/views/controls/separator.h"
 #include "url/gurl.h"
 
 class Profile;
@@ -47,8 +48,10 @@ class PaymentHandlerWebFlowViewController
   void FillContentView(views::View* content_view) override;
   bool ShouldShowSecondaryButton() override;
   std::unique_ptr<views::View> CreateHeaderContentView() override;
+  views::View* CreateHeaderContentSeparatorView() override;
   std::unique_ptr<views::Background> GetHeaderBackground() override;
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  bool GetSheetId(DialogViewID* sheet_id) override;
+  bool DisplayDynamicBorderForHiddenContents() override;
 
   // content::WebContentsDelegate:
   void LoadProgressChanged(content::WebContents* source,
@@ -67,9 +70,9 @@ class PaymentHandlerWebFlowViewController
 
   Profile* profile_;
   GURL target_;
-  bool progress_bar_is_shown_;
+  bool show_progress_bar_;
   std::unique_ptr<views::ProgressBar> progress_bar_;
-  std::unique_ptr<views::View> content_header_view_;
+  std::unique_ptr<views::Separator> separator_;
   PaymentHandlerOpenWindowCallback first_navigation_complete_callback_;
 };
 

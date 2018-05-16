@@ -11,7 +11,6 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,14 +20,9 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
-#include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
-#include "ui/views/controls/button/image_button_factory.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/progress_bar.h"
@@ -37,15 +31,6 @@
 #include "ui/views/layout/grid_layout.h"
 
 namespace payments {
-
-constexpr int kFirstTagValue = static_cast<int>(
-    payments::PaymentRequestCommonTags::PAYMENT_REQUEST_COMMON_TAG_MAX);
-
-// Tags for the buttons in the payment sheet
-enum class PaymentHandlerWebFlowTags {
-  SITE_SETTINGS_TAG = kFirstTagValue,
-  MAX_TAG,  // Always keep last.
-};
 
 class ReadOnlyOriginView : public views::View {
  public:
@@ -119,10 +104,6 @@ class ReadOnlyOriginView : public views::View {
           kPaymentHandlerIconSize);
       top_level_columns->AddPaddingColumn(0, 8);
     }
-    constexpr int kSiteSettingsSize = 16;
-    top_level_columns->AddColumn(
-        views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
-        views::GridLayout::FIXED, kSiteSettingsSize, kSiteSettingsSize);
 
     top_level_layout->StartRow(0, 0);
     top_level_layout->AddView(title_origin_container.release());
@@ -134,28 +115,6 @@ class ReadOnlyOriginView : public views::View {
           gfx::Size(kPaymentHandlerIconSize, kPaymentHandlerIconSize));
       top_level_layout->AddView(instrument_icon_view.release());
     }
-
-    views::ImageButton* site_settings_button =
-        views::CreateVectorImageButton(site_settings_listener);
-
-    // Inline the contents of views::SetImageFromVectorIcon to be able to
-    // properly set the icon size.
-    const SkColor icon_color = color_utils::DeriveDefaultIconColor(
-        GetForegroundColorForBackground(background_color));
-    site_settings_button->SetImage(
-        views::Button::STATE_NORMAL,
-        gfx::CreateVectorIcon(kSettingsIcon, kSiteSettingsSize, icon_color));
-    site_settings_button->set_ink_drop_base_color(icon_color);
-
-    site_settings_button->SetSize(
-        gfx::Size(kSiteSettingsSize, kSiteSettingsSize));
-    // This icon should be focusable in both regular and accessibility mode.
-    site_settings_button->SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
-    site_settings_button->set_tag(
-        static_cast<int>(PaymentHandlerWebFlowTags::SITE_SETTINGS_TAG));
-    site_settings_button->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_SETTINGS_SITE_SETTINGS));
-    top_level_layout->AddView(site_settings_button);
   }
   ~ReadOnlyOriginView() override {}
 
@@ -173,12 +132,16 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
     : PaymentRequestSheetController(spec, state, dialog),
       profile_(profile),
       target_(target),
-      progress_bar_is_shown_(false),
+      show_progress_bar_(false),
       progress_bar_(
           std::make_unique<views::ProgressBar>(/*preferred_height=*/2)),
+      separator_(std::make_unique<views::Separator>()),
       first_navigation_complete_callback_(
           std::move(first_navigation_complete_callback)) {
   progress_bar_->set_owned_by_client();
+  separator_->set_owned_by_client();
+  separator_->SetColor(separator_->GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_SeparatorColor));
 }
 
 PaymentHandlerWebFlowViewController::~PaymentHandlerWebFlowViewController() {}
@@ -192,20 +155,7 @@ base::string16 PaymentHandlerWebFlowViewController::GetSheetTitle() {
 
 void PaymentHandlerWebFlowViewController::FillContentView(
     views::View* content_view) {
-  views::GridLayout* content_layout = content_view->SetLayoutManager(
-      std::make_unique<views::GridLayout>(content_view));
-  views::ColumnSet* columns = content_layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                     views::GridLayout::USE_PREF, 0, 0);
-
-  // Content header to display progress bar.
-  content_layout->StartRow(0, 0);
-  content_header_view_ = std::make_unique<views::View>();
-  content_header_view_->set_owned_by_client();
-  content_layout->AddView(content_header_view_.get());
-
-  // Content body to display the web page.
-  content_layout->StartRow(0, 0);
+  content_view->SetLayoutManager(std::make_unique<views::FillLayout>());
   std::unique_ptr<views::WebView> web_view =
       std::make_unique<views::WebView>(profile_);
   Observe(web_view->GetWebContents());
@@ -218,7 +168,7 @@ void PaymentHandlerWebFlowViewController::FillContentView(
   // total_dialog_height - header_height. On the other hand, the width will be
   // properly set so it can be 0 here.
   web_view->SetPreferredSize(gfx::Size(0, kDialogHeight - 75));
-  content_layout->AddView(web_view.release());
+  content_view->AddChildView(web_view.release());
 }
 
 bool PaymentHandlerWebFlowViewController::ShouldShowSecondaryButton() {
@@ -237,6 +187,13 @@ PaymentHandlerWebFlowViewController::CreateHeaderContentView() {
       background->get_color(), this);
 }
 
+views::View*
+PaymentHandlerWebFlowViewController::CreateHeaderContentSeparatorView() {
+  if (show_progress_bar_)
+    return progress_bar_.get();
+  return separator_.get();
+}
+
 std::unique_ptr<views::Background>
 PaymentHandlerWebFlowViewController::GetHeaderBackground() {
   if (!web_contents())
@@ -244,18 +201,14 @@ PaymentHandlerWebFlowViewController::GetHeaderBackground() {
   return views::CreateSolidBackground(web_contents()->GetThemeColor());
 }
 
-void PaymentHandlerWebFlowViewController::ButtonPressed(
-    views::Button* sender,
-    const ui::Event& event) {
-  if (sender->tag() ==
-      static_cast<int>(PaymentHandlerWebFlowTags::SITE_SETTINGS_TAG)) {
-    if (web_contents()) {
-      chrome::ShowSiteSettings(dialog()->GetProfile(),
-                               web_contents()->GetLastCommittedURL());
-    }
-  } else {
-    PaymentRequestSheetController::ButtonPressed(sender, event);
-  }
+bool PaymentHandlerWebFlowViewController::GetSheetId(DialogViewID* sheet_id) {
+  *sheet_id = DialogViewID::PAYMENT_APP_OPENED_WINDOW_SHEET;
+  return true;
+}
+
+bool PaymentHandlerWebFlowViewController::
+    DisplayDynamicBorderForHiddenContents() {
+  return false;
 }
 
 void PaymentHandlerWebFlowViewController::LoadProgressChanged(
@@ -265,23 +218,17 @@ void PaymentHandlerWebFlowViewController::LoadProgressChanged(
 
   progress_bar_->SetValue(progress);
 
-  if (progress == 1.0 && !progress_bar_is_shown_)
+  if (progress == 1.0 && show_progress_bar_) {
+    show_progress_bar_ = false;
+    UpdateHeaderContentSeparatorView();
     return;
-
-  if (progress < 1.0 && progress_bar_is_shown_)
-    return;
-
-  content_header_view_->RemoveAllChildViews(/*delete_children=*/true);
-  if (progress_bar_is_shown_) {
-    progress_bar_is_shown_ = false;
-  } else {
-    content_header_view_->SetLayoutManager(
-        std::make_unique<views::FillLayout>());
-    content_header_view_->AddChildView(progress_bar_.get());
-    progress_bar_is_shown_ = true;
   }
 
-  RelayoutPane();
+  if (progress < 1.0 && !show_progress_bar_) {
+    show_progress_bar_ = true;
+    UpdateHeaderContentSeparatorView();
+    return;
+  }
 }
 
 void PaymentHandlerWebFlowViewController::VisibleSecurityStateChanged(

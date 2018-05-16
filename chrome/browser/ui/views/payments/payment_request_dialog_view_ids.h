@@ -89,6 +89,9 @@ enum class DialogViewID : int {
   // The combobox to choose a billing address to associate to a credit card.
   CREDIT_CARD_BILLING_ADDRESS,
 
+  // The sheet opens payment app window.
+  PAYMENT_APP_OPENED_WINDOW_SHEET,
+
   // NOTE: Keep these values last.
   // Used to offset the IDs of input fields, which gets added to the Autofill
   // type value they represent.
