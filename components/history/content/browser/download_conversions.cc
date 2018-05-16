@@ -69,6 +69,8 @@ download::DownloadDangerType ToContentDownloadDangerType(
       return download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST;
     case DownloadDangerType::POTENTIALLY_UNWANTED:
       return download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED;
+    case DownloadDangerType::WHITELISTED_BY_POLICY:
+      return download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY;
     case DownloadDangerType::INVALID:
       NOTREACHED();
       return download::DOWNLOAD_DANGER_TYPE_MAX;
@@ -98,6 +100,8 @@ DownloadDangerType ToHistoryDownloadDangerType(
       return DownloadDangerType::DANGEROUS_HOST;
     case download::DOWNLOAD_DANGER_TYPE_POTENTIALLY_UNWANTED:
       return DownloadDangerType::POTENTIALLY_UNWANTED;
+    case download::DOWNLOAD_DANGER_TYPE_WHITELISTED_BY_POLICY:
+      return DownloadDangerType::WHITELISTED_BY_POLICY;
     default:
       NOTREACHED();
       return DownloadDangerType::INVALID;

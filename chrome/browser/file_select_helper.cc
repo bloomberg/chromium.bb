@@ -100,6 +100,7 @@ bool IsDownloadAllowedBySafeBrowsing(
     // failed safe browsing ping.
     case Result::UNKNOWN:
     case Result::SAFE:
+    case Result::WHITELISTED_BY_POLICY:
       return true;
 
     case Result::DANGEROUS:

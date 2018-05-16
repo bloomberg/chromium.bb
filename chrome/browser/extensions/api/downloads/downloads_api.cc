@@ -149,6 +149,7 @@ const char kDangerKey[] = "danger";
 const char kDangerSafe[] = "safe";
 const char kDangerUncommon[] = "uncommon";
 const char kDangerUnwanted[] = "unwanted";
+const char kDangerWhitelistedByPolicy[] = "whitelistedByPolicy";
 const char kDangerUrl[] = "url";
 const char kEndTimeKey[] = "endTime";
 const char kEndedAfterKey[] = "endedAfter";
@@ -183,16 +184,11 @@ const char kFinalUrlRegexKey[] = "finalUrlRegex";
 // Note: Any change to the danger type strings, should be accompanied by a
 // corresponding change to downloads.json.
 const char* const kDangerStrings[] = {
-  kDangerSafe,
-  kDangerFile,
-  kDangerUrl,
-  kDangerContent,
-  kDangerSafe,
-  kDangerUncommon,
-  kDangerAccepted,
-  kDangerHost,
-  kDangerUnwanted
-};
+    kDangerSafe,     kDangerFile,
+    kDangerUrl,      kDangerContent,
+    kDangerSafe,     kDangerUncommon,
+    kDangerAccepted, kDangerHost,
+    kDangerUnwanted, kDangerWhitelistedByPolicy};
 static_assert(arraysize(kDangerStrings) == download::DOWNLOAD_DANGER_TYPE_MAX,
               "kDangerStrings should have DOWNLOAD_DANGER_TYPE_MAX elements");
 

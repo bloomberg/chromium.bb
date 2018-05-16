@@ -10823,6 +10823,7 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="USER_VALIDATED"/>
   <int value="7" label="DANGEROUS_HOST"/>
   <int value="8" label="POTENTIALLY_UNWANTED"/>
+  <int value="9" label="WHITELISTED_BY_POLICY"/>
 </enum>
 
 <enum name="DownloadNotificationForegroundLifecycle">
@@ -40008,6 +40009,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="UNCOMMON"/>
   <int value="4" label="DANGEROUS_HOST"/>
   <int value="5" label="POTENTIALLY_UNWANTED"/>
+  <int value="6" label="WHITELISTED_BY_POLICY"/>
 </enum>
 
 <enum name="SBClientDownloadExtensions">

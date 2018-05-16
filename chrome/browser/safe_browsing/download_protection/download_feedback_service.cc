@@ -88,9 +88,11 @@ void DownloadFeedbackService::MaybeStorePingsForDownload(
     download::DownloadItem* download,
     const std::string& ping,
     const std::string& response) {
-  // We never upload SAFE files.
-  if (result == DownloadCheckResult::SAFE)
+  // We never upload SAFE or WHITELISTED_BY_POLICY files.
+  if (result == DownloadCheckResult::SAFE ||
+      result == DownloadCheckResult::WHITELISTED_BY_POLICY) {
     return;
+  }
 
   UMA_HISTOGRAM_BOOLEAN("SBDownloadFeedback.UploadRequestedByServer",
                         upload_requested);
