@@ -20,6 +20,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -139,6 +140,8 @@ PaymentHandlerWebFlowViewController::PaymentHandlerWebFlowViewController(
       first_navigation_complete_callback_(
           std::move(first_navigation_complete_callback)) {
   progress_bar_->set_owned_by_client();
+  progress_bar_->set_foreground_color(gfx::kGoogleBlue500);
+  progress_bar_->set_background_color(SK_ColorTRANSPARENT);
   separator_->set_owned_by_client();
   separator_->SetColor(separator_->GetNativeTheme()->GetSystemColor(
       ui::NativeTheme::kColorId_SeparatorColor));
