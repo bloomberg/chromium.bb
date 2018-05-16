@@ -217,11 +217,7 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
                                                const string& auth_token) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  // TODO(pavely): crbug.com/273096. Check for "credentials_lost" is added as
-  // workaround for M29 blocker to avoid sending RPC to sync with known invalid
-  // token but instead to trigger refreshing token in ProfileSyncService. Need
-  // to clean it.
-  if (auth_token.empty() || auth_token == "credentials_lost") {
+  if (auth_token.empty()) {
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
     // Print a log to distinguish this "known failure" from others.
     DVLOG(1) << "ServerConnectionManager forcing SYNC_AUTH_ERROR due to missing"
