@@ -29,12 +29,6 @@ TabManager::WebContentsData::WebContentsData(content::WebContents* web_contents)
 
 TabManager::WebContentsData::~WebContentsData() {}
 
-void TabManager::WebContentsData::DidStopLoading() {
-  if (IsPageAlmostIdleSignalEnabled())
-    return;
-  NotifyTabIsLoaded();
-}
-
 void TabManager::WebContentsData::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   // Only change to the loading state if there is a navigation in the main
@@ -45,7 +39,6 @@ void TabManager::WebContentsData::DidStartNavigation(
     return;
   }
 
-  SetTabLoadingState(TAB_IS_LOADING);
   g_browser_process->GetTabManager()
       ->stats_collector()
       ->OnDidStartMainFrameNavigation(web_contents());
@@ -61,19 +54,8 @@ void TabManager::WebContentsData::WebContentsDestroyed() {
   // If Chrome is shutting down, ignore this event.
   if (g_browser_process->IsShuttingDown())
     return;
-
-  SetTabLoadingState(TAB_IS_NOT_LOADING);
   SetIsInSessionRestore(false);
   g_browser_process->GetTabManager()->OnWebContentsDestroyed(web_contents());
-}
-
-void TabManager::WebContentsData::NotifyTabIsLoaded() {
-  // We may already be in the stopped state if this is being invoked due to an
-  // iframe loading new content.
-  if (tab_data_.tab_loading_state != TAB_IS_LOADED) {
-    SetTabLoadingState(TAB_IS_LOADED);
-    g_browser_process->GetTabManager()->OnTabIsLoaded(web_contents());
-  }
 }
 
 TimeTicks TabManager::WebContentsData::LastInactiveTime() {
@@ -97,7 +79,7 @@ void TabManager::WebContentsData::CopyState(
 }
 
 TabManager::WebContentsData::Data::Data()
-    : tab_loading_state(TAB_IS_NOT_LOADING),
+    : tab_loading_state(TabLoadTracker::UNLOADED),
       is_in_session_restore(false),
       is_restored_in_foreground(false) {}
 

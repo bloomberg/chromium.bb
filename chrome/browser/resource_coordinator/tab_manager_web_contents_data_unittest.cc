@@ -20,6 +20,10 @@ using content::WebContentsTester;
 namespace resource_coordinator {
 namespace {
 
+constexpr TabLoadTracker::LoadingState UNLOADED = TabLoadTracker::UNLOADED;
+constexpr TabLoadTracker::LoadingState LOADING = TabLoadTracker::LOADING;
+constexpr TabLoadTracker::LoadingState LOADED = TabLoadTracker::LOADED;
+
 class TabManagerWebContentsDataTest : public ChromeRenderViewHostTestHarness {
  public:
   TabManagerWebContentsDataTest()
@@ -70,17 +74,17 @@ TEST_F(TabManagerWebContentsDataTest, LastInactiveTime) {
 }
 
 TEST_F(TabManagerWebContentsDataTest, TabLoadingState) {
-  EXPECT_EQ(TAB_IS_NOT_LOADING, tab_data()->tab_loading_state());
-  tab_data()->SetTabLoadingState(TAB_IS_LOADING);
-  EXPECT_EQ(TAB_IS_LOADING, tab_data()->tab_loading_state());
-  tab_data()->SetTabLoadingState(TAB_IS_LOADED);
-  EXPECT_EQ(TAB_IS_LOADED, tab_data()->tab_loading_state());
+  EXPECT_EQ(UNLOADED, tab_data()->tab_loading_state());
+  tab_data()->SetTabLoadingState(LOADING);
+  EXPECT_EQ(LOADING, tab_data()->tab_loading_state());
+  tab_data()->SetTabLoadingState(LOADED);
+  EXPECT_EQ(LOADED, tab_data()->tab_loading_state());
 }
 
 TEST_F(TabManagerWebContentsDataTest, CopyState) {
   tab_data()->SetLastInactiveTime(base::TimeTicks() +
                                   base::TimeDelta::FromSeconds(42));
-  tab_data()->SetTabLoadingState(TAB_IS_LOADED);
+  tab_data()->SetTabLoadingState(LOADED);
   tab_data()->SetIsInSessionRestore(true);
   tab_data()->SetIsRestoredInForeground(true);
 

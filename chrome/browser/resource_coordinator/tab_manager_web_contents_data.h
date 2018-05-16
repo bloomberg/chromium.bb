@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -18,27 +19,6 @@ class WebContents;
 
 namespace resource_coordinator {
 
-// Tabs (WebContentsData) start in the not loading state, and transition to the
-// loading state when a navigation begins in the main frame of the associated
-// WebContents. The state changes to loaded when we receive the DidStopLoading*
-// signal. The state can change from loaded to loading if another navigation
-// occurs in the main frame, which happens if the user navigates to a new page
-// and the WebContents is reused.
-//
-// These values are used in the TabManager.SessionRestore.SwitchToTab UMA.
-//
-// These values are written to logs.  New enum values can be added, but existing
-// enums must never be renumbered or deleted and reused.
-enum TabLoadingState {
-  TAB_IS_NOT_LOADING = 0,
-  TAB_IS_LOADING = 1,
-  // A tab is considered loaded when DidStopLoading is called from WebContents
-  // for now. We are in the progress to deprecate using it, and use
-  // PageAlmostIdle signal from resource coordinator instead.
-  TAB_IS_LOADED = 2,
-  TAB_LOADING_STATE_MAX,
-};
-
 // Internal class used by TabManager to record the needed data for
 // WebContentses.
 // TODO(michaelpg): Merge implementation into
@@ -47,20 +27,17 @@ class TabManager::WebContentsData
     : public content::WebContentsObserver,
       public content::WebContentsUserData<TabManager::WebContentsData> {
  public:
+  using LoadingState = resource_coordinator::TabLoadTracker::LoadingState;
+
   explicit WebContentsData(content::WebContents* web_contents);
   ~WebContentsData() override;
 
   // WebContentsObserver implementation:
-  void DidStopLoading() override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
-
-  // Called by TabManager::ResourceCoordinatorSignalObserver to notify that a
-  // tab is considered loaded.
-  void NotifyTabIsLoaded();
 
   // Returns the timestamp of the last time the tab changed became inactive.
   base::TimeTicks LastInactiveTime();
@@ -91,14 +68,12 @@ class TabManager::WebContentsData
   base::TimeDelta time_to_purge() const { return time_to_purge_; }
 
   // Sets the tab loading state.
-  void SetTabLoadingState(TabLoadingState state) {
+  void SetTabLoadingState(LoadingState state) {
     tab_data_.tab_loading_state = state;
   }
 
-  // Returns the TabLoadingState of the tab.
-  TabLoadingState tab_loading_state() const {
-    return tab_data_.tab_loading_state;
-  }
+  // Returns the loading state of the tab.
+  LoadingState tab_loading_state() const { return tab_data_.tab_loading_state; }
 
   void SetIsInSessionRestore(bool is_in_session_restore) {
     tab_data_.is_in_session_restore = is_in_session_restore;
@@ -127,7 +102,7 @@ class TabManager::WebContentsData
     // The last time the tab switched from being active to inactive.
     base::TimeTicks last_inactive_time;
     // Current loading state of this tab.
-    TabLoadingState tab_loading_state;
+    LoadingState tab_loading_state;
     // True if the tab was created by session restore. Remains true until the
     // end of the first navigation or the tab is closed.
     bool is_in_session_restore;

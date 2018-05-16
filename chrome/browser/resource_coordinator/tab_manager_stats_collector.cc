@@ -170,19 +170,19 @@ void TabManagerStatsCollector::RecordSwitchToTab(
   if (is_session_restore_loading_tabs_) {
     UMA_HISTOGRAM_ENUMERATION(kHistogramSessionRestoreSwitchToTab,
                               new_data->tab_loading_state(),
-                              TAB_LOADING_STATE_MAX);
+                              TabLoadTracker::LOADING_STATE_MAX);
   }
   if (is_in_background_tab_opening_session_) {
     UMA_HISTOGRAM_ENUMERATION(kHistogramBackgroundTabOpeningSwitchToTab,
                               new_data->tab_loading_state(),
-                              TAB_LOADING_STATE_MAX);
+                              TabLoadTracker::LOADING_STATE_MAX);
   }
 
   if (old_contents)
     foreground_contents_switched_to_times_.erase(old_contents);
   DCHECK(
       !base::ContainsKey(foreground_contents_switched_to_times_, new_contents));
-  if (new_data->tab_loading_state() != TAB_IS_LOADED) {
+  if (new_data->tab_loading_state() != TabLoadTracker::LOADED) {
     foreground_contents_switched_to_times_.insert(
         std::make_pair(new_contents, NowTicks()));
   }

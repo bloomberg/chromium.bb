@@ -26,20 +26,7 @@
 #include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-namespace {
-
-// The manager currently doesn't exist on all platforms, which means the
-// tab load tracker will not either.
-// TODO(chrisha): Make the tab manager exist everywhere. It's going to start
-// making scheduling decisions that apply to mobile devices as well, so there's
-// no longer any reason for it to be mobile only.
-resource_coordinator::TabLoadTracker* GetTabLoadTracker() {
-  if (auto* manager = g_browser_process->GetTabManager())
-    return &(manager->tab_load_tracker());
-  return nullptr;
-}
-
-}  // namespace
+using resource_coordinator::TabLoadTracker;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(ResourceCoordinatorWebContentsObserver);
 
@@ -71,8 +58,7 @@ ResourceCoordinatorWebContentsObserver::ResourceCoordinatorWebContentsObserver(
         page_resource_coordinator_->id(), web_contents);
   }
 
-  if (auto* tracker = GetTabLoadTracker())
-    tracker->StartTracking(web_contents);
+  TabLoadTracker::Get()->StartTracking(web_contents);
 }
 
 ResourceCoordinatorWebContentsObserver::
@@ -87,20 +73,16 @@ bool ResourceCoordinatorWebContentsObserver::IsEnabled() {
 
 void ResourceCoordinatorWebContentsObserver::DidStartLoading() {
   page_resource_coordinator_->SetIsLoading(true);
-
-  if (auto* tracker = GetTabLoadTracker())
-    tracker->DidStartLoading(web_contents());
+  TabLoadTracker::Get()->DidStartLoading(web_contents());
 }
 
 void ResourceCoordinatorWebContentsObserver::DidReceiveResponse() {
-  if (auto* tracker = GetTabLoadTracker())
-    tracker->DidReceiveResponse(web_contents());
+  TabLoadTracker::Get()->DidReceiveResponse(web_contents());
 }
 
 void ResourceCoordinatorWebContentsObserver::DidStopLoading() {
   page_resource_coordinator_->SetIsLoading(false);
-  if (auto* tracker = GetTabLoadTracker())
-    tracker->DidStopLoading(web_contents());
+  TabLoadTracker::Get()->DidStopLoading(web_contents());
 }
 
 void ResourceCoordinatorWebContentsObserver::DidFailLoad(
@@ -108,8 +90,7 @@ void ResourceCoordinatorWebContentsObserver::DidFailLoad(
     const GURL& validated_url,
     int error_code,
     const base::string16& error_description) {
-  if (auto* tracker = GetTabLoadTracker())
-    tracker->DidFailLoad(web_contents());
+  TabLoadTracker::Get()->DidFailLoad(web_contents());
 }
 
 void ResourceCoordinatorWebContentsObserver::OnVisibilityChanged(
@@ -127,8 +108,7 @@ void ResourceCoordinatorWebContentsObserver::WebContentsDestroyed() {
     page_signal_receiver->RemoveCoordinationUnitID(
         page_resource_coordinator_->id());
   }
-  if (auto* tracker = GetTabLoadTracker())
-    tracker->StopTracking(web_contents());
+  TabLoadTracker::Get()->StopTracking(web_contents());
 }
 
 void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
@@ -141,7 +121,7 @@ void ResourceCoordinatorWebContentsObserver::DidFinishNavigation(
   content::RenderFrameHost* render_frame_host =
       navigation_handle->GetRenderFrameHost();
 
-  // Make sure the hierarchical structure is constructured before sending signal
+  // Make sure the hierarchical structure is constructed before sending signal
   // to Resource Coordinator.
   auto* frame_resource_coordinator =
       render_frame_host->GetFrameResourceCoordinator();

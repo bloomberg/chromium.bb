@@ -176,11 +176,12 @@ TabManager::TabManager()
         new ResourceCoordinatorSignalObserver());
   }
   stats_collector_.reset(new TabManagerStatsCollector());
-
   proactive_discard_params_ = GetStaticProactiveTabDiscardParams();
+  TabLoadTracker::Get()->AddObserver(this);
 }
 
 TabManager::~TabManager() {
+  TabLoadTracker::Get()->RemoveObserver(this);
   resource_coordinator_signal_observer_.reset();
   Stop();
 }
@@ -578,6 +579,35 @@ void TabManager::TabReplacedAt(TabStripModel* tab_strip_model,
   WebContentsData::CopyState(old_contents, new_contents);
 }
 
+void TabManager::OnStartTracking(content::WebContents* web_contents,
+                                 LoadingState loading_state) {
+  GetWebContentsData(web_contents)->SetTabLoadingState(loading_state);
+}
+
+void TabManager::OnLoadingStateChange(content::WebContents* web_contents,
+                                      LoadingState loading_state) {
+  GetWebContentsData(web_contents)->SetTabLoadingState(loading_state);
+
+  if (loading_state == TabLoadTracker::LOADED) {
+    bool was_in_background_tab_opening_session =
+        IsInBackgroundTabOpeningSession();
+
+    loading_contents_.erase(web_contents);
+    stats_collector_->OnTabIsLoaded(web_contents);
+    LoadNextBackgroundTabIfNeeded();
+
+    if (was_in_background_tab_opening_session &&
+        !IsInBackgroundTabOpeningSession()) {
+      stats_collector_->OnBackgroundTabOpeningSessionEnded();
+    }
+  }
+}
+
+void TabManager::OnStopTracking(content::WebContents* web_contents,
+                                LoadingState loading_state) {
+  GetWebContentsData(web_contents)->SetTabLoadingState(loading_state);
+}
+
 // static
 TabManager::WebContentsData* TabManager::GetWebContentsData(
     content::WebContents* contents) {
@@ -661,8 +691,6 @@ TabManager::MaybeThrottleNavigation(BackgroundTabNavigationThrottle* throttle) {
   // Notify TabUIHelper that the navigation is delayed, so that the tab UI such
   // as favicon and title can be updated accordingly.
   TabUIHelper::FromWebContents(contents)->NotifyInitialNavigationDelayed(true);
-
-  GetWebContentsData(contents)->SetTabLoadingState(TAB_IS_NOT_LOADING);
   pending_navigations_.push_back(throttle);
   std::stable_sort(pending_navigations_.begin(), pending_navigations_.end(),
                    ComparePendingNavigations);
@@ -710,21 +738,6 @@ void TabManager::OnDidFinishNavigation(
       break;
     }
     it++;
-  }
-}
-
-void TabManager::OnTabIsLoaded(content::WebContents* contents) {
-  DCHECK_EQ(TAB_IS_LOADED, GetWebContentsData(contents)->tab_loading_state());
-  bool was_in_background_tab_opening_session =
-      IsInBackgroundTabOpeningSession();
-
-  loading_contents_.erase(contents);
-  stats_collector_->OnTabIsLoaded(contents);
-  LoadNextBackgroundTabIfNeeded();
-
-  if (was_in_background_tab_opening_session &&
-      !IsInBackgroundTabOpeningSession()) {
-    stats_collector_->OnBackgroundTabOpeningSessionEnded();
   }
 }
 
@@ -801,7 +814,6 @@ void TabManager::ResumeTabNavigationIfNeeded(content::WebContents* contents) {
 void TabManager::ResumeNavigation(BackgroundTabNavigationThrottle* throttle) {
   content::WebContents* contents =
       throttle->navigation_handle()->GetWebContents();
-  GetWebContentsData(contents)->SetTabLoadingState(TAB_IS_LOADING);
   loading_contents_.insert(contents);
   TabUIHelper::FromWebContents(contents)->NotifyInitialNavigationDelayed(false);
 
@@ -855,13 +867,10 @@ int TabManager::GetNumAliveTabs() const {
 }
 
 bool TabManager::IsTabLoadingForTest(content::WebContents* contents) const {
-  if (loading_contents_.count(contents) == 1) {
-    DCHECK_EQ(TAB_IS_LOADING,
-              GetWebContentsData(contents)->tab_loading_state());
+  if (base::ContainsKey(loading_contents_, contents))
     return true;
-  }
-
-  DCHECK_NE(TAB_IS_LOADING, GetWebContentsData(contents)->tab_loading_state());
+  DCHECK_NE(TabLoadTracker::LOADING,
+            GetWebContentsData(contents)->tab_loading_state());
   return false;
 }
 

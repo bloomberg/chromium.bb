@@ -14,9 +14,13 @@
 
 namespace resource_coordinator {
 
-TabLoadTracker::TabLoadTracker() {}
+TabLoadTracker::~TabLoadTracker() = default;
 
-TabLoadTracker::~TabLoadTracker() {}
+// static
+TabLoadTracker* TabLoadTracker::Get() {
+  static base::NoDestructor<TabLoadTracker> tab_load_tracker;
+  return tab_load_tracker.get();
+}
 
 TabLoadTracker::LoadingState TabLoadTracker::GetLoadingState(
     content::WebContents* web_contents) const {
@@ -60,6 +64,16 @@ void TabLoadTracker::RemoveObserver(Observer* observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   observers_.RemoveObserver(observer);
 }
+
+void TabLoadTracker::TransitionStateForTesting(
+    content::WebContents* web_contents,
+    LoadingState loading_state) {
+  auto it = tabs_.find(web_contents);
+  DCHECK(it != tabs_.end());
+  TransitionState(it, loading_state, false);
+}
+
+TabLoadTracker::TabLoadTracker() = default;
 
 void TabLoadTracker::StartTracking(content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -121,7 +135,7 @@ void TabLoadTracker::DidReceiveResponse(content::WebContents* web_contents) {
   // actual network requests, but not the rest of the state machinery.
   if (!it->second.did_start_loading_seen)
     return;
-  TransitionState(it, LOADING);
+  TransitionState(it, LOADING, true);
 }
 
 void TabLoadTracker::DidStopLoading(content::WebContents* web_contents) {
@@ -176,29 +190,32 @@ void TabLoadTracker::MaybeTransitionToLoaded(
   DCHECK(it != tabs_.end());
   if (it->second.loading_state != LOADING)
     return;
-  TransitionState(it, LOADED);
+  TransitionState(it, LOADED, true);
 }
 
 void TabLoadTracker::TransitionState(TabMap::iterator it,
-                                     LoadingState loading_state) {
+                                     LoadingState loading_state,
+                                     bool validate_transition) {
 #if DCHECK_IS_ON()
-  // Validate the transition.
-  switch (loading_state) {
-    case LOADING: {
-      DCHECK_NE(LOADING, it->second.loading_state);
-      DCHECK(it->second.did_start_loading_seen);
-      break;
-    }
+  if (validate_transition) {
+    // Validate the transition.
+    switch (loading_state) {
+      case LOADING: {
+        DCHECK_NE(LOADING, it->second.loading_state);
+        DCHECK(it->second.did_start_loading_seen);
+        break;
+      }
 
-    case LOADED: {
-      DCHECK_EQ(LOADING, it->second.loading_state);
-      DCHECK(it->second.did_start_loading_seen);
-      break;
-    }
+      case LOADED: {
+        DCHECK_EQ(LOADING, it->second.loading_state);
+        DCHECK(it->second.did_start_loading_seen);
+        break;
+      }
 
-    case UNLOADED:  // It never makes sense to transition to UNLOADED.
-    case LOADING_STATE_MAX:
-      NOTREACHED();
+      case UNLOADED:  // It never makes sense to transition to UNLOADED.
+      case LOADING_STATE_MAX:
+        NOTREACHED();
+    }
   }
 #endif
 
