@@ -29656,6 +29656,7 @@ Called by update_use_counter_css.py.-->
   <int value="6" label="OffTheRecordMismatch"/>
   <int value="7" label="NoSupportedProvider"/>
   <int value="8" label="Cancelled"/>
+  <int value="9" label="RouteAlreadyExists"/>
 </enum>
 
 <enum name="MediaRouteProviderVersion">

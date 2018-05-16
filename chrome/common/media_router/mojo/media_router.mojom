@@ -199,7 +199,7 @@ struct SinkSearchCriteria {
 // - RouteRequestResult::ResultCode in route_request_result.h
 // - MediaRouteProviderResult enum in tools/metrics/histograms.xml.
 // - mr.RouteRequestResultCode in route_request_error.js
-// - RouteRequestResultCodeFromMojo in media_router_type_converters.cc
+// - media_router_struct_traits.h
 enum RouteRequestResultCode {
   UNKNOWN_ERROR,
   OK,
@@ -209,7 +209,8 @@ enum RouteRequestResultCode {
   INVALID_ORIGIN,
   INCOGNITO_MISMATCH,
   NO_SUPPORTED_PROVIDER,
-  CANCELLED
+  CANCELLED,
+  ROUTE_ALREADY_EXISTS
 // New values must be added here.
 };
 
