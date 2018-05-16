@@ -47,14 +47,11 @@ namespace blink {
 namespace {
 
 class RootScrollerTest : public testing::Test,
-                         public testing::WithParamInterface<bool>,
-                         private ScopedRootLayerScrollingForTest,
                          private ScopedImplicitRootScrollerForTest,
                          private ScopedSetRootScrollerForTest {
  public:
   RootScrollerTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        ScopedImplicitRootScrollerForTest(false),
+      : ScopedImplicitRootScrollerForTest(false),
         ScopedSetRootScrollerForTest(true),
         base_url_("http://www.test.com/") {
     RegisterMockedHttpURLLoad("overflow-scrolling.html");
@@ -187,12 +184,10 @@ class RootScrollerTest : public testing::Test,
   RuntimeEnabledFeatures::Backup features_backup_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, RootScrollerTest, testing::Bool());
-
 // Test that no root scroller element is set if setRootScroller isn't called on
 // any elements. The document Node should be the default effective root
 // scroller.
-TEST_P(RootScrollerTest, TestDefaultRootScroller) {
+TEST_F(RootScrollerTest, TestDefaultRootScroller) {
   Initialize("overflow-scrolling.html");
 
   RootScrollerController& controller =
@@ -209,7 +204,7 @@ TEST_P(RootScrollerTest, TestDefaultRootScroller) {
 
 // Make sure that replacing the documentElement doesn't change the effective
 // root scroller when no root scroller is set.
-TEST_P(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
+TEST_F(RootScrollerTest, defaultEffectiveRootScrollerIsDocumentNode) {
   Initialize("root-scroller.html");
 
   Document* document = MainFrame()->GetDocument();
@@ -243,7 +238,7 @@ class OverscrollTestWebViewClient : public FrameTestHelpers::TestWebViewClient {
 
 // Tests that setting an element as the root scroller causes it to control url
 // bar hiding and overscroll.
-TEST_P(RootScrollerTest, TestSetRootScroller) {
+TEST_F(RootScrollerTest, TestSetRootScroller) {
   OverscrollTestWebViewClient client;
   Initialize("root-scroller.html", &client);
 
@@ -344,7 +339,7 @@ TEST_P(RootScrollerTest, TestSetRootScroller) {
 // Tests that removing the element that is the root scroller from the DOM tree
 // doesn't remove it as the root scroller but it does change the effective root
 // scroller.
-TEST_P(RootScrollerTest, TestRemoveRootScrollerFromDom) {
+TEST_F(RootScrollerTest, TestRemoveRootScrollerFromDom) {
   Initialize("root-scroller.html");
 
   ASSERT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
@@ -364,7 +359,7 @@ TEST_P(RootScrollerTest, TestRemoveRootScrollerFromDom) {
 
 // Tests that setting an element that isn't a valid scroller as the root
 // scroller doesn't change the effective root scroller.
-TEST_P(RootScrollerTest, TestSetRootScrollerOnInvalidElement) {
+TEST_F(RootScrollerTest, TestSetRootScrollerOnInvalidElement) {
   Initialize("root-scroller.html");
 
   {
@@ -389,7 +384,7 @@ TEST_P(RootScrollerTest, TestSetRootScrollerOnInvalidElement) {
 
 // Test that the effective root scroller resets to the document Node when the
 // current root scroller element becomes invalid as a scroller.
-TEST_P(RootScrollerTest, TestRootScrollerBecomesInvalid) {
+TEST_F(RootScrollerTest, TestRootScrollerBecomesInvalid) {
   Initialize("root-scroller.html");
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
@@ -439,7 +434,7 @@ TEST_P(RootScrollerTest, TestRootScrollerBecomesInvalid) {
 
 // Tests that setting the root scroller of the top document to an element that
 // belongs to a nested document works.
-TEST_P(RootScrollerTest, TestSetRootScrollerOnElementInIframe) {
+TEST_F(RootScrollerTest, TestSetRootScrollerOnElementInIframe) {
   Initialize("root-scroller-iframe.html");
 
   ASSERT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
@@ -474,7 +469,7 @@ TEST_P(RootScrollerTest, TestSetRootScrollerOnElementInIframe) {
 
 // Tests that setting a valid element as the root scroller on a document within
 // an iframe works as expected.
-TEST_P(RootScrollerTest, TestRootScrollerWithinIframe) {
+TEST_F(RootScrollerTest, TestRootScrollerWithinIframe) {
   Initialize("root-scroller-iframe.html");
 
   ASSERT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
@@ -499,7 +494,7 @@ TEST_P(RootScrollerTest, TestRootScrollerWithinIframe) {
 
 // Tests that setting an iframe as the root scroller makes the iframe the
 // effective root scroller in the parent frame.
-TEST_P(RootScrollerTest, SetRootScrollerIframeBecomesEffective) {
+TEST_F(RootScrollerTest, SetRootScrollerIframeBecomesEffective) {
   Initialize("root-scroller-iframe.html");
   ASSERT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
 
@@ -529,7 +524,7 @@ TEST_P(RootScrollerTest, SetRootScrollerIframeBecomesEffective) {
 
 // Tests that the global root scroller is correctly calculated when getting the
 // root scroller layer and that the viewport apply scroll is set on it.
-TEST_P(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
+TEST_F(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
   // TODO(bokan): The expectation and actual in the checks here are backwards.
   Initialize("root-scroller-iframe.html");
   ASSERT_EQ(nullptr, MainFrame()->GetDocument()->rootScroller());
@@ -623,7 +618,7 @@ TEST_P(RootScrollerTest, SetRootScrollerIframeUsesCorrectLayerAndCallback) {
 
 // Ensures that disconnecting the element currently set as the root scroller
 // recomputes the effective root scroller, before a lifecycle update.
-TEST_P(RootScrollerTest, RemoveCurrentRootScroller) {
+TEST_F(RootScrollerTest, RemoveCurrentRootScroller) {
   Initialize();
 
   WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
@@ -669,7 +664,7 @@ TEST_P(RootScrollerTest, RemoveCurrentRootScroller) {
 // Ensures that the root scroller always gets composited with scrolling layers.
 // This is necessary since we replace the Frame scrolling layers in CC as the
 // OuterViewport, we need something to replace them with.
-TEST_P(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
+TEST_F(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
   Initialize();
 
   WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
@@ -713,7 +708,7 @@ TEST_P(RootScrollerTest, AlwaysCreateCompositedScrollingLayers) {
   EXPECT_FALSE(layer->HasCompositedLayerMapping());
 }
 
-TEST_P(RootScrollerTest, TestSetRootScrollerCausesViewportLayerChange) {
+TEST_F(RootScrollerTest, TestSetRootScrollerCausesViewportLayerChange) {
   // TODO(bokan): Need a test that changing root scrollers actually sets the
   // outer viewport layer on the compositor, even in the absence of other
   // compositing changes. crbug.com/505516
@@ -722,7 +717,7 @@ TEST_P(RootScrollerTest, TestSetRootScrollerCausesViewportLayerChange) {
 // Tests that trying to set an element as the root scroller of a document inside
 // an iframe fails when that element belongs to the parent document.
 // TODO(bokan): Recent changes mean this is now possible but should be fixed.
-TEST_P(RootScrollerTest,
+TEST_F(RootScrollerTest,
        DISABLED_TestSetRootScrollerOnElementFromOutsideIframe) {
   Initialize("root-scroller-iframe.html");
 
@@ -752,7 +747,7 @@ TEST_P(RootScrollerTest,
 
 // Do a basic sanity check that setting as root scroller an iframe that's remote
 // doesn't crash or otherwise fail catastrophically.
-TEST_P(RootScrollerTest, RemoteIFrame) {
+TEST_F(RootScrollerTest, RemoteIFrame) {
   Initialize("root-scroller-iframe.html");
 
   // Initialization: Replace the iframe with a remote frame.
@@ -773,7 +768,7 @@ TEST_P(RootScrollerTest, RemoteIFrame) {
 
 // Make sure that if an effective root scroller becomes a remote frame, it's
 // immediately demoted.
-TEST_P(RootScrollerTest, IFrameSwapToRemote) {
+TEST_F(RootScrollerTest, IFrameSwapToRemote) {
   Initialize("root-scroller-iframe.html");
   Element* iframe = MainFrame()->GetDocument()->getElementById("iframe");
 
@@ -802,9 +797,9 @@ TEST_P(RootScrollerTest, IFrameSwapToRemote) {
 // still scroll as before and not crash. TODO(crbug.com/730269): appears to
 // segfault during teardown on TSAN.
 #if defined(THREAD_SANITIZER)
-TEST_P(RootScrollerTest, DISABLED_RemoteMainFrame) {
+TEST_F(RootScrollerTest, DISABLED_RemoteMainFrame) {
 #else
-TEST_P(RootScrollerTest, RemoteMainFrame) {
+TEST_F(RootScrollerTest, RemoteMainFrame) {
 #endif
   WebLocalFrameImpl* local_frame;
   WebFrameWidget* widget;
@@ -870,7 +865,7 @@ TEST_P(RootScrollerTest, RemoteMainFrame) {
 // Ensure a non-main local root doesn't interfere with the global root
 // scroller. This happens in this situation: Local <- Remote <- Local. This
 // tests the crash in https://crbug.com/800566.
-TEST_P(RootScrollerTest, NonMainLocalRootLifecycle) {
+TEST_F(RootScrollerTest, NonMainLocalRootLifecycle) {
   WebLocalFrameImpl* non_main_local_root = nullptr;
 
   // Setup a Local <- Remote <- Local frame hierarchy.
@@ -925,7 +920,7 @@ TEST_P(RootScrollerTest, NonMainLocalRootLifecycle) {
 
 // Tests that removing the root scroller element from the DOM resets the
 // effective root scroller without waiting for any lifecycle events.
-TEST_P(RootScrollerTest, RemoveRootScrollerFromDom) {
+TEST_F(RootScrollerTest, RemoveRootScrollerFromDom) {
   Initialize("root-scroller-iframe.html");
 
   {
@@ -954,7 +949,7 @@ TEST_P(RootScrollerTest, RemoveRootScrollerFromDom) {
 
 // Tests that we still have a global root scroller layer when the HTML element
 // has no layout object. crbug.com/637036.
-TEST_P(RootScrollerTest, DocumentElementHasNoLayoutObject) {
+TEST_F(RootScrollerTest, DocumentElementHasNoLayoutObject) {
   Initialize("overflow-scrolling.html");
 
   // There's no rootScroller set on this page so we should default to the
@@ -975,7 +970,7 @@ TEST_P(RootScrollerTest, DocumentElementHasNoLayoutObject) {
 // On Android, the main scrollbars are owned by the visual viewport and the
 // LocalFrameView's disabled. This functionality should extend to a rootScroller
 // that isn't the main LocalFrameView.
-TEST_P(RootScrollerTest, UseVisualViewportScrollbars) {
+TEST_F(RootScrollerTest, UseVisualViewportScrollbars) {
   Initialize("root-scroller.html");
 
   Element* container = MainFrame()->GetDocument()->getElementById("container");
@@ -996,7 +991,7 @@ TEST_P(RootScrollerTest, UseVisualViewportScrollbars) {
 // On Android, the main scrollbars are owned by the visual viewport and the
 // LocalFrameView's disabled. This functionality should extend to a rootScroller
 // that's a nested iframe.
-TEST_P(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
+TEST_F(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
   Initialize("root-scroller-iframe.html");
 
   Element* iframe = MainFrame()->GetDocument()->getElementById("iframe");
@@ -1024,7 +1019,7 @@ TEST_P(RootScrollerTest, UseVisualViewportScrollbarsIframe) {
   EXPECT_GT(container_scroller->MaximumScrollOffset().Height(), 0);
 }
 
-TEST_P(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
+TEST_F(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   Initialize();
 
   WebURL base_url = URLTestHelpers::ToKURL("http://www.test.com/");
@@ -1082,7 +1077,7 @@ TEST_P(RootScrollerTest, TopControlsAdjustmentAppliedToRootScroller) {
   EXPECT_EQ(1000 - 450, container_scroller->MaximumScrollOffset().Height());
 }
 
-TEST_P(RootScrollerTest, RotationAnchoring) {
+TEST_F(RootScrollerTest, RotationAnchoring) {
   Initialize("root-scroller-rotation.html");
 
   ScrollableArea* container_scroller;
@@ -1141,7 +1136,7 @@ TEST_P(RootScrollerTest, RotationAnchoring) {
 // Tests that we don't crash if the default documentElement isn't a valid root
 // scroller. This can happen in some edge cases where documentElement isn't
 // <html>. crbug.com/668553.
-TEST_P(RootScrollerTest, InvalidDefaultRootScroller) {
+TEST_F(RootScrollerTest, InvalidDefaultRootScroller) {
   Initialize("overflow-scrolling.html");
 
   Document* document = MainFrame()->GetDocument();
@@ -1162,7 +1157,7 @@ TEST_P(RootScrollerTest, InvalidDefaultRootScroller) {
 // size instead. This allows matching the layout size semantics of the root
 // FrameView since its layout size can differ from the frame rect due to
 // resizes by the URL bar.
-TEST_P(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
+TEST_F(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
   Initialize("root-scroller-iframe.html");
   MainFrameView()->UpdateAllLifecyclePhases();
 
@@ -1232,7 +1227,7 @@ TEST_P(RootScrollerTest, IFrameRootScrollerGetsNonFixedLayoutSize) {
 // Ensure that removing the root scroller element causes an update to the RFV's
 // layout viewport immediately since old layout viewport is now part of a
 // detached layout hierarchy.
-TEST_P(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
+TEST_F(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
   Initialize("root-scroller-iframe.html");
 
   Document* document = MainFrame()->GetDocument();
@@ -1258,13 +1253,9 @@ TEST_P(RootScrollerTest, ImmediateUpdateOfLayoutViewport) {
             &MainFrameView()->GetRootFrameViewport()->LayoutViewport());
 }
 
-class RootScrollerSimTest : public testing::WithParamInterface<bool>,
-                            private ScopedRootLayerScrollingForTest,
-                            public SimTest {
+class RootScrollerSimTest : public SimTest {
  public:
-  RootScrollerSimTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        implicit_root_scroller_for_test_(false) {}
+  RootScrollerSimTest() : implicit_root_scroller_for_test_(false) {}
 
   void SetUp() override {
     SimTest::SetUp();
@@ -1275,11 +1266,9 @@ class RootScrollerSimTest : public testing::WithParamInterface<bool>,
   ScopedImplicitRootScrollerForTest implicit_root_scroller_for_test_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, RootScrollerSimTest, testing::Bool());
-
 // Test that the element is considered to be viewport filling only if its
 // padding box fills the viewport. That means it must have no border.
-TEST_P(RootScrollerSimTest, UsePaddingBoxForViewportFillingCondition) {
+TEST_F(RootScrollerSimTest, UsePaddingBoxForViewportFillingCondition) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1316,7 +1305,7 @@ TEST_P(RootScrollerSimTest, UsePaddingBoxForViewportFillingCondition) {
 
 // Tests that the root scroller doesn't affect visualViewport pageLeft and
 // pageTop.
-TEST_P(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
+TEST_F(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
@@ -1375,7 +1364,7 @@ TEST_P(RootScrollerSimTest, RootScrollerDoesntAffectVisualViewport) {
 
 // Tests that we don't crash or violate lifecycle assumptions when we resize
 // from within layout.
-TEST_P(RootScrollerSimTest, ResizeFromResizeAfterLayout) {
+TEST_F(RootScrollerSimTest, ResizeFromResizeAfterLayout) {
   WebView().GetSettings()->SetShrinksViewportContentToFit(true);
   WebView().SetDefaultPageScaleLimits(0.25f, 5);
 
@@ -1910,7 +1899,7 @@ TEST_F(ImplicitRootScrollerSimTest,
 // layout. This will cause us to recalculate the effective root scroller while
 // the current one is valid in all ways except that it no longer has a content
 // frame. This test passes if it doesn't crash. https://crbug.com/805317.
-TEST_P(RootScrollerSimTest, RecomputeEffectiveWithNoContentFrame) {
+TEST_F(RootScrollerSimTest, RecomputeEffectiveWithNoContentFrame) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
   SimRequest first_request("https://example.com/first.html", "text/html");
@@ -2015,13 +2004,11 @@ class RootScrollerHitTest : public RootScrollerTest {
   }
 };
 
-INSTANTIATE_TEST_CASE_P(All, RootScrollerHitTest, testing::Bool());
-
 // Test that hit testing in the area revealed at the bottom of the screen
 // revealed by hiding the URL bar works properly when using a root scroller
 // when the target and scroller are in the same PaintLayer.
 // TODO(chrishtr): fix this for root scrollers.
-TEST_P(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
+TEST_F(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
   // Add a target at the bottom of the root scroller that's the size of the url
   // bar. We'll test that hiding the URL bar appropriately adjusts clipping so
   // that we can hit this target.
@@ -2070,7 +2057,7 @@ TEST_P(RootScrollerHitTest, DISABLED_HitTestInAreaRevealedByURLBarSameLayer) {
 // Test that hit testing in the area revealed at the bottom of the screen
 // revealed by hiding the URL bar works properly when using a root scroller
 // when the target and scroller are in different PaintLayers.
-TEST_P(RootScrollerHitTest, HitTestInAreaRevealedByURLBarDifferentLayer) {
+TEST_F(RootScrollerHitTest, HitTestInAreaRevealedByURLBarDifferentLayer) {
   // Add a target at the bottom of the root scroller that's the size of the url
   // bar. We'll test that hiding the URL bar appropriately adjusts clipping so
   // that we can hit this target.

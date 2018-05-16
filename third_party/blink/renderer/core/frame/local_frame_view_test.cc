@@ -10,13 +10,11 @@
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
-
-#include "third_party/blink/renderer/core/paint/paint_property_tree_printer.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -44,15 +42,10 @@ class AnimationMockChromeClient : public EmptyChromeClient {
   bool has_scheduled_animation_;
 };
 
-typedef bool TestParamRootLayerScrolling;
-class LocalFrameViewTest
-    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
-      private ScopedRootLayerScrollingForTest,
-      public RenderingTest {
+class LocalFrameViewTest : public RenderingTest {
  protected:
   LocalFrameViewTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(SingleChildLocalFrameClient::Create()),
         chrome_client_(new AnimationMockChromeClient) {
     EXPECT_CALL(GetAnimationMockChromeClient(), AttachRootGraphicsLayer(_, _))
         .Times(AnyNumber());
@@ -77,9 +70,7 @@ class LocalFrameViewTest
   Persistent<AnimationMockChromeClient> chrome_client_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, LocalFrameViewTest, testing::Bool());
-
-TEST_P(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
+TEST_F(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
   GetDocument().getElementById("a")->setAttribute(HTMLNames::styleAttr,
                                                   "color: green");
@@ -88,7 +79,7 @@ TEST_P(LocalFrameViewTest, SetPaintInvalidationDuringUpdateAllLifecyclePhases) {
   EXPECT_FALSE(GetAnimationMockChromeClient().has_scheduled_animation_);
 }
 
-TEST_P(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
+TEST_F(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
   SetBodyInnerHTML("<div id='a' style='color: blue'>A</div>");
   GetAnimationMockChromeClient().has_scheduled_animation_ = false;
   GetDocument()
@@ -109,7 +100,7 @@ TEST_P(LocalFrameViewTest, SetPaintInvalidationOutOfUpdateAllLifecyclePhases) {
 
 // If we don't hide the tooltip on scroll, it can negatively impact scrolling
 // performance. See crbug.com/586852 for details.
-TEST_P(LocalFrameViewTest, HideTooltipWhenScrollPositionChanges) {
+TEST_F(LocalFrameViewTest, HideTooltipWhenScrollPositionChanges) {
   SetBodyInnerHTML("<div style='width:1000px;height:1000px'></div>");
 
   EXPECT_CALL(GetAnimationMockChromeClient(),
@@ -129,7 +120,7 @@ TEST_P(LocalFrameViewTest, HideTooltipWhenScrollPositionChanges) {
 // NoOverflowInIncrementVisuallyNonEmptyPixelCount tests fail if the number of
 // pixels is calculated in 32-bit integer, because 65536 * 65536 would become 0
 // if it was calculated in 32-bit and thus it would be considered as empty.
-TEST_P(LocalFrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
+TEST_F(LocalFrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
   EXPECT_FALSE(GetDocument().View()->IsVisuallyNonEmpty());
   GetDocument().View()->IncrementVisuallyNonEmptyPixelCount(
       IntSize(65536, 65536));
@@ -140,7 +131,7 @@ TEST_P(LocalFrameViewTest, NoOverflowInIncrementVisuallyNonEmptyPixelCount) {
 // LocalFrameView::UpdateLayersAndCompositingAfterScrollIfNeeded during layout
 // caused a crash as the code was incorrectly assuming that the ancestor
 // overflow layer would always be valid.
-TEST_P(LocalFrameViewTest,
+TEST_F(LocalFrameViewTest,
        ViewportConstrainedObjectsHandledCorrectlyDuringLayout) {
   SetBodyInnerHTML(R"HTML(
     <style>.container { height: 200%; }
@@ -161,70 +152,7 @@ TEST_P(LocalFrameViewTest,
       ScrollOffset(0, 100), kProgrammaticScroll);
 }
 
-TEST_P(LocalFrameViewTest, StyleChangeUpdatesViewportConstrainedObjects) {
-  // When using root layer scrolling there is no concept of viewport constrained
-  // objects, so skip this test.
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
-  SetBodyInnerHTML(R"HTML(
-    <style>.container { height: 200%; }
-    #sticky1 { position: sticky; top: 0; height: 50px; }
-    #sticky2 { position: sticky; height: 50px; }</style>
-    <div class='container'>
-      <div id='sticky1'></div>
-      <div id='sticky2'></div>
-    </div>
-  )HTML");
-
-  LayoutBoxModelObject* sticky1 = ToLayoutBoxModelObject(
-      GetDocument().getElementById("sticky1")->GetLayoutObject());
-  LayoutBoxModelObject* sticky2 = ToLayoutBoxModelObject(
-      GetDocument().getElementById("sticky2")->GetLayoutObject());
-
-  EXPECT_TRUE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky1));
-  // #sticky2 is not viewport constrained because it has no anchor edges.
-  EXPECT_FALSE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky2));
-
-  // Making the element non-sticky should remove it from the set of
-  // viewport-constrained objects.
-  GetDocument().getElementById("sticky1")->setAttribute(HTMLNames::styleAttr,
-                                                        "position: relative");
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  EXPECT_FALSE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky1));
-
-  // And making it sticky1 again should put it back in that list.
-  GetDocument().getElementById("sticky1")->setAttribute(HTMLNames::styleAttr,
-                                                        "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  EXPECT_TRUE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky1));
-
-  // Adding an anchor edge on the non-anchored sticky should add it to the
-  // viewport-constrained objects.
-  GetDocument().getElementById("sticky2")->setAttribute(HTMLNames::styleAttr,
-                                                        "top: 0");
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  EXPECT_TRUE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky2));
-
-  // Removing the anchor edge on a sticky position element should remove it from
-  // the viewport-constrained objects.
-  GetDocument().getElementById("sticky2")->setAttribute(HTMLNames::styleAttr,
-                                                        "");
-  GetDocument().View()->UpdateAllLifecyclePhases();
-
-  EXPECT_FALSE(
-      GetDocument().View()->ViewportConstrainedObjects()->Contains(sticky2));
-}
-
-TEST_P(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
+TEST_F(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
   SetBodyInnerHTML("<iframe style='display: none'></iframe>");
   SetChildFrameHTML("A");
 
@@ -236,12 +164,8 @@ TEST_P(LocalFrameViewTest, UpdateLifecyclePhasesForPrintingDetachedFrame) {
             GetDocument().Lifecycle().GetState());
   EXPECT_EQ(DocumentLifecycle::kPrePaintClean,
             ChildDocument().Lifecycle().GetState());
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    auto* child_layout_view = ChildDocument().GetLayoutView();
-    EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());
-  } else {
-    EXPECT_TRUE(ChildDocument().View()->PreTranslation());
-  }
+  auto* child_layout_view = ChildDocument().GetLayoutView();
+  EXPECT_TRUE(child_layout_view->FirstFragment().PaintProperties());
 }
 
 }  // namespace

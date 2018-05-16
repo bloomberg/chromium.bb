@@ -16,19 +16,13 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
 using HTMLNames::styleAttr;
 
-typedef bool TestParamRootLayerScrolling;
-class SnapCoordinatorTest
-    : public testing::TestWithParam<TestParamRootLayerScrolling>,
-      private ScopedRootLayerScrollingForTest {
+class SnapCoordinatorTest : public testing::Test {
  protected:
-  SnapCoordinatorTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
-
   void SetUp() override {
     page_holder_ = DummyPageHolder::Create();
 
@@ -114,9 +108,7 @@ class SnapCoordinatorTest
   std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, SnapCoordinatorTest, testing::Bool());
-
-TEST_P(SnapCoordinatorTest, SimpleSnapElement) {
+TEST_F(SnapCoordinatorTest, SimpleSnapElement) {
   Element& snap_element = *GetDocument().getElementById("snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
@@ -124,7 +116,7 @@ TEST_P(SnapCoordinatorTest, SimpleSnapElement) {
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
 
-TEST_P(SnapCoordinatorTest, NestedSnapElement) {
+TEST_F(SnapCoordinatorTest, NestedSnapElement) {
   Element& snap_element = *GetDocument().getElementById("nested-snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
@@ -132,7 +124,7 @@ TEST_P(SnapCoordinatorTest, NestedSnapElement) {
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
 
-TEST_P(SnapCoordinatorTest, NestedSnapElementCaptured) {
+TEST_F(SnapCoordinatorTest, NestedSnapElementCaptured) {
   Element& snap_element = *GetDocument().getElementById("nested-snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
 
@@ -147,7 +139,7 @@ TEST_P(SnapCoordinatorTest, NestedSnapElementCaptured) {
   EXPECT_EQ(1U, SizeOfSnapAreas(*intermediate));
 }
 
-TEST_P(SnapCoordinatorTest, PositionFixedSnapElement) {
+TEST_F(SnapCoordinatorTest, PositionFixedSnapElement) {
   Element& snap_element =
       *GetDocument().getElementById("snap-element-fixed-position");
   snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
@@ -163,7 +155,7 @@ TEST_P(SnapCoordinatorTest, PositionFixedSnapElement) {
   EXPECT_EQ(0U, SizeOfSnapAreas(*body));
 }
 
-TEST_P(SnapCoordinatorTest, UpdateStyleForSnapElement) {
+TEST_F(SnapCoordinatorTest, UpdateStyleForSnapElement) {
   Element& snap_element = *GetDocument().getElementById("snap-element");
   snap_element.setAttribute(styleAttr, "scroll-snap-align: start;");
   GetDocument().UpdateStyleAndLayout();
@@ -187,7 +179,7 @@ TEST_P(SnapCoordinatorTest, UpdateStyleForSnapElement) {
   EXPECT_EQ(1U, SizeOfSnapAreas(SnapContainer()));
 }
 
-TEST_P(SnapCoordinatorTest, LayoutViewCapturesWhenBodyElementViewportDefining) {
+TEST_F(SnapCoordinatorTest, LayoutViewCapturesWhenBodyElementViewportDefining) {
   SetHTML(R"HTML(
     <style>
     body {
@@ -220,7 +212,7 @@ TEST_P(SnapCoordinatorTest, LayoutViewCapturesWhenBodyElementViewportDefining) {
   EXPECT_EQ(0U, SizeOfSnapAreas(*(GetDocument().documentElement())));
 }
 
-TEST_P(SnapCoordinatorTest,
+TEST_F(SnapCoordinatorTest,
        LayoutViewCapturesWhenDocumentElementViewportDefining) {
   SetHTML(R"HTML(
     <style>
@@ -260,7 +252,7 @@ TEST_P(SnapCoordinatorTest,
   EXPECT_EQ(0U, SizeOfSnapAreas(*(GetDocument().documentElement())));
 }
 
-TEST_P(SnapCoordinatorTest,
+TEST_F(SnapCoordinatorTest,
        BodyCapturesWhenBodyOverflowAndDocumentElementViewportDefining) {
   SetHTML(R"HTML(
     <style>
@@ -322,7 +314,7 @@ TEST_P(SnapCoordinatorTest,
   }
 
 // The following tests check the snap data are correctly calculated.
-TEST_P(SnapCoordinatorTest, StartAlignmentCalculation) {
+TEST_F(SnapCoordinatorTest, StartAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr, "scroll-snap-align: start;");
@@ -362,7 +354,7 @@ TEST_P(SnapCoordinatorTest, StartAlignmentCalculation) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculation) {
+TEST_F(SnapCoordinatorTest, ScrolledStartAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* scroller_element = GetDocument().getElementById("scroller");
   ScrollableArea* scrollable_area =
@@ -404,7 +396,7 @@ TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculation) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculationOnViewport) {
+TEST_F(SnapCoordinatorTest, ScrolledStartAlignmentCalculationOnViewport) {
   SetHTML(R"HTML(
     <style>
     body {
@@ -464,7 +456,7 @@ TEST_P(SnapCoordinatorTest, ScrolledStartAlignmentCalculationOnViewport) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, StartAlignmentCalculationWithBoxModel) {
+TEST_F(SnapCoordinatorTest, StartAlignmentCalculationWithBoxModel) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr,
@@ -511,7 +503,7 @@ TEST_P(SnapCoordinatorTest, StartAlignmentCalculationWithBoxModel) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, NegativeMarginStartAlignmentCalculation) {
+TEST_F(SnapCoordinatorTest, NegativeMarginStartAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr,
@@ -552,7 +544,7 @@ TEST_P(SnapCoordinatorTest, NegativeMarginStartAlignmentCalculation) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, CenterAlignmentCalculation) {
+TEST_F(SnapCoordinatorTest, CenterAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr, "scroll-snap-align: center;");
@@ -592,7 +584,7 @@ TEST_P(SnapCoordinatorTest, CenterAlignmentCalculation) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, AsymmetricalCenterAlignmentCalculation) {
+TEST_F(SnapCoordinatorTest, AsymmetricalCenterAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr,
@@ -655,7 +647,7 @@ TEST_P(SnapCoordinatorTest, AsymmetricalCenterAlignmentCalculation) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, EndAlignmentCalculation) {
+TEST_F(SnapCoordinatorTest, EndAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr, "scroll-snap-align: end;");
@@ -698,7 +690,7 @@ TEST_P(SnapCoordinatorTest, EndAlignmentCalculation) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, EndAlignmentCalculationWithBoxModel) {
+TEST_F(SnapCoordinatorTest, EndAlignmentCalculationWithBoxModel) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(
@@ -748,7 +740,7 @@ TEST_P(SnapCoordinatorTest, EndAlignmentCalculationWithBoxModel) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, ScaledEndAlignmentCalculation) {
+TEST_F(SnapCoordinatorTest, ScaledEndAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr,
@@ -794,7 +786,7 @@ TEST_P(SnapCoordinatorTest, ScaledEndAlignmentCalculation) {
   EXPECT_EQ_AREA(expected_area, actual_container.at(0));
 }
 
-TEST_P(SnapCoordinatorTest, VerticalRlStartAlignmentCalculation) {
+TEST_F(SnapCoordinatorTest, VerticalRlStartAlignmentCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr,
@@ -841,7 +833,7 @@ TEST_P(SnapCoordinatorTest, VerticalRlStartAlignmentCalculation) {
 
 // TODO(sunyunjia): Also add a test for vertical and rtl page.
 
-TEST_P(SnapCoordinatorTest, OverflowedSnapPositionCalculation) {
+TEST_F(SnapCoordinatorTest, OverflowedSnapPositionCalculation) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   area_element->setAttribute(styleAttr,
@@ -890,7 +882,7 @@ TEST_P(SnapCoordinatorTest, OverflowedSnapPositionCalculation) {
 }
 
 // The following tests check GetSnapPositionForPoint().
-TEST_P(SnapCoordinatorTest, SnapsIfScrolledAndSnappingAxesMatch) {
+TEST_F(SnapCoordinatorTest, SnapsIfScrolledAndSnappingAxesMatch) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   Element* scroller_element = GetDocument().getElementById("scroller");
@@ -906,7 +898,7 @@ TEST_P(SnapCoordinatorTest, SnapsIfScrolledAndSnappingAxesMatch) {
   EXPECT_EQ(150, snap_position.Y());
 }
 
-TEST_P(SnapCoordinatorTest, DoesNotSnapOnNonSnappingAxis) {
+TEST_F(SnapCoordinatorTest, DoesNotSnapOnNonSnappingAxis) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   Element* scroller_element = GetDocument().getElementById("scroller");
@@ -922,7 +914,7 @@ TEST_P(SnapCoordinatorTest, DoesNotSnapOnNonSnappingAxis) {
   EXPECT_EQ(150, snap_position.Y());
 }
 
-TEST_P(SnapCoordinatorTest, DoesNotSnapOnEmptyContainer) {
+TEST_F(SnapCoordinatorTest, DoesNotSnapOnEmptyContainer) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   Element* scroller_element = GetDocument().getElementById("scroller");
@@ -938,7 +930,7 @@ TEST_P(SnapCoordinatorTest, DoesNotSnapOnEmptyContainer) {
   EXPECT_EQ(150, snap_position.Y());
 }
 
-TEST_P(SnapCoordinatorTest, DoesNotSnapOnNonSnapContainer) {
+TEST_F(SnapCoordinatorTest, DoesNotSnapOnNonSnapContainer) {
   SetUpSingleSnapArea();
   Element* area_element = GetDocument().getElementById("area");
   Element* scroller_element = GetDocument().getElementById("scroller");

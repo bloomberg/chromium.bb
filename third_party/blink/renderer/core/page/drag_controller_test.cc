@@ -19,7 +19,6 @@
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
 #include "third_party/blink/renderer/platform/drag_image.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -40,15 +39,10 @@ class DragMockChromeClient : public EmptyChromeClient {
   WebPoint last_drag_image_offset;
 };
 
-typedef bool TestParamRootLayerScrolling;
-class DragControllerTest
-    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
-      private ScopedRootLayerScrollingForTest,
-      public RenderingTest {
+class DragControllerTest : public RenderingTest {
  protected:
   DragControllerTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::Create()),
+      : RenderingTest(SingleChildLocalFrameClient::Create()),
 
         chrome_client_(new DragMockChromeClient) {}
   LocalFrame& GetFrame() const { return *GetDocument().GetFrame(); }
@@ -64,9 +58,7 @@ class DragControllerTest
   Persistent<DragMockChromeClient> chrome_client_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, DragControllerTest, testing::Bool());
-
-TEST_P(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
+TEST_F(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
   SetBodyInnerHTML(
       "<div>Hello world! This tests that the bitmap for drag image is scaled "
       "by page scale factor</div>");
@@ -87,19 +79,12 @@ TEST_P(DragControllerTest, DragImageForSelectionUsesPageScaleFactor) {
   EXPECT_EQ(image1->Size().Height() * 2, image2->Size().Height());
 }
 
-class DragControllerSimTest : public testing::WithParamInterface<bool>,
-                              private ScopedRootLayerScrollingForTest,
-                              public SimTest {
- public:
-  DragControllerSimTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
-};
-
-INSTANTIATE_TEST_CASE_P(All, DragControllerSimTest, testing::Bool());
+class DragControllerSimTest : public SimTest {};
 
 // Tests that dragging a URL onto a WebWidget that doesn't navigate on Drag and
 // Drop clears out the Autoscroll state. Regression test for
 // https://crbug.com/733996.
-TEST_P(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
+TEST_F(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
   WebView().GetPage()->GetSettings().SetNavigateOnDragDrop(false);
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/test.html", "text/html");
@@ -136,8 +121,7 @@ TEST_P(DragControllerSimTest, DropURLOnNonNavigatingClearsState) {
       WebView().GetPage()->GetAutoscrollController().AutoscrollInProgress());
 }
 
-TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
-  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
+TEST_F(DragControllerTest, DragImageForSelectionClipsToViewport) {
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
@@ -184,8 +168,7 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
   LocalFrameView* frame_view = GetDocument().View();
   frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, scroll_offset), kProgrammaticScroll);
-  expected_selection =
-      FloatRect(0, rls ? 0 : scroll_offset, node_width, viewport_height_css);
+  expected_selection = FloatRect(0, 0, node_width, viewport_height_css);
   EXPECT_EQ(expected_selection, DragController::ClippedSelection(GetFrame()));
   selection_image = DragController::DragImageForSelection(GetFrame(), 1);
   expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
@@ -197,7 +180,7 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
   scroll_offset = 800;
   frame_view->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, scroll_offset), kProgrammaticScroll);
-  expected_selection = FloatRect(0, rls ? 0 : scroll_offset, node_width,
+  expected_selection = FloatRect(0, 0, node_width,
                                  node_height + node_margin_top - scroll_offset);
   EXPECT_EQ(expected_selection, DragController::ClippedSelection(GetFrame()));
   selection_image = DragController::DragImageForSelection(GetFrame(), 1);
@@ -206,8 +189,7 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsToViewport) {
   EXPECT_EQ(expected_image_size, selection_image->Size());
 }
 
-TEST_P(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
-  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
+TEST_F(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
@@ -277,16 +259,15 @@ TEST_P(DragControllerTest, DragImageForSelectionClipsChildFrameToViewport) {
   int iframe_scroll_offset = 7;
   child_frame.View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, iframe_scroll_offset), kProgrammaticScroll);
-  expected_selection = FloatRect(0, rls ? 10 : 17, 30, 8);
+  expected_selection = FloatRect(0, 10, 30, 8);
   EXPECT_EQ(expected_selection, DragController::ClippedSelection(child_frame));
   selection_image = DragController::DragImageForSelection(child_frame, 1);
   expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
   EXPECT_EQ(expected_image_size, selection_image->Size());
 }
 
-TEST_P(DragControllerTest,
+TEST_F(DragControllerTest,
        DragImageForSelectionClipsChildFrameToViewportWithPageScaleFactor) {
-  bool rls = RuntimeEnabledFeatures::RootLayerScrollingEnabled();
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
@@ -361,7 +342,7 @@ TEST_P(DragControllerTest,
   int iframe_scroll_offset = 7;
   child_frame.View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, iframe_scroll_offset), kProgrammaticScroll);
-  expected_selection = FloatRect(0, rls ? 10 : 17, 30, 8);
+  expected_selection = FloatRect(0, 10, 30, 8);
   EXPECT_EQ(expected_selection, DragController::ClippedSelection(child_frame));
   selection_image = DragController::DragImageForSelection(child_frame, 1);
   expected_image_size = IntSize(RoundedIntSize(expected_selection.Size()));
@@ -369,7 +350,7 @@ TEST_P(DragControllerTest,
   EXPECT_EQ(expected_image_size, selection_image->Size());
 }
 
-TEST_P(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
+TEST_F(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
@@ -414,7 +395,7 @@ TEST_P(DragControllerTest, DragImageOffsetWithPageScaleFactor) {
             IntPoint(GetChromeClient().last_drag_image_offset));
 }
 
-TEST_P(DragControllerTest, DragLinkWithPageScaleFactor) {
+TEST_F(DragControllerTest, DragLinkWithPageScaleFactor) {
   SetBodyInnerHTML(R"HTML(
     <style>
       * { margin: 0; }
