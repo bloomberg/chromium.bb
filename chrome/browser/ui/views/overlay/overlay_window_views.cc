@@ -28,6 +28,8 @@ std::unique_ptr<content::OverlayWindow> content::OverlayWindow::Create(
 }
 
 namespace {
+const gfx::Size kMinWindowSize = gfx::Size(144, 100);
+
 const int kBorderThickness = 5;
 const int kResizeAreaCornerSize = 16;
 
@@ -137,8 +139,8 @@ gfx::Rect OverlayWindowViews::CalculateAndUpdateBounds() {
   max_size_ = gfx::Size(work_area.width() / 2, work_area.height() / 2);
 
   // Lower bound size of the window is a fixed value to allow for minimal sizes
-  // on UI affordances, such as buttons. This is currently a placeholder value.
-  min_size_ = gfx::Size(144, 100);
+  // on UI affordances, such as buttons.
+  min_size_ = kMinWindowSize;
 
   // Initial size of the window is always 20% of the display width and height,
   // constrained by the min and max sizes. Only explicitly update this the first
