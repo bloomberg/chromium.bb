@@ -89,17 +89,11 @@ const base::Feature kUmaShortHWClass{"UmaShortHWClass",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Called on a background thread to load hardware class information.
-std::string GetHardwareClassOnBackgroundThread() {
-  // If short hardware class feature is enabled, the hardware class should be
-  // getting set synchronously, so this shouldn't be getting called.
-  // TODO(asvitkine): Get rid of the background thread logic after M67 goes to
-  // stable when the new logic has fully rolled out.
-  DCHECK(!base::FeatureList::IsEnabled(kUmaShortHWClass));
-
-  std::string hardware_class;
+std::string GetFullHardwareClassOnBackgroundThread() {
+  std::string full_hardware_class;
   chromeos::system::StatisticsProvider::GetInstance()->GetMachineStatistic(
-      "hardware_class", &hardware_class);
-  return hardware_class;
+      "hardware_class", &full_hardware_class);
+  return full_hardware_class;
 }
 
 }  // namespace
@@ -107,8 +101,7 @@ std::string GetHardwareClassOnBackgroundThread() {
 ChromeOSMetricsProvider::ChromeOSMetricsProvider()
     : registered_user_count_at_log_initialization_(false),
       user_count_at_log_initialization_(0),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 ChromeOSMetricsProvider::~ChromeOSMetricsProvider() {
 }
@@ -182,8 +175,8 @@ void ChromeOSMetricsProvider::InitTaskGetHardwareClass(
       {base::MayBlock(), base::WithBaseSyncPrimitives(),
        base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::BindOnce(&GetHardwareClassOnBackgroundThread),
-      base::BindOnce(&ChromeOSMetricsProvider::SetHardwareClass,
+      base::BindOnce(&GetFullHardwareClassOnBackgroundThread),
+      base::BindOnce(&ChromeOSMetricsProvider::SetFullHardwareClass,
                      weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
@@ -202,6 +195,7 @@ void ChromeOSMetricsProvider::ProvideSystemProfileMetrics(
   metrics::SystemProfileProto::Hardware* hardware =
       system_profile_proto->mutable_hardware();
   hardware->set_hardware_class(hardware_class_);
+  hardware->set_full_hardware_class(full_hardware_class_);
   display::Display::TouchSupport has_touch =
       ui::GetInternalDisplayTouchSupport();
   if (has_touch == display::Display::TouchSupport::AVAILABLE)
@@ -337,9 +331,14 @@ void ChromeOSMetricsProvider::SetBluetoothAdapter(
   callback.Run();
 }
 
-void ChromeOSMetricsProvider::SetHardwareClass(base::Closure callback,
-                                               std::string hardware_class) {
-  hardware_class_ = hardware_class;
+void ChromeOSMetricsProvider::SetFullHardwareClass(
+    base::Closure callback,
+    std::string full_hardware_class) {
+  if (!base::FeatureList::IsEnabled(kUmaShortHWClass)) {
+    DCHECK(hardware_class_.empty());
+    hardware_class_ = full_hardware_class;
+  }
+  full_hardware_class_ = full_hardware_class;
   callback.Run();
 }
 
