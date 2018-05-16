@@ -38,6 +38,7 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
 
   // AnimationTimeline implementation.
   double currentTime(bool& is_null) final;
+  bool IsScrollTimeline() const override { return true; }
 
   // IDL API implementation.
   Element* scrollSource();
@@ -67,6 +68,12 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   ScrollDirection orientation_;
   double time_range_;
 };
+
+DEFINE_TYPE_CASTS(ScrollTimeline,
+                  AnimationTimeline,
+                  value,
+                  value->IsScrollTimeline(),
+                  value.IsScrollTimeline());
 
 }  // namespace blink
 

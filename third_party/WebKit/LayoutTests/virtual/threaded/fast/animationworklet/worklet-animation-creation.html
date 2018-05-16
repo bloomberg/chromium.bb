@@ -33,18 +33,32 @@ function CreateKeyframeEffect(element) {
 
 test(function() {
   let effect = CreateKeyframeEffect(document.querySelector('#element'));
+  let workletAnimation = new WorkletAnimation(
+      'my-animation', effect);
+  assert_equals(workletAnimation.playState, 'idle');
+  assert_equals(workletAnimation.timeline, document.timeline);
+}, 'WorkletAnimation creation without timeline should use default documentation timeline');
+
+test(function() {
+  let effect = CreateKeyframeEffect(document.querySelector('#element'));
+  let workletAnimation = new WorkletAnimation(
+      'my-animation', effect, document.timeline);
+  assert_equals(workletAnimation.playState, 'idle');
+}, 'WorkletAnimation creation with timeline should work');
+
+test(function() {
+  let effect = CreateKeyframeEffect(document.querySelector('#element'));
   let options = { my_param: 'foo', my_other_param: true };
   let workletAnimation = new WorkletAnimation(
       'my-animation', effect, document.timeline, options);
   assert_equals(workletAnimation.playState, 'idle');
-}, 'Basic WorkletAnimation creation should work');
+}, 'WorkletAnimation creation with timeline and options should work');
 
 test(function() {
   let effect = CreateKeyframeEffect(document.querySelector('#element'));
   let effect2 = CreateKeyframeEffect(document.querySelector('#element2'));
-  let options = { my_param: 'foo', my_other_param: true };
   let constructorFunc = function() { new WorkletAnimation(
-      'my-animation', [ effect, effect2 ], document.timeline, options); };
+      'my-animation', [ effect, effect2 ]); };
   assert_throws('NotSupportedError', constructorFunc);
 }, 'Multiple effects are not currently supported');
 
@@ -53,16 +67,14 @@ test(function() {
   let scroller = document.querySelector('.scroller');
   let scrollTimeline = new ScrollTimeline(
       { scrollSource: scroller, timeRange: 100, orientation: 'inline' });
-  let options = { my_param: 'foo', my_other_param: true };
   let workletAnimation = new WorkletAnimation(
-      'my-animation', effect, scrollTimeline, options);
+      'my-animation', effect, scrollTimeline);
   assert_equals(workletAnimation.playState, 'idle');
 }, 'ScrollTimeline is a valid timeline for a WorkletAnimation');
 
 test(function() {
-  let options = { my_param: 'foo', my_other_param: true };
   let constructorFunc = function() { new WorkletAnimation(
-      'my-animation', [], document.timeline, options); };
+      'my-animation', []); };
   assert_throws('NotSupportedError', constructorFunc);
 }, 'If there are no effects specified, object construction should fail');
 
@@ -74,9 +86,8 @@ test(function() {
   otherDoc.body.appendChild(otherElement);
   let otherEffect = CreateKeyframeEffect(otherElement);
 
-  let options = { my_param: 'foo', my_other_param: true };
   let constructorFunc = function() { new WorkletAnimation(
-      'my-animation', [ effect, otherEffect ], document.timeline, options); };
+      'my-animation', [ effect, otherEffect ]); };
   assert_throws('NotSupportedError', constructorFunc);
 }, 'If the effects are from different documents, object construction should fail');
 
@@ -86,11 +97,11 @@ test(function() {
   let effect2 = CreateKeyframeEffect(document.querySelector('#element'));
 
   let constructorFunc = function() { new WorkletAnimation(
-      'my-animation', [ effect, effect2 ], document.timeline, {}); };
+      'my-animation', [ effect, effect2 ]); };
   assert_throws('NotSupportedError', constructorFunc);
 
   let constructorFunc2 = function() { new WorkletAnimation(
-      'my-animation', [ effect2, effect ], document.timeline, {}); };
+      'my-animation', [ effect2, effect ]); };
   assert_throws('NotSupportedError', constructorFunc2);
 }, 'If an effect has no target, object construction should fail');
 </script>
