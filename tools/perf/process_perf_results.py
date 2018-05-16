@@ -283,7 +283,7 @@ def main():
   parser.add_argument('-o', '--output-json', required=True,
                       help=argparse.SUPPRESS)
   parser.add_argument('json_files', nargs='*', help=argparse.SUPPRESS)
-  parser.add_argument('--smoke-test-mode', required=False, default=False,
+  parser.add_argument('--smoke-test-mode', action='store_true',
                       help='This test should be run in smoke test mode'
                       ' meaning it does not upload to the perf dashboard')
 
