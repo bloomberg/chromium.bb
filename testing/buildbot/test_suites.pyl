@@ -1606,25 +1606,6 @@
     'system_webview_shell_layout_test_apk': {},
   },
 
-  'performance_smoke_test_isolated_scripts': {
-    'performance_test_suite': {
-      'args': [
-        '--smoke-test-mode',
-	'--test-shard-map-filename=smoke_test_benchmark_shard_map.json'
-      ],
-      'swarming': {
-        'hard_timeout': 960,
-        'shards': 2,
-      },
-      'merge': {
-        'args': [
-          '--smoke-test-mode',
-        ],
-        'script': '//tools/perf/process_perf_results.py',
-      },
-    },
-  },
-
   'telemetry_perf_unittests_isolated_scripts': {
     'telemetry_perf_unittests': {
       'swarming': {
@@ -1873,7 +1854,6 @@
   'chromium_dbg_isolated_scripts': [
     'desktop_chromium_isolated_scripts',
     'telemetry_perf_unittests_isolated_scripts',
-    'performance_smoke_test_isolated_scripts',
   ],
 
   'chromium_rel_isolated_scripts': [
