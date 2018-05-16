@@ -56,6 +56,7 @@ config("skia_config") {
   defines += [
     "SK_HAS_PNG_LIBRARY",
     "SK_HAS_WEBP_LIBRARY",
+    "SK_IGNORE_SKIMAGE_ONREFENCODED_CHANGE",
   ]
 
   if (!is_ios) {
