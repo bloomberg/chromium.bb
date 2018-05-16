@@ -13,13 +13,13 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/containers/flat_set.h"
-#include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_database.h"
@@ -139,8 +139,12 @@ bool IsAnyURLBookmarked(HistoryBackendClient* backend_client,
 
 namespace internal {
 
-const base::Feature kClearOldOnDemandFavicons{
-    "ClearOldOnDemandFavicons", base::FEATURE_DISABLED_BY_DEFAULT};
+// Clearing old on-demand favicons is only enabled on mobile.
+#if defined(OS_ANDROID) || defined(OS_IOS)
+constexpr bool kClearOldOnDemandFaviconsEnabled = true;
+#else
+constexpr bool kClearOldOnDemandFaviconsEnabled = false;
+#endif
 
 const int kOnDemandFaviconIsOldAfterDays = 30;
 
@@ -566,7 +570,7 @@ void ExpireHistoryBackend::DoExpireIteration() {
     // If there are more items to expire, add the reader back to the queue, thus
     // creating a new task for future iterations.
     work_queue_.push(reader);
-  } else {
+  } else if (internal::kClearOldOnDemandFaviconsEnabled) {
     // Otherwise do a final clean-up - remove old favicons not bound to visits.
     ClearOldOnDemandFaviconsIfPossible(
         base::Time::Now() -
@@ -579,9 +583,6 @@ void ExpireHistoryBackend::DoExpireIteration() {
 void ExpireHistoryBackend::ClearOldOnDemandFaviconsIfPossible(
     base::Time expiration_threshold) {
   if (!thumb_db_)
-    return;
-
-  if (!base::FeatureList::IsEnabled(internal::kClearOldOnDemandFavicons))
     return;
 
   // Extra precaution to avoid repeated calls to GetOldOnDemandFavicons() close
