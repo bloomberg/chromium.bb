@@ -2371,6 +2371,8 @@ TEST(HeapTest, LargeHeapObjects) {
 }
 
 // This test often fails on Android (https://crbug.com/843032).
+// We run out of memory on Android devices because ReserveCapacityForSize
+// actually allocates a much larger backing than specified (in this case 400MB).
 #if defined(OS_ANDROID)
 #define MAYBE_LargeHashMap DISABLED_LargeHashMap
 #else
@@ -2378,7 +2380,11 @@ TEST(HeapTest, LargeHeapObjects) {
 #endif
 TEST(HeapTest, MAYBE_LargeHashMap) {
   ClearOutOldGarbage();
-  size_t size = (1 << 27) / sizeof(Member<IntWrapper>);
+
+  // Try to allocate a HashTable larger than kMaxHeapObjectSize
+  // (crbug.com/597953).
+  size_t size = kMaxHeapObjectSize /
+                sizeof(HeapHashMap<int, Member<IntWrapper>>::ValueType);
   Persistent<HeapHashMap<int, Member<IntWrapper>>> map =
       new HeapHashMap<int, Member<IntWrapper>>();
   map->ReserveCapacityForSize(size);
@@ -2388,7 +2394,9 @@ TEST(HeapTest, MAYBE_LargeHashMap) {
 TEST(HeapTest, LargeVector) {
   ClearOutOldGarbage();
 
-  size_t size = (1 << 27) / sizeof(int);
+  // Try to allocate a HeapVectors larger than kMaxHeapObjectSize
+  // (crbug.com/597953).
+  size_t size = kMaxHeapObjectSize / sizeof(int);
   Persistent<HeapVector<int>> vector = new HeapVector<int>(size);
   EXPECT_LE(size, vector->capacity());
 }
