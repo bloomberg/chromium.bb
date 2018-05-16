@@ -100,8 +100,6 @@ enum RequiredAccess { READ, WRITE };
 // Performs basic user mode buffer validation. In any case, buffers access must
 // be protected by SEH. intent specifies if the buffer should be tested for read
 // or write.
-// Note that write intent implies destruction of the buffer content (we actually
-// write)
 bool ValidParameter(void* buffer, size_t size, RequiredAccess intent);
 
 // Copies data from a user buffer to our buffer. Returns the operation status.

@@ -259,6 +259,21 @@ SBOX_TESTS_COMMAND int File_QueryAttributes(int argc, wchar_t** argv) {
   return SBOX_TEST_FAILED;
 }
 
+// Tries to create a backup of calc.exe in system32 folder. This should fail
+// with ERROR_ACCESS_DENIED if everything is working as expected.
+SBOX_TESTS_COMMAND int File_CopyFile(int argc, wchar_t** argv) {
+  base::string16 calc_path = MakePathToSys(L"calc.exe", false);
+  base::string16 calc_backup_path = MakePathToSys(L"calc.exe.bak", false);
+
+  if (::CopyFile(calc_path.c_str(), calc_backup_path.c_str(), FALSE))
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+
+  if (::GetLastError() != ERROR_ACCESS_DENIED)
+    return SBOX_TEST_FAILED;
+
+  return SBOX_TEST_SUCCEEDED;
+}
+
 TEST(FilePolicyTest, DenyNtCreateCalc) {
   TestRunner runner;
   EXPECT_TRUE(
@@ -662,6 +677,29 @@ TEST(FilePolicyTest, CheckMissingNTPrefixEscape) {
   base::string16 result = FixNTPrefixForMatch(name);
 
   EXPECT_STREQ(result.c_str(), L"\\/?/?\\C:\\NAME");
+}
+
+TEST(FilePolicyTest, TestCopyFile) {
+  // Check if the test is running Win8 or newer since
+  // MITIGATION_STRICT_HANDLE_CHECKS is not supported on older systems.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  TestRunner runner;
+  runner.SetTimeout(2000);
+
+  // Allow read access to calc.exe, this should be on all Windows versions.
+  ASSERT_TRUE(
+      runner.AddRuleSys32(TargetPolicy::FILES_ALLOW_READONLY, L"calc.exe"));
+
+  sandbox::TargetPolicy* policy = runner.GetPolicy();
+
+  // Set proper mitigation.
+  EXPECT_EQ(
+      policy->SetDelayedProcessMitigations(MITIGATION_STRICT_HANDLE_CHECKS),
+      SBOX_ALL_OK);
+
+  ASSERT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"File_CopyFile"));
 }
 
 }  // namespace sandbox
