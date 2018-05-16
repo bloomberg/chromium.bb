@@ -464,13 +464,15 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, AutoDiscardable) {
   ASSERT_EQ(2, tsm->count());
 
   // Set the auto-discardable state of the first tab to false.
-  tab_manager->SetTabAutoDiscardableState(tsm->GetWebContentsAt(0), false);
+  TabLifecycleUnitExternal::FromWebContents(tsm->GetWebContentsAt(0))
+      ->SetAutoDiscardable(false);
 
   // Shouldn't discard the tab, since auto-discardable is deactivated.
   EXPECT_FALSE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
 
   // Reset auto-discardable state to true.
-  tab_manager->SetTabAutoDiscardableState(tsm->GetWebContentsAt(0), true);
+  TabLifecycleUnitExternal::FromWebContents(tsm->GetWebContentsAt(0))
+      ->SetAutoDiscardable(true);
 
   // Now it should be able to discard the tab.
   EXPECT_TRUE(tab_manager->DiscardTabImpl(DiscardReason::kProactive));
