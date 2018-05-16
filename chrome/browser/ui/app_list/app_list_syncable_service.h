@@ -256,15 +256,6 @@ class AppListSyncableService : public syncer::SyncableService,
   // Returns true if extension service is ready.
   bool IsExtensionServiceReady() const;
 
-  // Play Store app id is changed in the app launcher and now unified with shelf
-  // id. This copies position from the legacy Play Store item in case the legacy
-  // position was modified and differs from the default position and the new
-  // position is still default. Don't remove the legacy sync item once user may
-  // use old and new versions at the same time.
-  // TODO(khmel): Remove import of legacy Play Store sync item after few
-  // releases http://crbug.com/722675.
-  void MaybeImportLegacyPlayStorePosition(syncer::SyncChangeList* change_list);
-
   // Remove sync data of Drive apps.
   // TODO(http://crbug.com/794724): Remove after M65 goes stable.
   void RemoveDriveAppItems();
