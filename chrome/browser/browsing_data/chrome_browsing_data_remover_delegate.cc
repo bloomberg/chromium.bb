@@ -90,10 +90,6 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/net_buildflags.h"
-#include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "url/url_util.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/oom_intervention/oom_intervention_decider.h"
@@ -135,12 +131,6 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
-
-#if BUILDFLAG(ENABLE_REPORTING)
-#include "net/network_error_logging/network_error_logging_service.h"
-#include "net/reporting/reporting_browsing_data_remover.h"
-#include "net/reporting/reporting_service.h"
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 using base::UserMetricsAction;
 using content::BrowserContext;
