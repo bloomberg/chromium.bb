@@ -468,6 +468,15 @@ BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
     'smoothness.tough_texture_upload_cases',
     'smoothness.tough_webgl_ad_cases',
     'smoothness.tough_webgl_cases',
+    'dromaeo',
+    'jetstream',
+    'kraken',
+    'octane',
+    'speedometer',
+    'speedometer-future',
+    'speedometer2',
+    'speedometer2-future',
+    'wasm',
 ]
 
 
