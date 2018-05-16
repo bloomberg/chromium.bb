@@ -520,7 +520,8 @@ int PDFiumFormFiller::Form_Alert(IPDF_JSPLATFORM* param,
 
 // static
 void PDFiumFormFiller::Form_Beep(IPDF_JSPLATFORM* param, int type) {
-  // Beeps are annoying, and not possible using javascript, so ignore for now.
+  PDFiumEngine* engine = GetEngine(param);
+  engine->client_->Beep();
 }
 
 // static

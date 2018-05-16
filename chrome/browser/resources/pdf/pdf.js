@@ -101,7 +101,7 @@ function PDFViewer(browserApi) {
   this.parentWindow_ = null;
   this.parentOrigin_ = null;
   this.isFormFieldFocused_ = false;
-
+  this.beepCount_ = 0;
   this.delayedScriptingMessages_ = [];
 
   this.isPrintPreview_ = location.origin === 'chrome://print';
@@ -660,6 +660,10 @@ PDFViewer.prototype = {
    */
   handlePluginMessage_: function(message) {
     switch (message.data.type.toString()) {
+      case 'beep':
+        // Beeps are annoying, so just track count for now.
+        this.beepCount_ += 1;
+        break;
       case 'documentDimensions':
         this.documentDimensions_ = message.data;
         this.isUserInitiatedEvent_ = false;
