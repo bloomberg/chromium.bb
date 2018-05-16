@@ -55,7 +55,10 @@ public class LocationBarLayoutTest {
     private static final int SEARCH_ICON_RESOURCE = R.drawable.omnibox_search;
 
     private static final String SEARCH_TERMS = "machine learning";
+    private static final String SEARCH_TERMS_URL = "testing.com";
     private static final String GOOGLE_SRP_URL = "https://www.google.com/search?q=machine+learning";
+    private static final String GOOGLE_SRP_URL_LIKE_URL =
+            "https://www.google.com/search?q=" + SEARCH_TERMS_URL;
     private static final String BING_SRP_URL = "https://www.bing.com/search?q=machine+learning";
 
     private static final String VERBOSE_URL = "https://www.suchwowveryyes.edu";
@@ -249,7 +252,7 @@ public class LocationBarLayoutTest {
         mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
-        Assert.assertEquals(SEARCH_TERMS, urlBar.getText().toString());
+        Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
     }
 
     @Test
@@ -266,7 +269,7 @@ public class LocationBarLayoutTest {
         mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
-        Assert.assertEquals(SEARCH_TERMS, urlBar.getText().toString());
+        Assert.assertEquals(SEARCH_TERMS, getUrlText(urlBar));
     }
 
     @Test
@@ -283,7 +286,7 @@ public class LocationBarLayoutTest {
         mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
-        Assert.assertNotEquals(SEARCH_TERMS, urlBar.getText().toString());
+        Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
     }
 
     @Test
@@ -329,9 +332,25 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
+    @EnableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
+    @Feature({"QueryInOmnibox"})
+    public void testNotShowingSearchTermsIfLooksLikeUrl() throws ExecutionException {
+        final UrlBar urlBar = getUrlBar();
+        final LocationBarLayout locationBar = getLocationBar();
+
+        mTestToolbarModel.setCurrentUrl(GOOGLE_SRP_URL_LIKE_URL);
+        mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
+        setUrlToPageUrl(locationBar);
+
+        Assert.assertNotEquals(SEARCH_TERMS_URL, getUrlText(urlBar));
+    }
+
+    @Test
+    @SmallTest
     @DisableFeatures(ChromeFeatureList.QUERY_IN_OMNIBOX)
     @Feature({"QueryInOmnibox"})
-    public void testNotShowingSearchTermsIfSrpIsGoogleAndFlagIsDisabled() {
+    public void testNotShowingSearchTermsIfSrpIsGoogleAndFlagIsDisabled()
+            throws ExecutionException {
         final UrlBar urlBar = getUrlBar();
         final LocationBarLayout locationBar = getLocationBar();
 
