@@ -43,13 +43,13 @@ class ChromePermissionMessageProviderUnittest : public testing::Test {
             type));
   }
 
-  bool IsPrivilegeIncrease(const APIPermissionSet& old_permissions,
-                           const APIPermissionSet& new_permissions) {
+  bool IsPrivilegeIncrease(const APIPermissionSet& granted_permissions,
+                           const APIPermissionSet& requested_permissions) {
     return message_provider_->IsPrivilegeIncrease(
-        PermissionSet(old_permissions, ManifestPermissionSet(), URLPatternSet(),
-                      URLPatternSet()),
-        PermissionSet(new_permissions, ManifestPermissionSet(), URLPatternSet(),
-                      URLPatternSet()),
+        PermissionSet(granted_permissions, ManifestPermissionSet(),
+                      URLPatternSet(), URLPatternSet()),
+        PermissionSet(requested_permissions, ManifestPermissionSet(),
+                      URLPatternSet(), URLPatternSet()),
         Manifest::TYPE_EXTENSION);
   }
 

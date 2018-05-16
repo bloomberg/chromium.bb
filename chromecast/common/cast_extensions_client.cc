@@ -61,8 +61,8 @@ class ShellPermissionMessageProvider : public PermissionMessageProvider {
     return PermissionMessages();
   }
 
-  bool IsPrivilegeIncrease(const PermissionSet& old_permissions,
-                           const PermissionSet& new_permissions,
+  bool IsPrivilegeIncrease(const PermissionSet& granted_permissions,
+                           const PermissionSet& requested_permissions,
                            Manifest::Type extension_type) const override {
     // Ensure we implement this before shipping.
     CHECK(false);

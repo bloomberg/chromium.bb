@@ -33,13 +33,13 @@ class PermissionMessageProvider {
   virtual PermissionMessages GetPermissionMessages(
       const PermissionIDSet& permissions) const = 0;
 
-  // Returns true if |new_permissions| has a greater privilege level than
-  // |old_permissions|.
+  // Returns true if |requested_permissions| has a greater privilege level than
+  // |granted_permissions|.
   // Whether certain permissions are considered varies by extension type.
   // TODO(sashab): Add an implementation of this method that uses
   // PermissionIDSet instead, then deprecate this one.
-  virtual bool IsPrivilegeIncrease(const PermissionSet& old_permissions,
-                                   const PermissionSet& new_permissions,
+  virtual bool IsPrivilegeIncrease(const PermissionSet& granted_permissions,
+                                   const PermissionSet& requested_permissions,
                                    Manifest::Type extension_type) const = 0;
 
   // Given the permissions for an extension, finds the IDs of all the

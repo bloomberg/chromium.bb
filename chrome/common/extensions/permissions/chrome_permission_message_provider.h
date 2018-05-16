@@ -27,8 +27,8 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
   // PermissionMessageProvider implementation.
   PermissionMessages GetPermissionMessages(
       const PermissionIDSet& permissions) const override;
-  bool IsPrivilegeIncrease(const PermissionSet& old_permissions,
-                           const PermissionSet& new_permissions,
+  bool IsPrivilegeIncrease(const PermissionSet& granted_permissions,
+                           const PermissionSet& requested_permissions,
                            Manifest::Type extension_type) const override;
   PermissionIDSet GetAllPermissionIDs(
       const PermissionSet& permissions,
@@ -48,16 +48,16 @@ class ChromePermissionMessageProvider : public PermissionMessageProvider {
                           PermissionIDSet* permission_ids,
                           Manifest::Type extension_type) const;
 
-  // Returns true if |new_permissions| has an elevated API or manifest privilege
-  // level compared to |old_permissions|.
+  // Returns true if |requested_permissions| has an elevated API or manifest
+  // privilege level compared to |granted_permissions|.
   bool IsAPIOrManifestPrivilegeIncrease(
-      const PermissionSet& old_permissions,
-      const PermissionSet& new_permissions) const;
+      const PermissionSet& granted_permissions,
+      const PermissionSet& requested_permissions) const;
 
-  // Returns true if |new_permissions| has more host permissions compared to
-  // |old_permissions|.
-  bool IsHostPrivilegeIncrease(const PermissionSet& old_permissions,
-                               const PermissionSet& new_permissions,
+  // Returns true if |requested_permissions| has more host permissions compared
+  // to |granted_permissions|.
+  bool IsHostPrivilegeIncrease(const PermissionSet& granted_permissions,
+                               const PermissionSet& requested_permissions,
                                Manifest::Type extension_type) const;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePermissionMessageProvider);
