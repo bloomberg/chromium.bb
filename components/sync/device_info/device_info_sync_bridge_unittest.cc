@@ -42,7 +42,7 @@ using testing::_;
 using DeviceInfoList = std::vector<std::unique_ptr<DeviceInfo>>;
 using StorageKeyList = ModelTypeSyncBridge::StorageKeyList;
 using RecordList = ModelTypeStore::RecordList;
-using StartCallback = ModelTypeChangeProcessor::StartCallback;
+using StartCallback = ModelTypeControllerDelegate::StartCallback;
 using WriteBatch = ModelTypeStore::WriteBatch;
 
 const char kGuidFormat[] = "cache guid %d";
@@ -179,9 +179,6 @@ class DeviceInfoSyncBridgeTest : public testing::Test,
 
     ON_CALL(*processor(), IsTrackingMetadata())
         .WillByDefault(testing::Return(true));
-    ON_CALL(*processor(), DisableSync())
-        .WillByDefault(testing::Invoke(
-            [this]() { bridge_->ApplyDisableSyncChanges({}); }));
   }
 
   ~DeviceInfoSyncBridgeTest() override {
@@ -795,7 +792,7 @@ TEST_F(DeviceInfoSyncBridgeTest, SendLocalData) {
   EXPECT_EQ(2, change_count());
 }
 
-TEST_F(DeviceInfoSyncBridgeTest, DisableSync) {
+TEST_F(DeviceInfoSyncBridgeTest, ApplyDisableSyncChanges) {
   InitializeAndPump();
   EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
   EXPECT_EQ(1, change_count());
@@ -809,7 +806,7 @@ TEST_F(DeviceInfoSyncBridgeTest, DisableSync) {
   EXPECT_EQ(2, change_count());
 
   // Should clear out all local data and notify observers.
-  bridge()->DisableSync();
+  bridge()->ApplyDisableSyncChanges({});
   EXPECT_EQ(0u, bridge()->GetAllDeviceInfo().size());
   EXPECT_EQ(3, change_count());
 

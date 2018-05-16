@@ -75,7 +75,9 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
 // "WeakPtr<ModelTypeControllerDelegate> (AutofillWebDataService*)".
 base::WeakPtr<syncer::ModelTypeControllerDelegate> DelegateFromDataService(
     autofill::AutofillWebDataService* service) {
-  return autofill::AutocompleteSyncBridge::FromWebDataService(service);
+  return autofill::AutocompleteSyncBridge::FromWebDataService(service)
+      ->change_processor()
+      ->GetControllerDelegateOnUIThread();
 }
 
 }  // namespace

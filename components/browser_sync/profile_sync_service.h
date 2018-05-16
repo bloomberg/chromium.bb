@@ -73,7 +73,7 @@ class BaseTransaction;
 class DeviceInfoSyncBridge;
 class DeviceInfoTracker;
 class LocalDeviceInfoProvider;
-class ModelTypeSyncBridge;
+class ModelTypeControllerDelegate;
 class NetworkResources;
 class SyncableService;
 class SyncErrorController;
@@ -329,10 +329,12 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Returns the SyncableService or USS bridge for syncer::SESSIONS.
   virtual syncer::SyncableService* GetSessionsSyncableService();
-  virtual syncer::ModelTypeSyncBridge* GetSessionSyncBridge();
+  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetSessionSyncControllerDelegateOnUIThread();
 
-  // Returns the ModelTypeSyncBridge for syncer::DEVICE_INFO.
-  virtual syncer::ModelTypeSyncBridge* GetDeviceInfoSyncBridge();
+  // Returns the ModelTypeControllerDelegate for syncer::DEVICE_INFO.
+  virtual base::WeakPtr<syncer::ModelTypeControllerDelegate>
+  GetDeviceInfoSyncControllerDelegateOnUIThread();
 
   // Returns synced devices tracker.
   virtual syncer::DeviceInfoTracker* GetDeviceInfoTracker() const;

@@ -24,6 +24,7 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model/fake_model_type_change_processor.h"
+#include "components/sync/model/fake_model_type_controller_delegate.h"
 #include "components/sync/model/stub_model_type_sync_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,11 +41,14 @@ void SetBool(bool* called, bool* out, bool in) {
 
 // A change processor for testing that connects using a thread-jumping proxy,
 // tracks connected state, and counts DisableSync calls.
-class TestModelTypeProcessor : public FakeModelTypeChangeProcessor,
+class TestModelTypeProcessor : public FakeModelTypeControllerDelegate,
+                               public FakeModelTypeChangeProcessor,
                                public FakeModelTypeProcessor {
  public:
   explicit TestModelTypeProcessor(int* disable_sync_call_count)
-      : disable_sync_call_count_(disable_sync_call_count),
+      : FakeModelTypeControllerDelegate(kTestModelType),
+        FakeModelTypeChangeProcessor(GetWeakPtr()),
+        disable_sync_call_count_(disable_sync_call_count),
         weak_factory_(this) {}
 
   // ModelTypeChangeProcessor implementation.
@@ -151,7 +155,7 @@ class ModelTypeControllerTest : public testing::Test, public FakeSyncClient {
 
   base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateForModelType(
       ModelType type) override {
-    return bridge_->AsWeakPtr();
+    return bridge_->change_processor()->GetControllerDelegateOnUIThread();
   }
 
   void LoadModels() {

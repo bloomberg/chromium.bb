@@ -35,7 +35,10 @@ class RunTaskOnHistoryThread : public HistoryDBTask {
     // around all the way until DoneRunOnMainThread() is invoked back on the
     // main thread - we want to release references as soon as possible to avoid
     // keeping them around too long during shutdown.
-    ModelTypeControllerDelegate* delegate = backend->GetTypedURLSyncBridge();
+    base::WeakPtr<ModelTypeControllerDelegate> delegate =
+        backend->GetTypedURLSyncBridge()
+            ->change_processor()
+            ->GetControllerDelegateOnUIThread();
     DCHECK(delegate);
 
     std::move(task_).Run(delegate);

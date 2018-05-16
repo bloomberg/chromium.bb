@@ -104,9 +104,6 @@ class UserEventSyncBridgeTest : public testing::Test {
         mock_processor_.CreateForwardingProcessor(), &test_global_id_mapper_,
         &fake_sync_service_);
     ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
-    ON_CALL(*processor(), DisableSync()).WillByDefault(Invoke([this]() {
-      bridge_->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList());
-    }));
   }
 
   std::string GetStorageKey(const UserEventSpecifics& specifics) {
@@ -194,20 +191,21 @@ TEST_F(UserEventSyncBridgeTest, SingleRecord) {
               ElementsAre(Pair(storage_key, MatchesUserEvent(specifics))));
 }
 
-TEST_F(UserEventSyncBridgeTest, DisableSync) {
+TEST_F(UserEventSyncBridgeTest, ApplyDisableSyncChanges) {
   const UserEventSpecifics specifics(CreateSpecifics(1u, 2u, 3u));
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_CALL(*processor(), DisableSync());
-  bridge()->DisableSync();
+  EXPECT_THAT(
+      bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList()),
+      Eq(ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync));
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
   EXPECT_THAT(GetAllData(), IsEmpty());
 }
 
-TEST_F(UserEventSyncBridgeTest, DisableSyncShouldKeepConsents) {
+TEST_F(UserEventSyncBridgeTest, ApplyDisableSyncChangesShouldKeepConsents) {
   UserEventSpecifics user_event_specifics(CreateSpecifics(2u, 2u, 2u));
   auto* consent = user_event_specifics.mutable_user_consent();
   consent->set_feature(UserEventSpecifics::UserConsent::CHROME_SYNC);
@@ -216,8 +214,9 @@ TEST_F(UserEventSyncBridgeTest, DisableSyncShouldKeepConsents) {
       std::make_unique<UserEventSpecifics>(user_event_specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_CALL(*processor(), DisableSync());
-  bridge()->DisableSync();
+  EXPECT_THAT(
+      bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList()),
+      Eq(ModelTypeSyncBridge::DisableSyncResponse::kModelStillReadyToSync));
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -391,8 +390,7 @@ TEST_F(UserEventSyncBridgeTest, RecordWithLateInitializedStore) {
   AccountInfo info;
   info.account_id = "account_id";
   sync_service()->SetAuthenticatedAccountInfo(info);
-  late_init_bridge.OnSyncStarting(/*error_handler=*/base::DoNothing(),
-                                  /*start_callback=*/base::DoNothing());
+  late_init_bridge.OnSyncStarting();
 
   // Record events after metadata is ready.
   late_init_bridge.RecordUserEvent(
@@ -416,8 +414,7 @@ TEST_F(UserEventSyncBridgeTest,
 
   bridge()->RecordUserEvent(std::make_unique<UserEventSpecifics>(consent));
 
-  EXPECT_CALL(*processor(), DisableSync());
-  bridge()->DisableSync();
+  bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -430,8 +427,7 @@ TEST_F(UserEventSyncBridgeTest,
   ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
   std::string storage_key;
   EXPECT_CALL(*processor(), DoPut(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
-  bridge()->OnSyncStarting(/*error_handler=*/base::DoNothing(),
-                           /*start_callback=*/base::DoNothing());
+  bridge()->OnSyncStarting();
 
   // The bridge may asynchronously query the store to choose what to resubmit.
   base::RunLoop().RunUntilIdle();
@@ -463,8 +459,7 @@ TEST_F(UserEventSyncBridgeTest,
   info.account_id = "account_id";
   sync_service()->SetAuthenticatedAccountInfo(info);
   EXPECT_CALL(*processor(), DoModelReadyToSync(_, _)).Times(0);
-  late_init_bridge.OnSyncStarting(/*error_handler=*/base::DoNothing(),
-                                  /*start_callback=*/base::DoNothing());
+  late_init_bridge.OnSyncStarting();
 
   // Initialize the store.
   std::unique_ptr<ModelTypeStore> store =
@@ -540,8 +535,7 @@ TEST_F(UserEventSyncBridgeTest,
   AccountInfo info;
   info.account_id = "account_id";
   sync_service()->SetAuthenticatedAccountInfo(info);
-  late_init_bridge.OnSyncStarting(/*error_handler=*/base::DoNothing(),
-                                  /*start_callback=*/base::DoNothing());
+  late_init_bridge.OnSyncStarting();
 
   std::string storage_key;
   EXPECT_CALL(*processor(), DoPut(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
@@ -562,8 +556,7 @@ TEST_F(UserEventSyncBridgeTest, ShouldSubmitPersistedConsentOnlyIfSameAccount) {
       std::make_unique<UserEventSpecifics>(user_event_specifics));
   ASSERT_THAT(GetAllData(), SizeIs(1));
 
-  EXPECT_CALL(*processor(), DisableSync());
-  bridge()->DisableSync();
+  bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList());
   // The bridge may asynchronously query the store to choose what to delete.
   base::RunLoop().RunUntilIdle();
 
@@ -578,12 +571,10 @@ TEST_F(UserEventSyncBridgeTest, ShouldSubmitPersistedConsentOnlyIfSameAccount) {
   // account is different.
   EXPECT_CALL(*processor(), DoPut(_, _, _)).Times(0);
   ON_CALL(*processor(), IsTrackingMetadata()).WillByDefault(Return(true));
-  bridge()->OnSyncStarting(/*error_handler=*/base::DoNothing(),
-                           /*start_callback=*/base::DoNothing());
+  bridge()->OnSyncStarting();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(*processor(), DisableSync());
-  bridge()->DisableSync();
+  bridge()->ApplyDisableSyncChanges(WriteBatch::CreateMetadataChangeList());
   base::RunLoop().RunUntilIdle();
 
   // The previous user signs in again and enables sync.
@@ -592,8 +583,7 @@ TEST_F(UserEventSyncBridgeTest, ShouldSubmitPersistedConsentOnlyIfSameAccount) {
 
   std::string storage_key;
   EXPECT_CALL(*processor(), DoPut(_, _, _)).WillOnce(SaveArg<0>(&storage_key));
-  bridge()->OnSyncStarting(/*error_handler=*/base::DoNothing(),
-                           /*start_callback=*/base::DoNothing());
+  bridge()->OnSyncStarting();
   // The bridge may asynchronously query the store to choose what to resubmit.
   base::RunLoop().RunUntilIdle();
 

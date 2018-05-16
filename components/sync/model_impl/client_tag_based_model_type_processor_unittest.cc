@@ -1206,7 +1206,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, Disable) {
   bridge()->WriteItem(kKey2, kValue2);
   EXPECT_TRUE(worker()->HasPendingCommitForHash(kHash2));
 
-  bridge()->DisableSync();
+  type_processor()->DisableSync();
   EXPECT_FALSE(type_processor()->IsTrackingMetadata());
 
   // The third item is added after disable.

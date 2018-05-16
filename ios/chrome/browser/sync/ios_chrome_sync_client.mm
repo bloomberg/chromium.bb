@@ -317,36 +317,40 @@ IOSChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
     case syncer::DEVICE_INFO:
       return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
                  browser_state_)
-          ->GetDeviceInfoSyncBridge()
-          ->AsWeakPtr();
+          ->GetDeviceInfoSyncControllerDelegateOnUIThread();
     case syncer::READING_LIST: {
       ReadingListModel* reading_list_model =
           ReadingListModelFactory::GetForBrowserState(browser_state_);
-      return reading_list_model->GetModelTypeSyncBridge()->AsWeakPtr();
+      return reading_list_model->GetModelTypeSyncBridge()
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
     }
     case syncer::AUTOFILL:
       return autofill::AutocompleteSyncBridge::FromWebDataService(
                  web_data_service_.get())
-          ->AsWeakPtr();
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
     case syncer::TYPED_URLS: {
       history::HistoryService* history =
           ios::HistoryServiceFactory::GetForBrowserState(
               browser_state_, ServiceAccessType::EXPLICIT_ACCESS);
-      return history ? history->GetTypedURLSyncBridge()->AsWeakPtr()
-                     : base::WeakPtr<syncer::ModelTypeSyncBridge>();
+      return history ? history->GetTypedURLSyncBridge()
+                           ->change_processor()
+                           ->GetControllerDelegateOnUIThread()
+                     : base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     }
     case syncer::USER_EVENTS:
       return IOSUserEventServiceFactory::GetForBrowserState(browser_state_)
           ->GetSyncBridge()
-          ->AsWeakPtr();
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
     case syncer::SESSIONS:
       return IOSChromeProfileSyncServiceFactory::GetForBrowserState(
                  browser_state_)
-          ->GetSessionSyncBridge()
-          ->AsWeakPtr();
+          ->GetSessionSyncControllerDelegateOnUIThread();
     default:
       NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
   }
 }
 

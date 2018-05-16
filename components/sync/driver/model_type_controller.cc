@@ -16,7 +16,6 @@
 #include "components/sync/engine/model_type_configurer.h"
 #include "components/sync/model/data_type_error_handler_impl.h"
 #include "components/sync/model/model_type_change_processor.h"
-#include "components/sync/model/model_type_debug_info.h"
 #include "components/sync/model/sync_merge_result.h"
 
 namespace syncer {
@@ -26,10 +25,35 @@ using ModelTask = ModelTypeController::ModelTask;
 
 namespace {
 
-void OnSyncStartingHelper(const ModelErrorHandler& error_handler,
-                          ModelTypeChangeProcessor::StartCallback callback,
-                          ModelTypeControllerDelegate* delegate) {
-  delegate->OnSyncStarting(std::move(error_handler), std::move(callback));
+void OnSyncStartingHelperOnModelThread(
+    const ModelErrorHandler& error_handler,
+    ModelTypeControllerDelegate::StartCallback callback_bound_to_ui_thread,
+    base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  delegate->OnSyncStarting(std::move(error_handler),
+                           std::move(callback_bound_to_ui_thread));
+}
+
+void GetAllNodesForDebuggingHelperOnModelThread(
+    const DataTypeController::AllNodesCallback& callback_bound_to_ui_thread,
+    base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  delegate->GetAllNodesForDebugging(callback_bound_to_ui_thread);
+}
+
+void GetStatusCountersForDebuggingHelperOnModelThread(
+    const DataTypeController::StatusCountersCallback&
+        callback_bound_to_ui_thread,
+    base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  delegate->GetStatusCountersForDebugging(callback_bound_to_ui_thread);
+}
+
+void RecordMemoryUsageHistogramHelperOnModelThread(
+    base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  delegate->RecordMemoryUsageHistogram();
+}
+
+void DisableSyncHelperOnModelThread(
+    base::WeakPtr<ModelTypeControllerDelegate> delegate) {
+  delegate->DisableSync();
 }
 
 void ReportError(ModelType model_type,
@@ -53,8 +77,8 @@ base::WeakPtr<ModelTypeControllerDelegate> ReturnCapturedDelegate(
 void RunModelTask(DelegateProvider delegate_provider, ModelTask task) {
   base::WeakPtr<ModelTypeControllerDelegate> delegate =
       std::move(delegate_provider).Run();
-  if (delegate)
-    std::move(task).Run(delegate.get());
+  if (delegate.get())
+    std::move(task).Run(delegate);
 }
 
 }  // namespace
@@ -67,8 +91,7 @@ ModelTypeController::ModelTypeController(
       sync_client_(sync_client),
       model_thread_(model_thread),
       sync_prefs_(sync_client->GetPrefService()),
-      state_(NOT_RUNNING) {
-}
+      state_(NOT_RUNNING) {}
 
 ModelTypeController::~ModelTypeController() {}
 
@@ -94,7 +117,7 @@ void ModelTypeController::LoadModels(
   state_ = MODEL_STARTING;
 
   // Callback that posts back to the UI thread.
-  ModelTypeChangeProcessor::StartCallback callback =
+  ModelTypeControllerDelegate::StartCallback callback_bound_to_ui_thread =
       BindToCurrentThread(base::BindOnce(
           &ModelTypeController::OnProcessorStarted, base::AsWeakPtr(this)));
 
@@ -105,8 +128,9 @@ void ModelTypeController::LoadModels(
 
   // Start the type processor on the model thread.
   PostModelTask(FROM_HERE,
-                base::BindOnce(&OnSyncStartingHelper, std::move(error_handler),
-                               std::move(callback)));
+                base::BindOnce(&OnSyncStartingHelperOnModelThread,
+                               std::move(error_handler),
+                               std::move(callback_bound_to_ui_thread)));
 }
 
 void ModelTypeController::BeforeLoadModels(ModelTypeConfigurer* configurer) {}
@@ -207,8 +231,7 @@ void ModelTypeController::Stop() {
       sync_prefs_.GetPreferredDataTypes(ModelTypeSet(type()));
   if ((state() == MODEL_LOADED || state() == RUNNING) &&
       (!sync_prefs_.IsFirstSetupComplete() || !preferred_types.Has(type()))) {
-    PostModelTask(FROM_HERE,
-                  base::BindOnce(&ModelTypeControllerDelegate::DisableSync));
+    PostModelTask(FROM_HERE, base::BindOnce(&DisableSyncHelperOnModelThread));
   }
 
   state_ = NOT_RUNNING;
@@ -219,21 +242,22 @@ DataTypeController::State ModelTypeController::state() const {
 }
 
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
-  PostModelTask(FROM_HERE, base::BindOnce(&ModelTypeDebugInfo::GetAllNodes,
-                                          BindToCurrentThread(callback)));
+  PostModelTask(FROM_HERE,
+                base::BindOnce(&GetAllNodesForDebuggingHelperOnModelThread,
+                               BindToCurrentThread(callback)));
 }
 
 void ModelTypeController::GetStatusCounters(
     const StatusCountersCallback& callback) {
   PostModelTask(
       FROM_HERE,
-      base::BindOnce(&ModelTypeDebugInfo::GetStatusCounters, callback));
+      base::BindOnce(&GetStatusCountersForDebuggingHelperOnModelThread,
+                     BindToCurrentThread(callback)));
 }
 
 void ModelTypeController::RecordMemoryUsageHistogram() {
-  PostModelTask(
-      FROM_HERE,
-      base::BindOnce(&ModelTypeDebugInfo::RecordMemoryUsageHistogram));
+  PostModelTask(FROM_HERE,
+                base::BindOnce(&RecordMemoryUsageHistogramHelperOnModelThread));
 }
 
 void ModelTypeController::ReportModelError(const ModelError& error) {

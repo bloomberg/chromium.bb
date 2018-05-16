@@ -450,21 +450,23 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
   switch (type) {
     case syncer::DEVICE_INFO:
       return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetDeviceInfoSyncBridge()
-          ->AsWeakPtr();
+          ->GetDeviceInfoSyncControllerDelegateOnUIThread();
     case syncer::READING_LIST:
       // Reading List is only supported on iOS at the moment.
       NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
     case syncer::AUTOFILL:
       return autofill::AutocompleteSyncBridge::FromWebDataService(
-          web_data_service_.get());
+                 web_data_service_.get())
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
 #if defined(OS_CHROMEOS)
     case syncer::PRINTERS:
       return chromeos::SyncedPrintersManagerFactory::GetForBrowserContext(
                  profile_)
           ->GetSyncBridge()
-          ->AsWeakPtr();
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
 #endif  // defined(OS_CHROMEOS)
     case syncer::TYPED_URLS: {
       // We request history service with explicit access here because this
@@ -474,21 +476,23 @@ ChromeSyncClient::GetControllerDelegateForModelType(syncer::ModelType type) {
       history::HistoryService* history = HistoryServiceFactory::GetForProfile(
           profile_, ServiceAccessType::EXPLICIT_ACCESS);
       if (!history)
-        return base::WeakPtr<syncer::ModelTypeSyncBridge>();
-      return history->GetTypedURLSyncBridge()->AsWeakPtr();
+        return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
+      return history->GetTypedURLSyncBridge()
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
     }
     case syncer::USER_EVENTS:
       return browser_sync::UserEventServiceFactory::GetForProfile(profile_)
           ->GetSyncBridge()
-          ->AsWeakPtr();
+          ->change_processor()
+          ->GetControllerDelegateOnUIThread();
     case syncer::SESSIONS: {
       return ProfileSyncServiceFactory::GetForProfile(profile_)
-          ->GetSessionSyncBridge()
-          ->AsWeakPtr();
+          ->GetSessionSyncControllerDelegateOnUIThread();
     }
     default:
       NOTREACHED();
-      return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+      return base::WeakPtr<syncer::ModelTypeControllerDelegate>();
   }
 }
 

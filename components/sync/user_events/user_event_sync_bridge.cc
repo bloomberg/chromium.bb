@@ -154,19 +154,13 @@ std::string UserEventSyncBridge::GetStorageKey(const EntityData& entity_data) {
   return GetStorageKeyFromSpecifics(entity_data.specifics.user_event());
 }
 
-void UserEventSyncBridge::OnSyncStarting(
-    const ModelErrorHandler& error_handler,
-    ModelTypeChangeProcessor::StartCallback start_callback) {
+void UserEventSyncBridge::OnSyncStarting() {
 #if !defined(OS_IOS)  // https://crbug.com/834042
   DCHECK(!GetAuthenticatedAccountId().empty());
 #endif  // !defined(OS_IOS)
-  change_processor()->OnSyncStarting(std::move(error_handler),
-                                     std::move(start_callback));
-
-  bool was_sync_starting_or_started = is_sync_starting_or_started_;
+  bool was_sync_started = is_sync_starting_or_started_;
   is_sync_starting_or_started_ = true;
-  if (store_ && change_processor()->IsTrackingMetadata() &&
-      !was_sync_starting_or_started) {
+  if (store_ && change_processor()->IsTrackingMetadata() && !was_sync_started) {
     ReadAllDataAndResubmit();
   }
 }

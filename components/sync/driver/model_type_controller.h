@@ -29,7 +29,8 @@ class ModelTypeController : public DataTypeController {
  public:
   using DelegateProvider =
       base::OnceCallback<base::WeakPtr<ModelTypeControllerDelegate>()>;
-  using ModelTask = base::OnceCallback<void(ModelTypeControllerDelegate*)>;
+  using ModelTask =
+      base::OnceCallback<void(base::WeakPtr<ModelTypeControllerDelegate>)>;
 
   ModelTypeController(
       ModelType type,

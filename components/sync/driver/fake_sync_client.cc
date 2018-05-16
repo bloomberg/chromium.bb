@@ -105,7 +105,7 @@ base::WeakPtr<SyncableService> FakeSyncClient::GetSyncableServiceForType(
 
 base::WeakPtr<ModelTypeControllerDelegate>
 FakeSyncClient::GetControllerDelegateForModelType(ModelType type) {
-  return bridge_->AsWeakPtr();
+  return bridge_->change_processor()->GetControllerDelegateOnUIThread();
 }
 
 scoped_refptr<ModelSafeWorker> FakeSyncClient::CreateModelWorkerForGroup(

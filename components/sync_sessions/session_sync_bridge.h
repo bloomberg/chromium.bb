@@ -61,6 +61,7 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   syncer::ModelTypeSyncBridge* GetModelTypeSyncBridge() override;
 
   // ModelTypeSyncBridge implementation.
+  void OnSyncStarting() override;
   std::unique_ptr<syncer::MetadataChangeList> CreateMetadataChangeList()
       override;
   base::Optional<syncer::ModelError> MergeSyncData(
@@ -73,9 +74,6 @@ class SessionSyncBridge : public AbstractSessionsSyncManager,
   void GetAllData(DataCallback callback) override;
   std::string GetClientTag(const syncer::EntityData& entity_data) override;
   std::string GetStorageKey(const syncer::EntityData& entity_data) override;
-  void OnSyncStarting(
-      const syncer::ModelErrorHandler& error_handler,
-      syncer::ModelTypeChangeProcessor::StartCallback callback) override;
   DisableSyncResponse ApplyDisableSyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list)
       override;

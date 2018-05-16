@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "base/memory/weak_ptr.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -20,9 +21,9 @@ class ModelTypeSyncBridge;
 // A ModelTypeChangeProcessor implementation for tests.
 class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
  public:
-  static std::unique_ptr<ModelTypeChangeProcessor> Create(ModelType type);
-
   FakeModelTypeChangeProcessor();
+  explicit FakeModelTypeChangeProcessor(
+      base::WeakPtr<ModelTypeControllerDelegate> delegate);
   ~FakeModelTypeChangeProcessor() override;
 
   // ModelTypeChangeProcessor overrides
@@ -38,11 +39,10 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   void OnModelStarting(ModelTypeSyncBridge* bridge) override;
   void ModelReadyToSync(ModelTypeSyncBridge* bridge,
                         std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(const ModelErrorHandler& error_handler,
-                      StartCallback callback) override;
-  void DisableSync() override;
   bool IsTrackingMetadata() override;
   void ReportError(const ModelError& error) override;
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateOnUIThread()
+      override;
 
   // Indicates that ReportError should be called in the future.
   void ExpectError();
@@ -50,6 +50,7 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
  private:
   // Whether we expect ReportError to be called.
   bool expect_error_ = false;
+  base::WeakPtr<ModelTypeControllerDelegate> delegate_;
 };
 
 }  // namespace syncer

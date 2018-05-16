@@ -375,15 +375,11 @@ void SessionSyncBridge::OnFaviconVisited(const GURL& page_url,
   favicon_cache_.OnFaviconVisited(page_url, favicon_url);
 }
 
-void SessionSyncBridge::OnSyncStarting(
-    const syncer::ModelErrorHandler& error_handler,
-    syncer::ModelTypeChangeProcessor::StartCallback callback) {
+void SessionSyncBridge::OnSyncStarting() {
   DCHECK(!syncing_);
 
   session_store_factory_.Run(base::BindOnce(
       &SessionSyncBridge::OnStoreInitialized, base::AsWeakPtr(this)));
-
-  ModelTypeSyncBridge::OnSyncStarting(error_handler, std::move(callback));
 }
 
 void SessionSyncBridge::OnStoreInitialized(

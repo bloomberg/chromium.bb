@@ -13,7 +13,7 @@ namespace syncer {
 
 StubModelTypeSyncBridge::StubModelTypeSyncBridge()
     : StubModelTypeSyncBridge(
-          FakeModelTypeChangeProcessor::Create(PREFERENCES)) {}
+          std::make_unique<FakeModelTypeChangeProcessor>()) {}
 
 StubModelTypeSyncBridge::StubModelTypeSyncBridge(
     std::unique_ptr<ModelTypeChangeProcessor> change_processor)
