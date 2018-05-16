@@ -1987,6 +1987,7 @@ void VrShellGl::DrawContentQuad(bool draw_overlay_texture) {
   glDisable(GL_CULL_FACE);
   glDisable(GL_SCISSOR_TEST);
   glDisable(GL_POLYGON_OFFSET_FILL);
+  glDisable(GL_BLEND);
   glClear(GL_COLOR_BUFFER_BIT);
 
   glViewport(
