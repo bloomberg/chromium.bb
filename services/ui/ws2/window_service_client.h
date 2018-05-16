@@ -186,6 +186,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
       const ClientWindowId& client_window_id,
       const std::map<std::string, std::vector<uint8_t>>& properties);
   bool DeleteWindowImpl(const ClientWindowId& window_id);
+  bool SetCaptureImpl(const ClientWindowId& window_id);
+  bool ReleaseCaptureImpl(const ClientWindowId& window_id);
   bool AddWindowImpl(const ClientWindowId& parent_id,
                      const ClientWindowId& child_id);
   bool RemoveWindowFromParentImpl(const ClientWindowId& client_window_id);
@@ -225,8 +227,8 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
       const base::flat_map<std::string, std::vector<uint8_t>>& properties)
       override;
   void DeleteWindow(uint32_t change_id, Id transport_window_id) override;
-  void SetCapture(uint32_t change_id, Id window_id) override;
-  void ReleaseCapture(uint32_t change_id, Id window_id) override;
+  void SetCapture(uint32_t change_id, Id transport_window_id) override;
+  void ReleaseCapture(uint32_t change_id, Id transport_window_id) override;
   void StartPointerWatcher(bool want_moves) override;
   void StopPointerWatcher() override;
   void SetWindowBounds(

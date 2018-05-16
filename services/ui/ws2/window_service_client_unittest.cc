@@ -502,6 +502,28 @@ TEST(WindowServiceClientTest, PointerWatcher) {
   }
 }
 
+TEST(WindowServiceClientTest, Capture) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(1);
+
+  // Setting capture on |window| should fail as it's not visible.
+  EXPECT_FALSE(helper.helper()->SetCapture(window));
+
+  aura::Window* top_level = helper.helper()->NewTopLevelWindow(2);
+  ASSERT_TRUE(top_level);
+  EXPECT_FALSE(helper.helper()->SetCapture(top_level));
+  top_level->Show();
+  EXPECT_TRUE(helper.helper()->SetCapture(top_level));
+
+  EXPECT_FALSE(helper.helper()->ReleaseCapture(window));
+  EXPECT_TRUE(helper.helper()->ReleaseCapture(top_level));
+
+  top_level->AddChild(window);
+  window->Show();
+  EXPECT_TRUE(helper.helper()->SetCapture(window));
+  EXPECT_TRUE(helper.helper()->ReleaseCapture(window));
+}
+
 }  // namespace
 }  // namespace ws2
 }  // namespace ui

@@ -48,6 +48,7 @@ component("lib") {
     "//services/ui/common:mus_common",
     "//services/ui/public/interfaces",
     "//ui/aura",
+    "//ui/wm",
   ]
 
   defines = [ "IS_WINDOW_SERVICE_IMPL" ]
