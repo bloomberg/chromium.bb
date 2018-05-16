@@ -1509,6 +1509,33 @@
             "--bucket",
             "chromium-result-details",
             "--test-name",
+            "gfx_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_os": "LMY47W",
+              "device_type": "sprout"
+            }
+          ],
+          "expiration": 14400,
+          "hard_timeout": 900
+        },
+        "test": "gfx_unittests"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
             "gl_tests"
           ],
           "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
@@ -5722,6 +5749,31 @@
           ]
         },
         "test": "events_unittests"
+      },
+      {
+        "args": [
+          "--gs-results-bucket=chromium-result-details",
+          "--recover-devices"
+        ],
+        "merge": {
+          "args": [
+            "--bucket",
+            "chromium-result-details",
+            "--test-name",
+            "gfx_unittests"
+          ],
+          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "gce_x86"
+            }
+          ],
+          "hard_timeout": 900
+        },
+        "test": "gfx_unittests"
       },
       {
         "args": [
