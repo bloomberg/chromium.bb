@@ -8,9 +8,10 @@
 #include <utility>
 
 // TODO(https://crbug.com/768439): Remove nogncheck when moved to ash.
-#include "ash/login_status.h"                // nogncheck
-#include "ash/session/session_controller.h"  // nogncheck
-#include "ash/shell.h"                       // nogncheck
+#include "ash/login_status.h"                             // nogncheck
+#include "ash/session/session_controller.h"               // nogncheck
+#include "ash/shell.h"                                    // nogncheck
+#include "ash/system/message_center/notification_tray.h"  // nogncheck
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/arc/mojo_channel.h"
@@ -173,6 +174,11 @@ void ArcNotificationManager::OnNotificationUpdated(
   GetAppId(data->package_name.value_or(std::string()),
            base::BindOnce(&ArcNotificationManager::OnGotAppId,
                           weak_ptr_factory_.GetWeakPtr(), std::move(data)));
+}
+
+void ArcNotificationManager::OpenMessageCenter() {
+  ash::Shell::Get()->GetNotificationTray()->ShowMessageCenter(
+      false /* show_by_click */);
 }
 
 void ArcNotificationManager::OnNotificationRemoved(const std::string& key) {
