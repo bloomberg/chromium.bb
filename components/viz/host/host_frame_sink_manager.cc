@@ -137,7 +137,7 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
   // the old CompositorFrameSink first.
   if (data.has_created_compositor_frame_sink) {
     frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id,
-                                                    base::OnceClosure());
+                                                    base::DoNothing());
   }
 
   data.is_root = true;
@@ -160,7 +160,7 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
   // the old CompositorFrameSink first.
   if (data.has_created_compositor_frame_sink) {
     frame_sink_manager_->DestroyCompositorFrameSink(frame_sink_id,
-                                                    base::OnceClosure());
+                                                    base::DoNothing());
   }
 
   data.is_root = false;
