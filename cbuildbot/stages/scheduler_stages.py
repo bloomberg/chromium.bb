@@ -149,7 +149,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
       return
 
     # May be None. This is okay.
-    buildbucket_id = self._run.options.buildbucket_id
+    master_buildbucket_id = self._run.options.buildbucket_id
 
     buildset_tag = 'cbuildbot/%s/%s/%s' % (
         self._run.manifest_branch, self._run.config.name, build_id)
@@ -164,7 +164,7 @@ class ScheduleSlavesStage(generic_stages.BuilderStage):
     for slave_config_name, slave_config in slave_config_map.iteritems():
       try:
         buildbucket_id, created_ts = self.PostSlaveBuildToBuildbucket(
-            slave_config_name, slave_config, build_id, buildbucket_id,
+            slave_config_name, slave_config, build_id, master_buildbucket_id,
             buildset_tag, dryrun=dryrun)
         request_reason = None
 
