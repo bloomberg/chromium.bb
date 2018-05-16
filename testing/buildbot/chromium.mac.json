@@ -413,6 +413,13 @@
         }
       },
       {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -881,6 +888,13 @@
         }
       },
       {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -1344,6 +1358,13 @@
       {
         "isolate_name": "components_perftests",
         "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -2298,6 +2319,13 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "isolate_name": "metrics_python_tests",
+        "name": "metrics_python_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "args": [
           "--smoke-test-mode",
