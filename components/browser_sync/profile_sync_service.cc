@@ -492,9 +492,6 @@ SyncCredentials ProfileSyncService::GetCredentials() {
   credentials.email = account_info.email;
   credentials.sync_token = access_token_;
 
-  if (credentials.sync_token.empty())
-    credentials.sync_token = "credentials_lost";
-
   credentials.scope_set.insert(GaiaConstants::kChromeSyncOAuth2Scope);
 
   return credentials;

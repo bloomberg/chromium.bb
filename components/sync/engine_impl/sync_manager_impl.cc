@@ -8,15 +8,11 @@
 
 #include <utility>
 
-#include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/json/json_writer.h"
-#include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -35,22 +31,15 @@
 #include "components/sync/engine_impl/sync_scheduler.h"
 #include "components/sync/engine_impl/syncer_types.h"
 #include "components/sync/engine_impl/uss_migrator.h"
-#include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/syncable/base_node.h"
 #include "components/sync/syncable/directory.h"
+#include "components/sync/syncable/directory_backing_store.h"
 #include "components/sync/syncable/entry.h"
-#include "components/sync/syncable/in_memory_directory_backing_store.h"
-#include "components/sync/syncable/on_disk_directory_backing_store.h"
 #include "components/sync/syncable/read_node.h"
 #include "components/sync/syncable/read_transaction.h"
 #include "components/sync/syncable/write_node.h"
 #include "components/sync/syncable/write_transaction.h"
-
-
-using base::TimeDelta;
-
-class GURL;
 
 namespace syncer {
 
@@ -204,7 +193,6 @@ void SyncManagerImpl::Init(InitArgs* args) {
   DCHECK(!args->long_poll_interval.is_zero());
   if (!args->enable_local_sync_backend) {
     DCHECK(!args->credentials.account_id.empty());
-    DCHECK(!args->credentials.sync_token.empty());
     DCHECK(!args->credentials.scope_set.empty());
   }
   DCHECK(args->cancelation_signal);
@@ -474,7 +462,6 @@ void SyncManagerImpl::UpdateCredentials(const SyncCredentials& credentials) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(initialized_);
   DCHECK(!credentials.account_id.empty());
-  DCHECK(!credentials.sync_token.empty());
   DCHECK(!credentials.scope_set.empty());
   cycle_context_->set_account_name(credentials.email);
 
