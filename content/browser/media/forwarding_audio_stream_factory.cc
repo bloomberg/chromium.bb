@@ -208,8 +208,6 @@ void ForwardingAudioStreamFactory::ResetRemoteFactoryPtr() {
   remote_factory_.reset();
   // The stream brokers will call a callback to be deleted soon, give them a
   // chance to signal an error to the client first.
-  inputs_.clear();
-  outputs_.clear();
 }
 
 }  // namespace content
