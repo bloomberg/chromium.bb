@@ -57,7 +57,7 @@ int GCMChannelStatusRequest::min_poll_interval_seconds() {
 }
 
 void GCMChannelStatusRequest::Start() {
-  DCHECK(!url_fetcher_.get());
+  DCHECK(!url_fetcher_);
 
   GURL request_url(channel_status_request_url_);
 

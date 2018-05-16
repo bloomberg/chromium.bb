@@ -9,8 +9,7 @@
 namespace history {
 
 PrepopulatedPage::PrepopulatedPage()
-    : most_visited(), favicon_id(-1), thumbnail_id(-1), color() {
-}
+    : favicon_id(-1), thumbnail_id(-1), color() {}
 
 PrepopulatedPage::PrepopulatedPage(const GURL& url,
                                    const base::string16& title,

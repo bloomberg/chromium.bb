@@ -145,7 +145,7 @@ NonBlockingInvalidator::Core::Core(
     : delegate_observer_(delegate_observer),
       delegate_observer_task_runner_(delegate_observer_task_runner) {
   DCHECK(delegate_observer_);
-  DCHECK(delegate_observer_task_runner_.get());
+  DCHECK(delegate_observer_task_runner_);
 }
 
 NonBlockingInvalidator::Core::~Core() {
@@ -153,7 +153,7 @@ NonBlockingInvalidator::Core::~Core() {
 
 void NonBlockingInvalidator::Core::Initialize(
     const NonBlockingInvalidator::InitializeOptions& initialize_options) {
-  DCHECK(initialize_options.request_context_getter.get());
+  DCHECK(initialize_options.request_context_getter);
   network_task_runner_ =
       initialize_options.request_context_getter->GetNetworkTaskRunner();
   DCHECK(network_task_runner_->BelongsToCurrentThread());

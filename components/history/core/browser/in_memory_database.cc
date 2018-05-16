@@ -13,8 +13,7 @@
 
 namespace history {
 
-InMemoryDatabase::InMemoryDatabase() : URLDatabase() {
-}
+InMemoryDatabase::InMemoryDatabase() {}
 
 InMemoryDatabase::~InMemoryDatabase() {
 }

@@ -80,7 +80,7 @@ TEST_F(SingleObjectInvalidationSetTest, SerializeEmpty) {
   std::unique_ptr<base::ListValue> value = list.ToValue();
   ASSERT_TRUE(value.get());
   SingleObjectInvalidationSet deserialized;
-  deserialized.ResetFromValue(*value.get());
+  deserialized.ResetFromValue(*value);
   EXPECT_TRUE(list == deserialized);
 }
 
@@ -91,7 +91,7 @@ TEST_F(SingleObjectInvalidationSetTest, SerializeOne) {
   std::unique_ptr<base::ListValue> value = list.ToValue();
   ASSERT_TRUE(value.get());
   SingleObjectInvalidationSet deserialized;
-  deserialized.ResetFromValue(*value.get());
+  deserialized.ResetFromValue(*value);
   EXPECT_TRUE(list == deserialized);
 }
 
@@ -103,7 +103,7 @@ TEST_F(SingleObjectInvalidationSetTest, SerializeMany) {
   std::unique_ptr<base::ListValue> value = list.ToValue();
   ASSERT_TRUE(value.get());
   SingleObjectInvalidationSet deserialized;
-  deserialized.ResetFromValue(*value.get());
+  deserialized.ResetFromValue(*value);
   EXPECT_TRUE(list == deserialized);
 }
 

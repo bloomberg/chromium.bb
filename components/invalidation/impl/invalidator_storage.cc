@@ -114,7 +114,7 @@ void InvalidatorStorage::SetSavedInvalidations(
       const syncer::UnackedInvalidationsMap& map) {
   std::unique_ptr<base::ListValue> value(
       UnackedInvalidationStorageMapToValue(map));
-  pref_service_->Set(prefs::kInvalidatorSavedInvalidations, *value.get());
+  pref_service_->Set(prefs::kInvalidatorSavedInvalidations, *value);
 }
 
 syncer::UnackedInvalidationsMap

@@ -363,7 +363,7 @@ void GCMDriverDesktop::IOWorker::GetGCMStatistics(
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
   gcm::GCMClient::GCMStatistics stats;
 
-  if (gcm_client_.get()) {
+  if (gcm_client_) {
     if (clear_logs == GCMDriver::CLEAR_LOGS)
       gcm_client_->ClearActivityLogs();
     stats = gcm_client_->GetStatistics();
@@ -378,7 +378,7 @@ void GCMDriverDesktop::IOWorker::SetGCMRecording(bool recording) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
   gcm::GCMClient::GCMStatistics stats;
 
-  if (gcm_client_.get()) {
+  if (gcm_client_) {
     gcm_client_->SetRecording(recording);
     stats = gcm_client_->GetStatistics();
     stats.gcm_client_created = true;
@@ -393,7 +393,7 @@ void GCMDriverDesktop::IOWorker::SetAccountTokens(
     const std::vector<GCMClient::AccountTokenInfo>& account_tokens) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  if (gcm_client_.get())
+  if (gcm_client_)
     gcm_client_->SetAccountTokens(account_tokens);
 }
 
@@ -401,7 +401,7 @@ void GCMDriverDesktop::IOWorker::UpdateAccountMapping(
     const AccountMapping& account_mapping) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  if (gcm_client_.get())
+  if (gcm_client_)
     gcm_client_->UpdateAccountMapping(account_mapping);
 }
 
@@ -409,14 +409,14 @@ void GCMDriverDesktop::IOWorker::RemoveAccountMapping(
     const std::string& account_id) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  if (gcm_client_.get())
+  if (gcm_client_)
     gcm_client_->RemoveAccountMapping(account_id);
 }
 
 void GCMDriverDesktop::IOWorker::SetLastTokenFetchTime(const base::Time& time) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  if (gcm_client_.get())
+  if (gcm_client_)
     gcm_client_->SetLastTokenFetchTime(time);
 }
 
@@ -426,7 +426,7 @@ void GCMDriverDesktop::IOWorker::AddInstanceIDData(
     const std::string& extra_data) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  if (gcm_client_.get())
+  if (gcm_client_)
     gcm_client_->AddInstanceIDData(app_id, instance_id, extra_data);
 }
 
@@ -434,7 +434,7 @@ void GCMDriverDesktop::IOWorker::RemoveInstanceIDData(
     const std::string& app_id) {
   DCHECK(io_thread_->RunsTasksInCurrentSequence());
 
-  if (gcm_client_.get())
+  if (gcm_client_)
     gcm_client_->RemoveInstanceIDData(app_id);
 }
 
@@ -444,7 +444,7 @@ void GCMDriverDesktop::IOWorker::GetInstanceIDData(
 
   std::string instance_id;
   std::string extra_data;
-  if (gcm_client_.get())
+  if (gcm_client_)
     gcm_client_->GetInstanceIDData(app_id, &instance_id, &extra_data);
 
   ui_thread_->PostTask(

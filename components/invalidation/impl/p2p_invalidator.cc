@@ -116,7 +116,7 @@ std::string P2PNotificationData::ToString() const {
 bool P2PNotificationData::ResetFromString(const std::string& str) {
   std::unique_ptr<base::Value> data_value = base::JSONReader::Read(str);
   const base::DictionaryValue* data_dict = nullptr;
-  if (!data_value.get() || !data_value->GetAsDictionary(&data_dict)) {
+  if (!data_value || !data_value->GetAsDictionary(&data_dict)) {
     LOG(WARNING) << "Could not parse " << str << " as a dictionary";
     return false;
   }

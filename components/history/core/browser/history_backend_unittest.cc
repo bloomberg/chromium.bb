@@ -261,7 +261,7 @@ class HistoryBackendTestBase : public testing::Test {
   }
 
   void TearDown() override {
-    if (backend_.get())
+    if (backend_)
       backend_->Closing();
     backend_ = nullptr;
     mem_backend_.reset();

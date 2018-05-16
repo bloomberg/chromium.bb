@@ -77,7 +77,7 @@ class RegistrarInvalidatorTestDelegate {
       const std::string& initial_state,
       const base::WeakPtr<InvalidationStateTracker>&
           invalidation_state_tracker) {
-    DCHECK(!invalidator_.get());
+    DCHECK(!invalidator_);
     invalidator_.reset(new RegistrarInvalidator());
   }
 

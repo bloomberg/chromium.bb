@@ -338,7 +338,7 @@ void GCMClientImpl::Initialize(
     std::unique_ptr<Encryptor> encryptor,
     GCMClient::Delegate* delegate) {
   DCHECK_EQ(UNINITIALIZED, state_);
-  DCHECK(url_request_context_getter.get());
+  DCHECK(url_request_context_getter);
   DCHECK(delegate);
 
   url_request_context_getter_ = url_request_context_getter;
@@ -447,7 +447,7 @@ void GCMClientImpl::OnLoadCompleted(
         RegistrationInfo::BuildFromString(iter->first, iter->second,
                                           &registration_id);
     // TODO(jianli): Add UMA to track the error case.
-    if (registration.get())
+    if (registration)
       registrations_[make_linked_ptr(registration.release())] = registration_id;
   }
 
@@ -700,7 +700,7 @@ void GCMClientImpl::RemoveHeartbeatInterval(const std::string& scope) {
 
 void GCMClientImpl::StartCheckin() {
   // Make sure no checkin is in progress.
-  if (checkin_request_.get())
+  if (checkin_request_)
     return;
 
   checkin_proto::ChromeBuildProto chrome_build_proto;
@@ -917,7 +917,7 @@ void GCMClientImpl::Register(
       base::TimeDelta token_invalidation_period =
           features::GetTokenInvalidationInterval();
       base::TimeDelta time_since_last_validation =
-          clock_->Now() - registrations_iter->first.get()->last_validated;
+          clock_->Now() - registrations_iter->first->last_validated;
       if (token_invalidation_period.is_zero() ||
           time_since_last_validation < token_invalidation_period) {
         // Token is fresh, or token invalidation is disabled.
@@ -1280,13 +1280,13 @@ GCMClient::GCMStatistics GCMClientImpl::GetStatistics() const {
   stats.gcm_client_created = true;
   stats.is_recording = recorder_.is_recording();
   stats.gcm_client_state = GetStateString();
-  stats.connection_client_created = mcs_client_.get() != nullptr;
+  stats.connection_client_created = mcs_client_ != nullptr;
   stats.last_checkin = last_checkin_time_;
   stats.next_checkin =
       last_checkin_time_ + gservices_settings_.GetCheckinInterval();
-  if (connection_factory_.get())
+  if (connection_factory_)
     stats.connection_state = connection_factory_->GetConnectionStateString();
-  if (mcs_client_.get()) {
+  if (mcs_client_) {
     stats.send_queue_size = mcs_client_->GetSendQueueSize();
     stats.resend_queue_size = mcs_client_->GetResendQueueSize();
   }

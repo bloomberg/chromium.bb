@@ -81,7 +81,7 @@ class StoringInitializedCallback {
 class TestInMemoryEventStore : public InMemoryEventStore {
  public:
   explicit TestInMemoryEventStore(bool load_should_succeed)
-      : InMemoryEventStore(), load_should_succeed_(load_should_succeed) {}
+      : load_should_succeed_(load_should_succeed) {}
 
   void Load(const OnLoadedCallback& callback) override {
     HandleLoadResult(callback, load_should_succeed_);

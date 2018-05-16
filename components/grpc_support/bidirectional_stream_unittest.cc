@@ -116,10 +116,7 @@ class TestBidirectionalStreamCallback {
         read_buffer(nullptr),
         net_error(0) {}
 
-  ~TestBidirectionalStreamCallback() {
-    if (read_buffer)
-      delete[] read_buffer;
-  }
+  ~TestBidirectionalStreamCallback() { delete[] read_buffer; }
 
   static TestBidirectionalStreamCallback* FromStream(
       bidirectional_stream* stream) {

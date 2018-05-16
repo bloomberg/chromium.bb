@@ -178,7 +178,7 @@ bool DeleteDirectiveHandler::DeleteDirectiveTask::RunOnDBThread(
 }
 
 void DeleteDirectiveHandler::DeleteDirectiveTask::DoneRunOnMainThread() {
-  if (delete_directive_handler_.get()) {
+  if (delete_directive_handler_) {
     delete_directive_handler_->FinishProcessing(post_processing_action_,
                                                 delete_directives_);
   }

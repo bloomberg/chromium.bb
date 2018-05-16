@@ -79,7 +79,7 @@ void PerUserTopicRegistrationRequest::OnURLFetchCompleteInternal(
     return;
   }
 
-  if (!response_body.get() || response_body->empty()) {
+  if (!response_body || response_body->empty()) {
     std::move(request_completed_callback_)
         .Run(Status(StatusCode::FAILED, base::StringPrintf("Body parse error")),
              std::string());

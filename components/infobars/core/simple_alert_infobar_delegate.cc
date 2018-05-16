@@ -27,8 +27,7 @@ SimpleAlertInfoBarDelegate::SimpleAlertInfoBarDelegate(
     const gfx::VectorIcon* vector_icon,
     const base::string16& message,
     bool auto_expire)
-    : ConfirmInfoBarDelegate(),
-      infobar_identifier_(infobar_identifier),
+    : infobar_identifier_(infobar_identifier),
       vector_icon_(vector_icon),
       message_(message),
       auto_expire_(auto_expire) {}

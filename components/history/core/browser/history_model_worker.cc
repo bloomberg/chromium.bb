@@ -42,7 +42,7 @@ void PostWorkerTask(
     const base::WeakPtr<history::HistoryService>& history_service,
     base::OnceClosure work,
     base::CancelableTaskTracker* cancelable_tracker) {
-  if (history_service.get()) {
+  if (history_service) {
     history_service->ScheduleDBTask(
         FROM_HERE, std::make_unique<WorkerTask>(std::move(work)),
         cancelable_tracker);
@@ -62,7 +62,7 @@ HistoryModelWorker::HistoryModelWorker(
       // constructed and deleted on the same sequence.
       cancelable_tracker_(new base::CancelableTaskTracker,
                           base::OnTaskRunnerDeleter(ui_thread_)) {
-  CHECK(history_service.get());
+  CHECK(history_service);
   DCHECK(ui_thread_->BelongsToCurrentThread());
 }
 

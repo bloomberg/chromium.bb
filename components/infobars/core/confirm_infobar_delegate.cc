@@ -58,9 +58,7 @@ bool ConfirmInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
   return false;
 }
 
-ConfirmInfoBarDelegate::ConfirmInfoBarDelegate()
-    : InfoBarDelegate() {
-}
+ConfirmInfoBarDelegate::ConfirmInfoBarDelegate() {}
 
 bool ConfirmInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   ConfirmInfoBarDelegate* confirm_delegate =

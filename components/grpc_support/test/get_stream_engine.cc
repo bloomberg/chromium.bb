@@ -40,7 +40,7 @@ class BidirectionalStreamTestURLRequestContextGetter
       : task_runner_(task_runner) {}
 
   net::URLRequestContext* GetURLRequestContext() override {
-    if (!request_context_.get()) {
+    if (!request_context_) {
       request_context_.reset(
           new net::TestURLRequestContext(true /* delay_initialization */));
       auto mock_host_resolver = std::make_unique<net::MockHostResolver>();

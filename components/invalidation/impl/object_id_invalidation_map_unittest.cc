@@ -80,7 +80,7 @@ TEST_F(ObjectIdInvalidationMapTest, SerializeEmpty) {
   std::unique_ptr<base::ListValue> value = empty.ToValue();
   ASSERT_TRUE(value.get());
   ObjectIdInvalidationMap deserialized;
-  deserialized.ResetFromValue(*value.get());
+  deserialized.ResetFromValue(*value);
   EXPECT_TRUE(empty == deserialized);
 }
 
@@ -88,7 +88,7 @@ TEST_F(ObjectIdInvalidationMapTest, SerializeOneInvalidation) {
   std::unique_ptr<base::ListValue> value = one_invalidation.ToValue();
   ASSERT_TRUE(value.get());
   ObjectIdInvalidationMap deserialized;
-  deserialized.ResetFromValue(*value.get());
+  deserialized.ResetFromValue(*value);
   EXPECT_TRUE(one_invalidation == deserialized);
 }
 
@@ -96,7 +96,7 @@ TEST_F(ObjectIdInvalidationMapTest, SerializeInvalidateAll) {
   std::unique_ptr<base::ListValue> value = invalidate_all.ToValue();
   ASSERT_TRUE(value.get());
   ObjectIdInvalidationMap deserialized;
-  deserialized.ResetFromValue(*value.get());
+  deserialized.ResetFromValue(*value);
   EXPECT_TRUE(invalidate_all == deserialized);
 }
 

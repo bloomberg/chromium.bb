@@ -65,7 +65,7 @@ FeedImageManager::~FeedImageManager() {
 
 void FeedImageManager::FetchImage(std::vector<std::string> urls,
                                   ImageFetchedCallback callback) {
-  DCHECK(image_database_.get());
+  DCHECK(image_database_);
 
   FetchImagesFromDatabase(0, std::move(urls), std::move(callback));
 }

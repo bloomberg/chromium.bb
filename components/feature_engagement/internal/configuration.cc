@@ -97,8 +97,7 @@ std::ostream& operator<<(std::ostream& os, const EventConfig& event_config) {
             << ", storage: " << event_config.storage << " }";
 }
 
-SessionRateImpact::SessionRateImpact()
-    : type(SessionRateImpact::Type::ALL), affected_features() {}
+SessionRateImpact::SessionRateImpact() : type(SessionRateImpact::Type::ALL) {}
 
 SessionRateImpact::SessionRateImpact(const SessionRateImpact& other) = default;
 

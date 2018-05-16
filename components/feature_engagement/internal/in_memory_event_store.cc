@@ -19,7 +19,7 @@ namespace feature_engagement {
 
 InMemoryEventStore::InMemoryEventStore(
     std::unique_ptr<std::vector<Event>> events)
-    : EventStore(), events_(std::move(events)), ready_(false) {}
+    : events_(std::move(events)), ready_(false) {}
 
 InMemoryEventStore::InMemoryEventStore()
     : InMemoryEventStore(std::make_unique<std::vector<Event>>()) {}
