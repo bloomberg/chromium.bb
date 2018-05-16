@@ -186,6 +186,49 @@ class ExecTest(unittest.TestCase):
                   str(cm.exception))
 
 
+class UpdateConditionTest(unittest.TestCase):
+  def test_both_present(self):
+    info = {'condition': 'foo'}
+    gclient_eval.UpdateCondition(info, 'and', 'bar')
+    self.assertEqual(info, {'condition': '(foo) and (bar)'})
+
+    info = {'condition': 'foo'}
+    gclient_eval.UpdateCondition(info, 'or', 'bar')
+    self.assertEqual(info, {'condition': '(foo) or (bar)'})
+
+  def test_one_present_and(self):
+    # If one of info's condition or new_condition is present, and |op| == 'and'
+    # then the the result must be the present condition.
+    info = {'condition': 'foo'}
+    gclient_eval.UpdateCondition(info, 'and', None)
+    self.assertEqual(info, {'condition': 'foo'})
+
+    info = {}
+    gclient_eval.UpdateCondition(info, 'and', 'bar')
+    self.assertEqual(info, {'condition': 'bar'})
+
+  def test_both_absent_and(self):
+    # Nothing happens
+    info = {}
+    gclient_eval.UpdateCondition(info, 'and', None)
+    self.assertEqual(info, {})
+
+  def test_or(self):
+    # If one of info's condition and new_condition is not present, then there
+    # shouldn't be a condition. An absent value is treated as implicitly True.
+    info = {'condition': 'foo'}
+    gclient_eval.UpdateCondition(info, 'or', None)
+    self.assertEqual(info, {})
+
+    info = {}
+    gclient_eval.UpdateCondition(info, 'or', 'bar')
+    self.assertEqual(info, {})
+
+    info = {}
+    gclient_eval.UpdateCondition(info, 'or', None)
+    self.assertEqual(info, {})
+
+
 class EvaluateConditionTest(unittest.TestCase):
   def test_true(self):
     self.assertTrue(gclient_eval.EvaluateCondition('True', {}))
@@ -573,8 +616,9 @@ class ParseTest(unittest.TestCase):
     for validate_syntax in True, False:
       local_scope = self.callParse(validate_syntax=validate_syntax)
       self.assertEqual({
-          'vars': collections.OrderedDict([('foo', 'bar')]),
-          'deps': collections.OrderedDict([('a_dep', 'abarb')]),
+          'vars': {'foo': 'bar'},
+          'deps': {'a_dep': {'url': 'abarb',
+                             'dep_type': 'git'}},
       }, local_scope)
 
   def test_no_expands_vars(self):
@@ -582,8 +626,9 @@ class ParseTest(unittest.TestCase):
       local_scope = self.callParse(False,
                                    validate_syntax=validate_syntax)
       self.assertEqual({
-          'vars': collections.OrderedDict([('foo', 'bar')]),
-          'deps': collections.OrderedDict([('a_dep', 'a{foo}b')]),
+          'vars': {'foo': 'bar'},
+          'deps': {'a_dep': {'url': 'a{foo}b',
+                             'dep_type': 'git'}},
       }, local_scope)
 
   def test_overrides_vars(self):
@@ -591,8 +636,9 @@ class ParseTest(unittest.TestCase):
       local_scope = self.callParse(validate_syntax=validate_syntax,
                                    vars_override={'foo': 'baz'})
       self.assertEqual({
-          'vars': collections.OrderedDict([('foo', 'bar')]),
-          'deps': collections.OrderedDict([('a_dep', 'abazb')]),
+          'vars': {'foo': 'bar'},
+          'deps': {'a_dep': {'url': 'abazb',
+                             'dep_type': 'git'}},
       }, local_scope)
 
   def test_no_extra_vars(self):
@@ -617,6 +663,171 @@ class ParseTest(unittest.TestCase):
           deps_file, True, False,
           '<unknown>', {'baz': 'lalala'})
     self.assertIn('baz', str(cm.exception))
+
+  def test_standardizes_deps_string_dep(self):
+    for validate_syntax in True, False:
+      local_scope = gclient_eval.Parse('\n'.join([
+        'deps = {',
+        '  "a_dep": "a_url@a_rev",',
+        '}',
+      ]), False, validate_syntax, '<unknown>')
+      self.assertEqual({
+          'deps': {'a_dep': {'url': 'a_url@a_rev',
+                             'dep_type': 'git'}},
+      }, local_scope)
+
+  def test_standardizes_deps_dict_dep(self):
+    for validate_syntax in True, False:
+      local_scope = gclient_eval.Parse('\n'.join([
+        'deps = {',
+        '  "a_dep": {',
+        '     "url": "a_url@a_rev",',
+        '     "condition": "checkout_android",',
+        '  },',
+        '}',
+      ]), False, validate_syntax, '<unknown>')
+      self.assertEqual({
+          'deps': {'a_dep': {'url': 'a_url@a_rev',
+                             'dep_type': 'git',
+                             'condition': 'checkout_android'}},
+      }, local_scope)
+
+  def test_ignores_none_in_deps_os(self):
+    for validate_syntax in True, False:
+      local_scope = gclient_eval.Parse('\n'.join([
+        'deps = {',
+        '  "a_dep": "a_url@a_rev",',
+        '}',
+        'deps_os = {',
+        '  "mac": {',
+        '     "a_dep": None,',
+        '  },',
+        '}',
+      ]), False, validate_syntax, '<unknown>')
+      self.assertEqual({
+          'deps': {'a_dep': {'url': 'a_url@a_rev',
+                             'dep_type': 'git'}},
+      }, local_scope)
+
+  def test_merges_deps_os_extra_dep(self):
+    for validate_syntax in True, False:
+      local_scope = gclient_eval.Parse('\n'.join([
+        'deps = {',
+        '  "a_dep": "a_url@a_rev",',
+        '}',
+        'deps_os = {',
+        '  "mac": {',
+        '     "b_dep": "b_url@b_rev"',
+        '  },',
+        '}',
+      ]), False, validate_syntax, '<unknown>')
+      self.assertEqual({
+          'deps': {'a_dep': {'url': 'a_url@a_rev',
+                             'dep_type': 'git'},
+                   'b_dep': {'url': 'b_url@b_rev',
+                             'dep_type': 'git',
+                             'condition': 'checkout_mac'}},
+      }, local_scope)
+
+  def test_merges_deps_os_existing_dep_with_no_condition(self):
+    for validate_syntax in True, False:
+      local_scope = gclient_eval.Parse('\n'.join([
+        'deps = {',
+        '  "a_dep": "a_url@a_rev",',
+        '}',
+        'deps_os = {',
+        '  "mac": {',
+        '     "a_dep": "a_url@a_rev"',
+        '  },',
+        '}',
+      ]), False, validate_syntax, '<unknown>')
+      self.assertEqual({
+          'deps': {'a_dep': {'url': 'a_url@a_rev',
+                             'dep_type': 'git'}},
+      }, local_scope)
+
+  def test_merges_deps_os_existing_dep_with_condition(self):
+    for validate_syntax in True, False:
+      local_scope = gclient_eval.Parse('\n'.join([
+        'deps = {',
+        '  "a_dep": {',
+        '    "url": "a_url@a_rev",',
+        '    "condition": "some_condition",',
+        '  },',
+        '}',
+        'deps_os = {',
+        '  "mac": {',
+        '     "a_dep": "a_url@a_rev"',
+        '  },',
+        '}',
+      ]), False, validate_syntax, '<unknown>')
+      self.assertEqual({
+          'deps': {
+              'a_dep': {'url': 'a_url@a_rev',
+                        'dep_type': 'git',
+                        'condition': '(checkout_mac) or (some_condition)'},
+          },
+      }, local_scope)
+
+  def test_merges_deps_os_multiple_os(self):
+    for validate_syntax in True, False:
+      local_scope = gclient_eval.Parse('\n'.join([
+        'deps_os = {',
+        '  "win": {'
+        '     "a_dep": "a_url@a_rev"',
+        '  },',
+        '  "mac": {',
+        '     "a_dep": "a_url@a_rev"',
+        '  },',
+        '}',
+      ]), False, validate_syntax, '<unknown>')
+      self.assertEqual({
+          'deps': {
+              'a_dep': {'url': 'a_url@a_rev',
+                        'dep_type': 'git',
+                        'condition': '(checkout_mac) or (checkout_win)'},
+          },
+      }, local_scope)
+
+  def test_fails_to_merge_same_dep_with_different_revisions(self):
+    for validate_syntax in True, False:
+      with self.assertRaises(gclient_eval.gclient_utils.Error) as cm:
+        gclient_eval.Parse('\n'.join([
+          'deps = {',
+          '  "a_dep": {',
+          '    "url": "a_url@a_rev",',
+          '    "condition": "some_condition",',
+          '  },',
+          '}',
+          'deps_os = {',
+          '  "mac": {',
+          '     "a_dep": "a_url@b_rev"',
+          '  },',
+          '}',
+        ]), False, validate_syntax, '<unknown>')
+      self.assertIn('conflicts with existing deps', str(cm.exception))
+
+  def test_merges_hooks_os(self):
+    for validate_syntax in True, False:
+      local_scope = gclient_eval.Parse('\n'.join([
+        'hooks = [',
+        '  {',
+        '    "action": ["a", "action"],',
+        '  },',
+        ']',
+        'hooks_os = {',
+        '  "mac": [',
+        '    {',
+        '       "action": ["b", "action"]',
+        '    },',
+        '  ]',
+        '}',
+      ]), False, validate_syntax, '<unknown>')
+      self.assertEqual({
+          "hooks": [{"action": ["a", "action"]},
+                    {"action": ["b", "action"], "condition": "checkout_mac"}],
+      }, local_scope)
+
 
 
 if __name__ == '__main__':

@@ -5,7 +5,10 @@
 import ast
 import cStringIO
 import collections
+import logging
 import tokenize
+
+import gclient_utils
 
 from third_party import schema
 
@@ -345,31 +348,9 @@ def Exec(content, expand_vars=True, filename='<unknown>', vars_override=None):
   return _GCLIENT_SCHEMA.validate(local_scope)
 
 
-def Parse(content, expand_vars, validate_syntax, filename, vars_override=None):
-  """Parses DEPS strings.
-
-  Executes the Python-like string stored in content, resulting in a Python
-  dictionary specifyied by the schema above. Supports syntax validation and
-  variable expansion.
-
-  Args:
-    content: str. DEPS file stored as a string.
-    expand_vars: bool. Whether variables should be expanded to their values.
-    validate_syntax: bool. Whether syntax should be validated using the schema
-      defined above.
-    filename: str. The name of the DEPS file, or a string describing the source
-      of the content, e.g. '<string>', '<unknown>'.
-    vars_override: dict, optional. A dictionary with overrides for the variables
-      defined by the DEPS file.
-
-  Returns:
-    A Python dict with the parsed contents of the DEPS file, as specified by the
-    schema above.
-  """
-  # TODO(ehmaldonado): Make validate_syntax = True the only case
-  if validate_syntax:
-    return Exec(content, expand_vars, filename, vars_override)
-
+def ExecLegacy(content, expand_vars=True, filename='<unknown>',
+               vars_override=None):
+  """Executes a DEPS file |content| using exec."""
   local_scope = {}
   global_scope = {'Var': lambda var_name: '{%s}' % var_name}
 
@@ -407,6 +388,119 @@ def Parse(content, expand_vars, validate_syntax, filename, vars_override=None):
       return node
 
   return _DeepFormat(local_scope)
+
+
+def _StandardizeDeps(deps_dict, vars_dict):
+  """"Standardizes the deps_dict.
+
+  For each dependency:
+  - Expands the variable in the dependency name.
+  - Ensures the dependency is a dictionary.
+  - Set's the 'dep_type' to be 'git' by default.
+  """
+  new_deps_dict = {}
+  for dep_name, dep_info in deps_dict.items():
+    dep_name = dep_name.format(**vars_dict)
+    if not isinstance(dep_info, collections.Mapping):
+      dep_info = {'url': dep_info}
+    dep_info.setdefault('dep_type', 'git')
+    new_deps_dict[dep_name] = dep_info
+  return new_deps_dict
+
+
+def _MergeDepsOs(deps_dict, os_deps_dict, os_name):
+  """Merges the deps in os_deps_dict into conditional dependencies in deps_dict.
+
+  The dependencies in os_deps_dict are transformed into conditional dependencies
+  using |'checkout_' + os_name|.
+  If the dependency is already present, the URL and revision must coincide.
+  """
+  for dep_name, dep_info in os_deps_dict.items():
+    # Make this condition very visible, so it's not a silent failure.
+    # It's unclear how to support None override in deps_os.
+    if dep_info['url'] is None:
+      logging.error('Ignoring %r:%r in %r deps_os', dep_name, dep_info, os_name)
+      continue
+
+    os_condition = 'checkout_' + (os_name if os_name != 'unix' else 'linux')
+    UpdateCondition(dep_info, 'and', os_condition)
+
+    if dep_name in deps_dict:
+      if deps_dict[dep_name]['url'] != dep_info['url']:
+        raise gclient_utils.Error(
+            'Value from deps_os (%r; %r: %r) conflicts with existing deps '
+            'entry (%r).' % (
+                os_name, dep_name, dep_info, deps_dict[dep_name]))
+
+      UpdateCondition(dep_info, 'or', deps_dict[dep_name].get('condition'))
+
+    deps_dict[dep_name] = dep_info
+
+
+def UpdateCondition(info_dict, op, new_condition):
+  """Updates info_dict's condition with |new_condition|.
+
+  An absent value is treated as implicitly True.
+  """
+  curr_condition = info_dict.get('condition')
+  # Easy case: Both are present.
+  if curr_condition and new_condition:
+    info_dict['condition'] = '(%s) %s (%s)' % (
+        curr_condition, op, new_condition)
+  # If |op| == 'and', and at least one condition is present, then use it.
+  elif op == 'and' and (curr_condition or new_condition):
+    info_dict['condition'] = curr_condition or new_condition
+  # Otherwise, no condition should be set
+  elif curr_condition:
+    del info_dict['condition']
+
+
+def Parse(content, expand_vars, validate_syntax, filename, vars_override=None):
+  """Parses DEPS strings.
+
+  Executes the Python-like string stored in content, resulting in a Python
+  dictionary specifyied by the schema above. Supports syntax validation and
+  variable expansion.
+
+  Args:
+    content: str. DEPS file stored as a string.
+    expand_vars: bool. Whether variables should be expanded to their values.
+    validate_syntax: bool. Whether syntax should be validated using the schema
+      defined above.
+    filename: str. The name of the DEPS file, or a string describing the source
+      of the content, e.g. '<string>', '<unknown>'.
+    vars_override: dict, optional. A dictionary with overrides for the variables
+      defined by the DEPS file.
+
+  Returns:
+    A Python dict with the parsed contents of the DEPS file, as specified by the
+    schema above.
+  """
+  if validate_syntax:
+    result = Exec(content, expand_vars, filename, vars_override)
+  else:
+    result = ExecLegacy(content, expand_vars, filename, vars_override)
+
+  vars_dict = result.get('vars', {})
+  if 'deps' in result:
+    result['deps'] = _StandardizeDeps(result['deps'], vars_dict)
+
+  if 'deps_os' in result:
+    deps = result.setdefault('deps', {})
+    for os_name, os_deps in result['deps_os'].iteritems():
+      os_deps = _StandardizeDeps(os_deps, vars_dict)
+      _MergeDepsOs(deps, os_deps, os_name)
+    del result['deps_os']
+
+  if 'hooks_os' in result:
+    hooks = result.setdefault('hooks', [])
+    for os_name, os_hooks in result['hooks_os'].iteritems():
+      for hook in os_hooks:
+        UpdateCondition(hook, 'and', 'checkout_' + os_name)
+      hooks.extend(os_hooks)
+    del result['hooks_os']
+
+  return result
 
 
 def EvaluateCondition(condition, variables, referenced_variables=None):
