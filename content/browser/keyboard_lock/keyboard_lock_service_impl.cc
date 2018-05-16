@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/common/console_message_level.h"
 #include "content/public/common/content_features.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
@@ -81,8 +82,13 @@ void KeyboardLockServiceImpl::RequestKeyboardLock(
   std::vector<ui::DomCode> dom_codes;
   for (const std::string& code : key_codes) {
     ui::DomCode dom_code = ui::KeycodeConverter::CodeStringToDomCode(code);
-    if (dom_code != ui::DomCode::NONE)
+    if (dom_code != ui::DomCode::NONE) {
       dom_codes.push_back(dom_code);
+    } else {
+      render_frame_host_->AddMessageToConsole(
+          ConsoleMessageLevel::CONSOLE_MESSAGE_LEVEL_WARNING,
+          "Invalid DOMString passed into keyboard.lock(): '" + code + "'");
+    }
   }
 
   // If we are provided with a vector containing only invalid keycodes, then
