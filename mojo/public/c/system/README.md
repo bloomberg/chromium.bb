@@ -543,7 +543,7 @@ platform_handle.struct_size = sizeof(platform_handle);
 platform_handle.type = MOJO_PLATFORM_HANDLE_TYPE_FILE_DESCRIPTOR;
 platform_handle.value = (uint64_t)fd;
 MojoHandle handle;
-MojoResult result = MojoWrapPlatformHandle(&platform_handle, &handle);
+MojoResult result = MojoWrapPlatformHandle(&platform_handle, nullptr, &handle);
 ```
 
 Note that at this point `handle` effectively owns the file descriptor
@@ -554,7 +554,7 @@ over a message pipe, and now we want to unwrap it on the other side:
 ``` c
 MojoPlatformHandle platform_handle;
 platform_handle.struct_size = sizeof(platform_handle);
-MojoResult result = MojoUnwrapPlatformHandle(handle, &platform_handle);
+MojoResult result = MojoUnwrapPlatformHandle(handle, nullptr, &platform_handle);
 int fd = (int)platform_handle.value;
 ```
 

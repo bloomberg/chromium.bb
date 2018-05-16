@@ -19,6 +19,7 @@
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/options_validation.h"
 #include "mojo/edk/system/platform_shared_memory_mapping.h"
+#include "mojo/public/c/system/platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -29,13 +30,11 @@ namespace {
 
 struct SerializedState {
   uint64_t num_bytes;
-  uint32_t flags;
+  uint32_t access_mode;
   uint64_t guid_high;
   uint64_t guid_low;
   uint32_t padding;
 };
-
-const uint32_t kSerializedStateFlagsReadOnly = 1 << 0;
 
 #pragma pack(pop)
 
@@ -138,24 +137,48 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     return nullptr;
   }
 
-  if (num_platform_handles != 1 || num_ports) {
-    LOG(ERROR)
-        << "Invalid serialized shared buffer dispatcher (missing handles)";
+  if (num_ports)
     return nullptr;
+
+  ScopedPlatformHandle handles[2];
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+    (!defined(OS_MACOSX) || defined(OS_IOS))
+  if (serialized_state->access_mode ==
+      MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE) {
+    if (num_platform_handles != 2)
+      return nullptr;
+    handles[1] = std::move(platform_handles[1]);
+  } else {
+    if (num_platform_handles != 1)
+      return nullptr;
   }
+#else
+  if (num_platform_handles != 1)
+    return nullptr;
+#endif
+  handles[0] = std::move(platform_handles[0]);
 
   base::UnguessableToken guid = base::UnguessableToken::Deserialize(
       serialized_state->guid_high, serialized_state->guid_low);
 
-  // TODO(https://crbug.com/826213): Support proper serialization and
-  // deserialization of writable regions as well.
-  base::subtle::PlatformSharedMemoryRegion::Mode mode =
-      serialized_state->flags & kSerializedStateFlagsReadOnly
-          ? base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
-          : base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe;
+  base::subtle::PlatformSharedMemoryRegion::Mode mode;
+  switch (serialized_state->access_mode) {
+    case MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_READ_ONLY:
+      mode = base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly;
+      break;
+    case MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE:
+      mode = base::subtle::PlatformSharedMemoryRegion::Mode::kWritable;
+      break;
+    case MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_UNSAFE:
+      mode = base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe;
+      break;
+    default:
+      LOG(ERROR) << "Invalid serialized shared buffer access mode.";
+      return nullptr;
+  }
   auto region = base::subtle::PlatformSharedMemoryRegion::Take(
-      CreateSharedMemoryRegionHandleFromPlatformHandles(
-          std::move(platform_handles[0]), ScopedPlatformHandle()),
+      CreateSharedMemoryRegionHandleFromPlatformHandles(std::move(handles[0]),
+                                                        std::move(handles[1])),
       mode, static_cast<size_t>(serialized_state->num_bytes), guid);
   if (!region.IsValid()) {
     LOG(ERROR)
@@ -288,6 +311,13 @@ void SharedBufferDispatcher::StartSerialize(uint32_t* num_bytes,
   *num_bytes = sizeof(SerializedState);
   *num_ports = 0;
   *num_platform_handles = 1;
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+    (!defined(OS_MACOSX) || defined(OS_IOS))
+  if (region_.GetMode() ==
+      base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
+    *num_platform_handles = 2;
+  }
+#endif
 }
 
 bool SharedBufferDispatcher::EndSerialize(void* destination,
@@ -297,20 +327,43 @@ bool SharedBufferDispatcher::EndSerialize(void* destination,
       static_cast<SerializedState*>(destination);
   base::AutoLock lock(lock_);
   serialized_state->num_bytes = region_.GetSize();
-  serialized_state->flags =
-      region_.GetMode() ==
-              base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
-          ? kSerializedStateFlagsReadOnly
-          : 0;
+  switch (region_.GetMode()) {
+    case base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly:
+      serialized_state->access_mode =
+          MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_READ_ONLY;
+      break;
+    case base::subtle::PlatformSharedMemoryRegion::Mode::kWritable:
+      serialized_state->access_mode =
+          MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE;
+      break;
+    case base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe:
+      serialized_state->access_mode =
+          MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_UNSAFE;
+      break;
+    default:
+      NOTREACHED();
+      return false;
+  }
+
   const base::UnguessableToken& guid = region_.GetGUID();
   serialized_state->guid_high = guid.GetHighForSerialization();
   serialized_state->guid_low = guid.GetLowForSerialization();
   serialized_state->padding = 0;
 
+  auto region = std::move(region_);
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+    (!defined(OS_MACOSX) || defined(OS_IOS))
+  if (region.GetMode() ==
+      base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
+    ExtractPlatformHandlesFromSharedMemoryRegionHandle(
+        region.PassPlatformHandle(), &handles[0], &handles[1]);
+    return true;
+  }
+#endif
+
   ScopedPlatformHandle ignored_handle;
   ExtractPlatformHandlesFromSharedMemoryRegionHandle(
-      region_.PassPlatformHandle(), &handles[0], &ignored_handle);
-  region_ = base::subtle::PlatformSharedMemoryRegion();
+      region.PassPlatformHandle(), &handles[0], &ignored_handle);
   return true;
 }
 

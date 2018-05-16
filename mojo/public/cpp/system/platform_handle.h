@@ -76,6 +76,7 @@ enum class UnwrappedSharedMemoryHandleProtection {
 };
 
 // Wraps a PlatformFile as a Mojo handle. Takes ownership of the file object.
+// If |platform_file| is valid, this will return a valid handle.
 MOJO_CPP_SYSTEM_EXPORT
 ScopedHandle WrapPlatformFile(base::PlatformFile platform_file);
 
@@ -83,6 +84,11 @@ ScopedHandle WrapPlatformFile(base::PlatformFile platform_file);
 MOJO_CPP_SYSTEM_EXPORT
 MojoResult UnwrapPlatformFile(ScopedHandle handle, base::PlatformFile* file);
 
+// DEPRECATED: Don't introduce new uses of base::SharedMemoryHandle, and please
+// attempt to avoid using this function. Use the new base shared memory APIs
+// (base::ReadOnlySharedMemoryRegion et al) and the corresponding wrap/unwrap
+// calls defined below instead.
+//
 // Wraps a base::SharedMemoryHandle as a Mojo handle. Takes ownership of the
 // SharedMemoryHandle. |size| indicates the size of the underlying
 // base::SharedMemory object, and |current_protection| indicates whether or
@@ -111,6 +117,11 @@ ScopedSharedBufferHandle WrapSharedMemoryHandle(
     size_t size,
     UnwrappedSharedMemoryHandleProtection current_protection);
 
+// DEPRECATED: Don't introduce new uses of base::SharedMemoryHandle, and please
+// attempt to avoid using this function. Use the new base shared memory APIs
+// (base::ReadOnlySharedMemoryRegion et al) and the corresponding wrap/unwrap
+// calls defined below instead.
+//
 // Unwraps a base::SharedMemoryHandle from a Mojo handle. The caller assumes
 // responsibility for the lifetime of the SharedMemoryHandle. On success,
 // |*memory_handle| is set to a valid handle, |*size| is is set to the size of
@@ -129,6 +140,8 @@ UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
                          UnwrappedSharedMemoryHandleProtection* protection);
 
 // Helpers for wrapping and unwrapping new base shared memory API primitives.
+// If the input |region| is valid for the Wrap* functions, they will always
+// succeed and return a valid Mojo shared buffer handle.
 
 MOJO_CPP_SYSTEM_EXPORT ScopedSharedBufferHandle
 WrapReadOnlySharedMemoryRegion(base::ReadOnlySharedMemoryRegion region);

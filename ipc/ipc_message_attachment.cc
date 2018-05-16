@@ -71,7 +71,7 @@ mojo::ScopedHandle MessageAttachment::TakeMojoHandle() {
           sizeof(platform_handle), MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT,
           static_cast<uint64_t>(attachment->get_mach_port())};
       MojoHandle wrapped_handle;
-      if (MojoWrapPlatformHandle(&platform_handle, &wrapped_handle) !=
+      if (MojoWrapPlatformHandle(&platform_handle, nullptr, &wrapped_handle) !=
           MOJO_RESULT_OK) {
         return mojo::ScopedHandle();
       }
@@ -85,7 +85,7 @@ mojo::ScopedHandle MessageAttachment::TakeMojoHandle() {
           sizeof(platform_handle), MOJO_PLATFORM_HANDLE_TYPE_FUCHSIA_HANDLE,
           static_cast<uint64_t>(attachment->Take())};
       MojoHandle wrapped_handle;
-      if (MojoWrapPlatformHandle(&platform_handle, &wrapped_handle) !=
+      if (MojoWrapPlatformHandle(&platform_handle, nullptr, &wrapped_handle) !=
           MOJO_RESULT_OK) {
         return mojo::ScopedHandle();
       }
@@ -111,8 +111,8 @@ scoped_refptr<MessageAttachment> MessageAttachment::CreateFromMojoHandle(
     return new internal::MojoHandleAttachment(std::move(handle));
 
   MojoPlatformHandle platform_handle = {sizeof(platform_handle), 0, 0};
-  MojoResult unwrap_result =
-      MojoUnwrapPlatformHandle(handle.release().value(), &platform_handle);
+  MojoResult unwrap_result = MojoUnwrapPlatformHandle(
+      handle.release().value(), nullptr, &platform_handle);
   if (unwrap_result != MOJO_RESULT_OK)
     return nullptr;
 

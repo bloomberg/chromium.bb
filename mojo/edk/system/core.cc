@@ -1035,8 +1035,10 @@ MojoResult Core::GetBufferInfo(MojoHandle buffer_handle,
   return dispatcher->GetBufferInfo(info);
 }
 
-MojoResult Core::WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
-                                    MojoHandle* mojo_handle) {
+MojoResult Core::WrapPlatformHandle(
+    const MojoPlatformHandle* platform_handle,
+    const MojoWrapPlatformHandleOptions* options,
+    MojoHandle* mojo_handle) {
   ScopedPlatformHandle handle;
   MojoResult result =
       MojoPlatformHandleToScopedPlatformHandle(platform_handle, &handle);
@@ -1046,8 +1048,10 @@ MojoResult Core::WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
   return CreatePlatformHandleWrapper(std::move(handle), mojo_handle);
 }
 
-MojoResult Core::UnwrapPlatformHandle(MojoHandle mojo_handle,
-                                      MojoPlatformHandle* platform_handle) {
+MojoResult Core::UnwrapPlatformHandle(
+    MojoHandle mojo_handle,
+    const MojoUnwrapPlatformHandleOptions* options,
+    MojoPlatformHandle* platform_handle) {
   ScopedPlatformHandle handle;
   MojoResult result = PassWrappedPlatformHandle(mojo_handle, &handle);
   if (result != MOJO_RESULT_OK)
@@ -1057,43 +1061,68 @@ MojoResult Core::UnwrapPlatformHandle(MojoHandle mojo_handle,
                                                   platform_handle);
 }
 
-MojoResult Core::WrapPlatformSharedBufferHandle(
-    const MojoPlatformHandle* platform_handle,
-    size_t size,
+MojoResult Core::WrapPlatformSharedMemoryRegion(
+    const MojoPlatformHandle* platform_handles,
+    uint32_t num_platform_handles,
+    uint64_t size,
     const MojoSharedBufferGuid* guid,
-    MojoPlatformSharedBufferHandleFlags flags,
+    MojoPlatformSharedMemoryRegionAccessMode access_mode,
+    const MojoWrapPlatformSharedMemoryRegionOptions* options,
     MojoHandle* mojo_handle) {
   DCHECK(size);
-  ScopedPlatformHandle handle;
-  MojoResult result =
-      MojoPlatformHandleToScopedPlatformHandle(platform_handle, &handle);
-  if (result != MOJO_RESULT_OK)
-    return result;
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+    (!defined(OS_MACOSX) || defined(OS_IOS))
+  if (access_mode == MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE) {
+    if (num_platform_handles != 2)
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+#else
+  if (num_platform_handles != 1)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+#endif
+
+  ScopedPlatformHandle handles[2];
+  bool handles_ok = true;
+  for (size_t i = 0; i < num_platform_handles; ++i) {
+    MojoResult result = MojoPlatformHandleToScopedPlatformHandle(
+        &platform_handles[i], &handles[i]);
+    if (result != MOJO_RESULT_OK)
+      handles_ok = false;
+  }
+  if (!handles_ok)
+    return MOJO_RESULT_INVALID_ARGUMENT;
 
   base::UnguessableToken token =
       base::UnguessableToken::Deserialize(guid->high, guid->low);
-  const bool read_only =
-      flags & MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_HANDLE_IS_READ_ONLY;
 
-  // TODO(https://crbug.com/826213): Support proper wrapping/unwrapping of
-  // shared memory region handles instead of forcing the wrapped handles to
-  // always be read-only or unsafe. This requires first extending the
-  // wrap/unwrap API to support multiple platform handles as input/output.
-  base::subtle::PlatformSharedMemoryRegion::Mode mode =
-      read_only ? base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly
-                : base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe;
+  base::subtle::PlatformSharedMemoryRegion::Mode mode;
+  switch (access_mode) {
+    case MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_READ_ONLY:
+      mode = base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly;
+      break;
+    case MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE:
+      mode = base::subtle::PlatformSharedMemoryRegion::Mode::kWritable;
+      break;
+    case MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_UNSAFE:
+      mode = base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe;
+      break;
+    default:
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
 
   base::subtle::PlatformSharedMemoryRegion region =
       base::subtle::PlatformSharedMemoryRegion::Take(
           CreateSharedMemoryRegionHandleFromPlatformHandles(
-              std::move(handle), ScopedPlatformHandle()),
+              std::move(handles[0]), std::move(handles[1])),
           mode, size, token);
   if (!region.IsValid())
     return MOJO_RESULT_UNKNOWN;
 
   scoped_refptr<SharedBufferDispatcher> dispatcher;
-  result = SharedBufferDispatcher::CreateFromPlatformSharedMemoryRegion(
-      std::move(region), &dispatcher);
+  MojoResult result =
+      SharedBufferDispatcher::CreateFromPlatformSharedMemoryRegion(
+          std::move(region), &dispatcher);
   if (result != MOJO_RESULT_OK)
     return result;
 
@@ -1107,12 +1136,14 @@ MojoResult Core::WrapPlatformSharedBufferHandle(
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::UnwrapPlatformSharedBufferHandle(
+MojoResult Core::UnwrapPlatformSharedMemoryRegion(
     MojoHandle mojo_handle,
-    MojoPlatformHandle* platform_handle,
-    size_t* size,
+    const MojoUnwrapPlatformSharedMemoryRegionOptions* options,
+    MojoPlatformHandle* platform_handles,
+    uint32_t* num_platform_handles,
+    uint64_t* size,
     MojoSharedBufferGuid* guid,
-    MojoPlatformSharedBufferHandleFlags* flags) {
+    MojoPlatformSharedMemoryRegionAccessMode* access_mode) {
   scoped_refptr<Dispatcher> dispatcher;
   MojoResult result = MOJO_RESULT_OK;
   {
@@ -1139,11 +1170,19 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
   guid->high = token.GetHighForSerialization();
   guid->low = token.GetLowForSerialization();
 
-  DCHECK(flags);
-  *flags = MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_NONE;
-  if (region.GetMode() ==
-      base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly) {
-    *flags |= MOJO_PLATFORM_SHARED_BUFFER_HANDLE_FLAG_HANDLE_IS_READ_ONLY;
+  DCHECK(access_mode);
+  switch (region.GetMode()) {
+    case base::subtle::PlatformSharedMemoryRegion::Mode::kReadOnly:
+      *access_mode = MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_READ_ONLY;
+      break;
+    case base::subtle::PlatformSharedMemoryRegion::Mode::kWritable:
+      *access_mode = MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE;
+      break;
+    case base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe:
+      *access_mode = MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_UNSAFE;
+      break;
+    default:
+      return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
   ScopedPlatformHandle handle;
@@ -1151,11 +1190,31 @@ MojoResult Core::UnwrapPlatformSharedBufferHandle(
   ExtractPlatformHandlesFromSharedMemoryRegionHandle(
       region.PassPlatformHandle(), &handle, &read_only_handle);
 
-  // TODO(https://crbug.com/826213): Once we support proper wrapping of shared
-  // memory handles, don't drop |read_only_handle| on the ground.
+  const uint32_t available_handle_storage_slots = *num_platform_handles;
+  if (available_handle_storage_slots < 1)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+  *num_platform_handles = 1;
+#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA) && \
+    (!defined(OS_MACOSX) || defined(OS_IOS))
+  if (region.GetMode() ==
+      base::subtle::PlatformSharedMemoryRegion::Mode::kWritable) {
+    if (available_handle_storage_slots < 2)
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (ScopedPlatformHandleToMojoPlatformHandle(std::move(read_only_handle),
+                                                 &platform_handles[1]) !=
+        MOJO_RESULT_OK) {
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    }
+    *num_platform_handles = 2;
+  }
+#endif
 
-  return ScopedPlatformHandleToMojoPlatformHandle(std::move(handle),
-                                                  platform_handle);
+  if (ScopedPlatformHandleToMojoPlatformHandle(
+          std::move(handle), &platform_handles[0]) != MOJO_RESULT_OK) {
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  }
+
+  return MOJO_RESULT_OK;
 }
 
 void Core::GetActiveHandlesForTest(std::vector<MojoHandle>* handles) {

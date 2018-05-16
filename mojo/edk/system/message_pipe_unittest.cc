@@ -318,7 +318,7 @@ TEST_F(MessagePipeTest, BasicWaiting) {
 
 #if !defined(OS_IOS)
 
-const size_t kPingPongHandlesPerIteration = 50;
+const size_t kPingPongHandlesPerIteration = 30;
 const size_t kPingPongIterations = 500;
 
 DEFINE_TEST_CLIENT_TEST_WITH_PIPE(HandlePingPong, MessagePipeTest, h) {

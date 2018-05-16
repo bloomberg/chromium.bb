@@ -312,36 +312,43 @@ MojoResult MojoNotifyBadMessage(MojoMessageHandle message,
   return g_thunks.NotifyBadMessage(message, error, error_num_bytes, options);
 }
 
-MojoResult MojoWrapPlatformHandle(
-    const struct MojoPlatformHandle* platform_handle,
-    MojoHandle* mojo_handle) {
-  return g_thunks.WrapPlatformHandle(platform_handle, mojo_handle);
+MojoResult MojoWrapPlatformHandle(const MojoPlatformHandle* platform_handle,
+                                  const MojoWrapPlatformHandleOptions* options,
+                                  MojoHandle* mojo_handle) {
+  return g_thunks.WrapPlatformHandle(platform_handle, options, mojo_handle);
 }
 
 MojoResult MojoUnwrapPlatformHandle(
     MojoHandle mojo_handle,
-    struct MojoPlatformHandle* platform_handle) {
-  return g_thunks.UnwrapPlatformHandle(mojo_handle, platform_handle);
+    const MojoUnwrapPlatformHandleOptions* options,
+    MojoPlatformHandle* platform_handle) {
+  return g_thunks.UnwrapPlatformHandle(mojo_handle, options, platform_handle);
 }
 
-MojoResult MojoWrapPlatformSharedBufferHandle(
-    const struct MojoPlatformHandle* platform_handle,
-    size_t num_bytes,
-    const struct MojoSharedBufferGuid* guid,
-    MojoPlatformSharedBufferHandleFlags flags,
+MojoResult MojoWrapPlatformSharedMemoryRegion(
+    const struct MojoPlatformHandle* platform_handles,
+    uint32_t num_platform_handles,
+    uint64_t num_bytes,
+    const MojoSharedBufferGuid* guid,
+    MojoPlatformSharedMemoryRegionAccessMode access_mode,
+    const MojoWrapPlatformSharedMemoryRegionOptions* options,
     MojoHandle* mojo_handle) {
-  return g_thunks.WrapPlatformSharedBufferHandle(platform_handle, num_bytes,
-                                                 guid, flags, mojo_handle);
+  return g_thunks.WrapPlatformSharedMemoryRegion(
+      platform_handles, num_platform_handles, num_bytes, guid, access_mode,
+      options, mojo_handle);
 }
 
-MojoResult MojoUnwrapPlatformSharedBufferHandle(
+MojoResult MojoUnwrapPlatformSharedMemoryRegion(
     MojoHandle mojo_handle,
-    struct MojoPlatformHandle* platform_handle,
-    size_t* num_bytes,
+    const MojoUnwrapPlatformSharedMemoryRegionOptions* options,
+    struct MojoPlatformHandle* platform_handles,
+    uint32_t* num_platform_handles,
+    uint64_t* num_bytes,
     struct MojoSharedBufferGuid* guid,
-    MojoPlatformSharedBufferHandleFlags* flags) {
-  return g_thunks.UnwrapPlatformSharedBufferHandle(mojo_handle, platform_handle,
-                                                   num_bytes, guid, flags);
+    MojoPlatformSharedMemoryRegionAccessMode* access_mode) {
+  return g_thunks.UnwrapPlatformSharedMemoryRegion(
+      mojo_handle, options, platform_handles, num_platform_handles, num_bytes,
+      guid, access_mode);
 }
 
 }  // extern "C"
