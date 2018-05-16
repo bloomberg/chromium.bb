@@ -253,6 +253,7 @@ cd "${OUTPUTDIR}"
 case "$TARGETARCH" in
   arm )
     export ARCHITECTURE="armhf"
+    stage_install_rpm
     ;;
   ia32 )
     export ARCHITECTURE="i386"
