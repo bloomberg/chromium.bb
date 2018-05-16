@@ -27,9 +27,9 @@ public class U2fApiHandler {
         return sInstance;
     }
 
-    protected void makeCredential(
+    protected void u2fRegister(
             PublicKeyCredentialCreationOptions options, HandlerResponseCallback callback) {}
 
-    protected void getAssertion(
+    protected void u2fSign(
             PublicKeyCredentialRequestOptions options, HandlerResponseCallback callback) {}
 }
