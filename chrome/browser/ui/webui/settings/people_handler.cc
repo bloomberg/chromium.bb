@@ -224,10 +224,6 @@ void PeopleHandler::RegisterMessages() {
       base::BindRepeating(&PeopleHandler::HandleSetDatatypes,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "SyncSetupSetSyncEverything",
-      base::BindRepeating(&PeopleHandler::HandleSetSyncEverything,
-                          base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "SyncSetupSetEncryption",
       base::BindRepeating(&PeopleHandler::HandleSetEncryption,
                           base::Unretained(this)));
@@ -459,30 +455,6 @@ void PeopleHandler::HandleSetDatatypes(const base::ListValue* args) {
   ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CUSTOMIZE);
   if (!configuration.sync_everything)
     ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CHOOSE);
-}
-
-// This function is different from HandleSetDatatypes, in that it only sets
-// the syncAllDatatypes without overriding other prefs' on-disk values.
-void PeopleHandler::HandleSetSyncEverything(const base::ListValue* args) {
-  DCHECK(!sync_startup_tracker_);
-
-  CHECK_EQ(2U, args->GetSize());
-  const base::Value& callback_id = args->GetList()[0];
-  bool sync_everything = args->GetList()[1].GetBool();
-
-  ProfileSyncService* service = GetSyncService();
-  // If the sync engine has shutdown for some reason, just close the sync
-  // dialog.
-  if (!service || !service->IsEngineInitialized()) {
-    CloseSyncSetup();
-    ResolveJavascriptCallback(callback_id, base::Value(kDonePageStatus));
-    return;
-  }
-
-  service->OnUserChangedSyncEverythingOnly(sync_everything);
-  ResolveJavascriptCallback(callback_id, base::Value(kConfigurePageStatus));
-
-  ProfileMetrics::LogProfileSyncInfo(ProfileMetrics::SYNC_CUSTOMIZE);
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

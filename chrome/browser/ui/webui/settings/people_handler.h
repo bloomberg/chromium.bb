@@ -167,7 +167,6 @@ class PeopleHandler : public SettingsPageUIHandler,
   void OnDidClosePage(const base::ListValue* args);
   void HandleSetDatatypes(const base::ListValue* args);
   void HandleSetEncryption(const base::ListValue* args);
-  void HandleSetSyncEverything(const base::ListValue* args);
   void HandleShowSetupUI(const base::ListValue* args);
   void HandleAttemptUserExit(const base::ListValue* args);
   void HandleStartSignin(const base::ListValue* args);
