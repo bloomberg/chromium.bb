@@ -8,7 +8,7 @@
   await dp.Runtime.evaluate({
     expression: `
     let frame = document.createElement('iframe');
-    frame.src = 'data:text/html,<script>onmessage = (e) => e.ports[0].postMessage(\\'pong\\');//# sourceURL=iframe.js</script>';
+    frame.src = 'data:text/html,<script>onmessage = (e) => e.ports[0].postMessage(\\'pong\\');//%23 sourceURL=iframe.js</script>';
     let p = new Promise(resolve => frame.onload = resolve);
     document.body.appendChild(frame);
     p
