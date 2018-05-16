@@ -74,7 +74,7 @@ int AwBrowserMainParts::PreEarlyInitialization() {
   DCHECK(!main_message_loop_.get());
   main_message_loop_.reset(new base::MessageLoopForUI);
   base::MessageLoopCurrentForUI::Get()->Start();
-  return content::RESULT_CODE_NORMAL_EXIT;
+  return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 
 int AwBrowserMainParts::PreCreateThreads() {
@@ -130,7 +130,7 @@ int AwBrowserMainParts::PreCreateThreads() {
     aw_field_trial_creator_.SetUpFieldTrials();
   }
 
-  return content::RESULT_CODE_NORMAL_EXIT;
+  return service_manager::RESULT_CODE_NORMAL_EXIT;
 }
 
 void AwBrowserMainParts::PreMainMessageLoopRun() {

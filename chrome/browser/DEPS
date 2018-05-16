@@ -73,7 +73,6 @@ include_rules = [
   "+services/proxy_resolver/public/mojom",
   "+services/resource_coordinator/public/cpp",
   "+services/resource_coordinator/public/mojom",
-  "+services/service_manager",
   "+services/shape_detection/public/mojom",
   "+services/ui/common",
   "+services/ui/public",

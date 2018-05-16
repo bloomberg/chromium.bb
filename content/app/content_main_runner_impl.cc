@@ -52,7 +52,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_init.h"
-#include "content/public/common/zygote_buildflags.h"
 #include "gin/v8_initializer.h"
 #include "media/base/media.h"
 #include "media/media_buildflags.h"
@@ -60,6 +59,7 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/service_manager/zygote/common/zygote_buildflags.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -87,11 +87,11 @@
 #include "content/public/common/content_descriptors.h"
 
 #if !defined(OS_MACOSX)
-#include "content/public/common/zygote_fork_delegate_linux.h"
+#include "services/service_manager/zygote/common/zygote_fork_delegate_linux.h"
 #endif
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
-#include "content/zygote/zygote_main.h"
 #include "sandbox/linux/services/libc_interceptor.h"
+#include "services/service_manager/zygote/zygote_main.h"
 #endif
 
 #endif  // OS_POSIX || OS_FUCHSIA
@@ -100,7 +100,7 @@
 #include "base/native_library.h"
 #include "base/rand_util.h"
 #include "content/common/font_config_ipc_linux.h"
-#include "content/public/common/common_sandbox_support_linux.h"
+#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 #include "third_party/boringssl/src/include/openssl/rand.h"
@@ -145,11 +145,11 @@
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
 #include "content/browser/sandbox_host_linux.h"
-#include "content/browser/zygote_host/zygote_communication_linux.h"
-#include "content/browser/zygote_host/zygote_host_impl_linux.h"
-#include "content/public/common/common_sandbox_support_linux.h"
-#include "content/public/common/zygote_handle.h"
 #include "media/base/media_switches.h"
+#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
+#include "services/service_manager/zygote/common/zygote_handle.h"
+#include "services/service_manager/zygote/host/zygote_communication_linux.h"
+#include "services/service_manager/zygote/host/zygote_host_impl_linux.h"
 #endif
 
 namespace content {
@@ -200,7 +200,8 @@ void InitializeFieldTrialAndFeatureList(
   // On POSIX systems that use the zygote, we get the trials from a shared
   // memory segment backed by an fd instead of the command line.
   base::FieldTrialList::CreateTrialsFromCommandLine(
-      command_line, switches::kFieldTrialHandle, kFieldTrialDescriptor);
+      command_line, switches::kFieldTrialHandle,
+      service_manager::kFieldTrialDescriptor);
 #endif
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
@@ -299,9 +300,10 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
   // sandboxed processes to talk to it.
   base::FileHandleMappingVector additional_remapped_fds;
   additional_remapped_fds.emplace_back(
-      SandboxHostLinux::GetInstance()->GetChildSocket(), GetSandboxFD());
+      SandboxHostLinux::GetInstance()->GetChildSocket(),
+      service_manager::GetSandboxFD());
 
-  return ZygoteHostImpl::GetInstance()->LaunchZygote(
+  return service_manager::ZygoteHostImpl::GetInstance()->LaunchZygote(
       cmd_line, control_fd, std::move(additional_remapped_fds));
 }
 
@@ -321,14 +323,14 @@ void InitializeZygoteSandboxForBrowserProcess(
   }
 
   // Tickle the zygote host so it forks now.
-  ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
-  ZygoteHandle generic_zygote =
-      CreateGenericZygote(base::BindOnce(LaunchZygoteHelper));
+  service_manager::ZygoteHostImpl::GetInstance()->Init(parsed_command_line);
+  service_manager::ZygoteHandle generic_zygote =
+      service_manager::CreateGenericZygote(base::BindOnce(LaunchZygoteHelper));
 
   // TODO(kerrnel): Investigate doing this without the ZygoteHostImpl as a
   // proxy. It is currently done this way due to concerns about race
   // conditions.
-  ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
+  service_manager::ZygoteHostImpl::GetInstance()->SetRendererSandboxStatus(
       generic_zygote->GetSandboxStatus());
 }
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
@@ -396,7 +398,8 @@ void PreSandboxInit() {
   InitializeWebRtcModule();
 #endif
 
-  SkFontConfigInterface::SetGlobal(sk_make_sp<FontConfigIPC>(GetSandboxFD()));
+  SkFontConfigInterface::SetGlobal(
+      sk_make_sp<FontConfigIPC>(service_manager::GetSandboxFD()));
 
   // Set the android SkFontMgr for blink. We need to ensure this is done
   // before the sandbox is initialized to allow the font manager to access
@@ -524,7 +527,8 @@ int RunZygote(ContentMainDelegate* delegate) {
 #endif
   };
 
-  std::vector<std::unique_ptr<ZygoteForkDelegate>> zygote_fork_delegates;
+  std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>
+      zygote_fork_delegates;
   if (delegate) {
     delegate->ZygoteStarting(&zygote_fork_delegates);
     media::InitializeMediaLibrary();
@@ -535,8 +539,9 @@ int RunZygote(ContentMainDelegate* delegate) {
 #endif
 
   // This function call can return multiple times, once per fork().
-  if (!ZygoteMain(std::move(zygote_fork_delegates)))
+  if (!service_manager::ZygoteMain(std::move(zygote_fork_delegates))) {
     return 1;
+  }
 
   if (delegate)
     delegate->ZygoteForked();
@@ -643,7 +648,7 @@ int RunNamedProcessTypeMain(const std::string& process_type,
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
   // Zygote startup is special -- see RunZygote comments above
   // for why we don't use ZygoteMain directly.
-  if (process_type == switches::kZygoteProcess)
+  if (process_type == service_manager::switches::kZygoteProcess)
     return RunZygote(delegate);
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
@@ -700,17 +705,19 @@ class ContentMainRunnerImpl : public ContentMainRunner {
 
 // On Android, the ipc_fd is passed through the Java service.
 #if !defined(OS_ANDROID)
-    g_fds->Set(kMojoIPCChannel,
-               kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+    g_fds->Set(service_manager::kMojoIPCChannel,
+               service_manager::kMojoIPCChannel +
+                   base::GlobalDescriptors::kBaseDescriptor);
 
-    g_fds->Set(
-        kFieldTrialDescriptor,
-        kFieldTrialDescriptor + base::GlobalDescriptors::kBaseDescriptor);
+    g_fds->Set(service_manager::kFieldTrialDescriptor,
+               service_manager::kFieldTrialDescriptor +
+                   base::GlobalDescriptors::kBaseDescriptor);
 #endif  // !OS_ANDROID
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
-    g_fds->Set(kCrashDumpSignal,
-               kCrashDumpSignal + base::GlobalDescriptors::kBaseDescriptor);
+    g_fds->Set(service_manager::kCrashDumpSignal,
+               service_manager::kCrashDumpSignal +
+                   base::GlobalDescriptors::kBaseDescriptor);
 #endif  // OS_LINUX || OS_OPENBSD
 
 #endif  // !OS_WIN
@@ -770,7 +777,7 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     //
     // Startup tracing flags are not (and should not) passed to Zygote
     // processes. We will enable tracing when forked, if needed.
-    if (process_type != switches::kZygoteProcess)
+    if (process_type != service_manager::switches::kZygoteProcess)
       tracing::EnableStartupTracingIfNeeded();
 #endif  // !OS_ANDROID
 
@@ -927,7 +934,8 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     // Run this logic on all child processes. Zygotes will run this at a later
     // point in time when the command line has been updated.
     std::unique_ptr<base::FieldTrialList> field_trial_list;
-    if (!process_type.empty() && process_type != switches::kZygoteProcess)
+    if (!process_type.empty() &&
+        process_type != service_manager::switches::kZygoteProcess)
       InitializeFieldTrialAndFeatureList(&field_trial_list);
 
     MainFunctionParams main_params(command_line);

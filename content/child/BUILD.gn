@@ -147,6 +147,10 @@ target(link_target_type, "child") {
     deps += [ "//third_party/android_tools:cpu_features" ]
   }
 
+  if (is_linux) {
+    deps += [ "//services/service_manager/zygote" ]
+  }
+
   if (is_win) {
     libs = [ "dwrite.lib" ]
   }

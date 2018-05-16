@@ -34,8 +34,6 @@ include_rules = [
   "+services/network/public",
   "+services/network/url_request_context_builder_mojo.h",
   "+services/proxy_resolver",
-  "+services/service_manager/embedder",
-  "+services/service_manager/public/cpp",
   "+services/ui/public",
   "+services/ui/service.h",
   "+skia/ext",
@@ -58,9 +56,4 @@ specific_include_rules = {
     "+services/ui/public",
     "+services/ui/service.h",
   ],
-  # Needed until utility process launching has been moved to the service
-  # manager.
-  "chrome_content_utility_client.cc": [
-    "+services/service_manager/sandbox/switches.h",
-  ]
 }

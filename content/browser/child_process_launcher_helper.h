@@ -14,11 +14,11 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/zygote_buildflags.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
+#include "services/service_manager/zygote/common/zygote_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/scoped_java_ref.h"
@@ -35,7 +35,7 @@
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-#include "content/public/common/zygote_handle.h"
+#include "services/service_manager/zygote/common/zygote_handle.h"  // nogncheck
 #endif
 
 namespace base {
@@ -79,7 +79,7 @@ class ChildProcessLauncherHelper :
     base::Process process;
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
-    ZygoteHandle zygote = nullptr;
+    service_manager::ZygoteHandle zygote = nullptr;
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
   };
 

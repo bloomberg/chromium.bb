@@ -9,6 +9,7 @@
 #include "content/public/app/content_main_runner.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
+#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/runner/common/client_util.h"
 
 namespace content {
@@ -44,7 +45,8 @@ bool ContentServiceManagerMainDelegate::IsEmbedderSubprocess() {
          type == switches::kPpapiBrokerProcess ||
          type == switches::kPpapiPluginProcess ||
          type == switches::kRendererProcess ||
-         type == switches::kUtilityProcess || type == switches::kZygoteProcess;
+         type == switches::kUtilityProcess ||
+         type == service_manager::switches::kZygoteProcess;
 }
 
 int ContentServiceManagerMainDelegate::RunEmbedderProcess() {

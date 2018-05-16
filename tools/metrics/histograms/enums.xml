@@ -48238,7 +48238,7 @@ Full version information for the fingerprint enum values:
   <int value="-805306369" label="0xCFFFFFFF - Hung browser killed."/>
   <int value="-36863" label="0xFFFF7001 - Crashpad kCrashExitCodeNoDump."/>
   <int value="-36862" label="0xFFFF7002 - Crashpad kFailedTerminationCode."/>
-  <int value="0" label="content::RESULT_CODE_NORMAL_EXIT"/>
+  <int value="0" label="service_manager::RESULT_CODE_NORMAL_EXIT"/>
   <int value="1" label="content::RESULT_CODE_KILLED"/>
   <int value="2" label="content::RESULT_CODE_HUNG"/>
   <int value="3" label="content::RESULT_CODE_KILLED_BAD_MESSAGE"/>

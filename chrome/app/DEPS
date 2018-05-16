@@ -34,7 +34,6 @@ include_rules = [
   "+native_client/src/trusted/service_runtime/osx",
   "+remoting/client/plugin",
   "+sandbox",
-  "+services/service_manager",
   "+services/ui/public",
   "+third_party/breakpad/breakpad",
   "+third_party/crashpad/crashpad",

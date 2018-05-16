@@ -21,7 +21,6 @@
 #include "components/nacl/loader/nacl_trusted_listener.h"
 #include "components/nacl/loader/nonsfi/nonsfi_main.h"
 #include "content/public/common/content_descriptors.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_sync_channel.h"

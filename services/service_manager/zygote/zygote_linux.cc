@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/zygote/zygote_linux.h"
+#include "services/service_manager/zygote/zygote_linux.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -32,30 +32,29 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
-#include "content/common/zygote_commands_linux.h"
-#include "content/public/common/content_descriptors.h"
-#include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_channel_switches.h"
-#include "content/public/common/result_codes.h"
-#include "content/public/common/send_zygote_child_ping_linux.h"
-#include "content/public/common/zygote_fork_delegate_linux.h"
 #include "ipc/ipc_channel.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
+#include "services/service_manager/embedder/descriptors.h"
+#include "services/service_manager/embedder/result_codes.h"
 #include "services/service_manager/embedder/set_process_title.h"
+#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox.h"
+#include "services/service_manager/zygote/common/send_zygote_child_ping_linux.h"
+#include "services/service_manager/zygote/common/zygote_commands_linux.h"
+#include "services/service_manager/zygote/common/zygote_fork_delegate_linux.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
-// See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
+// See
+// https://chromium.googlesource.com/chromium/src/+/master/docs/linux_zygote.md
 
-namespace content {
+namespace service_manager {
 
 namespace {
 
 // NOP function. See below where this handler is installed.
-void SIGCHLDHandler(int signal) {
-}
+void SIGCHLDHandler(int signal) {}
 
 int LookUpFd(const base::GlobalDescriptors::Mapping& fd_mapping, uint32_t key) {
   for (size_t index = 0; index < fd_mapping.size(); ++index) {
@@ -106,7 +105,8 @@ bool Zygote::ProcessRequests() {
   // A SOCK_SEQPACKET socket is installed in fd 3. We get commands from the
   // browser on it.
   // A SOCK_DGRAM is installed in fd 5. This is the sandbox IPC channel.
-  // See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
+  // See
+  // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
 
   // We need to accept SIGCHLD, even though our handler is a no-op because
   // otherwise we cannot wait on children. (According to POSIX 2001.)
@@ -126,17 +126,16 @@ bool Zygote::ProcessRequests() {
     // Let the ZygoteHost know we are ready to go.
     // The receiving code is in
     // content/browser/zygote_host/zygote_host_impl_linux.cc.
-    bool r = base::UnixDomainSocket::SendMsg(kZygoteSocketPairFd,
-                                             kZygoteHelloMessage,
-                                             sizeof(kZygoteHelloMessage),
-                                             std::vector<int>());
+    bool r = base::UnixDomainSocket::SendMsg(
+        kZygoteSocketPairFd, kZygoteHelloMessage, sizeof(kZygoteHelloMessage),
+        std::vector<int>());
 #if defined(OS_CHROMEOS)
     LOG_IF(WARNING, !r) << "Sending zygote magic failed";
     // Exit normally on chromeos because session manager may send SIGTERM
     // right after the process starts and it may fail to send zygote magic
     // number to browser process.
     if (!r)
-      _exit(RESULT_CODE_NORMAL_EXIT);
+      _exit(service_manager::RESULT_CODE_NORMAL_EXIT);
 #else
     CHECK(r) << "Sending zygote magic failed";
 #endif
@@ -178,8 +177,9 @@ bool Zygote::ReapChild(const base::TimeTicks& now, ZygoteProcessInfo* child) {
   pid_t r = HANDLE_EINTR(waitpid(pid, nullptr, WNOHANG));
   if (r > 0) {
     if (r != pid) {
-      DLOG(ERROR) << "While waiting for " << pid << " to terminate, "
-                                                    "waitpid returned "
+      DLOG(ERROR) << "While waiting for " << pid
+                  << " to terminate, "
+                     "waitpid returned "
                   << r;
     }
     return r == pid;
@@ -231,8 +231,8 @@ bool Zygote::UsingNSSandbox() const {
 bool Zygote::HandleRequestFromBrowser(int fd) {
   std::vector<base::ScopedFD> fds;
   char buf[kZygoteMaxMessageLength];
-  const ssize_t len = base::UnixDomainSocket::RecvMsg(
-      fd, buf, sizeof(buf), &fds);
+  const ssize_t len =
+      base::UnixDomainSocket::RecvMsg(fd, buf, sizeof(buf), &fds);
 
   if (len == 0 || (len == -1 && errno == ECONNRESET)) {
     // EOF from the browser. We should die.
@@ -324,11 +324,9 @@ bool Zygote::GetTerminationStatus(base::ProcessHandle real_pid,
                                   bool known_dead,
                                   base::TerminationStatus* status,
                                   int* exit_code) {
-
   ZygoteProcessInfo child_info;
   if (!GetProcessInfo(real_pid, &child_info)) {
-    LOG(ERROR) << "Zygote::GetTerminationStatus for unknown PID "
-               << real_pid;
+    LOG(ERROR) << "Zygote::GetTerminationStatus for unknown PID " << real_pid;
     NOTREACHED();
     return false;
   }
@@ -386,7 +384,7 @@ void Zygote::HandleGetTerminationStatus(int fd, base::PickleIterator iter) {
     // it terminated normally.
     NOTREACHED();
     status = base::TERMINATION_STATUS_NORMAL_TERMINATION;
-    exit_code = RESULT_CODE_NORMAL_EXIT;
+    exit_code = service_manager::RESULT_CODE_NORMAL_EXIT;
   }
 
   base::Pickle write_pickle;
@@ -422,7 +420,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
       return -1;
     }
     std::vector<int> fds;
-    fds.push_back(mojo_channel_fd);  // kBrowserFDIndex
+    fds.push_back(mojo_channel_fd);   // kBrowserFDIndex
     fds.push_back(pid_oracle.get());  // kPIDOracleFDIndex
     pid = helper->Fork(process_type, fds, channel_id);
 
@@ -460,8 +458,7 @@ int Zygote::ForkWithRealPid(const std::string& process_type,
 
     // Now read back our real PID from the zygote.
     base::ProcessId real_pid;
-    if (!base::ReadFromFD(read_pipe.get(),
-                          reinterpret_cast<char*>(&real_pid),
+    if (!base::ReadFromFD(read_pipe.get(), reinterpret_cast<char*>(&real_pid),
                           sizeof(real_pid))) {
       LOG(FATAL) << "Failed to synchronise with parent zygote process";
     }
@@ -549,9 +546,9 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
   base::GlobalDescriptors::Mapping mapping;
   std::string process_type;
   std::string channel_id;
-  const std::string channel_id_prefix = std::string("--") +
-                                        switches::kServiceRequestChannelToken +
-                                        std::string("=");
+  const std::string channel_id_prefix =
+      std::string("--") +
+      service_manager::switches::kServiceRequestChannelToken + std::string("=");
 
   if (!iter.ReadString(&process_type))
     return -1;
@@ -567,16 +564,14 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
       channel_id = arg.substr(channel_id_prefix.length());
   }
 
-  if (process_type == switches::kRendererProcess) {
-    // timezone_id is obtained from ICU in zygote host so that it can't be
-    // invalid. For an unknown reason, if an invalid ID is passed down here,
-    // the worst result would be that timezone would be set to Etc/Unknown.
-    base::string16 timezone_id;
-    if (!iter.ReadString16(&timezone_id))
-      return -1;
-    icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone(
-        icu::UnicodeString(FALSE, timezone_id.data(), timezone_id.length())));
-  }
+  // timezone_id is obtained from ICU in zygote host so that it can't be
+  // invalid. For an unknown reason, if an invalid ID is passed down here, the
+  // worst result would be that timezone would be set to Etc/Unknown.
+  base::string16 timezone_id;
+  if (!iter.ReadString16(&timezone_id))
+    return -1;
+  icu::TimeZone::adoptDefault(icu::TimeZone::createTimeZone(
+      icu::UnicodeString(FALSE, timezone_id.data(), timezone_id.length())));
 
   if (!iter.ReadInt(&numfds))
     return -1;
@@ -624,7 +619,7 @@ base::ProcessId Zygote::ReadArgsAndFork(base::PickleIterator iter,
     service_manager::SetProcessTitleFromCommandLine(nullptr);
   } else if (child_pid < 0) {
     LOG(ERROR) << "Zygote could not fork: process_type " << process_type
-        << " numfds " << numfds << " child_pid " << child_pid;
+               << " numfds " << numfds << " child_pid " << child_pid;
   }
   return child_pid;
 }
@@ -642,8 +637,8 @@ bool Zygote::HandleForkRequest(int fd,
   // If there's no UMA report for this particular fork, then check if any
   // helpers have an initial UMA report for us to send instead.
   while (uma_name.empty() && initial_uma_index_ < helpers_.size()) {
-    helpers_[initial_uma_index_++]->InitialUMA(
-        &uma_name, &uma_sample, &uma_boundary_value);
+    helpers_[initial_uma_index_++]->InitialUMA(&uma_name, &uma_sample,
+                                               &uma_boundary_value);
   }
   // Must always send reply, as ZygoteHost blocks while waiting for it.
   base::Pickle reply_pickle;
@@ -654,18 +649,18 @@ bool Zygote::HandleForkRequest(int fd,
     reply_pickle.WriteInt(uma_boundary_value);
   }
   if (HANDLE_EINTR(write(fd, reply_pickle.data(), reply_pickle.size())) !=
-      static_cast<ssize_t> (reply_pickle.size()))
+      static_cast<ssize_t>(reply_pickle.size()))
     PLOG(ERROR) << "write";
   return false;
 }
 
 bool Zygote::HandleGetSandboxStatus(int fd, base::PickleIterator iter) {
   if (HANDLE_EINTR(write(fd, &sandbox_flags_, sizeof(sandbox_flags_))) !=
-                   sizeof(sandbox_flags_)) {
+      sizeof(sandbox_flags_)) {
     PLOG(ERROR) << "write";
   }
 
   return false;
 }
 
-}  // namespace content
+}  // namespace service_manager

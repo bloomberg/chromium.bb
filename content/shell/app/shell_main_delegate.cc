@@ -45,6 +45,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/service_manager/embedder/switches.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
@@ -303,7 +304,7 @@ void ShellMainDelegate::PreSandboxStartup() {
     crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
 #elif defined(OS_LINUX)
     // Reporting for sub-processes will be initialized in ZygoteForked.
-    if (process_type != switches::kZygoteProcess)
+    if (process_type != service_manager::switches::kZygoteProcess)
       breakpad::InitCrashReporter(process_type);
 #elif defined(OS_ANDROID)
     if (process_type.empty())

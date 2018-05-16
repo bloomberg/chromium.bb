@@ -282,6 +282,7 @@ static_library("content_shell_lib") {
     "//sandbox",
     "//services/device/public/mojom",
     "//services/network/public/cpp",
+    "//services/service_manager/embedder:embedder_result_codes",
     "//services/service_manager/public/cpp",
     "//services/test/echo:lib",
     "//services/test/echo/public/mojom",

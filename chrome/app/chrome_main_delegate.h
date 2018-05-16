@@ -49,8 +49,9 @@ class ChromeMainDelegate : public content::ContentMainDelegate {
   bool ShouldSendMachPort(const std::string& process_type) override;
   bool DelaySandboxInitialization(const std::string& process_type) override;
 #elif defined(OS_LINUX)
-  void ZygoteStarting(std::vector<std::unique_ptr<content::ZygoteForkDelegate>>*
-                          delegates) override;
+  void ZygoteStarting(
+      std::vector<std::unique_ptr<service_manager::ZygoteForkDelegate>>*
+          delegates) override;
   void ZygoteForked() override;
 #endif
   bool ShouldEnableProfilerRecording() override;

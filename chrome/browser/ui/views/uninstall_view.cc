@@ -121,7 +121,7 @@ void UninstallView::SetupControls() {
 }
 
 bool UninstallView::Accept() {
-  user_selection_ = content::RESULT_CODE_NORMAL_EXIT;
+  user_selection_ = service_manager::RESULT_CODE_NORMAL_EXIT;
   if (delete_profile_->checked())
     user_selection_ = chrome::RESULT_CODE_UNINSTALL_DELETE_PROFILE;
   if (change_default_browser_ && change_default_browser_->checked()) {
@@ -176,7 +176,7 @@ namespace chrome {
 
 int ShowUninstallBrowserPrompt() {
   DCHECK(base::MessageLoopForUI::IsCurrent());
-  int result = content::RESULT_CODE_NORMAL_EXIT;
+  int result = service_manager::RESULT_CODE_NORMAL_EXIT;
 
   // Register a KeepAlive while showing the dialog. This is done because the
   // dialog uses the views framework which may take and release a KeepAlive

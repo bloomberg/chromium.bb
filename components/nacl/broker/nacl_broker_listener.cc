@@ -22,7 +22,6 @@
 #include "components/nacl/common/nacl_service.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/sandbox_init.h"
 #include "ipc/ipc_channel.h"
 #include "mojo/edk/embedder/embedder.h"
@@ -30,6 +29,7 @@
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "sandbox/win/src/sandbox_policy.h"
+#include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/service_context.h"
 
 namespace {
@@ -126,7 +126,8 @@ void NaClBrokerListener::OnLaunchLoaderThroughBroker(
         base::UintToString(base::win::HandleToUint32(handles[0])));
 
     std::string token = mojo::edk::GenerateRandomToken();
-    cmd_line->AppendSwitchASCII(switches::kServiceRequestChannelToken, token);
+    cmd_line->AppendSwitchASCII(
+        service_manager::switches::kServiceRequestChannelToken, token);
     mojo::edk::OutgoingBrokerClientInvitation invitation;
     MojoResult fuse_result = mojo::FuseMessagePipes(
         mojo::ScopedMessagePipeHandle(service_request_pipe),

@@ -15,8 +15,8 @@
 #include "base/posix/unix_domain_socket.h"
 #include "base/sys_byteorder.h"
 #include "base/trace_event/trace_event.h"
-#include "content/public/common/common_sandbox_support_linux.h"
 #include "services/service_manager/sandbox/linux/sandbox_linux.h"
+#include "services/service_manager/zygote/common/common_sandbox_support_linux.h"
 #include "third_party/blink/public/platform/linux/web_fallback_font.h"
 #include "third_party/blink/public/platform/web_font_render_style.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -37,7 +37,7 @@ void GetFallbackFontForCharacter(int32_t character,
 
   uint8_t buf[512];
   const ssize_t n = base::UnixDomainSocket::SendRecvMsg(
-      GetSandboxFD(), buf, sizeof(buf), nullptr, request);
+      service_manager::GetSandboxFD(), buf, sizeof(buf), nullptr, request);
 
   std::string family_name;
   std::string filename;
@@ -88,7 +88,7 @@ void GetRenderStyleForStrike(const char* family,
 
   uint8_t buf[512];
   const ssize_t n = base::UnixDomainSocket::SendRecvMsg(
-      GetSandboxFD(), buf, sizeof(buf), nullptr, request);
+      service_manager::GetSandboxFD(), buf, sizeof(buf), nullptr, request);
   if (n == -1)
     return;
 
@@ -127,8 +127,9 @@ int MatchFontWithFallback(const std::string& face,
   request.WriteUInt32(fallback_family);
   uint8_t reply_buf[64];
   int fd = -1;
-  base::UnixDomainSocket::SendRecvMsg(GetSandboxFD(), reply_buf,
-                                      sizeof(reply_buf), &fd, request);
+  base::UnixDomainSocket::SendRecvMsg(service_manager::GetSandboxFD(),
+                                      reply_buf, sizeof(reply_buf), &fd,
+                                      request);
   return fd;
 }
 
