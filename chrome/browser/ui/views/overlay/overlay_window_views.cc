@@ -42,7 +42,7 @@ const gfx::Size kPlayPauseIconSize = gfx::Size(90, 90);
 // OverlayWindow implementation of NonClientFrameView.
 class OverlayWindowFrameView : public views::NonClientFrameView {
  public:
-  OverlayWindowFrameView() = default;
+  explicit OverlayWindowFrameView(views::Widget* widget) : widget_(widget) {}
   ~OverlayWindowFrameView() override = default;
 
   // views::NonClientFrameView:
@@ -56,14 +56,18 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
     if (!bounds().Contains(point))
       return HTNOWHERE;
 
-    // Allow dragging the border of the window to resize. Within the bounds of
-    // the window, allow interaction with the media controls on the window.
-    // TODO(apacible): Return correct hit test value to enable drag.
-    // http://crbug.com/840540
-    int window_component = GetHTComponentForFrame(
-        point, kBorderThickness, kBorderThickness, kResizeAreaCornerSize,
-        kResizeAreaCornerSize, GetWidget()->widget_delegate()->CanResize());
-    return window_component;
+    // Allow dragging the border of the window to resize when interacting with
+    // the window outside the control icons.
+    OverlayWindowViews* window = static_cast<OverlayWindowViews*>(widget_);
+    if (!window->GetCloseControlsBounds().Contains(point) &&
+        !window->GetPlayPauseControlsBounds().Contains(point))
+      return HTCAPTION;
+
+    // The areas left to interact with are media controls. These should take
+    // and handle user interaction.
+    return GetHTComponentForFrame(point, kBorderThickness, kBorderThickness,
+                                  kResizeAreaCornerSize, kResizeAreaCornerSize,
+                                  GetWidget()->widget_delegate()->CanResize());
   }
   void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask) override {}
   void ResetWindowControls() override {}
@@ -72,6 +76,8 @@ class OverlayWindowFrameView : public views::NonClientFrameView {
   void SizeConstraintsChanged() override {}
 
  private:
+  views::Widget* widget_;
+
   DISALLOW_COPY_AND_ASSIGN(OverlayWindowFrameView);
 };
 
@@ -98,7 +104,7 @@ class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
   const views::Widget* GetWidget() const override { return widget_; }
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
-    return new OverlayWindowFrameView();
+    return new OverlayWindowFrameView(widget);
   }
 
  private:
