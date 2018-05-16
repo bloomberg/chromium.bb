@@ -87,111 +87,111 @@ TEST(AppsNavigationThrottleTest, TestGetPickerAction) {
   // Expect PickerAction::ERROR if the close_reason is ERROR.
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::ERROR, true));
+                AppType::INVALID, IntentPickerCloseReason::ERROR,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::ERROR, true));
+                AppType::ARC, IntentPickerCloseReason::ERROR,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::ERROR, false));
+                AppType::INVALID, IntentPickerCloseReason::ERROR,
+                /*should_persist=*/false));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ERROR,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::ERROR, false));
+                AppType::ARC, IntentPickerCloseReason::ERROR,
+                /*should_persist=*/false));
 
   // Expect PickerAction::DIALOG_DEACTIVATED if the close_reason is
   // DIALOG_DEACTIVATED.
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED, true));
+                AppType::INVALID, IntentPickerCloseReason::DIALOG_DEACTIVATED,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED, true));
+                AppType::ARC, IntentPickerCloseReason::DIALOG_DEACTIVATED,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED, false));
+                AppType::INVALID, IntentPickerCloseReason::DIALOG_DEACTIVATED,
+                /*should_persist=*/false));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::DIALOG_DEACTIVATED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED, false));
+                AppType::ARC, IntentPickerCloseReason::DIALOG_DEACTIVATED,
+                /*should_persist=*/false));
 
   // Expect PickerAction::PREFERRED_ACTIVITY_FOUND if the close_reason is
   // PREFERRED_APP_FOUND.
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND, true));
+                AppType::INVALID, IntentPickerCloseReason::PREFERRED_APP_FOUND,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND, true));
+                AppType::ARC, IntentPickerCloseReason::PREFERRED_APP_FOUND,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND, false));
+                AppType::INVALID, IntentPickerCloseReason::PREFERRED_APP_FOUND,
+                /*should_persist=*/false));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::PREFERRED_ACTIVITY_FOUND,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND, false));
+                AppType::ARC, IntentPickerCloseReason::PREFERRED_APP_FOUND,
+                /*should_persist=*/false));
 
   // Expect PREFERRED depending on the value of |should_persist|, and |app_type|
   // to be ignored if reason is STAY_IN_CHROME.
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::CHROME_PREFERRED_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::STAY_IN_CHROME, true));
+                AppType::INVALID, IntentPickerCloseReason::STAY_IN_CHROME,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::CHROME_PREFERRED_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::STAY_IN_CHROME, true));
+                AppType::ARC, IntentPickerCloseReason::STAY_IN_CHROME,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::CHROME_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::STAY_IN_CHROME, false));
+                AppType::INVALID, IntentPickerCloseReason::STAY_IN_CHROME,
+                /*should_persist=*/false));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::CHROME_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::STAY_IN_CHROME, false));
+                AppType::ARC, IntentPickerCloseReason::STAY_IN_CHROME,
+                /*should_persist=*/false));
 
   // Expect PREFERRED depending on the value of |should_persist|, and
   // INVALID/ARC to be chosen if reason is OPEN_APP.
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::INVALID,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::OPEN_APP, true));
+                AppType::INVALID, IntentPickerCloseReason::OPEN_APP,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ARC_APP_PREFERRED_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::OPEN_APP, true));
+                AppType::ARC, IntentPickerCloseReason::OPEN_APP,
+                /*should_persist=*/true));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::INVALID,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::INVALID,
-                chromeos::IntentPickerCloseReason::OPEN_APP, false));
+                AppType::INVALID, IntentPickerCloseReason::OPEN_APP,
+                /*should_persist=*/false));
 
   EXPECT_EQ(AppsNavigationThrottle::PickerAction::ARC_APP_PRESSED,
             AppsNavigationThrottle::GetPickerAction(
-                chromeos::AppType::ARC,
-                chromeos::IntentPickerCloseReason::OPEN_APP, false));
+                AppType::ARC, IntentPickerCloseReason::OPEN_APP,
+                /*should_persist=*/false));
 }
 
 TEST(AppsNavigationThrottleTest, TestGetDestinationPlatform) {
