@@ -5,11 +5,9 @@
 
 #include <string>
 
-#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
