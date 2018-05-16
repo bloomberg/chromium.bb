@@ -10,13 +10,14 @@
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "ui/app_list/views/suggestion_chip_view.h"
-#include "ui/base/resource/resource_bundle.h"
-#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -373,8 +374,9 @@ class SuggestionsContainer : public views::View {
       // TODO(dmblack): Here we are using a placeholder image for the suggestion
       // chip icon but we need to handle the actual icon URL.
       if (!suggestion.second->icon_url.is_empty())
-        params.icon = ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-            IDR_ASSISTANT_PLACEHOLDER_GREY300_20DP);
+        params.icon = gfx::CreateVectorIcon(
+            kCircleIcon, app_list::SuggestionChipView::kIconSizeDip,
+            gfx::kGoogleGrey300);
 
       views::View* suggestion_chip_view =
           new app_list::SuggestionChipView(params, suggestion_chip_listener_);

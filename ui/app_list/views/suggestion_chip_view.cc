@@ -21,7 +21,6 @@ constexpr SkColor kTextColor = SkColorSetRGB(0x3C, 0x40, 0x43);    // G Grey 800
 
 // Dimensions.
 constexpr int kIconMarginDip = 8;
-constexpr int kIconSizeDip = 20;
 constexpr int kPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
 constexpr int kStrokeWidthDip = 1;

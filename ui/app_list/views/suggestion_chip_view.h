@@ -32,6 +32,8 @@ class APP_LIST_EXPORT SuggestionChipListener {
 // View representing a suggestion chip.
 class APP_LIST_EXPORT SuggestionChipView : public views::View {
  public:
+  static constexpr int kIconSizeDip = 20;
+
   // Initialization parameters.
   struct Params {
     Params();
@@ -40,7 +42,7 @@ class APP_LIST_EXPORT SuggestionChipView : public views::View {
     // Display text.
     base::string16 text;
     // Optional icon.
-    base::Optional<gfx::ImageSkia*> icon;
+    base::Optional<gfx::ImageSkia> icon;
   };
 
   SuggestionChipView(const Params& params,
