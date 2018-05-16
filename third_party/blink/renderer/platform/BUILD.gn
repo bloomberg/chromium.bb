@@ -166,11 +166,6 @@ group("make_platform_generated") {
 import("//build/config/pch.gni")
 
 config("blink_platform_config") {
-  include_dirs = [
-    #"$angle_path/include",
-    "$root_gen_dir/third_party/blink/renderer",
-  ]
-
   configs = [
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:inside_blink",
@@ -1976,8 +1971,6 @@ jumbo_source_set("blink_platform_unittests_sources") {
   ]
 
   defines = [ "INSIDE_BLINK" ]
-
-  include_dirs = [ "$root_gen_dir/third_party/blink/renderer" ]
 }
 
 executable("image_decode_bench") {
