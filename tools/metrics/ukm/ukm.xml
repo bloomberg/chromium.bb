@@ -2197,6 +2197,14 @@ be describing additional metrics about the same event.
       correspond to the enum PasswordFormMetricsRecorder::BubbleTrigger.
     </summary>
   </metric>
+  <metric name="Submission.Indicator">
+    <summary>
+      Records the event that led the password manager to believe the submission
+      was successful. Metrics is recorded only when the password is saved.
+      Recorded values correspond to the enum
+      autofill::PasswordForm::SubmissionIndicatorEvent.
+    </summary>
+  </metric>
   <metric name="Submission.Observed">
     <summary>
       Records whether a submission of a password form has been observered. The

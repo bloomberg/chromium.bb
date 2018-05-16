@@ -194,6 +194,11 @@ class PasswordFormMetricsRecorder
   // Call this once the submitted form type has been determined.
   void SetSubmittedFormType(SubmittedFormType form_type);
 
+  // Call this when a password is saved to indicate which path led to
+  // submission.
+  void SetSubmissionIndicatorEvent(
+      autofill::PasswordForm::SubmissionIndicatorEvent event);
+
   // Records all histograms in the PasswordManager.SuppressedAccount.* family.
   // Takes the FormFetcher intance which owns the login data from PasswordStore.
   // |pending_credentials| stores credentials when the form was submitted but

@@ -200,6 +200,11 @@ void PasswordFormMetricsRecorder::SetSubmittedFormType(
   submitted_form_type_ = form_type;
 }
 
+void PasswordFormMetricsRecorder::SetSubmissionIndicatorEvent(
+    autofill::PasswordForm::SubmissionIndicatorEvent event) {
+  ukm_entry_builder_.SetSubmission_Indicator(static_cast<int>(event));
+}
+
 int PasswordFormMetricsRecorder::GetActionsTakenNew() const {
   // Merge kManagerActionNone and kManagerActionBlacklisted_Obsolete. This
   // lowers the number of histogram buckets used by 33%.
