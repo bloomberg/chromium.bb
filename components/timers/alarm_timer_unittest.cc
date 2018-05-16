@@ -43,7 +43,7 @@ class OneShotAlarmTimerTester {
     *did_run_ = true;
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   bool* did_run_;
@@ -71,7 +71,7 @@ class OneShotSelfDeletingAlarmTimerTester {
     timer_.reset();
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   bool* did_run_;
@@ -100,7 +100,7 @@ class RepeatingAlarmTimerTester {
       timer_->Stop();
 
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+          FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     }
   }
 
@@ -370,13 +370,13 @@ void ClearAllCallbackHappened() {
 void SetCallbackHappened1() {
   g_callback_happened1 = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 void SetCallbackHappened2() {
   g_callback_happened2 = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 TEST(AlarmTimerTest, ContinuationStopStart) {

@@ -161,8 +161,8 @@ class AddRemoveThread : public PlatformThread::Delegate,
 
   // This function is only callable from the main thread.
   void Quit() {
-    loop_->task_runner()->PostTask(FROM_HERE,
-                                   MessageLoop::QuitWhenIdleClosure());
+    loop_->task_runner()->PostTask(
+        FROM_HERE, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   void Observe(int x) override {

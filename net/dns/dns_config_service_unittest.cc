@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/cancelable_callback.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_split.h"
@@ -60,7 +59,8 @@ class DnsConfigServiceTest : public TestWithScopedTaskEnvironment {
   };
 
   void WaitForConfig(base::TimeDelta timeout) {
-    base::CancelableClosure closure(base::MessageLoop::QuitWhenIdleClosure());
+    base::CancelableClosure closure(
+        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, closure.callback(), timeout);
     quit_on_config_ = true;

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "build/buildflag.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -83,10 +84,8 @@ void ClickOnViewCocoa(const Browser* browser, ViewID vid) {
   NSView* view = view_id_util::GetView(window, vid);
   DCHECK(view);
   MoveMouseToNSViewCenterAndPress(
-      view,
-      ui_controls::LEFT,
-      ui_controls::DOWN | ui_controls::UP,
-      base::MessageLoop::QuitWhenIdleClosure());
+      view, ui_controls::LEFT, ui_controls::DOWN | ui_controls::UP,
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   content::RunMessageLoop();
 }
 

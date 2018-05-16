@@ -842,7 +842,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
     driver->ExpectValue(i);
     SendValue(proxy(), i);
   }
-  driver->RequestQuit(base::MessageLoop::QuitWhenIdleClosure());
+  driver->RequestQuit(base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   base::RunLoop().Run();
 
   DestroyProxy();

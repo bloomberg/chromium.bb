@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
@@ -151,7 +150,7 @@ bool GeolocationProviderTest::ProvidersStarted() {
       FROM_HERE,
       base::BindOnce(&GeolocationProviderTest::GetProvidersStarted,
                      base::Unretained(this)),
-      base::MessageLoop::QuitWhenIdleClosure());
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   base::RunLoop().Run();
   return is_started_;
 }

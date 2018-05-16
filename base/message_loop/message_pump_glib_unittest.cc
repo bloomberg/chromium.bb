@@ -191,7 +191,7 @@ TEST_F(MessagePumpGLibTest, TestQuit) {
 
   injector()->Reset();
   // Quit from an event
-  injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
+  injector()->AddEvent(0, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   RunLoop().Run();
   EXPECT_EQ(1, injector()->processed_events());
 }
@@ -211,7 +211,7 @@ TEST_F(MessagePumpGLibTest, TestEventTaskInterleave) {
       BindOnce(&PostMessageLoopTask, FROM_HERE, std::move(check_task));
   injector()->AddEventAsTask(0, std::move(posted_task));
   injector()->AddEventAsTask(0, DoNothing());
-  injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
+  injector()->AddEvent(0, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   RunLoop().Run();
   EXPECT_EQ(4, injector()->processed_events());
 
@@ -222,7 +222,7 @@ TEST_F(MessagePumpGLibTest, TestEventTaskInterleave) {
       BindOnce(&PostMessageLoopTask, FROM_HERE, std::move(check_task));
   injector()->AddEventAsTask(0, std::move(posted_task));
   injector()->AddEventAsTask(10, DoNothing());
-  injector()->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
+  injector()->AddEvent(0, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   RunLoop().Run();
   EXPECT_EQ(4, injector()->processed_events());
 }
@@ -239,7 +239,7 @@ TEST_F(MessagePumpGLibTest, TestWorkWhileWaitingForEvents) {
   // quit.
   loop()->task_runner()->PostTask(
       FROM_HERE, BindOnce(&EventInjector::AddEvent, Unretained(injector()), 0,
-                          MessageLoop::QuitWhenIdleClosure()));
+                          RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
   RunLoop().Run();
   ASSERT_EQ(10, task_count);
   EXPECT_EQ(1, injector()->processed_events());
@@ -259,7 +259,7 @@ TEST_F(MessagePumpGLibTest, TestWorkWhileWaitingForEvents) {
   loop()->task_runner()->PostDelayedTask(
       FROM_HERE,
       BindOnce(&EventInjector::AddEvent, Unretained(injector()), 10,
-               MessageLoop::QuitWhenIdleClosure()),
+               RunLoop::QuitCurrentWhenIdleClosureDeprecated()),
       TimeDelta::FromMilliseconds(150));
   RunLoop().Run();
   ASSERT_EQ(10, task_count);
@@ -282,7 +282,7 @@ TEST_F(MessagePumpGLibTest, TestEventsWhileWaitingForWork) {
   injector()->AddEventAsTask(10, std::move(posted_task));
 
   // And then quit (relies on the condition tested by TestEventTaskInterleave).
-  injector()->AddEvent(10, MessageLoop::QuitWhenIdleClosure());
+  injector()->AddEvent(10, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   RunLoop().Run();
 
   EXPECT_EQ(12, injector()->processed_events());
@@ -374,7 +374,7 @@ void AddEventsAndDrainGLib(EventInjector* injector) {
   injector->AddDummyEvent(0);
   injector->AddDummyEvent(0);
   // Then add an event that will quit the main loop.
-  injector->AddEvent(0, MessageLoop::QuitWhenIdleClosure());
+  injector->AddEvent(0, RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 
   // Post a couple of dummy tasks
   ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, DoNothing());

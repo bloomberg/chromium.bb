@@ -25,7 +25,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -85,7 +84,7 @@ class HistoryServiceTest : public testing::Test {
     // Make sure we don't have any event pending that could disrupt the next
     // test.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     base::RunLoop().Run();
   }
 
@@ -94,7 +93,7 @@ class HistoryServiceTest : public testing::Test {
 
     history_service_->ClearCachedDataForContextID(nullptr);
     history_service_->SetOnBackendDestroyTask(
-        base::MessageLoop::QuitWhenIdleClosure());
+        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     history_service_->Cleanup();
     history_service_.reset();
 

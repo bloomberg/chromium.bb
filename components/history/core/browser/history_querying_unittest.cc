@@ -183,7 +183,7 @@ class HistoryQueryTest : public testing::Test {
   void TearDown() override {
     if (history_) {
       history_->SetOnBackendDestroyTask(
-          base::MessageLoop::QuitWhenIdleClosure());
+          base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
       history_->Cleanup();
       history_.reset();
       base::RunLoop().Run();  // Wait for the other thread.

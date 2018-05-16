@@ -114,7 +114,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     // called.
     base::Timer shutdown_timer(false, false);
     shutdown_timer.Start(FROM_HERE, TestTimeouts::action_timeout(),
-                         base::MessageLoop::QuitWhenIdleClosure());
+                         base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     base::RunLoop().Run();
   }
 

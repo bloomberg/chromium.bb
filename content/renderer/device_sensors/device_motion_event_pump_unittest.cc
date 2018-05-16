@@ -417,7 +417,7 @@ TEST_F(DeviceMotionEventPumpTest, PumpThrottlesEventRate) {
   sensor_provider()->UpdateGyroscopeData(7, 8, 9);
 
   blink::scheduler::GetSingleThreadTaskRunnerForTesting()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       base::TimeDelta::FromMilliseconds(100));
   base::RunLoop().Run();
   motion_pump()->Stop();

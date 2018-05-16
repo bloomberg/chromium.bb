@@ -388,7 +388,7 @@ TEST_F(AudioLowLatencyInputOutputTest, DISABLED_FullDuplexDelayMeasurement) {
   // in loop back during this time. At the same time, delay recordings are
   // performed and stored in the output text file.
   message_loop()->task_runner()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TestTimeouts::action_timeout());
   base::RunLoop().Run();
 

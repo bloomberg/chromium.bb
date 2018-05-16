@@ -370,7 +370,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
   EXPECT_LT(download_manager_.fetcher_backoff_.GetTimeUntilRelease(),
             base::TimeDelta::FromMilliseconds(1100));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       base::TimeDelta::FromMilliseconds(1100));
   base::RunLoop().Run();
 
@@ -426,7 +426,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   EXPECT_LT(download_manager_.fetcher_backoff_.GetTimeUntilRelease(),
             base::TimeDelta::FromMilliseconds(1100));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       base::TimeDelta::FromMilliseconds(1100));
   base::RunLoop().Run();
 

@@ -60,7 +60,7 @@ class DesktopMediaListAshTest : public ash::AshTestBase {
 
 ACTION(QuitMessageLoop) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 TEST_F(DesktopMediaListAshTest, ScreenOnly) {

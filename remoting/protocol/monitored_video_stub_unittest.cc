@@ -90,7 +90,7 @@ TEST_F(MonitoredVideoStubTest, OnChannelStayDisconnected) {
   monitor_->ProcessVideoPacket(std::move(packet_), base::Closure());
 
   message_loop_.task_runner()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       // The delay should be much greater than |kTestOverrideDelayMilliseconds|.
       TestTimeouts::tiny_timeout());
   base::RunLoop().Run();

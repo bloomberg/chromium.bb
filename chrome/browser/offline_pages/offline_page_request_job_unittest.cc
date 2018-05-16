@@ -14,7 +14,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -1110,7 +1109,7 @@ void OfflinePageRequestJobTest::ReadCompleted(
   is_offline_page_set_in_navigation_data_ =
       is_offline_page_set_in_navigation_data;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 TEST_F(OfflinePageRequestJobTest, FailedToCreateRequestJob) {

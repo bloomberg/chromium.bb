@@ -20,7 +20,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -827,7 +826,7 @@ void BlinkTestController::DiscardMainWindow() {
   if (test_phase_ != BETWEEN_TESTS) {
     Shell::CloseAllWindows();
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     test_phase_ = CLEAN_UP;
   } else if (main_window_) {
     main_window_->Close();
@@ -1193,14 +1192,14 @@ void BlinkTestController::OnResetDone() {
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 void BlinkTestController::OnLeakDetectionDone(
     const LeakDetector::LeakDetectionReport& report) {
   if (!report.leaked) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     return;
   }
 

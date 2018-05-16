@@ -13,7 +13,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/sys_string_conversions.h"
@@ -100,7 +99,7 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   }
   if (!ran_at_least_once) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     main_runner->Run();
   }
 
@@ -150,7 +149,7 @@ int LayoutTestBrowserMain(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kCheckLayoutTestSysDeps)) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     main_runner->Run();
     content::Shell::CloseAllWindows();
     main_runner->Shutdown();

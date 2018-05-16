@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/process/process_handle.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -85,7 +86,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
       case printing::JobEventDetails::JOB_DONE: {
         // Succeeded.
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+            FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
         break;
       }
       case printing::JobEventDetails::USER_INIT_CANCELED:
@@ -93,7 +94,7 @@ class PrintingLayoutTest : public PrintingTest<InProcessBrowserTest>,
         // Failed.
         ASSERT_TRUE(false);
         base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+            FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
         break;
       }
       case printing::JobEventDetails::NEW_DOC:

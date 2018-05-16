@@ -11,7 +11,7 @@
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/app/content_main.h"
 #include "content/public/browser/browser_thread.h"
@@ -114,8 +114,8 @@ void HeadlessBrowserImpl::Shutdown() {
     browser_contexts_.clear();
   }
 
-  BrowserMainThread()->PostTask(FROM_HERE,
-                                base::MessageLoop::QuitWhenIdleClosure());
+  BrowserMainThread()->PostTask(
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 }
 
 std::vector<HeadlessBrowserContext*>

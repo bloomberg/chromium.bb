@@ -12,7 +12,6 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/histogram_tester.h"
@@ -1454,7 +1453,7 @@ TEST_F(RenderWidgetHostTest, DontPostponeHangMonitorTimeout) {
 
   // Wait long enough for first timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMilliseconds(10));
   base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
@@ -1473,7 +1472,7 @@ TEST_F(RenderWidgetHostTest, StopAndStartHangMonitorTimeout) {
 
   // Wait long enough for first timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMilliseconds(40));
   base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
@@ -1491,7 +1490,7 @@ TEST_F(RenderWidgetHostTest, ShorterDelayHangMonitorTimeout) {
 
   // Wait long enough for the second timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMilliseconds(25));
   base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
@@ -1509,7 +1508,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
   // The timeout should not fire.
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(2));
   base::RunLoop().Run();
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
@@ -1517,7 +1516,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
   // The timeout should never reactivate while hidden.
   SimulateMouseEvent(WebInputEvent::kMouseMove, 10, 10, 0, false);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(2));
   base::RunLoop().Run();
   EXPECT_FALSE(delegate_->unresponsive_timer_fired());
@@ -1526,7 +1525,7 @@ TEST_F(RenderWidgetHostTest, HangMonitorTimeoutDisabledForInputWhenHidden) {
   // not yet been ack'ed.
   host_->WasShown(ui::LatencyInfo());
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(2));
   base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
@@ -1554,7 +1553,7 @@ TEST_F(RenderWidgetHostTest, MultipleInputEvents) {
 
   // Wait long enough for first timeout and see if it fired.
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
   EXPECT_TRUE(delegate_->unresponsive_timer_fired());
@@ -1592,7 +1591,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
                    .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
 
@@ -1608,7 +1607,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
               .Build();
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
 
@@ -1624,7 +1623,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
   host_->SubmitCompositorFrame(local_surface_id, std::move(frame), nullptr, 0);
   host_->DidNavigate(7);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
 
@@ -1634,7 +1633,7 @@ TEST_F(RenderWidgetHostTest, NewContentRenderingTimeoutWithoutSurfaceSync) {
   // Don't send any frames after the timer starts. The timer should fire.
   host_->DidNavigate(20);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       TimeDelta::FromMicroseconds(20));
   base::RunLoop().Run();
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());

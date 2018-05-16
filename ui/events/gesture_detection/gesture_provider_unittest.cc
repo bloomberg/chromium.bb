@@ -10,7 +10,6 @@
 
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
@@ -426,7 +425,8 @@ class GestureProviderTest : public testing::Test, public GestureProviderClient {
 
   static void RunTasksAndWait(base::TimeDelta delay) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(), delay);
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
+        delay);
     base::RunLoop().Run();
   }
 

@@ -13,7 +13,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -86,7 +85,7 @@ static void EosOnReadDone(bool* got_eos_buffer,
                           DemuxerStream::Status status,
                           scoped_refptr<DecoderBuffer> buffer) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
 
   EXPECT_EQ(status, DemuxerStream::kOk);
   if (buffer->end_of_stream()) {
@@ -210,7 +209,7 @@ class FFmpegDemuxerTest : public testing::Test {
     }
     OnReadDoneCalled(read_expectation.size, read_expectation.timestamp_us);
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   }
 
   DemuxerStream::ReadCB NewReadCB(
@@ -1349,7 +1348,7 @@ static void ValidateAnnexB(DemuxerStream* stream,
 
   if (buffer->end_of_stream()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     return;
   }
 
@@ -1366,7 +1365,7 @@ static void ValidateAnnexB(DemuxerStream* stream,
   if (!is_valid) {
     LOG(ERROR) << "Buffer contains invalid Annex B data.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
+        FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     return;
   }
 

@@ -6,6 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -80,7 +81,7 @@ const int kDefaultTimeoutMs = 10000;
 void QuitAfter(int time_ms) {
   DCHECK_GE(time_ms, 0);
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure(),
+      FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated(),
       base::TimeDelta::FromMilliseconds(time_ms));
 }
 
