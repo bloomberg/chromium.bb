@@ -36,6 +36,7 @@ class OverlaySurfaceEmbedder {
   std::unique_ptr<ui::Layer> surface_layer_;
 
   // Owned by the OverlayWindow implementation.
+  // These are set in AddControlsLayer(), which is called in the constructor.
   ui::Layer* video_layer_ = nullptr;
   ui::Layer* controls_background_layer_ = nullptr;
   ui::Layer* close_controls_layer_ = nullptr;
