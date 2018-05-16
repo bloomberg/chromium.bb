@@ -13,16 +13,16 @@ import org.chromium.webauth.mojom.PublicKeyCredentialRequestOptions;
  * Android implementation of the Authenticator service defined in
  * components/webauth/authenticator.mojom.
  */
-public class U2fApiHandler {
-    private static U2fApiHandler sInstance;
+public class Fido2ApiHandler {
+    private static Fido2ApiHandler sInstance;
 
     /**
-     * @return The U2fApiHandler for use during the lifetime of the browser process.
+     * @return The Fido2ApiHandler for use during the lifetime of the browser process.
      */
-    public static U2fApiHandler getInstance() {
+    public static Fido2ApiHandler getInstance() {
         ThreadUtils.checkUiThread();
         if (sInstance == null) {
-            sInstance = AppHooks.get().createU2fApiHandler();
+            sInstance = AppHooks.get().createFido2ApiHandler();
         }
         return sInstance;
     }
