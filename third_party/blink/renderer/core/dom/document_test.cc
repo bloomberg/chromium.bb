@@ -993,20 +993,9 @@ TEST_F(DocumentTest, CanExecuteScriptsWithSandboxAndIsolatedWorld) {
   }
 }
 
-typedef bool TestParamRootLayerScrolling;
-class ParameterizedDocumentTest
-    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
-      private ScopedRootLayerScrollingForTest,
-      public DocumentTest {
- public:
-  ParameterizedDocumentTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
-};
-
-INSTANTIATE_TEST_CASE_P(All, ParameterizedDocumentTest, testing::Bool());
-
 // Android does not support non-overlay top-level scrollbars.
 #if !defined(OS_ANDROID)
-TEST_P(ParameterizedDocumentTest, ElementFromPointOnScrollbar) {
+TEST_F(DocumentTest, ElementFromPointOnScrollbar) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
@@ -1034,7 +1023,7 @@ TEST_P(ParameterizedDocumentTest, ElementFromPointOnScrollbar) {
 }
 #endif  // defined(OS_ANDROID)
 
-TEST_P(ParameterizedDocumentTest, ElementFromPointWithPageZoom) {
+TEST_F(DocumentTest, ElementFromPointWithPageZoom) {
   GetDocument().SetCompatibilityMode(Document::kQuirksMode);
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);

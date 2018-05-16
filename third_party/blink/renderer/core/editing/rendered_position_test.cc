@@ -14,16 +14,12 @@
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/use_mock_scrollbar_settings.h"
 
 namespace blink {
 
-class RenderedPositionTest : public testing::WithParamInterface<bool>,
-                             private ScopedRootLayerScrollingForTest,
-                             public EditingTestBase {
+class RenderedPositionTest : public EditingTestBase {
  public:
-  RenderedPositionTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
   void SetUp() override {
     EditingTestBase::SetUp();
     GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
@@ -49,9 +45,7 @@ class RenderedPositionTest : public testing::WithParamInterface<bool>,
   UseMockScrollbarSettings mock_scrollbars_;
 };
 
-INSTANTIATE_TEST_CASE_P(All, RenderedPositionTest, testing::Bool());
-
-TEST_P(RenderedPositionTest, ComputeCompositedSelection) {
+TEST_F(RenderedPositionTest, ComputeCompositedSelection) {
   SetBodyContent(R"HTML(
       <!DOCTYPE html>
       input {
@@ -71,7 +65,7 @@ TEST_P(RenderedPositionTest, ComputeCompositedSelection) {
   EXPECT_TRUE(composited_selection.end.hidden);
 }
 
-TEST_P(RenderedPositionTest, PositionInScrollableRoot) {
+TEST_F(RenderedPositionTest, PositionInScrollableRoot) {
   SetBodyContent(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -116,7 +110,7 @@ TEST_P(RenderedPositionTest, PositionInScrollableRoot) {
             composited_selection.end.edge_bottom_in_layer);
 }
 
-TEST_P(RenderedPositionTest, PositionInScroller) {
+TEST_F(RenderedPositionTest, PositionInScroller) {
   SetBodyContent(R"HTML(
       <!DOCTYPE html>
       <style>
@@ -183,7 +177,7 @@ TEST_P(RenderedPositionTest, PositionInScroller) {
 }
 
 // crbug.com/807930
-TEST_P(RenderedPositionTest, ContentEditableLinebreak) {
+TEST_F(RenderedPositionTest, ContentEditableLinebreak) {
   SetBodyContent(
       "<div style='font: 10px/10px Ahem;' contenteditable>"
       "test<br><br></div>");
@@ -202,7 +196,7 @@ TEST_P(RenderedPositionTest, ContentEditableLinebreak) {
 }
 
 // crbug.com/807930
-TEST_P(RenderedPositionTest, TextAreaLinebreak) {
+TEST_F(RenderedPositionTest, TextAreaLinebreak) {
   SetBodyContent(
       "<textarea style='font: 10px/10px Ahem;'>"
       "test\n</textarea>");
@@ -220,7 +214,7 @@ TEST_P(RenderedPositionTest, TextAreaLinebreak) {
 }
 
 // crbug.com/815099
-TEST_P(RenderedPositionTest, CaretBeforeSoftWrap) {
+TEST_F(RenderedPositionTest, CaretBeforeSoftWrap) {
   SetBodyContent(
       "<div style='font: 10px/10px Ahem; width:20px;' "
       "contenteditable>foo</div>");
@@ -246,7 +240,7 @@ TEST_P(RenderedPositionTest, CaretBeforeSoftWrap) {
             FloatPoint(27.0f, 18.0f));
 }
 
-TEST_P(RenderedPositionTest, CaretAfterSoftWrap) {
+TEST_F(RenderedPositionTest, CaretAfterSoftWrap) {
   SetBodyContent(
       "<div style='font: 10px/10px Ahem; width:20px;' "
       "contenteditable>foo</div>");
@@ -273,7 +267,7 @@ TEST_P(RenderedPositionTest, CaretAfterSoftWrap) {
 }
 
 // crbug.com/834686
-TEST_P(RenderedPositionTest, RangeBeginAtBlockEnd) {
+TEST_F(RenderedPositionTest, RangeBeginAtBlockEnd) {
   const SelectionInDOMTree& selection = SetSelectionTextToBody(
       "<div style='font: 10px/10px Ahem;'>"
       "<div>foo\n^</div><div>ba|r</div></div>");

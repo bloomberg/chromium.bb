@@ -106,16 +106,9 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   EXPECT_EQ(400, web_view->MainFrameImpl()->GetScrollOffset().height);
 }
 
-class ProgrammaticScrollSimTest : public testing::WithParamInterface<bool>,
-                                  private ScopedRootLayerScrollingForTest,
-                                  public SimTest {
- public:
-  ProgrammaticScrollSimTest() : ScopedRootLayerScrollingForTest(GetParam()) {}
-};
+class ProgrammaticScrollSimTest : public SimTest {};
 
-INSTANTIATE_TEST_CASE_P(All, ProgrammaticScrollSimTest, testing::Bool());
-
-TEST_P(ProgrammaticScrollSimTest, NavigateToHash) {
+TEST_F(ProgrammaticScrollSimTest, NavigateToHash) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/test.html#target", "text/html");
   SimRequest css_resource("https://example.com/test.css", "text/css");
