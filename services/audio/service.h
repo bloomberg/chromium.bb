@@ -99,7 +99,6 @@ class Service : public service_manager::Service {
   base::RepeatingClosure quit_closure_;
   const base::TimeDelta quit_timeout_;
   base::OneShotTimer quit_timer_;
-  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
   const bool device_notifier_enabled_;
@@ -113,6 +112,11 @@ class Service : public service_manager::Service {
   std::unique_ptr<DeviceNotifier> device_notifier_;
 
   service_manager::BinderRegistry registry_;
+
+  // Must be defined before ref counted members and members accessed in its quit
+  // closure (MaybeRequestQuitDelayed), because quit closure may be called on
+  // ref factory destruction.
+  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };
