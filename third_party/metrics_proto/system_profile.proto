@@ -15,7 +15,7 @@ import "extension_install.proto";
 
 // Stores information about the user's brower and system configuration.
 // The system configuration fields are recorded once per client session.
-// Next tag: 27
+// Next tag: 28
 message SystemProfileProto {
   // The time when the client was compiled/linked, in seconds since the epoch.
   optional int64 build_timestamp = 1;
@@ -83,7 +83,8 @@ message SystemProfileProto {
     // - Android
     // - Windows NT
     // - Linux (includes ChromeOS)
-    // - iPhone OS
+    // - iOS (iOS versions >= 9)
+    // - iPhone OS (iOS versions <= 8)
     // - Mac OS X
     optional string name = 1;
 
@@ -102,7 +103,7 @@ message SystemProfileProto {
   optional OS os = 5;
 
   // Information on the user's hardware.
-  // Next tag: 18
+  // Next tag: 19
   message Hardware {
     // The CPU architecture (x86, PowerPC, x86_64, ...)
     optional string cpu_architecture = 1;
@@ -122,16 +123,23 @@ message SystemProfileProto {
     // to that, device hardware class was incorrectly recorded in
     // cpu_architecture field.
     //
-    // For Chrome OS, the device hardware class ID is a unique string associated
-    // with each Chrome OS device product revision generally assigned at
-    // hardware qualification time. The hardware class effectively identifies
-    // the configured system components such as CPU, WiFi adapter, etc.
+    // For Chrome OS, prior to M68, this field had the value that is
+    // currently in |full_hardware_class| field. In M68+, this contains the
+    // board name only. E.G. "CELES", "VEYRON_MINNIE".
+
+    optional string hardware_class = 4;
+
+    // This field is only sent on Chrome OS. The full hardware class is a unique
+    // string associated with each Chrome OS device product revision generally
+    // assigned at hardware qualification time. The hardware class effectively
+    // identifies the configured system components such as CPU, WiFi adapter,
+    // etc.
     //
     // An example of such a hardware class is "IEC MARIO PONY 6101".  An
     // internal database associates this hardware class with the qualified
     // device specifications including OEM information, schematics, hardware
     // qualification reports, test device tags, etc.
-    optional string hardware_class = 4;
+    optional string full_hardware_class = 18;
 
     // The number of physical screens.
     optional int32 screen_count = 5;
