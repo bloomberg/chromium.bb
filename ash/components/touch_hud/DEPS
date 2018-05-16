@@ -1,12 +1,16 @@
 include_rules = [
   "+ash/public",
-  "+ash/touch_hud",
   "+base",
+  "+cc/paint",
   "+mash/public/mojom",
   "+mojo/public",
   "+services/service_manager/public",
   "+services/ui/public",
+  "+third_party/skia",
   "+ui/aura",
+  "+ui/compositor",
+  "+ui/events",
   "+ui/display",
+  "+ui/gfx",
   "+ui/views",
 ]

@@ -16,18 +16,21 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "ui/display/display_observer.h"
+#include "ui/views/pointer_watcher.h"
 
 namespace views {
 class AuraInit;
-class Widget;
 }  // namespace views
 
 namespace touch_hud {
+
+class TouchHudRenderer;
 
 // Application that paints touch tap points as circles. Creates a fullscreen
 // transparent widget on each display to draw the taps.
 class TouchHudApplication : public service_manager::Service,
                             public mash::mojom::Launchable,
+                            public views::PointerWatcher,
                             public display::DisplayObserver {
  public:
   TouchHudApplication();
@@ -45,6 +48,11 @@ class TouchHudApplication : public service_manager::Service,
   // mojom::Launchable:
   void Launch(uint32_t what, mash::mojom::LaunchMode how) override;
 
+  // views::PointerWatcher:
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              const gfx::Point& location_in_screen,
+                              gfx::NativeView target) override;
+
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& new_display) override;
   void OnDisplayRemoved(const display::Display& old_display) override;
@@ -57,8 +65,8 @@ class TouchHudApplication : public service_manager::Service,
   service_manager::BinderRegistry registry_;
   mojo::Binding<mash::mojom::Launchable> binding_;
 
-  // Maps display::Display::id() to the touch HUD widget for that display.
-  std::map<int64_t, std::unique_ptr<views::Widget>> display_id_to_widget_;
+  // Maps display::Display::id() to the renderer for that display.
+  std::map<int64_t, std::unique_ptr<TouchHudRenderer>> display_id_to_renderer_;
 
   std::unique_ptr<views::AuraInit> aura_init_;
 

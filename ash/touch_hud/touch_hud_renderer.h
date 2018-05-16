@@ -23,6 +23,8 @@ class TouchHudProjectionTest;
 class TouchPointView;
 
 // Handles touch events to draw out touch points accordingly.
+// TODO(jamescook): Delete this when the mojo touch_hud_app is the default.
+// https://crbug.com/840380
 class ASH_TOUCH_HUD_EXPORT TouchHudRenderer {
  public:
   explicit TouchHudRenderer(views::Widget* parent_widget);
