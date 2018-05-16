@@ -135,6 +135,7 @@
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "ui/base/idle/idle.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/message_center/message_center.h"
 
 #if defined(OS_WIN)
@@ -676,11 +677,17 @@ NotificationUIManager* BrowserProcessImpl::notification_ui_manager() {
 // are enabled by default.
 #if defined(OS_ANDROID)
   return nullptr;
-#else
+#else  // !defined(OS_ANDROID)
+#if defined(OS_CHROMEOS)
+  if (base::FeatureList::IsEnabled(features::kNativeNotifications) ||
+      base::FeatureList::IsEnabled(features::kMash)) {
+    return nullptr;
+  }
+#endif  // defined(OS_CHROMEOS)
   if (!created_notification_ui_manager_)
     CreateNotificationUIManager();
   return notification_ui_manager_.get();
-#endif
+#endif  // !defined(OS_ANDROID)
 }
 
 NotificationPlatformBridge* BrowserProcessImpl::notification_platform_bridge() {
