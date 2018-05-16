@@ -54,6 +54,9 @@ class ErrorPageTest : public WebTestWithWebState {
     server_.RegisterRequestHandler(
         base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/iframe",
                             base::BindRepeating(&testing::HandleIFrame)));
+    server_.RegisterRequestHandler(
+        base::BindRepeating(&net::test_server::HandlePrefixedRequest, "/form",
+                            base::BindRepeating(&testing::HandleForm)));
     scoped_feature_list_.InitAndEnableFeature(features::kWebErrorPages);
   }
 
@@ -168,7 +171,7 @@ TEST_F(ErrorPageTest, ErrorPageInIFrame) {
   }));
 }
 
-// Loads the URL with off the record browser state;
+// Loads the URL with off the record browser state.
 TEST_F(ErrorPageTest, OtrError) {
   TestBrowserState browser_state;
   browser_state.SetOffTheRecord(true);
@@ -183,6 +186,19 @@ TEST_F(ErrorPageTest, OtrError) {
   web_state->GetNavigationManager()->LoadIfNecessary();
   ASSERT_TRUE(test::WaitForWebViewContainingText(
       web_state.get(), "domain: NSURLErrorDomain code: -1005 post: 0 otr: 1"));
+}
+
+// Loads the URL with form which fails to submit.
+TEST_F(ErrorPageTest, FormSubmissionError) {
+  test::LoadUrl(web_state(), server_.GetURL("/form?close-socket"));
+  ASSERT_TRUE(
+      test::WaitForWebViewContainingText(web_state(), testing::kTestFormPage));
+
+  // Submit the form using JavaScript.
+  ExecuteJavaScript(@"document.getElementById('form').submit();");
+
+  ASSERT_TRUE(test::WaitForWebViewContainingText(
+      web_state(), "domain: NSURLErrorDomain code: -1005 post: 1 otr: 0"));
 }
 
 }  // namespace web
