@@ -8891,6 +8891,7 @@ interface Worklet
 interface WorkletAnimation
     attribute @@toStringTag
     getter playState
+    getter timeline
     method cancel
     method constructor
     method play

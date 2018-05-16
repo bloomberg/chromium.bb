@@ -89,6 +89,18 @@ bool ValidateTimeline(const DocumentTimelineOrScrollTimeline& timeline,
   return true;
 }
 
+AnimationTimeline* ConvertAnimationTimeline(
+    const Document& document,
+    const DocumentTimelineOrScrollTimeline& timeline) {
+  if (timeline.IsScrollTimeline())
+    return timeline.GetAsScrollTimeline();
+
+  if (timeline.IsDocumentTimeline())
+    return timeline.GetAsDocumentTimeline();
+
+  return &document.Timeline();
+}
+
 bool CheckElementComposited(const Element& target) {
   return target.GetLayoutObject() &&
          target.GetLayoutObject()->GetCompositingState() ==
@@ -131,11 +143,11 @@ CompositorScrollTimeline::ScrollDirection ConvertOrientation(
 //
 // If the timeline cannot be converted, returns nullptr.
 std::unique_ptr<CompositorScrollTimeline> ToCompositorScrollTimeline(
-    const DocumentTimelineOrScrollTimeline& timeline) {
-  if (!timeline.IsScrollTimeline())
+    AnimationTimeline* timeline) {
+  if (!timeline || timeline->IsDocumentTimeline())
     return nullptr;
 
-  ScrollTimeline* scroll_timeline = timeline.GetAsScrollTimeline();
+  ScrollTimeline* scroll_timeline = ToScrollTimeline(timeline);
   Element* scroll_source = scroll_timeline->scrollSource();
   CompositorElementId element_id = GetCompositorScrollElementId(*scroll_source);
 
@@ -180,6 +192,21 @@ unsigned NextSequenceNumber() {
 WorkletAnimation* WorkletAnimation::Create(
     String animator_name,
     const AnimationEffectOrAnimationEffectSequence& effects,
+    ExceptionState& exception_state) {
+  return Create(animator_name, effects, DocumentTimelineOrScrollTimeline(),
+                nullptr, exception_state);
+}
+
+WorkletAnimation* WorkletAnimation::Create(
+    String animator_name,
+    const AnimationEffectOrAnimationEffectSequence& effects,
+    DocumentTimelineOrScrollTimeline timeline,
+    ExceptionState& exception_state) {
+  return Create(animator_name, effects, timeline, nullptr, exception_state);
+}
+WorkletAnimation* WorkletAnimation::Create(
+    String animator_name,
+    const AnimationEffectOrAnimationEffectSequence& effects,
     DocumentTimelineOrScrollTimeline timeline,
     scoped_refptr<SerializedScriptValue> options,
     ExceptionState& exception_state) {
@@ -205,8 +232,12 @@ WorkletAnimation* WorkletAnimation::Create(
   }
 
   Document& document = keyframe_effects.at(0)->target()->GetDocument();
-  WorkletAnimation* animation = new WorkletAnimation(
-      animator_name, document, keyframe_effects, timeline, std::move(options));
+  AnimationTimeline* animation_timeline =
+      ConvertAnimationTimeline(document, timeline);
+
+  WorkletAnimation* animation =
+      new WorkletAnimation(animator_name, document, keyframe_effects,
+                           animation_timeline, std::move(options));
 
   return animation;
 }
@@ -215,7 +246,7 @@ WorkletAnimation::WorkletAnimation(
     const String& animator_name,
     Document& document,
     const HeapVector<Member<KeyframeEffect>>& effects,
-    DocumentTimelineOrScrollTimeline timeline,
+    AnimationTimeline* timeline,
     scoped_refptr<SerializedScriptValue> options)
     : sequence_number_(NextSequenceNumber()),
       animator_name_(animator_name),
@@ -230,8 +261,8 @@ WorkletAnimation::WorkletAnimation(
   AnimationEffect* target_effect = effects_.at(0);
   target_effect->Attach(this);
 
-  if (timeline_.IsScrollTimeline())
-    timeline.GetAsScrollTimeline()->AttachAnimation();
+  if (timeline_->IsScrollTimeline())
+    ToScrollTimeline(timeline_)->AttachAnimation();
 }
 
 String WorkletAnimation::playState() {
@@ -304,15 +335,6 @@ void WorkletAnimation::Update(TimingUpdateReason reason) {
   GetEffect()->UpdateInheritedTime(inherited_time_seconds, reason);
 }
 
-AnimationTimeline& WorkletAnimation::GetAnimationTimeline() {
-  DCHECK(!timeline_.IsNull());
-
-  if (timeline_.IsScrollTimeline())
-    return *timeline_.GetAsScrollTimeline();
-
-  return *timeline_.GetAsDocumentTimeline();
-}
-
 bool WorkletAnimation::UpdateCompositingState() {
   switch (play_state_) {
     case Animation::kPending: {
@@ -356,9 +378,8 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
     return false;
   }
 
-  if (timeline_.IsScrollTimeline() &&
-      !CheckElementComposited(
-          *timeline_.GetAsScrollTimeline()->scrollSource())) {
+  if (timeline_->IsScrollTimeline() &&
+      !CheckElementComposited(*ToScrollTimeline(timeline_)->scrollSource())) {
     if (failure_message)
       *failure_message = "The ScrollTimeline scrollSource is not composited.";
     return false;
@@ -394,9 +415,8 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   StartEffectOnCompositor(compositor_animation_.get(), GetEffect());
   play_state_ = Animation::kRunning;
 
-  AnimationTimeline& timeline = GetAnimationTimeline();
   bool is_null;
-  double time = timeline.currentTime(is_null);
+  double time = timeline_->currentTime(is_null);
   if (!is_null)
     start_time_ = time;
 
@@ -432,8 +452,8 @@ KeyframeEffect* WorkletAnimation::GetEffect() const {
 
 void WorkletAnimation::Dispose() {
   DCHECK(IsMainThread());
-  if (timeline_.IsScrollTimeline())
-    timeline_.GetAsScrollTimeline()->DetachAnimation();
+  if (timeline_->IsScrollTimeline())
+    ToScrollTimeline(timeline_)->DetachAnimation();
   DestroyCompositorAnimation();
 }
 

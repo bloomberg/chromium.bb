@@ -44,12 +44,22 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   static WorkletAnimation* Create(
       String animator_name,
       const AnimationEffectOrAnimationEffectSequence&,
+      ExceptionState&);
+  static WorkletAnimation* Create(
+      String animator_name,
+      const AnimationEffectOrAnimationEffectSequence&,
+      DocumentTimelineOrScrollTimeline,
+      ExceptionState&);
+  static WorkletAnimation* Create(
+      String animator_name,
+      const AnimationEffectOrAnimationEffectSequence&,
       DocumentTimelineOrScrollTimeline,
       scoped_refptr<SerializedScriptValue>,
       ExceptionState&);
 
   ~WorkletAnimation() override = default;
 
+  AnimationTimeline* timeline() { return timeline_; }
   String playState();
   void play();
   void cancel();
@@ -89,8 +99,6 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   Document* GetDocument() const override { return document_.Get(); }
   const String& Name() { return animator_name_; }
 
-  const DocumentTimelineOrScrollTimeline& Timeline() { return timeline_; }
-
   const scoped_refptr<SerializedScriptValue> Options() { return options_; }
   KeyframeEffect* GetEffect() const override;
 
@@ -100,11 +108,9 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   WorkletAnimation(const String& animator_name,
                    Document&,
                    const HeapVector<Member<KeyframeEffect>>&,
-                   DocumentTimelineOrScrollTimeline,
+                   AnimationTimeline*,
                    scoped_refptr<SerializedScriptValue>);
   void DestroyCompositorAnimation();
-
-  AnimationTimeline& GetAnimationTimeline();
 
   // Attempts to start the animation on the compositor side, returning true if
   // it succeeds or false otherwise. If false is returned and failure_message
@@ -124,7 +130,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   Member<Document> document_;
 
   HeapVector<Member<KeyframeEffect>> effects_;
-  DocumentTimelineOrScrollTimeline timeline_;
+  Member<AnimationTimeline> timeline_;
   scoped_refptr<SerializedScriptValue> options_;
 
   std::unique_ptr<CompositorAnimation> compositor_animation_;
