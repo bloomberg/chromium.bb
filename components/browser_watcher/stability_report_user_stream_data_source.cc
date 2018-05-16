@@ -97,7 +97,7 @@ bool CollectStabilityReport(const base::FilePath& path,
   return true;
 }
 
-void CollectSystemMemoryMetrics(StabilityReport* report) {
+void CollectSystemPerformanceMetrics(StabilityReport* report) {
   // Grab system commit memory. Also best effort.
   PERFORMANCE_INFORMATION perf_info = {sizeof(perf_info)};
   if (GetPerformanceInfo(&perf_info, sizeof(perf_info))) {
@@ -107,11 +107,13 @@ void CollectSystemMemoryMetrics(StabilityReport* report) {
     memory_state->set_system_commit_limit(perf_info.CommitLimit);
     memory_state->set_system_commit_remaining(perf_info.CommitLimit -
                                               perf_info.CommitTotal);
+    memory_state->set_system_handle_count(perf_info.HandleCount);
   }
 }
 
-void CollectProcessMemoryMetrics(crashpad::ProcessSnapshot* process_snapshot,
-                                 StabilityReport* report) {
+void CollectProcessPerformanceMetrics(
+    crashpad::ProcessSnapshot* process_snapshot,
+    StabilityReport* report) {
   const crashpad::ExceptionSnapshot* exception = process_snapshot->Exception();
 
   if (!exception)
@@ -151,7 +153,7 @@ void CollectProcessMemoryMetrics(crashpad::ProcessSnapshot* process_snapshot,
 
   if (process.IsValid()) {
     PROCESS_MEMORY_COUNTERS_EX process_memory = {sizeof(process_memory)};
-    if (GetProcessMemoryInfo(
+    if (::GetProcessMemoryInfo(
             process.Handle(),
             reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&process_memory),
             sizeof(process_memory))) {
@@ -164,6 +166,11 @@ void CollectProcessMemoryMetrics(crashpad::ProcessSnapshot* process_snapshot,
           process_memory.PeakWorkingSetSize / kPageSize);
       memory_state->set_process_peak_pagefile_usage(
           process_memory.PeakPagefileUsage / kPageSize);
+    }
+
+    DWORD process_handle_count = 0;
+    if (::GetProcessHandleCount(process.Handle(), &process_handle_count)) {
+      memory_state->set_process_handle_count(process_handle_count);
     }
   }
 }
@@ -194,8 +201,8 @@ StabilityReportUserStreamDataSource::ProduceStreamData(
     }
   }
 
-  CollectSystemMemoryMetrics(&report);
-  CollectProcessMemoryMetrics(process_snapshot, &report);
+  CollectSystemPerformanceMetrics(&report);
+  CollectProcessPerformanceMetrics(process_snapshot, &report);
 
   std::unique_ptr<BufferExtensionStreamDataSource> source(
       new BufferExtensionStreamDataSource(kStabilityReportStreamType));

@@ -189,6 +189,8 @@ message ProcessState {
       optional uint32 process_peak_pagefile_usage = 3;
       // The allocation request that caused OOM, bytes.
       optional uint32 process_allocation_attempt = 4;
+      // The number of opened handles in the process.
+      optional uint32 process_handle_count = 5;
     }
 
     optional WindowsMemory windows_memory = 1;
@@ -231,6 +233,8 @@ message SystemMemoryState {
     optional uint32 system_commit_limit = 1;
     // The amount of system commit remaining. Unit is number of 4K pages.
     optional uint32 system_commit_remaining = 2;
+    // The current number of open handles.
+    optional uint32 system_handle_count = 3;
   }
 
   optional WindowsMemory windows_memory = 1;

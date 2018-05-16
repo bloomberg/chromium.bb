@@ -179,6 +179,10 @@ void PrintProcessState(FILE* out,
       fprintf(out, "process_allocation_attempt: %u bytes\n",
               windows_memory.process_allocation_attempt());
     }
+    if (windows_memory.has_process_handle_count()) {
+      fprintf(out, "process_handle_count: %u handles\n",
+              windows_memory.process_handle_count());
+    }
   }
 
   for (const browser_watcher::ThreadState& thread : process.threads()) {
@@ -204,6 +208,10 @@ void PrintReport(FILE* out, const browser_watcher::StabilityReport& report) {
     if (windows_memory.has_system_commit_remaining()) {
       fprintf(out, "system_commit_remaining: %u pages\n",
               windows_memory.system_commit_remaining());
+    }
+    if (windows_memory.has_system_handle_count()) {
+      fprintf(out, "system_handle_count: %u handles\n",
+              windows_memory.system_handle_count());
     }
   }
   PrintUserData(out, 0, report.global_data());
