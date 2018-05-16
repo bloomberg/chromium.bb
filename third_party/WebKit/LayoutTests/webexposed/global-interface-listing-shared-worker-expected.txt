@@ -96,6 +96,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface CanvasPattern
 [Worker]     attribute @@toStringTag
 [Worker]     method constructor
+[Worker]     method setTransform
 [Worker] interface CloseEvent : Event
 [Worker]     attribute @@toStringTag
 [Worker]     getter code

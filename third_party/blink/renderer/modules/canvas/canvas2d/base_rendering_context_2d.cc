@@ -431,17 +431,6 @@ void BaseRenderingContext2D::setFilter(
   SnapshotStateForFilter();
 }
 
-SVGMatrixTearOff* BaseRenderingContext2D::currentTransform() const {
-  return SVGMatrixTearOff::Create(GetState().Transform());
-}
-
-void BaseRenderingContext2D::setCurrentTransform(
-    SVGMatrixTearOff* matrix_tear_off) {
-  const AffineTransform& transform = matrix_tear_off->Value();
-  setTransform(transform.A(), transform.B(), transform.C(), transform.D(),
-               transform.E(), transform.F());
-}
-
 void BaseRenderingContext2D::scale(double sx, double sy) {
   PaintCanvas* c = DrawingCanvas();
   if (!c)

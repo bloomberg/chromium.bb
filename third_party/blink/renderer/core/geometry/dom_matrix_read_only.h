@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_GEOMETRY_DOM_MATRIX_READ_ONLY_H_
 
 #include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_unrestricted_double_sequence.h"
 #include "third_party/blink/renderer/core/geometry/dom_matrix_2d_init.h"
@@ -13,6 +14,7 @@
 #include "third_party/blink/renderer/core/typed_arrays/dom_typed_array.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
@@ -38,6 +40,8 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
   static DOMMatrixReadOnly* fromMatrix2D(DOMMatrix2DInit&, ExceptionState&);
   static DOMMatrixReadOnly* CreateForSerialization(double[], int size);
   ~DOMMatrixReadOnly() override;
+  // Used by Canvas2D, not defined on the IDL.
+  static DOMMatrixReadOnly* fromMatrix2D(DOMMatrix2DInit&);
 
   double a() const { return matrix_->M11(); }
   double b() const { return matrix_->M12(); }
@@ -104,6 +108,12 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
 
   const TransformationMatrix& Matrix() const { return *matrix_; }
 
+  AffineTransform GetAffineTransform() const;
+
+  void Trace(blink::Visitor* visitor) override {
+    ScriptWrappable::Trace(visitor);
+  }
+
  protected:
   DOMMatrixReadOnly() = default;
   DOMMatrixReadOnly(const String&, ExceptionState&);
@@ -132,7 +142,7 @@ class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
                                 const String&,
                                 ExceptionState&);
 
-  static bool ValidateAndFixup2D(DOMMatrix2DInit&, ExceptionState&);
+  static bool ValidateAndFixup2D(DOMMatrix2DInit&);
   static bool ValidateAndFixup(DOMMatrixInit&, ExceptionState&);
   // TransformationMatrix needs to be 16-byte aligned. PartitionAlloc
   // supports 16-byte alignment but Oilpan doesn't. So we use an std::unique_ptr

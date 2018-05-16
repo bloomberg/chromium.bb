@@ -27,7 +27,6 @@ class CanvasImageSource;
 class Color;
 class Image;
 class Path2D;
-class SVGMatrixTearOff;
 
 typedef CSSImageValueOrHTMLImageElementOrSVGImageElementOrHTMLVideoElementOrHTMLCanvasElementOrImageBitmapOrOffscreenCanvas
     CanvasImageSourceUnion;
@@ -88,9 +87,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   void save();
   void restore();
-
-  SVGMatrixTearOff* currentTransform() const;
-  void setCurrentTransform(SVGMatrixTearOff*);
 
   void scale(double sx, double sy);
   void rotate(double angle_in_radians);

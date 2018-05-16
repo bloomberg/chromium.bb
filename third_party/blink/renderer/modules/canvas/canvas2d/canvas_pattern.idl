@@ -26,6 +26,6 @@
     Exposed(Worker OffscreenCanvas, Window StableBlinkFeatures)
 ] interface CanvasPattern {
 
-    [RuntimeEnabled=CanvasTransformations,Exposed=Window] void setTransform(SVGMatrix transform);
+    [RaisesException] void setTransform(optional DOMMatrix2DInit transform);
 
 };
