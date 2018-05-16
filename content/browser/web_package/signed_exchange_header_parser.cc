@@ -215,21 +215,21 @@ SignedExchangeHeaderParser::ParseSignature(
     signatures.push_back(Signature());
     Signature& sig = signatures.back();
     sig.label = value.label;
-    sig.sig = value.params["sig"];
+    sig.sig = value.params[kSig];
     if (sig.sig.empty()) {
       signed_exchange_utils::ReportErrorAndEndTraceEvent(
           devtools_proxy, "SignedExchangeHeaderParser::ParseSignature",
           "'sig' parameter is not set,");
       return base::nullopt;
     }
-    sig.integrity = value.params["integrity"];
+    sig.integrity = value.params[kIntegrity];
     if (sig.integrity.empty()) {
       signed_exchange_utils::ReportErrorAndEndTraceEvent(
           devtools_proxy, "SignedExchangeHeaderParser::ParseSignature",
           "'integrity' parameter is not set.");
       return base::nullopt;
     }
-    sig.cert_url = GURL(value.params["certUrl"]);
+    sig.cert_url = GURL(value.params[kCertUrl]);
     if (!sig.cert_url.is_valid() || sig.cert_url.has_ref()) {
       // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
       // params may not have "certUrl".
