@@ -136,27 +136,52 @@ bool ReadFileToStringWithMaxSize(const FilePath& path,
     return false;
   }
 
-  const size_t kBufferSize = 1 << 16;
-  std::unique_ptr<char[]> buf(new char[kBufferSize]);
-  size_t len;
-  size_t size = 0;
-  bool read_status = true;
-
   // Many files supplied in |path| have incorrect size (proc files etc).
-  // Hence, the file is read sequentially as opposed to a one-shot read.
-  while ((len = fread(buf.get(), 1, kBufferSize, file)) > 0) {
-    if (contents)
-      contents->append(buf.get(), std::min(len, max_size - size));
+  // Hence, the file is read sequentially as opposed to a one-shot read, using
+  // file size as a hint for chunk size if available.
+  constexpr int64_t kDefaultChunkSize = 1 << 16;
+  int64_t chunk_size;
+#if !defined(OS_NACL_NONSFI)
+  if (!GetFileSize(path, &chunk_size) || chunk_size <= 0)
+    chunk_size = kDefaultChunkSize - 1;
+  // We need to attempt to read at EOF for feof flag to be set so here we
+  // use |chunk_size| + 1.
+  chunk_size = std::min<uint64_t>(chunk_size, max_size) + 1;
+#else
+  chunk_size = kDefaultChunkSize;
+#endif  // !defined(OS_NACL_NONSFI)
+  size_t bytes_read_this_pass;
+  size_t bytes_read_so_far = 0;
+  bool read_status = true;
+  std::string local_contents;
+  local_contents.resize(chunk_size);
 
-    if ((max_size - size) < len) {
+  while ((bytes_read_this_pass = fread(&local_contents[bytes_read_so_far], 1,
+                                       chunk_size, file)) > 0) {
+    if ((max_size - bytes_read_so_far) < bytes_read_this_pass) {
+      // Read more than max_size bytes, bail out.
+      bytes_read_so_far = max_size;
       read_status = false;
       break;
     }
+    // In case EOF was not reached, iterate again but revert to the default
+    // chunk size.
+    if (bytes_read_so_far == 0)
+      chunk_size = kDefaultChunkSize;
 
-    size += len;
+    bytes_read_so_far += bytes_read_this_pass;
+    // Last fread syscall (after EOF) can be avoided via feof, which is just a
+    // flag check.
+    if (feof(file))
+      break;
+    local_contents.resize(bytes_read_so_far + chunk_size);
   }
   read_status = read_status && !ferror(file);
   CloseFile(file);
+  if (contents) {
+    contents->swap(local_contents);
+    contents->resize(bytes_read_so_far);
+  }
 
   return read_status;
 }
