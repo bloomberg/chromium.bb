@@ -43,6 +43,18 @@ aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
       window_service_client_->MakeClientWindowId(transport_window_id));
 }
 
+bool WindowServiceClientTestHelper::SetCapture(aura::Window* window) {
+  return window_service_client_->SetCaptureImpl(
+      window_service_client_->MakeClientWindowId(
+          window_service_client_->TransportIdForWindow(window)));
+}
+
+bool WindowServiceClientTestHelper::ReleaseCapture(aura::Window* window) {
+  return window_service_client_->ReleaseCaptureImpl(
+      window_service_client_->MakeClientWindowId(
+          window_service_client_->TransportIdForWindow(window)));
+}
+
 void WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
                                                     const gfx::Rect& bounds,
                                                     uint32_t change_id) {

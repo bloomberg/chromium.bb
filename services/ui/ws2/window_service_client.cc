@@ -28,6 +28,7 @@
 #include "ui/compositor/layer_type.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/wm/core/capture_controller.h"
 
 namespace ui {
 namespace ws2 {
@@ -430,6 +431,58 @@ bool WindowServiceClient::DeleteWindowImpl(const ClientWindowId& window_id) {
   return true;
 }
 
+bool WindowServiceClient::SetCaptureImpl(const ClientWindowId& window_id) {
+  DVLOG(3) << "SetCapture window_id=" << window_id;
+  aura::Window* window = GetWindowByClientId(window_id);
+  if (!window) {
+    DVLOG(1) << "SetCapture failed (no window)";
+    return false;
+  }
+
+  if ((!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) ||
+      !window->IsVisible() || !window->GetRootWindow()) {
+    DVLOG(1) << "SetCapture failed (access denied or invalid window)";
+    return false;
+  }
+
+  wm::CaptureController* capture_controller = wm::CaptureController::Get();
+  DCHECK(capture_controller);
+
+  if (capture_controller->GetCaptureWindow() == window)
+    return true;
+
+  capture_controller->SetCapture(window);
+  return capture_controller->GetCaptureWindow() == window;
+}
+
+bool WindowServiceClient::ReleaseCaptureImpl(const ClientWindowId& window_id) {
+  DVLOG(3) << "ReleaseCapture window_id=" << window_id;
+  aura::Window* window = GetWindowByClientId(window_id);
+  if (!window) {
+    DVLOG(1) << "ReleaseCapture failed (no window)";
+    return false;
+  }
+
+  if (!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) {
+    DVLOG(1) << "ReleaseCapture failed (access denied)";
+    return false;
+  }
+
+  wm::CaptureController* capture_controller = wm::CaptureController::Get();
+  DCHECK(capture_controller);
+
+  if (!capture_controller->GetCaptureWindow())
+    return true;  // Capture window is already null.
+
+  if (capture_controller->GetCaptureWindow() != window) {
+    DVLOG(1) << "ReleaseCapture failed (supplied window does not have capture)";
+    return false;
+  }
+
+  capture_controller->ReleaseCapture(window);
+  return capture_controller->GetCaptureWindow() != window;
+}
+
 bool WindowServiceClient::AddWindowImpl(const ClientWindowId& parent_id,
                                         const ClientWindowId& child_id) {
   aura::Window* parent = GetWindowByClientId(parent_id);
@@ -751,12 +804,16 @@ void WindowServiceClient::DeleteWindow(uint32_t change_id,
       change_id, DeleteWindowImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowServiceClient::SetCapture(uint32_t change_id, Id window_id) {
-  NOTIMPLEMENTED();
+void WindowServiceClient::SetCapture(uint32_t change_id,
+                                     Id transport_window_id) {
+  window_tree_client_->OnChangeCompleted(
+      change_id, SetCaptureImpl(MakeClientWindowId(transport_window_id)));
 }
 
-void WindowServiceClient::ReleaseCapture(uint32_t change_id, Id window_id) {
-  NOTIMPLEMENTED();
+void WindowServiceClient::ReleaseCapture(uint32_t change_id,
+                                         Id transport_window_id) {
+  window_tree_client_->OnChangeCompleted(
+      change_id, ReleaseCaptureImpl(MakeClientWindowId(transport_window_id)));
 }
 
 void WindowServiceClient::StartPointerWatcher(bool want_moves) {
