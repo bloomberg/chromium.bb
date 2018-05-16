@@ -559,19 +559,18 @@ void PasswordProtectionService::FillUserPopulation(
 
 void PasswordProtectionService::OnURLsDeleted(
     history::HistoryService* history_service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
+    const history::DeletionInfo& deletion_info) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PasswordProtectionService::RemoveContentSettingsOnURLsDeleted,
-                 GetWeakPtr(), all_history, deleted_rows));
+                 GetWeakPtr(), deletion_info.IsAllHistory(),
+                 deletion_info.deleted_rows()));
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&PasswordProtectionService::
                      RemoveUnhandledSyncPasswordReuseOnURLsDeleted,
-                 GetWeakPtr(), all_history, deleted_rows));
+                 GetWeakPtr(), deletion_info.IsAllHistory(),
+                 deletion_info.deleted_rows()));
 }
 
 void PasswordProtectionService::HistoryServiceBeingDeleted(

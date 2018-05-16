@@ -46,10 +46,7 @@ class HistoryEventRouter : public history::HistoryServiceObserver {
                     const history::RedirectList& redirects,
                     base::Time visit_time) override;
   void OnURLsDeleted(history::HistoryService* history_service,
-                     bool all_history,
-                     bool expired,
-                     const history::URLRows& deleted_rows,
-                     const std::set<GURL>& favicon_urls) override;
+                     const history::DeletionInfo& deletion_info) override;
 
   void DispatchEvent(Profile* profile,
                      events::HistogramValue histogram_value,

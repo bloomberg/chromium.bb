@@ -534,16 +534,13 @@ void ContentSuggestionsService::OnPrimaryAccountCleared(
 // history::HistoryServiceObserver implementation.
 void ContentSuggestionsService::OnURLsDeleted(
     history::HistoryService* history_service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
+    const history::DeletionInfo& deletion_info) {
   // We don't care about expired entries.
-  if (expired) {
+  if (deletion_info.is_from_expiration()) {
     return;
   }
 
-  if (all_history) {
+  if (deletion_info.IsAllHistory()) {
     base::Callback<bool(const GURL& url)> filter =
         base::Bind([](const GURL& url) { return true; });
     ClearHistory(base::Time(), base::Time::Max(), filter);
@@ -554,11 +551,11 @@ void ContentSuggestionsService::OnURLsDeleted(
     // basis. However this depends on the provider's details and thus cannot be
     // done here. Introduce a OnURLsDeleted() method on the providers to move
     // this decision further down.
-    if (deleted_rows.size() < 2) {
+    if (deletion_info.deleted_rows().size() < 2) {
       return;
     }
     std::set<GURL> deleted_urls;
-    for (const history::URLRow& row : deleted_rows) {
+    for (const history::URLRow& row : deletion_info.deleted_rows()) {
       deleted_urls.insert(row.url());
     }
     base::Callback<bool(const GURL& url)> filter =
