@@ -63,15 +63,20 @@ class CleanUpStage(generic_stages.BuilderStage):
       osutils.RmDir(d, ignore_missing=True, sudo=True)
 
   def _RevertChrootToCleanSnapshot(self):
-    logging.info('Attempting to revert chroot to %s snapshot',
-                 constants.CHROOT_SNAPSHOT_CLEAN)
-    snapshots = commands.ListChrootSnapshots(self._build_root)
-    if constants.CHROOT_SNAPSHOT_CLEAN not in snapshots:
-      logging.error("Can't find %s snapshot.", constants.CHROOT_SNAPSHOT_CLEAN)
-      return False
+    try:
+      logging.info('Attempting to revert chroot to %s snapshot',
+                   constants.CHROOT_SNAPSHOT_CLEAN)
+      snapshots = commands.ListChrootSnapshots(self._build_root)
+      if constants.CHROOT_SNAPSHOT_CLEAN not in snapshots:
+        logging.error(
+            "Can't find %s snapshot.", constants.CHROOT_SNAPSHOT_CLEAN)
+        return False
 
-    return commands.RevertChrootToSnapshot(self._build_root,
-                                           constants.CHROOT_SNAPSHOT_CLEAN)
+      return commands.RevertChrootToSnapshot(self._build_root,
+                                             constants.CHROOT_SNAPSHOT_CLEAN)
+    except failures_lib.BuildScriptFailure as e:
+      logging.error('Failed to revert chroot to snapshot: %s', e)
+      return False
 
   def _CreateCleanSnapshot(self):
     for snapshot in commands.ListChrootSnapshots(self._build_root):

@@ -847,3 +847,16 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
         mock.call(self.build_root, constants.CHROOT_SNAPSHOT_CLEAN)])
     create_mock.assert_called_with(self.build_root,
                                    constants.CHROOT_SNAPSHOT_CLEAN)
+
+  def testChrootRevertFailsWhenCommandsRaiseExceptions(self):
+    self.PatchObject(
+        cros_build_lib,
+        'SudoRunCommand',
+        side_effect=cros_build_lib.RunCommandError(
+            'error', cros_build_lib.CommandResult(cmd='error', returncode=5)))
+    self._Prepare(
+        extra_config={'chroot_use_image': True, 'chroot_replace': False})
+    chroot_path = os.path.join(self.build_root, 'chroot')
+    osutils.Touch(chroot_path + '.img')
+    stage = self.ConstructStage()
+    self.assertFalse(stage._RevertChrootToCleanSnapshot())
