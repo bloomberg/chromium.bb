@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/smb_client/smb_constants.h"
+#include "chrome/browser/chromeos/smb_client/smb_errors.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 #include "chrome/browser/chromeos/smb_client/smb_file_system_id.h"
 #include "chrome/browser/chromeos/smb_client/smb_provider.h"
@@ -134,7 +135,7 @@ void SmbService::OnMountResponse(
     smbprovider::ErrorType error,
     int32_t mount_id) {
   if (error != smbprovider::ERROR_OK) {
-    std::move(callback).Run(SmbFileSystem::TranslateError(error));
+    std::move(callback).Run(TranslateToFileError(error));
     return;
   }
 

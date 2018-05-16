@@ -54,8 +54,6 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       UnmountCallback unmount_callback);
   ~SmbFileSystem() override;
 
-  static base::File::Error TranslateError(smbprovider::ErrorType);
-
   // ProvidedFileSystemInterface overrides.
   file_system_provider::AbortCallback RequestUnmount(
       storage::AsyncFileUtil::StatusCallback callback) override;
