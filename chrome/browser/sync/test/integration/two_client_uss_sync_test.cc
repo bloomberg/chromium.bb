@@ -55,7 +55,8 @@ class TestSyncClient : public ChromeSyncClient {
       syncer::ModelType type) override {
     return type == syncer::PREFERENCES
                ? static_cast<base::WeakPtr<ModelTypeControllerDelegate>>(
-                     bridge_->AsWeakPtr())
+                     bridge_->change_processor()
+                         ->GetControllerDelegateOnUIThread())
                : ChromeSyncClient::GetControllerDelegateForModelType(type);
   }
 

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
 
@@ -19,6 +20,8 @@ ModelTypeSyncBridge::ModelTypeSyncBridge(
 }
 
 ModelTypeSyncBridge::~ModelTypeSyncBridge() {}
+
+void ModelTypeSyncBridge::OnSyncStarting() {}
 
 bool ModelTypeSyncBridge::SupportsGetStorageKey() const {
   return true;
@@ -34,19 +37,6 @@ ConflictResolution ModelTypeSyncBridge::ResolveConflict(
   return ConflictResolution::UseRemote();
 }
 
-void ModelTypeSyncBridge::OnSyncStarting(
-    const ModelErrorHandler& error_handler,
-    ModelTypeChangeProcessor::StartCallback start_callback) {
-  change_processor_->OnSyncStarting(std::move(error_handler),
-                                    std::move(start_callback));
-}
-
-void ModelTypeSyncBridge::DisableSync() {
-  // The processor resets its internal state and clears the metadata (by calling
-  // ApplyDisableSyncChanges() of this bridge).
-  change_processor_->DisableSync();
-}
-
 ModelTypeSyncBridge::DisableSyncResponse
 ModelTypeSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<MetadataChangeList> delete_metadata_change_list) {
@@ -55,7 +45,7 @@ ModelTypeSyncBridge::ApplyDisableSyncChanges(
   return DisableSyncResponse::kModelStillReadyToSync;
 }
 
-ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() const {
+ModelTypeChangeProcessor* ModelTypeSyncBridge::change_processor() {
   return change_processor_.get();
 }
 

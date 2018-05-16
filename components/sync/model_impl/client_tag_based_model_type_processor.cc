@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_usage_estimator.h"
+#include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/activation_context.h"
@@ -19,6 +20,7 @@
 #include "components/sync/engine/model_type_processor_proxy.h"
 #include "components/sync/model_impl/processor_entity_tracker.h"
 #include "components/sync/protocol/proto_memory_estimations.h"
+#include "components/sync/protocol/proto_value_conversions.h"
 
 namespace syncer {
 
@@ -75,6 +77,10 @@ void ClientTagBasedModelTypeProcessor::OnSyncStarting(
   DCHECK(error_handler);
   DCHECK(start_callback);
   DVLOG(1) << "Sync is starting for " << ModelTypeToString(type_);
+
+  // Notify the bridge sync is starting before calling the |start_callback_|
+  // which in turn creates the worker.
+  bridge_->OnSyncStarting();
 
   error_handler_ = error_handler;
   start_callback_ = std::move(start_callback);
@@ -218,6 +224,11 @@ void ClientTagBasedModelTypeProcessor::ReportError(const ModelError& error) {
     // of going through ConnectIfReady().
     error_handler_.Run(error);
   }
+}
+
+base::WeakPtr<ModelTypeControllerDelegate>
+ClientTagBasedModelTypeProcessor::GetControllerDelegateOnUIThread() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void ClientTagBasedModelTypeProcessor::ConnectSync(
@@ -1012,6 +1023,78 @@ void ClientTagBasedModelTypeProcessor::ResetState() {
 
   // Do not let any delayed callbacks to be called.
   weak_ptr_factory_.InvalidateWeakPtrs();
+}
+
+void ClientTagBasedModelTypeProcessor::GetAllNodesForDebugging(
+    AllNodesCallback callback) {
+  if (!bridge_)
+    return;
+  bridge_->GetAllData(base::BindOnce(
+      &ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging,
+      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
+    AllNodesCallback callback,
+    std::unique_ptr<DataBatch> batch) {
+  std::unique_ptr<base::ListValue> all_nodes =
+      std::make_unique<base::ListValue>();
+  std::string type_string = ModelTypeToString(type_);
+
+  while (batch->HasNext()) {
+    KeyAndData data = batch->Next();
+    std::unique_ptr<base::DictionaryValue> node =
+        data.second->ToDictionaryValue();
+    ProcessorEntityTracker* entity = GetEntityForStorageKey(data.first);
+    // Entity could be null if there are some unapplied changes.
+    if (entity != nullptr) {
+      std::unique_ptr<base::DictionaryValue> metadata =
+          EntityMetadataToValue(entity->metadata());
+      base::Value* server_id = metadata->FindKey("server_id");
+      if (server_id) {
+        // Set ID value as directory, "s" means server.
+        node->SetString("ID", "s" + server_id->GetString());
+      }
+      node->Set("metadata", std::move(metadata));
+    }
+    node->SetString("modelType", type_string);
+    all_nodes->Append(std::move(node));
+  }
+
+  // Create a permanent folder for this data type. Since sync server no longer
+  // create root folders, and USS won't migrate root folders from directory, we
+  // create root folders for each data type here.
+  std::unique_ptr<base::DictionaryValue> rootnode =
+      std::make_unique<base::DictionaryValue>();
+  // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
+  // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
+  // sync_node_browser.js uses modelType to check if root node is parent of real
+  // data node. NON_UNIQUE_NAME will be the name of node to display.
+  rootnode->SetString("PARENT_ID", "r");
+  rootnode->SetString("UNIQUE_SERVER_TAG", type_string);
+  rootnode->SetBoolean("IS_DIR", true);
+  rootnode->SetString("modelType", type_string);
+  rootnode->SetString("NON_UNIQUE_NAME", type_string);
+  all_nodes->Append(std::move(rootnode));
+
+  std::move(callback).Run(type_, std::move(all_nodes));
+}
+
+void ClientTagBasedModelTypeProcessor::GetStatusCountersForDebugging(
+    StatusCountersCallback callback) {
+  StatusCounters counters;
+  counters.num_entries_and_tombstones = entities_.size();
+  for (const auto& kv : entities_) {
+    if (!kv.second->metadata().is_deleted()) {
+      ++counters.num_entries;
+    }
+  }
+  std::move(callback).Run(type_, counters);
+}
+
+void ClientTagBasedModelTypeProcessor::RecordMemoryUsageHistogram() {
+  SyncRecordMemoryKbHistogram(kModelTypeMemoryHistogramPrefix, type_,
+                              EstimateMemoryUsage());
 }
 
 }  // namespace syncer

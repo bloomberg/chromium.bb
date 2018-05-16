@@ -53,17 +53,15 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
     other_->ModelReadyToSync(bridge, std::move(batch));
   }
 
-  void OnSyncStarting(const ModelErrorHandler& error_handler,
-                      StartCallback callback) override {
-    other_->OnSyncStarting(error_handler, std::move(callback));
-  }
-
-  void DisableSync() override { other_->DisableSync(); }
-
   bool IsTrackingMetadata() override { return other_->IsTrackingMetadata(); }
 
   void ReportError(const ModelError& error) override {
     other_->ReportError(error);
+  }
+
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateOnUIThread()
+      override {
+    return other_->GetControllerDelegateOnUIThread();
   }
 
  private:
@@ -87,12 +85,6 @@ void MockModelTypeChangeProcessor::ModelReadyToSync(
     ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {
   DoModelReadyToSync(bridge, batch.get());
-}
-
-void MockModelTypeChangeProcessor::OnSyncStarting(
-    const ModelErrorHandler& error_handler,
-    StartCallback callback) {
-  DoOnSyncStarting(error_handler, &callback);
 }
 
 std::unique_ptr<ModelTypeChangeProcessor>
@@ -130,18 +122,15 @@ void MockModelTypeChangeProcessor::DelegateCallsByDefaultTo(
             delegate->ModelReadyToSync(
                 bridge, std::make_unique<MetadataBatch>(std::move(*batch)));
           }));
-  ON_CALL(*this, DoOnSyncStarting(_, _))
-      .WillByDefault(Invoke([delegate](const ModelErrorHandler& error_handler,
-                                       StartCallback* callback) {
-        delegate->OnSyncStarting(error_handler, std::move(*callback));
-      }));
-  ON_CALL(*this, DisableSync())
-      .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::DisableSync));
   ON_CALL(*this, IsTrackingMetadata())
       .WillByDefault(
           Invoke(delegate, &ModelTypeChangeProcessor::IsTrackingMetadata));
   ON_CALL(*this, ReportError(_))
       .WillByDefault(Invoke(delegate, &ModelTypeChangeProcessor::ReportError));
+  ON_CALL(*this, GetControllerDelegateOnUIThread())
+      .WillByDefault(
+          Invoke(delegate,
+                 &ModelTypeChangeProcessor::GetControllerDelegateOnUIThread));
 }
 
 }  //  namespace syncer

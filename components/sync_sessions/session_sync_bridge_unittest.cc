@@ -214,7 +214,7 @@ class SessionSyncBridgeTest : public ::testing::Test {
         "Chrome 10k", sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "device_id"));
 
     base::RunLoop loop;
-    bridge_->OnSyncStarting(
+    real_processor_->OnSyncStarting(
         /*error_handler=*/base::DoNothing(),
         base::BindLambdaForTesting(
             [&loop](std::unique_ptr<syncer::ActivationContext>) {
@@ -687,9 +687,8 @@ TEST_F(SessionSyncBridgeTest, ShouldDisableSyncAndReenable) {
                   MatchesHeader(kLocalSessionTag, {kWindowId}, {kTabId})));
   ASSERT_THAT(GetAllData(), Not(IsEmpty()));
 
-  EXPECT_CALL(mock_processor(), DisableSync());
   EXPECT_CALL(mock_processor(), DoModelReadyToSync(_, _)).Times(0);
-  bridge()->DisableSync();
+  real_processor()->DisableSync();
 
   EXPECT_CALL(mock_processor(),
               DoModelReadyToSync(bridge(), IsEmptyMetadataBatch()));

@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/stub_model_type_sync_bridge.h"
@@ -27,10 +28,6 @@ class ModelTypeSyncBridgeTest : public ::testing::Test {
       : bridge_(mock_processor_.CreateForwardingProcessor()) {}
   ~ModelTypeSyncBridgeTest() override {}
 
-  void OnSyncStarting() {
-    bridge_.OnSyncStarting(ModelErrorHandler(), base::DoNothing());
-  }
-
   StubModelTypeSyncBridge* bridge() { return &bridge_; }
   MockModelTypeChangeProcessor* processor() { return &mock_processor_; }
 
@@ -38,18 +35,6 @@ class ModelTypeSyncBridgeTest : public ::testing::Test {
   testing::NiceMock<MockModelTypeChangeProcessor> mock_processor_;
   StubModelTypeSyncBridge bridge_;
 };
-
-// OnSyncStarting should create a processor and call OnSyncStarting on it.
-TEST_F(ModelTypeSyncBridgeTest, OnSyncStarting) {
-  EXPECT_CALL(*processor(), DoOnSyncStarting(_, _));
-  OnSyncStarting();
-}
-
-// DisableSync should call DisableSync on the processor.
-TEST_F(ModelTypeSyncBridgeTest, DisableSync) {
-  EXPECT_CALL(*processor(), DisableSync());
-  bridge()->DisableSync();
-}
 
 // ResolveConflicts should return USE_REMOTE unless the remote data is deleted.
 TEST_F(ModelTypeSyncBridgeTest, DefaultConflictResolution) {

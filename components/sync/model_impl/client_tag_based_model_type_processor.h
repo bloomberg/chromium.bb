@@ -18,6 +18,7 @@
 #include "components/sync/engine/cycle/status_counters.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/metadata_batch.h"
 #include "components/sync/model/metadata_change_list.h"
@@ -38,7 +39,8 @@ class ProcessorEntityTracker;
 // //docs/sync/uss/client_tag_based_model_type_processor.md for a more thorough
 // description.
 class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
-                                         public ModelTypeChangeProcessor {
+                                         public ModelTypeChangeProcessor,
+                                         public ModelTypeControllerDelegate {
  public:
   ClientTagBasedModelTypeProcessor(ModelType type,
                                    const base::RepeatingClosure& dump_stack);
@@ -64,11 +66,10 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   void OnModelStarting(ModelTypeSyncBridge* bridge) override;
   void ModelReadyToSync(ModelTypeSyncBridge* bridge,
                         std::unique_ptr<MetadataBatch> batch) override;
-  void OnSyncStarting(const ModelErrorHandler& error_handler,
-                      StartCallback callback) override;
-  void DisableSync() override;
   bool IsTrackingMetadata() override;
   void ReportError(const ModelError& error) override;
+  base::WeakPtr<ModelTypeControllerDelegate> GetControllerDelegateOnUIThread()
+      override;
 
   // ModelTypeProcessor implementation.
   void ConnectSync(std::unique_ptr<CommitQueue> worker) override;
@@ -79,6 +80,14 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                          const CommitResponseDataList& response_list) override;
   void OnUpdateReceived(const sync_pb::ModelTypeState& type_state,
                         const UpdateResponseDataList& updates) override;
+
+  // ModelTypeControllerDelegate implementation.
+  void OnSyncStarting(const ModelErrorHandler& error_handler,
+                      StartCallback callback) override;
+  void DisableSync() override;
+  void GetAllNodesForDebugging(AllNodesCallback callback) override;
+  void GetStatusCountersForDebugging(StatusCountersCallback callback) override;
+  void RecordMemoryUsageHistogram() override;
 
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
@@ -200,6 +209,12 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // into a few structs / nested classes so that the state can be reset by
   // resetting these structs.
   void ResetState();
+
+  // Adds metadata to all data returned by the bridge.
+  // TODO(jkrcal): Mark as const (together with functions it depends on such as
+  // GetEntityForStorageKey, GetEntityForTagHash and maybe more).
+  void MergeDataWithMetadataForDebugging(AllNodesCallback callback,
+                                         std::unique_ptr<DataBatch> batch);
 
   /////////////////////
   // Processor state //

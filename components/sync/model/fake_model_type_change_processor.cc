@@ -14,13 +14,12 @@
 
 namespace syncer {
 
-// static
-std::unique_ptr<ModelTypeChangeProcessor> FakeModelTypeChangeProcessor::Create(
-    ModelType type) {
-  return base::WrapUnique(new FakeModelTypeChangeProcessor());
-}
+FakeModelTypeChangeProcessor::FakeModelTypeChangeProcessor()
+    : FakeModelTypeChangeProcessor(nullptr) {}
 
-FakeModelTypeChangeProcessor::FakeModelTypeChangeProcessor() = default;
+FakeModelTypeChangeProcessor::FakeModelTypeChangeProcessor(
+    base::WeakPtr<ModelTypeControllerDelegate> delegate)
+    : delegate_(delegate) {}
 
 FakeModelTypeChangeProcessor::~FakeModelTypeChangeProcessor() {
   // If this fails we were expecting an error but never got one.
@@ -51,16 +50,6 @@ void FakeModelTypeChangeProcessor::ModelReadyToSync(
     ModelTypeSyncBridge* bridge,
     std::unique_ptr<MetadataBatch> batch) {}
 
-void FakeModelTypeChangeProcessor::OnSyncStarting(
-    const ModelErrorHandler& error_handler,
-    StartCallback callback) {
-  if (!callback.is_null()) {
-    std::move(callback).Run(nullptr);
-  }
-}
-
-void FakeModelTypeChangeProcessor::DisableSync() {}
-
 bool FakeModelTypeChangeProcessor::IsTrackingMetadata() {
   return true;
 }
@@ -68,6 +57,11 @@ bool FakeModelTypeChangeProcessor::IsTrackingMetadata() {
 void FakeModelTypeChangeProcessor::ReportError(const ModelError& error) {
   EXPECT_TRUE(expect_error_) << error.ToString();
   expect_error_ = false;
+}
+
+base::WeakPtr<ModelTypeControllerDelegate>
+FakeModelTypeChangeProcessor::GetControllerDelegateOnUIThread() {
+  return delegate_;
 }
 
 void FakeModelTypeChangeProcessor::ExpectError() {

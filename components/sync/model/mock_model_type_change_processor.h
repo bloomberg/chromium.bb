@@ -43,16 +43,10 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
                void(ModelTypeSyncBridge* bridge, MetadataBatch* batch));
   void ModelReadyToSync(ModelTypeSyncBridge* bridge,
                         std::unique_ptr<MetadataBatch> batch) override;
-  // TODO(crbug.com/729950): Use unique_ptr here directly once move-only
-  // arguments are supported in gMock.
-  MOCK_METHOD2(DoOnSyncStarting,
-               void(const ModelErrorHandler& error_handler,
-                    StartCallback* callback));
-  void OnSyncStarting(const ModelErrorHandler& error_handler,
-                      StartCallback callback) override;
-  MOCK_METHOD0(DisableSync, void());
   MOCK_METHOD0(IsTrackingMetadata, bool());
   MOCK_METHOD1(ReportError, void(const ModelError& error));
+  MOCK_METHOD0(GetControllerDelegateOnUIThread,
+               base::WeakPtr<ModelTypeControllerDelegate>());
 
   // Returns a processor that forwards all calls to
   // |this|. |*this| must outlive the returned processor.
