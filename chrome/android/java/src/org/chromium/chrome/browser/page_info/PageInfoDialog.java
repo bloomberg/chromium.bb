@@ -32,7 +32,6 @@ class PageInfoDialog {
     private static final int ENTER_START_DELAY_MS = 100;
     private static final int ENTER_EXIT_DURATION_MS = 200;
     private static final int CLOSE_CLEANUP_DELAY_MS = 10;
-    private static final int MAX_MODAL_DIALOG_WIDTH_DP = 400;
 
     @NonNull
     private final PageInfoView mView;
@@ -89,8 +88,8 @@ class PageInfoDialog {
             // On smaller screens, make the dialog fill the width of the screen.
             container = createSheetContainer(context, tabView);
         } else {
-            // On larger screens, make the dialog centered in the screen and have a maximum width.
-            container = createModalContainer(context);
+            // On larger screens, modal dialog already has an maximum width set.
+            container = new ScrollView(context);
         }
 
         container.addView(mView);
@@ -185,21 +184,6 @@ class PageInfoDialog {
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                 heightMeasureSpec = MeasureSpec.makeMeasureSpec(
                         tabView != null ? tabView.getHeight() : 0, MeasureSpec.AT_MOST);
-                super.onMeasure(widthMeasureSpec, heightMeasureSpec);
-            }
-        };
-    }
-
-    private ViewGroup createModalContainer(Context context) {
-        return new ScrollView(context) {
-            @Override
-            protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                final int maxDialogWidthInPx = (int) (MAX_MODAL_DIALOG_WIDTH_DP
-                        * context.getResources().getDisplayMetrics().density);
-                if (MeasureSpec.getSize(widthMeasureSpec) > maxDialogWidthInPx) {
-                    widthMeasureSpec =
-                            MeasureSpec.makeMeasureSpec(maxDialogWidthInPx, MeasureSpec.EXACTLY);
-                }
                 super.onMeasure(widthMeasureSpec, heightMeasureSpec);
             }
         };
