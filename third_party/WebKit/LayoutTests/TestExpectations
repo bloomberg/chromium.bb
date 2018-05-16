@@ -4304,19 +4304,12 @@ crbug.com/770232 [ Win10 ] editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]
 
-# Test flaky (crashing) on WebKit Android (Nexus4)
-crbug.com/762008 [ Android ] http/tests/appcache/abort-cache-onchecking-resource-404.html [ Pass Crash ]
-
 # Editing commands incorrectly assume no plain text length change after formatting text.
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs.html [ Failure ]
 crbug.com/764489 editing/execCommand/format-block-multiple-paragraphs-in-pre.html [ Failure ]
 
 # Incorrect pixel alignment due to float number scale factor.
 crbug.com/773810 external/wpt/css/css-transforms/transform3d-perspective-008.html [ Failure ]
-
-# Sheriff failure 2017-09-06
-crbug.com/762423 [ Android ] http/tests/dom/create-contextual-fragment-from-svg-document-range.html [ Pass Crash ]
-crbug.com/762399 [ Android ] http/tests/cache/zero-length-xhr.html [ Pass Crash ]
 
 # Sheriff failures 2017-09-08
 crbug.com/763667 external/wpt/upgrade-insecure-requests/iframe-redirect-upgrade.https.html [ Timeout ]
