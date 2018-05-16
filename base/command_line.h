@@ -34,7 +34,7 @@ class BASE_EXPORT CommandLine {
 #if defined(OS_WIN)
   // The native command line string type.
   using StringType = string16;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   using StringType = std::string;
 #endif
 

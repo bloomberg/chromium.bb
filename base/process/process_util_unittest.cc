@@ -43,15 +43,16 @@
 #include <sched.h>
 #include <sys/syscall.h>
 #endif
-#if defined(OS_POSIX)
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
+#if defined(OS_POSIX) && !defined(OS_FUCHSIA)
+#include <sys/resource.h>
+#endif
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sched.h>
 #include <signal.h>
-#if !defined(OS_FUCHSIA)
-#include <sys/resource.h>
-#endif
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -82,18 +83,18 @@ const char kSignalFileSlow[] = "SlowChildProcess.die";
 const char kSignalFileKill[] = "KilledChildProcess.die";
 const char kTestHelper[] = "test_child_process";
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 const char kSignalFileTerm[] = "TerminatedChildProcess.die";
+#endif
 
 #if defined(OS_FUCHSIA)
 const char kSignalFileClone[] = "ClonedTmpDir.die";
 #endif
-#endif  // defined(OS_POSIX)
 
 #if defined(OS_WIN)
 const int kExpectedStillRunningExitCode = 0x102;
 const int kExpectedKilledExitCode = 1;
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 const int kExpectedStillRunningExitCode = 0;
 #endif
 
@@ -145,7 +146,7 @@ class ProcessUtilTest : public MultiProcessTest {
     test_helper_path_ = test_helper_path_.AppendASCII(kTestHelper);
   }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Spawn a child process that counts how many file descriptors are open.
   int CountOpenFDsInChild();
 #endif
@@ -283,7 +284,7 @@ TEST_F(ProcessUtilTest, CloneAlternateDir) {
   EXPECT_EQ(1, exit_code);
 }
 
-#endif
+#endif  // defined(OS_FUCHSIA)
 
 // On Android SpawnProcess() doesn't use LaunchProcess() and doesn't support
 // LaunchOptions::current_directory.
@@ -351,7 +352,7 @@ const char kSignalFileCrash[] = "CrashingChildProcess.die";
 
 MULTIPROCESS_TEST_MAIN(CrashingChildProcess) {
   WaitToDie(ProcessUtilTest::GetSignalFilePath(kSignalFileCrash).c_str());
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Have to disable to signal handler for segv so we can get a crash
   // instead of an abnormal termination through the crash dump handler.
   ::signal(SIGSEGV, SIG_DFL);
@@ -389,7 +390,7 @@ TEST_F(ProcessUtilTest, MAYBE_GetTerminationStatusCrash) {
 
 #if defined(OS_WIN)
   EXPECT_EQ(static_cast<int>(0xc0000005), exit_code);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   int signaled = WIFSIGNALED(exit_code);
   EXPECT_NE(0, signaled);
   int signal = WTERMSIG(exit_code);
@@ -408,21 +409,21 @@ MULTIPROCESS_TEST_MAIN(KilledChildProcess) {
   // Kill ourselves.
   HANDLE handle = ::OpenProcess(PROCESS_ALL_ACCESS, 0, ::GetCurrentProcessId());
   ::TerminateProcess(handle, kExpectedKilledExitCode);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Send a SIGKILL to this process, just like the OOM killer would.
   ::kill(getpid(), SIGKILL);
 #endif
   return 1;
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 MULTIPROCESS_TEST_MAIN(TerminatedChildProcess) {
   WaitToDie(ProcessUtilTest::GetSignalFilePath(kSignalFileTerm).c_str());
   // Send a SIGTERM to this process.
   ::kill(getpid(), SIGTERM);
   return 1;
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 TEST_F(ProcessUtilTest, GetTerminationStatusSigKill) {
   const std::string signal_file =
@@ -448,7 +449,7 @@ TEST_F(ProcessUtilTest, GetTerminationStatusSigKill) {
 
 #if defined(OS_WIN)
   EXPECT_EQ(kExpectedKilledExitCode, exit_code);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   int signaled = WIFSIGNALED(exit_code);
   EXPECT_NE(0, signaled);
   int signal = WTERMSIG(exit_code);
@@ -457,7 +458,7 @@ TEST_F(ProcessUtilTest, GetTerminationStatusSigKill) {
   remove(signal_file.c_str());
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 TEST_F(ProcessUtilTest, GetTerminationStatusSigTerm) {
   const std::string signal_file =
     ProcessUtilTest::GetSignalFilePath(kSignalFileTerm);
@@ -482,7 +483,7 @@ TEST_F(ProcessUtilTest, GetTerminationStatusSigTerm) {
   EXPECT_EQ(SIGTERM, signal);
   remove(signal_file.c_str());
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 TEST_F(ProcessUtilTest, EnsureTerminationUndying) {
   test::ScopedTaskEnvironment task_environment;
@@ -620,14 +621,14 @@ TEST_F(ProcessUtilTest, GetAppOutputWithExitCode) {
   // On Windows, anything that quits with a nonzero status code is handled as a
   // "crash", so just ignore GetAppOutputWithExitCode's return value.
   GetAppOutputWithExitCode(command, &output, &exit_code);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   EXPECT_TRUE(GetAppOutputWithExitCode(command, &output, &exit_code));
 #endif
   EXPECT_EQ(kEchoMessage2, output);
   EXPECT_EQ(kExpectedExitCode, exit_code);
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 namespace {
 
@@ -650,7 +651,7 @@ int GetMaxFilesOpenInProcess() {
   }
 
   return rlim.rlim_cur;
-#endif  // !defined(OS_FUCHSIA)
+#endif  // defined(OS_FUCHSIA)
 }
 
 const int kChildPipe = 20;  // FD # for write end of pipe in child process.
@@ -1072,7 +1073,7 @@ TEST_F(ProcessUtilTest, PreExecHook) {
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
-#endif  // defined(OS_POSIX)
+#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
 #if defined(OS_LINUX)
 MULTIPROCESS_TEST_MAIN(CheckPidProcess) {

@@ -29,7 +29,7 @@ using ScopedPlatformFile = ::base::win::ScopedHandle;
 // disallowed in constexpr. Visual Studio accepts this, however.
 const PlatformFile kInvalidPlatformFile = INVALID_HANDLE_VALUE;
 
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 using PlatformFile = int;
 using ScopedPlatformFile = ::base::ScopedFD;

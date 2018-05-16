@@ -83,10 +83,7 @@ void* GetRandomPageBase() {
 
 // The kASLRMask and kASLROffset constants will be suitable for the
 // OS and build configuration.
-#if defined(MEMORY_TOOL_REPLACES_ALLOCATOR) || defined(OS_POSIX)
-  random &= internal::kASLRMask;
-  random += internal::kASLROffset;
-#else   // defined(OS_WIN)
+#if defined(OS_WIN) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   // Windows >= 8.1 has the full 47 bits. Use them where available.
   static bool windows_81 = false;
   static bool windows_81_initialized = false;
@@ -100,7 +97,10 @@ void* GetRandomPageBase() {
     random &= internal::kASLRMask;
   }
   random += internal::kASLROffset;
-#endif  // defined(OS_WIN)
+#else
+  random &= internal::kASLRMask;
+  random += internal::kASLROffset;
+#endif  // defined(OS_WIN) && !defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
 #else   // defined(ARCH_CPU_32_BITS)
 #if defined(OS_WIN)
   // On win32 host systems the randomization plus huge alignment causes

@@ -20,7 +20,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include "winbase.h"
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <sys/mman.h>
 #endif
 
@@ -47,18 +47,16 @@ void* Map(size_t size) {
 #if defined(OS_WIN)
   return ::VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT,
                         PAGE_READWRITE);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return ::mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON,
                 0, 0);
-#else
-#error This architecture is not (yet) supported.
 #endif
 }
 
 void Unmap(void* addr, size_t size) {
 #if defined(OS_WIN)
   ::VirtualFree(addr, 0, MEM_DECOMMIT);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   ::munmap(addr, size);
 #else
 #error This architecture is not (yet) supported.

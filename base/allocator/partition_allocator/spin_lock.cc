@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/allocator/partition_allocator/spin_lock.h"
+#include "build/build_config.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <sched.h>
 #endif
 
@@ -23,9 +24,12 @@
 // you really should be using a proper lock (such as |base::Lock|)rather than
 // these spinlocks.
 #if defined(OS_WIN)
+
 #define YIELD_PROCESSOR YieldProcessor()
 #define YIELD_THREAD SwitchToThread()
-#elif defined(COMPILER_GCC) || defined(__clang__)
+
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+
 #if defined(ARCH_CPU_X86_64) || defined(ARCH_CPU_X86)
 #define YIELD_PROCESSOR __asm__ __volatile__("pause")
 #elif (defined(ARCH_CPU_ARMEL) && __ARM_ARCH >= 6) || defined(ARCH_CPU_ARM64)
@@ -44,22 +48,21 @@
 #elif defined(ARCH_CPU_S390_FAMILY)
 // just do nothing
 #define YIELD_PROCESSOR ((void)0)
-#endif
-#endif
+#endif  // ARCH
 
 #ifndef YIELD_PROCESSOR
 #warning "Processor yield not supported on this architecture."
 #define YIELD_PROCESSOR ((void)0)
 #endif
 
-#ifndef YIELD_THREAD
-#if defined(OS_POSIX)
 #define YIELD_THREAD sched_yield()
-#else
+
+#else  // Other OS
+
 #warning "Thread yield not supported on this OS."
 #define YIELD_THREAD ((void)0)
-#endif
-#endif
+
+#endif  // OS_WIN
 
 namespace base {
 namespace subtle {

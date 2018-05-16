@@ -46,7 +46,7 @@ struct NativeLibraryStruct {
   };
 };
 using NativeLibrary = NativeLibraryStruct*;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 using NativeLibrary = void*;
 #endif  // OS_*
 
@@ -60,7 +60,7 @@ struct BASE_EXPORT NativeLibraryLoadError {
 
 #if defined(OS_WIN)
   DWORD code;
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   std::string message;
 #endif  // OS_WIN
 };

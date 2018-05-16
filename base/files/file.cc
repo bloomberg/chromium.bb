@@ -9,7 +9,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <errno.h>
 #endif
 
@@ -41,7 +41,7 @@ File::File(PlatformFile platform_file)
       error_details_(FILE_OK),
       created_(false),
       async_(false) {
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   DCHECK_GE(platform_file, -1);
 #endif
 }
@@ -88,7 +88,7 @@ void File::Initialize(const FilePath& path, uint32_t flags) {
   if (path.ReferencesParent()) {
 #if defined(OS_WIN)
     ::SetLastError(ERROR_ACCESS_DENIED);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     errno = EACCES;
 #else
 #error Unsupported platform

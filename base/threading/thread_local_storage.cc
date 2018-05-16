@@ -296,7 +296,7 @@ void PlatformThreadLocalStorage::OnThreadExit() {
     return;
   OnThreadExitInternal(static_cast<TlsVectorEntry*>(tls_data));
 }
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 void PlatformThreadLocalStorage::OnThreadExit(void* value) {
   OnThreadExitInternal(static_cast<TlsVectorEntry*>(value));
 }

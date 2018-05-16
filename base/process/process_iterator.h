@@ -26,7 +26,7 @@
 #include <sys/sysctl.h>
 #elif defined(OS_FREEBSD)
 #include <sys/user.h>
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <dirent.h>
 #endif
 
@@ -38,7 +38,7 @@ struct ProcessEntry : public PROCESSENTRY32 {
   ProcessId parent_pid() const { return th32ParentProcessID; }
   const wchar_t* exe_file() const { return szExeFile; }
 };
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 struct BASE_EXPORT ProcessEntry {
   ProcessEntry();
   ProcessEntry(const ProcessEntry& other);
@@ -58,7 +58,7 @@ struct BASE_EXPORT ProcessEntry {
   std::string exe_file_;
   std::vector<std::string> cmd_line_args_;
 };
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_WIN)
 
 // Used to filter processes by process ID.
 class ProcessFilter {
@@ -112,7 +112,7 @@ class BASE_EXPORT ProcessIterator {
 #elif defined(OS_MACOSX) || defined(OS_BSD)
   std::vector<kinfo_proc> kinfo_procs_;
   size_t index_of_kinfo_proc_;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   DIR* procfs_dir_;
 #endif
   ProcessEntry entry_;

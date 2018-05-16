@@ -226,7 +226,7 @@ bool MessageLoopCurrentForIO::WaitForIOCompletion(
   DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
   return pump_->WaitForIOCompletion(timeout, filter);
 }
-#elif defined(OS_POSIX)  // defined(OS_WIN)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool MessageLoopCurrentForIO::WatchFileDescriptor(
     int fd,
     bool persistent,
@@ -236,7 +236,7 @@ bool MessageLoopCurrentForIO::WatchFileDescriptor(
   DCHECK_CALLED_ON_VALID_THREAD(current_->bound_thread_checker_);
   return pump_->WatchFileDescriptor(fd, persistent, mode, controller, delegate);
 }
-#endif                   // defined(OS_WIN)
+#endif  // defined(OS_WIN)
 
 #endif  // !defined(OS_NACL_SFI)
 

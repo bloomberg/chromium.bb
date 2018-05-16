@@ -46,14 +46,23 @@ typedef HANDLE MutexHandle;
 #include <mach/mach_time.h>
 #include <mach-o/dyld.h>
 
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #if defined(OS_NACL)
 #include <sys/time.h>  // timespec doesn't seem to be in <time.h>
 #endif
 #include <time.h>
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_FUCHSIA)
+#include <zircon/process.h>
+#include <zircon/syscalls.h>
+#endif
+
+#if defined(OS_ANDROID)
+#include <android/log.h>
+#endif
+
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <errno.h>
 #include <paths.h>
 #include <pthread.h>
@@ -93,17 +102,9 @@ typedef pthread_mutex_t* MutexHandle;
 #include "base/synchronization/lock_impl.h"
 #include "base/threading/platform_thread.h"
 #include "base/vlog.h"
-#if defined(OS_POSIX)
+
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/posix/safe_strerror.h"
-#endif
-
-#if defined(OS_ANDROID)
-#include <android/log.h>
-#endif
-
-#if defined(OS_FUCHSIA)
-#include <zircon/process.h>
-#include <zircon/syscalls.h>
 #endif
 
 namespace logging {
@@ -135,7 +136,7 @@ const int kAlwaysPrintErrorLevel = LOG_ERROR;
 // first needed.
 #if defined(OS_WIN)
 typedef std::wstring PathString;
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 typedef std::string PathString;
 #endif
 PathString* g_log_file_name = nullptr;
@@ -179,11 +180,11 @@ int32_t CurrentProcessId() {
 uint64_t TickCount() {
 #if defined(OS_WIN)
   return GetTickCount();
-#elif defined(OS_MACOSX)
-  return mach_absolute_time();
 #elif defined(OS_FUCHSIA)
   return zx_clock_get(ZX_CLOCK_MONOTONIC) /
          static_cast<zx_time_t>(base::Time::kNanosecondsPerMicrosecond);
+#elif defined(OS_MACOSX)
+  return mach_absolute_time();
 #elif defined(OS_NACL)
   // NaCl sadly does not have _POSIX_TIMERS enabled in sys/features.h
   // So we have to use clock() for now.
@@ -204,8 +205,10 @@ void DeleteFilePath(const PathString& log_name) {
   DeleteFile(log_name.c_str());
 #elif defined(OS_NACL)
   // Do nothing; unlink() isn't supported on NaCl.
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   unlink(log_name.c_str());
+#else
+#error Unsupported platform
 #endif
 }
 
@@ -221,7 +224,7 @@ PathString GetDefaultLogFile() {
     log_name.erase(last_backslash + 1);
   log_name += L"debug.log";
   return log_name;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // On other platforms we just use the current directory.
   return PathString("debug.log");
 #endif
@@ -229,7 +232,7 @@ PathString GetDefaultLogFile() {
 
 // We don't need locks on Windows for atomically appending to files. The OS
 // provides this functionality.
-#if !defined(OS_WIN)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // This class acts as a wrapper for locking the logging files.
 // LoggingLock::Init() should be called from the main thread before any logging
 // is done. Then whenever logging, be sure to have a local LoggingLock
@@ -260,9 +263,7 @@ class LoggingLock {
  private:
   static void LockLogging() {
     if (lock_log_file == LOCK_LOG_FILE) {
-#if defined(OS_POSIX)
       pthread_mutex_lock(&log_mutex);
-#endif
     } else {
       // use the lock
       log_lock->Lock();
@@ -271,9 +272,7 @@ class LoggingLock {
 
   static void UnlockLogging() {
     if (lock_log_file == LOCK_LOG_FILE) {
-#if defined(OS_POSIX)
       pthread_mutex_unlock(&log_mutex);
-#endif
     } else {
       log_lock->Unlock();
     }
@@ -286,9 +285,7 @@ class LoggingLock {
 
   // When we don't use a lock, we are using a global mutex. We need to do this
   // because LockFileEx is not thread safe.
-#if defined(OS_POSIX)
   static pthread_mutex_t log_mutex;
-#endif
 
   static bool initialized;
   static LogLockingState lock_log_file;
@@ -301,11 +298,9 @@ base::internal::LockImpl* LoggingLock::log_lock = nullptr;
 // static
 LogLockingState LoggingLock::lock_log_file = LOCK_LOG_FILE;
 
-#if defined(OS_POSIX)
 pthread_mutex_t LoggingLock::log_mutex = PTHREAD_MUTEX_INITIALIZER;
-#endif
 
-#endif  // OS_WIN
+#endif  // OS_POSIX || OS_FUCHSIA
 
 // Called by logging functions to ensure that |g_log_file| is initialized
 // and can be used for writing. Returns false if the file could not be
@@ -357,10 +352,12 @@ bool InitializeLogFileHandle() {
         return false;
       }
     }
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     g_log_file = fopen(g_log_file_name->c_str(), "a");
     if (g_log_file == nullptr)
       return false;
+#else
+#error Unsupported platform
 #endif
   }
 
@@ -370,8 +367,10 @@ bool InitializeLogFileHandle() {
 void CloseFile(FileHandle log) {
 #if defined(OS_WIN)
   CloseHandle(log);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   fclose(log);
+#else
+#error Unsupported platform
 #endif
 }
 
@@ -431,7 +430,7 @@ bool BaseInitLoggingImpl(const LoggingSettings& settings) {
   if ((g_logging_destination & LOG_TO_FILE) == 0)
     return true;
 
-#if !defined(OS_WIN)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   LoggingLock::Init(settings.lock_log, settings.log_file);
   LoggingLock logging_lock;
 #endif
@@ -541,11 +540,10 @@ void DisplayDebugMessageInDialog(const std::string& str) {
     return;
 
 #if defined(OS_WIN)
-  MessageBoxW(nullptr, base::UTF8ToUTF16(str).c_str(), L"Fatal error",
-              MB_OK | MB_ICONHAND | MB_TOPMOST);
-#else
   // We intentionally don't implement a dialog on other platforms.
   // You can just look at stderr.
+  MessageBoxW(nullptr, base::UTF8ToUTF16(str).c_str(), L"Fatal error",
+              MB_OK | MB_ICONHAND | MB_TOPMOST);
 #endif  // defined(OS_WIN)
 }
 #endif  // !defined(NDEBUG)
@@ -795,7 +793,7 @@ LogMessage::~LogMessage() {
     // to do this at the same time, there will be a race condition to create
     // the lock. This is why InitLogging should be called from the main
     // thread at the beginning of execution.
-#if !defined(OS_WIN)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
     LoggingLock::Init(LOCK_LOG_FILE, nullptr);
     LoggingLock logging_lock;
 #endif
@@ -807,10 +805,12 @@ LogMessage::~LogMessage() {
                 static_cast<DWORD>(str_newline.length()),
                 &num_written,
                 nullptr);
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
       ignore_result(fwrite(
           str_newline.data(), str_newline.size(), 1, g_log_file));
       fflush(g_log_file);
+#else
+#error Unsupported platform
 #endif
     }
   }
@@ -872,7 +872,21 @@ void LogMessage::Init(const char* file, int line) {
   if (g_log_thread_id)
     stream_ << base::PlatformThread::CurrentId() << ':';
   if (g_log_timestamp) {
-#if defined(OS_POSIX)
+#if defined(OS_WIN)
+    SYSTEMTIME local_time;
+    GetLocalTime(&local_time);
+    stream_ << std::setfill('0')
+            << std::setw(2) << local_time.wMonth
+            << std::setw(2) << local_time.wDay
+            << '/'
+            << std::setw(2) << local_time.wHour
+            << std::setw(2) << local_time.wMinute
+            << std::setw(2) << local_time.wSecond
+            << '.'
+            << std::setw(3)
+            << local_time.wMilliseconds
+            << ':';
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     timeval tv;
     gettimeofday(&tv, nullptr);
     time_t t = tv.tv_sec;
@@ -889,19 +903,8 @@ void LogMessage::Init(const char* file, int line) {
             << '.'
             << std::setw(6) << tv.tv_usec
             << ':';
-#elif defined(OS_WIN)
-    SYSTEMTIME local_time;
-    GetLocalTime(&local_time);
-    stream_ << std::setfill('0')
-            << std::setw(2) << local_time.wMonth
-            << std::setw(2) << local_time.wDay
-            << '/'
-            << std::setw(2) << local_time.wHour
-            << std::setw(2) << local_time.wMinute
-            << std::setw(2) << local_time.wSecond
-            << '.'
-            << std::setw(3) << local_time.wMilliseconds
-            << ':';
+#else
+#error Unsupported platform
 #endif
   }
   if (g_log_tickcount)
@@ -926,15 +929,13 @@ typedef DWORD SystemErrorCode;
 SystemErrorCode GetLastSystemErrorCode() {
 #if defined(OS_WIN)
   return ::GetLastError();
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return errno;
-#else
-#error Not implemented
 #endif
 }
 
-#if defined(OS_WIN)
 BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code) {
+#if defined(OS_WIN)
   const int kErrorMessageBufferSize = 256;
   char msgbuf[kErrorMessageBufferSize];
   DWORD flags = FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
@@ -947,15 +948,11 @@ BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code) {
   }
   return base::StringPrintf("Error (0x%lX) while retrieving error. (0x%lX)",
                             GetLastError(), error_code);
-}
-#elif defined(OS_POSIX)
-BASE_EXPORT std::string SystemErrorCodeToString(SystemErrorCode error_code) {
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   return base::safe_strerror(error_code) +
          base::StringPrintf(" (%d)", error_code);
-}
-#else
-#error Not implemented
 #endif  // defined(OS_WIN)
+}
 
 
 #if defined(OS_WIN)
@@ -974,7 +971,7 @@ Win32ErrorLogMessage::~Win32ErrorLogMessage() {
   DWORD last_error = err_;
   base::debug::Alias(&last_error);
 }
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 ErrnoLogMessage::ErrnoLogMessage(const char* file,
                                  int line,
                                  LogSeverity severity,
@@ -993,7 +990,7 @@ ErrnoLogMessage::~ErrnoLogMessage() {
 #endif  // defined(OS_WIN)
 
 void CloseLogFile() {
-#if !defined(OS_WIN)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   LoggingLock logging_lock;
 #endif
   CloseLogFileUnlocked();
