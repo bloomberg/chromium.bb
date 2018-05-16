@@ -35,6 +35,7 @@
 #include "services/network/public/mojom/request_context_frame_type.mojom-shared.h"
 #include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
+#include "third_party/blink/public/platform/web_content_security_policy_struct.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
@@ -372,6 +373,13 @@ class PLATFORM_EXPORT ResourceRequest final {
   void SetIsAdResource() { is_ad_resource_ = true; }
   bool IsAdResource() const { return is_ad_resource_; }
 
+  void SetInitiatorCSP(const WebContentSecurityPolicyList& initiator_csp) {
+    initiator_csp_ = initiator_csp;
+  }
+  const WebContentSecurityPolicyList& GetInitiatorCSP() const {
+    return initiator_csp_;
+  }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -439,6 +447,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   TimeTicks navigation_start_;
 
   bool is_ad_resource_ = false;
+  WebContentSecurityPolicyList initiator_csp_;
 };
 
 // This class is needed to copy a ResourceRequest across threads, because it
@@ -497,6 +506,7 @@ struct CrossThreadResourceRequestData {
   ResourceRequest::RedirectStatus redirect_status_;
   base::Optional<String> suggested_filename_;
   bool is_ad_resource_;
+  WebContentSecurityPolicyList navigation_csp_;
 };
 
 }  // namespace blink

@@ -1523,6 +1523,15 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   resource_request.SetFrameType(
       frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                             : network::mojom::RequestContextFrameType::kNested);
+  Document* origin_document = frame_load_request.OriginDocument();
+
+  if (origin_document && origin_document->GetContentSecurityPolicy()
+                             ->ExperimentalFeaturesEnabled()) {
+    WebContentSecurityPolicyList initiator_csp =
+        origin_document->GetContentSecurityPolicy()
+            ->ExposeForNavigationalChecks();
+    resource_request.SetInitiatorCSP(initiator_csp);
+  }
 
   bool had_placeholder_client_document_loader =
       provisional_document_loader_ && !provisional_document_loader_->DidStart();

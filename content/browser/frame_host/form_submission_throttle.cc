@@ -82,9 +82,10 @@ FormSubmissionThrottle::CheckContentSecurityPolicyFormAction(bool is_redirect) {
   // TODO(estark): Move this check into NavigationRequest and split it into (1)
   // check report-only CSP, (2) upgrade request if needed, (3) check enforced
   // CSP to match how frame-src works. https://crbug.com/713388
-  if (render_frame->IsAllowedByCsp(CSPDirective::FormAction, url, is_redirect,
-                                   handle->source_location(),
-                                   CSPContext::CHECK_ALL_CSP)) {
+  if (render_frame->IsAllowedByCsp(
+          CSPDirective::FormAction, url, is_redirect,
+          false /* is_response_check */, handle->source_location(),
+          CSPContext::CHECK_ALL_CSP, true /* is_form_submission */)) {
     return NavigationThrottle::PROCEED;
   }
 

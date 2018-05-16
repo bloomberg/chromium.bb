@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/initiator_csp_context.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
@@ -278,14 +279,36 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // be destroyed after this call.
   void CommitNavigation();
 
+  // Checks if CSP allows the navigation. This will check the frame-src and
+  // navigate-to directives.
+  // The net_error parameter will be set by this function to indicate how the
+  // failure should be handled (currently ERR_ABORTED or ERR_BLOCKED_BY_CLIENT
+  // depending on the directive that caused the failure).
+  bool IsAllowedByCSP(RenderFrameHostImpl* parent,
+                      bool is_redirect,
+                      bool is_response_check,
+                      CSPContext::CheckCSPDisposition disposition,
+                      net::Error& net_error);
+
+  // Checks if the specified CSP context's relevant CSP directive
+  // allows the navigation. This is called to perform the frame-src
+  // and navigate-to checks.
+  bool IsAllowedByCSPDirective(CSPContext* context,
+                               CSPDirective::Name directive,
+                               bool is_redirect,
+                               bool is_response_check,
+                               CSPContext::CheckCSPDisposition disposition);
+
   // Check whether a request should be allowed to continue or should be blocked
   // because it violates a CSP. This method can have two side effects:
   // - If a CSP is configured to send reports and the request violates the CSP,
   //   a report will be sent.
   // - The navigation request may be upgraded from HTTP to HTTPS if a CSP is
   //   configured to upgrade insecure requests.
-  ContentSecurityPolicyCheckResult CheckContentSecurityPolicyFrameSrc(
-      bool is_redirect);
+  ContentSecurityPolicyCheckResult CheckContentSecurityPolicy(
+      bool is_redirect,
+      bool is_response_check,
+      net::Error& net_error);
 
   // This enum describes the result of the credentialed subresource check for
   // the request.
@@ -387,6 +410,8 @@ class CONTENT_EXPORT NavigationRequest : public NavigationURLLoaderDelegate {
   // checks are performed by the NavigationHandle.
   bool has_stale_copy_in_cache_;
   int net_error_;
+
+  std::unique_ptr<InitiatorCSPContext> initiator_csp_context_;
 
   base::Closure on_start_checks_complete_closure_;
 

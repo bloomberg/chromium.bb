@@ -32,18 +32,24 @@ CSPContext::~CSPContext() {}
 bool CSPContext::IsAllowedByCsp(CSPDirective::Name directive_name,
                                 const GURL& url,
                                 bool is_redirect,
+                                bool is_response_check,
                                 const SourceLocation& source_location,
-                                CheckCSPDisposition check_csp_disposition) {
+                                CheckCSPDisposition check_csp_disposition,
+                                bool is_form_submission) {
   if (SchemeShouldBypassCSP(url.scheme_piece()))
     return true;
 
   bool allow = true;
   for (const auto& policy : policies_) {
     if (ShouldCheckPolicy(policy, check_csp_disposition)) {
-      allow &= ContentSecurityPolicy::Allow(policy, directive_name, url,
-                                            is_redirect, this, source_location);
+      allow &= ContentSecurityPolicy::Allow(
+          policy, directive_name, url, is_redirect, is_response_check, this,
+          source_location, is_form_submission);
     }
   }
+
+  DCHECK(allow || check_csp_disposition != CSPContext::CHECK_REPORT_ONLY_CSP);
+
   return allow;
 }
 
@@ -86,6 +92,10 @@ void CSPContext::SetSelf(const url::Origin origin) {
       origin.port() == 0 ? url::PORT_UNSPECIFIED : origin.port(), false, "");
 
   DCHECK_NE("", self_source_->scheme);
+}
+
+void CSPContext::SetSelf(const CSPSource& self_source) {
+  self_source_ = self_source;
 }
 
 bool CSPContext::SchemeShouldBypassCSP(const base::StringPiece& scheme) {

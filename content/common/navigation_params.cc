@@ -44,7 +44,9 @@ CommonNavigationParams::CommonNavigationParams(
     base::Optional<SourceLocation> source_location,
     CSPDisposition should_check_main_world_csp,
     bool started_from_context_menu,
-    bool has_user_gesture)
+    bool has_user_gesture,
+    const std::vector<ContentSecurityPolicy>& initiator_csp,
+    const base::Optional<CSPSource>& initiator_self_source)
     : url(url),
       referrer(referrer),
       transition(transition),
@@ -62,7 +64,9 @@ CommonNavigationParams::CommonNavigationParams(
       source_location(source_location),
       should_check_main_world_csp(should_check_main_world_csp),
       started_from_context_menu(started_from_context_menu),
-      has_user_gesture(has_user_gesture) {
+      has_user_gesture(has_user_gesture),
+      initiator_csp(initiator_csp),
+      initiator_self_source(initiator_self_source) {
   // |method != "POST"| should imply absence of |post_data|.
   if (method != "POST" && post_data) {
     NOTREACHED();

@@ -557,6 +557,8 @@ bool CSPDirectiveList::CheckSourceAndReportViolation(
     prefix = prefix + "load the script '";
   else if (ContentSecurityPolicy::DirectiveType::kStyleSrc == effective_type)
     prefix = prefix + "load the stylesheet '";
+  else if (ContentSecurityPolicy::DirectiveType::kNavigateTo == effective_type)
+    prefix = prefix + "navigate to '";
 
   String suffix = String();
   if (CheckDynamic(directive))
@@ -1381,6 +1383,8 @@ void CSPDirectiveList::AddDirective(const String& name, const String& value) {
     EnforceStrictMixedContentChecking(name, value);
   } else if (type == ContentSecurityPolicy::DirectiveType::kManifestSrc) {
     SetCSPDirective<SourceListDirective>(name, value, manifest_src_);
+  } else if (type == ContentSecurityPolicy::DirectiveType::kNavigateTo) {
+    SetCSPDirective<SourceListDirective>(name, value, navigate_to_);
   } else if (type ==
              ContentSecurityPolicy::DirectiveType::kTreatAsPublicAddress) {
     TreatAsPublicAddress(name, value);
@@ -1415,6 +1419,8 @@ SourceListDirective* CSPDirectiveList::OperativeDirective(
       return frame_ancestors_.Get();
     case ContentSecurityPolicy::DirectiveType::kFormAction:
       return form_action_.Get();
+    case ContentSecurityPolicy::DirectiveType::kNavigateTo:
+      return navigate_to_.Get();
     // Directives that have one default directive.
     case ContentSecurityPolicy::DirectiveType::kChildSrc:
       return OperativeDirective(child_src_.Get());
@@ -1480,7 +1486,8 @@ bool CSPDirectiveList::Subsumes(const CSPDirectiveListVector& other) {
       ContentSecurityPolicy::DirectiveType::kWorkerSrc,
       ContentSecurityPolicy::DirectiveType::kBaseURI,
       ContentSecurityPolicy::DirectiveType::kFrameAncestors,
-      ContentSecurityPolicy::DirectiveType::kFormAction};
+      ContentSecurityPolicy::DirectiveType::kFormAction,
+      ContentSecurityPolicy::DirectiveType::kNavigateTo};
 
   for (const auto& directive : directives) {
     // There should only be one SourceListDirective for each directive in
@@ -1518,7 +1525,7 @@ WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
   policy.source = static_cast<WebContentSecurityPolicySource>(header_source_);
   std::vector<WebContentSecurityPolicyDirective> directives;
   for (const auto& directive :
-       {child_src_, default_src_, form_action_, frame_src_}) {
+       {child_src_, default_src_, form_action_, frame_src_, navigate_to_}) {
     if (directive) {
       directives.push_back(WebContentSecurityPolicyDirective{
           directive->DirectiveName(),
@@ -1565,6 +1572,7 @@ void CSPDirectiveList::Trace(blink::Visitor* visitor) {
   visitor->Trace(script_src_);
   visitor->Trace(style_src_);
   visitor->Trace(worker_src_);
+  visitor->Trace(navigate_to_);
 }
 
 }  // namespace blink

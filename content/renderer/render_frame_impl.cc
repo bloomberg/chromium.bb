@@ -47,7 +47,7 @@
 #include "content/common/associated_interface_provider_impl.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_constants_internal.h"
-#include "content/common/content_security_policy/csp_context.h"
+#include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/download/mhtml_save_status.h"
 #include "content/common/edit_command.h"
@@ -555,7 +555,12 @@ CommonNavigationParams MakeCommonNavigationParams(
       base::TimeTicks::Now(), info.url_request.HttpMethod().Latin1(),
       GetRequestBodyForWebURLRequest(info.url_request), source_location,
       should_check_main_world_csp, false /* started_from_context_menu */,
-      info.url_request.HasUserGesture());
+      info.url_request.HasUserGesture(),
+      BuildContentSecurityPolicyList(info.url_request.GetNavigationCSP()),
+      info.url_request.GetNavigationCSP().self_source.has_value()
+          ? base::Optional<CSPSource>(BuildCSPSource(
+                info.url_request.GetNavigationCSP().self_source.value()))
+          : base::nullopt);
 }
 
 WebFrameLoadType NavigationTypeToLoadType(

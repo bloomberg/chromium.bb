@@ -22,12 +22,16 @@ bool AllowFromSources(const GURL& url,
 };  // namespace
 
 CSPSourceList::CSPSourceList()
-    : allow_self(false), allow_star(false), sources() {}
+    : allow_self(false), allow_star(false), allow_redirects(false), sources() {}
 
 CSPSourceList::CSPSourceList(bool allow_self,
                              bool allow_star,
+                             bool allow_redirects,
                              std::vector<CSPSource> sources)
-    : allow_self(allow_self), allow_star(allow_star), sources(sources) {}
+    : allow_self(allow_self),
+      allow_star(allow_star),
+      allow_redirects(allow_redirects),
+      sources(sources) {}
 
 CSPSourceList::CSPSourceList(const CSPSourceList&) = default;
 CSPSourceList::~CSPSourceList() = default;
@@ -36,7 +40,23 @@ CSPSourceList::~CSPSourceList() = default;
 bool CSPSourceList::Allow(const CSPSourceList& source_list,
                           const GURL& url,
                           CSPContext* context,
-                          bool is_redirect) {
+                          bool is_redirect,
+                          bool is_response_check) {
+  // If the source list allows all redirects, the decision can't be made until
+  // the response is received.
+  if (source_list.allow_redirects && !is_response_check)
+    return true;
+
+  // If the source list does not allow all redirects, the decision has already
+  // been made when checking the request.
+  if (!source_list.allow_redirects && is_response_check)
+    return true;
+
+  // If the source list allows all redirects, all responses that are a redirect
+  // are allowed.
+  if (source_list.allow_redirects && is_response_check && is_redirect)
+    return true;
+
   // Wildcards match network schemes ('http', 'https', 'ftp', 'ws', 'wss'), and
   // the scheme of the protected resource:
   // https://w3c.github.io/webappsec-csp/#match-url-to-source-expression. Other

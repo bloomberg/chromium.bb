@@ -687,8 +687,7 @@ bool ContentSecurityPolicy::AllowScriptFromSource(
     // 'ScriptWithCSPBypassingScheme*' metrics, make a decision about what
     // behavior to ship. https://crbug.com/653521
     if ((parser_disposition == kNotParserInserted ||
-         !RuntimeEnabledFeatures::
-             ExperimentalContentSecurityPolicyFeaturesEnabled()) &&
+         !ExperimentalFeaturesEnabled()) &&
         // The schemes where javascript:-URLs are blocked are usually privileged
         // pages, so do not allow the CSP to be bypassed either.
         !SchemeRegistry::ShouldTreatURLSchemeAsNotAllowingJavascriptURLs(
@@ -1733,6 +1732,8 @@ const char* ContentSecurityPolicy::GetDirectiveName(const DirectiveType& type) {
       return "worker-src";
     case DirectiveType::kReportTo:
       return "report-to";
+    case DirectiveType::kNavigateTo:
+      return "navigate-to";
     case DirectiveType::kUndefined:
       NOTREACHED();
       return "";
@@ -1794,6 +1795,8 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::GetDirectiveType(
     return DirectiveType::kWorkerSrc;
   if (name == "report-to")
     return DirectiveType::kReportTo;
+  if (name == "navigate-to")
+    return DirectiveType::kNavigateTo;
 
   return DirectiveType::kUndefined;
 }
@@ -1868,6 +1871,22 @@ bool ContentSecurityPolicy::IsValidCSPAttr(const String& attr,
          context_policy->policies_.size() == 1);
 
   return context_policy->Subsumes(*attr_policy);
+}
+
+WebContentSecurityPolicyList
+ContentSecurityPolicy::ExposeForNavigationalChecks() const {
+  std::vector<WebContentSecurityPolicy> policies;
+  for (const auto& policy : policies_) {
+    policies.push_back(policy->ExposeForNavigationalChecks());
+  }
+
+  WebContentSecurityPolicyList list;
+  list.policies = policies;
+
+  if (self_source_)
+    list.self_source = self_source_->ExposeForNavigationalChecks();
+
+  return list;
 }
 
 }  // namespace blink

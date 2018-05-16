@@ -15,6 +15,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
+#include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy/csp_disposition_enum.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -76,7 +77,9 @@ struct CONTENT_EXPORT CommonNavigationParams {
       base::Optional<SourceLocation> source_location,
       CSPDisposition should_check_main_world_csp,
       bool started_from_context_menu,
-      bool has_user_gesture);
+      bool has_user_gesture,
+      const std::vector<ContentSecurityPolicy>& initiator_csp,
+      const base::Optional<CSPSource>& initiator_self_source);
   CommonNavigationParams(const CommonNavigationParams& other);
   ~CommonNavigationParams();
 
@@ -160,6 +163,10 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
   // True if the request was user initiated.
   bool has_user_gesture = false;
+
+  // We require a copy of the relevant CSP to perform navigation checks.
+  std::vector<ContentSecurityPolicy> initiator_csp;
+  base::Optional<CSPSource> initiator_self_source;
 };
 
 // Provided by the browser -----------------------------------------------------

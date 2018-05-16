@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Test that the parent can't navigate the child because the relevant policy belongs to the navigation initiator (in this case the parent) assert_unreached: Should not have received a message from the child Reached unreachable code
-Harness: the test ran to completion.
-

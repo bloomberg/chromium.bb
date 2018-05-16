@@ -190,6 +190,7 @@ class CORE_EXPORT CSPDirectiveList
   // * frame-src
   // * form-action
   // * upgrade-insecure-requests
+  // * navigate-to
   // The exported directives only contains sources that affect navigation. For
   // instance it doesn't contains 'unsafe-inline' or 'unsafe-eval'
   WebContentSecurityPolicy ExposeForNavigationalChecks() const;
@@ -360,6 +361,7 @@ class CORE_EXPORT CSPDirectiveList
   Member<SourceListDirective> script_src_;
   Member<SourceListDirective> style_src_;
   Member<SourceListDirective> worker_src_;
+  Member<SourceListDirective> navigate_to_;
 
   uint8_t require_sri_for_;
 

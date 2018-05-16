@@ -424,6 +424,10 @@ bool WebURLRequest::IsAdResource() const {
   return resource_request_->IsAdResource();
 }
 
+const WebContentSecurityPolicyList& WebURLRequest::GetNavigationCSP() const {
+  return resource_request_->GetInitiatorCSP();
+}
+
 const ResourceRequest& WebURLRequest::ToResourceRequest() const {
   DCHECK(resource_request_);
   return *resource_request_;

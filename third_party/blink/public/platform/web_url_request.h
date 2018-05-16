@@ -54,6 +54,7 @@ class WebHTTPHeaderVisitor;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
+struct WebContentSecurityPolicyList;
 
 class WebURLRequest {
  public:
@@ -352,6 +353,11 @@ class WebURLRequest {
   // Returns true if this request is tagged as an ad. This is done using various
   // heuristics so it is not expected to be 100% accurate.
   BLINK_PLATFORM_EXPORT bool IsAdResource() const;
+
+  // This is the navigation relevant CSP to be used during request and response
+  // checks.
+  BLINK_PLATFORM_EXPORT const WebContentSecurityPolicyList& GetNavigationCSP()
+      const;
 
 #if INSIDE_BLINK
   BLINK_PLATFORM_EXPORT ResourceRequest& ToMutableResourceRequest();

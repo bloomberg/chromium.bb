@@ -24,9 +24,10 @@ CSPSourceList BuildCSPSourceList(
     sources.push_back(BuildCSPSource(source));
   }
 
-  return CSPSourceList(source_list.allow_self,  // allow_self
-                       source_list.allow_star,  // allow_star
-                       sources);                // source_list
+  return CSPSourceList(source_list.allow_self,       // allow_self
+                       source_list.allow_star,       // allow_star
+                       source_list.allow_redirects,  // allow_redirects
+                       sources);                     // source_list
 }
 
 CSPDirective BuildCSPDirective(
@@ -50,6 +51,16 @@ ContentSecurityPolicy BuildContentSecurityPolicy(
       ContentSecurityPolicyHeader(policy.header.Utf8(), policy.disposition,
                                   policy.source),
       directives, report_endpoints, policy.use_reporting_api);
+}
+
+std::vector<ContentSecurityPolicy> BuildContentSecurityPolicyList(
+    const blink::WebContentSecurityPolicyList& policies) {
+  std::vector<ContentSecurityPolicy> list;
+
+  for (const auto& policy : policies.policies)
+    list.push_back(BuildContentSecurityPolicy(policy));
+
+  return list;
 }
 
 blink::WebContentSecurityPolicyViolation BuildWebContentSecurityPolicyViolation(
