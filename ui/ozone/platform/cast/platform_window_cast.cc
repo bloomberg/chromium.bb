@@ -8,15 +8,17 @@
 #include "ui/events/event.h"
 #include "ui/events/ozone/events_ozone.h"
 #include "ui/events/platform/platform_event_source.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
 PlatformWindowCast::PlatformWindowCast(PlatformWindowDelegate* delegate,
                                        const gfx::Rect& bounds)
-    : delegate_(delegate), bounds_(bounds) {
-  widget_ = (bounds.width() << 16) + bounds.height();
-  delegate_->OnAcceleratedWidgetAvailable(widget_, 1.f);
+    : StubWindow(delegate, false, bounds) {
+  gfx::AcceleratedWidget widget = (bounds.width() << 16) + bounds.height();
+  delegate->OnAcceleratedWidgetAvailable(widget, 1.f);
 
   if (PlatformEventSource::GetInstance())
     PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
@@ -27,26 +29,6 @@ PlatformWindowCast::~PlatformWindowCast() {
     PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 
-gfx::Rect PlatformWindowCast::GetBounds() {
-  return bounds_;
-}
-
-void PlatformWindowCast::SetBounds(const gfx::Rect& bounds) {
-  bounds_ = bounds;
-  delegate_->OnBoundsChanged(bounds);
-}
-
-void PlatformWindowCast::SetTitle(const base::string16& title) {
-}
-
-bool PlatformWindowCast::HasCapture() const {
-  return false;
-}
-
-PlatformImeController* PlatformWindowCast::GetPlatformImeController() {
-  return nullptr;
-}
-
 bool PlatformWindowCast::CanDispatchEvent(const PlatformEvent& ne) {
   return true;
 }
@@ -54,7 +36,7 @@ bool PlatformWindowCast::CanDispatchEvent(const PlatformEvent& ne) {
 uint32_t PlatformWindowCast::DispatchEvent(const PlatformEvent& native_event) {
   DispatchEventFromNativeUiEvent(
       native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                                   base::Unretained(delegate_)));
+                                   base::Unretained(delegate())));
 
   return ui::POST_DISPATCH_STOP_PROPAGATION;
 }

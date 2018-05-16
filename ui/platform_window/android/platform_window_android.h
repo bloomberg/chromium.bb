@@ -7,14 +7,12 @@
 
 #include "base/android/jni_weak_ref.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gfx/sequential_id_generator.h"
 #include "ui/platform_window/android/android_window_export.h"
 #include "ui/platform_window/android/platform_ime_controller_android.h"
-#include "ui/platform_window/platform_window.h"
+#include "ui/platform_window/stub/stub_window.h"
 
 struct ANativeWindow;
 
@@ -22,7 +20,9 @@ namespace ui {
 
 class PlatformWindowDelegate;
 
-class ANDROID_WINDOW_EXPORT PlatformWindowAndroid : public PlatformWindow {
+// NOTE: This class extends StubWindow because it's very much a work in
+// progress. If we make it real then it should subclass PlatformWindow directly.
+class ANDROID_WINDOW_EXPORT PlatformWindowAndroid : public StubWindow {
  public:
   explicit PlatformWindowAndroid(PlatformWindowDelegate* delegate);
   ~PlatformWindowAndroid() override;
@@ -64,34 +64,16 @@ class ANDROID_WINDOW_EXPORT PlatformWindowAndroid : public PlatformWindow {
   // Overridden from PlatformWindow:
   void Show() override;
   void Hide() override;
-  void Close() override;
-  void PrepareForShutdown() override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;
-  void SetTitle(const base::string16& title) override;
-  void SetCapture() override;
-  void ReleaseCapture() override;
-  bool HasCapture() const override;
-  void ToggleFullscreen() override;
-  void Maximize() override;
-  void Minimize() override;
-  void Restore() override;
-  void SetCursor(PlatformCursor cursor) override;
-  void MoveCursorTo(const gfx::Point& location) override;
-  void ConfineCursorToBounds(const gfx::Rect& bounds) override;
   PlatformImeController* GetPlatformImeController() override;
-
-  PlatformWindowDelegate* delegate_;
 
   JavaObjectWeakGlobalRef java_platform_window_android_;
   ANativeWindow* window_;
-  ui::SequentialIDGenerator id_generator_;
 
   gfx::Size size_;  // Origin is always (0,0)
 
   PlatformImeControllerAndroid platform_ime_controller_;
-
-  base::WeakPtrFactory<PlatformWindowAndroid> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformWindowAndroid);
 };

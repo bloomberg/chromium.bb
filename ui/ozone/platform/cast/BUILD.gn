@@ -51,5 +51,6 @@ source_set("cast") {
     "//ui/ozone:ozone_base",
     "//ui/ozone/common",
     "//ui/platform_window",
+    "//ui/platform_window/stub",
   ]
 }

@@ -15,6 +15,8 @@ namespace ui {
 
 class PlatformWindowDelegate;
 
+// StubWindow is useful for tests, as well as implementations that only care
+// about bounds.
 class STUB_WINDOW_EXPORT StubWindow : public PlatformWindow {
  public:
   explicit StubWindow(PlatformWindowDelegate* delegate,
