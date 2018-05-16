@@ -122,6 +122,8 @@ class TestHttpClient {
     ASSERT_TRUE(response.empty());
   }
 
+  void Close() { socket_.reset(); }
+
  private:
   bool IsCompleteResponse(const std::string& response) {
     // Check end of headers first.
@@ -295,8 +297,9 @@ class WebSocketTest : public HttpServerTest {
     NOTREACHED();
   }
 
-  void OnWebSocketRequest(int connection_id,
-                          const HttpServerRequestInfo& info) override {
+  void OnWebSocketRequest(
+      int connection_id,
+      const network::server::HttpServerRequestInfo& info) override {
     HttpServerTest::OnHttpRequest(connection_id, info);
   }
 
@@ -445,6 +448,23 @@ TEST_F(HttpServerTest, RequestWithBody) {
   ASSERT_EQ(body.length(), GetRequest(0).data.length());
   ASSERT_EQ('a', body[0]);
   ASSERT_EQ('c', *body.rbegin());
+}
+
+// Tests that |HttpServer:OnReadable()| will notice the closure of the connected
+// socket and not try to read from an invalid pipe.
+TEST_F(WebSocketTest, PipeClosed) {
+  TestHttpClient client;
+  ASSERT_THAT(client.ConnectAndWait(server_address_), IsOk());
+  client.Send(
+      "GET /test HTTP/1.1\r\n"
+      "Upgrade: WebSocket\r\n"
+      "Connection: SomethingElse, Upgrade\r\n"
+      "Sec-WebSocket-Version: 8\r\n"
+      "Sec-WebSocket-Key: key\r\n"
+      "\r\n");
+  RunUntilRequestsReceived(1);
+  client.Close();
+  RunUntilConnectionIdClosed(1);
 }
 
 TEST_F(WebSocketTest, RequestWebSocket) {

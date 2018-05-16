@@ -114,7 +114,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) HttpServer {
                          mojo::ScopedDataPipeConsumerHandle receive_pipe_handle,
                          mojo::ScopedDataPipeProducerHandle send_pipe_handle);
 
-  void OnReadable(int connection_id, MojoResult result);
+  void OnReadable(int connection_id,
+                  MojoResult result,
+                  const mojo::HandleSignalsState& state);
   void OnReadCompleted(int connection_id, MojoResult rv);
   void HandleReadResult(HttpConnection* connection, MojoResult rv);
 

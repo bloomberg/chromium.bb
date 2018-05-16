@@ -213,6 +213,7 @@ void HttpServer::OnAcceptCompleted(
     connection->read_watcher().Watch(
         connection->receive_handle(),
         MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED,
+        MOJO_TRIGGER_CONDITION_SIGNALS_SATISFIED,
         base::BindRepeating(&HttpServer::OnReadable, base::Unretained(this),
                             connection->id()));
   }
@@ -220,9 +221,13 @@ void HttpServer::OnAcceptCompleted(
   DoAcceptLoop();
 }
 
-void HttpServer::OnReadable(int connection_id, MojoResult result) {
-  if (result != MOJO_RESULT_OK)
+void HttpServer::OnReadable(int connection_id,
+                            MojoResult result,
+                            const mojo::HandleSignalsState& state) {
+  if (result != MOJO_RESULT_OK) {
+    Close(connection_id);
     return;
+  }
 
   HttpConnection* connection = FindConnection(connection_id);
   if (!connection)
@@ -234,6 +239,10 @@ void HttpServer::OnReadable(int connection_id, MojoResult result) {
                                                       MOJO_READ_DATA_FLAG_NONE);
   if (result == MOJO_RESULT_SHOULD_WAIT) {
     connection->receive_handle().EndReadData(0);
+    return;
+  }
+  if (result != MOJO_RESULT_OK) {
+    Close(connection_id);
     return;
   }
 
