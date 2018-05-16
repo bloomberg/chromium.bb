@@ -13,10 +13,6 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "ui/gfx/transform.h"
 
-namespace gfx {
-class BoxF;
-}
-
 namespace cc {
 
 class ColorAnimationCurve;
@@ -80,12 +76,6 @@ class CC_ANIMATION_EXPORT TransformAnimationCurve : public AnimationCurve {
   ~TransformAnimationCurve() override {}
 
   virtual TransformOperations GetValue(base::TimeDelta t) const = 0;
-
-  // Sets |bounds| to be the bounding box for the region within which |box|
-  // will move during this animation. If this region cannot be computed,
-  // returns false.
-  virtual bool AnimatedBoundsForBox(const gfx::BoxF& box,
-                                    gfx::BoxF* bounds) const = 0;
 
   // Returns true if this animation is a translation.
   virtual bool IsTranslation() const = 0;

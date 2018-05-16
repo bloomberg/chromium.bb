@@ -24,8 +24,6 @@ class CC_ANIMATION_EXPORT TimingFunction {
   virtual Type GetType() const = 0;
   virtual float GetValue(double t) const = 0;
   virtual float Velocity(double time) const = 0;
-  // The smallest and largest values returned by GetValue for inputs in [0, 1].
-  virtual void Range(float* min, float* max) const = 0;
   virtual std::unique_ptr<TimingFunction> Clone() const = 0;
 
  protected:
@@ -50,7 +48,6 @@ class CC_ANIMATION_EXPORT CubicBezierTimingFunction : public TimingFunction {
   Type GetType() const override;
   float GetValue(double time) const override;
   float Velocity(double time) const override;
-  void Range(float* min, float* max) const override;
   std::unique_ptr<TimingFunction> Clone() const override;
 
   EaseType ease_type() const { return ease_type_; }
@@ -83,7 +80,6 @@ class CC_ANIMATION_EXPORT StepsTimingFunction : public TimingFunction {
   Type GetType() const override;
   float GetValue(double t) const override;
   std::unique_ptr<TimingFunction> Clone() const override;
-  void Range(float* min, float* max) const override;
   float Velocity(double time) const override;
 
   int steps() const { return steps_; }
@@ -110,7 +106,6 @@ class CC_ANIMATION_EXPORT FramesTimingFunction : public TimingFunction {
   Type GetType() const override;
   float GetValue(double t) const override;
   std::unique_ptr<TimingFunction> Clone() const override;
-  void Range(float* min, float* max) const override;
   float Velocity(double time) const override;
 
   int frames() const { return frames_; }

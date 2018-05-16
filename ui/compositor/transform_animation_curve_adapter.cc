@@ -65,15 +65,6 @@ cc::TransformOperations TransformAnimationCurveAdapter::GetValue(
   return WrapTransform(gfx::ComposeTransform(to_return));
 }
 
-bool TransformAnimationCurveAdapter::AnimatedBoundsForBox(
-    const gfx::BoxF& box,
-    gfx::BoxF* bounds) const {
-  // TODO(ajuma): Once cc::TransformOperation::BlendedBoundsForBox supports
-  // computing bounds for TransformOperationMatrix, use that to compute
-  // the bounds we need here.
-  return false;
-}
-
 bool TransformAnimationCurveAdapter::IsTranslation() const {
   return initial_value_.IsIdentityOrTranslation() &&
          target_value_.IsIdentityOrTranslation();
@@ -136,15 +127,6 @@ cc::TransformOperations InverseTransformCurveAdapter::GetValue(
   to_return.PreconcatTransform(effective_initial_value_);
 
   return WrapTransform(to_return);
-}
-
-bool InverseTransformCurveAdapter::AnimatedBoundsForBox(
-    const gfx::BoxF& box,
-    gfx::BoxF* bounds) const {
-  // TODO(ajuma): Once cc::TransformOperation::BlendedBoundsForBox supports
-  // computing bounds for TransformOperationMatrix, use that to compute
-  // the bounds we need here.
-  return false;
 }
 
 bool InverseTransformCurveAdapter::IsTranslation() const {
