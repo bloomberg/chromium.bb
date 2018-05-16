@@ -473,45 +473,22 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(MultiProfileFileManagerBrowserTest);
 };
 
-// Flaky crashes in ash::tray::MultiProfileMediaTrayView.
-// https://crbug.com/842442
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(LEAK_SANITIZER)
-#define MAYBE_PRE_BasicDownloads DISABLED_PRE_BasicDownloads
-#define MAYBE_BasicDownloads DISABLED_BasicDownloads
-#else
-#define MAYBE_PRE_BasicDownloads PRE_BasicDownloads
-#define MAYBE_BasicDownloads BasicDownloads
-#endif
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       MAYBE_PRE_BasicDownloads) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDownloads) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       MAYBE_BasicDownloads) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDownloads) {
   AddAllUsers();
   // Sanity check that normal operations work in multi-profile.
   set_test_case_name("keyboardCopyDownloads");
   StartTest();
 }
 
-// Flaky crashes in ash::tray::MultiProfileMediaTrayView.
-// https://crbug.com/842442
-#if defined(MEMORY_SANITIZER) || defined(ADDRESS_SANITIZER) || \
-    defined(LEAK_SANITIZER)
-#define MAYBE_PRE_BasicDrive DISABLED_PRE_BasicDrive
-#define MAYBE_BasicDrive DISABLED_BasicDrive
-#else
-#define MAYBE_PRE_BasicDrive PRE_BasicDrive
-#define MAYBE_BasicDrive BasicDrive
-#endif
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest,
-                       MAYBE_PRE_BasicDrive) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, PRE_BasicDrive) {
   AddAllUsers();
 }
 
-IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, MAYBE_BasicDrive) {
+IN_PROC_BROWSER_TEST_F(MultiProfileFileManagerBrowserTest, BasicDrive) {
   AddAllUsers();
   // Sanity check that normal operations work in multi-profile.
   set_test_case_name("keyboardCopyDrive");
