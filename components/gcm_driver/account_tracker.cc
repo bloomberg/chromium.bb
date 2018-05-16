@@ -13,12 +13,14 @@
 namespace gcm {
 
 AccountTracker::AccountTracker(
+    SigninManagerBase* signin_manager,
     IdentityProvider* identity_provider,
     net::URLRequestContextGetter* request_context_getter)
-    : identity_provider_(identity_provider),
+    : signin_manager_(signin_manager),
+      identity_provider_(identity_provider),
       request_context_getter_(request_context_getter),
       shutdown_called_(false) {
-  identity_provider_->AddObserver(this);
+  signin_manager_->AddObserver(this);
   identity_provider_->GetTokenService()->AddObserver(this);
 }
 
@@ -30,7 +32,7 @@ void AccountTracker::Shutdown() {
   shutdown_called_ = true;
   user_info_requests_.clear();
   identity_provider_->GetTokenService()->RemoveObserver(this);
-  identity_provider_->RemoveObserver(this);
+  signin_manager_->RemoveObserver(this);
 }
 
 bool AccountTracker::IsAllUserInfoFetched() const {
@@ -47,7 +49,7 @@ void AccountTracker::RemoveObserver(Observer* observer) {
 
 std::vector<AccountIds> AccountTracker::GetAccounts() const {
   const std::string active_account_id =
-      identity_provider_->GetActiveAccountId();
+      signin_manager_->GetAuthenticatedAccountId();
   std::vector<AccountIds> accounts;
 
   for (std::map<std::string, AccountState>::const_iterator it =
@@ -74,7 +76,7 @@ void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
                "account_key", account_id);
 
   // Ignore refresh tokens if there is no active account ID at all.
-  if (identity_provider_->GetActiveAccountId().empty())
+  if (signin_manager_->GetAuthenticatedAccountId().empty())
     return;
 
   DVLOG(1) << "AVAILABLE " << account_id;
@@ -89,8 +91,9 @@ void AccountTracker::OnRefreshTokenRevoked(const std::string& account_id) {
   UpdateSignInState(account_id, false);
 }
 
-void AccountTracker::OnActiveAccountLogin() {
-  TRACE_EVENT0("identity", "AccountTracker::OnActiveAccountLogin");
+void AccountTracker::GoogleSigninSucceeded(const std::string& account_id,
+                                           const std::string& username) {
+  TRACE_EVENT0("identity", "AccountTracker::GoogleSigninSucceeded");
 
   std::vector<std::string> accounts =
       identity_provider_->GetTokenService()->GetAccounts();
@@ -103,8 +106,9 @@ void AccountTracker::OnActiveAccountLogin() {
   }
 }
 
-void AccountTracker::OnActiveAccountLogout() {
-  TRACE_EVENT0("identity", "AccountTracker::OnActiveAccountLogout");
+void AccountTracker::GoogleSignedOut(const std::string& account_id,
+                                     const std::string& username) {
+  TRACE_EVENT0("identity", "AccountTracker::GoogleSignedOut");
   DVLOG(1) << "LOGOUT";
   StopTrackingAllAccounts();
 }

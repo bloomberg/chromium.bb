@@ -8,6 +8,7 @@ include_rules = [
   "+components/signin",
   "+components/sync/driver",
   "+components/sync/protocol",
+  "+components/sync_preferences",
   "+components/timers",  # Only used for Chrome OS builds.
   "+components/version_info",
   "+content/public/browser/browser_context.h",

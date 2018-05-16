@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/observer_list.h"
+#include "components/signin/core/browser/signin_manager.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/identity_provider.h"
 #include "google_apis/gaia/oauth2_token_service.h"
@@ -41,9 +42,10 @@ class AccountIdFetcher;
 // 3. SignIn follows Add, and there will be a SignOut between SignIn & Remove.
 // 4. If there is no primary account, there are no other accounts.
 class AccountTracker : public OAuth2TokenService::Observer,
-                       public IdentityProvider::Observer {
+                       public SigninManagerBase::Observer {
  public:
-  AccountTracker(IdentityProvider* identity_provider,
+  AccountTracker(SigninManagerBase* signin_manager,
+                 IdentityProvider* identity_provider,
                  net::URLRequestContextGetter* request_context_getter);
   ~AccountTracker() override;
 
@@ -71,9 +73,11 @@ class AccountTracker : public OAuth2TokenService::Observer,
                               const std::string& gaia_id);
   void OnUserInfoFetchFailure(AccountIdFetcher* fetcher);
 
-  // IdentityProvider::Observer implementation.
-  void OnActiveAccountLogin() override;
-  void OnActiveAccountLogout() override;
+  // SigninManagerBase::Observer implementation.
+  void GoogleSigninSucceeded(const std::string& account_id,
+                             const std::string& username) override;
+  void GoogleSignedOut(const std::string& account_id,
+                       const std::string& username) override;
 
   // Sets the state of an account. Does not fire notifications.
   void SetAccountStateForTest(AccountIds ids, bool is_signed_in);
@@ -105,7 +109,8 @@ class AccountTracker : public OAuth2TokenService::Observer,
   void StartFetchingUserInfo(const std::string& account_key);
   void DeleteFetcher(AccountIdFetcher* fetcher);
 
-  IdentityProvider* identity_provider_;  // Not owned.
+  SigninManagerBase* signin_manager_;
+  IdentityProvider* identity_provider_;
   scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
   std::map<std::string, std::unique_ptr<AccountIdFetcher>> user_info_requests_;
   std::map<std::string, AccountState> accounts_;
