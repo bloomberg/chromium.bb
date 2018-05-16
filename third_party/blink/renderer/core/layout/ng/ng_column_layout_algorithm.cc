@@ -44,26 +44,20 @@ LayoutUnit ConstrainColumnBlockSize(LayoutUnit size,
   LayoutUnit extra = border_scrollbar_padding.BlockSum();
   size += extra;
 
-  base::Optional<LayoutUnit> max_length;
   const ComputedStyle& style = node.Style();
-  Length logical_max_height = style.LogicalMaxHeight();
-  if (!logical_max_height.IsMaxSizeNone()) {
-    max_length = ResolveBlockLength(space, style, logical_max_height, size,
-                                    LengthResolveType::kMaxSize);
-  }
+  LayoutUnit max = ResolveBlockLength(space, style, style.LogicalMaxHeight(),
+                                      size, LengthResolveType::kMaxSize,
+                                      LengthResolvePhase::kLayout);
   LayoutUnit extent = ResolveBlockLength(space, style, style.LogicalHeight(),
-                                         size, LengthResolveType::kContentSize);
+                                         size, LengthResolveType::kContentSize,
+                                         LengthResolvePhase::kLayout);
   if (extent != NGSizeIndefinite) {
     // A specified height/width will just constrain the maximum length.
-    if (max_length.has_value())
-      max_length = std::min(max_length.value(), extent);
-    else
-      max_length = extent;
+    max = std::min(max, extent);
   }
 
   // Constrain and convert the value back to content-box.
-  if (max_length.has_value())
-    size = std::min(size, max_length.value());
+  size = std::min(size, max);
   return size - extra;
 }
 
