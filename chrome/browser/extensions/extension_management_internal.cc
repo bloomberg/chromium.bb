@@ -149,12 +149,12 @@ bool IndividualSettings::Parse(const base::DictionaryValue* dict,
     return true;
   };
 
-  if (!parse_url_pattern_set(dict, schema_constants::kRuntimeBlockedHosts,
-                             &runtime_blocked_hosts))
+  if (!parse_url_pattern_set(dict, schema_constants::kPolicyBlockedHosts,
+                             &policy_blocked_hosts))
     return false;
 
-  if (!parse_url_pattern_set(dict, schema_constants::kRuntimeAllowedHosts,
-                             &runtime_allowed_hosts))
+  if (!parse_url_pattern_set(dict, schema_constants::kPolicyAllowedHosts,
+                             &policy_allowed_hosts))
     return false;
 
   // Parses the minimum version settings.
@@ -189,8 +189,8 @@ void IndividualSettings::Reset() {
   installation_mode = ExtensionManagement::INSTALLATION_ALLOWED;
   update_url.clear();
   blocked_permissions.clear();
-  runtime_blocked_hosts.ClearPatterns();
-  runtime_allowed_hosts.ClearPatterns();
+  policy_blocked_hosts.ClearPatterns();
+  policy_allowed_hosts.ClearPatterns();
   blocked_install_message.clear();
 }
 

@@ -104,8 +104,8 @@ class PermissionsData {
   // of URL restrictions using SetDefaultPolicyHostRestrictions. This function
   // overrides any default host restriction policy.
   void SetPolicyHostRestrictions(
-      const URLPatternSet& runtime_blocked_hosts,
-      const URLPatternSet& runtime_allowed_hosts) const;
+      const URLPatternSet& policy_blocked_hosts,
+      const URLPatternSet& policy_allowed_hosts) const;
 
   // Marks this extension as using default enterprise policy limiting
   // which URLs extensions can interact with. A default policy can be set with
@@ -117,8 +117,8 @@ class PermissionsData {
   // extensions can interact with. This restriction can be overridden on a
   // per-extension basis with SetPolicyHostRestrictions.
   static void SetDefaultPolicyHostRestrictions(
-      const URLPatternSet& default_runtime_blocked_hosts,
-      const URLPatternSet& default_runtime_allowed_hosts);
+      const URLPatternSet& default_policy_blocked_hosts,
+      const URLPatternSet& default_policy_allowed_hosts);
 
   // Sets the active permissions, leaving withheld the same.
   void SetActivePermissions(std::unique_ptr<const PermissionSet> active) const;
@@ -269,9 +269,9 @@ class PermissionsData {
   const URLPatternSet policy_allowed_hosts() const;
 
   // Check if a specific URL is blocked by policy from extension use at runtime.
-  bool IsRuntimeBlockedHost(const GURL& url) const {
+  bool IsPolicyBlockedHost(const GURL& url) const {
     base::AutoLock auto_lock(runtime_lock_);
-    return IsRuntimeBlockedHostUnsafe(url);
+    return IsPolicyBlockedHostUnsafe(url);
   }
 
 #if defined(UNIT_TEST)
@@ -301,7 +301,7 @@ class PermissionsData {
 
   // Check if a specific URL is blocked by policy from extension use at runtime.
   // You must acquire the runtime_lock_ before calling.
-  bool IsRuntimeBlockedHostUnsafe(const GURL& url) const;
+  bool IsPolicyBlockedHostUnsafe(const GURL& url) const;
 
   // Same as policy_blocked_hosts but instead returns a reference.
   // You must acquire runtime_lock_ before calling this.

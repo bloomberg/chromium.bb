@@ -256,10 +256,10 @@ void PermissionsUpdater::InitializePermissions(const Extension* extension) {
     // Apply per-extension policy if set.
     ExtensionManagement* management =
         ExtensionManagementFactory::GetForBrowserContext(browser_context_);
-    if (!management->UsesDefaultRuntimeHostRestrictions(extension)) {
+    if (!management->UsesDefaultPolicyHostRestrictions(extension)) {
       SetPolicyHostRestrictions(extension,
-                                management->GetRuntimeBlockedHosts(extension),
-                                management->GetRuntimeAllowedHosts(extension));
+                                management->GetPolicyBlockedHosts(extension),
+                                management->GetPolicyAllowedHosts(extension));
     }
   }
 

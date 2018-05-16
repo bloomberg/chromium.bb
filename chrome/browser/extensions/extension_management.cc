@@ -196,43 +196,41 @@ APIPermissionSet ExtensionManagement::GetBlockedAPIPermissions(
   return default_settings_->blocked_permissions;
 }
 
-const URLPatternSet& ExtensionManagement::GetDefaultRuntimeBlockedHosts()
-    const {
-  return default_settings_->runtime_blocked_hosts;
+const URLPatternSet& ExtensionManagement::GetDefaultPolicyBlockedHosts() const {
+  return default_settings_->policy_blocked_hosts;
 }
 
-const URLPatternSet& ExtensionManagement::GetDefaultRuntimeAllowedHosts()
-    const {
-  return default_settings_->runtime_allowed_hosts;
+const URLPatternSet& ExtensionManagement::GetDefaultPolicyAllowedHosts() const {
+  return default_settings_->policy_allowed_hosts;
 }
 
-const URLPatternSet& ExtensionManagement::GetRuntimeBlockedHosts(
+const URLPatternSet& ExtensionManagement::GetPolicyBlockedHosts(
     const Extension* extension) const {
   auto iter_id = settings_by_id_.find(extension->id());
   if (iter_id != settings_by_id_.end())
-    return iter_id->second->runtime_blocked_hosts;
-  return default_settings_->runtime_blocked_hosts;
+    return iter_id->second->policy_blocked_hosts;
+  return default_settings_->policy_blocked_hosts;
 }
 
-const URLPatternSet& ExtensionManagement::GetRuntimeAllowedHosts(
+const URLPatternSet& ExtensionManagement::GetPolicyAllowedHosts(
     const Extension* extension) const {
   auto iter_id = settings_by_id_.find(extension->id());
   if (iter_id != settings_by_id_.end())
-    return iter_id->second->runtime_allowed_hosts;
-  return default_settings_->runtime_allowed_hosts;
+    return iter_id->second->policy_allowed_hosts;
+  return default_settings_->policy_allowed_hosts;
 }
 
-bool ExtensionManagement::UsesDefaultRuntimeHostRestrictions(
+bool ExtensionManagement::UsesDefaultPolicyHostRestrictions(
     const Extension* extension) const {
   return settings_by_id_.find(extension->id()) == settings_by_id_.end();
 }
 
-bool ExtensionManagement::IsRuntimeBlockedHost(const Extension* extension,
-                                               const GURL& url) const {
+bool ExtensionManagement::IsPolicyBlockedHost(const Extension* extension,
+                                              const GURL& url) const {
   auto iter_id = settings_by_id_.find(extension->id());
   if (iter_id != settings_by_id_.end())
-    return iter_id->second->runtime_blocked_hosts.MatchesURL(url);
-  return default_settings_->runtime_blocked_hosts.MatchesURL(url);
+    return iter_id->second->policy_blocked_hosts.MatchesURL(url);
+  return default_settings_->policy_blocked_hosts.MatchesURL(url);
 }
 
 std::unique_ptr<const PermissionSet> ExtensionManagement::GetBlockedPermissions(

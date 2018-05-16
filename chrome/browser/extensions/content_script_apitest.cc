@@ -402,7 +402,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   // Set enterprise policy to block injection to policy specified host.
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
-    pref.AddRuntimeBlockedHost("*", "*://example.com");
+    pref.AddPolicyBlockedHost("*", "*://example.com");
   }
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
@@ -414,7 +414,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   // Set enterprise policy to block injection to policy specified hosts.
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
-    pref.AddRuntimeBlockedHost("*", "*://example.*");
+    pref.AddPolicyBlockedHost("*", "*://example.*");
   }
   ASSERT_TRUE(StartEmbeddedTestServer());
   ASSERT_TRUE(RunExtensionTest("content_scripts/policy")) << message_;
@@ -441,7 +441,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
   // specified host.
   {
     ExtensionManagementPolicyUpdater pref(&policy_provider_);
-    pref.AddRuntimeBlockedHost(extension_id, "*://example.com");
+    pref.AddPolicyBlockedHost(extension_id, "*://example.com");
   }
   // Some policy updating operations are performed asynchronuosly. Wait for them
   // to complete before installing extension.

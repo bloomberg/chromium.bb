@@ -172,30 +172,30 @@ void ExtensionManagementPrefUpdaterBase::SetBlockedInstallMessage(
 
 // Helper functions for 'runtime_blocked_hosts' manipulation ------------------
 
-void ExtensionManagementPrefUpdaterBase::UnsetRuntimeBlockedHosts(
+void ExtensionManagementPrefUpdaterBase::UnsetPolicyBlockedHosts(
     const std::string& prefix) {
   DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
-  pref_->Remove(make_path(prefix, schema::kRuntimeBlockedHosts), nullptr);
+  pref_->Remove(make_path(prefix, schema::kPolicyBlockedHosts), nullptr);
 }
 
-void ExtensionManagementPrefUpdaterBase::ClearRuntimeBlockedHosts(
+void ExtensionManagementPrefUpdaterBase::ClearPolicyBlockedHosts(
     const std::string& prefix) {
   DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
-  ClearList(make_path(prefix, schema::kRuntimeBlockedHosts));
+  ClearList(make_path(prefix, schema::kPolicyBlockedHosts));
 }
 
-void ExtensionManagementPrefUpdaterBase::AddRuntimeBlockedHost(
+void ExtensionManagementPrefUpdaterBase::AddPolicyBlockedHost(
     const std::string& prefix,
     const std::string& host) {
   DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
-  AddStringToList(make_path(prefix, schema::kRuntimeBlockedHosts), host);
+  AddStringToList(make_path(prefix, schema::kPolicyBlockedHosts), host);
 }
 
-void ExtensionManagementPrefUpdaterBase::RemoveRuntimeBlockedHost(
+void ExtensionManagementPrefUpdaterBase::RemovePolicyBlockedHost(
     const std::string& prefix,
     const std::string& host) {
   DCHECK(prefix == schema::kWildcard || crx_file::id_util::IdIsValid(prefix));
-  RemoveStringFromList(make_path(prefix, schema::kRuntimeBlockedHosts), host);
+  RemoveStringFromList(make_path(prefix, schema::kPolicyBlockedHosts), host);
 }
 
 // Helper functions for 'allowed_permissions' manipulation ---------------------

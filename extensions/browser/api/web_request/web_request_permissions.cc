@@ -249,7 +249,7 @@ PermissionsData::PageAccess WebRequestPermissions::CanExtensionAccessURL(
   // Prevent viewing / modifying requests initiated by a host protected by
   // policy.
   if (initiator &&
-      extension->permissions_data()->IsRuntimeBlockedHost(initiator->GetURL()))
+      extension->permissions_data()->IsPolicyBlockedHost(initiator->GetURL()))
     return PermissionsData::PageAccess::kDenied;
 
   // When we are in a Public Session, allow all URLs for webRequests initiated
