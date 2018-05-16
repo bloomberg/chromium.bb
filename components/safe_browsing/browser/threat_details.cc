@@ -684,16 +684,6 @@ void ThreatDetails::FinishCollection(bool did_proceed, int num_visit) {
     }
   }
 
-  if (trim_to_ad_tags_) {
-    TrimElements(trimmed_dom_element_ids_, &elements_, &resources_);
-    // If trimming the report removed all the elements then don't bother
-    // sending it.
-    if (elements_.empty()) {
-      AllDone();
-      return;
-    }
-  }
-
   did_proceed_ = did_proceed;
   num_visits_ = num_visit;
   std::vector<GURL> urls;
@@ -728,6 +718,18 @@ void ThreatDetails::AddRedirectUrlList(const std::vector<GURL>& urls) {
 
 void ThreatDetails::OnCacheCollectionReady() {
   DVLOG(1) << "OnCacheCollectionReady.";
+
+  // All URLs have been collected, trim the report if necessary.
+  if (trim_to_ad_tags_) {
+    TrimElements(trimmed_dom_element_ids_, &elements_, &resources_);
+    // If trimming the report removed all the elements then don't bother
+    // sending it.
+    if (elements_.empty()) {
+      AllDone();
+      return;
+    }
+  }
+
   // Add all the urls in our |resources_| maps to the |report_| protocol buffer.
   for (auto& resource_pair : resources_) {
     ClientSafeBrowsingReportRequest::Resource* pb_resource =
