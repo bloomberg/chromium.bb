@@ -275,6 +275,9 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // it was the update UI.
   void OnNoInteraction(bool is_update);
 
+  // Called when the passwords were shown on on the bubble without obfuscation.
+  void OnPasswordsRevealed();
+
   // Saves the outcome of HTML parsing based form classifier to upload proto.
   void SaveGenerationFieldDetectedByClassifier(
       const base::string16& generation_field);
@@ -589,6 +592,9 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // of times that Chrome will autofill to avoid being stuck in an infinite
   // loop.
   int autofills_left_ = kMaxTimesAutofill;
+
+  // Whether the password values have been shown to the user on the save prompt.
+  bool has_passwords_revealed_vote_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordFormManager);
 };

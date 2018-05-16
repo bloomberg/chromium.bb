@@ -156,6 +156,7 @@ IN_PROC_BROWSER_TEST_F(AutofillServerTest,
   upload.set_data_present("1f7e0003780000080004");
   upload.set_action_signature(15724779818122431245U);
   upload.set_form_name("test_form");
+  upload.set_passwords_revealed(false);
 
   test::FillUploadField(upload.add_field(), 2594484045U, "one", "text", nullptr,
                         2U);

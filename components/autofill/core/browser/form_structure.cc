@@ -324,7 +324,8 @@ FormStructure::FormStructure(const FormData& form)
       is_form_tag_(form.is_form_tag),
       is_formless_checkout_(form.is_formless_checkout),
       all_fields_are_passwords_(!form.fields.empty()),
-      is_signin_upload_(false) {
+      is_signin_upload_(false),
+      passwords_were_revealed_(false) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
@@ -421,6 +422,7 @@ bool FormStructure::EncodeUploadRequest(
   upload->set_form_signature(form_signature());
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
+  upload->set_passwords_revealed(passwords_were_revealed_);
 
   if (IsAutofillFieldMetadataEnabled()) {
     upload->set_action_signature(StrToHash64Bit(target_url_.host()));

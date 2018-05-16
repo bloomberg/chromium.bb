@@ -814,8 +814,13 @@ bool PasswordFormManager::UploadPasswordVote(
         SetFieldLabelsOnSave(autofill_type, form_to_upload, &field_types);
       }
       if (autofill_type != autofill::ACCOUNT_CREATION_PASSWORD) {
+        // If |autofill_type| == autofill::ACCOUNT_CREATION_PASSWORD, Chrome
+        // will upload a vote for another form: the one that the credential was
+        // saved on.
         field_types[submitted_form_->confirmation_password_element] =
             autofill::CONFIRMATION_PASSWORD;
+        form_structure.set_passwords_were_revealed(
+            has_passwords_revealed_vote_);
       }
     }
     if (autofill_type != autofill::ACCOUNT_CREATION_PASSWORD) {
@@ -1201,6 +1206,10 @@ void PasswordFormManager::OnNoInteraction(bool is_update) {
     UploadPasswordVote(pending_credentials_, autofill::UNKNOWN_TYPE,
                        std::string());
   }
+}
+
+void PasswordFormManager::OnPasswordsRevealed() {
+  has_passwords_revealed_vote_ = true;
 }
 
 void PasswordFormManager::SetHasGeneratedPassword(bool generated_password) {

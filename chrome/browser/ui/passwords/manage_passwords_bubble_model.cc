@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -203,6 +204,7 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     DisplayReason display_reason)
     : delegate_(std::move(delegate)),
       interaction_reported_(false),
+      are_passwords_revealed_when_bubble_is_opened_(false),
       metrics_recorder_(delegate_->GetPasswordFormMetricsRecorder()) {
   origin_ = delegate_->GetOrigin();
   state_ = delegate_->GetState();
@@ -222,8 +224,11 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
         interaction_stats.dismissal_count = stats->dismissal_count;
       }
     }
-    are_passwords_revealed_when_bubble_is_opened_ =
-        delegate_->ArePasswordsRevealedWhenBubbleIsOpened();
+
+    if (delegate_->ArePasswordsRevealedWhenBubbleIsOpened()) {
+      are_passwords_revealed_when_bubble_is_opened_ = true;
+      delegate_->OnPasswordsRevealed();
+    }
     password_revealing_requires_reauth_ =
         !are_passwords_revealed_when_bubble_is_opened_ &&
         (delegate_->BubbleIsManualFallbackForSaving()
@@ -521,8 +526,11 @@ void ManagePasswordsBubbleModel::SetClockForTesting(base::Clock* clock) {
 }
 
 bool ManagePasswordsBubbleModel::RevealPasswords() {
-  return !password_revealing_requires_reauth_ ||
-         (delegate_ && delegate_->AuthenticateUser());
+  bool reveal_immediately = !password_revealing_requires_reauth_ ||
+                            (delegate_ && delegate_->AuthenticateUser());
+  if (reveal_immediately)
+    delegate_->OnPasswordsRevealed();
+  return reveal_immediately;
 }
 
 void ManagePasswordsBubbleModel::UpdatePendingStateTitle() {
