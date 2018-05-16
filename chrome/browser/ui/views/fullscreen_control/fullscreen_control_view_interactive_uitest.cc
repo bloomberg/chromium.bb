@@ -27,6 +27,11 @@
 #include "ui/views/view.h"
 #include "url/gurl.h"
 
+#if defined(USE_AURA)
+#include "ui/aura/test/test_cursor_client.h"
+#include "ui/aura/window.h"
+#endif
+
 namespace {
 
 constexpr base::TimeDelta kPopupEventTimeout = base::TimeDelta::FromSeconds(5);
@@ -54,6 +59,25 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
     scoped_feature_list_.InitWithFeatures(
         {features::kFullscreenExitUI, features::kKeyboardLockAPI}, {});
     InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
+#if defined(USE_AURA)
+    // This code prevents WindowEventDispatcher from synthesizing mouse move
+    // events when views get refreshed, so that they won't interfere with the
+    // tests. Note that new mouse move events directly coming from the real
+    // device will still pass through.
+    auto* root_window = browser()->window()->GetNativeWindow()->GetRootWindow();
+    cursor_client_ =
+        std::make_unique<aura::test::TestCursorClient>(root_window);
+    cursor_client_->DisableMouseEvents();
+#endif
+  }
+
+  void TearDownOnMainThread() override {
+#if defined(USE_AURA)
+    cursor_client_.reset();
+#endif
   }
 
  protected:
@@ -121,6 +145,10 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+#if defined(USE_AURA)
+  std::unique_ptr<aura::test::TestCursorClient> cursor_client_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(FullscreenControlViewTest);
 };
@@ -392,10 +420,6 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
 #endif
 IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
                        MAYBE_KeyboardPopupInteraction) {
-  // TODO(yuweih): Test will fail if the cursor is at the top of the screen.
-  // That's because random mouse move events may pass from the browser to the
-  // host and interfere with the InputEntryMethod tracking. Consider fixing
-  // this.
   EnterActiveTabFullscreen();
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   ASSERT_TRUE(browser_view->IsFullscreen());
