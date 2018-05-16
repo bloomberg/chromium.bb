@@ -8,6 +8,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/eme_constants.h"
 #include "media/base/media_export.h"
 
@@ -24,6 +25,10 @@ class MEDIA_EXPORT KeySystemProperties {
   // Returns whether |init_data_type| is supported by this key system.
   virtual bool IsSupportedInitDataType(
       EmeInitDataType init_data_type) const = 0;
+
+  // Returns whether |encryption_scheme| is supported by this key system.
+  virtual bool IsEncryptionSchemeSupported(
+      EncryptionMode encryption_scheme) const = 0;
 
   // Returns the codecs supported by this key system.
   virtual SupportedCodecs GetSupportedCodecs() const = 0;

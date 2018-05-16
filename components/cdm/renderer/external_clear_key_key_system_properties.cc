@@ -34,6 +34,19 @@ bool ExternalClearKeyProperties::IsSupportedInitDataType(
   return false;
 }
 
+bool ExternalClearKeyProperties::IsEncryptionSchemeSupported(
+    media::EncryptionMode encryption_scheme) const {
+  switch (encryption_scheme) {
+    case media::EncryptionMode::kCenc:
+    case media::EncryptionMode::kCbcs:
+      return true;
+    case media::EncryptionMode::kUnencrypted:
+      break;
+  }
+  NOTREACHED();
+  return false;
+}
+
 media::SupportedCodecs ExternalClearKeyProperties::GetSupportedCodecs() const {
   return media::EME_CODEC_MP4_ALL | media::EME_CODEC_WEBM_ALL;
 }
