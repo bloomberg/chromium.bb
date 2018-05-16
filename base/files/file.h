@@ -18,7 +18,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <sys/stat.h>
 #endif
 
@@ -27,7 +27,7 @@ namespace base {
 #if defined(OS_BSD) || defined(OS_MACOSX) || defined(OS_NACL) || \
     defined(OS_ANDROID) && __ANDROID_API__ < 21
 typedef struct stat stat_wrapper_t;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 typedef struct stat64 stat_wrapper_t;
 #endif
 
@@ -122,7 +122,7 @@ class BASE_EXPORT File {
   struct BASE_EXPORT Info {
     Info();
     ~Info();
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
     // Fills this struct with values from |stat_info|.
     void FromStat(const stat_wrapper_t& stat_info);
 #endif
@@ -331,7 +331,7 @@ class BASE_EXPORT File {
 
 #if defined(OS_WIN)
   static Error OSErrorToFileError(DWORD last_error);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   static Error OSErrorToFileError(int saved_errno);
 #endif
 

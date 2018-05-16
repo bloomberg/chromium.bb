@@ -24,7 +24,7 @@
 #endif
 #include <sys/types.h>
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/file_descriptor_posix.h"
 #endif
 
@@ -35,7 +35,7 @@ class BASE_EXPORT SyncSocket {
 #if defined(OS_WIN)
   typedef HANDLE Handle;
   typedef Handle TransitDescriptor;
-#else
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   typedef int Handle;
   typedef FileDescriptor TransitDescriptor;
 #endif

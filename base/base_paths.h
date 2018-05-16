@@ -18,7 +18,7 @@
 #include "base/base_paths_android.h"
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/base_paths_posix.h"
 #endif
 

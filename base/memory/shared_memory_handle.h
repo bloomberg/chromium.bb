@@ -19,7 +19,7 @@
 #include "base/file_descriptor_posix.h"
 #include "base/macros.h"
 #include "base/process/process_handle.h"
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <sys/types.h>
 #include "base/file_descriptor_posix.h"
 #endif
@@ -74,7 +74,31 @@ class BASE_EXPORT SharedMemoryHandle {
   // Returns the size of the memory region that SharedMemoryHandle points to.
   size_t GetSize() const;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_WIN)
+  // Takes implicit ownership of |h|.
+  // |guid| uniquely identifies the shared memory region pointed to by the
+  // underlying OS resource. If the HANDLE is associated with another
+  // SharedMemoryHandle, the caller must pass the |guid| of that
+  // SharedMemoryHandle. Otherwise, the caller should generate a new
+  // UnguessableToken.
+  // Passing the wrong |size| has no immediate consequence, but may cause errors
+  // when trying to map the SharedMemoryHandle at a later point in time.
+  SharedMemoryHandle(HANDLE h, size_t size, const base::UnguessableToken& guid);
+  HANDLE GetHandle() const;
+#elif defined(OS_FUCHSIA)
+  // Takes implicit ownership of |h|.
+  // |guid| uniquely identifies the shared memory region pointed to by the
+  // underlying OS resource. If the zx_handle_t is associated with another
+  // SharedMemoryHandle, the caller must pass the |guid| of that
+  // SharedMemoryHandle. Otherwise, the caller should generate a new
+  // UnguessableToken.
+  // Passing the wrong |size| has no immediate consequence, but may cause errors
+  // when trying to map the SharedMemoryHandle at a later point in time.
+  SharedMemoryHandle(zx_handle_t h,
+                     size_t size,
+                     const base::UnguessableToken& guid);
+  zx_handle_t GetHandle() const;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
   enum Type {
     // The SharedMemoryHandle is backed by a POSIX fd.
     POSIX,
@@ -105,31 +129,7 @@ class BASE_EXPORT SharedMemoryHandle {
   // On success, |memory| is an output variable that contains the start of the
   // mapped memory.
   bool MapAt(off_t offset, size_t bytes, void** memory, bool read_only);
-#elif defined(OS_FUCHSIA)
-  // Takes implicit ownership of |h|.
-  // |guid| uniquely identifies the shared memory region pointed to by the
-  // underlying OS resource. If the zx_handle_t is associated with another
-  // SharedMemoryHandle, the caller must pass the |guid| of that
-  // SharedMemoryHandle. Otherwise, the caller should generate a new
-  // UnguessableToken.
-  // Passing the wrong |size| has no immediate consequence, but may cause errors
-  // when trying to map the SharedMemoryHandle at a later point in time.
-  SharedMemoryHandle(zx_handle_t h,
-                     size_t size,
-                     const base::UnguessableToken& guid);
-  zx_handle_t GetHandle() const;
-#elif defined(OS_WIN)
-  // Takes implicit ownership of |h|.
-  // |guid| uniquely identifies the shared memory region pointed to by the
-  // underlying OS resource. If the HANDLE is associated with another
-  // SharedMemoryHandle, the caller must pass the |guid| of that
-  // SharedMemoryHandle. Otherwise, the caller should generate a new
-  // UnguessableToken.
-  // Passing the wrong |size| has no immediate consequence, but may cause errors
-  // when trying to map the SharedMemoryHandle at a later point in time.
-  SharedMemoryHandle(HANDLE h, size_t size, const base::UnguessableToken& guid);
-  HANDLE GetHandle() const;
-#else
+#elif defined(OS_POSIX)
   // Creates a SharedMemoryHandle from an |fd| supplied from an external
   // service.
   // Passing the wrong |size| has no immediate consequence, but may cause errors
@@ -161,6 +161,7 @@ class BASE_EXPORT SharedMemoryHandle {
   bool SetRegionReadOnly() const;
 #endif
 
+// TODO(crbug/836416): Remove OS_FUCHSIA here.
 #if defined(OS_POSIX) && !defined(OS_FUCHSIA)
   // Constructs a SharedMemoryHandle backed by a FileDescriptor. The newly
   // created instance has the same ownership semantics as base::FileDescriptor.
@@ -182,7 +183,19 @@ class BASE_EXPORT SharedMemoryHandle {
 #endif
 
  private:
-#if defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_WIN)
+  HANDLE handle_ = nullptr;
+
+  // Whether passing this object as a parameter to an IPC message passes
+  // ownership of |handle_| to the IPC stack. This is meant to mimic the
+  // behavior of the |auto_close| parameter of FileDescriptor. This member only
+  // affects attachment-brokered SharedMemoryHandles.
+  // Defaults to |false|.
+  bool ownership_passes_to_ipc_ = false;
+#elif defined(OS_FUCHSIA)
+  zx_handle_t handle_ = ZX_HANDLE_INVALID;
+  bool ownership_passes_to_ipc_ = false;
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
   friend class SharedMemory;
   friend bool CheckReadOnlySharedMemoryHandleForTesting(
       SharedMemoryHandle handle);
@@ -209,19 +222,7 @@ class BASE_EXPORT SharedMemoryHandle {
 
   FileDescriptor file_descriptor_;
   bool read_only_ = false;
-#elif defined(OS_FUCHSIA)
-  zx_handle_t handle_ = ZX_HANDLE_INVALID;
-  bool ownership_passes_to_ipc_ = false;
-#elif defined(OS_WIN)
-  HANDLE handle_ = nullptr;
-
-  // Whether passing this object as a parameter to an IPC message passes
-  // ownership of |handle_| to the IPC stack. This is meant to mimic the
-  // behavior of the |auto_close| parameter of FileDescriptor. This member only
-  // affects attachment-brokered SharedMemoryHandles.
-  // Defaults to |false|.
-  bool ownership_passes_to_ipc_ = false;
-#else
+#elif defined(OS_POSIX)
   FileDescriptor file_descriptor_;
 #endif
 

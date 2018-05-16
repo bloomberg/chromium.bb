@@ -77,7 +77,7 @@
 #include <jni.h>
 #endif
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <unistd.h>
 #include <sys/time.h>
 #endif
@@ -122,12 +122,11 @@ class BASE_EXPORT TimeDelta {
   static constexpr TimeDelta FromMillisecondsD(double ms);
   static constexpr TimeDelta FromMicrosecondsD(double us);
   static constexpr TimeDelta FromNanosecondsD(double ns);
-#if defined(OS_POSIX)
-  static TimeDelta FromTimeSpec(const timespec& ts);
-#endif
 #if defined(OS_WIN)
   static TimeDelta FromQPCValue(LONGLONG qpc_value);
   static TimeDelta FromFileTime(FILETIME ft);
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
+  static TimeDelta FromTimeSpec(const timespec& ts);
 #endif
 
   // Converts an integer value representing TimeDelta to a class. This is used
@@ -178,7 +177,7 @@ class BASE_EXPORT TimeDelta {
     return delta_ == std::numeric_limits<int64_t>::min();
   }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   struct timespec ToTimeSpec() const;
 #endif
 
@@ -556,7 +555,7 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   static Time FromDoubleT(double dt);
   double ToDoubleT() const;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Converts the timespec structure to time. MacOS X 10.8.3 (and tentatively,
   // earlier versions) will have the |ts|'s tv_nsec component zeroed out,
   // having a 1 second resolution, which agrees with
@@ -576,7 +575,7 @@ class BASE_EXPORT Time : public time_internal::TimeBase<Time> {
   static Time FromJavaTime(int64_t ms_since_epoch);
   int64_t ToJavaTime() const;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   static Time FromTimeVal(struct timeval t);
   struct timeval ToTimeVal() const;
 #endif

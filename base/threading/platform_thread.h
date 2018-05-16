@@ -18,10 +18,10 @@
 
 #if defined(OS_WIN)
 #include "base/win/windows_types.h"
-#elif defined(OS_MACOSX)
-#include <mach/mach_types.h>
 #elif defined(OS_FUCHSIA)
 #include <zircon/types.h>
+#elif defined(OS_MACOSX)
+#include <mach/mach_types.h>
 #elif defined(OS_POSIX)
 #include <pthread.h>
 #include <unistd.h>
@@ -32,10 +32,10 @@ namespace base {
 // Used for logging. Always an integer value.
 #if defined(OS_WIN)
 typedef DWORD PlatformThreadId;
-#elif defined(OS_MACOSX)
-typedef mach_port_t PlatformThreadId;
 #elif defined(OS_FUCHSIA)
 typedef zx_handle_t PlatformThreadId;
+#elif defined(OS_MACOSX)
+typedef mach_port_t PlatformThreadId;
 #elif defined(OS_POSIX)
 typedef pid_t PlatformThreadId;
 #endif
@@ -52,7 +52,7 @@ class PlatformThreadRef {
  public:
 #if defined(OS_WIN)
   typedef DWORD RefType;
-#elif defined(OS_POSIX)
+#else  //  OS_POSIX
   typedef pthread_t RefType;
 #endif
   constexpr PlatformThreadRef() : id_(0) {}
@@ -77,7 +77,7 @@ class PlatformThreadHandle {
  public:
 #if defined(OS_WIN)
   typedef void* Handle;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   typedef pthread_t Handle;
 #endif
 

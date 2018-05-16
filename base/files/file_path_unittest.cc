@@ -13,7 +13,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include "base/test/scoped_locale.h"
 #endif
 
@@ -321,7 +321,7 @@ TEST_F(FilePathTest, Append) {
     // handle the case when AppendASCII is passed UTF8
 #if defined(OS_WIN)
     std::string ascii = WideToUTF8(leaf);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     std::string ascii = leaf;
 #endif
     observed_str = root.AppendASCII(ascii);

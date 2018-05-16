@@ -19,7 +19,7 @@
 
 #if defined(OS_WIN)
 #include <windows.h>
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
 #include <sys/stat.h>
 #include <unistd.h>
 #endif
@@ -60,7 +60,7 @@ class BASE_EXPORT FileEnumerator {
     // of the WIN32_FIND_DATA will be empty. Since we don't use short file
     // names, we tell Windows to omit it which speeds up the query slightly.
     const WIN32_FIND_DATA& find_data() const { return find_data_; }
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     const struct stat& stat() const { return stat_; }
 #endif
 
@@ -69,18 +69,18 @@ class BASE_EXPORT FileEnumerator {
 
 #if defined(OS_WIN)
     WIN32_FIND_DATA find_data_;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     struct stat stat_;
     FilePath filename_;
 #endif
   };
 
   enum FileType {
-    FILES                 = 1 << 0,
-    DIRECTORIES           = 1 << 1,
-    INCLUDE_DOT_DOT       = 1 << 2,
-#if defined(OS_POSIX)
-    SHOW_SYM_LINKS        = 1 << 4,
+    FILES = 1 << 0,
+    DIRECTORIES = 1 << 1,
+    INCLUDE_DOT_DOT = 1 << 2,
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+    SHOW_SYM_LINKS = 1 << 4,
 #endif
   };
 
@@ -149,7 +149,7 @@ class BASE_EXPORT FileEnumerator {
   bool has_find_data_ = false;
   WIN32_FIND_DATA find_data_;
   HANDLE find_handle_ = INVALID_HANDLE_VALUE;
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // The files in the current directory
   std::vector<FileInfo> directory_entries_;
 

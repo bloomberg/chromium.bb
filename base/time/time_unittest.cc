@@ -158,7 +158,7 @@ TEST_F(TimeTest, UTCTimeT) {
   struct tm tms;
 #if defined(OS_WIN)
   gmtime_s(&tms, &now_t_1);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   gmtime_r(&now_t_1, &tms);
 #endif
 
@@ -204,7 +204,7 @@ TEST_F(TimeTest, LocalTimeT) {
   struct tm tms;
 #if defined(OS_WIN)
   localtime_s(&tms, &now_t_1);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   localtime_r(&now_t_1, &tms);
 #endif
 
@@ -240,13 +240,13 @@ TEST_F(TimeTest, JsTime) {
   EXPECT_EQ(800730.0, t.ToJsTime());
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 TEST_F(TimeTest, FromTimeVal) {
   Time now = Time::Now();
   Time also_now = Time::FromTimeVal(now.ToTimeVal());
   EXPECT_EQ(now, also_now);
 }
-#endif  // OS_POSIX
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 TEST_F(TimeTest, FromExplodedWithMilliseconds) {
   // Some platform implementations of FromExploded are liable to drop
@@ -311,7 +311,7 @@ TEST_F(TimeTest, ParseTimeTest1) {
 #if defined(OS_WIN)
   localtime_s(&local_time, &current_time);
   asctime_s(time_buf, arraysize(time_buf), &local_time);
-#elif defined(OS_POSIX)
+#elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   localtime_r(&current_time, &local_time);
   asctime_r(&local_time, time_buf);
 #endif
@@ -647,7 +647,7 @@ TEST_F(TimeTest, MaxConversions) {
   EXPECT_TRUE(t.is_max());
   EXPECT_EQ(std::numeric_limits<time_t>::max(), t.ToTimeT());
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   struct timeval tval;
   tval.tv_sec = std::numeric_limits<time_t>::max();
   tval.tv_usec = static_cast<suseconds_t>(Time::kMicrosecondsPerSecond) - 1;
@@ -719,7 +719,7 @@ TEST_F(TimeTest, FromExploded_MinMax) {
   if (Time::kExplodedMinYear != std::numeric_limits<int>::min()) {
     exploded.year = Time::kExplodedMinYear;
     EXPECT_TRUE(Time::FromUTCExploded(exploded, &parsed_time));
-#if !defined(OS_WIN)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
     // On Windows, January 1, 1601 00:00:00 is actually the null time.
     EXPECT_FALSE(parsed_time.is_null());
 #endif
@@ -1129,7 +1129,7 @@ TEST(TimeDelta, FromAndIn) {
   EXPECT_EQ(TimeDelta::FromNanosecondsD(12345.678).InNanoseconds(), 12000);
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 TEST(TimeDelta, TimeSpecConversion) {
   TimeDelta delta = TimeDelta::FromSeconds(0);
   struct timespec result = delta.ToTimeSpec();
@@ -1155,7 +1155,7 @@ TEST(TimeDelta, TimeSpecConversion) {
   EXPECT_EQ(result.tv_nsec, 1000);
   EXPECT_EQ(delta, TimeDelta::FromTimeSpec(result));
 }
-#endif  // OS_POSIX
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 // Our internal time format is serialized in things like databases, so it's
 // important that it's consistent across all our platforms.  We use the 1601

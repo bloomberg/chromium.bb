@@ -18,7 +18,7 @@ namespace base {
 
 namespace internal {
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 struct BASE_EXPORT ScopedFDCloseTraits {
   static int InvalidValue() {
     return -1;
@@ -39,7 +39,7 @@ struct ScopedFILECloser {
 
 // -----------------------------------------------------------------------------
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // A low-level Posix file descriptor closer class. Use this when writing
 // platform-specific code, especially that does non-file-like things with the
 // FD (like sockets).
