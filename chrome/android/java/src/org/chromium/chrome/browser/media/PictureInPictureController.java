@@ -184,8 +184,9 @@ public class PictureInPictureController {
 
         try {
             if (!activity.enterPictureInPictureMode(builder.build())) return;
-        } catch (IllegalStateException e) {
-            Log.e(TAG, "Error entering PiP: " + e);
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            Log.e(TAG, "Error entering PiP with bounds (%d, %d): %s",
+                    bounds.width(), bounds.height(), e);
             return;
         }
 
