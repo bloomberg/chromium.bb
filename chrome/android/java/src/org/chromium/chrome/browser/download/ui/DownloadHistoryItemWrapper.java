@@ -9,6 +9,7 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -146,7 +147,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     abstract String getId();
 
     /** @return String showing where the download resides. */
-    abstract String getFilePath();
+    public abstract String getFilePath();
 
     /** @return The file where the download resides. */
     public final File getFile() {
@@ -483,6 +484,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         OfflineItemWrapper(OfflineItem item, BackendProvider provider, ComponentName component) {
             super(provider, component);
             mItem = item;
+        }
+
+        @VisibleForTesting
+        public static OfflineItemWrapper createOfflineItemWrapperForTest(OfflineItem item) {
+            return new OfflineItemWrapper(item, null, null);
         }
 
         @Override
