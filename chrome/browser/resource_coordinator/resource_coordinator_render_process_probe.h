@@ -47,7 +47,7 @@ class ResourceCoordinatorRenderProcessProbe {
     RenderProcessInfo();
     ~RenderProcessInfo();
     base::Process process;
-    double cpu_usage = -1.0;
+    base::TimeDelta cpu_usage;
     size_t last_gather_cycle_active = -1;
     std::unique_ptr<base::ProcessMetrics> metrics;
   };
@@ -65,6 +65,7 @@ class ResourceCoordinatorRenderProcessProbe {
   void CollectRenderProcessMetricsAndStartMemoryDumpOnIOThread();
   // (3) Process the results of the memory dump and dispatch the results.
   void ProcessGlobalMemoryDumpAndDispatchOnIOThread(
+      base::TimeTicks collection_start_time,
       bool success,
       std::unique_ptr<memory_instrumentation::GlobalMemoryDump> dump);
   // (4) Initiate the next render process metrics collection cycle if the
