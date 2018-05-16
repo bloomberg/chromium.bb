@@ -40,15 +40,14 @@ OpenFileOperation::OpenFileOperation(
       weak_ptr_factory_(this) {
 }
 
-OpenFileOperation::~OpenFileOperation() {
-}
+OpenFileOperation::~OpenFileOperation() = default;
 
 void OpenFileOperation::OpenFile(const base::FilePath& file_path,
                                  OpenMode open_mode,
                                  const std::string& mime_type,
                                  const OpenFileCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   switch (open_mode) {
     case OPEN_FILE:
@@ -80,8 +79,8 @@ void OpenFileOperation::OpenFileAfterCreateFile(
     const base::FilePath& file_path,
     const OpenFileCallback& callback,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error, base::FilePath(), base::Closure());
@@ -103,8 +102,8 @@ void OpenFileOperation::OpenFileAfterFileDownloaded(
     FileError error,
     const base::FilePath& local_file_path,
     std::unique_ptr<ResourceEntry> entry) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (error == FILE_ERROR_OK) {
     DCHECK(entry);
@@ -142,8 +141,8 @@ void OpenFileOperation::OpenFileAfterOpenForWrite(
     const OpenFileCallback& callback,
     std::unique_ptr<base::ScopedClosureRunner>* file_closer,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error, base::FilePath(), base::Closure());
@@ -161,7 +160,7 @@ void OpenFileOperation::OpenFileAfterOpenForWrite(
 void OpenFileOperation::CloseFile(
     const std::string& local_id,
     std::unique_ptr<base::ScopedClosureRunner> file_closer) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK_GT(open_files_[local_id], 0);
 
   if (--open_files_[local_id] == 0) {

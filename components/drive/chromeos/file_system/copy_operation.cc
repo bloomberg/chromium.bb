@@ -301,15 +301,15 @@ CopyOperation::CopyOperation(base::SequencedTaskRunner* blocking_task_runner,
 }
 
 CopyOperation::~CopyOperation() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void CopyOperation::Copy(const base::FilePath& src_file_path,
                          const base::FilePath& dest_file_path,
                          bool preserve_last_modified,
                          const FileOperationCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   CopyParams* params = new CopyParams;
   params->src_file_path = src_file_path;
@@ -337,8 +337,8 @@ void CopyOperation::CopyAfterTryToCopyLocally(
     const bool* directory_changed,
     const bool* should_copy_on_server,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!params->callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(params->callback);
 
   for (const auto& id : *updated_local_ids) {
     // Syncing for copy should be done in background, so pass the BACKGROUND
@@ -374,8 +374,8 @@ void CopyOperation::CopyAfterTryToCopyLocally(
 
 void CopyOperation::CopyAfterParentSync(const CopyParams& params,
                                         FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!params.callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(params.callback);
 
   if (error != FILE_ERROR_OK) {
     params.callback.Run(error);
@@ -399,8 +399,8 @@ void CopyOperation::CopyAfterParentSync(const CopyParams& params,
 void CopyOperation::CopyAfterGetParentResourceId(const CopyParams& params,
                                                  const ResourceEntry* parent,
                                                  FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!params.callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(params.callback);
 
   if (error != FILE_ERROR_OK) {
     params.callback.Run(error);
@@ -428,8 +428,8 @@ void CopyOperation::TransferFileFromLocalToRemote(
     const base::FilePath& local_src_path,
     const base::FilePath& remote_dest_path,
     const FileOperationCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   std::string* gdoc_resource_id = new std::string;
   ResourceEntry* parent_entry = new ResourceEntry;
@@ -454,8 +454,8 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
     std::string* gdoc_resource_id,
     ResourceEntry* parent_entry,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
@@ -491,7 +491,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterPrepare(
 void CopyOperation::TransferJsonGdocFileAfterLocalWork(
     TransferJsonGdocParams* params,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (error != FILE_ERROR_OK) {
     params->callback.Run(error);
@@ -549,8 +549,8 @@ void CopyOperation::CopyResourceOnServer(
     const std::string& new_title,
     const base::Time& last_modified,
     const FileOperationCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   scheduler_->CopyResource(
       resource_id, parent_resource_id, new_title, last_modified,
@@ -563,8 +563,8 @@ void CopyOperation::UpdateAfterServerSideOperation(
     const FileOperationCallback& callback,
     google_apis::DriveApiErrorCode status,
     std::unique_ptr<google_apis::FileResource> entry) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
@@ -591,8 +591,8 @@ void CopyOperation::UpdateAfterLocalStateUpdate(
     base::FilePath* file_path,
     const ResourceEntry* entry,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (error == FILE_ERROR_OK) {
     FileChange changed_file;
@@ -607,8 +607,8 @@ void CopyOperation::ScheduleTransferRegularFile(
     const base::FilePath& local_src_path,
     const base::FilePath& remote_dest_path,
     const FileOperationCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   create_file_operation_->CreateFile(
       remote_dest_path,
@@ -624,8 +624,8 @@ void CopyOperation::ScheduleTransferRegularFileAfterCreate(
     const base::FilePath& remote_dest_path,
     const FileOperationCallback& callback,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (error != FILE_ERROR_OK) {
     callback.Run(error);
@@ -659,8 +659,8 @@ void CopyOperation::ScheduleTransferRegularFileAfterUpdateLocalState(
     const ResourceEntry* entry,
     std::string* local_id,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (error == FILE_ERROR_OK) {
     FileChange changed_file;

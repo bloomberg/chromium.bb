@@ -120,7 +120,7 @@ class DownloadOperation {
   internal::FileCache* cache_;
   const base::FilePath temporary_file_directory_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
