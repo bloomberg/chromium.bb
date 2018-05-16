@@ -18,10 +18,10 @@ from utils import file_path
 from utils import fs
 from utils import threading_utils
 
+import local_caching
 
 # Keep synced with task_request.py
 CACHE_NAME_RE = re.compile(ur'^[a-z0-9_]{1,4096}$')
-MAX_CACHE_SIZE = 50
 
 
 class Error(Exception):
@@ -38,9 +38,10 @@ class CacheManager(object):
       "build_chromium" could be build artefacts of the Chromium.
     path is a directory path relative to the task run dir. Cache installation
       puts the requested cache directory at the path.
+    policies is a local_caching.CachePolicies instance.
   """
 
-  def __init__(self, root_dir):
+  def __init__(self, root_dir, policies):
     """Initializes NamedCaches.
 
     |root_dir| is a directory for persistent cache storage.
@@ -48,6 +49,7 @@ class CacheManager(object):
     assert isinstance(root_dir, unicode), root_dir
     assert file_path.isabs(root_dir), root_dir
     self.root_dir = root_dir
+    self._policies = policies
     self._lock = threading_utils.LockWithAssert()
     # LRU {cache_name -> cache_location}
     # It is saved to |root_dir|/state.json.
@@ -211,13 +213,8 @@ class CacheManager(object):
           'cannot uninstall cache named %r at %r: %s' % (
             name, path, ex))
 
-  def trim(self, min_free_space):
-    """Purges cache.
-
-    Removes cache directories that were not accessed for a long time
-    until there is enough free space and the number of caches is sane.
-
-    If min_free_space is None, disk free space is not checked.
+  def trim(self):
+    """Purges cache entries that do not comply with the cache policies.
 
     NamedCache must be open.
 
@@ -228,25 +225,43 @@ class CacheManager(object):
     if not os.path.isdir(self.root_dir):
       return 0
 
-    total = 0
-    free_space = 0
-    if min_free_space:
-      free_space = file_path.get_free_space(self.root_dir)
-    while ((min_free_space and free_space < min_free_space)
-           or len(self._lru) > MAX_CACHE_SIZE):
-      logging.info(
-          'Making space for named cache %d > %d or %d > %d',
-          free_space, min_free_space, len(self._lru), MAX_CACHE_SIZE)
-      try:
-        name, _ = self._lru.get_oldest()
-      except KeyError:
-        return total
+    removed = []
+
+    def _remove_lru_file():
+      """Removes the oldest LRU entry. LRU must not be empty."""
+      name, _data = self._lru.get_oldest()
       logging.info('Removing named cache %r', name)
       self._remove(name)
-      if min_free_space:
+      removed.append(name)
+
+    # Trim according to maximum number of items.
+    while len(self._lru) > self._policies.max_items:
+      _remove_lru_file()
+
+    # Trim according to maximum age.
+    if self._policies.max_age_secs:
+      cutoff = self._lru.time_fn() - self._policies.max_age_secs
+      while self._lru:
+        _name, (_content, timestamp) = self._lru.get_oldest()
+        if timestamp >= cutoff:
+          break
+        _remove_lru_file()
+
+    # Trim according to minimum free space.
+    if self._policies.min_free_space:
+      while True:
         free_space = file_path.get_free_space(self.root_dir)
-      total += 1
-    return total
+        if not self._lru or free_space >= self._policies.min_free_space:
+          break
+        _remove_lru_file()
+
+    # TODO(maruel): Trim according to self._policies.max_cache_size. Do it last
+    # as it requires counting the size of each entry.
+
+    # TODO(maruel): Trim empty directories. An empty directory is not a cache,
+    # something needs to be in it.
+
+    return len(removed)
 
   _DIR_ALPHABET = string.ascii_letters + string.digits
 
@@ -325,7 +340,20 @@ def process_named_cache_options(parser, options):
     if not path:
       parser.error('cache path cannot be empty')
   if options.named_cache_root:
-    return CacheManager(unicode(os.path.abspath(options.named_cache_root)))
+    # Make these configurable later if there is use case but for now it's fairly
+    # safe values.
+    # In practice, a fair chunk of bots are already recycled on a daily schedule
+    # so this code doesn't have any effect to them, unless they are preloaded
+    # with a really old cache.
+    policies = local_caching.CachePolicies(
+        # 1TiB.
+        max_cache_size=1024*1024*1024*1024,
+        min_free_space=options.min_free_space,
+        max_items=50,
+        # 3 weeks.
+        max_age_secs=21*24*60*60)
+    root_dir = unicode(os.path.abspath(options.named_cache_root))
+    return CacheManager(root_dir, policies)
   return None
 
 

@@ -17,6 +17,8 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 from depot_tools import fix_encoding
 from utils import file_path
 from utils import fs
+
+import local_caching
 import named_cache
 
 
@@ -33,7 +35,12 @@ def read_file(path):
 class CacheManagerTest(unittest.TestCase):
   def setUp(self):
     self.tempdir = tempfile.mkdtemp(prefix=u'named_cache_test')
-    self.manager = named_cache.CacheManager(self.tempdir)
+    self.policies = local_caching.CachePolicies(
+        max_cache_size=1024*1024*1024,
+        min_free_space=1024,
+        max_items=50,
+        max_age_secs=21*24*60*60)
+    self.manager = named_cache.CacheManager(self.tempdir, self.policies)
 
   def tearDown(self):
     try:
@@ -138,13 +145,13 @@ class CacheManagerTest(unittest.TestCase):
 
   def test_trim(self):
     with self.manager.open():
-      item_count = named_cache.MAX_CACHE_SIZE + 10
+      item_count = self.policies.max_items + 10
       self.make_caches(range(item_count))
       self.assertEqual(len(self.manager), item_count)
-      self.manager.trim(None)
-      self.assertEqual(len(self.manager), named_cache.MAX_CACHE_SIZE)
+      self.manager.trim()
+      self.assertEqual(len(self.manager), self.policies.max_items)
       self.assertEqual(
-          set(map(str, xrange(10, 10 + named_cache.MAX_CACHE_SIZE))),
+          set(map(str, xrange(10, 10 + self.policies.max_items))),
           set(os.listdir(os.path.join(self.tempdir, 'named'))))
 
   def test_corrupted(self):

@@ -215,6 +215,7 @@ def get_as_zip_package(executable=True):
   package.add_python_file(os.path.join(BASE_DIR, 'isolateserver.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'auth.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'cipd.py'))
+  package.add_python_file(os.path.join(BASE_DIR, 'local_caching.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'named_cache.py'))
   package.add_directory(os.path.join(BASE_DIR, 'libs'))
   package.add_directory(os.path.join(BASE_DIR, 'third_party'))
@@ -1010,7 +1011,7 @@ def install_client_and_packages(
       })
 
 
-def clean_caches(options, isolate_cache, named_cache_manager):
+def clean_caches(isolate_cache, named_cache_manager):
   """Trims isolated and named caches.
 
   The goal here is to coherently trim both caches, deleting older items
@@ -1027,7 +1028,7 @@ def clean_caches(options, isolate_cache, named_cache_manager):
         isolate_cache.get_timestamp(oldest_isolated) if oldest_isolated else 0,
       ),
       (
-        lambda: named_cache_manager.trim(options.min_free_space),
+        named_cache_manager.trim,
         named_cache_manager.get_timestamp(oldest_named) if oldest_named else 0,
       ),
     ]
@@ -1188,11 +1189,11 @@ def main(args):
       parser.error('Can\'t use --json with --clean.')
     if options.named_caches:
       parser.error('Can\t use --named-cache with --clean.')
-    clean_caches(options, isolate_cache, named_cache_manager)
+    clean_caches(isolate_cache, named_cache_manager)
     return 0
 
   if not options.no_clean:
-    clean_caches(options, isolate_cache, named_cache_manager)
+    clean_caches(isolate_cache, named_cache_manager)
 
   if not options.isolated and not args:
     parser.error('--isolated or command to run is required.')

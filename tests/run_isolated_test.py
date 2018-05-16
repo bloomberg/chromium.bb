@@ -814,8 +814,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     named_cache_manager = named_cache.process_named_cache_options(
         parser, options)
     # This function uses real time, hence the time.time() calls above.
-    actual = run_isolated.clean_caches(
-        options, isolate_cache, named_cache_manager)
+    actual = run_isolated.clean_caches(isolate_cache, named_cache_manager)
     self.assertEqual(2, actual)
     # One of each entry should have been cleaned up. This only happen to work
     # because:

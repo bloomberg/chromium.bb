@@ -26,6 +26,7 @@ import auth
 import isolated_format
 import isolateserver
 import isolate_storage
+import local_caching
 import test_utils
 from depot_tools import fix_encoding
 from utils import file_path
@@ -1288,7 +1289,11 @@ class DiskCacheTest(TestCase):
     self._free_disk = 1000
     # Max: 100 bytes, 2 items
     # Min free disk: 1000 bytes.
-    self._policies = isolateserver.CachePolicies(100, 1000, 2)
+    self._policies = local_caching.CachePolicies(
+        max_cache_size=100,
+        min_free_space=1000,
+        max_items=2,
+        max_age_secs=0)
     def get_free_space(p):
       self.assertEqual(p, self.tempdir)
       return self._free_disk
@@ -1336,7 +1341,8 @@ class DiskCacheTest(TestCase):
       cache.write(*self.to_hash('e'))
     expected = (
         'Not enough space to fetch the whole isolated tree.\n'
-        '  CachePolicies(cache=100bytes, 2 items; min_free_space=1000)\n'
+        '  CachePolicies(max_cache_size=100; max_items=2; min_free_space=1000; '
+          'max_age_secs=0)\n'
         '  cache=6bytes, 6 items; 999b free_space')
     self.assertEqual(expected, cm.exception.message)
 
@@ -1402,7 +1408,11 @@ class DiskCacheTest(TestCase):
         sorted([h_b, h_c, u'state.json']), sorted(os.listdir(self.tempdir)))
 
     # Allow 3 items and 101 bytes so h_large is kept.
-    self._policies = isolateserver.CachePolicies(101, 1000, 3)
+    self._policies = local_caching.CachePolicies(
+        max_cache_size=101,
+        min_free_space=1000,
+        max_items=3,
+        max_age_secs=0)
     with self.get_cache() as cache:
       cache.write(h_large, large)
       self.assertEqual(2, cache.initial_number_items)
@@ -1413,7 +1423,11 @@ class DiskCacheTest(TestCase):
         sorted(os.listdir(self.tempdir)))
 
     # Assert that trimming is done in constructor too.
-    self._policies = isolateserver.CachePolicies(100, 1000, 2)
+    self._policies = local_caching.CachePolicies(
+        max_cache_size=100,
+        min_free_space=1000,
+        max_items=2,
+        max_age_secs=0)
     with self.get_cache() as cache:
       assertItems([(h_c, 1), (h_large, len(large))])
       self.assertEqual(None, cache._protected)
@@ -1424,8 +1438,11 @@ class DiskCacheTest(TestCase):
   def test_policies_trim_old(self):
     # Add two items, one 3 weeks and one minute old, one recent, make sure the
     # old one is trimmed.
-    self._policies = isolateserver.CachePolicies(
-        max_cache_size=1000, min_free_space=0, max_items=1000)
+    self._policies = local_caching.CachePolicies(
+        max_cache_size=1000,
+        min_free_space=0,
+        max_items=1000,
+        max_age_secs=21*24*60*60)
     now = 100
     c = self.get_cache(time_fn=lambda: now)
     # Test the very limit of 3 weeks:

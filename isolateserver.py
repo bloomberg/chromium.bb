@@ -5,7 +5,7 @@
 
 """Archives a set of files or directories to an Isolate Server."""
 
-__version__ = '0.8.4'
+__version__ = '0.8.5'
 
 import errno
 import functools
@@ -40,6 +40,7 @@ import auth
 import isolated_format
 import isolate_storage
 from isolate_storage import Item
+import local_caching
 
 
 # Version of isolate protocol passed to the server in /handshake request.
@@ -1113,36 +1114,6 @@ class MemoryCache(LocalCache):
     return 0
 
 
-class CachePolicies(object):
-  def __init__(self, max_cache_size, min_free_space, max_items):
-    """
-    Arguments:
-    - max_cache_size: Trim if the cache gets larger than this value. If 0, the
-                      cache is effectively a leak.
-    - min_free_space: Trim if disk free space becomes lower than this value. If
-                      0, it unconditionally fill the disk.
-    - max_items: Maximum number of items to keep in the cache. If 0, do not
-                 enforce a limit.
-    - max_age_secs: Maximum age an item is kept in the cache until it is
-                    automatically evicted. Having a lot of dead luggage slows
-                    everything down.
-    """
-    self.max_cache_size = max_cache_size
-    self.min_free_space = min_free_space
-    self.max_items = max_items
-    # 3 weeks. Make it configurable later if there is use case but for now it's
-    # fairly safe value. Think about lowering this value, likely to 1 week.
-    # In practice, a fair chunk of bots are already recycled on a daily schedule
-    # so this code doesn't have any effect to them, unless they are preloaded
-    # with a really old cache.
-    self.max_age_secs = 21*24*60*60
-
-  def __str__(self):
-    return (
-        'CachePolicies(cache=%dbytes, %d items; min_free_space=%d)') % (
-            self.max_cache_size, self.max_items, self.min_free_space)
-
-
 class DiskCache(LocalCache):
   """Stateful LRU cache in a flat hash table in a directory.
 
@@ -1154,7 +1125,7 @@ class DiskCache(LocalCache):
     """
     Arguments:
       cache_dir: directory where to place the cache.
-      policies: cache retention policies.
+      policies: local_caching.CachePolicies instance, cache retention policies.
       algo: hashing algorithm used.
       trim: if True to enforce |policies| right away.
         It can be done later by calling trim() explicitly.
@@ -1412,12 +1383,13 @@ class DiskCache(LocalCache):
     self._lock.assert_locked()
 
     # Trim old items.
-    cutoff = self._lru.time_fn() - self.policies.max_age_secs
-    while self._lru:
-      oldest = self._lru.get_oldest()
-      if oldest[1][1] >= cutoff:
-        break
-      self._remove_lru_file(True)
+    if self.policies.max_age_secs:
+      cutoff = self._lru.time_fn() - self.policies.max_age_secs
+      while self._lru:
+        oldest = self._lru.get_oldest()
+        if oldest[1][1] >= cutoff:
+          break
+        self._remove_lru_file(True)
 
     # Ensure maximum cache size.
     if self.policies.max_cache_size:
@@ -2129,8 +2101,12 @@ def add_cache_options(parser):
 
 def process_cache_options(options, **kwargs):
   if options.cache:
-    policies = CachePolicies(
-        options.max_cache_size, options.min_free_space, options.max_items)
+    policies = local_caching.CachePolicies(
+        options.max_cache_size,
+        options.min_free_space,
+        options.max_items,
+        # 3 weeks.
+        max_age_secs=21*24*60*60)
 
     # |options.cache| path may not exist until DiskCache() instance is created.
     return DiskCache(

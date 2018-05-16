@@ -21,8 +21,10 @@ from utils import fs
 from utils import net
 from utils import subprocess42
 from utils import tools
+
 import isolated_format
 import isolateserver
+import local_caching
 
 
 # .exe on Windows.
@@ -379,7 +381,13 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
     # It does not take a lot of disk space.
     version_cache = isolateserver.DiskCache(
         unicode(os.path.join(cache_dir, 'versions')),
-        isolateserver.CachePolicies(0, 0, 300),
+        local_caching.CachePolicies(
+            # 512GiB.
+            max_cache_size=512*1024*1024*1024,
+            min_free_space=0,
+            max_items=300,
+            # 3 weeks.
+            max_age_secs=21*24*60*60),
         hashlib.sha1,
         trim=True)
     with version_cache:
@@ -403,7 +411,13 @@ def get_client(service_url, package_template, version, cache_dir, timeout=None):
   # It is bounded by 5 client versions.
   instance_cache = isolateserver.DiskCache(
       unicode(os.path.join(cache_dir, 'clients')),
-      isolateserver.CachePolicies(0, 0, 5),
+        local_caching.CachePolicies(
+            # 1GiB.
+            max_cache_size=1024*1024*1024,
+            min_free_space=0,
+            max_items=10,
+            # 3 weeks.
+            max_age_secs=21*24*60*60),
       hashlib.sha1,
       trim=True)
   with instance_cache:
