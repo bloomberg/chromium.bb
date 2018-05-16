@@ -4,45 +4,52 @@
 
 #include "chrome/browser/ui/webui/snippets_internals/snippets_internals_ui.h"
 
-#include <memory>
-
-#include "build/build_config.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/snippets_internals/snippets_internals_message_handler.h"
+#include "chrome/browser/ui/webui/snippets_internals/snippets_internals_page_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
-#include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/chrome_feature_list.h"
 #endif
 
-namespace {
-
-content::WebUIDataSource* CreateSnippetsInternalsHTMLSource() {
+SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
+    : ui::MojoWebUIController(web_ui), binding_(this) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUISnippetsInternalsHost);
-
-  source->SetJsonPath("strings.js");
-  source->AddResourcePath("snippets_internals.js", IDR_SNIPPETS_INTERNALS_JS);
   source->AddResourcePath("snippets_internals.css", IDR_SNIPPETS_INTERNALS_CSS);
+  source->AddResourcePath("snippets_internals.js", IDR_SNIPPETS_INTERNALS_JS);
+
   source->SetDefaultResource(IDR_SNIPPETS_INTERNALS_HTML);
   source->UseGzip();
-  return source;
-}
 
-}  // namespace
-
-SnippetsInternalsUI::SnippetsInternalsUI(content::WebUI* web_ui)
-    : WebUIController(web_ui) {
   Profile* profile = Profile::FromWebUI(web_ui);
-  content::WebUIDataSource::Add(profile, CreateSnippetsInternalsHTMLSource());
-
-  web_ui->AddMessageHandler(std::make_unique<SnippetsInternalsMessageHandler>(
-      ContentSuggestionsServiceFactory::GetInstance()->GetForProfile(profile),
-      profile->GetPrefs()));
+  content_suggestions_service_ =
+      ContentSuggestionsServiceFactory::GetInstance()->GetForProfile(profile);
+  pref_service_ = profile->GetPrefs();
+  content::WebUIDataSource::Add(profile, source);
+  AddHandlerToRegistry(base::BindRepeating(
+      &SnippetsInternalsUI::BindSnippetsInternalsPageHandlerFactory,
+      base::Unretained(this)));
 }
 
 SnippetsInternalsUI::~SnippetsInternalsUI() {}
+
+void SnippetsInternalsUI::BindSnippetsInternalsPageHandlerFactory(
+    snippets_internals::mojom::PageHandlerFactoryRequest request) {
+  binding_.Bind(std::move(request));
+}
+
+void SnippetsInternalsUI::CreatePageHandler(
+    snippets_internals::mojom::PagePtr page,
+    CreatePageHandlerCallback callback) {
+  DCHECK(page);
+  snippets_internals::mojom::PageHandlerPtr handler;
+  page_handler_.reset(new SnippetsInternalsPageHandler(
+      mojo::MakeRequest(&handler), std::move(page),
+      content_suggestions_service_, pref_service_));
+
+  std::move(callback).Run(std::move(handler));
+}
