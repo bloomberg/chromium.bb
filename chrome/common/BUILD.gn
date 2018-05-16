@@ -662,6 +662,8 @@ source_set("app_mode_app_support") {
 }
 
 mojom("mojo_bindings") {
+  disable_variants = true
+
   sources = [
     "cache_stats_recorder.mojom",
     "chrome_render_frame.mojom",
