@@ -38,8 +38,9 @@ class NavigationContextImplTest : public PlatformTest {
 TEST_F(NavigationContextImplTest, NavigationContext) {
   std::unique_ptr<NavigationContext> context =
       NavigationContextImpl::CreateNavigationContext(
-          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
-          true);
+          &web_state_, url_, /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
+          /*is_renderer_initiated=*/true);
   ASSERT_TRUE(context);
 
   EXPECT_EQ(&web_state_, context->GetWebState());
@@ -47,6 +48,7 @@ TEST_F(NavigationContextImplTest, NavigationContext) {
       context->GetPageTransition(),
       ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK));
   EXPECT_EQ(url_, context->GetUrl());
+  EXPECT_TRUE(context->HasUserGesture());
   EXPECT_FALSE(context->IsSameDocument());
   EXPECT_FALSE(context->HasCommitted());
   EXPECT_FALSE(context->IsDownload());
@@ -58,13 +60,15 @@ TEST_F(NavigationContextImplTest, NavigationContext) {
 TEST_F(NavigationContextImplTest, NavigationId) {
   std::unique_ptr<NavigationContextImpl> context1 =
       NavigationContextImpl::CreateNavigationContext(
-          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
-          false);
+          &web_state_, url_, /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
+          /*is_renderer_initiated=*/false);
   ASSERT_TRUE(context1);
   std::unique_ptr<NavigationContextImpl> context2 =
       NavigationContextImpl::CreateNavigationContext(
-          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
-          false);
+          &web_state_, url_, /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
+          /*is_renderer_initiated=*/false);
   ASSERT_TRUE(context2);
   ASSERT_NE(0, context1->GetNavigationId());
   ASSERT_NE(0, context2->GetNavigationId());
@@ -75,8 +79,9 @@ TEST_F(NavigationContextImplTest, NavigationId) {
 TEST_F(NavigationContextImplTest, Setters) {
   std::unique_ptr<NavigationContextImpl> context =
       NavigationContextImpl::CreateNavigationContext(
-          &web_state_, url_, ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
-          false);
+          &web_state_, url_, /*has_user_gesture=*/true,
+          ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
+          /*is_renderer_initiated=*/false);
   ASSERT_TRUE(context);
 
   EXPECT_EQ(url_, context->GetUrl());

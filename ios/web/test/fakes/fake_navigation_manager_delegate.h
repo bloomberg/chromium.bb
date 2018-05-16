@@ -15,8 +15,8 @@ class FakeNavigationManagerDelegate : public NavigationManagerDelegate {
  public:
   void ClearTransientContent() override;
   void RecordPageStateInNavigationItem() override;
-  void OnGoToIndexSameDocumentNavigation(
-      NavigationInitiationType type) override;
+  void OnGoToIndexSameDocumentNavigation(NavigationInitiationType type,
+                                         bool has_user_gesture) override;
   void WillChangeUserAgentType() override;
   void LoadCurrentItem() override;
   void LoadIfNecessary() override;

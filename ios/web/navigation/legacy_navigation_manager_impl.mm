@@ -306,9 +306,9 @@ NavigationItemImpl* LegacyNavigationManagerImpl::GetTransientItemImpl() const {
   return [session_controller_ transientItem];
 }
 
-void LegacyNavigationManagerImpl::FinishGoToIndex(
-    int index,
-    NavigationInitiationType type) {
+void LegacyNavigationManagerImpl::FinishGoToIndex(int index,
+                                                  NavigationInitiationType type,
+                                                  bool has_user_gesture) {
   const ScopedNavigationItemImplList& items = [session_controller_ items];
   NavigationItem* to_item = items[index].get();
   NavigationItem* previous_item = GetLastCommittedItem();
@@ -321,7 +321,7 @@ void LegacyNavigationManagerImpl::FinishGoToIndex(
                                                        andItem:to_item];
   if (same_document_navigation) {
     [session_controller_ goToItemAtIndex:index discardNonCommittedItems:YES];
-    delegate_->OnGoToIndexSameDocumentNavigation(type);
+    delegate_->OnGoToIndexSameDocumentNavigation(type, has_user_gesture);
   } else {
     [session_controller_ discardNonCommittedItems];
     [session_controller_ setPendingItemIndex:index];

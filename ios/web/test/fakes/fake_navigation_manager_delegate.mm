@@ -15,7 +15,8 @@ namespace web {
 void FakeNavigationManagerDelegate::ClearTransientContent() {}
 void FakeNavigationManagerDelegate::RecordPageStateInNavigationItem() {}
 void FakeNavigationManagerDelegate::OnGoToIndexSameDocumentNavigation(
-    NavigationInitiationType type) {}
+    NavigationInitiationType type,
+    bool has_user_gesture) {}
 void FakeNavigationManagerDelegate::WillChangeUserAgentType() {}
 void FakeNavigationManagerDelegate::LoadCurrentItem() {}
 void FakeNavigationManagerDelegate::LoadIfNecessary() {}

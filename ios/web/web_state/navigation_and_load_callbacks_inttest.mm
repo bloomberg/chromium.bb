@@ -66,6 +66,7 @@ ACTION_P5(VerifyPageStartedContext,
   *nav_id = (*context)->GetNavigationId();
   EXPECT_NE(0, *nav_id);
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   ui::PageTransition actual_transition = (*context)->GetPageTransition();
   EXPECT_TRUE(PageTransitionCoreTypeIs(transition, actual_transition))
       << "Got unexpected transition: " << actual_transition;
@@ -97,6 +98,7 @@ ACTION_P5(VerifyNewPageFinishedContext,
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   EXPECT_TRUE(
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
@@ -127,6 +129,7 @@ ACTION_P4(VerifyErrorFinishedContext, web_state, url, context, nav_id) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   EXPECT_TRUE(
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
@@ -160,6 +163,7 @@ ACTION_P4(VerifyResponseRejectedFinishedContext,
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   EXPECT_TRUE(
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
@@ -178,9 +182,10 @@ ACTION_P4(VerifyResponseRejectedFinishedContext,
 // Verifies correctness of |NavigationContext| (|arg1|) for navigations via POST
 // HTTP methods passed to |DidStartNavigation|. Stores |NavigationContext| in
 // |context| pointer.
-ACTION_P5(VerifyPostStartedContext,
+ACTION_P6(VerifyPostStartedContext,
           web_state,
           url,
+          has_user_gesture,
           context,
           nav_id,
           renderer_initiated) {
@@ -191,6 +196,7 @@ ACTION_P5(VerifyPostStartedContext,
   *nav_id = (*context)->GetNavigationId();
   EXPECT_NE(0, *nav_id);
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_EQ(has_user_gesture, (*context)->HasUserGesture());
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_FALSE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
@@ -215,9 +221,10 @@ ACTION_P5(VerifyPostStartedContext,
 // Verifies correctness of |NavigationContext| (|arg1|) for navigations via POST
 // HTTP methods passed to |DidFinishNavigation|. Stores |NavigationContext| in
 // |context| pointer.
-ACTION_P5(VerifyPostFinishedContext,
+ACTION_P6(VerifyPostFinishedContext,
           web_state,
           url,
+          has_user_gesture,
           context,
           nav_id,
           renderer_initiated) {
@@ -227,6 +234,7 @@ ACTION_P5(VerifyPostFinishedContext,
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_EQ(has_user_gesture, (*context)->HasUserGesture());
   EXPECT_FALSE((*context)->IsSameDocument());
   EXPECT_TRUE((*context)->HasCommitted());
   EXPECT_FALSE((*context)->IsDownload());
@@ -243,9 +251,10 @@ ACTION_P5(VerifyPostFinishedContext,
 // Verifies correctness of |NavigationContext| (|arg1|) for same page navigation
 // passed to |DidFinishNavigation|. Stores |NavigationContext| in |context|
 // pointer.
-ACTION_P6(VerifySameDocumentStartedContext,
+ACTION_P7(VerifySameDocumentStartedContext,
           web_state,
           url,
+          has_user_gesture,
           context,
           nav_id,
           page_transition,
@@ -257,6 +266,7 @@ ACTION_P6(VerifySameDocumentStartedContext,
   *nav_id = (*context)->GetNavigationId();
   EXPECT_NE(0, *nav_id);
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_EQ(has_user_gesture, (*context)->HasUserGesture());
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       page_transition, (*context)->GetPageTransition()));
   EXPECT_TRUE((*context)->IsSameDocument());
@@ -270,9 +280,10 @@ ACTION_P6(VerifySameDocumentStartedContext,
 // Verifies correctness of |NavigationContext| (|arg1|) for same page navigation
 // passed to |DidFinishNavigation|. Asserts that |NavigationContext| the same as
 // |context|.
-ACTION_P6(VerifySameDocumentFinishedContext,
+ACTION_P7(VerifySameDocumentFinishedContext,
           web_state,
           url,
+          has_user_gesture,
           context,
           nav_id,
           page_transition,
@@ -283,6 +294,7 @@ ACTION_P6(VerifySameDocumentFinishedContext,
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_EQ(has_user_gesture, (*context)->HasUserGesture());
   EXPECT_TRUE(PageTransitionTypeIncludingQualifiersIs(
       page_transition, (*context)->GetPageTransition()));
   EXPECT_TRUE((*context)->IsSameDocument());
@@ -308,6 +320,7 @@ ACTION_P4(VerifyNewNativePageStartedContext, web_state, url, context, nav_id) {
   *nav_id = (*context)->GetNavigationId();
   EXPECT_NE(0, *nav_id);
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   EXPECT_TRUE(
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
@@ -334,6 +347,7 @@ ACTION_P4(VerifyNewNativePageFinishedContext, web_state, url, context, nav_id) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   EXPECT_TRUE(
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
@@ -361,6 +375,7 @@ ACTION_P4(VerifyReloadStartedContext, web_state, url, context, nav_id) {
   *nav_id = (*context)->GetNavigationId();
   EXPECT_NE(0, *nav_id);
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   EXPECT_TRUE(
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_RELOAD,
                                (*context)->GetPageTransition()));
@@ -401,6 +416,7 @@ ACTION_P5(VerifyReloadFinishedContext,
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   EXPECT_TRUE(
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_RELOAD,
                                (*context)->GetPageTransition()));
@@ -437,6 +453,7 @@ ACTION_P4(VerifyDownloadFinishedContext, web_state, url, context, nav_id) {
   EXPECT_EQ(web_state, (*context)->GetWebState());
   EXPECT_EQ(*nav_id, (*context)->GetNavigationId());
   EXPECT_EQ(url, (*context)->GetUrl());
+  EXPECT_TRUE((*context)->HasUserGesture());
   EXPECT_TRUE(
       PageTransitionCoreTypeIs(ui::PageTransition::PAGE_TRANSITION_TYPED,
                                (*context)->GetPageTransition()));
@@ -741,13 +758,13 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
-          web_state(), hash_url, &context, &nav_id,
+          web_state(), hash_url, /*has_user_gesture=*/true, &context, &nav_id,
           ui::PageTransition::PAGE_TRANSITION_TYPED,
           /*renderer_initiated=*/false));
   // No ShouldAllowResponse callback for same-document navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentFinishedContext(
-          web_state(), hash_url, &context, &nav_id,
+          web_state(), hash_url, /*has_user_gesture=*/true, &context, &nav_id,
           ui::PageTransition::PAGE_TRANSITION_TYPED,
           /*renderer_initiated=*/false));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
@@ -760,14 +777,14 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
-          web_state(), url, &context, &nav_id,
+          web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
           ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
           /*renderer_initiated=*/false));
   // No ShouldAllowResponse callbacks for same-document back-forward
   // navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentFinishedContext(
-          web_state(), url, &context, &nav_id,
+          web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
           ui::PageTransition::PAGE_TRANSITION_FORWARD_BACK,
           /*renderer_initiated=*/false));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
@@ -809,13 +826,13 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedHashChangeNavigation) {
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
-          web_state(), hash_url, &context, &nav_id,
+          web_state(), hash_url, /*has_user_gesture=*/false, &context, &nav_id,
           ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
           /*renderer_initiated=*/true));
   // No ShouldAllowResponse callback for same-document navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentFinishedContext(
-          web_state(), hash_url, &context, &nav_id,
+          web_state(), hash_url, /*has_user_gesture=*/false, &context, &nav_id,
           ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
           /*renderer_initiated=*/true));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
@@ -852,14 +869,14 @@ TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
   const GURL push_url = test_server_->GetURL("/test.html");
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
-          web_state(), push_url, &context, &nav_id,
+          web_state(), push_url, /*has_user_gesture=*/false, &context, &nav_id,
           ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
           /*renderer_initiated=*/true));
   // No ShouldAllowRequest/ShouldAllowResponse callbacks for same-document push
   // state navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentFinishedContext(
-          web_state(), push_url, &context, &nav_id,
+          web_state(), push_url, /*has_user_gesture=*/false, &context, &nav_id,
           ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
           /*renderer_initiated=*/true));
   ExecuteJavaScript(@"window.history.pushState('', 'Test', 'test.html')");
@@ -869,14 +886,14 @@ TEST_F(NavigationAndLoadCallbacksTest, StateNavigation) {
   // No ShouldAllowRequest callbacks for same-document push state navigations.
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentStartedContext(
-          web_state(), replace_url, &context, &nav_id,
-          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
+          web_state(), replace_url, /*has_user_gesture=*/false, &context,
+          &nav_id, ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
           /*renderer_initiated=*/true));
   // No ShouldAllowResponse callbacks for same-document push state navigations.
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifySameDocumentFinishedContext(
-          web_state(), replace_url, &context, &nav_id,
-          ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
+          web_state(), replace_url, /*has_user_gesture=*/false, &context,
+          &nav_id, ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT,
           /*renderer_initiated=*/true));
   ExecuteJavaScript(@"window.history.replaceState('', 'Test', '1.html')");
 }
@@ -946,15 +963,17 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(VerifyPostStartedContext(web_state(), url, &context, &nav_id,
-                                         /*renderer_initiated=*/false));
+      .WillOnce(VerifyPostStartedContext(
+          web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
+          /*renderer_initiated=*/false));
   if (@available(iOS 11, *)) {
     EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
         .WillOnce(Return(true));
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyPostFinishedContext(web_state(), url, &context, &nav_id,
-                                          /*renderer_initiated=*/false));
+      .WillOnce(VerifyPostFinishedContext(
+          web_state(), url, /*has_user_gesture=*/true, &context, &nav_id,
+          /*renderer_initiated=*/false));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -994,17 +1013,18 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(VerifyPostStartedContext(web_state(), action, &context, &nav_id,
-                                         /*renderer_initiated=*/true));
+      .WillOnce(VerifyPostStartedContext(
+          web_state(), action, /*has_user_gesture=*/false, &context, &nav_id,
+          /*renderer_initiated=*/true));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyPostFinishedContext(web_state(), action, &context,
-                                          &nav_id,
-                                          /*renderer_initiated=*/true));
+      .WillOnce(VerifyPostFinishedContext(
+          web_state(), action, /*has_user_gesture=*/false, &context, &nav_id,
+          /*renderer_initiated=*/true));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1071,14 +1091,15 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
     reload_is_renderer_initiated = true;
   }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(VerifyPostStartedContext(web_state(), action, &context, &nav_id,
-                                         reload_is_renderer_initiated));
+      .WillOnce(VerifyPostStartedContext(
+          web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
+          reload_is_renderer_initiated));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyPostFinishedContext(web_state(), action, &context,
-                                          &nav_id,
-                                          reload_is_renderer_initiated));
+      .WillOnce(VerifyPostFinishedContext(
+          web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
+          reload_is_renderer_initiated));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
@@ -1166,12 +1187,13 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
         .WillOnce(Return(true));
   }
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _))
-      .WillOnce(VerifyPostStartedContext(web_state(), action, &context, &nav_id,
-                                         /*renderer_initiated=*/false));
+      .WillOnce(VerifyPostStartedContext(
+          web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
+          /*renderer_initiated=*/false));
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
-      .WillOnce(VerifyPostFinishedContext(web_state(), action, &context,
-                                          &nav_id,
-                                          /*renderer_initiated=*/false));
+      .WillOnce(VerifyPostFinishedContext(
+          web_state(), action, /*has_user_gesture=*/true, &context, &nav_id,
+          /*renderer_initiated=*/false));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));

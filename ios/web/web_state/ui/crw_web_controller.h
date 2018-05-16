@@ -223,7 +223,8 @@ class WebStateImpl;
 // navigation. Updates HTML5 history state, current document URL and sends
 // approprivate navigation and loading WebStateObserver callbacks.
 - (void)didFinishGoToIndexSameDocumentNavigationWithType:
-    (web::NavigationInitiationType)type;
+            (web::NavigationInitiationType)type
+                                          hasUserGesture:(BOOL)hasUserGesture;
 
 @end
 

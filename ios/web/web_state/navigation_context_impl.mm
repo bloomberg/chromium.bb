@@ -31,10 +31,12 @@ std::unique_ptr<NavigationContextImpl>
 NavigationContextImpl::CreateNavigationContext(
     WebState* web_state,
     const GURL& url,
+    bool has_user_gesture,
     ui::PageTransition page_transition,
     bool is_renderer_initiated) {
-  std::unique_ptr<NavigationContextImpl> result(new NavigationContextImpl(
-      web_state, url, page_transition, is_renderer_initiated));
+  std::unique_ptr<NavigationContextImpl> result(
+      new NavigationContextImpl(web_state, url, has_user_gesture,
+                                page_transition, is_renderer_initiated));
   return result;
 }
 
@@ -58,6 +60,10 @@ int64_t NavigationContextImpl::GetNavigationId() const {
 
 const GURL& NavigationContextImpl::GetUrl() const {
   return url_;
+}
+
+bool NavigationContextImpl::HasUserGesture() const {
+  return has_user_gesture_;
 }
 
 ui::PageTransition NavigationContextImpl::GetPageTransition() const {
@@ -144,11 +150,13 @@ WKNavigationType NavigationContextImpl::GetWKNavigationType() const {
 
 NavigationContextImpl::NavigationContextImpl(WebState* web_state,
                                              const GURL& url,
+                                             bool has_user_gesture,
                                              ui::PageTransition page_transition,
                                              bool is_renderer_initiated)
     : web_state_(web_state),
       navigation_id_(CreateUniqueContextId()),
       url_(url),
+      has_user_gesture_(has_user_gesture),
       page_transition_(page_transition),
       is_same_document_(false),
       error_(nil),
