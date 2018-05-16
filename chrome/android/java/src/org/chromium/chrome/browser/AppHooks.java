@@ -47,6 +47,7 @@ import org.chromium.chrome.browser.sync.GmsCoreSyncListener;
 import org.chromium.chrome.browser.tab.AuthenticatorNavigationInterceptor;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.GooglePlayWebApkInstallDelegate;
+import org.chromium.chrome.browser.webauth.Fido2ApiHandler;
 import org.chromium.chrome.browser.webauth.U2fApiHandler;
 import org.chromium.components.signin.AccountManagerDelegate;
 import org.chromium.components.signin.SystemAccountManagerDelegate;
@@ -334,6 +335,13 @@ public abstract class AppHooks {
      */
     public FeedbackSourceProvider getAdditionalFeedbackSources() {
         return new FeedbackSourceProvider() {};
+    }
+
+    /**
+     * @return a new {@link Fido2ApiHandler} instance.
+     */
+    public Fido2ApiHandler createFido2ApiHandler() {
+        return new Fido2ApiHandler();
     }
 
     /**
