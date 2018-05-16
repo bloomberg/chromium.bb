@@ -1360,19 +1360,6 @@
       'Linux Tests (dbg)(1)(32)',
     ],
   },
-  'gfx_unittests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
-      'Nougat Phone Tester chromium.android',
-      # chromium.android.fyi
-      'Lollipop Low-end Tester',
-      'x86 Cloud Tester',
-      # chromium.win
-      'Win7 Tests (dbg)(1)',
-    ],
-  },
   'gin_unittests': {
     'remove_from': [
       # chromium.chromiumos
