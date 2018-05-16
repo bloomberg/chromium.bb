@@ -278,6 +278,7 @@
   // All possible actions that can be performed on automation nodes.
   enum ActionType {
     blur,
+    clearAccessibilityFocus,
     customAction,
     decrement,
     doDefault,
@@ -295,6 +296,7 @@
     scrollToMakeVisible,
     scrollToPoint,
     scrollUp,
+    setAccessibilityFocus,
     setScrollOffset,
     setSelection,
     setSequentialFocusNavigationStartingPoint,

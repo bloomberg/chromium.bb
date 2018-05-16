@@ -264,10 +264,12 @@ class WebAXObject {
 
   // Actions. Return true if handled.
   BLINK_EXPORT WebAXDefaultActionVerb Action() const;
+  BLINK_EXPORT bool ClearAccessibilityFocus() const;
   BLINK_EXPORT bool Click() const;
   BLINK_EXPORT bool Decrement() const;
   BLINK_EXPORT bool Increment() const;
   BLINK_EXPORT bool Focus() const;
+  BLINK_EXPORT bool SetAccessibilityFocus() const;
   BLINK_EXPORT bool SetSelected(bool) const;
   BLINK_EXPORT bool SetSelection(const WebAXObject& anchor_object,
                                  int anchor_offset,

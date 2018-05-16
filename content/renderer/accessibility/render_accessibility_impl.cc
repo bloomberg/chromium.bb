@@ -566,6 +566,9 @@ void RenderAccessibilityImpl::OnPerformAction(
     case ax::mojom::Action::kBlur:
       root.Focus();
       break;
+    case ax::mojom::Action::kClearAccessibilityFocus:
+      target.ClearAccessibilityFocus();
+      break;
     case ax::mojom::Action::kDecrement:
       target.Decrement();
       break;
@@ -597,6 +600,9 @@ void RenderAccessibilityImpl::OnPerformAction(
       break;
     case ax::mojom::Action::kFocus:
       target.Focus();
+      break;
+    case ax::mojom::Action::kSetAccessibilityFocus:
+      target.SetAccessibilityFocus();
       break;
     case ax::mojom::Action::kSetScrollOffset:
       target.SetScrollOffset(

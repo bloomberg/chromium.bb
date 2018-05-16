@@ -345,6 +345,9 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
     case api::automation::ACTION_TYPE_BLUR:
       action->action = ax::mojom::Action::kBlur;
       break;
+    case api::automation::ACTION_TYPE_CLEARACCESSIBILITYFOCUS:
+      action->action = ax::mojom::Action::kClearAccessibilityFocus;
+      break;
     case api::automation::ACTION_TYPE_DECREMENT:
       action->action = ax::mojom::Action::kDecrement;
       break;
@@ -382,6 +385,9 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
     }
     case api::automation::ACTION_TYPE_LOADINLINETEXTBOXES:
       action->action = ax::mojom::Action::kLoadInlineTextBoxes;
+      break;
+    case api::automation::ACTION_TYPE_SETACCESSIBILITYFOCUS:
+      action->action = ax::mojom::Action::kSetAccessibilityFocus;
       break;
     case api::automation::ACTION_TYPE_SCROLLTOMAKEVISIBLE:
       action->action = ax::mojom::Action::kScrollToMakeVisible;

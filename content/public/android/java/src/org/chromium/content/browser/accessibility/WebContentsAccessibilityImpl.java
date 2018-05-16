@@ -433,6 +433,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
                 sendAccessibilityEvent(
                         virtualViewId, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUS_CLEARED);
                 if (mAccessibilityFocusId == virtualViewId) {
+                    nativeMoveAccessibilityFocus(mNativeObj, mAccessibilityFocusId, View.NO_ID);
                     mAccessibilityFocusId = View.NO_ID;
                     mAccessibilityFocusRect = null;
                 }
@@ -753,6 +754,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     private boolean moveAccessibilityFocusToId(int newAccessibilityFocusId) {
         if (newAccessibilityFocusId == mAccessibilityFocusId) return false;
 
+        nativeMoveAccessibilityFocus(mNativeObj, mAccessibilityFocusId, newAccessibilityFocusId);
+
         mAccessibilityFocusId = newAccessibilityFocusId;
         mAccessibilityFocusRect = null;
         // Used to store the node (edit text field) that has input focus but not a11y focus.
@@ -763,17 +766,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mSelectionStartIndex = -1;
         mSelectionEndIndex = nativeGetTextLength(mNativeObj, newAccessibilityFocusId);
 
-        // Calling nativeSetAccessibilityFocus will asynchronously load inline text boxes for
-        // this node and its subtree. If accessibility focus is on anything other than
-        // the root, do it - otherwise set it to -1 so we don't load inline text boxes
-        // for the whole subtree of the root.
-        if (mAccessibilityFocusId == mCurrentRootId) {
-            nativeSetAccessibilityFocus(mNativeObj, -1);
-        } else if (nativeIsAutofillPopupNode(mNativeObj, mAccessibilityFocusId)) {
+        if (nativeIsAutofillPopupNode(mNativeObj, mAccessibilityFocusId))
             mAutofillPopupView.requestFocus();
-        } else {
-            nativeSetAccessibilityFocus(mNativeObj, mAccessibilityFocusId);
-        }
 
         sendAccessibilityEvent(
                 mAccessibilityFocusId, AccessibilityEvent.TYPE_VIEW_ACCESSIBILITY_FOCUSED);
@@ -1499,8 +1493,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
             int selectionGranularity, boolean extendSelection, int id, int cursorIndex);
     private native boolean nativeAdjustSlider(
             long nativeWebContentsAccessibilityAndroid, int id, boolean increment);
-    private native void nativeSetAccessibilityFocus(
-            long nativeWebContentsAccessibilityAndroid, int id);
+    private native void nativeMoveAccessibilityFocus(
+            long nativeWebContentsAccessibilityAndroid, int oldId, int newId);
     private native boolean nativeIsSlider(long nativeWebContentsAccessibilityAndroid, int id);
     private native boolean nativeScroll(
             long nativeWebContentsAccessibilityAndroid, int id, int direction);

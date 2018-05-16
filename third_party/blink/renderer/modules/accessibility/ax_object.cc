@@ -2513,6 +2513,16 @@ bool AXObject::RequestShowContextMenuAction() {
   return OnNativeShowContextMenuAction();
 }
 
+bool AXObject::InternalClearAccessibilityFocusAction() {
+  // TODO(mlamouri): implement
+  return false;
+}
+
+bool AXObject::InternalSetAccessibilityFocusAction() {
+  // TODO(mlamouri): implement
+  return false;
+}
+
 bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   Node* node = GetNode();
   LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
