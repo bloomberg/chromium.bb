@@ -118,11 +118,8 @@ class AutofillPopupItemView : public AutofillPopupRowView {
 
     AddChildView(text_label_);
 
-    auto* spacer = new views::View;
-    spacer->SetPreferredSize(gfx::Size(
-        views::MenuConfig::instance().label_to_minor_text_padding, 1));
-    AddChildView(spacer);
-    layout->SetFlexForView(spacer, /*flex*/ 1);
+    AddSpacerWithSize(views::MenuConfig::instance().label_to_minor_text_padding,
+                      /*resize=*/true, layout);
 
     const base::string16& description_text =
         controller_->GetElidedLabelAt(line_number_);
@@ -138,11 +135,12 @@ class AutofillPopupItemView : public AutofillPopupRowView {
     const gfx::ImageSkia icon =
         controller_->layout_model().GetIconImage(line_number_);
     if (!icon.isNull()) {
+      AddSpacerWithSize(views::MenuConfig::instance().icon_to_label_padding,
+                        /*resize=*/false, layout);
+
       auto* image_view = new views::ImageView();
       image_view->SetImage(icon);
 
-      image_view->SetBorder(views::CreateEmptyBorder(
-          0, views::MenuConfig::instance().icon_to_label_padding, 0, 0));
       AddChildView(image_view);
     }
   }
@@ -169,6 +167,15 @@ class AutofillPopupItemView : public AutofillPopupRowView {
   }
 
  private:
+  void AddSpacerWithSize(int spacer_width,
+                         bool resize,
+                         views::BoxLayout* layout) {
+    auto* spacer = new views::View;
+    spacer->SetPreferredSize(gfx::Size(spacer_width, 1));
+    AddChildView(spacer);
+    layout->SetFlexForView(spacer, /*flex=*/resize ? 1 : 0);
+  }
+
   views::Label* text_label_ = nullptr;
   views::Label* subtext_label_ = nullptr;
 
