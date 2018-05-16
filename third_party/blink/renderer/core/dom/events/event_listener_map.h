@@ -47,7 +47,7 @@ class EventTarget;
 
 using EventListenerVector = HeapVector<RegisteredEventListener, 1>;
 
-class CORE_EXPORT EventListenerMap {
+class CORE_EXPORT EventListenerMap final {
   DISALLOW_NEW();
 
  public:
