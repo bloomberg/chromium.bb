@@ -272,4 +272,27 @@ TEST_P(RenderedPositionTest, CaretAfterSoftWrap) {
             FloatPoint(8.0f, 28.0f));
 }
 
+// crbug.com/834686
+TEST_P(RenderedPositionTest, RangeBeginAtBlockEnd) {
+  const SelectionInDOMTree& selection = SetSelectionTextToBody(
+      "<div style='font: 10px/10px Ahem;'>"
+      "<div>foo\n^</div><div>ba|r</div></div>");
+  Selection().SetSelection(
+      selection,
+      SetSelectionOptions::Builder().SetShouldShowHandle(true).Build());
+  Element* target = GetDocument().QuerySelector("div");
+  target->focus();
+  UpdateAllLifecyclePhases();
+  const CompositedSelection& composited_selection =
+      RenderedPosition::ComputeCompositedSelection(Selection());
+  EXPECT_EQ(composited_selection.start.edge_top_in_layer,
+            FloatPoint(38.0f, 8.0f));
+  EXPECT_EQ(composited_selection.start.edge_bottom_in_layer,
+            FloatPoint(38.0f, 18.0f));
+  EXPECT_EQ(composited_selection.end.edge_top_in_layer,
+            FloatPoint(28.0f, 18.0f));
+  EXPECT_EQ(composited_selection.end.edge_bottom_in_layer,
+            FloatPoint(28.0f, 28.0f));
+}
+
 }  // namespace blink
