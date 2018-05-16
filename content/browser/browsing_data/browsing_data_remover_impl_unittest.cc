@@ -58,19 +58,29 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
-using testing::_;
+#if BUILDFLAG(ENABLE_REPORTING)
+#include "net/network_error_logging/network_error_logging_delegate.h"
+#include "net/network_error_logging/network_error_logging_service.h"
+#include "net/reporting/reporting_cache.h"
+#include "net/reporting/reporting_report.h"
+#include "net/reporting/reporting_service.h"
+#include "net/reporting/reporting_test_util.h"
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
 using testing::ByRef;
 using testing::Eq;
 using testing::Invoke;
 using testing::IsEmpty;
-using testing::Matcher;
 using testing::MakeMatcher;
-using testing::MatcherInterface;
 using testing::MatchResultListener;
+using testing::Matcher;
+using testing::MatcherInterface;
 using testing::Not;
 using testing::Return;
 using testing::SizeIs;
+using testing::UnorderedElementsAre;
 using testing::WithArgs;
+using testing::_;
 using CookieDeletionFilterPtr = network::mojom::CookieDeletionFilterPtr;
 
 namespace content {
@@ -1379,6 +1389,169 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveDownloadsByOrigin) {
                               BrowsingDataRemover::DATA_TYPE_DOWNLOADS,
                               std::move(builder));
 }
+
+#if BUILDFLAG(ENABLE_REPORTING)
+TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache) {
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      ->GetURLRequestContext()
+      ->GetURLRequestContext()
+      ->set_reporting_service(reporting_service.get());
+
+  GURL domain("https://google.com");
+  reporting_cache->SetClient(url::Origin::Create(domain), domain,
+                             net::ReportingClient::Subdomains::EXCLUDE, "group",
+                             base::TimeTicks::Max(), 0, 1);
+
+  std::vector<const net::ReportingClient*> clients;
+  reporting_cache->GetClients(&clients);
+  ASSERT_EQ(1u, clients.size());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_COOKIES, false);
+
+  reporting_cache->GetClients(&clients);
+  EXPECT_TRUE(clients.empty());
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_SpecificOrigins) {
+  auto reporting_context = std::make_unique<net::TestReportingContext>(
+      base::DefaultClock::GetInstance(), base::DefaultTickClock::GetInstance(),
+      net::ReportingPolicy());
+  net::ReportingCache* reporting_cache = reporting_context->cache();
+  std::unique_ptr<net::ReportingService> reporting_service =
+      net::ReportingService::CreateForTesting(std::move(reporting_context));
+
+  BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      ->GetURLRequestContext()
+      ->GetURLRequestContext()
+      ->set_reporting_service(reporting_service.get());
+
+  GURL domain1("https://google.com");
+  reporting_cache->SetClient(url::Origin::Create(domain1), domain1,
+                             net::ReportingClient::Subdomains::EXCLUDE, "group",
+                             base::TimeTicks::Max(), 0, 1);
+  GURL domain2("https://host2.com");
+  reporting_cache->SetClient(url::Origin::Create(domain2), domain2,
+                             net::ReportingClient::Subdomains::EXCLUDE, "group",
+                             base::TimeTicks::Max(), 0, 1);
+  GURL domain3("https://host3.com");
+  reporting_cache->SetClient(url::Origin::Create(domain3), domain3,
+                             net::ReportingClient::Subdomains::EXCLUDE, "group",
+                             base::TimeTicks::Max(), 0, 1);
+  GURL domain4("https://host4.com");
+  reporting_cache->SetClient(url::Origin::Create(domain4), domain4,
+                             net::ReportingClient::Subdomains::EXCLUDE, "group",
+                             base::TimeTicks::Max(), 0, 1);
+
+  std::vector<const net::ReportingClient*> clients;
+  reporting_cache->GetClients(&clients);
+  ASSERT_EQ(4u, clients.size());
+
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  filter_builder->AddRegisterableDomain("google.com");
+  filter_builder->AddRegisterableDomain("host3.com");
+  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
+                              BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(filter_builder));
+
+  reporting_cache->GetClients(&clients);
+  EXPECT_EQ(2u, clients.size());
+  std::vector<GURL> origins;
+  for (const net::ReportingClient* client : clients) {
+    origins.push_back(client->endpoint);
+  }
+  EXPECT_THAT(origins, UnorderedElementsAre(domain2, domain4));
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveReportingCache_NoService) {
+  ASSERT_FALSE(BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+                   ->GetURLRequestContext()
+                   ->GetURLRequestContext()
+                   ->reporting_service());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_COOKIES, false);
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging) {
+  std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
+      net::NetworkErrorLoggingService::Create(
+          net::NetworkErrorLoggingDelegate::Create());
+  BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      ->GetURLRequestContext()
+      ->GetURLRequestContext()
+      ->set_network_error_logging_service(logging_service.get());
+
+  GURL domain("https://google.com");
+  logging_service->OnHeader(url::Origin::Create(domain),
+                            "{\"report-to\":\"group\",\"max-age\":86400}");
+
+  ASSERT_EQ(1u, logging_service->GetPolicyOriginsForTesting().size());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_COOKIES, false);
+
+  EXPECT_TRUE(logging_service->GetPolicyOriginsForTesting().empty());
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_SpecificOrigins) {
+  std::unique_ptr<net::NetworkErrorLoggingService> logging_service =
+      net::NetworkErrorLoggingService::Create(
+          net::NetworkErrorLoggingDelegate::Create());
+  BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+      ->GetURLRequestContext()
+      ->GetURLRequestContext()
+      ->set_network_error_logging_service(logging_service.get());
+
+  GURL domain1("https://google.com");
+  logging_service->OnHeader(url::Origin::Create(domain1),
+                            "{\"report-to\":\"group\",\"max-age\":86400}");
+  GURL domain2("https://host2.com");
+  logging_service->OnHeader(url::Origin::Create(domain2),
+                            "{\"report-to\":\"group\",\"max-age\":86400}");
+  GURL domain3("https://host3.com");
+  logging_service->OnHeader(url::Origin::Create(domain3),
+                            "{\"report-to\":\"group\",\"max-age\":86400}");
+  GURL domain4("https://host4.com");
+  logging_service->OnHeader(url::Origin::Create(domain4),
+                            "{\"report-to\":\"group\",\"max-age\":86400}");
+
+  ASSERT_EQ(4u, logging_service->GetPolicyOriginsForTesting().size());
+
+  std::unique_ptr<BrowsingDataFilterBuilder> filter_builder(
+      BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST));
+  filter_builder->AddRegisterableDomain("google.com");
+  filter_builder->AddRegisterableDomain("host3.com");
+  BlockUntilOriginDataRemoved(base::Time(), base::Time::Max(),
+                              BrowsingDataRemover::DATA_TYPE_COOKIES,
+                              std::move(filter_builder));
+
+  std::set<url::Origin> policy_origins =
+      logging_service->GetPolicyOriginsForTesting();
+  EXPECT_EQ(2u, policy_origins.size());
+  EXPECT_THAT(policy_origins,
+              UnorderedElementsAre(url::Origin::Create(domain2),
+                                   url::Origin::Create(domain4)));
+}
+
+TEST_F(BrowsingDataRemoverImplTest, RemoveNetworkErrorLogging_NoService) {
+  ASSERT_FALSE(BrowserContext::GetDefaultStoragePartition(GetBrowserContext())
+                   ->GetURLRequestContext()
+                   ->GetURLRequestContext()
+                   ->network_error_logging_service());
+
+  BlockUntilBrowsingDataRemoved(base::Time(), base::Time::Max(),
+                                BrowsingDataRemover::DATA_TYPE_COOKIES, false);
+}
+#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 class MultipleTasksObserver {
  public:

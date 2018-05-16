@@ -451,6 +451,22 @@ void BrowsingDataRemoverImpl::RemoveImpl(
         StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
   }
 
+#if BUILDFLAG(ENABLE_REPORTING)
+  //////////////////////////////////////////////////////////////////////////////
+  // Reporting cache.
+  if (remove_mask & DATA_TYPE_COOKIES) {
+    network::mojom::NetworkContext* network_context =
+        BrowserContext::GetDefaultStoragePartition(browser_context_)
+            ->GetNetworkContext();
+    network_context->ClearReportingCacheClients(
+        filter_builder.BuildNetworkServiceFilter(),
+        CreatePendingTaskCompletionClosureForMojo());
+    network_context->ClearNetworkErrorLogging(
+        filter_builder.BuildNetworkServiceFilter(),
+        CreatePendingTaskCompletionClosureForMojo());
+  }
+#endif  // BUILDFLAG(ENABLE_REPORTING)
+
   //////////////////////////////////////////////////////////////////////////////
   // Auth cache.
   if ((remove_mask & DATA_TYPE_COOKIES) &&
