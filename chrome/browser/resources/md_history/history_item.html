@@ -6,6 +6,7 @@
 <link rel="import" href="chrome://history/shared_style.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_row.html">
 <link rel="import" href="chrome://resources/html/icon.html">
 <link rel="import" href="chrome://resources/html/util.html">
@@ -32,7 +33,7 @@
       }
 
       :host([is-card-start][is-card-end]) #main-container {
-        border-radius: 2px;
+        border-radius: var(--cr-card-border-radius);
       }
 
       #date-accessed {
@@ -152,15 +153,15 @@
       }
 
       :host([is-card-start]) #background {
-        border-radius: 2px 2px 0 0;
+        border-radius: var(--cr-card-border-radius) var(--cr-card-border-radius) 0 0;
       }
 
       :host([is-card-end]) #background {
-        border-radius: 0 0 2px 2px;
+        border-radius: 0 0 var(--cr-card-border-radius) var(--cr-card-border-radius);
       }
 
       :host([is-card-start][is-card-end]) #background {
-        border-radius: 2px;
+        border-radius: var(--cr-card-border-radius);
       }
     </style>
 
