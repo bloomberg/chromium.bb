@@ -128,8 +128,7 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
   }
 
   Invalidate();
-  if (GetWidget())
-    Layout();
+  Layout();
 }
 
 void OmniboxResultView::ShowKeyword(bool show_keyword) {
