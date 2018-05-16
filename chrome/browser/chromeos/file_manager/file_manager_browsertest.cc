@@ -88,6 +88,10 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTest, Test) {
 
 // FileManager browser test class for tests that rely on deprecated event
 // dispatch that send tests.
+// TODO(noel): get rid of this class, move what it needs into the
+// FileManagerBrowserTest class.  Add a |group_name| to TestCase to allow
+// detection of tests that need legacy event dispatch by loooking at their
+// group name.
 class FileManagerBrowserTestWithLegacyEventDispatch
     : public FileManagerBrowserTest {
  public:
@@ -108,15 +112,13 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserTestWithLegacyEventDispatch, Test) {
   StartTest();
 }
 
-// Unlike TEST/TEST_F, which are macros that expand to further macros,
-// INSTANTIATE_TEST_CASE_P is a macro that expands directly to code that
-// stringizes the arguments. As a result, macros passed as parameters (such as
-// prefix or test_case_name) will not be expanded by the preprocessor. To work
-// around this, indirect the macro for INSTANTIATE_TEST_CASE_P, so that the
-// pre-processor will expand macros such as MAYBE_test_name before
-// instantiating the test.
-#define WRAPPED_INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator) \
-  INSTANTIATE_TEST_CASE_P(prefix, test_case_name, generator)
+// INSTANTIATE_TEST_CASE_P expands to code that stringizes the arguments. Thus
+// macro parameters such as |prefix| and |test_class| won't be expanded by the
+// macro pre-processor. To work around this, indirect INSTANTIATE_TEST_CASE_P,
+// as WRAPPED_INSTANTIATE_TEST_CASE_P here, so the pre-processor expand macros
+// like MAYBE_prefix used to disable tests.
+#define WRAPPED_INSTANTIATE_TEST_CASE_P(prefix, test_class, generator) \
+  INSTANTIATE_TEST_CASE_P(prefix, test_class, generator)
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     FileDisplay,
