@@ -13,8 +13,12 @@
 #include "aom/aom_integer.h"
 
 static const size_t kMaximumLeb128Size = 8;
-static const uint64_t kMaximumLeb128Value = 0xFFFFFFFFFFFFFF;  // 2 ^ 56 - 1
 static const uint8_t kLeb128ByteMask = 0x7f;  // Binary: 01111111
+
+// Disallow values larger than 32-bits to ensure consistent behavior on 32 and
+// 64 bit targets: value is typically used to determine buffer allocation size
+// when decoded.
+static const uint64_t kMaximumLeb128Value = UINT32_MAX;
 
 size_t aom_uleb_size_in_bytes(uint64_t value) {
   size_t size = 0;
@@ -53,11 +57,6 @@ int aom_uleb_decode(const uint8_t *buffer, size_t available, uint64_t *value,
 
 int aom_uleb_encode(uint64_t value, size_t available, uint8_t *coded_value,
                     size_t *coded_size) {
-  // Fail on values larger than 32-bits to ensure consistent behavior on
-  // 32 and 64 bit targets: value is typically used to determine buffer
-  // allocation size when decoded.
-  if (value > UINT32_MAX) return -1;
-
   const size_t leb_size = aom_uleb_size_in_bytes(value);
   if (value > kMaximumLeb128Value || leb_size > kMaximumLeb128Size ||
       leb_size > available || !coded_value || !coded_size) {
@@ -80,8 +79,8 @@ int aom_uleb_encode(uint64_t value, size_t available, uint8_t *coded_value,
 int aom_uleb_encode_fixed_size(uint64_t value, size_t available,
                                size_t pad_to_size, uint8_t *coded_value,
                                size_t *coded_size) {
-  if (!coded_value || !coded_size || available < pad_to_size ||
-      pad_to_size > kMaximumLeb128Size) {
+  if (value > kMaximumLeb128Value || !coded_value || !coded_size ||
+      available < pad_to_size || pad_to_size > kMaximumLeb128Size) {
     return -1;
   }
   const uint64_t limit = 1ULL << (7 * pad_to_size);
