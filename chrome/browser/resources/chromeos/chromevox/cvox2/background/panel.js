@@ -97,17 +97,6 @@ Panel.init = function() {
   /** @type {Panel.Mode} @private */
   Panel.mode_ = Panel.Mode.COLLAPSED;
 
-  var blockedSessionQuery =
-      location.search.match(/[?&]?blockedUserSession=(true|false)/);
-  /**
-   * Whether the panel is loaded for blocked user session - e.g. on sign-in or
-   * lock screen.
-   * @type {boolean}
-   * @private @const
-   */
-  Panel.isUserSessionBlocked_ =
-      !!blockedSessionQuery && blockedSessionQuery[1] == 'true';
-
   /**
    * The array of top-level menus.
    * @type {!Array<PanelMenu>}
@@ -121,15 +110,6 @@ Panel.init = function() {
    * @private
    */
   Panel.activeMenu_ = null;
-
-  /**
-   * True if the menu button in the panel is enabled at all. It's disabled if
-   * ChromeVox Next is not active.
-   * @type {boolean}
-   * @private
-   */
-  Panel.menusEnabled_ =
-      !Panel.isUserSessionBlocked_ && localStorage['useClassic'] == 'false';
 
   /**
    * @type {Tutorial}
@@ -248,12 +228,6 @@ Panel.exec = function(command) {
     case PanelCommandType.UPDATE_BRAILLE:
       Panel.onUpdateBraille(command.data);
       break;
-    case PanelCommandType.ENABLE_MENUS:
-      Panel.onEnableMenus();
-      break;
-    case PanelCommandType.DISABLE_MENUS:
-      Panel.onDisableMenus();
-      break;
     case PanelCommandType.OPEN_MENUS:
       Panel.onOpenMenus(undefined, command.data);
       break;
@@ -270,28 +244,6 @@ Panel.exec = function(command) {
       Panel.onTutorial('updateNotes');
       break;
   }
-};
-
-/**
- * Enable the ChromeVox Menus.
- */
-Panel.onEnableMenus = function() {
-  if (Panel.isUserSessionBlocked_)
-    return;
-  Panel.menusEnabled_ = true;
-  $('menus_button').disabled = false;
-  $('triangle').hidden = false;
-};
-
-/**
- * Disable the ChromeVox Menus.
- */
-Panel.onDisableMenus = function() {
-  if (Panel.isUserSessionBlocked_)
-    return;
-  Panel.menusEnabled_ = false;
-  $('menus_button').disabled = true;
-  $('triangle').hidden = true;
 };
 
 /**
@@ -329,11 +281,6 @@ Panel.setMode = function(mode) {
  * @param {*=} opt_activateMenuTitle Title msg id of menu to open.
  */
 Panel.onOpenMenus = function(opt_event, opt_activateMenuTitle) {
-  // Don't open the menu if it's not enabled, such as when ChromeVox Next
-  // is not active.
-  if (!Panel.menusEnabled_)
-    return;
-
   // Eat the event so that a mousedown isn't turned into a drag, allowing
   // users to click-drag-release to select a menu item.
   if (opt_event) {
@@ -897,7 +844,7 @@ Panel.closeMenusAndRestoreFocus = function() {
     };
 
     var onBlur = function(evt) {
-      if (evt.docUrl != location.href)
+      if (evt.target.docUrl != location.href)
         return;
 
       desktop.removeEventListener(

@@ -59,7 +59,6 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/focused_node_details.h"
@@ -208,7 +207,6 @@ AccessibilityManager::AccessibilityManager()
   notification_registrar_.Add(this, content::NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
                               content::NotificationService::AllSources());
   input_method::InputMethodManager::Get()->AddObserver(this);
-  session_manager::SessionManager::Get()->AddObserver(this);
 
   ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   media::SoundsManager* manager = media::SoundsManager::Get();
@@ -278,7 +276,6 @@ AccessibilityManager::~AccessibilityManager() {
                                           false);
   NotifyAccessibilityStatusChanged(details);
   input_method::InputMethodManager::Get()->RemoveObserver(this);
-  session_manager::SessionManager::Get()->RemoveObserver(this);
 
   if (chromevox_panel_) {
     chromevox_panel_->CloseNow();
@@ -874,24 +871,6 @@ void AccessibilityManager::InputMethodChanged(
       (descriptor.id() == extension_ime_util::kBrailleImeEngineId);
 }
 
-void AccessibilityManager::OnSessionStateChanged() {
-  // Don't reload ChromeVox during shutdown. http://crrev.com/c/838180
-  if (app_terminating_)
-    return;
-
-  if (!chromevox_panel_)
-    return;
-  if (chromevox_panel_->for_blocked_user_session() ==
-      session_manager::SessionManager::Get()->IsUserSessionBlocked()) {
-    return;
-  }
-
-  // If user session got blocked or unblocked, reload ChromeVox panel, as
-  // functionality available to the panel differs based on whether the user
-  // session is active (and unlocked) or not.
-  ReloadChromeVoxPanel();
-}
-
 void AccessibilityManager::SetProfile(Profile* profile) {
   // Do nothing if this is called for the current profile. This can happen. For
   // example, ChromeSessionManager fires both
@@ -1206,9 +1185,7 @@ void AccessibilityManager::PostLoadChromeVox() {
       extension_misc::kChromeVoxExtensionId, std::move(event));
 
   if (!chromevox_panel_) {
-    chromevox_panel_ = new ChromeVoxPanel(
-        profile_,
-        session_manager::SessionManager::Get()->IsUserSessionBlocked());
+    chromevox_panel_ = new ChromeVoxPanel(profile_);
     chromevox_panel_widget_observer_.reset(
         new ChromeVoxPanelWidgetObserver(chromevox_panel_->GetWidget(), this));
   }
@@ -1241,16 +1218,11 @@ void AccessibilityManager::PostUnloadChromeVox() {
 }
 
 void AccessibilityManager::PostSwitchChromeVoxProfile() {
-  ReloadChromeVoxPanel();
-}
-
-void AccessibilityManager::ReloadChromeVoxPanel() {
   if (chromevox_panel_) {
     chromevox_panel_->CloseNow();
     chromevox_panel_ = nullptr;
   }
-  chromevox_panel_ = new ChromeVoxPanel(
-      profile_, session_manager::SessionManager::Get()->IsUserSessionBlocked());
+  chromevox_panel_ = new ChromeVoxPanel(profile_);
   chromevox_panel_widget_observer_.reset(
       new ChromeVoxPanelWidgetObserver(chromevox_panel_->GetWidget(), this));
 }

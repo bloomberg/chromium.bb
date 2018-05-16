@@ -33,7 +33,7 @@ button {
   min-width: 52px;
 }
 
-#menus_button:not([disabled]):hover {
+#menus_button:hover {
   background-color: rgb(246, 145, 57);
 }
 
@@ -61,7 +61,7 @@ button {
   width: 19px;
 }
 
-#options:not([disabled]):hover {
+#options:hover {
   background-image: url(/images/options-hover-19.png);
 }
 
