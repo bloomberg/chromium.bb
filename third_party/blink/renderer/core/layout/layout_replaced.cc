@@ -152,31 +152,17 @@ static inline bool LayoutObjectHasAspectRatio(
 
 void LayoutReplaced::ComputeIntrinsicSizingInfoForReplacedContent(
     IntrinsicSizingInfo& intrinsic_sizing_info) const {
-  if (GetNestedIntrinsicSizingInfo(intrinsic_sizing_info)) {
-    // Handle zoom & vertical writing modes here, as the embedded document
-    // doesn't know about them.
-    intrinsic_sizing_info.size.Scale(Style()->EffectiveZoom());
-    if (IsLayoutImage() && Style()->GetObjectFit() != EObjectFit::kScaleDown)
-      intrinsic_sizing_info.size.Scale(
-          ToLayoutImage(this)->ImageDevicePixelRatio());
+  ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
 
-    // Update our intrinsic size to match what the content layoutObject has
-    // computed, so that when we constrain the size below, the correct intrinsic
-    // size will be obtained for comparison against min and max widths.
-    if (!intrinsic_sizing_info.aspect_ratio.IsEmpty() &&
-        !intrinsic_sizing_info.size.IsEmpty())
-      intrinsic_size_ = LayoutSize(intrinsic_sizing_info.size);
-
-    if (!IsHorizontalWritingMode())
-      intrinsic_sizing_info.Transpose();
-  } else {
-    ComputeIntrinsicSizingInfo(intrinsic_sizing_info);
-    if (!intrinsic_sizing_info.aspect_ratio.IsEmpty() &&
-        !intrinsic_sizing_info.size.IsEmpty())
-      intrinsic_size_ =
-          LayoutSize(IsHorizontalWritingMode()
-                         ? intrinsic_sizing_info.size
-                         : intrinsic_sizing_info.size.TransposedSize());
+  // Update our intrinsic size to match what was computed, so that
+  // when we constrain the size, the correct intrinsic size will be
+  // obtained for comparison against min and max widths.
+  if (!intrinsic_sizing_info.aspect_ratio.IsEmpty() &&
+      !intrinsic_sizing_info.size.IsEmpty()) {
+    intrinsic_size_ =
+        LayoutSize(IsHorizontalWritingMode()
+                       ? intrinsic_sizing_info.size
+                       : intrinsic_sizing_info.size.TransposedSize());
   }
 }
 
