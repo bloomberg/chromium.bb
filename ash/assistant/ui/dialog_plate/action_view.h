@@ -9,6 +9,10 @@
 #include "base/macros.h"
 #include "ui/views/view.h"
 
+namespace views {
+class ImageView;
+}  // namespace views
+
 namespace ash {
 
 class ActionView;
@@ -45,10 +49,13 @@ class ActionView : public views::View,
   void OnMicStateChanged(MicState mic_state) override;
 
  private:
+  void InitLayout();
   void UpdateState();
 
   AssistantController* const assistant_controller_;  // Owned by Shell.
   ActionViewListener* listener_;
+
+  views::ImageView* keyboard_action_view_;  // Owned by view hierarchy.
 
   // TODO(dmblack): Remove after LogoView is implemented.
   // Temporarily used to represent state.

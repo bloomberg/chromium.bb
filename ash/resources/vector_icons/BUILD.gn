@@ -11,6 +11,7 @@ aggregate_vector_icons("ash_vector_icons") {
   icons = [
     "captive_portal.icon",
     "check_circle.icon",
+    "circle.icon",
     "dictation_off.icon",
     "dictation_on.icon",
     "ime_menu_emoticon.icon",
@@ -84,6 +85,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "palette_tray_icon_laser_pointer.icon",
     "palette_tray_icon_magnify.icon",
     "palette_tray_icon_metalayer.icon",
+    "send.icon",
     "shelf_add_person_button.icon",
     "shelf_back.icon",
     "shelf_browse_as_guest_button.icon",
