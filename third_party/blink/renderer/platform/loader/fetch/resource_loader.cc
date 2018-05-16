@@ -55,6 +55,16 @@
 
 namespace blink {
 
+namespace {
+
+bool IsThrottlableRequestContext(WebURLRequest::RequestContext context) {
+  return context != WebURLRequest::kRequestContextEventSource &&
+         context != WebURLRequest::kRequestContextFetch &&
+         context != WebURLRequest::kRequestContextXMLHttpRequest;
+}
+
+}  // namespace
+
 ResourceLoader* ResourceLoader::Create(ResourceFetcher* fetcher,
                                        ResourceLoadScheduler* scheduler,
                                        Resource* resource,
@@ -100,11 +110,10 @@ void ResourceLoader::Start() {
   DCHECK_EQ(ResourceLoadScheduler::kInvalidClientId, scheduler_client_id_);
   auto throttle_option = ResourceLoadScheduler::ThrottleOption::kCanBeThrottled;
 
-  // Synchronous requests should not work with a throttling. Also, tentatively
-  // disables throttling for fetch requests that could keep on holding an active
-  // connection until data is read by JavaScript.
+  // Synchronous requests should not work with a throttling. Also, disables
+  // throttling for the case that can be used for aka long-polling requests.
   if (resource_->Options().synchronous_policy == kRequestSynchronously ||
-      request.GetRequestContext() == WebURLRequest::kRequestContextFetch) {
+      !IsThrottlableRequestContext(request.GetRequestContext())) {
     throttle_option = ResourceLoadScheduler::ThrottleOption::kCanNotBeThrottled;
   }
 
