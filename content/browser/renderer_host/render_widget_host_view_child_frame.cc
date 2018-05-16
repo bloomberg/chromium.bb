@@ -440,7 +440,13 @@ void RenderWidgetHostViewChildFrame::SetTooltipText(
   if (!root_view)
     return;
 
-  root_view->GetCursorManager()->SetTooltipTextForView(this, tooltip_text);
+  auto* cursor_manager = root_view->GetCursorManager();
+  // If there's no CursorManager then we're on Android, and setting tooltips
+  // is a null-opt there, so it's ok to early out.
+  if (!cursor_manager)
+    return;
+
+  cursor_manager->SetTooltipTextForView(this, tooltip_text);
 }
 
 RenderWidgetHostViewBase* RenderWidgetHostViewChildFrame::GetParentView() {
