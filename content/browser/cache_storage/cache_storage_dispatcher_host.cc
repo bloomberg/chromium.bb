@@ -61,7 +61,7 @@ class CacheStorageDispatcherHost::CacheImpl
 
   // blink::mojom::CacheStorageCache implementation:
   void Match(const ServiceWorkerFetchRequest& request,
-             const CacheStorageCacheQueryParams& match_params,
+             blink::mojom::QueryParamsPtr match_params,
              MatchCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -75,7 +75,7 @@ class CacheStorageDispatcherHost::CacheImpl
         request.is_reload);
 
     cache->Match(
-        std::move(scoped_request), match_params,
+        std::move(scoped_request), std::move(match_params),
         base::BindOnce(&CacheImpl::OnCacheMatchCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -93,7 +93,7 @@ class CacheStorageDispatcherHost::CacheImpl
   }
 
   void MatchAll(const ServiceWorkerFetchRequest& request,
-                const CacheStorageCacheQueryParams& match_params,
+                blink::mojom::QueryParamsPtr match_params,
                 MatchAllCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -104,7 +104,7 @@ class CacheStorageDispatcherHost::CacheImpl
 
     if (request.url.is_empty()) {
       cache->MatchAll(
-          nullptr, match_params,
+          nullptr, std::move(match_params),
           base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
       return;
@@ -113,16 +113,16 @@ class CacheStorageDispatcherHost::CacheImpl
     auto scoped_request = std::make_unique<ServiceWorkerFetchRequest>(
         request.url, request.method, request.headers, request.referrer,
         request.is_reload);
-    if (match_params.ignore_search) {
+    if (match_params->ignore_search) {
       cache->MatchAll(
-          std::move(scoped_request), match_params,
+          std::move(scoped_request), std::move(match_params),
           base::BindOnce(&CacheImpl::OnCacheMatchAllCallback,
                          weak_factory_.GetWeakPtr(), std::move(callback)));
       return;
     }
 
     cache->Match(
-        std::move(scoped_request), match_params,
+        std::move(scoped_request), std::move(match_params),
         base::BindOnce(&CacheImpl::OnCacheMatchAllCallbackAdapter,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -154,7 +154,7 @@ class CacheStorageDispatcherHost::CacheImpl
   }
 
   void Keys(const ServiceWorkerFetchRequest& request,
-            const CacheStorageCacheQueryParams& match_params,
+            blink::mojom::QueryParamsPtr match_params,
             KeysCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -167,7 +167,7 @@ class CacheStorageDispatcherHost::CacheImpl
         request.url, request.method, request.headers, request.referrer,
         request.is_reload);
     cache->Keys(
-        std::move(request_ptr), match_params,
+        std::move(request_ptr), std::move(match_params),
         base::BindOnce(&CacheImpl::OnCacheKeysCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)));
   }
@@ -184,7 +184,7 @@ class CacheStorageDispatcherHost::CacheImpl
     std::move(callback).Run(blink::mojom::CacheKeysResult::NewKeys(*requests));
   }
 
-  void Batch(const std::vector<CacheStorageBatchOperation>& batch_operations,
+  void Batch(std::vector<blink::mojom::BatchOperationPtr> batch_operations,
              BatchCallback callback) override {
     content::CacheStorageCache* cache = cache_handle_.value();
     if (!cache) {
@@ -192,7 +192,7 @@ class CacheStorageDispatcherHost::CacheImpl
       return;
     }
     cache->BatchOperation(
-        batch_operations,
+        std::move(batch_operations),
         base::BindOnce(&CacheImpl::OnCacheBatchCallback,
                        weak_factory_.GetWeakPtr(), std::move(callback)),
         base::BindOnce(&CacheImpl::OnBadMessage, weak_factory_.GetWeakPtr(),
@@ -310,7 +310,7 @@ void CacheStorageDispatcherHost::Keys(
 
 void CacheStorageDispatcherHost::Match(
     const content::ServiceWorkerFetchRequest& request,
-    const content::CacheStorageCacheQueryParams& match_params,
+    blink::mojom::QueryParamsPtr match_params,
     blink::mojom::CacheStorage::MatchCallback callback) {
   TRACE_EVENT0("CacheStorage",
                "CacheStorageDispatcherHost::OnCacheStorageMatch");
@@ -325,7 +325,7 @@ void CacheStorageDispatcherHost::Match(
       request.url, request.method, request.headers, request.referrer,
       request.is_reload);
 
-  if (match_params.cache_name.is_null()) {
+  if (!match_params->cache_name) {
     context_->cache_manager()->MatchAllCaches(
         origin, CacheStorageOwner::kCacheAPI, std::move(scoped_request),
         std::move(match_params),
@@ -335,8 +335,8 @@ void CacheStorageDispatcherHost::Match(
   }
   context_->cache_manager()->MatchCache(
       origin, CacheStorageOwner::kCacheAPI,
-      base::UTF16ToUTF8(match_params.cache_name.string()),
-      std::move(scoped_request), std::move(match_params),
+      base::UTF16ToUTF8(*match_params->cache_name), std::move(scoped_request),
+      std::move(match_params),
 
       base::BindOnce(&CacheStorageDispatcherHost::OnMatchCallback, this,
                      std::move(callback)));
