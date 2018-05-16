@@ -45,7 +45,7 @@ class AssociatedInterfacePtrInfo {
 
   bool is_valid() const { return handle_.is_valid(); }
 
-  explicit operator bool() const { return handle_; }
+  explicit operator bool() const { return handle_.is_valid(); }
 
   ScopedInterfaceEndpointHandle PassHandle() {
     return std::move(handle_);
