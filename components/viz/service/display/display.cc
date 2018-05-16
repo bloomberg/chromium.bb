@@ -229,12 +229,10 @@ void Display::InitializeRenderer() {
           &settings_, output_surface_.get(), resource_provider_.get(),
           skia_output_surface_);
     }
-  } else if (output_surface_->vulkan_context_provider()) {
 #if BUILDFLAG(ENABLE_VULKAN)
+  } else if (output_surface_->vulkan_context_provider()) {
     renderer_ = std::make_unique<SkiaRenderer>(
         &settings_, output_surface_.get(), resource_provider_.get());
-#else
-    NOTREACHED();
 #endif
   } else {
     auto renderer = std::make_unique<SoftwareRenderer>(

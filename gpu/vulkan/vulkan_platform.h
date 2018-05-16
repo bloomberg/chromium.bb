@@ -13,14 +13,6 @@
 extern "C" {
 #endif
 
-#if defined(USE_X11)
-#define VK_USE_PLATFORM_XLIB_KHR
-#endif
-
-#if defined(OS_ANDROID)
-#define VK_USE_PLATFORM_ANDROID_KHR
-#endif
-
 // This section below is taken from <vulkan/vulkan.h>, with an include
 // of <X11/Xlib.h> replaced with an include of "ui/gfx/x/x11.h"
 #ifdef VK_USE_PLATFORM_XLIB_KHR

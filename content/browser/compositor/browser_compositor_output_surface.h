@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "components/viz/service/display/output_surface.h"
 #include "content/common/content_export.h"
+#include "gpu/vulkan/buildflags.h"
 
 namespace cc {
 class SoftwareOutputDevice;
@@ -56,10 +57,12 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
       std::unique_ptr<viz::SoftwareOutputDevice> software_device,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
 
+#if BUILDFLAG(ENABLE_VULKAN)
   // Constructor used by the Vulkan implementation.
   BrowserCompositorOutputSurface(
       const scoped_refptr<viz::VulkanContextProvider>& vulkan_context_provider,
       const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
+#endif
 
   const UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   ReflectorImpl* reflector_;

@@ -4,33 +4,24 @@
 
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "gpu/vulkan/buildflags.h"
-
-#if BUILDFLAG(ENABLE_VULKAN)
+#include "gpu/vulkan/init/vulkan_factory.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_implementation.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkInterface.h"
-#endif  // BUILDFLAG(ENABLE_VULKAN)
 
 namespace viz {
 
 scoped_refptr<VulkanInProcessContextProvider>
-VulkanInProcessContextProvider::Create() {
-#if BUILDFLAG(ENABLE_VULKAN)
-  if (!gpu::VulkanSupported())
-    return nullptr;
-
+VulkanInProcessContextProvider::Create(
+    gpu::VulkanImplementation* vulkan_implementation) {
   scoped_refptr<VulkanInProcessContextProvider> context_provider(
-      new VulkanInProcessContextProvider);
+      new VulkanInProcessContextProvider(vulkan_implementation));
   if (!context_provider->Initialize())
     return nullptr;
   return context_provider;
-#else
-  return nullptr;
-#endif
 }
 
-#if BUILDFLAG(ENABLE_VULKAN)
 GrVkInterface::GetProc make_unified_getter(
     const GrVkInterface::GetInstanceProc& iproc,
     const GrVkInterface::GetDeviceProc& dproc) {
@@ -42,17 +33,15 @@ GrVkInterface::GetProc make_unified_getter(
     return iproc(instance, proc_name);
   };
 }
-#endif
 
 bool VulkanInProcessContextProvider::Initialize() {
-#if BUILDFLAG(ENABLE_VULKAN)
   DCHECK(!device_queue_);
-  std::unique_ptr<gpu::VulkanDeviceQueue> device_queue(
-      new gpu::VulkanDeviceQueue);
-  if (!device_queue->Initialize(
+  std::unique_ptr<gpu::VulkanDeviceQueue> device_queue =
+      gpu::CreateVulkanDeviceQueue(
+          vulkan_implementation_,
           gpu::VulkanDeviceQueue::GRAPHICS_QUEUE_FLAG |
-          gpu::VulkanDeviceQueue::PRESENTATION_SUPPORT_QUEUE_FLAG)) {
-    device_queue->Destroy();
+              gpu::VulkanDeviceQueue::PRESENTATION_SUPPORT_QUEUE_FLAG);
+  if (!device_queue) {
     return false;
   }
 
@@ -82,13 +71,9 @@ bool VulkanInProcessContextProvider::Initialize() {
   backend_context_.reset(backend_context);
   gr_context_ = GrContext::MakeVulkan(backend_context_);
   return true;
-#else
-  return false;
-#endif
 }
 
 void VulkanInProcessContextProvider::Destroy() {
-#if BUILDFLAG(ENABLE_VULKAN)
   if (gr_context_)
     gr_context_.reset();
 
@@ -97,26 +82,24 @@ void VulkanInProcessContextProvider::Destroy() {
     device_queue_.reset();
     backend_context_.reset();
   }
-#endif
 }
 
 GrContext* VulkanInProcessContextProvider::GetGrContext() {
-#if BUILDFLAG(ENABLE_VULKAN)
   return gr_context_.get();
-#else
-  return nullptr;
-#endif
+}
+
+gpu::VulkanImplementation*
+VulkanInProcessContextProvider::GetVulkanImplementation() {
+  return vulkan_implementation_;
 }
 
 gpu::VulkanDeviceQueue* VulkanInProcessContextProvider::GetDeviceQueue() {
-#if BUILDFLAG(ENABLE_VULKAN)
   return device_queue_.get();
-#else
-  return nullptr;
-#endif
 }
 
-VulkanInProcessContextProvider::VulkanInProcessContextProvider() {}
+VulkanInProcessContextProvider::VulkanInProcessContextProvider(
+    gpu::VulkanImplementation* vulkan_implementation)
+    : vulkan_implementation_(vulkan_implementation) {}
 
 VulkanInProcessContextProvider::~VulkanInProcessContextProvider() {
   Destroy();

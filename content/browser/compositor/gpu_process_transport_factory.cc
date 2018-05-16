@@ -26,7 +26,6 @@
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gl_helper.h"
-#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/host/renderer_settings_creation.h"
@@ -114,7 +113,9 @@
 #endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
+#include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "content/browser/compositor/vulkan_browser_compositor_output_surface.h"
+#include "gpu/vulkan/init/vulkan_factory.cc"
 #endif
 
 using viz::ContextProvider;
@@ -329,7 +330,11 @@ void GpuProcessTransportFactory::CreateLayerTreeFrameSink(
       compositor->widget());
 #endif
 
+#if BUILDFLAG(ENABLE_VULKAN)
   const bool use_vulkan = static_cast<bool>(SharedVulkanContextProvider());
+#else
+  const bool use_vulkan = false;
+#endif
   const bool use_gpu_compositing =
       !compositor->force_software_compositor() && !is_gpu_compositing_disabled_;
   if (use_gpu_compositing && !use_vulkan) {
@@ -382,11 +387,16 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       compositor->widget());
 #endif
 
+#if BUILDFLAG(ENABLE_VULKAN)
   scoped_refptr<viz::VulkanInProcessContextProvider> vulkan_context_provider =
       SharedVulkanContextProvider();
+  bool use_vulkan = vulkan_context_provider != nullptr;
+#else
+  bool use_vulkan = false;
+#endif
   scoped_refptr<ui::ContextProviderCommandBuffer> context_provider;
 
-  if (!use_gpu_compositing || vulkan_context_provider) {
+  if (!use_gpu_compositing || use_vulkan) {
     // If not using GL compositing, don't keep the old shared worker context.
     shared_worker_context_provider_ = nullptr;
   } else if (!gpu_channel_host) {
@@ -450,8 +460,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
   }
 
   bool gpu_compositing_ready =
-      vulkan_context_provider ||
-      (context_provider && shared_worker_context_provider_);
+      use_vulkan || (context_provider && shared_worker_context_provider_);
   UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor",
                         gpu_compositing_ready);
   if (!gpu_compositing_ready) {
@@ -1033,19 +1042,28 @@ void GpuProcessTransportFactory::OnLostMainThreadSharedContext() {
   lost_shared_main_thread_contexts = nullptr;
 }
 
+#if BUILDFLAG(ENABLE_VULKAN)
 scoped_refptr<viz::VulkanInProcessContextProvider>
 GpuProcessTransportFactory::SharedVulkanContextProvider() {
   if (!shared_vulkan_context_provider_initialized_) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableVulkan)) {
-      shared_vulkan_context_provider_ =
-          viz::VulkanInProcessContextProvider::Create();
+      vulkan_implementation_ = gpu::CreateVulkanImplementation();
+      if (vulkan_implementation_ &&
+          vulkan_implementation_->InitializeVulkanInstance()) {
+        shared_vulkan_context_provider_ =
+            viz::VulkanInProcessContextProvider::Create(
+                vulkan_implementation_.get());
+      } else {
+        vulkan_implementation_.reset();
+      }
     }
 
     shared_vulkan_context_provider_initialized_ = true;
   }
   return shared_vulkan_context_provider_;
 }
+#endif
 
 void GpuProcessTransportFactory::OnContextLost() {
   base::ThreadTaskRunnerHandle::Get()->PostTask(

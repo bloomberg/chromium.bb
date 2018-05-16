@@ -38,6 +38,8 @@ if (enable_vulkan) {
         "vulkan_image_view.h",
         "vulkan_implementation.cc",
         "vulkan_implementation.h",
+        "vulkan_instance.cc",
+        "vulkan_instance.h",
         "vulkan_platform.h",
         "vulkan_render_pass.cc",
         "vulkan_render_pass.h",
@@ -65,6 +67,10 @@ if (enable_vulkan) {
       ]
 
       if (use_x11) {
+        sources += [
+          "vulkan_implementation_x11.cc",
+          "vulkan_implementation_x11.h",
+        ]
         deps += [ "//ui/gfx/x" ]
         configs += [ "//build/config/linux:x11" ]
       }
@@ -91,8 +97,8 @@ if (enable_vulkan) {
     }
 
     deps = [
-      ":vulkan",
       "//base/test:test_support",
+      "//gpu/vulkan/init",
       "//testing/gmock",
       "//testing/gtest",
     ]
