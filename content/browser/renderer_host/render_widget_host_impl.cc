@@ -1852,7 +1852,6 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
 
   // Reset some fields in preparation for recovering from a crash.
   ResetSizeAndRepaintPendingFlags();
-  current_size_.SetSize(0, 0);
   // After the renderer crashes, the view is destroyed and so the
   // RenderWidgetHost cannot track its visibility anymore. We assume such
   // RenderWidgetHost to be invisible for the sake of internal accounting - be
@@ -2178,11 +2177,6 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
   // Update our knowledge of the RenderWidget's size.
   DCHECK(!metadata.viewport_size_in_pixels.IsEmpty());
 
-  // TODO(fsamuel): The fact that we translate the viewport_size from pixels
-  // to DIP is concerning. This could result in invariants violations.
-  current_size_ = gfx::ScaleToCeiledSize(metadata.viewport_size_in_pixels,
-                                         1.f / metadata.device_scale_factor);
-
   visual_properties_ack_pending_ = false;
 
   NotificationService::current()->Notify(
@@ -2196,6 +2190,8 @@ void RenderWidgetHostImpl::DidUpdateVisualProperties(
       view_->DidUpdateVisualProperties(metadata);
 
   if (auto_resize_enabled_ && delegate_) {
+    // TODO(fsamuel): The fact that we translate the viewport_size from pixels
+    // to DIP is concerning. This could result in invariants violations.
     gfx::Size viewport_size_in_dip = gfx::ScaleToCeiledSize(
         metadata.viewport_size_in_pixels, 1.f / metadata.device_scale_factor);
     delegate_->ResizeDueToAutoResize(this, viewport_size_in_dip);

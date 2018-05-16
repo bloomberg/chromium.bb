@@ -266,8 +266,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   RenderWidgetHostDelegate* delegate() const { return delegate_; }
 
-  bool empty() const { return current_size_.IsEmpty(); }
-
   // Called when a renderer object already been created for this host, and we
   // just need to be attached to it. Used for window.open, <select> dropdown
   // menus, and other times when the renderer initiates creating an object.
@@ -945,9 +943,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // True when waiting for visual_properties_ack.
   bool visual_properties_ack_pending_;
-
-  // The current size of the RenderWidget.
-  gfx::Size current_size_;
 
   // Visual properties that were most recently sent to the renderer.
   std::unique_ptr<VisualProperties> old_visual_properties_;
