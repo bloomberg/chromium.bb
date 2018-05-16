@@ -67,7 +67,7 @@ void ContentBrowserTest::SetUp() {
     // setting a global that may be used after ContentBrowserTest is
     // destroyed.
     ContentRendererClient* old_client =
-        switches::IsRunLayoutTestSwitchPresent()
+        switches::IsRunWebTestsSwitchPresent()
             ? SetRendererClientForTesting(new LayoutTestContentRendererClient)
             : SetRendererClientForTesting(new ShellContentRendererClient);
     // No-one should have set this value before we did.
@@ -114,7 +114,7 @@ void ContentBrowserTest::TearDown() {
 }
 
 void ContentBrowserTest::PreRunTestOnMainThread() {
-  if (!switches::IsRunLayoutTestSwitchPresent()) {
+  if (!switches::IsRunWebTestsSwitchPresent()) {
     CHECK_EQ(Shell::windows().size(), 1u);
     shell_ = Shell::windows()[0];
     SetInitialWebContents(shell_->web_contents());

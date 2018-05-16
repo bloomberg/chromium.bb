@@ -86,7 +86,7 @@ Shell::Shell(std::unique_ptr<WebContents> web_contents)
       hide_toolbar_(false) {
   web_contents_->SetDelegate(this);
 
-  if (switches::IsRunLayoutTestSwitchPresent()) {
+  if (switches::IsRunWebTestsSwitchPresent()) {
     headless_ = true;
     // In a headless shell, disable occlusion tracking. Otherwise, WebContents
     // would always behave as if they were occluded, i.e. would not render
@@ -144,7 +144,7 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
   // Note: Do not make RenderFrameHost or RenderViewHost specific state changes
   // here, because they will be forgotten after a cross-process navigation. Use
   // RenderFrameCreated or RenderViewCreated instead.
-  if (switches::IsRunLayoutTestSwitchPresent()) {
+  if (switches::IsRunWebTestsSwitchPresent()) {
     raw_web_contents->GetMutableRendererPrefs()->use_custom_colors = false;
     raw_web_contents->GetRenderViewHost()->SyncRendererPrefs();
   }
@@ -287,7 +287,7 @@ void Shell::AddNewContents(WebContents* source,
                            bool* was_blocked) {
   WebContents* raw_new_contents = new_contents.get();
   CreateShell(std::move(new_contents), AdjustWindowSize(initial_rect.size()));
-  if (switches::IsRunLayoutTestSwitchPresent())
+  if (switches::IsRunWebTestsSwitchPresent())
     SecondaryTestWindowObserver::CreateForWebContents(raw_new_contents);
 }
 
@@ -372,7 +372,7 @@ WebContents* Shell::OpenURLFromTab(WebContents* source,
                                  params.source_site_instance,
                                  gfx::Size());  // Use default size.
       target = new_window->web_contents();
-      if (switches::IsRunLayoutTestSwitchPresent())
+      if (switches::IsRunWebTestsSwitchPresent())
         SecondaryTestWindowObserver::CreateForWebContents(target);
       break;
     }
@@ -434,7 +434,7 @@ void Shell::ToggleFullscreenModeForTab(WebContents* web_contents,
 #if defined(OS_ANDROID)
   PlatformToggleFullscreenModeForTab(web_contents, enter_fullscreen);
 #endif
-  if (!switches::IsRunLayoutTestSwitchPresent())
+  if (!switches::IsRunWebTestsSwitchPresent())
     return;
   if (is_fullscreen_ != enter_fullscreen) {
     is_fullscreen_ = enter_fullscreen;
@@ -487,7 +487,7 @@ void Shell::DidNavigateMainFramePostCommit(WebContents* web_contents) {
 JavaScriptDialogManager* Shell::GetJavaScriptDialogManager(
     WebContents* source) {
   if (!dialog_manager_) {
-    dialog_manager_.reset(switches::IsRunLayoutTestSwitchPresent()
+    dialog_manager_.reset(switches::IsRunWebTestsSwitchPresent()
                               ? new LayoutTestJavaScriptDialogManager
                               : new ShellJavaScriptDialogManager);
   }
@@ -498,7 +498,7 @@ std::unique_ptr<BluetoothChooser> Shell::RunBluetoothChooser(
     RenderFrameHost* frame,
     const BluetoothChooser::EventHandler& event_handler) {
   BlinkTestController* blink_test_controller = BlinkTestController::Get();
-  if (blink_test_controller && switches::IsRunLayoutTestSwitchPresent())
+  if (blink_test_controller && switches::IsRunWebTestsSwitchPresent())
     return blink_test_controller->RunBluetoothChooser(frame, event_handler);
   return nullptr;
 }
@@ -508,13 +508,13 @@ bool Shell::DidAddMessageToConsole(WebContents* source,
                                    const base::string16& message,
                                    int32_t line_no,
                                    const base::string16& source_id) {
-  return switches::IsRunLayoutTestSwitchPresent();
+  return switches::IsRunWebTestsSwitchPresent();
 }
 
 void Shell::RendererUnresponsive(WebContents* source,
                                  RenderWidgetHost* render_widget_host) {
   BlinkTestController* blink_test_controller = BlinkTestController::Get();
-  if (blink_test_controller && switches::IsRunLayoutTestSwitchPresent())
+  if (blink_test_controller && switches::IsRunWebTestsSwitchPresent())
     blink_test_controller->RendererUnresponsive();
 }
 
@@ -529,9 +529,7 @@ bool Shell::ShouldAllowRunningInsecureContent(
     const GURL& resource_url) {
   bool allowed_by_test = false;
   BlinkTestController* blink_test_controller = BlinkTestController::Get();
-  if (blink_test_controller &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kRunLayoutTest)) {
+  if (blink_test_controller && switches::IsRunWebTestsSwitchPresent()) {
     const base::DictionaryValue& test_flags =
         blink_test_controller->accumulated_layout_test_runtime_flags_changes();
     test_flags.GetBoolean("running_insecure_content_allowed", &allowed_by_test);

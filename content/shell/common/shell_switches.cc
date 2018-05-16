@@ -58,9 +58,9 @@ std::vector<std::string> GetSideloadFontFiles() {
   return files;
 }
 
-bool IsRunLayoutTestSwitchPresent() {
+bool IsRunWebTestsSwitchPresent() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kRunLayoutTest);
+      switches::kRunWebTests);
 }
 
 }  // namespace switches

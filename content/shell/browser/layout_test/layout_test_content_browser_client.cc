@@ -178,7 +178,7 @@ void LayoutTestContentBrowserClient::OverrideWebkitPrefs(
 void LayoutTestContentBrowserClient::AppendExtraCommandLineSwitches(
     base::CommandLine* command_line,
     int child_process_id) {
-  command_line->AppendSwitch(switches::kRunLayoutTest);
+  command_line->AppendSwitch(switches::kRunWebTests);
   ShellContentBrowserClient::AppendExtraCommandLineSwitches(command_line,
                                                             child_process_id);
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

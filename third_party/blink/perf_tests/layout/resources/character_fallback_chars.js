@@ -1,8 +1,8 @@
 // This list of supported unicode characters was extracted from the Linux
-// content_shell font configuration, when in --run-layout-test mode in
-// Linux. It spans the list of 36 default configured fonts for running layout
-// tests and is intended as a good approximation of the coverage of installed
-// fonts on a regular system.
+// content_shell font configuration, when in --run-web-tests mode in Linux. It
+// spans the list of 36 default configured fonts for running layout tests and is
+// intended as a good approximation of the coverage of installed fonts on a
+// regular system.
 
 charsSupportedByNFonts = [];
 

@@ -278,7 +278,7 @@ def RunDrtTask(url):
 
   with open(os.devnull, "w") as fnull:
     p = subprocess.Popen([content_shell,
-                          "--run-layout-test",
+                          "--run-web-tests",
                           additional_content_shell_flags,
                           # The single quote is not a typo, it's a separator!
                           html_path + "'--pixel-test"

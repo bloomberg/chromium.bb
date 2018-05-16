@@ -4,6 +4,8 @@
 
 #include "content/shell/app/shell_main_delegate.h"
 
+#include <iostream>
+
 #include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/cpu.h"
@@ -179,7 +181,14 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     }
   }
 
-  if (command_line.HasSwitch(switches::kRunLayoutTest)) {
+  if (command_line.HasSwitch("run-layout-test")) {
+    std::cerr << "The switch --run-layout-test is obsolete. Please use --"
+              << switches::kRunWebTests << " instead.\n";
+    *exit_code = 1;
+    return true;
+  }
+
+  if (command_line.HasSwitch(switches::kRunWebTests)) {
     EnableBrowserLayoutTestMode();
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -265,8 +274,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
     }
   }
 
-  content_client_.reset(base::CommandLine::ForCurrentProcess()->HasSwitch(
-                            switches::kRunLayoutTest)
+  content_client_.reset(switches::IsRunWebTestsSwitchPresent()
                             ? new LayoutTestContentClient
                             : new ShellContentClient);
   SetContentClient(content_client_.get());
@@ -329,7 +337,7 @@ int ShellMainDelegate::RunProcess(
 
   browser_runner_.reset(BrowserMainRunner::Create());
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kRunLayoutTest) ||
+  return command_line.HasSwitch(switches::kRunWebTests) ||
                  command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)
              ? LayoutTestBrowserMain(main_function_params, browser_runner_)
              : ShellBrowserMain(main_function_params, browser_runner_);
@@ -390,8 +398,7 @@ void ShellMainDelegate::InitializeResourceBundle() {
 }
 
 ContentBrowserClient* ShellMainDelegate::CreateContentBrowserClient() {
-  browser_client_.reset(base::CommandLine::ForCurrentProcess()->HasSwitch(
-                            switches::kRunLayoutTest)
+  browser_client_.reset(switches::IsRunWebTestsSwitchPresent()
                             ? new LayoutTestContentBrowserClient
                             : new ShellContentBrowserClient);
 
@@ -404,8 +411,7 @@ ContentGpuClient* ShellMainDelegate::CreateContentGpuClient() {
 }
 
 ContentRendererClient* ShellMainDelegate::CreateContentRendererClient() {
-  renderer_client_.reset(base::CommandLine::ForCurrentProcess()->HasSwitch(
-                             switches::kRunLayoutTest)
+  renderer_client_.reset(switches::IsRunWebTestsSwitchPresent()
                              ? new LayoutTestContentRendererClient
                              : new ShellContentRendererClient);
 

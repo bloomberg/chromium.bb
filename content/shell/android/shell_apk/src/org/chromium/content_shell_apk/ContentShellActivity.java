@@ -34,8 +34,8 @@ public class ContentShellActivity extends Activity {
     private static final String ACTIVE_SHELL_URL_KEY = "activeUrl";
     public static final String COMMAND_LINE_ARGS_KEY = "commandLineArgs";
 
-    // Native switch - shell_switches::kRunLayoutTest
-    private static final String RUN_LAYOUT_TEST_SWITCH = "run-layout-test";
+    // Native switch - shell_switches::kRunWebTests
+    private static final String RUN_WEB_TESTS_SWITCH = "run-web-tests";
 
     private ShellManager mShellManager;
     private ActivityWindowAndroid mWindowAndroid;
@@ -83,7 +83,7 @@ public class ContentShellActivity extends Activity {
             mShellManager.setStartupUrl(Shell.sanitizeUrl(mStartupUrl));
         }
 
-        if (CommandLine.getInstance().hasSwitch(RUN_LAYOUT_TEST_SWITCH)) {
+        if (CommandLine.getInstance().hasSwitch(RUN_WEB_TESTS_SWITCH)) {
             try {
                 BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .startBrowserProcessesSync(false);

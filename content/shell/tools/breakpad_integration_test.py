@@ -29,7 +29,7 @@ def run_test(options, crash_dir, additional_arguments = []):
 
   print "# Run content_shell and make it crash."
   cmd = [options.binary,
-         '--run-layout-test',
+         '--run-web-tests',
          'chrome://crash',
          '--enable-crash-reporter',
          '--crash-dumps-dir=%s' % crash_dir]
