@@ -56,59 +56,59 @@ layer at (8,163) size 784x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (8,318) size 784x2 clip at (0,0) size 0x0
   LayoutNGBlockFlow {HR} at (0,155) size 784x2 [border: (1px inset #EEEEEE)]
-hidden layer at (8,194) size 0x134
-  LayoutNGBlockFlow (positioned) {DIV} at (8,193.91) size 0x134
-    LayoutTable {TABLE} at (0,0) size 66x134
-      LayoutTableSection {TBODY} at (0,0) size 66x134
-        LayoutTableRow {TR} at (0,2) size 66x42
-          LayoutNGTableCell {TD} at (2,12) size 6x22 [r=0 c=0 rs=1 cs=1]
+hidden layer at (8,194) size 103x134
+  LayoutNGBlockFlow (positioned) {DIV} at (8,193.91) size 103x134
+    LayoutTable {TABLE} at (0,0) size 103x134
+      LayoutTableSection {TBODY} at (0,0) size 103x134
+        LayoutTableRow {TR} at (0,2) size 103x42
+          LayoutNGTableCell {TD} at (2,12) size 32x22 [r=0 c=0 rs=1 cs=1]
             LayoutText {#text} at (1,11) size 4x19
               text run at (1,11) width 4: " "
-          LayoutNGTableCell {TD} at (10,2) size 54x42 [r=0 c=1 rs=1 cs=1]
+          LayoutNGTableCell {TD} at (36,2) size 65x42 [r=0 c=1 rs=1 cs=1]
             LayoutText {#text} at (1,1) size 42x39
               text run at (1,1) width 42: "This is"
               text run at (1,21) width 19: "the"
-        LayoutTableRow {TR} at (0,46) size 66x42
-          LayoutNGTableCell {TD} at (2,56) size 6x22 [r=1 c=0 rs=1 cs=1]
+        LayoutTableRow {TR} at (0,46) size 103x42
+          LayoutNGTableCell {TD} at (2,56) size 32x22 [r=1 c=0 rs=1 cs=1]
             LayoutText {#text} at (1,11) size 4x19
               text run at (1,11) width 4: " "
-          LayoutNGTableCell {TD} at (10,46) size 54x42 [r=1 c=1 rs=1 cs=1]
+          LayoutNGTableCell {TD} at (36,46) size 65x42 [r=1 c=1 rs=1 cs=1]
             LayoutText {#text} at (1,1) size 52x39
               text run at (1,1) width 52: "contents"
               text run at (1,21) width 13: "of"
-        LayoutTableRow {TR} at (0,90) size 66x42
-          LayoutNGTableCell {TD} at (2,100) size 6x22 [r=2 c=0 rs=1 cs=1]
+        LayoutTableRow {TR} at (0,90) size 103x42
+          LayoutNGTableCell {TD} at (2,100) size 32x22 [r=2 c=0 rs=1 cs=1]
             LayoutText {#text} at (1,11) size 4x19
               text run at (1,11) width 4: " "
-          LayoutNGTableCell {TD} at (10,90) size 54x42 [r=2 c=1 rs=1 cs=1]
+          LayoutNGTableCell {TD} at (36,90) size 65x42 [r=2 c=1 rs=1 cs=1]
             LayoutText {#text} at (1,1) size 35x39
               text run at (1,1) width 35: "block"
               text run at (1,21) width 27: "one."
-hidden layer at (8,215) size 0x134
-  LayoutNGBlockFlow (positioned) {DIV} at (8,214.91) size 0x134
-    LayoutTable {TABLE} at (0,0) size 66x134
-      LayoutTableSection {TBODY} at (0,0) size 66x134
-        LayoutTableRow {TR} at (0,2) size 66x42
-          LayoutNGTableCell {TD} at (2,12) size 6x22 [r=0 c=0 rs=1 cs=1]
+hidden layer at (8,215) size 103x134
+  LayoutNGBlockFlow (positioned) {DIV} at (8,214.91) size 103x134
+    LayoutTable {TABLE} at (0,0) size 103x134
+      LayoutTableSection {TBODY} at (0,0) size 103x134
+        LayoutTableRow {TR} at (0,2) size 103x42
+          LayoutNGTableCell {TD} at (2,12) size 32x22 [r=0 c=0 rs=1 cs=1]
             LayoutText {#text} at (1,11) size 4x19
               text run at (1,11) width 4: " "
-          LayoutNGTableCell {TD} at (10,2) size 54x42 [r=0 c=1 rs=1 cs=1]
+          LayoutNGTableCell {TD} at (36,2) size 65x42 [r=0 c=1 rs=1 cs=1]
             LayoutText {#text} at (1,1) size 42x39
               text run at (1,1) width 42: "This is"
               text run at (1,21) width 19: "the"
-        LayoutTableRow {TR} at (0,46) size 66x42
-          LayoutNGTableCell {TD} at (2,56) size 6x22 [r=1 c=0 rs=1 cs=1]
+        LayoutTableRow {TR} at (0,46) size 103x42
+          LayoutNGTableCell {TD} at (2,56) size 32x22 [r=1 c=0 rs=1 cs=1]
             LayoutText {#text} at (1,11) size 4x19
               text run at (1,11) width 4: " "
-          LayoutNGTableCell {TD} at (10,46) size 54x42 [r=1 c=1 rs=1 cs=1]
+          LayoutNGTableCell {TD} at (36,46) size 65x42 [r=1 c=1 rs=1 cs=1]
             LayoutText {#text} at (1,1) size 52x39
               text run at (1,1) width 52: "contents"
               text run at (1,21) width 13: "of"
-        LayoutTableRow {TR} at (0,90) size 66x42
-          LayoutNGTableCell {TD} at (2,100) size 6x22 [r=2 c=0 rs=1 cs=1]
+        LayoutTableRow {TR} at (0,90) size 103x42
+          LayoutNGTableCell {TD} at (2,100) size 32x22 [r=2 c=0 rs=1 cs=1]
             LayoutText {#text} at (1,11) size 4x19
               text run at (1,11) width 4: " "
-          LayoutNGTableCell {TD} at (10,90) size 54x42 [r=2 c=1 rs=1 cs=1]
+          LayoutNGTableCell {TD} at (36,90) size 65x42 [r=2 c=1 rs=1 cs=1]
             LayoutText {#text} at (1,1) size 35x39
               text run at (1,1) width 35: "block"
               text run at (1,21) width 28: "two."

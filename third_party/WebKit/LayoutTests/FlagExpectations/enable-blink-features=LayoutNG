@@ -30,6 +30,8 @@ crbug.com/594672 virtual/mouseevent_fractional/fast/events/updateLayoutForHitTes
 # New passes
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-due-to-large-margin-after-left-right.html [ Pass ]
+crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-004.html [ Pass ]
+crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-005.html [ Pass ]
 crbug.com/626703 external/wpt/css/css-ui/text-overflow-021.html [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-003.xht [ Pass ]
 crbug.com/492664 external/wpt/css/css-writing-modes/inline-block-alignment-005.xht [ Pass ]
@@ -383,8 +385,6 @@ crbug.com/591099 external/wpt/css/css-shapes/spec-examples/shape-outside-016.htm
 crbug.com/591099 external/wpt/css/css-shapes/spec-examples/shape-outside-017.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-shapes/spec-examples/shape-outside-018.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-shapes/spec-examples/shape-outside-019.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-001.html [ Failure ]
-crbug.com/591099 external/wpt/css/css-sizing/intrinsic-percent-non-replaced-003.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-tables/height-distribution/percentage-sizing-of-table-cell-children.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-tables/table-model-fixup-2.html [ Failure ]
 crbug.com/591099 external/wpt/css/css-tables/width-distribution/td-with-subpixel-padding-vertical-rl.html [ Failure ]

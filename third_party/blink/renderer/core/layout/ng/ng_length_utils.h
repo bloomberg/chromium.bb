@@ -21,6 +21,16 @@ class NGConstraintSpace;
 class NGBlockNode;
 class NGLayoutInputNode;
 
+// LengthResolvePhase indicates what type of layout pass we are currently in.
+// This changes how lengths are resolved. kIntrinsic must be used during the
+// intrinsic sizes pass, and kLayout must be used during the layout pass.
+enum class LengthResolvePhase { kIntrinsic, kLayout };
+
+// LengthResolveType indicates what type length the function is being passed
+// based on its CSS property. E.g.
+// kMinSize - min-width / min-height
+// kMaxSize - max-width / max-height
+// kContentSize - width / height
 enum class LengthResolveType { kMinSize, kMaxSize, kContentSize };
 
 // Whether the caller needs to compute min-content and max-content sizes to
@@ -45,7 +55,8 @@ CORE_EXPORT LayoutUnit ResolveInlineLength(const NGConstraintSpace&,
                                            const ComputedStyle&,
                                            const base::Optional<MinMaxSize>&,
                                            const Length&,
-                                           LengthResolveType);
+                                           LengthResolveType,
+                                           LengthResolvePhase);
 
 // Convert a block-axis length to a layout unit using the given constraint
 // space and content size.
@@ -53,7 +64,8 @@ CORE_EXPORT LayoutUnit ResolveBlockLength(const NGConstraintSpace&,
                                           const ComputedStyle&,
                                           const Length&,
                                           LayoutUnit content_size,
-                                          LengthResolveType);
+                                          LengthResolveType,
+                                          LengthResolvePhase);
 
 // Convert margin/border/padding length to a layout unit using the
 // given constraint space.
@@ -163,8 +175,8 @@ CORE_EXPORT LayoutUnit LineOffsetForTextAlign(ETextAlign,
                                               LayoutUnit trailing_spaces_width);
 
 CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
-                                         base::Optional<LayoutUnit> min,
-                                         base::Optional<LayoutUnit> max);
+                                         LayoutUnit min,
+                                         LayoutUnit max);
 
 NGBoxStrut CalculateBorderScrollbarPadding(
     const NGConstraintSpace& constraint_space,

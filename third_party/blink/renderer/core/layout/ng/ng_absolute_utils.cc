@@ -51,27 +51,30 @@ LayoutUnit ResolveWidth(const Length& width,
                         const NGConstraintSpace& space,
                         const ComputedStyle& style,
                         const base::Optional<MinMaxSize>& child_minmax,
-                        LengthResolveType resolve_type) {
-  if (space.GetWritingMode() == WritingMode::kHorizontalTb)
-    return ResolveInlineLength(space, style, child_minmax, width, resolve_type);
+                        LengthResolveType type) {
+  if (space.GetWritingMode() == WritingMode::kHorizontalTb) {
+    return ResolveInlineLength(space, style, child_minmax, width, type,
+                               LengthResolvePhase::kLayout);
+  }
   LayoutUnit computed_width =
       child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
-  return ResolveBlockLength(space, style, style.Width(), computed_width,
-                            resolve_type);
+  return ResolveBlockLength(space, style, width, computed_width, type,
+                            LengthResolvePhase::kLayout);
 }
 
 LayoutUnit ResolveHeight(const Length& height,
                          const NGConstraintSpace& space,
                          const ComputedStyle& style,
                          const base::Optional<MinMaxSize>& child_minmax,
-                         LengthResolveType resolve_type) {
-  if (space.GetWritingMode() != WritingMode::kHorizontalTb)
-    return ResolveInlineLength(space, style, child_minmax, height,
-                               resolve_type);
+                         LengthResolveType type) {
+  if (space.GetWritingMode() != WritingMode::kHorizontalTb) {
+    return ResolveInlineLength(space, style, child_minmax, height, type,
+                               LengthResolvePhase::kLayout);
+  }
   LayoutUnit computed_height =
       child_minmax.has_value() ? child_minmax->max_size : LayoutUnit();
-  return ResolveBlockLength(space, style, height, computed_height,
-                            resolve_type);
+  return ResolveBlockLength(space, style, height, computed_height, type,
+                            LengthResolvePhase::kLayout);
 }
 
 // Available size can is maximum length Element can have without overflowing
@@ -282,16 +285,12 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
 
   // If calculated width is outside of min/max constraints,
   // rerun the algorithm with constrained width.
-  base::Optional<LayoutUnit> min_width;
-  if (!style.MinWidth().IsAuto())
-    min_width = ResolveWidth(style.MinWidth(), space, style, child_minmax,
-                             LengthResolveType::kMinSize);
-  base::Optional<LayoutUnit> max_width;
-  if (!style.MaxWidth().IsMaxSizeNone())
-    max_width = ResolveWidth(style.MaxWidth(), space, style, child_minmax,
-                             LengthResolveType::kMaxSize);
-  if (width != ConstrainByMinMax(*width, min_width, max_width)) {
-    width = ConstrainByMinMax(*width, min_width, max_width);
+  LayoutUnit min = ResolveWidth(style.MinWidth(), space, style, child_minmax,
+                                LengthResolveType::kMinSize);
+  LayoutUnit max = ResolveWidth(style.MaxWidth(), space, style, child_minmax,
+                                LengthResolveType::kMaxSize);
+  if (width != ConstrainByMinMax(*width, min, max)) {
+    width = ConstrainByMinMax(*width, min, max);
     // Because this function only changes "width" when it's not already
     // set, it is safe to recursively call ourselves here because on the
     // second call it is guaranteed to be within min..max.
@@ -450,16 +449,12 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
   }
   // If calculated height is outside of min/max constraints,
   // rerun the algorithm with constrained width.
-  base::Optional<LayoutUnit> min_height;
-  if (!style.MinHeight().IsAuto())
-    min_height = ResolveHeight(style.MinHeight(), space, style, child_minmax,
-                               LengthResolveType::kMinSize);
-  base::Optional<LayoutUnit> max_height;
-  if (!style.MaxHeight().IsMaxSizeNone())
-    max_height = ResolveHeight(style.MaxHeight(), space, style, child_minmax,
-                               LengthResolveType::kMaxSize);
-  if (height != ConstrainByMinMax(*height, min_height, max_height)) {
-    height = ConstrainByMinMax(*height, min_height, max_height);
+  LayoutUnit min = ResolveHeight(style.MinHeight(), space, style, child_minmax,
+                                 LengthResolveType::kMinSize);
+  LayoutUnit max = ResolveHeight(style.MaxHeight(), space, style, child_minmax,
+                                 LengthResolveType::kMaxSize);
+  if (height != ConstrainByMinMax(*height, min, max)) {
+    height = ConstrainByMinMax(*height, min, max);
     // Because this function only changes "height" when it's not already
     // set, it is safe to recursively call ourselves here because on the
     // second call it is guaranteed to be within min..max.
