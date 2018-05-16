@@ -65,10 +65,8 @@ void SurfaceLayerBridge::CreateSolidColorLayer() {
   cc_layer_ = cc::SolidColorLayer::Create();
   cc_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
-  web_layer_ = std::make_unique<WebLayer>(cc_layer_.get());
-
   if (observer_)
-    observer_->RegisterContentsLayer(web_layer_.get());
+    observer_->RegisterContentsLayer(cc_layer_.get());
 }
 
 void SurfaceLayerBridge::OnFirstSurfaceActivation(
@@ -76,10 +74,10 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
   if (!current_surface_id_.is_valid() && surface_info.is_valid()) {
     // First time a SurfaceId is received.
     current_surface_id_ = surface_info.id();
-    if (web_layer_) {
+    if (cc_layer_) {
       if (observer_)
-        observer_->UnregisterContentsLayer(web_layer_.get());
-      web_layer_->RemoveFromParent();
+        observer_->UnregisterContentsLayer(cc_layer_.get());
+      cc_layer_->RemoveFromParent();
     }
 
     scoped_refptr<cc::SurfaceLayer> surface_layer = cc::SurfaceLayer::Create();
@@ -90,9 +88,8 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
     surface_layer->SetIsDrawable(true);
     cc_layer_ = surface_layer;
 
-    web_layer_ = std::make_unique<WebLayer>(cc_layer_.get());
     if (observer_)
-      observer_->RegisterContentsLayer(web_layer_.get());
+      observer_->RegisterContentsLayer(cc_layer_.get());
   } else if (current_surface_id_ != surface_info.id()) {
     // A different SurfaceId is received, prompting change to existing
     // SurfaceLayer.

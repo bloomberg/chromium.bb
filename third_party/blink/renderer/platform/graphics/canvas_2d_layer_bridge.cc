@@ -100,7 +100,6 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
   BeginDestruction();
   DCHECK(destruction_in_progress_);
   if (layer_) {
-    web_layer_ = nullptr;
     layer_->ClearClient();
     layer_ = nullptr;
   }
@@ -308,8 +307,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
     layer_->SetContentsOpaque(ColorParams().GetOpacityMode() == kOpaque);
     layer_->SetBlendBackgroundColor(ColorParams().GetOpacityMode() != kOpaque);
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
-    web_layer_ = std::make_unique<WebLayer>(layer_.get());
-    GraphicsLayer::RegisterContentsLayer(web_layer_.get());
+    GraphicsLayer::RegisterContentsLayer(layer_.get());
   }
 
   if (resource_provider_ && IsHibernating()) {
@@ -401,7 +399,7 @@ void Canvas2DLayerBridge::BeginDestruction() {
   ResetResourceProvider();
 
   if (layer_ && acceleration_mode_ != kDisableAcceleration) {
-    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
+    GraphicsLayer::UnregisterContentsLayer(layer_.get());
     layer_->ClearTexture();
     // Orphaning the layer is required to trigger the recration of a new layer
     // in the case where destruction is caused by a canvas resize. Test:
@@ -659,7 +657,7 @@ WebLayer* Canvas2DLayerBridge::Layer() {
   DCHECK(!destruction_in_progress_);
   // Trigger lazy layer creation
   GetOrCreateResourceProvider(kPreferAcceleration);
-  return web_layer_.get();
+  return layer_.get();
 }
 
 void Canvas2DLayerBridge::DidDraw(const FloatRect& rect) {

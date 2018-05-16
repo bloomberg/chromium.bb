@@ -47,7 +47,6 @@ PaintArtifactCompositor::PaintArtifactCompositor(
       !RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
     return;
   root_layer_ = cc::Layer::Create();
-  web_layer_ = std::make_unique<WebLayer>(root_layer_.get());
 }
 
 PaintArtifactCompositor::~PaintArtifactCompositor() {
@@ -836,15 +835,10 @@ void PaintArtifactCompositor::Update(
 #endif
 }
 
-std::unique_ptr<WebLayer>
-PaintArtifactCompositor::ExtraDataForTesting::ContentWebLayerAt(
-    unsigned index) {
-  return std::make_unique<WebLayer>(content_layers[index].get());
-}
-std::unique_ptr<WebLayer>
+cc::Layer*
 PaintArtifactCompositor::ExtraDataForTesting::ScrollHitTestWebLayerAt(
     unsigned index) {
-  return std::make_unique<WebLayer>(scroll_hit_test_layers[index].get());
+  return scroll_hit_test_layers[index].get();
 }
 
 #if DCHECK_IS_ON()

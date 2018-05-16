@@ -1365,18 +1365,16 @@ namespace {
 class CompositedPlugin : public FakeWebPlugin {
  public:
   explicit CompositedPlugin(const WebPluginParams& params)
-      : FakeWebPlugin(params),
-        layer_(cc::Layer::Create()),
-        web_layer_(std::make_unique<WebLayer>(layer_.get())) {}
+      : FakeWebPlugin(params), layer_(cc::Layer::Create()) {}
 
-  WebLayer* GetWebLayer() const { return web_layer_.get(); }
+  WebLayer* GetWebLayer() const { return layer_.get(); }
 
   // WebPlugin
 
   bool Initialize(WebPluginContainer* container) override {
     if (!FakeWebPlugin::Initialize(container))
       return false;
-    container->SetWebLayer(web_layer_.get(), false);
+    container->SetWebLayer(layer_.get(), false);
     return true;
   }
 
@@ -1389,7 +1387,6 @@ class CompositedPlugin : public FakeWebPlugin {
   ~CompositedPlugin() override = default;
 
   scoped_refptr<cc::Layer> layer_;
-  std::unique_ptr<WebLayer> web_layer_;
 };
 
 }  // namespace
@@ -1426,8 +1423,7 @@ TEST_F(WebPluginContainerTest, CompositedPluginSPv2) {
   ASSERT_EQ(DisplayItem::kForeignLayerPlugin, display_items[0].GetType());
   const auto& foreign_layer_display_item =
       static_cast<const ForeignLayerDisplayItem&>(display_items[0]);
-  EXPECT_EQ(plugin->GetWebLayer()->CcLayer(),
-            foreign_layer_display_item.GetLayer());
+  EXPECT_EQ(plugin->GetWebLayer(), foreign_layer_display_item.GetLayer());
 }
 
 TEST_F(WebPluginContainerTest, NeedsWheelEvents) {

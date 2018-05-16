@@ -262,7 +262,6 @@ class CONTENT_EXPORT WebMediaPlayerMS
   scoped_refptr<MediaStreamVideoRenderer> video_frame_provider_;  // Weak
 
   scoped_refptr<cc::VideoLayer> video_layer_;
-  std::unique_ptr<blink::WebLayer> video_weblayer_;
 
   scoped_refptr<MediaStreamAudioRenderer> audio_renderer_;  // Weak
   media::PaintCanvasVideoRenderer video_renderer_;

@@ -90,7 +90,6 @@ class PLATFORM_EXPORT ImageLayerBridge
 
   scoped_refptr<StaticBitmapImage> image_;
   scoped_refptr<cc::TextureLayer> layer_;
-  std::unique_ptr<WebLayer> web_layer_;  // Wrapper for |layer_|.
   SkFilterQuality filter_quality_ = kLow_SkFilterQuality;
 
   // SharedMemory bitmaps that can be recycled.

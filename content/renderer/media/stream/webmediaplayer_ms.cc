@@ -1011,11 +1011,9 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
       cc::VideoLayer::Create(compositor_.get(), video_rotation);
   new_video_layer->SetContentsOpaque(is_opaque);
 
-  auto new_weblayer = std::make_unique<blink::WebLayer>(new_video_layer.get());
-  get_client()->SetWebLayer(new_weblayer.get());
+  get_client()->SetWebLayer(new_video_layer.get());
 
   video_layer_ = std::move(new_video_layer);
-  video_weblayer_ = std::move(new_weblayer);
 }
 
 void WebMediaPlayerMS::RepaintInternal() {

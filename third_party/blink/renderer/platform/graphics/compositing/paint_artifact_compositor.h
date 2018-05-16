@@ -70,15 +70,14 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
 
   // Wraps rootLayer(), so that it can be attached as a child of another
   // WebLayer.
-  WebLayer* GetWebLayer() const { return web_layer_.get(); }
+  WebLayer* GetWebLayer() const { return root_layer_.get(); }
 
   // Returns extra information recorded during unit tests.
   // While not part of the normal output of this class, this provides a simple
   // way of locating the layers of interest, since there are still a slew of
   // placeholder layers required.
   struct PLATFORM_EXPORT ExtraDataForTesting {
-    std::unique_ptr<WebLayer> ContentWebLayerAt(unsigned index);
-    std::unique_ptr<WebLayer> ScrollHitTestWebLayerAt(unsigned index);
+    cc::Layer* ScrollHitTestWebLayerAt(unsigned index);
 
     Vector<scoped_refptr<cc::Layer>> content_layers;
     Vector<scoped_refptr<cc::Layer>> synthesized_clip_layers;
@@ -211,7 +210,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   bool tracks_raster_invalidations_;
 
   scoped_refptr<cc::Layer> root_layer_;
-  std::unique_ptr<WebLayer> web_layer_;
   Vector<std::unique_ptr<ContentLayerClientImpl>> content_layer_clients_;
   struct SynthesizedClipEntry {
     const ClipPaintPropertyNode* key;

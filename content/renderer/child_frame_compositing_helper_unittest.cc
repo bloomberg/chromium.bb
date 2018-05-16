@@ -20,19 +20,17 @@ class MockChildFrameCompositor : public ChildFrameCompositor {
     sad_page_bitmap_.allocN32Pixels(width, height);
   }
 
-  blink::WebLayer* GetLayer() override { return web_layer_.get(); }
+  blink::WebLayer* GetLayer() override { return layer_.get(); }
 
   void SetLayer(scoped_refptr<cc::Layer> layer,
                 bool prevent_contents_opaque_changes) override {
     layer_ = std::move(layer);
-    web_layer_ = std::make_unique<blink::WebLayer>(layer_.get());
   }
 
   SkBitmap* GetSadPageBitmap() override { return &sad_page_bitmap_; }
 
  private:
   scoped_refptr<cc::Layer> layer_;
-  std::unique_ptr<blink::WebLayer> web_layer_;
   SkBitmap sad_page_bitmap_;
 
   DISALLOW_COPY_AND_ASSIGN(MockChildFrameCompositor);

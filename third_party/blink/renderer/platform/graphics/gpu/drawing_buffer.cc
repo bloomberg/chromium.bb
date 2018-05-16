@@ -190,7 +190,6 @@ DrawingBuffer::~DrawingBuffer() {
   DCHECK(destruction_in_progress_);
   SwapPreviousFrameCallback(nullptr);
   if (layer_) {
-    web_layer_ = nullptr;
     layer_->ClearClient();
     layer_ = nullptr;
   }
@@ -898,11 +897,10 @@ WebLayer* DrawingBuffer::PlatformLayer() {
                                   premultiplied_alpha_false_texture_);
     layer_->SetNearestNeighbor(filter_quality_ == kNone_SkFilterQuality);
 
-    web_layer_ = std::make_unique<WebLayer>(layer_.get());
-    GraphicsLayer::RegisterContentsLayer(web_layer_.get());
+    GraphicsLayer::RegisterContentsLayer(layer_.get());
   }
 
-  return web_layer_.get();
+  return layer_.get();
 }
 
 void DrawingBuffer::ClearPlatformLayer() {
@@ -947,7 +945,7 @@ void DrawingBuffer::BeginDestruction() {
   fbo_ = 0;
 
   if (layer_)
-    GraphicsLayer::UnregisterContentsLayer(web_layer_.get());
+    GraphicsLayer::UnregisterContentsLayer(layer_.get());
 
   client_ = nullptr;
 }

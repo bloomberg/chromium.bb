@@ -68,7 +68,7 @@ void RecordForeignLayer(GraphicsContext& context,
     return;
 
   paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
-      client, type, web_layer->CcLayer(), location, bounds);
+      client, type, web_layer, location, bounds);
 }
 
 }  // namespace blink

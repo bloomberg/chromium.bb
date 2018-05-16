@@ -219,7 +219,7 @@ void BrowserPlugin::Detach() {
 
   attached_ = false;
   guest_crashed_ = false;
-  web_layer_ = nullptr;
+  embedded_layer_ = nullptr;
 
   BrowserPluginManager::Get()->Send(
       new BrowserPluginHostMsg_Detach(browser_plugin_instance_id_));
@@ -857,18 +857,14 @@ void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(
 #endif
 
 blink::WebLayer* BrowserPlugin::GetLayer() {
-  return web_layer_.get();
+  return embedded_layer_.get();
 }
 
 void BrowserPlugin::SetLayer(scoped_refptr<cc::Layer> layer,
                              bool prevent_contents_opaque_changes) {
-  auto web_layer = std::make_unique<blink::WebLayer>(layer.get());
-
-  if (container_) {
-    container_->SetWebLayer(web_layer.get(), prevent_contents_opaque_changes);
-  }
+  if (container_)
+    container_->SetWebLayer(layer.get(), prevent_contents_opaque_changes);
   embedded_layer_ = std::move(layer);
-  web_layer_ = std::move(web_layer);
 }
 
 SkBitmap* BrowserPlugin::GetSadPageBitmap() {

@@ -103,9 +103,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   bool ComputeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
 
   scoped_refptr<cc::PictureLayer> content_layer_;
-  std::unique_ptr<WebLayer> web_content_layer_;  // Wraps |content_layer_|.
   scoped_refptr<cc::Layer> clip_layer_;
-  std::unique_ptr<WebLayer> web_clip_layer_;
   Path path_;
 
   Persistent<Node> node_;
