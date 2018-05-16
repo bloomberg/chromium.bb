@@ -83,6 +83,7 @@ public class FeedbackCollector implements Runnable {
         sources.add(new LowEndDeviceFeedbackSource());
         sources.add(new IMEFeedbackSource());
         sources.add(new PermissionFeedbackSource());
+        sources.add(new SimplifiedNtpFeedbackSource());
 
         // Sanity check in case a source is added to the wrong list.
         for (FeedbackSource source : sources) {

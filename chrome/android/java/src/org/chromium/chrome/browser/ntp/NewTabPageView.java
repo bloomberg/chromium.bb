@@ -1027,9 +1027,7 @@ public class NewTabPageView
 
     private void initializeShortcuts() {
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SIMPLIFIED_NTP)
-                || ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
-                           ChromeFeatureList.SIMPLIFIED_NTP, PARAM_SIMPLIFIED_NTP_ABLATION,
-                           false)) {
+                || isSimplifiedNtpAblationEnabled()) {
             return;
         }
 
@@ -1043,5 +1041,14 @@ public class NewTabPageView
         mShortcutsView.findViewById(R.id.downloads_button)
                 .setOnClickListener(
                         view -> mManager.getNavigationDelegate().navigateToDownloadManager());
+    }
+
+    /**
+     * @return Whether the simplified NTP ablation experiment arm which removes the additional
+     *         suggestions sections without replacing them with shortcut buttons is enabled.
+     */
+    public static boolean isSimplifiedNtpAblationEnabled() {
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.SIMPLIFIED_NTP, PARAM_SIMPLIFIED_NTP_ABLATION, false);
     }
 }
