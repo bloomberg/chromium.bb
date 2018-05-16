@@ -39,7 +39,6 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/shadow_value.h"
-#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
@@ -54,11 +53,6 @@ base::LazyInstance<gfx::ImageSkia>::DestructorAtExit g_bottom_shadow =
     LAZY_INSTANCE_INITIALIZER;
 
 constexpr int kPopupVerticalPadding = 4;
-
-bool IsNarrow() {
-  return LocationBarView::IsRounded() ||
-         base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown);
-}
 
 void InitializeWideShadows() {
   if (!g_top_shadow.Get().isNull()) {
@@ -221,7 +215,7 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
-  if (!IsNarrow())
+  if (!LocationBarView::IsRounded())
     InitializeWideShadows();
 
   for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
@@ -355,19 +349,6 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     child_at(i)->SetVisible(false);
 
   gfx::Rect new_target_bounds = UpdateMarginsAndGetTargetBounds();
-  if (IsNarrow() && !LocationBarView::IsRounded()) {
-    SkColor background_color =
-        GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, GetTint());
-    auto border = std::make_unique<views::BubbleBorder>(
-        views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
-        background_color);
-
-    // Outdent the popup to factor in the shadow size.
-    new_target_bounds.Inset(-border->GetInsets());
-
-    SetBackground(std::make_unique<views::BubbleBackground>(border.get()));
-    SetBorder(std::move(border));
-  }
 
   if (popup_) {
     popup_->SetTargetBounds(new_target_bounds);
@@ -489,36 +470,22 @@ gfx::Rect OmniboxPopupContentsView::UpdateMarginsAndGetTargetBounds() {
     return content_rect;
   }
 
-  int top_edge_overlap = 0;
-  // The popup itself may either be the same width as the contents, or as wide
-  // as the toolbar.
-  const bool narrow_popup = IsNarrow();
-  if (!narrow_popup) {
-    // We want the popup to appear to overlay the bottom of the toolbar. So we
-    // shift the popup to completely cover the client edge, and then draw an
-    // additional semitransparent shadow above that.
-    top_edge_overlap = g_top_shadow.Get().height() +
-                       views::NonClientFrameView::kClientEdgeThickness;
-  }
-
-  views::View* toolbar = location_bar_view_->parent();
+  // We want the popup to appear to overlay the bottom of the toolbar. So we
+  // shift the popup to completely cover the client edge, and then draw an
+  // additional semitransparent shadow above that.
+  int top_edge_overlap = g_top_shadow.Get().height() +
+                         views::NonClientFrameView::kClientEdgeThickness;
 
   // The popup contents are always sized matching the location bar size.
-  const int popup_contents_left = location_bar_view_->x();
-  const int popup_contents_right = location_bar_view_->bounds().right();
-  const int popup_left = narrow_popup ? popup_contents_left : 0;
-  const int popup_right =
-      narrow_popup ? popup_contents_right : toolbar->width();
-  const int width = popup_right - popup_left;
-
-  start_margin_ = popup_contents_left - popup_left;
-  end_margin_ = popup_right - popup_contents_right;
+  views::View* toolbar = location_bar_view_->parent();
+  start_margin_ = location_bar_view_->x();
+  end_margin_ = toolbar->width() - location_bar_view_->bounds().right();
 
   gfx::Point top_left_screen_coord =
-      gfx::Point(popup_left, toolbar->height() - top_edge_overlap);
+      gfx::Point(0, toolbar->height() - top_edge_overlap);
   views::View::ConvertPointToScreen(toolbar, &top_left_screen_coord);
   return gfx::Rect(top_left_screen_coord,
-                   gfx::Size(width, CalculatePopupHeight()));
+                   gfx::Size(toolbar->width(), CalculatePopupHeight()));
 }
 
 int OmniboxPopupContentsView::CalculatePopupHeight() {
@@ -607,7 +574,7 @@ const char* OmniboxPopupContentsView::GetClassName() const {
 }
 
 void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
-  if (IsNarrow()) {
+  if (LocationBarView::IsRounded()) {
     View::OnPaint(canvas);
     return;
   }
@@ -621,7 +588,7 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
 
 void OmniboxPopupContentsView::PaintChildren(
     const views::PaintInfo& paint_info) {
-  if (IsNarrow()) {
+  if (LocationBarView::IsRounded()) {
     View::PaintChildren(paint_info);
     return;
   }

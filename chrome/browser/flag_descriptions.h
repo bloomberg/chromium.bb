@@ -702,9 +702,6 @@ extern const char kOmniboxUIHideSteadyStateUrlSchemeAndSubdomainsDescription[];
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
-extern const char kOmniboxUINarrowDropdownName[];
-extern const char kOmniboxUINarrowDropdownDescription[];
-
 extern const char kOmniboxUIShowSuggestionFaviconsName[];
 extern const char kOmniboxUIShowSuggestionFaviconsDescription[];
 

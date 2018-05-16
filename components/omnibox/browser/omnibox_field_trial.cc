@@ -110,10 +110,6 @@ const base::Feature kUIExperimentHideSteadyStateUrlSchemeAndSubdomains{
     "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature used for the omnibox narrow suggestions dropdown UI experiment.
-const base::Feature kUIExperimentNarrowDropdown{
-    "OmniboxUIExperimentNarrowDropdown", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Feature used for showing the URL suggestion favicons as a UI experiment.
 const base::Feature kUIExperimentShowSuggestionFavicons{
     "OmniboxUIExperimentShowSuggestionFavicons",

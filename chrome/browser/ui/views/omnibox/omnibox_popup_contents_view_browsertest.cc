@@ -45,7 +45,7 @@
 
 namespace {
 
-enum PopupType { WIDE, NARROW, ROUNDED };
+enum PopupType { WIDE, ROUNDED };
 
 // A View that positions itself over another View to intercept clicks.
 class ClickTrackingOverlayView : public views::View {
@@ -90,8 +90,6 @@ std::string PrintPopupType(const testing::TestParamInfo<PopupType>& info) {
   switch (info.param) {
     case WIDE:
       return "Wide";
-    case NARROW:
-      return "Narrow";
     case ROUNDED:
       return "Rounded";
   }
@@ -116,10 +114,6 @@ class OmniboxPopupContentsViewTest
             switches::kTopChromeMD,
             switches::kTopChromeMDMaterialTouchOptimized);
         break;
-      case NARROW:
-        feature_list_.InitAndEnableFeature(
-            omnibox::kUIExperimentNarrowDropdown);
-        FALLTHROUGH;
       default:
         // Cater for the touch-optimized UI being enabled by default by always
         // setting --top-chrome-md=material (the current default).
@@ -177,11 +171,6 @@ IN_PROC_BROWSER_TEST_P(OmniboxPopupContentsViewTest, PopupAlignment) {
 
   if (GetParam() == WIDE) {
     EXPECT_EQ(toolbar()->width(), popup->GetRestoredBounds().width());
-  } else if (GetParam() == NARROW) {
-    // Inset for the views::BubbleBorder::SMALL_SHADOW.
-    gfx::Insets border_insets = popup_view()->GetInsets();
-    EXPECT_EQ(location_bar()->width() + border_insets.width(),
-              popup->GetRestoredBounds().width());
   } else {
     gfx::Rect alignment_rect = location_bar()->GetBoundsInScreen();
     alignment_rect.Inset(
@@ -458,7 +447,7 @@ IN_PROC_BROWSER_TEST_P(RoundedOmniboxPopupContentsViewTest,
 
 INSTANTIATE_TEST_CASE_P(,
                         OmniboxPopupContentsViewTest,
-                        ::testing::Values(WIDE, NARROW, ROUNDED),
+                        ::testing::Values(WIDE, ROUNDED),
                         &PrintPopupType);
 
 INSTANTIATE_TEST_CASE_P(,
