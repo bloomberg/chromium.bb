@@ -30,8 +30,6 @@
 namespace {
 
 const char kChromeVoxPanelRelativeUrl[] = "/cvox2/background/panel.html";
-const char kChromeVoxPanelBlockedUserSessionQuery[] =
-    "?blockedUserSession=true";
 const char kFullscreenURLFragment[] = "fullscreen";
 const char kDisableSpokenFeedbackURLFragment[] = "close";
 const char kFocusURLFragment[] = "focus";
@@ -72,19 +70,11 @@ class ChromeVoxPanel::ChromeVoxPanelWebContentsObserver
   DISALLOW_COPY_AND_ASSIGN(ChromeVoxPanelWebContentsObserver);
 };
 
-ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
-                               bool for_blocked_user_session)
-    : widget_(nullptr),
-      web_view_(nullptr),
-      for_blocked_user_session_(for_blocked_user_session) {
+ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context)
+    : widget_(nullptr), web_view_(nullptr) {
   std::string url("chrome-extension://");
   url += extension_misc::kChromeVoxExtensionId;
   url += kChromeVoxPanelRelativeUrl;
-  if (for_blocked_user_session ||
-      chromeos::ProfileHelper::IsSigninProfile(
-          Profile::FromBrowserContext(browser_context))) {
-    url += kChromeVoxPanelBlockedUserSessionQuery;
-  }
 
   views::WebView* web_view = new views::WebView(browser_context);
   content::WebContents* contents = web_view->GetWebContents();
@@ -92,6 +82,7 @@ ChromeVoxPanel::ChromeVoxPanel(content::BrowserContext* browser_context,
       new ChromeVoxPanelWebContentsObserver(contents, this));
   data_use_measurement::DataUseWebContentsObserver::CreateForWebContents(
       contents);
+  contents->SetDelegate(this);
   extensions::SetViewType(contents, extensions::VIEW_TYPE_COMPONENT);
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       contents);
@@ -152,6 +143,12 @@ void ChromeVoxPanel::DeleteDelegate() {
 
 views::View* ChromeVoxPanel::GetContentsView() {
   return web_view_;
+}
+
+bool ChromeVoxPanel::HandleContextMenu(
+    const content::ContextMenuParams& params) {
+  // Eat all requests as context menus are disallowed.
+  return true;
 }
 
 void ChromeVoxPanel::DidFirstVisuallyNonEmptyPaint() {

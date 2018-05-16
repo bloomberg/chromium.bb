@@ -45,8 +45,6 @@ PanelCommandType = {
   UPDATE_BRAILLE: 'update_braille',
   OPEN_MENUS: 'open_menus',
   OPEN_MENUS_MOST_RECENT: 'open_menus_most_recent',
-  ENABLE_MENUS: 'enable_menus',
-  DISABLE_MENUS: 'disable_menus',
   SEARCH: 'search',
   TUTORIAL: 'tutorial',
   UPDATE_NOTES: 'update_notes',
