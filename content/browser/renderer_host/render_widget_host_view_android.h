@@ -188,6 +188,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   void OnSynchronizedDisplayPropertiesChanged() override;
   base::Optional<SkColor> GetBackgroundColor() const override;
+  void DidNavigate() override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
@@ -245,6 +246,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void ReclaimResources(
       const std::vector<viz::ReturnedResource>& resources) override;
   void OnFrameTokenChanged(uint32_t frame_token) override;
+  void DidReceiveFirstFrameAfterNavigation() override;
 
   // viz::BeginFrameObserver implementation.
   void OnBeginFrame(const viz::BeginFrameArgs& args) override;

@@ -263,7 +263,8 @@ void RenderWidgetHostViewAndroid::InitAsFullscreen(
 
 bool RenderWidgetHostViewAndroid::SynchronizeVisualProperties() {
   if (delegated_frame_host_) {
-    delegated_frame_host_->SynchronizeVisualProperties();
+    delegated_frame_host_->SynchronizeVisualProperties(
+        GetCompositorViewportPixelSize());
 
     // TODO(ericrk): This can be removed once surface synchronization is
     // enabled. https://crbug.com/835102
@@ -887,6 +888,10 @@ void RenderWidgetHostViewAndroid::ReclaimResources(
 
 void RenderWidgetHostViewAndroid::OnFrameTokenChanged(uint32_t frame_token) {
   OnFrameTokenChangedForView(frame_token);
+}
+
+void RenderWidgetHostViewAndroid::DidReceiveFirstFrameAfterNavigation() {
+  host_->DidReceiveFirstFrameAfterNavigation();
 }
 
 void RenderWidgetHostViewAndroid::DidCreateNewRendererCompositorFrameSink(
@@ -2285,6 +2290,13 @@ void RenderWidgetHostViewAndroid::OnSynchronizedDisplayPropertiesChanged() {
 base::Optional<SkColor> RenderWidgetHostViewAndroid::GetBackgroundColor()
     const {
   return default_background_color_;
+}
+
+void RenderWidgetHostViewAndroid::DidNavigate() {
+  RenderWidgetHostViewBase::DidNavigate();
+
+  if (delegated_frame_host_)
+    delegated_frame_host_->DidNavigate();
 }
 
 }  // namespace content
