@@ -86,7 +86,7 @@ def main(args):
   build_utils.CallAndWriteDepfileIfStale(
       _OnStaleMd5, options,
       input_paths=jar_files,
-      output_paths=options.output)
+      output_paths=[options.output])
 
 
 if __name__ == '__main__':
