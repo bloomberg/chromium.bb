@@ -24,6 +24,7 @@ bool TouchscreenTapSuppressionController::FilterTapEvent(
     case WebInputEvent::kGestureTapDown:
       return ShouldSuppressTapDown();
 
+    case WebInputEvent::kGestureShowPress:
     case WebInputEvent::kGestureTapUnconfirmed:
     case WebInputEvent::kGestureTapCancel:
     case WebInputEvent::kGestureTap:
