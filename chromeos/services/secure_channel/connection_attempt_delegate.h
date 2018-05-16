@@ -10,13 +10,11 @@
 
 #include "base/macros.h"
 
-namespace cryptauth {
-class SecureChannel;
-}  // namespace cryptauth
-
 namespace chromeos {
 
 namespace secure_channel {
+
+class AuthenticatedChannel;
 
 class ConnectionAttemptDelegate {
  public:
@@ -28,7 +26,7 @@ class ConnectionAttemptDelegate {
   // ConnectionAttempt::attempt_id().
   virtual void OnConnectionAttemptSucceeded(
       const std::string& attempt_id,
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel) = 0;
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel) = 0;
 
   // Invoked when a ConnectionAttempt has finished without achieving a
   // connection to the remote device (due to cancellation by the client or

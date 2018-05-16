@@ -24,6 +24,8 @@ namespace chromeos {
 
 namespace secure_channel {
 
+class AuthenticatedChannel;
+
 // ConnectionAttempt implementation which stays active for as long as at least
 // one of its requests has not yet completed. While a ConnectionAttemptBase is
 // active, it starts one or more operations to connect to the device. If an
@@ -114,10 +116,10 @@ class ConnectionAttemptBase : public ConnectionAttempt<FailureDetailType>,
   }
 
   void OnConnectToDeviceOperationSuccess(
-      std::unique_ptr<cryptauth::SecureChannel> secure_channel) {
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
     DCHECK(current_operation_);
     current_operation_.reset();
-    this->OnConnectionAttemptSucceeded(std::move(secure_channel));
+    this->OnConnectionAttemptSucceeded(std::move(authenticated_channel));
   }
 
   void OnConnectToDeviceOperationFailure(FailureDetailType failure_detail) {

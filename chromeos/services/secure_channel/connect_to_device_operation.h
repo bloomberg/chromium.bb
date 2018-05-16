@@ -9,13 +9,11 @@
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 
-namespace cryptauth {
-class SecureChannel;
-}  // namespace cryptauth
-
 namespace chromeos {
 
 namespace secure_channel {
+
+class AuthenticatedChannel;
 
 // Performs an operation which creates a connection to a remote device. A
 // ConnectToDeviceOperation can only be used for a single connection attempt; if
@@ -25,7 +23,7 @@ template <typename FailureDetailType>
 class ConnectToDeviceOperation {
  public:
   using ConnectionSuccessCallback =
-      base::OnceCallback<void(std::unique_ptr<cryptauth::SecureChannel>)>;
+      base::OnceCallback<void(std::unique_ptr<AuthenticatedChannel>)>;
   using ConnectionFailedCallback = base::OnceCallback<void(FailureDetailType)>;
 
   virtual ~ConnectToDeviceOperation() {
@@ -60,7 +58,7 @@ class ConnectToDeviceOperation {
   virtual void PerformCancellation() = 0;
 
   void OnSuccessfulConnectionAttempt(
-      std::unique_ptr<cryptauth::SecureChannel> authenticated_channel) {
+      std::unique_ptr<AuthenticatedChannel> authenticated_channel) {
     if (!is_active_) {
       PA_LOG(ERROR) << "ConnectToDeviceOperation::"
                     << "OnSuccessfulConnectionAttempt(): Tried to "
