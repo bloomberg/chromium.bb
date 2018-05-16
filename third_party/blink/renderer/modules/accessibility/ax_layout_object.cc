@@ -485,6 +485,20 @@ AXObjectInclusion AXLayoutObject::DefaultObjectInclusion(
   return AXObject::DefaultObjectInclusion(ignored_reasons);
 }
 
+bool HasAriaAttribute(Element* element) {
+  if (!element)
+    return false;
+
+  AttributeCollection attributes = element->AttributesWithoutUpdate();
+  for (const Attribute& attr : attributes) {
+    // Attributes cache their uppercase names.
+    if (attr.GetName().LocalNameUpper().StartsWith("ARIA-"))
+      return true;
+  }
+
+  return false;
+}
+
 bool AXLayoutObject::ComputeAccessibilityIsIgnored(
     IgnoredReasons* ignored_reasons) const {
 #if DCHECK_IS_ON()
@@ -695,10 +709,8 @@ bool AXLayoutObject::ComputeAccessibilityIsIgnored(
   // These checks are simplified in the interest of execution speed;
   // for example, any element having an alt attribute will make it
   // not ignored, rather than just images.
-  if (!GetAttribute(aria_helpAttr).IsEmpty() ||
-      !GetAttribute(aria_describedbyAttr).IsEmpty() ||
-      !GetAttribute(aria_detailsAttr).IsEmpty() ||
-      !GetAttribute(altAttr).IsEmpty() || !GetAttribute(titleAttr).IsEmpty())
+  if (HasAriaAttribute(GetElement()) || !GetAttribute(altAttr).IsEmpty() ||
+      !GetAttribute(titleAttr).IsEmpty())
     return false;
 
   // <span> tags are inline tags and not meant to convey information if they
