@@ -537,6 +537,7 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
                                                     : ax::mojom::Action::kBlur;
       DCHECK(HasAction(excluded_action));
     } break;
+    case ax::mojom::Action::kClearAccessibilityFocus:
     case ax::mojom::Action::kCustomAction:
     case ax::mojom::Action::kDecrement:
     case ax::mojom::Action::kDoDefault:
@@ -547,6 +548,7 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kReplaceSelectedText:
     case ax::mojom::Action::kScrollToMakeVisible:
     case ax::mojom::Action::kScrollToPoint:
+    case ax::mojom::Action::kSetAccessibilityFocus:
     case ax::mojom::Action::kSetScrollOffset:
     case ax::mojom::Action::kSetSelection:
     case ax::mojom::Action::kSetSequentialFocusNavigationStartingPoint:

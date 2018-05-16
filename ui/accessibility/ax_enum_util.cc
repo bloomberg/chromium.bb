@@ -927,6 +927,8 @@ const char* ToString(ax::mojom::Action action) {
       return "none";
     case ax::mojom::Action::kBlur:
       return "blur";
+    case ax::mojom::Action::kClearAccessibilityFocus:
+      return "clearAccessibilityFocus";
     case ax::mojom::Action::kCustomAction:
       return "customAction";
     case ax::mojom::Action::kDecrement:
@@ -961,6 +963,8 @@ const char* ToString(ax::mojom::Action action) {
       return "scrollToMakeVisible";
     case ax::mojom::Action::kScrollToPoint:
       return "scrollToPoint";
+    case ax::mojom::Action::kSetAccessibilityFocus:
+      return "setAccessibilityFocus";
     case ax::mojom::Action::kSetScrollOffset:
       return "setScrollOffset";
     case ax::mojom::Action::kSetSelection:
@@ -981,6 +985,8 @@ ax::mojom::Action ParseAction(const char* action) {
     return ax::mojom::Action::kNone;
   if (0 == strcmp(action, "blur"))
     return ax::mojom::Action::kBlur;
+  if (0 == strcmp(action, "clearAccessibilityFocus"))
+    return ax::mojom::Action::kClearAccessibilityFocus;
   if (0 == strcmp(action, "customAction"))
     return ax::mojom::Action::kCustomAction;
   if (0 == strcmp(action, "decrement"))
@@ -1015,6 +1021,8 @@ ax::mojom::Action ParseAction(const char* action) {
     return ax::mojom::Action::kScrollToMakeVisible;
   if (0 == strcmp(action, "scrollToPoint"))
     return ax::mojom::Action::kScrollToPoint;
+  if (0 == strcmp(action, "setAccessibilityFocus"))
+    return ax::mojom::Action::kSetAccessibilityFocus;
   if (0 == strcmp(action, "setScrollOffset"))
     return ax::mojom::Action::kSetScrollOffset;
   if (0 == strcmp(action, "setSelection"))

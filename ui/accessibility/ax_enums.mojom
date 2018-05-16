@@ -305,6 +305,11 @@ enum Action {
   kNone,
   kBlur,
 
+  // Notifies a node that it no longer has accessibility focus.
+  // Currently used only on Android and only internally, it's not
+  // exposed to the open web. See kSetAccessibilityFocus, below.
+  kClearAccessibilityFocus,
+
   kCustomAction,
 
    // Decrement a slider or range control by one step value.
@@ -351,6 +356,11 @@ enum Action {
    // Scroll the given object to a specified point on the screen in
    // global screen coordinates. Pass a point in AXActionData.target_point.
   kScrollToPoint,
+
+  // Notifies a node that it has accessibility focus.
+  // Currently used only on Android and only internally, it's not
+  // exposed to the open web. See kClearAccessibilityFocus, above.
+  kSetAccessibilityFocus,
 
   kSetScrollOffset,
   kSetSelection,

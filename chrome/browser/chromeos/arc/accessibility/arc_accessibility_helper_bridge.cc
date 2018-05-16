@@ -442,6 +442,14 @@ void ArcAccessibilityHelperBridge::OnAction(
           arc::mojom::AccessibilityActionType::CUSTOM_ACTION;
       action_data->custom_action_id = data.custom_action_id;
       break;
+    case ax::mojom::Action::kSetAccessibilityFocus:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::ACCESSIBILITY_FOCUS;
+      break;
+    case ax::mojom::Action::kClearAccessibilityFocus:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::CLEAR_ACCESSIBILITY_FOCUS;
+      break;
     default:
       return;
   }

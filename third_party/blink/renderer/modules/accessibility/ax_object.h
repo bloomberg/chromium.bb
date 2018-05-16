@@ -734,6 +734,13 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   bool RequestSetValueAction(const String&);
   bool RequestShowContextMenuAction();
 
+  // These are actions, just like the actions above, and they allow us
+  // to keep track of nodes that gain or lose accessibility focus, but
+  // this isn't exposed to the open web so they're explicitly marked as
+  // internal so it's clear that these should not dispatch DOM events.
+  virtual bool InternalClearAccessibilityFocusAction();
+  virtual bool InternalSetAccessibilityFocusAction();
+
   // Native implementations of actions that aren't handled by AOM
   // event listeners. These all return true if handled.
   virtual bool OnNativeDecrementAction();

@@ -684,6 +684,13 @@ WebString WebAXObject::Language() const {
   return private_->Language();
 }
 
+bool WebAXObject::ClearAccessibilityFocus() const {
+  if (IsDetached())
+    return false;
+
+  return private_->InternalClearAccessibilityFocusAction();
+}
+
 bool WebAXObject::Click() const {
   if (IsDetached())
     return false;
@@ -764,6 +771,13 @@ void WebAXObject::Selection(WebAXObject& anchor_object,
   focus_offset = ax_selection.focus_offset;
   focus_affinity = static_cast<WebAXTextAffinity>(ax_selection.focus_affinity);
   return;
+}
+
+bool WebAXObject::SetAccessibilityFocus() const {
+  if (IsDetached())
+    return false;
+
+  return private_->InternalSetAccessibilityFocusAction();
 }
 
 bool WebAXObject::SetSelected(bool selected) const {

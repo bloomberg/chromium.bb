@@ -711,6 +711,28 @@ void BrowserAccessibilityManager::LoadInlineTextBoxes(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
+void BrowserAccessibilityManager::SetAccessibilityFocus(
+    const BrowserAccessibility& node) {
+  if (!delegate_)
+    return;
+
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kSetAccessibilityFocus;
+  action_data.target_node_id = node.GetId();
+  delegate_->AccessibilityPerformAction(action_data);
+}
+
+void BrowserAccessibilityManager::ClearAccessibilityFocus(
+    const BrowserAccessibility& node) {
+  if (!delegate_)
+    return;
+
+  ui::AXActionData action_data;
+  action_data.action = ax::mojom::Action::kClearAccessibilityFocus;
+  action_data.target_node_id = node.GetId();
+  delegate_->AccessibilityPerformAction(action_data);
+}
+
 void BrowserAccessibilityManager::HitTest(const gfx::Point& point) {
   if (!delegate_)
     return;
