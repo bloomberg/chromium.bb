@@ -1079,9 +1079,6 @@ TEST_F(ExpireHistoryTest, ExpiringVisitsReader) {
 // Test that ClearOldOnDemandFaviconsIfPossible() deletes favicons associated
 // only to unstarred page URLs.
 TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteUnstarred) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
-
   // The blob does not encode any real bitmap, obviously.
   const unsigned char kBlob[] = "0";
   scoped_refptr<base::RefCountedBytes> favicon(
@@ -1108,9 +1105,6 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteUnstarred) {
 // Test that ClearOldOnDemandFaviconsIfPossible() deletes favicons associated to
 // at least one starred page URL.
 TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesNotDeleteStarred) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
-
   // The blob does not encode any real bitmap, obviously.
   const unsigned char kBlob[] = "0";
   scoped_refptr<base::RefCountedBytes> favicon(
@@ -1147,9 +1141,6 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesNotDeleteStarred) {
 // Test that ClearOldOnDemandFaviconsIfPossible() has effect if the last
 // clearing was long time age (such as 2 days ago).
 TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteAfterLongDelay) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
-
   // Previous clearing (2 days ago).
   expirer_.ClearOldOnDemandFaviconsIfPossible(GetOldFaviconThreshold() -
                                               base::TimeDelta::FromDays(2));
@@ -1181,9 +1172,6 @@ TEST_F(ExpireHistoryTest, ClearOldOnDemandFaviconsDoesDeleteAfterLongDelay) {
 // at least one starred page URL.
 TEST_F(ExpireHistoryTest,
        ClearOldOnDemandFaviconsDoesNotDeleteAfterShortDelay) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(internal::kClearOldOnDemandFavicons);
-
   // Previous clearing (5 minutes ago).
   expirer_.ClearOldOnDemandFaviconsIfPossible(GetOldFaviconThreshold() -
                                               base::TimeDelta::FromMinutes(5));

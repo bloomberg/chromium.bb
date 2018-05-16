@@ -20,7 +20,6 @@ class GURL;
 class TestingProfile;
 
 namespace base {
-struct Feature;
 class SequencedTaskRunner;
 }
 
@@ -44,9 +43,6 @@ class ExpiringVisitsReader {
 typedef std::vector<const ExpiringVisitsReader*> ExpiringVisitsReaders;
 
 namespace internal {
-// Feature that enables clearing old on-demand favicons.
-extern const base::Feature kClearOldOnDemandFavicons;
-
 // The minimum number of days since last use for an icon to be considered old.
 extern const int kOnDemandFaviconIsOldAfterDays;
 }  // namespace internal
