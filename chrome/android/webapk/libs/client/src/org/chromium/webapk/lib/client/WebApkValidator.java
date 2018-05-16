@@ -134,16 +134,20 @@ public class WebApkValidator {
             selector.setComponent(null);
         }
         List<ResolveInfo> resolveInfoList;
+
+        // StrictMode is relaxed due to https://crbug.com/843092.
+        StrictMode.ThreadPolicy policy = StrictMode.allowThreadDiskReads();
         try {
-            resolveInfoList = context.getPackageManager().queryIntentActivities(
+            return context.getPackageManager().queryIntentActivities(
                     intent, PackageManager.GET_RESOLVED_FILTER);
         } catch (Exception e) {
             // We used to catch only java.util.MissingResourceException, but we need to catch more
             // exceptions to handle "Package manager has died" exception.
             // http://crbug.com/794363
-            resolveInfoList = new LinkedList<>();
+            return new LinkedList<>();
+        } finally {
+            StrictMode.setThreadPolicy(policy);
         }
-        return resolveInfoList;
     }
 
     /**
