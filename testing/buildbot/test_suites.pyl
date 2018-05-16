@@ -510,7 +510,6 @@
 
   'chromium_gtests_for_devices_with_graphical_output': {
     'device_unittests': {},
-    'remoting_unittests': {},
   },
 
   'chromium_gtests_for_linux_and_chromeos_only': {
@@ -1316,6 +1315,7 @@
     'ppapi_unittests': {},
     'printing_unittests': {},
     'service_manager_unittests': {}, # crbug.com/843134
+    'remoting_unittests': {},
     'views_unittests': {},
   },
 
