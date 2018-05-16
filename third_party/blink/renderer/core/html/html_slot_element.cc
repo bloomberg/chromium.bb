@@ -364,9 +364,14 @@ HTMLSlotElement::ChildrenInFlatTreeIfAssignmentIsSupported() {
 
 void HTMLSlotElement::DetachLayoutTree(const AttachContext& context) {
   if (SupportsAssignment()) {
+    // TODO(hayato): It is suspicious that AssignedNodes() is required here,
+    // in terms of node tree lifecycle. Find a better way.
     const HeapVector<Member<Node>>& flat_tree_children =
-        RuntimeEnabledFeatures::SlotInFlatTreeEnabled() ? assigned_nodes_
-                                                        : distributed_nodes_;
+        RuntimeEnabledFeatures::SlotInFlatTreeEnabled()
+            ? (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled()
+                   ? AssignedNodes()
+                   : assigned_nodes_)
+            : distributed_nodes_;
     for (auto& node : flat_tree_children)
       node->LazyReattachIfAttached();
   }
