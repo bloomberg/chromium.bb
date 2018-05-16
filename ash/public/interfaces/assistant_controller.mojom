@@ -6,6 +6,7 @@ module ash.mojom;
 
 import "ash/public/interfaces/assistant_card_renderer.mojom";
 import "chromeos/services/assistant/public/mojom/assistant.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Interface for AssistantManagerService to communicate with
 // AssistantController.
@@ -16,4 +17,9 @@ interface AssistantController {
   // Provides an interface to the |assistant_card_renderer| owned by
   // AssistantClient.
   SetAssistantCardRenderer(AssistantCardRenderer assistant_card_renderer);
+
+  // Requests screenshot of specified |rect| region and returns the screenshot
+  // encoded in JPEG format. If |rect| is empty, it returns fullscreen
+  // screenshot.
+  RequestScreenshot(gfx.mojom.Rect rect) => (array<uint8> screenshot);
 };

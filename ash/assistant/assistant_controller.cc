@@ -11,7 +11,10 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
+#include "base/bind.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/unguessable_token.h"
+#include "ui/snapshot/snapshot.h"
 
 namespace ash {
 
@@ -49,6 +52,24 @@ void AssistantController::SetAssistant(
 void AssistantController::SetAssistantCardRenderer(
     mojom::AssistantCardRendererPtr assistant_card_renderer) {
   assistant_card_renderer_ = std::move(assistant_card_renderer);
+}
+
+void AssistantController::RequestScreenshot(
+    const gfx::Rect& rect,
+    RequestScreenshotCallback callback) {
+  // TODO(muyuanli): handle multi-display when assistant's behavior is defined.
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  gfx::Rect source_rect =
+      rect.IsEmpty() ? gfx::Rect(root_window->bounds().size()) : rect;
+  ui::GrabWindowSnapshotAsyncJPEG(
+      root_window, source_rect,
+      base::BindRepeating(
+          [](RequestScreenshotCallback callback,
+             scoped_refptr<base::RefCountedMemory> data) {
+            std::move(callback).Run(std::vector<uint8_t>(
+                data->front(), data->front() + data->size()));
+          },
+          base::Passed(&callback)));
 }
 
 void AssistantController::RenderCard(
