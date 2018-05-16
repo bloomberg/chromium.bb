@@ -52,6 +52,7 @@ AppListClientImpl::AppListClientImpl()
   ash::mojom::AppListClientPtr client;
   binding_.Bind(mojo::MakeRequest(&client));
   app_list_controller_->SetClient(std::move(client));
+  controller_delegate_.SetAppListController(app_list_controller_.get());
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
 
   DCHECK(!g_app_list_client_instance);
