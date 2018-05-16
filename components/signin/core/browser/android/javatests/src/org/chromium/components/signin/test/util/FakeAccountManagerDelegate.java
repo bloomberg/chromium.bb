@@ -7,6 +7,7 @@ package org.chromium.components.signin.test.util;
 import android.accounts.Account;
 import android.accounts.AuthenticatorDescription;
 import android.app.Activity;
+import android.content.Intent;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 
@@ -307,6 +308,12 @@ public class FakeAccountManagerDelegate implements AccountManagerDelegate {
             }
         }
         return hasAllFeatures;
+    }
+
+    @Override
+    public void createAddAccountIntent(Callback<Intent> callback) {
+        ThreadUtils.assertOnUiThread();
+        ThreadUtils.postOnUiThread(() -> callback.onResult(null));
     }
 
     @Override

@@ -194,6 +194,21 @@ public class SystemAccountManagerDelegate implements AccountManagerDelegate {
     }
 
     @Override
+    public void createAddAccountIntent(Callback<Intent> callback) {
+        AccountManagerCallback<Bundle> accountManagerCallback = accountManagerFuture -> {
+            try {
+                Bundle bundle = accountManagerFuture.getResult();
+                callback.onResult(bundle.getParcelable(AccountManager.KEY_INTENT));
+            } catch (OperationCanceledException | IOException | AuthenticatorException e) {
+                Log.e(TAG, "Error while creating an intent to add an account: ", e);
+                callback.onResult(null);
+            }
+        };
+        mAccountManager.addAccount(GoogleAuthUtil.GOOGLE_ACCOUNT_TYPE, null, null, null, null,
+                accountManagerCallback, null);
+    }
+
+    @Override
     public void updateCredentials(
             Account account, Activity activity, final Callback<Boolean> callback) {
         ThreadUtils.assertOnUiThread();

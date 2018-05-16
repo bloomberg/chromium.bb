@@ -5,6 +5,7 @@
 package org.chromium.components.signin;
 
 import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.accounts.AuthenticatorDescription;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -539,6 +540,17 @@ public class AccountManagerFacade {
             }
         }
                 .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /**
+     * Creates an intent that will ask the user to add a new account to the device. See
+     * {@link AccountManager#addAccount} for details.
+     * @param callback The callback to get the created intent. Will be invoked on the main thread.
+     *         If there is an issue while creating the intent, callback will receive null.
+     */
+    @AnyThread
+    public void createAddAccountIntent(Callback<Intent> callback) {
+        mDelegate.createAddAccountIntent(callback);
     }
 
     /**

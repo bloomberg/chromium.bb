@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.signin;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Point;
@@ -64,6 +66,8 @@ public abstract class SigninFragmentBase
 
     public static final String ACCOUNT_PICKER_DIALOG_TAG =
             "SigninFragmentBase.AccountPickerDialogFragment";
+
+    private static final int ADD_ACCOUNT_REQUEST_CODE = 1;
 
     private @SigninAccessPoint int mSigninAccessPoint;
     private boolean mForceSignin;
@@ -409,7 +413,7 @@ public abstract class SigninFragmentBase
 
     private void showAccountPicker() {
         // Account picker is already shown
-        if (getChildFragmentManager().findFragmentByTag(ACCOUNT_PICKER_DIALOG_TAG) != null) return;
+        if (getAccountPickerDialogFragment() != null) return;
 
         AccountPickerDialogFragment dialog =
                 AccountPickerDialogFragment.create(mSelectedAccountName);
@@ -418,9 +422,40 @@ public abstract class SigninFragmentBase
         transaction.commit();
     }
 
+    private AccountPickerDialogFragment getAccountPickerDialogFragment() {
+        return (AccountPickerDialogFragment) getChildFragmentManager().findFragmentByTag(
+                ACCOUNT_PICKER_DIALOG_TAG);
+    }
+
     @Override
     public void onAccountSelected(String accountName, boolean isDefaultAccount) {
         selectAccount(accountName, isDefaultAccount);
+    }
+
+    @Override
+    public void addAccount() {
+        RecordUserAction.record("Signin_AddAccountToDevice");
+        // TODO(https://crbug.com/842860): Revise createAddAccountIntent and AccountAdder.
+        AccountManagerFacade.get().createAddAccountIntent((@Nullable Intent intent) -> {
+            if (intent != null) {
+                startActivityForResult(intent, ADD_ACCOUNT_REQUEST_CODE);
+                return;
+            }
+
+            // AccountManagerFacade couldn't create intent, use AccountAdder as fallback.
+            AccountAdder.getInstance().addAccount(this, ADD_ACCOUNT_REQUEST_CODE);
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == ADD_ACCOUNT_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            AccountPickerDialogFragment accountPickerFragment = getAccountPickerDialogFragment();
+            if (accountPickerFragment != null) {
+                accountPickerFragment.dismiss();
+            }
+            // TODO(https://crbug.com/814728): Select the added account.
+        }
     }
 
     @Override
@@ -450,9 +485,7 @@ public abstract class SigninFragmentBase
         mProfileDataCache.update(Collections.singletonList(mSelectedAccountName));
         updateProfileData();
 
-        AccountPickerDialogFragment accountPickerFragment =
-                (AccountPickerDialogFragment) getChildFragmentManager().findFragmentByTag(
-                        ACCOUNT_PICKER_DIALOG_TAG);
+        AccountPickerDialogFragment accountPickerFragment = getAccountPickerDialogFragment();
         if (accountPickerFragment != null) {
             accountPickerFragment.updateSelectedAccount(accountName);
         }
