@@ -32,7 +32,7 @@
 
 namespace blink {
 
-class RegisteredEventListener {
+class RegisteredEventListener final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
