@@ -294,13 +294,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetViewportIntersectionFromParent(const IntRect&);
   IntRect RemoteViewportIntersection() { return remote_viewport_intersection_; }
 
-  // Dummy leftover for compile test.
-  static std::unique_ptr<UserGestureIndicator> CreateUserGesture(
-      LocalFrame*,
-      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture) {
-    return std::make_unique<UserGestureIndicator>();
-  }
-
   // Replaces the initial empty document with a Document suitable for
   // |mime_type| and populated with the contents of |data|. Only intended for
   // use in internal-implementation LocalFrames that aren't in the frame tree.
