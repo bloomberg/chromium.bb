@@ -105,7 +105,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // Calls match on the cache with the given |cache_name|.
   void MatchCache(const std::string& cache_name,
                   std::unique_ptr<ServiceWorkerFetchRequest> request,
-                  blink::mojom::QueryParamsPtr match_params,
+                  const CacheStorageCacheQueryParams& match_params,
                   CacheStorageCache::ResponseCallback callback);
 
   // Calls match on all of the caches in parallel, calling |callback| with the
@@ -113,7 +113,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // entry. If no response is found then |callback| is called with
   // blink::mojom::CacheStorageError::kErrorNotFound.
   void MatchAllCaches(std::unique_ptr<ServiceWorkerFetchRequest> request,
-                      blink::mojom::QueryParamsPtr match_params,
+                      const CacheStorageCacheQueryParams& match_params,
                       CacheStorageCache::ResponseCallback callback);
 
   // Sums the sizes of each cache and closes them. Runs |callback| with the
@@ -201,7 +201,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
   // The MatchCache callbacks are below.
   void MatchCacheImpl(const std::string& cache_name,
                       std::unique_ptr<ServiceWorkerFetchRequest> request,
-                      blink::mojom::QueryParamsPtr match_params,
+                      const CacheStorageCacheQueryParams& match_params,
                       CacheStorageCache::ResponseCallback callback);
   void MatchCacheDidMatch(CacheStorageCacheHandle cache_handle,
                           CacheStorageCache::ResponseCallback callback,
@@ -210,7 +210,7 @@ class CONTENT_EXPORT CacheStorage : public CacheStorageCacheObserver {
 
   // The MatchAllCaches callbacks are below.
   void MatchAllCachesImpl(std::unique_ptr<ServiceWorkerFetchRequest> request,
-                          blink::mojom::QueryParamsPtr match_params,
+                          const CacheStorageCacheQueryParams& match_params,
                           CacheStorageCache::ResponseCallback callback);
   void MatchAllCachesDidMatch(
       CacheStorageCacheHandle cache_handle,
