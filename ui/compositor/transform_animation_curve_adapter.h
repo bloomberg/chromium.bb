@@ -34,8 +34,6 @@ class COMPOSITOR_EXPORT TransformAnimationCurveAdapter
   base::TimeDelta Duration() const override;
   std::unique_ptr<AnimationCurve> Clone() const override;
   cc::TransformOperations GetValue(base::TimeDelta t) const override;
-  bool AnimatedBoundsForBox(const gfx::BoxF& box,
-                            gfx::BoxF* bounds) const override;
   bool IsTranslation() const override;
   bool PreservesAxisAlignment() const override;
   bool AnimationStartScale(bool forward_direction,
@@ -68,8 +66,6 @@ class COMPOSITOR_EXPORT InverseTransformCurveAdapter
   base::TimeDelta Duration() const override;
   std::unique_ptr<AnimationCurve> Clone() const override;
   cc::TransformOperations GetValue(base::TimeDelta t) const override;
-  bool AnimatedBoundsForBox(const gfx::BoxF& box,
-                            gfx::BoxF* bounds) const override;
   bool IsTranslation() const override;
   bool PreservesAxisAlignment() const override;
   bool AnimationStartScale(bool forward_direction,

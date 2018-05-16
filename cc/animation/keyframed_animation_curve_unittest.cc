@@ -658,32 +658,6 @@ TEST(KeyframedAnimationCurveTest, FramesTimingFunction) {
   }
 }
 
-// Tests that animated bounds are computed as expected.
-TEST(KeyframedAnimationCurveTest, AnimatedBounds) {
-  std::unique_ptr<KeyframedTransformAnimationCurve> curve(
-      KeyframedTransformAnimationCurve::Create());
-
-  TransformOperations operations1;
-  curve->AddKeyframe(
-      TransformKeyframe::Create(base::TimeDelta(), operations1, nullptr));
-  operations1.AppendTranslate(2.0, 3.0, -1.0);
-  curve->AddKeyframe(TransformKeyframe::Create(
-      base::TimeDelta::FromSecondsD(0.5f), operations1, nullptr));
-  TransformOperations operations2;
-  operations2.AppendTranslate(4.0, 1.0, 2.0);
-  curve->AddKeyframe(TransformKeyframe::Create(
-      base::TimeDelta::FromSecondsD(1.f), operations2,
-      CubicBezierTimingFunction::CreatePreset(
-          CubicBezierTimingFunction::EaseType::EASE)));
-
-  gfx::BoxF box(2.f, 3.f, 4.f, 1.f, 3.f, 2.f);
-  gfx::BoxF bounds;
-
-  EXPECT_TRUE(curve->AnimatedBoundsForBox(box, &bounds));
-  EXPECT_EQ(gfx::BoxF(2.f, 3.f, 3.f, 5.f, 6.f, 5.f).ToString(),
-            bounds.ToString());
-}
-
 // Tests that animations that are translations are correctly identified.
 TEST(KeyframedAnimationCurveTest, IsTranslation) {
   std::unique_ptr<KeyframedTransformAnimationCurve> curve(

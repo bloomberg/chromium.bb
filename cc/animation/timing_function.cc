@@ -65,11 +65,6 @@ float CubicBezierTimingFunction::Velocity(double x) const {
   return static_cast<float>(bezier_.Slope(x));
 }
 
-void CubicBezierTimingFunction::Range(float* min, float* max) const {
-  *min = static_cast<float>(bezier_.range_min());
-  *max = static_cast<float>(bezier_.range_max());
-}
-
 std::unique_ptr<TimingFunction> CubicBezierTimingFunction::Clone() const {
   return base::WrapUnique(new CubicBezierTimingFunction(*this));
 }
@@ -95,11 +90,6 @@ float StepsTimingFunction::GetValue(double t) const {
 
 std::unique_ptr<TimingFunction> StepsTimingFunction::Clone() const {
   return base::WrapUnique(new StepsTimingFunction(*this));
-}
-
-void StepsTimingFunction::Range(float* min, float* max) const {
-  *min = 0.0f;
-  *max = 1.0f;
 }
 
 float StepsTimingFunction::Velocity(double x) const {
@@ -148,11 +138,6 @@ float FramesTimingFunction::GetValue(double t) const {
 
 std::unique_ptr<TimingFunction> FramesTimingFunction::Clone() const {
   return base::WrapUnique(new FramesTimingFunction(*this));
-}
-
-void FramesTimingFunction::Range(float* min, float* max) const {
-  *min = 0.0f;
-  *max = 1.0f;
 }
 
 float FramesTimingFunction::Velocity(double x) const {

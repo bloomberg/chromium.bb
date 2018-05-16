@@ -168,11 +168,6 @@ TransformOperations FakeTransformTransition::GetValue(
   return TransformOperations();
 }
 
-bool FakeTransformTransition::AnimatedBoundsForBox(const gfx::BoxF& box,
-                                                   gfx::BoxF* bounds) const {
-  return false;
-}
-
 bool FakeTransformTransition::IsTranslation() const { return true; }
 
 bool FakeTransformTransition::PreservesAxisAlignment() const {
