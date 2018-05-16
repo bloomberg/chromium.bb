@@ -5,14 +5,11 @@
 #include "ios/chrome/test/app/navigation_test_util.h"
 
 #import "ios/chrome/test/app/chrome_test_util.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web/public/test/navigation_test_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
-
-using testing::WaitUntilConditionOrTimeout;
 
 namespace chrome_test_util {
 
@@ -25,9 +22,7 @@ bool IsLoading() {
 }
 
 bool WaitForPageToFinishLoading() {
-  return WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return !IsLoading();
-  });
+  return web::test::WaitForPageToFinishLoading(GetCurrentWebState());
 }
 
 }  // namespace chrome_test_util

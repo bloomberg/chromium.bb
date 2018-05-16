@@ -12,7 +12,11 @@ namespace web {
 namespace test {
 
 // Loads |url| in |web_state| with transition of type ui::PAGE_TRANSITION_TYPED.
-void LoadUrl(web::WebState* web_state, const GURL& url);
+void LoadUrl(WebState* web_state, const GURL& url);
+
+// Returns true if the current page in the current WebState finishes loading
+// within a timeout.
+bool WaitForPageToFinishLoading(WebState* web_state) WARN_UNUSED_RESULT;
 
 }  // namespace test
 }  // namespace web
