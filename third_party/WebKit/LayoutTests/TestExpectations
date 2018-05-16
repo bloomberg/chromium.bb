@@ -84,9 +84,6 @@ crbug.com/504613 crbug.com/524248 [ Mac ] paint/images/image-backgrounds-not-ant
 crbug.com/619103 paint/invalidation/background/background-resize-width.html [ Failure Pass ]
 crbug.com/619103 virtual/disable-spv175/paint/invalidation/background/background-resize-width.html [ Skip ]
 
-# Scanlines off by 1, but code path should be the same
-crbug.com/644433 virtual/gpu/fast/canvas/OffscreenCanvas-2d-pattern-in-worker.html [ Failure ]
-
 crbug.com/702006 paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Failure ]
 crbug.com/702006 virtual/disable-spv175/paint/invalidation/compositing/scrolling-neg-z-index-descendants-should-cause-repaint.html [ Skip ]
 
@@ -103,9 +100,6 @@ crbug.com/653722 compositing/reflections/nested-reflection-animated.html [ Pass 
 crbug.com/653722 virtual/disable-spv175/compositing/reflections/nested-reflection-animated.html [ Skip ]
 crbug.com/653722 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
 crbug.com/653722 virtual/disable-spv175/compositing/reflections/nested-reflection-transition.html [ Skip ]
-
-crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
-crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
 crbug.com/816045 [ Win Linux ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ Pass Timeout ]
 
@@ -3984,10 +3978,7 @@ crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/capti
 crbug.com/736177 [ Mac10.12 Retina ] tables/mozilla_expected_failures/core/captions2.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/prefer_compositing_to_lcd_text/compositing/overflow/theme-affects-visual-overflow.html [ Failure Pass ]
 crbug.com/736177 [ Mac10.12 Retina ] virtual/scalefactor200/fast/hidpi/static/validation-bubble-appearance-hidpi.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-shadow.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Failure Pass ]
-crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/fillrect_gradient.html [ Failure Pass ]
 crbug.com/736177 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Failure Pass ]
 
 crbug.com/734762 inspector-protocol/timeline/page-frames.js [ Failure ]
@@ -4365,7 +4356,6 @@ crbug.com/807191 fast/media/mq-color-gamut-picture.html [ Pass Failure Timeout ]
 crbug.com/773122 [ Win7 ] fast/text/international/unicode-bidi-plaintext-in-textarea.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] fast/text/whitespace/022.html [ Failure Pass ]
 crbug.com/773122 [ Win7 ] fast/text/word-break.html [ Failure Pass ]
-crbug.com/773122 [ Win7 ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Failure Pass ]
 
 # Sheriff failures 2017-10-13
 crbug.com/774437 paint/invalidation/selection/selection-partial-invalidation-between-blocks.html [ Pass Failure ]
@@ -4417,7 +4407,7 @@ crbug.com/789567 scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass
 crbug.com/789567 scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789567 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-inactive-pseudo.html [ Failure Pass ]
 crbug.com/789478 virtual/prefer_compositing_to_lcd_text/scrollbars/custom-scrollbar-adjust-on-inactive-pseudo.html [ Pass Failure ]
-crbug.com/789533 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Pass Failure Timeout ]
+crbug.com/786641 virtual/gpu/fast/canvas/OffscreenCanvas-2d-imageSmoothing.html [ Pass Failure Timeout ]
 
 # Sheriff failures 2017-11-30
 crbug.com/789921 [ Win7 Mac ] media/video-controls-overflow-menu-last-button-visible.html [ Pass Failure ]
@@ -4498,7 +4488,6 @@ crbug.com/800840 [ Mac ] virtual/wheelscrolllatching/fast/compositor-wheel-scrol
 
 # Sheriff failures 2018-01-23
 # Flaking on linux_chromium_rel_ng
-crbug.com/804709 [ Linux ] virtual/gpu/fast/canvas/canvas-fillPath-shadow.html [ Pass Failure ]
 crbug.com/805788 [ Linux Win7 Win10 Mac ] virtual/threaded/animations/responsive/viewport-unit-transform-responsive.html [ Pass Timeout ]
 
 # Sheriff failures 2018-01-25
