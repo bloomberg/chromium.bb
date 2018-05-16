@@ -21,6 +21,7 @@
 #include "device/fido/fido_attestation_statement.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
+#include "device/fido/mac/keychain.h"
 
 namespace device {
 namespace fido {
@@ -35,6 +36,10 @@ using cbor::CBORValue;
 constexpr std::array<uint8_t, 16> kAaguid = {0xad, 0xce, 0x00, 0x02, 0x35, 0xbc,
                                              0xc6, 0x0a, 0x64, 0x8b, 0x0b, 0x25,
                                              0xf1, 0xf0, 0x55, 0x03};
+
+std::vector<uint8_t> TouchIdAaguid() {
+  return std::vector<uint8_t>(kAaguid.begin(), kAaguid.end());
+}
 
 namespace {
 
@@ -119,9 +124,10 @@ base::Optional<std::vector<uint8_t>> GenerateSignature(
   CFDataAppendBytes(sig_input, client_data_hash.data(),
                     client_data_hash.size());
   ScopedCFTypeRef<CFErrorRef> err;
-  ScopedCFTypeRef<CFDataRef> sig_data(SecKeyCreateSignature(
-      private_key, kSecKeyAlgorithmECDSASignatureMessageX962SHA256, sig_input,
-      err.InitializeInto()));
+  ScopedCFTypeRef<CFDataRef> sig_data(
+      Keychain::GetInstance().KeyCreateSignature(
+          private_key, kSecKeyAlgorithmECDSASignatureMessageX962SHA256,
+          sig_input, err.InitializeInto()));
   if (!sig_data) {
     LOG(ERROR) << "SecKeyCreateSignature failed: " << err;
     return base::nullopt;
