@@ -511,7 +511,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
                                       const uint8_t *data, size_t data_sz,
                                       void *user_priv) {
   const uint8_t *data_start = data;
-  const uint8_t *const data_end = data + data_sz;
+  const uint8_t *data_end = data + data_sz;
   aom_codec_err_t res = AOM_CODEC_OK;
 
   if (data == NULL && data_sz == 0) {
@@ -531,12 +531,15 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   if (ctx->is_annexb) {
     // read the size of this temporal unit
     size_t length_of_size;
-    uint64_t size_of_unit;
-    if (aom_uleb_decode(data_start, data_sz, &size_of_unit, &length_of_size) !=
-        0) {
+    uint64_t temporal_unit_size;
+    if (aom_uleb_decode(data_start, data_sz, &temporal_unit_size,
+                        &length_of_size) != 0) {
       return AOM_CODEC_CORRUPT_FRAME;
     }
     data_start += length_of_size;
+    if (temporal_unit_size > (size_t)(data_end - data_start))
+      return AOM_CODEC_CORRUPT_FRAME;
+    data_end = data_start + temporal_unit_size;
   }
 
   // Decode in serial mode.
@@ -550,6 +553,8 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
         return AOM_CODEC_CORRUPT_FRAME;
       }
       data_start += length_of_size;
+      if (frame_size > (size_t)(data_end - data_start))
+        return AOM_CODEC_CORRUPT_FRAME;
     } else {
       frame_size = (uint64_t)(data_end - data_start);
     }
