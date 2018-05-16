@@ -150,7 +150,8 @@ void NativeViewHostAura::RemovedFromWidget() {
 
 bool NativeViewHostAura::SetCornerRadius(int corner_radius) {
 #if defined(OS_WIN)
-  // Layer masks don't work on Windows. See crbug.com/713359
+  // TODO(crbug/843250): On Aura, layer masks don't play with HiDPI. Fix this
+  // and enable this on Windows.
   return false;
 #else
   mask_ = views::Painter::CreatePaintedLayer(

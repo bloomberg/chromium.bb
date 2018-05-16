@@ -4,6 +4,7 @@
 
 #include "ui/views/animation/ink_drop_host_view.h"
 
+#include "build/build_config.h"
 #include "ui/events/event.h"
 #include "ui/events/scoped_target_handler.h"
 #include "ui/gfx/color_palette.h"
@@ -300,12 +301,9 @@ InkDrop* InkDropHostView::GetInkDrop() {
 }
 
 void InkDropHostView::InstallInkDropMask(ui::Layer* ink_drop_layer) {
-// Layer masks don't work on Windows. See crbug.com/713359
-#if !defined(OS_WIN)
   ink_drop_mask_ = CreateInkDropMask();
   if (ink_drop_mask_)
     ink_drop_layer->SetMaskLayer(ink_drop_mask_->layer());
-#endif
 }
 
 void InkDropHostView::ResetInkDropMask() {
