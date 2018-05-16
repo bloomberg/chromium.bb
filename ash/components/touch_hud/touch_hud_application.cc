@@ -6,8 +6,8 @@
 
 #include <utility>
 
+#include "ash/components/touch_hud/touch_hud_renderer.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/touch_hud/touch_hud_renderer.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -25,53 +25,6 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace touch_hud {
-namespace {
-
-// TouchHudUI handles events on the widget of the touch-hud app. After
-// receiving touch events from PointerWatcher, it calls ash::TouchHudRenderer to
-// draw the touch points.
-class TouchHudUI : public views::WidgetDelegateView,
-                   public views::PointerWatcher {
- public:
-  explicit TouchHudUI(views::Widget* widget)
-      : touch_hud_renderer_(std::make_unique<ash::TouchHudRenderer>(widget)) {
-    // Watches moves so the user can drag around a touch point.
-    views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
-        this, true /* want_moves */);
-  }
-  ~TouchHudUI() override {
-    views::MusClient::Get()
-        ->pointer_watcher_event_router()
-        ->RemovePointerWatcher(this);
-  }
-
- private:
-  // Overridden from views::WidgetDelegate:
-  base::string16 GetWindowTitle() const override {
-    // TODO(beng): use resources.
-    return base::ASCIIToUTF16("TouchHud");
-  }
-
-  // Overridden from views::PointerWatcher:
-  void OnPointerEventObserved(const ui::PointerEvent& event,
-                              const gfx::Point& location_in_screen,
-                              gfx::NativeView target) override {
-    if (!event.IsTouchPointerEvent())
-      return;
-
-    // Ignore taps on other displays.
-    if (!GetWidget()->GetWindowBoundsInScreen().Contains(location_in_screen))
-      return;
-
-    touch_hud_renderer_->HandleTouchEvent(event);
-  }
-
-  std::unique_ptr<ash::TouchHudRenderer> touch_hud_renderer_;
-
-  DISALLOW_COPY_AND_ASSIGN(TouchHudUI);
-};
-
-}  // namespace
 
 TouchHudApplication::TouchHudApplication() : binding_(this) {
   registry_.AddInterface<mash::mojom::Launchable>(base::BindRepeating(
@@ -80,6 +33,8 @@ TouchHudApplication::TouchHudApplication() : binding_(this) {
 
 TouchHudApplication::~TouchHudApplication() {
   display::Screen::GetScreen()->RemoveObserver(this);
+  views::MusClient::Get()->pointer_watcher_event_router()->RemovePointerWatcher(
+      this);
 }
 
 void TouchHudApplication::OnStart() {
@@ -92,7 +47,6 @@ void TouchHudApplication::OnStart() {
     context()->QuitNow();
     return;
   }
-  display::Screen::GetScreen()->AddObserver(this);
   Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
 }
 
@@ -104,9 +58,30 @@ void TouchHudApplication::OnBindInterface(
 }
 
 void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
+  // Watches moves so the user can drag around a touch point.
+  views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
+      this, true /* want_moves */);
+  display::Screen::GetScreen()->AddObserver(this);
   for (const display::Display& display :
        display::Screen::GetScreen()->GetAllDisplays()) {
     CreateWidgetForDisplay(display.id());
+  }
+}
+
+void TouchHudApplication::OnPointerEventObserved(
+    const ui::PointerEvent& event,
+    const gfx::Point& location_in_screen,
+    gfx::NativeView target) {
+  if (!event.IsTouchPointerEvent())
+    return;
+
+  int64_t display_id = display::Screen::GetScreen()
+                           ->GetDisplayNearestPoint(location_in_screen)
+                           .id();
+  auto it = display_id_to_renderer_.find(display_id);
+  if (it != display_id_to_renderer_.end()) {
+    TouchHudRenderer* renderer = it->second.get();
+    renderer->HandleTouchEvent(event);
   }
 }
 
@@ -116,8 +91,8 @@ void TouchHudApplication::OnDisplayAdded(const display::Display& new_display) {
 
 void TouchHudApplication::OnDisplayRemoved(
     const display::Display& old_display) {
-  // Deletes the widget.
-  display_id_to_widget_.erase(old_display.id());
+  // Deletes the renderer.
+  display_id_to_renderer_.erase(old_display.id());
 }
 
 void TouchHudApplication::CreateWidgetForDisplay(int64_t display_id) {
@@ -128,7 +103,7 @@ void TouchHudApplication::CreateWidgetForDisplay(int64_t display_id) {
   params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
   params.activatable = views::Widget::InitParams::ACTIVATABLE_NO;
   params.accept_events = false;
-  params.delegate = new TouchHudUI(widget.get());
+  params.delegate = new views::WidgetDelegateView;
   params.mus_properties[ui::mojom::WindowManager::kContainerId_InitProperty] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(ash::kShellWindowId_OverlayContainer));
@@ -138,7 +113,9 @@ void TouchHudApplication::CreateWidgetForDisplay(int64_t display_id) {
   params.name = "TouchHud";
   widget->Init(params);
   widget->Show();
-  display_id_to_widget_[display_id] = std::move(widget);
+
+  display_id_to_renderer_[display_id] =
+      std::make_unique<TouchHudRenderer>(std::move(widget));
 }
 
 void TouchHudApplication::Create(mash::mojom::LaunchableRequest request) {

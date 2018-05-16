@@ -11,17 +11,24 @@ source_set("lib") {
   sources = [
     "touch_hud_application.cc",
     "touch_hud_application.h",
+    "touch_hud_renderer.cc",
+    "touch_hud_renderer.h",
   ]
 
   deps = [
     "//ash/public/cpp",
-    "//ash/touch_hud",
     "//base",
+    "//cc/paint",
     "//mash/public/mojom",
     "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
     "//services/ui/public/cpp",
     "//services/ui/public/interfaces",
+    "//skia",
+    "//ui/compositor",
+    "//ui/events",
+    "//ui/gfx",
+    "//ui/gfx/geometry",
     "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]
