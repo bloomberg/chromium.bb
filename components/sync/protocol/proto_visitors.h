@@ -879,6 +879,11 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::UserConsent& proto) {
   VISIT(locale);
   VISIT_ENUM(status);
   VISIT(account_id);
+  VISIT(sync_consent);
+  VISIT(arc_backup_and_restore_consent);
+  VISIT(arc_location_service_consent);
+  VISIT(arc_play_terms_of_service_consent);
+  VISIT(arc_metrics_and_usage_consent);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::TypeHint& proto) {
@@ -911,6 +916,43 @@ VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(translation_event);
   VISIT(user_consent);
   VISIT(gaia_password_reuse_event);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserEventSpecifics::UserConsent::ArcBackupAndRestoreConsent&
+        proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT_ENUM(status);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserEventSpecifics::UserConsent::
+        ArcGoogleLocationServiceConsent& proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT_ENUM(status);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserEventSpecifics::UserConsent::ArcMetricsAndUsageConsent&
+        proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT_ENUM(status);
+}
+
+VISIT_PROTO_FIELDS(
+  const sync_pb::UserEventSpecifics::UserConsent::ArcPlayTermsOfServiceConsent&
+      proto) {
+  VISIT(play_terms_of_service_text_length);
+  VISIT(play_terms_of_service_hash);
+  VISIT(confirmation_grd_id);
+  VISIT_ENUM(status);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserEventSpecifics::UserConsent::SyncConsent& proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT(confirmation_grd_id);
+  VISIT_ENUM(status);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics::Test& proto) {}
