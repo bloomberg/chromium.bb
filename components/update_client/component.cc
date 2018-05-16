@@ -78,8 +78,7 @@ void InstallComplete(
              const CrxInstaller::Result& result) {
             base::DeleteFile(unpack_path, true);
             const ErrorCategory error_category =
-                result.error ? ErrorCategory::kInstallError
-                             : ErrorCategory::kErrorNone;
+                result.error ? ErrorCategory::kInstall : ErrorCategory::kNone;
             main_task_runner->PostTask(
                 FROM_HERE, base::BindOnce(std::move(callback),
                                           static_cast<int>(error_category),
@@ -110,7 +109,7 @@ void InstallOnBlockingTaskRunner(
     main_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
-                       static_cast<int>(ErrorCategory::kInstallError),
+                       static_cast<int>(ErrorCategory::kInstall),
                        static_cast<int>(result.error), result.extended_error));
     return;
   }
@@ -134,7 +133,7 @@ void UnpackCompleteOnBlockingTaskRunner(
     main_task_runner->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback),
-                       static_cast<int>(ErrorCategory::kUnpackError),
+                       static_cast<int>(ErrorCategory::kUnpack),
                        static_cast<int>(result.error), result.extended_error));
     return;
   }
@@ -217,6 +216,9 @@ CrxUpdateItem Component::GetCrxUpdateItem() const {
   crx_update_item.last_check = last_check_;
   crx_update_item.next_version = next_version_;
   crx_update_item.next_fp = next_fp_;
+  crx_update_item.error_category = error_category_;
+  crx_update_item.error_code = error_code_;
+  crx_update_item.extra_code1 = extra_code1_;
 
   return crx_update_item;
 }
@@ -349,7 +351,7 @@ void Component::StateNew::DoHandle() {
     TransitionState(std::make_unique<StateChecking>(&component));
   } else {
     component.error_code_ = static_cast<int>(Error::CRX_NOT_FOUND);
-    component.error_category_ = static_cast<int>(ErrorCategory::kServiceError);
+    component.error_category_ = static_cast<int>(ErrorCategory::kService);
     TransitionState(std::make_unique<StateUpdateError>(&component));
   }
 }
@@ -383,7 +385,7 @@ void Component::StateChecking::DoHandle() {
 void Component::StateChecking::UpdateCheckComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
   auto& component = State::component();
-  if (!component.update_check_error_) {
+  if (!component.error_code_) {
     if (component.status_ == "ok") {
       TransitionState(std::make_unique<StateCanUpdate>(&component));
       return;
@@ -440,7 +442,7 @@ void Component::StateCanUpdate::DoHandle() {
   if (component.crx_component()
           ->supports_group_policy_enable_component_updates &&
       !component.update_context_.enabled_component_updates) {
-    component.error_category_ = static_cast<int>(ErrorCategory::kServiceError);
+    component.error_category_ = static_cast<int>(ErrorCategory::kService);
     component.error_code_ = static_cast<int>(ServiceError::UPDATE_DISABLED);
     component.extra_code1_ = 0;
     TransitionState(std::make_unique<StateUpdateError>(&component));
@@ -538,8 +540,7 @@ void Component::StateDownloadingDiff::DownloadComplete(
 
   if (download_result.error) {
     DCHECK(download_result.response.empty());
-    component.diff_error_category_ =
-        static_cast<int>(ErrorCategory::kNetworkError);
+    component.diff_error_category_ = static_cast<int>(ErrorCategory::kDownload);
     component.diff_error_code_ = download_result.error;
 
     TransitionState(std::make_unique<StateDownloading>(&component));
@@ -608,7 +609,7 @@ void Component::StateDownloading::DownloadComplete(
 
   if (download_result.error) {
     DCHECK(download_result.response.empty());
-    component.error_category_ = static_cast<int>(ErrorCategory::kNetworkError);
+    component.error_category_ = static_cast<int>(ErrorCategory::kDownload);
     component.error_code_ = download_result.error;
 
     TransitionState(std::make_unique<StateUpdateError>(&component));
@@ -670,13 +671,12 @@ void Component::StateUpdatingDiff::InstallComplete(int error_category,
     return;
   }
 
-  DCHECK_EQ(static_cast<int>(ErrorCategory::kErrorNone),
+  DCHECK_EQ(static_cast<int>(ErrorCategory::kNone),
             component.diff_error_category_);
   DCHECK_EQ(0, component.diff_error_code_);
   DCHECK_EQ(0, component.diff_extra_code1_);
 
-  DCHECK_EQ(static_cast<int>(ErrorCategory::kErrorNone),
-            component.error_category_);
+  DCHECK_EQ(static_cast<int>(ErrorCategory::kNone), component.error_category_);
   DCHECK_EQ(0, component.error_code_);
   DCHECK_EQ(0, component.extra_code1_);
 
@@ -735,8 +735,7 @@ void Component::StateUpdating::InstallComplete(int error_category,
     return;
   }
 
-  DCHECK_EQ(static_cast<int>(ErrorCategory::kErrorNone),
-            component.error_category_);
+  DCHECK_EQ(static_cast<int>(ErrorCategory::kNone), component.error_category_);
   DCHECK_EQ(0, component.error_code_);
   DCHECK_EQ(0, component.extra_code1_);
 

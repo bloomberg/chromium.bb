@@ -92,9 +92,10 @@ class Component {
   std::string next_fp() const { return next_fp_; }
   void set_next_fp(const std::string& next_fp) { next_fp_ = next_fp; }
 
-  int update_check_error() const { return update_check_error_; }
   void set_update_check_error(int update_check_error) {
-    update_check_error_ = update_check_error;
+    error_category_ = static_cast<int>(ErrorCategory::kUpdateCheck);
+    error_code_ = update_check_error;
+    extra_code1_ = 0;
   }
 
   bool is_foreground() const;

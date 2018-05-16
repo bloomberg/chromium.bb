@@ -33,6 +33,10 @@ struct CrxUpdateItem {
 
   base::Version next_version;
   std::string next_fp;
+
+  int error_category = 0;
+  int error_code = 0;
+  int extra_code1 = 0;
 };
 
 }  // namespace update_client

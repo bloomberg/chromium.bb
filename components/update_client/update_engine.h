@@ -164,7 +164,9 @@ struct UpdateContext : public base::RefCounted<UpdateContext> {
   // update check.
   std::vector<std::string> components_to_check_for_updates;
 
+  // The error reported by the update checker.
   int update_check_error = 0;
+
   size_t num_components_ready_to_check = 0;
   size_t num_components_checked = 0;
 
