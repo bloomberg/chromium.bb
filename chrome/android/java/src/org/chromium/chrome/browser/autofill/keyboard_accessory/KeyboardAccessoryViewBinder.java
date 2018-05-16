@@ -15,6 +15,7 @@ import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessory
 import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
 import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
@@ -24,8 +25,9 @@ import org.chromium.ui.widget.ButtonCompat;
 class KeyboardAccessoryViewBinder
         implements LazyViewBinderAdapter.SimpleViewBinder<KeyboardAccessoryModel,
                 KeyboardAccessoryView, PropertyKey> {
-    static class ActionViewBinder implements RecyclerViewAdapter.ViewBinder<
-            KeyboardAccessoryModel.SimpleListObservable<Action>, ActionViewBinder.ViewHolder> {
+    static class ActionViewBinder
+            implements RecyclerViewAdapter.ViewBinder<SimpleListObservable<Action>,
+                    ActionViewBinder.ViewHolder> {
         static class ViewHolder extends RecyclerView.ViewHolder {
             public ViewHolder(ButtonCompat actionView) {
                 super(actionView);
@@ -44,8 +46,8 @@ class KeyboardAccessoryViewBinder
         }
 
         @Override
-        public void onBindViewHolder(KeyboardAccessoryModel.SimpleListObservable<Action> actions,
-                ViewHolder holder, int position) {
+        public void onBindViewHolder(
+                SimpleListObservable<Action> actions, ViewHolder holder, int position) {
             final Action action = actions.get(position);
             holder.getActionView().setText(action.getCaption());
             holder.getActionView().setOnClickListener(
@@ -53,11 +55,12 @@ class KeyboardAccessoryViewBinder
         }
     }
 
-    static class TabViewBinder implements ListModelChangeProcessor.ViewBinder<
-            KeyboardAccessoryModel.SimpleListObservable<Tab>, KeyboardAccessoryView> {
+    static class TabViewBinder
+            implements ListModelChangeProcessor
+                               .ViewBinder<SimpleListObservable<Tab>, KeyboardAccessoryView> {
         @Override
-        public void onItemsInserted(KeyboardAccessoryModel.SimpleListObservable<Tab> model,
-                KeyboardAccessoryView view, int index, int count) {
+        public void onItemsInserted(
+                SimpleListObservable<Tab> model, KeyboardAccessoryView view, int index, int count) {
             assert count > 0 : "Tried to insert invalid amount of tabs - must be at least one.";
             while (count-- > 0) {
                 Tab tab = model.get(index);
@@ -67,8 +70,8 @@ class KeyboardAccessoryViewBinder
         }
 
         @Override
-        public void onItemsRemoved(KeyboardAccessoryModel.SimpleListObservable<Tab> model,
-                KeyboardAccessoryView view, int index, int count) {
+        public void onItemsRemoved(
+                SimpleListObservable<Tab> model, KeyboardAccessoryView view, int index, int count) {
             assert count > 0 : "Tried to remove invalid amount of tabs - must be at least one.";
             while (count-- > 0) {
                 view.removeTabAt(index++);
@@ -76,14 +79,13 @@ class KeyboardAccessoryViewBinder
         }
 
         @Override
-        public void onItemsChanged(KeyboardAccessoryModel.SimpleListObservable<Tab> model,
-                KeyboardAccessoryView view, int index, int count) {
+        public void onItemsChanged(
+                SimpleListObservable<Tab> model, KeyboardAccessoryView view, int index, int count) {
             // TODO(fhorschig): Implement fine-grained, ranged changes should the need arise.
             updateAllTabs(view, model);
         }
 
-        void updateAllTabs(KeyboardAccessoryView view,
-                KeyboardAccessoryModel.SimpleListObservable<Tab> model) {
+        void updateAllTabs(KeyboardAccessoryView view, SimpleListObservable<Tab> model) {
             view.clearTabs();
             for (int i = 0; i < model.getItemCount(); ++i) {
                 Tab tab = model.get(i);

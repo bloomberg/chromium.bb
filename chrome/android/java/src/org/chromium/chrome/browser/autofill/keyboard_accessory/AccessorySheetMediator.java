@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -12,14 +14,15 @@ import org.chromium.base.VisibleForTesting;
  */
 class AccessorySheetMediator {
     private final AccessorySheetModel mModel;
-    private KeyboardAccessoryData.Tab mTab;
 
     AccessorySheetMediator(AccessorySheetModel model) {
         mModel = model;
     }
 
+    @Nullable
     KeyboardAccessoryData.Tab getTab() {
-        return null; // TODO(fhorschig): Return the active tab.
+        if (mModel.getActiveTabIndex() == AccessorySheetModel.NO_ACTIVE_TAB) return null;
+        return mModel.getTabList().get(mModel.getActiveTabIndex());
     }
 
     @VisibleForTesting
@@ -33,5 +36,12 @@ class AccessorySheetMediator {
 
     public void hide() {
         mModel.setVisible(false);
+    }
+
+    public void addTab(KeyboardAccessoryData.Tab tab) {
+        mModel.getTabList().add(tab);
+        if (mModel.getActiveTabIndex() == AccessorySheetModel.NO_ACTIVE_TAB) {
+            mModel.setActiveTabIndex(mModel.getTabList().getItemCount() - 1);
+        }
     }
 }
