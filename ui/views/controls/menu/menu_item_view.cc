@@ -1107,8 +1107,12 @@ MenuItemView::MenuItemDimensions MenuItemView::CalculateDimensions() const {
   const MenuConfig& menu_config = MenuConfig::instance();
 
   if (GetMenuController() && GetMenuController()->use_touchable_layout()) {
-    // MenuItemViews that use the touchable layout have fixed height and width.
+    // Touchable layout uses a fixed size, but adjusts the height for icons.
     dimensions.height = menu_config.touchable_menu_height;
+    if (icon_view_) {
+      dimensions.height = icon_view_->height() +
+                          2 * menu_config.vertical_touchable_menu_item_padding;
+    }
     dimensions.standard_width = menu_config.touchable_menu_width;
     return dimensions;
   }
@@ -1187,6 +1191,14 @@ void MenuItemView::ApplyMinimumDimensions(MenuItemDimensions* dims) const {
 
 int MenuItemView::GetLabelStartForThisItem() const {
   const MenuConfig& config = MenuConfig::instance();
+
+  // Touchable items with icons do not respect |label_start_|.
+  if (GetMenuController() && GetMenuController()->use_touchable_layout() &&
+      icon_view_) {
+    return config.touchable_item_left_margin + icon_view_->width() +
+           config.touchable_icon_to_label_padding;
+  }
+
   int label_start = label_start_ + left_icon_margin_ + right_icon_margin_;
   if ((config.icons_in_label || type_ == CHECKBOX || type_ == RADIO) &&
       icon_view_)

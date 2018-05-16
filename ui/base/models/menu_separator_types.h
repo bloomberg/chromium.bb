@@ -26,6 +26,10 @@ enum MenuSeparatorType {
 
   // Vertical separator within a row.
   VERTICAL_SEPARATOR,
+
+  // Separator with left padding - top to bottom: Line only,
+  //                               horizontal: Starts after left padding.
+  PADDED_SEPARATOR,
 };
 
 }  // namespace ui

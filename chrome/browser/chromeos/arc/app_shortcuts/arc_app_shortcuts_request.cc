@@ -12,7 +12,6 @@
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
-#include "ui/views/controls/menu/menu_config.h"
 
 namespace arc {
 
@@ -57,7 +56,7 @@ void ArcAppShortcutsRequest::OnGetAppShortcutItems(
       base::BindOnce(&ArcAppShortcutsRequest::OnAllIconDecodeRequestsDone,
                      base::Unretained(this)));
 
-  const views::MenuConfig& menu_config = views::MenuConfig::instance();
+  constexpr int kAppShortcutIconSize = 32;
   for (const auto& shortcut_item_ptr : shortcut_items) {
     ArcAppShortcutItem item;
     item.shortcut_id = shortcut_item_ptr->shortcut_id;
@@ -67,7 +66,7 @@ void ArcAppShortcutsRequest::OnGetAppShortcutItems(
     icon_decode_requests_.emplace_back(std::make_unique<IconDecodeRequest>(
         base::BindOnce(&ArcAppShortcutsRequest::OnSingleIconDecodeRequestDone,
                        weak_ptr_factory_.GetWeakPtr(), items_->size() - 1),
-        menu_config.touchable_icon_size));
+        kAppShortcutIconSize));
     icon_decode_requests_.back()->StartWithOptions(shortcut_item_ptr->icon_png);
   }
 }
