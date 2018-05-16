@@ -83,7 +83,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
     expected_generated_test = {
         'override_compile_targets': ['telemetry_perf_tests'],
         'args': ['speedometer', '-v', '--upload-results',
-                 '--browser=release', '--output-format=chartjson'],
+                 '--browser=release', '--output-format=histograms'],
         'swarming': {
           'ignore_task_failure': False,
           'dimension_sets': [{'os': 'SkyNet', 'id': 'T-850', 'pool': 'T-RIP'}],
@@ -105,7 +105,7 @@ class PerfDataGeneratorTest(unittest.TestCase):
     expected_generated_test = {
         'override_compile_targets': ['telemetry_perf_tests'],
         'args': ['speedometer', '-v', '--upload-results',
-                 '--browser=reference', '--output-format=chartjson',
+                 '--browser=reference', '--output-format=histograms',
                  '--max-failures=5',
                  '--output-trace-tag=_ref'],
         'swarming': {
