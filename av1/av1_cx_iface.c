@@ -156,8 +156,8 @@ static struct av1_extracfg default_extra_cfg = {
   1,                            // jnt_comp
   1,                            // enable_ref_frame_mvs sequence level
   1,                            // allow ref_frame_mvs frame level
-  1,                            // frame order hint
-  1,                            // jnt_comp
+  1,                            // enable_warped_motion at sequence level
+  1,                            // allow_warped_motion at frame level
   1,                            // superres
 };
 
@@ -681,6 +681,11 @@ static aom_codec_err_t set_encoder_config(
       extra_cfg->enable_jnt_comp & extra_cfg->enable_order_hint;
   oxcf->enable_ref_frame_mvs =
       extra_cfg->enable_ref_frame_mvs & extra_cfg->enable_order_hint;
+
+  oxcf->enable_warped_motion = extra_cfg->enable_warped_motion;
+  oxcf->allow_warped_motion =
+      extra_cfg->allow_warped_motion & extra_cfg->enable_warped_motion;
+
   oxcf->enable_superres =
       (oxcf->superres_mode != SUPERRES_NONE) && extra_cfg->enable_superres;
   if (!oxcf->enable_superres) {
