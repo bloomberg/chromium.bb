@@ -15,6 +15,7 @@
 #include "content/public/test/test_utils.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/media_switches.h"
+#include "media/media_buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
@@ -232,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
       "testGetSettingsWhenRemoteDimensionsUnknown();");
 }
 
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) && BUILDFLAG(USE_PROPRIETARY_CODECS)
 // This test is to make sure HW H264 work normally on supported devices, since
 // there is no SW H264 fallback available on Android.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcBrowserTest,
