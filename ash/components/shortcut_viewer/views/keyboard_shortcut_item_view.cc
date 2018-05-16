@@ -13,6 +13,7 @@
 #include "ash/components/shortcut_viewer/views/bubble_view.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
 #include "base/i18n/rtl.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -21,6 +22,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/styled_label.h"
+
 namespace keyboard_shortcut_viewer {
 
 namespace {
@@ -74,7 +76,13 @@ KeyboardShortcutItemView::KeyboardShortcutItemView(
   replacement_strings.reserve(shortcut_key_codes_size);
   bool has_invalid_dom_key = false;
   for (ui::KeyboardCode key_code : item.shortcut_key_codes) {
-    const base::string16& dom_key_string = GetStringForKeyboardCode(key_code);
+    auto iter = GetKeycodeToString16Cache()->find(key_code);
+    if (iter == GetKeycodeToString16Cache()->end()) {
+      iter = GetKeycodeToString16Cache()
+                 ->emplace(key_code, GetStringForKeyboardCode(key_code))
+                 .first;
+    }
+    const base::string16& dom_key_string = iter->second;
     // If the |key_code| has no mapped |dom_key_string|, we use alternative
     // string to indicate that the shortcut is not supported by current keyboard
     // layout.
@@ -146,6 +154,19 @@ int KeyboardShortcutItemView::GetHeightForWidth(int w) const {
 
 void KeyboardShortcutItemView::Layout() {
   MaybeCalculateAndDoLayout(GetLocalBounds().width());
+}
+
+// static
+void KeyboardShortcutItemView::ClearKeycodeToString16Cache() {
+  GetKeycodeToString16Cache()->clear();
+}
+
+// static
+std::map<ui::KeyboardCode, base::string16>*
+KeyboardShortcutItemView::GetKeycodeToString16Cache() {
+  static base::NoDestructor<std::map<ui::KeyboardCode, base::string16>>
+      key_code_to_string16_cache;
+  return key_code_to_string16_cache.get();
 }
 
 void KeyboardShortcutItemView::MaybeCalculateAndDoLayout(int width) const {

@@ -39,7 +39,19 @@ class KeyboardShortcutItemView : public views::View {
 
   const KeyboardShortcutItem* shortcut_item() const { return shortcut_item_; }
 
+  // Clear the cache.
+  static void ClearKeycodeToString16Cache();
+
  private:
+  // A cache to avoid repeatly looking up base::string16 from ui::KeyboardCode.
+  // Currently the Keyboard Shortcut Viewer (KSV) will not refresh its contents
+  // when keyboard layout changes. The users must restart KSV again to get new
+  // keys for the new layout. Also since GetStringForKeyboardCode is only called
+  // for KSV to create the strings in the initialization process, clearing the
+  // cache is not necessary when keyboard layout changes.
+  static std::map<ui::KeyboardCode, base::string16>*
+  GetKeycodeToString16Cache();
+
   // Calculates how to layout child views, sets their size and position. |width|
   // is the horizontal space, in pixels, that the view has to work with.
   // Returns the needed size and caches the result in |calculated_size_|.
