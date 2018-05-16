@@ -32,6 +32,9 @@ class GFX_EXPORT GpuFence {
   ClientGpuFence AsClientGpuFence();
   static GpuFence* FromClientGpuFence(ClientGpuFence gpu_fence);
 
+  // Wait for the GpuFence to become ready.
+  void Wait();
+
  private:
   gfx::GpuFenceHandleType type_;
 #if defined(OS_POSIX)

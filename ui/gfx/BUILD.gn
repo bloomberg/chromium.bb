@@ -567,6 +567,10 @@ source_set("memory_buffer_sources") {
     deps += [ "//third_party/libdrm" ]
   }
 
+  if (is_linux || is_android) {
+    deps += [ "//third_party/libsync" ]
+  }
+
   if (is_mac) {
     sources += [
       "mac/io_surface.cc",
