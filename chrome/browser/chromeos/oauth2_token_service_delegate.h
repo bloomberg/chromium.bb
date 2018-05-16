@@ -52,7 +52,6 @@ class ChromeOSOAuth2TokenServiceDelegate : public OAuth2TokenServiceDelegate,
   void OnTokenUpserted(const AccountManager::AccountKey& account_key) override;
 
   // TODO(sinhak): Implement server token revocation.
-  // TODO(sinhak): Implement scoped batch changes.
 
  private:
   // Callback handler for |AccountManager::GetAccounts|.

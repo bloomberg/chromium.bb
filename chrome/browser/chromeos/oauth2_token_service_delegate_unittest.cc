@@ -11,6 +11,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "chromeos/account_manager/account_manager.h"
 #include "components/signin/core/browser/account_info.h"
@@ -30,8 +31,25 @@ using account_manager::AccountType::ACCOUNT_TYPE_ACTIVE_DIRECTORY;
 
 class TokenServiceObserver : public OAuth2TokenService::Observer {
  public:
+  void OnStartBatchChanges() override {
+    EXPECT_FALSE(is_inside_batch_);
+    is_inside_batch_ = true;
+
+    // Start a new batch
+    batch_change_records_.emplace_back(std::vector<std::string>());
+  }
+
+  void OnEndBatchChanges() override {
+    EXPECT_TRUE(is_inside_batch_);
+    is_inside_batch_ = false;
+  }
+
   void OnRefreshTokenAvailable(const std::string& account_id) override {
+    EXPECT_TRUE(is_inside_batch_);
     account_ids_.insert(account_id);
+
+    // Record the |account_id| in the last batch.
+    batch_change_records_.rbegin()->emplace_back(account_id);
   }
 
   void OnAuthErrorChanged(const std::string& account_id,
@@ -43,6 +61,12 @@ class TokenServiceObserver : public OAuth2TokenService::Observer {
   std::string last_err_account_id_;
   GoogleServiceAuthError last_err_;
   std::set<std::string> account_ids_;
+  bool is_inside_batch_ = false;
+
+  // Records batch changes for later verification. Each index of this vector
+  // represents a batch change. Each batch change is a vector of account ids for
+  // which |OnRefreshTokenAvailable| is called.
+  std::vector<std::vector<std::string>> batch_change_records_;
 };
 
 }  // namespace
@@ -70,37 +94,49 @@ class CrOSOAuthDelegateTest : public testing::Test {
 
     account_tracker_service_.Initialize(client_.get());
 
-    account_info_.email = "user@gmail.com";
-    account_info_.gaia = "111";
-    account_info_.full_name = "name";
-    account_info_.given_name = "name";
-    account_info_.hosted_domain = "example.com";
-    account_info_.locale = "en";
-    account_info_.picture_url = "https://example.com";
-    account_info_.is_child_account = false;
-    account_info_.account_id = account_tracker_service_.PickAccountIdForAccount(
-        account_info_.gaia, account_info_.email);
-
-    ASSERT_TRUE(account_info_.IsValid());
+    account_info_ = CreateAccountInfoTestFixture("111" /* gaia_id */,
+                                                 "user@gmail.com" /* email */);
     account_tracker_service_.SeedAccountInfo(account_info_);
 
     delegate_ = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
         &account_tracker_service_, &account_manager_);
   }
 
+  AccountInfo CreateAccountInfoTestFixture(const std::string& gaia_id,
+                                           const std::string& email) {
+    AccountInfo account_info;
+
+    account_info.gaia = gaia_id;
+    account_info.email = email;
+    account_info.full_name = "name";
+    account_info.given_name = "name";
+    account_info.hosted_domain = "example.com";
+    account_info.locale = "en";
+    account_info.picture_url = "https://example.com";
+    account_info.is_child_account = false;
+    account_info.account_id = account_tracker_service_.PickAccountIdForAccount(
+        account_info.gaia, account_info.email);
+
+    // Cannot use |ASSERT_TRUE| due to a |void| return type in an |ASSERT_TRUE|
+    // branch.
+    EXPECT_TRUE(account_info.IsValid());
+
+    return account_info;
+  }
+
   // Check base/test/scoped_task_environment.h. This must be the first member /
   // declared before any member that cares about tasks.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
+  base::ScopedTempDir tmp_dir_;
   AccountInfo account_info_;
+  AccountTrackerService account_tracker_service_;
   AccountManager account_manager_;
   std::unique_ptr<ChromeOSOAuth2TokenServiceDelegate> delegate_;
 
  private:
-  base::ScopedTempDir tmp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<TestSigninClient> client_;
-  AccountTrackerService account_tracker_service_;
 
   DISALLOW_COPY_AND_ASSIGN(CrOSOAuthDelegateTest);
 };
@@ -174,6 +210,70 @@ TEST_F(CrOSOAuthDelegateTest,
   EXPECT_EQ(std::string(), observer.last_err_account_id_);
 
   delegate_->RemoveObserver(&observer);
+}
+
+TEST_F(CrOSOAuthDelegateTest,
+       BatchChangeObserversAreNotifiedOnCredentialsUpdate) {
+  TokenServiceObserver observer;
+  delegate_->AddObserver(&observer);
+  delegate_->UpdateCredentials(account_info_.account_id, "123");
+
+  EXPECT_EQ(1UL, observer.batch_change_records_.size());
+  EXPECT_EQ(1UL, observer.batch_change_records_[0].size());
+  EXPECT_EQ(account_info_.account_id, observer.batch_change_records_[0][0]);
+
+  delegate_->RemoveObserver(&observer);
+}
+
+// If observers register themselves with |OAuth2TokenServiceDelegate| before
+// |AccountManager| has been initialized, they should receive all the accounts
+// stored in |AccountManager| in a single batch.
+TEST_F(CrOSOAuthDelegateTest, BatchChangeObserversAreNotifiedOncePerBatch) {
+  // Setup
+  AccountInfo account1 = CreateAccountInfoTestFixture(
+      "1" /* gaia_id */, "test1@gmail.com" /* email */);
+  AccountInfo account2 = CreateAccountInfoTestFixture(
+      "2" /* gaia_id */, "test2@gmail.com" /* email */);
+
+  account_tracker_service_.SeedAccountInfo(account1);
+  account_tracker_service_.SeedAccountInfo(account2);
+  account_manager_.UpsertToken(
+      AccountManager::AccountKey{account1.gaia, ACCOUNT_TYPE_GAIA}, "token1");
+  account_manager_.UpsertToken(
+      AccountManager::AccountKey{account2.gaia, ACCOUNT_TYPE_GAIA}, "token2");
+  scoped_task_environment_.RunUntilIdle();
+
+  AccountManager account_manager;
+  // AccountManager will not be fully initialized until
+  // |scoped_task_environment_.RunUntilIdle()| is called.
+  account_manager.Initialize(tmp_dir_.GetPath());
+
+  // Register callbacks before AccountManager has been fully initialized.
+  auto delegate = std::make_unique<ChromeOSOAuth2TokenServiceDelegate>(
+      &account_tracker_service_, &account_manager);
+  TokenServiceObserver observer;
+  delegate->AddObserver(&observer);
+  // Wait until AccountManager is fully initialized.
+  scoped_task_environment_.RunUntilIdle();
+
+  // Tests
+
+  // The observer should receive 3 batch change callbacks:
+  // First - A batch of all accounts stored in AccountManager: because of the
+  // delegate's invocation of |AccountManager::GetAccounts| in its constructor.
+  // Followed by 2 updates for the individual accounts (|account1| and
+  // |account2|): because of the delegate's registration as an
+  // |AccountManager::Observer| before |AccountManager| has been fully
+  // initialized.
+  EXPECT_EQ(3UL, observer.batch_change_records_.size());
+
+  const std::vector<std::string>& first_batch =
+      observer.batch_change_records_[0];
+  EXPECT_EQ(2UL, first_batch.size());
+  EXPECT_TRUE(base::ContainsValue(first_batch, account1.account_id));
+  EXPECT_TRUE(base::ContainsValue(first_batch, account2.account_id));
+
+  delegate->RemoveObserver(&observer);
 }
 
 TEST_F(CrOSOAuthDelegateTest, GetAccountsShouldNotReturnAdAccounts) {
