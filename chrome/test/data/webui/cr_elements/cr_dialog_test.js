@@ -248,4 +248,41 @@ suite('cr-dialog', function() {
     dialog.dispatchEvent(e);
     assertFalse(e.defaultPrevented);
   });
+
+  test('dialog close button shown when showCloseButton is true', function() {
+    document.body.innerHTML = `
+      <cr-dialog show-close-button>
+        <div slot="title">title</div>
+      </cr-dialog>`;
+
+    const dialog = document.body.querySelector('cr-dialog');
+    dialog.showModal();
+    assertTrue(dialog.open);
+
+    // The paper-icon-button-light is the hidden element which is the
+    // parentElement of the button.
+    assertFalse(dialog.getCloseButton().parentElement.hidden);
+    assertEquals(
+        'block',
+        window.getComputedStyle(dialog.getCloseButton().parentElement).display);
+    dialog.getCloseButton().click();
+    assertFalse(dialog.open);
+  });
+
+  test('dialog close button hidden when showCloseButton is false', function() {
+    document.body.innerHTML = `
+      <cr-dialog>
+        <div slot="title">title</div>
+      </cr-dialog>`;
+
+    const dialog = document.body.querySelector('cr-dialog');
+    dialog.showModal();
+
+    // The paper-icon-button-light is the hidden element which is the
+    // parentElement of the button.
+    assertTrue(dialog.getCloseButton().parentElement.hidden);
+    assertEquals(
+        'none',
+        window.getComputedStyle(dialog.getCloseButton().parentElement).display);
+  });
 });

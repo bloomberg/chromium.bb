@@ -142,7 +142,7 @@
             <slot name="title"></slot>
           </div>
           <paper-icon-button-light id="closeContainer" class="icon-clear"
-              hidden$="[[noCancel]]">
+              hidden$="[[!showCloseButton]]">
             <button id="close" aria-label$="[[closeText]]"
                 on-tap="cancel" on-keypress="onCloseKeypress_">
             </button>
