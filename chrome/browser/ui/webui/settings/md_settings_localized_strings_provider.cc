@@ -1603,7 +1603,9 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_PERSONALIZATION_SECTION_ACCESSIBILITY_LABEL},
     {"syncExpandA11yLabel", IDS_SETTINGS_SYNC_SECTION_ACCESSIBILITY_LABEL},
     {"syncAndPersonalization", IDS_SETTINGS_SYNC_SYNC_AND_PERSONALIZATION},
-    {"syncPageTitle", IDS_SETTINGS_SYNC_PAGE_TITLE},
+    {"syncPageTitle", IsUnifiedConsentEnabled(profile)
+                          ? IDS_SETTINGS_SYNC_SYNC_AND_PERSONALIZATION
+                          : IDS_SETTINGS_SYNC_PAGE_TITLE},
     {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
     {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
     {"syncEverythingCheckboxLabel",
