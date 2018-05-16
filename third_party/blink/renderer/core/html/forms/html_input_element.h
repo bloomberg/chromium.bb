@@ -394,8 +394,6 @@ class CORE_EXPORT HTMLInputElement
 
   void SetListAttributeTargetObserver(ListAttributeTargetObserver*);
   void ResetListAttributeTargetObserver();
-  void ParseMaxLengthAttribute(const AtomicString&);
-  void ParseMinLengthAttribute(const AtomicString&);
 
   // Returns null if this isn't associated with any radio button group.
   RadioButtonGroupScope* GetRadioButtonGroupScope() const;
