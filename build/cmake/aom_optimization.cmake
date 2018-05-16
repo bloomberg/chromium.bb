@@ -40,6 +40,9 @@ endfunction()
 # libraries do not have this limitation.
 function(add_intrinsics_object_library flag opt_name target_to_update sources
          dependent_target)
+  if("${${sources}}" STREQUAL "")
+    return()
+  endif()
   set(target_name ${target_to_update}_${opt_name}_intrinsics)
   add_library(${target_name} OBJECT ${${sources}})
 
@@ -113,6 +116,9 @@ endfunction()
 # ensure that all cmake generators can determine the linker language, and that
 # build tools don't complain that an object exposes no symbols.
 function(add_asm_library lib_name asm_sources dependent_target)
+  if("${${asm_sources}}" STREQUAL "")
+    return()
+  endif()
   set(asm_lib_obj_dir "${AOM_CONFIG_DIR}/asm_objects/${lib_name}")
   if(NOT EXISTS "${asm_lib_obj_dir}")
     file(MAKE_DIRECTORY "${asm_lib_obj_dir}")
@@ -154,6 +160,9 @@ endfunction()
 # to ensure the sources are reconverted when the original asm source is updated.
 # See add_asm_library() for more information.
 function(add_gas_asm_library lib_name asm_sources dependent_target)
+  if("${${asm_sources}}" STREQUAL "")
+    return()
+  endif()
   set(asm_converted_source_dir "${AOM_CONFIG_DIR}/asm_gas/${lib_name}")
   if(NOT EXISTS "${asm_converted_source_dir}")
     file(MAKE_DIRECTORY "${asm_converted_source_dir}")
