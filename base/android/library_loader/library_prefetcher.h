@@ -33,8 +33,7 @@ class BASE_EXPORT NativeLibraryPrefetcher {
   // it wait()s for the process to exit or die. If ordered_only is true, only
   // the ordered section is prefetched. See GetOrdrderedTextRange() in
   // library_prefetcher.cc.
-  // Returns true for success.
-  static bool ForkAndPrefetchNativeLibrary(bool ordered_only);
+  static void ForkAndPrefetchNativeLibrary(bool ordered_only);
 
   // Returns the percentage of the native library code currently resident in
   // memory, or -1 in case of error.

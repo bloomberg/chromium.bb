@@ -312,18 +312,11 @@ public class LibraryLoader {
         protected Void doInBackground(Void... params) {
             try (TraceEvent e = TraceEvent.scoped("LibraryLoader.asyncPrefetchLibrariesToMemory")) {
                 int percentage = nativePercentageOfResidentNativeLibraryCode();
-                boolean success = false;
                 // Arbitrary percentage threshold. If most of the native library is already
                 // resident (likely with monochrome), don't bother creating a prefetch process.
                 boolean prefetch = mColdStart && percentage < 90;
                 if (prefetch) {
-                    success = nativeForkAndPrefetchNativeLibrary();
-                    if (!success) {
-                        Log.w(TAG, "Forking a process to prefetch the native library failed.");
-                    }
-                }
-                if (prefetch) {
-                    RecordHistogram.recordBooleanHistogram("LibraryLoader.PrefetchStatus", success);
+                    nativeForkAndPrefetchNativeLibrary();
                 }
                 if (percentage != -1) {
                     String histogram = "LibraryLoader.PercentageOfResidentCodeBeforePrefetch"
@@ -712,7 +705,7 @@ public class LibraryLoader {
     // Finds the ranges corresponding to the native library pages, forks a new
     // process to prefetch these pages and waits for it. The new process then
     // terminates. This is blocking.
-    private static native boolean nativeForkAndPrefetchNativeLibrary();
+    private static native void nativeForkAndPrefetchNativeLibrary();
 
     // Returns the percentage of the native library code page that are currently reseident in
     // memory.
