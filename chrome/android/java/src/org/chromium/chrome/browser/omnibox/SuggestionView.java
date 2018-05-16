@@ -929,7 +929,15 @@ class SuggestionView extends ViewGroup {
             int leftOffset = getUrlBarLeftOffset();
             View contentView = getRootView().findViewById(android.R.id.content);
             ViewUtils.getRelativeLayoutPosition(contentView, this, mViewPositionHolder);
-            return leftOffset + mUrlBar.getWidth() - mUrlBar.getPaddingRight()
+
+            // When a user types into the omnibox, buttons on the url action container e.g. delete
+            // become visible, shrinking the url bar's width. Add the url action container's width
+            // to the url bar for consistency.
+            int buttonWidth = 0;
+            if (mLocationBar instanceof LocationBarPhone) {
+                buttonWidth = mLocationBar.getUrlContainerMarginEnd();
+            }
+            return leftOffset + mUrlBar.getWidth() + buttonWidth - mUrlBar.getPaddingRight()
                     - mViewPositionHolder[0];
         }
 
