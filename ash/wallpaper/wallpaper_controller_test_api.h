@@ -26,8 +26,13 @@ class ASH_EXPORT WallpaperControllerTestApi {
   // The expected prominent color is returned.
   SkColor ApplyColorProducingWallpaper();
 
-  // Simulates the fullscreen wallpaper preview mode.
+  // Simulates starting the fullscreen wallpaper preview.
   void StartWallpaperPreview();
+
+  // Simulates ending the fullscreen wallpaper preview.
+  // |confirm_preview_wallpaper| indicates if the preview wallpaper should be
+  // set as the actual user wallpaper.
+  void EndWallpaperPreview(bool confirm_preview_wallpaper);
 
  private:
   WallpaperController* controller_;

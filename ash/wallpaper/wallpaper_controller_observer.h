@@ -20,6 +20,9 @@ class ASH_EXPORT WallpaperControllerObserver {
   // Invoked when the wallpaper preview mode starts.
   virtual void OnWallpaperPreviewStarted() {}
 
+  // Invoked when the wallpaper preview mode ends.
+  virtual void OnWallpaperPreviewEnded() {}
+
  protected:
   virtual ~WallpaperControllerObserver() {}
 };

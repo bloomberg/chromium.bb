@@ -373,6 +373,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   FRIEND_TEST_ALL_PREFIXES(WallpaperControllerTest,
                            WallpaperMovementDuringUnlock);
   friend class WallpaperControllerTest;
+  friend class WallpaperControllerTestApi;
 
   // Cached default wallpaper image and file path. The file path can be used to
   // check if the image is outdated (i.e. when there's a new default wallpaper).

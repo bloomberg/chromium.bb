@@ -1208,12 +1208,16 @@ void WallpaperController::SetThirdPartyWallpaper(
 void WallpaperController::ConfirmPreviewWallpaper() {
   std::move(confirm_preview_wallpaper_callback_).Run();
   reload_preview_wallpaper_callback_.Reset();
+  for (auto& observer : observers_)
+    observer.OnWallpaperPreviewEnded();
 }
 
 void WallpaperController::CancelPreviewWallpaper() {
   confirm_preview_wallpaper_callback_.Reset();
   reload_preview_wallpaper_callback_.Reset();
   ReloadWallpaper(false /*clear_cache=*/);
+  for (auto& observer : observers_)
+    observer.OnWallpaperPreviewEnded();
 }
 
 void WallpaperController::UpdateCustomWallpaperLayout(

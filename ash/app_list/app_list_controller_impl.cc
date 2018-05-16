@@ -17,6 +17,7 @@
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "ash/wallpaper/wallpaper_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -81,11 +82,13 @@ AppListControllerImpl::AppListControllerImpl()
   OnSessionStateChanged(session_controller->GetSessionState());
 
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
+  Shell::Get()->wallpaper_controller()->AddObserver(this);
   Shell::Get()->AddShellObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
   Shell::Get()->RemoveShellObserver(this);
+  Shell::Get()->wallpaper_controller()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
   model_.RemoveObserver(this);
@@ -467,23 +470,17 @@ void AppListControllerImpl::OnVirtualKeyboardStateChanged(
 }
 
 void AppListControllerImpl::OnOverviewModeStarting() {
+  in_overview_mode_ = true;
   if (!IsHomeLauncherEnabledInTabletMode()) {
-    presenter_.Dismiss(base::TimeTicks());
+    DismissAppList();
     return;
   }
-  // In tablet mode, set the app list invisible if the overview mode starts
-  // instead of dismissing it. The app list will be visible when the overview
-  // mode ends, so only changing visibity is less expensive.
-  if (presenter_.GetWindow())
-    presenter_.GetWindow()->Hide();
+  UpdateHomeLauncherVisibility();
 }
 
 void AppListControllerImpl::OnOverviewModeEnding() {
-  if (!IsHomeLauncherEnabledInTabletMode())
-    return;
-  // In tablet mode, set the app list visible if the overview mode ends.
-  if (presenter_.GetWindow())
-    presenter_.GetWindow()->Show();
+  in_overview_mode_ = false;
+  UpdateHomeLauncherVisibility();
 }
 
 void AppListControllerImpl::OnTabletModeStarted() {
@@ -501,6 +498,7 @@ void AppListControllerImpl::OnTabletModeStarted() {
   // Show the app list if the tablet mode starts.
   Show(display::Display::InternalDisplayId(), app_list::kTabletMode,
        base::TimeTicks());
+  UpdateHomeLauncherVisibility();
 }
 
 void AppListControllerImpl::OnTabletModeEnded() {
@@ -519,6 +517,16 @@ void AppListControllerImpl::OnKeyboardAvailabilityChanged(
   app_list::AppListView* app_list_view = presenter_.GetView();
   if (app_list_view)
     app_list_view->OnScreenKeyboardShown(is_available);
+}
+
+void AppListControllerImpl::OnWallpaperPreviewStarted() {
+  in_wallpaper_preview_ = true;
+  UpdateHomeLauncherVisibility();
+}
+
+void AppListControllerImpl::OnWallpaperPreviewEnded() {
+  in_wallpaper_preview_ = false;
+  UpdateHomeLauncherVisibility();
 }
 
 bool AppListControllerImpl::IsHomeLauncherEnabledInTabletMode() const {
@@ -676,6 +684,16 @@ std::unique_ptr<app_list::AppListItem> AppListControllerImpl::CreateAppListItem(
 app_list::AppListFolderItem* AppListControllerImpl::FindFolderItem(
     const std::string& folder_id) {
   return model_.FindFolderItem(folder_id);
+}
+
+void AppListControllerImpl::UpdateHomeLauncherVisibility() {
+  if (!IsHomeLauncherEnabledInTabletMode() || !presenter_.GetWindow())
+    return;
+
+  if (in_overview_mode_ || in_wallpaper_preview_)
+    presenter_.GetWindow()->Hide();
+  else
+    presenter_.GetWindow()->Show();
 }
 
 }  // namespace ash
