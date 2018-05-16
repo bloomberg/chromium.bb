@@ -1,7 +1,7 @@
 # These tests fail when running browser_tests with out-of-process ash
 # system UI on Chrome OS ("mash"). Most new features are expected to work
 # with mash, see //ash/README.md. If you need to disable more than
-# ~10 tests, please contact someone on mustash-team@ to discuss.
+# ~10 tests, please contact someone on mustash-team@google.com to discuss.
 # Meta-bug: http://crbug.com/678687
 
 # Unknown failure.
