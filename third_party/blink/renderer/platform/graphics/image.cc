@@ -401,13 +401,8 @@ FloatRect Image::ComputeTileContaining(const FloatPoint& point,
                                        const FloatSize& tile_spacing) {
   const FloatSize actual_tile_size(tile_size + tile_spacing);
   return FloatRect(
-      FloatPoint(
-          point.X() + fmodf(fmodf(-tile_phase.X(), actual_tile_size.Width()) -
-                                actual_tile_size.Width(),
-                            actual_tile_size.Width()),
-          point.Y() + fmodf(fmodf(-tile_phase.Y(), actual_tile_size.Height()) -
-                                actual_tile_size.Height(),
-                            actual_tile_size.Height())),
+      FloatPoint(point.X() + fmodf(-tile_phase.X(), actual_tile_size.Width()),
+                 point.Y() + fmodf(-tile_phase.Y(), actual_tile_size.Height())),
       tile_size);
 }
 
