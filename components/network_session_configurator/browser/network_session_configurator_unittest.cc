@@ -312,18 +312,6 @@ TEST_F(NetworkSessionConfiguratorTest,
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
-       QuicMigrateSessionsOnNetworkChangeFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["migrate_sessions_on_network_change"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_migrate_sessions_on_network_change);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
        QuicMigrateSessionsOnNetworkChangeV2FromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["migrate_sessions_on_network_change_v2"] = "true";
@@ -333,18 +321,6 @@ TEST_F(NetworkSessionConfiguratorTest,
   ParseFieldTrials();
 
   EXPECT_TRUE(params_.quic_migrate_sessions_on_network_change_v2);
-}
-
-TEST_F(NetworkSessionConfiguratorTest,
-       QuicMigrateSessionsEarlyFromFieldTrialParams) {
-  std::map<std::string, std::string> field_trial_params;
-  field_trial_params["migrate_sessions_early"] = "true";
-  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
-  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
-
-  ParseFieldTrials();
-
-  EXPECT_TRUE(params_.quic_migrate_sessions_early);
 }
 
 TEST_F(NetworkSessionConfiguratorTest,

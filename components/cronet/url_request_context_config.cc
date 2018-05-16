@@ -60,8 +60,6 @@ const char kQuicMaxIdleTimeBeforeCryptoHandshakeSeconds[] =
     "max_idle_time_before_crypto_handshake_seconds";
 const char kQuicCloseSessionsOnIpChange[] = "close_sessions_on_ip_change";
 const char kQuicAllowServerMigration[] = "allow_server_migration";
-const char kQuicMigrateSessionsOnNetworkChange[] =
-    "migrate_sessions_on_network_change";
 const char kQuicMigrateSessionsOnNetworkChangeV2[] =
     "migrate_sessions_on_network_change_v2";
 const char kQuicMaxTimeOnNonDefaultNetworkSeconds[] =
@@ -69,7 +67,6 @@ const char kQuicMaxTimeOnNonDefaultNetworkSeconds[] =
 const char kQuicMaxMigrationsToNonDefaultNetworkOnPathDegrading[] =
     "max_migrations_to_non_default_network_on_path_degrading";
 const char kQuicUserAgentId[] = "user_agent_id";
-const char kQuicMigrateSessionsEarly[] = "migrate_sessions_early";
 const char kQuicMigrateSessionsEarlyV2[] = "migrate_sessions_early_v2";
 const char kQuicDisableBidirectionalStreams[] =
     "quic_disable_bidirectional_streams";
@@ -292,20 +289,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                                 &quic_allow_server_migration)) {
         session_params->quic_allow_server_migration =
             quic_allow_server_migration;
-      }
-
-      bool quic_migrate_sessions_on_network_change = false;
-      if (quic_args->GetBoolean(kQuicMigrateSessionsOnNetworkChange,
-                                &quic_migrate_sessions_on_network_change)) {
-        session_params->quic_migrate_sessions_on_network_change =
-            quic_migrate_sessions_on_network_change;
-      }
-
-      bool quic_migrate_sessions_early = false;
-      if (quic_args->GetBoolean(kQuicMigrateSessionsEarly,
-                                &quic_migrate_sessions_early)) {
-        session_params->quic_migrate_sessions_early =
-            quic_migrate_sessions_early;
       }
 
       std::string quic_user_agent_id;
