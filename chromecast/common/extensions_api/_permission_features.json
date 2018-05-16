@@ -3,6 +3,11 @@
 // found in the LICENSE file.
 
 {
+  "accessibilityPrivate": {
+    "channel": "stable",
+    "extension_types": ["extension", "legacy_packaged_app", "platform_app"],
+    "whitelist": [ "2FCBCE08B34CCA1728A85F1EFBD9A34DD2558B2E" ]
+  },
   "bookmarks": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

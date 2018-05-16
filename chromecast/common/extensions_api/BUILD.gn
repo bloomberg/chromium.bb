@@ -11,6 +11,7 @@ assert(enable_extensions,
 
 schema_sources = [
   # TODO(crbug/837773) De-dupe Automation later.
+  "accessibility_private.json",
   "automation.idl",
   "automation_internal.idl",
   "bookmarks.json",
@@ -22,9 +23,7 @@ schema_sources = [
 
 root_namespace = "extensions::cast::api::%(namespace)s"
 
-extensions_api_uncompiled_sources = [
-  "extension.json",
-]
+extensions_api_uncompiled_sources = [ "extension.json" ]
 
 json_schema_api("api") {
   sources = schema_sources

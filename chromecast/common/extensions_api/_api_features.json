@@ -7,6 +7,10 @@
 // feature.h, simple_feature.h, and feature_provider.h.
 
 {
+  "accessibilityPrivate": {
+    "dependencies": ["permission:accessibilityPrivate"],
+    "contexts": ["blessed_extension"]
+  },
   // TODO(crbug/837773) De-dupe automation later.
   "automationInternal": {
     "internal": true,
