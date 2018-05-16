@@ -110,8 +110,6 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   views::View* footnote_view_ = nullptr;
   views::Link* learn_more_link_ = nullptr;
 
-  std::unique_ptr<WebContentMouseHandler> mouse_handler_;
-
   DISALLOW_COPY_AND_ASSIGN(SaveCardBubbleViews);
 };
 
