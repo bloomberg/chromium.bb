@@ -5,7 +5,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
@@ -13,7 +12,6 @@ class LayoutCountTest : public RenderingTest {};
 
 TEST_F(LayoutCountTest, SimpleBlockLayoutIsOnePass) {
   ScopedTrackLayoutPassesPerBlockForTest track_layout_passes_per_block(true);
-  ScopedRootLayerScrollingForTest root_layer_scrolling(true);
   SetBodyInnerHTML(
       "<!DOCTYPE html>"
       " <div id='block' style='height:1000px'>Item</div>");
