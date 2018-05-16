@@ -659,20 +659,15 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
           should_affinity_be_downstream);
     }
 
-    if (!prev_box || prev_box->BidiLevel() < box->BidiLevel()) {
-      // e.g. left of D in aDC12BAb
-      const InlineBox& rightmost_box =
-          InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
-              *box, box->BidiLevel());
-      return CreatePositionWithAffinityForBox(
-          &rightmost_box,
-          box->IsLeftToRightDirection() ? rightmost_box.CaretMaxOffset()
-                                        : rightmost_box.CaretMinOffset(),
-          should_affinity_be_downstream);
-    }
-
-    return CreatePositionWithAffinityForBox(box, box->CaretRightmostOffset(),
-                                            should_affinity_be_downstream);
+    // e.g. left of D in aDC12BAb
+    const InlineBox& rightmost_box =
+        InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
+            *box, box->BidiLevel());
+    return CreatePositionWithAffinityForBox(
+        &rightmost_box,
+        box->IsLeftToRightDirection() ? rightmost_box.CaretMaxOffset()
+                                      : rightmost_box.CaretMinOffset(),
+        should_affinity_be_downstream);
   }
 
   // offset is on the right edge
@@ -693,19 +688,14 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
                                             should_affinity_be_downstream);
   }
 
-  if (!next_box || next_box->BidiLevel() < box->BidiLevel()) {
-    // e.g. right of A in aDC12BAb
-    const InlineBox& leftmost_box =
-        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
-            *box, box->BidiLevel());
-    return CreatePositionWithAffinityForBox(&leftmost_box,
-                                            box->IsLeftToRightDirection()
-                                                ? leftmost_box.CaretMinOffset()
-                                                : leftmost_box.CaretMaxOffset(),
-                                            should_affinity_be_downstream);
-  }
-
-  return CreatePositionWithAffinityForBox(box, box->CaretLeftmostOffset(),
+  // e.g. right of A in aDC12BAb
+  const InlineBox& leftmost_box =
+      InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
+          *box, box->BidiLevel());
+  return CreatePositionWithAffinityForBox(&leftmost_box,
+                                          box->IsLeftToRightDirection()
+                                              ? leftmost_box.CaretMinOffset()
+                                              : leftmost_box.CaretMaxOffset(),
                                           should_affinity_be_downstream);
 }
 
