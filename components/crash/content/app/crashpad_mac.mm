@@ -31,6 +31,46 @@
 
 namespace crash_reporter {
 
+namespace {
+
+std::map<std::string, std::string> GetProcessSimpleAnnotations() {
+  static std::map<std::string, std::string> annotations = []() -> auto {
+    std::map<std::string, std::string> process_annotations;
+    @autoreleasepool {
+      NSBundle* outer_bundle = base::mac::OuterBundle();
+      NSString* product = base::mac::ObjCCast<NSString>([outer_bundle
+          objectForInfoDictionaryKey:base::mac::CFToNSCast(kCFBundleNameKey)]);
+      process_annotations["prod"] =
+          base::SysNSStringToUTF8(product).append("_Mac");
+
+#if defined(GOOGLE_CHROME_BUILD)
+      // Empty means stable.
+      const bool allow_empty_channel = true;
+#else
+      const bool allow_empty_channel = false;
+#endif
+      NSString* channel = base::mac::ObjCCast<NSString>(
+          [outer_bundle objectForInfoDictionaryKey:@"KSChannelID"]);
+      if (channel) {
+        process_annotations["channel"] = base::SysNSStringToUTF8(channel);
+      } else if (allow_empty_channel) {
+        process_annotations["channel"] = "";
+      }
+
+      NSString* version =
+          base::mac::ObjCCast<NSString>([base::mac::FrameworkBundle()
+              objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
+      process_annotations["ver"] = base::SysNSStringToUTF8(version);
+
+      process_annotations["plat"] = std::string("OS X");
+    }  // @autoreleasepool
+    return process_annotations;
+  }();
+  return annotations;
+}
+
+}  // namespace
+
 void DumpProcessWithoutCrashing(task_t task_port) {
   crashpad::CrashReportDatabase* database = internal::GetCrashReportDatabase();
   if (!database)
@@ -40,11 +80,9 @@ void DumpProcessWithoutCrashing(task_t task_port) {
   if (!snapshot.Initialize(task_port))
     return;
 
-  snapshot.SetAnnotationsSimpleMap(
-      {{"is-dump-process-without-crashing", "true"}});
-
-  crashpad::MinidumpFileWriter minidump;
-  minidump.InitializeFromSnapshot(&snapshot);
+  auto process_annotations = GetProcessSimpleAnnotations();
+  process_annotations["is-dump-process-without-crashing"] = "true";
+  snapshot.SetAnnotationsSimpleMap(process_annotations);
 
   std::unique_ptr<crashpad::CrashReportDatabase::NewReport> new_report;
   if (database->PrepareNewCrashReport(&new_report) !=
@@ -52,11 +90,19 @@ void DumpProcessWithoutCrashing(task_t task_port) {
     return;
   }
 
+  crashpad::UUID client_id;
+  database->GetSettings()->GetClientID(&client_id);
+
+  snapshot.SetReportID(new_report->ReportID());
+  snapshot.SetClientID(client_id);
+
+  crashpad::MinidumpFileWriter minidump;
+  minidump.InitializeFromSnapshot(&snapshot);
   if (!minidump.WriteEverything(new_report->Writer()))
     return;
 
-  crashpad::UUID uuid;
-  database->FinishedWritingCrashReport(std::move(new_report), &uuid);
+  crashpad::UUID report_id;
+  database->FinishedWritingCrashReport(std::move(new_report), &report_id);
 }
 
 namespace internal {
@@ -90,35 +136,6 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       std::string url;
 #endif
 
-      std::map<std::string, std::string> process_annotations;
-
-      NSBundle* outer_bundle = base::mac::OuterBundle();
-      NSString* product = base::mac::ObjCCast<NSString>([outer_bundle
-          objectForInfoDictionaryKey:base::mac::CFToNSCast(kCFBundleNameKey)]);
-      process_annotations["prod"] =
-          base::SysNSStringToUTF8(product).append("_Mac");
-
-#if defined(GOOGLE_CHROME_BUILD)
-      // Empty means stable.
-      const bool allow_empty_channel = true;
-#else
-      const bool allow_empty_channel = false;
-#endif
-      NSString* channel = base::mac::ObjCCast<NSString>(
-          [outer_bundle objectForInfoDictionaryKey:@"KSChannelID"]);
-      if (channel) {
-        process_annotations["channel"] = base::SysNSStringToUTF8(channel);
-      } else if (allow_empty_channel) {
-        process_annotations["channel"] = "";
-      }
-
-      NSString* version =
-          base::mac::ObjCCast<NSString>([base::mac::FrameworkBundle()
-              objectForInfoDictionaryKey:@"CFBundleShortVersionString"]);
-      process_annotations["ver"] = base::SysNSStringToUTF8(version);
-
-      process_annotations["plat"] = std::string("OS X");
-
       std::vector<std::string> arguments;
 
       if (crash_reporter_client->ShouldMonitorCrashHandlerExpensively()) {
@@ -140,8 +157,8 @@ base::FilePath PlatformCrashpadInitialization(bool initial_client,
       }
 
       bool result = GetCrashpadClient().StartHandler(
-          handler_path, database_path, metrics_path, url, process_annotations,
-          arguments, true, false);
+          handler_path, database_path, metrics_path, url,
+          GetProcessSimpleAnnotations(), arguments, true, false);
 
       // If this is an initial client that's not the browser process, it's
       // important to sever the connection to any existing handler. If
