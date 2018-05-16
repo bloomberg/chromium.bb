@@ -527,6 +527,8 @@ const IDNTestCase idn_cases[] = {
     {"xn--13457890-e7g0943b.com", L"1\x14bf" L"345\x0431" L"7890.com", false},
     // 12з4567890.com
     {"xn--124567890-10h.com", L"12\x0437" L"4567890.com", false},
+    // 12ҙ4567890.com
+    {"xn--124567890-1ti.com", L"12\x0499" L"4567890.com", false},
     // 12ӡ4567890.com
     {"xn--124567890-mfj.com", L"12\x04e1" L"4567890.com", false},
     // 123Ꮞ567890.com
@@ -539,6 +541,15 @@ const IDNTestCase idn_cases[] = {
     {"xn--123456780-71w.com", L"12345678\x0b68" L"0.com", false},
     // 123456789ꓳ.com
     {"xn--123456789-tx75a.com", L"123456789\xa4f3.com", false},
+
+    // aeœ.com
+    {"xn--ae-fsa.com", L"ae\x0153.com", false},
+    // æce.com
+    {"xn--ce-0ia.com", L"\x00e6" L"ce.com", false},
+    // æœ.com
+    {"xn--6ca2t.com", L"\x00e6\x0153.com", false},
+    // ӕԥ.com
+    {"xn--y5a4n.com", L"\x04d5\x0525.com", false},
 
     // ငၔဌ၂ဝ.com (entirely made of Myanmar characters)
     {"xn--ridq5c9hnd.com", L"\x1004\x1054\x100c" L"\x1042\x101d.com", false},
