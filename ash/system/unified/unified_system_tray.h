@@ -50,11 +50,16 @@ class UnifiedSystemTray : public TrayBackgroundView {
   // Private class implements message_center::UiDelegate.
   class UiDelegate;
 
+  // Private class implements TrayNetworkStateObserver::Delegate.
+  class NetworkStateDelegate;
+
   // Forwarded from UiDelegate.
   void ShowBubbleInternal(bool show_by_click);
   void HideBubbleInternal();
 
   std::unique_ptr<UiDelegate> ui_delegate_;
+
+  std::unique_ptr<NetworkStateDelegate> network_state_delegate_;
 
   std::unique_ptr<UnifiedSystemTrayBubble> bubble_;
 

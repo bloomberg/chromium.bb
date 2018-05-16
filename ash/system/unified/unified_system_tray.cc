@@ -8,6 +8,8 @@
 #include "ash/system/date/date_view.h"
 #include "ash/system/message_center/ash_popup_alignment_delegate.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/network/network_tray_view.h"
+#include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/power/tray_power.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
@@ -97,16 +99,53 @@ bool UnifiedSystemTray::UiDelegate::ShowNotifierSettings() {
   return false;
 }
 
+class UnifiedSystemTray::NetworkStateDelegate
+    : public TrayNetworkStateObserver::Delegate {
+ public:
+  explicit NetworkStateDelegate(tray::NetworkTrayView* tray_view);
+  ~NetworkStateDelegate() override;
+
+  // TrayNetworkStateObserver::Delegate
+  void NetworkStateChanged(bool notify_a11y) override;
+
+ private:
+  tray::NetworkTrayView* const tray_view_;
+  const std::unique_ptr<TrayNetworkStateObserver> network_state_observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkStateDelegate);
+};
+
+UnifiedSystemTray::NetworkStateDelegate::NetworkStateDelegate(
+    tray::NetworkTrayView* tray_view)
+    : tray_view_(tray_view),
+      network_state_observer_(
+          std::make_unique<TrayNetworkStateObserver>(this)) {}
+
+UnifiedSystemTray::NetworkStateDelegate::~NetworkStateDelegate() = default;
+
+void UnifiedSystemTray::NetworkStateDelegate::NetworkStateChanged(
+    bool notify_a11y) {
+  tray_view_->UpdateNetworkStateHandlerIcon();
+  tray_view_->UpdateConnectionStatus(tray::GetConnectedNetwork(), notify_a11y);
+}
+
 UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
       model_(std::make_unique<UnifiedSystemTrayModel>()) {
+  tray::NetworkTrayView* network_item = new tray::NetworkTrayView(nullptr);
+  network_state_delegate_ =
+      std::make_unique<NetworkStateDelegate>(network_item);
+  tray_container()->AddChildView(network_item);
+
   tray_container()->AddChildView(new tray::PowerTrayView(nullptr));
+
   TrayItemView* time_item = new TrayItemView(nullptr);
   time_item->AddChildView(
       new tray::TimeView(tray::TimeView::ClockLayout::HORIZONTAL_CLOCK,
                          Shell::Get()->system_tray_model()->clock()));
   tray_container()->AddChildView(time_item);
+
   SetInkDropMode(InkDropMode::ON);
   SetVisible(true);
 }

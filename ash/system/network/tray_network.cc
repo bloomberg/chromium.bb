@@ -11,6 +11,7 @@
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_icon_animation_observer.h"
 #include "ash/system/network/network_list.h"
+#include "ash/system/network/network_tray_view.h"
 #include "ash/system/network/tray_network_state_observer.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -33,122 +34,10 @@
 #include "ui/views/widget/widget.h"
 
 using chromeos::NetworkHandler;
-using chromeos::NetworkState;
-using chromeos::NetworkStateHandler;
 using chromeos::NetworkTypePattern;
 
 namespace ash {
 namespace tray {
-
-namespace {
-
-// Returns the connected, non-virtual (aka VPN), network.
-const NetworkState* GetConnectedNetwork() {
-  NetworkStateHandler* handler = NetworkHandler::Get()->network_state_handler();
-  return handler->ConnectedNetworkByType(NetworkTypePattern::NonVirtual());
-}
-
-}  // namespace
-
-class NetworkTrayView : public TrayItemView,
-                        public network_icon::AnimationObserver {
- public:
-  explicit NetworkTrayView(TrayNetwork* network_tray)
-      : TrayItemView(network_tray) {
-    CreateImageView();
-    UpdateNetworkStateHandlerIcon();
-    UpdateConnectionStatus(GetConnectedNetwork(), true /* notify_a11y */);
-  }
-
-  ~NetworkTrayView() override {
-    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
-  }
-
-  const char* GetClassName() const override { return "NetworkTrayView"; }
-
-  void UpdateNetworkStateHandlerIcon() {
-    gfx::ImageSkia image;
-    base::string16 name;
-    bool animating = false;
-    network_icon::GetDefaultNetworkImageAndLabel(network_icon::ICON_TYPE_TRAY,
-                                                 &image, &name, &animating);
-    bool show_in_tray = !image.isNull();
-    UpdateIcon(show_in_tray, image);
-    if (animating)
-      network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
-    else
-      network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
-  }
-
-  // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
-    node_data->SetName(connection_status_string_);
-    node_data->role = ax::mojom::Role::kButton;
-  }
-
-  // network_icon::AnimationObserver:
-  void NetworkIconChanged() override {
-    UpdateNetworkStateHandlerIcon();
-    UpdateConnectionStatus(GetConnectedNetwork(), false /* notify_a11y */);
-  }
-
-  // Updates connection status and notifies accessibility event when necessary.
-  void UpdateConnectionStatus(const NetworkState* connected_network,
-                              bool notify_a11y) {
-    using SignalStrength = network_icon::SignalStrength;
-
-    base::string16 new_connection_status_string;
-    if (connected_network) {
-      new_connection_status_string = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED,
-          base::UTF8ToUTF16(connected_network->name()));
-
-      // Retrieve the string describing the signal strength, if it is applicable
-      // to |connected_network|.
-      base::string16 signal_strength_string;
-      switch (network_icon::GetSignalStrengthForNetwork(connected_network)) {
-        case SignalStrength::NONE:
-        case SignalStrength::NOT_WIRELESS:
-          break;
-        case SignalStrength::WEAK:
-          signal_strength_string = l10n_util::GetStringUTF16(
-              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_WEAK);
-          break;
-        case SignalStrength::MEDIUM:
-          signal_strength_string = l10n_util::GetStringUTF16(
-              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_MEDIUM);
-          break;
-        case SignalStrength::STRONG:
-          signal_strength_string = l10n_util::GetStringUTF16(
-              IDS_ASH_STATUS_TRAY_NETWORK_SIGNAL_STRONG);
-          break;
-      }
-
-      if (!signal_strength_string.empty()) {
-        new_connection_status_string = l10n_util::GetStringFUTF16(
-            IDS_ASH_STATUS_TRAY_NETWORK_CONNECTED_ACCESSIBLE,
-            base::UTF8ToUTF16(connected_network->name()),
-            signal_strength_string);
-      }
-    }
-    if (new_connection_status_string != connection_status_string_) {
-      connection_status_string_ = new_connection_status_string;
-      if (notify_a11y && !connection_status_string_.empty())
-        NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-    }
-  }
-
- private:
-  void UpdateIcon(bool tray_icon_visible, const gfx::ImageSkia& image) {
-    image_view()->SetImage(image);
-    SetVisible(tray_icon_visible);
-    SchedulePaint();
-  }
-
-  base::string16 connection_status_string_;
-
-  DISALLOW_COPY_AND_ASSIGN(NetworkTrayView);
-};
 
 class NetworkDefaultView : public TrayItemMore,
                            public network_icon::AnimationObserver {
