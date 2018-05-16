@@ -1098,12 +1098,12 @@ class GclientTest(trial_dir.TestCase):
                                {'package': 'foo_package',
                                 'version': 'foo_version'},
                                cipd_root, None, True, False,
-                               'fake_condition', True),
+                               'fake_condition'),
         gclient.CipdDependency(obj.dependencies[0], 'foo',
                                {'package': 'bar_package',
                                 'version': 'bar_version'},
                                cipd_root, None, True, False,
-                               'fake_condition', True),
+                               'fake_condition'),
       ],
       [])
     dep0 = obj.dependencies[0].dependencies[0]

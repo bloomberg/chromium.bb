@@ -241,8 +241,7 @@ class DependencySettings(object):
   """Immutable configuration settings."""
   def __init__(
       self, parent, raw_url, url, managed, custom_deps, custom_vars,
-      custom_hooks, deps_file, should_process, relative,
-      condition, condition_value):
+      custom_hooks, deps_file, should_process, relative, condition):
     # These are not mutable:
     self._parent = parent
     self._deps_file = deps_file
@@ -250,8 +249,6 @@ class DependencySettings(object):
     self._url = url
     # The condition as string (or None). Useful to keep e.g. for flatten.
     self._condition = condition
-    # Boolean value of the condition. If there's no condition, just True.
-    self._condition_value = condition_value
     # 'managed' determines whether or not this dependency is synced/updated by
     # gclient after gclient checks it out initially.  The difference between
     # 'managed' and 'should_process' is that the user specifies 'managed' via
@@ -341,10 +338,6 @@ class DependencySettings(object):
     return self._condition
 
   @property
-  def condition_value(self):
-    return self._condition_value
-
-  @property
   def target_os(self):
     if self.local_target_os is not None:
       return tuple(set(self.local_target_os).union(self.parent.target_os))
@@ -374,12 +367,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def __init__(self, parent, name, raw_url, url, managed, custom_deps,
                custom_vars, custom_hooks, deps_file, should_process,
-               relative, condition, condition_value, print_outbuf=False):
+               relative, condition, print_outbuf=False):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
         self, parent, raw_url, url, managed, custom_deps, custom_vars,
-        custom_hooks, deps_file, should_process, relative,
-        condition, condition_value)
+        custom_hooks, deps_file, should_process, relative, condition)
 
     # This is in both .gclient and DEPS files:
     self._deps_hooks = []
@@ -641,12 +633,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       condition = dep_value.get('condition')
       dep_type = dep_value.get('dep_type')
 
-      condition_value = True
-      if condition:
-        condition_value = gclient_eval.EvaluateCondition(
+      if condition and not self._get_option('process_all_deps', False):
+        should_process = should_process and gclient_eval.EvaluateCondition(
             condition, self.get_vars())
-        if not self._get_option('process_all_deps', False):
-          should_process = should_process and condition_value
 
       if dep_type == 'cipd':
         cipd_root = self.GetCipdRoot()
@@ -658,17 +647,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
             package['version'] = version
           deps_to_add.append(
               CipdDependency(
-                  self, name, package, cipd_root,
-                  self.custom_vars, should_process, use_relative_paths,
-                  condition, condition_value))
+                  self, name, package, cipd_root, self.custom_vars,
+                  should_process, use_relative_paths, condition))
       else:
         raw_url = dep_value.get('url')
         url = raw_url.format(**self.get_vars()) if raw_url else None
         deps_to_add.append(
             GitDependency(
                 self, name, raw_url, url, None, None, self.custom_vars, None,
-                deps_file, should_process, use_relative_paths, condition,
-                condition_value))
+                deps_file, should_process, use_relative_paths, condition))
 
     deps_to_add.sort(key=lambda x: x.name)
     return deps_to_add
@@ -1407,7 +1394,6 @@ it or fix the checkout.
             True,
             None,
             None,
-            True,
             True))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
@@ -1821,14 +1807,14 @@ class CipdDependency(Dependency):
 
   def __init__(
       self, parent, name, dep_value, cipd_root,
-      custom_vars, should_process, relative, condition, condition_value):
+      custom_vars, should_process, relative, condition):
     package = dep_value['package']
     version = dep_value['version']
     url = urlparse.urljoin(
         cipd_root.service_url, '%s@%s' % (package, version))
     super(CipdDependency, self).__init__(
         parent, name + ':' + package, url, url, None, None, custom_vars,
-        None, None, should_process, relative, condition, condition_value)
+        None, None, should_process, relative, condition)
     if relative:
       # TODO(jbudorick): Implement relative if necessary.
       raise gclient_utils.Error(
