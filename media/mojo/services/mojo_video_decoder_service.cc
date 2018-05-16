@@ -66,7 +66,7 @@ class VideoFrameHandleReleaserImpl final
   // VideoFrame.
   base::UnguessableToken RegisterVideoFrame(scoped_refptr<VideoFrame> frame) {
     base::UnguessableToken token = base::UnguessableToken::Create();
-    DVLOG(2) << __func__ << " => " << token.ToString();
+    DVLOG(3) << __func__ << " => " << token.ToString();
     video_frames_[token] = std::move(frame);
     return token;
   }
@@ -74,7 +74,7 @@ class VideoFrameHandleReleaserImpl final
   // mojom::MojoVideoFrameHandleReleaser implementation
   void ReleaseVideoFrame(const base::UnguessableToken& release_token,
                          const gpu::SyncToken& release_sync_token) final {
-    DVLOG(2) << __func__ << "(" << release_token.ToString() << ")";
+    DVLOG(3) << __func__ << "(" << release_token.ToString() << ")";
     auto it = video_frames_.find(release_token);
     if (it == video_frames_.end()) {
       mojo::ReportBadMessage("Unknown |release_token|.");
@@ -98,14 +98,14 @@ MojoVideoDecoderService::MojoVideoDecoderService(
     : mojo_media_client_(mojo_media_client),
       mojo_cdm_service_context_(mojo_cdm_service_context),
       weak_factory_(this) {
-  DVLOG(3) << __func__;
+  DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);
   DCHECK(mojo_cdm_service_context_);
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 MojoVideoDecoderService::~MojoVideoDecoderService() {
-  DVLOG(3) << __func__;
+  DVLOG(1) << __func__;
 }
 
 void MojoVideoDecoderService::Construct(
@@ -148,7 +148,8 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
                                          bool low_delay,
                                          int32_t cdm_id,
                                          InitializeCallback callback) {
-  DVLOG(1) << __func__;
+  DVLOG(1) << __func__ << " config = " << config.AsHumanReadableString()
+           << ", cdm_id = " << cdm_id;
 
   if (!decoder_) {
     std::move(callback).Run(false, false, 1);
@@ -157,7 +158,7 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
 
   // Get CdmContext from cdm_id if the stream is encrypted.
   CdmContext* cdm_context = nullptr;
-  if (config.is_encrypted()) {
+  if (cdm_id != CdmContext::kInvalidCdmId) {
     cdm_context_ref_ = mojo_cdm_service_context_->GetCdmContextRef(cdm_id);
     if (!cdm_context_ref_) {
       DVLOG(1) << "CdmContextRef not found for CDM id: " << cdm_id;
@@ -180,7 +181,7 @@ void MojoVideoDecoderService::Initialize(const VideoDecoderConfig& config,
 
 void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
                                      DecodeCallback callback) {
-  DVLOG(2) << __func__ << " pts=" << buffer->timestamp.InMilliseconds();
+  DVLOG(3) << __func__ << " pts=" << buffer->timestamp.InMilliseconds();
 
   if (!decoder_) {
     std::move(callback).Run(DecodeStatus::DECODE_ERROR);
@@ -193,7 +194,7 @@ void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
 }
 
 void MojoVideoDecoderService::Reset(ResetCallback callback) {
-  DVLOG(1) << __func__;
+  DVLOG(2) << __func__;
 
   if (!decoder_) {
     std::move(callback).Run();
@@ -206,9 +207,8 @@ void MojoVideoDecoderService::Reset(ResetCallback callback) {
                  base::Passed(&callback)));
 }
 
-void MojoVideoDecoderService::OnDecoderInitialized(
-    InitializeCallback callback,
-    bool success) {
+void MojoVideoDecoderService::OnDecoderInitialized(InitializeCallback callback,
+                                                   bool success) {
   DVLOG(1) << __func__;
   DCHECK(decoder_);
 
@@ -241,18 +241,18 @@ void MojoVideoDecoderService::OnReaderFlushed(ResetCallback callback) {
 
 void MojoVideoDecoderService::OnDecoderDecoded(DecodeCallback callback,
                                                DecodeStatus status) {
-  DVLOG(2) << __func__;
+  DVLOG(3) << __func__;
   std::move(callback).Run(status);
 }
 
 void MojoVideoDecoderService::OnDecoderReset(ResetCallback callback) {
-  DVLOG(1) << __func__;
+  DVLOG(2) << __func__;
   std::move(callback).Run();
 }
 
 void MojoVideoDecoderService::OnDecoderOutput(
     const scoped_refptr<VideoFrame>& frame) {
-  DVLOG(2) << __func__;
+  DVLOG(3) << __func__;
   DCHECK(client_);
   DCHECK(decoder_);
 

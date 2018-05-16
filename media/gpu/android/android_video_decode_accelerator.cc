@@ -132,6 +132,32 @@ bool ShouldDeferSurfaceCreation(AVDACodecAllocator* codec_allocator,
          device_info->SdkVersion() <= base::android::SDK_VERSION_JELLY_BEAN_MR2;
 }
 
+bool HasValidCdm(int cdm_id) {
+#if !BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
+  return false;
+#else
+  auto cdm = CdmManager::GetInstance()->GetCdm(cdm_id);
+  if (!cdm) {
+    // This could happen during the destruction of the media element and the CDM
+    // and due to IPC CDM could be destroyed before the decoder.
+    DVLOG(1) << "CDM not available.";
+    return false;
+  }
+
+  auto* cdm_context = cdm->GetCdmContext();
+  auto* media_crypto_context =
+      cdm_context ? cdm_context->GetMediaCryptoContext() : nullptr;
+  // This could happen if the CDM is not MediaDrmBridge, which could happen in
+  // test cases.
+  if (!media_crypto_context) {
+    DVLOG(1) << "MediaCryptoContext not available.";
+    return false;
+  }
+
+  return true;
+#endif
+}
+
 }  // namespace
 
 // AVDAManager manages a RepeatingTimer so that AVDAs can get a regular callback
@@ -271,13 +297,12 @@ AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
   if (!media_crypto_context_)
     return;
 
-  DCHECK(cdm_registration_id_);
-
   // Cancel previously registered callback (if any).
   media_crypto_context_->SetMediaCryptoReadyCB(
       MediaCryptoContext::MediaCryptoReadyCB());
 
-  media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
+  if (cdm_registration_id_)
+    media_crypto_context_->UnregisterPlayer(cdm_registration_id_);
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 }
 
@@ -370,18 +395,19 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   codec_allocator_->StartThread(this);
 
-  // For encrypted media, start by initializing the CDM.  Otherwise, start with
-  // the surface.
-  if (config_.cdm_id != CdmContext::kInvalidCdmId) {
-    if (!deferred_initialization_pending_) {
-      DLOG(ERROR)
-          << "Deferred initialization must be used for encrypted streams";
-      return false;
-    }
+  // If has valid CDM, start by initializing the CDM, even for clear stream.
+  if (HasValidCdm(config_.cdm_id) && deferred_initialization_pending_) {
     InitializeCdm();
-  } else {
-    StartSurfaceChooser();
+    return state_ != ERROR;
   }
+
+  // Cannot handle encrypted stream without valid CDM.
+  if (config_.is_encrypted()) {
+    DLOG(ERROR) << "Deferred initialization must be used for encrypted streams";
+    return false;
+  }
+
+  StartSurfaceChooser();
 
   // Fail / complete / defer initialization.
   return state_ != ERROR;
@@ -1459,42 +1485,22 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
   DVLOG(2) << __func__ << ": " << config_.cdm_id;
 
 #if !BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-  NOTIMPLEMENTED();
-  NOTIFY_ERROR(PLATFORM_FAILURE, "Cdm support needs mojo in the gpu process");
-  return;
+  NOTREACHED();
 #else
   // Store the CDM to hold a reference to it.
   cdm_for_reference_holding_only_ =
       CdmManager::GetInstance()->GetCdm(config_.cdm_id);
-  if (!cdm_for_reference_holding_only_) {
-    // This could happen during the destruction of the media element and the CDM
-    // and due to IPC CDM could be destroyed before the decoder.
-    NOTIFY_ERROR(PLATFORM_FAILURE, "CDM not available.");
-    return;
-  }
 
-  auto* cdm_context = cdm_for_reference_holding_only_->GetCdmContext();
+  // We can DCHECK here and below because we checked HasValidCdm() before
+  // calling InitializeCdm(), and the status shouldn't have changed since then.
+  DCHECK(cdm_for_reference_holding_only_) << "CDM not available";
+
   media_crypto_context_ =
-      cdm_context ? cdm_context->GetMediaCryptoContext() : nullptr;
-  if (!media_crypto_context_) {
-    NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCryptoContext not available.");
-    return;
-  }
+      cdm_for_reference_holding_only_->GetCdmContext()->GetMediaCryptoContext();
+  DCHECK(media_crypto_context_) << "MediaCryptoContext not available.";
 
-  // Register CDM callbacks. The callbacks registered will be posted back to
-  // this thread via BindToCurrentLoop.
-
-  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
-  // destructed, UnregisterPlayer() must have been called and |this| has been
-  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
-  // called.
-  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
-  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
-      BindToCurrentLoop(base::Bind(&AndroidVideoDecodeAccelerator::OnKeyAdded,
-                                   weak_this_factory_.GetWeakPtr())),
-      base::DoNothing());
-
-  // Deferred initialization will continue in OnMediaCryptoReady().
+  // Deferred initialization will continue in OnMediaCryptoReady(). The callback
+  // registered will be posted back to this thread via BindToCurrentLoop.
   media_crypto_context_->SetMediaCryptoReadyCB(BindToCurrentLoop(
       base::Bind(&AndroidVideoDecodeAccelerator::OnMediaCryptoReady,
                  weak_this_factory_.GetWeakPtr())));
@@ -1508,8 +1514,10 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
   DCHECK(media_crypto);
 
   if (media_crypto->is_null()) {
-    cdm_for_reference_holding_only_ = nullptr;
+    media_crypto_context_->SetMediaCryptoReadyCB(
+        MediaCryptoContext::MediaCryptoReadyCB());
     media_crypto_context_ = nullptr;
+    cdm_for_reference_holding_only_ = nullptr;
 
     if (config_.is_encrypted()) {
       LOG(ERROR)
@@ -1529,6 +1537,16 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
   // is not created yet.
   DCHECK(!media_codec_);
   DCHECK(deferred_initialization_pending_);
+
+  // Since |this| holds a reference to the |cdm_|, by the time the CDM is
+  // destructed, UnregisterPlayer() must have been called and |this| has been
+  // destructed as well. So the |cdm_unset_cb| will never have a chance to be
+  // called.
+  // TODO(xhwang): Remove |cdm_unset_cb| after it's not used on all platforms.
+  cdm_registration_id_ = media_crypto_context_->RegisterPlayer(
+      BindToCurrentLoop(base::Bind(&AndroidVideoDecodeAccelerator::OnKeyAdded,
+                                   weak_this_factory_.GetWeakPtr())),
+      base::DoNothing());
 
   codec_config_->media_crypto = std::move(media_crypto);
   codec_config_->requires_secure_codec = requires_secure_video_codec;

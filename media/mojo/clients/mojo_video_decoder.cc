@@ -125,11 +125,14 @@ void MojoVideoDecoder::Initialize(
   }
 #endif  // defined(OS_MACOSX)
 
-  // Fail immediately if the stream is encrypted but |cdm_context| is invalid.
-  int cdm_id = (config.is_encrypted() && cdm_context)
-                   ? cdm_context->GetCdmId()
-                   : CdmContext::kInvalidCdmId;
+  int cdm_id =
+      cdm_context ? cdm_context->GetCdmId() : CdmContext::kInvalidCdmId;
 
+  // Fail immediately if the stream is encrypted but |cdm_id| is invalid.
+  // This check is needed to avoid unnecessary IPC to the remote process.
+  // Note that we do not support unsetting a CDM, so it should never happen
+  // that a valid CDM ID is available on first initialization but an invalid
+  // is passed for reinitialization.
   if (config.is_encrypted() && CdmContext::kInvalidCdmId == cdm_id) {
     DVLOG(1) << __func__ << ": Invalid CdmContext.";
     task_runner_->PostTask(FROM_HERE, base::Bind(init_cb, false));
@@ -155,7 +158,7 @@ void MojoVideoDecoder::Initialize(
 void MojoVideoDecoder::OnInitializeDone(bool status,
                                         bool needs_bitstream_conversion,
                                         int32_t max_decode_requests) {
-  DVLOG(1) << __func__;
+  DVLOG(1) << __func__ << ": status = " << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
   initialized_ = status;
   needs_bitstream_conversion_ = needs_bitstream_conversion;
@@ -165,7 +168,7 @@ void MojoVideoDecoder::OnInitializeDone(bool status,
 
 void MojoVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
                               const DecodeCB& decode_cb) {
-  DVLOG(2) << __func__;
+  DVLOG(3) << __func__ << ": " << buffer->AsHumanReadableString();
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
@@ -193,7 +196,7 @@ void MojoVideoDecoder::OnVideoFrameDecoded(
     const scoped_refptr<VideoFrame>& frame,
     bool can_read_without_stalling,
     const base::Optional<base::UnguessableToken>& release_token) {
-  DVLOG(2) << __func__;
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // TODO(sandersd): Prove that all paths read this value again after running
@@ -211,7 +214,7 @@ void MojoVideoDecoder::OnVideoFrameDecoded(
 }
 
 void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
-  DVLOG(2) << __func__;
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   auto it = pending_decodes_.find(decode_id);
@@ -226,7 +229,7 @@ void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
 }
 
 void MojoVideoDecoder::Reset(const base::Closure& reset_cb) {
-  DVLOG(1) << __func__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
@@ -240,7 +243,7 @@ void MojoVideoDecoder::Reset(const base::Closure& reset_cb) {
 }
 
 void MojoVideoDecoder::OnResetDone() {
-  DVLOG(1) << __func__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::ResetAndReturn(&reset_cb_).Run();
 }
