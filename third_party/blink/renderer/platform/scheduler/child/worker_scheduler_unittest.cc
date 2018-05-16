@@ -26,11 +26,24 @@ void AppendToVectorTestTask(std::vector<std::string>* vector,
   vector->push_back(value);
 }
 
+class WorkerThreadSchedulerForTest : public WorkerThreadScheduler {
+ public:
+  WorkerThreadSchedulerForTest(
+      WebThreadType thread_type,
+      std::unique_ptr<base::sequence_manager::TaskQueueManager> manager,
+      WorkerSchedulerProxy* proxy)
+      : WorkerThreadScheduler(thread_type, std::move(manager), proxy) {}
+
+  const std::unordered_set<WorkerScheduler*>& worker_schedulers() {
+    return worker_schedulers_;
+  }
+};
+
 class WorkerSchedulerTest : public testing::Test {
  public:
   WorkerSchedulerTest()
       : mock_task_runner_(new base::TestSimpleTaskRunner()),
-        scheduler_(new WorkerThreadScheduler(
+        scheduler_(new WorkerThreadSchedulerForTest(
             WebThreadType::kTestThread,
             base::sequence_manager::TaskQueueManagerForTest::Create(
                 nullptr,
@@ -62,7 +75,7 @@ class WorkerSchedulerTest : public testing::Test {
   base::SimpleTestTickClock clock_;
   scoped_refptr<base::TestSimpleTaskRunner> mock_task_runner_;
 
-  std::unique_ptr<WorkerThreadScheduler> scheduler_;
+  std::unique_ptr<WorkerThreadSchedulerForTest> scheduler_;
   std::unique_ptr<WorkerScheduler> worker_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerSchedulerTest);
@@ -84,6 +97,27 @@ TEST_F(WorkerSchedulerTest, TestPostTasks) {
   PostTestTask(&run_order, "T5");
   RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
+}
+
+TEST_F(WorkerSchedulerTest, RegisterWorkerSchedulers) {
+  EXPECT_THAT(scheduler_->worker_schedulers(),
+              testing::ElementsAre(worker_scheduler_.get()));
+
+  std::unique_ptr<WorkerScheduler> worker_scheduler2 =
+      std::make_unique<WorkerScheduler>(scheduler_.get());
+
+  EXPECT_THAT(scheduler_->worker_schedulers(),
+              testing::UnorderedElementsAre(worker_scheduler_.get(),
+                                            worker_scheduler2.get()));
+
+  worker_scheduler_->Dispose();
+
+  EXPECT_THAT(scheduler_->worker_schedulers(),
+              testing::ElementsAre(worker_scheduler2.get()));
+
+  worker_scheduler2->Dispose();
+
+  EXPECT_THAT(scheduler_->worker_schedulers(), testing::ElementsAre());
 }
 
 }  // namespace worker_scheduler_unittest

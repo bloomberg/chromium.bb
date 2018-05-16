@@ -42,6 +42,8 @@ class PLATFORM_EXPORT WorkerScheduler : public FrameOrWorkerScheduler {
  private:
   scoped_refptr<base::sequence_manager::TaskQueue> task_queue_;
 
+  NonMainThreadScheduler* thread_scheduler_;  // NOT OWNED
+
 #if DCHECK_IS_ON()
   bool is_disposed_ = false;
 #endif
