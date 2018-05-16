@@ -583,7 +583,7 @@ void NavigationSimulator::CommitErrorPage() {
 void NavigationSimulator::CommitSameDocument() {
   if (!browser_initiated_) {
     CHECK_EQ(INITIALIZATION, state_)
-        << "NavigationSimulator::CommitErrorPage should be the only "
+        << "NavigationSimulator::CommitSameDocument should be the only "
            "navigation event function called on the NavigationSimulator";
   } else {
     CHECK(same_document_);
