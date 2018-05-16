@@ -32,7 +32,6 @@ class SyncConsentScreenHandler : public BaseScreenHandler,
  private:
   // BaseScreenHandler:
   void Initialize() override;
-  void GetAdditionalParameters(base::DictionaryValue* parameters) override;
 
   SyncConsentScreen* screen_ = nullptr;
 
