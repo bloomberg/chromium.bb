@@ -16,7 +16,9 @@ NonMainThreadScheduler::NonMainThreadScheduler(
     std::unique_ptr<NonMainThreadSchedulerHelper> helper)
     : helper_(std::move(helper)) {}
 
-NonMainThreadScheduler::~NonMainThreadScheduler() = default;
+NonMainThreadScheduler::~NonMainThreadScheduler() {
+  DCHECK(worker_schedulers_.empty());
+}
 
 // static
 std::unique_ptr<NonMainThreadScheduler> NonMainThreadScheduler::Create(
@@ -89,6 +91,17 @@ NonMainThreadScheduler::PauseScheduler() {
 base::TimeTicks NonMainThreadScheduler::MonotonicallyIncreasingVirtualTime()
     const {
   return base::TimeTicks::Now();
+}
+
+void NonMainThreadScheduler::RegisterWorkerScheduler(
+    WorkerScheduler* worker_scheduler) {
+  worker_schedulers_.insert(worker_scheduler);
+}
+
+void NonMainThreadScheduler::UnregisterWorkerScheduler(
+    WorkerScheduler* worker_scheduler) {
+  DCHECK(worker_schedulers_.find(worker_scheduler) != worker_schedulers_.end());
+  worker_schedulers_.erase(worker_scheduler);
 }
 
 }  // namespace scheduler

@@ -21,6 +21,7 @@ namespace blink {
 namespace scheduler {
 class TaskQueueWithTaskType;
 class WorkerSchedulerProxy;
+class WorkerScheduler;
 
 // TODO(yutak): Remove the dependency to WebThreadScheduler. We want to
 // separate interfaces to Chromium (in blink/public/platform/scheduler) from
@@ -89,7 +90,17 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
 
   std::unique_ptr<NonMainThreadSchedulerHelper> helper_;
 
+  // Worker schedulers associated with this thread.
+  std::unordered_set<WorkerScheduler*> worker_schedulers_;
+
  private:
+  friend class WorkerScheduler;
+
+  // Each WorkerScheduler should notify NonMainThreadScheduler when it is
+  // created or destroyed.
+  void RegisterWorkerScheduler(WorkerScheduler* worker_scheduler);
+  void UnregisterWorkerScheduler(WorkerScheduler* worker_scheduler);
+
   static void RunIdleTask(WebThread::IdleTask task, base::TimeTicks deadline);
   scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
 

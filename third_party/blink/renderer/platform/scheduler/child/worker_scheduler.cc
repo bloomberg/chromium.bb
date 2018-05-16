@@ -11,7 +11,9 @@ namespace blink {
 namespace scheduler {
 
 WorkerScheduler::WorkerScheduler(
-    NonMainThreadScheduler* non_main_thread_scheduler) {
+    NonMainThreadScheduler* non_main_thread_scheduler)
+    : thread_scheduler_(non_main_thread_scheduler) {
+  non_main_thread_scheduler->RegisterWorkerScheduler(this);
   task_queue_ = non_main_thread_scheduler->CreateTaskRunner();
 }
 
@@ -27,6 +29,7 @@ WorkerScheduler::OnActiveConnectionCreated() {
 }
 
 void WorkerScheduler::Dispose() {
+  thread_scheduler_->UnregisterWorkerScheduler(this);
   task_queue_->ShutdownTaskQueue();
 #if DCHECK_IS_ON()
   is_disposed_ = true;
