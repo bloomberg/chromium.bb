@@ -27,7 +27,6 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   void AddItemToOemFolder(
       std::unique_ptr<ChromeAppListItem> item,
       app_list::AppListSyncableService::SyncItem* oem_sync_item,
-      const std::string& oem_folder_id,
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preferred_oem_position) override;
   void UpdateAppItemFromSyncItem(
@@ -74,7 +73,6 @@ class FakeAppListModelUpdater : public AppListModelUpdater {
   AppListModelUpdaterDelegate* delegate_ = nullptr;
 
   ash::mojom::AppListItemMetadataPtr FindOrCreateOemFolder(
-      const std::string& oem_folder_id,
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preferred_oem_position);
   syncer::StringOrdinal GetOemFolderPos();

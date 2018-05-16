@@ -40,7 +40,7 @@ class APP_LIST_MODEL_EXPORT AppListFolderItem : public AppListItem,
 
   static const char kItemType[];
 
-  AppListFolderItem(const std::string& id, FolderType folder_type);
+  explicit AppListFolderItem(const std::string& id);
   ~AppListFolderItem() override;
 
   // Returns the target icon bounds for |item| to fly back to its parent folder

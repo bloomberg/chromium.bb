@@ -234,8 +234,7 @@ class AppListModelFolderTest : public AppListModelTest {
 };
 
 TEST_F(AppListModelFolderTest, FolderItem) {
-  AppListFolderItem* folder =
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
   const size_t num_folder_apps = 8;
   const size_t num_observed_apps = 4;
   model_.AddItem(folder);
@@ -322,8 +321,7 @@ TEST_F(AppListModelFolderTest, MergeItems) {
 }
 
 TEST_F(AppListModelFolderTest, AddItemToFolder) {
-  AppListFolderItem* folder =
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
   model_.AddItem(folder);
   AppListItem* item0 = new AppListItem("Item 0");
   model_.AddItemToFolder(item0, folder->id());
@@ -336,8 +334,7 @@ TEST_F(AppListModelFolderTest, AddItemToFolder) {
 }
 
 TEST_F(AppListModelFolderTest, MoveItemToFolder) {
-  AppListFolderItem* folder =
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
   model_.AddItem(folder);
   AppListItem* item0 = new AppListItem("Item 0");
   AppListItem* item1 = new AppListItem("Item 1");
@@ -368,8 +365,8 @@ TEST_F(AppListModelFolderTest, MoveItemToFolder) {
 TEST_F(AppListModelFolderTest, MoveItemToFolderAt) {
   model_.AddItem(new AppListItem("Item 0"));
   model_.AddItem(new AppListItem("Item 1"));
-  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(model_.AddItem(
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL)));
+  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(
+      model_.AddItem(new AppListFolderItem("folder1")));
   model_.AddItem(new AppListItem("Item 2"));
   model_.AddItem(new AppListItem("Item 3"));
   ASSERT_EQ(5u, model_.top_level_item_list()->item_count());
@@ -395,10 +392,8 @@ TEST_F(AppListModelFolderTest, MoveItemToFolderAt) {
 }
 
 TEST_F(AppListModelFolderTest, MoveItemFromFolderToFolder) {
-  AppListFolderItem* folder0 =
-      new AppListFolderItem("folder0", AppListFolderItem::FOLDER_TYPE_NORMAL);
-  AppListFolderItem* folder1 =
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
+  AppListFolderItem* folder0 = new AppListFolderItem("folder0");
+  AppListFolderItem* folder1 = new AppListFolderItem("folder1");
   model_.AddItem(folder0);
   model_.AddItem(folder1);
   EXPECT_EQ("folder0,folder1", GetModelContents());
@@ -438,8 +433,8 @@ TEST_F(AppListModelFolderTest, UninstallFolderItems) {
   AppListItem* item0 = model_.CreateAndAddItem("Item 0");
   AppListItem* item1 = model_.CreateAndAddItem("Item 1");
   AppListItem* item2 = model_.CreateAndAddItem("Item 2");
-  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(model_.AddItem(
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL)));
+  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(
+      model_.AddItem(new AppListFolderItem("folder1")));
   EXPECT_EQ("Item 0,Item 1,Item 2,folder1", GetModelContents());
 
   // Move all items to folder1.
@@ -462,8 +457,8 @@ TEST_F(AppListModelFolderTest, UninstallFolderItems) {
 
 TEST_F(AppListModelFolderTest, UninstallSingleItemFolderItem) {
   AppListItem* item0 = model_.CreateAndAddItem("Item 0");
-  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(model_.AddItem(
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL)));
+  AppListFolderItem* folder1 = static_cast<AppListFolderItem*>(
+      model_.AddItem(new AppListFolderItem("folder1")));
   EXPECT_EQ("Item 0,folder1", GetModelContents());
 
   // Move item0 to folder1.
@@ -478,8 +473,7 @@ TEST_F(AppListModelFolderTest, UninstallSingleItemFolderItem) {
 }
 
 TEST_F(AppListModelFolderTest, FindItemInFolder) {
-  AppListFolderItem* folder =
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
   EXPECT_TRUE(folder);
   model_.AddItem(folder);
   std::string folder_id = folder->id();
@@ -491,8 +485,7 @@ TEST_F(AppListModelFolderTest, FindItemInFolder) {
 }
 
 TEST_F(AppListModelFolderTest, OemFolder) {
-  AppListFolderItem* folder =
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_OEM);
+  AppListFolderItem* folder = new AppListFolderItem(ash::kOemFolderId);
   model_.AddItem(folder);
   std::string folder_id = folder->id();
 
@@ -516,8 +509,7 @@ TEST_F(AppListModelFolderTest, OemFolder) {
 
 TEST_F(AppListModelFolderTest, DisableFolders) {
   // Set up a folder with two items and an OEM folder with one item.
-  AppListFolderItem* folder =
-      new AppListFolderItem("folder1", AppListFolderItem::FOLDER_TYPE_NORMAL);
+  AppListFolderItem* folder = new AppListFolderItem("folder1");
   model_.AddItem(folder);
   std::string folder_id = folder->id();
   AppListItem* item0 = new AppListItem("Item 0");
@@ -527,13 +519,12 @@ TEST_F(AppListModelFolderTest, DisableFolders) {
   AppListFolderItem* folder_item = model_.FindFolderItem(folder_id);
   ASSERT_TRUE(folder_item);
   EXPECT_EQ(2u, folder_item->item_list()->item_count());
-  AppListFolderItem* oem_folder =
-      new AppListFolderItem("oem_folder", AppListFolderItem::FOLDER_TYPE_OEM);
+  AppListFolderItem* oem_folder = new AppListFolderItem(ash::kOemFolderId);
   model_.AddItem(oem_folder);
   AppListItem* oem_item = new AppListItem("OEM Item");
   std::string oem_folder_id = oem_folder->id();
   model_.AddItemToFolder(oem_item, oem_folder_id);
-  EXPECT_EQ("folder1,oem_folder", GetModelContents());
+  EXPECT_EQ(std::string("folder1,") + ash::kOemFolderId, GetModelContents());
 }
 
 }  // namespace app_list

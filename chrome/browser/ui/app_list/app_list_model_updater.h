@@ -112,13 +112,11 @@ class AppListModelUpdater {
   virtual void AddItemToOemFolder(
       std::unique_ptr<ChromeAppListItem> item,
       app_list::AppListSyncableService::SyncItem* oem_sync_item,
-      const std::string& oem_folder_id,
       const std::string& oem_folder_name,
       const syncer::StringOrdinal& preferred_oem_position) {}
   using ResolveOemFolderPositionCallback =
       base::OnceCallback<void(ChromeAppListItem*)>;
   virtual void ResolveOemFolderPosition(
-      const std::string& oem_folder_id,
       const syncer::StringOrdinal& preferred_oem_position,
       ResolveOemFolderPositionCallback callback) {}
   virtual void UpdateAppItemFromSyncItem(

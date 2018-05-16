@@ -153,7 +153,7 @@ TEST_F(FolderHeaderViewTest, MaxFoldernNameLength) {
 }
 
 TEST_F(FolderHeaderViewTest, OemFolderNameNotEditable) {
-  AppListFolderItem* folder_item = model_->CreateAndAddOemFolder("oem folder");
+  AppListFolderItem* folder_item = model_->CreateAndAddOemFolder();
   folder_header_view_->SetFolderItem(folder_item);
   EXPECT_EQ("", GetFolderNameFromUI());
   EXPECT_FALSE(CanEditFolderName());
