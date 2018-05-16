@@ -84,9 +84,7 @@ class PermissionsData {
   // Returns true if the given |url| is restricted for the given |extension|,
   // as is commonly the case for chrome:// urls.
   // NOTE: You probably want to use CanAccessPage().
-  static bool IsRestrictedUrl(const GURL& document_url,
-                              const Extension* extension,
-                              std::string* error);
+  bool IsRestrictedUrl(const GURL& document_url, std::string* error) const;
 
   // Is this extension using the default scope for policy_blocked_hosts and
   // policy_allowed_hosts of the ExtensionSettings policy.
@@ -318,6 +316,9 @@ class PermissionsData {
 
   // The associated extension's manifest type.
   Manifest::Type manifest_type_;
+
+  // The associated extension's location.
+  Manifest::Location location_;
 
   mutable base::Lock runtime_lock_;
 

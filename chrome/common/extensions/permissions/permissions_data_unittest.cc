@@ -89,22 +89,18 @@ void CheckRestrictedUrls(const Extension* extension,
   const GURL invalid_url("chrome-debugger://foo/bar.html");
 
   std::string error;
-  EXPECT_EQ(block_chrome_urls,
-            PermissionsData::IsRestrictedUrl(
-                chrome_settings_url,
-                extension,
-                &error)) << name;
+  EXPECT_EQ(block_chrome_urls, extension->permissions_data()->IsRestrictedUrl(
+                                   chrome_settings_url, &error))
+      << name;
   if (block_chrome_urls)
     EXPECT_EQ(manifest_errors::kCannotAccessChromeUrl, error) << name;
   else
     EXPECT_TRUE(error.empty()) << name;
 
   error.clear();
-  EXPECT_EQ(block_chrome_urls,
-            PermissionsData::IsRestrictedUrl(
-                chrome_extension_url,
-                extension,
-                &error)) << name;
+  EXPECT_EQ(block_chrome_urls, extension->permissions_data()->IsRestrictedUrl(
+                                   chrome_extension_url, &error))
+      << name;
   if (block_chrome_urls)
     EXPECT_EQ(manifest_errors::kCannotAccessExtensionUrl, error) << name;
   else
@@ -112,14 +108,15 @@ void CheckRestrictedUrls(const Extension* extension,
 
   // Google should never be a restricted url.
   error.clear();
-  EXPECT_FALSE(PermissionsData::IsRestrictedUrl(
-      google_url, extension, &error)) << name;
+  EXPECT_FALSE(
+      extension->permissions_data()->IsRestrictedUrl(google_url, &error))
+      << name;
   EXPECT_TRUE(error.empty()) << name;
 
   // We should always be able to access our own extension pages.
   error.clear();
-  EXPECT_FALSE(PermissionsData::IsRestrictedUrl(
-      self_url, extension, &error)) << name;
+  EXPECT_FALSE(extension->permissions_data()->IsRestrictedUrl(self_url, &error))
+      << name;
   EXPECT_TRUE(error.empty()) << name;
 
   // We should only allow other schemes for extensions when it's a whitelisted
@@ -128,8 +125,8 @@ void CheckRestrictedUrls(const Extension* extension,
   bool allow_on_other_schemes = PermissionsData::CanExecuteScriptEverywhere(
       extension->id(), extension->location());
   EXPECT_EQ(!allow_on_other_schemes,
-            PermissionsData::IsRestrictedUrl(
-                invalid_url, extension, &error)) << name;
+            extension->permissions_data()->IsRestrictedUrl(invalid_url, &error))
+      << name;
   if (!allow_on_other_schemes) {
     EXPECT_EQ(ErrorUtils::FormatErrorMessage(
                   manifest_errors::kCannotAccessPage,

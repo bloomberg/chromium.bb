@@ -368,7 +368,7 @@ bool DebuggerFunction::InitAgentHost() {
     if (result && web_contents) {
       // TODO(rdevlin.cronin) This should definitely be GetLastCommittedURL().
       GURL url = web_contents->GetVisibleURL();
-      if (PermissionsData::IsRestrictedUrl(url, extension(), &error_))
+      if (extension()->permissions_data()->IsRestrictedUrl(url, &error_))
         return false;
       agent_host_ = DevToolsAgentHost::GetOrCreateFor(web_contents);
     }
@@ -377,9 +377,8 @@ bool DebuggerFunction::InitAgentHost() {
         ProcessManager::Get(GetProfile())
             ->GetBackgroundHostForExtension(*debuggee_.extension_id);
     if (extension_host) {
-      if (PermissionsData::IsRestrictedUrl(extension_host->GetURL(),
-                                           extension(),
-                                           &error_)) {
+      if (extension()->permissions_data()->IsRestrictedUrl(
+              extension_host->GetURL(), &error_)) {
         return false;
       }
       agent_host_ =
@@ -388,9 +387,8 @@ bool DebuggerFunction::InitAgentHost() {
   } else if (debuggee_.target_id) {
     agent_host_ = DevToolsAgentHost::GetForId(*debuggee_.target_id);
     if (agent_host_.get()) {
-      if (PermissionsData::IsRestrictedUrl(agent_host_->GetURL(),
-                                           extension(),
-                                           &error_)) {
+      if (extension()->permissions_data()->IsRestrictedUrl(
+              agent_host_->GetURL(), &error_)) {
         agent_host_ = nullptr;
         return false;
       }
