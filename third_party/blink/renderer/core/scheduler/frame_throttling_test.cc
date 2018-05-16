@@ -60,14 +60,14 @@ class FrameThrottlingTest : public SimTest, public PaintTestConfigurations {
         layer->GraphicsLayerBacking(&layer->GetLayoutObject());
     if (own_graphics_layer) {
       result += own_graphics_layer->PlatformLayer()
-                    ->TouchEventHandlerRegion()
+                    ->touch_action_region()
                     .region()
                     .GetRegionComplexity();
     }
     GraphicsLayer* child_graphics_layer = layer->GraphicsLayerBacking();
     if (child_graphics_layer && child_graphics_layer != own_graphics_layer) {
       result += child_graphics_layer->PlatformLayer()
-                    ->TouchEventHandlerRegion()
+                    ->touch_action_region()
                     .region()
                     .GetRegionComplexity();
     }

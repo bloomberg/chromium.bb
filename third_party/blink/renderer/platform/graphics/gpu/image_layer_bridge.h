@@ -10,6 +10,7 @@
 #include "cc/layers/texture_layer_client.h"
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -26,7 +27,6 @@ class Size;
 }
 
 namespace blink {
-class WebLayer;
 
 class PLATFORM_EXPORT ImageLayerBridge
     : public GarbageCollectedFinalized<ImageLayerBridge>,

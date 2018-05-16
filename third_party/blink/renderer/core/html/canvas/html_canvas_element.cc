@@ -517,7 +517,7 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   }
 
   if (context_ && HasImageBitmapContext() && context_->PlatformLayer()) {
-    context_->PlatformLayer()->Invalidate();
+    context_->PlatformLayer()->SetNeedsDisplay();
   }
 
   NotifyListenersCanvasChanged();

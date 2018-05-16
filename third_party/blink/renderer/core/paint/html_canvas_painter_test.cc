@@ -105,7 +105,7 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
   const WebLayer* layer = context->PlatformLayer();
   ASSERT_TRUE(layer);
   EXPECT_TRUE(HasLayerAttached(*layer));
-  EXPECT_EQ(gfx::Size(300, 200), layer->Bounds());
+  EXPECT_EQ(gfx::Size(300, 200), layer->bounds());
 }
 
 }  // namespace blink

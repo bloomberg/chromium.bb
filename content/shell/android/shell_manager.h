@@ -9,12 +9,9 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/scoped_java_ref.h"
+#include "third_party/blink/public/platform/web_layer.h"
 
 class Shell;
-
-namespace blink {
-class WebLayer;
-}
 
 namespace content {
 

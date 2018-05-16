@@ -131,11 +131,11 @@ TEST(ImageLayerChromiumTest, opaqueImages) {
 
   graphics_layer->SetContentsToImage(opaque_image.get(),
                                      Image::kUnspecifiedDecode);
-  ASSERT_TRUE(graphics_layer->ContentsLayer()->Opaque());
+  ASSERT_TRUE(graphics_layer->ContentsLayer()->contents_opaque());
 
   graphics_layer->SetContentsToImage(non_opaque_image.get(),
                                      Image::kUnspecifiedDecode);
-  ASSERT_FALSE(graphics_layer->ContentsLayer()->Opaque());
+  ASSERT_FALSE(graphics_layer->ContentsLayer()->contents_opaque());
 }
 
 }  // namespace blink

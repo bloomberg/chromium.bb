@@ -12,16 +12,11 @@ WebLayer::WebLayer(cc::Layer* layer) : layer_(layer) {}
 
 WebLayer::~WebLayer() = default;
 
-int WebLayer::Id() const {
+int WebLayer::id() const {
   return layer_->id();
 }
 
-DISABLE_CFI_PERF
-void WebLayer::InvalidateRect(const gfx::Rect& rect) {
-  layer_->SetNeedsDisplayRect(rect);
-}
-
-void WebLayer::Invalidate() {
+void WebLayer::SetNeedsDisplay() {
   layer_->SetNeedsDisplay();
 }
 
@@ -49,7 +44,7 @@ void WebLayer::SetBounds(const gfx::Size& size) {
   layer_->SetBounds(size);
 }
 
-const gfx::Size& WebLayer::Bounds() const {
+const gfx::Size& WebLayer::bounds() const {
   return layer_->bounds();
 }
 
@@ -57,7 +52,7 @@ void WebLayer::SetMasksToBounds(bool masks_to_bounds) {
   layer_->SetMasksToBounds(masks_to_bounds);
 }
 
-bool WebLayer::MasksToBounds() const {
+bool WebLayer::masks_to_bounds() const {
   return layer_->masks_to_bounds();
 }
 
@@ -69,7 +64,7 @@ void WebLayer::SetOpacity(float opacity) {
   layer_->SetOpacity(opacity);
 }
 
-float WebLayer::Opacity() const {
+float WebLayer::opacity() const {
   return layer_->opacity();
 }
 
@@ -77,7 +72,7 @@ void WebLayer::SetBlendMode(SkBlendMode blend_mode) {
   layer_->SetBlendMode(blend_mode);
 }
 
-SkBlendMode WebLayer::BlendMode() const {
+SkBlendMode WebLayer::blend_mode() const {
   return layer_->blend_mode();
 }
 
@@ -85,7 +80,7 @@ void WebLayer::SetIsRootForIsolatedGroup(bool isolate) {
   layer_->SetIsRootForIsolatedGroup(isolate);
 }
 
-bool WebLayer::IsRootForIsolatedGroup() {
+bool WebLayer::is_root_for_isolated_group() {
   return layer_->is_root_for_isolated_group();
 }
 
@@ -93,11 +88,11 @@ void WebLayer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
   layer_->SetHitTestableWithoutDrawsContent(should_hit_test);
 }
 
-void WebLayer::SetOpaque(bool opaque) {
+void WebLayer::SetContentsOpaque(bool opaque) {
   layer_->SetContentsOpaque(opaque);
 }
 
-bool WebLayer::Opaque() const {
+bool WebLayer::contents_opaque() const {
   return layer_->contents_opaque();
 }
 
@@ -105,7 +100,7 @@ void WebLayer::SetPosition(const gfx::PointF& position) {
   layer_->SetPosition(position);
 }
 
-const gfx::PointF& WebLayer::GetPosition() const {
+const gfx::PointF& WebLayer::position() const {
   return layer_->position();
 }
 
@@ -117,15 +112,15 @@ void WebLayer::SetTransformOrigin(const gfx::Point3F& point) {
   layer_->SetTransformOrigin(point);
 }
 
-const gfx::Point3F& WebLayer::TransformOrigin() const {
+const gfx::Point3F& WebLayer::transform_origin() const {
   return layer_->transform_origin();
 }
 
-const gfx::Transform& WebLayer::Transform() const {
+const gfx::Transform& WebLayer::transform() const {
   return layer_->transform();
 }
 
-void WebLayer::SetDrawsContent(bool draws_content) {
+void WebLayer::SetIsDrawable(bool draws_content) {
   layer_->SetIsDrawable(draws_content);
 }
 
@@ -141,7 +136,7 @@ void WebLayer::SetShouldFlattenTransform(bool flatten) {
   layer_->SetShouldFlattenTransform(flatten);
 }
 
-void WebLayer::SetRenderingContext(int context) {
+void WebLayer::Set3dSortingContextId(int context) {
   layer_->Set3dSortingContextId(context);
 }
 
@@ -154,7 +149,7 @@ void WebLayer::SetBackgroundColor(SkColor color) {
   layer_->SetBackgroundColor(color);
 }
 
-SkColor WebLayer::BackgroundColor() const {
+SkColor WebLayer::background_color() const {
   return layer_->background_color();
 }
 
@@ -178,19 +173,19 @@ void WebLayer::SetScrollable(const gfx::Size& size) {
   layer_->SetScrollable(size);
 }
 
-void WebLayer::SetScrollPosition(const gfx::ScrollOffset& position) {
+void WebLayer::SetScrollOffset(const gfx::ScrollOffset& position) {
   layer_->SetScrollOffset(position);
 }
 
-const gfx::ScrollOffset& WebLayer::ScrollPosition() const {
+const gfx::ScrollOffset& WebLayer::scroll_offset() const {
   return layer_->scroll_offset();
 }
 
-bool WebLayer::Scrollable() const {
+bool WebLayer::scrollable() const {
   return layer_->scrollable();
 }
 
-const gfx::Size& WebLayer::ScrollContainerBoundsForTesting() const {
+const gfx::Size& WebLayer::scroll_container_bounds() const {
   return layer_->scroll_container_bounds();
 }
 
@@ -198,11 +193,11 @@ void WebLayer::SetUserScrollable(bool horizontal, bool vertical) {
   layer_->SetUserScrollable(horizontal, vertical);
 }
 
-bool WebLayer::UserScrollableHorizontal() const {
+bool WebLayer::user_scrollable_horizontal() const {
   return layer_->user_scrollable_horizontal();
 }
 
-bool WebLayer::UserScrollableVertical() const {
+bool WebLayer::user_scrollable_vertical() const {
   return layer_->user_scrollable_vertical();
 }
 
@@ -217,11 +212,11 @@ void WebLayer::ClearMainThreadScrollingReasons(
       main_thread_scrolling_reasons_to_clear);
 }
 
-uint32_t WebLayer::MainThreadScrollingReasons() {
+uint32_t WebLayer::main_thread_scrolling_reasons() {
   return layer_->main_thread_scrolling_reasons();
 }
 
-bool WebLayer::ShouldScrollOnMainThread() const {
+bool WebLayer::should_scroll_on_main_thread() const {
   return layer_->should_scroll_on_main_thread();
 }
 
@@ -229,21 +224,16 @@ void WebLayer::SetNonFastScrollableRegion(const cc::Region& region) {
   layer_->SetNonFastScrollableRegion(region);
 }
 
-const cc::Region& WebLayer::NonFastScrollableRegion() const {
+const cc::Region& WebLayer::non_fast_scrollable_region() const {
   return layer_->non_fast_scrollable_region();
 }
 
-void WebLayer::SetTouchEventHandlerRegion(const cc::TouchActionRegion& region) {
+void WebLayer::SetTouchActionRegion(const cc::TouchActionRegion& region) {
   layer_->SetTouchActionRegion(region);
 }
 
-const cc::TouchActionRegion& WebLayer::TouchEventHandlerRegion() const {
+const cc::TouchActionRegion& WebLayer::touch_action_region() const {
   return layer_->touch_action_region();
-}
-
-const cc::Region& WebLayer::TouchEventHandlerRegionForTouchActionForTesting(
-    cc::TouchAction touch_action) const {
-  return layer_->touch_action_region().GetRegionForTouchAction(touch_action);
 }
 
 void WebLayer::SetIsContainerForFixedPositionLayers(bool enable) {
@@ -263,7 +253,7 @@ void WebLayer::SetPositionConstraint(
   layer_->SetPositionConstraint(constraint);
 }
 
-const cc::LayerPositionConstraint& WebLayer::PositionConstraint() const {
+const cc::LayerPositionConstraint& WebLayer::position_constraint() const {
   return layer_->position_constraint();
 }
 
@@ -272,19 +262,18 @@ void WebLayer::SetStickyPositionConstraint(
   layer_->SetStickyPositionConstraint(constraint);
 }
 
-const cc::LayerStickyPositionConstraint& WebLayer::StickyPositionConstraint()
+const cc::LayerStickyPositionConstraint& WebLayer::sticky_position_constraint()
     const {
   return layer_->sticky_position_constraint();
 }
 
-void WebLayer::SetScrollCallback(
+void WebLayer::set_did_scroll_callback(
     base::RepeatingCallback<void(const gfx::ScrollOffset&,
                                  const cc::ElementId&)> callback) {
   layer_->set_did_scroll_callback(std::move(callback));
 }
 
-void WebLayer::SetScrollOffsetFromImplSideForTesting(
-    const gfx::ScrollOffset& offset) {
+void WebLayer::SetScrollOffsetFromImplSide(const gfx::ScrollOffset& offset) {
   layer_->SetScrollOffsetFromImplSide(offset);
 }
 
@@ -292,19 +281,11 @@ void WebLayer::SetLayerClient(base::WeakPtr<cc::LayerClient> client) {
   layer_->SetLayerClient(std::move(client));
 }
 
-const cc::Layer* WebLayer::CcLayer() const {
-  return layer_;
-}
-
-cc::Layer* WebLayer::CcLayer() {
-  return layer_;
-}
-
 void WebLayer::SetElementId(const cc::ElementId& id) {
   layer_->SetElementId(id);
 }
 
-cc::ElementId WebLayer::GetElementId() const {
+cc::ElementId WebLayer::element_id() const {
   return layer_->element_id();
 }
 

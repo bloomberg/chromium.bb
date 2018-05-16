@@ -136,7 +136,13 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   Layer* mask_layer() { return inputs_.mask_layer.get(); }
   const Layer* mask_layer() const { return inputs_.mask_layer.get(); }
 
+  // Marks the |dirty_rect| as being changed, which will cause a commit and
+  // the compositor to submit a new frame with a damage rect that includes the
+  // layer's dirty area.
   virtual void SetNeedsDisplayRect(const gfx::Rect& dirty_rect);
+  // Marks the entire layer's bounds as being changed, which will cause a commit
+  // and the compositor to submit a new frame with a damage rect that includes
+  // the entire layer.
   void SetNeedsDisplay() { SetNeedsDisplayRect(gfx::Rect(bounds())); }
 
   virtual void SetOpacity(float opacity);
@@ -235,6 +241,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   const gfx::ScrollOffset& scroll_offset() const {
     return inputs_.scroll_offset;
   }
+  // Called internally during commit to update the layer with state from the
+  // compositor thread. Not to be called externally by users of this class.
   void SetScrollOffsetFromImplSide(const gfx::ScrollOffset& scroll_offset);
 
   // Marks this layer as being scrollable and needing an associated scroll node.
@@ -314,6 +322,11 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   virtual void SetLayerTreeHost(LayerTreeHost* host);
 
+  // When true the layer may contribute to the compositor's output. When false,
+  // it does not. This property does not apply to children of the layer, they
+  // may contribute while this layer does not. The layer itself will determine
+  // if it has content to contribute, but when false, this prevents it from
+  // doing so.
   void SetIsDrawable(bool is_drawable);
 
   void SetHideLayerAndSubtree(bool hide);
@@ -324,6 +337,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
 
   int NumDescendantsThatDrawContent() const;
 
+  // Is true if the layer will contribute content to the compositor's output.
+  // Will be false if SetIsDrawable(false) is called. But will also be false if
+  // the layer itself has no content to contribute, even though the layer was
+  // given SetIsDrawable(true).
   // This is only virtual for tests.
   // TODO(awoloszyn): Remove this once we no longer need it for tests
   virtual bool DrawsContent() const;

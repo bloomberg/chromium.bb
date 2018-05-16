@@ -2260,7 +2260,7 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
       container_->SetWebLayer(web_layer_.get(), true);
     }
     if (is_flash_plugin_) {
-      web_layer_->CcLayer()->SetMayContainVideo(true);
+      web_layer_->SetMayContainVideo(true);
     }
   }
 

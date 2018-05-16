@@ -1541,7 +1541,7 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
                               ->LayerForScrolling()
                               ->PlatformLayer();
 
-  EXPECT_EQ(gfx::Size(1500, 2400), scrollLayer->Bounds());
+  EXPECT_EQ(gfx::Size(1500, 2400), scrollLayer->bounds());
 }
 
 // Tests that resizing the visual viepwort keeps its bounds within the outer

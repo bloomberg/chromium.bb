@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 
 #include "base/macros.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
@@ -46,7 +47,6 @@ class Page;
 class PagePopupChromeClient;
 class PagePopupClient;
 class WebLayerTreeView;
-class WebLayer;
 class WebViewImpl;
 class LocalDOMWindow;
 

@@ -119,7 +119,7 @@ void ChildFrameCompositingHelper::SetFallbackSurfaceId(
 void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
   blink::WebLayer* web_layer = child_frame_compositor_->GetLayer();
   if (web_layer)
-    web_layer->SetDrawsContent(visible);
+    web_layer->SetIsDrawable(visible);
 }
 
 }  // namespace content

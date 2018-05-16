@@ -24,7 +24,6 @@
 
 namespace blink {
 class WebGraphicsContext3DProvider;
-class WebLayer;
 struct WebPluginParams;
 }
 

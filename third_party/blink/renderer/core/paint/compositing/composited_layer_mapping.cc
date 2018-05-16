@@ -449,14 +449,14 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
     // layer. This may not be the case if there are box decorations or
     // shadows.
     if (layer &&
-        layer->Bounds() == graphics_layer_->PlatformLayer()->Bounds()) {
+        layer->bounds() == graphics_layer_->PlatformLayer()->bounds()) {
       // Determine whether the rendering context's external texture layer is
       // opaque.
       if (!context->CreationAttributes().alpha) {
         graphics_layer_->SetContentsOpaque(true);
       } else {
         graphics_layer_->SetContentsOpaque(
-            !Color(layer->BackgroundColor()).HasAlpha());
+            !Color(layer->background_color()).HasAlpha());
       }
     } else {
       graphics_layer_->SetContentsOpaque(false);

@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
 
 #include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -15,7 +16,6 @@ namespace blink {
 
 class LocalFrame;
 class RemoteFrameClient;
-class WebLayer;
 struct FrameLoadRequest;
 
 class CORE_EXPORT RemoteFrame final : public Frame {

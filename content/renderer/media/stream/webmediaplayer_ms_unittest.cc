@@ -987,19 +987,19 @@ TEST_F(WebMediaPlayerMSTest, OpacityChange) {
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
   ASSERT_TRUE(web_layer_ != nullptr);
-  EXPECT_TRUE(web_layer_->Opaque());
+  EXPECT_TRUE(web_layer_->contents_opaque());
 
   // Push one transparent frame.
   provider->QueueFrames(timestamps, false);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  EXPECT_FALSE(web_layer_->Opaque());
+  EXPECT_FALSE(web_layer_->contents_opaque());
 
   // Push another opaque frame.
   provider->QueueFrames(timestamps, true);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  EXPECT_TRUE(web_layer_->Opaque());
+  EXPECT_TRUE(web_layer_->contents_opaque());
 
   testing::Mock::VerifyAndClearExpectations(this);
   EXPECT_CALL(*this, DoSetWebLayer(false));

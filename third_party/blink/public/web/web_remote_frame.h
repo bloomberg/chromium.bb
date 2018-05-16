@@ -9,6 +9,7 @@
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "v8/include/v8.h"
 
@@ -17,7 +18,6 @@ namespace blink {
 enum class WebTreeScopeType;
 class InterfaceRegistry;
 class WebFrameClient;
-class WebLayer;
 class WebRemoteFrameClient;
 class WebString;
 class WebView;

@@ -86,26 +86,19 @@ namespace cc {
 class Layer;
 }
 
-using blink::WebFloatPoint;
-using blink::WebRect;
-using blink::WebSelection;
-using blink::WebSize;
-using blink::WebBrowserControlsState;
-using blink::WebLayerTreeView;
-
 namespace content {
 namespace {
 
 const base::Feature kUnpremultiplyAndDitherLowBitDepthTiles = {
     "UnpremultiplyAndDitherLowBitDepthTiles", base::FEATURE_ENABLED_BY_DEFAULT};
 
-using ReportTimeCallback = RenderWidgetCompositor::ReportTimeCallback;
+using ReportTimeCallback = blink::WebLayerTreeView::ReportTimeCallback;
 
 class ReportTimeSwapPromise : public cc::SwapPromise {
  public:
   ReportTimeSwapPromise(
       ReportTimeCallback callback,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   ~ReportTimeSwapPromise() override;
 
   void DidActivate() override {}
@@ -125,37 +118,37 @@ class ReportTimeSwapPromise : public cc::SwapPromise {
 
 ReportTimeSwapPromise::ReportTimeSwapPromise(
     ReportTimeCallback callback,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
-    : callback_(callback), task_runner_(task_runner) {}
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : callback_(std::move(callback)), task_runner_(std::move(task_runner)) {}
 
 ReportTimeSwapPromise::~ReportTimeSwapPromise() {}
 
 void ReportTimeSwapPromise::DidSwap() {
   task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback_, WebLayerTreeView::SwapResult::kDidSwap,
-                     base::TimeTicks::Now()));
+      FROM_HERE, base::BindOnce(std::move(callback_),
+                                blink::WebLayerTreeView::SwapResult::kDidSwap,
+                                base::TimeTicks::Now()));
 }
 
 cc::SwapPromise::DidNotSwapAction ReportTimeSwapPromise::DidNotSwap(
     cc::SwapPromise::DidNotSwapReason reason) {
-  WebLayerTreeView::SwapResult result;
+  blink::WebLayerTreeView::SwapResult result;
   switch (reason) {
     case cc::SwapPromise::DidNotSwapReason::SWAP_FAILS:
-      result = WebLayerTreeView::SwapResult::kDidNotSwapSwapFails;
+      result = blink::WebLayerTreeView::SwapResult::kDidNotSwapSwapFails;
       break;
     case cc::SwapPromise::DidNotSwapReason::COMMIT_FAILS:
-      result = WebLayerTreeView::SwapResult::kDidNotSwapCommitFails;
+      result = blink::WebLayerTreeView::SwapResult::kDidNotSwapCommitFails;
       break;
     case cc::SwapPromise::DidNotSwapReason::COMMIT_NO_UPDATE:
-      result = WebLayerTreeView::SwapResult::kDidNotSwapCommitNoUpdate;
+      result = blink::WebLayerTreeView::SwapResult::kDidNotSwapCommitNoUpdate;
       break;
     case cc::SwapPromise::DidNotSwapReason::ACTIVATION_FAILS:
-      result = WebLayerTreeView::SwapResult::kDidNotSwapActivationFails;
+      result = blink::WebLayerTreeView::SwapResult::kDidNotSwapActivationFails;
       break;
   }
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(callback_, result, base::TimeTicks::Now()));
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(std::move(callback_), result,
+                                                   base::TimeTicks::Now()));
   return cc::SwapPromise::DidNotSwapAction::BREAK_PROMISE;
 }
 
@@ -206,7 +199,8 @@ cc::LayerSelectionBound ConvertFromWebSelectionBound(
   return cc_bound;
 }
 
-cc::LayerSelection ConvertFromWebSelection(const WebSelection& web_selection) {
+cc::LayerSelection ConvertFromWebSelection(
+    const blink::WebSelection& web_selection) {
   if (web_selection.IsNone())
     return cc::LayerSelection();
   cc::LayerSelection cc_selection;
@@ -256,7 +250,7 @@ static_assert(int(blink::kWebBrowserControlsShown) == int(cc::SHOWN),
               "mismatching enums: SHOWN");
 
 static cc::BrowserControlsState ConvertBrowserControlsState(
-    WebBrowserControlsState state) {
+    blink::WebBrowserControlsState state) {
   return static_cast<cc::BrowserControlsState>(state);
 }
 
@@ -803,12 +797,12 @@ cc::AnimationHost* RenderWidgetCompositor::CompositorAnimationHost() {
   return animation_host_.get();
 }
 
-WebSize RenderWidgetCompositor::GetViewportSize() const {
+blink::WebSize RenderWidgetCompositor::GetViewportSize() const {
   return layer_tree_host_->device_viewport_size();
 }
 
-WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
-    const WebFloatPoint& point) const {
+blink::WebFloatPoint RenderWidgetCompositor::adjustEventPointForPinchZoom(
+    const blink::WebFloatPoint& point) const {
   return point;
 }
 
@@ -1125,8 +1119,8 @@ void RenderWidgetCompositor::SetShowScrollBottleneckRects(bool show) {
 }
 
 void RenderWidgetCompositor::UpdateBrowserControlsState(
-    WebBrowserControlsState constraints,
-    WebBrowserControlsState current,
+    blink::WebBrowserControlsState constraints,
+    blink::WebBrowserControlsState current,
     bool animate) {
   layer_tree_host_->UpdateBrowserControlsState(
       ConvertBrowserControlsState(constraints),

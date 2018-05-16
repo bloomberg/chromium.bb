@@ -473,7 +473,7 @@ void VisualViewport::SetupScrollbar(ScrollbarOrientation orientation) {
         /*prevent_contents_opaque_changes=*/false);
     scrollbar_graphics_layer->SetDrawsContent(false);
     scrollbar_layer_group->scrollbar_layer->SetScrollElementId(
-        inner_viewport_scroll_layer_->PlatformLayer()->GetElementId());
+        inner_viewport_scroll_layer_->PlatformLayer()->element_id());
   }
 
   int x_position = is_horizontal

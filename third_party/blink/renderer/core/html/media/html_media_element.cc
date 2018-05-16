@@ -3363,7 +3363,7 @@ bool HTMLMediaElement::IsAutoplayingMuted() {
 // MediaPlayerPresentation methods
 void HTMLMediaElement::Repaint() {
   if (web_layer_)
-    web_layer_->Invalidate();
+    web_layer_->SetNeedsDisplay();
 
   UpdateDisplayState();
   if (GetLayoutObject())

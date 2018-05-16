@@ -26,35 +26,8 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_LAYER_H_
 
-#include "base/callback.h"
-#include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_string.h"
-#include "third_party/blink/public/platform/web_touch_info.h"
-#include "third_party/blink/public/platform/web_vector.h"
-#include "third_party/skia/include/core/SkBlendMode.h"
-#include "third_party/skia/include/core/SkColor.h"
-
-namespace cc {
-struct ElementId;
-class FilterOperations;
-class Layer;
-class LayerClient;
-class LayerPositionConstraint;
-struct LayerStickyPositionConstraint;
-class Region;
-class TouchActionRegion;
-}
-
-namespace gfx {
-class PointF;
-class Point3F;
-class Rect;
-class ScrollOffset;
-class Transform;
-}
 
 namespace blink {
 
@@ -65,13 +38,12 @@ class BLINK_PLATFORM_EXPORT WebLayer {
 
   // Returns a positive ID that will be unique across all WebLayers allocated in
   // this process.
-  int Id() const;
+  int id() const;
 
-  // Sets a area of the layer as invalid, i.e. needs to update its content.
-  void InvalidateRect(const gfx::Rect&);
-
-  // Sets the entire layer as invalid, i.e. needs to update its content.
-  void Invalidate();
+  // Marks the entire layer's bounds as being changed, which will cause a commit
+  // and the compositor to submit a new frame with a damage rect that includes
+  // the entire layer.
+  void SetNeedsDisplay();
 
   // These functions do not take ownership of the WebLayer* parameter.
   void AddChild(WebLayer*);
@@ -81,38 +53,48 @@ class BLINK_PLATFORM_EXPORT WebLayer {
   void RemoveAllChildren();
 
   void SetBounds(const gfx::Size&);
-  const gfx::Size& Bounds() const;
+  const gfx::Size& bounds() const;
 
   void SetMasksToBounds(bool);
-  bool MasksToBounds() const;
+  bool masks_to_bounds() const;
 
   void SetMaskLayer(WebLayer*);
 
   void SetOpacity(float);
-  float Opacity() const;
+  float opacity() const;
 
   void SetBlendMode(SkBlendMode);
-  SkBlendMode BlendMode() const;
+  SkBlendMode blend_mode() const;
 
   void SetIsRootForIsolatedGroup(bool);
-  bool IsRootForIsolatedGroup();
+  bool is_root_for_isolated_group();
 
   void SetHitTestableWithoutDrawsContent(bool);
 
-  void SetOpaque(bool);
-  bool Opaque() const;
+  void SetContentsOpaque(bool);
+  bool contents_opaque() const;
 
   void SetPosition(const gfx::PointF&);
-  const gfx::PointF& GetPosition() const;
+  const gfx::PointF& position() const;
 
   void SetTransform(const gfx::Transform&);
-  const gfx::Transform& Transform() const;
+  const gfx::Transform& transform() const;
 
   void SetTransformOrigin(const gfx::Point3F&);
-  const gfx::Point3F& TransformOrigin() const;
+  const gfx::Point3F& transform_origin() const;
 
-  // Sets whether the layer draws its content when compositing.
-  void SetDrawsContent(bool);
+  void SetMayContainVideo(bool may) { layer_->SetMayContainVideo(may); }
+
+  // When true the layer may contribute to the compositor's output. When false,
+  // it does not. This property does not apply to children of the layer, they
+  // may contribute while this layer does not. The layer itself will determine
+  // if it has content to contribute, but when false, this prevents it from
+  // doing so.
+  void SetIsDrawable(bool);
+  // Is true if the layer will contribute content to the compositor's output.
+  // Will be false if SetIsDrawable(false) is called. But will also be false if
+  // the layer itself has no content to contribute, even though the layer was
+  // given SetIsDrawable(true).
   bool DrawsContent() const;
 
   // Set to true if the backside of this layer's contents should be visible
@@ -125,7 +107,7 @@ class BLINK_PLATFORM_EXPORT WebLayer {
   // Sets the id of the layer's 3d rendering context. Layers in the same 3d
   // rendering context id are sorted with one another according to their 3d
   // position rather than their tree order.
-  void SetRenderingContext(int id);
+  void Set3dSortingContextId(int id);
 
   // Mark that this layer should use its parent's transform and double-sided
   // properties in determining this layer's backface visibility instead of
@@ -137,11 +119,12 @@ class BLINK_PLATFORM_EXPORT WebLayer {
   void SetUseParentBackfaceVisibility(bool);
 
   void SetBackgroundColor(SkColor);
-  SkColor BackgroundColor() const;
+  SkColor background_color() const;
 
   // Clear the filters in use by passing in a newly instantiated
   // FilterOperations object.
   void SetFilters(const cc::FilterOperations&);
+  const cc::FilterOperations& filters() const { return layer_->filters(); }
 
   // The position of the original primitive inside the total bounds.
   void SetFiltersOrigin(const gfx::PointF&);
@@ -165,34 +148,32 @@ class BLINK_PLATFORM_EXPORT WebLayer {
   void SetClipParent(WebLayer*);
 
   // Scrolling
-  void SetScrollPosition(const gfx::ScrollOffset&);
-  const gfx::ScrollOffset& ScrollPosition() const;
+  void SetScrollOffset(const gfx::ScrollOffset&);
+  const gfx::ScrollOffset& scroll_offset() const;
 
   // To set a WebLayer as scrollable we must specify the scrolling container
   // bounds.
   void SetScrollable(const gfx::Size& scroll_container_bounds);
-  bool Scrollable() const;
-  const gfx::Size& ScrollContainerBoundsForTesting() const;
+  bool scrollable() const;
+  const gfx::Size& scroll_container_bounds() const;
 
   void SetUserScrollable(bool horizontal, bool vertical);
-  bool UserScrollableHorizontal() const;
-  bool UserScrollableVertical() const;
+  bool user_scrollable_horizontal() const;
+  bool user_scrollable_vertical() const;
 
   // Indicates that this layer will always scroll on the main thread for the
   // provided reason.
   void AddMainThreadScrollingReasons(uint32_t);
   void ClearMainThreadScrollingReasons(
       uint32_t main_thread_scrolling_reasons_to_clear);
-  uint32_t MainThreadScrollingReasons();
-  bool ShouldScrollOnMainThread() const;
+  uint32_t main_thread_scrolling_reasons();
+  bool should_scroll_on_main_thread() const;
 
   void SetNonFastScrollableRegion(const cc::Region&);
-  const cc::Region& NonFastScrollableRegion() const;
+  const cc::Region& non_fast_scrollable_region() const;
 
-  void SetTouchEventHandlerRegion(const cc::TouchActionRegion& region);
-  const cc::TouchActionRegion& TouchEventHandlerRegion() const;
-  const cc::Region& TouchEventHandlerRegionForTouchActionForTesting(
-      WebTouchAction) const;
+  void SetTouchActionRegion(const cc::TouchActionRegion& region);
+  const cc::TouchActionRegion& touch_action_region() const;
 
   void SetIsContainerForFixedPositionLayers(bool);
   bool IsContainerForFixedPositionLayers() const;
@@ -202,22 +183,22 @@ class BLINK_PLATFORM_EXPORT WebLayer {
   // This function sets layer position constraint. The constraint will be used
   // to adjust layer position during threaded scrolling.
   void SetPositionConstraint(const cc::LayerPositionConstraint&);
-  const cc::LayerPositionConstraint& PositionConstraint() const;
+  const cc::LayerPositionConstraint& position_constraint() const;
 
   // Sets the sticky position constraint. This will be used to adjust sticky
   // position objects during threaded scrolling.
   void SetStickyPositionConstraint(const cc::LayerStickyPositionConstraint&);
-  const cc::LayerStickyPositionConstraint& StickyPositionConstraint() const;
+  const cc::LayerStickyPositionConstraint& sticky_position_constraint() const;
 
   // The scroll callback is notified when the scroll position of the WebLayer
   // changes. Only a single scroll callback can be set for a WebLayer at a time.
-  void SetScrollCallback(
+  void set_did_scroll_callback(
       base::RepeatingCallback<void(const gfx::ScrollOffset&,
                                    const cc::ElementId&)> callback);
 
-  // Sets a synthetic impl-side scroll offset which will end up reporting this
-  // call back to blink via the scroll callback set by SetScrollCallback().
-  void SetScrollOffsetFromImplSideForTesting(const gfx::ScrollOffset&);
+  // Called internally during commit to update the layer with state from the
+  // compositor thread. Not to be called externally by users of this class.
+  void SetScrollOffsetFromImplSide(const gfx::ScrollOffset&);
 
   // The scroll-boundary-behavior allows developers to specify whether the
   // scroll should be propagated to its ancestors at the beginning of the
@@ -234,17 +215,21 @@ class BLINK_PLATFORM_EXPORT WebLayer {
   // Sets the cc-side layer client.
   void SetLayerClient(base::WeakPtr<cc::LayerClient>);
 
-  // Gets the underlying cc layer.
-  const cc::Layer* CcLayer() const;
-  cc::Layer* CcLayer();
-
   void SetElementId(const cc::ElementId&);
-  cc::ElementId GetElementId() const;
+  cc::ElementId element_id() const;
 
   void SetHasWillChangeTransformHint(bool);
 
   // Called on the scroll layer to trigger showing the overlay scrollbars.
   void ShowScrollbars();
+
+  // Gets the underlying cc layer.
+  const cc::Layer* CcLayer() const { return layer_; }
+  cc::Layer* CcLayer() { return layer_; }
+
+  cc::LayerTreeHost* GetLayerTreeHostForTesting() const {
+    return layer_->GetLayerTreeHostForTesting();
+  }
 
  private:
   cc::Layer* layer_;

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -33,7 +34,6 @@ class ContentLayerClientImpl;
 class JSONObject;
 class PaintArtifact;
 class SynthesizedClip;
-class WebLayer;
 struct PaintChunk;
 
 // Responsible for managing compositing in terms of a PaintArtifact.

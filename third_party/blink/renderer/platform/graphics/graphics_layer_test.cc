@@ -70,7 +70,7 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     scroll_elasticity_layer_->AddChild(page_scale_layer_.get());
     page_scale_layer_->AddChild(graphics_layer_.get());
     graphics_layer_->PlatformLayer()->SetScrollable(
-        clip_layer_->PlatformLayer()->Bounds());
+        clip_layer_->PlatformLayer()->bounds());
     platform_layer_ = graphics_layer_->PlatformLayer();
     layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
     DCHECK(layer_tree_view_);
@@ -170,10 +170,10 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   host.AddTimeline(*compositor_timeline);
   compositor_timeline->AnimationAttached(animation);
 
-  platform_layer_->SetElementId(CompositorElementId(platform_layer_->Id()));
+  platform_layer_->SetElementId(CompositorElementId(platform_layer_->id()));
 
   animation.GetCompositorAnimation()->AttachElement(
-      platform_layer_->GetElementId());
+      platform_layer_->element_id());
   ASSERT_TRUE(animation.GetCompositorAnimation()->IsElementAttached());
 
   animation.GetCompositorAnimation()->AddKeyframeModel(

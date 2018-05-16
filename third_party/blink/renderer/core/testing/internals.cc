@@ -1896,7 +1896,7 @@ static void AccumulateLayerRectList(PaintLayerCompositor* compositor,
                                     GraphicsLayer* graphics_layer,
                                     LayerRectList* rects) {
   const cc::TouchActionRegion& touch_action_region =
-      graphics_layer->PlatformLayer()->TouchEventHandlerRegion();
+      graphics_layer->PlatformLayer()->touch_action_region();
   if (!touch_action_region.region().IsEmpty()) {
     Vector<IntRect> layer_rects;
     for (const gfx::Rect& rect : touch_action_region.region()) {
