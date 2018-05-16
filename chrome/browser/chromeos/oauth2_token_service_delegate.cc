@@ -147,8 +147,17 @@ void ChromeOSOAuth2TokenServiceDelegate::GetAccountsCallback(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   load_credentials_state_ = LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS;
-  for (const auto& account_key : account_keys) {
-    OnTokenUpserted(account_key);
+
+  // The typical order of |OAuth2TokenService::Observer| callbacks is:
+  // 1. OnStartBatchChanges
+  // 2. OnRefreshTokenAvailable
+  // 3. OnEndBatchChanges
+  // 4. OnRefreshTokensLoaded
+  {
+    ScopedBatchChange batch(this);
+    for (const auto& account_key : account_keys) {
+      OnTokenUpserted(account_key);
+    }
   }
   FireRefreshTokensLoaded();
 }
@@ -189,9 +198,17 @@ void ChromeOSOAuth2TokenServiceDelegate::OnTokenUpserted(
 
   std::string account_id = MapAccountKeyToAccountId(account_key);
   if (!account_id.empty()) {
+    ScopedBatchChange batch(this);
     FireRefreshTokenAvailable(account_id);
 
+    // We cannot directly use |UpdateAuthError| because it does not invoke
+    // |FireAuthErrorChanged| if |account_id|'s error state was already
+    // |GoogleServiceAuthError::State::NONE|, but |FireAuthErrorChanged| must be
+    // invoked here, regardless. See the comment below.
     errors_.erase(account_id);
+    // See |OAuth2TokenService::Observer::OnAuthErrorChanged|.
+    // |OnAuthErrorChanged| must be always called after
+    // |OnRefreshTokenAvailable|, when refresh token is updated.
     FireAuthErrorChanged(account_id, GoogleServiceAuthError::AuthErrorNone());
   }
 }
