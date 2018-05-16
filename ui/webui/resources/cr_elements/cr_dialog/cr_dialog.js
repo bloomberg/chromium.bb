@@ -52,10 +52,16 @@ Polymer({
     },
 
     /**
-     * True if the dialog should not be able to be cancelled, which will hide
-     * the 'x' button and prevent 'Escape' key presses from closing the dialog.
+     * True if the dialog should not be able to be cancelled, which will prevent
+     * 'Escape' key presses from closing the dialog.
      */
     noCancel: {
+      type: Boolean,
+      value: false,
+    },
+
+    // True if dialog should show the 'X' close button.
+    showCloseButton: {
       type: Boolean,
       value: false,
     },
