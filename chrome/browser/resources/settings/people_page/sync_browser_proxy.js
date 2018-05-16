@@ -192,13 +192,6 @@ cr.define('settings', function() {
     setSyncDatatypes(syncPrefs) {}
 
     /**
-     * Sets the syncAllDataTypes pref.
-     * @param {boolean} syncEverything
-     * @return {!Promise<!settings.PageStatus>}
-     */
-    setSyncEverything(syncEverything) {}
-
-    /**
      * Sets the sync encryption options.
      * @param {!settings.SyncPrefs} syncPrefs
      * @return {!Promise<!settings.PageStatus>}
@@ -286,11 +279,6 @@ cr.define('settings', function() {
     setSyncDatatypes(syncPrefs) {
       return cr.sendWithPromise(
           'SyncSetupSetDatatypes', JSON.stringify(syncPrefs));
-    }
-
-    /** @override */
-    setSyncEverything(syncEverything) {
-      return cr.sendWithPromise('SyncSetupSetSyncEverything', syncEverything);
     }
 
     /** @override */
