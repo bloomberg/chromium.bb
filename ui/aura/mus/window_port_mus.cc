@@ -428,8 +428,10 @@ viz::ScopedSurfaceIdAllocator WindowPortMus::GetSurfaceIdAllocator(
 
 void WindowPortMus::UpdateLocalSurfaceIdFromEmbeddedClient(
     const viz::LocalSurfaceId& embedded_client_local_surface_id) {
-  local_surface_id_ = parent_local_surface_id_allocator_.UpdateFromChild(
+  parent_local_surface_id_allocator_.UpdateFromChild(
       embedded_client_local_surface_id);
+  local_surface_id_ =
+      parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
 const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {

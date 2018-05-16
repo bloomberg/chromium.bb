@@ -17,15 +17,16 @@ ParentLocalSurfaceIdAllocator::ParentLocalSurfaceIdAllocator()
                                 kInitialChildSequenceNumber,
                                 base::UnguessableToken::Create()) {}
 
-const LocalSurfaceId& ParentLocalSurfaceIdAllocator::UpdateFromChild(
+bool ParentLocalSurfaceIdAllocator::UpdateFromChild(
     const LocalSurfaceId& child_allocated_local_surface_id) {
   if (child_allocated_local_surface_id.child_sequence_number() >
       current_local_surface_id_.child_sequence_number()) {
     current_local_surface_id_.child_sequence_number_ =
         child_allocated_local_surface_id.child_sequence_number_;
     is_invalid_ = false;
+    return true;
   }
-  return current_local_surface_id_;
+  return false;
 }
 
 void ParentLocalSurfaceIdAllocator::Reset(

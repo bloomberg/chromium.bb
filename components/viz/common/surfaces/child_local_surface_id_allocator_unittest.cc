@@ -91,9 +91,9 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
   EXPECT_NE(preupdate_local_surface_id.embed_token(),
             parent_allocated_local_surface_id.embed_token());
 
-  const LocalSurfaceId& returned_local_surface_id =
-      parent_updated_child_allocator.UpdateFromParent(
-          parent_allocated_local_surface_id);
+  bool changed = parent_updated_child_allocator.UpdateFromParent(
+      parent_allocated_local_surface_id);
+  EXPECT_TRUE(changed);
 
   const LocalSurfaceId& postupdate_local_surface_id =
       parent_updated_child_allocator.GetCurrentLocalSurfaceId();
@@ -103,8 +103,6 @@ TEST(ChildLocalSurfaceIdAllocatorTest,
             parent_allocated_local_surface_id.child_sequence_number());
   EXPECT_EQ(postupdate_local_surface_id.embed_token(),
             parent_allocated_local_surface_id.embed_token());
-  EXPECT_EQ(returned_local_surface_id,
-            parent_updated_child_allocator.GetCurrentLocalSurfaceId());
 }
 
 // GenerateId() on a child allocator should monotonically increment the child

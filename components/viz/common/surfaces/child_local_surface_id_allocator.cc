@@ -15,7 +15,7 @@ ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
                                 kInitialChildSequenceNumber,
                                 base::UnguessableToken()) {}
 
-const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
+bool ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id) {
   if (parent_allocated_local_surface_id.parent_sequence_number() >
       current_local_surface_id_.parent_sequence_number()) {
@@ -23,8 +23,9 @@ const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
         parent_allocated_local_surface_id.parent_sequence_number_;
     current_local_surface_id_.embed_token_ =
         parent_allocated_local_surface_id.embed_token_;
+    return true;
   }
-  return current_local_surface_id_;
+  return false;
 }
 
 const LocalSurfaceId& ChildLocalSurfaceIdAllocator::GenerateId() {
