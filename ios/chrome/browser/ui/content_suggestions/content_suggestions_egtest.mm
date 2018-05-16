@@ -103,10 +103,8 @@ ContentSuggestion Suggestion(Category category,
 GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Start the scroll from the middle of the screen in case the bottom of the
   // screen is obscured by the bottom toolbar.
-  id<GREYAction> action = IsUIRefreshPhase1Enabled()
-                              ? grey_scrollInDirectionWithStartPoint(
-                                    kGREYDirectionDown, 200, 0.5, 0.5)
-                              : grey_scrollInDirection(kGREYDirectionDown, 200);
+  id<GREYAction> action =
+      grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
   return [[EarlGrey
       selectElementWithMatcher:grey_allOf(matcher, grey_sufficientlyVisible(),
                                           nil)]
