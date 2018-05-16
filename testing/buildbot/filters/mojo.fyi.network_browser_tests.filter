@@ -6,8 +6,6 @@
 # See https://crbug.com/769401
 
 # Uncategorized timeouts or test failures.
--BackgroundXhrTest.HttpAuth
--BackgroundXhrTest.TlsClientAuth
 -ChromeSecurityExploitBrowserTest.CreateFilesystemURLInExtensionOrigin
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 -DomainReliabilityBrowserTest.Upload
@@ -146,6 +144,9 @@
 -ExtensionWebRequestApiTest.WebRequestClientsGoogleComProtection
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
+# http://crbug.com/841827
+-BackgroundXhrTest.HttpAuth
+-BackgroundXhrTest.TlsClientAuth
 
 # https://crbug.com/721400
 # WebSocket with the network service
