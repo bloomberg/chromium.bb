@@ -524,6 +524,8 @@ mojom("mojo_bindings") {
   # both a direct and an indirect dependency on the same target
   skip_deps_check = true
 
+  disable_variants = true
+
   sources = [
     "appcache.mojom",
     "associated_interfaces.mojom",

@@ -703,11 +703,8 @@ mojom("mojo_bindings") {
     "//content/*",
     "//chrome/common:mojo_bindings",
   ]
-  visibility_blink = [
-    "//content/common:mojo_bindings_blink",
-    "//chrome/common:mojo_bindings_blink",
-    "//third_party/blink/renderer/platform:blink_platform_public_deps",
-  ]
+  visibility_blink =
+      [ "//third_party/blink/renderer/platform:blink_platform_public_deps" ]
   sources = [
     "platform/autoplay.mojom",
     "platform/content_security_policy.mojom",
@@ -870,10 +867,7 @@ mojom("embedded_frame_sink_mojo_bindings") {
 # to depend on types in WebKit/Source/core.
 mojom("core_mojo_bindings") {
   visibility = [ "//content/*" ]
-  visibility_blink = [
-    "//content/common:mojo_bindings_blink",
-    "//third_party/blink/renderer/core/*",
-  ]
+  visibility_blink = [ "//third_party/blink/renderer/core/*" ]
   sources = [
     "platform/modules/broadcastchannel/broadcast_channel.mojom",
   ]
