@@ -181,10 +181,12 @@ void StubNotificationDisplayService::Display(
                      true /* silent */);
 
   NotificationHandler* handler = GetNotificationHandler(notification_type);
-  if (notification_type == NotificationHandler::Type::TRANSIENT)
-    DCHECK(!handler);
-  else
+  if (notification_type == NotificationHandler::Type::TRANSIENT) {
+    CHECK(!handler);
+    CHECK(notification.delegate());
+  } else {
     handler->OnShow(profile_, notification.id());
+  }
 
   notifications_.emplace_back(notification_type, notification,
                               std::move(metadata));

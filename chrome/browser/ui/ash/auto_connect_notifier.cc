@@ -132,7 +132,8 @@ void AutoConnectNotifier::DisplayNotification() {
       message_center::NotifierId(
           message_center::NotifierId::NotifierType::SYSTEM_COMPONENT,
           kNotifierAutoConnect),
-      {} /* optional_fields */, nullptr /* delegate */,
+      {} /* optional_fields */,
+      base::MakeRefCounted<message_center::NotificationDelegate>(),
       gfx::VectorIcon() /* small_image */,
       message_center::SystemNotificationWarningLevel::NORMAL);
 
