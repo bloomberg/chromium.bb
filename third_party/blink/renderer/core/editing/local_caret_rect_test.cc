@@ -679,9 +679,7 @@ TEST_P(ParameterizedLocalCaretRectTest, FloatFirstLetter) {
                            LayoutRect(LayoutNGEnabled() ? 10 : 20, 0, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position(foo, 2), TextAffinity::kDownstream)));
-  EXPECT_EQ(LocalCaretRect(remaining_text, LayoutNGEnabled()
-                                               ? LayoutRect(20, 0, 1, 10)
-                                               : LayoutRect()),
+  EXPECT_EQ(LocalCaretRect(remaining_text, LayoutRect(20, 0, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position(foo, 3), TextAffinity::kDownstream)));
 }
@@ -902,6 +900,17 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPreBlockRTLLineRTL) {
   std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), position_rect);
   EXPECT_EQ(LayoutRect(299, 10, 1, 10), visible_position_rect);
+};
+
+// crbug.com/834686
+TEST_P(ParameterizedLocalCaretRectTest, AfterTrimedLineBreak) {
+  LoadAhem();
+  InsertStyleElement("body { font: 10px/10px Ahem; width: 300px }");
+  const Position& caret = SetCaretTextToBody("<div>foo\n|</div>");
+  LayoutRect position_rect, visible_position_rect;
+  std::tie(position_rect, visible_position_rect) = GetLayoutRects(caret);
+  EXPECT_EQ(LayoutRect(30, 0, 1, 10), position_rect);
+  EXPECT_EQ(LayoutRect(30, 0, 1, 10), visible_position_rect);
 };
 
 TEST_P(ParameterizedLocalCaretRectTest,
