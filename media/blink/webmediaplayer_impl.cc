@@ -33,6 +33,7 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/cdm_context.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/limits.h"
 #include "media/base/media_content_type.h"
 #include "media/base/media_log.h"
@@ -166,6 +167,21 @@ blink::WebLocalizedString::Name GetSwitchToLocalMessage(
   NOTREACHED();
   // To suppress compiler warning on Windows.
   return blink::WebLocalizedString::kMediaRemotingStopNoText;
+}
+
+// These values are persisted to UMA. Entries should not be renumbered and
+// numeric values should never be reused.
+// TODO(crbug.com/825041): This should use EncryptionMode when kUnencrypted
+// removed.
+enum class EncryptionSchemeUMA { kCenc = 0, kCbcs = 1, kCount };
+
+EncryptionSchemeUMA DetermineEncryptionSchemeUMAValue(
+    const EncryptionScheme& encryption_scheme) {
+  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC)
+    return EncryptionSchemeUMA::kCbcs;
+
+  DCHECK_EQ(encryption_scheme.mode(), EncryptionScheme::CIPHER_MODE_AES_CTR);
+  return EncryptionSchemeUMA::kCenc;
 }
 
 }  // namespace
@@ -1595,7 +1611,15 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
                             metadata.video_decoder_config.video_rotation(),
                             VIDEO_ROTATION_MAX + 1);
 
+  if (HasAudio()) {
+    RecordEncryptionScheme("Audio",
+                           metadata.audio_decoder_config.encryption_scheme());
+  }
+
   if (HasVideo()) {
+    RecordEncryptionScheme("Video",
+                           metadata.video_decoder_config.encryption_scheme());
+
     if (overlay_enabled_) {
       // SurfaceView doesn't support rotated video, so transition back if
       // the video is now rotated.  If |always_enable_overlays_|, we keep the
@@ -3185,6 +3209,21 @@ void WebMediaPlayerImpl::RecordTimingUMA(const std::string& key,
     base::UmaHistogramMediumTimes(key + ".SRC", elapsed);
   if (is_encrypted_)
     base::UmaHistogramMediumTimes(key + ".EME", elapsed);
+}
+
+void WebMediaPlayerImpl::RecordEncryptionScheme(
+    const std::string& stream_name,
+    const EncryptionScheme& encryption_scheme) {
+  DCHECK(stream_name == "Audio" || stream_name == "Video");
+
+  // If the stream is not encrypted, don't record it.
+  if (encryption_scheme.mode() == EncryptionScheme::CIPHER_MODE_UNENCRYPTED)
+    return;
+
+  base::UmaHistogramEnumeration(
+      "Media.EME.EncryptionScheme.Initial." + stream_name,
+      DetermineEncryptionSchemeUMAValue(encryption_scheme),
+      EncryptionSchemeUMA::kCount);
 }
 
 }  // namespace media
