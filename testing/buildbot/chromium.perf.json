@@ -1995,7 +1995,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -2024,7 +2024,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2055,7 +2055,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -2084,7 +2084,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2175,7 +2175,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -2204,7 +2204,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2235,7 +2235,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -2264,7 +2264,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2295,7 +2295,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -2324,7 +2324,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2475,7 +2475,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -2504,7 +2504,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2715,7 +2715,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -2744,7 +2744,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2775,7 +2775,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -2804,7 +2804,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2835,7 +2835,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -2864,7 +2864,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2895,7 +2895,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -2924,7 +2924,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -2955,7 +2955,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -2984,7 +2984,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3015,7 +3015,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -3044,7 +3044,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3075,7 +3075,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -3104,7 +3104,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3195,7 +3195,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -3224,7 +3224,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3255,7 +3255,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -3284,7 +3284,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3315,7 +3315,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -3344,7 +3344,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -3375,7 +3375,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -3404,7 +3404,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6748,7 +6748,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -6777,7 +6777,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6808,7 +6808,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -6837,7 +6837,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6928,7 +6928,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -6957,7 +6957,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -6988,7 +6988,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -7017,7 +7017,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7048,7 +7048,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -7077,7 +7077,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7228,7 +7228,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -7257,7 +7257,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7468,7 +7468,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -7497,7 +7497,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7528,7 +7528,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -7557,7 +7557,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7588,7 +7588,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -7617,7 +7617,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7648,7 +7648,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -7677,7 +7677,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7708,7 +7708,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -7737,7 +7737,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7768,7 +7768,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -7797,7 +7797,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7828,7 +7828,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -7857,7 +7857,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -7948,7 +7948,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -7977,7 +7977,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8008,7 +8008,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -8037,7 +8037,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8068,7 +8068,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -8097,7 +8097,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -8128,7 +8128,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -8157,7 +8157,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -10431,7 +10431,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10461,7 +10461,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10521,7 +10521,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10551,7 +10551,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10581,7 +10581,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10671,7 +10671,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10791,7 +10791,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10821,7 +10821,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10851,7 +10851,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10881,7 +10881,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10911,7 +10911,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10941,7 +10941,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -10971,7 +10971,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -11031,7 +11031,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -11061,7 +11061,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -11091,7 +11091,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -11121,7 +11121,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -12715,7 +12715,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -12745,7 +12745,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -12805,7 +12805,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -12835,7 +12835,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -12865,7 +12865,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -12955,7 +12955,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13075,7 +13075,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13105,7 +13105,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13135,7 +13135,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13165,7 +13165,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13195,7 +13195,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13225,7 +13225,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13255,7 +13255,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13315,7 +13315,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13345,7 +13345,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13375,7 +13375,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -13405,7 +13405,7 @@
           "-v",
           "--upload-results",
           "--browser=android-webview",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk"
         ],
         "isolate_name": "telemetry_perf_webview_tests",
@@ -15987,7 +15987,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -16016,7 +16016,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16047,7 +16047,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -16076,7 +16076,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16167,7 +16167,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -16196,7 +16196,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16227,7 +16227,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -16256,7 +16256,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16287,7 +16287,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -16316,7 +16316,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16467,7 +16467,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -16496,7 +16496,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16707,7 +16707,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -16736,7 +16736,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16767,7 +16767,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -16796,7 +16796,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16827,7 +16827,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -16856,7 +16856,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16887,7 +16887,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -16916,7 +16916,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -16947,7 +16947,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -16976,7 +16976,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -17007,7 +17007,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -17036,7 +17036,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -17067,7 +17067,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -17096,7 +17096,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -17187,7 +17187,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -17216,7 +17216,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -17247,7 +17247,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -17276,7 +17276,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -17307,7 +17307,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -17336,7 +17336,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -17367,7 +17367,7 @@
           "-v",
           "--upload-results",
           "--browser=android-chromium",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -17396,7 +17396,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -20816,7 +20816,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -20846,7 +20846,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -20878,7 +20878,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -20908,7 +20908,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -20940,7 +20940,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -20970,7 +20970,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21002,7 +21002,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -21032,7 +21032,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21064,7 +21064,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -21094,7 +21094,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21126,7 +21126,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -21156,7 +21156,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21188,7 +21188,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -21218,7 +21218,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21250,7 +21250,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -21280,7 +21280,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21312,7 +21312,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -21342,7 +21342,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21374,7 +21374,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -21404,7 +21404,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21436,7 +21436,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -21466,7 +21466,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21498,7 +21498,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -21528,7 +21528,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21560,7 +21560,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -21590,7 +21590,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21622,7 +21622,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -21652,7 +21652,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21684,7 +21684,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -21714,7 +21714,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21746,7 +21746,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -21776,7 +21776,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -21808,7 +21808,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -21838,7 +21838,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -24858,7 +24858,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -24888,7 +24888,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -24920,7 +24920,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -24950,7 +24950,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -24982,7 +24982,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -25012,7 +25012,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25044,7 +25044,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -25074,7 +25074,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25106,7 +25106,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -25136,7 +25136,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25168,7 +25168,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -25198,7 +25198,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25230,7 +25230,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -25260,7 +25260,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25292,7 +25292,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -25322,7 +25322,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25354,7 +25354,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -25384,7 +25384,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25416,7 +25416,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -25446,7 +25446,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25478,7 +25478,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -25508,7 +25508,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25540,7 +25540,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -25570,7 +25570,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25602,7 +25602,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -25632,7 +25632,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25664,7 +25664,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -25694,7 +25694,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25726,7 +25726,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -25756,7 +25756,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25788,7 +25788,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -25818,7 +25818,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -25850,7 +25850,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -25880,7 +25880,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28884,7 +28884,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -28914,7 +28914,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -28946,7 +28946,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -28976,7 +28976,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29008,7 +29008,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -29038,7 +29038,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29070,7 +29070,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -29100,7 +29100,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29132,7 +29132,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -29162,7 +29162,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29194,7 +29194,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -29224,7 +29224,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29256,7 +29256,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -29286,7 +29286,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29318,7 +29318,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -29348,7 +29348,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29380,7 +29380,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -29410,7 +29410,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29442,7 +29442,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -29472,7 +29472,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29504,7 +29504,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -29534,7 +29534,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29566,7 +29566,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -29596,7 +29596,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29628,7 +29628,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -29658,7 +29658,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29690,7 +29690,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -29720,7 +29720,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29752,7 +29752,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -29782,7 +29782,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29814,7 +29814,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -29844,7 +29844,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -29876,7 +29876,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -29906,7 +29906,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32698,7 +32698,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -32728,7 +32728,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32760,7 +32760,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -32790,7 +32790,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32822,7 +32822,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -32852,7 +32852,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32884,7 +32884,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -32914,7 +32914,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -32946,7 +32946,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -32976,7 +32976,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33008,7 +33008,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -33038,7 +33038,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33070,7 +33070,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -33100,7 +33100,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33132,7 +33132,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -33162,7 +33162,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33194,7 +33194,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -33224,7 +33224,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33256,7 +33256,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -33286,7 +33286,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33318,7 +33318,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -33348,7 +33348,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33380,7 +33380,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -33410,7 +33410,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33442,7 +33442,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -33472,7 +33472,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33504,7 +33504,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -33534,7 +33534,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33566,7 +33566,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -33596,7 +33596,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33628,7 +33628,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -33658,7 +33658,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33690,7 +33690,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -33720,7 +33720,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -33752,7 +33752,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -33782,7 +33782,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36616,7 +36616,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -36646,7 +36646,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36678,7 +36678,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -36708,7 +36708,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36740,7 +36740,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -36770,7 +36770,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36802,7 +36802,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -36832,7 +36832,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36864,7 +36864,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -36894,7 +36894,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36926,7 +36926,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -36956,7 +36956,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -36988,7 +36988,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -37018,7 +37018,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37050,7 +37050,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -37080,7 +37080,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37112,7 +37112,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -37142,7 +37142,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37174,7 +37174,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -37204,7 +37204,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37236,7 +37236,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -37266,7 +37266,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37298,7 +37298,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -37328,7 +37328,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37360,7 +37360,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -37390,7 +37390,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37422,7 +37422,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -37452,7 +37452,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37484,7 +37484,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -37514,7 +37514,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37546,7 +37546,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -37576,7 +37576,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37608,7 +37608,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -37638,7 +37638,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -37670,7 +37670,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -37700,7 +37700,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40600,7 +40600,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -40630,7 +40630,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40662,7 +40662,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -40692,7 +40692,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40724,7 +40724,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -40754,7 +40754,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40786,7 +40786,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -40816,7 +40816,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40848,7 +40848,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -40878,7 +40878,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40910,7 +40910,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -40940,7 +40940,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -40972,7 +40972,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -41002,7 +41002,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41034,7 +41034,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -41064,7 +41064,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41096,7 +41096,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -41126,7 +41126,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41158,7 +41158,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -41188,7 +41188,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41220,7 +41220,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -41250,7 +41250,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41282,7 +41282,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -41312,7 +41312,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41344,7 +41344,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -41374,7 +41374,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41406,7 +41406,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -41436,7 +41436,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41468,7 +41468,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -41498,7 +41498,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41530,7 +41530,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -41560,7 +41560,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41592,7 +41592,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -41622,7 +41622,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -41654,7 +41654,7 @@
           "-v",
           "--upload-results",
           "--browser=release_x64",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -41684,7 +41684,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44563,7 +44563,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_filters_cases",
@@ -44593,7 +44593,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44625,7 +44625,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_path_rendering_cases",
@@ -44655,7 +44655,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44687,7 +44687,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization.tough_scrolling_cases",
@@ -44717,7 +44717,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44749,7 +44749,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.gpu_rasterization_and_decoding.image_decoding_cases",
@@ -44779,7 +44779,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44811,7 +44811,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.image_decoding_cases",
@@ -44841,7 +44841,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44873,7 +44873,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.key_desktop_move_cases",
@@ -44903,7 +44903,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44935,7 +44935,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.maps",
@@ -44965,7 +44965,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -44997,7 +44997,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.top_25_smooth",
@@ -45027,7 +45027,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45059,7 +45059,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_ad_cases",
@@ -45089,7 +45089,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45121,7 +45121,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_animation_cases",
@@ -45151,7 +45151,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45183,7 +45183,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_canvas_cases",
@@ -45213,7 +45213,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45245,7 +45245,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_filters_cases",
@@ -45275,7 +45275,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45307,7 +45307,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_image_decode_cases",
@@ -45337,7 +45337,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45369,7 +45369,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_path_rendering_cases",
@@ -45399,7 +45399,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45431,7 +45431,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_scrolling_cases",
@@ -45461,7 +45461,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45493,7 +45493,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_texture_upload_cases",
@@ -45523,7 +45523,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45555,7 +45555,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_ad_cases",
@@ -45585,7 +45585,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
@@ -45617,7 +45617,7 @@
           "-v",
           "--upload-results",
           "--browser=release",
-          "--output-format=chartjson"
+          "--output-format=histograms"
         ],
         "isolate_name": "telemetry_perf_tests",
         "name": "smoothness.tough_webgl_cases",
@@ -45647,7 +45647,7 @@
           "-v",
           "--upload-results",
           "--browser=reference",
-          "--output-format=chartjson",
+          "--output-format=histograms",
           "--max-failures=5",
           "--output-trace-tag=_ref"
         ],
