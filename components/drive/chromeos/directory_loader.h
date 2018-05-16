@@ -44,6 +44,7 @@ class ChangeListLoaderObserver;
 class DirectoryFetchInfo;
 class LoaderController;
 class ResourceMetadata;
+class StartPageTokenLoader;
 
 // DirectoryLoader is used to load directory contents.
 class DirectoryLoader {
@@ -53,6 +54,7 @@ class DirectoryLoader {
                   ResourceMetadata* resource_metadata,
                   JobScheduler* scheduler,
                   AboutResourceLoader* about_resource_loader,
+                  StartPageTokenLoader* start_page_token_loader,
                   LoaderController* apply_task_controller);
   ~DirectoryLoader();
 
@@ -88,11 +90,17 @@ class DirectoryLoader {
       const std::string& local_id,
       google_apis::DriveApiErrorCode status,
       std::unique_ptr<google_apis::AboutResource> about_resource);
+  void ReadDirectoryAfterGetStartPageToken(
+      const std::string& local_id,
+      const std::string& root_folder_id,
+      google_apis::DriveApiErrorCode status,
+      std::unique_ptr<google_apis::StartPageToken> start_page_token);
+
   void ReadDirectoryAfterCheckLocalState(
-      std::unique_ptr<google_apis::AboutResource> about_resource,
+      const std::string& remote_start_page_token,
       const std::string& local_id,
       const ResourceEntry* entry,
-      const int64_t* local_changestamp,
+      const std::string* local_start_page_token,
       FileError error);
 
   // Part of ReadDirectory().
@@ -119,7 +127,7 @@ class DirectoryLoader {
       FileError error);
 
   // Part of LoadDirectoryFromServer().
-  void LoadDirectoryFromServerAfterUpdateChangestamp(
+  void LoadDirectoryFromServerAfterUpdateStartPageToken(
       const DirectoryFetchInfo& directory_fetch_info,
       const base::FilePath* directory_path,
       FileError error);
@@ -129,6 +137,7 @@ class DirectoryLoader {
   ResourceMetadata* resource_metadata_;  // Not owned.
   JobScheduler* scheduler_;  // Not owned.
   AboutResourceLoader* about_resource_loader_;  // Not owned.
+  StartPageTokenLoader* start_page_token_loader_;  // Not owned
   LoaderController* loader_controller_;  // Not owned.
   base::ObserverList<ChangeListLoaderObserver> observers_;
   typedef std::map<std::string, std::vector<ReadDirectoryCallbackState> >

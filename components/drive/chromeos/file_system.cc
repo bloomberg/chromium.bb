@@ -31,10 +31,12 @@
 #include "components/drive/chromeos/loader_controller.h"
 #include "components/drive/chromeos/remove_stale_cache_files.h"
 #include "components/drive/chromeos/search_metadata.h"
+#include "components/drive/chromeos/start_page_token_loader.h"
 #include "components/drive/chromeos/sync_client.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/drive_pref_names.h"
 #include "components/drive/file_change.h"
+#include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
 #include "components/drive/resource_entry_conversion.h"
 #include "components/prefs/pref_service.h"
@@ -350,52 +352,59 @@ void FileSystem::Reset(const FileOperationCallback& callback) {
 void FileSystem::ResetComponents() {
   file_system::OperationDelegate* delegate = this;
 
-  about_resource_loader_.reset(new internal::AboutResourceLoader(scheduler_));
-  loader_controller_.reset(new internal::LoaderController);
-  change_list_loader_.reset(new internal::ChangeListLoader(
+  about_resource_loader_ =
+      std::make_unique<internal::AboutResourceLoader>(scheduler_);
+  start_page_token_loader_ = std::make_unique<internal::StartPageTokenLoader>(
+      drive::util::kTeamDriveIdDefaultCorpus, scheduler_);
+  loader_controller_ = std::make_unique<internal::LoaderController>();
+  change_list_loader_ = std::make_unique<internal::ChangeListLoader>(
       logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
-      about_resource_loader_.get(), loader_controller_.get()));
+      about_resource_loader_.get(), start_page_token_loader_.get(),
+      loader_controller_.get());
   change_list_loader_->AddObserver(this);
-  directory_loader_.reset(new internal::DirectoryLoader(
+  directory_loader_ = std::make_unique<internal::DirectoryLoader>(
       logger_, blocking_task_runner_.get(), resource_metadata_, scheduler_,
-      about_resource_loader_.get(), loader_controller_.get()));
+      about_resource_loader_.get(), start_page_token_loader_.get(),
+      loader_controller_.get());
   directory_loader_->AddObserver(this);
 
-  sync_client_.reset(new internal::SyncClient(
+  sync_client_ = std::make_unique<internal::SyncClient>(
       blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
-      cache_, loader_controller_.get(), temporary_file_directory_));
+      cache_, loader_controller_.get(), temporary_file_directory_);
 
-  copy_operation_.reset(
-      new file_system::CopyOperation(blocking_task_runner_.get(), delegate,
-                                     scheduler_, resource_metadata_, cache_));
-  create_directory_operation_.reset(new file_system::CreateDirectoryOperation(
-      blocking_task_runner_.get(), delegate, resource_metadata_));
-  create_file_operation_.reset(new file_system::CreateFileOperation(
-      blocking_task_runner_.get(), delegate, resource_metadata_));
-  move_operation_.reset(new file_system::MoveOperation(
-      blocking_task_runner_.get(), delegate, resource_metadata_));
-  open_file_operation_.reset(new file_system::OpenFileOperation(
+  copy_operation_ = std::make_unique<file_system::CopyOperation>(
       blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
-      cache_, temporary_file_directory_));
-  remove_operation_.reset(new file_system::RemoveOperation(
-      blocking_task_runner_.get(), delegate, resource_metadata_, cache_));
-  touch_operation_.reset(new file_system::TouchOperation(
-      blocking_task_runner_.get(), delegate, resource_metadata_));
-  truncate_operation_.reset(new file_system::TruncateOperation(
+      cache_);
+  create_directory_operation_ =
+      std::make_unique<file_system::CreateDirectoryOperation>(
+          blocking_task_runner_.get(), delegate, resource_metadata_);
+  create_file_operation_ = std::make_unique<file_system::CreateFileOperation>(
+      blocking_task_runner_.get(), delegate, resource_metadata_);
+  move_operation_ = std::make_unique<file_system::MoveOperation>(
+      blocking_task_runner_.get(), delegate, resource_metadata_);
+  open_file_operation_ = std::make_unique<file_system::OpenFileOperation>(
       blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
-      cache_, temporary_file_directory_));
-  download_operation_.reset(new file_system::DownloadOperation(
+      cache_, temporary_file_directory_);
+  remove_operation_ = std::make_unique<file_system::RemoveOperation>(
+      blocking_task_runner_.get(), delegate, resource_metadata_, cache_);
+  touch_operation_ = std::make_unique<file_system::TouchOperation>(
+      blocking_task_runner_.get(), delegate, resource_metadata_);
+  truncate_operation_ = std::make_unique<file_system::TruncateOperation>(
       blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
-      cache_, temporary_file_directory_));
-  search_operation_.reset(new file_system::SearchOperation(
+      cache_, temporary_file_directory_);
+  download_operation_ = std::make_unique<file_system::DownloadOperation>(
+      blocking_task_runner_.get(), delegate, scheduler_, resource_metadata_,
+      cache_, temporary_file_directory_);
+  search_operation_ = std::make_unique<file_system::SearchOperation>(
       blocking_task_runner_.get(), scheduler_, resource_metadata_,
-      loader_controller_.get()));
-  get_file_for_saving_operation_.reset(
-      new file_system::GetFileForSavingOperation(
+      loader_controller_.get());
+  get_file_for_saving_operation_ =
+      std::make_unique<file_system::GetFileForSavingOperation>(
+
           logger_, blocking_task_runner_.get(), delegate, scheduler_,
-          resource_metadata_, cache_, temporary_file_directory_));
-  set_property_operation_.reset(new file_system::SetPropertyOperation(
-      blocking_task_runner_.get(), delegate, resource_metadata_));
+          resource_metadata_, cache_, temporary_file_directory_);
+  set_property_operation_ = std::make_unique<file_system::SetPropertyOperation>(
+      blocking_task_runner_.get(), delegate, resource_metadata_);
 }
 
 void FileSystem::CheckForUpdates() {

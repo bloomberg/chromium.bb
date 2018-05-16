@@ -215,7 +215,7 @@ class FileSystemTest : public testing::Test {
   // Sets up a filesystem with directories: drive/root, drive/root/Dir1,
   // drive/root/Dir1/SubDir2 and files drive/root/File1, drive/root/Dir1/File2,
   // drive/root/Dir1/SubDir2/File3. If |use_up_to_date_timestamp| is true, sets
-  // the changestamp to that of FakeDriveService, indicating the cache is
+  // the start_page_token to that of FakeDriveService, indicating the cache is
   // holding the latest file system info.
   void SetUpTestFileSystem(SetUpTestFileSystemParam param) {
     // Destroy the existing resource metadata to close DB.
@@ -242,12 +242,12 @@ class FileSystemTest : public testing::Test {
 
     ASSERT_EQ(FILE_ERROR_OK, resource_metadata->Initialize());
 
-    const int64_t changestamp =
+    const std::string start_page_token =
         param == USE_SERVER_TIMESTAMP
-            ? fake_drive_service_->about_resource().largest_change_id()
-            : 1;
+            ? fake_drive_service_->start_page_token().start_page_token()
+            : "2";
     ASSERT_EQ(FILE_ERROR_OK,
-              resource_metadata->SetLargestChangestamp(changestamp));
+              resource_metadata->SetStartPageToken(start_page_token));
 
     // drive/root
     ResourceEntry root;
@@ -720,19 +720,19 @@ TEST_F(FileSystemTest, LoadFileSystemFromUpToDateCache) {
   EXPECT_TRUE(ReadDirectorySync(util::GetDriveMyDriveRootPath()));
 
   // SetUpTestFileSystem and FakeDriveService have the same
-  // changestamp (i.e. the local metadata is up to date), so no request for
+  // start_page_token (i.e. the local metadata is up to date), so no request for
   // new resource list (i.e., call to GetResourceList) should happen.
   EXPECT_EQ(0, fake_drive_service_->file_list_load_count());
 
   // Since the file system has verified that it holds the latest snapshot,
   // it should change its state to "loaded", which admits periodic refresh.
   // To test it, call CheckForUpdates and verify it does try to check updates.
-  const int about_resource_load_count_before =
-      fake_drive_service_->about_resource_load_count();
+  const int start_page_toke_load_count_before =
+      fake_drive_service_->start_page_token_load_count();
   file_system_->CheckForUpdates();
   content::RunAllTasksUntilIdle();
-  EXPECT_LT(about_resource_load_count_before,
-            fake_drive_service_->about_resource_load_count());
+  EXPECT_LT(start_page_toke_load_count_before,
+            fake_drive_service_->start_page_token_load_count());
 }
 
 TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
@@ -745,12 +745,12 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
 
   // Load the root.
   EXPECT_TRUE(ReadDirectorySync(util::GetDriveGrandRootPath()));
-  // Loading of about resource should not happen as it's offline.
-  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
+  // Loading of start page token should not happen as it's offline.
+  EXPECT_EQ(0, fake_drive_service_->start_page_token_load_count());
 
   // Load "My Drive".
   EXPECT_TRUE(ReadDirectorySync(util::GetDriveMyDriveRootPath()));
-  EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(0, fake_drive_service_->start_page_token_load_count());
 
   // Tests that cached data can be loaded even if the server is not reachable.
   EXPECT_TRUE(EntryExists(base::FilePath(
@@ -773,7 +773,7 @@ TEST_F(FileSystemTest, LoadFileSystemFromCacheWhileOffline) {
   file_system_->CheckForUpdates();
 
   content::RunAllTasksUntilIdle();
-  EXPECT_EQ(1, fake_drive_service_->about_resource_load_count());
+  EXPECT_EQ(1, fake_drive_service_->start_page_token_load_count());
   EXPECT_EQ(1, fake_drive_service_->change_list_load_count());
 
   ASSERT_LE(0u, mock_directory_observer_->changed_directories().size());

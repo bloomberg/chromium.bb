@@ -19,6 +19,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/drive/file_system_core_util.h"
 #include "components/drive/service/test_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
@@ -779,7 +780,8 @@ TEST_F(FakeDriveServiceTest, GetStartPageToken) {
 
   ASSERT_TRUE(start_page_token);
   // Do some sanity check.
-  EXPECT_EQ(base::NumberToString(GetLargestChangeByAboutResource()),
+  EXPECT_EQ(drive::util::ConvertChangestampToStartPageToken(
+                GetLargestChangeByAboutResource()),
             start_page_token->start_page_token());
   EXPECT_EQ(1, fake_service_.start_page_token_load_count());
 }

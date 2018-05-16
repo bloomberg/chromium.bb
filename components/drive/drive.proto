@@ -79,8 +79,8 @@ message DirectorySpecificInfo {
   // changestamp of ResourceMetadata, if this directory was
   // "fast-fetched". See crbug.com/178348 for details about the "fast-fetch"
   // feature.
-  // TODO(slangley): Deprecate and remove changestamp.
-  optional int64 changestamp = 1;
+  // TODO(slangley): Remove changestamp once migration code can be removed.
+  optional int64 changestamp = 1 [deprecated = true];
 
   // The start page token of this directory. This value may not match the
   // start_page_token of ResourceMetadata if the directory was "fast-fetched".
@@ -168,8 +168,8 @@ message ResourceMetadataHeader {
   // drive_resource_metadata_storage.h defines the current version.
   optional int32 version = 1;
 
-  // TODO(slangley): Deprecate and remove changestamp.
-  optional int64 largest_changestamp = 2;
+  // TODO(slangley): Remove changestamp once migration code can be removed.
+  optional int64 largest_changestamp = 2 [deprecated = true];
 
   // The argument with ID 3 (starred_property_initialized) had been used, but
   // got deleted.

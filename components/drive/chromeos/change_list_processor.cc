@@ -38,9 +38,8 @@ bool ShouldApplyChange(const ResourceEntry& local_entry,
 }  // namespace
 
 std::string DirectoryFetchInfo::ToString() const {
-  return ("local_id: " + local_id_ +
-          ", resource_id: " + resource_id_ +
-          ", changestamp: " + base::Int64ToString(changestamp_));
+  return ("local_id: " + local_id_ + ", resource_id: " + resource_id_ +
+          ", start_page_token: " + start_page_token_);
 }
 
 ChangeList::ChangeList() = default;
@@ -57,7 +56,7 @@ ChangeList::ChangeList(const google_apis::TeamDriveList& team_drive_list) {
 
 ChangeList::ChangeList(const google_apis::ChangeList& change_list)
     : next_url_(change_list.next_link()),
-      largest_changestamp_(change_list.largest_change_id()) {
+      new_start_page_token_(change_list.new_start_page_token()) {
   const std::vector<std::unique_ptr<google_apis::ChangeResource>>& items =
       change_list.items();
   entries_.resize(items.size());
@@ -75,8 +74,7 @@ ChangeList::ChangeList(const google_apis::ChangeList& change_list)
 }
 
 ChangeList::ChangeList(const google_apis::FileList& file_list)
-    : next_url_(file_list.next_link()),
-      largest_changestamp_(0) {
+    : next_url_(file_list.next_link()) {
   const std::vector<std::unique_ptr<google_apis::FileResource>>& items =
       file_list.items();
   entries_.resize(items.size());
@@ -124,30 +122,23 @@ ChangeListProcessor::ChangeListProcessor(ResourceMetadata* resource_metadata,
                                          base::CancellationFlag* in_shutdown)
     : resource_metadata_(resource_metadata),
       in_shutdown_(in_shutdown),
-      changed_files_(new FileChange) {
-}
+      changed_files_(new FileChange) {}
 
 ChangeListProcessor::~ChangeListProcessor() = default;
 
 FileError ChangeListProcessor::ApplyUserChangeList(
-    std::unique_ptr<google_apis::AboutResource> about_resource,
+    const std::string& start_page_token,
+    const std::string& root_resource_id,
     std::vector<std::unique_ptr<ChangeList>> change_lists,
     bool is_delta_update) {
-  DCHECK(about_resource);
-
-  int64_t largest_changestamp = 0;
+  std::string new_start_page_token = start_page_token;
   if (is_delta_update) {
     if (!change_lists.empty()) {
-      // The changestamp appears in the first page of the change list.
-      // The changestamp does not appear in the full resource list.
-      largest_changestamp = change_lists[0]->largest_changestamp();
-      DCHECK_GE(change_lists[0]->largest_changestamp(), 0);
+      // The start_page_token appears in the first page of the change list.
+      // The start_page_token does not appear in the full resource list.
+      new_start_page_token = change_lists[0]->new_start_page_token();
+      DCHECK(!new_start_page_token.empty());
     }
-  } else {
-    largest_changestamp = about_resource->largest_change_id();
-
-    DVLOG(1) << "Root folder ID is " << about_resource->root_folder_id();
-    DCHECK(!about_resource->root_folder_id().empty());
   }
 
   ResourceEntry root;
@@ -158,7 +149,7 @@ FileError ChangeListProcessor::ApplyUserChangeList(
     LOG(ERROR) << "Failed to get root entry: " << FileErrorToString(error);
     return error;
   }
-  root.set_resource_id(about_resource->root_folder_id());
+  root.set_resource_id(root_resource_id);
   error = resource_metadata_->RefreshEntry(root);
   if (error != FILE_ERROR_OK) {
     LOG(ERROR) << "Failed to update root entry: " << FileErrorToString(error);
@@ -166,15 +157,15 @@ FileError ChangeListProcessor::ApplyUserChangeList(
   }
 
   ChangeListToEntryMapUMAStats uma_stats;
-  error = ApplyChangeListInternal(std::move(change_lists), largest_changestamp,
+  error = ApplyChangeListInternal(std::move(change_lists), new_start_page_token,
                                   &root, &uma_stats);
   if (error != FILE_ERROR_OK)
     return error;
 
-  // Update changestamp in the metadata header.
-  error = resource_metadata_->SetLargestChangestamp(largest_changestamp);
+  // Update start_page_token in the metadata header.
+  error = resource_metadata_->SetStartPageToken(new_start_page_token);
   if (error != FILE_ERROR_OK) {
-    DLOG(ERROR) << "SetLargestChangeStamp failed: " << FileErrorToString(error);
+    DLOG(ERROR) << "SetStartPageToken failed: " << FileErrorToString(error);
     return error;
   }
 
@@ -185,57 +176,20 @@ FileError ChangeListProcessor::ApplyUserChangeList(
   return FILE_ERROR_OK;
 }
 
-FileError ChangeListProcessor::ApplyTeamDriveChangeList(
-    const std::string& team_drive_id,
-    std::vector<std::unique_ptr<ChangeList>> change_lists) {
-  DCHECK(!change_lists.empty());
-  int64_t largest_changestamp = 0;
-  // The changestamp appears in the first page of the change list.
-  // The changestamp does not appear in the full resource list.
-  largest_changestamp = change_lists[0]->largest_changestamp();
-  if (change_lists[0]->largest_changestamp() < 0) {
-    LOG(ERROR) << "Received changeList with invalid largestChangestamp: "
-               << largest_changestamp << " (team_drive_id=" << team_drive_id
-               << "). Ignored.";
-    return FILE_ERROR_FAILED;
-  }
-
-  std::string local_id;
-  FileError error =
-      resource_metadata_->GetIdByResourceId(team_drive_id, &local_id);
-  if (error != FILE_ERROR_OK) {
-    LOG(ERROR) << "Failed to get local ID of a Team Drive root entry: "
-               << FileErrorToString(error);
-    return error;
-  }
-  ResourceEntry root;
-  error = resource_metadata_->GetResourceEntryById(local_id, &root);
-  if (error != FILE_ERROR_OK) {
-    LOG(ERROR) << "Failed to get Team Drive root entry: "
-               << FileErrorToString(error);
-    return error;
-  }
-
-  ChangeListToEntryMapUMAStats uma_stats;
-  error = ApplyChangeListInternal(std::move(change_lists), largest_changestamp,
-                                  &root, &uma_stats);
-  return error;
-}
-
 FileError ChangeListProcessor::ApplyChangeListInternal(
     std::vector<std::unique_ptr<ChangeList>> change_lists,
-    int64_t largest_changestamp,
+    const std::string& start_page_token,
     ResourceEntry* root,
     ChangeListToEntryMapUMAStats* uma_stats) {
-  ConvertChangeListsToMap(std::move(change_lists), largest_changestamp,
-                          uma_stats);
+  ConvertChangeListsToMap(std::move(change_lists), start_page_token, uma_stats);
   FileError error = ApplyEntryMap(root->resource_id());
   if (error != FILE_ERROR_OK) {
     DLOG(ERROR) << "ApplyEntryMap failed: " << FileErrorToString(error);
     return error;
   }
-  // Update changestamp of the root entry.
-  root->mutable_directory_specific_info()->set_changestamp(largest_changestamp);
+  // Update start_page_token of the root entry.
+  root->mutable_directory_specific_info()->set_start_page_token(
+      start_page_token);
   error = resource_metadata_->RefreshEntry(*root);
   if (error != FILE_ERROR_OK)
     DLOG(ERROR) << "RefreshEntry failed: " << FileErrorToString(error);
@@ -244,7 +198,7 @@ FileError ChangeListProcessor::ApplyChangeListInternal(
 
 void ChangeListProcessor::ConvertChangeListsToMap(
     std::vector<std::unique_ptr<ChangeList>> change_lists,
-    int64_t largest_changestamp,
+    const std::string& start_page_token,
     ChangeListToEntryMapUMAStats* uma_stats) {
   for (size_t i = 0; i < change_lists.size(); ++i) {
     ChangeList* change_list = change_lists[i].get();
@@ -266,12 +220,12 @@ void ChangeListProcessor::ConvertChangeListsToMap(
     }
   }
 
-  // Add the largest changestamp for directories.
+  // Add the largest start_page_token for directories.
   for (ResourceEntryMap::iterator it = entry_map_.begin();
        it != entry_map_.end(); ++it) {
     if (it->second.file_info().is_directory()) {
-      it->second.mutable_directory_specific_info()->set_changestamp(
-          largest_changestamp);
+      it->second.mutable_directory_specific_info()->set_start_page_token(
+          start_page_token);
     }
   }
 }
@@ -438,10 +392,10 @@ FileError ChangeListProcessor::ApplyEntry(const ResourceEntry& entry) {
         error = resource_metadata_->RefreshEntry(new_entry);
       } else {
         if (entry.file_info().is_directory()) {
-          // No need to refresh, but update the changestamp.
+          // No need to refresh, but update the start_page_token.
           new_entry = existing_entry;
-          new_entry.mutable_directory_specific_info()->set_changestamp(
-              new_entry.directory_specific_info().changestamp());
+          new_entry.mutable_directory_specific_info()->set_start_page_token(
+              new_entry.directory_specific_info().start_page_token());
           error = resource_metadata_->RefreshEntry(new_entry);
         }
         DVLOG(1) << "Change was discarded for: " << entry.resource_id();

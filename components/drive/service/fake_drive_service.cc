@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/drive/drive_api_util.h"
+#include "components/drive/file_system_core_util.h"
 #include "google_apis/drive/drive_api_parser.h"
 #include "google_apis/drive/test_util.h"
 #include "net/base/escape.h"
@@ -1851,7 +1852,10 @@ void FakeDriveService::GetChangeListInternal(
 
   std::unique_ptr<ChangeList> change_list(new ChangeList);
   if (start_changestamp > 0 && start_offset == 0) {
-    change_list->set_largest_change_id(about_resource_->largest_change_id());
+    auto largest_change_id = about_resource_->largest_change_id();
+    change_list->set_largest_change_id(largest_change_id);
+    change_list->set_new_start_page_token(
+        drive::util::ConvertChangestampToStartPageToken(largest_change_id));
   }
 
   // If |max_results| is set, trim the entries if the number exceeded the max
@@ -1922,6 +1926,7 @@ void FakeDriveService::NotifyObservers() {
 
 void FakeDriveService::UpdateLatestChangelistId(int64_t change_list_id) {
   about_resource_->set_largest_change_id(change_list_id);
-  start_page_token_->set_start_page_token(base::NumberToString(change_list_id));
+  start_page_token_->set_start_page_token(
+      drive::util::ConvertChangestampToStartPageToken(change_list_id));
 }
 }  // namespace drive
