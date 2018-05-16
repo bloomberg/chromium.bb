@@ -91,7 +91,10 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   // should be rendered with inverted color.
   // https://github.com/WICG/feature-policy/blob/gh-pages/policies/optimized-images.md
   bool ShouldInvertColor() const;
-  void UpdateShouldInvertColor(bool);
+  void UpdateShouldInvertColor();
+  void UpdateShouldInvertColorForTest(bool);
+
+  void UpdateAfterLayout() override;
 
  protected:
   bool NeedsPreferredWidthsRecalculation() const final;
@@ -153,7 +156,11 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
   bool is_generated_content_;
   float image_device_pixel_ratio_;
 
-  bool should_invert_color_;
+  // These flags indicate if the image violates one or more optimized image
+  // policies. When any policy is violated, the image should be rendered with
+  // inverted color.
+  bool is_legacy_format_or_compressed_image_;
+  bool is_downscaled_image_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutImage, IsLayoutImage());

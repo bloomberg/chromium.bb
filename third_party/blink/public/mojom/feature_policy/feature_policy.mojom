@@ -84,6 +84,9 @@ enum FeaturePolicyFeature {
   // When disallowed, requires images to have a reasonable byte-to-pixel ratio.
   kImageCompression,
   kAnimations,
+  // When disallowed, restricts source image size to be no more 2x larger than
+  // the image's containing block.
+  kMaxDownscalingImage,
   // Controls access to Picture-in-Picture.
   kPictureInPicture,
   // Controls the ability to block and interfere with vertical scrolling.

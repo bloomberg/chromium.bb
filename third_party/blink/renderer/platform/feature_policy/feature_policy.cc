@@ -153,6 +153,7 @@ bool IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature feature) {
     case mojom::FeaturePolicyFeature::kLegacyImageFormats:
     case mojom::FeaturePolicyFeature::kImageCompression:
     case mojom::FeaturePolicyFeature::kDocumentStreamInsertion:
+    case mojom::FeaturePolicyFeature::kMaxDownscalingImage:
       return RuntimeEnabledFeatures::ExperimentalProductivityFeaturesEnabled();
     default:
       return false;
@@ -202,6 +203,9 @@ const FeatureNameMap& GetDefaultFeatureNameMap() {
       default_feature_name_map.Set(
           "legacy-image-formats",
           mojom::FeaturePolicyFeature::kLegacyImageFormats);
+      default_feature_name_map.Set(
+          "max-downscaling-image",
+          mojom::FeaturePolicyFeature::kMaxDownscalingImage);
       default_feature_name_map.Set("sync-script",
                                    mojom::FeaturePolicyFeature::kSyncScript);
       default_feature_name_map.Set("unsized-media",
