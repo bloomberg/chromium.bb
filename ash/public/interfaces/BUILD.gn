@@ -65,7 +65,6 @@ mojom("interfaces_internal") {
     "//chromeos/services/assistant/public/mojom",
     "//components/account_id/interfaces",
     "//components/arc/common:notifications",
-    "//components/password_manager/public/interfaces",
     "//components/sync/mojo:interfaces",
     "//mojo/public/mojom/base",
     "//services/preferences/public/mojom",
