@@ -156,6 +156,7 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer {
   void StartContainer(std::string vm_name,
                       std::string container_name,
                       std::string container_username,
+                      std::string cryptohome_id,
                       StartContainerCallback callback);
 
   // Asynchronously launches an app as specified by its desktop file id.

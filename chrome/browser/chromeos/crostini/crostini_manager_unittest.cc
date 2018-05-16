@@ -19,6 +19,7 @@ namespace {
 const char kVmName[] = "vm_name";
 const char kContainerName[] = "container_name";
 const char kContainerUserName[] = "container_username";
+const char kCryptohomeId[] = "cryptohome_id";
 }  // namespace
 
 class CrostiniManagerTest : public testing::Test {
@@ -244,7 +245,7 @@ TEST_F(CrostiniManagerTest, StopVmSuccess) {
 TEST_F(CrostiniManagerTest, StartContainerVmNameError) {
   base::RunLoop loop;
   CrostiniManager::GetInstance()->StartContainer(
-      "", kContainerName, kContainerUserName,
+      "", kContainerName, kContainerUserName, kCryptohomeId,
       base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
                      base::Unretained(this), loop.QuitClosure()));
   loop.Run();
@@ -253,7 +254,7 @@ TEST_F(CrostiniManagerTest, StartContainerVmNameError) {
 TEST_F(CrostiniManagerTest, StartContainerContainerNameError) {
   base::RunLoop loop;
   CrostiniManager::GetInstance()->StartContainer(
-      kVmName, "", kContainerUserName,
+      kVmName, "", kContainerUserName, kCryptohomeId,
       base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
                      base::Unretained(this), loop.QuitClosure()));
   loop.Run();
@@ -262,7 +263,16 @@ TEST_F(CrostiniManagerTest, StartContainerContainerNameError) {
 TEST_F(CrostiniManagerTest, StartContainerContainerUserNameError) {
   base::RunLoop loop;
   CrostiniManager::GetInstance()->StartContainer(
-      kVmName, kContainerName, "",
+      kVmName, kContainerName, "", kCryptohomeId,
+      base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
+                     base::Unretained(this), loop.QuitClosure()));
+  loop.Run();
+}
+
+TEST_F(CrostiniManagerTest, StartContainerContainerCryptohomeIdError) {
+  base::RunLoop loop;
+  CrostiniManager::GetInstance()->StartContainer(
+      kVmName, kContainerName, kContainerUserName, "",
       base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
                      base::Unretained(this), loop.QuitClosure()));
   loop.Run();
@@ -272,7 +282,7 @@ TEST_F(CrostiniManagerTest, StartContainerSignalNotConnectedError) {
   base::RunLoop loop;
   fake_concierge_client_->set_container_started_signal_connected(false);
   CrostiniManager::GetInstance()->StartContainer(
-      kVmName, kContainerName, kContainerUserName,
+      kVmName, kContainerName, kContainerUserName, kCryptohomeId,
       base::BindOnce(&CrostiniManagerTest::StartContainerClientErrorCallback,
                      base::Unretained(this), loop.QuitClosure()));
   loop.Run();
@@ -281,7 +291,7 @@ TEST_F(CrostiniManagerTest, StartContainerSignalNotConnectedError) {
 TEST_F(CrostiniManagerTest, StartContainerSuccess) {
   base::RunLoop loop;
   CrostiniManager::GetInstance()->StartContainer(
-      kVmName, kContainerName, kContainerUserName,
+      kVmName, kContainerName, kContainerUserName, kCryptohomeId,
       base::BindOnce(&CrostiniManagerTest::StartContainerSuccessCallback,
                      base::Unretained(this), loop.QuitClosure()));
   loop.Run();

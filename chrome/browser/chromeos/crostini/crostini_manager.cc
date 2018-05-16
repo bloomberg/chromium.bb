@@ -268,7 +268,7 @@ class CrostiniRestarter : public base::RefCountedThreadSafe<CrostiniRestarter> {
       return;
     }
     CrostiniManager::GetInstance()->StartContainer(
-        vm_name_, container_name_, container_username_,
+        vm_name_, container_name_, container_username_, cryptohome_id_,
         base::BindOnce(&CrostiniRestarter::StartContainerFinished, this));
   }
 
@@ -584,6 +584,7 @@ void CrostiniManager::StopVm(std::string name, StopVmCallback callback) {
 void CrostiniManager::StartContainer(std::string vm_name,
                                      std::string container_name,
                                      std::string container_username,
+                                     std::string cryptohome_id,
                                      StartContainerCallback callback) {
   if (vm_name.empty()) {
     LOG(ERROR) << "vm_name is required";
@@ -597,6 +598,11 @@ void CrostiniManager::StartContainer(std::string vm_name,
   }
   if (container_username.empty()) {
     LOG(ERROR) << "container_username is required";
+    std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
+    return;
+  }
+  if (cryptohome_id.empty()) {
+    LOG(ERROR) << "cryptohome_id is required";
     std::move(callback).Run(ConciergeClientResult::CLIENT_ERROR);
     return;
   }
@@ -616,7 +622,7 @@ void CrostiniManager::StartContainer(std::string vm_name,
   request.set_vm_name(std::move(vm_name));
   request.set_container_name(std::move(container_name));
   request.set_container_username(std::move(container_username));
-  request.set_async(true);
+  request.set_cryptohome_id(std::move(cryptohome_id));
 
   GetConciergeClient()->StartContainer(
       std::move(request),
