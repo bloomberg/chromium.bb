@@ -58,7 +58,9 @@ class AutoLockOnValidThread {
 }  // namespace
 
 PermissionsData::PermissionsData(const Extension* extension)
-    : extension_id_(extension->id()), manifest_type_(extension->GetType()) {
+    : extension_id_(extension->id()),
+      manifest_type_(extension->GetType()),
+      location_(extension->location()) {
   const PermissionSet& required_permissions =
       PermissionsParser::GetRequiredPermissions(extension);
   active_permissions_unsafe_.reset(new PermissionSet(
@@ -96,14 +98,10 @@ bool PermissionsData::ShouldSkipPermissionWarnings(
   return extension_id == extension_misc::kProdHangoutsExtensionId;
 }
 
-// static
 bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
-                                      const Extension* extension,
-                                      std::string* error) {
-  if (extension &&
-      CanExecuteScriptEverywhere(extension->id(), extension->location())) {
+                                      std::string* error) const {
+  if (CanExecuteScriptEverywhere(extension_id_, location_))
     return false;
-  }
 
   if (g_policy_delegate &&
       g_policy_delegate->IsRestrictedUrl(document_url, error)) {
@@ -114,8 +112,7 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
   if (!URLPattern::IsValidSchemeForExtensions(document_url.scheme()) &&
       document_url.spec() != url::kAboutBlankURL) {
     if (error) {
-      if (extension->permissions_data()->active_permissions().HasAPIPermission(
-              APIPermission::kTab)) {
+      if (active_permissions().HasAPIPermission(APIPermission::kTab)) {
         *error = ErrorUtils::FormatErrorMessage(
             manifest_errors::kCannotAccessPageWithUrl, document_url.spec());
       } else {
@@ -137,8 +134,8 @@ bool PermissionsData::IsRestrictedUrl(const GURL& document_url,
     return true;
   }
 
-  if (extension && document_url.SchemeIs(kExtensionScheme) &&
-      document_url.host() != extension->id() && !allow_on_chrome_urls) {
+  if (document_url.SchemeIs(kExtensionScheme) &&
+      document_url.host() != extension_id_ && !allow_on_chrome_urls) {
     if (error)
       *error = manifest_errors::kCannotAccessExtensionUrl;
     return true;
@@ -462,7 +459,7 @@ PermissionsData::PageAccess PermissionsData::CanRunOnPage(
     return PageAccess::kDenied;
   }
 
-  if (IsRestrictedUrl(document_url, extension, error))
+  if (IsRestrictedUrl(document_url, error))
     return PageAccess::kDenied;
 
   if (tab_url_patterns && tab_url_patterns->MatchesURL(document_url))
