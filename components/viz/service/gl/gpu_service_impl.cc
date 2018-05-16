@@ -720,12 +720,13 @@ void GpuServiceImpl::DestroyAllChannels() {
   gpu_channel_manager_->DestroyAllChannels();
 }
 
-void GpuServiceImpl::OnBackgrounded() {
+void GpuServiceImpl::OnBackgroundCleanup() {
 // Currently only called on Android.
 #if defined(OS_ANDROID)
   if (io_runner_->BelongsToCurrentThread()) {
     main_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&GpuServiceImpl::OnBackgrounded, weak_ptr_));
+        FROM_HERE,
+        base::BindOnce(&GpuServiceImpl::OnBackgroundCleanup, weak_ptr_));
     return;
   }
   DVLOG(1) << "GPU: Performing background cleanup";
@@ -733,6 +734,16 @@ void GpuServiceImpl::OnBackgrounded() {
 #else
   NOTREACHED();
 #endif
+}
+
+void GpuServiceImpl::OnBackgrounded() {
+  if (watchdog_thread_)
+    watchdog_thread_->OnBackgrounded();
+}
+
+void GpuServiceImpl::OnForegrounded() {
+  if (watchdog_thread_)
+    watchdog_thread_->OnForegrounded();
 }
 
 void GpuServiceImpl::Crash() {
