@@ -18,7 +18,6 @@ js_library("cr_radio_button") {
 
 js_library("cr_radio_button_behavior") {
   deps = [
-    "//third_party/polymer/v1_0/components-chromium/iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
     "//third_party/polymer/v1_0/components-chromium/paper-behaviors:paper-ripple-behavior-extracted",
   ]
 }

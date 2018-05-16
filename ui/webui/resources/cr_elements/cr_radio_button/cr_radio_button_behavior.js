@@ -30,8 +30,10 @@ var CrRadioButtonBehaviorImpl = {
   },
 
   listeners: {
-    'focus': 'onFocus_',
     'blur': 'cancelRipple_',
+    'click': 'onClick_',
+    'focus': 'onFocus_',
+    'keyup': 'onKeyUp_',
     'pointerup': 'cancelRipple_',
   },
 
@@ -40,13 +42,6 @@ var CrRadioButtonBehaviorImpl = {
     'aria-checked': 'false',
     role: 'radio',
     tabindex: 0,
-  },
-
-  keyBindings: {
-    // This is mainly for screenreaders, which can perform actions on things
-    // that aren't focused (only focused things get synthetic click/tap events).
-    'enter:keyup': 'onSelectKeyUp_',
-    'space:keyup': 'onSelectKeyUp_',
   },
 
   /** @private */
@@ -74,16 +69,27 @@ var CrRadioButtonBehaviorImpl = {
   },
 
   /**
-   * @param {!{detail: {keyboardEvent: !Event}}} e
+   * @param {!Event} e
    * @private
    */
-  onSelectKeyUp_: function(e) {
-    // If ripple is disabled, or focus is on a link, don't propagate to the
-    // parent paper-radio-group to avoid incorrect selection.
-    if (this.disabled || e.detail.keyboardEvent.target.tagName == 'A')
+  onClick_: function(e) {
+    // If this element is disabled, or event fired on a link, don't propagate
+    // to the parent paper-radio-group to avoid incorrect selection.
+    if (this.disabled || e.target.tagName == 'A')
+      e.stopPropagation();
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onKeyUp_: function(e) {
+    if (e.key != ' ' && e.key != 'Enter')
       return;
 
-    this.click();
+    // Simulating click on the key-up target, and let onClick decide if it
+    // should be propagated to the parent paper-radio-group.
+    e.target.click();
   },
 
   /** @private */
@@ -106,7 +112,6 @@ var CrRadioButtonBehaviorImpl = {
 
 /** @polymerBehavior */
 const CrRadioButtonBehavior = [
-  Polymer.IronA11yKeysBehavior,
   Polymer.PaperRippleBehavior,
   CrRadioButtonBehaviorImpl,
 ];

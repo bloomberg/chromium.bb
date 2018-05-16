@@ -87,13 +87,6 @@ cr.define('settings', function() {
     /** Initializes the stylus handler. */
     initializeStylus() {}
 
-    /**
-     * Override to interact with the on-tap/on-keydown event on the Learn More
-     * link.
-     * @param {!Event} e
-     */
-    handleLinkEvent(e) {}
-
     /** Initializes the keyboard WebUI handler. */
     initializeKeyboard() {}
 
@@ -172,14 +165,6 @@ cr.define('settings', function() {
     /** @override */
     initializeStylus() {
       chrome.send('initializeStylusSettings');
-    }
-
-    /** override */
-    handleLinkEvent(e) {
-      // Prevent the link from activating its parent element when clicked or
-      // when Enter is pressed.
-      if (e.type != 'keydown' || e.keyCode == 13)
-        e.stopPropagation();
     }
 
     /** @override */

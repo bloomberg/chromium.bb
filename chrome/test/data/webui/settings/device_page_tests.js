@@ -44,14 +44,6 @@ cr.define('device_page_tests', function() {
       cr.webUIListenerCallback('has-stylus-changed', true);
     },
 
-    /** @override */
-    handleLinkEvent: function(e) {
-      settings.DevicePageBrowserProxyImpl.prototype.handleLinkEvent.call(
-          this, e);
-      // Prevent opening the link, which can block the test.
-      e.preventDefault();
-    },
-
     /** override */
     initializeKeyboard: function() {},
 
@@ -561,12 +553,17 @@ cr.define('device_page_tests', function() {
         expectEquals(2, slider.pref.value);
       });
 
-      test('link doesn\'t activate control', function(done) {
+      test('link doesn\'t activate control', function() {
         expectNaturalScrollValue(pointersPage, false);
 
         // Tapping the link shouldn't enable the radio button.
+        const naturalScrollOff =
+            pointersPage.$$('cr-radio-button[name="false"]');
         const naturalScrollOn = pointersPage.$$('cr-radio-button[name="true"]');
         const a = naturalScrollOn.querySelector('a');
+
+        // Prevent actually opening a link, which would block test.
+        a.removeAttribute('href');
 
         MockInteractions.tap(a);
         expectNaturalScrollValue(pointersPage, false);
@@ -576,21 +573,32 @@ cr.define('device_page_tests', function() {
         devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
         expectNaturalScrollValue(pointersPage, false);
 
+        /**
+         * MockInteraction's pressEnter does not sufficiently set all key-event
+         * properties.
+         * @param {!HTMLElement} element
+         * @param {string} keyCode
+         * @param {string} keyName
+         */
+        function triggerKeyEvents(element, keyCode, keyName) {
+          ['keydown', 'keypress', 'keyup'].forEach(event => {
+            MockInteractions.keyEventOn(
+                element, event, keyCode, undefined, keyName);
+          });
+        }
+
         // Enter on the link shouldn't enable the radio button either.
-        MockInteractions.pressEnter(a);
+        triggerKeyEvents(a, 'Enter', 'Enter');
+        PolymerTest.flushTasks();
+        expectNaturalScrollValue(pointersPage, false);
 
-        // Annoyingly, we have to schedule an async event with a timeout
-        // greater than or equal to the timeout used by IronButtonState (1).
-        // https://github.com/PolymerElements/iron-behaviors/issues/54
-        Polymer.Base.async(function() {
-          expectNaturalScrollValue(pointersPage, false);
+        triggerKeyEvents(naturalScrollOn, 'Enter', 'Enter');
+        PolymerTest.flushTasks();
+        expectNaturalScrollValue(pointersPage, true);
 
-          MockInteractions.pressEnter(naturalScrollOn);
-          Polymer.Base.async(function() {
-            expectNaturalScrollValue(pointersPage, true);
-            done();
-          }, 1);
-        }, 1);
+        triggerKeyEvents(naturalScrollOff, 'Space', ' ');
+        PolymerTest.flushTasks();
+        expectNaturalScrollValue(pointersPage, false);
       });
     });
 
