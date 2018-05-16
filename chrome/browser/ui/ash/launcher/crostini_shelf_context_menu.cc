@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ui_base_features.h"
@@ -37,6 +38,8 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
   if (registration)
     AddPinMenu(menu_model);
 
+  menu_model->AddItemWithStringId(MENU_NEW_WINDOW, IDS_APP_LIST_NEW_WINDOW);
+
   if (controller()->IsOpen(item().id)) {
     menu_model->AddItemWithStringId(MENU_CLOSE,
                                     IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
@@ -47,4 +50,15 @@ void CrostiniShelfContextMenu::BuildMenu(ui::SimpleMenuModel* menu_model) {
 
   if (!features::IsTouchableAppContextMenuEnabled())
     menu_model->AddSeparator(ui::NORMAL_SEPARATOR);
+}
+
+void CrostiniShelfContextMenu::ExecuteCommand(int command_id, int event_flags) {
+  if (ExecuteCommonCommand(command_id, event_flags))
+    return;
+
+  if (command_id == MENU_NEW_WINDOW) {
+    LaunchCrostiniApp(controller()->profile(), item().id.app_id);
+    return;
+  }
+  NOTREACHED();
 }

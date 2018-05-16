@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "content/public/browser/browser_thread.h"
 
 // static
@@ -46,7 +47,8 @@ const char* CrostiniAppItem::GetItemType() const {
 }
 
 void CrostiniAppItem::Activate(int event_flags) {
-  LaunchCrostiniApp(profile(), id());
+  ChromeLauncherController::instance()->ActivateApp(
+      id(), ash::LAUNCH_FROM_APP_LIST, event_flags);
 
   // TODO(timloh): Launching Crostini apps can take a few seconds if the
   // container is not currently running. Hiding the launcher at least provides
