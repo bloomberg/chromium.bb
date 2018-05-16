@@ -275,10 +275,13 @@ static constexpr float kRepositionFrameTransitionDurationMs = 300;
 static constexpr float kOverflowMenuOffset = 0.016f;
 static constexpr float kOverflowMenuMinimumWidth = 0.312f;
 static constexpr float kOverflowButtonRegionHeight = 0.088f;
-static constexpr float kOverflowButtonXOffset = 0.016f;
+static constexpr float kOverflowButtonRegionOpacity = 0.97f;
+static constexpr float kOverflowButtonXPadding = 0.016f;
+static constexpr float kOverflowButtonYPadding = 0.012f;
 static constexpr float kOverflowMenuYPadding = 0.012f;
 static constexpr float kOverflowMenuItemHeight = 0.080f;
 static constexpr float kOverflowMenuItemXPadding = 0.024f;
+static constexpr float kOverflowMenuMaxSpan = 0.384f - kOverflowMenuYPadding;
 
 static constexpr float kTabsViewDistance = 2.4f;
 static constexpr float kTabsViewRootMarginDMM = 0.1f;

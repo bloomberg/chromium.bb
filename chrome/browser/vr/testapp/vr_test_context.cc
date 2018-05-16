@@ -60,7 +60,7 @@ constexpr gfx::Vector3dF kLaserLocalOffset = {0.f, -0.0075f, -0.05f};
 constexpr float kControllerScaleFactor = 1.5f;
 constexpr float kTouchpadPositionDelta = 0.05f;
 const float kVerticalScrollScaleFactor =
-    -8.0f / ui::MouseWheelEvent::kWheelDelta;
+    8.0f / ui::MouseWheelEvent::kWheelDelta;
 const float kHorizontalScrollScaleFactor =
     100.0f / ui::MouseWheelEvent::kWheelDelta;
 constexpr gfx::PointF kInitialTouchPosition = {0.5f, 0.5f};

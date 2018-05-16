@@ -45,6 +45,7 @@
 #include "chrome/browser/vr/elements/resizer.h"
 #include "chrome/browser/vr/elements/reticle.h"
 #include "chrome/browser/vr/elements/scaled_depth_adjuster.h"
+#include "chrome/browser/vr/elements/scrollable_element.h"
 #include "chrome/browser/vr/elements/spinner.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/elements/text_button.h"
@@ -2360,9 +2361,21 @@ void UiSceneCreator::CreateOverflowMenu() {
   auto overflow_outer_layout =
       Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kUp);
 
-  // The item that reserves space in the menu layout for the buttons.
-  auto button_spacer =
-      CreateSpacer(kOverflowMenuMinimumWidth, kOverflowButtonRegionHeight);
+  auto button_region = Create<UiElement>(kNone, kPhaseNone);
+  button_region->set_bounds_contain_children(true);
+  button_region->set_y_anchoring(BOTTOM);
+  button_region->set_y_centering(BOTTOM);
+  button_region->set_contributes_to_parent_bounds(false);
+
+  auto button_region_bg = Create<Rect>(kNone, kPhaseForeground);
+  button_region_bg->SetSize(kOverflowMenuMinimumWidth,
+                            kOverflowButtonRegionHeight);
+  button_region_bg->SetCornerRadii(
+      {0.0f, 0.0f, kUrlBarItemCornerRadiusDMM, kUrlBarItemCornerRadiusDMM});
+  button_region_bg->SetOpacity(kOverflowButtonRegionOpacity);
+  VR_BIND_COLOR(model_, button_region_bg.get(),
+                &ColorScheme::omnibox_background, &Rect::SetColor);
+  button_region->AddChild(std::move(button_region_bg));
 
   // The forward and refresh buttons are anchored to the bottom corners of the
   // reserved space. In the future, when we have more buttons, they may instead
@@ -2390,7 +2403,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     button->set_y_anchoring(BOTTOM);
     button->set_y_centering(BOTTOM);
     button->SetTranslate(
-        kOverflowButtonXOffset * (std::get<1>(item) == RIGHT ? -1 : 1),
+        kOverflowButtonXPadding * (std::get<1>(item) == RIGHT ? -1 : 1),
         kOverflowMenuYPadding, 0);
     VR_BIND_BUTTON_COLORS(model_, button.get(), &ColorScheme::url_bar_button,
                           &Button::SetButtonColors);
@@ -2419,10 +2432,8 @@ void UiSceneCreator::CreateOverflowMenu() {
         break;
     }
 
-    button_spacer->AddChild(std::move(button));
+    button_region->AddChild(std::move(button));
   }
-
-  overflow_outer_layout->AddChild(std::move(button_spacer));
 
   std::vector<std::tuple<UiElementName, int>> menu_items = {
       {kOverflowMenuCloseAllTabsItem, IDS_VR_MENU_CLOSE_ALL_TABS},
@@ -2439,8 +2450,17 @@ void UiSceneCreator::CreateOverflowMenu() {
       {kOverflowMenuSendFeedbackItem, IDS_VR_MENU_SEND_FEEDBACK},
   };
 
+  auto overflow_menu_scroll = Create<ScrollableElement>(
+      kNone, kPhaseNone, ScrollableElement::kVertical);
+  overflow_menu_scroll->SetMaxSpan(kOverflowMenuMaxSpan);
+  overflow_menu_scroll->SetScrollAnchoring(TOP);
   auto overflow_menu_layout =
       Create<LinearLayout>(kOverflowMenuLayout, kPhaseNone, LinearLayout::kUp);
+
+  // The item that reserves space in the menu layout for the buttons.
+  auto button_spacer =
+      CreateSpacer(kOverflowMenuMinimumWidth, kOverflowButtonRegionHeight);
+  overflow_menu_layout->AddChild(std::move(button_spacer));
 
   for (auto& item : menu_items) {
     auto layout = std::make_unique<LinearLayout>(LinearLayout::kRight);
@@ -2558,14 +2578,17 @@ void UiSceneCreator::CreateOverflowMenu() {
     overflow_menu_layout->AddChild(std::move(background));
   }
 
-  overflow_outer_layout->AddChild(std::move(overflow_menu_layout));
+  overflow_menu_scroll->AddScrollingChild(std::move(overflow_menu_layout));
+  overflow_outer_layout->AddChild(std::move(overflow_menu_scroll));
 
   auto top_cap = Create<Rect>(kNone, kPhaseNone);
   top_cap->SetType(kTypeSpacer);
   top_cap->SetSize(kOverflowMenuMinimumWidth, kOverflowMenuYPadding);
   overflow_outer_layout->AddChild(std::move(top_cap));
-
   overflow_menu->AddChild(std::move(overflow_outer_layout));
+
+  overflow_menu->AddChild(std::move(button_region));
+
   overflow_backplane->AddChild(std::move(overflow_menu));
   scene_->AddUiElement(kUrlBarOverflowButton, std::move(overflow_backplane));
 }
