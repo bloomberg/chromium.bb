@@ -26,7 +26,7 @@ def RunMountCommands(sysroot_path, unmount):
     mount_path = os.path.join(sysroot_path, point)
     if unmount:
       if osutils.IsMounted(mount_path):
-        osutils.UnmountDir(mount_path)
+        osutils.UmountDir(mount_path, cleanup=False)
     else:
       if not osutils.IsMounted(mount_path):
         # Not using osutils.Mount here, as not sure how to call
