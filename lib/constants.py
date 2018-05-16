@@ -1163,11 +1163,17 @@ CHROMEOS_SERVICE_ACCOUNT = os.path.join('/', 'creds', 'service_accounts',
                                         'service-account-chromeos.json')
 
 # Buildbucket buckets
-TRYSERVER_BUILDBUCKET_BUCKET = 'master.chromiumos.tryserver'
 CHROMEOS_RELEASE_BUILDBUCKET_BUCKET = 'master.chromeos_release'
 CHROMEOS_BUILDBUCKET_BUCKET = 'master.chromeos'
 CHROMIUMOS_BUILDBUCKET_BUCKET = 'master.chromiumos'
 INTERNAL_SWARMING_BUILDBUCKET_BUCKET = 'luci.chromeos.general'
+
+ACTIVE_BUCKETS = [
+    CHROMEOS_RELEASE_BUILDBUCKET_BUCKET,
+    CHROMEOS_BUILDBUCKET_BUCKET,
+    CHROMIUMOS_BUILDBUCKET_BUCKET,
+    INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
+]
 
 # Build retry limit on buildbucket
 BUILDBUCKET_BUILD_RETRY_LIMIT = 2

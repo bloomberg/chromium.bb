@@ -201,7 +201,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     self.mock_http.request.return_value = (self.success_response, content)
     result_content = self.client.SearchBuildsRequest(
         False,
-        buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
+        buckets=[constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob', 'bot_id:build265-m2'],
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,
         start_cursor='start_cursor',
@@ -214,7 +214,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
      # Test dryrun
     result_content_2 = self.client.SearchBuildsRequest(
         True,
-        buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,
+        buckets=[constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,
                  constants.CHROMEOS_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob'],
         max_builds=100)
@@ -255,7 +255,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
     return self.client.SearchAllBuilds(
         False,
         limit=limit,
-        buckets=[constants.TRYSERVER_BUILDBUCKET_BUCKET,],
+        buckets=[constants.INTERNAL_SWARMING_BUILDBUCKET_BUCKET,],
         tags=['build_type:tryjob', 'bot_id:build265-m2'],
         status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
 

@@ -16,14 +16,13 @@ from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import build_stages
-from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.lib.const import waterfall
 from chromite.lib import auth
 from chromite.lib import buildbucket_lib
 from chromite.lib import build_summary
+from chromite.lib import builder_status_lib
 from chromite.lib import cidb
-from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_sdk_lib
@@ -41,12 +40,10 @@ from chromite.cbuildbot.stages.generic_stages_unittest import patches
 
 
 # pylint: disable=too-many-ancestors
-
+# pylint: disable=protected-access
 
 class InitSDKTest(generic_stages_unittest.RunCommandAbstractStageTestCase):
   """Test building the SDK"""
-
-  # pylint: disable=protected-access
 
   def setUp(self):
     self.PatchObject(cros_sdk_lib, 'GetChrootVersion', return_value='12')
@@ -431,13 +428,11 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
       self._run.options.goma_client_json = temp_goma_client_json.name
 
       stage = self.ConstructStage()
-      # pylint: disable=protected-access
       chroot_args = stage._SetupGomaIfNecessary()
       self.assertEqual(
           ['--goma_dir', goma_dir,
            '--goma_client_json', temp_goma_client_json.name],
           chroot_args)
-      # pylint: disable=protected-access
       portage_env = stage._portage_extra_env
       self.assertRegexpMatches(
           portage_env.get('GOMA_DIR', ''), '^/home/.*/goma$')
@@ -457,7 +452,6 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
 
       stage = self.ConstructStage()
       with self.assertRaisesRegexp(ValueError, 'json file is missing'):
-        # pylint: disable=protected-access
         stage._SetupGomaIfNecessary()
 
   def testGomaOnBotWithoutCertFile(self):
@@ -472,7 +466,6 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
 
       with self.assertRaisesRegexp(
           ValueError, 'goma_client_json is not provided'):
-        # pylint: disable=protected-access
         stage._SetupGomaIfNecessary()
 
 
@@ -531,10 +524,9 @@ class BuildImageStageTest(BuildPackagesStageTest):
   def testUnifiedBuilds(self):
     pass
 
+
 class CleanUpStageTest(generic_stages_unittest.StageTestCase):
   """Test CleanUpStage."""
-
-  # pylint: disable=protected-access
 
   BOT_ID = 'master-paladin'
 
@@ -568,126 +560,6 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
 
   def ConstructStage(self):
     return build_stages.CleanUpStage(self._run)
-
-  def test_GetBuildbucketBucketsForSlavesOnMixedWaterfalls(self):
-    """Test _GetBuildbucketBucketsForSlaves with mixed waterfalls."""
-    stage = self.ConstructStage()
-    slave_config_map = {
-        'slave_1': config_lib.BuildConfig(
-            name='slave1',
-            active_waterfall=waterfall.WATERFALL_EXTERNAL),
-        'slave_2': config_lib.BuildConfig(
-            name='slave2',
-            active_waterfall=waterfall.WATERFALL_INTERNAL),
-        'slave_3': config_lib.BuildConfig(
-            name='slave3',
-            active_waterfall=None)
-    }
-    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
-                     return_value=slave_config_map)
-    buckets = stage._GetBuildbucketBucketsForSlaves()
-
-    expected_list = ['master.chromiumos', 'master.chromeos']
-    self.assertItemsEqual(expected_list, buckets)
-
-  def test_GetBuildbucketBucketsForSlavesOnSingleWaterfall(self):
-    """Test _GetBuildbucketBucketsForSlaves with a signle waterfall."""
-    stage = self.ConstructStage()
-
-    slave_config_map = {
-        'slave_1': config_lib.BuildConfig(
-            name='slave1',
-            active_waterfall=waterfall.WATERFALL_INTERNAL),
-        'slave_2': config_lib.BuildConfig(
-            name='slave2',
-            active_waterfall=waterfall.WATERFALL_INTERNAL)
-    }
-    self.PatchObject(generic_stages.BuilderStage, '_GetSlaveConfigMap',
-                     return_value=slave_config_map)
-    buckets = stage._GetBuildbucketBucketsForSlaves()
-
-    expected_list = ['master.chromeos']
-    self.assertItemsEqual(expected_list, buckets)
-
-  def testCancelObsoleteSlaveBuilds(self):
-    """Test CancelObsoleteSlaveBuilds."""
-    buildbucket_id_1 = '100'
-    buildbucket_id_2 = '200'
-
-    searched_builds = [{
-        'status': 'STARTED',
-        'id': buildbucket_id_1,
-        'tags':[
-            'bot_id:build265-m2',
-            'build_type:tryjob',
-            'master:False']
-    }, {
-        'status': 'STARTED',
-        'id': buildbucket_id_2,
-        'tags':[
-            'bot_id:build265-m2',
-            'build_type:tryjob',
-            'master:False']
-    }]
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     'SearchAllBuilds',
-                     return_value=searched_builds)
-
-    cancel_content = {
-        'kind': 'kind',
-        'etag': 'etag',
-        'results':[{
-            'build_id': buildbucket_id_1,
-            'build': {
-                'status': 'COMPLETED',
-                'result': 'CANCELED',
-            }
-        }, {
-            'build_id': buildbucket_id_2,
-            'error': {
-                'message': "Cannot cancel a completed build",
-                'reason': 'BUILD_IS_COMPLETED',
-            }
-        }]
-    }
-    cancel_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
-                                   'CancelBatchBuildsRequest',
-                                   return_value=cancel_content)
-
-    stage = self.ConstructStage()
-    stage.CancelObsoleteSlaveBuilds()
-
-    self.assertEqual(cancel_mock.call_count, 1)
-
-  def testNoObsoleteSlaveBuilds(self):
-    """Test no obsolete slave builds."""
-    search_content = {
-        'kind': 'kind',
-        'etag': 'etag'
-    }
-    self.PatchObject(buildbucket_lib.BuildbucketClient,
-                     'SearchBuildsRequest',
-                     return_value=search_content)
-
-    cancel_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
-                                   'CancelBatchBuildsRequest')
-
-    stage = self.ConstructStage()
-    stage.CancelObsoleteSlaveBuilds()
-
-    self.assertEqual(cancel_mock.call_count, 0)
-
-  def testCancelObsoleteSlaveBuildsWithNoSlaveBuilds(self):
-    """Test CancelObsoleteSlaveBuilds with no slave builds."""
-    self.PatchObject(build_stages.CleanUpStage,
-                     '_GetBuildbucketBucketsForSlaves',
-                     return_value=set())
-    stage = self.ConstructStage()
-    stage.CancelObsoleteSlaveBuilds()
-
-    search_mock = self.PatchObject(buildbucket_lib.BuildbucketClient,
-                                   'SearchAllBuilds')
-    search_mock.assert_not_called()
 
   def testChrootReuseImageMismatch(self):
     chroot_path = os.path.join(self.build_root, 'chroot')
@@ -861,3 +733,99 @@ class CleanUpStageTest(generic_stages_unittest.StageTestCase):
     osutils.Touch(chroot_path + '.img')
     stage = self.ConstructStage()
     self.assertFalse(stage._RevertChrootToCleanSnapshot())
+
+
+class CleanUpStageCancelSlaveBuilds(generic_stages_unittest.StageTestCase):
+  """Test CleanUpStage.CancelObsoleteSlaveBuilds."""
+  BOT_ID = 'master-paladin'
+
+  def setUp(self):
+    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
+                     return_value=True)
+    self.PatchObject(auth.AuthorizedHttp, '__init__',
+                     return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
+
+    # Mock out the active APIs for both testing and safety.
+    self.cancelMock = self.PatchObject(builder_status_lib,
+                                       'CancelBuilds')
+
+    self.searchMock = self.PatchObject(buildbucket_lib.BuildbucketClient,
+                                       'SearchAllBuilds')
+
+    self._Prepare(extra_config={'chroot_use_image': False})
+
+  def ConstructStage(self):
+    return build_stages.CleanUpStage(self._run)
+
+  def testNoPreviousMasterBuilds(self):
+    """Test cancellation if the master has never run."""
+    search_results = [[]]
+    self.searchMock.side_effect = search_results
+    stage = self.ConstructStage()
+    stage.CancelObsoleteSlaveBuilds()
+
+    # Validate searches and cancellations match expections.
+    self.assertEqual(self.searchMock.call_count, len(search_results))
+    self.cancelMock.assert_not_called()
+
+  def testNoPreviousSlaveBuilds(self):
+    """Test cancellation if there are no running slave builds."""
+    search_results = [
+        [{'id': 'master_1'}],
+        [],
+        [],
+    ]
+    self.searchMock.side_effect = search_results
+
+    stage = self.ConstructStage()
+    stage.CancelObsoleteSlaveBuilds()
+
+    # Validate searches and cancellations match expections.
+    self.assertEqual(self.searchMock.call_count, len(search_results))
+    self.cancelMock.assert_not_called()
+
+  def testPreviousSlaveBuild(self):
+    """Test cancellation if there is a running slave build."""
+    search_results = [
+        [{'id': 'master_1'}],
+        [{'id': 'm1_slave_1'}],
+        [],
+    ]
+    self.searchMock.side_effect = search_results
+
+    stage = self.ConstructStage()
+    stage.CancelObsoleteSlaveBuilds()
+
+    # Validate searches and cancellations match expections.
+    self.assertEqual(self.searchMock.call_count, len(search_results))
+    self.assertEqual(self.cancelMock.call_count, 1)
+
+    cancelled_ids = self.cancelMock.call_args[0][0]
+    self.assertEqual(cancelled_ids, ['m1_slave_1'])
+
+  def testManyPreviousSlaveBuilds(self):
+    """Test cancellation with an assortment of running slave builds."""
+    search_results = [
+        [{'id': 'master_1'}, {'id': 'master_2'}],
+        [{'id': 'm1_slave_1'}, {'id': 'm1_slave_2'}],
+        [{'id': 'm1_slave_3'}, {'id': 'm1_slave_4'}],
+        [{'id': 'm2_slave_1'}, {'id': 'm2_slave_2'}],
+        [{'id': 'm2_slave_3'}, {'id': 'm2_slave_4'}],
+    ]
+    self.searchMock.side_effect = search_results
+
+    stage = self.ConstructStage()
+    stage.CancelObsoleteSlaveBuilds()
+
+    # Validate searches and cancellations match expections.
+    self.assertEqual(self.searchMock.call_count, len(search_results))
+    self.assertEqual(self.cancelMock.call_count, 1)
+
+    cancelled_ids = self.cancelMock.call_args[0][0]
+    self.assertEqual(cancelled_ids, [
+        'm1_slave_1', 'm1_slave_2', 'm1_slave_3', 'm1_slave_4',
+        'm2_slave_1', 'm2_slave_2', 'm2_slave_3', 'm2_slave_4',
+    ])

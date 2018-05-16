@@ -33,6 +33,7 @@ from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
 from chromite.lib import path_util
+from chromite.lib import request_build
 
 
 class CleanUpStage(generic_stages.BuilderStage):
@@ -137,21 +138,6 @@ class CleanUpStage(generic_stages.BuilderStage):
     logging.info('Wiping old output.')
     commands.WipeOldOutput(self._build_root)
 
-  def _GetBuildbucketBucketsForSlaves(self):
-    """Get Buildbucket buckets for slaves of current build.
-
-    Returns:
-      A list of Buildbucket buckets (strings) serving the slaves.
-    """
-    slave_config_map = self._GetSlaveConfigMap(important_only=False)
-
-    bucket_set = set(
-        buildbucket_lib.WATERFALL_BUCKET_MAP[slave_config.active_waterfall]
-        for slave_config in slave_config_map.values()
-        if slave_config.active_waterfall)
-
-    return list(bucket_set)
-
   def _GetPreviousBuildStatus(self):
     """Extract the status of the previous build from command-line arguments.
 
@@ -203,34 +189,37 @@ class CleanUpStage(generic_stages.BuilderStage):
     logging.info('Cancelling obsolete slave builds.')
 
     buildbucket_client = self.GetBuildbucketClient()
+    if not buildbucket_client:
+      return
 
-    if buildbucket_client is not None:
+    # Find the 3 most recent master buildbucket ids.
+    master_builds = buildbucket_client.SearchAllBuilds(
+        self._run.options.debug,
+        buckets=constants.ACTIVE_BUCKETS,
+        limit=3,
+        tags=['cbb_config:%s' % self._run.config.name,
+              'cbb_branch:%s' % self._run.manifest_branch],
+        status=constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
 
-      slave_buildbucket_buckets = self._GetBuildbucketBucketsForSlaves()
-      if not slave_buildbucket_buckets:
-        logging.info('No Buildbucket buckets to search for slave builds.')
-        return
+    slave_ids = []
 
-      buildbucket_ids = []
-      # Search for scheduled/started slave builds in chromiumos waterfall
-      # and chromeos waterfall.
+    # Find the scheduled or started slaves for those master builds.
+    for master_id in buildbucket_lib.ExtractBuildIds(master_builds):
       for status in [constants.BUILDBUCKET_BUILDER_STATUS_SCHEDULED,
                      constants.BUILDBUCKET_BUILDER_STATUS_STARTED]:
         builds = buildbucket_client.SearchAllBuilds(
             self._run.options.debug,
-            buckets=slave_buildbucket_buckets,
-            tags=['build_type:%s' % self._run.config.build_type,
-                  'cbb_branch:%s' % self._run.manifest_branch,
-                  'master:False',
-                  'master_config:%s' % self._run.config.name],
+            tags=['buildset:%s' % request_build.SlaveBuildSet(master_id)],
             status=status)
 
         ids = buildbucket_lib.ExtractBuildIds(builds)
         if ids:
-          logging.info('Found builds %s in status %s.', ids, status)
-          buildbucket_ids.extend(ids)
+          logging.info('Found builds %s in status %s from master %s.',
+                       ids, status, master_id)
+          slave_ids.extend(ids)
 
-      builder_status_lib.CancelBuilds(buildbucket_ids,
+    if slave_ids:
+      builder_status_lib.CancelBuilds(slave_ids,
                                       buildbucket_client,
                                       self._run.options.debug,
                                       self._run.config)
