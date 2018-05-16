@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -83,7 +82,7 @@ void ForwardingAudioStreamFactory::CreateOutputStream(
   outputs_
       .insert(broker_factory_->CreateAudioOutputStreamBroker(
           process_id, frame_id, ++stream_id_counter_, device_id, params,
-          AudioMirroringManager::ToGroupId(process_id, frame_id),
+          group_id_,
           base::BindOnce(&ForwardingAudioStreamFactory::RemoveOutput,
                          base::Unretained(this)),
           std::move(client)))
