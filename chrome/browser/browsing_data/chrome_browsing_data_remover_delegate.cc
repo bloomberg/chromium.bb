@@ -149,6 +149,8 @@ using content::BrowsingDataFilterBuilder;
 
 namespace {
 
+// Generic functions but currently only used when ENABLE_NACL.
+#if BUILDFLAG(ENABLE_NACL)
 void UIThreadTrampolineHelper(base::OnceClosure callback) {
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
 }
@@ -161,6 +163,7 @@ base::OnceClosure UIThreadTrampoline(base::OnceClosure callback) {
   // task is actually posted.
   return base::BindOnce(&UIThreadTrampolineHelper, std::move(callback));
 }
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 template <typename T>
 void IgnoreArgumentHelper(base::OnceClosure callback, T unused_argument) {
@@ -223,31 +226,6 @@ void ClearHostnameResolutionCacheOnIOThread(
 
   io_thread->ClearHostCache(host_filter);
 }
-
-#if BUILDFLAG(ENABLE_REPORTING)
-void ClearReportingCacheOnIOThread(
-    net::URLRequestContextGetter* context,
-    int data_type_mask,
-    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  net::ReportingService* service =
-      context->GetURLRequestContext()->reporting_service();
-  if (service)
-    service->RemoveBrowsingData(data_type_mask, origin_filter);
-}
-
-void ClearNetworkErrorLoggingOnIOThread(
-    net::URLRequestContextGetter* context,
-    const base::RepeatingCallback<bool(const GURL&)>& origin_filter) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  net::NetworkErrorLoggingService* service =
-      context->GetURLRequestContext()->network_error_logging_service();
-  if (service)
-    service->RemoveBrowsingData(origin_filter);
-}
-#endif  // BUILDFLAG(ENABLE_REPORTING)
 
 #if defined(OS_ANDROID)
 void ClearPrecacheInBackground(content::BrowserContext* browser_context) {
@@ -1081,35 +1059,16 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   }
 
 #if BUILDFLAG(ENABLE_REPORTING)
-  if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) ||
-      (remove_mask & DATA_TYPE_HISTORY)) {
-    scoped_refptr<net::URLRequestContextGetter> context =
-        profile_->GetRequestContext();
-
-    int data_type_mask = 0;
-    if (remove_mask & DATA_TYPE_HISTORY)
-      data_type_mask |= net::ReportingBrowsingDataRemover::DATA_TYPE_REPORTS;
-    if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES)
-      data_type_mask |= net::ReportingBrowsingDataRemover::DATA_TYPE_CLIENTS;
-
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ClearReportingCacheOnIOThread,
-                       base::RetainedRef(std::move(context)), data_type_mask,
-                       filter),
-        UIThreadTrampoline(CreatePendingTaskCompletionClosure()));
-  }
-
-  if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) ||
-      (remove_mask & DATA_TYPE_HISTORY)) {
-    scoped_refptr<net::URLRequestContextGetter> context =
-        profile_->GetRequestContext();
-
-    BrowserThread::PostTaskAndReply(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&ClearNetworkErrorLoggingOnIOThread,
-                       base::RetainedRef(std::move(context)), filter),
-        UIThreadTrampoline(CreatePendingTaskCompletionClosure()));
+  if (remove_mask & DATA_TYPE_HISTORY) {
+    network::mojom::NetworkContext* network_context =
+        BrowserContext::GetDefaultStoragePartition(profile_)
+            ->GetNetworkContext();
+    network_context->ClearReportingCacheReports(
+        filter_builder.BuildNetworkServiceFilter(),
+        CreatePendingTaskCompletionClosureForMojo());
+    network_context->ClearNetworkErrorLogging(
+        filter_builder.BuildNetworkServiceFilter(),
+        CreatePendingTaskCompletionClosureForMojo());
   }
 #endif  // BUILDFLAG(ENABLE_REPORTING)
 
