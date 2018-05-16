@@ -154,10 +154,18 @@ component("fido") {
 
   if (is_mac) {
     sources += [
+      "mac/authenticator.h",
+      "mac/authenticator.mm",
       "mac/get_assertion_operation.h",
       "mac/get_assertion_operation.mm",
+      "mac/keychain.h",
+      "mac/keychain.mm",
       "mac/make_credential_operation.h",
       "mac/make_credential_operation.mm",
+      "mac/operation.h",
+      "mac/operation_base.h",
+      "mac/touch_id_context.h",
+      "mac/touch_id_context.mm",
       "mac/util.h",
       "mac/util.mm",
     ]
