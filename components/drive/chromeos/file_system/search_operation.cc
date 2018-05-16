@@ -93,14 +93,13 @@ SearchOperation::SearchOperation(
       weak_ptr_factory_(this) {
 }
 
-SearchOperation::~SearchOperation() {
-}
+SearchOperation::~SearchOperation() = default;
 
 void SearchOperation::Search(const std::string& search_query,
                              const GURL& next_link,
                              const SearchCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (next_link.is_empty()) {
     // This is first request for the |search_query|.
@@ -121,8 +120,8 @@ void SearchOperation::SearchAfterGetFileList(
     const SearchCallback& callback,
     google_apis::DriveApiErrorCode gdata_error,
     std::unique_ptr<google_apis::FileList> file_list) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   FileError error = GDataToFileError(gdata_error);
   if (error != FILE_ERROR_OK) {
@@ -163,8 +162,8 @@ void SearchOperation::SearchAfterResolveSearchResult(
     const GURL& next_link,
     std::unique_ptr<std::vector<SearchResultInfo>> result,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
   DCHECK(result);
 
   if (error != FILE_ERROR_OK) {

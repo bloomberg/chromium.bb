@@ -33,7 +33,7 @@ class FileSystemObserver {
                                 const base::FilePath& file_path) {}
 
  protected:
-  virtual ~FileSystemObserver() = default;
+  virtual ~FileSystemObserver() {}
 };
 
 }  // namespace drive

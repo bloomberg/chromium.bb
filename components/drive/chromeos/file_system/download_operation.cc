@@ -353,8 +353,7 @@ DownloadOperation::DownloadOperation(
       weak_ptr_factory_(this) {
 }
 
-DownloadOperation::~DownloadOperation() {
-}
+DownloadOperation::~DownloadOperation() = default;
 
 base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
     const std::string& local_id,
@@ -362,7 +361,7 @@ base::Closure DownloadOperation::EnsureFileDownloadedByLocalId(
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const GetFileCallback& completion_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!completion_callback.is_null());
 
   CheckPreconditionForEnsureFileDownloadedParams params;
@@ -396,7 +395,7 @@ base::Closure DownloadOperation::EnsureFileDownloadedByPath(
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const GetFileCallback& completion_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!completion_callback.is_null());
 
   CheckPreconditionForEnsureFileDownloadedParams params;
@@ -431,7 +430,7 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
     base::FilePath* cache_file_path,
     base::FilePath* temp_download_file_path,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(params);
   DCHECK(drive_file_path);
   DCHECK(cache_file_path);
@@ -478,7 +477,7 @@ void DownloadOperation::EnsureFileDownloadedAfterDownloadFile(
     std::unique_ptr<DownloadParams> params,
     google_apis::DriveApiErrorCode gdata_error,
     const base::FilePath& downloaded_file_path) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   DownloadParams* params_ptr = params.get();
   ResourceEntry* entry_after_update = new ResourceEntry;
@@ -500,7 +499,7 @@ void DownloadOperation::EnsureFileDownloadedAfterUpdateLocalState(
     std::unique_ptr<ResourceEntry> entry_after_update,
     base::FilePath* cache_file_path,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (error != FILE_ERROR_OK) {
     params->OnError(error);

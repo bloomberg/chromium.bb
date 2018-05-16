@@ -194,7 +194,7 @@ enum SearchMetadataOptions {
 // The interface is defined to make FileSystem mockable.
 class FileSystemInterface {
  public:
-  virtual ~FileSystemInterface() = default;
+  virtual ~FileSystemInterface() {}
 
   // Adds and removes the observer.
   virtual void AddObserver(FileSystemObserver* observer) = 0;

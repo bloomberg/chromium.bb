@@ -56,7 +56,7 @@ class SetPropertyOperation {
   OperationDelegate* delegate_;
   internal::ResourceMetadata* metadata_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

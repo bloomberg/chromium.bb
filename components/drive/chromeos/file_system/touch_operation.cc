@@ -52,15 +52,14 @@ TouchOperation::TouchOperation(base::SequencedTaskRunner* blocking_task_runner,
       weak_ptr_factory_(this) {
 }
 
-TouchOperation::~TouchOperation() {
-}
+TouchOperation::~TouchOperation() = default;
 
 void TouchOperation::TouchFile(const base::FilePath& file_path,
                                const base::Time& last_access_time,
                                const base::Time& last_modified_time,
                                const FileOperationCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
@@ -77,8 +76,8 @@ void TouchOperation::TouchFileAfterUpdateLocalState(
     const FileOperationCallback& callback,
     const ResourceEntry* entry,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   FileChange changed_files;
   changed_files.Update(file_path, entry->file_info().is_directory()

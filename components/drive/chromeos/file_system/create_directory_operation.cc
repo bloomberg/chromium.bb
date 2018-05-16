@@ -133,7 +133,7 @@ CreateDirectoryOperation::CreateDirectoryOperation(
 }
 
 CreateDirectoryOperation::~CreateDirectoryOperation() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void CreateDirectoryOperation::CreateDirectory(
@@ -141,8 +141,8 @@ void CreateDirectoryOperation::CreateDirectory(
     bool is_exclusive,
     bool is_recursive,
     const FileOperationCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   std::set<std::string>* updated_local_ids = new std::set<std::string>;
   FileChange* changed_files(new FileChange);
@@ -169,8 +169,8 @@ void CreateDirectoryOperation::CreateDirectoryAfterUpdateLocalState(
     const std::set<std::string>* updated_local_ids,
     const FileChange* changed_files,
     FileError error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   for (const auto& id : *updated_local_ids) {
     delegate_->OnEntryUpdatedByOperation(ClientContext(USER_INITIATED), id);

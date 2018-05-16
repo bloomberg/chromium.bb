@@ -78,8 +78,7 @@ SetPropertyOperation::SetPropertyOperation(
       weak_ptr_factory_(this) {
 }
 
-SetPropertyOperation::~SetPropertyOperation() {
-}
+SetPropertyOperation::~SetPropertyOperation() = default;
 
 void SetPropertyOperation::SetProperty(
     const base::FilePath& file_path,
@@ -87,8 +86,8 @@ void SetPropertyOperation::SetProperty(
     const std::string& key,
     const std::string& value,
     const FileOperationCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
@@ -103,8 +102,8 @@ void SetPropertyOperation::SetPropertyAfterUpdateLocalState(
     const FileOperationCallback& callback,
     const ResourceEntry* entry,
     FileError result) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   if (result == FILE_ERROR_OK) {
     // Do not notify about the file change, as properties are write only and
