@@ -9,6 +9,7 @@
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -62,13 +63,21 @@ base::LazyInstance<HeadlessCrashReporterClient>::Leaky g_headless_crash_client =
 #endif
 
 const char kLogFileName[] = "CHROME_LOG_FILE";
+const char kHeadlessCrashKey[] = "headless";
 }  // namespace
 
 HeadlessContentMainDelegate::HeadlessContentMainDelegate(
     std::unique_ptr<HeadlessBrowserImpl> browser)
-    : content_client_(browser->options()), browser_(std::move(browser)) {
+    : content_client_(browser->options()),
+      browser_(std::move(browser)),
+      headless_crash_key_(base::debug::AllocateCrashKeyString(
+          kHeadlessCrashKey,
+          base::debug::CrashKeySize::Size32)) {
   DCHECK(!g_current_headless_content_main_delegate);
   g_current_headless_content_main_delegate = this;
+
+  // Mark any bug reports from headless mode as such.
+  base::debug::SetCrashKeyString(headless_crash_key_, "true");
 }
 
 HeadlessContentMainDelegate::~HeadlessContentMainDelegate() {
