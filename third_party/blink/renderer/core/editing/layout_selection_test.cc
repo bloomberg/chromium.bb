@@ -911,4 +911,18 @@ TEST_F(NGLayoutSelectionTest, LineBreakImage) {
   EXPECT_EQ(SelectLineBreak::kNotSelected,
             ComputeLayoutSelectionStatus(*bar).line_break);
 }
+
+TEST_F(NGLayoutSelectionTest, BRStatus) {
+  const SelectionInDOMTree& selection =
+      SetSelectionTextToBody("<div>foo<!--^--><br><!--|-->bar</div>");
+  Selection().SetSelectionAndEndTyping(selection);
+  Selection().CommitAppearanceIfNeeded();
+  LayoutObject* const layout_br =
+      GetDocument().QuerySelector("br")->GetLayoutObject();
+  CHECK(layout_br->IsBR());
+  EXPECT_EQ(
+      LayoutSelectionStatus(0u, 0u, SelectLineBreak::kNotSelected),
+      Selection().ComputeLayoutSelectionStatus(GetNGPaintFragment(layout_br)));
+}
+
 }  // namespace blink

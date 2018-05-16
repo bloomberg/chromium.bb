@@ -1948,6 +1948,26 @@ LayoutRect LayoutText::LocalSelectionRect() const {
   if (!cb)
     return LayoutRect();
 
+  const FrameSelection& frame_selection = GetFrame()->Selection();
+  const auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+  if (fragments.IsInLayoutNGInlineFormattingContext()) {
+    LayoutRect rect;
+    for (const NGPaintFragment* fragment : fragments) {
+      const LayoutSelectionStatus status =
+          frame_selection.ComputeLayoutSelectionStatus(*fragment);
+      if (status.start == status.end)
+        continue;
+      // TODO(yoichio): We should consider linebreak selection. See
+      // ng_text_fragment_painter.cc::PaintSelection.
+      NGPhysicalOffsetRect fragment_rect =
+          ToNGPhysicalTextFragment(fragment->PhysicalFragment())
+              .LocalRect(status.start, status.end);
+      fragment_rect.offset += fragment->InlineOffsetToContainerBox();
+      rect.Unite(fragment_rect.ToLayoutRect());
+    }
+    return rect;
+  }
+
   // Now calculate startPos and endPos for painting selection.
   // We include a selection while endPos > 0
   unsigned start_pos, end_pos;
@@ -1956,7 +1976,6 @@ LayoutRect LayoutText::LocalSelectionRect() const {
     start_pos = 0;
     end_pos = TextLength();
   } else {
-    const FrameSelection& frame_selection = GetFrame()->Selection();
     if (GetSelectionState() == SelectionState::kStart) {
       // TODO(yoichio): value_or is used to prevent use uininitialized value
       // on release. It should be value() after LayoutSelection brushup.
@@ -1972,12 +1991,8 @@ LayoutRect LayoutText::LocalSelectionRect() const {
     }
   }
 
-  // TODO(yoichio): The following DCHECK should pass, but fails 14 tests.
-  // DCHECK_LE(start_pos, end_pos);
+  DCHECK_LE(start_pos, end_pos);
   LayoutRect rect;
-  if (start_pos >= end_pos)
-    return rect;
-
   for (InlineTextBox* box : TextBoxes()) {
     rect.Unite(box->LocalSelectionRect(start_pos, end_pos));
     rect.Unite(LayoutRect(EllipsisRectForBox(box, start_pos, end_pos)));

@@ -6,6 +6,9 @@
 
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
+#include "third_party/blink/renderer/core/editing/selection_template.h"
+#include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -33,6 +36,35 @@ class LayoutTextTest : public RenderingTest {
   }
 
   LayoutText* GetBasicText() { return GetLayoutTextById("target"); }
+
+  void SetSelectionAndUpdateLayoutSelection(const std::string& selection_text) {
+    const SelectionInDOMTree selection =
+        SelectionSample::SetSelectionText(GetDocument().body(), selection_text);
+    UpdateAllLifecyclePhases();
+    Selection().SetSelectionAndEndTyping(selection);
+    Selection().CommitAppearanceIfNeeded();
+  }
+
+  const LayoutText* FindFirstLayoutText() {
+    for (const Node& node :
+         NodeTraversal::DescendantsOf(*GetDocument().body())) {
+      if (node.GetLayoutObject() && node.GetLayoutObject()->IsText())
+        return ToLayoutTextOrDie(node.GetLayoutObject());
+    }
+    NOTREACHED();
+    return nullptr;
+  }
+
+  LayoutRect GetSelectionRectFor(const std::string& selection_text) {
+    std::stringstream stream;
+    stream << "<div style='font: 10px/10px Ahem;'>" << selection_text
+           << "</div>";
+    SetSelectionAndUpdateLayoutSelection(stream.str());
+    const Node* target = GetDocument().getElementById("target");
+    const LayoutObject* layout_object =
+        target ? target->GetLayoutObject() : FindFirstLayoutText();
+    return layout_object->LocalSelectionRect();
+  }
 };
 
 const char kTacoText[] = "Los Compadres Taco Truck";
@@ -577,6 +609,30 @@ TEST_P(ParameterizedLayoutTextTest, WordBreakElement) {
   EXPECT_EQ(0u, layout_wbr->ResolvedTextLength());
   EXPECT_EQ(0, layout_wbr->CaretMinOffset());
   EXPECT_EQ(0, layout_wbr->CaretMaxOffset());
+}
+
+TEST_P(ParameterizedLayoutTextTest, LocalSelectionRect) {
+  LoadAhem();
+  // TODO(yoichio): Fix LayoutNG incompatibility.
+  EXPECT_EQ(LayoutRect(10, 0, 50, 10), GetSelectionRectFor("f^oo ba|r"));
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(0, 0, 30, 20) : LayoutRect(0, 0, 40, 20),
+      GetSelectionRectFor("<div style='width: 2em'>f^oo ba|r</div>"));
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(0, 0, 0, 0) : LayoutRect(30, 0, 10, 10),
+      GetSelectionRectFor("foo^<br id='target'>|bar"));
+  EXPECT_EQ(LayoutRect(30, 0, 10, 10), GetSelectionRectFor("foo^ |bar"));
+  EXPECT_EQ(LayoutRect(0, 0, 0, 0), GetSelectionRectFor("^ |foo"));
+  EXPECT_EQ(LayoutRect(0, 0, 0, 0),
+            GetSelectionRectFor("fo^o<wbr id='target'>ba|r"));
+  EXPECT_EQ(
+      LayoutRect(0, 0, 10, 10),
+      GetSelectionRectFor("<style>:first-letter { float: right}</style>^fo|o"));
+  // Since we don't paint trimed white spaces on LayoutNG,  we don't need fix
+  // this case.
+  EXPECT_EQ(
+      LayoutNGEnabled() ? LayoutRect(0, 0, 0, 0) : LayoutRect(30, 0, 10, 10),
+      GetSelectionRectFor("foo^ |"));
 }
 
 }  // namespace blink
