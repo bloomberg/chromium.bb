@@ -477,6 +477,23 @@ BENCHMARKS_TO_OUTPUT_HISTOGRAMS = [
     'speedometer2',
     'speedometer2-future',
     'wasm',
+    'battor.steady_state',
+    'battor.trivial_pages',
+    'rasterize_and_record_micro.partial_invalidation',
+    'rasterize_and_record_micro.top_25',
+    'scheduler.tough_scheduling_cases',
+    'tab_switching.typical_25',
+    'thread_times.key_hit_test_cases',
+    'thread_times.key_idle_power_cases',
+    'thread_times.key_mobile_sites_smooth',
+    'thread_times.key_noop_cases',
+    'thread_times.key_silk_cases',
+    'thread_times.simple_mobile_sites',
+    'thread_times.oop_rasterization.key_mobile',
+    'thread_times.tough_compositor_cases',
+    'thread_times.tough_scrolling_cases',
+    'tracing.tracing_with_background_memory_infra',
+    'tracing.tracing_with_debug_overhead',
 ]
 
 
