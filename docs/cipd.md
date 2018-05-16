@@ -133,6 +133,7 @@ Once you have those, you can create your package like so:
 ```
 # Assuming that the third-party dependency in question is at version 1.2.3
 # and this is the first chromium revision of that version.
+$ cipd auth-login  # One-time auth.
 $ cipd create --pkg-def cipd.yaml -tag version:1.2.3-cr0
 ```
 
@@ -196,6 +197,12 @@ $ cipd acl-list chromium
 
 By default, [cria/project-chromium-cipd-owners][4] own all CIPD packages
 under `chromium/`. If you're adding a package, talk to one of them.
+
+To obtain write access to a new package, ask an owner to run:
+
+```
+$ cipd acl-edit chromium/third_party/sample_cipd_dep -owner user:email@address.com
+```
 
 ## Troubleshooting
 
