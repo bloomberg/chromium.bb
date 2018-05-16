@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include "third_party/blink/renderer/core/events/error_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/script/module_script.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -20,24 +21,29 @@ WorkerModuleTreeClient::WorkerModuleTreeClient(Modulator* modulator)
 // https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
 void WorkerModuleTreeClient::NotifyModuleTreeLoadFinished(
     ModuleScript* module_script) {
+  auto* execution_context =
+      ExecutionContext::From(modulator_->GetScriptState());
+
   if (!module_script) {
-    // Step 11: ... "If the algorithm asynchronously completes with null, queue
-    // a task to fire an event named error at worker, and abort these steps."
-    // ...
-    // TODO(nhiroki): Throw an ErrorEvent at the Worker object on the owner
-    // Document.
+    // Step 13: "If the algorithm asynchronously completes with null, queue
+    // a task to fire an event named error at worker, and return."
+    // This ErrorEvent object is just used for passing error information to a
+    // worker object on the parent context thread and not dispatched directly.
+    execution_context->ExceptionThrown(
+        ErrorEvent::Create("Failed to load a module script.",
+                           SourceLocation::Capture(), nullptr /* world */));
     return;
   }
 
-  // Step 11: ... "Otherwise, continue the rest of these steps after the
-  // algorithm's asynchronous completion, with script being the asynchronous
-  // completion value." ...
+  // Step 13: "Otherwise, continue the rest of these steps after the algorithm's
+  // asynchronous completion, with script being the asynchronous completion
+  // value."
 
   ScriptValue error = modulator_->ExecuteModule(
       module_script, Modulator::CaptureEvalErrorFlag::kReport);
-  WorkerGlobalScope* global_scope =
-      ToWorkerGlobalScope(ExecutionContext::From(modulator_->GetScriptState()));
-  global_scope->ReportingProxy().DidEvaluateModuleScript(error.IsEmpty());
+  ToWorkerGlobalScope(execution_context)
+      ->ReportingProxy()
+      .DidEvaluateModuleScript(error.IsEmpty());
 }
 
 void WorkerModuleTreeClient::Trace(blink::Visitor* visitor) {
