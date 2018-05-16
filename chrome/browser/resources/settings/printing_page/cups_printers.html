@@ -79,14 +79,9 @@
     </div>
 
     <cr-toast id="errorToast" duration="3000">
-      <div class="error-message" id="addPrinterDoneMessage" hidden>
-          $i18n{printerAddedSuccessfulMessage}
-        </div>
-        <div class="error-message" id="addPrinterErrorMessage">
-          <span id="addPrinterFailedMessage" hidden>
-            $i18n{printerAddedFailedMessage}
-          </span>
-        </div>
+      <div class="error-message" id="addPrinterDoneMessage">
+        [[addPrinterResultText_]]
+      </div>
     </cr-toast>
   </template>
   <script src="cups_printers.js"></script>
