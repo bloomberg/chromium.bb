@@ -27,19 +27,24 @@
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_service_win.h"
 #include "device/bluetooth/test/fake_bluetooth_adapter_winrt.h"
+#include "device/bluetooth/test/fake_device_information_winrt.h"
 
 namespace {
 
 using Microsoft::WRL::Make;
 using Microsoft::WRL::ComPtr;
-using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapter;
+using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
+using ABI::Windows::Devices::Enumeration::IDeviceInformation;
+using ABI::Windows::Devices::Enumeration::IDeviceInformationStatics;
 
 class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
  public:
   TestBluetoothAdapterWinrt(ComPtr<IBluetoothAdapter> adapter,
+                            ComPtr<IDeviceInformation> device_information,
                             InitCallback init_cb)
-      : adapter_(std::move(adapter)) {
+      : adapter_(std::move(adapter)),
+        device_information_(std::move(device_information)) {
     Init(std::move(init_cb));
   }
 
@@ -53,8 +58,17 @@ class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
     return adapter_statics.CopyTo(statics);
   };
 
+  HRESULT
+  GetDeviceInformationStaticsActivationFactory(
+      IDeviceInformationStatics** statics) const override {
+    auto device_information_statics =
+        Make<device::FakeDeviceInformationStaticsWinrt>(device_information_);
+    return device_information_statics.CopyTo(statics);
+  };
+
  private:
   ComPtr<IBluetoothAdapter> adapter_;
+  ComPtr<IDeviceInformation> device_information_;
 };
 
 BLUETOOTH_ADDRESS CanonicalStringToBLUETOOTH_ADDRESS(
@@ -151,7 +165,7 @@ void BluetoothTestWin::InitWithoutDefaultAdapter() {
   if (UseNewBLEWinImplementation()) {
     base::RunLoop run_loop;
     adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
-        nullptr, run_loop.QuitClosure());
+        nullptr, nullptr, run_loop.QuitClosure());
     run_loop.Run();
     return;
   }
@@ -166,7 +180,8 @@ void BluetoothTestWin::InitWithFakeAdapter() {
   if (UseNewBLEWinImplementation()) {
     base::RunLoop run_loop;
     adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
-        Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress, kTestAdapterName),
+        Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress),
+        Make<FakeDeviceInformationWinrt>(kTestAdapterName),
         run_loop.QuitClosure());
     run_loop.Run();
     return;

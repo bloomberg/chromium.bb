@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/win/async_operation.h"
-#include "base/win/scoped_hstring.h"
 #include "device/bluetooth/test/bluetooth_test.h"
 
 namespace device {
@@ -33,11 +33,10 @@ using Microsoft::WRL::Make;
 
 }  // namespace
 
-FakeBluetoothAdapterWinrt::FakeBluetoothAdapterWinrt(std::string address,
-                                                     std::string device_id)
-    : address_(std::move(address)), device_id_(std::move(device_id)) {
+FakeBluetoothAdapterWinrt::FakeBluetoothAdapterWinrt(
+    base::StringPiece address) {
   const bool result = base::HexStringToUInt64(
-      base::StrCat(base::SplitStringPiece(address_, ":", base::TRIM_WHITESPACE,
+      base::StrCat(base::SplitStringPiece(address, ":", base::TRIM_WHITESPACE,
                                           base::SPLIT_WANT_ALL)),
       &raw_address_);
   DCHECK(result);
@@ -46,7 +45,8 @@ FakeBluetoothAdapterWinrt::FakeBluetoothAdapterWinrt(std::string address,
 FakeBluetoothAdapterWinrt::~FakeBluetoothAdapterWinrt() = default;
 
 HRESULT FakeBluetoothAdapterWinrt::get_DeviceId(HSTRING* value) {
-  *value = base::win::ScopedHString::Create(device_id_).release();
+  // The actual device id does not matter for testing, as long as this method
+  // returns a success code.
   return S_OK;
 }
 

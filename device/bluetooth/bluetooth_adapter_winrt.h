@@ -6,6 +6,7 @@
 #define DEVICE_BLUETOOTH_BLUETOOTH_ADAPTER_WINRT_H_
 
 #include <windows.devices.bluetooth.h>
+#include <windows.devices.enumeration.h>
 #include <wrl/client.h>
 
 #include <memory>
@@ -82,9 +83,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   void RemovePairingDelegateInternal(
       BluetoothDevice::PairingDelegate* pairing_delegate) override;
 
-  // This is declared virtual so that it can be overridden by tests.
+  // These are declared virtual so that they can be overridden by tests.
   virtual HRESULT GetBluetoothAdapterStaticsActivationFactory(
       ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics** statics)
+      const;
+  virtual HRESULT GetDeviceInformationStaticsActivationFactory(
+      ABI::Windows::Devices::Enumeration::IDeviceInformationStatics** statics)
       const;
 
  private:
@@ -92,6 +96,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
       base::ScopedClosureRunner on_init,
       Microsoft::WRL::ComPtr<
           ABI::Windows::Devices::Bluetooth::IBluetoothAdapter> adapter);
+
+  void OnCreateFromIdAsync(
+      base::ScopedClosureRunner on_init,
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Enumeration::IDeviceInformation>
+          device_information);
 
   bool is_initialized_ = false;
   bool is_present_ = false;

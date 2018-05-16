@@ -33,6 +33,9 @@ using ABI::Windows::Devices::Bluetooth::BluetoothAdapter;
 }  // namespace uwp
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapter;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
+using ABI::Windows::Devices::Enumeration::DeviceInformation;
+using ABI::Windows::Devices::Enumeration::IDeviceInformation;
+using ABI::Windows::Devices::Enumeration::IDeviceInformationStatics;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::IAsyncOperationCompletedHandler;
 using Microsoft::WRL::Callback;
@@ -305,6 +308,13 @@ HRESULT BluetoothAdapterWinrt::GetBluetoothAdapterStaticsActivationFactory(
       RuntimeClass_Windows_Devices_Bluetooth_BluetoothAdapter>(statics);
 }
 
+HRESULT BluetoothAdapterWinrt::GetDeviceInformationStaticsActivationFactory(
+    IDeviceInformationStatics** statics) const {
+  return base::win::GetActivationFactory<
+      IDeviceInformationStatics,
+      RuntimeClass_Windows_Devices_Enumeration_DeviceInformation>(statics);
+}
+
 void BluetoothAdapterWinrt::OnGetDefaultAdapter(
     base::ScopedClosureRunner on_init,
     ComPtr<IBluetoothAdapter> adapter) {
@@ -337,9 +347,51 @@ void BluetoothAdapterWinrt::OnGetDefaultAdapter(
     return;
   }
 
-  // TODO(https://crbug.com/841261): Retrieve the name from the appropriate
-  // DeviceInformation.
-  name_ = base::win::ScopedHString(device_id).GetAsUTF8();
+  ComPtr<IDeviceInformationStatics> device_information_statics;
+  hr =
+      GetDeviceInformationStaticsActivationFactory(&device_information_statics);
+  if (FAILED(hr)) {
+    VLOG(2) << "GetDeviceInformationStaticsActivationFactory failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  ComPtr<IAsyncOperation<DeviceInformation*>> create_from_id_op;
+  hr = device_information_statics->CreateFromIdAsync(device_id,
+                                                     &create_from_id_op);
+  if (FAILED(hr)) {
+    VLOG(2) << "CreateFromIdAsync failed: "
+            << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  hr = PostAsyncResults(
+      std::move(create_from_id_op), ui_task_runner_,
+      base::BindOnce(&BluetoothAdapterWinrt::OnCreateFromIdAsync,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(on_init)));
+  if (FAILED(hr)) {
+    VLOG(2) << "PostAsyncResults failed: "
+            << logging::SystemErrorCodeToString(hr);
+  }
+}
+
+void BluetoothAdapterWinrt::OnCreateFromIdAsync(
+    base::ScopedClosureRunner on_init,
+    ComPtr<IDeviceInformation> device_information) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!device_information) {
+    VLOG(2) << "Getting Device Information failed.";
+    return;
+  }
+
+  HSTRING name;
+  HRESULT hr = device_information->get_Name(&name);
+  if (FAILED(hr)) {
+    VLOG(2) << "Getting Name failed: " << logging::SystemErrorCodeToString(hr);
+    return;
+  }
+
+  name_ = base::win::ScopedHString(name).GetAsUTF8();
 }
 
 }  // namespace device
