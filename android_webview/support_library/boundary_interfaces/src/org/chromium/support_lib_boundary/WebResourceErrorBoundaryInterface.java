@@ -8,6 +8,6 @@ package org.chromium.support_lib_boundary;
  * Boundary interface for WebResourceErrorCompat.
  */
 public interface WebResourceErrorBoundaryInterface {
-    public int getErrorCode();
-    public CharSequence getDescription();
+    int getErrorCode();
+    CharSequence getDescription();
 }
