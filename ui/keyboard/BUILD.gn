@@ -20,7 +20,6 @@ jumbo_component("keyboard") {
     "container_fullscreen_behavior.h",
     "display_util.cc",
     "display_util.h",
-    "drag_descriptor.cc",
     "drag_descriptor.h",
     "keyboard_controller.cc",
     "keyboard_controller.h",

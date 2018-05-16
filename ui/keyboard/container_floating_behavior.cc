@@ -215,8 +215,8 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
         // If there is no active drag descriptor, start a new one.
         bool drag_started_by_touch = (type == ui::ET_TOUCH_PRESSED);
         drag_descriptor_.reset(
-            new DragDescriptor(keyboard_bounds.origin(), kb_offset,
-                               drag_started_by_touch, pointer_id));
+            new DragDescriptor{keyboard_bounds.origin(), kb_offset,
+                               drag_started_by_touch, pointer_id});
       }
       break;
 
@@ -224,26 +224,26 @@ bool ContainerFloatingBehavior::HandlePointerEvent(
     case ui::ET_TOUCH_MOVED:
       if (!drag_descriptor_) {
         // do nothing
-      } else if (drag_descriptor_->is_touch_drag() !=
+      } else if (drag_descriptor_->is_touch_drag !=
                  (type == ui::ET_TOUCH_MOVED)) {
         // If the event isn't of the same type that started the drag, end the
         // drag to prevent confusion.
         drag_descriptor_ = nullptr;
-      } else if (drag_descriptor_->pointer_id() != pointer_id) {
+      } else if (drag_descriptor_->pointer_id != pointer_id) {
         // do nothing.
       } else {
         // Drag continues.
         // If there is an active drag, use it to determine the new location
         // of the keyboard.
         const gfx::Point original_click_location =
-            drag_descriptor_->original_keyboard_location() +
-            drag_descriptor_->original_click_offset();
+            drag_descriptor_->original_keyboard_location +
+            drag_descriptor_->original_click_offset;
         const gfx::Point current_drag_location =
             keyboard_bounds.origin() + kb_offset;
         const gfx::Vector2d cumulative_drag_offset =
             current_drag_location - original_click_location;
         const gfx::Point new_keyboard_location =
-            drag_descriptor_->original_keyboard_location() +
+            drag_descriptor_->original_keyboard_location +
             cumulative_drag_offset;
         gfx::Rect new_bounds_in_local =
             gfx::Rect(new_keyboard_location, keyboard_bounds.size());

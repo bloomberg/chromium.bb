@@ -82,7 +82,7 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
 
   // Current state of a cursor drag to move the keyboard, if one exists.
   // Otherwise nullptr.
-  std::unique_ptr<DragDescriptor> drag_descriptor_ = nullptr;
+  std::unique_ptr<const DragDescriptor> drag_descriptor_ = nullptr;
 
   gfx::Rect draggable_area_ = gfx::Rect();
 };
