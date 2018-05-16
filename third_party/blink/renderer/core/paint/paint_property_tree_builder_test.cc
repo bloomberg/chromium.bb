@@ -5346,9 +5346,6 @@ TEST_P(PaintPropertyTreeBuilderTest, CompositedLayerSkipsFragmentClip) {
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id="fixed" style="position: fixed; top: 20px; left: 20px">
       <div id="fixed-child" style="position: relative; top: 10px"></div>
@@ -5405,9 +5402,6 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
 
 TEST_P(PaintPropertyTreeBuilderTest,
        RepeatingFixedPositionWithTransformInPagedMedia) {
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
-    return;
-
   SetBodyInnerHTML(R"HTML(
     <div id="fixed" style="position: fixed; top: 20px; left: 20px;
         transform: translateX(10px)">

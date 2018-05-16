@@ -6,19 +6,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
-#include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 
 namespace blink {
 
-typedef bool TestParamRootLayerScrolling;
-class CompositingRequirementsUpdaterTest
-    : public testing::WithParamInterface<TestParamRootLayerScrolling>,
-      private ScopedRootLayerScrollingForTest,
-      public RenderingTest {
+class CompositingRequirementsUpdaterTest : public RenderingTest {
  public:
   CompositingRequirementsUpdaterTest()
-      : ScopedRootLayerScrollingForTest(GetParam()),
-        RenderingTest(SingleChildLocalFrameClient::Create()) {}
+      : RenderingTest(SingleChildLocalFrameClient::Create()) {}
 
   void SetUp() final;
 };
@@ -28,11 +22,7 @@ void CompositingRequirementsUpdaterTest::SetUp() {
   EnableCompositing();
 }
 
-INSTANTIATE_TEST_CASE_P(All,
-                        CompositingRequirementsUpdaterTest,
-                        testing::Bool());
-
-TEST_P(CompositingRequirementsUpdaterTest, FixedPosOverlap) {
+TEST_F(CompositingRequirementsUpdaterTest, FixedPosOverlap) {
   SetBodyInnerHTML(R"HTML(
     <div style="position: relative; width: 500px; height: 300px;
         will-change: transform"></div>
