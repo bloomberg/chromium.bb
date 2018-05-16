@@ -35,7 +35,7 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // pressed.
   void SetPressed();
 
-  static constexpr int kVerticalPadding = 2;
+  static constexpr int kVerticalPadding = 3;
   const int text_height_;
   OmniboxPopupContentsView* model_;
   OmniboxResultView* result_view_;

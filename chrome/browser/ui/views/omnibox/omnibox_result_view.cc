@@ -44,10 +44,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 
 namespace {
-// The vertical padding to provide each RenderText in addition to the height of
-// the font. Where possible, RenderText uses this additional space to vertically
-// center the cap height of the font instead of centering the entire font.
-static const int kVerticalPadding = 4;
 
 // Creates a views::Background for the current result style.
 std::unique_ptr<views::Background> CreateBackgroundWithColor(SkColor bg_color) {
@@ -116,11 +112,8 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // Set up 'switch to tab' button.
   if (match.has_tab_match && !match_.associated_keyword.get()) {
-    // TODO(dschuyler): the kVerticalPadding is added here, and again within
-    // OmniboxTabSwitchButton. Should that just be done once?
     suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-        model_, this,
-        suggestion_view_->content()->GetLineHeight() + kVerticalPadding);
+        model_, this, suggestion_view_->content()->GetLineHeight());
     suggestion_tab_switch_button_->set_owned_by_client();
     AddChildView(suggestion_tab_switch_button_.get());
   } else {
