@@ -3833,6 +3833,8 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (CGFloat)overscrollHeaderHeight {
+  if (base::FeatureList::IsEnabled(kBrowserContainerFullscreen))
+    return self.headerHeight;
   return self.headerHeight + StatusBarHeight();
 }
 

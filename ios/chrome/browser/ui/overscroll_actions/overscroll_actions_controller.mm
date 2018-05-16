@@ -23,6 +23,7 @@
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/legacy/toolbar_controller_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
+#include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
@@ -368,7 +369,14 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   }
   CGFloat contentOffsetFromExpandedHeader =
       contentOffsetFromTheTop + self.initialHeaderInset;
-  if (contentOffsetFromExpandedHeader >= 0) {
+  CGFloat limit = 0;
+  CGFloat topMargin = 0;
+  if (!_webViewProxy &&
+      base::FeatureList::IsEnabled(kBrowserContainerFullscreen)) {
+    limit = -StatusBarHeight();
+    topMargin = StatusBarHeight();
+  }
+  if (contentOffsetFromExpandedHeader >= limit) {
     // Record initial content offset and dispatch delegate on state change.
     self.overscrollState = OverscrollState::NO_PULL_STARTED;
   } else {
@@ -382,7 +390,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       _initialHeaderHeight = [[self delegate] overscrollHeaderHeight];
       self.overscrollState = OverscrollState::STARTED_PULLING;
     }
-    [self updateWithVerticalOffset:-contentOffsetFromExpandedHeader];
+    [self updateWithVerticalOffset:-contentOffsetFromExpandedHeader
+                         topMargin:topMargin];
   }
 }
 
@@ -814,13 +823,16 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   }
 }
 
-- (void)updateWithVerticalOffset:(CGFloat)verticalOffset {
+- (void)updateWithVerticalOffset:(CGFloat)verticalOffset
+                       topMargin:(CGFloat)topMargin {
   self.overscrollActionView.backgroundView.alpha =
       1.0 -
-      Clamp(verticalOffset / (kHeaderMaxExpansionThreshold / 2.0), 0.0, 1.0);
+      Clamp((verticalOffset - topMargin) / (kHeaderMaxExpansionThreshold / 2.0),
+            0.0, 1.0);
   SetViewFrameHeight(self.overscrollActionView,
                      self.initialHeaderHeight + verticalOffset);
-  [self.overscrollActionView updateWithVerticalOffset:verticalOffset];
+  [self.overscrollActionView
+      updateWithVerticalOffset:verticalOffset - topMargin];
 }
 
 - (CGFloat)initialContentInset {
@@ -893,8 +905,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   if (_bounceState.yInset - _bounceState.headerInset < 0.5)
     _bounceState.yInset = _bounceState.headerInset;
   if (_performingScrollViewIndependentAnimation) {
-    [self updateWithVerticalOffset:_bounceState.yInset -
-                                   _bounceState.headerInset];
+    [self
+        updateWithVerticalOffset:_bounceState.yInset - _bounceState.headerInset
+                       topMargin:0];
   } else {
     const UIEdgeInsets insets = UIEdgeInsetsMake(_bounceState.yInset, 0, 0, 0);
     _forceStateUpdate = YES;
