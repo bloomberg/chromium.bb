@@ -49,7 +49,7 @@ const STATE_CHANGE_EVENT_COUNT = Object.keys(StateChangeEvent).length;
  * @type {string}
  */
 const STATE_CHANGE_EVENT_METRIC_NAME =
-    'Accessibility.CrosSelectToSpeak.SelectToSpeakStateChangeRequested';
+    'Accessibility.CrosSelectToSpeak.StateChangeEvent';
 
 // This must be the same as in ash/system/accessibility/select_to_speak_tray.cc:
 // ash::kSelectToSpeakTrayClassName.
@@ -994,8 +994,7 @@ SelectToSpeak.prototype = {
    */
   recordSelectToSpeakStateChangeEvent_: function(changeType) {
     chrome.metricsPrivate.recordEnumerationValue(
-        'Accessibility.CrosSelectToSpeak.SelectToSpeakStateChangeRequested',
-        changeType, STATE_CHANGE_EVENT_COUNT);
+        STATE_CHANGE_EVENT_METRIC_NAME, changeType, STATE_CHANGE_EVENT_COUNT);
   },
 
   /**
