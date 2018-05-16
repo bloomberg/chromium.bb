@@ -137,10 +137,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterCast
       bool connected) override;
   void OnMtuChanged(scoped_refptr<chromecast::bluetooth::RemoteDevice> device,
                     int mtu) override;
-  void OnServicesUpdated(
-      scoped_refptr<chromecast::bluetooth::RemoteDevice> device,
-      std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>> services)
-      override;
   void OnCharacteristicNotification(
       scoped_refptr<chromecast::bluetooth::RemoteDevice> device,
       scoped_refptr<chromecast::bluetooth::RemoteCharacteristic> characteristic,

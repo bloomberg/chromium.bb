@@ -6,22 +6,19 @@
 #define DEVICE_BLUETOOTH_TEST_BLUETOOTH_TEST_CAST_H_
 
 #include <cstdint>
+#include <map>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "chromecast/device/bluetooth/shlib/mock_gatt_client.h"
+#include "chromecast/device/bluetooth/le/mock_le_scan_manager.h"
+#include "chromecast/public/bluetooth/bluetooth_types.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_local_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_descriptor.h"
 #include "device/bluetooth/test/bluetooth_test.h"
-
-namespace chromecast {
-namespace bluetooth {
-class GattClientManagerImpl;
-}
-}  // namespace chromecast
 
 namespace device {
 
@@ -37,8 +34,7 @@ class BluetoothTestCast : public BluetoothTestBase {
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
 
  private:
-  class FakeGattClientManager;
-  class FakeLeScanManager;
+  class GattClientManager;
 
   void UpdateAdapter(
       const std::string& address,
@@ -47,11 +43,8 @@ class BluetoothTestCast : public BluetoothTestBase {
       const std::map<std::string, std::vector<uint8_t>>& service_data,
       const std::map<uint16_t, std::vector<uint8_t>>& manufacturer_data);
 
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  chromecast::bluetooth_v2_shlib::MockGattClient mock_gatt_client_;
-  std::unique_ptr<chromecast::bluetooth::GattClientManagerImpl>
-      gatt_client_manager_;
-  std::unique_ptr<FakeLeScanManager> fake_le_scan_manager_;
+  const std::unique_ptr<GattClientManager> gatt_client_manager_;
+  ::chromecast::bluetooth::MockLeScanManager le_scan_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothTestCast);
 };

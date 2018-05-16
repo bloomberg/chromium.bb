@@ -246,6 +246,7 @@ test("device_unittests") {
       deps += [
         "//chromecast/device/bluetooth:util",
         "//chromecast/device/bluetooth/le",
+        "//chromecast/device/bluetooth/le:test_support",
         "//chromecast/device/bluetooth/shlib:mock_shlib",
       ]
     } else {

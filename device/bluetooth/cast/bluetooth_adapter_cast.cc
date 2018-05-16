@@ -300,24 +300,6 @@ void BluetoothAdapterCast::OnMtuChanged(
            << " mtu: " << mtu;
 }
 
-void BluetoothAdapterCast::OnServicesUpdated(
-    scoped_refptr<chromecast::bluetooth::RemoteDevice> device,
-    std::vector<scoped_refptr<chromecast::bluetooth::RemoteService>> services) {
-  DVLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  std::string address = GetCanonicalBluetoothAddress(device->addr());
-  BluetoothDeviceCast* cast_device = GetCastDevice(address);
-  if (!cast_device)
-    return;
-
-  if (!cast_device->UpdateServices(services))
-    LOG(WARNING) << "The services were not updated. Alerting anyway.";
-
-  cast_device->SetGattServicesDiscoveryComplete(true);
-  NotifyGattServicesDiscovered(cast_device);
-}
-
 void BluetoothAdapterCast::OnCharacteristicNotification(
     scoped_refptr<chromecast::bluetooth::RemoteDevice> device,
     scoped_refptr<chromecast::bluetooth::RemoteCharacteristic> characteristic,
@@ -347,17 +329,19 @@ void BluetoothAdapterCast::OnNewScanResult(
   // to send an async request to |gatt_client_manager_| for a handle to the
   // device.
   if (devices_.find(address) == devices_.end()) {
+    bool first_time_seen =
+        pending_scan_results_.find(address) == pending_scan_results_.end();
+    // These results will be used to construct the BluetoothDeviceCast.
+    pending_scan_results_[address].push_back(result);
+
     // Only send a request if this is the first time we've seen this |address|
     // in a scan. This may happen if we pick up additional GAP advertisements
     // while the first request is in-flight.
-    if (pending_scan_results_.find(address) == pending_scan_results_.end()) {
+    if (first_time_seen) {
       gatt_client_manager_->GetDevice(
           result.addr, base::BindOnce(&BluetoothAdapterCast::OnGetDevice,
                                       weak_factory_.GetWeakPtr()));
     }
-
-    // These results will be used to construct the BluetoothDeviceCast.
-    pending_scan_results_[address].push_back(result);
     return;
   }
 

@@ -288,6 +288,10 @@ void RemoteDeviceImpl::SetConnected(bool connected) {
       LOG(ERROR) << "Couldn't discover services, disconnecting";
       Disconnect({});
     }
+  } else {
+    uuid_to_service_.clear();
+    handle_to_characteristic_.clear();
+    handle_to_descriptor_.clear();
   }
 }
 
