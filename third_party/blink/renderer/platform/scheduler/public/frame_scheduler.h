@@ -11,6 +11,7 @@
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scoped_virtual_time_pauser.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_or_worker_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
@@ -27,10 +28,18 @@ class FrameScheduler : public FrameOrWorkerScheduler {
 
   // Represents throttling state.
   enum class ThrottlingState {
-    kThrottled,
+    // Frame is active and should not be throttled.
     kNotThrottled,
+    // Frame has just been backgrounded and can be throttled non-aggressively.
+    kHidden,
+    // Frame spent some time in background and can be fully throttled.
+    kThrottled,
+    // Frame is stopped, no tasks associated with it can run.
     kStopped,
   };
+
+  PLATFORM_EXPORT static const char* ThrottlingStateToString(
+      ThrottlingState state);
 
   // Represents the type of frame: main (top-level) vs not.
   enum class FrameType {

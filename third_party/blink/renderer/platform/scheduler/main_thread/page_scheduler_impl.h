@@ -74,10 +74,14 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);
 
+  bool IsPageVisible() const;
   bool IsFrozen() const;
   // PageSchedulerImpl::HasActiveConnection can be used in non-test code,
   // while PageScheduler::HasActiveConnectionForTest can't.
   bool HasActiveConnection() const;
+  // Note that the frame can throttle queues even when the page is not throttled
+  // (e.g. for offscreen frames or recently backgrounded pages).
+  bool IsThrottled() const;
 
   std::unique_ptr<FrameSchedulerImpl> CreateFrameSchedulerImpl(
       base::trace_event::BlameContext*,
@@ -125,9 +129,18 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // number of active connections.
   void UpdateBackgroundBudgetPoolThrottlingState();
 
+  // Callback for marking page is silent after a delay since last audible
+  // signal.
   void OnAudioSilent();
 
+  // Callback for enabling throttling in background after specified delay.
+  // TODO(altimin): Trigger throttling depending on the loading state
+  // of the page.
+  void OnPageThrottled();
+
   void UpdateFramePolicies();
+
+  void EnableThrottling();
 
   TraceableVariableController tracing_controller_;
   std::set<FrameSchedulerImpl*> frame_schedulers_;
@@ -141,8 +154,10 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   bool has_active_connection_;
   bool nested_runloop_;
   bool is_main_frame_local_;
+  bool is_throttled_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   PageScheduler::Delegate* delegate_;               // Not owned.
+  CancelableClosureHolder on_page_throttled_closure_;
   CancelableClosureHolder on_audio_silent_closure_;
   base::WeakPtrFactory<PageSchedulerImpl> weak_factory_;
 

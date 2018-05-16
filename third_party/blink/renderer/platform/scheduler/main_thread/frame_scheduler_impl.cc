@@ -23,6 +23,24 @@
 #include "third_party/blink/renderer/platform/scheduler/util/tracing_helper.h"
 
 namespace blink {
+
+// static
+const char* FrameScheduler::ThrottlingStateToString(ThrottlingState state) {
+  switch (state) {
+    case ThrottlingState::kNotThrottled:
+      return "not throttled";
+    case ThrottlingState::kHidden:
+      return "hidden";
+    case ThrottlingState::kThrottled:
+      return "throttled";
+    case ThrottlingState::kStopped:
+      return "frozen";
+    default:
+      NOTREACHED();
+      return nullptr;
+  }
+}
+
 namespace scheduler {
 
 using base::sequence_manager::TaskQueue;
@@ -596,7 +614,7 @@ FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState(
     return FrameScheduler::ThrottlingState::kNotThrottled;
 
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
-      page_frozen_ && !keep_active_) {
+      parent_page_scheduler_->IsFrozen() && !keep_active_) {
     DCHECK(page_visibility_ == PageVisibilityState::kHidden);
     return FrameScheduler::ThrottlingState::kStopped;
   }
@@ -604,8 +622,10 @@ FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState(
       parent_page_scheduler_->HasActiveConnection()) {
     return FrameScheduler::ThrottlingState::kNotThrottled;
   }
-  if (page_visibility_ == PageVisibilityState::kHidden)
+  if (parent_page_scheduler_->IsThrottled())
     return FrameScheduler::ThrottlingState::kThrottled;
+  if (!parent_page_scheduler_->IsPageVisible())
+    return FrameScheduler::ThrottlingState::kHidden;
   return FrameScheduler::ThrottlingState::kNotThrottled;
 }
 
