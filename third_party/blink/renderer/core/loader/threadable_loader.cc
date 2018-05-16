@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/loader/document_threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loading_context.h"
+#include "third_party/blink/renderer/core/loader/worker_threadable_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 
 namespace blink {
@@ -56,6 +57,12 @@ void ThreadableLoader::LoadResourceSynchronously(
     ThreadableLoaderClient& client,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options) {
+  if (context.IsWorkerGlobalScope()) {
+    WorkerThreadableLoader::LoadResourceSynchronously(
+        ToWorkerGlobalScope(context), request, client, options,
+        resource_loader_options);
+    return;
+  }
   DocumentThreadableLoader::LoadResourceSynchronously(
       *ThreadableLoadingContext::Create(context), request, client, options,
       resource_loader_options);
