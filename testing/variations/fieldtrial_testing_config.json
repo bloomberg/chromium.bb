@@ -2453,23 +2453,6 @@
             ]
         }
     ],
-    "PasswordBranding": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "SmartLockBrandingSavePromptOnly"
-                }
-            ]
-        }
-    ],
     "PasswordGeneration": [
         {
             "platforms": [
