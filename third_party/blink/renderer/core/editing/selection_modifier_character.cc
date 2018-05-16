@@ -271,6 +271,60 @@ const InlineBox* LeadingBoxOfEntireSecondaryRun(const InlineBox* box) {
   }
 }
 
+// TODO(xiaochengh): Stop passing return value by non-const reference parameters
+template <typename Traversal>
+bool FindForwardBoxInPossiblyBidiContext(const InlineBox*& box,
+                                         int& offset,
+                                         TextDirection primary_direction) {
+  // TODO(xiaochengh): Make |level| and |forward_box| const, and use additional
+  // variables for their changed values.
+  unsigned char level = box->BidiLevel();
+  const InlineBox* forward_box = Traversal::ForwardLeafChildOf(*box);
+
+  if (box->Direction() == primary_direction) {
+    if (!forward_box) {
+      InlineBox* logical_start = nullptr;
+      if (Traversal::LogicalStartBoxOf(primary_direction, *box,
+                                       logical_start)) {
+        box = logical_start;
+        offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
+      }
+      return true;
+    }
+    if (forward_box->BidiLevel() >= level)
+      return true;
+
+    level = forward_box->BidiLevel();
+    const InlineBox* const backward_box =
+        Traversal::FindBackwardBidiRun(*box, level);
+    if (backward_box && backward_box->BidiLevel() == level)
+      return true;
+
+    box = forward_box;
+    offset = Traversal::CaretEndOffsetOf(*box);
+    return box->Direction() == primary_direction;
+  }
+
+  while (forward_box && !forward_box->GetLineLayoutItem().GetNode())
+    forward_box = Traversal::ForwardLeafChildOf(*forward_box);
+
+  if (forward_box) {
+    box = forward_box;
+    offset = Traversal::CaretEndOffsetOf(*box);
+    if (box->BidiLevel() > level) {
+      forward_box = Traversal::FindForwardBidiRun(*forward_box, level);
+      if (!forward_box || forward_box->BidiLevel() < level)
+        return false;
+    }
+    return true;
+  }
+  // Trailing edge of a secondary run. Set to the leading edge of
+  // the entire run.
+  box = LeadingBoxOfEntireSecondaryRun<Traversal>(box);
+  offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
+  return true;
+}
+
 template <typename Strategy, typename Traversal>
 static PositionTemplate<Strategy> TraverseInternalAlgorithm(
     const VisiblePositionTemplate<Strategy>& visible_position) {
@@ -353,55 +407,10 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
       }
 
       DCHECK_EQ(offset, Traversal::CaretStartOffsetOf(*box));
-
-      unsigned char level = box->BidiLevel();
-      const InlineBox* forward_box = Traversal::ForwardLeafChildOf(*box);
-
-      if (box->Direction() == primary_direction) {
-        if (!forward_box) {
-          InlineBox* logical_start = nullptr;
-          if (Traversal::LogicalStartBoxOf(primary_direction, *box,
-                                           logical_start)) {
-            box = logical_start;
-            offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
-          }
-          break;
-        }
-        if (forward_box->BidiLevel() >= level)
-          break;
-
-        level = forward_box->BidiLevel();
-
-        const InlineBox* const backward_box =
-            Traversal::FindBackwardBidiRun(*box, level);
-        if (backward_box && backward_box->BidiLevel() == level)
-          break;
-
-        box = forward_box;
-        offset = Traversal::CaretEndOffsetOf(*box);
-        if (box->Direction() == primary_direction)
-          break;
-        continue;
-      }
-
-      while (forward_box && !forward_box->GetLineLayoutItem().GetNode())
-        forward_box = Traversal::ForwardLeafChildOf(*forward_box);
-
-      if (forward_box) {
-        box = forward_box;
-        offset = Traversal::CaretEndOffsetOf(*box);
-        if (box->BidiLevel() > level) {
-          forward_box = Traversal::FindForwardBidiRun(*forward_box, level);
-          if (!forward_box || forward_box->BidiLevel() < level)
-            continue;
-        }
+      const bool should_break = FindForwardBoxInPossiblyBidiContext<Traversal>(
+          box, offset, primary_direction);
+      if (should_break)
         break;
-      }
-      // Trailing edge of a secondary run. Set to the leading edge of
-      // the entire run.
-      box = LeadingBoxOfEntireSecondaryRun<Traversal>(box);
-      offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
-      break;
     }
 
     p = PositionTemplate<Strategy>::EditingPositionOf(
