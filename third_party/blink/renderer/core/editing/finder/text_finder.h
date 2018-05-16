@@ -149,8 +149,7 @@ class CORE_EXPORT TextFinder final
   int SelectFindMatch(unsigned index, WebRect* selection_rect);
 
   // Compute and cache the rects for FindMatches if required.
-  // Rects are automatically invalidated in case of content size changes,
-  // propagating the invalidation to child frames.
+  // Rects are automatically invalidated in case of content size changes.
   void UpdateFindMatchRects();
 
   // Sets the markers within a range as active or inactive. Returns true if at

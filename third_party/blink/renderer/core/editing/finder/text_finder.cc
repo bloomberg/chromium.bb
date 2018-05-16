@@ -664,16 +664,6 @@ void TextFinder::UpdateFindMatchRects() {
     find_matches_cache_.swap(filtered_matches);
   }
 
-  // Invalidate the rects in child frames. Will be updated later during
-  // traversal.
-  if (!find_match_rects_are_valid_) {
-    for (WebFrame* child = OwnerFrame().FirstChild(); child;
-         child = child->NextSibling()) {
-      ToWebLocalFrameImpl(child)
-          ->EnsureTextFinder()
-          .find_match_rects_are_valid_ = false;
-    }
-  }
   find_match_rects_are_valid_ = true;
 }
 
