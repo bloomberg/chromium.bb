@@ -27,6 +27,7 @@ class CheckKeyRequest;
 class FlushAndSignBootAttributesRequest;
 class GetBootAttributeRequest;
 class GetKeyDataRequest;
+class GetSupportedKeyPoliciesRequest;
 class MigrateToDircryptoRequest;
 class MountRequest;
 class RemoveFirmwareManagementParametersRequest;
@@ -578,6 +579,11 @@ class CHROMEOS_EXPORT CryptohomeClient : public DBusClient {
   virtual void NeedsDircryptoMigration(
       const cryptohome::Identification& cryptohome_id,
       DBusMethodCallback<bool> callback) = 0;
+
+  // Calls GetSupportedKeyPolicies to determine which type of keys can be added.
+  virtual void GetSupportedKeyPolicies(
+      const cryptohome::GetSupportedKeyPoliciesRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
  protected:
   // Create() should be used instead.

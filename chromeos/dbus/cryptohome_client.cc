@@ -910,6 +910,13 @@ class CryptohomeClientImpl : public CryptohomeClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void GetSupportedKeyPolicies(
+      const cryptohome::GetSupportedKeyPoliciesRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
+    CallCryptohomeMethod(cryptohome::kCryptohomeGetSupportedKeyPolicies,
+                         request, std::move(callback));
+  }
+
  protected:
   void Init(dbus::Bus* bus) override {
     proxy_ = bus->GetObjectProxy(

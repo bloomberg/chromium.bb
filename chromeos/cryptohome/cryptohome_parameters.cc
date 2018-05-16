@@ -174,6 +174,15 @@ bool KeyDefinition::ProviderData::operator==(const ProviderData& other) const {
          (!has_bytes || (*bytes == *other.bytes));
 }
 
+bool KeyDefinition::Policy::operator==(const Policy& other) const {
+  return low_entropy_credential == other.low_entropy_credential &&
+         auth_locked == other.auth_locked;
+}
+
+bool KeyDefinition::Policy::operator!=(const Policy& other) const {
+  return !(*this == other);
+}
+
 KeyDefinition KeyDefinition::CreateForPassword(
     const std::string& secret,
     const std::string& label,
@@ -206,7 +215,8 @@ KeyDefinition::~KeyDefinition() = default;
 
 bool KeyDefinition::operator==(const KeyDefinition& other) const {
   if (type != other.type || label != other.label ||
-      privileges != other.privileges || revision != other.revision ||
+      privileges != other.privileges || policy != other.policy ||
+      revision != other.revision ||
       challenge_response_keys != other.challenge_response_keys ||
       authorization_data.size() != other.authorization_data.size() ||
       provider_data.size() != other.provider_data.size()) {
