@@ -97,9 +97,9 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
   EXPECT_EQ(preupdate_local_surface_id.embed_token(),
             child_allocated_local_surface_id.embed_token());
 
-  const LocalSurfaceId& returned_local_surface_id =
-      child_updated_parent_allocator.UpdateFromChild(
-          child_allocated_local_surface_id);
+  bool changed = child_updated_parent_allocator.UpdateFromChild(
+      child_allocated_local_surface_id);
+  EXPECT_TRUE(changed);
 
   const LocalSurfaceId& postupdate_local_surface_id =
       child_updated_parent_allocator.GetCurrentLocalSurfaceId();
@@ -109,8 +109,6 @@ TEST(ParentLocalSurfaceIdAllocatorTest,
             child_allocated_local_surface_id.child_sequence_number());
   EXPECT_EQ(postupdate_local_surface_id.embed_token(),
             child_allocated_local_surface_id.embed_token());
-  EXPECT_EQ(returned_local_surface_id,
-            child_updated_parent_allocator.GetCurrentLocalSurfaceId());
   EXPECT_FALSE(child_updated_parent_allocator.is_allocation_suppressed());
 }
 
