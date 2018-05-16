@@ -65,23 +65,13 @@ struct CategoryOfWords {
 
 // Used only inside DCHECK.
 bool AllElementsBelongsToSameForm(
-    const std::vector<blink::WebFormControlElement>& all_control_elements,
-    const std::vector<blink::WebInputElement>& possible_usernames) {
-  if (std::adjacent_find(
-          possible_usernames.begin(), possible_usernames.end(),
-          [](const blink::WebInputElement& a, const blink::WebInputElement& b) {
-            return a.Form() != b.Form();
-          }) != possible_usernames.end())
-    return false;
-  if (std::adjacent_find(all_control_elements.begin(),
-                         all_control_elements.end(),
-                         [](const blink::WebFormControlElement& a,
-                            const blink::WebFormControlElement& b) {
-                           return a.Form() != b.Form();
-                         }) != all_control_elements.end())
-    return false;
-  DCHECK(!all_control_elements.empty());
-  return all_control_elements[0].Form() == possible_usernames[0].Form();
+    const std::vector<WebFormControlElement>& all_control_elements) {
+  return std::adjacent_find(all_control_elements.begin(),
+                            all_control_elements.end(),
+                            [](const WebFormControlElement& a,
+                               const WebFormControlElement& b) {
+                              return a.Form() != b.Form();
+                            }) == all_control_elements.end();
 }
 
 // 1. Removes delimiters from |raw_value| and appends the remainder to
@@ -295,69 +285,38 @@ void FindUsernameFieldInternal(
   }
 }
 
-// Find the first element in |username_predictions| (i.e. the most reliable
-// prediction) that occurs in |possible_usernames|. If the element found, the
-// method saves it to |username_element| and returns true.
-bool FindUsernameInPredictions(
-    const std::vector<blink::WebInputElement>& username_predictions,
-    const std::vector<blink::WebInputElement>& possible_usernames,
-    WebInputElement* username_element) {
-  // To keep linear time complexity, convert |possible_usernames| to a set.
-  const base::flat_set<blink::WebInputElement> usernames(
-      possible_usernames.begin(), possible_usernames.end());
-
-  for (const blink::WebInputElement& prediction : username_predictions) {
-    auto iter = usernames.find(prediction);
-    if (iter != usernames.end()) {
-      *username_element = *iter;
-      return true;
-    }
-  }
-  return false;
-}
-
 }  // namespace
 
-bool GetUsernameFieldBasedOnHtmlAttributes(
-    const std::vector<blink::WebFormControlElement>& all_control_elements,
-    const std::vector<blink::WebInputElement>& possible_usernames,
+const std::vector<WebInputElement>& GetPredictionsFieldBasedOnHtmlAttributes(
+    const std::vector<WebFormControlElement>& all_control_elements,
     const FormData& form_data,
-    WebInputElement* username_element,
     UsernameDetectorCache* username_detector_cache) {
-  DCHECK(username_element);
+  // The cache will store the object referenced in the return value, so it must
+  // exist. It can be empty.
+  DCHECK(username_detector_cache);
 
-  if (possible_usernames.empty())
-    return false;
+  DCHECK(!all_control_elements.empty());
 
-  // All elements in |possible_usernames| and |all_control_elements| should have
-  // the same |Form()|.
-  DCHECK(
-      AllElementsBelongsToSameForm(all_control_elements, possible_usernames));
+  // All elements in |all_control_elements| should have the same |Form()|.
+  DCHECK(AllElementsBelongsToSameForm(all_control_elements));
 
-  const blink::WebFormElement form = possible_usernames[0].Form();
+  const WebFormElement form = all_control_elements[0].Form();
 
   // True if the cache has no entry for |form|.
   bool cache_miss = true;
   // Iterator pointing to the entry for |form| if the entry for |form| is found.
   UsernameDetectorCache::iterator form_position;
-  if (username_detector_cache) {
-    std::tie(form_position, cache_miss) = username_detector_cache->insert(
-        std::make_pair(form, std::vector<blink::WebInputElement>()));
-  }
+  std::tie(form_position, cache_miss) = username_detector_cache->insert(
+      std::make_pair(form, std::vector<WebInputElement>()));
 
-  if (!username_detector_cache || cache_miss) {
-    std::vector<blink::WebInputElement> username_predictions;
+  if (cache_miss) {
+    std::vector<WebInputElement> username_predictions;
     FindUsernameFieldInternal(all_control_elements, form_data,
                               &username_predictions);
-    bool result = FindUsernameInPredictions(
-        username_predictions, possible_usernames, username_element);
-    if (username_detector_cache && !username_predictions.empty())
+    if (!username_predictions.empty())
       form_position->second = std::move(username_predictions);
-    return result;
   }
-
-  return FindUsernameInPredictions(form_position->second, possible_usernames,
-                                   username_element);
+  return form_position->second;
 }
 
 }  // namespace autofill
