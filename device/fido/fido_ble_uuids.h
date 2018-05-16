@@ -22,6 +22,9 @@ COMPONENT_EXPORT(DEVICE_FIDO) extern const char kFidoControlPointLengthUUID[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kFidoServiceRevisionUUID[];
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const char kFidoServiceRevisionBitfieldUUID[];
+// TODO(hongjunchoi): Add URL to the specification once CaBLE protocol is
+// standardized.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kCableAdvertisementUUID[];
 
 }  // namespace device
 
