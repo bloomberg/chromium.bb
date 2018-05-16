@@ -216,11 +216,10 @@ void AppsNavigationThrottle::OnIntentPickerClosed(
 }
 
 // static
-void AppsNavigationThrottle::RecordUma(
-    const std::string& selected_app_package,
-    chromeos::AppType app_type,
-    chromeos::IntentPickerCloseReason close_reason,
-    bool should_persist) {
+void AppsNavigationThrottle::RecordUma(const std::string& selected_app_package,
+                                       AppType app_type,
+                                       IntentPickerCloseReason close_reason,
+                                       bool should_persist) {
   PickerAction action = GetPickerAction(app_type, close_reason, should_persist);
   Platform platform = GetDestinationPlatform(selected_app_package, action);
 
@@ -316,27 +315,27 @@ AppsNavigationThrottle::Platform AppsNavigationThrottle::GetDestinationPlatform(
 
 // static
 AppsNavigationThrottle::PickerAction AppsNavigationThrottle::GetPickerAction(
-    chromeos::AppType app_type,
-    chromeos::IntentPickerCloseReason close_reason,
+    AppType app_type,
+    IntentPickerCloseReason close_reason,
     bool should_persist) {
   switch (close_reason) {
-    case chromeos::IntentPickerCloseReason::ERROR:
+    case IntentPickerCloseReason::ERROR:
       return PickerAction::ERROR;
-    case chromeos::IntentPickerCloseReason::DIALOG_DEACTIVATED:
+    case IntentPickerCloseReason::DIALOG_DEACTIVATED:
       return PickerAction::DIALOG_DEACTIVATED;
-    case chromeos::IntentPickerCloseReason::PREFERRED_APP_FOUND:
+    case IntentPickerCloseReason::PREFERRED_APP_FOUND:
       return PickerAction::PREFERRED_ACTIVITY_FOUND;
-    case chromeos::IntentPickerCloseReason::STAY_IN_CHROME:
+    case IntentPickerCloseReason::STAY_IN_CHROME:
       return should_persist ? PickerAction::CHROME_PREFERRED_PRESSED
                             : PickerAction::CHROME_PRESSED;
-    case chromeos::IntentPickerCloseReason::OPEN_APP:
+    case IntentPickerCloseReason::OPEN_APP:
       switch (app_type) {
-        case chromeos::AppType::INVALID:
+        case AppType::INVALID:
           return PickerAction::INVALID;
-        case chromeos::AppType::ARC:
+        case AppType::ARC:
           return should_persist ? PickerAction::ARC_APP_PREFERRED_PRESSED
                                 : PickerAction::ARC_APP_PRESSED;
-        case chromeos::AppType::PWA:
+        case AppType::PWA:
           return PickerAction::PWA_APP_PRESSED;
       }
   }

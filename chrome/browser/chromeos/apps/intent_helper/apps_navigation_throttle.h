@@ -57,8 +57,8 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
                                    bool should_persist);
 
   static void RecordUma(const std::string& selected_app_package,
-                        chromeos::AppType app_type,
-                        chromeos::IntentPickerCloseReason close_reason,
+                        AppType app_type,
+                        IntentPickerCloseReason close_reason,
                         bool should_persist);
 
   static bool ShouldOverrideUrlLoadingForTesting(const GURL& previous_url,
@@ -128,10 +128,9 @@ class AppsNavigationThrottle : public content::NavigationThrottle {
 
   // Converts the provided |app_type|, |close_reason| and |should_persist|
   // boolean to a PickerAction value for recording in UMA.
-  static PickerAction GetPickerAction(
-      chromeos::AppType app_type,
-      chromeos::IntentPickerCloseReason close_reason,
-      bool should_persist);
+  static PickerAction GetPickerAction(AppType app_type,
+                                      IntentPickerCloseReason close_reason,
+                                      bool should_persist);
 
   static void FindPwaForUrlAndShowIntentPickerForApps(
       content::WebContents* web_contents,
