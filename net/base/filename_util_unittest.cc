@@ -231,6 +231,16 @@ TEST(FilenameUtilTest, FileURLConversion) {
     // %2f ('/') and %5c ('\\') are left alone by both GURL and
     // FileURLToFilePath.
     {L"C:\\foo%2f..%5cbar", "file:///C:\\foo%2f..%5cbar"},
+    // Other percent-encoded characters that are left alone when displaying a
+    // URL are also left alone in a file path.
+    // TODO(mgiuca): Keeping these escaped makes no sense in a file path. Fix
+    // this (https://crbug.com/585422).
+    {L"C:\\foo\\%F0%9F%94%92.txt",
+     "file:/c:/foo/%F0%9F%94%92.txt"},                          // Blacklisted.
+    {L"C:\\foo\\%E2%80%81.txt", "file:/c:/foo/%E2%80%81.txt"},  // Blacklisted.
+    {L"C:\\foo\\%0A.txt", "file:/c:/foo/%0A.txt"},              // Control char.
+    // Make sure that '+' isn't converted into ' '.
+    {L"C:\\foo\\romeo+juliet.txt", "file:/c:/foo/romeo+juliet.txt"},
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
     {L"/c:/foo/bar.txt", "file:/c:/foo/bar.txt"},
     {L"/c:/foo/bar.txt", "file:///c:/foo/bar.txt"},
@@ -248,13 +258,19 @@ TEST(FilenameUtilTest, FileURLConversion) {
     // %2f ('/') and %5c ('\\') are left alone by both GURL and
     // FileURLToFilePath.
     {L"/foo%2f..%5cbar", "file:///foo%2f..%5cbar"},
-//  We get these wrong because GURL turns back slashes into forward
-//  slashes.
-//  {L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
-//  {L"/c|/foo%5Cbar.txt", "file:c|/foo\\bar.txt"},
-//  {L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
-//  {L"/foo%5Cbar.txt", "file:////foo\\bar.txt"},
-//  {L"/foo%5Cbar.txt", "file://foo\\bar.txt"},
+    // Other percent-encoded characters that are left alone when displaying a
+    // URL are also left alone in a file path.
+    // TODO(mgiuca): Keeping these escaped makes no sense in a file path. Fix
+    // this (https://crbug.com/585422).
+    {L"/foo/%F0%9F%94%92.txt", "file:///foo/%F0%9F%94%92.txt"},  // Blacklisted.
+    {L"/foo/%E2%80%81.txt", "file:///foo/%E2%80%81.txt"},        // Blacklisted.
+    {L"/foo/%0A.txt", "file:///foo/%0A.txt"},  // Control char.
+    // Make sure that '+' isn't converted into ' '.
+    {L"/foo/romeo+juliet.txt", "file:///foo/romeo+juliet.txt"},
+    // Backslashes in a file URL are normalized as forward slashes.
+    {L"/bar.txt", "file://foo\\bar.txt"},
+    {L"/c|/foo/bar.txt", "file:c|/foo\\bar.txt"},
+    {L"/foo/bar.txt", "file:////foo\\bar.txt"},
 #endif
   };
   for (const auto& test_case : url_cases) {
@@ -262,15 +278,40 @@ TEST(FilenameUtilTest, FileURLConversion) {
     EXPECT_EQ(test_case.file, FilePathAsWString(output));
   }
 
-// Unfortunately, UTF8ToWide discards invalid UTF8 input.
-#ifdef BUG_878908_IS_FIXED
-  // Test that no conversion happens if the UTF-8 input is invalid, and that
-  // the input is preserved in UTF-8
-  const char invalid_utf8[] = "file:///d:/Blah/\xff.doc";
-  const wchar_t invalid_wide[] = L"D:\\Blah\\\xff.doc";
-  EXPECT_TRUE(FileURLToFilePath(GURL(std::string(invalid_utf8)), &output));
-  EXPECT_EQ(std::wstring(invalid_wide), output);
+  // Invalid UTF-8 tests can't be tested above because FilePathAsWString assumes
+  // the output is valid UTF-8.
+
+  // Invalid UTF-8 bytes in input.
+  {
+    const char invalid_utf8[] = "file:///d:/Blah/\x85\x99.doc";
+    EXPECT_TRUE(FileURLToFilePath(GURL(invalid_utf8), &output));
+#if defined(OS_WIN)
+    // On Windows, invalid UTF-8 bytes are interpreted using the default ANSI
+    // code page. This defaults to Windows-1252 (which we assume here).
+    const wchar_t expected_output[] = L"D:\\Blah\\\u2026\u2122.doc";
+    EXPECT_EQ(std::wstring(expected_output), output.value());
+#elif defined(OS_POSIX)
+    // No conversion should happen, and the invalid UTF-8 should be preserved.
+    const char expected_output[] = "/d:/Blah/\x85\x99.doc";
+    EXPECT_EQ(expected_output, output.value());
 #endif
+  }
+
+  // Invalid UTF-8 percent-encoded bytes in input.
+  {
+    const char invalid_utf8[] = "file:///d:/Blah/%85%99.doc";
+    EXPECT_TRUE(FileURLToFilePath(GURL(invalid_utf8), &output));
+#if defined(OS_WIN)
+    // On Windows, invalid UTF-8 bytes are interpreted using the default ANSI
+    // code page. This defaults to Windows-1252 (which we assume here).
+    const wchar_t expected_output[] = L"D:\\Blah\\\u2026\u2122.doc";
+    EXPECT_EQ(std::wstring(expected_output), output.value());
+#elif defined(OS_POSIX)
+    // No conversion should happen, and the invalid UTF-8 should be preserved.
+    const char expected_output[] = "/d:/Blah/\x85\x99.doc";
+    EXPECT_EQ(expected_output, output.value());
+#endif
+  }
 
   // Test that if a file URL is malformed, we get a failure
   EXPECT_FALSE(FileURLToFilePath(GURL("filefoobar"), &output));
