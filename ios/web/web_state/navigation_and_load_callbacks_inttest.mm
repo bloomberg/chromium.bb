@@ -202,7 +202,7 @@ ACTION_P5(VerifyPostStartedContext,
   // TODO(crbug.com/676129): Reload does not create a pending item. Remove this
   // workaround once the bug is fixed. The slim navigation manager fixes this
   // bug.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled() ||
+  if (GetWebClient()->IsSlimNavigationManagerEnabled() ||
       !ui::PageTransitionTypeIncludingQualifiersIs(
           ui::PageTransition::PAGE_TRANSITION_RELOAD,
           (*context)->GetPageTransition())) {
@@ -371,13 +371,13 @@ ACTION_P4(VerifyReloadStartedContext, web_state, url, context, nav_id) {
   // TODO(crbug.com/676129): Reload should not be renderer-initiated, but only
   // marked so because LegacyNavigationManager doesn't create a pending item.
   // WKBasedNavigationManager fixes this problem.
-  EXPECT_EQ(!web::GetWebClient()->IsSlimNavigationManagerEnabled(),
+  EXPECT_EQ(!GetWebClient()->IsSlimNavigationManagerEnabled(),
             (*context)->IsRendererInitiated());
   EXPECT_FALSE((*context)->GetResponseHeaders());
   // TODO(crbug.com/676129): Reload does not create a pending item. Check
   // pending item once the bug is fixed. The slim navigation manager fixes this
   // bug.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     NavigationManager* navigation_manager = web_state->GetNavigationManager();
     NavigationItem* item = navigation_manager->GetPendingItem();
     EXPECT_EQ(url, item->GetURL());
@@ -411,7 +411,7 @@ ACTION_P5(VerifyReloadFinishedContext,
   // TODO(crbug.com/676129): Reload should not be renderer-initiated, but only
   // marked so because LegacyNavigationManager doesn't create a pending item.
   // WKBasedNavigationManager fixes this problem.
-  EXPECT_EQ(!web::GetWebClient()->IsSlimNavigationManagerEnabled(),
+  EXPECT_EQ(!GetWebClient()->IsSlimNavigationManagerEnabled(),
             (*context)->IsRendererInitiated());
   if (is_web_page) {
     ASSERT_TRUE((*context)->GetResponseHeaders());
@@ -492,11 +492,10 @@ using testing::Return;
 using testing::StrictMock;
 using testing::_;
 using testing::WaitUntilConditionOrTimeout;
-using web::test::WaitForWebViewContainingText;
+using test::WaitForWebViewContainingText;
 
-// Test fixture for WebStateDelegate::ProvisionalNavigationStarted,
-// WebStateDelegate::DidFinishNavigation, WebStateDelegate::DidStartLoading and
-// WebStateDelegate::DidStopLoading integration tests.
+// Test fixture to test navigation and load callbacks from WebStateObserver and
+// WebStatePolicyDecider.
 class NavigationAndLoadCallbacksTest : public WebIntTest {
  public:
   NavigationAndLoadCallbacksTest() : scoped_observer_(&observer_) {}
@@ -533,13 +532,14 @@ class NavigationAndLoadCallbacksTest : public WebIntTest {
 
  protected:
   TestNativeContentProvider* provider_;
-  std::unique_ptr<StrictMock<PolicyDeciderMock>> decider_;
   TestNativeContent* content_;
+  std::unique_ptr<StrictMock<PolicyDeciderMock>> decider_;
   StrictMock<WebStateObserverMock> observer_;
+  std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
+
+ private:
   ScopedObserver<WebState, WebStateObserver> scoped_observer_;
   testing::InSequence callbacks_sequence_checker_;
-
-  std::unique_ptr<net::test_server::EmbeddedTestServer> test_server_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationAndLoadCallbacksTest);
 };
@@ -621,11 +621,8 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedNavigation) {
           VerifyErrorFinishedContext(web_state(), url, &context, &nav_id));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
-  // LoadUrl() expects sucessfull load and can not be used here.
-  web::test::LoadUrl(web_state(), url);
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return !web_state()->IsLoading();
-  }));
+  test::LoadUrl(web_state(), url);
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 }
 
 // Tests web page reload navigation.
@@ -934,7 +931,8 @@ TEST_F(NavigationAndLoadCallbacksTest, NativeContentReload) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
-  navigation_manager()->Reload(ReloadType::NORMAL, false /*check_for_repost*/);
+  web_state()->GetNavigationManager()->Reload(ReloadType::NORMAL,
+                                              /*check_for_repost=*/false);
 }
 
 // Tests successful navigation to a new page with post HTTP method.
@@ -962,7 +960,7 @@ TEST_F(NavigationAndLoadCallbacksTest, UserInitiatedPostNavigation) {
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
 
   // Load request using POST HTTP method.
-  web::NavigationManager::WebLoadParams params(url);
+  NavigationManager::WebLoadParams params(url);
   params.post_data = [@"foo" dataUsingEncoding:NSUTF8StringEncoding];
   params.extra_headers = @{@"Content-Type" : @"text/html"};
   ASSERT_TRUE(LoadWithParams(params));
@@ -1000,7 +998,7 @@ TEST_F(NavigationAndLoadCallbacksTest, RendererInitiatedPostNavigation) {
                                          /*renderer_initiated=*/true));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
@@ -1042,7 +1040,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
@@ -1057,7 +1055,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
   EXPECT_CALL(observer_, DidStartLoading(web_state()));
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // ShouldAllowRequest() not called because SlimNavigationManager catches
     // repost before calling policy decider.
   } else {
@@ -1066,7 +1064,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ReloadPostNavigation) {
   }
 
   bool reload_is_renderer_initiated = false;
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled()) {
     // TODO(crbug.com/676129) LegacyNavigationManager doesn't create a pending
     // item on reload. This causes the navigation context to be incorrectly
     // marked renderer-initiated. Remove this workaround.
@@ -1122,7 +1120,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   EXPECT_CALL(observer_, DidStartNavigation(web_state(), _));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/true))
       .WillOnce(Return(true));
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   }
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _));
@@ -1134,7 +1132,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
       WaitForWebViewContainingText(web_state(), testing::kTestFormFieldValue));
 
   // Go Back.
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
     EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
         .WillOnce(Return(true));
@@ -1158,7 +1156,7 @@ TEST_F(NavigationAndLoadCallbacksTest, ForwardPostNavigation) {
   // Go forward.
   NavigationContext* context = nullptr;
   int32_t nav_id = 0;
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+  if (GetWebClient()->IsSlimNavigationManagerEnabled()) {
     EXPECT_CALL(observer_, DidChangeBackForwardState(web_state())).Times(2);
     // ShouldAllowRequest() not called on repost.
     EXPECT_CALL(observer_, DidStartLoading(web_state()));
@@ -1235,10 +1233,8 @@ TEST_F(NavigationAndLoadCallbacksTest, DownloadNavigation) {
           VerifyDownloadFinishedContext(web_state(), url, &context, &nav_id));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
-  web::test::LoadUrl(web_state(), url);
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
-    return !web_state()->IsLoading();
-  }));
+  test::LoadUrl(web_state(), url);
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 
   EXPECT_FALSE(web_state()->GetNavigationManager()->GetPendingItem());
 }
@@ -1264,20 +1260,17 @@ TEST_F(NavigationAndLoadCallbacksTest, FailedLoad) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::FAILURE));
-  web::test::LoadUrl(web_state(), url);
+  test::LoadUrl(web_state(), url);
 
-  // Server does not stop responding until it's shut down. Let the server run
-  // to make web state finish the navigation.
-  EXPECT_FALSE(WaitUntilConditionOrTimeout(2.0, ^{
-    return !web_state()->IsLoading();
+  // Server will never stop responding. Wait until the navigation is committed.
+  EXPECT_FALSE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return context && context->HasCommitted();
   }));
 
   // It this point the navigation should be finished. Shutdown the server and
   // wait until web state stop loading.
   ASSERT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return !web_state()->IsLoading();
-  }));
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 }
 
 // Tests rejecting the navigation from ShouldAllowRequest. The load should stop,
@@ -1287,10 +1280,8 @@ TEST_F(NavigationAndLoadCallbacksTest, DisallowRequest) {
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
       .WillOnce(Return(false));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
-  web::test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return !web_state()->IsLoading();
-  }));
+  test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 }
 
 // Tests rejecting the navigation from ShouldAllowResponse. PageLoaded callback
@@ -1314,10 +1305,8 @@ TEST_F(NavigationAndLoadCallbacksTest, DisallowResponse) {
   EXPECT_CALL(observer_, DidFinishNavigation(web_state(), _))
       .WillOnce(VerifyResponseRejectedFinishedContext(web_state(), url,
                                                       &context, &nav_id));
-  web::test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return !web_state()->IsLoading();
-  }));
+  test::LoadUrl(web_state(), test_server_->GetURL("/echo"));
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 }
 
 // Tests stopping a navigation. Did FinishLoading and PageLoaded are never
@@ -1327,11 +1316,9 @@ TEST_F(NavigationAndLoadCallbacksTest, StopNavigation) {
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/true))
       .WillOnce(Return(true));
-  web::test::LoadUrl(web_state(), test_server_->GetURL("/hung"));
+  test::LoadUrl(web_state(), test_server_->GetURL("/hung"));
   web_state()->Stop();
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return !web_state()->IsLoading();
-  }));
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 }
 
 // Tests stopping a finished navigation. PageLoaded is never called.
@@ -1354,7 +1341,7 @@ TEST_F(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
                                              &context, &nav_id));
   EXPECT_CALL(observer_, DidStopLoading(web_state()));
 
-  web::test::LoadUrl(web_state(), url);
+  test::LoadUrl(web_state(), url);
 
   // Server will never stop responding. Wait until the navigation is committed.
   EXPECT_FALSE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
@@ -1363,15 +1350,13 @@ TEST_F(NavigationAndLoadCallbacksTest, StopFinishedNavigation) {
 
   // Stop the loading.
   web_state()->Stop();
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return !web_state()->IsLoading();
-  }));
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 }
 
 // Tests that iframe navigation triggers DidChangeBackForwardState.
 TEST_F(NavigationAndLoadCallbacksTest, IframeNavigation) {
   // LegacyNavigationManager doesn't support iframe navigation history.
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled())
+  if (!GetWebClient()->IsSlimNavigationManagerEnabled())
     return;
 
   GURL url = test_server_->GetURL("/iframe_host.html");
@@ -1393,10 +1378,8 @@ TEST_F(NavigationAndLoadCallbacksTest, IframeNavigation) {
   EXPECT_CALL(observer_,
               PageLoaded(web_state(), PageLoadCompletionStatus::SUCCESS));
 
-  web::test::LoadUrl(web_state(), url);
-  EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return !web_state()->IsLoading();
-  }));
+  test::LoadUrl(web_state(), url);
+  ASSERT_TRUE(test::WaitForPageToFinishLoading(web_state()));
 
   // Trigger different-document load in iframe.
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/false))
@@ -1406,11 +1389,11 @@ TEST_F(NavigationAndLoadCallbacksTest, IframeNavigation) {
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()));
   test::TapWebViewElementWithIdInIframe(web_state(), "normal-link");
   EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return navigation_manager()->CanGoBack();
+    return web_state()->GetNavigationManager()->CanGoBack();
   }));
   id history_length = ExecuteJavaScript(@"history.length;");
   ASSERT_NSEQ(@2, history_length);
-  EXPECT_FALSE(navigation_manager()->CanGoForward());
+  EXPECT_FALSE(web_state()->GetNavigationManager()->CanGoForward());
 
   // Go back to top.
   EXPECT_CALL(observer_, DidChangeBackForwardState(web_state()))
@@ -1419,11 +1402,11 @@ TEST_F(NavigationAndLoadCallbacksTest, IframeNavigation) {
       .WillOnce(Return(true));
   EXPECT_CALL(*decider_, ShouldAllowResponse(_, /*for_main_frame=*/false))
       .WillOnce(Return(true));
-  navigation_manager()->GoBack();
+  web_state()->GetNavigationManager()->GoBack();
   EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return navigation_manager()->CanGoForward();
+    return web_state()->GetNavigationManager()->CanGoForward();
   }));
-  EXPECT_FALSE(navigation_manager()->CanGoBack());
+  EXPECT_FALSE(web_state()->GetNavigationManager()->CanGoBack());
 
   // Trigger same-document load in iframe.
   EXPECT_CALL(*decider_, ShouldAllowRequest(_, _, /*from_main_frame=*/false))
@@ -1433,9 +1416,9 @@ TEST_F(NavigationAndLoadCallbacksTest, IframeNavigation) {
       .Times(2);  // called once each for canGoBack and canGoForward
   test::TapWebViewElementWithIdInIframe(web_state(), "same-page-link");
   EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return navigation_manager()->CanGoBack();
+    return web_state()->GetNavigationManager()->CanGoBack();
   }));
-  EXPECT_FALSE(navigation_manager()->CanGoForward());
+  EXPECT_FALSE(web_state()->GetNavigationManager()->CanGoForward());
 }
 
 }  // namespace web
