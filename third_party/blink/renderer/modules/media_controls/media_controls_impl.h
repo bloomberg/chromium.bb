@@ -280,6 +280,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   bool ShouldActAsAudioControls() const;
   void StartActingAsAudioControls();
   void StopActingAsAudioControls();
+  void UpdateActingAsAudioControls();
 
   // Returns true/false based on which set of controls to display.
   bool ShouldShowAudioControls() const;
