@@ -28,15 +28,15 @@ void EnsureCorrectResolutionSettings() {
       [[NSMutableDictionary alloc]
           initWithContentsOfFile:base::mac::FilePathToNSString(info_plist)]);
 
-  bool running_layout_tests = switches::IsRunLayoutTestSwitchPresent();
+  bool running_web_tests = switches::IsRunWebTestsSwitchPresent();
   bool not_high_resolution_capable =
       [info_dict objectForKey:kHighResolutionCapable] &&
       [[info_dict objectForKey:kHighResolutionCapable] isEqualToNumber:@(NO)];
-  if (running_layout_tests == not_high_resolution_capable)
+  if (running_web_tests == not_high_resolution_capable)
     return;
 
   // We need to update our Info.plist before we can continue.
-  [info_dict setObject:@(!running_layout_tests) forKey:kHighResolutionCapable];
+  [info_dict setObject:@(!running_web_tests) forKey:kHighResolutionCapable];
   CHECK([info_dict writeToFile:base::mac::FilePathToNSString(info_plist)
                     atomically:YES]);
 

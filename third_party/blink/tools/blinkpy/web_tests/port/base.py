@@ -250,7 +250,7 @@ class Port(object):
             #
             fingerprint = 'Nxvaj3+bY3oVrTc+Jp7m3E3sB1n3lXtnMDCyBsqEXiY='
             flags += [
-                '--run-layout-test',
+                '--run-web-tests',
                 '--ignore-certificate-errors-spki-list=' + fingerprint,
                 '--user-data-dir']
         return flags

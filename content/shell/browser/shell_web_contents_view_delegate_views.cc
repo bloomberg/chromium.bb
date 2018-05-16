@@ -69,7 +69,7 @@ ShellWebContentsViewDelegate::~ShellWebContentsViewDelegate() {}
 void ShellWebContentsViewDelegate::ShowContextMenu(
     RenderFrameHost* render_frame_host,
     const ContextMenuParams& params) {
-  if (switches::IsRunLayoutTestSwitchPresent())
+  if (switches::IsRunWebTestsSwitchPresent())
     return;
 
   gfx::Point screen_point(params.x, params.y);

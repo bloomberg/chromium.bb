@@ -112,13 +112,13 @@ As a final quick-but-less-robust alternative, you can also just use the
 content_shell executable to run specific tests by using (for Windows):
 
 ```bash
-out/Default/content_shell.exe --run-layout-test --no-sandbox full_test_source_path
+out/Default/content_shell.exe --run-web-tests --no-sandbox full_test_source_path
 ```
 
 as in:
 
 ```bash
-out/Default/content_shell.exe --run-layout-test --no-sandbox \
+out/Default/content_shell.exe --run-web-tests --no-sandbox \
     c:/chrome/src/third_party/WebKit/LayoutTests/fast/forms/001.html
 ```
 
@@ -341,7 +341,7 @@ finding the problem.
       If you have no other information, set a breakpoint on page load.
 * If your test only works in full layout-test mode, or if you find it simpler to
   debug without all the overhead of an interactive session, start the
-  content_shell with the command-line flag `--run-layout-test`, followed by the
+  content_shell with the command-line flag `--run-web-tests`, followed by the
   URL (`file:` or `http:`) to your test. More information about running layout tests
   in content_shell can be found [here](./layout_tests_in_content_shell.md).
     * In VS, you can do this in the Debugging section of the content_shell
@@ -418,7 +418,7 @@ machine?
       --time-out-ms=6000000`
     * Option B) If you need to debug an http/tests/inspector test, start httpd
       as described above. Then, run content_shell:
-      `out/Default/content_shell --debug-devtools --remote-debugging-port=9222 --run-layout-test
+      `out/Default/content_shell --debug-devtools --remote-debugging-port=9222 --run-web-tests
       http://127.0.0.1:8000/path/to/test.html`
 * Open `http://localhost:9222` in a stable/beta/canary Chrome, click the single
   link to open the devtools with the test loaded.

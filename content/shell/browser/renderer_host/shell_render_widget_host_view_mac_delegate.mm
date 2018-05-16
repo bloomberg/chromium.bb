@@ -5,7 +5,7 @@
 #import "content/shell/browser/renderer_host/shell_render_widget_host_view_mac_delegate.h"
 
 #include "base/command_line.h"
-#include "content/shell/common/layout_test/layout_test_switches.h"
+#include "content/shell/common/shell_switches.h"
 
 @interface ShellRenderWidgetHostViewMacDelegate () {
   BOOL drop_events_;
@@ -18,8 +18,7 @@
   if ((self = [super init])) {
     // Throw out all native input events if we are running with layout test
     // enabled.
-    drop_events_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-        switches::kRunLayoutTest);
+    drop_events_ = switches::IsRunWebTestsSwitchPresent();
   }
   return self;
 }

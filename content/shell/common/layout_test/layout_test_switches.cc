@@ -21,6 +21,7 @@ const char kAndroidStdoutPort[] = "android-stdout-port";
 #endif // defined(OS_ANDROID)
 
 // Check whether all system dependencies for running layout tests are met.
+// TODO(tkent): Rename this to "check-web-test-sys-deps".
 const char kCheckLayoutTestSysDeps[] = "check-layout-test-sys-deps";
 
 // When specified to "enable-leak-detection" command-line option,
@@ -51,7 +52,7 @@ const char kEncodeBinary[] = "encode-binary";
 
 // Request the render trees of pages to be dumped as text once they have
 // finished loading.
-const char kRunLayoutTest[] = "run-layout-test";
+const char kRunWebTests[] = "run-web-tests";
 
 // This makes us disable some web-platform runtime features so that we test
 // content_shell as if it was a stable release. It is only followed when

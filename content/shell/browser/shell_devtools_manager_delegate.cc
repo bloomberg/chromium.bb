@@ -186,7 +186,7 @@ ShellDevToolsManagerDelegate::CreateNewTarget(const GURL& url) {
                                         url,
                                         nullptr,
                                         gfx::Size());
-  if (switches::IsRunLayoutTestSwitchPresent())
+  if (switches::IsRunWebTestsSwitchPresent())
     SecondaryTestWindowObserver::CreateForWebContents(shell->web_contents());
   return DevToolsAgentHost::GetOrCreateFor(shell->web_contents());
 }

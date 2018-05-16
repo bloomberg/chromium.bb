@@ -3,10 +3,10 @@
 ## Basic usage
 
 Layout tests can be run with `content_shell`. To just dump the render tree, use
-the `--run-layout-test` flag:
+the `--run-web-tests` flag:
 
 ```bash
-out/Default/content_shell --run-layout-test foo.html
+out/Default/content_shell --run-web-tests foo.html
 ```
 
 ### Compiling

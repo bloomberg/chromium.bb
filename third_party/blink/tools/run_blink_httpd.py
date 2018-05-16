@@ -40,7 +40,7 @@ you will may a certificate warning, which you need to bypass.
 
 After starting the server, you can also run individual layout tests
 via content_shell, e.g.
-    $ out/Release/content_shell --run-layout-test \
+    $ out/Release/content_shell --run-web-tests \
     http://127.0.0.1:8000/security/cross-frame-access-get.html
 
 Note that some tests will only work if "127.0.0.1" for the host part of the

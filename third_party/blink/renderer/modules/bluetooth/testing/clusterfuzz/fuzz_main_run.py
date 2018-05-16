@@ -158,8 +158,8 @@ def main():
                                        args.output_dir)
 
         if args.content_shell_dir:
-            print '{} --run-layout-test {}'.format(args.content_shell_dir,
-                                                   test_file_path)
+            print '{} --run-web-tests {}'.format(args.content_shell_dir,
+                                                 test_file_path)
 
 
 if __name__ == '__main__':
