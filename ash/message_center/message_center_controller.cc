@@ -155,7 +155,7 @@ void MessageCenterController::SetClient(
 void MessageCenterController::SetArcNotificationsInstance(
     arc::mojom::NotificationsInstancePtr arc_notification_instance) {
   if (!arc_notification_manager_) {
-    arc_notification_manager_ = std::make_unique<arc::ArcNotificationManager>(
+    arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
         Shell::Get()
             ->session_controller()
             ->GetPrimaryUserSession()
@@ -232,7 +232,7 @@ void MessageCenterController::OnGotNotifierList(
 
 void MessageCenterController::GetArcAppIdByPackageName(
     const std::string& package_name,
-    arc::ArcNotificationManager::GetAppIdResponseCallback callback) {
+    ArcNotificationManager::GetAppIdResponseCallback callback) {
   DCHECK(client_.is_bound());
   client_->GetArcAppIdByPackageName(package_name, std::move(callback));
 }

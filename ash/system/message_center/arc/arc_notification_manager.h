@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_MANAGER_H_
-#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_MANAGER_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_MANAGER_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_MANAGER_H_
 
 #include <memory>
 #include <string>
@@ -16,13 +16,13 @@
 #include "components/arc/connection_observer.h"
 #include "ui/message_center/message_center.h"
 
-namespace arc {
+namespace ash {
 
 class ArcNotificationItem;
 
 class ArcNotificationManager
-    : public ConnectionObserver<mojom::NotificationsInstance>,
-      public mojom::NotificationsHost {
+    : public arc::ConnectionObserver<arc::mojom::NotificationsInstance>,
+      public arc::mojom::NotificationsHost {
  public:
   // Sets the factory function to create ARC notification views. Exposed for
   // testing.
@@ -33,9 +33,10 @@ class ArcNotificationManager
 
   ~ArcNotificationManager() override;
 
-  void SetInstance(mojom::NotificationsInstancePtr instance);
+  void SetInstance(arc::mojom::NotificationsInstancePtr instance);
 
-  ConnectionHolder<mojom::NotificationsInstance, mojom::NotificationsHost>*
+  arc::ConnectionHolder<arc::mojom::NotificationsInstance,
+                        arc::mojom::NotificationsHost>*
   GetConnectionHolderForTest();
 
   using GetAppIdResponseCallback =
@@ -47,13 +48,13 @@ class ArcNotificationManager
     get_app_id_callback_ = get_app_id_callback;
   }
 
-  // ConnectionObserver<mojom::NotificationsInstance> implementation:
+  // ConnectionObserver<arc::mojom::NotificationsInstance> implementation:
   void OnConnectionReady() override;
   void OnConnectionClosed() override;
 
-  // mojom::NotificationsHost implementation:
-  void OnNotificationPosted(mojom::ArcNotificationDataPtr data) override;
-  void OnNotificationUpdated(mojom::ArcNotificationDataPtr data) override;
+  // arc::mojom::NotificationsHost implementation:
+  void OnNotificationPosted(arc::mojom::ArcNotificationDataPtr data) override;
+  void OnNotificationUpdated(arc::mojom::ArcNotificationDataPtr data) override;
   void OnNotificationRemoved(const std::string& key) override;
   void OpenMessageCenter() override;
 
@@ -72,7 +73,7 @@ class ArcNotificationManager
   // Helper class to own MojoChannel and ConnectionHolder.
   class InstanceOwner;
 
-  bool ShouldIgnoreNotification(mojom::ArcNotificationData* data);
+  bool ShouldIgnoreNotification(arc::mojom::ArcNotificationData* data);
 
   // Calls |get_app_id_callback_| to retrieve the app id. |callback| will be
   // invoked with the app id or an empty string.
@@ -80,7 +81,7 @@ class ArcNotificationManager
                 GetAppIdResponseCallback callback) const;
 
   // Invoked when |get_app_id_callback_| gets back the app id.
-  void OnGotAppId(mojom::ArcNotificationDataPtr data,
+  void OnGotAppId(arc::mojom::ArcNotificationDataPtr data,
                   const std::string& app_id);
 
   const AccountId main_profile_id_;
@@ -101,6 +102,6 @@ class ArcNotificationManager
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationManager);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_MANAGER_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_MANAGER_H_

@@ -2,23 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_IMPL_H_
-#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_IMPL_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_ITEM_IMPL_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_ITEM_IMPL_H_
 
 #include <memory>
 #include <string>
 
+#include "ash/system/message_center/arc/arc_notification_item.h"
+#include "ash/system/message_center/arc/arc_notification_manager.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/account_id/account_id.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/arc/notification/arc_notification_item.h"
-#include "ui/arc/notification/arc_notification_manager.h"
 #include "ui/message_center/message_center.h"
 
-namespace arc {
+namespace ash {
 
 // The class represents each ARC notification. One instance of this class
 // corresponds to one ARC notification.
@@ -32,7 +32,7 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
 
   // ArcNotificationItem overrides:
   void OnClosedFromAndroid() override;
-  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
+  void OnUpdatedFromAndroid(arc::mojom::ArcNotificationDataPtr data,
                             const std::string& app_id) override;
   void Close(bool by_user) override;
   void Click() override;
@@ -43,31 +43,29 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   void IncrementWindowRefCount() override;
   void DecrementWindowRefCount() override;
   const gfx::ImageSkia& GetSnapshot() const override;
-  mojom::ArcNotificationType GetNotificationType() const override;
-  mojom::ArcNotificationExpandState GetExpandState() const override;
+  arc::mojom::ArcNotificationType GetNotificationType() const override;
+  arc::mojom::ArcNotificationExpandState GetExpandState() const override;
   bool IsManuallyExpandedOrCollapsed() const override;
-  mojom::ArcNotificationShownContents GetShownContents() const override;
+  arc::mojom::ArcNotificationShownContents GetShownContents() const override;
   gfx::Rect GetSwipeInputRect() const override;
   const std::string& GetNotificationKey() const override;
   const std::string& GetNotificationId() const override;
 
  private:
-  // Return true if it's on the thread this instance is created on.
-  bool CalledOnValidThread() const;
-
   ArcNotificationManager* const manager_;
   message_center::MessageCenter* const message_center_;
 
   // The snapshot of the latest notification.
   gfx::ImageSkia snapshot_;
   // The type of the latest notification.
-  mojom::ArcNotificationType type_ = mojom::ArcNotificationType::SIMPLE;
+  arc::mojom::ArcNotificationType type_ =
+      arc::mojom::ArcNotificationType::SIMPLE;
   // The expand state of the latest notification.
-  mojom::ArcNotificationExpandState expand_state_ =
-      mojom::ArcNotificationExpandState::FIXED_SIZE;
+  arc::mojom::ArcNotificationExpandState expand_state_ =
+      arc::mojom::ArcNotificationExpandState::FIXED_SIZE;
   // The type of shown content of the latest notification.
-  mojom::ArcNotificationShownContents shown_contents_ =
-      mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
+  arc::mojom::ArcNotificationShownContents shown_contents_ =
+      arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
   // Rect indicating where Android wants to handle swipe events by itself.
   gfx::Rect swipe_input_rect_ = gfx::Rect();
   // The reference counter of the window.
@@ -88,12 +86,12 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
 
   bool manually_expanded_or_collapsed_ = false;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
   base::WeakPtrFactory<ArcNotificationItemImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationItemImpl);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_ITEM_IMPL_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_ITEM_IMPL_H_

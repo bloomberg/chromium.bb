@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/arc_notification_view.h"
+#include "ash/system/message_center/arc/arc_notification_view.h"
 
 #include <algorithm>
 
+#include "ash/system/message_center/arc/arc_notification_content_view.h"
+#include "ash/system/message_center/arc/arc_notification_item.h"
 #include "ui/accessibility/ax_action_data.h"
-#include "ui/arc/notification/arc_notification_content_view.h"
-#include "ui/arc/notification/arc_notification_item.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/base/ime/text_input_type.h"
@@ -20,9 +20,9 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/painter.h"
 
-DEFINE_UI_CLASS_PROPERTY_TYPE(arc::ArcNotificationView*);
+DEFINE_UI_CLASS_PROPERTY_TYPE(ash::ArcNotificationView*);
 
-namespace arc {
+namespace ash {
 
 DEFINE_UI_CLASS_PROPERTY_KEY(ArcNotificationView*,
                              kArcNotificationViewPropertyKey,
@@ -98,8 +98,8 @@ ArcNotificationView::GetControlButtonsView() const {
 }
 
 bool ArcNotificationView::IsExpanded() const {
-  return item_ &&
-         item_->GetExpandState() == mojom::ArcNotificationExpandState::EXPANDED;
+  return item_ && item_->GetExpandState() ==
+                      arc::mojom::ArcNotificationExpandState::EXPANDED;
 }
 
 bool ArcNotificationView::IsAutoExpandingAllowed() const {
@@ -109,7 +109,8 @@ bool ArcNotificationView::IsAutoExpandingAllowed() const {
   // Disallow auto-expanding if the notificaiton is bundled. This is consistent
   // behavior with Android since expanded height of bundle notification might be
   // too long vertically.
-  return item_->GetNotificationType() != mojom::ArcNotificationType::BUNDLED;
+  return item_->GetNotificationType() !=
+         arc::mojom::ArcNotificationType::BUNDLED;
 }
 
 void ArcNotificationView::SetExpanded(bool expanded) {
@@ -118,10 +119,10 @@ void ArcNotificationView::SetExpanded(bool expanded) {
 
   auto expand_state = item_->GetExpandState();
   if (expanded) {
-    if (expand_state == mojom::ArcNotificationExpandState::COLLAPSED)
+    if (expand_state == arc::mojom::ArcNotificationExpandState::COLLAPSED)
       item_->ToggleExpansion();
   } else {
-    if (expand_state == mojom::ArcNotificationExpandState::EXPANDED)
+    if (expand_state == arc::mojom::ArcNotificationExpandState::EXPANDED)
       item_->ToggleExpansion();
   }
 }
@@ -220,4 +221,4 @@ void ArcNotificationView::OnItemDestroying() {
   item_ = nullptr;
 }
 
-}  // namespace message_center
+}  // namespace ash

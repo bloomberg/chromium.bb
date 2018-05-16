@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/arc_notification_surface_manager.h"
+#include "ash/system/message_center/arc/arc_notification_surface_manager.h"
 
 #include "base/logging.h"
 
-namespace arc {
+namespace ash {
 
 // static
 ArcNotificationSurfaceManager* ArcNotificationSurfaceManager::instance_ =
@@ -27,4 +27,4 @@ ArcNotificationSurfaceManager* ArcNotificationSurfaceManager::Get() {
   return instance_;
 }
 
-}  // namespace arc
+}  // namespace ash

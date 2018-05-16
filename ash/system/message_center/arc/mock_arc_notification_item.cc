@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/arc/notification/mock_arc_notification_item.h"
+#include "ash/system/message_center/arc/mock_arc_notification_item.h"
 
 #include <utility>
 
 #include "base/bind_helpers.h"
 
-namespace arc {
+namespace ash {
 
 namespace {
 
@@ -59,19 +59,19 @@ void MockArcNotificationItem::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-mojom::ArcNotificationType MockArcNotificationItem::GetNotificationType()
+arc::mojom::ArcNotificationType MockArcNotificationItem::GetNotificationType()
     const {
-  return mojom::ArcNotificationType::SIMPLE;
+  return arc::mojom::ArcNotificationType::SIMPLE;
 }
 
-mojom::ArcNotificationExpandState MockArcNotificationItem::GetExpandState()
+arc::mojom::ArcNotificationExpandState MockArcNotificationItem::GetExpandState()
     const {
-  return mojom::ArcNotificationExpandState::FIXED_SIZE;
+  return arc::mojom::ArcNotificationExpandState::FIXED_SIZE;
 }
 
-mojom::ArcNotificationShownContents MockArcNotificationItem::GetShownContents()
-    const {
-  return mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
+arc::mojom::ArcNotificationShownContents
+MockArcNotificationItem::GetShownContents() const {
+  return arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
 }
 
 gfx::Rect MockArcNotificationItem::GetSwipeInputRect() const {
@@ -82,4 +82,4 @@ bool MockArcNotificationItem::IsManuallyExpandedOrCollapsed() const {
   return false;
 }
 
-}  // namespace arc
+}  // namespace ash

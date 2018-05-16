@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_H_
-#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_H_
 
 #include <string>
 
@@ -18,7 +18,7 @@ namespace views {
 class NativeViewHost;
 }
 
-namespace arc {
+namespace ash {
 
 // Handles notification surface role.
 class ArcNotificationSurface {
@@ -65,6 +65,6 @@ class ArcNotificationSurface {
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationSurface);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_SURFACE_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_SURFACE_H_

@@ -2,18 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_VIEW_H_
-#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_VIEW_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_VIEW_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_VIEW_H_
 
+#include "ash/system/message_center/arc/arc_notification_item.h"
 #include "base/macros.h"
-#include "ui/arc/notification/arc_notification_item.h"
 #include "ui/message_center/views/message_view.h"
+
+namespace arc {
+class ArcAccessibilityHelperBridgeTest;
+}
 
 namespace views {
 class Painter;
 }
 
-namespace arc {
+namespace ash {
 
 class ArcNotificationContentView;
 
@@ -68,7 +72,7 @@ class ArcNotificationView : public message_center::MessageView,
  private:
   friend class ArcNotificationContentViewTest;
   friend class ArcNotificationViewTest;
-  friend class ArcAccessibilityHelperBridgeTest;
+  friend class arc::ArcAccessibilityHelperBridgeTest;
 
   // TODO(yoshiki): Mmove this to message_center::MessageView.
   void UpdateControlButtonsVisibilityWithNotification(
@@ -84,6 +88,6 @@ class ArcNotificationView : public message_center::MessageView,
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationView);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_VIEW_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_VIEW_H_

@@ -8,6 +8,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/system/message_center/arc/arc_notification_manager.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "components/arc/connection_holder.h"
@@ -16,10 +17,9 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/arc/notification/arc_notification_manager.h"
 #include "ui/message_center/fake_message_center.h"
 
-namespace arc {
+namespace ash {
 
 namespace {
 
@@ -27,9 +27,8 @@ const char kDummyNotificationKey[] = "DUMMY_NOTIFICATION_KEY";
 
 class MockMessageCenter : public message_center::FakeMessageCenter {
  public:
-  MockMessageCenter() {}
-  ~MockMessageCenter() override {
-  }
+  MockMessageCenter() = default;
+  ~MockMessageCenter() override = default;
 
   void AddNotification(
       std::unique_ptr<message_center::Notification> notification) override {
@@ -68,7 +67,7 @@ class ArcNotificationManagerTest : public testing::Test {
   ~ArcNotificationManagerTest() override = default;
 
  protected:
-  FakeNotificationsInstance* arc_notifications_instance() {
+  arc::FakeNotificationsInstance* arc_notifications_instance() {
     return arc_notifications_instance_.get();
   }
   ArcNotificationManager* arc_notification_manager() {
@@ -81,7 +80,7 @@ class ArcNotificationManagerTest : public testing::Test {
   }
 
   std::string CreateNotificationWithKey(const std::string& key) {
-    auto data = mojom::ArcNotificationData::New();
+    auto data = arc::mojom::ArcNotificationData::New();
     data->key = key;
     data->title = "TITLE";
     data->message = "MESSAGE";
@@ -96,15 +95,17 @@ class ArcNotificationManagerTest : public testing::Test {
 
  private:
   void SetUp() override {
-    arc_notifications_instance_ = std::make_unique<FakeNotificationsInstance>();
+    arc_notifications_instance_ =
+        std::make_unique<arc::FakeNotificationsInstance>();
     message_center_ = std::make_unique<MockMessageCenter>();
 
     arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
         EmptyAccountId(), message_center_.get());
 
-    binding_ = std::make_unique<mojo::Binding<mojom::NotificationsInstance>>(
-        arc_notifications_instance_.get());
-    mojom::NotificationsInstancePtr instance_ptr;
+    binding_ =
+        std::make_unique<mojo::Binding<arc::mojom::NotificationsInstance>>(
+            arc_notifications_instance_.get());
+    arc::mojom::NotificationsInstancePtr instance_ptr;
     binding_->Bind(mojo::MakeRequest(&instance_ptr));
 
     arc_notification_manager_->SetInstance(std::move(instance_ptr));
@@ -121,8 +122,8 @@ class ArcNotificationManagerTest : public testing::Test {
   }
 
   base::MessageLoop loop_;
-  std::unique_ptr<FakeNotificationsInstance> arc_notifications_instance_;
-  std::unique_ptr<mojo::Binding<mojom::NotificationsInstance>> binding_;
+  std::unique_ptr<arc::FakeNotificationsInstance> arc_notifications_instance_;
+  std::unique_ptr<mojo::Binding<arc::mojom::NotificationsInstance>> binding_;
   std::unique_ptr<ArcNotificationManager> arc_notification_manager_;
   std::unique_ptr<MockMessageCenter> message_center_;
 
@@ -155,7 +156,7 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByChrome) {
 
   ASSERT_EQ(1u, arc_notifications_instance()->events().size());
   EXPECT_EQ(key, arc_notifications_instance()->events().at(0).first);
-  EXPECT_EQ(mojom::ArcNotificationEvent::CLOSED,
+  EXPECT_EQ(arc::mojom::ArcNotificationEvent::CLOSED,
             arc_notifications_instance()->events().at(0).second);
 }
 
@@ -171,4 +172,4 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByConnectionClose) {
   EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
 }
 
-}  // namespace arc
+}  // namespace ash

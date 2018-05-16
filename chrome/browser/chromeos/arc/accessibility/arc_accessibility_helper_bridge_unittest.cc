@@ -8,6 +8,11 @@
 #include <unordered_map>
 #include <utility>
 
+#include "ash/system/message_center/arc/arc_notification_content_view.h"
+#include "ash/system/message_center/arc/arc_notification_surface.h"
+#include "ash/system/message_center/arc/arc_notification_surface_manager.h"
+#include "ash/system/message_center/arc/arc_notification_view.h"
+#include "ash/system/message_center/arc/mock_arc_notification_item.h"
 #include "base/command_line.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
@@ -18,11 +23,6 @@
 #include "components/exo/shell_surface.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/arc/notification/arc_notification_content_view.h"
-#include "ui/arc/notification/arc_notification_surface.h"
-#include "ui/arc/notification/arc_notification_surface_manager.h"
-#include "ui/arc/notification/arc_notification_view.h"
-#include "ui/arc/notification/mock_arc_notification_item.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -31,11 +31,17 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
+using ash::ArcNotificationItem;
+using ash::ArcNotificationSurface;
+using ash::ArcNotificationSurfaceManager;
+using ash::ArcNotificationView;
+using ash::MockArcNotificationItem;
+
 namespace arc {
 
 namespace {
 
-const char kNotificationKey[] = "unit.test.notification";
+constexpr char kNotificationKey[] = "unit.test.notification";
 
 }  // namespace
 

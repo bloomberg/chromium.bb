@@ -5,14 +5,14 @@
 #include <memory>
 
 #include "ash/shell.h"
+#include "ash/system/message_center/arc/arc_notification_content_view.h"
+#include "ash/system/message_center/arc/arc_notification_item.h"
+#include "ash/system/message_center/arc/arc_notification_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/arc/notification/arc_notification_content_view.h"
-#include "ui/arc/notification/arc_notification_item.h"
-#include "ui/arc/notification/arc_notification_view.h"
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/text_input_client.h"
@@ -31,7 +31,7 @@
 using message_center::MessageCenter;
 using message_center::Notification;
 
-namespace arc {
+namespace ash {
 
 namespace {
 
@@ -62,17 +62,17 @@ class MockArcNotificationItem : public ArcNotificationItem {
   void RemoveObserver(Observer* observer) override {}
   void IncrementWindowRefCount() override {}
   void DecrementWindowRefCount() override {}
-  mojom::ArcNotificationType GetNotificationType() const override {
-    return mojom::ArcNotificationType::SIMPLE;
+  arc::mojom::ArcNotificationType GetNotificationType() const override {
+    return arc::mojom::ArcNotificationType::SIMPLE;
   }
-  mojom::ArcNotificationExpandState GetExpandState() const override {
-    return mojom::ArcNotificationExpandState::FIXED_SIZE;
+  arc::mojom::ArcNotificationExpandState GetExpandState() const override {
+    return arc::mojom::ArcNotificationExpandState::FIXED_SIZE;
   }
-  mojom::ArcNotificationShownContents GetShownContents() const override {
-    return mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
+  arc::mojom::ArcNotificationShownContents GetShownContents() const override {
+    return arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
   }
   gfx::Rect GetSwipeInputRect() const override { return gfx::Rect(); }
-  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
+  void OnUpdatedFromAndroid(arc::mojom::ArcNotificationDataPtr data,
                             const std::string& app_id) override {}
   bool IsManuallyExpandedOrCollapsed() const override { return false; }
 
@@ -100,14 +100,14 @@ class TestTextInputClient : public ui::DummyTextInputClient {
 
 }  // namespace
 
-class ArcNotificationViewTest : public ash::AshTestBase {
+class ArcNotificationViewTest : public AshTestBase {
  public:
   ArcNotificationViewTest() = default;
   ~ArcNotificationViewTest() override = default;
 
   // views::ViewsTestBase
   void SetUp() override {
-    ash::AshTestBase::SetUp();
+    AshTestBase::SetUp();
 
     const std::string notification_id("notification id");
     item_ = std::make_unique<MockArcNotificationItem>(notification_id);
@@ -132,8 +132,8 @@ class ArcNotificationViewTest : public ash::AshTestBase {
     views::Widget::InitParams init_params(
         views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
     init_params.context = CurrentContext();
-    init_params.parent = ash::Shell::GetPrimaryRootWindow()->GetChildById(
-        ash::kShellWindowId_DefaultContainer);
+    init_params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
+        kShellWindowId_DefaultContainer);
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     views::Widget* widget = new views::Widget();
@@ -147,7 +147,7 @@ class ArcNotificationViewTest : public ash::AshTestBase {
   void TearDown() override {
     widget()->Close();
     notification_view_.reset();
-    ash::AshTestBase::TearDown();
+    AshTestBase::TearDown();
   }
 
   void PerformClick(const gfx::Point& point) {
@@ -372,4 +372,4 @@ TEST_F(ArcNotificationViewTest, ChangeContentHeight) {
   EXPECT_EQ("360x1000", size.ToString());
 }
 
-}  // namespace arc
+}  // namespace ash

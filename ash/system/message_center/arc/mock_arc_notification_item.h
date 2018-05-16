@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_MOCK_ARC_NOTIFICATION_ITEM_H_
-#define UI_ARC_NOTIFICATION_MOCK_ARC_NOTIFICATION_ITEM_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_MOCK_ARC_NOTIFICATION_ITEM_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_MOCK_ARC_NOTIFICATION_ITEM_H_
 
 #include <string>
 
+#include "ash/system/message_center/arc/arc_notification_item.h"
 #include "base/callback.h"
 #include "base/observer_list.h"
-#include "ui/arc/notification/arc_notification_item.h"
 
-namespace arc {
+namespace ash {
 
 class MockArcNotificationItem : public ArcNotificationItem {
  public:
@@ -42,12 +42,12 @@ class MockArcNotificationItem : public ArcNotificationItem {
   void OpenSettings() override {}
   void IncrementWindowRefCount() override {}
   void DecrementWindowRefCount() override {}
-  mojom::ArcNotificationType GetNotificationType() const override;
-  mojom::ArcNotificationExpandState GetExpandState() const override;
-  mojom::ArcNotificationShownContents GetShownContents() const override;
+  arc::mojom::ArcNotificationType GetNotificationType() const override;
+  arc::mojom::ArcNotificationExpandState GetExpandState() const override;
+  arc::mojom::ArcNotificationShownContents GetShownContents() const override;
   gfx::Rect GetSwipeInputRect() const override;
 
-  void OnUpdatedFromAndroid(mojom::ArcNotificationDataPtr data,
+  void OnUpdatedFromAndroid(arc::mojom::ArcNotificationDataPtr data,
                             const std::string& app_id) override {}
   bool IsManuallyExpandedOrCollapsed() const override;
 
@@ -65,6 +65,6 @@ class MockArcNotificationItem : public ArcNotificationItem {
   DISALLOW_COPY_AND_ASSIGN(MockArcNotificationItem);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_MOCK_ARC_NOTIFICATION_ITEM_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_MOCK_ARC_NOTIFICATION_ITEM_H_

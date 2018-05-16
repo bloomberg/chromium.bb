@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_ARC_NOTIFICATION_ARC_NOTIFICATION_CONTENT_VIEW_H_
-#define UI_ARC_NOTIFICATION_ARC_NOTIFICATION_CONTENT_VIEW_H_
+#ifndef ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_CONTENT_VIEW_H_
+#define ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_CONTENT_VIEW_H_
 
 #include <memory>
 #include <string>
 
+#include "ash/system/message_center/arc/arc_notification_item.h"
+#include "ash/system/message_center/arc/arc_notification_surface_manager.h"
 #include "base/macros.h"
-#include "ui/arc/notification/arc_notification_item.h"
-#include "ui/arc/notification/arc_notification_surface_manager.h"
 #include "ui/aura/window_observer.h"
 #include "ui/message_center/views/notification_control_buttons_view.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -18,7 +18,7 @@
 namespace message_center {
 class Notification;
 class NotificationControlButtonsView;
-}
+}  // namespace message_center
 
 namespace ui {
 class LayerTreeOwner;
@@ -27,9 +27,9 @@ class LayerTreeOwner;
 namespace views {
 class FocusTraversable;
 class Widget;
-}
+}  // namespace views
 
-namespace arc {
+namespace ash {
 
 class ArcNotificationSurface;
 
@@ -154,6 +154,6 @@ class ArcNotificationContentView
   DISALLOW_COPY_AND_ASSIGN(ArcNotificationContentView);
 };
 
-}  // namespace arc
+}  // namespace ash
 
-#endif  // UI_ARC_NOTIFICATION_ARC_NOTIFICATION_CONTENT_VIEW_H_
+#endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_CONTENT_VIEW_H_

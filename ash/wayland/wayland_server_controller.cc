@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
+#include "ash/system/message_center/arc/arc_notification_surface_manager_impl.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop_current.h"
@@ -15,7 +16,6 @@
 #include "components/exo/file_helper.h"
 #include "components/exo/wayland/server.h"
 #include "components/exo/wm_helper.h"
-#include "ui/arc/notification/arc_notification_surface_manager_impl.h"
 
 namespace ash {
 
@@ -67,7 +67,7 @@ WaylandServerController::~WaylandServerController() {
 WaylandServerController::WaylandServerController(
     std::unique_ptr<exo::FileHelper> file_helper) {
   arc_notification_surface_manager_ =
-      std::make_unique<arc::ArcNotificationSurfaceManagerImpl>();
+      std::make_unique<ArcNotificationSurfaceManagerImpl>();
   wm_helper_ = std::make_unique<exo::WMHelper>();
   exo::WMHelper::SetInstance(wm_helper_.get());
   display_ = std::make_unique<exo::Display>(
