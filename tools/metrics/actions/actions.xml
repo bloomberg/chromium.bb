@@ -15632,6 +15632,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.OptIn.DeclineButtonPressed">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15641,6 +15644,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.OptIn.EnableButtonPressed">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15680,6 +15686,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.Prefs.FeatureDisabled">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15689,6 +15698,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.Prefs.FeatureEnabled">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15698,6 +15710,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.Prefs.FromOmnibox">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15708,6 +15723,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.Prefs.LocationDenied">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15718,6 +15736,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.Prefs.LocationGranted">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15728,6 +15749,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.UrlSelected">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15735,6 +15759,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.WebUI.ListViewUrlSelected">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -15744,6 +15771,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PhysicalWeb.WebUI.Open">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>cco3@chromium.org</owner>
   <owner>mattreynolds@chromium.org</owner>
   <owner>mmocny@chromium.org</owner>
@@ -19301,6 +19331,9 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="TodayExtension.PhysicalWebPressed">
+  <obsolete>
+    Obsolete 4/2018, Physical Web is disabled (crbug.com/826540).
+  </obsolete>
   <owner>olivierrobin@chromium.org</owner>
   <description>
     Tapped on physical web URL in the Chrome Today extension.

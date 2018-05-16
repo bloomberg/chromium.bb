@@ -105,8 +105,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kOmniboxSpareRenderer,
     &kOmniboxVoiceSearchAlwaysVisible,
     &kPayWithGoogleV1,
-    &kPhysicalWebFeature,
-    &kPhysicalWebSharing,
     &kProgressBarThrottleFeature,
     &kPwaImprovedSplashScreen,
     &kPwaPersistentNotification,
@@ -310,12 +308,6 @@ const base::Feature kOmniboxVoiceSearchAlwaysVisible{
 
 const base::Feature kPayWithGoogleV1{"PayWithGoogleV1",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kPhysicalWebFeature{"PhysicalWeb",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kPhysicalWebSharing{"PhysicalWebSharing",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kProgressBarThrottleFeature{
     "ProgressBarThrottle", base::FEATURE_DISABLED_BY_DEFAULT};
