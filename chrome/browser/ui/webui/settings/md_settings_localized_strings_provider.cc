@@ -258,6 +258,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_TEXT_TO_SPEECH_VOLUME_MINIMUM_LABEL},
     {"textToSpeechVolumeMaximumLabel",
      IDS_SETTINGS_TEXT_TO_SPEECH_VOLUME_MAXIMUM_LABEL},
+    {"percentage", IDS_SETTINGS_PERCENTAGE},
+    {"defaultPercentage", IDS_SETTINGS_DEFAULT_PERCENTAGE},
     {"textToSpeechPreviewHeading", IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_HEADING},
     {"textToSpeechPreviewInputLabel",
      IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_INPUT_LABEL},

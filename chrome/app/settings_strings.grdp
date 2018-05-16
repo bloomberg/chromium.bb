@@ -385,6 +385,12 @@
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_VOLUME_MAXIMUM_LABEL" desc="A label for the maximum side of a slider allowing users to change their text-to-speech speech volume">
       Loudest
     </message>
+    <message name="IDS_SETTINGS_PERCENTAGE" desc="A number displayed as a percentage">
+      <ph name="PERCENTAGE">$1<ex>120</ex>%</ph>
+    </message>
+    <message name="IDS_SETTINGS_DEFAULT_PERCENTAGE" desc="A number displayed as a percentage, which is the normal or default.">
+      <ph name="PERCENTAGE">$1<ex>120</ex>%</ph> (normal)
+    </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_HEADING" desc="The heading for a section of the text-to-speech settings page where a user can preview text to speech">
       Preview
     </message>

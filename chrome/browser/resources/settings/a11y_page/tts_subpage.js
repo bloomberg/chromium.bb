@@ -10,7 +10,7 @@
 Polymer({
   is: 'settings-tts-subpage',
 
-  behaviors: [WebUIListenerBehavior],
+  behaviors: [WebUIListenerBehavior, I18nBehavior],
 
   properties: {
     /**
@@ -39,6 +39,60 @@ Polymer({
     this.addWebUIListener(
         'tts-extensions-updated', this.populateExtensionList_.bind(this));
     chrome.send('getTtsExtensions');
+  },
+
+  /**
+   * Ticks for the Speech Rate slider. Non-linear as we expect people
+   * to want more control near 1.0.
+   * @return Array<{value: number, label: string}>
+   * @private
+   */
+  speechRateTicks_: function() {
+    return Array.from(Array(16).keys()).map(x => {
+      return x <= 4 ?
+          // Linear from rates 0.6 to 1.0
+          this.initTick_(x / 10 + .6) :
+          // Power function above 1.0 gives more control at lower values.
+          this.initTick_(Math.pow(x - 3, 2) / 20 + 1);
+    });
+  },
+
+  /**
+   * Ticks for the Speech Pitch slider. Valid pitches are between 0 and 2,
+   * exclusive of 0.
+   * @return Array<{value: number, label: string}>
+   * @private
+   */
+  speechPitchTicks_: function() {
+    return Array.from(Array(10).keys()).map(x => {
+      return this.initTick_(x * .2 + .2);
+    });
+  },
+
+  /**
+   * Ticks for the Speech Volume slider. Valid volumes are between 0 and
+   * 1 (100%), but volumes lower than .2 are excluded as being too quiet.
+   * The values are linear between .2 and 1.0.
+   * @return Array<{value: number, label: string}>
+   * @private
+   */
+  speechVolumeTicks_: function() {
+    return Array.from(Array(9).keys()).map(x => {
+      return this.initTick_(x * .1 + .2);
+    });
+  },
+
+  /**
+   * Initializes i18n labels for ticks arrays.
+   * @param {number} tick The value to make a tick for.
+   * @return {{value: number, label: string}}
+   * @private
+   */
+  initTick_: function(tick) {
+    let value = (100 * tick).toFixed(0);
+    let label = value === '100' ? this.i18n('defaultPercentage', value) :
+                                  this.i18n('percentage', value);
+    return {label: label, value: tick};
   },
 
   /**
