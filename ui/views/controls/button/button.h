@@ -143,6 +143,9 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   void set_has_ink_drop_action_on_click(bool has_ink_drop_action_on_click) {
     has_ink_drop_action_on_click_ = has_ink_drop_action_on_click;
   }
+  void set_install_focus_ring_on_focus(bool install_focus_ring_on_focus) {
+    install_focus_ring_on_focus_ = install_focus_ring_on_focus;
+  }
 
   void SetHotTracked(bool is_hot_tracked);
   bool IsHotTracked() const;
@@ -283,6 +286,10 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // True when a button click should trigger an animation action on
   // ink_drop_delegate().
   bool has_ink_drop_action_on_click_ = false;
+
+  // Whether the button should draw a focus ring on focus, rather than
+  // the hover state.
+  bool install_focus_ring_on_focus_ = false;
 
   // When true, the ink drop ripple and hover will be hidden prior to showing
   // the context menu.

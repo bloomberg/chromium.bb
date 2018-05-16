@@ -186,7 +186,7 @@ SkColor GetBookmarkButtonInkDropBaseColor(const ui::ThemeProvider* tp) {
 
 std::unique_ptr<views::InkDrop> CreateBookmarkButtonInkDrop(
     std::unique_ptr<views::InkDropImpl> ink_drop) {
-  ink_drop->SetShowHighlightOnFocus(true);
+  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
   return std::move(ink_drop);
 }
 
@@ -250,6 +250,7 @@ class BookmarkButtonBase : public views::LabelButton {
     } else {
       show_animation_->Show();
     }
+    set_install_focus_ring_on_focus(views::PlatformStyle::kPreferFocusRings);
   }
 
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override {
@@ -384,6 +385,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
     if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
       set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
     SetFocusPainter(nullptr);
+    set_install_focus_ring_on_focus(views::PlatformStyle::kPreferFocusRings);
   }
 
   // MenuButton:

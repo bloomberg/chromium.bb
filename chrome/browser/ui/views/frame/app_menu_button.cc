@@ -9,9 +9,12 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "ui/views/controls/menu/menu_listener.h"
+#include "ui/views/style/platform_style.h"
 
 AppMenuButton::AppMenuButton(views::MenuButtonListener* menu_button_listener)
-    : views::MenuButton(base::string16(), menu_button_listener, false) {}
+    : views::MenuButton(base::string16(), menu_button_listener, false) {
+  set_install_focus_ring_on_focus(views::PlatformStyle::kPreferFocusRings);
+}
 
 AppMenuButton::~AppMenuButton() {}
 

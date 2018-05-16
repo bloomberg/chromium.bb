@@ -34,6 +34,7 @@
 #include "ui/views/controls/menu/menu_model_adapter.h"
 #include "ui/views/controls/menu/menu_runner.h"
 #include "ui/views/mouse_constants.h"
+#include "ui/views/style/platform_style.h"
 
 using views::LabelButtonBorder;
 
@@ -67,6 +68,7 @@ ToolbarActionView::ToolbarActionView(
   view_controller_->SetDelegate(this);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   set_drag_controller(delegate_);
+  set_install_focus_ring_on_focus(views::PlatformStyle::kPreferFocusRings);
 
   set_context_menu_controller(this);
 
@@ -135,7 +137,7 @@ std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
   // TODO(devlin): Ink drops look weird with the blocked actions state. We'll
   // need to resolve that.
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
-  ink_drop->SetShowHighlightOnFocus(true);
+  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
   return ink_drop;
 }
 

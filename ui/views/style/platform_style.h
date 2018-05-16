@@ -78,6 +78,11 @@ class VIEWS_EXPORT PlatformStyle {
   static const float kFocusHaloThickness;
   static const float kFocusHaloInset;
 
+  // Whether "button-like" (for example, buttons in the top chrome or Omnibox
+  // decorations) UI elements should use a focus ring, rather than show
+  // hover state on focus.
+  static const bool kPreferFocusRings;
+
   // Creates the default scrollbar for the given orientation.
   static std::unique_ptr<ScrollBar> CreateScrollBar(bool is_horizontal);
 

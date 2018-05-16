@@ -22,6 +22,8 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
+#include "ui/views/controls/focus_ring.h"
+#include "ui/views/style/platform_style.h"
 
 void PageActionIconView::Init() {
   AddChildView(image_);
@@ -92,6 +94,18 @@ bool PageActionIconView::Refresh() {
 void PageActionIconView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kButton;
   node_data->SetName(GetTextForTooltipAndAccessibleName());
+}
+
+void PageActionIconView::OnFocus() {
+  InkDropHostView::OnFocus();
+  if (views::PlatformStyle::kPreferFocusRings)
+    views::FocusRing::Install(this);
+}
+
+void PageActionIconView::OnBlur() {
+  InkDropHostView::OnFocus();
+  if (views::PlatformStyle::kPreferFocusRings)
+    views::FocusRing::Uninstall(this);
 }
 
 bool PageActionIconView::GetTooltipText(const gfx::Point& p,
@@ -193,7 +207,7 @@ void PageActionIconView::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
 std::unique_ptr<views::InkDrop> PageActionIconView::CreateInkDrop() {
   std::unique_ptr<views::InkDropImpl> ink_drop =
       CreateDefaultFloodFillInkDropImpl();
-  ink_drop->SetShowHighlightOnFocus(true);
+  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
   return std::move(ink_drop);
 }
 

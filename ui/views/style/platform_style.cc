@@ -60,6 +60,7 @@ const bool PlatformStyle::kShouldElideBookmarksInBookmarksBar = false;
 const float PlatformStyle::kFocusHaloThickness = 2.f;
 const float PlatformStyle::kFocusHaloInset =
     -PlatformStyle::kFocusHaloThickness;
+const bool PlatformStyle::kPreferFocusRings = false;
 
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
