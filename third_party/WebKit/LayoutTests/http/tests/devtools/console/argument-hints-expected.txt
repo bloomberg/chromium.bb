@@ -86,6 +86,9 @@ null
 aNumber.toString(
 ?radix
 
+[1,2,3].splice(
+start,?deleteCount,...items
+
 var notInAfunction
 null
 
