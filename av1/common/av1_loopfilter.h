@@ -161,19 +161,53 @@ struct AV1LfSyncData;
 
 void av1_loop_filter_init(struct AV1Common *cm);
 
+void av1_loop_filter_frame_init(struct AV1Common *cm, int plane_start,
+                                int plane_end);
+
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int plane_start,
                            int plane_end, int partial_frame);
+
+void av1_filter_block_plane_vert(const struct AV1Common *const cm,
+                                 const MACROBLOCKD *const xd, const int plane,
+                                 const MACROBLOCKD_PLANE *const plane_ptr,
+                                 const uint32_t mi_row, const uint32_t mi_col);
+
+void av1_filter_block_plane_horz(const struct AV1Common *const cm,
+                                 const MACROBLOCKD *const xd, const int plane,
+                                 const MACROBLOCKD_PLANE *const plane_ptr,
+                                 const uint32_t mi_row, const uint32_t mi_col);
 
 typedef struct LoopFilterWorkerData {
   YV12_BUFFER_CONFIG *frame_buffer;
   struct AV1Common *cm;
   struct macroblockd_plane planes[MAX_MB_PLANE];
-
-  int start;
-  int stop;
-  int y_only;
+  // TODO(Ranjit): When the filter functions are modified to use xd->lossless
+  // add lossless as a member here.
+  MACROBLOCKD *xd;
 } LFWorkerData;
+
+#if LOOP_FILTER_BITMASK
+INLINE enum lf_path av1_get_loop_filter_path(
+    int plane, struct macroblockd_plane pd[MAX_MB_PLANE]);
+
+LoopFilterMask *av1_get_loop_filter_mask(struct AV1Common *const cm, int mi_row,
+                                         int mi_col);
+
+void av1_setup_bitmask(struct AV1Common *const cm, int mi_row, int mi_col,
+                       int plane, int subsampling_x, int subsampling_y,
+                       LoopFilterMask *lfm);
+
+void av1_loop_filter_block_plane_vert(struct AV1Common *const cm,
+                                      struct macroblockd_plane *pd, int pl,
+                                      int mi_row, int mi_col, enum lf_path path,
+                                      LoopFilterMask *lf_mask);
+
+void av1_loop_filter_block_plane_horz(struct AV1Common *const cm,
+                                      struct macroblockd_plane *pd, int pl,
+                                      int mi_row, int mi_col, enum lf_path path,
+                                      LoopFilterMask *lf_mask);
+#endif
 
 #ifdef __cplusplus
 }  // extern "C"

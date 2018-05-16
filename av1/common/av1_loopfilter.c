@@ -274,8 +274,8 @@ const FilterMaskUV size_mask_u_v[BLOCK_SIZES_ALL] = {
   0x00000000ffffffffULL,  // BLOCK_64X16
 };
 
-static LoopFilterMask *get_loop_filter_mask(AV1_COMMON *const cm, int mi_row,
-                                            int mi_col) {
+LoopFilterMask *av1_get_loop_filter_mask(AV1_COMMON *const cm, int mi_row,
+                                         int mi_col) {
   assert(cm->lf.lfm != NULL);
   const int sb_row = mi_row >> MAX_MIB_SIZE_LOG2;
   const int sb_col = mi_col >> MAX_MIB_SIZE_LOG2;
@@ -364,8 +364,8 @@ void av1_loop_filter_init(AV1_COMMON *cm) {
 // Update the loop filter for the current frame.
 // This should be called before loop_filter_rows(),
 // av1_loop_filter_frame() calls this function directly.
-static void loop_filter_frame_init(AV1_COMMON *cm, int plane_start,
-                                   int plane_end) {
+void av1_loop_filter_frame_init(AV1_COMMON *cm, int plane_start,
+                                int plane_end) {
   int filt_lvl[MAX_MB_PLANE], filt_lvl_r[MAX_MB_PLANE];
   int plane;
   int seg_id;
@@ -1043,12 +1043,10 @@ static TX_SIZE set_lpf_parameters(
   return ts;
 }
 
-static void filter_block_plane_vert(const AV1_COMMON *const cm,
-                                    const MACROBLOCKD *const xd,
-                                    const int plane,
-                                    const MACROBLOCKD_PLANE *const plane_ptr,
-                                    const uint32_t mi_row,
-                                    const uint32_t mi_col) {
+void av1_filter_block_plane_vert(const AV1_COMMON *const cm,
+                                 const MACROBLOCKD *const xd, const int plane,
+                                 const MACROBLOCKD_PLANE *const plane_ptr,
+                                 const uint32_t mi_row, const uint32_t mi_col) {
   const int row_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
@@ -1130,12 +1128,10 @@ static void filter_block_plane_vert(const AV1_COMMON *const cm,
   }
 }
 
-static void filter_block_plane_horz(const AV1_COMMON *const cm,
-                                    const MACROBLOCKD *const xd,
-                                    const int plane,
-                                    const MACROBLOCKD_PLANE *const plane_ptr,
-                                    const uint32_t mi_row,
-                                    const uint32_t mi_col) {
+void av1_filter_block_plane_horz(const AV1_COMMON *const cm,
+                                 const MACROBLOCKD *const xd, const int plane,
+                                 const MACROBLOCKD_PLANE *const plane_ptr,
+                                 const uint32_t mi_row, const uint32_t mi_col) {
   const int col_step = MI_SIZE >> MI_SIZE_LOG2;
   const uint32_t scale_horz = plane_ptr->subsampling_x;
   const uint32_t scale_vert = plane_ptr->subsampling_y;
@@ -1220,7 +1216,7 @@ static void filter_block_plane_horz(const AV1_COMMON *const cm,
 }
 
 #if LOOP_FILTER_BITMASK
-static INLINE enum lf_path get_loop_filter_path(
+INLINE enum lf_path av1_get_loop_filter_path(
     int plane, struct macroblockd_plane pd[MAX_MB_PLANE]) {
   if (pd[plane].subsampling_y == 1 && pd[plane].subsampling_x == 1)
     return LF_PATH_420;
@@ -1230,11 +1226,10 @@ static INLINE enum lf_path get_loop_filter_path(
     return LF_PATH_SLOW;
 }
 
-static void loop_filter_block_plane_vert(AV1_COMMON *const cm,
-                                         struct macroblockd_plane *pd, int pl,
-                                         int mi_row, int mi_col,
-                                         enum lf_path path,
-                                         LoopFilterMask *lf_mask) {
+void av1_loop_filter_block_plane_vert(AV1_COMMON *const cm,
+                                      struct macroblockd_plane *pd, int pl,
+                                      int mi_row, int mi_col, enum lf_path path,
+                                      LoopFilterMask *lf_mask) {
   MB_MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride + mi_col;
   switch (path) {
     case LF_PATH_420:
@@ -1249,11 +1244,10 @@ static void loop_filter_block_plane_vert(AV1_COMMON *const cm,
   }
 }
 
-static void loop_filter_block_plane_horz(AV1_COMMON *const cm,
-                                         struct macroblockd_plane *pd, int pl,
-                                         int mi_row, int mi_col,
-                                         enum lf_path path,
-                                         LoopFilterMask *lf_mask) {
+void av1_loop_filter_block_plane_horz(AV1_COMMON *const cm,
+                                      struct macroblockd_plane *pd, int pl,
+                                      int mi_row, int mi_col, enum lf_path path,
+                                      LoopFilterMask *lf_mask) {
   MB_MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride + mi_col;
   switch (path) {
     case LF_PATH_420:
@@ -1287,7 +1281,7 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       continue;
 
 #if LOOP_FILTER_BITMASK
-    enum lf_path path = get_loop_filter_path(plane, pd);
+    enum lf_path path = av1_get_loop_filter_path(plane, pd);
 
     if (cm->lf.combine_vert_horz_lf) {
       // filter all vertical and horizontal edges in every super block
@@ -1297,7 +1291,8 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
 
-          LoopFilterMask *lf_mask = get_loop_filter_mask(cm, mi_row, mi_col);
+          LoopFilterMask *lf_mask =
+              av1_get_loop_filter_mask(cm, mi_row, mi_col);
           av1_setup_bitmask(cm, mi_row, mi_col, plane, pd[plane].subsampling_x,
                             pd[plane].subsampling_y, lf_mask);
           loop_filter_block_plane_vert(cm, pd, plane, mi_row, mi_col, path,
@@ -1310,7 +1305,7 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                                  plane + 1);
 
             LoopFilterMask *lf_mask =
-                get_loop_filter_mask(cm, mi_row, mi_col - MAX_MIB_SIZE);
+                av1_get_loop_filter_mask(cm, mi_row, mi_col - MAX_MIB_SIZE);
             loop_filter_block_plane_horz(cm, pd, plane, mi_row,
                                          mi_col - MAX_MIB_SIZE, path, lf_mask);
           }
@@ -1320,7 +1315,7 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
                              mi_col - MAX_MIB_SIZE, plane, plane + 1);
 
         LoopFilterMask *lf_mask =
-            get_loop_filter_mask(cm, mi_row, mi_col - MAX_MIB_SIZE);
+            av1_get_loop_filter_mask(cm, mi_row, mi_col - MAX_MIB_SIZE);
         loop_filter_block_plane_horz(cm, pd, plane, mi_row,
                                      mi_col - MAX_MIB_SIZE, path, lf_mask);
       }
@@ -1331,11 +1326,12 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
 
-          LoopFilterMask *lf_mask = get_loop_filter_mask(cm, mi_row, mi_col);
+          LoopFilterMask *lf_mask =
+              av1_get_loop_filter_mask(cm, mi_row, mi_col);
           av1_setup_bitmask(cm, mi_row, mi_col, plane, pd[plane].subsampling_x,
                             pd[plane].subsampling_y, lf_mask);
-          loop_filter_block_plane_vert(cm, pd, plane, mi_row, mi_col, path,
-                                       lf_mask);
+          av1_loop_filter_block_plane_vert(cm, pd, plane, mi_row, mi_col, path,
+                                           lf_mask);
         }
       }
 
@@ -1345,7 +1341,8 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
 
-          LoopFilterMask *lf_mask = get_loop_filter_mask(cm, mi_row, mi_col);
+          LoopFilterMask *lf_mask =
+              av1_get_loop_filter_mask(cm, mi_row, mi_col);
           loop_filter_block_plane_horz(cm, pd, plane, mi_row, mi_col, path,
                                        lf_mask);
         }
@@ -1359,21 +1356,22 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
           // filter vertical edges
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
-          filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row, mi_col);
+          av1_filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row,
+                                      mi_col);
           // filter horizontal edges
           if (mi_col - MAX_MIB_SIZE >= 0) {
             av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer,
                                  mi_row, mi_col - MAX_MIB_SIZE, plane,
                                  plane + 1);
-            filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
-                                    mi_col - MAX_MIB_SIZE);
+            av1_filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
+                                        mi_col - MAX_MIB_SIZE);
           }
         }
         // filter horizontal edges
         av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                              mi_col - MAX_MIB_SIZE, plane, plane + 1);
-        filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
-                                mi_col - MAX_MIB_SIZE);
+        av1_filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
+                                    mi_col - MAX_MIB_SIZE);
       }
     } else {
       // filter all vertical edges in every 128x128 super block
@@ -1381,7 +1379,8 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
         for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
-          filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row, mi_col);
+          av1_filter_block_plane_vert(cm, xd, plane, &pd[plane], mi_row,
+                                      mi_col);
         }
       }
 
@@ -1390,7 +1389,8 @@ static void loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
         for (mi_col = col_start; mi_col < col_end; mi_col += MAX_MIB_SIZE) {
           av1_setup_dst_planes(pd, cm->seq_params.sb_size, frame_buffer, mi_row,
                                mi_col, plane, plane + 1);
-          filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row, mi_col);
+          av1_filter_block_plane_horz(cm, xd, plane, &pd[plane], mi_row,
+                                      mi_col);
         }
       }
     }
@@ -1411,7 +1411,7 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     mi_rows_to_filter = AOMMAX(cm->mi_rows / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
-  loop_filter_frame_init(cm, plane_start, plane_end);
+  av1_loop_filter_frame_init(cm, plane_start, plane_end);
   loop_filter_rows(frame, cm, xd, start_mi_row, end_mi_row, plane_start,
                    plane_end);
 }

@@ -604,6 +604,8 @@ typedef struct AV1_COMP {
   //   A mapping of each reference frame from its encoder side value to the
   //   decoder side value obtained following the short signaling procedure.
   int ref_conv[REF_FRAMES];
+
+  AV1LfSync lf_row_sync;
 } AV1_COMP;
 
 void av1_initialize_enc(void);
