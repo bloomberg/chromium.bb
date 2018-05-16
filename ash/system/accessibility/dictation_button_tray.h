@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_DICTATION_DICTATION_BUTTON_TRAY_H_
-#define ASH_SYSTEM_DICTATION_DICTATION_BUTTON_TRAY_H_
+#ifndef ASH_SYSTEM_ACCESSIBILITY_DICTATION_BUTTON_TRAY_H_
+#define ASH_SYSTEM_ACCESSIBILITY_DICTATION_BUTTON_TRAY_H_
 
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility/accessibility_observer.h"
@@ -72,4 +72,4 @@ class ASH_EXPORT DictationButtonTray : public TrayBackgroundView,
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_DICTATION_DICTATION_BUTTON_TRAY_H_
+#endif  // ASH_SYSTEM_ACCESSIBILITY_DICTATION_BUTTON_TRAY_H_

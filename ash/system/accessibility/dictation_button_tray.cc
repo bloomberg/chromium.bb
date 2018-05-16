@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/system/dictation/dictation_button_tray.h"
+#include "ash/system/accessibility/dictation_button_tray.h"
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
