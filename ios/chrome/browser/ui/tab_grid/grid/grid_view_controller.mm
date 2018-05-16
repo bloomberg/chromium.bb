@@ -30,6 +30,9 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @interface GridViewController ()<GridCellDelegate,
                                  UICollectionViewDataSource,
                                  UICollectionViewDelegate>
+// Bookkeeping based on |-viewDidAppear:| and |-viewDidDisappear:|.
+// If the view is not appeared, there is no need to update the collection view.
+@property(nonatomic, assign, getter=isViewAppeared) BOOL viewAppeared;
 // A collection view of items in a grid format.
 @property(nonatomic, weak) UICollectionView* collectionView;
 // The local model backing the collection view.
@@ -54,6 +57,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 @synthesize imageDataSource = _imageDataSource;
 @synthesize emptyStateView = _emptyStateView;
 // Private properties.
+@synthesize viewAppeared = _viewAppeared;
 @synthesize collectionView = _collectionView;
 @synthesize items = _items;
 @synthesize selectedItemID = _selectedItemID;
@@ -107,6 +111,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                               scrollPosition:UICollectionViewScrollPositionTop];
   // Update the delegate, in case it wasn't set when |items| was populated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  self.viewAppeared = YES;
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [super viewDidDisappear:animated];
+  self.viewAppeared = NO;
 }
 
 #pragma mark - Public
@@ -246,7 +260,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   self.items = [items mutableCopy];
   self.selectedItemID = selectedItemID;
-  if ([self isViewVisible]) {
+  if ([self isViewAppeared]) {
     [self.collectionView reloadData];
     [self.collectionView
         selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
@@ -267,7 +281,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self.items insertObject:item atIndex:index];
     self.selectedItemID = selectedItemID;
   };
-  if (![self isViewVisible]) {
+  if (![self isViewAppeared]) {
     performDataSourceUpdates();
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
     return;
@@ -295,7 +309,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
     [self.items removeObjectAtIndex:index];
     self.selectedItemID = selectedItemID;
   };
-  if (![self isViewVisible]) {
+  if (![self isViewAppeared]) {
     performDataSourceUpdates();
     [self.delegate gridViewController:self didChangeItemCount:self.items.count];
     return;
@@ -322,7 +336,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 - (void)selectItemWithID:(NSString*)selectedItemID {
   self.selectedItemID = selectedItemID;
-  if (![self isViewVisible])
+  if (![self isViewAppeared])
     return;
   [self.collectionView
       selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
@@ -336,11 +350,10 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
          [self indexOfItemWithID:item.identifier] == NSNotFound);
   NSUInteger index = [self indexOfItemWithID:itemID];
   self.items[index] = item;
-  if (![self isViewVisible])
+  if (![self isViewAppeared])
     return;
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:CreateIndexPath(index)]);
-  // TODO(crbug.com/839892) : Cell is sometimes nil, but should not be.
   [self configureCell:cell withItem:item];
 }
 
@@ -357,7 +370,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   };
   // If the view isn't visible, there's no need for the collection view to
   // update.
-  if (![self isViewVisible]) {
+  if (![self isViewAppeared]) {
     performDataSourceUpdates();
     return;
   }
@@ -393,17 +406,12 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   return [self.items indexOfObjectPassingTest:selectedTest];
 }
 
-// If the view is not visible, there is no need to update the collection view.
-- (BOOL)isViewVisible {
-  return self.viewIfLoaded.window != nil;
-}
-
 // Configures |cell|'s title synchronously, and favicon and snapshot
 // asynchronously with information from |item|. Updates the |cell|'s theme to
 // this view controller's theme. This view controller becomes the delegate for
 // the cell.
 - (void)configureCell:(GridCell*)cell withItem:(GridItem*)item {
-  // TODO(crbug.com/839892) : Cell is sometimes nil. Add DCHECK(cell) here.
+  DCHECK(cell);
   DCHECK(item);
   cell.delegate = self;
   cell.theme = self.theme;
