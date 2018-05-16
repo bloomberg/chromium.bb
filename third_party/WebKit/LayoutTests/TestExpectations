@@ -2770,7 +2770,6 @@ crbug.com/655458 crbug.com/721814 external/wpt/mediacapture-image/idlharness.htm
 crbug.com/626703 external/wpt/web-nfc/idlharness.https.html [ Skip ]
 
 crbug.com/723741 virtual/threaded/http/tests/devtools/tracing/idle-callback.js [ Failure Pass Timeout ]
-crbug.com/723826 http/tests/security/w3c/cross-origin-objects.html [ Failure Pass ]
 
 
 # Untriaged failures after https://crrev.com/c/543695/.
