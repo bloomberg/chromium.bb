@@ -513,7 +513,7 @@ class UiElement : public cc::AnimationTarget {
   // ancestors), or its animation will cause it to become locally visible.
   bool IsOrWillBeLocallyVisible() const;
 
-  gfx::RectF ComputeContributingChildrenBounds();
+  virtual gfx::RectF ComputeContributingChildrenBounds();
 
   // Valid IDs are non-negative.
   int id_ = -1;
