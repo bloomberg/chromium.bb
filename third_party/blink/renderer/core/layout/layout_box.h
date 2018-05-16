@@ -1532,6 +1532,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutRect LocalVisualRectIgnoringVisibility() const override;
 
+  // For atomic inlines, returns its resolved direction in text flow. Not to be
+  // confused with the CSS property 'direction'.
+  // Returns the CSS 'direction' property value when it is not atomic inline.
+  TextDirection ResolvedDirection() const;
+
  private:
   void UpdateShapeOutsideInfoAfterStyleChange(const ComputedStyle&,
                                               const ComputedStyle* old_style);
