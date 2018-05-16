@@ -1291,6 +1291,11 @@ if (enable_vr) {
       proguard_config_exclusions =
           [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
     }
+
+    # The test APK contains code from both the APK under test and the
+    # test APK when proguard is enabled. That causes this APK to exceed
+    # the dex limit.
+    enable_multidex = proguard_enabled
   }
 
   android_apk("vr_nfc_simulator_apk") {
@@ -1358,6 +1363,11 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     proguard_config_exclusions =
         [ "//base/android/proguard/disable_chromium_obfuscation.flags" ]
   }
+
+  # The test APK contains code from both the APK under test and the
+  # test APK when proguard is enabled. That causes this APK to exceed
+  # the dex limit.
+  enable_multidex = proguard_enabled
 }
 
 if (defined(expected_static_initializer_count)) {
