@@ -164,6 +164,11 @@ test("jingle_unittests") {
     ]
   }
 
+  if (is_android) {
+    # LibjingleLogTest don't pass on Android (crbug.com/843104).
+    sources -= [ "glue/logging_unittest.cc" ]
+  }
+
   configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
 
   public_deps = [
