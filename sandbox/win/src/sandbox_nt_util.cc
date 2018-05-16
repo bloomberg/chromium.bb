@@ -190,14 +190,14 @@ bool InitHeap() {
 int TouchMemory(void* buffer, size_t size_bytes, RequiredAccess intent) {
   const int kPageSize = 4096;
   int dummy = 0;
-  char* start = reinterpret_cast<char*>(buffer);
-  char* end = start + size_bytes - 1;
+  volatile char* start = reinterpret_cast<char*>(buffer);
+  volatile char* end = start + size_bytes - 1;
 
   if (WRITE == intent) {
     for (; start < end; start += kPageSize) {
-      *start = 0;
+      *start = *start;
     }
-    *end = 0;
+    *end = *end;
   } else {
     for (; start < end; start += kPageSize) {
       dummy += *start;
