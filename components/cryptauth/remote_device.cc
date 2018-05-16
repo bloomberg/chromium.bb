@@ -11,7 +11,7 @@ namespace cryptauth {
 
 namespace {
 
-// Returns true if both vectors are BeaconSeeds are equal.
+// Returns true if both vectors of BeaconSeeds are equal.
 bool AreBeaconSeedsEqual(const std::vector<BeaconSeed> beacon_seeds1,
                          const std::vector<BeaconSeed> beacon_seeds2) {
   if (beacon_seeds1.size() != beacon_seeds2.size())
