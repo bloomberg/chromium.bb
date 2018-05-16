@@ -144,10 +144,16 @@ void IdentityManager::SetPrimaryAccountSynchronously(
 #if !defined(OS_CHROMEOS)
 void IdentityManager::WillFireGoogleSigninSucceeded(
     const AccountInfo& account_info) {
+  // TODO(843510): Consider setting this info and notifying observers
+  // asynchronously in response to GoogleSigninSucceeded() once there are no
+  // direct clients of SigninManager.
   primary_account_info_ = account_info;
 }
 
 void IdentityManager::WillFireGoogleSignedOut(const AccountInfo& account_info) {
+  // TODO(843510): Consider setting this info and notifying observers
+  // asynchronously in response to GoogleSigninSucceeded() once there are no
+  // direct clients of SigninManager.
   DCHECK(account_info.account_id == primary_account_info_.account_id);
   DCHECK(account_info.gaia == primary_account_info_.gaia);
   DCHECK(account_info.email == primary_account_info_.email);
@@ -156,25 +162,19 @@ void IdentityManager::WillFireGoogleSignedOut(const AccountInfo& account_info) {
 #endif
 
 void IdentityManager::GoogleSigninSucceeded(const AccountInfo& account_info) {
-  // Fire observer callbacks asynchronously to mimic this callback itself coming
-  // in asynchronously from the Identity Service rather than synchronously from
-  // SigninManager.
   DCHECK(account_info.account_id == primary_account_info_.account_id);
   DCHECK(account_info.gaia == primary_account_info_.gaia);
   DCHECK(account_info.email == primary_account_info_.email);
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&IdentityManager::HandleGoogleSigninSucceeded,
-                                weak_ptr_factory_.GetWeakPtr(), account_info));
+  for (auto& observer : observer_list_) {
+    observer.OnPrimaryAccountSet(account_info);
+  }
 }
 
 void IdentityManager::GoogleSignedOut(const AccountInfo& account_info) {
-  // Fire observer callbacks asynchronously to mimic this callback itself coming
-  // in asynchronously from the Identity Service rather than synchronously from
-  // SigninManager.
   DCHECK(!HasPrimaryAccount());
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&IdentityManager::HandleGoogleSignedOut,
-                                weak_ptr_factory_.GetWeakPtr(), account_info));
+  for (auto& observer : observer_list_) {
+    observer.OnPrimaryAccountCleared(account_info);
+  }
 }
 
 void IdentityManager::OnAccessTokenRequested(
@@ -195,19 +195,6 @@ void IdentityManager::HandleRemoveAccessTokenFromCache(
     const OAuth2TokenService::ScopeSet& scopes,
     const std::string& access_token) {
   token_service_->InvalidateAccessToken(account_id, scopes, access_token);
-}
-
-void IdentityManager::HandleGoogleSigninSucceeded(
-    const AccountInfo& account_info) {
-  for (auto& observer : observer_list_) {
-    observer.OnPrimaryAccountSet(account_info);
-  }
-}
-
-void IdentityManager::HandleGoogleSignedOut(const AccountInfo& account_info) {
-  for (auto& observer : observer_list_) {
-    observer.OnPrimaryAccountCleared(account_info);
-  }
 }
 
 void IdentityManager::HandleOnAccessTokenRequested(
