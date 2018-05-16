@@ -192,7 +192,6 @@ void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
 
   JobDetails& job_details = job_details_iter->second;
   job_details.cancelled = true;
-  UpdateOfflineItemAndUpdateObservers(&job_details);
 
   for (const auto& download_guid : job_details.current_download_guids) {
     download_service_->CancelDownload(download_guid);
@@ -395,21 +394,10 @@ void BackgroundFetchDelegateImpl::RemoveItem(
 
 void BackgroundFetchDelegateImpl::CancelDownload(
     const offline_items_collection::ContentId& id) {
-  auto job_details_iter = job_details_map_.find(id.id);
-  if (job_details_iter == job_details_map_.end())
-    return;
-
-  JobDetails& job_details = job_details_iter->second;
-
-  for (auto& download_guid : job_details.current_download_guids) {
-    download_service_->CancelDownload(download_guid);
-    download_job_unique_id_map_.erase(download_guid);
-  }
+  Abort(id.id);
 
   if (client())
     client()->OnJobCancelled(id.id);
-
-  job_details_map_.erase(job_details_iter);
 }
 
 void BackgroundFetchDelegateImpl::PauseDownload(
