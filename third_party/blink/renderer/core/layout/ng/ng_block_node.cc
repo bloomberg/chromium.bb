@@ -126,6 +126,8 @@ void UpdateLegacyMultiColumnFlowThread(
 // handles such cases.
 void CopyFragmentDataToLayoutBoxForInlineChildren(
     const NGPhysicalContainerFragment& container,
+    LayoutUnit initial_container_width,
+    bool initial_container_is_flipped,
     NGPhysicalOffset offset = {}) {
   for (const auto& child : container.Children()) {
     if (child->IsContainer()) {
@@ -136,7 +138,13 @@ void CopyFragmentDataToLayoutBoxForInlineChildren(
       LayoutObject* layout_object = child->GetLayoutObject();
       if (layout_object && layout_object->IsBox()) {
         LayoutBox& layout_box = ToLayoutBox(*layout_object);
-        layout_box.SetLocation(child_offset.ToLayoutPoint());
+        NGPhysicalOffset maybe_flipped_offset = child_offset;
+        if (initial_container_is_flipped) {
+          maybe_flipped_offset.left = initial_container_width -
+                                      child->Size().width -
+                                      maybe_flipped_offset.left;
+        }
+        layout_box.SetLocation(maybe_flipped_offset.ToLayoutPoint());
       }
 
       // The Location() of inline LayoutObject is relative to the
@@ -145,7 +153,8 @@ void CopyFragmentDataToLayoutBoxForInlineChildren(
       // to its descendants in this case.
       if (!child->IsBlockLayoutRoot()) {
         CopyFragmentDataToLayoutBoxForInlineChildren(
-            ToNGPhysicalContainerFragment(*child), child_offset);
+            ToNGPhysicalContainerFragment(*child), initial_container_width,
+            initial_container_is_flipped, child_offset);
       }
     }
   }
@@ -204,8 +213,12 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
     DCHECK(layout_result->PhysicalFragment());
 
     if (block_flow && first_child && first_child.IsInline()) {
-        CopyFragmentDataToLayoutBoxForInlineChildren(
-            ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()));
+      NGBoxStrut scrollbars = GetScrollbarSizes();
+      CopyFragmentDataToLayoutBoxForInlineChildren(
+          ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
+          layout_result->PhysicalFragment()->Size().width -
+              scrollbars.block_start,
+          Style().IsFlippedBlocksWritingMode());
 
       block_flow->SetPaintFragment(layout_result->PhysicalFragment());
     }

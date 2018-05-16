@@ -443,7 +443,8 @@ void TableSectionPainter::PaintBackgroundsBehindCell(
     const PaintInfo& paint_info_for_cells,
     const LayoutPoint& paint_offset) {
   LayoutPoint cell_point =
-      layout_table_section_.FlipForWritingModeForChild(&cell, paint_offset);
+      layout_table_section_.FlipForWritingModeForChildForPaint(&cell,
+                                                               paint_offset);
 
   // We need to handle painting a stack of backgrounds. This stack (from bottom
   // to top) consists of the column group, column, row group, row, and then the
@@ -483,7 +484,8 @@ void TableSectionPainter::PaintCell(const LayoutTableCell& cell,
                                     const LayoutPoint& paint_offset) {
   if (!cell.HasSelfPaintingLayer() && !cell.Row()->HasSelfPaintingLayer()) {
     LayoutPoint cell_point =
-        layout_table_section_.FlipForWritingModeForChild(&cell, paint_offset);
+        layout_table_section_.FlipForWritingModeForChildForPaint(&cell,
+                                                                 paint_offset);
     cell.Paint(paint_info_for_cells, cell_point);
   }
 }

@@ -466,27 +466,31 @@ void NGBoxFragmentPainter::PaintInlineChildBoxUsingLegacyFallback(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     const LayoutPoint& legacy_paint_offset) {
-  LayoutObject* layout_object = fragment.GetLayoutObject();
-  DCHECK(layout_object);
-  if (layout_object->IsLayoutNGMixin() &&
-      ToLayoutBlockFlow(layout_object)->PaintFragment()) {
+  LayoutObject* child_layout_object = fragment.GetLayoutObject();
+  DCHECK(child_layout_object);
+  if (child_layout_object->IsLayoutNGMixin() &&
+      ToLayoutBlockFlow(child_layout_object)->PaintFragment()) {
     // This object will use NGBoxFragmentPainter. NGBoxFragmentPainter expects
     // |paint_offset| relative to the parent, even when in inline context.
-    layout_object->Paint(paint_info, paint_offset);
+    LayoutPoint child_point =
+        FlipForWritingModeForChild(fragment, paint_offset);
+    child_layout_object->Paint(paint_info, child_point);
     return;
   }
 
   // When in inline context, pre-NG painters expect |paint_offset| of their
   // block container.
-  if (layout_object->IsAtomicInlineLevel()) {
+  if (child_layout_object->IsAtomicInlineLevel()) {
     // Pre-NG painters also expect callers to use |PaintAllPhasesAtomically()|
     // for atomic inlines.
-    ObjectPainter(*layout_object)
-        .PaintAllPhasesAtomically(paint_info, legacy_paint_offset);
+    LayoutPoint child_point =
+        FlipForWritingModeForChild(fragment, legacy_paint_offset);
+    ObjectPainter(*child_layout_object)
+        .PaintAllPhasesAtomically(paint_info, child_point);
     return;
   }
 
-  layout_object->Paint(paint_info, paint_offset);
+  child_layout_object->Paint(paint_info, paint_offset);
 }
 
 void NGBoxFragmentPainter::PaintAllPhasesAtomically(
@@ -938,6 +942,37 @@ bool NGBoxFragmentPainter::HitTestClippedOutByBorder(
       LayoutRect(LayoutPoint(), PhysicalFragment().Size().ToLayoutSize());
   rect.MoveBy(border_box_location);
   return !location_in_container.Intersects(style.GetRoundedBorderFor(rect));
+}
+
+LayoutPoint NGBoxFragmentPainter::FlipForWritingModeForChild(
+    const NGPhysicalFragment& child_fragment,
+    const LayoutPoint& offset) {
+  if (!PhysicalFragment().Style().IsFlippedBlocksWritingMode())
+    return offset;
+
+  LayoutPoint flipped_offset;
+  LayoutObject* child_layout_object = child_fragment.GetLayoutObject();
+  if (!AdjustPaintOffsetScope::WillUseLegacyLocation(
+          ToLayoutBox(child_layout_object)))
+    return offset;
+  LayoutObject* container_layout_object = box_fragment_.GetLayoutObject();
+  DCHECK(child_layout_object->IsBox());
+  if (container_layout_object->IsLayoutBlock()) {
+    flipped_offset = ToLayoutBlock(container_layout_object)
+                         ->FlipForWritingModeForChild(
+                             ToLayoutBox(child_layout_object), offset);
+  } else if (container_layout_object->IsInline()) {
+    // Reimplementation of LayoutBox::FlipForWritingModeForChild because
+    // LayoutInline cannot be an argument to FlipForWritingModeForChild
+    NGPhysicalSize container_size = PhysicalFragment().Size();
+    LayoutSize child_size = ToLayoutBox(child_layout_object)->Size();
+    LayoutPoint child_location = ToLayoutBox(child_layout_object)->Location();
+    flipped_offset =
+        LayoutPoint(offset.X() + container_size.width - child_size.Width() -
+                        (2 * child_location.X()),
+                    offset.Y());
+  }
+  return flipped_offset;
 }
 
 const NGPhysicalBoxFragment& NGBoxFragmentPainter::PhysicalFragment() const {

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 
+#include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
 
 namespace blink {
@@ -58,4 +59,17 @@ bool AdjustPaintOffsetScope::AdjustPaintOffset(const LayoutBox& box) {
   return false;
 }
 
+bool AdjustPaintOffsetScope::WillUseLegacyLocation(const LayoutBox* child) {
+  if (child->HasSelfPaintingLayer())
+    return true;
+  if (child->IsLayoutNGMixin()) {
+    NGPaintFragment* paint_fragment = ToLayoutBlockFlow(child)->PaintFragment();
+    if (!paint_fragment)
+      return true;
+    if (!paint_fragment->PhysicalFragment().IsPlacedByLayoutNG())
+      return true;
+    return false;
+  }
+  return true;
+}
 }  // namespace blink

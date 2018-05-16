@@ -122,6 +122,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                            const LayoutPoint& accumulated_offset);
   bool HitTestClippedOutByBorder(const HitTestLocation&,
                                  const LayoutPoint& border_box_location) const;
+  LayoutPoint FlipForWritingModeForChild(
+      const NGPhysicalFragment& child_fragment,
+      const LayoutPoint& offset);
 
   const NGPhysicalBoxFragment& PhysicalFragment() const;
 

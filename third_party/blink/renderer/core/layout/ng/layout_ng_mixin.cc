@@ -237,7 +237,8 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
                                         accumulated_offset, action);
   }
 
-  LayoutPoint adjusted_location = accumulated_offset + Base::Location();
+  LayoutPoint adjusted_location =
+      accumulated_offset + PaintFragment()->Offset().ToLayoutPoint();
   if (!RootScrollerUtil::IsEffective(*this)) {
     // Check if we need to do anything at all.
     // If we have clipping, then we can't have any spillout.
