@@ -28,7 +28,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
     : public FidoBleDiscoveryBase {
  public:
   static constexpr size_t kEphemeralIdSize = 16;
+  static constexpr size_t kSessionKeySize = 32;
   using EidArray = std::array<uint8_t, kEphemeralIdSize>;
+  using SessionKeyArray = std::array<uint8_t, kSessionKeySize>;
 
   // Encapsulates information required to discover Cable device per single
   // credential. When multiple credentials are enrolled to a single account
@@ -37,13 +39,15 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   // EID received from the relying party.
   struct COMPONENT_EXPORT(DEVICE_FIDO) CableDiscoveryData {
     CableDiscoveryData(const EidArray& client_eid,
-                       const EidArray& authenticator_eid);
+                       const EidArray& authenticator_eid,
+                       const SessionKeyArray& session_key);
     CableDiscoveryData(const CableDiscoveryData& data);
     CableDiscoveryData& operator=(const CableDiscoveryData& other);
     ~CableDiscoveryData();
 
     EidArray client_eid;
     EidArray authenticator_eid;
+    SessionKeyArray session_key;
   };
 
   FidoCableDiscovery(std::vector<CableDiscoveryData> discovery_data);
@@ -67,7 +71,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoCableDiscovery
   void OnAdvertisementRegisterError(
       BluetoothAdvertisement::ErrorCode error_code);
   void CableDeviceFound(BluetoothAdapter* adapter, BluetoothDevice* device);
-  bool IsExpectedCaBleDevice(const BluetoothDevice* device) const;
+  const CableDiscoveryData* GetFoundCableDiscoveryData(
+      const BluetoothDevice* device) const;
 
   std::vector<CableDiscoveryData> discovery_data_;
   std::map<EidArray, scoped_refptr<BluetoothAdvertisement>> advertisements_;

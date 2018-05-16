@@ -40,6 +40,11 @@ constexpr FidoCableDiscovery::EidArray kInvalidAuthenticatorEid = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00}};
 
+constexpr FidoCableDiscovery::SessionKeyArray kTestSessionKey = {
+    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
+
 // Below constants are used to construct MockBluetoothDevice for testing.
 constexpr char kTestBleDeviceAddress[] = "11:12:13:14:15:16";
 
@@ -110,7 +115,7 @@ class FidoCableDiscoveryTest : public ::testing::Test {
  public:
   std::unique_ptr<FidoCableDiscovery> CreateDiscovery() {
     std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
-    discovery_data.emplace_back(kClientEid, kAuthenticatorEid);
+    discovery_data.emplace_back(kClientEid, kAuthenticatorEid, kTestSessionKey);
     return std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
   }
 
@@ -177,9 +182,15 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
       {0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee,
        0xee, 0xee, 0xee, 0xee}};
 
+  constexpr FidoCableDiscovery::SessionKeyArray kSecondarySessionKey = {
+      {0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+       0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+       0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd}};
+
   std::vector<FidoCableDiscovery::CableDiscoveryData> discovery_data;
-  discovery_data.emplace_back(kClientEid, kAuthenticatorEid);
-  discovery_data.emplace_back(kSecondaryClientEid, kSecondaryAuthenticatorEid);
+  discovery_data.emplace_back(kClientEid, kAuthenticatorEid, kTestSessionKey);
+  discovery_data.emplace_back(kSecondaryClientEid, kSecondaryAuthenticatorEid,
+                              kSecondarySessionKey);
   auto cable_discovery =
       std::make_unique<FidoCableDiscovery>(std::move(discovery_data));
 
