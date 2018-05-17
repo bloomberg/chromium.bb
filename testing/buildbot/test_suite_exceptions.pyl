@@ -1521,32 +1521,6 @@
       'Out of Process Profiling Mac',
     ],
   },
-  'google_apis_unittests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run.
-      'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Phone Tester (rel)',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x86 Cloud Tester',
-      # On chromium.linux, unclear why these aren't run on Cast.
-      'Cast Audio Linux',
-      'Cast Linux',
-      # chromium.win
-      'Win7 Tests (dbg)(1)',
-    ],
-  },
   'headless_browsertests': {
     'remove_from': [
       'Linux Tests (dbg)(1)(32)',
