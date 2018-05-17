@@ -10,8 +10,6 @@ ShortcutInfo::ShortcutInfo(const GURL& shortcut_url)
       display(blink::kWebDisplayModeBrowser),
       orientation(blink::kWebScreenOrientationLockDefault),
       source(SOURCE_ADD_TO_HOMESCREEN_SHORTCUT),
-      theme_color(content::Manifest::kInvalidOrMissingColor),
-      background_color(content::Manifest::kInvalidOrMissingColor),
       ideal_splash_image_size_in_px(0),
       minimum_splash_image_size_in_px(0) {}
 
@@ -57,11 +55,11 @@ void ShortcutInfo::UpdateFromManifest(const content::Manifest& manifest) {
   }
 
   // Set the theme color based on the manifest value, if any.
-  if (manifest.theme_color != content::Manifest::kInvalidOrMissingColor)
+  if (manifest.theme_color)
     theme_color = manifest.theme_color;
 
   // Set the background color based on the manifest value, if any.
-  if (manifest.background_color != content::Manifest::kInvalidOrMissingColor)
+  if (manifest.background_color)
     background_color = manifest.background_color;
 
   // Sets the URL of the HTML splash screen, if any.

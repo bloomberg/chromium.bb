@@ -26,6 +26,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
+#include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
@@ -47,7 +48,6 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/codec/png_codec.h"
-#include "ui/gfx/color_utils.h"
 #include "url/gurl.h"
 
 namespace {
@@ -116,15 +116,6 @@ GURL GetServerUrl() {
 GURL GetScope(const ShortcutInfo& info) {
   return (info.scope.is_valid()) ? info.scope
                                  : ShortcutHelper::GetScopeFromURL(info.url);
-}
-
-// Converts a color from the format specified in content::Manifest to a CSS
-// string.
-std::string ColorToString(int64_t color) {
-  if (color == content::Manifest::kInvalidOrMissingColor)
-    return "";
-  SkColor sk_color = reinterpret_cast<uint32_t&>(color);
-  return color_utils::SkColorToRgbaString(sk_color);
 }
 
 webapk::WebApk_UpdateReason ConvertUpdateReasonToProtoEnum(
@@ -216,8 +207,9 @@ std::unique_ptr<std::string> BuildProtoInBackground(
   web_app_manifest->set_display_mode(
       content::WebDisplayModeToString(shortcut_info.display));
   web_app_manifest->set_background_color(
-      ColorToString(shortcut_info.background_color));
-  web_app_manifest->set_theme_color(ColorToString(shortcut_info.theme_color));
+      OptionalSkColorToString(shortcut_info.background_color));
+  web_app_manifest->set_theme_color(
+      OptionalSkColorToString(shortcut_info.theme_color));
 
   std::string* scope = web_app_manifest->add_scopes();
   scope->assign(GetScope(shortcut_info).spec());

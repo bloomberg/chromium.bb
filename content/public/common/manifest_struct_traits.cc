@@ -13,12 +13,6 @@
 namespace mojo {
 namespace {
 
-bool ValidateColor(int64_t color) {
-  return color >= std::numeric_limits<int32_t>::min() ||
-         color <= std::numeric_limits<int32_t>::max() ||
-         color == content::Manifest::kInvalidOrMissingColor;
-}
-
 // A wrapper around base::Optional<base::string16> so a custom StructTraits
 // specialization can enforce maximum string length.
 struct TruncatedString16 {
@@ -77,13 +71,12 @@ bool StructTraits<blink::mojom::ManifestDataView, content::Manifest>::Read(
     return false;
 
   out->prefer_related_applications = data.prefer_related_applications();
-  out->theme_color = data.theme_color();
-  if (!ValidateColor(out->theme_color))
-    return false;
 
-  out->background_color = data.background_color();
-  if (!ValidateColor(out->background_color))
-    return false;
+  if (data.has_theme_color())
+    out->theme_color = data.theme_color();
+
+  if (data.has_background_color())
+    out->background_color = data.background_color();
 
   if (!data.ReadSplashScreenUrl(&out->splash_screen_url))
     return false;

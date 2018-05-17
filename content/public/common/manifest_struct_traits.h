@@ -63,12 +63,20 @@ struct StructTraits<blink::mojom::ManifestDataView, content::Manifest> {
     return m.orientation;
   }
 
-  static int64_t theme_color(const content::Manifest& m) {
-    return m.theme_color;
+  static bool has_theme_color(const content::Manifest& m) {
+    return m.theme_color.has_value();
   }
 
-  static int64_t background_color(const content::Manifest& m) {
-    return m.background_color;
+  static uint32_t theme_color(const content::Manifest& m) {
+    return m.theme_color.value_or(0);
+  }
+
+  static bool has_background_color(const content::Manifest& m) {
+    return m.background_color.has_value();
+  }
+
+  static uint32_t background_color(const content::Manifest& m) {
+    return m.background_color.value_or(0);
   }
 
   static const GURL& splash_screen_url(const content::Manifest& m) {

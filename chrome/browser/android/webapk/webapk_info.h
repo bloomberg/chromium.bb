@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "content/public/common/manifest.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 // Structure with information about a WebAPK.
 //
@@ -30,14 +31,14 @@ struct WebApkInfo {
              std::string manifest_start_url,
              blink::WebDisplayMode display,
              blink::WebScreenOrientationLockType orientation,
-             int64_t theme_color,
-             int64_t background_color,
+             base::Optional<SkColor> theme_color,
+             base::Optional<SkColor> background_color,
              base::Time last_update_check_time,
              bool relax_updates);
   ~WebApkInfo();
 
-  WebApkInfo& operator=(WebApkInfo&& other);
-  WebApkInfo(WebApkInfo&& other);
+  WebApkInfo& operator=(WebApkInfo&& other) noexcept;
+  WebApkInfo(WebApkInfo&& other) noexcept;
 
   // Short name of the WebAPK.
   std::string name;
@@ -60,8 +61,8 @@ struct WebApkInfo {
   std::string manifest_start_url;
   blink::WebDisplayMode display;
   blink::WebScreenOrientationLockType orientation;
-  int64_t theme_color;
-  int64_t background_color;
+  base::Optional<SkColor> theme_color;
+  base::Optional<SkColor> background_color;
   base::Time last_update_check_time;
   bool relax_updates;
 

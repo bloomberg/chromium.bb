@@ -130,12 +130,12 @@ base::NullableString16 ManifestParser::ParseString(
   return base::NullableString16(value, false);
 }
 
-int64_t ManifestParser::ParseColor(
+base::Optional<SkColor> ManifestParser::ParseColor(
     const base::DictionaryValue& dictionary,
     const std::string& key) {
   base::NullableString16 parsed_color = ParseString(dictionary, key, Trim);
   if (parsed_color.is_null())
-    return Manifest::kInvalidOrMissingColor;
+    return base::nullopt;
 
   SkColor color;
   if (!blink::WebCSSParser::ParseColor(
@@ -143,15 +143,10 @@ int64_t ManifestParser::ParseColor(
     AddErrorInfo("property '" + key + "' ignored, '" +
                  base::UTF16ToUTF8(parsed_color.string()) + "' is not a " +
                  "valid color.");
-      return Manifest::kInvalidOrMissingColor;
+    return base::nullopt;
   }
 
-  // We do this here because Java does not have an unsigned int32_t type so
-  // colors with high alpha values will be negative. Instead of doing the
-  // conversion after we pass over to Java, we do it here as it is easier and
-  // clearer.
-  int32_t signed_color = reinterpret_cast<int32_t&>(color);
-  return static_cast<int64_t>(signed_color);
+  return color;
 }
 
 GURL ManifestParser::ParseURL(const base::DictionaryValue& dictionary,
@@ -442,12 +437,12 @@ bool ManifestParser::ParsePreferRelatedApplications(
   return ParseBoolean(dictionary, "prefer_related_applications", false);
 }
 
-int64_t ManifestParser::ParseThemeColor(
+base::Optional<SkColor> ManifestParser::ParseThemeColor(
     const base::DictionaryValue& dictionary) {
   return ParseColor(dictionary, "theme_color");
 }
 
-int64_t ManifestParser::ParseBackgroundColor(
+base::Optional<SkColor> ManifestParser::ParseBackgroundColor(
     const base::DictionaryValue& dictionary) {
   return ParseColor(dictionary, "background_color");
 }

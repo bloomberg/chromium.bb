@@ -17,8 +17,8 @@ WebApkInfo::WebApkInfo(std::string name,
                        std::string manifest_start_url,
                        blink::WebDisplayMode display,
                        blink::WebScreenOrientationLockType orientation,
-                       int64_t theme_color,
-                       int64_t background_color,
+                       base::Optional<SkColor> theme_color,
+                       base::Optional<SkColor> background_color,
                        base::Time last_update_check_time,
                        bool relax_updates)
     : name(std::move(name)),
@@ -39,5 +39,5 @@ WebApkInfo::WebApkInfo(std::string name,
 
 WebApkInfo::~WebApkInfo() {}
 
-WebApkInfo& WebApkInfo::operator=(WebApkInfo&& rhs) = default;
-WebApkInfo::WebApkInfo(WebApkInfo&& other) = default;
+WebApkInfo& WebApkInfo::operator=(WebApkInfo&& rhs) noexcept = default;
+WebApkInfo::WebApkInfo(WebApkInfo&& other) noexcept = default;

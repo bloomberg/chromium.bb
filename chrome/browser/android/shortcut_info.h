@@ -9,9 +9,11 @@
 
 #include <vector>
 
+#include "base/optional.h"
 #include "base/strings/string16.h"
 #include "content/public/common/manifest.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 // Information needed to create a shortcut via ShortcutHelper.
@@ -85,8 +87,8 @@ struct ShortcutInfo {
   blink::WebDisplayMode display;
   blink::WebScreenOrientationLockType orientation;
   Source source;
-  int64_t theme_color;
-  int64_t background_color;
+  base::Optional<SkColor> theme_color;
+  base::Optional<SkColor> background_color;
   GURL splash_screen_url;
   int ideal_splash_image_size_in_px;
   int minimum_splash_image_size_in_px;

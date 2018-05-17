@@ -9,20 +9,11 @@
 #include "base/callback_forward.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/manifest_util.h"
 #include "ui/gfx/color_utils.h"
-
-namespace {
-// Converts a color from the format documented in content::Manifest to a
-// rgba() CSS string.
-std::string ColorToString(int64_t color) {
-  if (color == content::Manifest::kInvalidOrMissingColor)
-    return std::string();
-  return color_utils::SkColorToRgbaString(reinterpret_cast<uint32_t&>(color));
-}
-}  // namespace
 
 WebApksHandler::WebApksHandler() : weak_ptr_factory_(this) {}
 
@@ -62,9 +53,10 @@ void WebApksHandler::OnWebApkInfoRetrieved(
     result->SetString(
         "orientation",
         content::WebScreenOrientationLockTypeToString(webapk_info.orientation));
-    result->SetString("themeColor", ColorToString(webapk_info.theme_color));
+    result->SetString("themeColor",
+                      OptionalSkColorToString(webapk_info.theme_color));
     result->SetString("backgroundColor",
-                      ColorToString(webapk_info.background_color));
+                      OptionalSkColorToString(webapk_info.background_color));
     result->SetDouble("lastUpdateCheckTimeMs",
                       webapk_info.last_update_check_time.ToJsTime());
     result->SetBoolean("relaxUpdates", webapk_info.relax_updates);
