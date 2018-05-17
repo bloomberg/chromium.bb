@@ -176,7 +176,7 @@ bool ProfileSyncServiceHarness::SetupSync(syncer::ModelTypeSet synced_datatypes,
         IdentityManagerFactory::GetForProfile(profile_);
     identity_manager->SetPrimaryAccountSynchronouslyForTests(
         gaia_id_, username_, GenerateFakeOAuth2RefreshTokenString());
-    service()->OnPrimaryAccountSet(identity_manager->GetPrimaryAccountInfo());
+    service()->OnPrimaryAccountSet();
   } else {
     LOG(ERROR) << "Unsupported profile signin type.";
   }
@@ -282,7 +282,7 @@ bool ProfileSyncServiceHarness::StartSyncService() {
 
 void ProfileSyncServiceHarness::SignoutSyncService() {
   DCHECK(!username_.empty());
-  service()->OnPrimaryAccountCleared(service()->GetAuthenticatedAccountInfo());
+  service()->OnPrimaryAccountCleared();
 }
 
 bool ProfileSyncServiceHarness::HasUnsyncedItems() {

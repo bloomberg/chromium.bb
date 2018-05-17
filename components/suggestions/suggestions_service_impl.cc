@@ -554,6 +554,8 @@ void SuggestionsServiceImpl::PopulateExtraData(
 void SuggestionsServiceImpl::Shutdown() {
   // Cancel pending request.
   pending_request_.reset(nullptr);
+
+  sync_service_observer_.RemoveAll();
 }
 
 void SuggestionsServiceImpl::ScheduleBlacklistUpload() {
