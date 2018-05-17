@@ -1528,10 +1528,11 @@ GLES2ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                              GLuint background_color,
                              GLuint edge_aa_mask,
                              const GLfloat* bounds_rect,
-                             GLuint filter) {
+                             GLuint filter,
+                             bool is_protected_video) {
   gles2::GetGLContext()->ScheduleDCLayerCHROMIUM(
       num_textures, contents_texture_ids, contents_rect, background_color,
-      edge_aa_mask, bounds_rect, filter);
+      edge_aa_mask, bounds_rect, filter, is_protected_video);
 }
 void GL_APIENTRY GLES2MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) {
   gles2::GetGLContext()->MatrixLoadfCHROMIUM(matrixMode, m);

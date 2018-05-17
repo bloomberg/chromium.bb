@@ -32,7 +32,8 @@ struct GL_EXPORT DCRendererLayerParams {
                         unsigned background_color,
                         unsigned edge_aa_mask,
                         float opacity,
-                        unsigned filter);
+                        unsigned filter,
+                        bool is_protected_video);
   DCRendererLayerParams(const DCRendererLayerParams& other);
   ~DCRendererLayerParams();
 
@@ -47,6 +48,7 @@ struct GL_EXPORT DCRendererLayerParams {
   unsigned edge_aa_mask;
   float opacity;
   unsigned filter;
+  bool is_protected_video;
 
   // This is a subset of cc::FilterOperation::FilterType.
   enum class FilterEffectType : uint32_t {

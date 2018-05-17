@@ -4207,7 +4207,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
     GLuint background_color,
     GLuint edge_aa_mask,
     GLenum filter,
-    const GLfloat* bounds_rect) {
+    const GLfloat* bounds_rect,
+    bool is_protected_video) {
   switch (filter) {
     case GL_NEAREST:
     case GL_LINEAR:
@@ -4260,7 +4261,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
       dc_layer_shared_state_->is_clipped, dc_layer_shared_state_->clip_rect,
       dc_layer_shared_state_->z_order, dc_layer_shared_state_->transform,
       images, contents_rect_object, gfx::ToEnclosingRect(bounds_rect_object),
-      background_color, edge_aa_mask, dc_layer_shared_state_->opacity, filter);
+      background_color, edge_aa_mask, dc_layer_shared_state_->opacity, filter,
+      is_protected_video);
 
   if (!surface_->ScheduleDCLayer(params)) {
     InsertError(GL_INVALID_OPERATION, "failed to schedule DCLayer");

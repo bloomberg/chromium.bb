@@ -794,7 +794,8 @@ virtual void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                                      GLuint background_color,
                                      GLuint edge_aa_mask,
                                      const GLfloat* bounds_rect,
-                                     GLuint filter) = 0;
+                                     GLuint filter,
+                                     bool is_protected_video) = 0;
 virtual void MatrixLoadfCHROMIUM(GLenum matrixMode, const GLfloat* m) = 0;
 virtual void MatrixLoadIdentityCHROMIUM(GLenum matrixMode) = 0;
 virtual GLuint GenPathsCHROMIUM(GLsizei range) = 0;

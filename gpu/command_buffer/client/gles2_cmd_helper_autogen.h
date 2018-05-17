@@ -2830,12 +2830,13 @@ void ScheduleDCLayerCHROMIUM(GLsizei num_textures,
                              GLuint edge_aa_mask,
                              GLuint filter,
                              GLuint shm_id,
-                             GLuint shm_offset) {
+                             GLuint shm_offset,
+                             bool is_protected_video) {
   gles2::cmds::ScheduleDCLayerCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ScheduleDCLayerCHROMIUM>();
   if (c) {
     c->Init(num_textures, background_color, edge_aa_mask, filter, shm_id,
-            shm_offset);
+            shm_offset, is_protected_video);
   }
 }
 

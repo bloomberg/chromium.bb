@@ -3749,7 +3749,7 @@ _FUNCTION_INFO = {
     'client_test': False,
     'cmd_args': 'GLsizei num_textures, GLuint background_color, '
                 'GLuint edge_aa_mask, GLuint filter, GLuint shm_id, '
-                'GLuint shm_offset',
+                'GLuint shm_offset, bool is_protected_video',
     'extension': 'CHROMIUM_schedule_ca_layer',
   },
   'CommitOverlayPlanesCHROMIUM': {
