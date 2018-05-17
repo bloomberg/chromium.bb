@@ -500,12 +500,15 @@ public class VrShellImpl
     // Called when the user clicks on the security icon in the URL bar.
     @CalledByNative
     public void showPageInfo() {
+        Tab tab = mActivity.getActivityTab();
+        if (tab == null) return;
+
         if (!ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING_NATIVE_ANDROID_UI)) {
             VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
                 @Override
                 public void onSucceeded() {
-                    PageInfoController.show(mActivity, mActivity.getActivityTab(), null,
-                            PageInfoController.OPENED_FROM_VR);
+                    PageInfoController.show(
+                            mActivity, tab, null, PageInfoController.OPENED_FROM_VR);
                 }
 
                 @Override
@@ -514,8 +517,7 @@ public class VrShellImpl
             return;
         }
 
-        PageInfoController.show(
-                mActivity, mActivity.getActivityTab(), null, PageInfoController.OPENED_FROM_VR);
+        PageInfoController.show(mActivity, tab, null, PageInfoController.OPENED_FROM_VR);
     }
 
     // Called because showing audio permission dialog isn't supported in VR. This happens when
