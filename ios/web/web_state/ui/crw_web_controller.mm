@@ -4349,6 +4349,15 @@ registerLoadRequestForURL:(const GURL&)requestURL
         // Navigation callbacks can only be called for the main frame.
         _webStateImpl->OnNavigationFinished(context);
         transition = context->GetPageTransition();
+        if (!context->HasUserGesture() &&
+            ui::PageTransitionTypeIncludingQualifiersIs(
+                transition, ui::PAGE_TRANSITION_LINK)) {
+          // Link click is not possible without user gesture, so this transition
+          // was incorrectly classified and should be "client redirect" instead.
+          // TODO(crbug.com/549301): Remove this workaround when transition
+          // detection is fixed.
+          transition = ui::PAGE_TRANSITION_CLIENT_REDIRECT;
+        }
       }
       web::DownloadController::FromBrowserState(browserState)
           ->CreateDownloadTask(_webStateImpl, [NSUUID UUID].UUIDString,
