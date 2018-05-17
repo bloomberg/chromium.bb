@@ -18,7 +18,6 @@ class ThreadScheduler;
 namespace blink {
 namespace scheduler {
 class MainThreadSchedulerImpl;
-class WebSchedulerImpl;
 
 class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
  public:
@@ -46,7 +45,6 @@ class PLATFORM_EXPORT WebThreadImplForRendererScheduler : public WebThreadBase {
   void RemoveTaskTimeObserverInternal(
       base::sequence_manager::TaskTimeObserver*) override;
 
-  std::unique_ptr<WebSchedulerImpl> web_scheduler_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   scoped_refptr<SingleThreadIdleTaskRunner> idle_task_runner_;
   MainThreadSchedulerImpl* scheduler_;  // Not owned.

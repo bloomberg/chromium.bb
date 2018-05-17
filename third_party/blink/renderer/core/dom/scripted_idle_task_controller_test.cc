@@ -47,7 +47,7 @@ class MockScriptedIdleTaskControllerScheduler final : public ThreadScheduler {
     return nullptr;
   }
 
-  base::TimeTicks MonotonicallyIncreasingVirtualTime() const override {
+  base::TimeTicks MonotonicallyIncreasingVirtualTime() override {
     return base::TimeTicks();
   }
 

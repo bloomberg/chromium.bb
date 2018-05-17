@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "third_party/blink/renderer/platform/scheduler/child/idle_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/child/pollable_thread_safe_flag.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/deadline_task_runner.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/idle_time_estimator.h"
@@ -63,6 +64,7 @@ class WebRenderWidgetSchedulingState;
 
 class PLATFORM_EXPORT MainThreadSchedulerImpl
     : public WebMainThreadScheduler,
+      public ThreadScheduler,
       public IdleHelper::Delegate,
       public MainThreadSchedulerHelper::Observer,
       public RenderWidgetSignals::Observer,
@@ -103,7 +105,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   ~MainThreadSchedulerImpl() override;
 
-  // WebMainThreadSchedulerScheduler implementation:
+  // WebMainThreadScheduler implementation:
   std::unique_ptr<WebThread> CreateMainThread() override;
   scoped_refptr<SingleThreadIdleTaskRunner> IdleTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
@@ -127,7 +129,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void PauseTimersForAndroidWebView() override;
   void ResumeTimersForAndroidWebView() override;
 #endif
-  std::unique_ptr<RendererPauseHandle> PauseRenderer() override
+  std::unique_ptr<ThreadScheduler::RendererPauseHandle> PauseRenderer() override
       WARN_UNUSED_RESULT;
   bool IsHighPriorityWorkAnticipated() override;
   bool ShouldYieldForHighPriorityWork() override;
@@ -144,6 +146,33 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const char* name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
+
+  // ThreadScheduler implementation:
+  void PostIdleTask(const base::Location&, WebThread::IdleTask) override;
+  void PostNonNestableIdleTask(const base::Location&,
+                               WebThread::IdleTask) override;
+  scoped_refptr<base::SingleThreadTaskRunner> V8TaskRunner() override;
+  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
+  std::unique_ptr<PageScheduler> CreatePageScheduler(
+      PageScheduler::Delegate*) override;
+  std::unique_ptr<ThreadScheduler::RendererPauseHandle> PauseScheduler()
+      override;
+  base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
+  WebMainThreadScheduler* GetWebMainThreadSchedulerForTest() override;
+
+  // The following functions are defined in both WebThreadScheduler and
+  // ThreadScheduler, and have the same function signatures -- see above.
+  // This class implements those functions for both base classes.
+  //
+  // void Shutdown() override;
+  // bool ShouldYieldForHighPriorityWork() override;
+  // bool CanExceedIdleDeadlineIfRequied() override;
+  // void AddPendingNavigation(WebMainThreadScheduler::NavigatingFrameType)
+  //     override;
+  // void RemovePendingNavigation(WebMainThreadScheduler::NavigatingFrameType)
+  //     override;
+  //
+  // TODO(yutak): Reduce the overlaps and simplify.
 
   // AutoAdvancingVirtualTimeDomain::Observer implementation:
   void OnVirtualTimeAdvanced() override;
@@ -300,8 +329,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // WebMainThreadScheduler implementation.
   // Use *TaskQueue internally.
   scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner() override;
-  scoped_refptr<base::SingleThreadTaskRunner> CompositorTaskRunner() override;
   scoped_refptr<base::SingleThreadTaskRunner> InputTaskRunner() override;
+
+  // This is implemented in WebMainThreadScheduler implementation above.
+  // scoped_refptr<SingleThreadTaskRunner> CompositorTaskRunner() override;
 
   // `current_use_case` will be overwritten by the next call to UpdatePolicy.
   // Thus, this function should be only used for testing purposes.
@@ -468,7 +499,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   class TaskDurationMetricTracker;
 
-  class RendererPauseHandleImpl : public RendererPauseHandle {
+  class RendererPauseHandleImpl : public ThreadScheduler::RendererPauseHandle {
    public:
     explicit RendererPauseHandleImpl(MainThreadSchedulerImpl* scheduler);
     ~RendererPauseHandleImpl() override;
@@ -606,6 +637,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   // Returns true with probability of kSamplingRateForTaskUkm.
   bool ShouldRecordTaskUkm(bool has_thread_time);
 
+  static void RunIdleTask(WebThread::IdleTask, base::TimeTicks deadline);
+
   // Probabilistically record all task metadata for the current task.
   // If task belongs to a per-frame queue, this task is attributed to
   // a particular Page, otherwise it's attributed to all Pages in the process.
@@ -656,6 +689,9 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   scoped_refptr<MainThreadTaskQueue> v8_task_queue_;
   scoped_refptr<MainThreadTaskQueue> ipc_task_queue_;
+
+  scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
+  scoped_refptr<TaskQueueWithTaskType> compositor_task_runner_;
 
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;

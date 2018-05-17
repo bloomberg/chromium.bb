@@ -65,7 +65,7 @@ class PLATFORM_EXPORT NonMainThreadScheduler : public WebThreadScheduler,
       WARN_UNUSED_RESULT;
 
   // Returns TimeTicks::Now() by default.
-  base::TimeTicks MonotonicallyIncreasingVirtualTime() const override;
+  base::TimeTicks MonotonicallyIncreasingVirtualTime() override;
 
   // The following virtual methods are defined in *both* WebThreadScheduler
   // and ThreadScheduler, with identical interfaces and semantics. They are

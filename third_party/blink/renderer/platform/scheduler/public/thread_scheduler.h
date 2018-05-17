@@ -79,7 +79,7 @@ class PLATFORM_EXPORT ThreadScheduler {
 
   // Returns the current time recognized by the scheduler, which may perhaps
   // be based on a real or virtual time domain. Used by Timer.
-  virtual base::TimeTicks MonotonicallyIncreasingVirtualTime() const = 0;
+  virtual base::TimeTicks MonotonicallyIncreasingVirtualTime() = 0;
 
   // Test helpers.
 
