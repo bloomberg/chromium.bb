@@ -185,6 +185,11 @@ gfx::RectF GfxRectFromUV(gvr::Rectf rect) {
                     rect.top - rect.bottom);
 }
 
+gfx::RectF ClampRect(gfx::RectF bounds) {
+  bounds.AdjustToFit(gfx::RectF(0, 0, 1, 1));
+  return bounds;
+}
+
 }  // namespace
 
 WebXrSharedBuffer::WebXrSharedBuffer() = default;
@@ -1166,6 +1171,11 @@ void VrShellGl::UpdateViewports() {
   // own UV bounds.
   viewport_list.GetBufferViewport(0, &webvr_viewport_.left);
   viewport_list.GetBufferViewport(1, &webvr_viewport_.right);
+  webvr_viewport_.left.SetSourceUv(
+      UVFromGfxRect(ClampRect(current_webvr_frame_bounds_.left_bounds)));
+  webvr_viewport_.right.SetSourceUv(
+      UVFromGfxRect(ClampRect(current_webvr_frame_bounds_.right_bounds)));
+
   // Set up Content UI viewports. Content will be shown as a quad layer to get
   // the best possible quality.
   viewport_list.GetBufferViewport(0, &content_underlay_viewport_.left);
@@ -1355,6 +1365,8 @@ bool VrShellGl::ResizeForWebVR(int16_t frame_index) {
     const WebVrBounds& bounds = pending_bounds_.front().second;
     webvr_viewport_.left.SetSourceUv(UVFromGfxRect(bounds.left_bounds));
     webvr_viewport_.right.SetSourceUv(UVFromGfxRect(bounds.right_bounds));
+    current_webvr_frame_bounds_ =
+        bounds;  // If we recreate the viewports, keep these bounds.
     DVLOG(1) << __FUNCTION__ << ": resize from pending_bounds to "
              << bounds.source_size.width() << "x"
              << bounds.source_size.height();
@@ -2271,11 +2283,6 @@ bool ValidateRect(const gfx::RectF& bounds) {
          !std::isnan(bounds.x()) && !std::isnan(bounds.y());
 }
 
-gfx::RectF ClampRect(gfx::RectF bounds) {
-  bounds.AdjustToFit(gfx::RectF(0, 0, 1, 1));
-  return bounds;
-}
-
 }  // namespace
 
 void VrShellGl::UpdateLayerBounds(int16_t frame_index,
@@ -2296,6 +2303,8 @@ void VrShellGl::UpdateLayerBounds(int16_t frame_index,
   }
 
   if (frame_index < 0) {
+    current_webvr_frame_bounds_ =
+        WebVrBounds(left_bounds, right_bounds, source_size);
     webvr_viewport_.left.SetSourceUv(UVFromGfxRect(ClampRect(left_bounds)));
     webvr_viewport_.right.SetSourceUv(UVFromGfxRect(ClampRect(right_bounds)));
     CreateOrResizeWebVRSurface(source_size);

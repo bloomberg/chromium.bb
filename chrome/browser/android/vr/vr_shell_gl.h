@@ -471,11 +471,13 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   Viewport webvr_viewport_;
   Viewport webvr_overlay_viewport_;
   Viewport content_underlay_viewport_;
-  bool viewports_need_updating_;
+  bool viewports_need_updating_ = true;
   gvr::SwapChain swap_chain_;
   gvr::Frame acquired_frame_;
   base::queue<std::pair<WebXrPresentationState::FrameIndexType, WebVrBounds>>
       pending_bounds_;
+  WebVrBounds current_webvr_frame_bounds_ =
+      WebVrBounds(gfx::RectF(), gfx::RectF(), gfx::Size());
   base::queue<uint16_t> pending_frames_;
   std::unique_ptr<MailboxToSurfaceBridge> mailbox_bridge_;
   bool mailbox_bridge_ready_ = false;
