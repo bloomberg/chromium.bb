@@ -688,14 +688,15 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   LayoutUnit bfc_block_offset = line_.line_opportunity.bfc_block_offset;
 
   // The float should be positioned after the current line if:
-  //  - It can't fit.
+  //  - It can't fit within the non-shape area. (Assuming the current position
+  //    also is strictly within the non-shape area).
   //  - It will be moved down due to block-start edge alignment.
   //  - It will be moved down due to clearance.
   //  - We are currently computing our min/max-content size. (We use the
   //    unpositioned_floats to manually adjust the min/max-content size after
   //    the line breaker has run).
   bool float_after_line =
-      !line_.CanFit(inline_margin_size) ||
+      !line_.CanFloatFit(inline_margin_size) ||
       exclusion_space_->LastFloatBlockStart() > bfc_block_offset ||
       exclusion_space_->ClearanceOffset(float_style.Clear()) >
           bfc_block_offset ||
@@ -715,17 +716,15 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
     DCHECK_EQ(positioned_float.bfc_offset.block_offset,
               bfc_block_offset + margins.block_start);
 
-    if (float_style.Floating() == EFloat::kLeft) {
-      line_.line_opportunity.line_left_offset = std::max(
-          line_.line_opportunity.line_left_offset,
-          positioned_float.bfc_offset.line_offset + inline_margin_size -
-              margins.LineLeft(TextDirection::kLtr));
-    } else {
-      line_.line_opportunity.line_right_offset =
-          std::min(line_.line_opportunity.line_right_offset,
-                   positioned_float.bfc_offset.line_offset -
-                       margins.LineLeft(TextDirection::kLtr));
-    }
+    NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
+        {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
+        constraint_space_.AvailableSize().inline_size, NGLogicalSize());
+
+    DCHECK_EQ(bfc_block_offset, opportunity.rect.BlockStartOffset());
+
+    line_.line_opportunity = opportunity.ComputeLineLayoutOpportunity(
+        constraint_space_, line_.line_opportunity.line_block_size,
+        LayoutUnit());
 
     DCHECK_GE(line_.AvailableWidth(), LayoutUnit());
   }

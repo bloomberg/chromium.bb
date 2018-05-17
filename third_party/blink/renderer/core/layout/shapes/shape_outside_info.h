@@ -95,6 +95,7 @@ class ShapeOutsideInfo final {
 
  public:
   void SetReferenceBoxLogicalSize(LayoutSize);
+  void SetPercentageResolutionInlineSize(LayoutUnit);
 
   LayoutUnit ShapeLogicalTop() const {
     return ComputedShape().ShapeMarginLogicalBoundingBox().Y() +
@@ -178,6 +179,7 @@ class ShapeOutsideInfo final {
   const LayoutBox& layout_box_;
   mutable std::unique_ptr<Shape> shape_;
   LayoutSize reference_box_logical_size_;
+  LayoutUnit percentage_resolution_inline_size_;
   ShapeOutsideDeltas shape_outside_deltas_;
   mutable bool is_computing_shape_;
 };

@@ -130,7 +130,8 @@ NGLayoutOpportunity CreateLayoutOpportunity(const NGLayoutOpportunity& other,
       std::min(other.rect.LineEndOffset(), offset.line_offset + inline_size),
       other.rect.BlockEndOffset());
 
-  return NGLayoutOpportunity(NGBfcRect(start_offset, end_offset));
+  return NGLayoutOpportunity(NGBfcRect(start_offset, end_offset),
+                             other.shape_exclusions);
 }
 
 // Creates a new layout opportunity. The given shelf *must* intersect with the
@@ -151,7 +152,11 @@ NGLayoutOpportunity CreateLayoutOpportunity(
                start_offset.line_offset),
       LayoutUnit::Max());
 
-  return NGLayoutOpportunity(NGBfcRect(start_offset, end_offset));
+  return NGLayoutOpportunity(
+      NGBfcRect(start_offset, end_offset),
+      shelf.has_shape_exclusions
+          ? base::AdoptRef(new NGShapeExclusions(*shelf.shape_exclusions))
+          : nullptr);
 }
 
 }  // namespace
@@ -273,10 +278,14 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
 
         // Insert a closed-off layout opportunity if needed.
         if (has_solid_edges && is_overlapping) {
-          NGLayoutOpportunity opportunity(NGBfcRect(
-              /* start_offset */ {shelf.line_left, shelf.block_offset},
-              /* end_offset */ {shelf.line_right,
-                                exclusion->rect.BlockStartOffset()}));
+          NGLayoutOpportunity opportunity(
+              NGBfcRect(
+                  /* start_offset */ {shelf.line_left, shelf.block_offset},
+                  /* end_offset */ {shelf.line_right,
+                                    exclusion->rect.BlockStartOffset()}),
+              shelf.has_shape_exclusions ? base::AdoptRef(new NGShapeExclusions(
+                                               *shelf.shape_exclusions))
+                                         : nullptr);
 
           InsertOpportunity(opportunity, &opportunities_);
         }
@@ -329,6 +338,7 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
             shelf.line_left = exclusion->rect.LineEndOffset();
             shelf.line_left_edges.push_back(exclusion);
           }
+          shelf.shape_exclusions->line_left_shapes.push_back(exclusion);
         } else {
           DCHECK_EQ(exclusion->type, EFloat::kRight);
           if (exclusion->rect.LineStartOffset() <= shelf.line_right) {
@@ -338,7 +348,16 @@ void NGExclusionSpace::Add(scoped_refptr<const NGExclusion> exclusion) {
             shelf.line_right = exclusion->rect.LineStartOffset();
             shelf.line_right_edges.push_back(exclusion);
           }
+          shelf.shape_exclusions->line_right_shapes.push_back(exclusion);
         }
+
+        // We collect all exclusions in shape_exclusions (even if they don't
+        // have any shape data associated with them - normal floats need to be
+        // included in the shape line algorithm). We use this bool to track
+        // if the shape exclusions should be copied to the resulting layout
+        // opportunity.
+        if (exclusion->shape_data)
+          shelf.has_shape_exclusions = true;
 
         // Just in case the shelf has a negative inline-size.
         shelf.line_right = std::max(shelf.line_left, shelf.line_right);

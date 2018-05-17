@@ -87,7 +87,21 @@ class CORE_EXPORT NGExclusionSpace {
     explicit NGShelf(LayoutUnit block_offset)
         : block_offset(block_offset),
           line_left(LayoutUnit::Min()),
-          line_right(LayoutUnit::Max()) {}
+          line_right(LayoutUnit::Max()),
+          shape_exclusions(base::AdoptRef(new NGShapeExclusions)),
+          has_shape_exclusions(false) {}
+
+    // The copy constructor explicitly copies the shape_exclusions member,
+    // instead of just incrementing the ref.
+    NGShelf(const NGShelf& other)
+        : block_offset(other.block_offset),
+          line_left(other.line_left),
+          line_right(other.line_right),
+          line_left_edges(other.line_left_edges),
+          line_right_edges(other.line_right_edges),
+          shape_exclusions(
+              base::AdoptRef(new NGShapeExclusions(*other.shape_exclusions))),
+          has_shape_exclusions(other.has_shape_exclusions) {}
 
     LayoutUnit block_offset;
     LayoutUnit line_left;
@@ -95,6 +109,13 @@ class CORE_EXPORT NGExclusionSpace {
 
     Vector<scoped_refptr<const NGExclusion>, 1> line_left_edges;
     Vector<scoped_refptr<const NGExclusion>, 1> line_right_edges;
+
+    // shape_exclusions contains all the floats which sit below this shelf. The
+    // has_shape_exclusions member will be true if shape_exclusions contains an
+    // exclusion with shape-outside specified (and therefore should be copied
+    // to any layout opportunity).
+    scoped_refptr<NGShapeExclusions> shape_exclusions;
+    bool has_shape_exclusions;
   };
 
  private:

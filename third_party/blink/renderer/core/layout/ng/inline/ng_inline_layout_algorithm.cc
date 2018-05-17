@@ -606,7 +606,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
 
   // We query all the layout opportunities on the initial exclusion space up
   // front, as if the line breaker may add floats and change the opportunities.
-  Vector<NGLayoutOpportunity> opportunities =
+  const Vector<NGLayoutOpportunity> opportunities =
       initial_exclusion_space->AllLayoutOpportunities(
           ConstraintSpace().BfcOffset(),
           ConstraintSpace().AvailableSize().inline_size);
@@ -617,7 +617,30 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   std::unique_ptr<NGExclusionSpace> exclusion_space;
   NGInlineBreakToken* break_token = BreakToken();
 
-  for (const auto& opportunity : opportunities) {
+  LayoutUnit line_block_size;
+  LayoutUnit block_delta;
+  const auto* opportunities_it = opportunities.begin();
+  while (opportunities_it != opportunities.end()) {
+    const NGLayoutOpportunity& opportunity = *opportunities_it;
+
+#if DCHECK_IS_ON()
+    // Make sure the last opportunity has the correct properties.
+    if (opportunities_it + 1 == opportunities.end()) {
+      // We shouldn't have any shapes affecting the last opportunity.
+      DCHECK(!opportunity.HasShapeExclusions());
+      DCHECK_EQ(line_block_size, LayoutUnit());
+      DCHECK_EQ(block_delta, LayoutUnit());
+
+      // The opportunity should match the given available size, (however need
+      // to check if the inline-size got saturated first).
+      if (opportunity.rect.InlineSize() != LayoutUnit::Max()) {
+        DCHECK_EQ(opportunity.rect.InlineSize(),
+                  ConstraintSpace().AvailableSize().inline_size);
+      }
+      DCHECK_EQ(opportunity.rect.BlockSize(), LayoutUnit::Max());
+    }
+#endif
+
     // Reset any state that may have been modified in a previous pass.
     positioned_floats.clear();
     unpositioned_floats_.clear();
@@ -625,10 +648,9 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     exclusion_space =
         std::make_unique<NGExclusionSpace>(*initial_exclusion_space);
 
-    NGLineLayoutOpportunity line_opportunity(
-        opportunity.rect.LineStartOffset(), opportunity.rect.LineEndOffset(),
-        opportunity.rect.LineStartOffset(), opportunity.rect.LineEndOffset(),
-        opportunity.rect.BlockStartOffset(), LayoutUnit());
+    NGLineLayoutOpportunity line_opportunity =
+        opportunity.ComputeLineLayoutOpportunity(ConstraintSpace(),
+                                                 line_block_size, block_delta);
 
     NGLineInfo line_info;
     NGLineBreaker line_breaker(
@@ -645,10 +667,25 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // *and* the opportunity is smaller than the available inline-size, and the
     // container autowraps, continue to the next opportunity.
     if (line_info.Width() > line_opportunity.AvailableInlineSize() &&
-        line_opportunity.AvailableInlineSize() !=
-            ConstraintSpace().AvailableSize().inline_size &&
-        Node().Style().AutoWrap())
+        ConstraintSpace().AvailableSize().inline_size !=
+            line_opportunity.AvailableFloatInlineSize() &&
+        Node().Style().AutoWrap()) {
+      // Shapes are *special*. We need to potentially increment the block-delta
+      // by 1px each loop to properly test each potential position of the line.
+      if (UNLIKELY(opportunity.HasShapeExclusions()) &&
+          block_delta < opportunity.rect.BlockSize() &&
+          !opportunity.IsBlockDeltaBelowShapes(block_delta)) {
+        block_delta += LayoutUnit(1);
+        line_block_size = LayoutUnit();
+      } else {
+        // We've either don't have any shapes, or run out of block-delta space
+        // to test, proceed to the next layout opportunity.
+        block_delta = LayoutUnit();
+        line_block_size = LayoutUnit();
+        ++opportunities_it;
+      }
       continue;
+    }
 
     PrepareBoxStates(line_info, break_token);
     CreateLine(&line_info, exclusion_space.get());
@@ -656,8 +693,33 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     // We now can check the block-size of the fragment, and it fits within the
     // opportunity.
     LayoutUnit block_size = container_builder_.ComputeBlockSize();
-    if (block_size > opportunity.rect.BlockSize())
+
+    // Now that we have the block-size of the line, we can re-test the layout
+    // opportunity to see if we fit into the (potentially) non-rectangular
+    // shape area.
+    // If the AvailableInlineSize changes we need to run the line breaker again
+    // with the calculated line_block_size. This is *safe* as the line breaker
+    // won't produce a line which has a larger block-size, (as it can only
+    // decrease or stay the same size).
+    if (UNLIKELY(opportunity.HasShapeExclusions())) {
+      NGLineLayoutOpportunity line_opportunity_with_height =
+          opportunity.ComputeLineLayoutOpportunity(ConstraintSpace(),
+                                                   block_size, block_delta);
+
+      if (line_opportunity_with_height.AvailableInlineSize() !=
+          line_opportunity.AvailableInlineSize()) {
+        line_block_size = block_size;
+        continue;
+      }
+    }
+
+    // Check if the line will fit in the current opportunity.
+    if (block_size + block_delta > opportunity.rect.BlockSize()) {
+      block_delta = LayoutUnit();
+      line_block_size = LayoutUnit();
+      ++opportunities_it;
       continue;
+    }
 
     if (opportunity.rect.BlockStartOffset() >
         ConstraintSpace().BfcOffset().block_offset)

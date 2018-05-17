@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
@@ -53,26 +54,6 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
       float_size);
 }
 
-// Creates an exclusion from the fragment that will be placed in the provided
-// layout opportunity.
-scoped_refptr<NGExclusion> CreateExclusion(
-    const NGFragment& fragment,
-    const NGBfcOffset& float_margin_bfc_offset,
-    const NGBoxStrut& margins,
-    EFloat type) {
-  // TODO(ikilpatrick): Don't include the block-start margin of a float which
-  // has fragmented.
-  NGBfcOffset start_offset = float_margin_bfc_offset;
-
-  NGBfcOffset end_offset(
-      /* line_offset */ start_offset.line_offset +
-          (fragment.InlineSize() + margins.InlineSum()).ClampNegativeToZero(),
-      /* block_offset */ start_offset.block_offset +
-          (fragment.BlockSize() + margins.BlockSum()).ClampNegativeToZero());
-
-  return NGExclusion::Create(NGBfcRect(start_offset, end_offset), type);
-}
-
 scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForFloatFromBuilder(
     const NGUnpositionedFloat& unpositioned_float,
     NGConstraintSpaceBuilder& builder) {
@@ -115,6 +96,86 @@ CreateConstraintSpaceForFloatForInlineSizeCalculation(
     const NGConstraintSpace& parent_space) {
   NGConstraintSpaceBuilder builder(parent_space);
   return CreateConstraintSpaceForFloatFromBuilder(unpositioned_float, builder);
+}
+
+std::unique_ptr<NGExclusionShapeData> CreateExclusionShapeData(
+    const NGBoxStrut& margins,
+    const LayoutBox* layout_box,
+    const NGUnpositionedFloat& unpositioned_float,
+    const NGConstraintSpace& parent_space,
+    TextDirection direction) {
+  DCHECK(layout_box->GetShapeOutsideInfo());
+
+  // We make the margins on the shape-data relative to line-left/line-right.
+  NGBoxStrut new_margins(margins.LineLeft(direction),
+                         margins.LineRight(direction), margins.block_start,
+                         margins.block_end);
+  NGBoxStrut shape_insets;
+
+  const ComputedStyle& style = layout_box->StyleRef();
+  switch (style.ShapeOutside()->CssBox()) {
+    case CSSBoxType::kMissing:
+    case CSSBoxType::kMargin:
+      shape_insets -= new_margins;
+      break;
+    case CSSBoxType::kBorder:
+      break;
+    case CSSBoxType::kPadding:
+      shape_insets =
+          ComputeBorders(*CreateConstraintSpaceForFloatForInlineSizeCalculation(
+                             unpositioned_float, parent_space),
+                         style)
+              .ConvertToPhysical(style.GetWritingMode(), style.Direction())
+              .ConvertToLogical(parent_space.GetWritingMode(),
+                                TextDirection::kLtr);
+      break;
+    case CSSBoxType::kContent:
+      const scoped_refptr<NGConstraintSpace> space =
+          CreateConstraintSpaceForFloatForInlineSizeCalculation(
+              unpositioned_float, parent_space);
+      NGBoxStrut border_padding =
+          ComputeBorders(*space, style) + ComputePadding(*space, style);
+      shape_insets =
+          border_padding
+              .ConvertToPhysical(style.GetWritingMode(), style.Direction())
+              .ConvertToLogical(parent_space.GetWritingMode(),
+                                TextDirection::kLtr);
+      break;
+  }
+
+  return std::make_unique<NGExclusionShapeData>(layout_box, new_margins,
+                                                shape_insets);
+}
+
+// Creates an exclusion from the fragment that will be placed in the provided
+// layout opportunity.
+scoped_refptr<NGExclusion> CreateExclusion(
+    const NGFragment& fragment,
+    const NGBfcOffset& float_margin_bfc_offset,
+    const NGBoxStrut& margins,
+    const LayoutBox* layout_box,
+    const NGUnpositionedFloat& unpositioned_float,
+    const NGConstraintSpace& parent_space,
+    TextDirection direction,
+    EFloat type) {
+  // TODO(ikilpatrick): Don't include the block-start margin of a float which
+  // has fragmented.
+  NGBfcOffset start_offset = float_margin_bfc_offset;
+
+  NGBfcOffset end_offset(
+      /* line_offset */ start_offset.line_offset +
+          (fragment.InlineSize() + margins.InlineSum()).ClampNegativeToZero(),
+      /* block_offset */ start_offset.block_offset +
+          (fragment.BlockSize() + margins.BlockSum()).ClampNegativeToZero());
+
+  std::unique_ptr<NGExclusionShapeData> shape_data =
+      layout_box->GetShapeOutsideInfo()
+          ? CreateExclusionShapeData(margins, layout_box, unpositioned_float,
+                                     parent_space, direction)
+          : nullptr;
+
+  return NGExclusion::Create(NGBfcRect(start_offset, end_offset), type,
+                             std::move(shape_data));
 }
 
 }  // namespace
@@ -237,6 +298,8 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
   // Add the float as an exclusion.
   scoped_refptr<NGExclusion> exclusion = CreateExclusion(
       float_fragment, float_margin_bfc_offset, unpositioned_float->margins,
+      ToLayoutBox(unpositioned_float->node.GetLayoutObject()),
+      *unpositioned_float, parent_space, parent_space.Direction(),
       unpositioned_float->IsRight() ? EFloat::kRight : EFloat::kLeft);
   exclusion_space->Add(std::move(exclusion));
 
