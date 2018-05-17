@@ -68,4 +68,4 @@ void GeneratePageBundleRequest::OnCompleted(PrefetchRequestStatus status,
   callback_.Run(PrefetchRequestStatus::SUCCESS, operation_name, pages);
 }
 
-}  // namespace offline_pages
+}  // offline_pages

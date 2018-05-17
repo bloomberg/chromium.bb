@@ -26,6 +26,7 @@ class DownloadService;
 namespace offline_pages {
 
 class PrefetchService;
+class PrefetchServiceTestTaco;
 
 // Asynchronously downloads the archive.
 class PrefetchDownloaderImpl : public PrefetchDownloader {
@@ -53,6 +54,8 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
   void SetClockForTesting(base::Clock* clock);
 
  private:
+  friend class PrefetchServiceTestTaco;
+
   enum class DownloadServiceStatus {
     // The download service is booting up.
     INITIALIZING,
@@ -62,6 +65,9 @@ class PrefetchDownloaderImpl : public PrefetchDownloader {
     // Chrome.
     UNAVAILABLE,
   };
+
+  // For test only.
+  explicit PrefetchDownloaderImpl(version_info::Channel channel);
 
   // Callback for StartDownload.
   void OnStartDownload(const std::string& download_id,

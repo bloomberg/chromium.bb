@@ -255,15 +255,6 @@ struct PrefetchArchiveInfo {
   int64_t file_size = 0;
 };
 
-// These operators are implemented for testing only, see test_util.cc.
-// They are provided here to avoid ODR problems.
-std::ostream& operator<<(std::ostream& out,
-                         PrefetchBackgroundTaskRescheduleType value);
-std::ostream& operator<<(std::ostream& out, PrefetchRequestStatus value);
-std::ostream& operator<<(std::ostream& out, RenderStatus value);
-std::ostream& operator<<(std::ostream& out, const PrefetchItemState& value);
-std::ostream& operator<<(std::ostream& out, PrefetchItemErrorCode value);
-
 }  // namespace offline_pages
 
 #endif  // COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_TYPES_H_

@@ -24,8 +24,6 @@ class PrefetchNetworkRequestFactory;
 class PrefetchService;
 class PrefetchStore;
 class SuggestedArticlesObserver;
-class TestDownloadClient;
-class TestDownloadService;
 class ThumbnailFetcher;
 
 // The taco class acts as a wrapper around the prefetch service making
@@ -80,8 +78,6 @@ class PrefetchServiceTestTaco {
     return prefetch_service_.get();
   }
 
-  TestDownloadService* download_service() { return download_service_.get(); }
-
   // Creates and returns the ownership of the created PrefetchService instance.
   // Leaves the taco empty, not usable.
   std::unique_ptr<PrefetchService> CreateAndReturnPrefetchService();
@@ -101,8 +97,6 @@ class PrefetchServiceTestTaco {
   std::unique_ptr<PrefetchService> prefetch_service_;
   std::unique_ptr<ThumbnailFetcher> thumbnail_fetcher_;
   std::unique_ptr<OfflinePageModel> offline_page_model_;
-  std::unique_ptr<TestDownloadService> download_service_;
-  std::unique_ptr<TestDownloadClient> download_client_;
 };
 
 }  // namespace offline_pages

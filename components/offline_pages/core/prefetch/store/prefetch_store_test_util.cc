@@ -256,18 +256,6 @@ std::size_t PrefetchStoreTestUtil::GetAllItems(
   return items_count;
 }
 
-std::string PrefetchStoreTestUtil::ToString() {
-  std::string result = "PrefetchItems: [";
-  std::set<PrefetchItem> items;
-  GetAllItems(&items);
-  for (const auto& item : items) {
-    result += "\n";
-    result += item.ToString();
-  }
-  result += "\n]";
-  return result;
-}
-
 int PrefetchStoreTestUtil::ZombifyPrefetchItems(const std::string& name_space,
                                                 const GURL& url) {
   int count = -1;
