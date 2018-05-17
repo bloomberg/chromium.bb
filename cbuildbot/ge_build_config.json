@@ -1640,6 +1640,12 @@
         },
         {
           "board_name": "coral",
+          "name": "babytiger",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "coral",
           "name": "blacktip",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
