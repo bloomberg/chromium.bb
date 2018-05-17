@@ -36,8 +36,7 @@ class ScopedFullscreenDisabler;
 class ToolbarModel;
 
 // Concrete implementation of the LocationBarController interface.
-class LocationBarControllerImpl : public LocationBarController,
-                                  public LeftImageProvider {
+class LocationBarControllerImpl : public LocationBarController {
  public:
   LocationBarControllerImpl(LocationBarLegacyView* location_bar_view,
                             ios::ChromeBrowserState* browser_state,
@@ -75,9 +74,6 @@ class LocationBarControllerImpl : public LocationBarController,
   const OmniboxView* GetLocationEntry() const override;
   OmniboxView* GetLocationEntry() override;
   bool IsShowingPlaceholderWhileCollapsed() override;
-
-  // LeftImageProvider implementation.
-  void SetLeftImage(int ImageId) override;
 
  private:
   // Installs a UIButton that serves as the location icon and lock icon.  This

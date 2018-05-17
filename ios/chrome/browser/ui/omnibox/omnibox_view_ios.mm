@@ -202,7 +202,7 @@ UIColor* IncognitoSecureTextColor() {
 
 OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
                                WebOmniboxEditController* controller,
-                               LeftImageProvider* left_image_provider,
+                               id<OmniboxLeftImageConsumer> left_image_consumer,
                                ios::ChromeBrowserState* browser_state)
     : OmniboxView(
           controller,
@@ -210,7 +210,7 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
       browser_state_(browser_state),
       field_(field),
       controller_(controller),
-      left_image_provider_(left_image_provider),
+      left_image_consumer_(left_image_consumer),
       ignore_popup_updates_(false),
       attributing_display_string_(nil),
       popup_provider_(nullptr) {
@@ -898,9 +898,7 @@ bool OmniboxViewIOS::ShouldIgnoreUserInputDueToPendingVoiceSearch() {
 }
 
 void OmniboxViewIOS::SetLeftImage(int imageId) {
-  if (left_image_provider_) {
-    left_image_provider_->SetLeftImage(imageId);
-  }
+  [left_image_consumer_ setLeftImageId:imageId];
 }
 
 void OmniboxViewIOS::HideKeyboardAndEndEditing() {

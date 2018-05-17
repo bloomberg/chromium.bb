@@ -113,7 +113,7 @@ LocationBarControllerImpl::LocationBarControllerImpl(
     id<BrowserCommands> dispatcher)
     : edit_view_(std::make_unique<OmniboxViewIOS>(location_bar_view.textField,
                                                   this,
-                                                  this,
+                                                  location_bar_view,
                                                   browser_state)),
       location_bar_view_(location_bar_view),
       delegate_(delegate),
@@ -310,10 +310,4 @@ void LocationBarControllerImpl::InstallLocationIcon() {
   // The placeholder image is only shown when in edit mode on iPhone, and always
   // shown on iPad.
   [location_bar_view_ setLeadingButtonHidden:!IsIPadIdiom()];
-}
-
-#pragma mark - LeftImageProvider
-
-void LocationBarControllerImpl::SetLeftImage(int imageId) {
-  [location_bar_view_ setPlaceholderImage:imageId];
 }

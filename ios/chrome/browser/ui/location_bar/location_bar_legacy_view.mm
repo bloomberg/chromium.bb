@@ -313,4 +313,10 @@ const LayoutOffset kPositionAnimationLeadingOffset = -10;
   return tint;
 }
 
+#pragma mark - OmniboxLeftImageConsumer
+
+- (void)setLeftImageId:(int)imageId {
+  [self setPlaceholderImage:imageId];
+}
+
 @end

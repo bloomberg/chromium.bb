@@ -7,13 +7,15 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/omnibox/omnibox_left_image_consumer.h"
+
 @class OmniboxTextFieldIOS;
 
 // The location bar view is the view that is displayed in the visible "address
 // bar" space of the toolbar. Everything that's located in the white rectangle
 // is the location bar: the button on the left, the buttons on the right, the
 // omnibox textfield.
-@interface LocationBarLegacyView : UIView
+@interface LocationBarLegacyView : UIView<OmniboxLeftImageConsumer>
 
 // Initialize the location bar with the given frame, font, text color, and tint
 // color for omnibox.
