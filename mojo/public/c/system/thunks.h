@@ -13,13 +13,24 @@
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/c/system/system_export.h"
 
-// Structure used to bind the basic Mojo Core functions to an embedder
-// implementation. This is intended to eventually be used as a stable ABI
-// between a Mojo embedder and some loaded application code, but for now it is
-// still effectively safe to rearrange entries as needed.
+// This defines the *stable*, foward-compatible ABI for the Mojo Core C library.
+// As such, the following types of changes are DISALLOWED:
+//
+//   - DO NOT delete or re-order any of the fields in this structure
+//   - DO NOT modify any function signatures defined here
+//   - DO NOT alter the alignment of the stucture
+//
+// Some changes are of course permissible:
+//
+//   - DO feel free to rename existing fields if there's a good reason to do so,
+//     e.g. deprecation of a function for all future applications.
+//   - DO add new functions to the end of this structure, but ensure that they
+//     have a signature which lends itself to reasonably extensible behavior
+//     (e.g. an optional "Options" structure as many functions here have).
+//
 #pragma pack(push, 8)
 struct MojoSystemThunks {
-  size_t size;  // Should be set to sizeof(MojoSystemThunks).
+  uint32_t size;  // Should be set to sizeof(MojoSystemThunks).
 
   MojoResult (*Initialize)(const struct MojoInitializeOptions* options);
 
@@ -81,7 +92,7 @@ struct MojoSystemThunks {
   MojoResult (*NotifyBadMessage)(
       MojoMessageHandle message,
       const char* error,
-      size_t error_num_bytes,
+      uint32_t error_num_bytes,
       const struct MojoNotifyBadMessageOptions* options);
 
   // Data pipe API.

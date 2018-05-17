@@ -591,7 +591,7 @@ MojoGetMessageContext(MojoMessageHandle message,
 MOJO_SYSTEM_EXPORT MojoResult
 MojoNotifyBadMessage(MojoMessageHandle message,
                      const char* error,
-                     size_t error_num_bytes,
+                     uint32_t error_num_bytes,
                      const struct MojoNotifyBadMessageOptions* options);
 
 #ifdef __cplusplus
