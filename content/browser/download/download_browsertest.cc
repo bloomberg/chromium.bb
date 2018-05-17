@@ -370,7 +370,7 @@ class CountingDownloadFile : public download::DownloadFileImpl {
     download::GetDownloadTaskRunner()->PostTaskAndReply(
         FROM_HERE,
         base::BindOnce(&CountingDownloadFile::GetNumberActiveFiles, &result),
-        base::MessageLoopCurrent::Get()->QuitWhenIdleClosure());
+        base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
     base::RunLoop().Run();
     DCHECK_NE(-1, result);
     return result;
