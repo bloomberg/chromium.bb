@@ -64,13 +64,6 @@
 -SitePerProcessBrowserTest.HiddenOOPIFWillNotGenerateCompositorFramesAfterNavigation
 -SitePerProcessBrowserTest.SubframeVisibleAfterRenderViewBecomesSwappedOut
 
-#### Tab Capture
-# Copy Surface timing out http://crbug.com/785257
--GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTest.CopyFromSurface*
--GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestHiDPI.*
--GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestTabCapture.*
--GLAndSoftwareCompositing/CompositingRenderWidgetHostViewBrowserTestTabCaptureHighDPI.*
-
 #### VizProcessTransportFactory
 # No ContextProvider http://crbug.com/785268
 -ImageTransportFactoryTearDownBrowserTest.*

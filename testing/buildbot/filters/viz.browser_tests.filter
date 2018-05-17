@@ -12,16 +12,11 @@
 # http://crbug.com/807465
 -ArcAccessibilityHelperBridgeBrowserTest.PreferenceChange
 
-# Tab Capture Errors
-# Tab Capture is still in development: crbug.com/754864
--TabCaptureApiPixelTest.OffscreenTabEndToEnd
--TabCaptureApiPixelTest.OffscreenTabEvilTests
--ThumbnailTest.ShouldCaptureOnNavigatingAwayExplicitWait
--ThumbnailTest.ShouldCaptureOnNavigatingAwaySlowPageLoad
-
 # Tab Capture on Viz fails at CopyOutputRequest: crbug.com/810389
 -FeedbackTest.*
 -LoginFeedbackTest.Basic
+-TabCaptureApiPixelTest.OffscreenTabEndToEnd
+-TabCaptureApiPixelTest.OffscreenTabEvilTests
 
 #### Compositor Frame Observation Timeouts
 # WaitForChildFrameSurfaceReady crashes crbug.com/787945
@@ -31,10 +26,6 @@
 -WebViewTest.InterstitialPageFocusedWidget
 -WebViewTest.ReloadAfterCrash
 -WebViewGuestTouchFocusBrowserPluginSpecificTest.TouchFocusesBrowserPluginInEmbedder
-
-#### Hit Testing
-# Incorrect Focus State crbug.com/818205
--WebViewFocusBrowserPluginSpecificTest.TouchFocusesEmbedder
 
 # Mac
 # Shutdown error. https://crbug.com/823276
