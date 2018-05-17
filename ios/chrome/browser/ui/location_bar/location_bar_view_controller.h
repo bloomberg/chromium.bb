@@ -10,7 +10,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_consumer.h"
 
-@class LocationBarEditView;
 @class OmniboxTextFieldIOS;
 @protocol ActivityServiceCommands;
 @protocol BrowserCommands;
