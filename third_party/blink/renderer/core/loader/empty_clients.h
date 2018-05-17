@@ -320,11 +320,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
                                        const Vector<String>&,
                                        const Vector<String>&,
                                        const String&,
-                                       bool,
-                                       DetachedPluginPolicy) override;
-  bool CanCreatePluginWithoutRenderer(const String& mime_type) const override {
-    return false;
-  }
+                                       bool) override;
   std::unique_ptr<WebMediaPlayer> CreateWebMediaPlayer(
       HTMLMediaElement&,
       const WebMediaPlayerSource&,

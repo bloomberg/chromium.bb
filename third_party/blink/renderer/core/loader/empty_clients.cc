@@ -135,8 +135,7 @@ WebPluginContainerImpl* EmptyLocalFrameClient::CreatePlugin(
     const Vector<String>&,
     const Vector<String>&,
     const String&,
-    bool,
-    DetachedPluginPolicy) {
+    bool) {
   return nullptr;
 }
 

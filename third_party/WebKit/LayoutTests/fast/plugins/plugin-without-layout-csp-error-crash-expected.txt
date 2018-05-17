@@ -1,3 +1,0 @@
-CONSOLE ERROR: line 7: Refused to load plugin data from '' because it violates the following Content Security Policy directive: "default-src 'none'". Note that 'object-src' was not explicitly set, so 'default-src' is used as a fallback.
-
-PASS if no crash

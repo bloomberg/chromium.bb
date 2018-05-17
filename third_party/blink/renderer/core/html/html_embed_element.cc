@@ -105,8 +105,6 @@ void HTMLEmbedElement::ParseAttribute(
       SetNeedsPluginUpdate(true);
       GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
           "Embed type changed");
-    } else {
-      RequestPluginCreationWithoutLayoutObjectIfPossible();
     }
   } else if (params.name == codeAttr) {
     // TODO(schenney): Remove this branch? It's not in the spec and we're not in
@@ -124,8 +122,6 @@ void HTMLEmbedElement::ParseAttribute(
         SetNeedsPluginUpdate(true);
         LazyReattachIfNeeded();
       }
-    } else {
-      RequestPluginCreationWithoutLayoutObjectIfPossible();
     }
   } else {
     HTMLPlugInElement::ParseAttribute(params);
