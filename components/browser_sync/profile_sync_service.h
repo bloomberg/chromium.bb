@@ -45,9 +45,7 @@
 #include "components/sync/model/model_type_store.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/backoff_entry.h"
-#include "services/identity/public/cpp/identity_manager.h"
 #include "url/gurl.h"
 
 class ProfileOAuth2TokenService;
@@ -87,6 +85,8 @@ struct UserShare;
 }  // namespace syncer
 
 namespace browser_sync {
+
+class SyncAuthManager;
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync engine. Each subsystem is logically thought of as being a sync
@@ -171,8 +171,6 @@ class ProfileSyncService : public syncer::SyncService,
                            public syncer::SyncPrefObserver,
                            public syncer::DataTypeManagerObserver,
                            public syncer::UnrecoverableErrorHandler,
-                           public OAuth2TokenService::Observer,
-                           public identity::IdentityManager::Observer,
                            public GaiaCookieManagerService::Observer {
  public:
   using PlatformSyncAllowedProvider = base::RepeatingCallback<bool()>;
@@ -368,10 +366,11 @@ class ProfileSyncService : public syncer::SyncService,
   bool IsPassphraseRequired() const override;
   syncer::ModelTypeSet GetEncryptedDataTypes() const override;
 
-  // identity::IdentityManager::Observer implementation.
-  void OnPrimaryAccountSet(const AccountInfo& primary_account_info) override;
-  void OnPrimaryAccountCleared(
-      const AccountInfo& previous_primary_account_info) override;
+  // Called by the SyncAuthManager when the primary account changes.
+  // TODO(crbug.com/842697): Make these private and pass a callback to the
+  // SyncAuthManager.
+  void OnPrimaryAccountSet();
+  void OnPrimaryAccountCleared();
 
   // GaiaCookieManagerService::Observer implementation.
   void OnGaiaAccountsInCookieUpdated(
@@ -491,10 +490,12 @@ class ProfileSyncService : public syncer::SyncService,
   // been cleared yet. Virtual for testing purposes.
   virtual bool waiting_for_auth() const;
 
-  // OAuth2TokenService::Observer implementation.
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
-  void OnRefreshTokensLoaded() override;
+  // Called by the SyncAuthManager when the refresh token state changes.
+  // TODO(crbug.com/842697): Make these private and pass a callback to the
+  // SyncAuthManager.
+  void OnRefreshTokenAvailable();
+  void OnRefreshTokenRevoked();
+  void OnCredentialsRejectedByClient();
 
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
@@ -543,9 +544,6 @@ class ProfileSyncService : public syncer::SyncService,
   void ClearServerDataForTest(const base::Closure& callback);
 
  private:
-  void RegisterAuthNotifications();
-  void UnregisterAuthNotifications();
-
   syncer::SyncCredentials GetCredentials();
   virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
   syncer::SyncEngine::HttpPostProviderFactoryGetter
@@ -722,6 +720,8 @@ class ProfileSyncService : public syncer::SyncService,
   // email address.
   const std::unique_ptr<SigninManagerWrapper> signin_;
 
+  std::unique_ptr<SyncAuthManager> auth_manager_;
+
   // The product channel of the embedder.
   const version_info::Channel channel_;
 
@@ -757,12 +757,6 @@ class ProfileSyncService : public syncer::SyncService,
   THREAD_CHECKER(thread_checker_);
 
   SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
-
-  // This is a cache of the last authentication response we received from the
-  // sync server. The UI queries this to display appropriate messaging to the
-  // user.
-  GoogleServiceAuthError last_auth_error_;
-
   // Cache of the last SyncCycleSnapshot received from the sync engine.
   syncer::SyncCycleSnapshot last_snapshot_;
 
@@ -795,10 +789,6 @@ class ProfileSyncService : public syncer::SyncService,
   // ProfileSyncService from starting engine till browser restarted or user
   // signed out.
   bool sync_disabled_by_admin_;
-
-  // Set to true if a signin has completed but we're still waiting for the
-  // engine to refresh its credentials.
-  bool is_auth_in_progress_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;
@@ -836,9 +826,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;
-
-  // ProfileSyncService uses this service to get access tokens.
-  ProfileOAuth2TokenService* const oauth2_token_service_;
 
   // ProfileSyncService needs to remember access token in order to invalidate it
   // with OAuth2TokenService.
