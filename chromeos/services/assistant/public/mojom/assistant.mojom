@@ -4,7 +4,10 @@
 
 module chromeos.assistant.mojom;
 
+import "ui/accessibility/mojom/ax_assistant_structure.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
+import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
 // Interface to communicate with assistant backend.
@@ -68,13 +71,22 @@ interface AssistantEventSubscriber {
 interface AssistantPlatform {
   // Initiates assistant and provides interfaces for assistant to call into the
   // browser.
-  Init(Client assistant_client_interface, AudioInput audio_input_interface);
+  Init(Client assistant_client_interface, Context context_interface,
+       AudioInput audio_input_interface);
 };
 
 // Interface for assistant to call into client.
 interface Client {
   // Notifies assistant client that assistant running status has changed.
   OnAssistantStatusChanged(bool running);
+};
+
+// Interface for assistant to request view hierarchy for current focused window.
+interface Context {
+  // Request context of current window from browser.
+  RequestAssistantStructure() => (
+    ax.mojom.AssistantExtra? extra,
+    ax.mojom.AssistantTree? structure);
 };
 
 // Interface for assistant to call into browser for audio input related

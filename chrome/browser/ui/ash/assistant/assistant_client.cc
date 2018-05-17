@@ -24,7 +24,9 @@ AssistantClient* AssistantClient::Get() {
 }
 
 AssistantClient::AssistantClient()
-    : client_binding_(this), audio_input_binding_(&audio_input_) {
+    : client_binding_(this),
+      audio_input_binding_(&audio_input_),
+      context_binding_(&context_) {
   DCHECK_EQ(nullptr, g_instance);
   g_instance = this;
 }
@@ -32,6 +34,7 @@ AssistantClient::AssistantClient()
 AssistantClient::~AssistantClient() {
   DCHECK(g_instance);
   g_instance = nullptr;
+  context_binding_.Close();
 }
 
 void AssistantClient::MaybeInit(service_manager::Connector* connector) {
@@ -46,7 +49,10 @@ void AssistantClient::MaybeInit(service_manager::Connector* connector) {
   chromeos::assistant::mojom::ClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
 
-  assistant_connection_->Init(std::move(client_ptr),
+  chromeos::assistant::mojom::ContextPtr context_ptr;
+  context_binding_.Bind(mojo::MakeRequest(&context_ptr));
+
+  assistant_connection_->Init(std::move(client_ptr), std::move(context_ptr),
                               std::move(audio_input_ptr));
 
   assistant_card_renderer_.reset(new AssistantCardRenderer(connector));

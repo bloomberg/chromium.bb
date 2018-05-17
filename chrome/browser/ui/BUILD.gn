@@ -3711,6 +3711,10 @@ split_static_library("ui") {
       "ash/assistant/assistant_card_renderer.h",
       "ash/assistant/assistant_client.cc",
       "ash/assistant/assistant_client.h",
+      "ash/assistant/assistant_context.cc",
+      "ash/assistant/assistant_context.h",
+      "ash/assistant/assistant_context_util.cc",
+      "ash/assistant/assistant_context_util.h",
       "ash/assistant/platform_audio_input_host.cc",
       "ash/assistant/platform_audio_input_host.h",
     ]

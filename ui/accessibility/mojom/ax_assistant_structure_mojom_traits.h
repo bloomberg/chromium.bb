@@ -14,15 +14,28 @@
 namespace mojo {
 
 template <>
-struct StructTraits<ax::mojom::AssistantTreeDataView, ui::AssistantTree> {
+struct StructTraits<ax::mojom::AssistantTreeDataView,
+                    std::unique_ptr<ui::AssistantTree>> {
+  static bool IsNull(const std::unique_ptr<ui::AssistantTree>& ptr) {
+    return !ptr;
+  }
+
+  static void SetToNull(std::unique_ptr<ui::AssistantTree>* output) {
+    output->reset();
+  }
+
+  static const std::vector<std::unique_ptr<ui::AssistantNode>>& nodes(
+      const std::unique_ptr<ui::AssistantTree>& tree) {
+    return tree->nodes;
+  }
   static bool Read(ax::mojom::AssistantTreeDataView data,
-                   ui::AssistantTree* out);
+                   std::unique_ptr<ui::AssistantTree>* out);
 };
 
 template <>
 struct StructTraits<ax::mojom::AssistantNodeDataView,
                     std::unique_ptr<ui::AssistantNode>> {
-  static std::vector<int32_t> children_indices(
+  static const std::vector<int32_t>& children_indices(
       const std::unique_ptr<ui::AssistantNode>& node) {
     return node->children_indices;
   }
