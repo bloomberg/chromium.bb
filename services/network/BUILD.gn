@@ -44,6 +44,8 @@ component("network_service") {
     "network_context.h",
     "network_sandbox_hook_linux.cc",
     "network_sandbox_hook_linux.h",
+    "network_sandbox_win.cc",
+    "network_sandbox_win.h",
     "network_service.cc",
     "network_service.h",
     "network_service_network_delegate.cc",
@@ -124,6 +126,7 @@ component("network_service") {
     "//services/network/public/mojom",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
+    "//services/service_manager/sandbox:sandbox",
     "//url",
   ]
 
@@ -132,6 +135,10 @@ component("network_service") {
       "//sandbox/linux:sandbox_services",
       "//services/service_manager/sandbox:sandbox",
     ]
+  }
+
+  if (is_win) {
+    deps += [ "//sandbox/win:sandbox" ]
   }
 
   # TODO(sdefresne): This depends on net's enable_net_mojo getting turned on for

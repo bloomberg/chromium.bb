@@ -869,6 +869,8 @@ sandbox::ResultCode SandboxWin::StartSandboxedProcess(
                 sandbox::MITIGATION_DLL_SEARCH_ORDER;
   if (!cmd_line->HasSwitch(switches::kAllowThirdPartyModules))
     mitigations |= sandbox::MITIGATION_FORCE_MS_SIGNED_BINS;
+  if (sandbox_type == SANDBOX_TYPE_NETWORK)
+    mitigations |= sandbox::MITIGATION_DYNAMIC_CODE_DISABLE;
 
   result = policy->SetDelayedProcessMitigations(mitigations);
   if (result != sandbox::SBOX_ALL_OK)

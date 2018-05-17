@@ -6,7 +6,12 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "services/service_manager/sandbox/switches.h"
+
+#if defined(OS_WIN)
+#include "services/service_manager/sandbox/features.h"
+#endif
 
 namespace service_manager {
 
@@ -14,11 +19,15 @@ bool IsUnsandboxedSandboxType(SandboxType sandbox_type) {
   return
 #if defined(OS_WIN)
       sandbox_type == SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES ||
+      // Windows sandbox for network service requires feature flag.
+      (sandbox_type == SANDBOX_TYPE_NETWORK &&
+       !base::FeatureList::IsEnabled(
+           service_manager::features::kNetworkServiceWindowsSandbox)) ||
 #endif
-#if !defined(OS_LINUX)
-      // TODO(tsepez): Sandbox network process beyond linux.
+#if !defined(OS_LINUX) and !defined(OS_WIN)
+      // TODO(tsepez): Sandbox network process beyond linux and Windows.
       sandbox_type == SANDBOX_TYPE_NETWORK ||
-#endif
+#endif  // !defined(OS_LINUX) and !defined(OS_WIN)
       sandbox_type == SANDBOX_TYPE_NO_SANDBOX;
 }
 
