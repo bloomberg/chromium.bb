@@ -96,7 +96,8 @@ BrowserPlugin::BrowserPlugin(
       ready_(false),
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       delegate_(delegate),
-      task_runner_(render_frame->GetTaskRunner(blink::TaskType::kUnthrottled)),
+      task_runner_(
+          render_frame->GetTaskRunner(blink::TaskType::kInternalDefault)),
       weak_ptr_factory_(this) {
   browser_plugin_instance_id_ =
       BrowserPluginManager::Get()->GetNextInstanceID();
