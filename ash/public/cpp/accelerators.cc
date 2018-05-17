@@ -8,9 +8,6 @@
 
 namespace ash {
 
-const int kDebugModifier =
-    ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN;
-
 const AcceleratorData kAcceleratorData[] = {
     {true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME},
     {false, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN, PREVIOUS_IME},
