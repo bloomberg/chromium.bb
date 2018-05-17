@@ -285,6 +285,23 @@ bool UtilityProcessHost::StartProcess() {
 #if defined(OS_ANDROID)
       switches::kOrderfileMemoryOptimization,
 #endif
+      // These flags are used by the audio service:
+      switches::kAudioBufferSize,
+      switches::kAudioServiceQuitTimeoutMs,
+      switches::kDisableAudioOutput,
+      switches::kFailAudioStreamCreation,
+      switches::kMuteAudio,
+      switches::kUseFileForFakeAudioCapture,
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)
+      switches::kAlsaInputDevice,
+      switches::kAlsaOutputDevice,
+#endif
+#if defined(OS_WIN)
+      switches::kEnableExclusiveAudio,
+      switches::kForceWaveAudio,
+      switches::kTrySupportedChannelLayouts,
+      switches::kWaveOutBuffers,
+#endif
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                arraysize(kSwitchNames));
