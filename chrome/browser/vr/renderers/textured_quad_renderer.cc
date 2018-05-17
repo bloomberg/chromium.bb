@@ -195,17 +195,18 @@ void TexturedQuadRenderer::AddQuad(int texture_data_handle,
                                    const gfx::SizeF& element_size,
                                    float corner_radius,
                                    bool blend) {
+  if (!clip_rect.Intersects(gfx::RectF(1.0f, 1.0f)))
+    return;
   QuadData quad;
   quad.texture_data_handle = texture_data_handle;
   quad.overlay_texture_data_handle = overlay_texture_data_handle;
   quad.model_view_proj_matrix = model_view_proj_matrix;
-  quad.clip_rect = CalculateTexSpaceRect(element_size, clip_rect);
+  quad.clip_rect = clip_rect;
   quad.opacity = opacity;
   quad.element_size = element_size;
   quad.corner_radius = corner_radius;
   quad.blend = blend;
-  if (quad.clip_rect.Intersects({0.0f, 0.0f, 1.0f, 1.0f}))
-    quad_queue_.push(quad);
+  quad_queue_.push(quad);
 }
 
 void TexturedQuadRenderer::Flush() {

@@ -19,6 +19,10 @@
 
 namespace vr {
 
+namespace {
+constexpr float kAlmostOne = 0.999f;
+}
+
 TEST(UiElement, BoundsContainChildren) {
   auto parent = std::make_unique<UiElement>();
   parent->set_bounds_contain_children(true);
@@ -309,19 +313,19 @@ TEST(UiElement, HitTest) {
       {gfx::PointF(0.f, 0.45f), true, false, true},
       {gfx::PointF(0.f, 0.55f), true, false, true},
       {gfx::PointF(0.f, 0.95f), true, false, false},
-      {gfx::PointF(0.f, 1.f), true, false, false},
+      {gfx::PointF(0.f, kAlmostOne), true, false, false},
       // Walk bottom edge
-      {gfx::PointF(0.1f, 1.f), true, false, false},
-      {gfx::PointF(0.45f, 1.f), true, false, true},
-      {gfx::PointF(0.55f, 1.f), true, false, true},
-      {gfx::PointF(0.95f, 1.f), true, false, false},
-      {gfx::PointF(1.0f, 1.f), true, false, false},
+      {gfx::PointF(0.1f, kAlmostOne), true, false, false},
+      {gfx::PointF(0.45f, kAlmostOne), true, false, true},
+      {gfx::PointF(0.55f, kAlmostOne), true, false, true},
+      {gfx::PointF(0.95f, kAlmostOne), true, false, false},
+      {gfx::PointF(kAlmostOne, kAlmostOne), true, false, false},
       // Walk right edge
-      {gfx::PointF(1.f, 0.95f), true, false, false},
-      {gfx::PointF(1.f, 0.55f), true, false, true},
-      {gfx::PointF(1.f, 0.45f), true, false, true},
-      {gfx::PointF(1.f, 0.1f), true, false, false},
-      {gfx::PointF(1.f, 0.f), true, false, false},
+      {gfx::PointF(kAlmostOne, 0.95f), true, false, false},
+      {gfx::PointF(kAlmostOne, 0.55f), true, false, true},
+      {gfx::PointF(kAlmostOne, 0.45f), true, false, true},
+      {gfx::PointF(kAlmostOne, 0.1f), true, false, false},
+      {gfx::PointF(kAlmostOne, 0.f), true, false, false},
       // Walk top edge
       {gfx::PointF(0.95f, 0.f), true, false, false},
       {gfx::PointF(0.55f, 0.f), true, false, true},
@@ -351,7 +355,7 @@ TEST(UiElement, HitTestWithClip) {
   UiElement rect;
   rect.SetSize(1.0, 1.0);
   // A horizontal band in the middle.
-  rect.set_clip_rect_for_test({-0.5f, 0.2f, 1.0f, 0.4f});
+  rect.SetClipRect({0.0f, 0.3f, 1.0f, 0.4f});
   struct {
     gfx::PointF location;
     bool expected;
@@ -369,6 +373,7 @@ TEST(UiElement, HitTestWithClip) {
       {{0.4f, 0.5f}, true},
       {{0.6f, 0.5f}, true},
       {{0.8f, 0.5f}, true},
+      {{kAlmostOne, 0.5f}, true},
   };
 
   for (size_t i = 0; i < base::size(test_cases); ++i) {
@@ -526,13 +531,13 @@ TEST(UiElement, ClipChildren) {
 
   parent->SizeAndLayOut();
 
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-8.0f, 0.0f, 16.0f, 8.0f),
-                       p_child->clip_rect());
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-1.5f, 0.5f, 4.0f, 2.0f),
+                       p_child->GetClipRect());
 
   p_child->SetScale(0.5f, 0.5f, 1.0f);
   parent->SizeAndLayOut();
-  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-16.0f, 0.0f, 32.0f, 16.0f),
-                       p_child->clip_rect());
+  EXPECT_FLOAT_RECT_EQ(gfx::RectF(-3.5f, 0.5f, 8.0f, 4.0f),
+                       p_child->GetClipRect());
 }
 
 }  // namespace vr

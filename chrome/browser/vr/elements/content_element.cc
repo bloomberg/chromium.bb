@@ -53,7 +53,7 @@ void ContentElement::Render(UiElementRenderer* renderer,
   if (uses_quad_layer_) {
     renderer->DrawTexturedQuad(0, 0, texture_location(),
                                model.view_proj_matrix * world_space_transform(),
-                               clip_rect(), computed_opacity(), size(),
+                               GetClipRect(), computed_opacity(), size(),
                                corner_radius(), false);
     return;
   }
@@ -63,7 +63,7 @@ void ContentElement::Render(UiElementRenderer* renderer,
   if (texture_id() || overlay_texture_id) {
     renderer->DrawTexturedQuad(
         texture_id(), overlay_texture_id, texture_location(),
-        model.view_proj_matrix * world_space_transform(), clip_rect(),
+        model.view_proj_matrix * world_space_transform(), GetClipRect(),
         computed_opacity(), size(), corner_radius(), true);
   }
 }

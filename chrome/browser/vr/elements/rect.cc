@@ -46,7 +46,7 @@ void Rect::Render(UiElementRenderer* renderer, const CameraModel& model) const {
     return;
   renderer->DrawRadialGradientQuad(
       model.view_proj_matrix * world_space_transform(), edge_color_,
-      center_color_, clip_rect(), opacity, size(), corner_radii());
+      center_color_, GetClipRect(), opacity, size(), corner_radii());
 }
 
 void Rect::SetLocalOpacity(float opacity) {

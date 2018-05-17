@@ -21,7 +21,7 @@ void PlatformUiElement::Render(UiElementRenderer* renderer,
   if (texture_id_) {
     renderer->DrawTexturedQuad(texture_id_, 0, texture_location_,
                                model.view_proj_matrix * world_space_transform(),
-                               clip_rect(), computed_opacity(), size(),
+                               GetClipRect(), computed_opacity(), size(),
                                corner_radius(), true);
   }
 }

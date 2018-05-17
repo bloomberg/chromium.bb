@@ -144,8 +144,7 @@ void RadialGradientQuadRenderer::Draw(
       SkColorGetA(center_color) == SK_AlphaTRANSPARENT) {
     return;
   }
-  auto tex_clip_rect = CalculateTexSpaceRect(element_size, clip_rect);
-  if (!tex_clip_rect.Intersects({0.0f, 0.0f, 1.0f, 1.0f}))
+  if (!clip_rect.Intersects(gfx::RectF(1.0f, 1.0f)))
     return;
 
   glUseProgram(program_handle_);
@@ -186,9 +185,8 @@ void RadialGradientQuadRenderer::Draw(
   glUniformMatrix4fv(model_view_proj_matrix_handle_, 1, false,
                      MatrixToGLArray(model_view_proj_matrix).data());
 
-  const GLfloat clip_rect_data[4] = {tex_clip_rect.x(), tex_clip_rect.y(),
-                                     tex_clip_rect.right(),
-                                     tex_clip_rect.bottom()};
+  const GLfloat clip_rect_data[4] = {clip_rect.x(), clip_rect.y(),
+                                     clip_rect.right(), clip_rect.bottom()};
   glUniform2fv(clip_rect_handle_, 2, clip_rect_data);
 
   if (radii.IsZero()) {

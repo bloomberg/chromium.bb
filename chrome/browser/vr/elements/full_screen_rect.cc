@@ -16,9 +16,9 @@ void FullScreenRect::Render(UiElementRenderer* renderer,
                             const CameraModel& model) const {
   gfx::Transform m;
   m.Scale3d(2.0f, 2.0f, 1.0f);
-  renderer->DrawRadialGradientQuad(m, edge_color(), center_color(), clip_rect(),
-                                   computed_opacity(), gfx::SizeF(1.f, 1.f),
-                                   corner_radii());
+  renderer->DrawRadialGradientQuad(m, edge_color(), center_color(),
+                                   GetClipRect(), computed_opacity(),
+                                   gfx::SizeF(1.f, 1.f), corner_radii());
 }
 
 bool FullScreenRect::IsWorldPositioned() const {

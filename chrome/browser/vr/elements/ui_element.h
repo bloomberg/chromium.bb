@@ -225,8 +225,10 @@ class UiElement : public cc::AnimationTarget {
   void SetSize(float width, float hight);
   virtual void OnSetSize(const gfx::SizeF& size);
 
-  gfx::RectF clip_rect() const { return clip_rect_; }
-  void set_clip_rect_for_test(const gfx::RectF& rect) { clip_rect_ = rect; }
+  // Setter and getter for the clip rect in relative tex coordinates, the same
+  // system used for hit testing.
+  gfx::RectF GetClipRect() const;
+  void SetClipRect(const gfx::RectF& rect);
 
   gfx::PointF local_origin() const { return local_origin_; }
 
@@ -415,8 +417,7 @@ class UiElement : public cc::AnimationTarget {
   // been determined.  The default implementation applies anchoring.
   virtual void LayOutNonContributingChildren();
 
-  // Recursive method that clips element subtrees, given that a parent is
-  // clipped.
+  // Recursive method that clips element subtrees, using the clip rect set.
   void ClipChildren();
 
   UiElement* FirstLaidOutChild() const;
@@ -490,6 +491,8 @@ class UiElement : public cc::AnimationTarget {
   // requirements.
   virtual bool SizeAndLayOutChildren();
 
+  gfx::RectF GetAbsoluteClipRect() const;
+
   Animation& animation() { return animation_; }
 
   virtual const Sounds& GetSounds() const;
@@ -513,6 +516,10 @@ class UiElement : public cc::AnimationTarget {
   // ancestors), or its animation will cause it to become locally visible.
   bool IsOrWillBeLocallyVisible() const;
 
+  // Recursive method that clips element subtrees, given that a parent is
+  // clipped. Receives a clipping rect in absolute scale.
+  void ClipChildren(const gfx::RectF& abs_clip);
+
   virtual gfx::RectF ComputeContributingChildrenBounds();
 
   // Valid IDs are non-negative.
@@ -534,9 +541,10 @@ class UiElement : public cc::AnimationTarget {
   // The size of the object.  This does not affect children.
   gfx::SizeF size_;
 
-  // The clip of the object. The rect is in relation to the element's size,
-  // with the origin at its center.
-  gfx::RectF clip_rect_;
+  // The clip of the object. The rect dimensions are relative to the element's
+  // size, with the origin at its center. Use the getter and setter to
+  // manipulate the rect in relative tex coordinates.
+  gfx::RectF clip_rect_ = {-0.5f, 0.5f, 1.0f, 1.0f};
 
   // Indicates that this element clips its descendants with its size.
   bool clips_descendants_ = false;
