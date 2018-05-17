@@ -34,9 +34,6 @@ buildflag_header("media_buildflags") {
     "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
     "ENABLE_MEDIA_REMOTING=$enable_media_remoting",
     "ENABLE_MEDIA_REMOTING_RPC=$enable_media_remoting_rpc",
-
-    # TODO(phoglund): Remove this define from the code.
-    "ENABLE_WEBRTC=true",
     "USE_PROPRIETARY_CODECS=$proprietary_codecs",
   ]
 }

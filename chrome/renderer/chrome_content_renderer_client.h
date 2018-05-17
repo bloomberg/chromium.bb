@@ -79,9 +79,7 @@ namespace web_cache {
 class WebCacheImpl;
 }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 class WebRtcLoggingMessageFilter;
-#endif
 
 namespace internal {
 
@@ -327,9 +325,7 @@ class ChromeContentRendererClient
   std::unique_ptr<subresource_filter::UnverifiedRulesetDealer>
       subresource_filter_ruleset_dealer_;
   std::unique_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
-#if BUILDFLAG(ENABLE_WEBRTC)
   scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
-#endif
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   std::unique_ptr<ChromePDFPrintClient> pdf_print_client_;
 #endif

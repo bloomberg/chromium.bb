@@ -485,11 +485,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
     media_router::prefs::kMediaRouterCastAllowAllIPs,
     base::Value::Type::BOOLEAN },
 #endif  // !defined(OS_ANDROID)
-#if BUILDFLAG(ENABLE_WEBRTC)
   { key::kWebRtcUdpPortRange,
     prefs::kWebRTCUDPPortRange,
     base::Value::Type::STRING },
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   { key::kSecurityKeyPermitAttestation,
     prefs::kSecurityKeyPermitAttestation,

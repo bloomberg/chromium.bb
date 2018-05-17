@@ -70,9 +70,7 @@ static const char* kBadFlags[] = {
     translate::switches::kTranslateSecurityOrigin,
 
     // These flags undermine HTTPS / connection security.
-#if BUILDFLAG(ENABLE_WEBRTC)
     switches::kDisableWebRtcEncryption,
-#endif
     switches::kIgnoreCertificateErrors,
     invalidation::switches::kSyncAllowInsecureXmppConnection,
 

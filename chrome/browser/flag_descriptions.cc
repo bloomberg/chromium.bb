@@ -3105,16 +3105,12 @@ const char kPnaclSubzeroDescription[] =
 
 #endif  // BUILDFLAG(ENABLE_NACL)
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-
 const char kWebrtcH264WithOpenh264FfmpegName[] =
     "WebRTC H.264 software video encoder/decoder";
 const char kWebrtcH264WithOpenh264FfmpegDescription[] =
     "When enabled, an H.264 software video encoder/decoder pair is included. "
     "If a hardware encoder/decoder is also available it may be used instead of "
     "this encoder/decoder.";
-
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 #if defined(OS_CHROMEOS)
 

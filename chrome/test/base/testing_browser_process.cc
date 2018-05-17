@@ -397,11 +397,9 @@ MediaFileSystemRegistry* TestingBrowserProcess::media_file_system_registry() {
 #endif
 }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 WebRtcLogUploader* TestingBrowserProcess::webrtc_log_uploader() {
   return nullptr;
 }
-#endif
 
 network_time::NetworkTimeTracker*
 TestingBrowserProcess::network_time_tracker() {

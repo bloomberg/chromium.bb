@@ -814,19 +814,6 @@ class CaptureStreamRenderProcessHostTest : public RenderProcessHostTest {
   }
 };
 
-// These tests contain WebRTC calls and cannot be run when it isn't enabled.
-#if !BUILDFLAG(ENABLE_WEBRTC)
-#define GetUserMediaIncrementsVideoCaptureStreams \
-  DISABLED_GetUserMediaIncrementsVideoCaptureStreams
-#define StopResetsVideoCaptureStreams DISABLED_StopResetsVideoCaptureStreams
-#define KillProcessZerosVideoCaptureStreams \
-  DISABLED_KillProcessZerosVideoCaptureStreams
-#define GetUserMediaAudioOnlyIncrementsMediaStreams \
-  DISABLED_GetUserMediaAudioOnlyIncrementsMediaStreams
-#define KillProcessZerosAudioCaptureStreams \
-  DISABLED_KillProcessZerosAudioCaptureStreams
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
-
 // Tests that video capture stream count increments when getUserMedia() is
 // called.
 IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,

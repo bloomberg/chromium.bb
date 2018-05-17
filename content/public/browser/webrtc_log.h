@@ -12,10 +12,6 @@
 #include "content/common/content_export.h"
 #include "media/media_buildflags.h"
 
-#if !BUILDFLAG(ENABLE_WEBRTC)
-#error "WebRTC not enabled."
-#endif
-
 namespace content {
 
 class CONTENT_EXPORT WebRtcLog {

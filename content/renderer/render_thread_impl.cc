@@ -98,11 +98,16 @@
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/midi/midi_message_filter.h"
 #include "content/renderer/media/render_media_client.h"
+#include "content/renderer/media/stream/aec_dump_message_filter.h"
 #include "content/renderer/media/stream/media_stream_center.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_tracker.h"
+#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/mus/render_widget_window_tree_client_factory.h"
 #include "content/renderer/mus/renderer_window_tree_client.h"
 #include "content/renderer/net_info_helper.h"
+#include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -168,9 +173,6 @@
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_switches.h"
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/renderer/p2p/socket_dispatcher.h"
-#endif
 
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
@@ -188,13 +190,6 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #include <objbase.h>
-#endif
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/renderer/media/stream/aec_dump_message_filter.h"
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/peer_connection_tracker.h"
-#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #endif
 
 #ifdef ENABLE_VTUNE_JIT_INTERFACE
@@ -832,7 +827,6 @@ void RenderThreadImpl::Init(
   browser_plugin_manager_.reset(new BrowserPluginManager());
   AddObserver(browser_plugin_manager_.get());
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   peer_connection_tracker_.reset(new PeerConnectionTracker());
   AddObserver(peer_connection_tracker_.get());
 
@@ -847,7 +841,6 @@ void RenderThreadImpl::Init(
 
   AddFilter(aec_dump_message_filter_.get());
 
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
   audio_input_ipc_factory_.emplace(main_thread_runner(), GetIOTaskRunner());
 
   audio_output_ipc_factory_.emplace(GetIOTaskRunner());
@@ -2183,21 +2176,17 @@ std::unique_ptr<blink::WebMediaStreamCenter>
 RenderThreadImpl::CreateMediaStreamCenter(
     blink::WebMediaStreamCenterClient* client) {
   std::unique_ptr<blink::WebMediaStreamCenter> media_stream_center;
-#if BUILDFLAG(ENABLE_WEBRTC)
   if (!media_stream_center) {
     media_stream_center = std::make_unique<MediaStreamCenter>(
         client, GetPeerConnectionDependencyFactory());
   }
-#endif
   return media_stream_center;
 }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 PeerConnectionDependencyFactory*
 RenderThreadImpl::GetPeerConnectionDependencyFactory() {
   return peer_connection_factory_.get();
 }
-#endif
 
 mojom::RenderFrameMessageFilter*
 RenderThreadImpl::render_frame_message_filter() {

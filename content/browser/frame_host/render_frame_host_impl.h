@@ -147,9 +147,7 @@ struct RequestNavigationParams;
 struct ResourceTimingInfo;
 struct SubresourceLoaderParams;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 class MediaStreamDispatcherHost;
-#endif
 
 class CONTENT_EXPORT RenderFrameHostImpl
     : public RenderFrameHost,
@@ -1033,11 +1031,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void CreateAudioOutputStreamFactory(
       mojom::RendererAudioOutputStreamFactoryRequest request);
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   void CreateMediaStreamDispatcherHost(
       MediaStreamManager* media_stream_manager,
       mojom::MediaStreamDispatcherHostRequest request);
-#endif
 
   void BindMediaInterfaceFactoryRequest(
       media::mojom::InterfaceFactoryRequest request);
@@ -1440,10 +1436,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       audio_service_audio_input_stream_factory_;
   UniqueAudioInputStreamFactoryPtr in_content_audio_input_stream_factory_;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   std::unique_ptr<MediaStreamDispatcherHost, BrowserThread::DeleteOnIOThread>
       media_stream_dispatcher_host_;
-#endif
 
   // Hosts media::mojom::InterfaceFactory for the RenderFrame and forwards
   // media::mojom::InterfaceFactory calls to the remote "media" service.

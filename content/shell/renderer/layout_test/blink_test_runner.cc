@@ -730,19 +730,14 @@ bool BlinkTestRunner::IsNavigationInitiatedByRenderer(
 bool BlinkTestRunner::AddMediaStreamVideoSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);
-#if BUILDFLAG(ENABLE_WEBRTC)
   return AddVideoTrackToMediaStream(std::make_unique<MockVideoCapturerSource>(),
                                     false,  // is_remote
                                     stream);
-#else
-  return false;
-#endif
 }
 
 bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
     blink::WebMediaStream* stream) {
   DCHECK(stream);
-#if BUILDFLAG(ENABLE_WEBRTC)
   return AddAudioTrackToMediaStream(
       base::MakeRefCounted<MockAudioCapturerSource>(),
       48000,  // sample rate
@@ -750,9 +745,6 @@ bool BlinkTestRunner::AddMediaStreamAudioSourceAndTrack(
       480,    // sample frames per buffer
       false,  // is_remote
       stream);
-#else
-  return false;
-#endif
 }
 
 // RenderViewObserver  --------------------------------------------------------

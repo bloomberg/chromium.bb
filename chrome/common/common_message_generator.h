@@ -55,12 +55,10 @@
 #endif
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 #undef CHROME_COMMON_MEDIA_WEBRTC_LOGGING_MESSAGES_H_
 #include "chrome/common/media/webrtc_logging_messages.h"
 #ifndef CHROME_COMMON_MEDIA_WEBRTC_LOGGING_MESSAGES_H_
 #error "Failed to include header chrome/common/media/webrtc_logging_messages.h"
-#endif
 #endif
 
 #if defined(FULL_SAFE_BROWSING)

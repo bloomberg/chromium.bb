@@ -88,6 +88,7 @@
 #include "content/browser/tracing/background_tracing_manager_impl.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/browser/utility_process_host.h"
+#include "content/browser/webrtc/webrtc_internals.h"
 #include "content/browser/webui/content_web_ui_controller_factory.h"
 #include "content/browser/webui/url_data_manager.h"
 #include "content/common/content_switches_internal.h"
@@ -215,10 +216,6 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/browser/media/cdm_registry_impl.h"
-#endif
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/browser/webrtc/webrtc_internals.h"
 #endif
 
 #if defined(USE_X11)
@@ -1299,14 +1296,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       new media::DeviceMonitorMac(base::ThreadTaskRunnerHandle::Get()));
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   // Instantiated once using CreateSingletonInstance(), and accessed only using
   // GetInstance(), which is not allowed to create the object. This allows us
   // to ensure that it cannot be used before objects it relies on have been
   // created; namely, WebRtcEventLogManager.
   // Allowed to leak when the browser exits.
   WebRTCInternals::CreateSingletonInstance();
-#endif
 
   // RDH needs the IO thread to be created
   {

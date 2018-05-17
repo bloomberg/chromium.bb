@@ -120,8 +120,6 @@ TEST_F(ChromeContentBrowserClientWindowTest, OpenURL) {
 
 #endif  // !defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_WEBRTC)
-
 // NOTE: Any updates to the expectations in these tests should also be done in
 // the browser test WebRtcDisableEncryptionFlagBrowserTest.
 class DisableWebRtcEncryptionFlagTest : public testing::Test {
@@ -177,8 +175,6 @@ TEST_F(DisableWebRtcEncryptionFlagTest, StableChannel) {
   MaybeCopyDisableWebRtcEncryptionSwitch(version_info::Channel::STABLE);
   EXPECT_FALSE(to_command_line_.HasSwitch(switches::kDisableWebRtcEncryption));
 }
-
-#endif  // ENABLE_WEBRTC
 
 class BlinkSettingsFieldTrialTest : public testing::Test {
  public:

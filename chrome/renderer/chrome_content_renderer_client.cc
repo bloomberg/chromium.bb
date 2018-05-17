@@ -48,6 +48,7 @@
 #include "chrome/renderer/chrome_render_view_observer.h"
 #include "chrome/renderer/content_settings_observer.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
+#include "chrome/renderer/media/webrtc_logging_message_filter.h"
 #include "chrome/renderer/net/net_error_helper.h"
 #include "chrome/renderer/net_benchmarking_extension.h"
 #include "chrome/renderer/page_load_metrics/metrics_render_frame_observer.h"
@@ -190,10 +191,6 @@
 #include "components/spellcheck/renderer/spellcheck_panel.h"
 #endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "chrome/renderer/media/webrtc_logging_message_filter.h"
-#endif
 
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
@@ -433,10 +430,8 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   prerender_dispatcher_.reset(new prerender::PrerenderDispatcher());
   subresource_filter_ruleset_dealer_.reset(
       new subresource_filter::UnverifiedRulesetDealer());
-#if BUILDFLAG(ENABLE_WEBRTC)
   webrtc_logging_message_filter_ =
       new WebRtcLoggingMessageFilter(thread->GetIOTaskRunner());
-#endif
 
   thread->AddObserver(chrome_observer_.get());
   thread->AddObserver(prerender_dispatcher_.get());
@@ -446,10 +441,7 @@ void ChromeContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(SearchBouncer::GetInstance());
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   thread->AddFilter(webrtc_logging_message_filter_.get());
-#endif
-
   thread->RegisterExtension(extensions_v8::LoadTimesExtension::Get());
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

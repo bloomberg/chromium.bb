@@ -29,9 +29,7 @@
 #if defined(USE_AURA)
 #include "content/browser/media/capture/desktop_capture_device_aura.h"
 #endif
-#if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/browser/media/capture/desktop_capture_device.h"
-#endif
 #endif  // defined(OS_ANDROID)
 #endif  // defined(ENABLE_SCREEN_CAPTURE)
 
@@ -305,10 +303,8 @@ void InProcessVideoCaptureDeviceLauncher::DoStartDesktopCaptureOnDeviceThread(
 #if defined(USE_AURA)
   video_capture_device = DesktopCaptureDeviceAura::Create(desktop_id);
 #endif  // defined(USE_AURA)
-#if BUILDFLAG(ENABLE_WEBRTC)
   if (!video_capture_device)
     video_capture_device = DesktopCaptureDevice::Create(desktop_id);
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 #endif  // defined (OS_ANDROID)
 
   if (video_capture_device)

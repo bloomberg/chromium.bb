@@ -13,15 +13,12 @@
 #include "content/browser/net/network_errors_listing_ui.h"
 #include "content/browser/service_worker/service_worker_internals_ui.h"
 #include "content/browser/tracing/tracing_ui.h"
+#include "content/browser/webrtc/webrtc_internals_ui.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_buildflags.h"
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/browser/webrtc/webrtc_internals_ui.h"
-#endif
 
 namespace content {
 
@@ -79,11 +76,8 @@ WebUIController* ContentWebUIControllerFactory::CreateWebUIControllerForURL(
   if (url.host_piece() == kChromeUITracingHost)
     return new TracingUI(web_ui);
 #endif
-
-#if BUILDFLAG(ENABLE_WEBRTC)
   if (url.host_piece() == kChromeUIWebRTCInternalsHost)
     return new WebRTCInternalsUI(web_ui);
-#endif
 
   return nullptr;
 }

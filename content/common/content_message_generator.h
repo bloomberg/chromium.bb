@@ -107,12 +107,10 @@
 #error "Failed to include content/common/input/sync_compositor_messages.h"
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 #undef CONTENT_COMMON_P2P_MESSAGES_H_
 #include "content/common/p2p_messages.h"
 #ifndef CONTENT_COMMON_P2P_MESSAGES_H_
 #error "Failed to include content/common/p2p_messages.h"
-#endif
 #endif
 
 #if defined(OS_ANDROID)

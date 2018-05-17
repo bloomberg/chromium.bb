@@ -107,7 +107,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   void AddFilter(BrowserMessageFilter* filter) override;
   base::TimeDelta GetChildProcessIdleTime() const override;
   void FilterURL(bool empty_allowed, GURL* url) override;
-#if BUILDFLAG(ENABLE_WEBRTC)
   void EnableAudioDebugRecordings(const base::FilePath& file) override;
   void DisableAudioDebugRecordings() override;
   void SetEchoCanceller3(
@@ -118,7 +117,6 @@ class MockRenderProcessHost : public RenderProcessHost {
       bool outgoing,
       const WebRtcRtpPacketCallback& packet_callback) override;
   void SetWebRtcEventLogOutput(int lid, bool enabled) override;
-#endif
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   const service_manager::Identity& GetChildIdentity() const override;

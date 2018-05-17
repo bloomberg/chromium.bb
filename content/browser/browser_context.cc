@@ -516,14 +516,12 @@ void BrowserContext::Initialize(
     connection->Start();
   }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   if (!browser_context->IsOffTheRecord()) {
     WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
     if (logger) {
       logger->EnableForBrowserContext(browser_context);
     }
   }
-#endif
 }
 
 // static
@@ -576,12 +574,10 @@ BrowserContext::~BrowserContext() {
 
   DCHECK(was_notify_will_be_destroyed_called_);
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
     logger->DisableForBrowserContext(this);
   }
-#endif
 
   RemoveBrowserContextFromUserIdMap(this);
 

@@ -43,7 +43,7 @@ void SpeechRecognitionDispatcher::OnDestruct() {
 }
 
 void SpeechRecognitionDispatcher::WasHidden() {
-#if defined(OS_ANDROID) && BUILDFLAG(ENABLE_WEBRTC)
+#if defined(OS_ANDROID)
   for (const auto& it : session_map_) {
     it.second->Abort();
   }

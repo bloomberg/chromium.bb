@@ -121,9 +121,7 @@ class TestingBrowserProcess : public BrowserProcess {
   supervised_user_whitelist_installer() override;
   MediaFileSystemRegistry* media_file_system_registry() override;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   WebRtcLogUploader* webrtc_log_uploader() override;
-#endif
 
   network_time::NetworkTimeTracker* network_time_tracker() override;
 

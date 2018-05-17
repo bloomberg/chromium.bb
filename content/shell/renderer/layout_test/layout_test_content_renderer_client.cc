@@ -211,12 +211,8 @@ WebThemeEngine* LayoutTestContentRendererClient::OverrideThemeEngine() {
 
 std::unique_ptr<MediaStreamRendererFactory>
 LayoutTestContentRendererClient::CreateMediaStreamRendererFactory() {
-#if BUILDFLAG(ENABLE_WEBRTC)
   return std::unique_ptr<MediaStreamRendererFactory>(
       new TestMediaStreamRendererFactory());
-#else
-  return nullptr;
-#endif
 }
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>

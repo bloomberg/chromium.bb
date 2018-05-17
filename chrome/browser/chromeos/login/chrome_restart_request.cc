@@ -159,10 +159,8 @@ void DeriveCommandLine(const GURL& start_url,
     ::switches::kDisableWebGLImageChromium,
     ::switches::kEnableWebGLImageChromium,
     ::switches::kEnableWebVR,
-#if BUILDFLAG(ENABLE_WEBRTC)
     ::switches::kDisableWebRtcHWDecoding,
     ::switches::kDisableWebRtcHWEncoding,
-#endif
     ::switches::kOzonePlatform,
     ash::switches::kAshEnableTabletMode,
     ash::switches::kAshEnableWaylandServer,

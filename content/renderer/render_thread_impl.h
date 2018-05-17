@@ -359,7 +359,6 @@ class CONTENT_EXPORT RenderThreadImpl
     return browser_plugin_manager_.get();
   }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   // Returns a factory used for creating RTC PeerConnection objects.
   PeerConnectionDependencyFactory* GetPeerConnectionDependencyFactory();
 
@@ -371,7 +370,6 @@ class CONTENT_EXPORT RenderThreadImpl
   P2PSocketDispatcher* p2p_socket_dispatcher() {
     return p2p_socket_dispatcher_.get();
   }
-#endif
 
   VideoCaptureImplManager* video_capture_impl_manager() const {
     return vc_manager_.get();
@@ -627,7 +625,6 @@ class CONTENT_EXPORT RenderThreadImpl
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   std::unique_ptr<PeerConnectionDependencyFactory> peer_connection_factory_;
 
   // This is used to communicate to the browser process the status
@@ -642,7 +639,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // diagnostic audio data for WebRTC stored locally when enabled by the user in
   // chrome://webrtc-internals.
   scoped_refptr<AecDumpMessageFilter> aec_dump_message_filter_;
-#endif
 
   // Provides AudioInputIPC objects for audio input devices. Initialized in
   // Init.

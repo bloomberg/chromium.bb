@@ -35,6 +35,7 @@
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/media/media_device_id_salt.h"
 #include "chrome/browser/media/media_engagement_service.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service.h"
 #include "chrome/browser/net/nqe/ui_network_quality_estimator_service_factory.h"
 #include "chrome/browser/net/predictor.h"
@@ -82,6 +83,8 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "components/web_cache/browser/web_cache_manager.h"
+#include "components/webrtc_logging/browser/log_cleanup.h"
+#include "components/webrtc_logging/browser/log_list.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/plugin_data_remover.h"
@@ -121,12 +124,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/user_manager/user.h"
 #endif  // defined(OS_CHROMEOS)
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
-#include "components/webrtc_logging/browser/log_cleanup.h"
-#include "components/webrtc_logging/browser/log_list.h"
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/browsing_data/browsing_data_flash_lso_helper.h"
@@ -538,7 +535,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         data_manager->Refresh();
     }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
         base::BindOnce(
@@ -547,7 +543,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                 profile_->GetPath()),
             delete_begin_),
         CreatePendingTaskCompletionClosure());
-#endif
 
 #if defined(OS_ANDROID)
     base::PostTaskWithTraitsAndReply(
@@ -918,7 +913,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     }
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
     // TODO(crbug.com/829321): Remove null-check.
     auto* webrtc_event_log_manager = WebRtcEventLogManager::GetInstance();
     if (webrtc_event_log_manager) {
@@ -928,7 +922,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     } else {
       LOG(ERROR) << "WebRtcEventLogManager not instantiated.";
     }
-#endif
   }
 
 //////////////////////////////////////////////////////////////////////////////
