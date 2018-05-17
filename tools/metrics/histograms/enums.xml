@@ -6247,6 +6247,9 @@ histogram as enum -->
 </enum>
 
 <enum name="ColorSpaceNonlinearFitConverged">
+  <obsolete>
+    Nonlinear fit code moved to skcms on 2018-04-25.
+  </obsolete>
   <int value="0" label="Did not converge."/>
   <int value="1" label="Converged."/>
 </enum>
@@ -23197,23 +23200,30 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
 
 <enum name="ICCProfileAnalyzeResult">
   <int value="0"
-      label="Extracted primary matrix and numerical transfer function"/>
+      label="Extracted primary matrix and numerical transfer function
+             (Obsolete)"/>
   <int value="1"
-      label="Extracted primary matrix and approximated transfer function"/>
+      label="Extracted primary matrix and approximated transfer function
+             (Obsolete)"/>
   <int value="2"
-      label="Failed to converge in approximation of transfer function"/>
-  <int value="3" label="Failed to extract transfer function"/>
-  <int value="4" label="Failed to extract primary matrix"/>
+      label="Failed to converge in approximation of transfer function
+             (Obsolete)"/>
+  <int value="3" label="Failed to extract transfer function (Obsolete)"/>
+  <int value="4" label="Failed to extract primary matrix (Obsolete)"/>
   <int value="5" label="Failed to parse"/>
-  <int value="6" label="Parsed, but failed to extract SkColorSpace"/>
+  <int value="6" label="Parsed, but failed to extract SkColorSpace (Obsolete)"/>
   <int value="7"
       label="Parsed and extracteed SkColorSpace, but failed to create
-             SkColorSpaceXform to this space"/>
+             SkColorSpaceXform to this space (Obsolete)"/>
   <int value="8"
       label="Converged to an insufficiently accurate approximation of
-             transfer function"/>
-  <int value="9" label="Extracted an sRGB profile directly"/>
+             transfer function (Obsolete)"/>
+  <int value="9" label="Extracted an sRGB profile directly (Obsolete)"/>
   <int value="10" label="No profile specified"/>
+  <int value="11" label="Parsed, but failed to make a usable approximation"/>
+  <int value="12"
+      label="Got an exact color space (or accurate approximation) from the
+             profile"/>
 </enum>
 
 <enum name="IceCandidatePairTypes">

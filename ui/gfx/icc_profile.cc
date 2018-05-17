@@ -13,7 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/lock.h"
 #include "third_party/skia/include/core/SkColorSpaceXform.h"
-#include "third_party/skia/include/core/SkICC.h"
+#include "third_party/skia/third_party/skcms/skcms.h"
 #include "ui/gfx/skia_color_space_util.h"
 
 namespace gfx {
@@ -75,73 +75,36 @@ ICCProfile::Internals::AnalyzeResult ICCProfile::Internals::Initialize() {
   if (data_.empty())
     return kICCNoProfile;
 
-  // Parse the profile and attempt to create a SkColorSpaceXform out of it.
-  sk_sp<SkColorSpace> sk_srgb_color_space = SkColorSpace::MakeSRGB();
-  sk_sp<SkICC> sk_icc = SkICC::Make(data_.data(), data_.size());
-  if (!sk_icc) {
-    DLOG(ERROR) << "Failed to parse ICC profile to SkICC.";
+  // Parse the profile.
+  skcms_ICCProfile profile;
+  if (!skcms_Parse(data_.data(), data_.size(), &profile)) {
+    DLOG(ERROR) << "Failed to parse ICC profile.";
     return kICCFailedToParse;
   }
-  sk_color_space_ = SkColorSpace::MakeICC(data_.data(), data_.size());
-  if (!sk_color_space_) {
-    DLOG(ERROR) << "Failed to parse ICC profile to SkColorSpace.";
-    return kICCFailedToExtractSkColorSpace;
-  }
-  std::unique_ptr<SkColorSpaceXform> sk_color_space_xform =
-      SkColorSpaceXform::New(sk_srgb_color_space.get(), sk_color_space_.get());
-  if (!sk_color_space_xform) {
-    DLOG(ERROR) << "Parsed ICC profile but can't create SkColorSpaceXform.";
-    return kICCFailedToCreateXform;
+
+  // Coerce it into a rasterization destination (if possible). If the profile
+  // can't be approximated accurately, skcms will not allow transforming to it,
+  // and this will fail.
+  if (!skcms_MakeUsableAsDestinationWithSingleCurve(&profile)) {
+    DLOG(ERROR) << "Parsed ICC profile but can't make usable as destination.";
+    return kICCFailedToMakeUsable;
   }
 
-  // Because this SkColorSpace can be used to construct a transform, we can use
-  // it to create a LUT based color transform, at the very least. If we fail to
-  // get any better approximation, we'll use sRGB as our approximation.
-  ColorSpace::CreateSRGB().GetPrimaryMatrix(&to_XYZD50_);
-  ColorSpace::CreateSRGB().GetTransferFunction(&transfer_fn_);
+  // Create an SkColorSpace from the profile. This should always succeed after
+  // calling MakeUsableAsDestinationWithSingleCurve.
+  sk_color_space_ = SkColorSpace::Make(profile);
+  DCHECK(sk_color_space_);
 
-  // If our SkColorSpace representation is sRGB then return that.
-  if (sk_color_space_->isSRGB())
-    return kICCExtractedSRGBColorSpace;
+  // Extract the primary matrix and transfer function
+  to_XYZD50_.set3x3RowMajorf(&profile.toXYZD50.vals[0][0]);
+  memcpy(&transfer_fn_, &profile.trc[0].parametric, sizeof(transfer_fn_));
 
-  // A primary matrix is required for our parametric representations. Use it if
-  // it exists.
-  SkMatrix44 to_XYZD50_matrix;
-  if (!sk_icc->toXYZD50(&to_XYZD50_matrix)) {
-    DLOG(ERROR) << "Failed to extract ICC profile primary matrix.";
-    return kICCFailedToExtractMatrix;
-  }
-  to_XYZD50_ = to_XYZD50_matrix;
-
-  // Try to directly extract a numerical transfer function. Use it if it
-  // exists.
-  SkColorSpaceTransferFn exact_tr_fn;
-  if (sk_icc->isNumericalTransferFn(&exact_tr_fn)) {
-    transfer_fn_ = exact_tr_fn;
-    return kICCExtractedMatrixAndAnalyticTrFn;
-  }
-
-  // Attempt to fit a parametric transfer function to the table data in the
-  // profile.
-  SkColorSpaceTransferFn approx_tr_fn;
-  if (!SkApproximateTransferFn(sk_icc, &transfer_fn_error_, &approx_tr_fn)) {
-    DLOG(ERROR) << "Failed approximate transfer function.";
-    return kICCFailedToConvergeToApproximateTrFn;
-  }
-
-  // If this converged, but has too high error, use the sRGB transfer function
-  // from above.
-  const float kMaxError = 2.f / 256.f;
-  if (transfer_fn_error_ >= kMaxError) {
-    DLOG(ERROR) << "Failed to accurately approximate transfer function, error: "
-                << 256.f * transfer_fn_error_ << "/256";
-    return kICCFailedToApproximateTrFnAccurately;
-  };
-
-  // If the error is sufficiently low, declare that the approximation is
-  // accurate.
-  transfer_fn_ = approx_tr_fn;
-  return kICCExtractedMatrixAndApproximatedTrFn;
+  // We assume that if we accurately approximated the profile, then the
+  // single-curve version (which may have higher error) is also okay. If we
+  // want to maintain the distinction between accurate and inaccurate profiles,
+  // we could check to see if the single-curve version is/ approximately equal
+  // to the original (or to the multi-channel approximation).
+  return kICCExtractedMatrixAndTrFn;
 }
 
 ICCProfile::ICCProfile() = default;
@@ -293,25 +256,14 @@ ICCProfile::Internals::Internals(std::vector<char> data, uint64_t id)
   // Parse the ICC profile
   analyze_result_ = Initialize();
   switch (analyze_result_) {
-    case kICCExtractedSRGBColorSpace:
-    case kICCExtractedMatrixAndAnalyticTrFn:
-    case kICCExtractedMatrixAndApproximatedTrFn:
+    case kICCExtractedMatrixAndTrFn:
       // Successfully and accurately extracted color space.
       is_valid_ = true;
       is_parametric_ = true;
       break;
-    case kICCFailedToConvergeToApproximateTrFn:
-    case kICCFailedToApproximateTrFnAccurately:
-      // Successfully but extracted a color space, but it isn't accurate enough.
-      is_valid_ = true;
-      is_parametric_ = false;
-      break;
-    case kICCFailedToExtractRawTrFn:
-    case kICCFailedToExtractMatrix:
     case kICCFailedToParse:
-    case kICCFailedToExtractSkColorSpace:
-    case kICCFailedToCreateXform:
     case kICCNoProfile:
+    case kICCFailedToMakeUsable:
       // Can't even use this color space as a LUT.
       is_valid_ = false;
       is_parametric_ = false;
@@ -352,23 +304,7 @@ void ICCProfile::Internals::HistogramDisplay(int64_t display_id) {
   histogrammed_display_ids_.insert(display_id);
 
   UMA_HISTOGRAM_ENUMERATION("Blink.ColorSpace.Destination.ICCResult",
-                            analyze_result_, kICCProfileAnalyzeLast);
-
-  // Add histograms for numerical approximation.
-  bool nonlinear_fit_converged =
-      analyze_result_ == kICCExtractedMatrixAndApproximatedTrFn ||
-      analyze_result_ == kICCFailedToApproximateTrFnAccurately;
-  bool nonlinear_fit_did_not_converge =
-      analyze_result_ == kICCFailedToConvergeToApproximateTrFn;
-  if (nonlinear_fit_converged || nonlinear_fit_did_not_converge) {
-    UMA_HISTOGRAM_BOOLEAN("Blink.ColorSpace.Destination.NonlinearFitConverged",
-                          nonlinear_fit_converged);
-  }
-  if (nonlinear_fit_converged) {
-    UMA_HISTOGRAM_CUSTOM_COUNTS(
-        "Blink.ColorSpace.Destination.NonlinearFitError",
-        static_cast<int>(transfer_fn_error_ * 255), 0, 127, 16);
-  }
+                            analyze_result_);
 }
 
 }  // namespace gfx
