@@ -355,6 +355,9 @@
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_VOICES" desc="Heading describing a collection of listboxes on the text-to-speech settings page. Each listbox is associated with a language, and contains all possible voices for that language">
       Preferred Voices
     </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_NO_VOICES_MESSAGE" desc="Message when no text-to-speech voices are found on the Chrome OS device.">
+      No voices found
+    </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PROPERTIES" desc="Heading describing a collection of input controls for a section of text-to-speech settings on speech properties, including speech pitch and rate">
       Speech Properties
     </message>
@@ -399,6 +402,9 @@
     </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_INPUT" desc="The sample input for a section of the text-to-speech settings page where a user can preview text to speech. Users will hear this read aloud.">
       Hi there! I'm your text-to-speech voice.
+    </message>
+    <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_VOICE" desc="Label for a dropdown to select preview voice in the section of the text-to-speech settings page where a user can preview text to speech.">
+      Voice to preview
     </message>
     <message name="IDS_SETTINGS_TEXT_TO_SPEECH_PREVIEW_PLAY" desc="A button on the text-to-speech settings page to start playing a preview of text to speech">
       Play
