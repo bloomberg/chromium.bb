@@ -222,22 +222,18 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
       permissions_data->withheld_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
 
-  // Remove the switch. Since the extension previously had access revoked, it
-  // should still have all hosts withheld.
-  // TODO(devlin): This is bad - turning off an experiment should disable all
-  // the experiment's effects.
-  // https://crbug.com/841465.
+  // Remove the switch. The extension should have permission again.
   enabled_scope.reset();
   updater.InitializePermissions(extension.get());
-
-  EXPECT_FALSE(modifier.IsAllowedOnAllUrls());
-  EXPECT_TRUE(
-      permissions_data->active_permissions().scriptable_hosts().is_empty());
+  EXPECT_FALSE(modifier.CanAffectExtension());
   EXPECT_TRUE(SetsAreEqual(
-      permissions_data->withheld_permissions().scriptable_hosts().patterns(),
+      permissions_data->active_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
+  EXPECT_TRUE(
+      permissions_data->withheld_permissions().scriptable_hosts().is_empty());
 
-  // Reapply the switch; the extension should still have permissions withheld.
+  // Reapply the switch; the extension should go back to having permissions
+  // withheld.
   enabled_scope = std::make_unique<RuntimeHostPermissionsEnabledScope>();
   updater.InitializePermissions(extension.get());
   EXPECT_FALSE(modifier.IsAllowedOnAllUrls());
@@ -246,34 +242,6 @@ TEST_F(ScriptingPermissionsModifierUnitTest, SwitchBehavior) {
   EXPECT_TRUE(SetsAreEqual(
       permissions_data->withheld_permissions().scriptable_hosts().patterns(),
       all_host_patterns));
-}
-
-TEST_F(ScriptingPermissionsModifierUnitTest,
-       SetAllowedOnAllUrlsIsANoOpForComponentExtensions) {
-  InitializeEmptyExtensionService();
-
-  // Permissions can only be withheld with the appropriate feature turned on.
-  auto enabled_scope = std::make_unique<RuntimeHostPermissionsEnabledScope>();
-
-  URLPattern all_hosts(URLPattern::SCHEME_ALL, "<all_urls>");
-  std::set<URLPattern> all_host_patterns;
-  all_host_patterns.insert(all_hosts);
-
-  scoped_refptr<const Extension> extension = CreateExtensionWithPermissions(
-      all_host_patterns, all_host_patterns, Manifest::COMPONENT, "a");
-  PermissionsUpdater updater(profile());
-  updater.InitializePermissions(extension.get());
-  const PermissionsData* permissions_data = extension->permissions_data();
-
-  // Try to revoke access. It shouldn't do anything.
-  ScriptingPermissionsModifier modifier(profile(), extension);
-  modifier.SetAllowedOnAllUrls(false);
-  EXPECT_TRUE(SetsAreEqual(
-      permissions_data->active_permissions().scriptable_hosts().patterns(),
-      all_host_patterns));
-  EXPECT_TRUE(
-      permissions_data->withheld_permissions().scriptable_hosts().is_empty());
-  EXPECT_TRUE(modifier.IsAllowedOnAllUrls());
 }
 
 TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
@@ -319,44 +287,45 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl2));
 }
 
-// Checks that policy-installed extensions don't have permissions withheld and
-// that preferences are correctly recovered in the case of an improper value.
-// Fix for crbug.com/629927.
-TEST_F(ScriptingPermissionsModifierUnitTest,
-       PolicyExtensionsCanExecuteEverywhere) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kRuntimeHostPermissions);
+TEST_F(ScriptingPermissionsModifierUnitTest, CanAffectExtensionByLocation) {
+  auto enabled_scope = std::make_unique<RuntimeHostPermissionsEnabledScope>();
+
   InitializeEmptyExtensionService();
-  URLPattern all_hosts(URLPattern::SCHEME_ALL, "<all_urls>");
-  std::set<URLPattern> all_host_patterns;
-  all_host_patterns.insert(all_hosts);
-  scoped_refptr<const Extension> extension =
-      CreateExtensionWithPermissions(all_host_patterns, all_host_patterns,
-                                     Manifest::EXTERNAL_POLICY, "extension");
-  PermissionsUpdater(profile()).InitializePermissions(extension.get());
 
-  ScriptingPermissionsModifier modifier(profile(), extension);
-  EXPECT_TRUE(modifier.IsAllowedOnAllUrls());
+  struct {
+    Manifest::Location location;
+    bool can_be_affected;
+  } test_cases[] = {
+      {Manifest::INTERNAL, true},   {Manifest::EXTERNAL_PREF, true},
+      {Manifest::UNPACKED, true},   {Manifest::EXTERNAL_POLICY_DOWNLOAD, false},
+      {Manifest::COMPONENT, false},
+  };
 
-  // Simulate preferences being incorrectly set.
-  const char* kAllowedPref = "extension_can_script_all_urls";
-  const char* kHasSetPref = "has_set_script_all_urls";
-  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  prefs->UpdateExtensionPref(extension->id(), kAllowedPref,
-                             std::make_unique<base::Value>(false));
-  prefs->UpdateExtensionPref(extension->id(), kHasSetPref,
-                             std::make_unique<base::Value>(true));
+  for (const auto& test_case : test_cases) {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("test")
+            .SetLocation(test_case.location)
+            .AddPermission("<all_urls>")
+            .Build();
+    EXPECT_EQ(test_case.can_be_affected,
+              ScriptingPermissionsModifier(profile(), extension.get())
+                  .CanAffectExtension())
+        << test_case.location;
+  }
 
-  // The modifier should still return the correct value and should fix the
-  // preferences.
-  EXPECT_TRUE(modifier.IsAllowedOnAllUrls());
-  bool stored_allowed = false;
-  EXPECT_TRUE(
-      prefs->ReadPrefAsBoolean(extension->id(), kAllowedPref, &stored_allowed));
-  EXPECT_TRUE(stored_allowed);
-  bool has_set = false;
-  EXPECT_FALSE(
-      prefs->ReadPrefAsBoolean(extension->id(), kHasSetPref, &has_set));
+  enabled_scope.reset();
+
+  // With the feature disabled, no extension should be able to be affected.
+  for (const auto& test_case : test_cases) {
+    scoped_refptr<const Extension> extension =
+        ExtensionBuilder("test")
+            .SetLocation(test_case.location)
+            .AddPermission("<all_urls>")
+            .Build();
+    EXPECT_FALSE(ScriptingPermissionsModifier(profile(), extension.get())
+                     .CanAffectExtension())
+        << test_case.location;
+  }
 }
 
 }  // namespace extensions

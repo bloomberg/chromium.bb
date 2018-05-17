@@ -424,30 +424,9 @@ TEST_F(ExtensionInfoGeneratorUnitTest, ExtensionInfoRunOnAllUrls) {
   EXPECT_FALSE(info->run_on_all_urls.is_enabled);
   EXPECT_FALSE(info->run_on_all_urls.is_active);
 
-  // Turn off the switch and load another extension (so permissions are
-  // re-initialized).
+  // Turn off the switch. With the switch off, the run_on_all_urls control
+  // should never be enabled.
   scoped_feature_list.reset();
-
-  // Since the extension doesn't have access to all urls (but normally would),
-  // the extension should have the "want" flag even with the switch off.
-  info = GenerateExtensionInfo(all_urls_extension->id());
-  EXPECT_TRUE(info->run_on_all_urls.is_enabled);
-  EXPECT_FALSE(info->run_on_all_urls.is_active);
-
-  // If we grant the extension all urls, then the checkbox should still be
-  // there, since it has an explicitly-set user preference.
-  permissions_modifier.SetAllowedOnAllUrls(true);
-  info = GenerateExtensionInfo(all_urls_extension->id());
-  EXPECT_TRUE(info->run_on_all_urls.is_enabled);
-  EXPECT_TRUE(info->run_on_all_urls.is_active);
-
-  // Load another extension with all urls (so permissions get re-init'd).
-  all_urls_extension = CreateExtension(
-      "all_urls_II", ListBuilder().Append(kAllHostsPermission).Build(),
-      Manifest::INTERNAL);
-
-  // Even though the extension has all_urls permission, the checkbox shouldn't
-  // show up without the switch.
   info = GenerateExtensionInfo(all_urls_extension->id());
   EXPECT_FALSE(info->run_on_all_urls.is_enabled);
   EXPECT_FALSE(info->run_on_all_urls.is_active);

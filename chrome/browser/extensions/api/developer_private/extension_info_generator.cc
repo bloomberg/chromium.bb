@@ -10,7 +10,6 @@
 
 #include "base/base64.h"
 #include "base/callback_helpers.h"
-#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/command.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/pref_names.h"
@@ -40,7 +38,6 @@
 #include "extensions/browser/image_loader.h"
 #include "extensions/browser/path_util.h"
 #include "extensions/browser/warning_service.h"
-#include "extensions/common/extension_features.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest.h"
@@ -536,11 +533,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
   // Runs on all urls.
   ScriptingPermissionsModifier permissions_modifier(
       browser_context_, base::WrapRefCounted(&extension));
-  info->run_on_all_urls.is_enabled =
-      (base::FeatureList::IsEnabled(features::kRuntimeHostPermissions) &&
-       permissions_modifier.CanAffectExtension(
-           extension.permissions_data()->active_permissions())) ||
-      permissions_modifier.HasAffectedExtension();
+  info->run_on_all_urls.is_enabled = permissions_modifier.CanAffectExtension();
   info->run_on_all_urls.is_active = info->run_on_all_urls.is_enabled &&
                                     permissions_modifier.IsAllowedOnAllUrls();
 

@@ -25,10 +25,6 @@ namespace {
 const char kExtensionAllowedOnAllUrlsPrefName[] =
     "extension_can_script_all_urls";
 
-// The entry into the prefs for when a user has explicitly set the "extension
-// allowed on all urls" pref.
-const char kHasSetScriptOnAllUrlsPrefName[] = "has_set_script_all_urls";
-
 URLPatternSet FilterImpliedAllHostsPatterns(const URLPatternSet& patterns) {
   URLPatternSet result;
   for (const URLPattern& pattern : patterns) {
@@ -50,21 +46,6 @@ bool ExtensionMustBeAllowedOnAllUrls(const Extension& extension) {
          Manifest::IsComponentLocation(extension.location()) ||
          PermissionsData::CanExecuteScriptEverywhere(extension.id(),
                                                      extension.location());
-}
-
-// Sets the preference for whether the extension with |id| is allowed to execute
-// on all urls, and, if |by_user| is true, also updates preferences to indicate
-// that the user has explicitly set a value (rather than using the default).
-void SetAllowedOnAllUrlsPref(bool by_user,
-                             bool allowed,
-                             const std::string& id,
-                             ExtensionPrefs* prefs) {
-  prefs->UpdateExtensionPref(id, kExtensionAllowedOnAllUrlsPrefName,
-                             std::make_unique<base::Value>(allowed));
-  if (by_user) {
-    prefs->UpdateExtensionPref(id, kHasSetScriptOnAllUrlsPrefName,
-                               std::make_unique<base::Value>(true));
-  }
 }
 
 // Partitions |permissions| into two sets of permissions, placing any
@@ -103,6 +84,30 @@ void PartitionPermissions(
                         withheld_explicit_hosts, withheld_scriptable_hosts));
 }
 
+// Returns true if the extension should even be considered for being affected
+// by the runtime host permissions experiment.
+bool ShouldConsiderExtension(const Extension& extension) {
+  // No extensions are affected if the experiment is disabled.
+  if (!base::FeatureList::IsEnabled(features::kRuntimeHostPermissions))
+    return false;
+
+  // Certain extensions are always exempt from having permissions withheld.
+  if (ExtensionMustBeAllowedOnAllUrls(extension))
+    return false;
+
+  return true;
+}
+
+base::Optional<bool> GetPrefValue(const ExtensionPrefs& prefs,
+                                  const ExtensionId& id) {
+  bool allowed = false;
+  if (!prefs.ReadPrefAsBoolean(id, kExtensionAllowedOnAllUrlsPrefName,
+                               &allowed)) {
+    return base::nullopt;
+  }
+  return allowed;
+}
+
 }  // namespace
 
 ScriptingPermissionsModifier::ScriptingPermissionsModifier(
@@ -116,83 +121,56 @@ ScriptingPermissionsModifier::ScriptingPermissionsModifier(
 
 ScriptingPermissionsModifier::~ScriptingPermissionsModifier() {}
 
-// static
-void ScriptingPermissionsModifier::SetAllowedOnAllUrlsForSync(
-    bool allowed,
-    content::BrowserContext* context,
-    const std::string& id) {
-  const Extension* extension =
-      ExtensionRegistry::Get(context)->GetExtensionById(
-          id, ExtensionRegistry::EVERYTHING);
-  if (extension) {
-    // If the extension exists, we should go through the normal flow.
-    ScriptingPermissionsModifier(context, extension)
-        .SetAllowedOnAllUrls(allowed);
-    return;
-  }
-  // Otherwise, we only update the preference, and the extension will be
-  // properly initialized once it's added.
-  SetAllowedOnAllUrlsPref(true, allowed, id, ExtensionPrefs::Get(context));
-}
-
 void ScriptingPermissionsModifier::SetAllowedOnAllUrls(bool allowed) {
-  if (ExtensionMustBeAllowedOnAllUrls(*extension_)) {
-    CleanUpPrefsIfNecessary();
-    return;
-  }
+  DCHECK(CanAffectExtension());
+
   if (IsAllowedOnAllUrls() == allowed)
     return;
 
-  SetAllowedOnAllUrlsPref(true, allowed, extension_->id(), extension_prefs_);
+  extension_prefs_->UpdateExtensionPref(extension_->id(),
+                                        kExtensionAllowedOnAllUrlsPrefName,
+                                        std::make_unique<base::Value>(allowed));
   if (allowed)
     GrantWithheldImpliedAllHosts();
   else
     WithholdImpliedAllHosts();
 
   // If this was an update to permissions, we also need to sync the change.
+  // TODO(devlin): This isn't currently necessary. We should remove it and add
+  // it back.
   ExtensionSyncService* sync_service =
       ExtensionSyncService::Get(browser_context_);
   if (sync_service)  // |sync_service| can be null in unittests.
     sync_service->SyncExtensionChangeIfNeeded(*extension_);
 }
 
-bool ScriptingPermissionsModifier::IsAllowedOnAllUrls() {
-  if (ExtensionMustBeAllowedOnAllUrls(*extension_)) {
-    CleanUpPrefsIfNecessary();
+bool ScriptingPermissionsModifier::IsAllowedOnAllUrls() const {
+  DCHECK(CanAffectExtension());
+
+  base::Optional<bool> pref_value =
+      GetPrefValue(*extension_prefs_, extension_->id());
+  if (!pref_value.has_value()) {
+    // If there is no value present, default to true.
     return true;
   }
-  bool allowed = false;
-  if (!extension_prefs_->ReadPrefAsBoolean(
-          extension_->id(), kExtensionAllowedOnAllUrlsPrefName, &allowed)) {
-    // If there is no value present, we make one, defaulting it to true -
-    // extensions are granted permissions until revoked.
-    allowed = true;
-    SetAllowedOnAllUrlsPref(false, allowed, extension_->id(), extension_prefs_);
-  }
-  return allowed;
+  return *pref_value;
 }
 
-bool ScriptingPermissionsModifier::HasSetAllowedOnAllUrls() const {
-  bool set = false;
-  return extension_prefs_->ReadPrefAsBoolean(
-             extension_->id(), kHasSetScriptOnAllUrlsPrefName, &set) &&
-         set;
-}
+bool ScriptingPermissionsModifier::CanAffectExtension() const {
+  if (!ShouldConsiderExtension(*extension_))
+    return false;
 
-bool ScriptingPermissionsModifier::CanAffectExtension(
-    const PermissionSet& permissions) const {
-  // We can withhold permissions if the extension isn't required to maintain
-  // permission and if it requests access to all hosts.
-  return !ExtensionMustBeAllowedOnAllUrls(*extension_) &&
-         permissions.ShouldWarnAllHosts();
-}
-
-bool ScriptingPermissionsModifier::HasAffectedExtension() const {
-  return extension_->permissions_data()->HasWithheldImpliedAllHosts() ||
-         HasSetAllowedOnAllUrls();
+  // The extension can be affected if it currently has all-hosts-style
+  // permissions, or if it did and they are actively withheld.
+  return extension_->permissions_data()
+             ->active_permissions()
+             .ShouldWarnAllHosts() ||
+         extension_->permissions_data()->HasWithheldImpliedAllHosts();
 }
 
 void ScriptingPermissionsModifier::GrantHostPermission(const GURL& url) {
+  DCHECK(CanAffectExtension());
+
   GURL origin = url.GetOrigin();
   URLPatternSet new_explicit_hosts;
   URLPatternSet new_scriptable_hosts;
@@ -213,7 +191,10 @@ void ScriptingPermissionsModifier::GrantHostPermission(const GURL& url) {
                                     new_explicit_hosts, new_scriptable_hosts));
 }
 
-bool ScriptingPermissionsModifier::HasGrantedHostPermission(const GURL& url) {
+bool ScriptingPermissionsModifier::HasGrantedHostPermission(
+    const GURL& url) const {
+  DCHECK(CanAffectExtension());
+
   GURL origin = url.GetOrigin();
   // If the extension doesn't have access to the host, it clearly hasn't been
   // granted permission.
@@ -245,6 +226,7 @@ bool ScriptingPermissionsModifier::HasGrantedHostPermission(const GURL& url) {
 
 void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
     const GURL& url) {
+  DCHECK(CanAffectExtension());
   DCHECK(HasGrantedHostPermission(url));
 
   GURL origin = url.GetOrigin();
@@ -269,13 +251,21 @@ void ScriptingPermissionsModifier::RemoveGrantedHostPermission(
           PermissionsUpdater::REMOVE_HARD);
 }
 
-void ScriptingPermissionsModifier::WithholdPermissions(
+// static
+void ScriptingPermissionsModifier::WithholdPermissionsIfNecessary(
+    const Extension& extension,
+    const ExtensionPrefs& extension_prefs,
     const PermissionSet& permissions,
     std::unique_ptr<const PermissionSet>* granted_permissions_out,
     std::unique_ptr<const PermissionSet>* withheld_permissions_out) {
-  bool should_withhold =
-      CanAffectExtension(permissions) && !IsAllowedOnAllUrls();
+  bool should_withhold = false;
+  if (ShouldConsiderExtension(extension)) {
+    base::Optional<bool> pref_value =
+        GetPrefValue(extension_prefs, extension.id());
+    should_withhold = pref_value.has_value() && pref_value.value() == false;
+  }
 
+  should_withhold &= permissions.ShouldWarnAllHosts();
   if (!should_withhold) {
     *granted_permissions_out = permissions.Clone();
     withheld_permissions_out->reset(new PermissionSet());
@@ -287,19 +277,9 @@ void ScriptingPermissionsModifier::WithholdPermissions(
 }
 
 std::unique_ptr<const PermissionSet>
-ScriptingPermissionsModifier::GetRevokablePermissions() {
-  // No additional revokable permissions for extensions that must be allowed
-  // to run everywhere.
-  if (ExtensionMustBeAllowedOnAllUrls(*extension_))
-    return nullptr;
-
-  bool experiment_is_enabled =
-      base::FeatureList::IsEnabled(features::kRuntimeHostPermissions);
-  // Check for revokable permissions if either the experiment is enabled or if
-  // the extension has been affected in the past.
-  // TODO(devlin): This should only rely on the experiment state.
-  // https://crbug.com/841465
-  if (!experiment_is_enabled && !HasAffectedExtension())
+ScriptingPermissionsModifier::GetRevokablePermissions() const {
+  // No extra revokable permissions if the extension couldn't ever be affected.
+  if (!ShouldConsiderExtension(*extension_))
     return nullptr;
 
   std::unique_ptr<const PermissionSet> granted_permissions;
@@ -332,20 +312,6 @@ void ScriptingPermissionsModifier::WithholdImpliedAllHosts() {
   PermissionsUpdater(browser_context_)
       .RemovePermissions(extension_.get(), permissions,
                          PermissionsUpdater::REMOVE_HARD);
-}
-
-void ScriptingPermissionsModifier::CleanUpPrefsIfNecessary() {
-  // From a bug, some extensions such as policy extensions could have the
-  // preference set even if it should have been impossible. Reset the prefs to
-  // a sane state.
-  // See crbug.com/629927
-  // TODO(devlin): Remove this in M56.
-  DCHECK(ExtensionMustBeAllowedOnAllUrls(*extension_));
-  extension_prefs_->UpdateExtensionPref(extension_->id(),
-                                        kExtensionAllowedOnAllUrlsPrefName,
-                                        std::make_unique<base::Value>(true));
-  extension_prefs_->UpdateExtensionPref(
-      extension_->id(), kHasSetScriptOnAllUrlsPrefName, nullptr);
 }
 
 }  // namespace extensions
