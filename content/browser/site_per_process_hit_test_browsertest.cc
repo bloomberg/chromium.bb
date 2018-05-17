@@ -2993,8 +2993,15 @@ void SendTouchpadFlingSequenceWithExpectedTarget(
 }  // anonymous namespace
 
 // Flaky, see https://crbug.com/823578
+#if defined(OS_WIN)
+#define MAYBE_InputEventRouterGestureTargetMapTest \
+  DISABLED_InputEventRouterGestureTargetMapTest
+#else
+#define MAYBE_InputEventRouterGestureTargetMapTest \
+  InputEventRouterGestureTargetMapTest
+#endif
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
-                       DISABLED_InputEventRouterGestureTargetMapTest) {
+                       MAYBE_InputEventRouterGestureTargetMapTest) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3167,11 +3174,13 @@ IN_PROC_BROWSER_TEST_P(
 
 IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
                        InputEventRouterTouchpadGestureTargetTest) {
+#if defined(OS_WIN)
   // TODO(838835): Flaky with viz hit testing
   if (features::IsVizHitTestingEnabled()) {
     LOG(INFO) << "Skipping test due to https://crbug.com/838835";
     return;
   }
+#endif
 
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
