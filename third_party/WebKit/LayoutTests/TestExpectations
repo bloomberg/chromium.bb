@@ -158,6 +158,8 @@ crbug.com/798638 virtual/disable-spv175/fragmentation/repeating-thead-tfoot-diff
 # Not relevant, because SPv175 is launching imminently.
 crbug.com/804670 virtual/disable-spv175/paint/filters/drop-shadow-clipped.html [ Skip ]
 
+crbug.com/842668 [ Win7 ] paint/invalidation/svg/zoom-foreignObject.svg [ Failure ]
+
 # ====== Paint team owned tests to here ======
 
 # ====== Layout team owned tests from here ======
