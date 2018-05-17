@@ -37,6 +37,9 @@ void ChooserBubbleUi::CreateAndShow(views::BubbleDialogDelegateView* delegate) {
   gfx::NativeView parent = widget->GetNativeView();
   DCHECK(parent);
   delegate->set_parent_window(parent);
-  views::BubbleDialogDelegateView::CreateBubble(delegate)->Show();
+  if (browser_->window()->IsActive())
+    views::BubbleDialogDelegateView::CreateBubble(delegate)->Show();
+  else
+    views::BubbleDialogDelegateView::CreateBubble(delegate)->ShowInactive();
 }
 #endif  // !OS_MACOSX || MAC_VIEWS_BROWSER
