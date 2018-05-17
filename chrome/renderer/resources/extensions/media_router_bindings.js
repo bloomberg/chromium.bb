@@ -410,7 +410,7 @@ MirrorServiceRemoterStubAdapter.prototype.startDataStreams =
  * Adapter for media.mojom.MirrorServiceRemoter.
  */
 var MirrorServiceRemoterAdapter = {
-    name: 'media::mojom::MirrorServiceRemoter',
+    name: 'media.mojom.MirrorServiceRemoter',
     kVersion: 0,
     ptrClass: MirrorServiceRemoterPtrAdapter,
     proxyClass: media.mojom.MirrorServiceRemoter.proxyClass,
@@ -442,7 +442,7 @@ MirrorServiceRemotingSourcePtrAdapter.prototype.onSinkAvailable =
  * Adapter for media.mojom.MirrorServiceRemotingSource.
  */
 var MirrorServiceRemotingSourceAdapter = {
-    name: 'media::mojom::MirrorServiceRemotingSource',
+    name: 'media.mojom.MirrorServiceRemotingSource',
     kVersion: 0,
     ptrClass: MirrorServiceRemotingSourcePtrAdapter,
     proxyClass: media.mojom.MirrorServiceRemotingSource.proxyClass,
@@ -474,7 +474,7 @@ MediaStatusObserverPtrAdapter.prototype.onMediaStatusUpdated =
  * Adapter for mediaRouter.mojom.MediaStatusObserver.
  */
 var MediaStatusObserverAdapter = {
-  name: 'mediaRouter::mojom::MediaStatusObserver',
+  name: 'mediaRouter.mojom.MediaStatusObserver',
   kVersion: 0,
   ptrClass: MediaStatusObserverPtrAdapter,
   proxyClass: mediaRouter.mojom.MediaStatusObserver.proxyClass,
