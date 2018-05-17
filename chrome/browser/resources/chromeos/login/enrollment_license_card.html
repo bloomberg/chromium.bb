@@ -4,7 +4,7 @@
 
 <link rel="import" href="chrome://resources/html/polymer.html">
 
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 
 <!--
@@ -36,14 +36,15 @@
                 <div>
                     <p class="license-card-explanation"
                           i18n-content="licenseSelectionCardExplanation"></p>
-                    <paper-radio-group selected="{{selected}}">
+                    <paper-radio-group selected="{{selected}}"
+                        selectable="cr-radio-button">
                         <template is="dom-repeat" items="[[licenses]]"
                                   id="repeatTemplate">
-                            <paper-radio-button class="gaia-radio-button"
+                            <cr-radio-button
                                 disabled$="[[or_(item.disabled, disabled)]]"
                                 hidden$="[[item.hidden]]" name="[[item.id]]">
                                 [[formatTitle_(item)]]
-                            </paper-radio-button>
+                            </cr-radio-button>
                         </template>
                     </paper-radio-group>
                 </div>

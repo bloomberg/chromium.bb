@@ -1,11 +1,11 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_onc_types.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 <link rel="import" href="network_shared_css.html">
 
@@ -17,14 +17,9 @@
       }
 
       paper-input-container {
-        -webkit-padding-start: 28px;
+        /* Aligns with the start of cr-radio-button's text. */
+        -webkit-margin-start: 38px;
         width: 200px;
-      }
-
-      paper-radio-button {
-        --paper-radio-button-ink-size: 40px;
-        --paper-radio-button-label-color: inherit;
-        --paper-radio-button-size: 16px;
       }
 
       paper-radio-group {
@@ -33,7 +28,8 @@
       }
 
       .nameservers {
-        -webkit-margin-start: calc(var(--cr-section-indent-width) - 12px);
+        /* Aligns with the start of cr-radio-button's text. */
+        -webkit-margin-start: 38px;
       }
 
       #radioGroupDiv {
@@ -52,19 +48,20 @@
     <div id="radioGroupDiv">
       <paper-radio-group id="nameserverType" class="layout vertical"
           selected="[[nameserversType_]]"
+          selectable="cr-radio-button"
           on-paper-radio-group-changed="onTypeChange_"
           aria-label="[[i18n('networkNameservers')]]">
         <!-- Automatic nameservers -->
-        <paper-radio-button name="automatic">
+        <cr-radio-button name="automatic">
           [[i18n('networkNameserversAutomatic')]]
-        </paper-radio-button>
+        </cr-radio-button>
         <template is="dom-if" if="[[showNameservers_(nameserversType_,
             'automatic', nameservers_)]]">
           <div class="nameservers">[[getNameserversString_(nameservers_)]]</div>
         </template>
 
         <!-- Google nameservers -->
-        <paper-radio-button name="google">
+        <cr-radio-button name="google">
           [[i18n('networkNameserversGoogle')]]
           <template is="dom-if"
               if="[[i18nExists('networkGoogleNameserversLearnMoreUrl')]]">
@@ -73,16 +70,16 @@
               [[i18n('networkNameserversLearnMore')]]
             </a>
           </template>
-        </paper-radio-button>
+        </cr-radio-button>
         <template is="dom-if" if="[[showNameservers_(nameserversType_,
             'google', nameservers_)]]">
           <div class="nameservers">[[getNameserversString_(nameservers_)]]</div>
         </template>
 
         <!-- Custom nameservers -->
-        <paper-radio-button name="custom">
+        <cr-radio-button name="custom">
           [[i18n('networkNameserversCustom')]]
-        </paper-radio-button>
+        </cr-radio-button>
         <template is="dom-if" if="[[showNameservers_(nameserversType_,
             'custom')]]">
           <div class="property-box single-column two-line">

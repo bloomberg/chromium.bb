@@ -9,7 +9,13 @@
         width: 200px;
       }
 
-      paper-radio-button {
+      cr-radio-button {
+        --inline-block-layout: {
+          display: inline-block;
+          vertical-align: middle;
+        }
+        --cr-radio-button-label: var(--inline-block-layout);
+        --cr-radio-button-circle: var(--inline-block-layout);
         display: inline-block;
       }
 
