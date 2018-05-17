@@ -21,8 +21,6 @@ class SVGForeignObjectPainter {
       : layout_svg_foreign_object_(layout_svg_foreign_object) {}
   void Paint(const PaintInfo&);
 
-  void PaintLayer(const PaintInfo& paint_info);
-
  private:
   const LayoutSVGForeignObject& layout_svg_foreign_object_;
 };
