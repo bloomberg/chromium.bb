@@ -38,8 +38,8 @@ class ComplexFeature : public Feature {
                                     const GURL& url,
                                     Platform platform) const override;
   Availability IsAvailableToEnvironment() const override;
-  bool IsIdInBlacklist(const HashedExtensionId& hashed_id) const override;
-  bool IsIdInWhitelist(const HashedExtensionId& hashed_id) const override;
+  bool IsIdInBlocklist(const HashedExtensionId& hashed_id) const override;
+  bool IsIdInAllowlist(const HashedExtensionId& hashed_id) const override;
 
  protected:
   // Feature:

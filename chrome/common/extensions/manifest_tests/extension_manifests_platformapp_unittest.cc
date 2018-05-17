@@ -83,9 +83,9 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
   RunTestcases(
       warning_testcases, arraysize(warning_testcases), EXPECT_TYPE_WARNING);
 
-  // Whitelisted ones can (this is the ID corresponding to the base 64 encoded
+  // Allowlisted ones can (this is the ID corresponding to the base 64 encoded
   // key in the init_platform_app_csp.json manifest.)
-  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelist(
+  SimpleFeature::ScopedThreadUnsafeAllowlistForTest allowlist(
       "ahplfneplbnjcflhdgkkjeiglkkfeelb");
   scoped_refptr<Extension> extension =
       LoadAndExpectSuccess("init_platform_app_csp.json");
@@ -96,7 +96,7 @@ TEST_F(PlatformAppsManifestTest, PlatformAppContentSecurityPolicy) {
             CSPInfo::GetResourceContentSecurityPolicy(extension.get(),
                                                       std::string()));
 
-  // But even whitelisted ones must specify a secure policy.
+  // But even allowlisted ones must specify a secure policy.
   LoadAndExpectWarning(
       "init_platform_app_csp_insecure.json",
       ErrorUtils::FormatErrorMessage(errors::kInvalidCSPInsecureValue,

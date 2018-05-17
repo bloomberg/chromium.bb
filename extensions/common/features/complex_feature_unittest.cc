@@ -14,23 +14,23 @@
 
 namespace extensions {
 
-TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
+TEST(ComplexFeatureTest, MultipleRulesAllowlist) {
   const HashedExtensionId kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const HashedExtensionId kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   std::vector<Feature*> features;
 
   {
-    // Rule: "extension", whitelist "foo".
+    // Rule: "extension", allowlist "foo".
     std::unique_ptr<SimpleFeature> simple_feature(new SimpleFeature());
-    simple_feature->set_whitelist({kIdFoo.value().c_str()});
+    simple_feature->set_allowlist({kIdFoo.value().c_str()});
     simple_feature->set_extension_types({Manifest::TYPE_EXTENSION});
     features.push_back(simple_feature.release());
   }
 
   {
-    // Rule: "legacy_packaged_app", whitelist "bar".
+    // Rule: "legacy_packaged_app", allowlist "bar".
     std::unique_ptr<SimpleFeature> simple_feature(new SimpleFeature());
-    simple_feature->set_whitelist({kIdBar.value().c_str()});
+    simple_feature->set_allowlist({kIdBar.value().c_str()});
     simple_feature->set_extension_types({Manifest::TYPE_LEGACY_PACKAGED_APP});
     features.push_back(simple_feature.release());
   }
@@ -55,7 +55,7 @@ TEST(ComplexFeatureTest, MultipleRulesWhitelist) {
                                      Feature::UNSPECIFIED_PLATFORM,
                                      Feature::GetCurrentPlatform()).result());
 
-  // Test whitelist with wrong extension type.
+  // Test allowlist with wrong extension type.
   EXPECT_NE(
       Feature::IS_AVAILABLE,
       feature->IsAvailableToManifest(kIdBar,

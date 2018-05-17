@@ -81,7 +81,7 @@ bool ActivityLogAPI::IsExtensionWhitelisted(const std::string& extension_id) {
   // TODO(devlin): Pass in a HashedExtensionId to avoid this conversion.
   return FeatureProvider::GetPermissionFeatures()
       ->GetFeature("activityLogPrivate")
-      ->IsIdInWhitelist(HashedExtensionId(extension_id));
+      ->IsIdInAllowlist(HashedExtensionId(extension_id));
 }
 
 void ActivityLogAPI::OnListenerAdded(const EventListenerInfo& details) {

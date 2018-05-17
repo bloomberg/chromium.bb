@@ -21,7 +21,7 @@ class CustomTypesTest : public NativeExtensionBindingsSystemUnittest {
  public:
   CustomTypesTest()
       : extension_id_(crx_file::id_util::GenerateId("id")),
-        whitelisted_extension_id_(extension_id_) {}
+        allowlisted_extension_id_(extension_id_) {}
 
   ~CustomTypesTest() override = default;
 
@@ -69,7 +69,7 @@ class CustomTypesTest : public NativeExtensionBindingsSystemUnittest {
 
  private:
   std::string extension_id_;
-  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelisted_extension_id_;
+  SimpleFeature::ScopedThreadUnsafeAllowlistForTest allowlisted_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomTypesTest);
 };
