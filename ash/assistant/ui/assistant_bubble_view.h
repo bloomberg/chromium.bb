@@ -79,6 +79,7 @@ class AssistantBubbleView : public views::View,
   void OnTextAdded(const AssistantTextElement* text_element);
 
   AssistantController* assistant_controller_;    // Owned by Shell.
+  views::View* caption_bar_;                     // Owned by view hierarchy.
   InteractionContainer* interaction_container_;  // Owned by view hierarchy.
   UiElementContainer* ui_element_container_;     // Owned by view hierarchy.
   SuggestionsContainer* suggestions_container_;  // Owned by view hierarchy.

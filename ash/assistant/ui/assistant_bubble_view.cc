@@ -8,6 +8,7 @@
 #include "ash/assistant/model/assistant_interaction_model.h"
 #include "ash/assistant/model/assistant_query.h"
 #include "ash/assistant/model/assistant_ui_element.h"
+#include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -409,6 +410,7 @@ class SuggestionsContainer : public views::View {
 AssistantBubbleView::AssistantBubbleView(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller),
+      caption_bar_(new CaptionBar()),
       interaction_container_(
           new InteractionContainer(assistant_controller->interaction_model())),
       ui_element_container_(new UiElementContainer()),
@@ -438,26 +440,34 @@ void AssistantBubbleView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void AssistantBubbleView::ChildVisibilityChanged(views::View* child) {
-  // When toggling the visibility of the dialog plate, we also need to update
-  // the bottom padding of the layout.
-  if (child == dialog_plate_) {
+  // When toggling the visibility of the caption bar or dialog plate, we also
+  // need to update the padding of the layout.
+  if (child == caption_bar_ || child == dialog_plate_) {
+    const int padding_top_dip = caption_bar_->visible() ? 0 : kPaddingDip;
     const int padding_bottom_dip = dialog_plate_->visible() ? 0 : kPaddingDip;
     layout_manager_->set_inside_border_insets(
-        gfx::Insets(kPaddingDip, 0, padding_bottom_dip, 0));
+        gfx::Insets(padding_top_dip, 0, padding_bottom_dip, 0));
   }
   PreferredSizeChanged();
 }
 
 void AssistantBubbleView::InitLayout() {
-  // Dialog plate is not visible when using the stylus input modality.
-  const bool show_dialog_plate =
-      assistant_controller_->interaction_model()->input_modality() !=
+  // Caption bar and dialog plate are not visible when using stylus modality.
+  const bool is_using_stylus =
+      assistant_controller_->interaction_model()->input_modality() ==
       InputModality::kStylus;
+
+  // There should be no vertical padding on the layout when the caption bar
+  // and dialog plate are present.
+  const int padding_vertical_dip = is_using_stylus ? kPaddingDip : 0;
 
   layout_manager_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
-      gfx::Insets(kPaddingDip, 0, show_dialog_plate ? 0 : kPaddingDip, 0),
-      kSpacingDip));
+      gfx::Insets(padding_vertical_dip, 0), kSpacingDip));
+
+  // Caption bar.
+  caption_bar_->SetVisible(!is_using_stylus);
+  AddChildView(caption_bar_);
 
   // Interaction container.
   AddChildView(interaction_container_);
@@ -471,7 +481,7 @@ void AssistantBubbleView::InitLayout() {
   AddChildView(suggestions_container_);
 
   // Dialog plate.
-  dialog_plate_->SetVisible(show_dialog_plate);
+  dialog_plate_->SetVisible(!is_using_stylus);
   AddChildView(dialog_plate_);
 }
 
@@ -497,7 +507,8 @@ void AssistantBubbleView::ProcessPendingUiElements() {
 }
 
 void AssistantBubbleView::OnInputModalityChanged(InputModality input_modality) {
-  // Dialog plate is not visible when using stylus input modality.
+  // Caption bar and dialog plate are not visible when using stylus modality.
+  caption_bar_->SetVisible(input_modality != InputModality::kStylus);
   dialog_plate_->SetVisible(input_modality != InputModality::kStylus);
 
   // If the query for the interaction is empty, we may need to update the prompt

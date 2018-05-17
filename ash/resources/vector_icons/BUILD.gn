@@ -9,6 +9,7 @@ aggregate_vector_icons("ash_vector_icons") {
   icon_directory = "."
 
   icons = [
+    "assistant.icon",
     "captive_portal.icon",
     "check_circle.icon",
     "circle.icon",
