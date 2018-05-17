@@ -1710,31 +1710,6 @@
       },
     },
   },
-  'jingle_unittests': {
-    'remove_from': [
-      # On chromium.android, unclear why these aren't run.
-      'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
-      'KitKat Tablet Tester',
-      'Lollipop Phone Tester',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Phone Tester (rel)',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.android.fyi
-      'Jelly Bean Tester',
-      'Lollipop Consumer Tester',
-      'Lollipop Low-end Tester',
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x86 Cloud Tester',
-      # chromium.clang
-      'ToTAndroidCFI',
-      # chromium.memory
-      'Android CFI',
-    ],
-  },
   'keyboard_unittests': {
     'remove_from': [
       'Win7 Tests (dbg)(1)',
