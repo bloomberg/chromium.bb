@@ -30,8 +30,20 @@ namespace media {
 class MEDIA_EXPORT MediaLog {
  public:
   enum MediaLogLevel {
+    // Fatal error, e.g. cause of playback failure. Since this is also used to
+    // form MediaError.message, do NOT use this for non-fatal errors to avoid
+    // contaminating MediaError.message.
     MEDIALOG_ERROR,
+
+    // Warning about non-fatal issues, e.g. quality of playback issues such as
+    // audio/video out of sync.
+    MEDIALOG_WARNING,
+
+    // General info useful for Chromium and/or web developers, testers and even
+    // users, e.g. audio/video codecs used in a playback instance.
     MEDIALOG_INFO,
+
+    // Misc debug info for Chromium developers.
     MEDIALOG_DEBUG,
   };
 

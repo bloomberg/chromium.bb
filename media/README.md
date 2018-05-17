@@ -161,6 +161,8 @@ processes. Media operations are often asynchronous running in a sandbox. These
 make attaching a debugger (e.g. GDB) sometimes less efficient than other
 mechanisms like logging.
 
+## DVLOG
+
 In media we use DVLOG() a lot. It makes filename-based filtering super easy.
 Within one file, not all logs are created equal. To make log filtering
 more convenient, use appropriate log levels. Here are some general
@@ -172,3 +174,10 @@ recommendations:
 * DVLOG(2): Recurring events per playback, e.g. seek/reset/flush, config change.
 * DVLOG(3): Frequent events, e.g. demuxer read, audio/video buffer decrypt or
   decode, audio/video frame rendering.
+
+## MediaLog
+
+MediaLog will send logs to `about://media-internals`, which is easily accessible
+by developers (including web developes), testers and even users to get detailed
+information about a playback instance. For guidance on how to use MediaLog, see
+`media/base/media_log.h`.

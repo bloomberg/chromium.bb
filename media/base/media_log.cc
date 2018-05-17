@@ -21,6 +21,8 @@ std::string MediaLog::MediaLogLevelToString(MediaLogLevel level) {
   switch (level) {
     case MEDIALOG_ERROR:
       return "error";
+    case MEDIALOG_WARNING:
+      return "warning";
     case MEDIALOG_INFO:
       return "info";
     case MEDIALOG_DEBUG:
@@ -34,6 +36,8 @@ MediaLogEvent::Type MediaLog::MediaLogLevelToEventType(MediaLogLevel level) {
   switch (level) {
     case MEDIALOG_ERROR:
       return MediaLogEvent::MEDIA_ERROR_LOG_ENTRY;
+    case MEDIALOG_WARNING:
+      return MediaLogEvent::MEDIA_WARNING_LOG_ENTRY;
     case MEDIALOG_INFO:
       return MediaLogEvent::MEDIA_INFO_LOG_ENTRY;
     case MEDIALOG_DEBUG:
@@ -71,6 +75,8 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "TEXT_ENDED";
     case MediaLogEvent::MEDIA_ERROR_LOG_ENTRY:
       return "MEDIA_ERROR_LOG_ENTRY";
+    case MediaLogEvent::MEDIA_WARNING_LOG_ENTRY:
+      return "MEDIA_WARNING_LOG_ENTRY";
     case MediaLogEvent::MEDIA_INFO_LOG_ENTRY:
       return "MEDIA_INFO_LOG_ENTRY";
     case MediaLogEvent::MEDIA_DEBUG_LOG_ENTRY:
