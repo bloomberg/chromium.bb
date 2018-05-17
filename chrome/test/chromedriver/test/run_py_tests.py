@@ -151,6 +151,8 @@ _INTEGRATION_NEGATIVE_FILTER = [
     # SessionHandlingTest tests an internal ChromeDriver feature, not needed
     # for integration test. It is also slightly flaky.
     'SessionHandlingTest.*',
+    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2431
+    'ChromeDriverTest.testCloseWindow*',
 ]
 
 
