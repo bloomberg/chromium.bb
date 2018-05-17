@@ -189,6 +189,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnSynchronizedDisplayPropertiesChanged() override;
   base::Optional<SkColor> GetBackgroundColor() const override;
   void DidNavigate() override;
+  viz::ScopedSurfaceIdAllocator DidUpdateVisualProperties(
+      const cc::RenderFrameMetadata& metadata) override;
 
   // ui::EventHandlerAndroid implementation.
   bool OnTouchEvent(const ui::MotionEventAndroid& m) override;
@@ -355,6 +357,14 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnFrameMetadataUpdated(
       const viz::CompositorFrameMetadata& frame_metadata,
       bool is_transparent);
+
+  bool UpdateControls(float dip_scale,
+                      float top_controls_height,
+                      float top_controls_shown_ratio,
+                      float bottom_controls_height,
+                      float bottom_controls_shown_ratio);
+  void OnDidUpdateVisualPropertiesComplete(
+      const cc::RenderFrameMetadata& metadata);
 
   void ShowInternal();
   void HideInternal();

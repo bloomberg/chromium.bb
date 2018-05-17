@@ -24,6 +24,7 @@
 #include "cc/layers/surface_layer.h"
 #include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
@@ -1207,9 +1208,6 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   }
 
   float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
-  float top_controls_pix = frame_metadata.top_controls_height * to_pix;
-  // |top_content_offset| is in physical pixels if --use-zoom-for-dsf is
-  // enabled. Otherwise, it is in DIPs.
   // Note that the height of browser control is not affected by page scale
   // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
   float top_content_offset = frame_metadata.top_controls_height *
@@ -1257,8 +1255,38 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
                                      ? top_content_offset / dip_scale
                                      : top_content_offset;
   view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
+  bool controls_changed =
+      features::IsSurfaceSynchronizationEnabled()
+          ? false
+          : UpdateControls(view_.GetDipScale(),
+                           frame_metadata.top_controls_height,
+                           frame_metadata.top_controls_shown_ratio,
+                           frame_metadata.bottom_controls_height,
+                           frame_metadata.bottom_controls_shown_ratio);
 
-  bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
+  page_scale_ = frame_metadata.page_scale_factor;
+  min_page_scale_ = frame_metadata.min_page_scale_factor;
+  max_page_scale_ = frame_metadata.max_page_scale_factor;
+
+  // All offsets and sizes except |top_shown_pix| are in CSS pixels.
+  // TODO(fsamuel): This needs to be synchronized with RenderFrameMetadata when
+  // surface synchronization is enabled.
+  gesture_listener_manager_->UpdateScrollInfo(
+      root_scroll_offset_dip, frame_metadata.page_scale_factor,
+      frame_metadata.min_page_scale_factor,
+      frame_metadata.max_page_scale_factor, root_layer_size_dip,
+      scrollable_viewport_size_dip, top_content_offset_dip, top_shown_pix,
+      controls_changed);
+
+  EvictFrameIfNecessary();
+}
+
+bool RenderWidgetHostViewAndroid::UpdateControls(
+    float dip_scale,
+    float top_controls_height,
+    float top_controls_shown_ratio,
+    float bottom_controls_height,
+    float bottom_controls_shown_ratio) {
   // TODO(carlosil, https://crbug.com/825765): Remove the IsInVR() check here,
   // which is a temporary hack. Interstitial pages are not committed navigations
   // and their metadata updates never leave the content layer, so Chrome and the
@@ -1269,38 +1297,45 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   // to get ignored. Tracking bug for the interstitial work to fix this by
   // converting interstitials to committed navigations is
   // https://crbug.com/755632.
+  float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
+  float top_controls_pix = top_controls_height * to_pix;
+  // |top_content_offset| is in physical pixels if --use-zoom-for-dsf is
+  // enabled. Otherwise, it is in DIPs.
+  // Note that the height of browser control is not affected by page scale
+  // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
+  float top_content_offset = top_controls_height * top_controls_shown_ratio;
+  float top_shown_pix = top_content_offset * to_pix;
   float top_translate = top_shown_pix - top_controls_pix;
-  if (top_changed || (!controls_initialized_ && IsInVR())) {
+  bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
+  if (top_changed || (!controls_initialized_ && IsInVR()))
     view_.OnTopControlsChanged(top_translate, top_shown_pix);
-  }
   prev_top_shown_pix_ = top_shown_pix;
   prev_top_controls_translate_ = top_translate;
 
-  float bottom_controls_pix = frame_metadata.bottom_controls_height * to_pix;
-  float bottom_shown_pix =
-      bottom_controls_pix * frame_metadata.bottom_controls_shown_ratio;
+  float bottom_controls_pix = bottom_controls_height * to_pix;
+  float bottom_shown_pix = bottom_controls_pix * bottom_controls_shown_ratio;
   bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
   float bottom_translate = bottom_controls_pix - bottom_shown_pix;
-  if (bottom_changed || (!controls_initialized_ && IsInVR())) {
+  if (bottom_changed || (!controls_initialized_ && IsInVR()))
     view_.OnBottomControlsChanged(bottom_translate, bottom_shown_pix);
-  }
   prev_bottom_shown_pix_ = bottom_shown_pix;
   prev_bottom_controls_translate_ = bottom_translate;
   controls_initialized_ = true;
+  return top_changed || bottom_changed;
+}
 
-  page_scale_ = frame_metadata.page_scale_factor;
-  min_page_scale_ = frame_metadata.min_page_scale_factor;
-  max_page_scale_ = frame_metadata.max_page_scale_factor;
-
-  // All offsets and sizes except |top_shown_pix| are in CSS pixels.
-  gesture_listener_manager_->UpdateScrollInfo(
-      root_scroll_offset_dip, frame_metadata.page_scale_factor,
-      frame_metadata.min_page_scale_factor,
-      frame_metadata.max_page_scale_factor, root_layer_size_dip,
-      scrollable_viewport_size_dip, top_content_offset_dip, top_shown_pix,
-      top_changed);
-
-  EvictFrameIfNecessary();
+void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
+    const cc::RenderFrameMetadata& metadata) {
+  if (delegated_frame_host_->GetLocalSurfaceIdAllocator()->UpdateFromChild(
+          metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
+    // A synchronization event was initiated by the renderer so let's updated
+    // the top/bottom bar controls now.
+    UpdateControls(view_.GetDipScale(), metadata.top_controls_height,
+                   metadata.top_controls_shown_ratio,
+                   metadata.bottom_controls_height,
+                   metadata.bottom_controls_shown_ratio);
+  }
+  host()->SynchronizeVisualProperties();
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {
@@ -2297,6 +2332,19 @@ void RenderWidgetHostViewAndroid::DidNavigate() {
 
   if (delegated_frame_host_)
     delegated_frame_host_->DidNavigate();
+}
+
+viz::ScopedSurfaceIdAllocator
+RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
+    const cc::RenderFrameMetadata& metadata) {
+  if (!features::IsSurfaceSynchronizationEnabled())
+    return RenderWidgetHostViewBase::DidUpdateVisualProperties(metadata);
+
+  base::OnceCallback<void()> allocation_task = base::BindOnce(
+      &RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete,
+      weak_ptr_factory_.GetWeakPtr(), metadata);
+  return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
+  ;
 }
 
 }  // namespace content
