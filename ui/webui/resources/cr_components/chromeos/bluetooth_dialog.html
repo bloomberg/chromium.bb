@@ -72,6 +72,15 @@
         font-weight: 600;  /* semibold */
         margin: 0 20px;
       }
+
+      /* Override default style since it assumes a single action-button */
+      paper-button.cancel-button {
+        margin: 0;
+      }
+
+      paper-button.action-button {
+        -webkit-margin-start: 8px;
+      }
     </style>
     <!-- TODO(stevenjb/dschuyler): Find a solution to support i18n{} here -->
     <cr-dialog id="dialog" no-cancel="[[noCancel]]"
