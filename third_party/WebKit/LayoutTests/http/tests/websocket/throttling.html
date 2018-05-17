@@ -7,11 +7,11 @@
 // These tests test WebSocket handshake throttling, which is a feature of
 // Blink's implementation, not part of the web platform. The special throttle
 // content::TestWebSocketHandshakeThrottle is used when content_shell is run
-// with the --run-layout-test option. It detects the
+// with the --run-web-tests option. It detects the
 // content-shell-websocket-delay-ms query parameter in the URL and applies a
 // delay of the specified number of milliseconds.
 //
-// These tests will not function correctly without the --run-layout-test
+// These tests will not function correctly without the --run-web-tests
 // option. To debug them interactively you can follow the instructions for a
 // "legacy test" in
 // https://chromium.googlesource.com/chromium/src/+/master/docs/testing/layout_tests.md#Debugging-DevTools-Tests.

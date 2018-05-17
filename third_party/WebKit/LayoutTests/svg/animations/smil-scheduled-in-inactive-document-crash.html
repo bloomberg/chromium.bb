@@ -12,7 +12,7 @@ description("SMIL animations scheduled in inactive document cause crash");
 debug("PASS if no crash on debug builds");
 
 if (!window.eventSender)
-    testFailed("Please run this in content_shell --run-layout-test")
+    testFailed("Please run this in content_shell --run-web-tests")
 
 var svg = document.querySelector("svg");
 svg.pauseAnimations();
