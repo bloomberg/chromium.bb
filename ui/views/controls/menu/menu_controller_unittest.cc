@@ -335,8 +335,9 @@ class MenuControllerTest : public ViewsTestBase {
   void TestMenuControllerReplacementDuringDrag() {
     DestroyMenuController();
     menu_item()->GetSubmenu()->Close();
+    const bool for_drop = false;
     menu_controller_ =
-        new MenuController(true, menu_controller_delegate_.get());
+        new MenuController(for_drop, menu_controller_delegate_.get());
     menu_controller_->owner_ = owner_.get();
     menu_controller_->showing_ = true;
   }
@@ -567,8 +568,9 @@ class MenuControllerTest : public ViewsTestBase {
 
   void SetupMenuController() {
     menu_controller_delegate_.reset(new TestMenuControllerDelegate);
+    const bool for_drop = false;
     menu_controller_ =
-        new MenuController(true, menu_controller_delegate_.get());
+        new MenuController(for_drop, menu_controller_delegate_.get());
     menu_controller_->owner_ = owner_.get();
     menu_controller_->showing_ = true;
     menu_controller_->SetSelection(

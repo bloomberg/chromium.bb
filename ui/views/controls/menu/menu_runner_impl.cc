@@ -92,9 +92,9 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   MenuController* controller = MenuController::GetActiveInstance();
   if (controller) {
     if ((run_types & MenuRunner::IS_NESTED) != 0) {
-      if (!controller->IsBlockingRun()) {
+      if (controller->for_drop()) {
         controller->CancelAll();
-        controller = NULL;
+        controller = nullptr;
       } else {
         // Only nest the delegate when not cancelling drag-and-drop. When
         // cancelling this will become the root delegate of the new
@@ -112,7 +112,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
       }
       // Drop menus don't block the message loop, so it's ok to create a new
       // MenuController.
-      controller = NULL;
+      controller = nullptr;
     }
   }
 
@@ -122,7 +122,7 @@ void MenuRunnerImpl::RunMenuAt(Widget* parent,
   owns_controller_ = false;
   if (!controller) {
     // No menus are showing, show one.
-    controller = new MenuController(!for_drop_, this);
+    controller = new MenuController(for_drop_, this);
     owns_controller_ = true;
   }
   controller->set_is_combobox((run_types & MenuRunner::COMBOBOX) != 0);

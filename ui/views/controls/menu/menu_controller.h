@@ -95,8 +95,7 @@ class VIEWS_EXPORT MenuController
            bool context_menu,
            bool is_nested_drag);
 
-  // Whether or not Run blocks.
-  bool IsBlockingRun() const { return blocking_run_; }
+  bool for_drop() const { return for_drop_; }
 
   bool in_nested_run() const { return !menu_stack_.empty(); }
 
@@ -335,10 +334,8 @@ class VIEWS_EXPORT MenuController
   // Key processing.
   void OnKeyDown(ui::KeyboardCode key_code);
 
-  // Creates a MenuController. If |blocking| is true a nested run loop is
-  // started in |Run|.
-  MenuController(bool blocking,
-                 internal::MenuControllerDelegate* delegate);
+  // Creates a MenuController. See |for_drop_| member for details on |for_drop|.
+  MenuController(bool for_drop, internal::MenuControllerDelegate* delegate);
 
   ~MenuController() override;
 
@@ -582,11 +579,10 @@ class VIEWS_EXPORT MenuController
   // The active instance.
   static MenuController* active_instance_;
 
-  // If true, Run blocks. If false, Run doesn't block and this is used for
-  // drag and drop. Note that the semantics for drag and drop are slightly
-  // different: cancel timer is kicked off any time the drag moves outside the
-  // menu, mouse events do nothing...
-  bool blocking_run_;
+  // If true the menu is shown for a drag and drop. Note that the semantics for
+  // drag and drop are slightly different: cancel timer is kicked off any time
+  // the drag moves outside the menu, mouse events do nothing...
+  const bool for_drop_;
 
   // If true, we're showing.
   bool showing_ = false;
