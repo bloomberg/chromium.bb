@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager.h"
+#include "third_party/blink/renderer/platform/scheduler/child/task_queue_with_task_type.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 
 namespace blink {
@@ -37,8 +38,10 @@ IdleHelper::IdleHelper(
   on_idle_task_posted_closure_.Reset(base::BindRepeating(
       &IdleHelper::OnIdleTaskPostedOnMainThread, weak_idle_helper_ptr_));
 
-  idle_task_runner_ =
-      base::MakeRefCounted<SingleThreadIdleTaskRunner>(idle_queue_, this);
+  idle_task_runner_ = base::MakeRefCounted<SingleThreadIdleTaskRunner>(
+      TaskQueueWithTaskType::Create(idle_queue_,
+                                    TaskType::kMainThreadTaskQueueIdle),
+      this);
 
   // This fence will block any idle tasks from running.
   idle_queue_->InsertFence(TaskQueue::InsertFencePosition::kBeginningOfTime);

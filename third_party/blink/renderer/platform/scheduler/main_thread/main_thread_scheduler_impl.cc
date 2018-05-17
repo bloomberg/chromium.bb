@@ -190,6 +190,14 @@ const char* TaskTypeToString(TaskType task_type) {
       return "MainThreadTaskQueueV8";
     case TaskType::kMainThreadTaskQueueCompositor:
       return "MainThreadTaskQueueCompositor";
+    case TaskType::kMainThreadTaskQueueDefault:
+      return "MainThreadTaskQueueDefault";
+    case TaskType::kMainThreadTaskQueueInput:
+      return "MainThreadTaskQueueInput";
+    case TaskType::kMainThreadTaskQueueIdle:
+      return "MainThreadTaskQueueIdle";
+    case TaskType::kMainThreadTaskQueueIPC:
+      return "MainThreadTaskQueueIPC";
     case TaskType::kCount:
       return "Count";
   }
@@ -649,13 +657,15 @@ std::unique_ptr<blink::WebThread> MainThreadSchedulerImpl::CreateMainThread() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::DefaultTaskRunner() {
-  return helper_.DefaultMainThreadTaskQueue();
+  return TaskQueueWithTaskType::Create(helper_.DefaultMainThreadTaskQueue(),
+                                       TaskType::kMainThreadTaskQueueDefault);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::InputTaskRunner() {
   helper_.CheckOnValidThread();
-  return input_task_queue_;
+  return TaskQueueWithTaskType::Create(input_task_queue_,
+                                       TaskType::kMainThreadTaskQueueInput);
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
@@ -665,7 +675,8 @@ MainThreadSchedulerImpl::IdleTaskRunner() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::IPCTaskRunner() {
-  return ipc_task_queue_;
+  return TaskQueueWithTaskType::Create(ipc_task_queue_,
+                                       TaskType::kMainThreadTaskQueueIPC);
 }
 
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::DefaultTaskQueue() {
