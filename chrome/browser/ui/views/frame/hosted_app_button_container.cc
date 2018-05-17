@@ -254,6 +254,19 @@ void HostedAppButtonContainer::OnImmersiveRevealStarted() {
     fade_in_content_setting_buttons_timer_.AbandonAndStop();
     content_settings_container_->SetVisible(true);
   }
+  // Remove layers so that buttons display correctly when painted into the
+  // immersive mode top container view.
+  // See https://crbug.com/787640 for details.
+  // TODO(calamity): Make immersive mode support button layers.
+  content_settings_container_->DestroyLayer();
+  // Disable the ink drop as ink drops also render layers.
+  app_menu_button_->SetInkDropMode(HostedAppMenuButton::InkDropMode::OFF);
+}
+
+void HostedAppButtonContainer::OnImmersiveFullscreenExited() {
+  content_settings_container_->SetPaintToLayer();
+  content_settings_container_->layer()->SetFillsBoundsOpaquely(false);
+  app_menu_button_->SetInkDropMode(HostedAppMenuButton::InkDropMode::ON);
 }
 
 void HostedAppButtonContainer::ChildVisibilityChanged(views::View* child) {

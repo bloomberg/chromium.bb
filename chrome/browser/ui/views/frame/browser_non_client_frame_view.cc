@@ -378,15 +378,6 @@ bool BrowserNonClientFrameView::DoesIntersectRect(const views::View* target,
     return tabstrip->IsRectInWindowCaption(rect_in_tabstrip_coords);
   }
 
-#if defined(OS_CHROMEOS)
-  if (browser_view()->immersive_mode_controller()->IsRevealed()) {
-    // In immersive mode, the caption buttons container is reparented to the
-    // TopContainerView and hence |rect| should not be claimed here.
-    // See BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted().
-    return false;
-  }
-#endif  // defined(OS_CHROMEOS)
-
   // We claim |rect| because it is above the bottom of the tabstrip, but
   // not in the tabstrip itself. In particular, the avatar label/button is left
   // of the tabstrip and the window controls are right of the tabstrip.

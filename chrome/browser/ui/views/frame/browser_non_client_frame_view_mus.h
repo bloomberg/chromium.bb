@@ -18,8 +18,6 @@
 
 class TabIconView;
 
-// TODO: Make sure caption buttons ink drop effects work with immersive
-// fullscreen mode browsers. https://crbug.com/840242.
 class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
                                      public TabIconViewModel {
  public:

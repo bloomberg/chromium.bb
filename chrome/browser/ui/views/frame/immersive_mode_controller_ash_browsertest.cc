@@ -118,14 +118,24 @@ class ImmersiveModeControllerAshHostedAppBrowserTest
     }
   }
 
-  void VerifyButtonsInImmersiveMode(BrowserNonClientFrameViewAsh* frame_view) {
+  void VerifyButtonsInImmersiveMode(BrowserNonClientFrameViewAsh* frame_view,
+                                    bool in_immersive_mode) {
+    // Button layers in the browser frame are disabled in immersive mode so that
+    // buttons render correctly, see https://crbug.com/787640 for details.
     HostedAppButtonContainer* container =
         frame_view->hosted_app_button_container_;
     views::test::InkDropHostViewTestApi ink_drop_api(
         container->app_menu_button_);
-    EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());
-    EXPECT_EQ(views::InkDropHostView::InkDropMode::ON,
-              ink_drop_api.ink_drop_mode());
+    if (in_immersive_mode) {
+      EXPECT_FALSE(container->GetContentSettingContainerForTesting()->layer());
+      EXPECT_EQ(views::InkDropHostView::InkDropMode::OFF,
+                ink_drop_api.ink_drop_mode());
+      EXPECT_FALSE(container->app_menu_button_->layer());
+    } else {
+      EXPECT_TRUE(container->GetContentSettingContainerForTesting()->layer());
+      EXPECT_EQ(views::InkDropHostView::InkDropMode::ON,
+                ink_drop_api.ink_drop_mode());
+    }
   }
 
   Browser* browser() { return browser_; }
@@ -291,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
 
   EXPECT_FALSE(frame_test_api.size_button()->visible());
 
-  VerifyButtonsInImmersiveMode(frame_view);
+  VerifyButtonsInImmersiveMode(frame_view, true);
 
   // Verify the size button is visible in clamshell mode, and that it does not
   // cover the other two buttons.
@@ -305,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   EXPECT_FALSE(frame_test_api.size_button()->GetBoundsInScreen().Intersects(
       frame_test_api.minimize_button()->GetBoundsInScreen()));
 
-  VerifyButtonsInImmersiveMode(frame_view);
+  VerifyButtonsInImmersiveMode(frame_view, false);
 }
 
 // Verify that the frame layout for new windows is as expected when using
@@ -334,7 +344,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
     task_runner->FastForwardBy(
         BrowserNonClientFrameViewAsh::kTitlebarAnimationDelay);
 
-    VerifyButtonsInImmersiveMode(frame_view);
+    VerifyButtonsInImmersiveMode(frame_view, true);
   }
 
   // Verify the size button is visible in clamshell mode, and that it does not
@@ -342,5 +352,5 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshHostedAppBrowserTest,
   tablet_mode_controller->EnableTabletModeWindowManager(false);
   tablet_mode_controller->FlushForTesting();
 
-  VerifyButtonsInImmersiveMode(frame_view);
+  VerifyButtonsInImmersiveMode(frame_view, false);
 }
