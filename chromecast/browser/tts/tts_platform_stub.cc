@@ -79,7 +79,12 @@ TtsPlatformImplStub* TtsPlatformImplStub::GetInstance() {
 
 }  // namespace chromecast
 
+// TODO(rdaum): This is temporarily disabled to avoid link time duplicate
+// symbol failures when the internal platform version is added. This code
+// will be restored (behind a flag) after the internal CL which adds a
+// GetInstance method symbol failures when the internal platform version is
+// added.
 // static
-TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
-  return chromecast::TtsPlatformImplStub::GetInstance();
-}
+// TtsPlatformImpl* TtsPlatformImpl::GetInstance() {
+//   return chromecast::TtsPlatformImplStub::GetInstance();
+// }

@@ -433,9 +433,18 @@ int TtsControllerImpl::QueueSize() {
 }
 
 TtsPlatformImpl* TtsControllerImpl::GetPlatformImpl() {
-  if (!platform_impl_)
-    platform_impl_ = TtsPlatformImpl::GetInstance();
-  return platform_impl_;
+  // TODO(rdaum): This is temporarily disabled to avoid link time duplicate
+  // symbol failures when the internal platform version is added. This code
+  // will be restored after the internal CL which adds a GetInstance method
+  // lands.
+  //  if (!platform_impl_)
+  //    platform_impl_ = TtsPlatformImpl::GetInstance();
+  //  return platform_impl_;
+
+  // Disabling the code above is safe for now as nothing in the repository
+  // currently executes this code path, but this DCHECK is here just in case.
+  DCHECK(false) << "Unexpected execution of TTS code path";
+  return nullptr;
 }
 
 std::string TtsControllerImpl::GetApplicationLocale() const {
