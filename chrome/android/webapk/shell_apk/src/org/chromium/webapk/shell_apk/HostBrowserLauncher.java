@@ -59,14 +59,17 @@ class HostBrowserLauncher {
     /** Whether the WebAPK should be navigated to {@link mStartUrl} if it is already running. */
     private boolean mForceNavigation;
 
+    private long mWebApkLaunchTime;
+
     public HostBrowserLauncher(Activity parentActivity, Intent intent, String startUrl, int source,
-            boolean forceNavigation) {
+            boolean forceNavigation, long webApkLaunchTime) {
         mParentActivity = parentActivity;
         mContext = parentActivity.getApplicationContext();
         mIntent = intent;
         mStartUrl = startUrl;
         mSource = source;
         mForceNavigation = forceNavigation;
+        mWebApkLaunchTime = webApkLaunchTime;
     }
 
     /**
@@ -105,7 +108,7 @@ class HostBrowserLauncher {
         }
 
         if (!TextUtils.isEmpty(runtimeHost)) {
-            launchInHostBrowser(runtimeHost);
+            launchInHostBrowser(runtimeHost, false);
             finishCallback.run();
             return;
         }
@@ -136,7 +139,7 @@ class HostBrowserLauncher {
                 mContext.getDir(HostBrowserClassLoader.DEX_DIR_NAME, Context.MODE_PRIVATE));
     }
 
-    private void launchInHostBrowser(String runtimeHost) {
+    private void launchInHostBrowser(String runtimeHost, boolean hostBrowserDialogShown) {
         PackageInfo info;
         try {
             info = mContext.getPackageManager().getPackageInfo(runtimeHost, 0);
@@ -161,6 +164,12 @@ class HostBrowserLauncher {
                 .putExtra(WebApkConstants.EXTRA_SOURCE, mSource)
                 .putExtra(WebApkConstants.EXTRA_WEBAPK_PACKAGE_NAME, mContext.getPackageName())
                 .putExtra(WebApkConstants.EXTRA_FORCE_NAVIGATION, mForceNavigation);
+
+        // Only pass on the start time if no user action was required between launching the webapk
+        // and chrome starting up. See https://crbug.com/842023
+        if (!hostBrowserDialogShown) {
+            intent.putExtra(WebApkConstants.EXTRA_WEBAPK_LAUNCH_TIME, mWebApkLaunchTime);
+        }
 
         try {
             mParentActivity.startActivity(intent);
@@ -209,7 +218,7 @@ class HostBrowserLauncher {
                 new ChooseHostBrowserDialog.DialogListener() {
                     @Override
                     public void onHostBrowserSelected(String selectedHostBrowser) {
-                        launchInHostBrowser(selectedHostBrowser);
+                        launchInHostBrowser(selectedHostBrowser, true);
                         WebApkUtils.writeHostBrowserToSharedPref(mContext, selectedHostBrowser);
                         finishCallback.run();
                     }
