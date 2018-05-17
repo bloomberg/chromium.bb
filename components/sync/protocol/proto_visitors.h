@@ -36,6 +36,7 @@
 #include "components/sync/protocol/theme_specifics.pb.h"
 #include "components/sync/protocol/typed_url_specifics.pb.h"
 #include "components/sync/protocol/unique_position.pb.h"
+#include "components/sync/protocol/user_consent_specifics.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 
 // This file implements VisitProtoFields() functions for sync protos.
@@ -401,6 +402,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(synced_notification_app_info);
   VISIT(theme);
   VISIT(typed_url);
+  VISIT(user_consent);
   VISIT(user_event);
   VISIT(wallet_metadata);
   VISIT(wifi_credential);
@@ -904,6 +906,53 @@ VISIT_PROTO_FIELDS(const sync_pb::UniquePosition& proto) {
   VISIT_BYTES(compressed_value);
   VISIT(uncompressed_length);
   VISIT_BYTES(custom_compressed_v1);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::UserConsentSpecifics& proto) {
+  VISIT_ENUM(feature);
+  VISIT_REP(description_grd_ids);
+  VISIT(confirmation_grd_id);
+  VISIT(locale);
+  VISIT_ENUM(status);
+  VISIT(account_id);
+  VISIT(sync_consent);
+  VISIT(arc_backup_and_restore_consent);
+  VISIT(arc_location_service_consent);
+  VISIT(arc_play_terms_of_service_consent);
+  VISIT(arc_metrics_and_usage_consent);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserConsentSpecifics::ArcBackupAndRestoreConsent& proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT_ENUM(status);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserConsentSpecifics::ArcGoogleLocationServiceConsent&
+        proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT_ENUM(status);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserConsentSpecifics::ArcMetricsAndUsageConsent& proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT_ENUM(status);
+}
+
+VISIT_PROTO_FIELDS(
+    const sync_pb::UserConsentSpecifics::ArcPlayTermsOfServiceConsent& proto) {
+  VISIT(play_terms_of_service_text_length);
+  VISIT(play_terms_of_service_hash);
+  VISIT(confirmation_grd_id);
+  VISIT_ENUM(status);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::UserConsentSpecifics::SyncConsent& proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT(confirmation_grd_id);
+  VISIT_ENUM(status);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {

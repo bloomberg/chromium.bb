@@ -33,11 +33,11 @@ import "favicon_image_specifics.proto";
 import "favicon_tracking_specifics.proto";
 import "get_updates_caller_info.proto";
 import "history_delete_directive_specifics.proto";
-import "nigori_specifics.proto";
 import "managed_user_setting_specifics.proto";
 import "managed_user_shared_setting_specifics.proto";
 import "managed_user_specifics.proto";
 import "managed_user_whitelist_specifics.proto";
+import "nigori_specifics.proto";
 import "password_specifics.proto";
 import "preference_specifics.proto";
 import "printer_specifics.proto";
@@ -51,6 +51,7 @@ import "synced_notification_specifics.proto";
 import "theme_specifics.proto";
 import "typed_url_specifics.proto";
 import "unique_position.proto";
+import "user_consent_specifics.proto";
 import "user_event_specifics.proto";
 import "wifi_credential_specifics.proto";
 
@@ -141,6 +142,7 @@ message EntitySpecifics {
   optional PrinterSpecifics printer = 410745;
   optional ReadingListSpecifics reading_list = 411028;
   optional UserEventSpecifics user_event = 455206;
+  optional UserConsentSpecifics user_consent = 556014;
 }
 
 message SyncEntity {
