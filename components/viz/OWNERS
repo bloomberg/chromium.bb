@@ -16,6 +16,11 @@ weiliangc@chromium.org
 # CopyOutputRequests/Results
 miu@chromium.org
 
+# renderers (GL/Skia/Software)
+weiliangc@chromium.org
+rjkroege@chromium.org
+ccameron@chromium.org
+
 # display_embedder / ozone
 reveman@chromium.org
 rjkroege@chromium.org
