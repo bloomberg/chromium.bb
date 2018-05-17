@@ -1015,8 +1015,8 @@ TEST_F(GLRendererTest, ActiveTextureState) {
                         gfx::Transform(), cc::FilterOperations());
   gpu::SyncToken mailbox_sync_token;
   AddOneOfEveryQuadTypeInDisplayResourceProvider(
-      root_pass, resource_provider.get(), child_resource_provider.get(), 0,
-      &mailbox_sync_token);
+      root_pass, resource_provider.get(), child_resource_provider.get(),
+      child_context_provider.get(), 0, &mailbox_sync_token);
 
   EXPECT_EQ(12u, resource_provider->num_resources());
   renderer.DecideRenderPassAllocationsForFrame(render_passes_in_draw_order_);
@@ -1631,7 +1631,8 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
   // Return the mapped resource id.
   cc::ResourceProvider::ResourceIdMap resource_map =
       SendResourceAndGetChildToParentMap({mask}, resource_provider_.get(),
-                                         child_resource_provider_.get());
+                                         child_resource_provider_.get(),
+                                         child_context_provider_.get());
   ResourceId mapped_mask = resource_map[mask];
 
   SkScalar matrix[20];
@@ -2093,7 +2094,8 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
   cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
   std::vector<TransferableResource> list;
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
+  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                               child_context_provider.get());
   parent_resource_provider->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
@@ -2286,7 +2288,8 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
   std::vector<TransferableResource> list;
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
+  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                               child_context_provider.get());
   parent_resource_provider->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
@@ -2666,7 +2669,8 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
   std::vector<TransferableResource> list;
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
+  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                               child_context_provider.get());
   parent_resource_provider->ReceiveFromChild(child_id, list);
   // In DisplayResourceProvider's namespace, use the mapped resource id.
   cc::ResourceProvider::ResourceIdMap resource_map =

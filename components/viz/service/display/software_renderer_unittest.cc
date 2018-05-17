@@ -196,7 +196,7 @@ TEST_F(SoftwareRendererTest, TileQuad) {
   cc::ResourceProvider::ResourceIdMap resource_map =
       SendResourceAndGetChildToParentMap({resource_yellow, resource_cyan},
                                          resource_provider(),
-                                         child_resource_provider());
+                                         child_resource_provider(), nullptr);
   ResourceId mapped_resource_yellow = resource_map[resource_yellow];
   ResourceId mapped_resource_cyan = resource_map[resource_cyan];
 
@@ -258,7 +258,7 @@ TEST_F(SoftwareRendererTest, TileQuadVisibleRect) {
   // Transfer resources to the parent, and get the resource map.
   cc::ResourceProvider::ResourceIdMap resource_map =
       SendResourceAndGetChildToParentMap({resource_cyan}, resource_provider(),
-                                         child_resource_provider());
+                                         child_resource_provider(), nullptr);
   ResourceId mapped_resource_cyan = resource_map[resource_cyan];
 
   gfx::Rect root_rect(tile_size);

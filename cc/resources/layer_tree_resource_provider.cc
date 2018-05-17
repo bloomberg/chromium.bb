@@ -91,9 +91,6 @@ LayerTreeResourceProvider::~LayerTreeResourceProvider() {
     bool is_lost = imported.exported_count || imported.returned_lost;
     imported.release_callback->Run(imported.returned_sync_token, is_lost);
   }
-  GLES2Interface* gl = ContextGL();
-  if (gl)
-    gl->Finish();
 }
 
 gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
@@ -118,9 +115,9 @@ gpu::SyncToken LayerTreeResourceProvider::GenerateSyncTokenHelper(
 
 void LayerTreeResourceProvider::PrepareSendToParent(
     const std::vector<viz::ResourceId>& export_ids,
-    std::vector<viz::TransferableResource>* list) {
+    std::vector<viz::TransferableResource>* list,
+    viz::ContextProvider* context_provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  GLES2Interface* gl = ContextGL();
 
   // This function goes through the array multiple times, store the resources
   // as pointers so we don't have to look up the resource id multiple times.
@@ -148,9 +145,9 @@ void LayerTreeResourceProvider::PrepareSendToParent(
 
   if (!unverified_sync_tokens.empty()) {
     DCHECK(settings_.delegated_sync_points_required);
-    DCHECK(gl);
-    gl->VerifySyncTokensCHROMIUM(unverified_sync_tokens.data(),
-                                 unverified_sync_tokens.size());
+    DCHECK(context_provider);
+    context_provider->ContextGL()->VerifySyncTokensCHROMIUM(
+        unverified_sync_tokens.data(), unverified_sync_tokens.size());
   }
 
   for (ImportedResource* imported : imports) {
@@ -212,11 +209,6 @@ void LayerTreeResourceProvider::RemoveImportedResource(viz::ResourceId id) {
                                    imported.returned_lost);
     imported_resources_.erase(it);
   }
-}
-
-void LayerTreeResourceProvider::FlushPendingDeletions() const {
-  if (auto* gl = ContextGL())
-    gl->ShallowFlushCHROMIUM();
 }
 
 bool LayerTreeResourceProvider::IsTextureFormatSupported(
@@ -337,9 +329,4 @@ bool LayerTreeResourceProvider::InUseByConsumer(viz::ResourceId id) {
   return imported.exported_count > 0 || imported.returned_lost;
 }
 
-GLES2Interface* LayerTreeResourceProvider::ContextGL() const {
-  return compositor_context_provider_
-             ? compositor_context_provider_->ContextGL()
-             : nullptr;
-}
 }  // namespace cc

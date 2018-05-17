@@ -14,7 +14,8 @@ namespace cc {
 const ResourceProvider::ResourceIdMap& SendResourceAndGetChildToParentMap(
     const ResourceProvider::ResourceIdArray& resource_ids,
     DisplayResourceProvider* resource_provider,
-    LayerTreeResourceProvider* child_resource_provider);
+    LayerTreeResourceProvider* child_resource_provider,
+    viz::ContextProvider* child_context_provider);
 
 }  // namespace cc
 

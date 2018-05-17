@@ -11,14 +11,16 @@ namespace cc {
 const ResourceProvider::ResourceIdMap& SendResourceAndGetChildToParentMap(
     const ResourceProvider::ResourceIdArray& resource_ids,
     DisplayResourceProvider* resource_provider,
-    LayerTreeResourceProvider* child_resource_provider) {
+    LayerTreeResourceProvider* child_resource_provider,
+    viz::ContextProvider* child_context_provider) {
   DCHECK(resource_provider);
   DCHECK(child_resource_provider);
   // Transfer resources to the parent.
   std::vector<viz::TransferableResource> send_to_parent;
   int child_id = resource_provider->CreateChild(
       base::BindRepeating([](const std::vector<viz::ReturnedResource>&) {}));
-  child_resource_provider->PrepareSendToParent(resource_ids, &send_to_parent);
+  child_resource_provider->PrepareSendToParent(resource_ids, &send_to_parent,
+                                               child_context_provider);
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
   // Return the child to parent map.

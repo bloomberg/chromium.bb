@@ -1777,8 +1777,10 @@ void LayerTreeHostImpl::ReclaimResources(
   // If we're not visible, we likely released resources, so we want to
   // aggressively flush here to make sure those DeleteTextures make it to the
   // GPU process to free up the memory.
-  if (!visible_)
-    resource_provider_->FlushPendingDeletions();
+  if (!visible_ && layer_tree_frame_sink_->context_provider()) {
+    auto* gl = layer_tree_frame_sink_->context_provider()->ContextGL();
+    gl->ShallowFlushCHROMIUM();
+  }
 }
 
 void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
@@ -2040,8 +2042,9 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
 
   viz::CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
-  resource_provider_->PrepareSendToParent(resources,
-                                          &compositor_frame.resource_list);
+  resource_provider_->PrepareSendToParent(
+      resources, &compositor_frame.resource_list,
+      layer_tree_frame_sink_->context_provider());
   compositor_frame.render_pass_list = std::move(frame->render_passes);
   // TODO(fsamuel): Once all clients get their viz::LocalSurfaceId from their
   // parent, the viz::LocalSurfaceId should hang off CompositorFrameMetadata.
@@ -2889,6 +2892,11 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   ClearUIResources();
   resource_provider_ = nullptr;
 
+  if (layer_tree_frame_sink_->context_provider()) {
+    auto* gl = layer_tree_frame_sink_->context_provider()->ContextGL();
+    gl->Finish();
+  }
+
   // Release any context visibility before we destroy the LayerTreeFrameSink.
   SetContextVisibility(false);
 
@@ -2922,19 +2930,10 @@ bool LayerTreeHostImpl::InitializeRenderer(
       layer_tree_frame_sink_->context_provider(),
       layer_tree_frame_sink_->capabilities().delegated_sync_points_required,
       settings_.resource_settings);
-  if (!layer_tree_frame_sink_->context_provider()) {
-    // This ResourcePool will vend software resources.
-    resource_pool_ = std::make_unique<ResourcePool>(
-        resource_provider_.get(), GetTaskRunner(),
-        ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kSoftware,
-        settings_.disallow_non_exact_resource_reuse);
-  } else {
-    // The ResourcePool will vend gpu resources.
-    resource_pool_ = std::make_unique<ResourcePool>(
-        resource_provider_.get(), GetTaskRunner(),
-        ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
-        settings_.disallow_non_exact_resource_reuse);
-  }
+  resource_pool_ = std::make_unique<ResourcePool>(
+      resource_provider_.get(), layer_tree_frame_sink_->context_provider(),
+      GetTaskRunner(), ResourcePool::kDefaultExpirationDelay,
+      settings_.disallow_non_exact_resource_reuse);
   if (features::IsVizHitTestingSurfaceLayerEnabled())
     layer_tree_frame_sink_->UpdateHitTestData(this);
 

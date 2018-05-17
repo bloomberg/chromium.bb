@@ -548,8 +548,8 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
   resource_ids_to_transfer.push_back(id2);
 
   std::vector<viz::TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                &list);
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                                child_context_provider_.get());
   ASSERT_EQ(2u, list.size());
   resource_provider_->ReceiveFromChild(child_id, list);
   ResourceProvider::ResourceIdMap resource_map =
@@ -639,8 +639,8 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id);
     std::vector<viz::TransferableResource> list;
-    no_token_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
-                                                    &list);
+    no_token_resource_provider->PrepareSendToParent(
+        resource_ids_to_transfer, &list, child_context_provider_.get());
     ASSERT_EQ(1u, list.size());
     // A given sync point should be passed through.
     EXPECT_EQ(external_sync_token, list[0].mailbox_holder.sync_token);
@@ -697,8 +697,8 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
   }
 
   std::vector<viz::TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                &list);
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                                child_context_provider_.get());
   ASSERT_EQ(2u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(ids[0]));
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(ids[1]));
@@ -758,8 +758,8 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
     resource_ids_to_transfer.push_back(id1);
 
     std::vector<viz::TransferableResource> list;
-    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                  &list);
+    child_resource_provider_->PrepareSendToParent(
+        resource_ids_to_transfer, &list, child_context_provider_.get());
     ASSERT_EQ(1u, list.size());
     EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
 
@@ -822,8 +822,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   resource_ids_to_transfer.push_back(id1);
 
   std::vector<viz::TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                &list);
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                                child_context_provider_.get());
   ASSERT_EQ(1u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
   EXPECT_TRUE(list[0].read_lock_fences_enabled);
@@ -882,8 +882,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   resource_ids_to_transfer.push_back(id2);
 
   std::vector<viz::TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                &list);
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                                child_context_provider_.get());
   ASSERT_EQ(2u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
@@ -941,8 +941,8 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   resource_ids_to_transfer.push_back(id2);
 
   std::vector<viz::TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                &list);
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                                child_context_provider_.get());
   ASSERT_EQ(2u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id2));
@@ -1009,8 +1009,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
     std::vector<viz::TransferableResource> list;
-    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                  &list);
+    child_resource_provider_->PrepareSendToParent(
+        resource_ids_to_transfer, &list, child_context_provider_.get());
     ASSERT_EQ(1u, list.size());
     EXPECT_LE(sync_token.release_count(),
               list[0].mailbox_holder.sync_token.release_count());
@@ -1061,8 +1061,8 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
     std::vector<viz::TransferableResource> list;
-    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                  &list);
+    child_resource_provider_->PrepareSendToParent(
+        resource_ids_to_transfer, &list, child_context_provider_.get());
     ASSERT_EQ(1u, list.size());
     EXPECT_LE(sync_token.release_count(),
               list[0].mailbox_holder.sync_token.release_count());
@@ -1121,8 +1121,8 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
     ResourceProvider::ResourceIdArray resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
     std::vector<viz::TransferableResource> list;
-    child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                  &list);
+    child_resource_provider_->PrepareSendToParent(
+        resource_ids_to_transfer, &list, child_context_provider_.get());
     EXPECT_EQ(1u, list.size());
 
     resource_provider_->ReceiveFromChild(child_id, list);
@@ -1193,7 +1193,8 @@ TEST_P(ResourceProviderTest, Shutdown) {
         i == kShutdownAfterExportAndReturnWithLostResource ||
         i == kShutdownAfterContextLossAfterExportAndReturn) {
       std::vector<viz::TransferableResource> send_list;
-      child_resource_provider_->PrepareSendToParent({id}, &send_list);
+      child_resource_provider_->PrepareSendToParent(
+          {id}, &send_list, child_context_provider_.get());
     }
 
     if (i == kShutdownAfterExportAndReturn ||
@@ -1271,8 +1272,8 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
       base::Bind(&CollectResources, &returned_to_child));
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
-                                               &send_to_parent);
+  child_resource_provider->PrepareSendToParent(
+      resource_ids_to_transfer, &send_to_parent, child_context_provider_.get());
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
@@ -1367,7 +1368,8 @@ class ResourceProviderTestImportedResourceGLFilters
     int child_id = resource_provider->CreateChild(
         base::Bind(&CollectResources, &returned_to_child));
     child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
-                                                 &send_to_parent);
+                                                 &send_to_parent,
+                                                 child_context_provider.get());
     resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
     // In DisplayResourceProvider's namespace, use the mapped resource id.
@@ -1520,8 +1522,8 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   std::vector<viz::ReturnedResource> returned_to_child;
   int child_id = resource_provider->CreateChild(
       base::Bind(&CollectResources, &returned_to_child));
-  child_resource_provider->PrepareSendToParent(resource_ids_to_transfer,
-                                               &send_to_parent);
+  child_resource_provider->PrepareSendToParent(
+      resource_ids_to_transfer, &send_to_parent, child_context_provider_.get());
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
   // Before create DrawQuad in DisplayResourceProvider's namespace, get the
@@ -1743,7 +1745,8 @@ TEST_P(ResourceProviderTest, ImportedResource_PrepareSendToParent_NoSyncToken) {
 
   ResourceProvider::ResourceIdArray resource_ids_to_transfer{id};
   std::vector<viz::TransferableResource> list;
-  resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list);
+  resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                         context_provider.get());
   ASSERT_EQ(1u, list.size());
   EXPECT_FALSE(list[0].mailbox_holder.sync_token.HasData());
   EXPECT_TRUE(list[0].mailbox_holder.sync_token.verified_flush());

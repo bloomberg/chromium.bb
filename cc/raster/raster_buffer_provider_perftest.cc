@@ -352,10 +352,6 @@ class RasterBufferProviderPerfTest
             std::make_unique<ZeroCopyRasterBufferProvider>(
                 &gpu_memory_buffer_manager_, compositor_context_provider_.get(),
                 viz::RGBA_8888);
-        resource_pool_ = std::make_unique<ResourcePool>(
-            resource_provider_.get(), task_runner_,
-            ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
-            false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dResourceProvider();
@@ -364,34 +360,24 @@ class RasterBufferProviderPerfTest
             worker_context_provider_.get(), &gpu_memory_buffer_manager_,
             std::numeric_limits<int>::max(), false, false,
             std::numeric_limits<int>::max(), viz::RGBA_8888);
-        resource_pool_ = std::make_unique<ResourcePool>(
-            resource_provider_.get(), task_runner_,
-            ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
-            false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             compositor_context_provider_.get(), worker_context_provider_.get(),
             false, 0, viz::RGBA_8888, gfx::Size(), true, false);
-        resource_pool_ = std::make_unique<ResourcePool>(
-            resource_provider_.get(), task_runner_,
-            ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
-            false);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
         raster_buffer_provider_ = std::make_unique<BitmapRasterBufferProvider>(
             layer_tree_frame_sink_.get());
-        resource_pool_ = std::make_unique<ResourcePool>(
-            resource_provider_.get(), task_runner_,
-            ResourcePool::kDefaultExpirationDelay,
-            ResourcePool::Mode::kSoftware, false);
         break;
     }
-
     DCHECK(raster_buffer_provider_);
 
+    resource_pool_ = std::make_unique<ResourcePool>(
+        resource_provider_.get(), compositor_context_provider_.get(),
+        task_runner_, ResourcePool::kDefaultExpirationDelay, false);
     tile_task_manager_ = TileTaskManagerImpl::Create(task_graph_runner_.get());
   }
   void TearDown() override {
@@ -588,8 +574,8 @@ class RasterBufferProviderCommonPerfTest
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
         compositor_context_provider_.get());
     resource_pool_ = std::make_unique<ResourcePool>(
-        resource_provider_.get(), task_runner_,
-        ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu, false);
+        resource_provider_.get(), compositor_context_provider_.get(),
+        task_runner_, ResourcePool::kDefaultExpirationDelay, false);
   }
 
   void RunBuildTileTaskGraphTest(const std::string& test_name,
