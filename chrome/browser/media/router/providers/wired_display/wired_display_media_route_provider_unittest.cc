@@ -223,6 +223,10 @@ TEST_F(WiredDisplayMediaRouteProviderTest, GetDisplaysAsSinks) {
             EXPECT_EQ(sinks[0].sink().id(), primary_id);
             EXPECT_EQ(sinks[1].sink().id(), secondary_id1);
             EXPECT_EQ(sinks[2].sink().id(), secondary_id2);
+
+            EXPECT_EQ(sinks[0].sink().provider_id(),
+                      MediaRouteProviderId::WIRED_DISPLAY);
+            EXPECT_EQ(sinks[0].sink().icon_type(), SinkIconType::WIRED_DISPLAY);
           })));
   provider_pointer_->StartObservingMediaSinks(kPresentationSource);
   base::RunLoop().RunUntilIdle();
