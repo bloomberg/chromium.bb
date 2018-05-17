@@ -171,17 +171,6 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     FrameLifecycle::set_phase(kUpdatedLayout);
   }
 
-  if (!scene_dirty) {
-    // Nothing to update, so set all elements to the final update phase and
-    // return early.
-    for (auto* element : elements) {
-      if (element->update_phase() != kDirty)
-        element->set_update_phase(kUpdatedWorldSpaceTransform);
-    }
-    FrameLifecycle::set_phase(kUpdatedWorldSpaceTransform);
-    return false;
-  }
-
   {
     TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateWorldSpaceTransform");
 

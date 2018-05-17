@@ -72,9 +72,9 @@ void ScrollableElement::SetInitialScroll() {
     scroll_offset_ = 0.0f;
   }
   if (orientation_ == kVertical) {
-    inner_element_->SetTranslate(0.0f, scroll_offset_, 0.0f);
+    inner_element_->SetLayoutOffset(0.0f, scroll_offset_);
   } else {
-    inner_element_->SetTranslate(scroll_offset_, 0.0f, 0.0f);
+    inner_element_->SetLayoutOffset(scroll_offset_, 0.0f);
   }
 }
 
@@ -115,12 +115,12 @@ void ScrollableElement::OnScrollUpdate(
     scroll_offset_ -= update.delta_x * kScrollScaleFactor;
     scroll_offset_ =
         base::ClampToRange(scroll_offset_, -half_scroll_span, half_scroll_span);
-    inner_element_->SetTranslate(scroll_offset_, 0.0f, 0.0f);
+    inner_element_->SetLayoutOffset(scroll_offset_, 0.0f);
   } else {
     scroll_offset_ -= update.delta_y * kScrollScaleFactor;
     scroll_offset_ =
         base::ClampToRange(scroll_offset_, -half_scroll_span, half_scroll_span);
-    inner_element_->SetTranslate(0.0f, scroll_offset_, 0.0f);
+    inner_element_->SetLayoutOffset(0.0f, scroll_offset_);
   }
 }
 
@@ -128,16 +128,6 @@ void ScrollableElement::OnScrollEnd(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
   animation().set_transition(cached_transition_);
-}
-
-bool ScrollableElement::OnBeginFrame(const gfx::Transform&) {
-  // TODO(acondor): Remove this calculation of dirtiness
-  // (https://crbug.com/843326).
-  if (scroll_offset_ != last_scroll_offset_) {
-    last_scroll_offset_ = scroll_offset_;
-    return true;
-  }
-  return false;
 }
 
 }  // namespace vr

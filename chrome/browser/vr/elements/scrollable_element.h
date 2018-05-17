@@ -32,7 +32,6 @@ class ScrollableElement : public UiElement {
   // UiElement overrides.
   gfx::RectF ComputeContributingChildrenBounds() final;
   void LayOutNonContributingChildren() final;
-  bool OnBeginFrame(const gfx::Transform&) final;
 
   void AddScrollingChild(std::unique_ptr<UiElement> child);
 
@@ -63,7 +62,6 @@ class ScrollableElement : public UiElement {
   gfx::SizeF inner_size_;
 
   float scroll_offset_ = 0.0f;
-  float last_scroll_offset_ = 0.0f;
 
   Transition cached_transition_;
 
