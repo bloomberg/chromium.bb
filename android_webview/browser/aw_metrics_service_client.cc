@@ -65,7 +65,8 @@ std::unique_ptr<metrics::ClientInfo> LoadClientInfo() {
   return client_info;
 }
 
-// WebView Metrics are sampled based on GUID value.
+// WebView Metrics are sampled based on GUID value. The sample rate must not
+// exceed 10%; see https://crbug.com/839646 for more info.
 // TODO(paulmiller) Sample with Finch, once we have Finch.
 bool IsInSample(const std::string& client_id) {
   // client_id comes from base::GenerateGUID(), so its value is random/uniform,
