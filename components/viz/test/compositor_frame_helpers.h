@@ -63,6 +63,8 @@ class CompositorFrameBuilder {
   CompositorFrameBuilder& SetPresentationToken(uint32_t presentation_token);
 
  private:
+  CompositorFrame MakeInitCompositorFrame() const;
+
   base::Optional<CompositorFrame> frame_;
   uint64_t next_render_pass_id_ = 1;
 

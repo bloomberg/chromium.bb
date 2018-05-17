@@ -550,13 +550,14 @@ void Surface::TakeLatencyInfoFromFrame(
     frame->metadata.latency_info.swap(*latency_info);
     return;
   }
-  if (ui::LatencyInfo::Verify(*latency_info,
-                              "Surface::TakeLatencyInfoFromFrame")) {
-    std::copy(frame->metadata.latency_info.begin(),
-              frame->metadata.latency_info.end(),
-              std::back_inserter(*latency_info));
-  }
+  std::copy(frame->metadata.latency_info.begin(),
+            frame->metadata.latency_info.end(),
+            std::back_inserter(*latency_info));
   frame->metadata.latency_info.clear();
+  if (!ui::LatencyInfo::Verify(*latency_info,
+                               "Surface::TakeLatencyInfoFromFrame")) {
+    latency_info->clear();
+  }
 }
 
 void Surface::OnWillBeDrawn() {

@@ -12,18 +12,15 @@ constexpr gfx::Rect kDefaultDamageRect(0, 0);
 
 }  // namespace
 
-CompositorFrameBuilder::CompositorFrameBuilder() : frame_(base::in_place) {
-  frame_->metadata.begin_frame_ack =
-      BeginFrameAck(BeginFrameArgs::kManualSourceId,
-                    BeginFrameArgs::kStartingFrameNumber, true);
-  frame_->metadata.device_scale_factor = 1.f;
+CompositorFrameBuilder::CompositorFrameBuilder() {
+  frame_ = MakeInitCompositorFrame();
 }
 
 CompositorFrameBuilder::~CompositorFrameBuilder() = default;
 
 CompositorFrame CompositorFrameBuilder::Build() {
   CompositorFrame temp_frame(std::move(frame_.value()));
-  frame_.reset();
+  frame_ = MakeInitCompositorFrame();
   return temp_frame;
 }
 
@@ -134,6 +131,15 @@ CompositorFrameBuilder& CompositorFrameBuilder::SetPresentationToken(
     uint32_t presentation_token) {
   frame_->metadata.presentation_token = presentation_token;
   return *this;
+}
+
+CompositorFrame CompositorFrameBuilder::MakeInitCompositorFrame() const {
+  CompositorFrame frame;
+  frame.metadata.begin_frame_ack =
+      BeginFrameAck(BeginFrameArgs::kManualSourceId,
+                    BeginFrameArgs::kStartingFrameNumber, true);
+  frame.metadata.device_scale_factor = 1.f;
+  return frame;
 }
 
 CompositorFrame MakeDefaultCompositorFrame() {
