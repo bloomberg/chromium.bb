@@ -349,6 +349,14 @@ def BuildFFmpeg(target_os, target_arch, host_os, host_arch, parallel_jobs,
          r'#define HAVE_SYSCTL 0 /* \1 -- forced to 0 for Fuchsia */')
     ]
 
+  # Turn off bcrypt, since we don't have it on Windows builders, but it does
+  # get detected when cross-compiling.
+  if target_os == 'win':
+    pre_make_rewrites += [
+        (r'(#define HAVE_BCRYPT [01])',
+         r'#define HAVE_BCRYPT 0')
+    ]
+
   RewriteFile(os.path.join(config_dir, 'config.h'), pre_make_rewrites)
 
   # Windows linking resolves external symbols. Since generate_gn.py does not
