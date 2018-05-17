@@ -97,6 +97,9 @@ class CORE_EXPORT NGLineBreaker {
     bool CanFit(LayoutUnit extra) const {
       return position + extra <= AvailableWidth();
     }
+    bool CanFloatFit(LayoutUnit extra) const {
+      return position + extra <= line_opportunity.AvailableFloatInlineSize();
+    }
   };
 
   const String& Text() const { return items_data_.text_content; }

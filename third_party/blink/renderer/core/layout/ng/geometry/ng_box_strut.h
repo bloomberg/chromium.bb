@@ -60,6 +60,20 @@ struct CORE_EXPORT NGBoxStrut {
     return result;
   }
 
+  NGBoxStrut& operator-=(const NGBoxStrut& other) {
+    inline_start -= other.inline_start;
+    inline_end -= other.inline_end;
+    block_start -= other.block_start;
+    block_end -= other.block_end;
+    return *this;
+  }
+
+  NGBoxStrut operator-(const NGBoxStrut& other) {
+    NGBoxStrut result(*this);
+    result -= other;
+    return result;
+  }
+
   bool operator==(const NGBoxStrut& other) const;
 
   String ToString() const;

@@ -99,6 +99,17 @@ void ShapeOutsideInfo::SetReferenceBoxLogicalSize(
   reference_box_logical_size_ = new_reference_box_logical_size;
 }
 
+void ShapeOutsideInfo::SetPercentageResolutionInlineSize(
+    LayoutUnit percentage_resolution_inline_size) {
+  DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
+
+  if (percentage_resolution_inline_size_ == percentage_resolution_inline_size)
+    return;
+
+  MarkShapeAsDirty();
+  percentage_resolution_inline_size_ = percentage_resolution_inline_size;
+}
+
 static bool CheckShapeImageOrigin(Document& document,
                                   const StyleImage& style_image) {
   if (style_image.IsGeneratedImage())
@@ -170,20 +181,21 @@ const Shape& ShapeOutsideInfo::ComputedShape() const {
 
   const ComputedStyle& style = *layout_box_.Style();
   DCHECK(layout_box_.ContainingBlock());
-  const ComputedStyle& containing_block_style =
-      *layout_box_.ContainingBlock()->Style();
+  const LayoutBlock& containing_block = *layout_box_.ContainingBlock();
+  const ComputedStyle& containing_block_style = containing_block.StyleRef();
 
   WritingMode writing_mode = containing_block_style.GetWritingMode();
   // Make sure contentWidth is not negative. This can happen when containing
   // block has a vertical scrollbar and its content is smaller than the
   // scrollbar width.
-  LayoutUnit maximum_value =
-      layout_box_.ContainingBlock()
-          ? std::max(LayoutUnit(),
-                     layout_box_.ContainingBlock()->ContentWidth())
-          : LayoutUnit();
-  float margin = FloatValueForLength(layout_box_.Style()->ShapeMargin(),
-                                     maximum_value.ToFloat());
+  LayoutUnit percentage_resolution_inline_size =
+      containing_block.IsLayoutNGMixin()
+          ? percentage_resolution_inline_size_
+          : std::max(LayoutUnit(), containing_block.ContentWidth());
+
+  float margin =
+      FloatValueForLength(layout_box_.Style()->ShapeMargin(),
+                          percentage_resolution_inline_size.ToFloat());
 
   float shape_image_threshold = style.ShapeImageThreshold();
   DCHECK(style.ShapeOutside());

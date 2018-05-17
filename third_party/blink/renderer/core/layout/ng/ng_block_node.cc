@@ -29,6 +29,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_page_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/shapes/shape_outside_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -421,6 +422,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
   box_->UpdateAfterLayout();
   box_->ClearNeedsLayout();
 
+  UpdateShapeOutsideInfoIfNeeded(
+      constraint_space.PercentageResolutionSize().inline_size);
+
   if (box_->IsLayoutBlockFlow()) {
     LayoutBlockFlow* block_flow = ToLayoutBlockFlow(box_);
     block_flow->UpdateIsSelfCollapsing();
@@ -603,6 +607,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::RunOldLayout(
       std::make_unique<NGExclusionSpace>(constraint_space.ExclusionSpace()));
 
   CopyBaselinesFromOldLayout(constraint_space, &builder);
+  UpdateShapeOutsideInfoIfNeeded(
+      constraint_space.PercentageResolutionSize().inline_size);
   return builder.ToBoxFragment();
 }
 
@@ -661,6 +667,27 @@ LayoutUnit NGBlockNode::AtomicInlineBaselineFromOldLayout(
   // If this is a block box, use |InlineBlockBaseline()|. When an inline block
   // has block children, their inline block baselines need to be propagated.
   return box_->InlineBlockBaseline(line_direction);
+}
+
+// Floats can optionally have a shape area, specifed by "shape-outside". The
+// current shape machinery requires setting the size of the float after layout
+// in the parents writing mode.
+void NGBlockNode::UpdateShapeOutsideInfoIfNeeded(
+    LayoutUnit percentage_resolution_inline_size) {
+  if (!box_->IsFloating() || !box_->GetShapeOutsideInfo())
+    return;
+
+  // TODO(ikilpatrick): Ideally this should be moved to a NGLayoutResult
+  // computing the shape area. There may be an issue with the new fragmentation
+  // model and computing the correct sizes of shapes.
+  ShapeOutsideInfo* shape_outside = box_->GetShapeOutsideInfo();
+  LayoutBlock* containing_block = box_->ContainingBlock();
+  shape_outside->SetReferenceBoxLogicalSize(
+      containing_block->IsHorizontalWritingMode()
+          ? box_->Size()
+          : box_->Size().TransposedSize());
+  shape_outside->SetPercentageResolutionInlineSize(
+      percentage_resolution_inline_size);
 }
 
 void NGBlockNode::UseOldOutOfFlowPositioning() {

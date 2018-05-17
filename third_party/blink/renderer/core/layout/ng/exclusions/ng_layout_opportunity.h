@@ -6,9 +6,13 @@
 #define NGLayoutOpportunity_h
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_line_layout_opportunity.h"
+#include "third_party/blink/renderer/core/layout/ng/exclusions/ng_shape_exclusions.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_rect.h"
 
 namespace blink {
+
+class NGConstraintSpace;
 
 // This struct represents an 2D-area where a NGFragment can fit within the
 // exclusion space. A layout opportunity is produced by the exclusion space by
@@ -19,15 +23,41 @@ struct CORE_EXPORT NGLayoutOpportunity {
   NGLayoutOpportunity()
       : rect(NGBfcOffset(LayoutUnit::Min(), LayoutUnit::Min()),
              NGBfcOffset(LayoutUnit::Max(), LayoutUnit::Max())) {}
-  explicit NGLayoutOpportunity(const NGBfcRect& rect) : rect(rect) {}
+  NGLayoutOpportunity(
+      const NGBfcRect& rect,
+      scoped_refptr<const NGShapeExclusions> shape_exclusions = nullptr)
+      : rect(rect), shape_exclusions(std::move(shape_exclusions)) {}
 
   // Rectangle in BFC coordinates that represents this opportunity.
   NGBfcRect rect;
 
-  // TODO(ikilpatrick): This will also need to hold all the adjacent exclusions
-  // on each edge for implementing css-shapes correctly. It'll need to have
-  // methods which use these adjacent exclusions to determine the available
-  // inline-size for a line-box.
+  // The shape exclusions hold all of the adjacent exclusions which may affect
+  // the line layout opportunity when queried. May be null if no shapes are
+  // present.
+  scoped_refptr<const NGShapeExclusions> shape_exclusions;
+
+  // Returns if the opportunity has any shapes which may affect a line layout
+  // opportunity.
+  bool HasShapeExclusions() const { return shape_exclusions.get(); }
+
+  // Returns if the given delta (relative to the start of the opportunity) will
+  // be below any shapes.
+  bool IsBlockDeltaBelowShapes(LayoutUnit block_delta) const;
+
+  // Calculates a line layout opportunity which takes into account any shapes
+  // which may affect the available inline size for the line breaker.
+  NGLineLayoutOpportunity ComputeLineLayoutOpportunity(
+      const NGConstraintSpace&,
+      LayoutUnit line_block_size,
+      LayoutUnit block_delta) const;
+
+ private:
+  LayoutUnit ComputeLineLeftOffset(const NGConstraintSpace&,
+                                   LayoutUnit line_block_size,
+                                   LayoutUnit block_delta) const;
+  LayoutUnit ComputeLineRightOffset(const NGConstraintSpace&,
+                                    LayoutUnit line_block_size,
+                                    LayoutUnit block_delta) const;
 };
 
 }  // namespace blink

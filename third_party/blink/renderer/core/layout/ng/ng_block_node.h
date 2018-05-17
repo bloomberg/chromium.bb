@@ -91,6 +91,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   void CopyBaselinesFromOldLayout(const NGConstraintSpace&, NGFragmentBuilder*);
   LayoutUnit AtomicInlineBaselineFromOldLayout(const NGBaselineRequest&,
                                                const NGConstraintSpace&);
+
+  void UpdateShapeOutsideInfoIfNeeded(
+      LayoutUnit percentage_resolution_inline_size);
 };
 
 DEFINE_TYPE_CASTS(NGBlockNode,
