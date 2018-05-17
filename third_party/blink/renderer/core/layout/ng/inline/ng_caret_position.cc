@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_caret_position.h"
 
+#include "third_party/blink/renderer/core/editing/inline_box_traversal.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
 #include "third_party/blink/renderer/core/editing/text_affinity.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
@@ -205,6 +206,31 @@ CaretPositionResolution TryResolveCaretPositionWithFragment(
   return CaretPositionResolution();
 }
 
+bool NeedsBidiAdjustment(const NGCaretPosition& caret_position) {
+  if (caret_position.IsNull())
+    return false;
+  if (caret_position.position_type != NGCaretPositionType::kAtTextOffset)
+    return true;
+  DCHECK(caret_position.text_offset.has_value());
+  DCHECK(caret_position.fragment->PhysicalFragment().IsText());
+  const NGPhysicalTextFragment& text_fragment =
+      ToNGPhysicalTextFragment(caret_position.fragment->PhysicalFragment());
+  DCHECK_GE(*caret_position.text_offset, text_fragment.StartOffset());
+  DCHECK_LE(*caret_position.text_offset, text_fragment.EndOffset());
+  // Bidi adjustment is needed only for caret positions at bidi boundaries.
+  // Caret positions in the middle of a text fragment can't be at bidi
+  // boundaries, and hence, don't need any adjustment.
+  return *caret_position.text_offset == text_fragment.StartOffset() ||
+         *caret_position.text_offset == text_fragment.EndOffset();
+}
+
+NGCaretPosition AdjustCaretPositionForBidiText(
+    const NGCaretPosition& caret_position) {
+  if (!NeedsBidiAdjustment(caret_position))
+    return caret_position;
+  return BidiAdjustment::AdjustForCaretPositionResolution(caret_position);
+}
+
 }  // namespace
 
 // The main function for compute an NGCaretPosition. See the comments at the top
@@ -228,7 +254,7 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
     // line box).
 
     if (resolution.type == ResolutionType::kResolved)
-      return resolution.caret_position;
+      return AdjustCaretPositionForBidiText(resolution.caret_position);
 
     DCHECK_EQ(ResolutionType::kFoundCandidate, resolution.type);
     // TODO(xiaochengh): We are not sure if we can ever find multiple
@@ -237,7 +263,7 @@ NGCaretPosition ComputeNGCaretPosition(const LayoutBlockFlow& context,
     candidate = resolution.caret_position;
   }
 
-  return candidate;
+  return AdjustCaretPositionForBidiText(candidate);
 }
 
 NGCaretPosition ComputeNGCaretPosition(const PositionWithAffinity& position) {

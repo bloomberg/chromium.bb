@@ -13,6 +13,7 @@ namespace blink {
 
 class InlineBox;
 struct InlineBoxPosition;
+struct NGCaretPosition;
 enum class UnicodeBidi : unsigned;
 
 class BidiAdjustment final {
@@ -23,6 +24,8 @@ class BidiAdjustment final {
   static InlineBoxPosition AdjustForCaretPositionResolution(
       const InlineBoxPosition&,
       UnicodeBidi unicode_bidi);
+  static NGCaretPosition AdjustForCaretPositionResolution(
+      const NGCaretPosition&);
 
   // TODO(xiaochengh): Clients of InlineBoxTraversal should be wrapped into
   // new member functions here.
