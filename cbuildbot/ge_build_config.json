@@ -1286,18 +1286,6 @@
       ]
     },
     {
-      "name": "scarlet",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": true,
-          "board_group": "scarlet",
-          "arch": "ARM_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "scarlet-arcnext",
       "configs": [
         {
@@ -1341,18 +1329,6 @@
           "experimental": false,
           "leader_board": false,
           "board_group": "reef",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
-      "name": "soraka",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": false,
-          "leader_board": false,
-          "board_group": "",
           "arch": "X86_INTERNAL"
         }
       ]
@@ -1952,6 +1928,36 @@
             "bvt-perbuild"
           ],
           "cq_test_enabled": true,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "scarlet",
+      "reference_board_name": "scarlet",
+      "arch": "ARM_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "scarlet",
+          "name": "dru",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "soraka",
+      "reference_board_name": "soraka",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": false,
+      "models": [
+        {
+          "board_name": "soraka",
+          "name": "soraka",
+          "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
       ]
