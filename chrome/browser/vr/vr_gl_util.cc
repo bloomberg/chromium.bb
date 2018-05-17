@@ -27,19 +27,6 @@ gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
   return gfx::Rect(rect.x(), rect.y(), rect.width(), rect.height());
 }
 
-gfx::RectF CalculateTexSpaceRect(const gfx::SizeF& element_size,
-                                 const gfx::RectF& rect) {
-  if (rect.IsEmpty())
-    return {0.0f, 0.0f, 1.0f, 1.0f};
-  auto new_origin =
-      rect.origin() - gfx::Vector2dF(-element_size.width() * 0.5f,
-                                     element_size.height() * 0.5f);
-  new_origin.set_y(-new_origin.y());
-  gfx::RectF result(new_origin, rect.size());
-  result.Scale(1.0f / element_size.width(), 1.0f / element_size.height());
-  return result;
-}
-
 GLuint CompileShader(GLenum shader_type,
                      const GLchar* shader_source,
                      std::string& error) {

@@ -31,9 +31,6 @@ std::array<float, 16> MatrixToGLArray(const gfx::Transform& matrix);
 gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
                                   const gfx::RectF& texture_rect);
 
-gfx::RectF CalculateTexSpaceRect(const gfx::SizeF& element_size,
-                                 const gfx::RectF& rect);
-
 // Compile a shader.
 GLuint CompileShader(GLenum shader_type,
                      const GLchar* shader_source,

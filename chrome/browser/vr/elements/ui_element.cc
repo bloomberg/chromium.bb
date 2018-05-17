@@ -25,6 +25,7 @@ namespace vr {
 namespace {
 
 constexpr float kHitTestResolutionInMeter = 0.000001f;
+constexpr gfx::RectF kRelativeFullRectClip = {-0.5f, 0.5f, 1.0f, 1.0f};
 
 int AllocateId() {
   static int g_next_id = 1;
@@ -465,18 +466,12 @@ float UiElement::ComputedAndLocalOpacityForTest() const {
 }
 
 bool UiElement::LocalHitTest(const gfx::PointF& point) const {
-  if (point.x() < 0.0f || point.x() > 1.0f || point.y() < 0.0f ||
-      point.y() > 1.0f) {
+  if (!gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f).Contains(point) ||
+      !GetClipRect().Contains(point))
     return false;
-  }
-  if (!clip_rect_.IsEmpty() &&
-      !CalculateTexSpaceRect(size(), clip_rect_).Contains(point)) {
-    return false;
-  }
 
-  if (corner_radii_.IsZero()) {
+  if (corner_radii_.IsZero())
     return true;
-  }
 
   float width = size().width();
   float height = size().height();
@@ -829,8 +824,7 @@ bool UiElement::SizeAndLayOut() {
   LayOutNonContributingChildren();
 
   if (clips_descendants_) {
-    clip_rect_ = {-0.5f * size().width(), 0.5f * size().height(),
-                  size().width(), size().height()};
+    clip_rect_ = kRelativeFullRectClip;
     ClipChildren();
   }
 
@@ -935,6 +929,10 @@ void UiElement::LayOutNonContributingChildren() {
 }
 
 void UiElement::ClipChildren() {
+  ClipChildren(GetAbsoluteClipRect());
+}
+
+void UiElement::ClipChildren(const gfx::RectF& abs_clip) {
   for (auto& child : children_) {
     // Nested clipping is not supported yet.
     DCHECK(!child->clips_descendants_);
@@ -943,10 +941,34 @@ void UiElement::ClipChildren() {
       continue;
 
     DCHECK(child->LocalTransform().IsScaleOrTranslation());
-    child->clip_rect_ = clip_rect_;
-    child->LocalTransform().TransformRectReverse(&child->clip_rect_);
-    child->ClipChildren();
+    auto child_abs_clip = abs_clip;
+    child->LocalTransform().TransformRectReverse(&child_abs_clip);
+    if (!child->size().IsEmpty()) {
+      child->clip_rect_ = child_abs_clip;
+      child->clip_rect_.Scale(1.0f / child->size().width(),
+                              1.0f / child->size().height());
+    } else {
+      child->clip_rect_ = kRelativeFullRectClip;
+    }
+    child->ClipChildren(child_abs_clip);
   }
+}
+
+gfx::RectF UiElement::GetAbsoluteClipRect() const {
+  auto result = clip_rect_;
+  result.Scale(size().width(), size().height());
+  return result;
+}
+
+gfx::RectF UiElement::GetClipRect() const {
+  auto corner_origin = clip_rect_.origin() - gfx::Vector2dF(-0.5f, 0.5f);
+  return gfx::RectF({corner_origin.x(), -corner_origin.y()}, clip_rect_.size());
+}
+
+void UiElement::SetClipRect(const gfx::RectF& rect) {
+  auto new_origin = gfx::PointF(rect.origin().x(), -rect.origin().y()) +
+                    gfx::Vector2dF(-0.5f, 0.5f);
+  clip_rect_ = gfx::RectF(new_origin, rect.size());
 }
 
 UiElement* UiElement::FirstLaidOutChild() const {
