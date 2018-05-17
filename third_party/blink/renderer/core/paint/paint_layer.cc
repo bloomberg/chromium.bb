@@ -2330,11 +2330,20 @@ PaintLayer* PaintLayer::HitTestChildren(
   if (!HasSelfPaintingLayerDescendant())
     return nullptr;
 
+  const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
+  PaintLayer* stop_layer = stop_node ? stop_node->PaintingLayer() : nullptr;
+
   PaintLayer* result_layer = nullptr;
   PaintLayerStackingNodeReverseIterator iterator(*stacking_node_,
                                                  childrento_visit);
   while (PaintLayerStackingNode* child = iterator.Next()) {
     PaintLayer* child_layer = child->Layer();
+    // Calling IsDescendantOf is sad (slow), but it's the only way to tell
+    // whether the child layer is a descendant of the stop node.
+    if (stop_layer == this &&
+        child_layer->GetLayoutObject().IsDescendantOf(stop_node)) {
+      continue;
+    }
     PaintLayer* hit_layer = nullptr;
     HitTestResult temp_result(result.GetHitTestRequest(),
                               result.GetHitTestLocation());

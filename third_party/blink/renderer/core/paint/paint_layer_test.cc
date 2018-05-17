@@ -1286,6 +1286,108 @@ TEST_P(PaintLayerTest, HitTestWithIgnoreClipping) {
   EXPECT_EQ(GetDocument().getElementById("hit"), result.InnerNode());
 }
 
+TEST_P(PaintLayerTest, HitTestWithStopNode) {
+  SetBodyInnerHTML(R"HTML(
+    <div id='hit' style='width: 100px; height: 100px;'>
+      <div id='child' style='width:100px;height:100px'></div>
+    </div>
+    <div id='overlap' style='position:relative;top:-50px;width:100px;height:100px'></div>
+  )HTML");
+  Element* hit = GetDocument().getElementById("hit");
+  Element* child = GetDocument().getElementById("child");
+  Element* overlap = GetDocument().getElementById("overlap");
+
+  // Regular hit test over 'child'
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestResult result(request, LayoutPoint(50, 25));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(child, result.InnerNode());
+
+  // Same hit test, with stop node.
+  request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive,
+                           hit->GetLayoutObject());
+  result = HitTestResult(request, LayoutPoint(50, 25));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(hit, result.InnerNode());
+
+  // Regular hit test over 'overlap'
+  request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  result = HitTestResult(request, LayoutPoint(50, 75));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(overlap, result.InnerNode());
+
+  // Same hit test, with stop node, should still hit 'overlap' because it's not
+  // a descendant of 'hit'.
+  request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive,
+                           hit->GetLayoutObject());
+  result = HitTestResult(request, LayoutPoint(50, 75));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(overlap, result.InnerNode());
+
+  // List-based hit test with stop node
+  request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                               HitTestRequest::kListBased,
+                           hit->GetLayoutObject());
+  result = HitTestResult(request, LayoutPoint(50, 25),
+                         LayoutRectOutsets(10, 10, 10, 10));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(1u, result.ListBasedTestResult().size());
+  EXPECT_EQ(hit, *result.ListBasedTestResult().begin());
+}
+
+TEST_P(PaintLayerTest, HitTestTableWithStopNode) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    .cell {
+      width: 100px;
+      height: 100px;
+    }
+    </style>
+    <table id='table'>
+      <tr>
+        <td><div id='cell11' class='cell'></td>
+        <td><div id='cell12' class='cell'></td>
+      </tr>
+      <tr>
+        <td><div id='cell21' class='cell'></td>
+        <td><div id='cell22' class='cell'></td>
+      </tr>
+    </table>
+    )HTML");
+  Element* table = GetDocument().getElementById("table");
+  Element* cell11 = GetDocument().getElementById("cell11");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestResult result(request, LayoutPoint(50, 50));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(cell11, result.InnerNode());
+
+  request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive,
+                           table->GetLayoutObject());
+  result = HitTestResult(request, LayoutPoint(50, 50));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(table, result.InnerNode());
+}
+
+TEST_P(PaintLayerTest, HitTestSVGWithStopNode) {
+  SetBodyInnerHTML(R"HTML(
+    <svg id='svg' style='width:100px;height:100px' viewBox='0 0 100 100'>
+      <circle id='circle' cx='50' cy='50' r='50' />
+    </svg>
+    )HTML");
+  Element* svg = GetDocument().getElementById("svg");
+  Element* circle = GetDocument().getElementById("circle");
+  HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestResult result(request, LayoutPoint(50, 50));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(circle, result.InnerNode());
+
+  request = HitTestRequest(HitTestRequest::kReadOnly | HitTestRequest::kActive,
+                           svg->GetLayoutObject());
+  result = HitTestResult(request, LayoutPoint(50, 50));
+  GetDocument().GetLayoutView()->Layer()->HitTest(result);
+  EXPECT_EQ(svg, result.InnerNode());
+}
+
 TEST_P(PaintLayerTest, SetNeedsRepaintSelfPaintingUnderNonSelfPainting) {
   SetHtmlInnerHTML(R"HTML(
     <span id='span' style='opacity: 0.5'>
