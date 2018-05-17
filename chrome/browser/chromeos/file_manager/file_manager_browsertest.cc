@@ -253,10 +253,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("restoreGeometryMaximized")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
-    ShareDialog, /* share_dialog.js */
+    ShareAndManageDialog, /* share_and_manage_dialog.js */
     FileManagerBrowserTest,
     ::testing::Values(TestCase("shareFile"),
-                      TestCase("shareDirectory")));
+                      TestCase("shareDirectory"),
+                      TestCase("manageHostedFile"),
+                      TestCase("manageFile")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     SuggestAppDialog, /* suggest_app_dialog.js */

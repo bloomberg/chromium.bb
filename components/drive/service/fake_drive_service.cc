@@ -1735,9 +1735,16 @@ const FakeDriveService::EntryInfo* FakeDriveService::AddNewEntry(
   // Set mime type.
   new_file->set_mime_type(content_type);
 
-  // Set alternate link if needed.
-  if (content_type == util::kGoogleDocumentMimeType)
-    new_file->set_alternate_link(GURL("https://document_alternate_link"));
+  // Set alternate link.
+  if (content_type == util::kGoogleDocumentMimeType) {
+    new_file->set_alternate_link(
+        GURL("https://document_alternate_link/" + title));
+  } else if (content_type == util::kDriveFolderMimeType) {
+    new_file->set_alternate_link(
+        GURL("https://folder_alternate_link/" + title));
+  } else {
+    new_file->set_alternate_link(GURL("https://file_alternate_link/" + title));
+  }
 
   // Set parents.
   if (!parent_resource_id.empty()) {

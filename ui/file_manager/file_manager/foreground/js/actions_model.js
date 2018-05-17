@@ -472,7 +472,7 @@ DriveManageAction.prototype.execute = function() {
           console.error(chrome.runtime.lastError.message);
           return;
         }
-        if (results.length == 1) {
+        if (results.length != 1) {
           console.error(
               'getEntryProperties for alternateUrl should return 1 entry ' +
               '(returned ' + results.length + ')');

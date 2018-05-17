@@ -903,16 +903,35 @@ util.isDescendantEntry = function(ancestorEntry, childEntry) {
 };
 
 /**
+ * The last URL with visitURL().
+ *
+ * @type {string}
+ * @private
+ */
+util.lastVisitedURL;
+
+/**
  * Visit the URL.
  *
  * If the browser is opening, the url is opened in a new tag, otherwise the url
  * is opened in a new window.
  *
- * @param {string} url URL to visit.
+ * @param {!string} url URL to visit.
  */
 util.visitURL = function(url) {
+  util.lastVisitedURL = url;
   window.open(url);
 };
+
+/**
+ * Return the last URL visited with visitURL().
+ *
+ * @return {string} The last URL visited.
+ */
+util.getLastVisitedURL = function() {
+  return util.lastVisitedURL;
+};
+
 
 /**
  * Returns normalized current locale, or default locale - 'en'.

@@ -160,6 +160,16 @@ test.util.sync.getTreeItems = function(contentWindow) {
 };
 
 /**
+ * Returns the last URL visited with visitURL() (e.g. for "Manage in Drive").
+ *
+ * @param {Window} contentWindow The window where visitURL() was called.
+ * @return {!string} The URL of the last URL visited.
+ */
+test.util.sync.getLastVisitedURL = function(contentWindow) {
+  return contentWindow.util.getLastVisitedURL();
+};
+
+/**
  * Executes Javascript code on a webview and returns the result.
  *
  * @param {Window} contentWindow Window to be tested.
