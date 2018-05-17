@@ -68,6 +68,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace content {
@@ -1484,6 +1485,36 @@ std::unique_ptr<Network::Response> BuildResponse(
 
   return response;
 }
+
+String blockedReason(blink::ResourceRequestBlockedReason reason) {
+  switch (reason) {
+    case blink::ResourceRequestBlockedReason::kCSP:
+      return protocol::Network::BlockedReasonEnum::Csp;
+    case blink::ResourceRequestBlockedReason::kMixedContent:
+      return protocol::Network::BlockedReasonEnum::MixedContent;
+    case blink::ResourceRequestBlockedReason::kOrigin:
+      return protocol::Network::BlockedReasonEnum::Origin;
+    case blink::ResourceRequestBlockedReason::kInspector:
+      return protocol::Network::BlockedReasonEnum::Inspector;
+    case blink::ResourceRequestBlockedReason::kSubresourceFilter:
+      return protocol::Network::BlockedReasonEnum::SubresourceFilter;
+    case blink::ResourceRequestBlockedReason::kContentType:
+      return protocol::Network::BlockedReasonEnum::ContentType;
+    case blink::ResourceRequestBlockedReason::kOther:
+      return protocol::Network::BlockedReasonEnum::Other;
+  }
+  NOTREACHED();
+  return protocol::Network::BlockedReasonEnum::Other;
+}
+
+Maybe<String> GetBlockedReasonFor(
+    const network::URLLoaderCompletionStatus& status) {
+  if (status.error_code != net::ERR_BLOCKED_BY_CLIENT &&
+      status.error_code != net::ERR_BLOCKED_BY_RESPONSE)
+    return Maybe<String>();
+  return blockedReason(static_cast<blink::ResourceRequestBlockedReason>(
+      status.extended_error_code));
+}
 }  // namespace
 
 void NetworkHandler::NavigationRequestWillBeSent(
@@ -1610,7 +1641,8 @@ void NetworkHandler::LoadingComplete(
         base::TimeTicks::Now().ToInternalValue() /
             static_cast<double>(base::Time::kMicrosecondsPerSecond),
         resource_type, net::ErrorToString(status.error_code),
-        status.error_code == net::Error::ERR_ABORTED);
+        status.error_code == net::Error::ERR_ABORTED,
+        GetBlockedReasonFor(status));
     return;
   }
   frontend_->LoadingFinished(

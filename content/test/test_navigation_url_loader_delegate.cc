@@ -73,12 +73,10 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
 }
 
 void TestNavigationURLLoaderDelegate::OnRequestFailed(
-    bool in_cache,
-    int net_error,
-    const base::Optional<net::SSLInfo>& ssl_info) {
-  net_error_ = net_error;
-  if (ssl_info.has_value())
-    ssl_info_ = ssl_info.value();
+    const network::URLLoaderCompletionStatus& status) {
+  net_error_ = status.error_code;
+  if (status.ssl_info.has_value())
+    ssl_info_ = status.ssl_info.value();
   if (request_failed_)
     request_failed_->Quit();
 }

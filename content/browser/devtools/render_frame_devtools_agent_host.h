@@ -92,8 +92,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static void OnNavigationResponseReceived(
       const NavigationRequest& nav_request,
       const network::ResourceResponse& response);
-  static void OnNavigationRequestFailed(const NavigationRequest& nav_request,
-                                        int error_code);
+  static void OnNavigationRequestFailed(
+      const NavigationRequest& nav_request,
+      const network::URLLoaderCompletionStatus& status);
 
   static void OnSignedExchangeReceived(
       FrameTreeNode* frame_tree_node,

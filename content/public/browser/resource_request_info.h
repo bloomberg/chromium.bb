@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
+#include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_referrer_policy.h"
 #include "ui/base/page_transition_types.h"
 
@@ -183,8 +184,13 @@ class ResourceRequestInfo {
     kNotCanceled,
   };
 
-  // If and why this request was canceled by DevTools.
+  // If and why this request was canceled by DevTools. TODO(johannes): Remove.
   virtual DevToolsStatus GetDevToolsStatus() const = 0;
+
+  // For net::ERR_BLOCKED_BY_CLIENT and net::ERR_BLOCKED_BY_RESPONSE
+  // errors, this will return the reason, otherwise base::nullopt.
+  virtual base::Optional<blink::ResourceRequestBlockedReason>
+  GetResourceRequestBlockedReason() const = 0;
 
   // When the client of a request decides to cancel it, it may optionally
   // provide an application-defined description of the canncellation reason.

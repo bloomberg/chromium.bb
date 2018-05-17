@@ -22,6 +22,7 @@
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context.h"
+#include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 
 namespace {
 static const int kInitialBufferSize = 4096;
@@ -1078,6 +1079,16 @@ void DevToolsURLInterceptorRequestJob::ProcessInterceptionResponse(
     if (sub_request_) {
       sub_request_->Cancel();
       sub_request_.reset();
+    }
+    if (modifications->error_reason == net::ERR_BLOCKED_BY_CLIENT) {
+      // So we know that these modifications originated from devtools
+      // (also known as inspector), and can therefore annotate the
+      // request. We only do this for one specific error code thus
+      // far, to minimize risk of breaking other usages.
+      ResourceRequestInfoImpl* resource_request_info =
+          ResourceRequestInfoImpl::ForRequest(request());
+      resource_request_info->set_resource_request_blocked_reason(
+          blink::ResourceRequestBlockedReason::kInspector);
     }
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            *modifications->error_reason));

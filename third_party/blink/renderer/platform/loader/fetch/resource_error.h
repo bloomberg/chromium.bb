@@ -81,6 +81,8 @@ class PLATFORM_EXPORT ResourceError final {
   bool IsCacheMiss() const;
   bool WasBlockedByResponse() const;
   bool ShouldCollapseInitiator() const { return should_collapse_initiator_; }
+  base::Optional<ResourceRequestBlockedReason> GetResourceRequestBlockedReason()
+      const;
 
   base::Optional<network::CORSErrorStatus> CORSErrorStatus() const {
     return cors_error_status_;

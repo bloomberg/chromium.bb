@@ -69,9 +69,8 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
       bool is_stream,
       base::Optional<SubresourceLoaderParams> subresource_loader_params)
       override;
-  void OnRequestFailed(bool in_cache,
-                       int net_error,
-                       const base::Optional<net::SSLInfo>& ssl_info) override;
+  void OnRequestFailed(
+      const network::URLLoaderCompletionStatus& status) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 
  private:

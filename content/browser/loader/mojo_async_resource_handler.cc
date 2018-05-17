@@ -500,6 +500,20 @@ void MojoAsyncResourceHandler::OnResponseCompleted(
     net::NetErrorDetails details;
     request()->PopulateNetErrorDetails(&details);
     loader_status.extended_error_code = details.quic_connection_error;
+  } else if (error_code == net::ERR_BLOCKED_BY_CLIENT ||
+             error_code == net::ERR_BLOCKED_BY_RESPONSE) {
+    ResourceRequestInfoImpl* resource_request_info =
+        ResourceRequestInfoImpl::ForRequest(request());
+    auto maybe_reason =
+        resource_request_info->GetResourceRequestBlockedReason();
+    // Ideally, every blocked by client / blocked by response error
+    // would be annotated with a blocked reason, but we can't guarantee it
+    // here, so sometimes we won't populate extended_error_code which
+    // corresonds ResourceRequestBlockedReason::kOther.
+    if (maybe_reason) {
+      loader_status.extended_error_code =
+          static_cast<int>(maybe_reason.value());
+    }
   }
   loader_status.exists_in_cache = request()->response_info().was_cached;
   loader_status.completion_time = base::TimeTicks::Now();

@@ -15,11 +15,11 @@
 
 namespace net {
 struct RedirectInfo;
-class SSLInfo;
 }
 
 namespace network {
 struct ResourceResponse;
+struct URLLoaderCompletionStatus;
 }
 
 namespace content {
@@ -54,17 +54,14 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
       bool is_stream,
       base::Optional<SubresourceLoaderParams> subresource_loader_params) = 0;
 
-  // Called if the request fails before receving a response. |net_error| is a
-  // network error code for the failure. |has_stale_copy_in_cache| is true if
-  // there is a stale copy of the unreachable page in cache. |ssl_info| is the
-  // SSL info for the request. If |net_error| is a certificate error and the
-  // navigation request was for the main frame, the caller must pass a value
-  // for |ssl_info|. If |net_error| is not a certificate error, |ssl_info| is
-  // ignored.
+  // Called if the request fails before receving a response. Specific
+  // fields which are used: |status.error_code| holds the error code
+  // for the failure; |status.extended_error_code| holds details if
+  // available; |status.exists_in_cache| indicates a stale cache
+  // entry; |status.ssl_info| is available when |status.error_code| is
+  // a certificate error.
   virtual void OnRequestFailed(
-      bool has_stale_copy_in_cache,
-      int net_error,
-      const base::Optional<net::SSLInfo>& ssl_info) = 0;
+      const network::URLLoaderCompletionStatus& status) = 0;
 
   // Called after the network request has begun on the IO thread at time
   // |timestamp|. This is just a thread hop but is used to compare timing
