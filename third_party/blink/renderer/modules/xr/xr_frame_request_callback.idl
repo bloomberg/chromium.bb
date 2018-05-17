@@ -2,5 +2,5 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://immersive-web.github.io/webxr/spec/latest/#callbackdef-xrframerequestcallback
+// https://immersive-web.github.io/webxr/#callbackdef-xrframerequestcallback
 callback XRFrameRequestCallback = void (DOMHighResTimeStamp time, XRPresentationFrame frame);
