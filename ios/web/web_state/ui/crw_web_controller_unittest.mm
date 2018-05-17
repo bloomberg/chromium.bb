@@ -764,7 +764,7 @@ class CRWWebControllerNativeContentTest : public WebTestWithWebController {
         [web_controller() webStateImpl]->GetNavigationManagerImpl();
     navigation_manager.AddPendingItem(
         URL, Referrer(), ui::PAGE_TRANSITION_TYPED,
-        NavigationInitiationType::USER_INITIATED,
+        NavigationInitiationType::BROWSER_INITIATED,
         NavigationManager::UserAgentOverrideOption::INHERIT);
     [web_controller() loadCurrentURL];
 
@@ -1011,7 +1011,7 @@ TEST_F(ScriptExecutionTest, UserScriptOnAppSpecificPage) {
       [web_controller() webStateImpl]->GetNavigationManagerImpl();
   nav_manager.AddPendingItem(
       GURL(kTestAppSpecificURL), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      NavigationInitiationType::USER_INITIATED,
+      NavigationInitiationType::BROWSER_INITIATED,
       NavigationManager::UserAgentOverrideOption::INHERIT);
   [nav_manager.GetSessionController() commitPendingItem];
 

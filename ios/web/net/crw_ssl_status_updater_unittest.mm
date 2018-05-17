@@ -127,7 +127,7 @@ class CRWSSLStatusUpdaterTest : public web::WebTest {
                  addPendingItem:GURL(item_url_spec)
                        referrer:Referrer()
                      transition:ui::PAGE_TRANSITION_LINK
-                 initiationType:web::NavigationInitiationType::USER_INITIATED
+                 initiationType:web::NavigationInitiationType::BROWSER_INITIATED
         userAgentOverrideOption:NavigationManager::UserAgentOverrideOption::
                                     INHERIT];
     [session_controller commitPendingItem];

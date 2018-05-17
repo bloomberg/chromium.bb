@@ -160,9 +160,9 @@ initiationType:(web::NavigationInitiationType)initiationType;
   // navigations in order to prevent URL spoof attacks.
   web::NavigationItemImpl* pendingItem = self.pendingItem;
   if (pendingItem) {
-    bool isUserInitiated = pendingItem->NavigationInitiationType() ==
-                           web::NavigationInitiationType::USER_INITIATED;
-    bool safeToShowPending = isUserInitiated && _pendingItemIndex == -1;
+    bool isBrowserInitiated = pendingItem->NavigationInitiationType() ==
+                              web::NavigationInitiationType::BROWSER_INITIATED;
+    bool safeToShowPending = isBrowserInitiated && _pendingItemIndex == -1;
 
     if (safeToShowPending)
       return pendingItem;
@@ -420,7 +420,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
       [self itemWithURL:URL
                 referrer:web::Referrer()
               transition:ui::PAGE_TRANSITION_CLIENT_REDIRECT
-          initiationType:web::NavigationInitiationType::USER_INITIATED];
+          initiationType:web::NavigationInitiationType::BROWSER_INITIATED];
   _transientItem->SetTimestamp(
       _timeSmoother.GetSmoothedTime(base::Time::Now()));
 }
@@ -441,7 +441,7 @@ initiationType:(web::NavigationInitiationType)initiationType;
       [self itemWithURL:URL
                 referrer:referrer
               transition:transition
-          initiationType:web::NavigationInitiationType::USER_INITIATED];
+          initiationType:web::NavigationInitiationType::BROWSER_INITIATED];
   pushedItem->SetUserAgentType(lastCommittedItem->GetUserAgentType());
   pushedItem->SetSerializedStateObject(stateObject);
   pushedItem->SetIsCreatedFromPushState(true);
