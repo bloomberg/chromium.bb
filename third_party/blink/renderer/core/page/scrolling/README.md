@@ -142,6 +142,30 @@ tree construction relative to the outer viewport's bounds\_delta mentioned
 above will apply to any layer marked with this bit. This makes position: fixed
 layers for all rootScroller ancestors get translated by the URL bar delta.
 
+### Implicit Promotion
+
+When the ImplicitRootScrollerEnabled setting is enabled, Blink may choose an
+element on the page to make the effective root scroller, without input from
+the page itself. This attempts to provide a better experience on existing pages
+that use an iframe or div to scroll the content of the page.
+
+#### How it works
+
+ - When a PaintLayerScrollableArea becomes scrollable - that is, it has
+   overflow: auto or scroll and actuallly has overflowing content - it adds
+   itself to the RootScrollerController's implicit candidate list.
+
+ - At root scroller evaluation time, we look at each candidate. Those that are
+   no longer valid candidates (i.e. no longer scroll overflow) are removed from
+   the list.
+
+ - From the remaining entries, we look only at candidates that meet some
+   additional criteria, specified by IsValidImplicit().
+
+ - If more than one candidate is a valid implicit, we promote the one with the
+   higher z-index. If there's a tie, we don't promote any elements implicitly.
+
+
 ## ViewportScrollCallback
 
 The ViewportScrollCallback is a Scroll Customization apply-scroll callback

@@ -2106,6 +2106,21 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   if (did_scroll_overflow == ScrollsOverflow())
     return;
 
+  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() &&
+      scrolls_overflow_) {
+    if (GetLayoutBox()->IsLayoutView()) {
+      if (Element* owner = GetLayoutBox()->GetDocument().LocalOwner()) {
+        owner->GetDocument().GetRootScrollerController().ConsiderForImplicit(
+            *owner);
+      }
+    } else {
+      GetLayoutBox()
+          ->GetDocument()
+          .GetRootScrollerController()
+          .ConsiderForImplicit(*GetLayoutBox()->GetNode());
+    }
+  }
+
   // The scroll and scroll offset properties depend on |scrollsOverflow| (see:
   // PaintPropertyTreeBuilder::updateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();

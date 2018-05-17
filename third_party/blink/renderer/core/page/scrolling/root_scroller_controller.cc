@@ -66,6 +66,36 @@ bool FillsViewport(const Element& element, bool check_location) {
   return bounding_box.Location() == LayoutPoint::Zero();
 }
 
+// If the element is an iframe this grabs the ScrollableArea for the owned
+// LayoutView.
+PaintLayerScrollableArea* GetScrollableArea(const Element& element) {
+  if (element.IsFrameOwnerElement()) {
+    const HTMLFrameOwnerElement* frame_owner =
+        ToHTMLFrameOwnerElement(&element);
+    if (!frame_owner->ContentFrame())
+      return nullptr;
+
+    if (!frame_owner->ContentFrame()->IsLocalFrame())
+      return nullptr;
+
+    LocalFrameView* frame_view =
+        ToLocalFrameView(frame_owner->OwnedEmbeddedContentView());
+
+    if (!frame_view)
+      return nullptr;
+
+    // Not supported with RLS turned off.
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+      return nullptr;
+
+    return ToPaintLayerScrollableArea(
+        frame_view->LayoutViewportScrollableArea());
+  }
+
+  DCHECK(element.GetLayoutObject()->IsBox());
+  return ToLayoutBox(element.GetLayoutObject())->GetScrollableArea();
+}
+
 }  // namespace
 
 // static
@@ -140,11 +170,6 @@ void RootScrollerController::DidResizeFrameView() {
 
 void RootScrollerController::DidUpdateIFrameFrameView(
     HTMLFrameOwnerElement& element) {
-  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled()) {
-    ConsiderForImplicit(element);
-    ProcessImplicitCandidates();
-  }
-
   if (&element != root_scroller_.Get() && &element != implicit_root_scroller_)
     return;
 
@@ -235,6 +260,25 @@ bool RootScrollerController::IsValidRootScroller(const Element& element) const {
   return true;
 }
 
+bool RootScrollerController::IsValidImplicitCandidate(
+    const Element& element) const {
+  if (!element.IsInTreeScope())
+    return false;
+
+  if (!element.GetLayoutObject())
+    return false;
+
+  // Ignore anything inside a FlowThread (multi-col, paginated, etc.).
+  if (element.GetLayoutObject()->IsInsideFlowThread())
+    return false;
+
+  PaintLayerScrollableArea* scrollable_area = GetScrollableArea(element);
+  if (!scrollable_area || !scrollable_area->ScrollsOverflow())
+    return false;
+
+  return true;
+}
+
 bool RootScrollerController::IsValidImplicit(const Element& element) const {
   // Valid implicit root scroller are a subset of valid root scrollers.
   if (!IsValidRootScroller(element))
@@ -248,12 +292,11 @@ bool RootScrollerController::IsValidImplicit(const Element& element) const {
   if (style->HasOpacity() || style->Visibility() != EVisibility::kVisible)
     return false;
 
-  // Valid, visible iframes can always be implicitly promoted.
-  if (element.IsFrameOwnerElement())
-    return true;
+  PaintLayerScrollableArea* scrollable_area = GetScrollableArea(element);
+  if (!scrollable_area)
+    return false;
 
-  LayoutBox* box = ToLayoutBox(element.GetLayoutObject());
-  return box->GetScrollableArea()->ScrollsOverflow();
+  return scrollable_area->ScrollsOverflow();
 }
 
 void RootScrollerController::ApplyRootScrollerProperties(Node& node) {
@@ -334,7 +377,8 @@ void RootScrollerController::ProcessImplicitCandidates() {
   HeapHashSet<WeakMember<Element>> copy(implicit_candidates_);
   for (auto& element : copy) {
     if (!IsValidImplicit(*element)) {
-      implicit_candidates_.erase(element);
+      if (!IsValidImplicitCandidate(*element))
+        implicit_candidates_.erase(element);
       continue;
     }
 
@@ -387,23 +431,10 @@ void RootScrollerController::ConsiderForImplicit(Node& node) {
   if (document_->GetPage()->GetChromeClient().IsPopup())
     return;
 
-  if (!node.IsElementNode() || !node.GetLayoutObject())
+  if (!node.IsElementNode())
     return;
 
-  DCHECK(node.GetLayoutObject()->IsBox());
-
-  if (!node.IsFrameOwnerElement()) {
-    LayoutBox* box = ToLayoutBox(node.GetLayoutObject());
-    if (!box->GetScrollableArea())
-      return;
-
-    if (!box->GetScrollableArea()->ScrollsOverflow())
-      return;
-  }
-
-  // Check only the size since we wont have location information at this point
-  // in layout.
-  if (!FillsViewport(ToElement(node), false))
+  if (!IsValidImplicitCandidate(ToElement(node)))
     return;
 
   implicit_candidates_.insert(&ToElement(node));

@@ -1266,6 +1266,79 @@ class RootScrollerSimTest : public SimTest {
   ScopedImplicitRootScrollerForTest implicit_root_scroller_for_test_;
 };
 
+// Tests that we don't explode when a layout occurs and the effective
+// rootScroller no longer has a ContentFrame(). We setup the frame tree such
+// that the first iframe is the effective root scroller. The second iframe has
+// an unload handler that reaches back to the common parent and causes a
+// layout. This will cause us to recalculate the effective root scroller while
+// the current one is valid in all ways except that it no longer has a content
+// frame. This test passes if it doesn't crash. https://crbug.com/805317.
+TEST_F(RootScrollerSimTest, RecomputeEffectiveWithNoContentFrame) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  SimRequest first_request("https://example.com/first.html", "text/html");
+  SimRequest second_request("https://example.com/second.html", "text/html");
+  SimRequest final_request("https://newdomain.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 100%;
+              border: 0;
+            }
+          </style>
+          <iframe id="first" src="https://example.com/first.html">
+          </iframe>
+          <iframe id="second" src="https://example.com/second.html">
+          </iframe>
+          <script>
+            // Dirty layout on unload
+            window.addEventListener('unload', function() {
+                document.getElementById("first").style.width="0";
+            });
+          </script>
+      )HTML");
+
+  first_request.Complete(R"HTML(
+          <!DOCTYPE html>
+      )HTML");
+
+  second_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <body></body>
+          <script>
+            window.addEventListener('unload', function() {
+                // This will do a layout.
+                window.top.document.getElementById("first").clientWidth;
+            });
+          </script>
+      )HTML");
+
+  Compositor().BeginFrame();
+
+  Element* container = GetDocument().getElementById("first");
+  GetDocument().GetRootScrollerController().Set(container);
+  ASSERT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // This will unload first the root, then the first frame, then the second.
+  LoadURL("https://newdomain.com/test.html");
+  final_request.Complete(R"HTML(
+          <!DOCTYPE html>
+      )HTML");
+}
+
 // Test that the element is considered to be viewport filling only if its
 // padding box fills the viewport. That means it must have no border.
 TEST_F(RootScrollerSimTest, UsePaddingBoxForViewportFillingCondition) {
@@ -1419,6 +1492,11 @@ class ImplicitRootScrollerSimTest : public SimTest {
   ImplicitRootScrollerSimTest()
       : root_scroller_for_test_(false),
         implicit_root_scroller_for_test_(true) {}
+
+  void SetUp() override {
+    SimTest::SetUp();
+    WebView().GetPage()->GetSettings().SetViewportEnabled(true);
+  }
 
  private:
   ScopedSetRootScrollerForTest root_scroller_for_test_;
@@ -1741,6 +1819,8 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerIframe) {
                   srcdoc="<!DOCTYPE html><style>html {height: 300%;}</style>">
           </iframe>
       )HTML");
+  // srcdoc iframe loads via posted tasks.
+  RunPendingTasks();
   Compositor().BeginFrame();
 
   Element* container = GetDocument().getElementById("container");
@@ -1753,59 +1833,6 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerIframe) {
 
   ASSERT_EQ(&GetDocument(),
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
-}
-
-// Test that when a valid iframe becomes loaded and thus should be promoted, it
-// becomes the root scroller, without needing an intervening layout.
-TEST_F(ImplicitRootScrollerSimTest,
-       ImplicitRootScrollerIframeLoadedWithoutLayout) {
-  WebView().Resize(WebSize(800, 600));
-  SimRequest main_request("https://example.com/test.html", "text/html");
-  SimRequest child_request("https://example.com/child.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  main_request.Complete(R"HTML(
-          <!DOCTYPE html>
-          <style>
-            ::-webkit-scrollbar {
-              width: 0px;
-              height: 0px;
-            }
-            body, html {
-              width: 100%;
-              height: 100%;
-              margin: 0px;
-            }
-            iframe {
-              width: 100%;
-              height: 100%;
-              border: 0;
-            }
-          </style>
-          <iframe id="container" src="child.html">
-          </iframe>
-      )HTML");
-  Compositor().BeginFrame();
-  ASSERT_EQ(GetDocument().getElementById("container"),
-            GetDocument().GetRootScrollerController().EffectiveRootScroller())
-      << "The iframe is valid and should be promoted.";
-
-  // Completing the second load will cause the FrameView to be swapped which
-  // will cause the iframe to be demoted transiently. Ensure that it gets
-  // re-promoted when the new FrameView is connected even though there's no
-  // layout to trigger it.
-  child_request.Complete(R"HTML(
-        <!DOCTYPE html>
-        <style>
-          body {
-            height: 1000px;
-          }
-        </style>
-  )HTML");
-
-  Compositor().BeginFrame();
-  EXPECT_EQ(GetDocument().getElementById("container"),
-            GetDocument().GetRootScrollerController().EffectiveRootScroller())
-      << "Once loaded, the iframe should be promoted.";
 }
 
 // Test that a root scroller is considered to fill the viewport at both the URL
@@ -1892,19 +1919,11 @@ TEST_F(ImplicitRootScrollerSimTest,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
 }
 
-// Tests that we don't explode when a layout occurs and the effective
-// rootScroller no longer has a ContentFrame(). We setup the frame tree such
-// that the first iframe is the effective root scroller. The second iframe has
-// an unload handler that reaches back to the common parent and causes a
-// layout. This will cause us to recalculate the effective root scroller while
-// the current one is valid in all ways except that it no longer has a content
-// frame. This test passes if it doesn't crash. https://crbug.com/805317.
-TEST_F(RootScrollerSimTest, RecomputeEffectiveWithNoContentFrame) {
+// Tests that implicit is continually reevaluating whether to promote or demote
+// a scroller.
+TEST_F(ImplicitRootScrollerSimTest, ContinuallyReevaluateImplicitPromotion) {
   WebView().Resize(WebSize(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
-  SimRequest first_request("https://example.com/first.html", "text/html");
-  SimRequest second_request("https://example.com/second.html", "text/html");
-  SimRequest final_request("https://newdomain.com/test.html", "text/html");
   LoadURL("https://example.com/test.html");
   request.Complete(R"HTML(
           <!DOCTYPE html>
@@ -1918,51 +1937,118 @@ TEST_F(RootScrollerSimTest, RecomputeEffectiveWithNoContentFrame) {
               height: 100%;
               margin: 0px;
             }
-            iframe {
+            #container {
               width: 100%;
               height: 100%;
+            }
+            #clip {
+              width: 100%;
+              height: 100%;
+              overflow: hidden;
+            }
+            #parent {
+              width: 100%;
+              height: 100%;
+            }
+          </style>
+          <div id="clip">
+            <div id="parent">
+              <div id="container">
+                <div id="spacer"></div>
+              </div>
+            </div>
+          </div>
+      )HTML");
+  Compositor().BeginFrame();
+
+  Element* parent = GetDocument().getElementById("parent");
+  Element* container = GetDocument().getElementById("container");
+  Element* spacer = GetDocument().getElementById("spacer");
+
+  // The container isn't yet scrollable.
+  ASSERT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // The container now has overflow but still doesn't scroll.
+  spacer->style()->setProperty(&GetDocument(), "height", "2000px", String(),
+                               ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // The container is now scrollable and should be promoted.
+  container->style()->setProperty(&GetDocument(), "overflow", "auto", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // The container is now not viewport-filling so it should be demoted.
+  container->style()->setProperty(&GetDocument(), "transform",
+                                  "translateX(-50px)", String(),
+                                  ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // The container is viewport-filling again so it should be promoted.
+  parent->style()->setProperty(&GetDocument(), "transform", "translateX(50px)",
+                               String(), ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(container,
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+
+  // No longer scrollable so demote.
+  container->style()->setProperty(&GetDocument(), "overflow", "hidden",
+                                  String(), ASSERT_NO_EXCEPTION);
+  Compositor().BeginFrame();
+  EXPECT_EQ(GetDocument(),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller());
+}
+
+// Loads with a larger than the ICB (but otherwise valid) implicit root
+// scrolling iframe. When the iframe is promoted (which happens at the end of
+// layout) its layout size is changed which makes it easy to violate lifecycle
+// assumptions.  (e.g. NeedsLayout at the end of layout)
+TEST_F(ImplicitRootScrollerSimTest, PromotionChangesLayoutSize) {
+  WebView().ResizeWithBrowserControls(IntSize(800, 650), 50, 0, false);
+  SimRequest main_request("https://example.com/test.html", "text/html");
+  SimRequest child_request("https://example.com/child.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  main_request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            ::-webkit-scrollbar {
+              width: 0px;
+              height: 0px;
+            }
+            body, html {
+              width: 100%;
+              height: 100%;
+              margin: 0px;
+            }
+            iframe {
+              width: 100%;
+              height: 650px;
               border: 0;
             }
           </style>
-          <iframe id="first" src="https://example.com/first.html">
+          <iframe id="container" src="child.html">
           </iframe>
-          <iframe id="second" src="https://example.com/second.html">
-          </iframe>
-          <script>
-            // Dirty layout on unload
-            window.addEventListener('unload', function() {
-                document.getElementById("first").style.width="0";
-            });
-          </script>
       )HTML");
-
-  first_request.Complete(R"HTML(
-          <!DOCTYPE html>
-      )HTML");
-
-  second_request.Complete(R"HTML(
-          <!DOCTYPE html>
-          <body></body>
-          <script>
-            window.addEventListener('unload', function() {
-                // This will do a layout.
-                window.top.document.getElementById("first").clientWidth;
-            });
-          </script>
-      )HTML");
+  child_request.Complete(R"HTML(
+        <!DOCTYPE html>
+        <style>
+          body {
+            height: 1000px;
+          }
+        </style>
+  )HTML");
 
   Compositor().BeginFrame();
-
-  Element* container = GetDocument().getElementById("first");
-  GetDocument().GetRootScrollerController().Set(container);
-  ASSERT_EQ(container,
-            GetDocument().GetRootScrollerController().EffectiveRootScroller());
-
-  // This will unload first the root, then the first frame, then the second.
-  LoadURL("https://newdomain.com/test.html");
-  final_request.Complete(R"HTML(
-          <!DOCTYPE html>
-      )HTML");
+  EXPECT_EQ(GetDocument().getElementById("container"),
+            GetDocument().GetRootScrollerController().EffectiveRootScroller())
+      << "Once loaded, the iframe should be promoted.";
 }
 
 class RootScrollerHitTest : public RootScrollerTest {
