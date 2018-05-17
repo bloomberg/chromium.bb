@@ -192,7 +192,7 @@ def DefaultPages(base_name):
       'pixel_video_mp4.html',
       base_name + '_Video_MP4',
       test_rect=[0, 0, 300, 300],
-      revision=7),
+      revision=8),
 
     PixelTestPage(
       'pixel_video_vp9.html',
