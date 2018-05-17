@@ -104,18 +104,6 @@ camera.views.Camera = function(context, router) {
    * @type {boolean}
    * @private
    */
-  this.running_ = false;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
-  this.capturing_ = false;
-
-  /**
-   * @type {boolean}
-   * @private
-   */
   this.locked_ = false;
 
   /**
@@ -475,11 +463,8 @@ camera.views.Camera.ASPECT_RATIO_SNAP_RANGE = 1.1;
 
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
-  get running() {
-    return this.running_;
-  },
   get capturing() {
-    return this.capturing_;
+    return document.body.classList.contains('capturing');
   }
 };
 
@@ -614,7 +599,9 @@ camera.views.Camera.prototype.onActivate = function() {
 camera.views.Camera.prototype.onInactivate = function() {
   this.setExpanded_(false);
   this.scrollTracker_.stop();
-  this.endTakePicture_();
+  if (this.taking_) {
+    this.endTakePicture_();
+  }
 };
 
 /**
@@ -859,25 +846,18 @@ camera.views.Camera.prototype.updateMirroring_ = function() {
  * @private
  */
 camera.views.Camera.prototype.updateAlbumButton_ = function() {
-  // Album-button would be disabled for initializing.
+  // Album-button would also be disabled if camera isn't capturing.
   document.querySelector('#album-enter').disabled =
-      !this.model_ || this.model_.length == 0 ||
-      document.body.classList.contains('initializing');
+      !this.model_ || this.model_.length == 0 || !this.capturing;
 };
 
 /**
- * Updates the toolbar enabled/disabled UI for doing initializing or
- * taking-picture operations.
+ * Updates the toolbar enabled/disabled UI for capturing or taking-picture
+ * state changes.
  * @private
  */
 camera.views.Camera.prototype.updateToolbar_ = function() {
-  if (this.context_.hasError) {
-    // No need to update the toolbar as it's being blocked from the error layer.
-    return;
-  }
-
-  var initializing = document.body.classList.contains('initializing');
-  var disabled = initializing || this.taking_;
+  var disabled = !this.capturing || this.taking_;
   document.querySelector('#toggle-timer').disabled = disabled;
   document.querySelector('#toggle-multi').disabled = disabled;
   document.querySelector('#toggle-mirror').disabled = disabled;
@@ -1113,12 +1093,9 @@ camera.views.Camera.prototype.showVersion_ = function() {
  * @private
  */
 camera.views.Camera.prototype.takePicture_ = function() {
-  if (!this.running_ || !this.model_)
-    return;
-
-  if (this.mediaRecorderRecording_()) {
-    // End the prior ongoing recording. A new reocording won't be started until
-    // the prior recording is stopped.
+  if (this.taking_) {
+    // End the prior ongoing taking/recording; a new taking/reocording won't be
+    // started until the prior one is ended.
     this.endTakePicture_();
     return;
   }
@@ -1190,7 +1167,7 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
     clearTimeout(this.multiShotInterval_);
     this.multiShotInterval_ = null;
   }
-  if (this.mediaRecorderRecording_()) {
+  if (this.mediaRecorder_ && this.mediaRecorder_.state == 'recording') {
     this.mediaRecorder_.stop();
   }
   document.querySelector('#toggle-timer').classList.remove('animate');
@@ -1208,23 +1185,25 @@ camera.views.Camera.prototype.endTakePicture_ = function() {
  * @private
  */
 camera.views.Camera.prototype.takePictureImmediately_ = function(motionPicture) {
-  if (!this.running_) {
-    return;
-  }
-
   setTimeout(function() {
     this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
 
     // Add picture to the gallery.
     var addPicture = function(blob, type) {
+      var saveFailure = function() {
+        this.showToastMessage_(
+            chrome.i18n.getMessage('errorMsgGallerySaveFailed'));
+      }.bind(this);
+
+      if (!this.model_) {
+        saveFailure();
+        return;
+      }
       var albumButton = document.querySelector('#toolbar #album-enter');
       camera.util.setAnimationClass(albumButton, albumButton, 'flash');
 
       // Add the photo or video to the model.
-      this.model_.addPicture(blob, type, function() {
-        this.showToastMessage_(
-            chrome.i18n.getMessage('errorMsgGallerySaveFailed'));
-      }.bind(this));
+      this.model_.addPicture(blob, type, saveFailure);
     }.bind(this);
 
     if (motionPicture) {
@@ -1337,27 +1316,16 @@ camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
 };
 
 /**
- * Checks if the media recorder is currently recording.
- *
- * @return {boolean} True if the media recorder is recording, false otherwise.
- * @private
- */
-camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
-  return this.mediaRecorder_ && this.mediaRecorder_.state == 'recording';
-};
-
-/**
  * Starts capturing with the specified constraints.
  *
  * @param {!Object} constraints Constraints passed to WebRTC.
  * @param {function()} onSuccess Success callback.
  * @param {function()} onFailure Failure callback, eg. the constraints are
  *     not supported.
- * @param {function()} onDisconnected Called when the camera connection is lost.
  * @private
  */
  camera.views.Camera.prototype.startWithConstraints_ =
-     function(constraints, onSuccess, onFailure, onDisconnected) {
+     function(constraints, onSuccess, onFailure) {
   navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
     if (this.is_recording_mode_) {
       // Disable audio stream until video recording is started.
@@ -1366,10 +1334,8 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
     this.video_.srcObject = stream;
-    this.stream_ = stream;
     var onLoadedMetadata = function() {
       this.video_.removeEventListener('loadedmetadata', onLoadedMetadata);
-      this.running_ = true;
       // Use a watchdog since the stream.onended event is unreliable in the
       // recent version of Chrome. As of 55, the event is still broken.
       this.watchdog_ = setInterval(function() {
@@ -1378,20 +1344,24 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
             stream.getVideoTracks()[0].readyState == 'ended') {
           clearInterval(this.watchdog_);
           this.watchdog_ = null;
-          this.endTakePicture_();
+          if (this.taking_) {
+            this.endTakePicture_();
+          }
           if (this.mediaRecorder_) {
             this.mediaRecorder_ = null;
           }
-          this.capturing_ = false;
+          // Try reconnecting the camera to capture new streams.
+          document.body.classList.remove('capturing');
+          this.updateToolbar_();
           this.stream_ = null;
-          onDisconnected();
+          this.start_();
         }
       }.bind(this), 100);
 
-      this.capturing_ = true;
+      this.stream_ = stream;
+      document.body.classList.add('capturing');
+      this.updateToolbar_();
       var onAnimationFrame = function() {
-        if (!this.running_)
-          return;
         this.onAnimationFrame_();
         requestAnimationFrame(onAnimationFrame);
       }.bind(this);
@@ -1565,10 +1535,6 @@ camera.views.Camera.prototype.collectVideoDevices_ = function() {
  * on new device or with new constraints.
  */
 camera.views.Camera.prototype.stop_ = function() {
-  // Add the initialization layer (if it's not there yet).
-  document.body.classList.add('initializing');
-  this.updateToolbar_();
-
   // TODO(mtomasz): Prevent blink. Clear somehow the video tag.
   if (this.stream_)
     this.stream_.getVideoTracks()[0].stop();
@@ -1620,10 +1586,8 @@ camera.views.Camera.prototype.start_ = function() {
       clearTimeout(this.retryStartTimer_);
       this.retryStartTimer_ = null;
     }
-    // Remove the error or initialization layer if any.
+    // Remove the error layer if any.
     this.context_.onErrorRecovered('no-camera');
-    document.body.classList.remove('initializing');
-    this.updateToolbar_();
 
     this.showToastMessage_(chrome.i18n.getMessage(this.is_recording_mode_ ?
         'recordVideoActiveMessage' : 'takePictureActiveMessage'));
@@ -1674,8 +1638,7 @@ camera.views.Camera.prototype.start_ = function() {
         function() {
           // TODO(mtomasz): Workaround for crbug.com/383241.
           setTimeout(tryStartWithConstraints.bind(this, index + 1), 0);
-        },
-        scheduleRetry);  // onDisconnected
+        });
   }.bind(this);
 
   this.videoDeviceIds_.then(function(deviceIds) {

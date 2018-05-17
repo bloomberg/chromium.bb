@@ -932,17 +932,18 @@ html[dir='rtl'] #dialog #dialog-close-button {
   padding: 5px 20px;
 }
 
-#initializing {
-  background: black url(../images/spinner.svg) center / 16px no-repeat;
+#spinner {
+  background: transparent url(../images/spinner.svg) center / 16px no-repeat;
   bottom: 0;
   left: 0;
   opacity: 1;
   position: absolute;
   right: 0;
   top: 0;
+  z-index: 1;
 }
 
-body:not(.initializing) #initializing {
+body.capturing #spinner {
   opacity: 0;
   transition: opacity 100ms, visibility 0 100ms;
   visibility: hidden;
