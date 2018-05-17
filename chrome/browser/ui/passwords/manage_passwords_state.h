@@ -113,12 +113,8 @@ class ManagePasswordsState {
   // Removes all the PasswordForms stored in this object.
   void ClearData();
 
-  // Add |form| to the internal state.
-  void AddForm(const autofill::PasswordForm& form);
-  // Updates |form| in the internal state.
-  bool UpdateForm(const autofill::PasswordForm& form);
-  // Removes |form| from the internal state.
-  void DeleteForm(const autofill::PasswordForm& form);
+  // Adds |form| to the internal state if it's relevant.
+  bool AddForm(const autofill::PasswordForm& form);
 
   void SetState(password_manager::ui::State state);
 
