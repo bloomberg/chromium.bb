@@ -1201,7 +1201,6 @@ const char kToolbarIconSurfacingBubbleLastShowTime[] =
     "toolbar_icon_surfacing_bubble_show_time";
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 // Whether WebRTC should bind to individual NICs to explore all possible routing
 // options. Default is true. This has become obsoleted and replaced by
 // kWebRTCIPHandlingPolicy. TODO(guoweis): Remove this at M50.
@@ -1218,7 +1217,6 @@ const char kWebRTCNonProxiedUdpEnabled[] =
 const char kWebRTCIPHandlingPolicy[] = "webrtc.ip_handling_policy";
 // Define range of UDP ports allowed to be used by WebRTC PeerConnections.
 const char kWebRTCUDPPortRange[] = "webrtc.udp_port_range";
-#endif
 
 #if !defined(OS_ANDROID)
 // Whether or not this profile has been shown the Welcome page.

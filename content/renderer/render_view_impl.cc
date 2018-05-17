@@ -81,6 +81,8 @@
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/stream/media_stream_device_observer.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -191,11 +193,6 @@
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"
 #include "content/renderer/pepper/pepper_plugin_registry.h"
-#endif
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
-#include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #endif
 
 using blink::WebAXObject;
@@ -2278,7 +2275,6 @@ bool RenderViewImpl::DidTapMultipleTargets(
 }
 
 void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
-#if BUILDFLAG(ENABLE_WEBRTC)
   if (!main_render_frame_)
     return;
 
@@ -2291,7 +2287,6 @@ void RenderViewImpl::SuspendVideoCaptureDevices(bool suspend) {
       media_stream_device_observer->GetNonScreenCaptureDevices();
   RenderThreadImpl::current()->video_capture_impl_manager()->SuspendDevices(
       video_devices, suspend);
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 #endif  // defined(OS_ANDROID)
 

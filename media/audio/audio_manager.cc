@@ -285,9 +285,7 @@ std::unique_ptr<AudioManager> AudioManager::Create(
     AudioLogFactory* audio_log_factory) {
   std::unique_ptr<AudioManager> manager =
       CreateAudioManager(std::move(audio_thread), audio_log_factory);
-#if BUILDFLAG(ENABLE_WEBRTC)
   manager->InitializeDebugRecording();
-#endif
   return manager;
 }
 

@@ -75,6 +75,8 @@ class ChildConnection;
 class GpuClientImpl;
 class IndexedDBDispatcherHost;
 class InProcessChildThreadParams;
+class MediaStreamTrackMetricsHost;
+class P2PSocketDispatcherHost;
 class PermissionServiceContext;
 class PeerConnectionTrackerHost;
 class PushMessagingManager;
@@ -89,11 +91,6 @@ class SiteInstanceImpl;
 class StoragePartition;
 class StoragePartitionImpl;
 struct ChildProcessTerminationInfo;
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-class MediaStreamTrackMetricsHost;
-class P2PSocketDispatcherHost;
-#endif
 
 typedef base::Thread* (*RendererMainThreadFactoryFunction)(
     const InProcessChildThreadParams& params);
@@ -181,7 +178,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   bool FastShutdownStarted() const override;
   base::TimeDelta GetChildProcessIdleTime() const override;
   void FilterURL(bool empty_allowed, GURL* url) override;
-#if BUILDFLAG(ENABLE_WEBRTC)
   void EnableAudioDebugRecordings(const base::FilePath& file) override;
   void DisableAudioDebugRecordings() override;
   void SetEchoCanceller3(
@@ -192,7 +188,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       bool outgoing,
       const WebRtcRtpPacketCallback& packet_callback) override;
   void SetWebRtcEventLogOutput(int lid, bool enabled) override;
-#endif
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
   const service_manager::Identity& GetChildIdentity() const override;
@@ -558,7 +553,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
       BrowserContext* browser_context,
       const GURL& site_url);
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   void CreateMediaStreamDispatcherHost(
       MediaStreamManager* media_stream_manager,
       mojom::MediaStreamDispatcherHostRequest request);
@@ -577,7 +571,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
   base::FilePath GetAecDumpFilePathWithExtensions(const base::FilePath& file);
   base::SequencedTaskRunner& GetAecDumpFileTaskRunner();
   void OnAec3Enabled();
-#endif
 
   static void OnMojoError(int render_process_id, const std::string& error);
 
@@ -755,7 +748,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
                   BrowserThread::DeleteOnIOThread>
       audio_output_stream_factory_context_;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   scoped_refptr<P2PSocketDispatcherHost> p2p_socket_dispatcher_host_;
 
   // Must be accessed on UI thread.
@@ -769,7 +761,6 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   std::unique_ptr<MediaStreamTrackMetricsHost, BrowserThread::DeleteOnIOThread>
       media_stream_track_metrics_host_;
-#endif
 
   // Forwards messages between WebRTCInternals in the browser process
   // and PeerConnectionTracker in the renderer process.

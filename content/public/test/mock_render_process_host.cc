@@ -416,7 +416,6 @@ void MockRenderProcessHost::FilterURL(bool empty_allowed, GURL* url) {
   RenderProcessHostImpl::FilterURL(this, empty_allowed, url);
 }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 void MockRenderProcessHost::EnableAudioDebugRecordings(
     const base::FilePath& file) {
 }
@@ -436,8 +435,6 @@ MockRenderProcessHost::StartRtpDump(
 }
 
 void MockRenderProcessHost::SetWebRtcEventLogOutput(int lid, bool enabled) {}
-
-#endif
 
 bool MockRenderProcessHost::OnMessageReceived(const IPC::Message& msg) {
   IPC::Listener* listener = listeners_.Lookup(msg.routing_id());

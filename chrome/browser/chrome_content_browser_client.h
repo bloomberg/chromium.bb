@@ -452,13 +452,11 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   // |worker_interfaces_parameterized_|.
   void InitWebContextInterfaces();
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   // Copies disable WebRTC encryption switch depending on the channel.
   static void MaybeCopyDisableWebRtcEncryptionSwitch(
       base::CommandLine* to_command_line,
       const base::CommandLine& from_command_line,
       version_info::Channel channel);
-#endif
 
   void FileSystemAccessed(
       const GURL& url,

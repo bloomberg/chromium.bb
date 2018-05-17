@@ -1127,6 +1127,8 @@ extern const char kWebrtcSrtpEncryptedHeadersDescription[];
 
 extern const char kWebrtcStunOriginName[];
 extern const char kWebrtcStunOriginDescription[];
+extern const char kWebrtcH264WithOpenh264FfmpegName[];
+extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
 
 extern const char kWebvrName[];
 extern const char kWebvrDescription[];
@@ -1909,13 +1911,6 @@ extern const char kPnaclSubzeroName[];
 extern const char kPnaclSubzeroDescription[];
 
 #endif  // BUILDFLAG(ENABLE_NACL)
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-
-extern const char kWebrtcH264WithOpenh264FfmpegName[];
-extern const char kWebrtcH264WithOpenh264FfmpegDescription[];
-
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 #if defined(OS_CHROMEOS)
 

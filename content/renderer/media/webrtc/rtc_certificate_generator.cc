@@ -140,7 +140,6 @@ void RTCCertificateGenerator::generateCertificateWithOptionalExpiration(
     std::unique_ptr<blink::WebRTCCertificateCallback> observer,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK(IsSupportedKeyParams(key_params));
-#if BUILDFLAG(ENABLE_WEBRTC)
   PeerConnectionDependencyFactory* pc_dependency_factory =
       RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
   pc_dependency_factory->EnsureInitialized();
@@ -150,9 +149,6 @@ void RTCCertificateGenerator::generateCertificateWithOptionalExpiration(
           task_runner, pc_dependency_factory->GetWebRtcWorkerThread());
   request->GenerateCertificateAsync(
       key_params, expires_ms, std::move(observer));
-#else
-  observer->onError();
-#endif
 }
 
 bool RTCCertificateGenerator::IsSupportedKeyParams(

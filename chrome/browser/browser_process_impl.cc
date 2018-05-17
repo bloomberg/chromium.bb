@@ -53,6 +53,8 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/switch_utils.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
+#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
+#include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_services_manager_client.h"
 #include "chrome/browser/metrics/thread_watcher.h"
@@ -170,11 +172,6 @@
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/plugins_resource_service.h"
-#endif
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
-#include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
@@ -309,10 +306,8 @@ void BrowserProcessImpl::Init() {
                net::ClientSocketPoolManager::max_sockets_per_group(
                    net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(!webrtc_event_log_manager_);
   webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
-#endif
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
@@ -409,11 +404,9 @@ void BrowserProcessImpl::StartTearDown() {
 
   platform_part()->StartTearDown();
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   // Cancel any uploads to release the system url request context references.
   if (webrtc_log_uploader_)
     webrtc_log_uploader_->StartShutdown();
-#endif
 
   if (local_state_)
     local_state_->CommitPendingWrite();
@@ -426,10 +419,8 @@ void BrowserProcessImpl::PostDestroyThreads() {
   // With the file_thread_ flushed, we can release any icon resources.
   icon_manager_.reset();
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   // Must outlive the worker threads.
   webrtc_log_uploader_.reset();
-#endif
 
   // Reset associated state right after actual thread is stopped,
   // as io_thread_.global_ cleanup happens in CleanUp on the IO
@@ -826,13 +817,11 @@ MediaFileSystemRegistry* BrowserProcessImpl::media_file_system_registry() {
 #endif
 }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 WebRtcLogUploader* BrowserProcessImpl::webrtc_log_uploader() {
   if (!webrtc_log_uploader_)
     webrtc_log_uploader_ = std::make_unique<WebRtcLogUploader>();
   return webrtc_log_uploader_.get();
 }
-#endif
 
 network_time::NetworkTimeTracker* BrowserProcessImpl::network_time_tracker() {
   if (!network_time_tracker_) {

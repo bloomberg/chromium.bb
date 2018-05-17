@@ -150,11 +150,9 @@
 #define WebScrollbarBehaviorImpl blink::WebScrollbarBehavior
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_certificate_generator.h"
 #include "content/renderer/media/webrtc/webrtc_uma_histograms.h"
-#endif
 
 using blink::Platform;
 using blink::WebAudioDevice;
@@ -834,12 +832,8 @@ void RendererBlinkPlatformImpl::SampleGamepads(device::Gamepads& gamepads) {
 std::unique_ptr<WebMediaRecorderHandler>
 RendererBlinkPlatformImpl::CreateMediaRecorderHandler(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-#if BUILDFLAG(ENABLE_WEBRTC)
   return std::make_unique<content::MediaRecorderHandler>(
       std::move(task_runner));
-#else
-  return nullptr;
-#endif
 }
 
 //------------------------------------------------------------------------------
@@ -853,25 +847,17 @@ RendererBlinkPlatformImpl::CreateRTCPeerConnectionHandler(
   if (!render_thread)
     return nullptr;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   PeerConnectionDependencyFactory* rtc_dependency_factory =
       render_thread->GetPeerConnectionDependencyFactory();
   return rtc_dependency_factory->CreateRTCPeerConnectionHandler(client,
                                                                 task_runner);
-#else
-  return nullptr;
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 
 //------------------------------------------------------------------------------
 
 std::unique_ptr<blink::WebRTCCertificateGenerator>
 RendererBlinkPlatformImpl::CreateRTCCertificateGenerator() {
-#if BUILDFLAG(ENABLE_WEBRTC)
   return std::make_unique<RTCCertificateGenerator>();
-#else
-  return nullptr;
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 
 //------------------------------------------------------------------------------
@@ -900,12 +886,8 @@ RendererBlinkPlatformImpl::CreateCanvasCaptureHandler(
     const WebSize& size,
     double frame_rate,
     WebMediaStreamTrack* track) {
-#if BUILDFLAG(ENABLE_WEBRTC)
   return CanvasCaptureHandler::CreateCanvasCaptureHandler(
       size, frame_rate, RenderThread::Get()->GetIOTaskRunner(), track);
-#else
-  return nullptr;
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 
 //------------------------------------------------------------------------------
@@ -914,7 +896,6 @@ void RendererBlinkPlatformImpl::CreateHTMLVideoElementCapturer(
     WebMediaStream* web_media_stream,
     WebMediaPlayer* web_media_player,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-#if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(web_media_stream);
   DCHECK(web_media_player);
   AddVideoTrackToMediaStream(
@@ -923,13 +904,11 @@ void RendererBlinkPlatformImpl::CreateHTMLVideoElementCapturer(
           task_runner),
       false,  // is_remote
       web_media_stream);
-#endif
 }
 
 void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
     WebMediaStream* web_media_stream,
     WebMediaPlayer* web_media_player) {
-#if BUILDFLAG(ENABLE_WEBRTC)
   DCHECK(web_media_stream);
   DCHECK(web_media_player);
 
@@ -958,25 +937,18 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
 
   media_stream_source->ConnectToTrack(web_media_stream_track);
   web_media_stream->AddTrack(web_media_stream_track);
-#endif
 }
 
 //------------------------------------------------------------------------------
 
 std::unique_ptr<WebImageCaptureFrameGrabber>
 RendererBlinkPlatformImpl::CreateImageCaptureFrameGrabber() {
-#if BUILDFLAG(ENABLE_WEBRTC)
   return std::make_unique<ImageCaptureFrameGrabber>();
-#else
-  return nullptr;
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 }
 
 void RendererBlinkPlatformImpl::UpdateWebRTCAPICount(
     blink::WebRTCAPIName api_name) {
-#if BUILDFLAG(ENABLE_WEBRTC)
   UpdateWebRTCMethodCount(api_name);
-#endif
 }
 
 //------------------------------------------------------------------------------

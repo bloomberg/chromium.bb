@@ -18,6 +18,7 @@
 #include "chrome/renderer/extensions/app_bindings.h"
 #include "chrome/renderer/extensions/app_hooks_delegate.h"
 #include "chrome/renderer/extensions/automation_internal_custom_bindings.h"
+#include "chrome/renderer/extensions/cast_streaming_native_handler.h"
 #include "chrome/renderer/extensions/extension_hooks_delegate.h"
 #include "chrome/renderer/extensions/media_galleries_custom_bindings.h"
 #include "chrome/renderer/extensions/notifications_native_handler.h"
@@ -50,10 +51,6 @@
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/web_security_policy.h"
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "chrome/renderer/extensions/cast_streaming_native_handler.h"
-#endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/renderer/extensions/file_browser_handler_custom_bindings.h"
@@ -138,12 +135,10 @@ void ChromeExtensionsDispatcherDelegate::RegisterNativeHandlers(
   module_system->RegisterNativeHandler(
       "webstore", std::unique_ptr<NativeHandler>(
                       new extensions::WebstoreBindings(context)));
-#if BUILDFLAG(ENABLE_WEBRTC)
   module_system->RegisterNativeHandler(
       "cast_streaming_natives",
       std::make_unique<extensions::CastStreamingNativeHandler>(
           context, bindings_system));
-#endif
   module_system->RegisterNativeHandler(
       "automationInternal",
       std::make_unique<extensions::AutomationInternalCustomBindings>(
@@ -235,7 +230,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_TERMINAL_PRIVATE_CUSTOM_BINDINGS_JS);
 #endif  // defined(OS_CHROMEOS)
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   source_map->RegisterSource("cast.streaming.rtpStream",
                              IDR_CAST_STREAMING_RTP_STREAM_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("cast.streaming.session",
@@ -246,14 +240,11 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource(
       "cast.streaming.receiverSession",
       IDR_CAST_STREAMING_RECEIVER_SESSION_CUSTOM_BINDINGS_JS);
-#endif
   source_map->RegisterSource(
       "webrtcDesktopCapturePrivate",
       IDR_WEBRTC_DESKTOP_CAPTURE_PRIVATE_CUSTOM_BINDINGS_JS);
-#if BUILDFLAG(ENABLE_WEBRTC)
   source_map->RegisterSource("webrtcLoggingPrivate",
                              IDR_WEBRTC_LOGGING_PRIVATE_CUSTOM_BINDINGS_JS);
-#endif
   source_map->RegisterSource("webstore", IDR_WEBSTORE_CUSTOM_BINDINGS_JS);
 
 

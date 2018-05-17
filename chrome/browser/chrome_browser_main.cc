@@ -76,6 +76,7 @@
 #include "chrome/browser/experiments/memory_ablation_experiment.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/webrtc_log_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/expired_histograms_array.h"
 #include "chrome/browser/metrics/field_trial_synchronizer.h"
@@ -293,10 +294,6 @@
 #include "chrome/browser/rlz/chrome_rlz_tracker_delegate.h"
 #include "components/rlz/rlz_tracker.h"
 #endif  // BUILDFLAG(ENABLE_RLZ)
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc/webrtc_log_util.h"
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 #if BUILDFLAG(ENABLE_VR)
 #include "chrome/browser/vr/service/vr_service_impl.h"
@@ -1547,14 +1544,12 @@ void ChromeBrowserMainParts::PostBrowserStart() {
   // Allow ProcessSingleton to process messages.
   process_singleton_->Unlock();
 #endif  // !defined(OS_ANDROID)
-#if BUILDFLAG(ENABLE_WEBRTC)
   // Set up a task to delete old WebRTC log files for all profiles. Use a delay
   // to reduce the impact on startup time.
   BrowserThread::PostDelayedTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&WebRtcLogUtil::DeleteOldWebRtcLogFilesForAllProfiles),
       base::TimeDelta::FromMinutes(1));
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 #if !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebUsb)) {

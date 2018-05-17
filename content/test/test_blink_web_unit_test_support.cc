@@ -52,10 +52,8 @@
 #include "gin/v8_initializer.h"  // nogncheck
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 #include "content/renderer/media/webrtc/rtc_certificate.h"
 #include "third_party/webrtc/rtc_base/rtccertificate.h"  // nogncheck
-#endif
 
 using blink::WebString;
 
@@ -344,7 +342,6 @@ void TestBlinkWebUnitTestSupport::GetPluginList(
   builder->AddMediaTypeToLastPlugin("application/pdf", "pdf");
 }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 namespace {
 
 class TestWebRTCCertificateGenerator
@@ -378,15 +375,10 @@ class TestWebRTCCertificateGenerator
 };
 
 }  // namespace
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 std::unique_ptr<blink::WebRTCCertificateGenerator>
 TestBlinkWebUnitTestSupport::CreateRTCCertificateGenerator() {
-#if BUILDFLAG(ENABLE_WEBRTC)
   return std::make_unique<TestWebRTCCertificateGenerator>();
-#else
-  return nullptr;
-#endif
 }
 
 service_manager::Connector* TestBlinkWebUnitTestSupport::GetConnector() {

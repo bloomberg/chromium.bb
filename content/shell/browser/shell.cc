@@ -148,14 +148,12 @@ Shell* Shell::CreateShell(std::unique_ptr<WebContents> web_contents,
     raw_web_contents->GetRenderViewHost()->SyncRendererPrefs();
   }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kForceWebRtcIPHandlingPolicy)) {
     raw_web_contents->GetMutableRendererPrefs()->webrtc_ip_handling_policy =
         command_line->GetSwitchValueASCII(
             switches::kForceWebRtcIPHandlingPolicy);
   }
-#endif
 
   return shell;
 }

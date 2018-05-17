@@ -37,9 +37,7 @@ class ProfileManager;
 class StatusTray;
 class SystemNetworkContextManager;
 class WatchDogThread;
-#if BUILDFLAG(ENABLE_WEBRTC)
 class WebRtcLogUploader;
-#endif
 
 namespace content {
 class NetworkConnectionTracker;
@@ -271,9 +269,7 @@ class BrowserProcess {
 
   virtual MediaFileSystemRegistry* media_file_system_registry() = 0;
 
-#if BUILDFLAG(ENABLE_WEBRTC)
   virtual WebRtcLogUploader* webrtc_log_uploader() = 0;
-#endif
 
   virtual network_time::NetworkTimeTracker* network_time_tracker() = 0;
 

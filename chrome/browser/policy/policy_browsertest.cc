@@ -325,10 +325,8 @@ const base::FilePath::CharType kUnpackedFullscreenAppName[] =
     FILE_PATH_LITERAL("fullscreen_app");
 #endif  // !defined(OS_MACOSX)
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 // Arbitrary port range for testing the WebRTC UDP port policy.
 const char kTestWebRtcUdpPortRange[] = "10000-10100";
-#endif
 
 void GetTestDataDirectory(base::FilePath* test_data_directory) {
   ASSERT_TRUE(
@@ -4765,7 +4763,6 @@ INSTANTIATE_TEST_CASE_P(MediaRouterCastAllowAllIPsPolicyTestInstance,
                         testing::Values(true, false));
 #endif  // !defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 // Sets the proper policy before the browser is started.
 template <bool enable>
 class WebRtcUdpPortRangePolicyTest : public PolicyTest {
@@ -4810,7 +4807,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcUdpPortRangeDisabledPolicyTest,
   pref->GetValue()->GetAsString(&port_range);
   EXPECT_TRUE(port_range.empty());
 }
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 // Tests the ComponentUpdater's EnabledComponentUpdates group policy by
 // calling the OnDemand interface. It uses the network interceptor to inspect

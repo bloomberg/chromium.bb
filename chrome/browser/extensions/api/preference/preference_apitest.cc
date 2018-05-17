@@ -127,12 +127,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionPreferenceApiTest, MAYBE_Standard) {
   prefs->SetBoolean(password_manager::prefs::kCredentialsEnableService, false);
   prefs->SetBoolean(prefs::kSafeBrowsingEnabled, false);
   prefs->SetBoolean(prefs::kSearchSuggestEnabled, false);
-#if BUILDFLAG(ENABLE_WEBRTC)
   prefs->SetBoolean(prefs::kWebRTCMultipleRoutesEnabled, false);
   prefs->SetBoolean(prefs::kWebRTCNonProxiedUdpEnabled, false);
   prefs->SetString(prefs::kWebRTCIPHandlingPolicy,
                    content::kWebRTCIPHandlingDefaultPublicInterfaceOnly);
-#endif
 
   const char kExtensionPath[] = "preference/standard";
 

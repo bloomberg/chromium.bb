@@ -1230,7 +1230,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"ui-disable-partial-swap", flag_descriptions::kUiPartialSwapName,
      flag_descriptions::kUiPartialSwapDescription, kOsAll,
      SINGLE_DISABLE_VALUE_TYPE(switches::kUIDisablePartialSwap)},
-#if BUILDFLAG(ENABLE_WEBRTC)
     {"disable-webrtc-hw-decoding", flag_descriptions::kWebrtcHwDecodingName,
      flag_descriptions::kWebrtcHwDecodingDescription, kOsAndroid | kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(switches::kDisableWebRtcHWDecoding)},
@@ -1262,7 +1261,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorName,
      flag_descriptions::kWebrtcNewEncodeCpuLoadEstimatorDescription, kOsAll,
      FEATURE_VALUE_TYPE(media::kNewEncodeCpuLoadEstimator)},
-#endif  // ENABLE_WEBRTC
 #if defined(OS_ANDROID)
     {"clear-old-browsing-data", flag_descriptions::kClearOldBrowsingDataName,
      flag_descriptions::kClearOldBrowsingDataDescription, kOsAndroid,
@@ -2575,14 +2573,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"user-activation-v2", flag_descriptions::kUserActivationV2Name,
      flag_descriptions::kUserActivationV2Description, kOsAll,
      FEATURE_VALUE_TYPE(features::kUserActivationV2)},
-#if BUILDFLAG(ENABLE_WEBRTC) && BUILDFLAG(RTC_USE_H264) && \
-    BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+#if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
     {"enable-webrtc-h264-with-openh264-ffmpeg",
      flag_descriptions::kWebrtcH264WithOpenh264FfmpegName,
      flag_descriptions::kWebrtcH264WithOpenh264FfmpegDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(content::kWebRtcH264WithOpenH264FFmpeg)},
-#endif  // ENABLE_WEBRTC && BUILDFLAG(RTC_USE_H264) &&
-        // BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
+#endif  // BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
 #if defined(OS_ANDROID)
     {"offlining-recent-pages", flag_descriptions::kOffliningRecentPagesName,
      flag_descriptions::kOffliningRecentPagesDescription, kOsAndroid,

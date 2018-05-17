@@ -53,7 +53,9 @@
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"
+#include "chrome/browser/media/webrtc/audio_debug_recordings_handler.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
+#include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #include "chrome/browser/memory/chrome_memory_coordinator_delegate.h"
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
@@ -427,11 +429,6 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_google_auth_navigation_throttle.h"
-#endif
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-#include "chrome/browser/media/webrtc/audio_debug_recordings_handler.h"
-#include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #endif
 
 #if BUILDFLAG(ENABLE_MEDIA_REMOTING)
@@ -1221,7 +1218,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
 #endif
   host->AddFilter(new prerender::PrerenderMessageFilter(id, profile));
   host->AddFilter(new TtsMessageFilter(host->GetBrowserContext()));
-#if BUILDFLAG(ENABLE_WEBRTC)
   WebRtcLoggingHandlerHost* webrtc_logging_handler_host =
       new WebRtcLoggingHandlerHost(id, profile,
                                    g_browser_process->webrtc_log_uploader());
@@ -1240,7 +1236,6 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       std::make_unique<base::UserDataAdapter<AudioDebugRecordingsHandler>>(
           audio_debug_recordings_handler));
 
-#endif
 #if BUILDFLAG(ENABLE_NACL)
   host->AddFilter(new nacl::NaClHostMessageFilter(id, profile->IsOffTheRecord(),
                                                   profile->GetPath()));
@@ -1881,11 +1876,9 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           chromeos::switches::kLoginProfile, login_profile);
 #endif
 
-#if BUILDFLAG(ENABLE_WEBRTC)
     MaybeCopyDisableWebRtcEncryptionSwitch(command_line,
                                            browser_command_line,
                                            chrome::GetChannel());
-#endif
 
     if (process) {
       PrefService* prefs = profile->GetPrefs();
@@ -3861,7 +3854,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::Bind(&BudgetServiceImpl::Create));
 }
 
-#if BUILDFLAG(ENABLE_WEBRTC)
 void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
     base::CommandLine* to_command_line,
     const base::CommandLine& from_command_line,
@@ -3882,7 +3874,6 @@ void ChromeContentBrowserClient::MaybeCopyDisableWebRtcEncryptionSwitch(
                                       arraysize(kWebRtcDevSwitchNames));
   }
 }
-#endif  // BUILDFLAG(ENABLE_WEBRTC)
 
 std::unique_ptr<content::MemoryCoordinatorDelegate>
 ChromeContentBrowserClient::GetMemoryCoordinatorDelegate() {
