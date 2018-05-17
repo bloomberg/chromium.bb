@@ -148,30 +148,17 @@ class DeviceStatusCollector {
   // next device status update.
   void SampleResourceUsage();
 
-  // The number of days in the past to store device activity.
+  // The timeout in the past to store device activity.
   // This is kept in case device status uploads fail for a number of days.
-  unsigned int max_stored_past_activity_days_;
+  base::TimeDelta max_stored_past_activity_;
 
-  // The number of days in the future to store device activity.
+  // The timeout in the future to store device activity.
   // When changing the system time and/or timezones, it's possible to record
   // activity time that is slightly in the future.
-  unsigned int max_stored_future_activity_days_;
+  base::TimeDelta max_stored_future_activity_;
 
  private:
-  // Prevents the local store of activity periods from growing too large by
-  // removing entries that are outside the reporting window.
-  void PruneStoredActivityPeriods(base::Time base_time);
-
-  // Trims the store activity periods to only retain data within the
-  // [|min_day_key|, |max_day_key|). The record for |min_day_key| will be
-  // adjusted by subtracting |min_day_trim_duration|.
-  void TrimStoredActivityPeriods(int64_t min_day_key,
-                                 int min_day_trim_duration,
-                                 int64_t max_day_key);
-
-  void AddActivePeriod(base::Time start,
-                       base::Time end,
-                       const std::string& active_user_email);
+  class ActivityStorage;
 
   // Clears the cached hardware resource usage.
   void ClearCachedResourceUsage();
@@ -271,6 +258,9 @@ class DeviceStatusCollector {
   chromeos::system::StatisticsProvider* const statistics_provider_;
 
   chromeos::CrosSettings* const cros_settings_;
+
+  // Stores and filters activity periods used for reporting.
+  std::unique_ptr<ActivityStorage> activity_storage_;
 
   // The most recent CPU readings.
   uint64_t last_cpu_active_ = 0;

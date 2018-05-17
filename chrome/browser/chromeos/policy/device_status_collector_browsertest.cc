@@ -123,12 +123,12 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
       IdleStateCallback(states[i]);
   }
 
-  void set_max_stored_past_activity_days(unsigned int value) {
-    max_stored_past_activity_days_ = value;
+  void set_max_stored_past_activity(TimeDelta value) {
+    max_stored_past_activity_ = value;
   }
 
-  void set_max_stored_future_activity_days(unsigned int value) {
-    max_stored_future_activity_days_ = value;
+  void set_max_stored_future_activity(TimeDelta value) {
+    max_stored_future_activity_ = value;
   }
 
   // Reset the baseline time.
@@ -704,8 +704,9 @@ TEST_F(DeviceStatusCollectorTest, MaxStoredPeriods) {
   const int kMaxDays = 10;
 
   settings_helper_.SetBoolean(chromeos::kReportDeviceActivityTimes, true);
-  status_collector_->set_max_stored_past_activity_days(kMaxDays - 1);
-  status_collector_->set_max_stored_future_activity_days(1);
+  status_collector_->set_max_stored_past_activity(
+      TimeDelta::FromDays(kMaxDays - 1));
+  status_collector_->set_max_stored_future_activity(TimeDelta::FromDays(1));
   Time baseline = Time::Now().LocalMidnight();
 
   // Simulate 12 active periods.
