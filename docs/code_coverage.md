@@ -65,6 +65,7 @@ per-line coverage information such as
 useful to identify areas of code that lack test coverage.
 - Per-line hit counts indicating how many times this line was hit by all tested targets. 
 This information can be useful to determine hot spots in your code.
+- Potentially dead code. See [dead code example].
 
 ![code coverage source view]
 
@@ -250,6 +251,7 @@ information, see [crbug.com/842424].
 [crbug.com/834781]: https://crbug.com/834781
 [crbug.com/842424]: https://crbug.com/842424
 [clang roll]: https://crbug.com/841908
+[dead code example]: https://chromium.googlesource.com/chromium/src/+/ac6e09311fcc7e734be2ef21a9ccbbe04c4c4706
 [documentation]: https://clang.llvm.org/docs/SourceBasedCodeCoverage.html
 [file a bug]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
 [file a new issue]: https://bugs.chromium.org/p/chromium/issues/entry?components=Tools%3ECodeCoverage
