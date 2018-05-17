@@ -119,7 +119,7 @@ public class KeyboardAccessoryControllerTest {
         mCoordinator.addTab(mMockTab);
         verify(mMockTabListObserver).onItemRangeInserted(mModel.getTabList(), 0, 1);
         assertThat(mModel.getTabList().getItemCount(), is(1));
-        assertThat(mModel.getTabList().get(0), is(equalTo(mMockTab)));
+        assertThat(mModel.getTabList().get(0), is(mMockTab));
 
         // Calling hide on the coordinator should make model propagate that it's invisible.
         mCoordinator.removeTab(mMockTab);

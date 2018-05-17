@@ -4,13 +4,23 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static android.support.test.espresso.matcher.ViewMatchers.withText;
+
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNull;
 
 import static org.junit.Assert.assertTrue;
 
+import android.graphics.drawable.Drawable;
+import android.support.annotation.LayoutRes;
 import android.support.test.filters.MediumTest;
+import android.support.v4.view.ViewPager;
 import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -34,7 +44,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class AccessorySheetViewTest {
     private AccessorySheetModel mModel;
-    private LazyViewBinderAdapter.StubHolder<View> mStubHolder;
+    private LazyViewBinderAdapter.StubHolder<ViewPager> mStubHolder;
 
     @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
@@ -65,5 +75,52 @@ public class AccessorySheetViewTest {
         ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(false));
         assertNotNull(mStubHolder.getView());
         assertTrue(mStubHolder.getView().getVisibility() != View.VISIBLE);
+    }
+
+    @Test
+    @MediumTest
+    public void testAddingTabToModelRendersTabsView() {
+        final String kSampleAction = "Some Action";
+        mModel.getTabList().add(createTestTab(view -> {
+            assertNotNull("The tab must have been created!", view);
+            assertTrue("Empty tab is a layout.", view instanceof LinearLayout);
+            LinearLayout baseLayout = (LinearLayout) view;
+            TextView sampleTextView = new TextView(mActivityTestRule.getActivity());
+            sampleTextView.setText(kSampleAction);
+            baseLayout.addView(sampleTextView);
+        }));
+        mModel.setActiveTabIndex(0);
+        // Shouldn't cause the view to be inflated.
+        assertNull(mStubHolder.getView());
+
+        // Setting visibility should cause the Tab to be rendered.
+        ThreadUtils.runOnUiThreadBlocking(() -> mModel.setVisible(true));
+        assertNotNull(mStubHolder.getView());
+
+        onView(withText(kSampleAction)).check(matches(isDisplayed()));
+    }
+
+    private KeyboardAccessoryData.Tab createTestTab(KeyboardAccessoryData.Tab.Listener listener) {
+        return new KeyboardAccessoryData.Tab() {
+            @Override
+            public Drawable getIcon() {
+                return null; // Unused.
+            }
+
+            @Override
+            public String getContentDescription() {
+                return null; // Unused.
+            }
+
+            @Override
+            public @LayoutRes int getTabLayout() {
+                return R.layout.empty_accessory_sheet;
+            }
+
+            @Override
+            public Listener getListener() {
+                return listener;
+            }
+        };
     }
 }
