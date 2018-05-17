@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
-#include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
@@ -61,7 +60,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -137,11 +135,6 @@ BrowserNonClientFrameViewAsh::BrowserNonClientFrameViewAsh(
 }
 
 BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
-  ImmersiveModeController* immersive_controller =
-      browser_view()->immersive_mode_controller();
-  if (immersive_controller)
-    immersive_controller->RemoveObserver(this);
-
   if (frame() && frame()->GetNativeWindow() &&
       frame()->GetNativeWindow()->HasObserver(this)) {
     frame()->GetNativeWindow()->RemoveObserver(this);
@@ -191,8 +184,6 @@ void BrowserNonClientFrameViewAsh::Init() {
     TabletModeClient::Get()->AddObserver(this);
 
   frame()->GetNativeWindow()->AddObserver(this);
-
-  browser_view()->immersive_mode_controller()->AddObserver(this);
 }
 
 ash::mojom::SplitViewObserverPtr
@@ -498,13 +489,6 @@ void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
 // ash::mojom::TabletModeClient:
 
 void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
-  if (!enabled && browser_view()->immersive_mode_controller()->IsRevealed()) {
-    // Before updating the caption buttons state below (which triggers a
-    // relayout), we want to move the caption buttons from the TopContainerView
-    // back to this view.
-    OnImmersiveRevealEnded();
-  }
-
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
 
   if (enabled) {
@@ -569,9 +553,6 @@ void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
   OnOverviewOrSplitviewModeChanged();
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// aura::WindowObserver:
-
 void BrowserNonClientFrameViewAsh::OnWindowDestroying(aura::Window* window) {
   DCHECK_EQ(frame()->GetNativeWindow(), window);
   window->RemoveObserver(this);
@@ -585,40 +566,6 @@ void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
     return;
   frame_header_->OnShowStateChanged(
       window->GetProperty(aura::client::kShowStateKey));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// ImmersiveModeController::Observer:
-
-void BrowserNonClientFrameViewAsh::OnImmersiveRevealStarted() {
-  // The frame caption buttons use ink drop highlights and flood fill effects.
-  // They make those buttons paint_to_layer. On immersive mode, the browser's
-  // TopContainerView is also converted to paint_to_layer (see
-  // ImmersiveModeControllerAsh::OnImmersiveRevealStarted()). In this mode, the
-  // TopContainerView is responsible for painting this
-  // BrowserNonClientFrameViewAsh (see TopContainerView::PaintChildren()).
-  // However, BrowserNonClientFrameViewAsh is a sibling of TopContainerView not
-  // a child. As a result, when the frame caption buttons are set to
-  // paint_to_layer as a result of an ink drop effect, they will disappear.
-  // https://crbug.com/840242. To fix this, we'll make the caption buttons
-  // temporarily children of the TopContainerView while they're all painting to
-  // their layers.
-  browser_view()->top_container()->AddChildViewAt(caption_button_container_, 0);
-  if (back_button_)
-    browser_view()->top_container()->AddChildViewAt(back_button_, 0);
-
-  browser_view()->top_container()->Layout();
-}
-
-void BrowserNonClientFrameViewAsh::OnImmersiveRevealEnded() {
-  AddChildViewAt(caption_button_container_, 0);
-  if (back_button_)
-    AddChildView(back_button_);
-  Layout();
-}
-
-void BrowserNonClientFrameViewAsh::OnImmersiveFullscreenExited() {
-  OnImmersiveRevealEnded();
 }
 
 HostedAppButtonContainer*

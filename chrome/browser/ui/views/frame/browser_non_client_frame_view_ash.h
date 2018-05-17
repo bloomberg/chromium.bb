@@ -15,7 +15,6 @@
 #include "chrome/browser/command_observer.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
-#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/browser/ui/views/tab_icon_view_model.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/window_observer.h"
@@ -42,8 +41,7 @@ class BrowserNonClientFrameViewAsh
       public TabIconViewModel,
       public CommandObserver,
       public ash::mojom::SplitViewObserver,
-      public aura::WindowObserver,
-      public ImmersiveModeController::Observer {
+      public aura::WindowObserver {
  public:
   // How long to delay the hosted app origin text animation from starting.
   static const base::TimeDelta kTitlebarAnimationDelay;
@@ -111,11 +109,6 @@ class BrowserNonClientFrameViewAsh
   void OnWindowPropertyChanged(aura::Window* window,
                                const void* key,
                                intptr_t old) override;
-
-  // ImmersiveModeController::Observer:
-  void OnImmersiveRevealStarted() override;
-  void OnImmersiveRevealEnded() override;
-  void OnImmersiveFullscreenExited() override;
 
   HostedAppButtonContainer* GetHostedAppButtonContainerForTesting() const;
 
