@@ -129,7 +129,8 @@
 
 - (void)viewControllerTraitCollectionDidChange:
     (UITraitCollection*)previousTraitCollection {
-  BOOL omniboxFocused = self.isOmniboxFirstResponder;
+  BOOL omniboxFocused = self.isOmniboxFirstResponder ||
+                        [self.locationBarCoordinator showingOmniboxPopup];
   [self.orchestrator
       transitionToStateOmniboxFocused:omniboxFocused
                       toolbarExpanded:omniboxFocused &&
