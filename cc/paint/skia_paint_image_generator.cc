@@ -17,8 +17,8 @@ SkiaPaintImageGenerator::SkiaPaintImageGenerator(
 
 SkiaPaintImageGenerator::~SkiaPaintImageGenerator() = default;
 
-SkData* SkiaPaintImageGenerator::onRefEncodedData() {
-  return paint_image_generator_->GetEncodedData().release();
+sk_sp<SkData> SkiaPaintImageGenerator::onRefEncodedData() {
+  return paint_image_generator_->GetEncodedData();
 }
 
 bool SkiaPaintImageGenerator::onGetPixels(const SkImageInfo& info,
