@@ -594,7 +594,8 @@ DesktopAutomationHandler.prototype = {
          target.root.role != RoleType.DESKTOP &&
          voxTarget.root.role != RoleType.DESKTOP &&
          voxTarget.root.url.indexOf(DesktopAutomationHandler.KEYBOARD_URL) !=
-             0))
+             0) &&
+            !AutomationUtil.isDescendantOf(target, voxTarget))
       return false;
 
     if (target.restriction == chrome.automation.Restriction.READ_ONLY)
