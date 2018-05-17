@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -22,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -156,7 +158,13 @@ TEST(TabCaptureCaptureOffscreenTabTest, DetermineInitialSize) {
 // Tests API behaviors, including info queries, and constraints violations.
 IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_ApiTests) {
   AddExtensionToCommandLineWhitelist();
-  ASSERT_TRUE(RunExtensionSubtest("tab_capture", "api_tests.html")) << message_;
+  ASSERT_TRUE(RunExtensionSubtest(
+      "tab_capture", base::StringPrintf("api_tests.html%s",
+                                        base::FeatureList::IsEnabled(
+                                            features::kAudioServiceAudioStreams)
+                                            ? ""
+                                            : "?includeLegacyUnmuteTest=true")))
+      << message_;
 }
 
 #if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -22,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -359,7 +361,13 @@ bool CanToggleAudioMute(content::WebContents* contents) {
     case TabAlertState::TAB_CAPTURING:
     case TabAlertState::BLUETOOTH_CONNECTED:
     case TabAlertState::USB_CONNECTED:
-      return false;
+      // The new Audio Service implements muting separately from the tab audio
+      // capture infrastructure; so the mute state can be toggled independently
+      // at all times.
+      //
+      // TODO(crbug.com/672469): Remove this method once the Audio Service is
+      // launched.
+      return base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams);
   }
   NOTREACHED();
   return false;
@@ -369,8 +377,13 @@ TabMutedReason GetTabAudioMutedReason(content::WebContents* contents) {
   LastMuteMetadata::CreateForWebContents(contents);  // Ensures metadata exists.
   LastMuteMetadata* const metadata =
       LastMuteMetadata::FromWebContents(contents);
-  if (GetTabAlertStateForContents(contents) == TabAlertState::TAB_CAPTURING) {
-    // For tab capture, libcontent forces muting off.
+  if (GetTabAlertStateForContents(contents) == TabAlertState::TAB_CAPTURING &&
+      !base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams)) {
+    // The legacy tab audio capture implementation in libcontent forces muting
+    // off because it requires using the same infrastructure.
+    //
+    // TODO(crbug.com/672469): Remove this once the Audio Service is launched.
+    // See comments in CanToggleAudioMute().
     metadata->reason = TabMutedReason::MEDIA_CAPTURE;
     metadata->extension_id.clear();
   }
