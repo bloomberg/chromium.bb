@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.compositor.bottombar;
 
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.components.navigation_interception.NavigationParams;
-import org.chromium.content_public.browser.ContentViewCore;
 
 /**
  * An base class for tracking events on the overlay panel.
@@ -49,19 +48,6 @@ public class OverlayContentDelegate {
     public boolean shouldInterceptNavigation(ExternalNavigationHandler externalNavHandler,
             NavigationParams navigationParams) {
         return true;
-    }
-
-    /**
-     * Allows the delegate to intercept the loading of a URL.
-     * If the loading is intercepted, the OverlayPanelContent will not load the URL when
-     * {@link OverlayPanelContent#loadUrl} is called. Instead, it is up to the delegate to load it.
-     * This allows, for example, passing custom HTTP headers when loading a URL.
-     * @param overlayContentViewCore The Overlay.
-     * @param url The URL to load.
-     * @return Whether the load has been intercepted.
-     */
-    public boolean handleInterceptLoadUrl(ContentViewCore overlayContentViewCore, String url) {
-        return false;
     }
 
     // ============================================================================================
