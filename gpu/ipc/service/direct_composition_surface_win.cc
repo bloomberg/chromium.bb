@@ -1512,8 +1512,39 @@ bool DirectCompositionSurfaceWin::UseOverlaysForVideo() const {
 }
 
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
-  if (root_surface_)
-    return root_surface_->SetDrawRectangle(rectangle);
+  if (root_surface_) {
+    // TODO(sunnyps): Remove after https://crbug.com/724999 is fixed.
+    CHECK(gl::GLContext::GetCurrent());
+    CHECK(gl::GLContext::GetCurrent()->IsCurrent(this));
+    bool was_surface_current = gl::GLSurface::GetCurrent() == this;
+    base::debug::Alias(&was_surface_current);
+    EGLSurface default_surface = root_surface_->default_surface_for_debugging();
+    base::debug::Alias(&default_surface);
+    EGLSurface old_real_surface = root_surface_->real_surface_for_debugging();
+    base::debug::Alias(&old_real_surface);
+    EGLSurface old_surface_handle = GetHandle();
+    base::debug::Alias(&old_surface_handle);
+    EGLSurface old_egl_current_surface = eglGetCurrentSurface(EGL_DRAW);
+    base::debug::Alias(&old_egl_current_surface);
+
+    bool succeeded = root_surface_->SetDrawRectangle(rectangle);
+
+    // TODO(sunnyps): Remove after https://crbug.com/724999 is fixed.
+    if (succeeded) {
+      bool is_surface_current = gl::GLSurface::GetCurrent() == this;
+      base::debug::Alias(&is_surface_current);
+      EGLSurface new_real_surface = root_surface_->real_surface_for_debugging();
+      base::debug::Alias(&new_real_surface);
+      EGLSurface new_surface_handle = GetHandle();
+      base::debug::Alias(&new_surface_handle);
+      EGLSurface new_egl_current_surface = eglGetCurrentSurface(EGL_DRAW);
+      base::debug::Alias(&new_egl_current_surface);
+      CHECK(gl::GLContext::GetCurrent());
+      CHECK(gl::GLContext::GetCurrent()->IsCurrent(this));
+    }
+
+    return succeeded;
+  }
   return false;
 }
 
