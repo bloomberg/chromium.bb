@@ -575,18 +575,14 @@ void RenderFrameProxy::OnScrollRectToVisible(
 
 void RenderFrameProxy::OnDidUpdateVisualProperties(
     const cc::RenderFrameMetadata& metadata) {
-  // In the auto-resize case, the child has allocated the provided
-  // LocalSurfaceId and is already aware of the update. Because of this, the
-  // parent (this class) only needs to update its internal ID, and doesn't need
-  // to send the update back to the child. Note that the surface ID cached on
-  // CrossProcessFrameConnector will not receive this update. However, the
-  // CrossProcessFrameConnector cached ID is only ever used to send updates to
-  // the child (which is already aware of this change), so this doesn't cause
-  // issues.
-  if (metadata.local_surface_id) {
-    parent_local_surface_id_allocator_.UpdateFromChild(
-        *metadata.local_surface_id);
+  if (!parent_local_surface_id_allocator_.UpdateFromChild(
+          metadata.local_surface_id.value_or(viz::LocalSurfaceId()))) {
+    return;
   }
+
+  // The viz::LocalSurfaceId has changed so we call SynchronizeVisualProperties
+  // here to embed it.
+  SynchronizeVisualProperties();
 }
 
 void RenderFrameProxy::OnEnableAutoResize(const gfx::Size& min_size,
