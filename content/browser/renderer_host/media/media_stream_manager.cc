@@ -469,9 +469,6 @@ MediaStreamManager::MediaStreamManager(
     scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner,
     std::unique_ptr<VideoCaptureProvider> video_capture_provider)
     : audio_system_(audio_system),
-#if defined(OS_WIN)
-      video_capture_thread_("VideoCaptureThread"),
-#endif
       fake_ui_factory_() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kUseFakeUIForMediaStream)) {
@@ -485,14 +482,25 @@ MediaStreamManager::MediaStreamManager(
 
   if (!video_capture_provider) {
     scoped_refptr<base::SingleThreadTaskRunner> device_task_runner =
-        std::move(audio_task_runner);
 #if defined(OS_WIN)
-    // Use an STA Video Capture Thread to try to avoid crashes on enumeration of
-    // buggy third party Direct Show modules, http://crbug.com/428958.
-    video_capture_thread_.init_com_with_mta(false);
-    CHECK(video_capture_thread_.Start());
-    device_task_runner = video_capture_thread_.task_runner();
+        // Windows unconditionally requires its own thread (see below).
+        nullptr;
+#else
+        // Share the provided |audio_task_runner| if it's non-null.
+        std::move(audio_task_runner);
 #endif
+
+    if (!device_task_runner) {
+      video_capture_thread_.emplace("VideoCaptureThread");
+#if defined(OS_WIN)
+      // Use an STA Video Capture Thread to try to avoid crashes on enumeration
+      // of buggy third party Direct Show modules, http://crbug.com/428958.
+      video_capture_thread_->init_com_with_mta(false);
+#endif
+      CHECK(video_capture_thread_->Start());
+      device_task_runner = video_capture_thread_->task_runner();
+    }
+
     if (base::FeatureList::IsEnabled(features::kMojoVideoCapture)) {
       video_capture_provider = std::make_unique<VideoCaptureProviderSwitcher>(
           std::make_unique<ServiceVideoCaptureProvider>(

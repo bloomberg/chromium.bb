@@ -96,6 +96,7 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
 
   std::unique_ptr<::media::AudioManager> CreateAudioManager(
       ::media::AudioLogFactory* audio_log_factory) override;
+  bool OverridesAudioManager() override;
   std::unique_ptr<::media::CdmFactory> CreateCdmFactory() override;
 #endif  // BUILDFLAG(IS_CAST_USING_CMA_BACKEND)
   media::MediaCapsImpl* media_caps();

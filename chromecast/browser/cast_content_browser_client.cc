@@ -239,6 +239,11 @@ CastContentBrowserClient::CreateAudioManager(
 #endif  // defined(USE_ALSA)
 }
 
+bool CastContentBrowserClient::OverridesAudioManager() {
+  // See CreateAudioManager().
+  return true;
+}
+
 std::unique_ptr<::media::CdmFactory>
 CastContentBrowserClient::CreateCdmFactory() {
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)

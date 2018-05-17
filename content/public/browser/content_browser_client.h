@@ -934,6 +934,11 @@ class CONTENT_EXPORT ContentBrowserClient {
   // will be used.
   virtual std::unique_ptr<media::AudioManager> CreateAudioManager(
       media::AudioLogFactory* audio_log_factory);
+
+  // Returns true if (and only if) CreateAudioManager() is implemented and
+  // returns a non-null value.
+  virtual bool OverridesAudioManager();
+
   // Creates and returns a factory used for creating CDM instances for playing
   // protected content.
   virtual std::unique_ptr<media::CdmFactory> CreateCdmFactory();

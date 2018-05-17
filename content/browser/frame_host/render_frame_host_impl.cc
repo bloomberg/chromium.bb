@@ -4479,7 +4479,7 @@ void RenderFrameHostImpl::CreateAudioInputStreamFactory(
     in_content_audio_input_stream_factory_ =
         RenderFrameAudioInputStreamFactoryHandle::CreateFactory(
             base::BindRepeating(&AudioInputDelegateImpl::Create,
-                                media::AudioManager::Get(),
+                                browser_main_loop->audio_manager(),
                                 AudioMirroringManager::GetInstance(),
                                 browser_main_loop->user_input_monitor(),
                                 GetProcess()->GetID(), GetRoutingID()),

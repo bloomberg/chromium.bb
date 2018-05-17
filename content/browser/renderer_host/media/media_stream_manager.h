@@ -38,6 +38,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/optional.h"
 #include "base/power_monitor/power_observer.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
@@ -104,6 +105,9 @@ class CONTENT_EXPORT MediaStreamManager
   // render processes hosts whose corresponding render processes are requesting
   // logging from webrtcLoggingPrivate API. Safe to call from any thread.
   static void SendMessageToNativeLog(const std::string& message);
+
+  // |audio_task_runner| passed to constructors is the task runner used by audio
+  // system when it runs in-process; it's null if audio runs out of process.
 
   MediaStreamManager(
       media::AudioSystem* audio_system,
@@ -435,9 +439,12 @@ class CONTENT_EXPORT MediaStreamManager
   media::AudioSystem* const audio_system_;  // not owned
   scoped_refptr<AudioInputDeviceManager> audio_input_device_manager_;
   scoped_refptr<VideoCaptureManager> video_capture_manager_;
-#if defined(OS_WIN)
-  base::Thread video_capture_thread_;
-#endif
+
+  // Not initialized on Mac (if not in tests), since the main thread is used.
+  // Always initialized on Windows.
+  // On other platforms, initialized when no audio task runner is provided in
+  // the constructor.
+  base::Optional<base::Thread> video_capture_thread_;
 
   std::unique_ptr<MediaDevicesManager> media_devices_manager_;
 

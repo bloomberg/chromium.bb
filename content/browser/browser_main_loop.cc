@@ -1127,7 +1127,16 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
 }
 
+media::AudioManager* BrowserMainLoop::audio_manager() const {
+  DCHECK(audio_manager_) << "AudioManager is not instantiated - running the "
+                            "audio service out of process?";
+  return audio_manager_.get();
+}
+
 base::SequencedTaskRunner* BrowserMainLoop::audio_service_runner() {
+  DCHECK(audio_service_runner_) << "The audio service task runner is not "
+                                   "instantiated - running the audio service "
+                                   "out of process?";
   return audio_service_runner_.get();
 }
 
@@ -1282,8 +1291,12 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   device_monitor_linux_.reset(
       new media::DeviceMonitorLinux(io_thread_->task_runner()));
 #elif defined(OS_MACOSX)
+  // On Mac, the audio task runner must belong to the main thread.
+  // See audio_thread_impl.cc and https://crbug.com/158170.
+  DCHECK(!audio_manager_ ||
+         audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   device_monitor_mac_.reset(
-      new media::DeviceMonitorMac(audio_manager_->GetTaskRunner()));
+      new media::DeviceMonitorMac(base::ThreadTaskRunnerHandle::Get()));
 #endif
 
 #if BUILDFLAG(ENABLE_WEBRTC)
@@ -1321,8 +1334,22 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   {
     TRACE_EVENT0("startup",
       "BrowserMainLoop::BrowserThreadsStarted:InitMediaStreamManager");
-    media_stream_manager_.reset(new MediaStreamManager(
-        audio_system_.get(), audio_manager_->GetTaskRunner()));
+
+    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
+        audio_manager_ ? audio_manager_->GetTaskRunner() : nullptr;
+
+#if defined(OS_MACOSX)
+    // On Mac, the audio task runner must belong to the main thread.
+    // See audio_thread_impl.cc and https://crbug.com/158170.
+    if (audio_task_runner) {
+      DCHECK(audio_task_runner->BelongsToCurrentThread());
+    } else {
+      audio_task_runner = base::ThreadTaskRunnerHandle::Get();
+    }
+#endif
+
+    media_stream_manager_ = std::make_unique<MediaStreamManager>(
+        audio_system_.get(), std::move(audio_task_runner));
   }
 
   {
@@ -1604,30 +1631,44 @@ void BrowserMainLoop::CreateAudioManager() {
 
   audio_manager_ = GetContentClient()->browser()->CreateAudioManager(
       MediaInternals::GetInstance());
-  // TODO(http://crbug/834666): Do not initialize |audio_manager_| if
-  // features::kAudioServiceOutOfProcess is enabled.
-  if (!audio_manager_) {
+  DCHECK_EQ(!!audio_manager_,
+            GetContentClient()->browser()->OverridesAudioManager());
+
+  // Do not initialize |audio_manager_| if running out of process.
+  if (!audio_manager_ &&
+      !base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
     audio_manager_ =
         media::AudioManager::Create(std::make_unique<media::AudioThreadImpl>(),
                                     MediaInternals::GetInstance());
+    CHECK(audio_manager_);
   }
-  CHECK(audio_manager_);
 
-  AudioMirroringManager* const mirroring_manager =
-      AudioMirroringManager::GetInstance();
-  audio_manager_->SetDiverterCallbacks(
-      mirroring_manager->GetAddDiverterCallback(),
-      mirroring_manager->GetRemoveDiverterCallback());
+  // Iff |audio_manager_| is instantiated, the audio service will run
+  // in-process. Complete the setup for that:
+  if (audio_manager_) {
+    AudioMirroringManager* const mirroring_manager =
+        AudioMirroringManager::GetInstance();
+    audio_manager_->SetDiverterCallbacks(
+        mirroring_manager->GetAddDiverterCallback(),
+        mirroring_manager->GetRemoveDiverterCallback());
 
-  TRACE_EVENT_INSTANT0("startup", "Starting Audio service task runner",
-                       TRACE_EVENT_SCOPE_THREAD);
-  audio_service_runner_->StartWithTaskRunner(audio_manager_->GetTaskRunner());
+    TRACE_EVENT_INSTANT0("startup", "Starting Audio service task runner",
+                         TRACE_EVENT_SCOPE_THREAD);
+    audio_service_runner_->StartWithTaskRunner(audio_manager_->GetTaskRunner());
+  }
 
   audio_system_ = audio::CreateAudioSystem(
       content::ServiceManagerConnection::GetForProcess()
           ->GetConnector()
           ->Clone());
   CHECK(audio_system_);
+}
+
+bool BrowserMainLoop::AudioServiceOutOfProcess() const {
+  // Returns true iff kAudioServiceOutOfProcess feature is enabled and if the
+  // embedder does not provide its own in-process AudioManager.
+  return base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess) &&
+         !GetContentClient()->browser()->OverridesAudioManager();
 }
 
 }  // namespace content
