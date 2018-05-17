@@ -257,8 +257,6 @@ class IndexedDBDatabase::OpenRequest
 
   void UpgradeTransactionFinished(bool committed) override {
     // Ownership of connection was already passed along in OnUpgradeNeeded.
-    DCHECK(!connection_);
-
     if (committed) {
       DCHECK_EQ(pending_->version, db_->metadata_.version);
       pending_->callbacks->OnSuccess(std::unique_ptr<IndexedDBConnection>(),

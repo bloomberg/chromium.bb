@@ -107,7 +107,7 @@ class CONTENT_EXPORT IndexedDBTransaction {
 
   IndexedDBDatabase* database() const { return database_.get(); }
   IndexedDBDatabaseCallbacks* callbacks() const { return callbacks_.get(); }
-  IndexedDBConnection* connection() const { return connection_; }
+  IndexedDBConnection* connection() const { return connection_.get(); }
 
   State state() const { return state_; }
   bool IsTimeoutTimerRunning() const { return timeout_timer_.IsRunning(); }
@@ -187,8 +187,9 @@ class CONTENT_EXPORT IndexedDBTransaction {
   bool used_ = false;
   State state_ = CREATED;
   bool commit_pending_ = false;
-  // We are owned by the connection object.
-  IndexedDBConnection* connection_;
+  // We are owned by the connection object, but during force closes sometimes
+  // there are issues if there is a pending OpenRequest. So use a WeakPtr.
+  base::WeakPtr<IndexedDBConnection> connection_;
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   scoped_refptr<IndexedDBDatabase> database_;
 

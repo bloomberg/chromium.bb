@@ -111,7 +111,7 @@ IndexedDBTransaction::IndexedDBTransaction(
     : id_(id),
       object_store_ids_(object_store_ids),
       mode_(mode),
-      connection_(connection),
+      connection_(connection->GetWeakPtr()),
       transaction_(backing_store_transaction),
       ptr_factory_(this) {
   IDB_ASYNC_TRACE_BEGIN("IndexedDBTransaction::lifetime", this);
@@ -222,7 +222,10 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
   database_->TransactionFinished(this, false);
 
   // RemoveTransaction will delete |this|.
-  connection_->RemoveTransaction(id_);
+  // Note: During force-close situations, the connection can be destroyed during
+  // the |IndexedDBDatabase::TransactionFinished| call
+  if (connection_)
+    connection_->RemoveTransaction(id_);
 }
 
 bool IndexedDBTransaction::IsTaskQueueEmpty() const {
