@@ -112,10 +112,12 @@ void OmniboxResultView::SetMatch(const AutocompleteMatch& match) {
 
   // Set up 'switch to tab' button.
   if (match.has_tab_match && !match_.associated_keyword.get()) {
-    suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
-        model_, this, suggestion_view_->content()->GetLineHeight());
-    suggestion_tab_switch_button_->set_owned_by_client();
-    AddChildView(suggestion_tab_switch_button_.get());
+    if (!suggestion_tab_switch_button_) {
+      suggestion_tab_switch_button_ = std::make_unique<OmniboxTabSwitchButton>(
+          model_, this, suggestion_view_->content()->GetLineHeight());
+      suggestion_tab_switch_button_->set_owned_by_client();
+      AddChildView(suggestion_tab_switch_button_.get());
+    }
   } else {
     suggestion_tab_switch_button_.reset();
   }
@@ -346,16 +348,22 @@ void OmniboxResultView::Layout() {
     suggestion_width = animation_->CurrentValueBetween(max_kw_x, 0);
   }
   if (suggestion_tab_switch_button_) {
+    suggestion_tab_switch_button_->ProvideWidthHint(suggestion_width);
     const gfx::Size ts_button_size =
         suggestion_tab_switch_button_->GetPreferredSize();
-    suggestion_tab_switch_button_->SetSize(ts_button_size);
+    if (ts_button_size.width() > 0) {
+      suggestion_tab_switch_button_->SetSize(ts_button_size);
 
-    // It looks nice to have the same margin on top, bottom and right side.
-    const int margin =
-        (suggestion_view_->height() - ts_button_size.height()) / 2;
-    suggestion_width -= ts_button_size.width() + margin;
-    suggestion_tab_switch_button_->SetPosition(
-        gfx::Point(suggestion_width, margin));
+      // It looks nice to have the same margin on top, bottom and right side.
+      const int margin =
+          (suggestion_view_->height() - ts_button_size.height()) / 2;
+      suggestion_width -= ts_button_size.width() + margin;
+      suggestion_tab_switch_button_->SetPosition(
+          gfx::Point(suggestion_width, margin));
+      suggestion_tab_switch_button_->SetVisible(true);
+    } else {
+      suggestion_tab_switch_button_->SetVisible(false);
+    }
   }
   keyword_view_->SetBounds(suggestion_width, 0, width(), height());
   suggestion_view_->SetBounds(0, 0, suggestion_width, height());

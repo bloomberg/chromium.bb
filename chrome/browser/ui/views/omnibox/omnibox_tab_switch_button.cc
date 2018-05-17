@@ -16,6 +16,11 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 
+bool OmniboxTabSwitchButton::calculated_widths_ = false;
+size_t OmniboxTabSwitchButton::icon_only_width_;
+size_t OmniboxTabSwitchButton::short_text_width_;
+size_t OmniboxTabSwitchButton::full_text_width_;
+
 OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
                                                OmniboxResultView* result_view,
                                                int text_height)
@@ -24,23 +29,43 @@ OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxPopupContentsView* model,
       model_(model),
       result_view_(result_view) {
   // TODO(krb): SetTooltipText(text);
-  //            SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
   SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL,
            gfx::CreateVectorIcon(omnibox::kSwitchIcon,
                                  GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
                                  SK_ColorBLACK));
-  SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
+  if (!calculated_widths_) {
+    icon_only_width_ = MdTextButton::CalculatePreferredSize().width();
+    SetText(base::ASCIIToUTF16("Switch"));
+    short_text_width_ = MdTextButton::CalculatePreferredSize().width();
+    SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
+    full_text_width_ = MdTextButton::CalculatePreferredSize().width();
+    calculated_widths_ = true;
+  } else {
+    SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
+  }
+  visible_ = true;
   set_corner_radius(CalculatePreferredSize().height() / 2.f);
 }
 
+void OmniboxTabSwitchButton::ProvideWidthHint(size_t parent_width) {
+  visible_ = true;
+  if (full_text_width_ < parent_width / 5) {
+    SetText(l10n_util::GetStringUTF16(IDS_OMNIBOX_TAB_SUGGEST_HINT));
+  } else if (short_text_width_ < parent_width / 5) {
+    SetText(base::ASCIIToUTF16("Switch"));
+  } else if (icon_only_width_ < parent_width / 5) {
+    SetText(base::ASCIIToUTF16(""));
+  } else {
+    visible_ = false;
+  }
+}
+
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
+  if (!visible_)
+    return gfx::Size();
   gfx::Size size = MdTextButton::CalculatePreferredSize();
   size.set_height(text_height_ + 2 * kVerticalPadding);
-  const int horizontal_padding =
-      GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
-      GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
-  size.set_width(size.width() + horizontal_padding);
   return size;
 }
 

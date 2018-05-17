@@ -26,6 +26,10 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   // event (tab key).
   void UpdateBackground();
 
+  // Called by parent view to provide the width of the surrounding area
+  // so the button can adjust its size or even presence.
+  void ProvideWidthHint(size_t width);
+
  private:
   // Encapsulates the color look-up, which uses the button state (hovered,
   // etc.) and consults the parent result view.
@@ -39,6 +43,15 @@ class OmniboxTabSwitchButton : public views::MdTextButton {
   const int text_height_;
   OmniboxPopupContentsView* model_;
   OmniboxResultView* result_view_;
+
+  // Only calculate the width of various contents once.
+  static bool calculated_widths_;
+  static size_t icon_only_width_;
+  static size_t short_text_width_;
+  static size_t full_text_width_;
+
+  // To remember case of not being visible at all.
+  bool visible_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);
 };
