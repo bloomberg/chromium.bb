@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_footer_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller_commands.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 
@@ -26,16 +27,33 @@ const CGFloat kPopupMenuVerticalInsets = 7;
 const CGFloat kScrollIndicatorVerticalInsets = 11;
 }  // namespace
 
+@interface PopupMenuTableViewController ()
+// Whether the -viewDidAppear: callback has been called.
+@property(nonatomic, assign) BOOL viewDidAppear;
+@end
+
 @implementation PopupMenuTableViewController
 
 @dynamic tableViewModel;
 @synthesize baseViewController = _baseViewController;
 @synthesize commandHandler = _commandHandler;
 @synthesize dispatcher = _dispatcher;
+@synthesize itemToHighlight = _itemToHighlight;
+@synthesize viewDidAppear = _viewDidAppear;
 
 - (instancetype)init {
   return [super initWithTableViewStyle:UITableViewStyleGrouped
                            appBarStyle:ChromeTableViewControllerStyleNoAppBar];
+}
+
+#pragma mark - Properties
+
+- (void)setItemToHighlight:(TableViewItem<PopupMenuItem>*)itemToHighlight {
+  DCHECK_GT(self.tableViewModel.numberOfSections, 0L);
+  _itemToHighlight = itemToHighlight;
+  if (itemToHighlight && self.viewDidAppear) {
+    [self highlightItem:itemToHighlight repeat:YES];
+  }
 }
 
 #pragma mark - UIViewController
@@ -55,6 +73,13 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
   self.tableView.tableHeaderView = [[UIView alloc]
       initWithFrame:CGRectMake(0.0f, 0.0f, self.tableView.bounds.size.width,
                                0.01f)];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  self.viewDidAppear = YES;
+  if (self.itemToHighlight) {
+    [self highlightItem:self.itemToHighlight repeat:YES];
+  }
 }
 
 - (void)setPopupMenuItems:
@@ -116,6 +141,36 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 }
 
 #pragma mark - Private
+
+// Highlights the |item| and |repeat| the highlighting once.
+- (void)highlightItem:(TableViewItem<PopupMenuItem>*)item repeat:(BOOL)repeat {
+  NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
+  [self.tableView selectRowAtIndexPath:indexPath
+                              animated:YES
+                        scrollPosition:UITableViewScrollPositionNone];
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW,
+                    (int64_t)(kHighlightAnimationDuration * NSEC_PER_SEC)),
+      dispatch_get_main_queue(), ^{
+        [self unhighlightItem:item repeat:repeat];
+      });
+}
+
+// Removes the highlight from |item| and |repeat| the highlighting once.
+- (void)unhighlightItem:(TableViewItem<PopupMenuItem>*)item
+                 repeat:(BOOL)repeat {
+  NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
+  [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
+  if (!repeat)
+    return;
+
+  dispatch_after(
+      dispatch_time(DISPATCH_TIME_NOW,
+                    (int64_t)(kHighlightAnimationDuration * NSEC_PER_SEC)),
+      dispatch_get_main_queue(), ^{
+        [self highlightItem:item repeat:NO];
+      });
+}
 
 // Executes the action associated with |identifier|, using |origin| as the point
 // of origin of the action if one is needed.
