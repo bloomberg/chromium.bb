@@ -601,8 +601,6 @@ target(link_target_type, "renderer") {
     "service_worker/web_service_worker_registration_impl.h",
     "service_worker/worker_fetch_context_impl.cc",
     "service_worker/worker_fetch_context_impl.h",
-    "shared_memory_seqlock_reader.cc",
-    "shared_memory_seqlock_reader.h",
     "shared_worker/embedded_shared_worker_stub.cc",
     "shared_worker/embedded_shared_worker_stub.h",
     "shared_worker/shared_worker_client_impl.cc",
