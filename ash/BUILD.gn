@@ -1214,8 +1214,8 @@ component("ash") {
     "wm/workspace_controller.h",
     "ws/window_service_delegate_impl.cc",
     "ws/window_service_delegate_impl.h",
-    "ws/window_service_util.cc",
-    "ws/window_service_util.h",
+    "ws/window_service_owner.cc",
+    "ws/window_service_owner.h",
   ]
 
   configs += [ "//build/config:precompiled_headers" ]

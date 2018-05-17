@@ -20,7 +20,8 @@ void RegisterOutOfProcessServices(
 
 // Registers the set of Ash related services that run in process.
 void RegisterInProcessServices(
-    content::ContentBrowserClient::StaticServiceMap* services);
+    content::ContentBrowserClient::StaticServiceMap* services,
+    content::ServiceManagerConnection* connection);
 
 // Returns true if |name| identifies an Ash related service.
 bool IsAshRelatedServiceName(const std::string& name);

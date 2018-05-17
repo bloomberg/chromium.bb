@@ -9,13 +9,12 @@
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/touch_hud/public/mojom/constants.mojom.h"
-#include "ash/content/content_gpu_support.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
 #include "ash/shell/content/client/shell_browser_main_parts.h"
 #include "ash/shell/grit/ash_shell_resources.h"
-#include "ash/ws/window_service_util.h"
+#include "ash/ws/window_service_owner.h"
 #include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -25,6 +24,7 @@
 #include "components/services/font/public/interfaces/constants.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/utility/content_utility_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
@@ -35,14 +35,6 @@
 
 namespace ash {
 namespace shell {
-namespace {
-
-// A factory function used in creation of the WindowService.
-std::unique_ptr<ui::ws2::GpuSupport> CreateContentGpuSupport() {
-  return std::make_unique<ContentGpuSupport>();
-}
-
-}  // namespace
 
 ShellContentBrowserClient::ShellContentBrowserClient()
     : shell_browser_main_parts_(nullptr) {}
@@ -94,15 +86,15 @@ void ShellContentBrowserClient::RegisterOutOfProcessServices(
 }
 
 void ShellContentBrowserClient::RegisterInProcessServices(
-    StaticServiceMap* services) {
-  services->insert(std::make_pair(ash::mojom::kServiceName,
+    StaticServiceMap* services,
+    content::ServiceManagerConnection* connection) {
+  services->insert(std::make_pair(mojom::kServiceName,
                                   AshService::CreateEmbeddedServiceInfo()));
 
-  service_manager::EmbeddedServiceInfo ws_service_info;
-  ws_service_info.factory = base::BindRepeating(
-      &CreateWindowService, base::BindRepeating(&CreateContentGpuSupport));
-  ws_service_info.task_runner = base::ThreadTaskRunnerHandle::Get();
-  services->insert(std::make_pair(ui::mojom::kServiceName, ws_service_info));
+  connection->AddServiceRequestHandler(
+      ui::mojom::kServiceName,
+      base::BindRepeating(&BindWindowServiceOnIoThread,
+                          base::ThreadTaskRunnerHandle::Get()));
 }
 
 }  // namespace shell

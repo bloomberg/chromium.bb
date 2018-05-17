@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/content/content_gpu_support.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/shell_init_params.h"
@@ -68,6 +69,7 @@ ViewEventTestPlatformPartChromeOS::ViewEventTestPlatformPartChromeOS(
   init_params.delegate = std::make_unique<ash::TestShellDelegate>();
   init_params.context_factory = context_factory;
   init_params.context_factory_private = context_factory_private;
+  init_params.gpu_support = std::make_unique<ash::ContentGpuSupport>();
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kHostWindowBounds, "0+0-1280x800");
   ash::Shell::CreateInstance(std::move(init_params));

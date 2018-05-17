@@ -576,7 +576,8 @@ bool WindowServiceClient::SetWindowPropertyImpl(
     return false;
   }
   DCHECK(window_service_->property_converter()->IsTransportNameRegistered(name))
-      << "Attempting to set an unrgistered property; this is not implemented.";
+      << "Attempting to set an unregistered property; this is not implemented. "
+      << "property name=" << name;
   if (!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) {
     DVLOG(1) << "SetWindowProperty failed (access policy denied change)";
     return false;

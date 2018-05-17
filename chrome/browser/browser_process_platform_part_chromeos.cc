@@ -182,8 +182,9 @@ BrowserProcessPlatformPart::CreateBrowserPolicyConnector() {
 }
 
 void BrowserProcessPlatformPart::RegisterInProcessServices(
-    content::ContentBrowserClient::StaticServiceMap* services) {
-  ash_service_registry::RegisterInProcessServices(services);
+    content::ContentBrowserClient::StaticServiceMap* services,
+    content::ServiceManagerConnection* connection) {
+  ash_service_registry::RegisterInProcessServices(services, connection);
 }
 
 chromeos::system::SystemClock* BrowserProcessPlatformPart::GetSystemClock() {

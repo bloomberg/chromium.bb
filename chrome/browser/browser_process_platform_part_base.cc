@@ -43,4 +43,5 @@ BrowserProcessPlatformPartBase::CreateBrowserPolicyConnector() {
 }
 
 void BrowserProcessPlatformPartBase::RegisterInProcessServices(
-    content::ContentBrowserClient::StaticServiceMap* services) {}
+    content::ContentBrowserClient::StaticServiceMap* services,
+    content::ServiceManagerConnection* connection) {}
