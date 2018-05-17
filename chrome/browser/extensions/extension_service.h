@@ -29,6 +29,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/crx_file_info.h"
+#include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registrar.h"
 #include "extensions/browser/external_provider_interface.h"
@@ -169,7 +170,6 @@ class ExtensionServiceInterface
 
   // Whether the extension service is ready.
   virtual bool is_ready() = 0;
-
 };
 
 // Manages installed and running Chromium extensions. An instance is shared
@@ -282,6 +282,15 @@ class ExtensionService
   // from Sync). If the extension cannot be disabled (due to policy), does
   // nothing.
   void DisableExtension(const std::string& extension_id, int disable_reasons);
+
+  // Same as |DisableExtension|, but assumes that the request to disable
+  // |extension_id| originates from |source_extension| when evaluating whether
+  // the extension can be disabled. Please see |ExtensionMayModifySettings|
+  // for details.
+  void DisableExtensionWithSource(
+      const extensions::Extension* source_extension,
+      const std::string& extension_id,
+      extensions::disable_reason::DisableReason disable_reasons);
 
   // Disable non-default and non-managed extensions with ids not in
   // |except_ids|. Default extensions are those from the Web Store with

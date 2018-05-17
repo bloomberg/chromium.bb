@@ -316,11 +316,13 @@ void ChromeManagementAPIDelegate::EnableExtension(
 
 void ChromeManagementAPIDelegate::DisableExtension(
     content::BrowserContext* context,
+    const extensions::Extension* source_extension,
     const std::string& extension_id,
     extensions::disable_reason::DisableReason disable_reason) const {
   extensions::ExtensionSystem::Get(context)
       ->extension_service()
-      ->DisableExtension(extension_id, disable_reason);
+      ->DisableExtensionWithSource(source_extension, extension_id,
+                                   disable_reason);
 }
 
 bool ChromeManagementAPIDelegate::UninstallExtension(

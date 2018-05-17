@@ -56,6 +56,15 @@ bool TestManagementPolicyProvider::UserMayModifySettings(
   return may_modify_status_;
 }
 
+bool TestManagementPolicyProvider::ExtensionMayModifySettings(
+    const Extension* source_extension,
+    const Extension* extension,
+    base::string16* error) const {
+  if (error && !may_modify_status_)
+    *error = error_message_;
+  return may_modify_status_;
+}
+
 bool TestManagementPolicyProvider::MustRemainEnabled(const Extension* extension,
                                                      base::string16* error)
     const {

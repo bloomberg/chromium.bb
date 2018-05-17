@@ -111,9 +111,13 @@ void ManagementApiUnitTest::TearDown() {
 TEST_F(ManagementApiUnitTest, ManagementSetEnabled) {
   scoped_refptr<const Extension> extension = ExtensionBuilder("Test").Build();
   service()->AddExtension(extension.get());
+  scoped_refptr<const Extension> source_extension =
+      ExtensionBuilder("Test").Build();
+  service()->AddExtension(source_extension.get());
   std::string extension_id = extension->id();
   scoped_refptr<ManagementSetEnabledFunction> function(
       new ManagementSetEnabledFunction());
+  function->set_extension(source_extension);
 
   base::ListValue disable_args;
   disable_args.AppendString(extension_id);
@@ -147,6 +151,107 @@ TEST_F(ManagementApiUnitTest, ManagementSetEnabled) {
                                            extension_id),
             function->GetError());
   policy->UnregisterProvider(&provider);
+}
+
+// Test that component extensions cannot be disabled, and that policy extensions
+// can be disabled only by component/policy extensions.
+TEST_F(ManagementApiUnitTest, ComponentPolicyDisabling) {
+  auto component =
+      ExtensionBuilder("component").SetLocation(Manifest::COMPONENT).Build();
+  auto component2 =
+      ExtensionBuilder("component2").SetLocation(Manifest::COMPONENT).Build();
+  auto policy =
+      ExtensionBuilder("policy").SetLocation(Manifest::EXTERNAL_POLICY).Build();
+  auto policy2 = ExtensionBuilder("policy2")
+                     .SetLocation(Manifest::EXTERNAL_POLICY)
+                     .Build();
+  auto internal =
+      ExtensionBuilder("internal").SetLocation(Manifest::INTERNAL).Build();
+
+  service()->AddExtension(component.get());
+  service()->AddExtension(component2.get());
+  service()->AddExtension(policy.get());
+  service()->AddExtension(policy2.get());
+  service()->AddExtension(internal.get());
+
+  auto extension_can_disable_extension =
+      [this](scoped_refptr<const Extension> source_extension,
+             scoped_refptr<const Extension> target_extension) {
+        std::string id = target_extension->id();
+        base::ListValue args;
+        args.AppendString(id);
+        args.AppendBoolean(false /* disable the extension */);
+        auto function = base::MakeRefCounted<ManagementSetEnabledFunction>();
+        function->set_extension(source_extension);
+        bool did_disable = RunFunction(function, args);
+        // If the extension was disabled, re-enable it.
+        if (did_disable) {
+          EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
+          service()->EnableExtension(id);
+        } else {
+          EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+        }
+        return did_disable;
+      };
+
+  // Component extension cannot be disabled.
+  EXPECT_FALSE(extension_can_disable_extension(component2, component));
+  EXPECT_FALSE(extension_can_disable_extension(policy, component));
+  EXPECT_FALSE(extension_can_disable_extension(internal, component));
+
+  // Policy extension can be disabled by component/policy extensions, but not
+  // others.
+  EXPECT_TRUE(extension_can_disable_extension(component, policy));
+  EXPECT_TRUE(extension_can_disable_extension(policy2, policy));
+  EXPECT_FALSE(extension_can_disable_extension(internal, policy));
+}
+
+// Test that policy extensions can be enabled only by component/policy
+// extensions.
+TEST_F(ManagementApiUnitTest, ComponentPolicyEnabling) {
+  auto component =
+      ExtensionBuilder("component").SetLocation(Manifest::COMPONENT).Build();
+  auto policy =
+      ExtensionBuilder("policy").SetLocation(Manifest::EXTERNAL_POLICY).Build();
+  auto policy2 = ExtensionBuilder("policy2")
+                     .SetLocation(Manifest::EXTERNAL_POLICY)
+                     .Build();
+  auto internal =
+      ExtensionBuilder("internal").SetLocation(Manifest::INTERNAL).Build();
+
+  service()->AddExtension(component.get());
+  service()->AddExtension(policy.get());
+  service()->AddExtension(policy2.get());
+  service()->AddExtension(internal.get());
+  service()->DisableExtensionWithSource(
+      component.get(), policy->id(), disable_reason::DISABLE_BLOCKED_BY_POLICY);
+
+  auto extension_can_enable_extension =
+      [this, component](scoped_refptr<const Extension> source_extension,
+                        scoped_refptr<const Extension> target_extension) {
+        std::string id = target_extension->id();
+        base::ListValue args;
+        args.AppendString(id);
+        args.AppendBoolean(true /* enable the extension */);
+        auto function = base::MakeRefCounted<ManagementSetEnabledFunction>();
+        function->set_extension(source_extension);
+        bool did_enable = RunFunction(function, args);
+        // If the extension was enabled, disable it.
+        if (did_enable) {
+          EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+          service()->DisableExtensionWithSource(
+              component.get(), id, disable_reason::DISABLE_BLOCKED_BY_POLICY);
+        } else {
+          EXPECT_TRUE(registry()->disabled_extensions().Contains(id));
+        }
+        return did_enable;
+      };
+
+  // Policy extension can be enabled by component/policy extensions, but not
+  // others.
+  EXPECT_TRUE(extension_can_enable_extension(component, policy));
+  EXPECT_TRUE(extension_can_enable_extension(policy2, policy));
+  EXPECT_FALSE(extension_can_enable_extension(internal, policy));
 }
 
 // Tests management.uninstall.

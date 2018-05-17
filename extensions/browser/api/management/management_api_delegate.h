@@ -87,9 +87,11 @@ class ManagementAPIDelegate {
   virtual void EnableExtension(content::BrowserContext* context,
                                const std::string& extension_id) const = 0;
 
-  // Disables the extension identified by |extension_id|.
+  // Disables the extension identified by |extension_id|. |source_extension| (if
+  // specified) is the extension that originated the request.
   virtual void DisableExtension(
       content::BrowserContext* context,
+      const Extension* source_extension,
       const std::string& extension_id,
       disable_reason::DisableReason disable_reason) const = 0;
 

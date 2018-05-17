@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/strings/pattern.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -26,6 +27,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/notification_types.h"
+#include "extensions/common/extension_builder.h"
 #include "extensions/test/extension_test_message_listener.h"
 
 namespace keys = extension_management_api_constants;
@@ -206,10 +208,13 @@ class ExtensionManagementApiEscalationTest :
                     ->DidExtensionEscalatePermissions(kId));
   }
 
-  void SetEnabled(bool enabled, bool user_gesture,
-                  const std::string& expected_error) {
+  void SetEnabled(bool enabled,
+                  bool user_gesture,
+                  const std::string& expected_error,
+                  scoped_refptr<const Extension> extension) {
     scoped_refptr<ManagementSetEnabledFunction> function(
         new ManagementSetEnabledFunction);
+    function->set_extension(extension);
     const char* const enabled_string = enabled ? "true" : "false";
     if (user_gesture)
       function->set_user_gesture(true);
@@ -251,14 +256,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
 
 IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
                        SetEnabled) {
+  scoped_refptr<const Extension> source_extension =
+      ExtensionBuilder("test").Build();
+
   // Expect an error about no gesture.
-  SetEnabled(true, false, keys::kGestureNeededForEscalationError);
+  SetEnabled(true, false, keys::kGestureNeededForEscalationError,
+             source_extension);
 
   {
     // Expect an error that user cancelled the dialog.
     ScopedTestDialogAutoConfirm auto_confirm(
         ScopedTestDialogAutoConfirm::CANCEL);
-    SetEnabled(true, true, keys::kUserDidNotReEnableError);
+    SetEnabled(true, true, keys::kUserDidNotReEnableError, source_extension);
   }
 
   {
@@ -271,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
         content::NotificationService::AllSources());
     ScopedTestDialogAutoConfirm auto_confirm(
         ScopedTestDialogAutoConfirm::ACCEPT);
-    SetEnabled(true, true, std::string());
+    SetEnabled(true, true, std::string(), source_extension);
     observer.Wait();
   }
 
@@ -281,8 +290,14 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
     ScopedTestDialogAutoConfirm auto_confirm(
         ScopedTestDialogAutoConfirm::ACCEPT);
     ASSERT_TRUE(CrashEnabledExtension(kId));
-    SetEnabled(false, true, std::string());
-    SetEnabled(true, true, std::string());
+    // Register the target extension with extension service.
+    scoped_refptr<const Extension> target_extension =
+        ExtensionBuilder("TargetExtension").SetID(kId).Build();
+    ExtensionService* const service =
+        ExtensionSystem::Get(browser()->profile())->extension_service();
+    service->AddExtension(target_extension.get());
+    SetEnabled(false, true, std::string(), source_extension);
+    SetEnabled(true, true, std::string(), source_extension);
     const Extension* extension = ExtensionSystem::Get(browser()->profile())
                                      ->extension_service()
                                      ->GetExtensionById(kId, false);

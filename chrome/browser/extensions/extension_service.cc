@@ -117,6 +117,7 @@ using content::BrowserContext;
 using content::BrowserThread;
 using extensions::APIPermission;
 using extensions::CrxInstaller;
+using extensions::disable_reason::DisableReason;
 using extensions::Extension;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
@@ -778,6 +779,25 @@ void ExtensionService::DisableExtension(const std::string& extension_id,
   extension_registrar_.DisableExtension(extension_id, disable_reasons);
 }
 
+void ExtensionService::DisableExtensionWithSource(
+    const Extension* source_extension,
+    const std::string& extension_id,
+    DisableReason disable_reasons) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DCHECK(disable_reasons == DisableReason::DISABLE_USER_ACTION ||
+         disable_reasons == DisableReason::DISABLE_BLOCKED_BY_POLICY);
+  if (disable_reasons == DisableReason::DISABLE_BLOCKED_BY_POLICY) {
+    DCHECK(Manifest::IsPolicyLocation(source_extension->location()) ||
+           Manifest::IsComponentLocation(source_extension->location()));
+  }
+
+  const Extension* extension = GetExtensionById(extension_id, true);
+  CHECK(system_->management_policy()->ExtensionMayModifySettings(
+      source_extension, extension, nullptr));
+  extension_registrar_.DisableExtension(extension_id, disable_reasons);
+}
+
 void ExtensionService::DisableUserExtensionsExcept(
     const std::vector<std::string>& except_ids) {
   extensions::ManagementPolicy* management_policy =
@@ -967,13 +987,12 @@ bool ExtensionService::is_ready() {
 }
 
 void ExtensionService::CheckManagementPolicy() {
-  std::map<std::string, extensions::disable_reason::DisableReason> to_disable;
+  std::map<std::string, DisableReason> to_disable;
   std::vector<std::string> to_enable;
 
   // Loop through the extensions list, finding extensions we need to disable.
   for (const auto& extension : registry_->enabled_extensions()) {
-    extensions::disable_reason::DisableReason disable_reason =
-        extensions::disable_reason::DISABLE_NONE;
+    DisableReason disable_reason = DisableReason::DISABLE_NONE;
     if (system_->management_policy()->MustRemainDisabled(
             extension.get(), &disable_reason, nullptr))
       to_disable[extension->id()] = disable_reason;
@@ -1874,8 +1893,7 @@ int ExtensionService::GetDisableReasonsOnInstalled(const Extension* extension) {
         existing_extension &&
         existing_extension->manifest()->type() == extension->manifest()->type();
   }
-  extensions::disable_reason::DisableReason disable_reason =
-      extensions::disable_reason::DISABLE_NONE;
+  DisableReason disable_reason = DisableReason::DISABLE_NONE;
   // Extensions disabled by management policy should always be disabled, even
   // if it's force-installed.
   if (system_->management_policy()->MustRemainDisabled(
