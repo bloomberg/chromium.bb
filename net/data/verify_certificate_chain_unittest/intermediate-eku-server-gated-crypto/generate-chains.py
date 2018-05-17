@@ -11,6 +11,10 @@ sys.path += ['../..']
 
 import gencerts
 
+# TODO(eroman): Update the defaults to be unexpired instead of explicitly
+# setting in this test (which is being used by cert_verify_proc_unittest.cc).
+gencerts.set_default_validity_range('180101120000Z', '240101120000Z')
+
 def generate_chain(intermediate_digest_algorithm):
   # Self-signed root certificate.
   root = gencerts.create_self_signed_root_certificate('Root')
@@ -25,6 +29,9 @@ def generate_chain(intermediate_digest_algorithm):
   target = gencerts.create_end_entity_certificate('Target', intermediate)
   target.get_extensions().set_property('extendedKeyUsage',
                                    'serverAuth,clientAuth')
+  # TODO(eroman): Set subjectAltName by default rather than specifically in
+  # this test.
+  target.get_extensions().set_property('subjectAltName', 'DNS:test.example')
 
   chain = [target, intermediate, root]
   gencerts.write_chain(__doc__, chain,

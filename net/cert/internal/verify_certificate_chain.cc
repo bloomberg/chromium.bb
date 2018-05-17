@@ -178,15 +178,38 @@ void VerifyExtendedKeyUsage(const ParsedCertificate& cert,
           return;
       }
 
-      // Add a warning if the certificate contains Netscape Server Gated Crypto.
+      // Check if the certificate contains Netscape Server Gated Crypto.
       // nsSGC is a deprecated mechanism, and not part of RFC 5280's
       // profile. Some unexpired certificate chains still rely on it though
-      // (there are intermediates valid until 2020 that use it). See
-      // crbug.com/733403 for details.
+      // (there are intermediates valid until 2020 that use it).
+      bool has_nsgc = false;
+
       for (const auto& key_purpose_oid : cert.extended_key_usage()) {
         if (key_purpose_oid == NetscapeServerGatedCrypto()) {
-          errors->AddWarning(cert_errors::kEkuLacksServerAuthButHasGatedCrypto);
+          has_nsgc = true;
           break;
+        }
+      }
+
+      if (has_nsgc) {
+        errors->AddWarning(cert_errors::kEkuLacksServerAuthButHasGatedCrypto);
+
+        // Allow NSGC for legacy RSA SHA1 intermediates, for compatibility with
+        // platform verifiers.
+        //
+        // In practice the chain will be rejected with or without this
+        // compatibility hack. The difference is whether the final error will be
+        // ERR_CERT_WEAK_SIGNATURE_ALGORITHM  (with compatibility hack) vs
+        // ERR_CERT_INVALID (without hack).
+        //
+        // TODO(https://crbug.com/843735): Remove this once error-for-error
+        // equivalence between builtin verifier and platform verifier is less
+        // important.
+        if ((cert.has_basic_constraints() && cert.basic_constraints().is_ca) &&
+            (cert.signature_algorithm().algorithm() ==
+             SignatureAlgorithmId::RsaPkcs1) &&
+            (cert.signature_algorithm().digest() == DigestAlgorithm::Sha1)) {
+          return;
         }
       }
 

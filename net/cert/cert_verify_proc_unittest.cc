@@ -200,6 +200,20 @@ bool ScopedTestRootCanTrustTargetCert(CertVerifyProcType verify_proc_type) {
          verify_proc_type == CERT_VERIFY_PROC_ANDROID;
 }
 
+// TODO(crbug.com/649017): This is not parameterized by the CertVerifyProc
+// because the CertVerifyProc::Verify() does this unconditionally based on the
+// platform.
+bool AreSHA1IntermediatesAllowed() {
+#if defined(OS_WIN)
+  // TODO(rsleevi): Remove this once https://crbug.com/588789 is resolved
+  // for Windows 7/2008 users.
+  // Note: This must be kept in sync with cert_verify_proc.cc
+  return base::win::GetVersion() < base::win::VERSION_WIN8;
+#else
+  return false;
+#endif
+}
+
 }  // namespace
 
 // This fixture is for tests that apply to concrete implementations of
@@ -1350,6 +1364,44 @@ TEST_P(CertVerifyProcInternalTest, WrongKeyPurpose) {
   }
 }
 
+// Tests that a Netscape Server Gated crypto is accepted in place of a
+// serverAuth EKU.
+// TODO(crbug.com/843735): Deprecate support for this.
+TEST_P(CertVerifyProcInternalTest, Sha1IntermediateUsesServerGatedCrypto) {
+  base::FilePath certs_dir =
+      GetTestNetDataDirectory()
+          .AppendASCII("verify_certificate_chain_unittest")
+          .AppendASCII("intermediate-eku-server-gated-crypto");
+
+  scoped_refptr<X509Certificate> cert_chain = CreateCertificateChainFromFile(
+      certs_dir, "sha1-chain.pem", X509Certificate::FORMAT_AUTO);
+
+  ASSERT_TRUE(cert_chain);
+  ASSERT_FALSE(cert_chain->intermediate_buffers().empty());
+
+  auto root = X509Certificate::CreateFromBuffer(
+      x509_util::DupCryptoBuffer(
+          cert_chain->intermediate_buffers().back().get()),
+      {});
+
+  ScopedTestRoot scoped_root(root.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = Verify(cert_chain.get(), "test.example", flags, NULL,
+                     CertificateList(), &verify_result);
+
+  if (AreSHA1IntermediatesAllowed()) {
+    EXPECT_THAT(error, IsOk());
+    EXPECT_EQ(CERT_STATUS_SHA1_SIGNATURE_PRESENT, verify_result.cert_status);
+  } else {
+    EXPECT_THAT(error, IsError(ERR_CERT_WEAK_SIGNATURE_ALGORITHM));
+    EXPECT_EQ(CERT_STATUS_WEAK_SIGNATURE_ALGORITHM |
+                  CERT_STATUS_SHA1_SIGNATURE_PRESENT,
+              verify_result.cert_status);
+  }
+}
+
 // Basic test for returning the chain in CertVerifyResult. Note that the
 // returned chain may just be a reflection of the originally supplied chain;
 // that is, if any errors occur, the default chain returned is an exact copy
@@ -2068,20 +2120,6 @@ TEST_P(CertVerifyProcInternalTest, CRLSetDuringPathBuilding) {
         << "; Got: " << intermediate->subject().common_name << " issued by "
         << intermediate->issuer().common_name;
   }
-}
-
-// TODO(crbug.com/649017): This is not parameterized by the CertVerifyProc
-// because the CertVerifyProc::Verify() does this unconditionally based on the
-// platform.
-bool AreSHA1IntermediatesAllowed() {
-#if defined(OS_WIN)
-  // TODO(rsleevi): Remove this once https://crbug.com/588789 is resolved
-  // for Windows 7/2008 users.
-  // Note: This must be kept in sync with cert_verify_proc.cc
-  return base::win::GetVersion() < base::win::VERSION_WIN8;
-#else
-  return false;
-#endif
 }
 
 TEST(CertVerifyProcTest, RejectsMD2) {
