@@ -51,7 +51,6 @@ class CONTENT_EXPORT WebGraphicsContext3DProviderImpl
   void SetLostContextCallback(base::RepeatingClosure) override;
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)>) override;
-  void SignalQuery(uint32_t, base::OnceClosure) override;
   cc::ImageDecodeCache* ImageDecodeCache() override;
 
   ui::ContextProviderCommandBuffer* context_provider() const {

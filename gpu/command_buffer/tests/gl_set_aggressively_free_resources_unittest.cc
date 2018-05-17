@@ -133,15 +133,6 @@ TEST_F(SetAggressivelyFreeResourcesTest, FreeAllMemory) {
   memcpy(data, kData, sizeof(kData));
   glUnmapBufferSubDataCHROMIUM(data);
 
-  if (context_type_ == CONTEXT_TYPE_OPENGLES3) {
-    data = gl_.gles2_implementation()->GetBufferSubDataAsyncCHROMIUM(
-        GL_ARRAY_BUFFER, 0, sizeof(kData));
-    gl_.gles2_implementation()->FreeSharedMemory(data);
-  } else {
-    LOG(ERROR) << "Skip testing of GetBufferSubDataAsyncCHROMIUM because ES3 "
-               << "is not supported";
-  }
-
   glEndQueryEXT(GL_COMMANDS_ISSUED_CHROMIUM);
   glDeleteQueriesEXT(1, &query);
 

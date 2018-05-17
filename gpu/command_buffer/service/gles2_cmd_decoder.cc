@@ -12717,58 +12717,6 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocation(
     c.program, c.location_shm_id, c.location_shm_offset, name_str);
 }
 
-error::Error GLES2DecoderImpl::HandleGetBufferSubDataAsyncCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context()) {
-    return error::kUnknownCommand;
-  }
-  const volatile gles2::cmds::GetBufferSubDataAsyncCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::GetBufferSubDataAsyncCHROMIUM*>(
-          cmd_data);
-  GLenum target = static_cast<GLenum>(c.target);
-  GLintptr offset = static_cast<GLintptr>(c.offset);
-  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  uint32_t data_shm_id = static_cast<uint32_t>(c.data_shm_id);
-
-  int8_t* mem =
-      GetSharedMemoryAs<int8_t*>(data_shm_id, c.data_shm_offset, size);
-  if (!mem) {
-    return error::kOutOfBounds;
-  }
-
-  if (!validators_->buffer_target.IsValid(target)) {
-    return error::kInvalidArguments;
-  }
-
-  Buffer* buffer = buffer_manager()->GetBufferInfoForTarget(&state_, target);
-  if (!buffer) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glGetBufferSubDataAsyncCHROMIUM",
-                       "no buffer bound to target");
-    return error::kNoError;
-  }
-  if (!buffer->CheckRange(offset, size)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glGetBufferSubDataAsyncCHROMIUM",
-                       "invalid range");
-    return error::kNoError;
-  }
-
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glGetBufferSubDataAsyncCHROMIUM");
-
-  void* ptr = api()->glMapBufferRangeFn(target, offset, size, GL_MAP_READ_BIT);
-  if (ptr == nullptr) {
-    return error::kInvalidArguments;
-  }
-  memcpy(mem, ptr, size);
-  api()->glUnmapBufferFn(target);
-
-  GLenum error = LOCAL_PEEK_GL_ERROR("glGetBufferSubDataAsyncCHROMIUM");
-  if (error != GL_NO_ERROR) {
-    return error::kInvalidArguments;
-  }
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::GetUniformLocationHelper(
     GLuint client_id,
     uint32_t location_shm_id,

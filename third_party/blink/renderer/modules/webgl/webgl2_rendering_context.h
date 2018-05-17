@@ -69,7 +69,6 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
   Member<WebGLCompressedTextureS3TCsRGB> webgl_compressed_texture_s3tc_srgb_;
   Member<WebGLDebugRendererInfo> webgl_debug_renderer_info_;
   Member<WebGLDebugShaders> webgl_debug_shaders_;
-  Member<WebGLGetBufferSubDataAsync> webgl_get_buffer_sub_data_async_;
   Member<WebGLLoseContext> webgl_lose_context_;
 };
 

@@ -2362,17 +2362,6 @@ _FUNCTION_INFO = {
     'result': ['GLint'],
     'error_return': -1,
   },
-  'GetBufferSubDataAsyncCHROMIUM': {
-    'type': 'Custom',
-    'data_transfer_methods': ['shm'],
-    'cmd_args': 'GLenumBufferTarget target, GLintptrNotNegative offset, '
-                'GLsizeiptr size, '
-                'uint32_t data_shm_id, uint32_t data_shm_offset',
-    'es3': True,
-    'impl_func': False,
-    'client_test': False,
-    'trace_level': 1,
-  },
   'GetFragDataIndexEXT': {
     'type': 'Custom',
     'data_transfer_methods': ['shm'],

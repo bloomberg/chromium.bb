@@ -177,7 +177,6 @@ class WebGLConformanceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
         'WEBGL_compressed_texture_s3tc_srgb',
         'WEBGL_debug_renderer_info',
         'WEBGL_debug_shaders',
-        'WEBGL_get_buffer_sub_data_async',
         'WEBGL_lose_context',
       ]
 

@@ -1697,12 +1697,6 @@ GLES2ProgramPathFragmentInputGenCHROMIUM(GLuint program,
   gles2::GetGLContext()->ProgramPathFragmentInputGenCHROMIUM(
       program, location, genMode, components, coeffs);
 }
-void* GL_APIENTRY GLES2GetBufferSubDataAsyncCHROMIUM(GLenum target,
-                                                     GLintptr offset,
-                                                     GLsizeiptr size) {
-  return gles2::GetGLContext()->GetBufferSubDataAsyncCHROMIUM(target, offset,
-                                                              size);
-}
 void GL_APIENTRY GLES2CoverageModulationCHROMIUM(GLenum components) {
   gles2::GetGLContext()->CoverageModulationCHROMIUM(components);
 }
@@ -3058,10 +3052,6 @@ extern const NameToFunc g_gles2_function_table[] = {
         "glProgramPathFragmentInputGenCHROMIUM",
         reinterpret_cast<GLES2FunctionPointer>(
             glProgramPathFragmentInputGenCHROMIUM),
-    },
-    {
-        "glGetBufferSubDataAsyncCHROMIUM",
-        reinterpret_cast<GLES2FunctionPointer>(glGetBufferSubDataAsyncCHROMIUM),
     },
     {
         "glCoverageModulationCHROMIUM",

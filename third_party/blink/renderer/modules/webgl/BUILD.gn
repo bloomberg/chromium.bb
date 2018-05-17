@@ -87,8 +87,6 @@ blink_modules_sources("webgl") {
     "webgl_fence_sync.h",
     "webgl_framebuffer.cc",
     "webgl_framebuffer.h",
-    "webgl_get_buffer_sub_data_async.cc",
-    "webgl_get_buffer_sub_data_async.h",
     "webgl_lose_context.cc",
     "webgl_lose_context.h",
     "webgl_object.cc",

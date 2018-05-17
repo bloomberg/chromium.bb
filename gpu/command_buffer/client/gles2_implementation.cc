@@ -1507,54 +1507,6 @@ GLint GLES2Implementation::GetAttribLocation(
   return loc;
 }
 
-void* GLES2Implementation::GetBufferSubDataAsyncCHROMIUM(
-    GLenum target, GLintptr offset, GLsizeiptr size) {
-  const char* name = "glGetBufferSubDataAsyncCHROMIUM";
-  GPU_CLIENT_SINGLE_THREAD_CHECK();
-  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] " << name << "("
-      << GLES2Util::GetStringEnum(target) << ", " << offset << ", "
-      << size << ")");
-  switch (target) {
-    case GL_ARRAY_BUFFER:
-    case GL_ELEMENT_ARRAY_BUFFER:
-    case GL_COPY_READ_BUFFER:
-    case GL_COPY_WRITE_BUFFER:
-    case GL_PIXEL_PACK_BUFFER:
-    case GL_PIXEL_UNPACK_BUFFER:
-    case GL_TRANSFORM_FEEDBACK_BUFFER:
-    case GL_UNIFORM_BUFFER:
-      break;
-    default:
-      SetGLError(GL_INVALID_ENUM, name, "invalid target");
-      return nullptr;
-  }
-
-  GLuint buffer = GetBoundBufferHelper(target);
-  if (buffer == 0) {
-    SetGLError(GL_INVALID_OPERATION, name, "no buffer bound");
-    return nullptr;
-  }
-
-  if (!ValidateSize("glMapBufferRange", size) ||
-      !ValidateOffset("glMapBufferRange", offset)) {
-    SetGLError(GL_INVALID_VALUE, name, "invalid size/offset");
-    return nullptr;
-  }
-
-  int32_t shm_id;
-  unsigned int shm_offset;
-  void* shm_ptr = mapped_memory_->Alloc(size, &shm_id, &shm_offset);
-  if (!shm_ptr) {
-    SetGLError(GL_OUT_OF_MEMORY, name, "out of memory");
-    return nullptr;
-  }
-
-  helper_->GetBufferSubDataAsyncCHROMIUM(target, offset, size,
-      shm_id, shm_offset);
-
-  return shm_ptr;
-}
-
 GLint GLES2Implementation::GetUniformLocationHelper(
     GLuint program, const char* name) {
   typedef cmds::GetUniformLocation::Result Result;

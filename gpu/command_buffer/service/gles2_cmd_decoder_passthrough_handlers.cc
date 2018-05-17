@@ -386,31 +386,6 @@ error::Error GLES2DecoderPassthroughImpl::HandleGetAttribLocation(
   return DoGetAttribLocation(program, name_str.c_str(), location);
 }
 
-error::Error GLES2DecoderPassthroughImpl::HandleGetBufferSubDataAsyncCHROMIUM(
-    uint32_t immediate_data_size,
-    const volatile void* cmd_data) {
-  if (!feature_info_->IsWebGL2OrES3Context()) {
-    return error::kUnknownCommand;
-  }
-  const volatile gles2::cmds::GetBufferSubDataAsyncCHROMIUM& c =
-      *static_cast<const volatile gles2::cmds::GetBufferSubDataAsyncCHROMIUM*>(
-          cmd_data);
-  GLenum target = static_cast<GLenum>(c.target);
-  GLintptr offset = static_cast<GLintptr>(c.offset);
-  GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
-  uint32_t data_shm_id = c.data_shm_id;
-  uint32_t data_shm_offset = c.data_shm_offset;
-
-  uint8_t* mem =
-      GetSharedMemoryAs<uint8_t*>(data_shm_id, data_shm_offset, size);
-  if (!mem) {
-    return error::kOutOfBounds;
-  }
-
-  return DoGetBufferSubDataAsyncCHROMIUM(target, offset, size, mem);
-}
-
-
 error::Error GLES2DecoderPassthroughImpl::HandleGetFragDataLocation(
     uint32_t immediate_data_size,
     const volatile void* cmd_data) {

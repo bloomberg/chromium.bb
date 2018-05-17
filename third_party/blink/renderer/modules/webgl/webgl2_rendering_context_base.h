@@ -16,8 +16,6 @@ class WebGLTexture;
 
 class WebGLActiveInfo;
 class WebGLBuffer;
-class WebGLGetBufferSubDataAsync;
-class WebGLGetBufferSubDataAsyncCallback;
 class WebGLProgram;
 class WebGLQuery;
 class WebGLSampler;
@@ -60,11 +58,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                         MaybeShared<DOMArrayBufferView>,
                         GLuint,
                         GLuint);
-
-  void RegisterGetBufferSubDataAsyncCallback(
-      WebGLGetBufferSubDataAsyncCallback*);
-  void UnregisterGetBufferSubDataAsyncCallback(
-      WebGLGetBufferSubDataAsyncCallback*);
 
   /* Framebuffer objects */
   bool ValidateTexFuncLayer(const char*, GLenum tex_target, GLint layer);
@@ -981,7 +974,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
 
  protected:
   friend class V8WebGL2RenderingContext;
-  friend class WebGLGetBufferSubDataAsync;
   friend class WebGLSync;
 
   WebGL2RenderingContextBase(
@@ -1149,9 +1141,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   GLint pack_skip_rows_;
   GLint unpack_image_height_;
   GLint unpack_skip_images_;
-
-  HeapHashSet<Member<WebGLGetBufferSubDataAsyncCallback>>
-      get_buffer_sub_data_async_callbacks_;
 };
 
 DEFINE_TYPE_CASTS(WebGL2RenderingContextBase,

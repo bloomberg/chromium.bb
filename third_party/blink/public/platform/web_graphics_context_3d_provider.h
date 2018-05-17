@@ -76,7 +76,6 @@ class WebGraphicsContext3DProvider {
   virtual void SetLostContextCallback(base::RepeatingClosure) = 0;
   virtual void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char* msg, int32_t id)>) = 0;
-  virtual void SignalQuery(uint32_t, base::OnceClosure) = 0;
   virtual cc::ImageDecodeCache* ImageDecodeCache() = 0;
 };
 

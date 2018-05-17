@@ -3119,18 +3119,6 @@ void ProgramPathFragmentInputGenCHROMIUM(GLuint program,
   }
 }
 
-void GetBufferSubDataAsyncCHROMIUM(GLenum target,
-                                   GLintptr offset,
-                                   GLsizeiptr size,
-                                   uint32_t data_shm_id,
-                                   uint32_t data_shm_offset) {
-  gles2::cmds::GetBufferSubDataAsyncCHROMIUM* c =
-      GetCmdSpace<gles2::cmds::GetBufferSubDataAsyncCHROMIUM>();
-  if (c) {
-    c->Init(target, offset, size, data_shm_id, data_shm_offset);
-  }
-}
-
 void CoverageModulationCHROMIUM(GLenum components) {
   gles2::cmds::CoverageModulationCHROMIUM* c =
       GetCmdSpace<gles2::cmds::CoverageModulationCHROMIUM>();
