@@ -442,9 +442,8 @@ void MenuController::Run(Widget* parent,
   // If we are already showing, this new menu is being nested. Such as context
   // menus on top of normal menus.
   if (showing_) {
-    // Only support nesting of blocking_run menus, nesting of
-    // blocking/non-blocking shouldn't be needed.
-    DCHECK(blocking_run_);
+    // Nesting (context menus) is not used for drag and drop.
+    DCHECK(!for_drop_);
 
     state_.hot_button = hot_button_;
     hot_button_ = nullptr;
@@ -477,7 +476,7 @@ void MenuController::Run(Widget* parent,
   // Set the selection, which opens the initial menu.
   SetSelection(root, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
 
-  if (!blocking_run_) {
+  if (for_drop_) {
     if (!is_nested_drag) {
       // Start the timer to hide the menu. This is needed as we get no
       // notification when the drag has finished.
@@ -516,7 +515,7 @@ void MenuController::Cancel(ExitType type) {
   // Hide windows immediately.
   SetSelection(NULL, SELECTION_UPDATE_IMMEDIATELY | SELECTION_EXIT);
 
-  if (!blocking_run_) {
+  if (for_drop_) {
     // If we didn't block the caller we need to notify the menu, which
     // triggers deleting us.
     DCHECK(selected);
@@ -607,7 +606,7 @@ bool MenuController::OnMouseDragged(SubmenuView* source,
   MenuPart part = GetMenuPart(source, event.location());
   UpdateScrolling(part);
 
-  if (!blocking_run_)
+  if (for_drop_)
     return false;
 
   if (possible_drag_) {
@@ -664,12 +663,11 @@ void MenuController::OnMouseReleased(SubmenuView* source,
     return;
   }
 
-  if (!blocking_run_)
+  if (for_drop_)
     return;
 
   DCHECK(state_.item);
   possible_drag_ = false;
-  DCHECK(blocking_run_);
   MenuPart part = GetMenuPart(source, event.location());
   if (event.IsRightMouseButton() && part.type == MenuPart::MENU_ITEM) {
     MenuItemView* menu = part.menu;
@@ -1004,7 +1002,7 @@ int MenuController::OnPerformDrop(SubmenuView* source,
   if (drop_target->id() == MenuItemView::kEmptyMenuItemViewID)
     drop_target = drop_target->GetParentMenuItem();
 
-  if (!IsBlockingRun()) {
+  if (for_drop_) {
     delegate_->OnMenuClosed(
         internal::MenuControllerDelegate::DONT_NOTIFY_DELEGATE,
         item->GetRootMenuItem(), accept_event_flags_);
@@ -1232,7 +1230,7 @@ void MenuController::SetSelection(MenuItemView* menu_item,
 
 void MenuController::SetSelectionOnPointerDown(SubmenuView* source,
                                                const ui::LocatedEvent* event) {
-  if (!blocking_run_)
+  if (for_drop_)
     return;
 
   DCHECK(!active_mouse_view_tracker_->view());
@@ -1315,7 +1313,7 @@ void MenuController::StartDrag(SubmenuView* source,
 
 void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
   // Do not process while performing drag-and-drop
-  if (!blocking_run_)
+  if (for_drop_)
     return;
 
   switch (key_code) {
@@ -1422,9 +1420,9 @@ void MenuController::OnKeyDown(ui::KeyboardCode key_code) {
   }
 }
 
-MenuController::MenuController(bool blocking,
+MenuController::MenuController(bool for_drop,
                                internal::MenuControllerDelegate* delegate)
-    : blocking_run_(blocking),
+    : for_drop_(for_drop),
       active_mouse_view_tracker_(std::make_unique<ViewTracker>()),
       delegate_(delegate) {
   delegate_stack_.push_back(delegate_);
@@ -1503,7 +1501,7 @@ void MenuController::Accept(MenuItemView* item, int event_flags) {
 }
 
 void MenuController::ReallyAccept(MenuItemView* item, int event_flags) {
-  DCHECK(IsBlockingRun());
+  DCHECK(!for_drop_);
   result_ = item;
 #if defined(OS_MACOSX)
   // Reset the closure animation since it's now finished - this also unblocks
@@ -1879,7 +1877,7 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
       CalculateBubbleMenuBounds(item, prefer_leading, &resulting_direction) :
       CalculateMenuBounds(item, prefer_leading, &resulting_direction);
   state_.open_leading.push_back(resulting_direction);
-  bool do_capture = (!did_capture_ && blocking_run_);
+  bool do_capture = (!did_capture_ && !for_drop_);
   showing_submenu_ = true;
   if (show) {
     // Menus are the only place using kGroupingPropertyKey, so any value (other
@@ -2485,8 +2483,8 @@ void MenuController::AcceptOrSelect(MenuItemView* parent,
 }
 
 void MenuController::SelectByChar(base::char16 character) {
-  // Do not process while performing drag-and-drop
-  if (!blocking_run_)
+  // Do not process while performing drag-and-drop.
+  if (for_drop_)
     return;
   if (!character)
     return;
@@ -2802,7 +2800,7 @@ void MenuController::HandleMouseLocation(SubmenuView* source,
 
   UpdateScrolling(part);
 
-  if (!blocking_run_)
+  if (for_drop_)
     return;
 
   if (part.type == MenuPart::NONE && ShowSiblingMenu(source, mouse_location))
