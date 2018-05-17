@@ -3867,6 +3867,9 @@ void RenderProcessHostImpl::ResetIPC() {
   associated_interface_provider_bindings_.CloseAllBindings();
   associated_interfaces_.reset();
 
+  // Destroy all embedded CompositorFrameSinks.
+  embedded_frame_sink_provider_.reset();
+
   // If RenderProcessHostImpl is reused, the next renderer will send a new
   // request for FrameSinkProvider so make sure frame_sink_provider_ is ready
   // for that.
