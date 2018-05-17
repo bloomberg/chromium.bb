@@ -4216,6 +4216,7 @@ test("unit_tests") {
       sources += [
         "../browser/conflicts/incompatible_applications_updater_win_unittest.cc",
         "../browser/conflicts/installed_applications_win_unittest.cc",
+        "../browser/conflicts/module_blacklist_cache_util_win_unittest.cc",
         "../browser/conflicts/module_list_filter_win_unittest.cc",
         "../browser/conflicts/registry_key_watcher_win_unittest.cc",
         "../browser/google/google_update_win_unittest.cc",

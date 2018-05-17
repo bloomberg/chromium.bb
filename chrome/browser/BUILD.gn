@@ -3009,6 +3009,7 @@ jumbo_split_static_library("browser") {
     if (is_chrome_branded) {
       deps += [
         ":conflicts_module_list_proto",
+        "//chrome_elf:third_party_shared_defines",
         "//google_update",
       ]
       libs += [ "msi.lib" ]
@@ -3019,6 +3020,8 @@ jumbo_split_static_library("browser") {
         "conflicts/incompatible_applications_updater_win.h",
         "conflicts/installed_applications_win.cc",
         "conflicts/installed_applications_win.h",
+        "conflicts/module_blacklist_cache_util_win.cc",
+        "conflicts/module_blacklist_cache_util_win.h",
         "conflicts/module_list_filter_win.cc",
         "conflicts/module_list_filter_win.h",
         "conflicts/msi_util_win.cc",
