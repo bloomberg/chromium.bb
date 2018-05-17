@@ -50,6 +50,9 @@ class EnterpriseEnrollmentHelperImpl : public EnterpriseEnrollmentHelper {
   FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentTest,
                            TestAttributePromptPageGetsLoaded);
 
+  // Checks if license type selection should be performed during enrollment.
+  bool ShouldCheckLicenseType() const;
+
   void DoEnroll(const std::string& token);
 
   // Handles completion of the OAuth2 token fetch attempt.
