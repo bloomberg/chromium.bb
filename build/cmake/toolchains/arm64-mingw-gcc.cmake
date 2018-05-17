@@ -22,6 +22,8 @@ endif()
 
 set(CMAKE_C_COMPILER ${CROSS}gcc)
 set(CMAKE_CXX_COMPILER ${CROSS}g++)
+set(CMAKE_AR ${CROSS}ar CACHE FILEPATH Archiver)
+set(CMAKE_RANLIB ${CROSS}ranlib CACHE FILEPATH Indexer)
 
 # No runtime cpu detect for arm64-mingw-gcc.
 set(CONFIG_RUNTIME_CPU_DETECT 0 CACHE NUMBER "")

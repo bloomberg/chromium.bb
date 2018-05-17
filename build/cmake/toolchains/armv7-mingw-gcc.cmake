@@ -22,6 +22,8 @@ endif()
 
 set(CMAKE_C_COMPILER ${CROSS}gcc)
 set(CMAKE_CXX_COMPILER ${CROSS}g++)
+set(CMAKE_AR ${CROSS}ar CACHE FILEPATH Archiver)
+set(CMAKE_RANLIB ${CROSS}ranlib CACHE FILEPATH Indexer)
 
 # Assembler sources must be converted for armv7-mingw-gcc targets.
 set(AOM_ADS2GAS_REQUIRED 1)
