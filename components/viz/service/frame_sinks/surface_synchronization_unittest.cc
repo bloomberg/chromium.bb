@@ -863,6 +863,63 @@ TEST_F(SurfaceSynchronizationTest, DropStaleReferencesAfterActivation) {
   EXPECT_THAT(GetChildReferences(parent_id), IsEmpty());
 }
 
+// Verifies that LatencyInfo does not get too large after multiple resizes.
+TEST_F(SurfaceSynchronizationTest, LimitLatencyInfo) {
+  const SurfaceId parent_id1 = MakeSurfaceId(kParentFrameSink, 1);
+  const SurfaceId parent_id2 = MakeSurfaceId(kParentFrameSink, 2);
+  const ui::LatencyComponentType latency_type1 =
+      ui::BROWSER_SNAPSHOT_FRAME_NUMBER_COMPONENT;
+  const int64_t latency_id1 = 234;
+  const int64_t latency_sequence_number1 = 5645432;
+  const ui::LatencyComponentType latency_type2 = ui::TAB_SHOW_COMPONENT;
+  const int64_t latency_id2 = 31434351;
+  const int64_t latency_sequence_number2 = 663788;
+
+  // Submit a frame with latency info
+  ui::LatencyInfo info;
+  info.AddLatencyNumber(latency_type1, latency_id1, latency_sequence_number1);
+
+  CompositorFrameBuilder builder;
+  builder.AddDefaultRenderPass();
+  for (int i = 0; i < 60; ++i)
+    builder.AddLatencyInfo(info);
+  CompositorFrame frame = builder.Build();
+
+  parent_support().SubmitCompositorFrame(parent_id1.local_surface_id(),
+                                         std::move(frame));
+
+  // Verify that the old surface has an active frame and no pending frame.
+  Surface* old_surface = GetSurfaceForId(parent_id1);
+  ASSERT_NE(nullptr, old_surface);
+  EXPECT_TRUE(old_surface->HasActiveFrame());
+  EXPECT_FALSE(old_surface->HasPendingFrame());
+
+  // Submit another frame with some other latency info and a different
+  // LocalSurfaceId.
+  ui::LatencyInfo info2;
+  info2.AddLatencyNumber(latency_type2, latency_id2, latency_sequence_number2);
+
+  builder.AddDefaultRenderPass();
+  for (int i = 0; i < 60; ++i)
+    builder.AddLatencyInfo(info);
+  CompositorFrame frame2 = builder.Build();
+
+  parent_support().SubmitCompositorFrame(parent_id2.local_surface_id(),
+                                         std::move(frame2));
+
+  // Verify that the new surface has an active frame and no pending frames.
+  Surface* surface = GetSurfaceForId(parent_id2);
+  ASSERT_NE(nullptr, surface);
+  EXPECT_TRUE(surface->HasActiveFrame());
+  EXPECT_FALSE(surface->HasPendingFrame());
+
+  // Verify that the new surface has no latency info objects because it grew
+  // too large.
+  std::vector<ui::LatencyInfo> info_list;
+  surface->TakeLatencyInfo(&info_list);
+  EXPECT_EQ(0u, info_list.size());
+}
+
 // Checks whether the latency info are moved to the new surface from the old
 // one when LocalSurfaceId changes. No frame has unresolved dependencies.
 TEST_F(SurfaceSynchronizationTest,
