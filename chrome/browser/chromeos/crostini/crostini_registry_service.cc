@@ -448,7 +448,7 @@ void CrostiniRegistryService::MaybeRequestIcon(const std::string& app_id,
     }
   }
   const auto retry_iter = retry_icon_requests_.find(app_id);
-  if (retry_iter != active_icon_requests_.end()) {
+  if (retry_iter != retry_icon_requests_.end()) {
     if (retry_iter->second & (1 << scale_factor)) {
       // Icon request already setup to be retried when we are active.
       return;
