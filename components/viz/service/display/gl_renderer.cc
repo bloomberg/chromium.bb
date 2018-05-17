@@ -2059,30 +2059,38 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
           ? UV_TEXTURE_MODE_UV
           : UV_TEXTURE_MODE_U_V;
 
-  // TODO(ccameron): There are currently three sources of the color space: the
-  // resource, quad->color_space, and quad->video_color_space. Remove two of
-  // them.
-  gfx::ColorSpace src_color_space = quad->video_color_space;
-  gfx::ColorSpace dst_color_space =
-      current_frame()->current_render_pass->color_space;
   cc::DisplayResourceProvider::ScopedSamplerGL y_plane_lock(
       resource_provider_, quad->y_plane_resource_id(), GL_TEXTURE1, GL_LINEAR);
   cc::DisplayResourceProvider::ScopedSamplerGL u_plane_lock(
       resource_provider_, quad->u_plane_resource_id(), GL_TEXTURE2, GL_LINEAR);
   DCHECK_EQ(y_plane_lock.target(), u_plane_lock.target());
   DCHECK_EQ(y_plane_lock.color_space(), u_plane_lock.color_space());
-  // TODO(jbauman): Use base::Optional when available.
-  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL> v_plane_lock;
 
+  // TODO(ccameron): There are currently three sources of the color space: the
+  // resource, quad->color_space, and quad->video_color_space. Remove two of
+  // them.
+  gfx::ColorSpace src_color_space = quad->video_color_space;
   // Invalid or unspecified color spaces should be treated as REC709.
   if (!src_color_space.IsValid())
     src_color_space = gfx::ColorSpace::CreateREC709();
   else
     DCHECK_EQ(src_color_space, y_plane_lock.color_space());
-
   // The source color space should never be RGB.
   DCHECK_NE(src_color_space, src_color_space.GetAsFullRangeRGB());
 
+  gfx::ColorSpace dst_color_space =
+      current_frame()->current_render_pass->color_space;
+  // Force sRGB output on Windows for overlay candidate video quads to match
+  // DirectComposition behavior in case these switch between overlays and
+  // compositing. See https://crbug.com/811118 for details.
+  if (supports_dc_layers_ &&
+      resource_provider_->IsOverlayCandidate(quad->y_plane_resource_id())) {
+    DCHECK(resource_provider_->IsOverlayCandidate(quad->u_plane_resource_id()));
+    dst_color_space = gfx::ColorSpace::CreateSRGB();
+  }
+
+  // TODO(jbauman): Use base::Optional when available.
+  std::unique_ptr<cc::DisplayResourceProvider::ScopedSamplerGL> v_plane_lock;
   if (uv_texture_mode == UV_TEXTURE_MODE_U_V) {
     v_plane_lock.reset(new cc::DisplayResourceProvider::ScopedSamplerGL(
         resource_provider_, quad->v_plane_resource_id(), GL_TEXTURE3,
