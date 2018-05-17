@@ -32,6 +32,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)
+#include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_location_dialog_bridge.h"
 #endif
 
@@ -146,6 +147,12 @@ class ChromeDownloadManagerDelegate
                         const CheckDownloadUrlCallback& callback) override;
   void GetFileMimeType(const base::FilePath& path,
                        const GetFileMimeTypeCallback& callback) override;
+
+#if defined(OS_ANDROID)
+  virtual void OnDownloadCanceled(
+      download::DownloadItem* download,
+      DownloadController::DownloadCancelReason reason);
+#endif
 
   // So that test classes that inherit from this for override purposes
   // can call back into the DownloadManager.

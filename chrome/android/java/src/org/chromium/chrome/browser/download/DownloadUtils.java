@@ -31,6 +31,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.download.ui.BackendProvider;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
@@ -52,7 +53,9 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
+import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.FailState;
+import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemProgressUnit;
@@ -538,6 +541,22 @@ public class DownloadUtils {
         StrictMode.setThreadPolicy(oldPolicy);
 
         return uri;
+    }
+
+    /**
+     * Utility method to open an {@link OfflineItem}, which can be a chrome download, offline page.
+     * Falls back to open download home.
+     * @param contentId The {@link ContentId} of the associated offline item.
+     */
+    public static void openItem(ContentId contentId, boolean isOffTheRecord,
+            @DownloadMetrics.DownloadOpenSource int source) {
+        if (LegacyHelpers.isLegacyOfflinePage(contentId)) {
+            OfflineContentAggregatorFactory.forProfile(Profile.getLastUsedProfile())
+                    .openItem(contentId);
+        } else {
+            DownloadManagerService.getDownloadManagerService().openDownload(
+                    contentId, isOffTheRecord, source);
+        }
     }
 
     /**

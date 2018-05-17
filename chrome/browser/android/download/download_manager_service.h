@@ -46,6 +46,13 @@ class DownloadManagerService
   // Called to Initialize this object.
   void Init(JNIEnv* env, jobject obj);
 
+  // Called to open a download item whose GUID is equal to |jdownload_guid|.
+  void OpenDownload(JNIEnv* env,
+                    jobject obj,
+                    const JavaParamRef<jstring>& jdownload_guid,
+                    bool is_off_the_record,
+                    jint source);
+
   // Called to resume downloading the item that has GUID equal to
   // |jdownload_guid|..
   void ResumeDownload(JNIEnv* env,

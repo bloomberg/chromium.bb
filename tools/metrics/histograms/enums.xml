@@ -697,6 +697,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="INFO_BAR"/>
   <int value="6" label="SNACK_BAR"/>
   <int value="7" label="AUTO_OPEN"/>
+  <int value="8" label="DOWNLOAD_PROGRESS_INFO_BAR"/>
 </enum>
 
 <enum name="AndroidEvictionReason">
@@ -27449,6 +27450,7 @@ from previous Chrome versions.
   <int value="125581289" label="WebRtcHWVP8Encoding:disabled"/>
   <int value="125934378" label="enable-password-link"/>
   <int value="131881947" label="D3DVsync:enabled"/>
+  <int value="143725809" label="DownloadProgressInfoBar:enabled"/>
   <int value="147342055" label="ChromeHomeClearUrlOnOpen:disabled"/>
   <int value="147373243" label="enable-deferred-image-decoding"/>
   <int value="151101719" label="HtmlBaseUsernameDetector:enabled"/>
@@ -27753,6 +27755,7 @@ from previous Chrome versions.
   <int value="867512869" label="mark-non-secure-as"/>
   <int value="868009556" label="AutofillUpstream:enabled"/>
   <int value="869531646" label="enable-session-crashed-bubble"/>
+  <int value="870664435" label="DownloadProgressInfoBar:disabled"/>
   <int value="871713352" label="ImprovedLanguageSettings:enabled"/>
   <int value="876879670" label="OfflinePagesInDownloadHomeOpenInCct:enabled"/>
   <int value="878773995" label="ChromeHomeBottomNavLabels:disabled"/>

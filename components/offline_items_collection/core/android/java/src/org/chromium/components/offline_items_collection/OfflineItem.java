@@ -73,6 +73,7 @@ public class OfflineItem {
     public int filter;
     public boolean isTransient;
     public boolean isSuggested;
+    public boolean isAccelerated;
 
     // Content Metadata.
     public long totalSizeBytes;
