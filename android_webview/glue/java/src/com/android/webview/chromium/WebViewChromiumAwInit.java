@@ -43,6 +43,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
+import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -176,6 +177,10 @@ public class WebViewChromiumAwInit {
                     });
 
             mStarted = true;
+
+            // Make sure to record any cached metrics, now that we know that the native
+            // library has been loaded and initialized.
+            CachedMetrics.commitCachedMetrics();
 
             RecordHistogram.recordSparseSlowlyHistogram("Android.WebView.TargetSdkVersion",
                     context.getApplicationInfo().targetSdkVersion);
