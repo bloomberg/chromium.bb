@@ -61,6 +61,9 @@ To import a new snapshot of wayland-protocols:
     wayland-scanner code < unstable/keyboard/keyboard-extension-unstable-v1.xml > protocol/keyboard-extension-protocol.c
     wayland-scanner server-header < unstable/keyboard/keyboard-extension-unstable-v1.xml > include/protocol/keyboard-extension-unstable-v1-server-protocol.h
     wayland-scanner client-header < unstable/keyboard/keyboard-extension-unstable-v1.xml > include/protocol/keyboard-extension-unstable-v1-client-protocol.h
+    wayland-scanner code < unstable/cursor-shapes/cursor-shapes-unstable-v1.xml > protocol/cursor-shapes-protocol.c
+    wayland-scanner server-header < unstable/cursor-shapes/cursor-shapes-unstable-v1.xml > include/protocol/cursor-shapes-unstable-v1-server-protocol.h
+    wayland-scanner client-header < unstable/cursor-shapes/cursor-shapes-unstable-v1.xml > include/protocol/cursor-shapes-unstable-v1-client-protocol.h
     wayland-scanner code < src/unstable/pointer-gestures/pointer-gestures-unstable-v1.xml > protocol/pointer-gestures-v1-protocol.c
     wayland-scanner client-header < src/unstable/pointer-gestures/pointer-gestures-unstable-v1.xml > include/protocol/pointer-gestures-unstable-v1-client-protocol.h
     wayland-scanner server-header < src/unstable/pointer-gestures/pointer-gestures-unstable-v1.xml > include/protocol/pointer-gestures-unstable-v1-server-protocol.h

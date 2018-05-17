@@ -131,6 +131,8 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
     }
     UpdatePointerSurface(surface);
     cursor_changed = true;
+  } else if (!surface && cursor_ != ui::CursorType::kNone) {
+    cursor_changed = true;
   }
 
   if (hotspot != hotspot_) {
@@ -146,12 +148,24 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
   // snapshot of cursor, otherwise cancel pending capture and immediately set
   // the cursor to "none".
   if (root_surface()) {
+    cursor_ = ui::CursorType::kCustom;
     CaptureCursor(hotspot);
   } else {
+    cursor_ = ui::CursorType::kNone;
     cursor_bitmap_.reset();
     cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
     UpdateCursor();
   }
+}
+
+void Pointer::SetCursorType(ui::CursorType cursor_type) {
+  if (cursor_ == cursor_type)
+    return;
+  cursor_ = cursor_type;
+  cursor_bitmap_.reset();
+  UpdatePointerSurface(nullptr);
+  cursor_capture_weak_ptr_factory_.InvalidateWeakPtrs();
+  UpdateCursor();
 }
 
 void Pointer::SetGesturePinchDelegate(PointerGesturePinchDelegate* delegate) {
@@ -446,9 +460,7 @@ void Pointer::UpdateCursor() {
   auto* helper = WMHelper::GetInstance();
   aura::client::CursorClient* cursor_client = helper->GetCursorClient();
 
-  if (cursor_bitmap_.drawsNothing()) {
-    cursor_ = ui::CursorType::kNone;
-  } else {
+  if (cursor_ == ui::CursorType::kCustom) {
     SkBitmap bitmap = cursor_bitmap_;
     gfx::Point hotspot =
         gfx::ScaleToFlooredPoint(cursor_hotspot_, capture_ratio_);
@@ -468,14 +480,14 @@ void Pointer::UpdateCursor() {
     ui::PlatformCursor platform_cursor;
 #if defined(USE_OZONE)
     // TODO(reveman): Add interface for creating cursors from GpuMemoryBuffers
-    // and use that here instead of the current bitmap API. crbug.com/686600
+    // and use that here instead of the current bitmap API.
+    // https://crbug.com/686600
     platform_cursor = ui::CursorFactoryOzone::GetInstance()->CreateImageCursor(
         bitmap, hotspot, 0);
 #elif defined(USE_X11)
     XcursorImage* image = ui::SkBitmapToXcursorImage(&bitmap, hotspot);
     platform_cursor = ui::CreateReffedCustomXCursor(image);
 #endif
-    cursor_ = ui::CursorType::kCustom;
     cursor_.SetPlatformCursor(platform_cursor);
     cursor_.set_custom_bitmap(bitmap);
     cursor_.set_custom_hotspot(hotspot);
