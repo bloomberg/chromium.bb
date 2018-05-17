@@ -108,7 +108,10 @@ if(NOT BUILD_SHARED_LIBS)
         "${AOM_ROOT}/test/cdef_test.cc" "${AOM_ROOT}/test/intrabc_test.cc"
         "${AOM_ROOT}/test/intrapred_test.cc" "${AOM_ROOT}/test/lpf_test.cc"
         "${AOM_ROOT}/test/onyxc_int_test.cc" "${AOM_ROOT}/test/scan_test.cc"
-        "${AOM_ROOT}/test/simd_cmp_impl.h")
+        "${AOM_ROOT}/test/simd_cmp_impl.h"
+        "${AOM_ROOT}/test/hiprec_convolve_test.cc"
+        "${AOM_ROOT}/test/hiprec_convolve_test_util.cc"
+        "${AOM_ROOT}/test/hiprec_convolve_test_util.h")
 
     set(AOM_UNIT_TEST_ENCODER_SOURCES ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/motion_vector_test.cc")
@@ -123,13 +126,6 @@ if(NOT BUILD_SHARED_LIBS)
 
     set(AOM_UNIT_TEST_COMMON_SOURCES ${AOM_UNIT_TEST_COMMON_SOURCES}
         "${AOM_ROOT}/test/selfguided_filter_test.cc")
-
-    if(HAVE_SSE2)
-      set(AOM_UNIT_TEST_COMMON_SOURCES ${AOM_UNIT_TEST_COMMON_SOURCES}
-          "${AOM_ROOT}/test/hiprec_convolve_test.cc"
-          "${AOM_ROOT}/test/hiprec_convolve_test_util.cc"
-          "${AOM_ROOT}/test/hiprec_convolve_test_util.h")
-    endif()
 
     set(AOM_UNIT_TEST_ENCODER_SOURCES ${AOM_UNIT_TEST_ENCODER_SOURCES}
         "${AOM_ROOT}/test/encodetxb_test.cc")
