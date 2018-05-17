@@ -682,6 +682,13 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     /**
+     * @return The {@link KeyboardAccessoryCoordinator} that belongs to this activity.
+     */
+    public ManualFillingCoordinator getManualFillingController() {
+        return mManualFillingController;
+    }
+
+    /**
      * @return The resource id for the menu to use in {@link AppMenu}. Default is R.menu.main_menu.
      */
     protected int getAppMenuLayoutId() {
