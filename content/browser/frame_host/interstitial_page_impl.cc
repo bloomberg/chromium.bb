@@ -781,6 +781,11 @@ void InterstitialPageImpl::SetFocusedFrame(FrameTreeNode* node,
   }
 }
 
+Visibility InterstitialPageImpl::GetVisibility() const {
+  // Interstitials always occlude the underlying web content.
+  return Visibility::OCCLUDED;
+}
+
 void InterstitialPageImpl::CreateNewWidget(int32_t render_process_id,
                                            int32_t route_id,
                                            mojom::WidgetPtr widget,

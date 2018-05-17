@@ -17,6 +17,7 @@
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/visibility.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/media_stream_request.h"
 #include "content/public/common/resource_load_info.mojom.h"
@@ -370,6 +371,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   // of the video to be in Picture-in-Picture mode.
   virtual void UpdatePictureInPictureSurfaceId(const viz::SurfaceId& surface_id,
                                                const gfx::Size& natural_size) {}
+
+  // Returns the visibility of the delegate.
+  virtual Visibility GetVisibility() const;
 
  protected:
   virtual ~RenderFrameHostDelegate() {}

@@ -7986,6 +7986,28 @@ Called by update_net_error_codes.py.-->
   <int value="250477278" label="(Delphi exception)"/>
 </enum>
 
+<enum name="CrashVisibility">
+  <summary>
+    This enum describes the timing of a renderer crash in relation to whether a
+    sad frame was visible.  Whether a subframe is &quot;visible&quot; is
+    currently defined as 1) in visible, non-occluded WebContents and 2) with a
+    non-empty viewport intersection rect.
+  </summary>
+  <int value="0" label="CrashedWhileVisible">
+    The renderer crashed while the subframe was visible.
+  </int>
+  <int value="1" label="ShownAfterCrashing">
+    The renderer crashed while the subframe was hidden, but later the frame
+    became visible (the tab was foregrounded, the frame was scrolled into view,
+    the frame was resized, etc.).
+  </int>
+  <int value="2" label="NeverVisibleAfterCrash">
+    The renderer crashed while the subframe was hidden, and the frame was never
+    shown afterwards (e.g. until eventually being discarded when the whole tab
+    is navigated away).
+  </int>
+</enum>
+
 <enum name="CreatePersistentHistogramResult">
   <int value="0" label="Success: Histogram created in persistent space."/>
   <int value="1" label="Error: Invalid metadata pointer. (coding error)"/>

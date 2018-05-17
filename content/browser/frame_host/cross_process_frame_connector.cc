@@ -5,12 +5,14 @@
 #include "content/browser/frame_host/cross_process_frame_connector.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_hittest.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/frame_host/render_frame_host_manager.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/cursor_manager.h"
@@ -44,6 +46,13 @@ CrossProcessFrameConnector::CrossProcessFrameConnector(
 }
 
 CrossProcessFrameConnector::~CrossProcessFrameConnector() {
+  if (!IsVisible()) {
+    // MaybeLogCrash will check 1) if there was a crash or not and 2) if the
+    // crash might have been already logged earlier as kCrashedWhileVisible or
+    // kShownAfterCrashing.
+    MaybeLogCrash(CrashVisibility::kNeverVisibleAfterCrash);
+  }
+
   // Notify the view of this object being destroyed, if the view still exists.
   SetView(nullptr);
 }
@@ -95,6 +104,14 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
   // visibility in case the frame owner is hidden in parent process. We should
   // try to move these updates to a single IPC (see https://crbug.com/750179).
   if (view_) {
+    if (has_crashed_ && !IsVisible()) {
+      // MaybeLogCrash will check 1) if there was a crash or not and 2) if the
+      // crash might have been already logged earlier as kCrashedWhileVisible or
+      // kShownAfterCrashing.
+      MaybeLogCrash(CrashVisibility::kNeverVisibleAfterCrash);
+    }
+    is_crash_already_logged_ = has_crashed_ = false;
+
     view_->SetFrameConnectorDelegate(this);
     if (is_hidden_)
       OnVisibilityChanged(false);
@@ -107,6 +124,21 @@ void CrossProcessFrameConnector::SetView(RenderWidgetHostViewChildFrame* view) {
 }
 
 void CrossProcessFrameConnector::RenderProcessGone() {
+  has_crashed_ = true;
+
+  FrameTreeNode* node = frame_proxy_in_parent_renderer_->frame_tree_node();
+  int process_id = node->current_frame_host()->GetProcess()->GetID();
+  for (node = node->parent(); node; node = node->parent()) {
+    if (node->current_frame_host()->GetProcess()->GetID() == process_id) {
+      // The crash will be already logged by the ancestor - ignore this crash in
+      // the current instance of the CrossProcessFrameConnector.
+      is_crash_already_logged_ = true;
+    }
+  }
+
+  if (IsVisible())
+    MaybeLogCrash(CrashVisibility::kCrashedWhileVisible);
+
   frame_proxy_in_parent_renderer_->Send(new FrameMsg_ChildFrameProcessGone(
       frame_proxy_in_parent_renderer_->GetRoutingID()));
 }
@@ -300,10 +332,23 @@ void CrossProcessFrameConnector::OnUpdateViewportIntersection(
   if (view_)
     view_->UpdateViewportIntersection(viewport_intersection,
                                       compositor_visible_rect);
+
+  if (IsVisible()) {
+    // MaybeLogCrash will check 1) if there was a crash or not and 2) if the
+    // crash might have been already logged earlier as kCrashedWhileVisible or
+    // kShownAfterCrashing.
+    MaybeLogCrash(CrashVisibility::kShownAfterCrashing);
+  }
 }
 
 void CrossProcessFrameConnector::OnVisibilityChanged(bool visible) {
   is_hidden_ = !visible;
+  if (IsVisible()) {
+    // MaybeLogCrash will check 1) if there was a crash or not and 2) if the
+    // crash might have been already logged earlier as kCrashedWhileVisible or
+    // kShownAfterCrashing.
+    MaybeLogCrash(CrashVisibility::kShownAfterCrashing);
+  }
   if (!view_)
     return;
 
@@ -472,6 +517,36 @@ bool CrossProcessFrameConnector::IsThrottled() const {
 
 bool CrossProcessFrameConnector::IsSubtreeThrottled() const {
   return subtree_throttled_;
+}
+
+void CrossProcessFrameConnector::MaybeLogCrash(CrashVisibility visibility) {
+  if (!has_crashed_)
+    return;
+
+  // Only log once per renderer crash.
+  if (is_crash_already_logged_)
+    return;
+  is_crash_already_logged_ = true;
+
+  // Actually log the UMA.
+  UMA_HISTOGRAM_ENUMERATION("Stability.ChildFrameCrash.Visibility", visibility);
+}
+
+bool CrossProcessFrameConnector::IsVisible() {
+  if (is_hidden_)
+    return false;
+  if (viewport_intersection_rect().IsEmpty())
+    return false;
+
+  Visibility embedder_visibility =
+      frame_proxy_in_parent_renderer_->frame_tree_node()
+          ->current_frame_host()
+          ->delegate()
+          ->GetVisibility();
+  if (embedder_visibility != Visibility::VISIBLE)
+    return false;
+
+  return true;
 }
 
 }  // namespace content
