@@ -201,7 +201,7 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
 
   enum {
     kConnectedFrameCountBits = 10,  // Must fit Page::maxNumberOfFrames.
-    kNumberOfElementFlags = 7,
+    kNumberOfElementFlags = 6,
     kNumberOfDynamicRestyleFlags = 14
   };
 

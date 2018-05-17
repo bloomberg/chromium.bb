@@ -42,6 +42,9 @@ class LayoutSVGPath final : public LayoutSVGShape {
   const char* GetName() const override { return "LayoutSVGPath"; }
 
  private:
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
+  void WillBeDestroyed() override;
+
   void UpdateShapeFromElement() override;
   FloatRect HitTestStrokeBoundingBox() const override;
   FloatRect CalculateUpdatedStrokeBoundingBox() const;

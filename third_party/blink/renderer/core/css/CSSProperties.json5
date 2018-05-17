@@ -1949,7 +1949,7 @@
       inherited: true,
       svg: true,
       name_for_methods: "MarkerEndResource",
-      converter: "ConvertFragmentIdentifier",
+      converter: "ConvertElementReference",
       keywords: ["none"],
       typedom_types: ["Keyword"]
     },
@@ -1959,7 +1959,7 @@
       inherited: true,
       svg: true,
       name_for_methods: "MarkerMidResource",
-      converter: "ConvertFragmentIdentifier",
+      converter: "ConvertElementReference",
       keywords: ["none"],
       typedom_types: ["Keyword"]
     },
@@ -1969,7 +1969,7 @@
       inherited: true,
       svg: true,
       name_for_methods: "MarkerStartResource",
-      converter: "ConvertFragmentIdentifier",
+      converter: "ConvertElementReference",
       keywords: ["none"],
       typedom_types: ["Keyword"]
     },
@@ -1978,7 +1978,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       svg: true,
       name_for_methods: "MaskerResource",
-      converter: "ConvertFragmentIdentifier",
+      converter: "ConvertElementReference",
     },
     {
       name: "mask-source-type",

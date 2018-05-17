@@ -6,7 +6,6 @@
 
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
-#include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_resource.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
@@ -33,42 +32,21 @@ LocalSVGResource* SVGTreeScopeResources::ExistingResourceForId(
   return resources_.at(id);
 }
 
-void SVGTreeScopeResources::RemoveUnreferencedResources() {
-  if (resources_.IsEmpty())
-    return;
-  // Remove resources that are no longer referenced.
-  Vector<AtomicString> to_be_removed;
-  for (const auto& entry : resources_) {
-    LocalSVGResource* resource = entry.value.Get();
-    DCHECK(resource);
-    if (resource->IsEmpty()) {
-      resource->Unregister();
-      to_be_removed.push_back(entry.key);
-    }
+void SVGTreeScopeResources::ClearWeakMembers(Visitor*) {
+  // Unregister and remove any resources that are no longer alive.
+  Vector<AtomicString> to_remove;
+  for (auto& resource_entry : resources_) {
+    if (ThreadHeap::IsHeapObjectAlive(resource_entry.value))
+      continue;
+    resource_entry.value->Unregister();
+    to_remove.push_back(resource_entry.key);
   }
-  resources_.RemoveAll(to_be_removed);
+  resources_.RemoveAll(to_remove);
 }
 
-void SVGTreeScopeResources::RemoveWatchesForElement(SVGElement& element) {
-  if (resources_.IsEmpty() || !element.HasPendingResources())
-    return;
-  // Remove the element from pending resources.
-  Vector<AtomicString> to_be_removed;
-  for (const auto& entry : resources_) {
-    LocalSVGResource* resource = entry.value.Get();
-    DCHECK(resource);
-    resource->RemoveWatch(element);
-    if (resource->IsEmpty()) {
-      resource->Unregister();
-      to_be_removed.push_back(entry.key);
-    }
-  }
-  resources_.RemoveAll(to_be_removed);
-
-  element.ClearHasPendingResources();
-}
-
-void SVGTreeScopeResources::Trace(blink::Visitor* visitor) {
+void SVGTreeScopeResources::Trace(Visitor* visitor) {
+  visitor->template RegisterWeakMembers<
+      SVGTreeScopeResources, &SVGTreeScopeResources::ClearWeakMembers>(this);
   visitor->Trace(resources_);
   visitor->Trace(tree_scope_);
 }
