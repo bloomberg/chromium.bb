@@ -1679,10 +1679,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForChild(
     // PositionListMarker() requires a first line baseline.
     if (container_builder_.UnpositionedListMarker()) {
       space_builder.AddBaselineRequest(
-          {NGBaselineAlgorithmType::kFirstLine,
-           IsHorizontalWritingMode(constraint_space_.GetWritingMode())
-               ? kAlphabeticBaseline
-               : kIdeographicBaseline});
+          {NGBaselineAlgorithmType::kFirstLine, Style().GetFontBaseline()});
     }
   }
   space_builder.SetClearanceOffset(clearance_offset);
@@ -1938,8 +1935,9 @@ void NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
       return;
     container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker());
   }
-  if (list_marker.AddToBox(constraint_space_, *layout_result.PhysicalFragment(),
-                           content_offset, &container_builder_))
+  if (list_marker.AddToBox(constraint_space_, Style().GetFontBaseline(),
+                           *layout_result.PhysicalFragment(), content_offset,
+                           &container_builder_))
     return;
 
   // If the list marker could not be positioned against this child because it
@@ -1955,7 +1953,7 @@ void NGBlockLayoutAlgorithm::PositionListMarkerWithoutLineBoxes() {
   // Position the list marker without aligning to line boxes.
   LayoutUnit marker_block_size =
       container_builder_.UnpositionedListMarker().AddToBoxWithoutLineBoxes(
-          constraint_space_, &container_builder_);
+          constraint_space_, Style().GetFontBaseline(), &container_builder_);
   container_builder_.SetUnpositionedListMarker(NGUnpositionedListMarker());
 
   // Whether the list marker should affect the block size or not is not

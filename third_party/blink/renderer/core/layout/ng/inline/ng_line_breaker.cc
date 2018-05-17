@@ -606,6 +606,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
   item_result->layout_result =
       NGBlockNode(ToLayoutBox(item.GetLayoutObject()))
           .LayoutAtomicInline(constraint_space_,
+                              line_info->LineStyle().GetFontBaseline(),
                               line_info->UseFirstLineStyle());
   DCHECK(item_result->layout_result->PhysicalFragment());
 

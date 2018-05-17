@@ -15,6 +15,9 @@ NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style,
   Initialize(font_data->GetFontMetrics(), baseline_type);
 }
 
+NGLineHeightMetrics::NGLineHeightMetrics(const ComputedStyle& style)
+    : NGLineHeightMetrics(style, style.GetFontBaseline()) {}
+
 NGLineHeightMetrics::NGLineHeightMetrics(const FontMetrics& font_metrics,
                                          FontBaseline baseline_type) {
   Initialize(font_metrics, baseline_type);

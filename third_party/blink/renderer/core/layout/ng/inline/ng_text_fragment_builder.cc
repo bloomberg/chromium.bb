@@ -72,11 +72,8 @@ void NGTextFragmentBuilder::SetText(
   end_offset_ = shape_result->EndIndexForResult();
   SetStyle(style, is_ellipsis_style ? NGStyleVariant::kEllipsis
                                     : NGStyleVariant::kStandard);
-  FontBaseline baseline_type = style->IsHorizontalWritingMode()
-                                   ? kAlphabeticBaseline
-                                   : kIdeographicBaseline;
   size_ = {shape_result->SnappedWidth(),
-           NGLineHeightMetrics(*style, baseline_type).LineHeight()};
+           NGLineHeightMetrics(*style).LineHeight()};
   shape_result_ = std::move(shape_result);
   layout_object_ = layout_object;
   end_effect_ = NGTextEndEffect::kNone;

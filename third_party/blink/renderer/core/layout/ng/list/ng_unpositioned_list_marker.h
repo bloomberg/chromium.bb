@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
 namespace blink {
@@ -45,6 +46,7 @@ class CORE_EXPORT NGUnpositionedListMarker final {
   // that the child content does not have a baseline to align to, and that
   // caller should try next child, or "WithoutLineBoxes" version.
   bool AddToBox(const NGConstraintSpace&,
+                FontBaseline,
                 const NGPhysicalFragment& content,
                 NGLogicalOffset* content_offset,
                 NGFragmentBuilder*) const;
@@ -53,13 +55,15 @@ class CORE_EXPORT NGUnpositionedListMarker final {
   // boxes.
   // Returns the block size of the list marker.
   LayoutUnit AddToBoxWithoutLineBoxes(const NGConstraintSpace&,
+                                      FontBaseline,
                                       NGFragmentBuilder*) const;
 
  private:
   bool IsImage() const;
   LayoutUnit InlineOffset(const LayoutUnit marker_inline_size) const;
 
-  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&) const;
+  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
+                                       FontBaseline) const;
 
   LayoutNGListMarker* marker_layout_object_;
 };

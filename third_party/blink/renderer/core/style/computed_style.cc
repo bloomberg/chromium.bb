@@ -1541,6 +1541,16 @@ FontSelectionValue ComputedStyle::GetFontStretch() const {
   return GetFontDescription().Stretch();
 }
 
+FontBaseline ComputedStyle::GetFontBaseline() const {
+  // TODO(kojii): Incorporate 'dominant-baseline' when we support it.
+  // https://www.w3.org/TR/css-inline-3/#dominant-baseline-property
+
+  // Vertical flow (except 'text-orientation: sideways') uses ideographic
+  // baseline. https://drafts.csswg.org/css-writing-modes-3/#intro-baselines
+  return !GetFontDescription().IsVerticalAnyUpright() ? kAlphabeticBaseline
+                                                      : kIdeographicBaseline;
+}
+
 TextDecoration ComputedStyle::TextDecorationsInEffect() const {
   if (HasSimpleUnderlineInternal())
     return TextDecoration::kUnderline;

@@ -41,17 +41,20 @@ LayoutUnit NGUnpositionedListMarker::InlineOffset(
 }
 
 scoped_refptr<NGLayoutResult> NGUnpositionedListMarker::Layout(
-    const NGConstraintSpace& space) const {
+    const NGConstraintSpace& space,
+    FontBaseline baseline_type) const {
   DCHECK(marker_layout_object_);
   NGBlockNode marker_node(marker_layout_object_);
   scoped_refptr<NGLayoutResult> marker_layout_result =
-      marker_node.LayoutAtomicInline(space, space.UseFirstLineStyle());
+      marker_node.LayoutAtomicInline(space, baseline_type,
+                                     space.UseFirstLineStyle());
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   return marker_layout_result;
 }
 
 bool NGUnpositionedListMarker::AddToBox(
     const NGConstraintSpace& space,
+    FontBaseline baseline_type,
     const NGPhysicalFragment& content,
     NGLogicalOffset* content_offset,
     NGFragmentBuilder* container_builder) const {
@@ -60,9 +63,6 @@ bool NGUnpositionedListMarker::AddToBox(
     return false;
 
   // Compute the baseline of the child content.
-  FontBaseline baseline_type = IsHorizontalWritingMode(space.GetWritingMode())
-                                   ? kAlphabeticBaseline
-                                   : kIdeographicBaseline;
   NGLineHeightMetrics content_metrics;
   if (content.IsLineBox()) {
     content_metrics = ToNGPhysicalLineBoxFragment(content).Metrics();
@@ -80,7 +80,8 @@ bool NGUnpositionedListMarker::AddToBox(
   }
 
   // Layout the list marker.
-  scoped_refptr<NGLayoutResult> marker_layout_result = Layout(space);
+  scoped_refptr<NGLayoutResult> marker_layout_result =
+      Layout(space, baseline_type);
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   const NGPhysicalBoxFragment& marker_physical_fragment =
       ToNGPhysicalBoxFragment(*marker_layout_result->PhysicalFragment());
@@ -112,9 +113,11 @@ bool NGUnpositionedListMarker::AddToBox(
 
 LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
     const NGConstraintSpace& space,
+    FontBaseline baseline_type,
     NGFragmentBuilder* container_builder) const {
   // Layout the list marker.
-  scoped_refptr<NGLayoutResult> marker_layout_result = Layout(space);
+  scoped_refptr<NGLayoutResult> marker_layout_result =
+      Layout(space, baseline_type);
   DCHECK(marker_layout_result && marker_layout_result->PhysicalFragment());
   const NGPhysicalBoxFragment& marker_physical_fragment =
       ToNGPhysicalBoxFragment(*marker_layout_result->PhysicalFragment());

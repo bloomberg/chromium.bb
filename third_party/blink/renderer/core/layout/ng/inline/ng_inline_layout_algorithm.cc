@@ -87,12 +87,10 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
           // lays out in visual order.
           TextDirection::kLtr,
           break_token),
+      baseline_type_(container_builder_.Style().GetFontBaseline()),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space.GetWritingMode())) {
   quirks_mode_ = inline_node.InLineHeightQuirksMode();
-
-  if (!is_horizontal_writing_mode_)
-    baseline_type_ = FontBaseline::kIdeographicBaseline;
 }
 
 NGInlineBoxState* NGInlineLayoutAlgorithm::HandleOpenTag(

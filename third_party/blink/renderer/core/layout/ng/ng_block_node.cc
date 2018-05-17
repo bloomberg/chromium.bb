@@ -524,6 +524,7 @@ void NGBlockNode::CopyChildFragmentPosition(
 
 scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
     const NGConstraintSpace& parent_constraint_space,
+    FontBaseline baseline_type,
     bool use_first_line_style) {
   NGConstraintSpaceBuilder space_builder(parent_constraint_space);
   space_builder.SetUseFirstLineStyle(use_first_line_style);
@@ -532,10 +533,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
   // would synthesize box-baseline.
   if (NGBaseline::ShouldPropagateBaselines(ToLayoutBox(GetLayoutObject()))) {
     space_builder.AddBaselineRequest(
-        {NGBaselineAlgorithmType::kAtomicInline,
-         IsHorizontalWritingMode(parent_constraint_space.GetWritingMode())
-             ? FontBaseline::kAlphabeticBaseline
-             : FontBaseline::kIdeographicBaseline});
+        {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
   }
 
   const ComputedStyle& style = Style();

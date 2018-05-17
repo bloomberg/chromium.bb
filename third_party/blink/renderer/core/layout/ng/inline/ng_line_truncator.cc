@@ -94,9 +94,7 @@ LayoutUnit NGLineTruncator::TruncateLine(
   builder.SetText(layout_object ? layout_object : node_.GetLayoutObject(),
                   ellipsis_text, ellipsis_style, true /* is_ellipsis_style */,
                   std::move(ellipsis_shape_result));
-  FontBaseline baseline_type = line_style_->IsHorizontalWritingMode()
-                                   ? kAlphabeticBaseline
-                                   : kIdeographicBaseline;
+  FontBaseline baseline_type = line_style_->GetFontBaseline();
   NGLineHeightMetrics ellipsis_metrics(font_data->GetFontMetrics(),
                                        baseline_type);
   line_box->AddChild(
