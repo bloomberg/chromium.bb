@@ -132,7 +132,7 @@ class PolicyTemplateChecker(object):
                   container_name, identifier, value)
     return value
 
-  def _AddPolicyID(self, id, policy_ids, policy):
+  def _AddPolicyID(self, id, policy_ids, policy, deleted_policy_ids):
     '''
     Adds |id| to |policy_ids|. Generates an error message if the
     |id| exists already; |policy| is needed for this message.
@@ -140,10 +140,13 @@ class PolicyTemplateChecker(object):
     if id in policy_ids:
       self._Error('Duplicate id', 'policy', policy.get('name'),
                   id)
+    elif id in deleted_policy_ids:
+      self._Error('Deleted id', 'policy', policy.get('name'),
+                  id)
     else:
       policy_ids.add(id)
 
-  def _CheckPolicyIDs(self, policy_ids):
+  def _CheckPolicyIDs(self, policy_ids, deleted_policy_ids):
     '''
     Checks a set of policy_ids to make sure it contains a continuous range
     of entries (i.e. no holes).
@@ -151,7 +154,7 @@ class PolicyTemplateChecker(object):
     accidentally omits IDs.
     '''
     for i in range(len(policy_ids)):
-      if (i + 1) not in policy_ids:
+      if (i + 1) not in policy_ids and (i + 1) not in deleted_policy_ids:
         self._Error('No policy with id: %s' % (i + 1))
 
   def _CheckPolicySchema(self, policy, policy_type):
@@ -174,7 +177,7 @@ class PolicyTemplateChecker(object):
                      'See also http://crbug.com/85687') % policy.get('name'))
 
 
-  def _CheckPolicy(self, policy, is_in_group, policy_ids):
+  def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids):
     if not isinstance(policy, dict):
       self._Error('Each policy must be a dictionary.', 'policy', None, policy)
       return
@@ -246,7 +249,7 @@ class PolicyTemplateChecker(object):
     else:  # policy_type != group
       # Each policy must have a protobuf ID.
       id = self._CheckContains(policy, 'id', int)
-      self._AddPolicyID(id, policy_ids, policy)
+      self._AddPolicyID(id, policy_ids, policy, deleted_policy_ids)
 
       # Each policy must have a tag list.
       self._CheckContains(policy, 'tags', list)
@@ -533,11 +536,15 @@ class PolicyTemplateChecker(object):
                                              parent_element=None,
                                              container_name='The root element',
                                              offending=None)
+    deleted_policy_ids = self._CheckContains(data, 'deleted_policy_ids', list,
+                                           parent_element=None,
+                                           container_name='The root element',
+                                           offending=None)
     if policy_definitions is not None:
       policy_ids = set()
       for policy in policy_definitions:
-        self._CheckPolicy(policy, False, policy_ids)
-      self._CheckPolicyIDs(policy_ids)
+        self._CheckPolicy(policy, False, policy_ids, deleted_policy_ids)
+      self._CheckPolicyIDs(policy_ids, deleted_policy_ids)
 
 
     # Made it as a dict (policy_name -> True) to reuse _CheckContains.
