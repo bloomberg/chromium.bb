@@ -73,7 +73,6 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
       base::Callback<void(ModelType, const StatusCounters&)>;
 
   using TypeMap = std::map<ModelType, std::unique_ptr<DataTypeController>>;
-  using StateMap = std::map<ModelType, DataTypeController::State>;
 
   // Returns true if the start result should trigger an unrecoverable error.
   // Public so unit tests can use this function as well.

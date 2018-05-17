@@ -332,11 +332,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Returns synced devices tracker.
   virtual syncer::DeviceInfoTracker* GetDeviceInfoTracker() const;
 
-  // Fills state_map with a map of current data types that are possible to
-  // sync, as well as their states.
-  void GetDataTypeControllerStates(
-      syncer::DataTypeController::StateMap* state_map) const;
-
   // Called when asynchronous session restore has completed.
   void OnSessionRestoreComplete();
 

@@ -67,21 +67,18 @@ class IOSChromeProfileSyncServiceFactoryTest : public PlatformTest {
   // Returns the number of default datatypes.
   size_t DefaultDatatypesCount() { return DefaultDatatypes().size(); }
 
-  // Asserts that all the default datatypes are in |map|, except
-  // for |exception_type|, which unless it is UNDEFINED, is asserted to
-  // not be in |map|.
-  void CheckDefaultDatatypesInMapExcept(DataTypeController::StateMap* map,
+  // Asserts that all the default datatypes are in |types|, except
+  // for |exception_types|, which are asserted to not be in |types|.
+  void CheckDefaultDatatypesInSetExcept(syncer::ModelTypeSet types,
                                         syncer::ModelTypeSet exception_types) {
     std::vector<syncer::ModelType> defaults = DefaultDatatypes();
     std::vector<syncer::ModelType>::iterator iter;
     for (iter = defaults.begin(); iter != defaults.end(); ++iter) {
-      if (exception_types.Has(*iter)) {
-        EXPECT_EQ(0U, map->count(*iter))
+      if (exception_types.Has(*iter))
+        EXPECT_FALSE(types.Has(*iter))
             << *iter << " found in dataypes map, shouldn't be there.";
-      } else {
-        EXPECT_EQ(1U, map->count(*iter)) << *iter
-                                         << " not found in datatypes map";
-      }
+      else
+        EXPECT_TRUE(types.Has(*iter)) << *iter << " not found in datatypes map";
     }
   }
 
@@ -113,10 +110,9 @@ TEST_F(IOSChromeProfileSyncServiceFactoryTest, CreatePSSDefault) {
   browser_sync::ProfileSyncService* pss =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(
           chrome_browser_state());
-  DataTypeController::StateMap controller_states;
-  pss->GetDataTypeControllerStates(&controller_states);
-  EXPECT_EQ(DefaultDatatypesCount(), controller_states.size());
-  CheckDefaultDatatypesInMapExcept(&controller_states, syncer::ModelTypeSet());
+  syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
+  EXPECT_EQ(DefaultDatatypesCount(), types.Size());
+  CheckDefaultDatatypesInSetExcept(types, syncer::ModelTypeSet());
 }
 
 // Verify that a PSS with a disabled datatype can be created and properly
@@ -127,11 +123,9 @@ TEST_F(IOSChromeProfileSyncServiceFactoryTest, CreatePSSDisableOne) {
   browser_sync::ProfileSyncService* pss =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(
           chrome_browser_state());
-  DataTypeController::StateMap controller_states;
-  pss->GetDataTypeControllerStates(&controller_states);
-  EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(),
-            controller_states.size());
-  CheckDefaultDatatypesInMapExcept(&controller_states, disabled_types);
+  syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
+  EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(), types.Size());
+  CheckDefaultDatatypesInSetExcept(types, disabled_types);
 }
 
 // Verify that a PSS with multiple disabled datatypes can be created and
@@ -143,9 +137,7 @@ TEST_F(IOSChromeProfileSyncServiceFactoryTest, CreatePSSDisableMultiple) {
   browser_sync::ProfileSyncService* pss =
       IOSChromeProfileSyncServiceFactory::GetForBrowserState(
           chrome_browser_state());
-  DataTypeController::StateMap controller_states;
-  pss->GetDataTypeControllerStates(&controller_states);
-  EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(),
-            controller_states.size());
-  CheckDefaultDatatypesInMapExcept(&controller_states, disabled_types);
+  syncer::ModelTypeSet types = pss->GetRegisteredDataTypes();
+  EXPECT_EQ(DefaultDatatypesCount() - disabled_types.Size(), types.Size());
+  CheckDefaultDatatypesInSetExcept(types, disabled_types);
 }
