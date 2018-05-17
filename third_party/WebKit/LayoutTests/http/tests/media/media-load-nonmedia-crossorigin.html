@@ -13,36 +13,36 @@ promise_test(async function() {
       let current_state = -1;
       let current_buffered_string = "";
       const video = document.querySelector("video");
-      function pollTagState(prefix) {
+      function pollTagState() {
         const state = video.networkState;
         if (state != current_state) {
           current_state = state
-          events.push(prefix + "NetworkState=" + state);
+          events.push("NetworkState=" + state);
         }
         const buffered = video.buffered;
         let buffered_string = "";
         for (let i = 0; i < buffered.length; i++) {
           buffered_string += "(" + buffered.start(i) + "-" + buffered.end(i) + ")";
         }
-	if (buffered_string != current_buffered_string) {
+        if (buffered_string != current_buffered_string) {
           current_buffered_string = buffered_string;
-          events.push(prefix + "Buffered=" + buffered_string);
-	}
+          events.push("Buffered=" + buffered_string);
+        }
       }
 
       for (var prop in video) {
         if (prop.slice(0,2) == "on") {
           video[prop] = function(e) {
+            pollTagState()
             events.push(e.type);
-            pollTagState("+")
           }
         }
       }
-      pollTagState("");
-      const interval = setInterval(function() { pollTagState("") }, 1);
+      pollTagState();
+      const interval = setInterval(function() { pollTagState() }, 1);
       video.onerror = function(e) {
+        pollTagState()
         events.push("Error("+video.error.message+")");
-        pollTagState("+")
         // Wait for network state to stabilize.
         setTimeout(function() {
           clearInterval(interval);
