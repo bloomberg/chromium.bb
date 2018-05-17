@@ -174,7 +174,8 @@ size_t FillJpegHeader(const gfx::Size& input_size,
                       const uint8_t* exif_buffer,
                       size_t exif_buffer_size,
                       int quality,
-                      uint8_t* header) {
+                      uint8_t* header,
+                      size_t* exif_offset) {
   unsigned int width = input_size.width();
   unsigned int height = input_size.height();
 
@@ -193,6 +194,7 @@ size_t FillJpegHeader(const gfx::Size& input_size,
         static_cast<uint8_t>(exif_segment_size % 256)};
     memcpy(header + idx, kAppSegment, sizeof(kAppSegment));
     idx += sizeof(kAppSegment);
+    *exif_offset = idx;
     memcpy(header + idx, exif_buffer, exif_buffer_size);
     idx += exif_buffer_size;
   } else {
@@ -369,7 +371,8 @@ bool VaapiJpegEncoder::Encode(const gfx::Size& input_size,
                               size_t exif_buffer_size,
                               int quality,
                               VASurfaceID surface_id,
-                              VABufferID output_buffer_id) {
+                              VABufferID output_buffer_id,
+                              size_t* exif_offset) {
   DCHECK_NE(surface_id, VA_INVALID_SURFACE);
 
   if (input_size.width() > kMaxDimension ||
@@ -421,8 +424,9 @@ bool VaapiJpegEncoder::Encode(const gfx::Size& input_size,
                                 ? kJpegDefaultHeaderSize + exif_buffer_size
                                 : kJpegDefaultHeaderSize + kJFIFApp0Size;
   jpeg_header.resize(jpeg_header_size);
-  size_t length_in_bits = FillJpegHeader(
-      input_size, exif_buffer, exif_buffer_size, quality, jpeg_header.data());
+  size_t length_in_bits =
+      FillJpegHeader(input_size, exif_buffer, exif_buffer_size, quality,
+                     jpeg_header.data(), exif_offset);
 
   VAEncPackedHeaderParameterBuffer header_param;
   memset(&header_param, 0, sizeof(header_param));

@@ -154,9 +154,17 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
     exif_buffer = static_cast<uint8_t*>(request->exif_shm->memory());
     exif_buffer_size = request->exif_shm->size();
   }
-  if (!jpeg_encoder_->Encode(input_size, exif_buffer, exif_buffer_size,
-                             request->quality, va_surface_id,
-                             cached_output_buffer_id_)) {
+
+  // When the exif buffer contains a thumbnail, the VAAPI encoder would
+  // generate a corrupted JPEG. We can work around the problem by supplying an
+  // all-zero buffer with the same size and fill in the real exif buffer after
+  // encoding.
+  // TODO(shenghao): Remove this mechanism after b/79840013 is fixed.
+  std::vector<uint8_t> exif_buffer_dummy(exif_buffer_size, 0);
+  size_t exif_offset = 0;
+  if (!jpeg_encoder_->Encode(input_size, exif_buffer_dummy.data(),
+                             exif_buffer_size, request->quality, va_surface_id,
+                             cached_output_buffer_id_, &exif_offset)) {
     VLOGF(1) << "Encode JPEG failed";
     notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
     return;
@@ -172,6 +180,10 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
     VLOGF(1) << "Failed to retrieve output image from VA coded buffer";
     notify_error_cb_.Run(buffer_id, PLATFORM_FAILURE);
   }
+
+  // Copy the real exif buffer into preserved space.
+  memcpy(static_cast<uint8_t*>(request->output_shm->memory()) + exif_offset,
+         exif_buffer, exif_buffer_size);
 
   video_frame_ready_cb_.Run(buffer_id, encoded_size);
 }
