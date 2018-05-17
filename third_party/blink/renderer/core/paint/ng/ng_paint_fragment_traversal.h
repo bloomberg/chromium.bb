@@ -22,6 +22,20 @@ struct CORE_EXPORT NGPaintFragmentWithContainerOffset {
   NGPhysicalOffset container_offset;
 };
 
+// Represents an NGPaintFragment by its parent and its index in the parent's
+// |Children()| vector.
+struct NGPaintFragmentTraversalContext {
+  STACK_ALLOCATED();
+
+  static NGPaintFragmentTraversalContext Create(const NGPaintFragment*);
+
+  bool IsNull() const { return !parent; }
+  const NGPaintFragment* GetFragment() const;
+
+  const NGPaintFragment* parent = nullptr;
+  unsigned index = 0;
+};
+
 // Utility class for traversing the paint fragment tree.
 class CORE_EXPORT NGPaintFragmentTraversal {
   STATIC_ONLY(NGPaintFragmentTraversal);
@@ -42,6 +56,19 @@ class CORE_EXPORT NGPaintFragmentTraversal {
   // Returns the line box paint fragment of |line|. |line| itself must be the
   // paint fragment of a line box.
   static NGPaintFragment* PreviousLineOf(const NGPaintFragment& line);
+
+  // Returns the previous/next inline leaf fragment (text or atomic inline)of
+  // the passed fragment, which itself must be inline.
+  static NGPaintFragmentTraversalContext PreviousInlineLeafOf(
+      const NGPaintFragmentTraversalContext&);
+  static NGPaintFragmentTraversalContext NextInlineLeafOf(
+      const NGPaintFragmentTraversalContext&);
+
+  // Variants of the above two skipping line break fragments.
+  static NGPaintFragmentTraversalContext PreviousInlineLeafOfIgnoringLineBreak(
+      const NGPaintFragmentTraversalContext&);
+  static NGPaintFragmentTraversalContext NextInlineLeafOfIgnoringLineBreak(
+      const NGPaintFragmentTraversalContext&);
 };
 
 }  // namespace blink

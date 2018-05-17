@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment_traversal.h"
 
 #include "third_party/blink/renderer/core/layout/layout_object.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
@@ -75,6 +76,73 @@ class LayoutObjectFilter {
   const LayoutObject* layout_object_;
 };
 
+// ------ Helpers for traversing inline fragments ------
+
+bool IsLineBreak(const NGPaintFragmentTraversalContext& fragment) {
+  DCHECK(!fragment.IsNull());
+  const NGPhysicalFragment& physical_fragment =
+      fragment.GetFragment()->PhysicalFragment();
+  DCHECK(physical_fragment.IsInline());
+  if (!physical_fragment.IsText())
+    return false;
+  return ToNGPhysicalTextFragment(physical_fragment).IsLineBreak();
+}
+
+bool IsInlineLeaf(const NGPaintFragmentTraversalContext& fragment) {
+  DCHECK(!fragment.IsNull());
+  const NGPhysicalFragment& physical_fragment =
+      fragment.GetFragment()->PhysicalFragment();
+  if (!physical_fragment.IsInline())
+    return false;
+  return physical_fragment.IsText() || physical_fragment.IsAtomicInline();
+}
+
+NGPaintFragmentTraversalContext FirstInclusiveLeafDescendantOf(
+    const NGPaintFragmentTraversalContext& fragment) {
+  DCHECK(!fragment.IsNull());
+  if (IsInlineLeaf(fragment))
+    return fragment;
+  const auto& children = fragment.GetFragment()->Children();
+  for (unsigned i = 0; i < children.size(); ++i) {
+    NGPaintFragmentTraversalContext maybe_leaf =
+        FirstInclusiveLeafDescendantOf({fragment.GetFragment(), i});
+    if (!maybe_leaf.IsNull())
+      return maybe_leaf;
+  }
+  return NGPaintFragmentTraversalContext();
+}
+
+NGPaintFragmentTraversalContext LastInclusiveLeafDescendantOf(
+    const NGPaintFragmentTraversalContext& fragment) {
+  DCHECK(!fragment.IsNull());
+  if (IsInlineLeaf(fragment))
+    return fragment;
+  const auto& children = fragment.GetFragment()->Children();
+  for (unsigned i = children.size(); i != 0u; --i) {
+    NGPaintFragmentTraversalContext maybe_leaf =
+        LastInclusiveLeafDescendantOf({fragment.GetFragment(), i - 1});
+    if (!maybe_leaf.IsNull())
+      return maybe_leaf;
+  }
+  return NGPaintFragmentTraversalContext();
+}
+
+NGPaintFragmentTraversalContext PreviousSiblingOf(
+    const NGPaintFragmentTraversalContext& fragment) {
+  if (!fragment.parent || fragment.index == 0u)
+    return NGPaintFragmentTraversalContext();
+  return {fragment.parent, fragment.index - 1};
+}
+
+NGPaintFragmentTraversalContext NextSiblingOf(
+    const NGPaintFragmentTraversalContext& fragment) {
+  if (!fragment.parent)
+    return NGPaintFragmentTraversalContext();
+  if (fragment.index + 1 == fragment.parent->Children().size())
+    return NGPaintFragmentTraversalContext();
+  return {fragment.parent, fragment.index + 1};
+}
+
 }  // namespace
 
 Vector<NGPaintFragmentWithContainerOffset>
@@ -117,6 +185,81 @@ NGPaintFragment* NGPaintFragmentTraversal::PreviousLineOf(
   }
   NOTREACHED();
   return nullptr;
+}
+
+const NGPaintFragment* NGPaintFragmentTraversalContext::GetFragment() const {
+  if (!parent)
+    return nullptr;
+  return parent->Children()[index].get();
+}
+
+// static
+NGPaintFragmentTraversalContext NGPaintFragmentTraversalContext::Create(
+    const NGPaintFragment* fragment) {
+  if (!fragment)
+    return NGPaintFragmentTraversalContext();
+
+  DCHECK(fragment->Parent());
+  const auto& siblings = fragment->Parent()->Children();
+  const auto* self_iter = std::find_if(
+      siblings.begin(), siblings.end(),
+      [&fragment](const auto& sibling) { return fragment == sibling.get(); });
+  DCHECK_NE(self_iter, siblings.end());
+  return {fragment->Parent(), self_iter - siblings.begin()};
+}
+
+NGPaintFragmentTraversalContext NGPaintFragmentTraversal::PreviousInlineLeafOf(
+    const NGPaintFragmentTraversalContext& fragment) {
+  DCHECK(!fragment.IsNull());
+  DCHECK(fragment.GetFragment()->PhysicalFragment().IsInline());
+  for (auto sibling = PreviousSiblingOf(fragment); !sibling.IsNull();
+       sibling = PreviousSiblingOf(sibling)) {
+    NGPaintFragmentTraversalContext maybe_leaf =
+        LastInclusiveLeafDescendantOf(sibling);
+    if (!maybe_leaf.IsNull())
+      return maybe_leaf;
+  }
+  DCHECK(fragment.parent);
+  if (fragment.parent->PhysicalFragment().IsLineBox())
+    return NGPaintFragmentTraversalContext();
+  return PreviousInlineLeafOf(
+      NGPaintFragmentTraversalContext::Create(fragment.parent));
+}
+
+NGPaintFragmentTraversalContext NGPaintFragmentTraversal::NextInlineLeafOf(
+    const NGPaintFragmentTraversalContext& fragment) {
+  DCHECK(!fragment.IsNull());
+  DCHECK(fragment.GetFragment()->PhysicalFragment().IsInline());
+  for (auto sibling = NextSiblingOf(fragment); !sibling.IsNull();
+       sibling = NextSiblingOf(sibling)) {
+    NGPaintFragmentTraversalContext maybe_leaf =
+        FirstInclusiveLeafDescendantOf(sibling);
+    if (!maybe_leaf.IsNull())
+      return maybe_leaf;
+  }
+  DCHECK(fragment.parent);
+  if (fragment.parent->PhysicalFragment().IsLineBox())
+    return NGPaintFragmentTraversalContext();
+  return NextInlineLeafOf(
+      NGPaintFragmentTraversalContext::Create(fragment.parent));
+}
+
+NGPaintFragmentTraversalContext
+NGPaintFragmentTraversal::PreviousInlineLeafOfIgnoringLineBreak(
+    const NGPaintFragmentTraversalContext& fragment) {
+  NGPaintFragmentTraversalContext runner = PreviousInlineLeafOf(fragment);
+  while (!runner.IsNull() && IsLineBreak(runner))
+    runner = PreviousInlineLeafOf(runner);
+  return runner;
+}
+
+NGPaintFragmentTraversalContext
+NGPaintFragmentTraversal::NextInlineLeafOfIgnoringLineBreak(
+    const NGPaintFragmentTraversalContext& fragment) {
+  NGPaintFragmentTraversalContext runner = NextInlineLeafOf(fragment);
+  while (!runner.IsNull() && IsLineBreak(runner))
+    runner = NextInlineLeafOf(runner);
+  return runner;
 }
 
 }  // namespace blink
