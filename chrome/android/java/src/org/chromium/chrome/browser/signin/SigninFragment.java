@@ -107,8 +107,8 @@ public class SigninFragment extends SigninFragmentBase {
     }
 
     @Override
-    protected void onSigninAccepted(
-            String accountName, boolean isDefaultAccount, boolean settingsClicked) {
+    protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
+            boolean settingsClicked, Runnable callback) {
         if (PrefServiceBridge.getInstance().getSyncLastAccountName() != null) {
             AccountSigninActivity.recordSwitchAccountSourceHistogram(
                     AccountSigninActivity.SwitchAccountSource.SIGNOUT_SIGNIN);
@@ -125,10 +125,13 @@ public class SigninFragment extends SigninFragmentBase {
 
                 recordSigninCompletedHistogramAccountInfo();
                 getActivity().finish();
+                callback.run();
             }
 
             @Override
-            public void onSignInAborted() {}
+            public void onSignInAborted() {
+                callback.run();
+            }
         });
     }
 
