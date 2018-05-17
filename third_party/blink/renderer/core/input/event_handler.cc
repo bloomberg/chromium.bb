@@ -228,7 +228,8 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
 HitTestResult EventHandler::HitTestResultAtPoint(
     const LayoutPoint& point,
     HitTestRequest::HitTestRequestType hit_type,
-    const LayoutRectOutsets& padding) {
+    const LayoutRectOutsets& padding,
+    const LayoutObject* stop_node) {
   TRACE_EVENT0("blink", "EventHandler::hitTestResultAtPoint");
 
   DCHECK((hit_type & HitTestRequest::kListBased) || padding.IsZero());
@@ -251,7 +252,8 @@ HitTestResult EventHandler::HitTestResultAtPoint(
 
   // hitTestResultAtPoint is specifically used to hitTest into all frames, thus
   // it always allows child frame content.
-  HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent);
+  HitTestRequest request(hit_type | HitTestRequest::kAllowChildFrameContent,
+                         stop_node);
   HitTestResult result(request, point, padding);
 
   // LayoutView::hitTest causes a layout, and we don't want to hit that until

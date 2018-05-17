@@ -502,9 +502,11 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
   // don't clip to the viewport, the visual overflow rect.
   // FIXME: This should be an intersection when rect-based hit tests are
   // supported by nodeAtFloatPoint.
-  if (ContentBoxRect().Contains(point_in_border_box) ||
-      (!ShouldApplyViewportClip() &&
-       VisualOverflowRect().Contains(point_in_border_box))) {
+  bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
+  if (!skip_children &&
+      (ContentBoxRect().Contains(point_in_border_box) ||
+       (!ShouldApplyViewportClip() &&
+        VisualOverflowRect().Contains(point_in_border_box)))) {
     const AffineTransform& local_to_parent_transform =
         LocalToSVGParentTransform();
     if (local_to_parent_transform.IsInvertible()) {

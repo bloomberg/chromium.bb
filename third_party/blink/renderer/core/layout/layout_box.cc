@@ -1559,8 +1559,8 @@ bool LayoutBox::NodeAtPoint(HitTestResult& result,
       HitTestOverflowControl(result, location_in_container, adjusted_location))
     return true;
 
-  bool skip_children = false;
-  if (ShouldClipOverflow()) {
+  bool skip_children = (result.GetHitTestRequest().GetStopNode() == this);
+  if (!skip_children && ShouldClipOverflow()) {
     // PaintLayer::HitTestContentsForFragments checked the fragments'
     // foreground rect for intersection if a layer is self painting,
     // so only do the overflow clip check here for non-self-painting layers.

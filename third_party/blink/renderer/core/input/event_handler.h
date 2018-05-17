@@ -103,7 +103,8 @@ class CORE_EXPORT EventHandler final
       const LayoutPoint&,
       HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
                                                     HitTestRequest::kActive,
-      const LayoutRectOutsets& padding = LayoutRectOutsets());
+      const LayoutRectOutsets& padding = LayoutRectOutsets(),
+      const LayoutObject* stop_node = nullptr);
 
   bool MousePressed() const { return mouse_event_manager_->MousePressed(); }
   bool IsMousePositionUnknown() const {
