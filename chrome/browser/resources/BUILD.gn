@@ -10,29 +10,37 @@ assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 if (closure_compile) {
   group("closure_compile") {
     deps = [
+      "cryptotoken:closure_compile",
       "engagement:closure_compile",
     ]
     if (is_linux || is_win || is_mac) {
       deps += [
-        "cryptotoken:closure_compile",
         "md_bookmarks:closure_compile",
         "md_downloads:closure_compile",
-        "md_extensions:closure_compile",
         "md_history:closure_compile",
-        "md_user_manager:closure_compile",
         "media_router:closure_compile",
-        "offline_pages:closure_compile",
+        "ntp4:closure_compile",
         "pdf:closure_compile",
         "print_preview:closure_compile",
         "settings:closure_compile",
+      ]
+    }
+    if (is_chromeos) {
+      deps += [
+        "md_user_manager:closure_compile",
         "signin/dice_sync_confirmation:closure_compile",
-        "webapks:closure_compile",
         "welcome/dice_welcome:closure_compile",
       ]
     }
-
+    if (enable_extensions) {
+      deps += [ "md_extensions:closure_compile" ]
+    }
     if (is_android) {
-      deps += [ "snippets_internals:closure_compile" ]
+      deps += [
+        "offline_pages:closure_compile",
+        "snippets_internals:closure_compile",
+        "webapks:closure_compile",
+      ]
     }
   }
 }

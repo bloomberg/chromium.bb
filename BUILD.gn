@@ -1158,6 +1158,9 @@ if (closure_compile) {
     if (is_chromeos) {
       data_deps += [ "ui/file_manager:closure_compile" ]
     }
+    if (is_android) {
+      data_deps += [ "components/offline_pages/resources:closure_compile" ]
+    }
   }
 }
 
