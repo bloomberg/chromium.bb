@@ -160,14 +160,18 @@ class WebSocketStreamRequestImpl : public WebSocketStreamRequest {
 
   void PerformUpgrade() {
     DCHECK(timer_);
-    DCHECK(handshake_stream_);
+    // TODO(bnc): Change to DCHECK after https://crbug.com/842575 is fixed.
+    CHECK(handshake_stream_);
+    CHECK(connect_delegate_);
 
     timer_->Stop();
 
     std::unique_ptr<URLRequest> url_request = std::move(url_request_);
     WebSocketHandshakeStreamBase* handshake_stream = handshake_stream_;
     handshake_stream_ = nullptr;
-    connect_delegate_->OnSuccess(handshake_stream->Upgrade());
+    // TODO(bnc): Combine into one line after https://crbug.com/842575 is fixed.
+    std::unique_ptr<WebSocketStream> stream = handshake_stream->Upgrade();
+    connect_delegate_->OnSuccess(std::move(stream));
 
     // This is safe even if |this| has already been deleted.
     url_request->CancelWithError(ERR_WS_UPGRADE);
