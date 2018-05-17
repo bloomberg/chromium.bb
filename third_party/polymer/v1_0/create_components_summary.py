@@ -8,6 +8,7 @@ import re
 
 
 COMPONENTS_DIR = 'components'
+DESTINATION_COMPONENTS_DIR = 'components-chromium'
 COMPONENT_SUMMARY =\
 """Name: %(name)s
 Repository: %(repository)s
@@ -44,7 +45,7 @@ def GetTreeishName(resolution):
 
 
 def main():
-  for entry in sorted(os.listdir(COMPONENTS_DIR)):
+  for entry in sorted(os.listdir(DESTINATION_COMPONENTS_DIR)):
     component_path = os.path.join(COMPONENTS_DIR, entry)
     if not os.path.isdir(component_path):
       continue
