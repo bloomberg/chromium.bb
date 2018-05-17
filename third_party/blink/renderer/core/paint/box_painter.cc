@@ -10,7 +10,6 @@
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_table.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/background_image_geometry.h"
 #include "third_party/blink/renderer/core/paint/box_decoration_data.h"
@@ -21,7 +20,6 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/scroll_recorder.h"
-#include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -44,13 +42,9 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info,
   PaintInfo child_info(paint_info);
   for (LayoutObject* child = layout_box_.SlowFirstChild(); child;
        child = child->NextSibling()) {
-    if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-        child->IsSVGForeignObject()) {
-      SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
-          .PaintLayer(paint_info);
-    } else {
+    if (!child->IsBoxModelObject() ||
+        !ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
       child->Paint(child_info, paint_offset);
-    }
   }
 }
 
