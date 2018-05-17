@@ -40,13 +40,15 @@ class MEDIA_GPU_EXPORT VaapiJpegEncoder {
   // |output_buffer_id| is the ID of VA buffer that encoded image will be
   // stored. The size of it should be at least as large as
   // GetMaxCodedBufferSize().
+  // |exif_offset| is the offset where Exif data should be filled into.
   // Return false on failure.
   bool Encode(const gfx::Size& input_size,
               const uint8_t* exif_buffer,
               size_t exif_buffer_size,
               int quality,
               VASurfaceID surface_id,
-              VABufferID output_buffer_id);
+              VABufferID output_buffer_id,
+              size_t* exif_offset);
 
   // Gets the maximum possible encoded result size.
   // |size| is the dimension of the YUV image to be encoded.
