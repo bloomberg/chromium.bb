@@ -3508,6 +3508,30 @@
             ]
         }
     ],
+    "SimplifiedNTP": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "SimplifiedNTP"
+                    ]
+                },
+                {
+                    "name": "Enabled_Ablation",
+                    "params": {
+                        "simplified_ntp_ablation": "true"
+                    },
+                    "enable_features": [
+                        "SimplifiedNTP"
+                    ]
+                }
+            ]
+        }
+    ],
     "SimplifyHttpsIndicator": [
         {
             "platforms": [
