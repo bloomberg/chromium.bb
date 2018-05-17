@@ -521,7 +521,7 @@ bool ChromeNetworkDelegate::OnCancelURLRequestWithPolicyViolatingReferrerHeader(
 bool ChromeNetworkDelegate::OnCanQueueReportingReport(
     const url::Origin& origin) const {
   if (!cookie_settings_)
-    return true;
+    return false;
 
   return cookie_settings_->IsCookieAccessAllowed(origin.GetURL(),
                                                  origin.GetURL());
@@ -530,28 +530,21 @@ bool ChromeNetworkDelegate::OnCanQueueReportingReport(
 void ChromeNetworkDelegate::OnCanSendReportingReports(
     std::set<url::Origin> origins,
     base::OnceCallback<void(std::set<url::Origin>)> result_callback) const {
-  if (!cookie_settings_) {
+  if (!reporting_permissions_checker_) {
+    origins.clear();
     std::move(result_callback).Run(std::move(origins));
     return;
   }
 
-  for (auto it = origins.begin(); it != origins.end();) {
-    const auto& origin = *it;
-    if (!cookie_settings_->IsCookieAccessAllowed(origin.GetURL(),
-                                                 origin.GetURL())) {
-      origins.erase(it++);
-    } else {
-      ++it;
-    }
-  }
-  std::move(result_callback).Run(std::move(origins));
+  reporting_permissions_checker_->FilterReportingOrigins(
+      std::move(origins), std::move(result_callback));
 }
 
 bool ChromeNetworkDelegate::OnCanSetReportingClient(
     const url::Origin& origin,
     const GURL& endpoint) const {
   if (!cookie_settings_)
-    return true;
+    return false;
 
   return cookie_settings_->IsCookieAccessAllowed(endpoint, origin.GetURL());
 }
@@ -560,7 +553,7 @@ bool ChromeNetworkDelegate::OnCanUseReportingClient(
     const url::Origin& origin,
     const GURL& endpoint) const {
   if (!cookie_settings_)
-    return true;
+    return false;
 
   return cookie_settings_->IsCookieAccessAllowed(endpoint, origin.GetURL());
 }

@@ -18,7 +18,9 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/net/safe_search_util.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -34,6 +36,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
@@ -155,7 +158,7 @@ class ChromeNetworkDelegateTest : public testing::Test {
     ASSERT_TRUE(profile_manager_->SetUp());
   }
 
-  void Initialize() {
+  virtual void Initialize() {
     network_delegate_.reset(
         new ChromeNetworkDelegate(forwarder(), &enable_referrers_));
     context_->set_client_socket_factory(&socket_factory_);
@@ -646,4 +649,76 @@ TEST(ChromeNetworkDelegateStaticTest, IsAccessAllowed) {
   // The external storage root itself is not allowed.
   EXPECT_FALSE(IsAccessAllowed(external_storage_path.AsUTF8Unsafe(), ""));
 #endif
+}
+
+namespace {
+
+class TestingPermissionProfile : public TestingProfile {
+ public:
+  TestingPermissionProfile() = default;
+
+  content::MockPermissionManager* mock_permission_manager() {
+    return &mock_permission_manager_;
+  }
+
+  content::PermissionManager* GetPermissionManager() override {
+    return &mock_permission_manager_;
+  }
+
+ private:
+  content::MockPermissionManager mock_permission_manager_;
+};
+
+}  // namespace
+
+class ChromeNetworkDelegateReportingTest : public ChromeNetworkDelegateTest {
+ public:
+  ChromeNetworkDelegateReportingTest() : factory_(&profile_) {}
+
+  content::MockPermissionManager* mock_permission_manager() {
+    return profile_.mock_permission_manager();
+  }
+
+  void Initialize() override {
+    ChromeNetworkDelegateTest::Initialize();
+    chrome_network_delegate()->set_reporting_permissions_checker(
+        factory_.CreateChecker());
+  }
+
+ protected:
+  TestingPermissionProfile profile_;
+  ReportingPermissionsCheckerFactory factory_;
+  DISALLOW_COPY_AND_ASSIGN(ChromeNetworkDelegateReportingTest);
+};
+
+TEST_F(ChromeNetworkDelegateReportingTest, ChecksReportingPermissions) {
+  using testing::_;
+  using testing::Return;
+
+  Initialize();
+
+  auto origin1 = url::Origin::Create(GURL("https://example.com/"));
+  auto origin2 = url::Origin::Create(GURL("https://foo.example.com/"));
+
+  std::set<url::Origin> origins = {origin1, origin2};
+
+  EXPECT_CALL(*mock_permission_manager(),
+              GetPermissionStatus(_, origin1.GetURL(), _))
+      .WillOnce(Return(blink::mojom::PermissionStatus::GRANTED));
+  EXPECT_CALL(*mock_permission_manager(),
+              GetPermissionStatus(_, origin2.GetURL(), _))
+      .WillOnce(Return(blink::mojom::PermissionStatus::DENIED));
+
+  std::set<url::Origin> allowed_origins;
+  chrome_network_delegate()->CanSendReportingReports(
+      std::move(origins),
+      base::BindOnce(
+          [](std::set<url::Origin>* dest, std::set<url::Origin> result) {
+            *dest = std::move(result);
+          },
+          &allowed_origins));
+  content::RunAllTasksUntilIdle();
+
+  ASSERT_EQ(1u, allowed_origins.size());
+  EXPECT_EQ(origin1, *allowed_origins.begin());
 }

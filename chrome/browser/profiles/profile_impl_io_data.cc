@@ -28,6 +28,7 @@
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/predictor.h"
 #include "chrome/browser/net/quota_policy_channel_id_store.h"
+#include "chrome/browser/net/reporting_permissions_checker.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_io_data.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
@@ -143,6 +144,7 @@ void ProfileImplIOData::Handle::Init(
     const base::FilePath& profile_path,
     chrome_browser_net::Predictor* predictor,
     storage::SpecialStoragePolicy* special_storage_policy,
+    std::unique_ptr<ReportingPermissionsChecker> reporting_permissions_checker,
     std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
         domain_reliability_monitor) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -159,6 +161,8 @@ void ProfileImplIOData::Handle::Init(
   lazy_params->persist_session_cookies =
       profile_->ShouldPersistSessionCookies();
   lazy_params->special_storage_policy = special_storage_policy;
+  lazy_params->reporting_permissions_checker =
+      std::move(reporting_permissions_checker);
   lazy_params->domain_reliability_monitor =
       std::move(domain_reliability_monitor);
 
@@ -426,6 +430,11 @@ ProfileImplIOData::ConfigureNetworkDelegate(
   if (lazy_params_->domain_reliability_monitor) {
     chrome_network_delegate->set_domain_reliability_monitor(
         std::move(lazy_params_->domain_reliability_monitor));
+  }
+
+  if (lazy_params_->reporting_permissions_checker) {
+    chrome_network_delegate->set_reporting_permissions_checker(
+        std::move(lazy_params_->reporting_permissions_checker));
   }
 
   return data_reduction_proxy_io_data()->CreateNetworkDelegate(

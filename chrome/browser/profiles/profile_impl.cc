@@ -412,7 +412,8 @@ ProfileImpl::ProfileImpl(
       last_session_exit_type_(EXIT_NORMAL),
       start_time_(base::Time::Now()),
       delegate_(delegate),
-      predictor_(nullptr) {
+      predictor_(nullptr),
+      reporting_permissions_checker_factory_(this) {
   TRACE_EVENT0("browser,startup", "ProfileImpl::ctor")
   DCHECK(!path.empty()) << "Using an empty path will attempt to write "
                         << "profile files to the root directory!";
@@ -647,6 +648,7 @@ void ProfileImpl::DoFinalInit() {
 
   io_data_.Init(media_cache_path, media_cache_max_size, extensions_cookie_path,
                 GetPath(), predictor_, GetSpecialStoragePolicy(),
+                reporting_permissions_checker_factory_.CreateChecker(),
                 CreateDomainReliabilityMonitor(local_state));
 
 #if BUILDFLAG(ENABLE_PLUGINS)
