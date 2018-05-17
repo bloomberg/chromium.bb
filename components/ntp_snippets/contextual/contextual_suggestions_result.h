@@ -7,9 +7,6 @@
 
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 
-using ntp_snippets::ContextualSuggestion;
-using ntp_snippets::SuggestionBuilder;
-
 namespace contextual_suggestions {
 
 // Encapsulates conditions under which to show or "peek" the contextual

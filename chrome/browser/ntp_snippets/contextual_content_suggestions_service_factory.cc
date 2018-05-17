@@ -31,8 +31,10 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #endif
 
-using ntp_snippets::ContextualSuggestionsFetcherImpl;
-using ntp_snippets::ContextualContentSuggestionsService;
+using contextual_suggestions::ContextualSuggestionsFetcherImpl;
+using contextual_suggestions::ContextualContentSuggestionsService;
+
+using ntp_snippets::CachedImageFetcher;
 using ntp_snippets::RemoteSuggestionsDatabase;
 
 namespace {
@@ -102,12 +104,11 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
   base::FilePath database_dir(profile->GetPath().Append(kDatabaseFolder));
   auto contextual_suggestions_database =
       std::make_unique<RemoteSuggestionsDatabase>(database_dir);
-  auto cached_image_fetcher =
-      std::make_unique<ntp_snippets::CachedImageFetcher>(
-          std::make_unique<image_fetcher::ImageFetcherImpl>(
-              std::make_unique<suggestions::ImageDecoderImpl>(),
-              request_context.get()),
-          pref_service, contextual_suggestions_database.get());
+  auto cached_image_fetcher = std::make_unique<CachedImageFetcher>(
+      std::make_unique<image_fetcher::ImageFetcherImpl>(
+          std::make_unique<suggestions::ImageDecoderImpl>(),
+          request_context.get()),
+      pref_service, contextual_suggestions_database.get());
   auto metrics_reporter_provider = std::make_unique<
       contextual_suggestions::ContextualSuggestionsMetricsReporterProvider>();
   auto* service = new ContextualContentSuggestionsService(

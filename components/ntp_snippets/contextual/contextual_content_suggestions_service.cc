@@ -18,13 +18,13 @@
 #include "contextual_content_suggestions_service_proxy.h"
 #include "ui/gfx/image/image.h"
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 
-using contextual_suggestions::Cluster;
-using contextual_suggestions::ContextualSuggestionsMetricsReporterProvider;
-using contextual_suggestions::ContextualSuggestionsResult;
-using contextual_suggestions::FetchClustersCallback;
-using contextual_suggestions::PeekConditions;
+using ntp_snippets::ContentSuggestion;
+using ntp_snippets::ImageDataFetchedCallback;
+using ntp_snippets::ImageFetchedCallback;
+using ntp_snippets::CachedImageFetcher;
+using ntp_snippets::RemoteSuggestionsDatabase;
 
 namespace {
 bool IsEligibleURL(const GURL& url) {
@@ -116,4 +116,4 @@ ContextualContentSuggestionsService::CreateProxy() {
       this, metrics_reporter_provider_->CreateMetricsReporter());
 }
 
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions

@@ -24,7 +24,7 @@ using contextual_suggestions::Cluster;
 using contextual_suggestions::ContextualSuggestionsFetch;
 using contextual_suggestions::ContextualSuggestionsResult;
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 
 class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
  public:
@@ -56,6 +56,6 @@ class ContextualSuggestionsFetcherImpl : public ContextualSuggestionsFetcher {
   DISALLOW_COPY_AND_ASSIGN(ContextualSuggestionsFetcherImpl);
 };
 
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions
 
 #endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_FETCHER_IMPL_H_

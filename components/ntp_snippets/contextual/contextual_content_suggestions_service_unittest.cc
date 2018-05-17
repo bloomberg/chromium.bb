@@ -31,11 +31,15 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
-using contextual_suggestions::ClusterBuilder;
-using contextual_suggestions::ContextualSuggestionsResult;
-using contextual_suggestions::MockClustersCallback;
-using contextual_suggestions::PeekConditions;
-using contextual_suggestions::ReportFetchMetricsCallback;
+using ntp_snippets::CachedImageFetcher;
+using ntp_snippets::Category;
+using ntp_snippets::ContentSuggestion;
+using ntp_snippets::KnownCategories;
+using ntp_snippets::ImageFetchedCallback;
+using ntp_snippets::ImageDataFetchedCallback;
+using ntp_snippets::RemoteSuggestionsDatabase;
+using ntp_snippets::RequestThrottler;
+
 using testing::_;
 using testing::AllOf;
 using testing::ElementsAre;
@@ -44,7 +48,7 @@ using testing::Mock;
 using testing::Pointee;
 using testing::Property;
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 
 namespace {
 
@@ -210,4 +214,4 @@ TEST_F(ContextualContentSuggestionsServiceTest,
   EXPECT_EQ(mock_callback.response_peek_text, std::string());
 }
 
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions

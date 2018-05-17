@@ -21,23 +21,20 @@ using testing::Pointee;
 
 namespace contextual_suggestions {
 
-using Cluster = ntp_snippets::Cluster;
-using ClustersCallback = ntp_snippets::FetchClustersCallback;
-
 namespace {
 
 static const std::string kTestPeekText("Test peek test");
 static const std::string kValidFromUrl = "http://some.url";
 
 class FakeContextualContentSuggestionsService
-    : public ntp_snippets::ContextualContentSuggestionsService {
+    : public ContextualContentSuggestionsService {
  public:
   FakeContextualContentSuggestionsService();
   ~FakeContextualContentSuggestionsService() override;
 
   void FetchContextualSuggestionClusters(
       const GURL& url,
-      ClustersCallback callback,
+      FetchClustersCallback callback,
       ReportFetchMetricsCallback metrics_callback) override {
     clusters_callback_ = std::move(callback);
   }
@@ -47,7 +44,7 @@ class FakeContextualContentSuggestionsService
   }
 
  private:
-  ClustersCallback clusters_callback_;
+  FetchClustersCallback clusters_callback_;
 };
 
 }  // namespace
