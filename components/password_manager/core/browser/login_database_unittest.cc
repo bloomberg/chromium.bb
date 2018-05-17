@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/common/password_form.h"
@@ -254,6 +255,7 @@ class LoginDatabaseTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   base::FilePath file_;
   std::unique_ptr<LoginDatabase> db_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 TEST_F(LoginDatabaseTest, Logins) {
@@ -1820,6 +1822,7 @@ class LoginDatabaseMigrationTest : public testing::TestWithParam<int> {
  private:
   base::FilePath database_dump_location_;
   base::ScopedTempDir temp_dir_;
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 void LoginDatabaseMigrationTest::MigrationToVCurrent(
