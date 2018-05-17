@@ -198,7 +198,6 @@ involved:
 * The binary is huge (~4GB)
 * The browser "works", but is noticeably slow and laggy
 * The sandbox needs to be disabled (`--no-sandbox`)
-* Coverage can be incomplete for child processes
 
 For more information, please see [crbug.com/834781].
 
@@ -230,16 +229,6 @@ If there is any failure, please upload a CL with the fix. If you can't fix it,
 feel free to [file a bug].
 * A particular test may not be available on a particular platform. As of now,
 only reports generated on Linux are available on the [coverage dashboard].
-
-### Why is coverage for X_fuzzer.cc file not reported, even though there are no errors in the log?
-
-There was an issue with merging coverage data for multiple definitions of the
-same symbol ([crbug.com/821617]). Given that every fuzz target defines its own
-`LLVMFuzzerTestOneInput` function, most of those functions are not presented in
-the report as of now. Please note that this issue does not affect coverage of
-the functions that are called from a fuzz target, i.e. the code that is actually
-being fuzzed. We have landed the fix upstream. In Chromium the issue will get
-resolved after the next [clang roll].
 
 ### Is coverage reported for the code executed inside the sandbox?
 
