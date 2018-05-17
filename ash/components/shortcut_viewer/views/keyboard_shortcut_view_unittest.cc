@@ -10,6 +10,7 @@
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/test/ash_test_base.h"
+#include "services/ui/public/cpp/input_devices/input_device_client_test_api.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -24,6 +25,13 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
  public:
   KeyboardShortcutViewTest() = default;
   ~KeyboardShortcutViewTest() override = default;
+
+  // ash::AshTestBase:
+  void SetUp() override {
+    ash::AshTestBase::SetUp();
+    // Simulate the complete listing of input devices, required by the viewer.
+    ui::InputDeviceClientTestApi().OnDeviceListsComplete();
+  }
 
  protected:
   int GetTabCount() const {

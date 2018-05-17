@@ -8,15 +8,12 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
-#include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
 namespace ui {
 
-class TouchDeviceServer;
+class DeviceDataManager;
 
 // Listens to DeviceDataManager for updates on input-devices and forwards those
 // updates to any registered InputDeviceObserverMojo in other processes via
@@ -31,12 +28,9 @@ class InputDeviceServer : public mojom::InputDeviceServer,
   void RegisterAsObserver();
   bool IsRegisteredAsObserver() const;
 
-  // Adds interface with the connection registry so remote observers can
-  // connect. You should have already called RegisterAsObserver() to get local
-  // input-device event updates and checked it was successful by calling
-  // IsRegisteredAsObserver().
-  void AddInterface(service_manager::BinderRegistryWithArgs<
-                    const service_manager::BindSourceInfo&>* registry);
+  // Binds an interface request to this instance. RegisterAsObserver() must be
+  // successfully called before this, to get local input-device event updates.
+  void AddBinding(mojom::InputDeviceServerRequest request);
 
   // mojom::InputDeviceServer:
   void AddObserver(mojom::InputDeviceObserverMojoPtr observer) override;
@@ -56,19 +50,11 @@ class InputDeviceServer : public mojom::InputDeviceServer,
 
   void CallOnTouchscreenDeviceConfigurationChanged();
 
-  void BindInputDeviceServerRequest(
-      mojom::InputDeviceServerRequest request,
-      const service_manager::BindSourceInfo& source_info);
-
   mojo::BindingSet<mojom::InputDeviceServer> bindings_;
   mojo::InterfacePtrSet<mojom::InputDeviceObserverMojo> observers_;
 
   // DeviceDataManager instance we are registered as an observer with.
   ui::DeviceDataManager* manager_ = nullptr;
-
-#if defined(OS_CHROMEOS)
-  std::unique_ptr<TouchDeviceServer> touch_device_server_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(InputDeviceServer);
 };

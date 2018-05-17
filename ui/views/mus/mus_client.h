@@ -39,6 +39,7 @@ class Connector;
 
 namespace ui {
 class CursorDataFactoryOzone;
+class InputDeviceClient;
 }
 
 namespace wm {
@@ -187,6 +188,9 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
 
   std::unique_ptr<PointerWatcherEventRouter> pointer_watcher_event_router_;
+
+  // Gives services transparent remote access the InputDeviceManager.
+  std::unique_ptr<ui::InputDeviceClient> input_device_client_;
 
   ui::mojom::WindowServerTestPtr server_test_ptr_;
   ui::mojom::EventInjectorPtr event_injector_;

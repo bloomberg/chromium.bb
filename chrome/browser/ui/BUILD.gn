@@ -2116,7 +2116,7 @@ split_static_library("ui") {
       "//ash",
       "//ash:ash_with_content",
       "//ash/app_list/presenter",
-      "//ash/components/shortcut_viewer:ksv",
+      "//ash/components/shortcut_viewer",
       "//ash/public/cpp",
       "//ash/public/cpp/resources:ash_public_unscaled_resources",
       "//ash/public/cpp/vector_icons",

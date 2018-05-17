@@ -46,6 +46,7 @@ component("lib") {
     "//components/viz/host",
     "//services/service_manager/public/cpp",
     "//services/ui/common:mus_common",
+    "//services/ui/input_devices",
     "//services/ui/public/interfaces",
     "//ui/aura",
     "//ui/wm",

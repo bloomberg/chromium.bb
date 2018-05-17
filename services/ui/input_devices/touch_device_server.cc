@@ -19,23 +19,13 @@ TouchDeviceServer::TouchDeviceServer()
 
 TouchDeviceServer::~TouchDeviceServer() {}
 
-void TouchDeviceServer::AddInterface(
-    service_manager::BinderRegistryWithArgs<
-        const service_manager::BindSourceInfo&>* registry) {
-  registry->AddInterface<mojom::TouchDeviceServer>(
-      base::Bind(&TouchDeviceServer::BindTouchDeviceServerRequest,
-                 base::Unretained(this)));
+void TouchDeviceServer::AddBinding(mojom::TouchDeviceServerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 void TouchDeviceServer::ConfigureTouchDevices(
     const std::vector<ui::TouchDeviceTransform>& transforms) {
   touch_transform_setter_->ConfigureTouchDevices(transforms);
-}
-
-void TouchDeviceServer::BindTouchDeviceServerRequest(
-    mojom::TouchDeviceServerRequest request,
-    const service_manager::BindSourceInfo& source_info) {
-  bindings_.AddBinding(this, std::move(request));
 }
 
 }  // namespace ui

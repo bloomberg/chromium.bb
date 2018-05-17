@@ -1850,7 +1850,7 @@ test("ash_unittests") {
     "//ash/autoclick/common:autoclick",
     "//ash/components/fast_ink",
     "//ash/components/fast_ink:unit_tests",
-    "//ash/components/shortcut_viewer:ksv_unittests",
+    "//ash/components/shortcut_viewer:unit_tests",
     "//ash/public/cpp",
     "//ash/public/cpp:unit_tests",
     "//ash/public/cpp/vector_icons",

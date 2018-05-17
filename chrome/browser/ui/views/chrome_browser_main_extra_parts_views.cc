@@ -30,9 +30,7 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/runner/common/client_util.h"
 #include "services/ui/public/cpp/gpu/gpu.h"  // nogncheck
-#include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/input_devices/input_device_server.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/display/screen.h"
 #include "ui/views/mus/mus_client.h"
@@ -185,11 +183,6 @@ void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
         service_manager::Identity(ash::mojom::kServiceName));
   }
 #endif
-
-  input_device_client_ = std::make_unique<ui::InputDeviceClient>();
-  ui::mojom::InputDeviceServerPtr server;
-  connection->GetConnector()->BindInterface(ui::mojom::kServiceName, &server);
-  input_device_client_->Connect(std::move(server));
 
 #if defined(OS_CHROMEOS)
   if (chromeos::GetAshConfig() != ash::Config::MASH)

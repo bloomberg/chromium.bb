@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/public/interfaces/input_devices/touch_device_server.mojom.h"
 
 namespace display {
@@ -25,20 +23,13 @@ class TouchDeviceServer : public mojom::TouchDeviceServer {
   TouchDeviceServer();
   ~TouchDeviceServer() override;
 
-  // Adds interface with the connection registry so remote observers can
-  // connect.
-  void AddInterface(service_manager::BinderRegistryWithArgs<
-                    const service_manager::BindSourceInfo&>* registry);
+  void AddBinding(mojom::TouchDeviceServerRequest request);
 
   // mojom::TouchDeviceServer:
   void ConfigureTouchDevices(
       const std::vector<ui::TouchDeviceTransform>& transforms) override;
 
  private:
-  void BindTouchDeviceServerRequest(
-      mojom::TouchDeviceServerRequest request,
-      const service_manager::BindSourceInfo& source_info);
-
   mojo::BindingSet<mojom::TouchDeviceServer> bindings_;
   std::unique_ptr<display::DefaultTouchTransformSetter> touch_transform_setter_;
 
