@@ -145,7 +145,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 445
+#   For your editing convenience: highest ID currently used: 447
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #   A policy can be delete if and only if a policy is never launched but has
@@ -11965,7 +11965,26 @@
       'desc': '''Configures the locales <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> may be displayed in.
 
       If this policy is set, the user can only configure <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to be displayed in one of the locales specified by this policy. If this policy is not set or set to an empty list, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can be displayed in all supported locales. If this policy is set to a list with invalid values, all invalid values will be ignored. If a user previously configured <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to be displayed in a language that is not allowed by this policy, the display locale will be switched to an allowed locale the next time the user signs in. If the user had configured preferred locales and one of the preferred locales is allowed by this policy, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will switch to this locale. Otherwise, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will switch to the first valid value specified by this policy, or to a fallback locale (currently en-US), if this policy only contains invalid entries.'''
-    }
+    },
+    {
+      'name': 'ArcAppInstallEventLoggingEnabled',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:67-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': True,
+      'id': 447,
+      'caption': '''Log events for Android app installs''',
+      'tags': ['google-sharing'],
+      'desc': '''Enables reporting of key events during Android app installation to Google. Events are captured only for apps whose installation was triggered via policy.
+
+      If the policy is set to true, events will be logged.
+      If the policy is set to false or unset, events will not be logged.''',
+    },
   ],
 
   'messages': {

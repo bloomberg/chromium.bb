@@ -143,7 +143,8 @@ class AppInstallEventLogManagerWrapperTest : public testing::Test {
 // log file nor the prefs are cleared.
 TEST_F(AppInstallEventLogManagerWrapperTest, EnableCreate) {
   PopulateLogFileAndPrefs();
-  profile_.GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled, true);
+  profile_.GetPrefs()->SetBoolean(prefs::kArcAppInstallEventLoggingEnabled,
+                                  true);
 
   CreateWrapper();
 
@@ -163,7 +164,8 @@ TEST_F(AppInstallEventLogManagerWrapperTest, EnableCreate) {
 // prefs are cleared.
 TEST_F(AppInstallEventLogManagerWrapperTest, DisableCreate) {
   PopulateLogFileAndPrefs();
-  profile_.GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled, false);
+  profile_.GetPrefs()->SetBoolean(prefs::kArcAppInstallEventLoggingEnabled,
+                                  false);
 
   CreateWrapper();
 
@@ -179,7 +181,8 @@ TEST_F(AppInstallEventLogManagerWrapperTest, DisableCreate) {
 // and is still pending. Then, destroy the wrapper. Verify that neither the log
 // file nor the prefs are cleared.
 TEST_F(AppInstallEventLogManagerWrapperTest, CreateEnable) {
-  profile_.GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled, false);
+  profile_.GetPrefs()->SetBoolean(prefs::kArcAppInstallEventLoggingEnabled,
+                                  false);
 
   CreateWrapper();
 
@@ -190,7 +193,8 @@ TEST_F(AppInstallEventLogManagerWrapperTest, CreateEnable) {
 
   EXPECT_CALL(*wrapper_, CreateManager());
   EXPECT_CALL(*wrapper_, DestroyManager()).Times(0);
-  profile_.GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled, true);
+  profile_.GetPrefs()->SetBoolean(prefs::kArcAppInstallEventLoggingEnabled,
+                                  true);
   Mock::VerifyAndClearExpectations(&wrapper_);
   FlushPendingTasks();
 
@@ -207,7 +211,8 @@ TEST_F(AppInstallEventLogManagerWrapperTest, CreateEnable) {
 // is destroyed and the log file and the prefs are cleared.
 TEST_F(AppInstallEventLogManagerWrapperTest, CreateDisable) {
   PopulateLogFileAndPrefs();
-  profile_.GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled, true);
+  profile_.GetPrefs()->SetBoolean(prefs::kArcAppInstallEventLoggingEnabled,
+                                  true);
 
   CreateWrapper();
 
@@ -219,7 +224,8 @@ TEST_F(AppInstallEventLogManagerWrapperTest, CreateDisable) {
 
   EXPECT_CALL(*wrapper_, CreateManager()).Times(0);
   EXPECT_CALL(*wrapper_, DestroyManager());
-  profile_.GetPrefs()->SetBoolean(prefs::kReportArcStatusEnabled, false);
+  profile_.GetPrefs()->SetBoolean(prefs::kArcAppInstallEventLoggingEnabled,
+                                  false);
   Mock::VerifyAndClearExpectations(&wrapper_);
   FlushPendingTasks();
   VerifyLogFileAndPrefsCleared();

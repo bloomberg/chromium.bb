@@ -1851,6 +1851,10 @@ const char kPowerMetricsLidClosedSuspendCount[] =
 // Key for list of users that should be reported.
 const char kReportingUsers[] = "reporting_users";
 
+// Whether to log events for Android app installs.
+const char kArcAppInstallEventLoggingEnabled[] =
+    "arc.app_install_event_logging_enabled";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.

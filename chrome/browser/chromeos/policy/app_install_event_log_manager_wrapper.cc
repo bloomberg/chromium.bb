@@ -13,6 +13,7 @@
 #include "chrome/browser/chromeos/policy/user_policy_manager_factory_chromeos.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/notification_service.h"
 
@@ -27,6 +28,13 @@ AppInstallEventLogManagerWrapper::CreateForProfile(Profile* profile) {
       new AppInstallEventLogManagerWrapper(profile);
   wrapper->Init();
   return wrapper;
+}
+
+// static
+void AppInstallEventLogManagerWrapper::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kArcAppInstallEventLoggingEnabled,
+                                false);
 }
 
 void AppInstallEventLogManagerWrapper::Observe(
@@ -44,7 +52,7 @@ AppInstallEventLogManagerWrapper::AppInstallEventLogManagerWrapper(
 
   pref_change_registrar_.Init(profile->GetPrefs());
   pref_change_registrar_.Add(
-      prefs::kReportArcStatusEnabled,
+      prefs::kArcAppInstallEventLoggingEnabled,
       base::BindRepeating(&AppInstallEventLogManagerWrapper::EvaluatePref,
                           base::Unretained(this)));
   notification_registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
@@ -69,7 +77,8 @@ void AppInstallEventLogManagerWrapper::DestroyManager() {
 }
 
 void AppInstallEventLogManagerWrapper::EvaluatePref() {
-  if (profile_->GetPrefs()->GetBoolean(prefs::kReportArcStatusEnabled)) {
+  if (profile_->GetPrefs()->GetBoolean(
+          prefs::kArcAppInstallEventLoggingEnabled)) {
     if (!log_manager_) {
       CreateManager();
     }
