@@ -283,10 +283,15 @@ bool MHTMLFrameSerializerDelegate::RewriteLink(const Element& element,
   }
 
   if (IsHTMLObjectElement(&element)) {
+    // If the <object> doesn't contain an image or a html document, then
+    // it won't be serialized by FrameSerializer::SerializeFrame.  If we can
+    // detect this case (possible only for local frames), then preserve the
+    // original URI of the <object>, rather than rewriting it to a Content-ID.
     Document* doc = frame_owner_element->contentDocument();
-    bool is_handled_by_serializer = doc->IsHTMLDocument() ||
-                                    doc->IsXHTMLDocument() ||
-                                    doc->IsImageDocument();
+    bool is_handled_by_serializer =
+        !doc ||  // Remote frame - can't tell if this is HTML or an image.
+        doc->IsHTMLDocument() || doc->IsXHTMLDocument() ||
+        doc->IsImageDocument();
     if (is_handled_by_serializer) {
       rewritten_link = cid_uri.GetString();
       return true;

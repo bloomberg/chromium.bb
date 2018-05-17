@@ -332,6 +332,9 @@
 -AutoplayExtensionBrowserTest.*
 -ChromeTracingDelegateBrowserTestOnStartup.StartupTracingThrottle
 
+# https://crbug.com/843760: webm in <object> triggers RegisterFrameSinkId crash
+-*SavePageOriginalVsSavedComparisonTest.CrossSiteObject*
+
 # DisplayPrefs need to be loaded synchronously, which currently is not
 # supported in mash. crbug/834775
 -DisplayPrefsBrowserTest.*
