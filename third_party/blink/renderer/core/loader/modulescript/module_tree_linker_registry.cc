@@ -23,11 +23,12 @@ void ModuleTreeLinkerRegistry::TraceWrappers(
 ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
     const KURL& url,
     const KURL& base_url,
+    WebURLRequest::RequestContext destination,
     const ScriptFetchOptions& options,
     Modulator* modulator,
     ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher =
-      ModuleTreeLinker::Fetch(url, base_url, options, modulator, this, client);
+  ModuleTreeLinker* fetcher = ModuleTreeLinker::Fetch(
+      url, base_url, destination, options, modulator, this, client);
   DCHECK(fetcher->IsFetching());
   active_tree_linkers_.insert(fetcher);
   return fetcher;
@@ -35,10 +36,11 @@ ModuleTreeLinker* ModuleTreeLinkerRegistry::Fetch(
 
 ModuleTreeLinker* ModuleTreeLinkerRegistry::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
+    WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleTreeClient* client) {
   ModuleTreeLinker* fetcher = ModuleTreeLinker::FetchDescendantsForInlineScript(
-      module_script, modulator, this, client);
+      module_script, destination, modulator, this, client);
   DCHECK(fetcher->IsFetching());
   active_tree_linkers_.insert(fetcher);
   return fetcher;

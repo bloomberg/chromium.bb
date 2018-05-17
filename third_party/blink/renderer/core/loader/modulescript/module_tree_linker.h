@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_TREE_LINKER_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LOADER_MODULESCRIPT_MODULE_TREE_LINKER_H_
 
+#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
@@ -40,6 +41,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // removed soon once an upcoming spec change lands.
   static ModuleTreeLinker* Fetch(const KURL&,
                                  const KURL& base_url,
+                                 WebURLRequest::RequestContext destination,
                                  const ScriptFetchOptions&,
                                  Modulator*,
                                  ModuleTreeLinkerRegistry*,
@@ -48,6 +50,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   // [FDaI] for an inline script.
   static ModuleTreeLinker* FetchDescendantsForInlineScript(
       ModuleScript*,
+      WebURLRequest::RequestContext destination,
       Modulator*,
       ModuleTreeLinkerRegistry*,
       ModuleTreeClient*);
@@ -62,7 +65,10 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   bool HasFinished() const { return state_ == State::kFinished; }
 
  private:
-  ModuleTreeLinker(Modulator*, ModuleTreeLinkerRegistry*, ModuleTreeClient*);
+  ModuleTreeLinker(WebURLRequest::RequestContext destination,
+                   Modulator*,
+                   ModuleTreeLinkerRegistry*,
+                   ModuleTreeClient*);
 
   enum class State {
     kInitial,
@@ -102,6 +108,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
   ScriptValue FindFirstParseError(ModuleScript*,
                                   HeapHashSet<Member<ModuleScript>>*) const;
 
+  const WebURLRequest::RequestContext destination_;
   const Member<Modulator> modulator_;
   HashSet<KURL> visited_set_;
   const Member<ModuleTreeLinkerRegistry> registry_;

@@ -545,8 +545,9 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         // completes, set the script's script to the result. At that time, the
         // script is ready.</spec>
         auto* module_tree_client = ModulePendingScriptTreeClient::Create();
-        modulator->FetchDescendantsForInlineScript(module_script,
-                                                   module_tree_client);
+        modulator->FetchDescendantsForInlineScript(
+            module_script, WebURLRequest::kRequestContextScript,
+            module_tree_client);
         prepared_pending_script_ = ModulePendingScript::Create(
             element_, module_tree_client, is_external_script_);
         break;
@@ -732,7 +733,8 @@ void ScriptLoader::FetchModuleScriptTree(const KURL& url,
   // Fetch a module script graph given url, settings object, "script", and
   // options.</spec>
   auto* module_tree_client = ModulePendingScriptTreeClient::Create();
-  modulator->FetchTree(url, options, module_tree_client);
+  modulator->FetchTree(url, WebURLRequest::kRequestContextScript, options,
+                       module_tree_client);
   prepared_pending_script_ = ModulePendingScript::Create(
       element_, module_tree_client, is_external_script_);
 }

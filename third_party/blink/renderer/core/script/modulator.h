@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_SCRIPT_MODULATOR_H_
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_module.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/script/module_import_meta.h"
@@ -102,6 +103,7 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-script-tree
   virtual void FetchTree(const KURL&,
+                         WebURLRequest::RequestContext destination,
                          const ScriptFetchOptions&,
                          ModuleTreeClient*) = 0;
 
@@ -112,8 +114,10 @@ class CORE_EXPORT Modulator : public GarbageCollectedFinalized<Modulator>,
                            ModuleGraphLevel,
                            SingleModuleClient*) = 0;
 
-  virtual void FetchDescendantsForInlineScript(ModuleScript*,
-                                               ModuleTreeClient*) = 0;
+  virtual void FetchDescendantsForInlineScript(
+      ModuleScript*,
+      WebURLRequest::RequestContext destination,
+      ModuleTreeClient*) = 0;
 
   // Synchronously retrieves a single module script from existing module map
   // entry.

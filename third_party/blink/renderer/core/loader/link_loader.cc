@@ -463,6 +463,8 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
       link_loader->DispatchLinkLoadingErroredAsync();
     return;
   }
+  WebURLRequest::RequestContext destination =
+      WebURLRequest::kRequestContextScript;
 
   // Step 4. "Parse the URL given by the href attribute, relative to the
   // element's node document. If that fails, then return. Otherwise, let url be
@@ -523,7 +525,7 @@ static void ModulePreloadIfNeeded(const LinkLoadParameters& params,
   // metadata is "not-parser-inserted", and credentials mode is credentials
   // mode." [spec text]
   ModuleScriptFetchRequest request(
-      params.href,
+      params.href, destination,
       ScriptFetchOptions(params.nonce, integrity_metadata, params.integrity,
                          kNotParserInserted, credentials_mode),
       Referrer::NoReferrer(), params.referrer_policy,

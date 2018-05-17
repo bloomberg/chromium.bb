@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/script/dynamic_module_resolver.h"
 
+#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -212,7 +213,8 @@ void DynamicModuleResolver::ResolveDynamically(
   // with result."
   auto* tree_client =
       DynamicImportTreeClient::Create(url, modulator_.Get(), promise_resolver);
-  modulator_->FetchTree(url, options, tree_client);
+  modulator_->FetchTree(url, WebURLRequest::kRequestContextScript, options,
+                        tree_client);
 
   // Steps 2.[5-8] are implemented at
   // DynamicImportTreeClient::NotifyModuleLoadFinished.

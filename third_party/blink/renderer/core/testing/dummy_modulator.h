@@ -38,13 +38,16 @@ class DummyModulator : public Modulator {
   ScriptState* GetScriptState() override;
 
   void FetchTree(const KURL&,
+                 WebURLRequest::RequestContext destination,
                  const ScriptFetchOptions&,
                  ModuleTreeClient*) override;
   void FetchSingle(const ModuleScriptFetchRequest&,
                    ModuleGraphLevel,
                    SingleModuleClient*) override;
-  void FetchDescendantsForInlineScript(ModuleScript*,
-                                       ModuleTreeClient*) override;
+  void FetchDescendantsForInlineScript(
+      ModuleScript*,
+      WebURLRequest::RequestContext destination,
+      ModuleTreeClient*) override;
   ModuleScript* GetFetchedModuleScript(const KURL&) override;
   void FetchNewSingleModule(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,

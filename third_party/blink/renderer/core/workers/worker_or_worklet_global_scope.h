@@ -7,6 +7,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_cache_options.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -113,6 +114,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public EventTargetWithInlineData,
   // HTML spec:
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-a-module-worker-script-tree
   void FetchModuleScript(const KURL& module_url_record,
+                         WebURLRequest::RequestContext destination,
                          network::mojom::FetchCredentialsMode,
                          ModuleTreeClient*);
 

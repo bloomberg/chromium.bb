@@ -90,9 +90,10 @@ void ModuleScriptLoader::Fetch(const ModuleScriptFetchRequest& module_request,
   url_ = module_request.Url();
 #endif
 
-  ResourceLoaderOptions options;
+  // "destination is destination," [spec text]
+  resource_request.SetRequestContext(module_request.Destination());
 
-  // TODO(kouhei): handle "destination is destination,"
+  ResourceLoaderOptions options;
 
   // Step 6. "Set up the module script request given request and options."
   // [spec text]

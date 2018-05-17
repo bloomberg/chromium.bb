@@ -17,32 +17,41 @@
 
 namespace blink {
 
-ModuleTreeLinker* ModuleTreeLinker::Fetch(const KURL& url,
-                                          const KURL& base_url,
-                                          const ScriptFetchOptions& options,
-                                          Modulator* modulator,
-                                          ModuleTreeLinkerRegistry* registry,
-                                          ModuleTreeClient* client) {
-  ModuleTreeLinker* fetcher = new ModuleTreeLinker(modulator, registry, client);
+ModuleTreeLinker* ModuleTreeLinker::Fetch(
+    const KURL& url,
+    const KURL& base_url,
+    WebURLRequest::RequestContext destination,
+    const ScriptFetchOptions& options,
+    Modulator* modulator,
+    ModuleTreeLinkerRegistry* registry,
+    ModuleTreeClient* client) {
+  ModuleTreeLinker* fetcher =
+      new ModuleTreeLinker(destination, modulator, registry, client);
   fetcher->FetchRoot(url, base_url, options);
   return fetcher;
 }
 
 ModuleTreeLinker* ModuleTreeLinker::FetchDescendantsForInlineScript(
     ModuleScript* module_script,
+    WebURLRequest::RequestContext destination,
     Modulator* modulator,
     ModuleTreeLinkerRegistry* registry,
     ModuleTreeClient* client) {
   DCHECK(module_script);
-  ModuleTreeLinker* fetcher = new ModuleTreeLinker(modulator, registry, client);
+  ModuleTreeLinker* fetcher =
+      new ModuleTreeLinker(destination, modulator, registry, client);
   fetcher->FetchRootInline(module_script);
   return fetcher;
 }
 
-ModuleTreeLinker::ModuleTreeLinker(Modulator* modulator,
+ModuleTreeLinker::ModuleTreeLinker(WebURLRequest::RequestContext destination,
+                                   Modulator* modulator,
                                    ModuleTreeLinkerRegistry* registry,
                                    ModuleTreeClient* client)
-    : modulator_(modulator), registry_(registry), client_(client) {
+    : destination_(destination),
+      modulator_(modulator),
+      registry_(registry),
+      client_(client) {
   CHECK(modulator);
   CHECK(registry);
   CHECK(client);
@@ -170,9 +179,9 @@ void ModuleTreeLinker::FetchRoot(const KURL& original_url,
 
   // Step 2. Perform the internal module script graph fetching procedure given
   // ... with the top-level module fetch flag set. ...
-  ModuleScriptFetchRequest request(url, options, Referrer::NoReferrer(),
-                                   modulator_->GetReferrerPolicy(),
-                                   TextPosition::MinimumPosition());
+  ModuleScriptFetchRequest request(
+      url, destination_, options, Referrer::NoReferrer(),
+      modulator_->GetReferrerPolicy(), TextPosition::MinimumPosition());
 
   InitiateInternalModuleScriptGraphFetching(
       request, ModuleGraphLevel::kTopLevelModuleFetch);
@@ -361,7 +370,7 @@ void ModuleTreeLinker::FetchDescendants(ModuleScript* module_script) {
     // [FD] Step 7. ... perform the internal module script graph fetching
     // procedure given ... with the top-level module fetch flag unset. ...
     ModuleScriptFetchRequest request(
-        urls[i], options, module_script->BaseURL().GetString(),
+        urls[i], destination_, options, module_script->BaseURL().GetString(),
         modulator_->GetReferrerPolicy(), positions[i]);
     InitiateInternalModuleScriptGraphFetching(
         request, ModuleGraphLevel::kDependentModuleFetch);

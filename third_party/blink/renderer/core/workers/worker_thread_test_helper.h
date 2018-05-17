@@ -72,6 +72,12 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
     return EventTargetNames::DedicatedWorkerGlobalScope;
   }
 
+  // WorkerGlobalScope
+  void ImportModuleScript(const KURL& module_url_record,
+                          network::mojom::FetchCredentialsMode) override {
+    NOTREACHED();
+  }
+
   void ExceptionThrown(ErrorEvent*) override {}
 };
 

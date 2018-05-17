@@ -32,6 +32,9 @@ class WorkletModuleResponsesMapTest : public testing::Test {
 
   void Fetch(const KURL& url, ClientImpl* client) {
     ResourceRequest resource_request(url);
+    // TODO(nhiroki): Specify worklet-specific request context (e.g.,
+    // "paintworklet").
+    resource_request.SetRequestContext(WebURLRequest::kRequestContextScript);
     FetchParameters fetch_params(resource_request);
     map_->Fetch(fetch_params, client);
   }

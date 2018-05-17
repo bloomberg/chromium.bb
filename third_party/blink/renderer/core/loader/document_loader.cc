@@ -32,6 +32,7 @@
 #include <memory>
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_parser.h"
@@ -211,6 +212,7 @@ Resource* DocumentLoader::StartPreload(Resource::Type type,
       resource = ImageResource::Fetch(params, Fetcher());
       break;
     case Resource::kScript:
+      params.SetRequestContext(WebURLRequest::kRequestContextScript);
       resource = ScriptResource::Fetch(params, Fetcher(), nullptr);
       break;
     case Resource::kCSSStyleSheet:

@@ -203,6 +203,7 @@ void WorkerOrWorkletGlobalScope::ApplyContentSecurityPolicyFromVector(
 
 void WorkerOrWorkletGlobalScope::FetchModuleScript(
     const KURL& module_url_record,
+    WebURLRequest::RequestContext destination,
     network::mojom::FetchCredentialsMode credentials_mode,
     ModuleTreeClient* client) {
   // Step 2: "Let options be a script fetch options whose cryptographic nonce is
@@ -218,7 +219,7 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
   // Step 3. "Perform the internal module script graph fetching procedure ..."
-  modulator->FetchTree(module_url_record, options, client);
+  modulator->FetchTree(module_url_record, destination, options, client);
 }
 
 void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
