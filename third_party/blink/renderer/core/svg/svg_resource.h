@@ -21,7 +21,6 @@ class DocumentResource;
 class Element;
 class IdTargetObserver;
 class LayoutSVGResourceContainer;
-class SVGElement;
 class TreeScope;
 
 // A class tracking a reference to an SVG resource (an element that constitutes
@@ -93,15 +92,12 @@ class LocalSVGResource final : public SVGResource {
  public:
   LocalSVGResource(TreeScope&, const AtomicString& id);
 
-  void AddWatch(SVGElement&);
-  void RemoveWatch(SVGElement&);
-
   void Unregister();
 
-  bool IsEmpty() const;
-
-  void NotifyPendingClients();
   void NotifyContentChanged(InvalidationModeMask);
+
+  void NotifyResourceAttached(LayoutSVGResourceContainer&);
+  void NotifyResourceDestroyed(LayoutSVGResourceContainer&);
 
   void Trace(Visitor*) override;
 
@@ -110,7 +106,6 @@ class LocalSVGResource final : public SVGResource {
 
   Member<TreeScope> tree_scope_;
   Member<IdTargetObserver> id_observer_;
-  HeapHashSet<Member<SVGElement>> pending_clients_;
 };
 
 // External resource reference (see SVGResource.)

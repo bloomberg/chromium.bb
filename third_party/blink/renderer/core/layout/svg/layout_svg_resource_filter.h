@@ -80,7 +80,7 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   }
 
   void RemoveAllClientsFromCache(bool mark_for_invalidation = true) override;
-  bool RemoveClientFromCache(LayoutObject&) override;
+  bool RemoveClientFromCache(SVGResourceClient&) override;
 
   FloatRect ResourceBoundingBox(const LayoutObject*);
 
@@ -93,12 +93,12 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
   static const LayoutSVGResourceType kResourceType = kFilterResourceType;
   LayoutSVGResourceType ResourceType() const override { return kResourceType; }
 
-  FilterData* GetFilterDataForLayoutObject(const LayoutObject* object) {
-    return filter_.at(const_cast<LayoutObject*>(object));
+  FilterData* GetFilterDataForClient(const SVGResourceClient* client) {
+    return filter_.at(const_cast<SVGResourceClient*>(client));
   }
-  void SetFilterDataForLayoutObject(LayoutObject* object,
-                                    FilterData* filter_data) {
-    filter_.Set(object, filter_data);
+  void SetFilterDataForClient(const SVGResourceClient* client,
+                              FilterData* filter_data) {
+    filter_.Set(const_cast<SVGResourceClient*>(client), filter_data);
   }
 
  protected:
@@ -107,7 +107,8 @@ class LayoutSVGResourceFilter final : public LayoutSVGResourceContainer {
  private:
   void DisposeFilterMap();
 
-  using FilterMap = PersistentHeapHashMap<LayoutObject*, Member<FilterData>>;
+  using FilterMap =
+      PersistentHeapHashMap<Member<SVGResourceClient>, Member<FilterData>>;
   FilterMap filter_;
 };
 

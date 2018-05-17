@@ -25,8 +25,6 @@
 
 namespace blink {
 
-class LocalSVGResource;
-
 enum LayoutSVGResourceType {
   kMaskerResourceType,
   kMarkerResourceType,
@@ -45,10 +43,9 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   virtual void RemoveAllClientsFromCache(bool mark_for_invalidation = true) = 0;
 
   // Remove any cached data for the |client|, and return true if so.
-  virtual bool RemoveClientFromCache(LayoutObject& client) { return false; }
+  virtual bool RemoveClientFromCache(SVGResourceClient&) { return false; }
 
   void UpdateLayout() override;
-  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
   bool IsOfType(LayoutObjectType type) const override {
     return type == kLayoutObjectSVGResourceContainer ||
            LayoutSVGHiddenContainer::IsOfType(type);
@@ -62,11 +59,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
            resource_type == kLinearGradientResourceType ||
            resource_type == kRadialGradientResourceType;
   }
-
-  // Detach all clients from this resource, and add them as watches to the tree
-  // scope's resource entry (the argument.)
-  void MakeClientsPending(LocalSVGResource&);
-  bool HasClients() const { return !clients_.IsEmpty(); }
 
   void InvalidateCacheAndMarkForLayout(LayoutInvalidationReasonForTracing,
                                        SubtreeLayoutScope* = nullptr);
@@ -83,23 +75,18 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   // Used from RemoveAllClientsFromCache methods.
   void MarkAllClientsForInvalidation(InvalidationModeMask);
 
+  void StyleDidChange(StyleDifference, const ComputedStyle* old_style) final;
   void WillBeDestroyed() override;
 
   bool is_in_layout_;
 
  private:
-  friend class SVGResourcesCache;
-  void AddClient(LayoutObject&);
-  bool RemoveClient(LayoutObject&);
-
   // Track global (markAllClientsForInvalidation) invalidations to avoid
   // redundant crawls.
   unsigned completed_invalidations_mask_ : 8;
 
   unsigned is_invalidating_ : 1;
   // 23 padding bits available
-
-  HashSet<LayoutObject*> clients_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGResourceContainer,

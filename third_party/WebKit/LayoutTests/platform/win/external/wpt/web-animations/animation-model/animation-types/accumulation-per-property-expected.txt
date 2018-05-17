@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 581 tests; 396 PASS, 185 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 581 tests; 404 PASS, 177 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
 PASS align-content: "flex-start" onto "flex-end"
@@ -356,17 +356,17 @@ PASS list-style-type (type: discrete) has testAccumulation function
 PASS list-style-type: "square" onto "circle"
 PASS list-style-type: "circle" onto "square"
 PASS marker-end (type: discrete) has testAccumulation function
-FAIL marker-end: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")" assert_equals: The value should be url("http://localhost/test-2") at 0ms expected "url(\"http://localhost/test-2\")" but got "none"
-FAIL marker-end: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")" assert_equals: The value should be url("http://localhost/test-1") at 0ms expected "url(\"http://localhost/test-1\")" but got "none"
+PASS marker-end: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")"
+PASS marker-end: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")"
 PASS marker-mid (type: discrete) has testAccumulation function
-FAIL marker-mid: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")" assert_equals: The value should be url("http://localhost/test-2") at 0ms expected "url(\"http://localhost/test-2\")" but got "none"
-FAIL marker-mid: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")" assert_equals: The value should be url("http://localhost/test-1") at 0ms expected "url(\"http://localhost/test-1\")" but got "none"
+PASS marker-mid: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")"
+PASS marker-mid: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")"
 PASS marker-start (type: discrete) has testAccumulation function
-FAIL marker-start: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")" assert_equals: The value should be url("http://localhost/test-2") at 0ms expected "url(\"http://localhost/test-2\")" but got "none"
-FAIL marker-start: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")" assert_equals: The value should be url("http://localhost/test-1") at 0ms expected "url(\"http://localhost/test-1\")" but got "none"
+PASS marker-start: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")"
+PASS marker-start: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")"
 PASS mask (type: discrete) has testAccumulation function
-FAIL mask: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")" assert_equals: The value should be url("http://localhost/test-2") at 0ms expected "url(\"http://localhost/test-2\")" but got "none"
-FAIL mask: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")" assert_equals: The value should be url("http://localhost/test-1") at 0ms expected "url(\"http://localhost/test-1\")" but got "none"
+PASS mask: "url("http://localhost/test-2")" onto "url("http://localhost/test-1")"
+PASS mask: "url("http://localhost/test-1")" onto "url("http://localhost/test-2")"
 PASS mask-type (type: discrete) has testAccumulation function
 PASS mask-type: "luminance" onto "alpha"
 PASS mask-type: "alpha" onto "luminance"

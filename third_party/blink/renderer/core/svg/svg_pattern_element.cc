@@ -26,6 +26,8 @@
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_pattern.h"
 #include "third_party/blink/renderer/core/svg/pattern_attributes.h"
+#include "third_party/blink/renderer/core/svg/svg_resource.h"
+#include "third_party/blink/renderer/core/svg/svg_tree_scope_resources.h"
 #include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
@@ -79,6 +81,7 @@ void SVGPatternElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(pattern_transform_);
   visitor->Trace(pattern_units_);
   visitor->Trace(pattern_content_units_);
+  visitor->Trace(resource_);
   SVGElement::Trace(visitor);
   SVGURIReference::Trace(visitor);
   SVGTests::Trace(visitor);
@@ -86,6 +89,28 @@ void SVGPatternElement::Trace(blink::Visitor* visitor) {
 }
 
 DEFINE_NODE_FACTORY(SVGPatternElement)
+
+void SVGPatternElement::BuildPendingResource() {
+  ClearResourceReferences();
+  if (!isConnected())
+    return;
+  TreeScope& tree_scope = GetTreeScope();
+  SVGTreeScopeResources& tree_scope_resources =
+      tree_scope.EnsureSVGTreeScopedResources();
+  resource_ = tree_scope_resources.ResourceForId(
+      FragmentIdentifierFromIRIString(HrefString(), tree_scope));
+  if (resource_)
+    resource_->AddClient(EnsureSVGResourceClient());
+
+  InvalidatePattern(LayoutInvalidationReason::kSvgResourceInvalidated);
+}
+
+void SVGPatternElement::ClearResourceReferences() {
+  if (!resource_)
+    return;
+  resource_->RemoveClient(*GetSVGResourceClient());
+  resource_ = nullptr;
+}
 
 void SVGPatternElement::CollectStyleForPresentationAttribute(
     const QualifiedName& name,
@@ -115,22 +140,37 @@ void SVGPatternElement::SvgAttributeChanged(const QualifiedName& attr_name) {
       attr_name == SVGNames::patternContentUnitsAttr ||
       attr_name == SVGNames::patternTransformAttr ||
       SVGFitToViewBox::IsKnownAttribute(attr_name) ||
-      SVGURIReference::IsKnownAttribute(attr_name) ||
       SVGTests::IsKnownAttribute(attr_name)) {
     SVGElement::InvalidationGuard invalidation_guard(this);
 
     if (is_length_attr)
       UpdateRelativeLengthsInformation();
 
-    LayoutSVGResourceContainer* layout_object =
-        ToLayoutSVGResourceContainer(this->GetLayoutObject());
-    if (layout_object)
-      layout_object->InvalidateCacheAndMarkForLayout();
+    InvalidatePattern(LayoutInvalidationReason::kAttributeChanged);
+    return;
+  }
 
+  if (SVGURIReference::IsKnownAttribute(attr_name)) {
+    SVGElement::InvalidationGuard invalidation_guard(this);
+    BuildPendingResource();
     return;
   }
 
   SVGElement::SvgAttributeChanged(attr_name);
+}
+
+Node::InsertionNotificationRequest SVGPatternElement::InsertedInto(
+    ContainerNode* root_parent) {
+  SVGElement::InsertedInto(root_parent);
+  if (root_parent->isConnected())
+    BuildPendingResource();
+  return kInsertionDone;
+}
+
+void SVGPatternElement::RemovedFrom(ContainerNode* root_parent) {
+  SVGElement::RemovedFrom(root_parent);
+  if (root_parent->isConnected())
+    ClearResourceReferences();
 }
 
 void SVGPatternElement::ChildrenChanged(const ChildrenChange& change) {
@@ -139,9 +179,13 @@ void SVGPatternElement::ChildrenChanged(const ChildrenChange& change) {
   if (change.by_parser)
     return;
 
-  if (LayoutObject* object = GetLayoutObject())
-    object->SetNeedsLayoutAndFullPaintInvalidation(
-        LayoutInvalidationReason::kChildChanged);
+  InvalidatePattern(LayoutInvalidationReason::kChildChanged);
+}
+
+void SVGPatternElement::InvalidatePattern(
+    LayoutInvalidationReasonForTracing reason) {
+  if (auto* layout_object = ToLayoutSVGResourceContainer(GetLayoutObject()))
+    layout_object->InvalidateCacheAndMarkForLayout(reason);
 }
 
 LayoutObject* SVGPatternElement::CreateLayoutObject(const ComputedStyle&) {

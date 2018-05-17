@@ -251,6 +251,7 @@ void LayoutSVGRoot::PaintReplaced(const PaintInfo& paint_info,
 
 void LayoutSVGRoot::WillBeDestroyed() {
   SVGResourcesCache::ClientDestroyed(*this);
+  SVGResources::ClearClipPathFilterMask(ToSVGSVGElement(*GetNode()), Style());
   LayoutReplaced::WillBeDestroyed();
 }
 
@@ -300,6 +301,8 @@ void LayoutSVGRoot::StyleDidChange(StyleDifference diff,
     IntrinsicSizingInfoChanged();
 
   LayoutReplaced::StyleDidChange(diff, old_style);
+  SVGResources::UpdateClipPathFilterMask(ToSVGSVGElement(*GetNode()), old_style,
+                                         StyleRef());
   SVGResourcesCache::ClientStyleChanged(*this, diff, StyleRef());
 }
 

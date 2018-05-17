@@ -38,6 +38,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/layout/svg/line/svg_root_inline_box.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_text_layout_attributes_builder.h"
 #include "third_party/blink/renderer/core/paint/svg_text_painter.h"
@@ -71,9 +72,15 @@ LayoutSVGText::~LayoutSVGText() {
   DCHECK(descendant_text_nodes_.IsEmpty());
 }
 
+void LayoutSVGText::StyleDidChange(StyleDifference diff,
+                                   const ComputedStyle* old_style) {
+  LayoutSVGBlock::StyleDidChange(diff, old_style);
+  SVGResources::UpdatePaints(*GetElement(), old_style, StyleRef());
+}
+
 void LayoutSVGText::WillBeDestroyed() {
   descendant_text_nodes_.clear();
-
+  SVGResources::ClearPaints(*GetElement(), Style());
   LayoutSVGBlock::WillBeDestroyed();
 }
 

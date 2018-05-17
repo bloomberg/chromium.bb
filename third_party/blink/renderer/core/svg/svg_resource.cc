@@ -9,11 +9,7 @@
 #include "third_party/blink/renderer/core/dom/id_target_observer.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
 #include "third_party/blink/renderer/core/loader/resource/document_resource.h"
-#include "third_party/blink/renderer/core/svg/svg_element.h"
-#include "third_party/blink/renderer/core/svg/svg_resource_client.h"
 #include "third_party/blink/renderer/core/svg/svg_uri_reference.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_parameters.h"
@@ -33,10 +29,17 @@ void SVGResource::Trace(Visitor* visitor) {
 
 void SVGResource::AddClient(SVGResourceClient& client) {
   clients_.insert(&client);
+  if (LayoutSVGResourceContainer* container = ResourceContainer())
+    container->ClearInvalidationMask();
 }
 
 void SVGResource::RemoveClient(SVGResourceClient& client) {
-  clients_.erase(&client);
+  if (!clients_.erase(&client))
+    return;
+  // The last instance of |client| was removed. Clear its entry in
+  // resource's cache.
+  if (LayoutSVGResourceContainer* container = ResourceContainer())
+    container->RemoveClientFromCache(client);
 }
 
 void SVGResource::NotifyElementChanged() {
@@ -65,33 +68,8 @@ LocalSVGResource::LocalSVGResource(TreeScope& tree_scope,
                          WrapWeakPersistent(this), id));
 }
 
-void LocalSVGResource::AddWatch(SVGElement& element) {
-  pending_clients_.insert(&element);
-  element.SetHasPendingResources();
-}
-
-void LocalSVGResource::RemoveWatch(SVGElement& element) {
-  pending_clients_.erase(&element);
-}
-
-bool LocalSVGResource::IsEmpty() const {
-  LayoutSVGResourceContainer* container = ResourceContainer();
-  return !HasClients() && (!container || !container->HasClients()) &&
-         pending_clients_.IsEmpty();
-}
-
 void LocalSVGResource::Unregister() {
   SVGURIReference::UnobserveTarget(id_observer_);
-}
-
-void LocalSVGResource::NotifyPendingClients() {
-  HeapHashSet<Member<SVGElement>> pending_clients;
-  pending_clients.swap(pending_clients_);
-
-  for (SVGElement* client_element : pending_clients) {
-    if (LayoutObject* layout_object = client_element->GetLayoutObject())
-      SVGResourcesCache::ResourceReferenceChanged(*layout_object);
-  }
 }
 
 void LocalSVGResource::NotifyContentChanged(
@@ -103,23 +81,42 @@ void LocalSVGResource::NotifyContentChanged(
     client->ResourceContentChanged(invalidation_mask);
 }
 
+void LocalSVGResource::NotifyResourceAttached(
+    LayoutSVGResourceContainer& attached_resource) {
+  // Checking the element here because
+  if (attached_resource.GetElement() != Target())
+    return;
+  NotifyElementChanged();
+}
+
+void LocalSVGResource::NotifyResourceDestroyed(
+    LayoutSVGResourceContainer& destroyed_resource) {
+  if (destroyed_resource.GetElement() != Target())
+    return;
+  destroyed_resource.RemoveAllClientsFromCache();
+
+  HeapVector<Member<SVGResourceClient>> clients;
+  CopyToVector(clients_, clients);
+
+  for (SVGResourceClient* client : clients)
+    client->ResourceDestroyed(&destroyed_resource);
+}
+
 void LocalSVGResource::TargetChanged(const AtomicString& id) {
   Element* new_target = tree_scope_->getElementById(id);
   if (new_target == target_)
     return;
-  // Detach clients from the old resource, moving them to the pending list
-  // and then notify pending clients.
+  // Clear out caches on the old resource, and then notify clients about the
+  // change.
   if (LayoutSVGResourceContainer* old_resource = ResourceContainer())
-    old_resource->MakeClientsPending(*this);
+    old_resource->RemoveAllClientsFromCache();
   target_ = new_target;
   NotifyElementChanged();
-  NotifyPendingClients();
 }
 
 void LocalSVGResource::Trace(Visitor* visitor) {
   visitor->Trace(tree_scope_);
   visitor->Trace(id_observer_);
-  visitor->Trace(pending_clients_);
   SVGResource::Trace(visitor);
 }
 
@@ -156,8 +153,9 @@ Element* ExternalSVGResource::ResolveTarget() {
   Document* external_document = resource_document_->GetDocument();
   if (!external_document)
     return nullptr;
-  return external_document->getElementById(
-      AtomicString(url_.FragmentIdentifier()));
+  AtomicString decoded_fragment(
+      DecodeURLEscapeSequences(url_.FragmentIdentifier()));
+  return external_document->getElementById(decoded_fragment);
 }
 
 void ExternalSVGResource::Trace(Visitor* visitor) {

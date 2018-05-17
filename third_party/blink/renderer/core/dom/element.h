@@ -95,10 +95,9 @@ enum class ElementFlags {
   kIsInCanvasSubtree = 1 << 2,
   kContainsFullScreenElement = 1 << 3,
   kIsInTopLayer = 1 << 4,
-  kHasPendingResources = 1 << 5,
-  kContainsPersistentVideo = 1 << 6,
+  kContainsPersistentVideo = 1 << 5,
 
-  kNumberOfElementFlags = 7,  // Size of bitfield used to store the flags.
+  kNumberOfElementFlags = 6,  // Size of bitfield used to store the flags.
 };
 
 enum class ShadowRootType;
@@ -768,15 +767,6 @@ class CORE_EXPORT Element : public ContainerNode {
 
   virtual bool ShouldForceLegacyLayout() const { return false; }
 
-  bool HasPendingResources() const {
-    return HasElementFlag(ElementFlags::kHasPendingResources);
-  }
-  void SetHasPendingResources() {
-    SetElementFlag(ElementFlags::kHasPendingResources);
-  }
-  void ClearHasPendingResources() {
-    ClearElementFlag(ElementFlags::kHasPendingResources);
-  }
   virtual void BuildPendingResource() {}
 
   void V0SetCustomElementDefinition(V0CustomElementDefinition*);

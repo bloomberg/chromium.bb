@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class LayoutSVGResourceContainer;
+
 typedef unsigned InvalidationModeMask;
 
 class CORE_EXPORT SVGResourceClient : public GarbageCollectedMixin {
@@ -25,7 +27,9 @@ class CORE_EXPORT SVGResourceClient : public GarbageCollectedMixin {
     kParentOnlyInvalidation = 1 << 3
   };
   virtual void ResourceContentChanged(InvalidationModeMask) = 0;
+  virtual void Invalidate(InvalidationModeMask) {}
   virtual void ResourceElementChanged() = 0;
+  virtual void ResourceDestroyed(LayoutSVGResourceContainer*) {}
 
  protected:
   SVGResourceClient() = default;

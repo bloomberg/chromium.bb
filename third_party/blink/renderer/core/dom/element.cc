@@ -125,7 +125,6 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
@@ -1912,9 +1911,6 @@ void Element::RemovedFrom(ContainerNode* insertion_point) {
   if (was_in_document) {
     if (this == GetDocument().CssTarget())
       GetDocument().SetCSSTarget(nullptr);
-
-    if (HasPendingResources())
-      SVGResources::RemoveWatchesForElement(*this);
 
     if (GetCustomElementState() == CustomElementState::kCustom)
       CustomElement::EnqueueDisconnectedCallback(this);
@@ -4799,8 +4795,9 @@ void Element::AddPropertyToPresentationAttributeStyle(
     CSSPropertyID property_id,
     const String& value) {
   DCHECK(IsStyledElement());
-  style->SetProperty(property_id, value, false,
-                     GetDocument().GetSecureContextMode());
+  Document& document = GetDocument();
+  style->SetProperty(property_id, value, false, document.GetSecureContextMode(),
+                     document.ElementSheet().Contents());
 }
 
 void Element::AddPropertyToPresentationAttributeStyle(

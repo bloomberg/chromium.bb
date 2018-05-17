@@ -593,8 +593,8 @@ void CanvasRenderingContext2D::ClearFilterReferences() {
 
 void CanvasRenderingContext2D::UpdateFilterReferences(
     const FilterOperations& filters) {
-  ClearFilterReferences();
   filters.AddClient(*this);
+  ClearFilterReferences();
   filter_operations_ = filters;
 }
 

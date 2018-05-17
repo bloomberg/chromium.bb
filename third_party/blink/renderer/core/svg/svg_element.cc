@@ -1310,6 +1310,16 @@ void SVGElement::RemoveAllOutgoingReferences() {
   outgoing_references.clear();
 }
 
+SVGResourceClient* SVGElement::GetSVGResourceClient() {
+  if (!HasSVGRareData())
+    return nullptr;
+  return SvgRareData()->GetSVGResourceClient();
+}
+
+SVGResourceClient& SVGElement::EnsureSVGResourceClient() {
+  return EnsureSVGRareData()->EnsureSVGResourceClient(this);
+}
+
 void SVGElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(elements_with_relative_lengths_);
   visitor->Trace(attribute_to_property_map_);

@@ -62,6 +62,17 @@ LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node)
 
 LayoutSVGShape::~LayoutSVGShape() = default;
 
+void LayoutSVGShape::StyleDidChange(StyleDifference diff,
+                                    const ComputedStyle* old_style) {
+  LayoutSVGModelObject::StyleDidChange(diff, old_style);
+  SVGResources::UpdatePaints(*GetElement(), old_style, StyleRef());
+}
+
+void LayoutSVGShape::WillBeDestroyed() {
+  SVGResources::ClearPaints(*GetElement(), Style());
+  LayoutSVGModelObject::WillBeDestroyed();
+}
+
 void LayoutSVGShape::CreatePath() {
   if (!path_)
     path_ = std::make_unique<Path>();

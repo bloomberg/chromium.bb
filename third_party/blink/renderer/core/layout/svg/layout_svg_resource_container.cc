@@ -64,40 +64,23 @@ void LayoutSVGResourceContainer::UpdateLayout() {
 
 void LayoutSVGResourceContainer::WillBeDestroyed() {
   LayoutSVGHiddenContainer::WillBeDestroyed();
-  // The resource is being torn down. If we have any clients, move those to be
-  // pending on the resource (if one exists.)
+  // The resource is being torn down.
+  // TODO(fs): Remove this when SVGResources is gone.
   if (LocalSVGResource* resource = ResourceForContainer(*this))
-    MakeClientsPending(*resource);
+    resource->NotifyResourceDestroyed(*this);
 }
 
 void LayoutSVGResourceContainer::StyleDidChange(
     StyleDifference diff,
     const ComputedStyle* old_style) {
   LayoutSVGHiddenContainer::StyleDidChange(diff, old_style);
-  // The resource has (read: may have) been attached. Notify any pending
-  // clients that they can now try to add themselves as clients to the
-  // resource.
-  if (LocalSVGResource* resource = ResourceForContainer(*this)) {
-    if (resource->Target() == GetElement())
-      resource->NotifyPendingClients();
-  }
-}
-
-void LayoutSVGResourceContainer::MakeClientsPending(
-    LocalSVGResource& resource) {
-  RemoveAllClientsFromCache();
-
-  for (auto* client : clients_) {
-    // Unlink the resource from the client's SVGResources.
-    SVGResources* resources =
-        SVGResourcesCache::CachedResourcesForLayoutObject(*client);
-    // Or else the client wouldn't be in the list in the first place.
-    DCHECK(resources);
-    resources->ResourceDestroyed(this);
-
-    resource.AddWatch(ToSVGElement(*client->GetNode()));
-  }
-  clients_.clear();
+  // The resource has been attached. Notify any pending clients that
+  // they can now try to add themselves as clients to the resource.
+  // TODO(fs): Remove this when SVGResources is gone.
+  if (old_style)
+    return;
+  if (LocalSVGResource* resource = ResourceForContainer(*this))
+    resource->NotifyResourceAttached(*this);
 }
 
 void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
@@ -105,7 +88,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
   if (is_invalidating_)
     return;
   LocalSVGResource* resource = ResourceForContainer(*this);
-  if (clients_.IsEmpty() && (!resource || !resource->HasClients()))
+  if (!resource || !resource->HasClients())
     return;
   // Remove modes for which invalidations have already been
   // performed. If no modes remain we are done.
@@ -115,25 +98,6 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
   completed_invalidations_mask_ |= invalidation_mask;
 
   is_invalidating_ = true;
-  bool needs_layout =
-      invalidation_mask & SVGResourceClient::kLayoutInvalidation;
-  bool mark_for_invalidation =
-      invalidation_mask & ~SVGResourceClient::kParentOnlyInvalidation;
-
-  // Invalidate clients registered on the this object (via SVGResources).
-  for (auto* client : clients_) {
-    DCHECK(client->IsSVG());
-    if (client->IsSVGResourceContainer()) {
-      ToLayoutSVGResourceContainer(client)->RemoveAllClientsFromCache(
-          mark_for_invalidation);
-      continue;
-    }
-
-    if (mark_for_invalidation)
-      MarkClientForInvalidation(*client, invalidation_mask);
-
-    MarkForLayoutAndParentResourceInvalidation(*client, needs_layout);
-  }
 
   // Invalidate clients registered via an SVGResource.
   if (resource)
@@ -162,17 +126,6 @@ void LayoutSVGResourceContainer::MarkClientForInvalidation(
     client.SetNeedsBoundariesUpdate();
 }
 
-void LayoutSVGResourceContainer::AddClient(LayoutObject& client) {
-  clients_.insert(&client);
-  ClearInvalidationMask();
-}
-
-bool LayoutSVGResourceContainer::RemoveClient(LayoutObject& client) {
-  RemoveClientFromCache(client);
-  clients_.erase(&client);
-  return clients_.IsEmpty();
-}
-
 void LayoutSVGResourceContainer::InvalidateCacheAndMarkForLayout(
     LayoutInvalidationReasonForTracing reason,
     SubtreeLayoutScope* layout_scope) {
@@ -195,24 +148,25 @@ void LayoutSVGResourceContainer::InvalidateCacheAndMarkForLayout(
 static inline void RemoveFromCacheAndInvalidateDependencies(
     LayoutObject& object,
     bool needs_layout) {
+  if (!object.GetNode() || !object.GetNode()->IsSVGElement())
+    return;
+  SVGElement& element = ToSVGElement(*object.GetNode());
+
   if (SVGResources* resources =
           SVGResourcesCache::CachedResourcesForLayoutObject(object)) {
+    SVGResourceClient* client = element.GetSVGResourceClient();
     if (InvalidationModeMask invalidation_mask =
-            resources->RemoveClientFromCacheAffectingObjectBounds(object)) {
+            resources->RemoveClientFromCacheAffectingObjectBounds(*client)) {
       LayoutSVGResourceContainer::MarkClientForInvalidation(object,
                                                             invalidation_mask);
     }
   }
 
-  if (!object.GetNode() || !object.GetNode()->IsSVGElement())
-    return;
-
-  ToSVGElement(object.GetNode())
-      ->NotifyIncomingReferences([needs_layout](SVGElement& element) {
-        DCHECK(element.GetLayoutObject());
-        LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-            *element.GetLayoutObject(), needs_layout);
-      });
+  element.NotifyIncomingReferences([needs_layout](SVGElement& element) {
+    DCHECK(element.GetLayoutObject());
+    LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
+        *element.GetLayoutObject(), needs_layout);
+  });
 }
 
 void LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
