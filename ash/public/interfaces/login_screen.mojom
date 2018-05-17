@@ -9,7 +9,6 @@ import "ash/public/interfaces/login_user_info.mojom";
 import "chromeos/components/proximity_auth/public/interfaces/auth_type.mojom";
 import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
-import "mojo/public/mojom/base/values.mojom";
 
 // Allows clients (e.g. Chrome browser) to control the ash login/lock/user-add
 // screens.
@@ -93,16 +92,12 @@ interface LoginScreen {
                               string display_name);
 
   // Set the public session locales for user with |account_id|.
-  // TODO: Use array<LocaleStruct> for |locales| instead of
-  // mojo_base.mojom.ListValue.
-  // |locales|: Available locales for this user.
-  //            Each entry is a base::DictionaryValue and it contains several
-  //            keys like displayName, nativeDisplayName, optionGroupName etc.
-  // |default_locale|: Default locale for this user.
+  // |locales|:            Available locales for this user.
+  // |default_locale|:     Default locale for this user.
   // |show_advanced_view|: True if we should show the advanced expanded user
   //                       view for the public session.
   SetPublicSessionLocales(signin.mojom.AccountId account_id,
-                          mojo_base.mojom.ListValue locales,
+                          array<LocaleItem> locales,
                           string default_locale,
                           bool show_advanced_view);
 

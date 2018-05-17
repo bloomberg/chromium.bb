@@ -403,35 +403,22 @@ class RightPaneView : public NonAccessibleView,
     keyboard_selection_->SetText(base::UTF8ToUTF16(item.title));
   }
 
-  void PopulateLanguageItems(const base::Value& locales) {
-    if (!locales.is_list())
-      return;
+  void PopulateLanguageItems(const std::vector<mojom::LocaleItemPtr>& locales) {
     language_items_.clear();
-
-    for (const auto& locale : locales.GetList()) {
-      const base::DictionaryValue* dictionary;
-      if (!locale.GetAsDictionary(&dictionary))
-        continue;
-
-      std::string value;
-      std::string title;
-      std::string group_name;
-      dictionary->GetString("value", &value);
-      dictionary->GetString("title", &title);
-      dictionary->GetString("optionGroupName", &group_name);
+    for (const auto& locale : locales) {
       LoginMenuView::Item item;
-      if (!group_name.empty()) {
-        item.title = group_name;
+      if (locale->group_name) {
+        item.title = locale->group_name.value();
         item.is_group = true;
       } else {
-        item.title = title;
-        item.value = value;
+        item.title = locale->title;
+        item.value = locale->language_code;
         item.is_group = false;
-        item.selected = selected_language_item_.value == value;
+        item.selected = selected_language_item_.value == locale->language_code;
       }
       language_items_.push_back(item);
 
-      if (selected_language_item_.value == value)
+      if (selected_language_item_.value == locale->language_code)
         selected_language_item_ = item;
     }
   }

@@ -81,7 +81,7 @@ class ASH_EXPORT LoginDataDispatcher {
     // |account_id|.
     virtual void OnPublicSessionLocalesChanged(
         const AccountId& account_id,
-        const base::ListValue& locales,
+        const std::vector<mojom::LocaleItemPtr>& locales,
         const std::string& default_locale,
         bool show_advanced_view);
 
@@ -122,7 +122,7 @@ class ASH_EXPORT LoginDataDispatcher {
   void SetPublicSessionDisplayName(const AccountId& account_id,
                                    const std::string& display_name);
   void SetPublicSessionLocales(const AccountId& account_id,
-                               std::unique_ptr<base::ListValue> locales,
+                               const std::vector<mojom::LocaleItemPtr>& locales,
                                const std::string& default_locale,
                                bool show_advanced_view);
   void SetPublicSessionKeyboardLayouts(

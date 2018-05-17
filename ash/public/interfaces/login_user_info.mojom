@@ -93,13 +93,26 @@ struct InputMethodItem {
   bool selected;
 };
 
+// Information of each available locale. This is used to populate language
+// locales for public account user.
+struct LocaleItem {
+  // Language code of the locale.
+  string language_code;
+
+  // Title of the locale.
+  string title;
+
+  // Optional, group name of the locale.
+  string? group_name;
+};
+
 // Infomation about a public account user.
 struct PublicAccountInfo {
   // Optional, the domain name displayed in the login screen UI.
   string? enterprise_domain;
 
   // A list of available user locales.
-  mojo_base.mojom.ListValue available_locales;
+  array<LocaleItem> available_locales;
 
   // Default locale for this user.
   string default_locale;

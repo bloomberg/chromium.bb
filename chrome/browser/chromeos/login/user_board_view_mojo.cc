@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
 
 namespace chromeos {
@@ -81,8 +82,9 @@ void UserBoardViewMojo::SetPublicSessionLocales(
     bool multiple_recommended_locales) {
   DCHECK(locales);
   LoginScreenClient::Get()->login_screen()->SetPublicSessionLocales(
-      account_id, std::move(*locales), default_locale,
-      multiple_recommended_locales);
+      account_id,
+      lock_screen_utils::FromListValueToLocaleItem(std::move(locales)),
+      default_locale, multiple_recommended_locales);
 
   // Send a request to get keyboard layouts for |default_locale|.
   LoginScreenClient::Get()->RequestPublicSessionKeyboardLayouts(account_id,

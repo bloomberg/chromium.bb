@@ -40,7 +40,7 @@ void LoginDataDispatcher::Observer::OnPublicSessionDisplayNameChanged(
 
 void LoginDataDispatcher::Observer::OnPublicSessionLocalesChanged(
     const AccountId& account_id,
-    const base::ListValue& locales,
+    const std::vector<mojom::LocaleItemPtr>& locales,
     const std::string& default_locale,
     bool show_advanced_view) {}
 
@@ -122,11 +122,11 @@ void LoginDataDispatcher::SetPublicSessionDisplayName(
 
 void LoginDataDispatcher::SetPublicSessionLocales(
     const AccountId& account_id,
-    std::unique_ptr<base::ListValue> locales,
+    const std::vector<mojom::LocaleItemPtr>& locales,
     const std::string& default_locale,
     bool show_advanced_view) {
   for (auto& observer : observers_) {
-    observer.OnPublicSessionLocalesChanged(account_id, *locales, default_locale,
+    observer.OnPublicSessionLocalesChanged(account_id, locales, default_locale,
                                            show_advanced_view);
   }
 }
