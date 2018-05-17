@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.signin;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.DimenRes;
@@ -18,6 +19,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.metrics.OneShotImpressionListener;
 import org.chromium.chrome.browser.signin.AccountSigninActivity.AccessPoint;
@@ -266,8 +268,14 @@ public class SigninPromoController {
         view.getSigninButton().setText(signinButtonText);
         view.getSigninButton().setOnClickListener(v -> signinWithDefaultAccount(context));
 
-        String chooseAccountButtonText = context.getString(
-                R.string.signin_promo_choose_account, mProfileData.getAccountName());
+        final String chooseAccountButtonText;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            chooseAccountButtonText =
+                    context.getString(R.string.signin_promo_choose_another_account);
+        } else {
+            chooseAccountButtonText = context.getString(
+                    R.string.signin_promo_choose_account, mProfileData.getAccountName());
+        }
         view.getChooseAccountButton().setText(chooseAccountButtonText);
         view.getChooseAccountButton().setOnClickListener(v -> signinWithNotDefaultAccount(context));
         view.getChooseAccountButton().setVisibility(View.VISIBLE);
@@ -281,22 +289,42 @@ public class SigninPromoController {
     private void signinWithNewAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNewAccountUserActionName);
-        context.startActivity(AccountSigninActivity.createIntentForAddAccountSigninFlow(
-                context, mAccessPoint, true));
+        final Intent intent;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            intent = SigninActivity.createIntentForPromoAddAccountFlow(context, mAccessPoint);
+        } else {
+            intent = AccountSigninActivity.createIntentForAddAccountSigninFlow(
+                    context, mAccessPoint, true);
+        }
+        context.startActivity(intent);
     }
 
     private void signinWithDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninWithDefaultUserActionName);
-        context.startActivity(AccountSigninActivity.createIntentForConfirmationOnlySigninFlow(
-                context, mAccessPoint, mProfileData.getAccountName(), true, true));
+        final Intent intent;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            intent = SigninActivity.createIntentForPromoDefaultFlow(
+                    context, mAccessPoint, mProfileData.getAccountName());
+        } else {
+            intent = AccountSigninActivity.createIntentForConfirmationOnlySigninFlow(
+                    context, mAccessPoint, mProfileData.getAccountName(), true, true);
+        }
+        context.startActivity(intent);
     }
 
     private void signinWithNotDefaultAccount(Context context) {
         recordSigninButtonUsed();
         RecordUserAction.record(mSigninNotDefaultUserActionName);
-        context.startActivity(AccountSigninActivity.createIntentForDefaultSigninFlow(
-                context, mAccessPoint, true));
+        final Intent intent;
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            intent = SigninActivity.createIntentForPromoChooseAccountFlow(
+                    context, mAccessPoint, mProfileData.getAccountName());
+        } else {
+            intent = AccountSigninActivity.createIntentForDefaultSigninFlow(
+                    context, mAccessPoint, true);
+        }
+        context.startActivity(intent);
     }
 
     private void recordSigninButtonUsed() {

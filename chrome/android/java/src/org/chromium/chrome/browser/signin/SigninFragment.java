@@ -37,22 +37,47 @@ public class SigninFragment extends SigninFragmentBase {
     private @PromoAction int mPromoAction;
 
     /**
-     * Creates an argument bundle to start signin.
-     * @param accessPoint The access point for starting signin flow.
+     * Creates an argument bundle to start sign-in.
+     * @param accessPoint The access point for starting sign-in flow.
      */
     public static Bundle createArguments(@SigninAccessPoint int accessPoint) {
-        return SigninFragmentBase.createArguments(accessPoint);
+        return SigninFragmentBase.createArguments(accessPoint, null);
     }
 
     /**
-     * Creates an argument bundle to start signin from personalized signin promo.
-     * @param accessPoint The access point for starting signin flow.
-     * @param promoAction Promo action that was used to start signin. Used for UMA.
+     * Creates an argument bundle to start sign-in from personalized sign-in promo.
+     * @param accessPoint The access point for starting sign-in flow.
+     * @param accountName The account to preselect or null to preselect the default account.
      */
-    public static Bundle createArgumentsFromPersonalizedPromo(
-            @SigninAccessPoint int accessPoint, @PromoAction int promoAction) {
-        Bundle result = SigninFragmentBase.createArguments(accessPoint);
-        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, promoAction);
+    public static Bundle createArgumentsForPromoDefaultFlow(
+            @SigninAccessPoint int accessPoint, String accountName) {
+        Bundle result = SigninFragmentBase.createArguments(accessPoint, accountName);
+        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PROMO_ACTION_WITH_DEFAULT);
+        return result;
+    }
+
+    /**
+     * Creates an argument bundle to start "Choose account" sign-in flow from personalized sign-in
+     * promo.
+     * @param accessPoint The access point for starting sign-in flow.
+     * @param accountName The account to preselect or null to preselect the default account.
+     */
+    public static Bundle createArgumentsForPromoChooseAccountFlow(
+            @SigninAccessPoint int accessPoint, String accountName) {
+        Bundle result =
+                SigninFragmentBase.createArgumentsForChooseAccountFlow(accessPoint, accountName);
+        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PROMO_ACTION_NOT_DEFAULT);
+        return result;
+    }
+
+    /**
+     * Creates an argument bundle to start "New account" sign-in flow from personalized sign-in
+     * promo.
+     * @param accessPoint The access point for starting sign-in flow.
+     */
+    public static Bundle createArgumentsForPromoAddAccountFlow(@SigninAccessPoint int accessPoint) {
+        Bundle result = SigninFragmentBase.createArgumentsForAddAccountFlow(accessPoint);
+        result.putInt(ARGUMENT_PERSONALIZED_PROMO_ACTION, PROMO_ACTION_NEW_ACCOUNT);
         return result;
     }
 
@@ -122,7 +147,7 @@ public class SigninFragment extends SigninFragmentBase {
                 histogram = "Signin.SigninCompletedAccessPoint.NewAccount";
                 break;
             default:
-                assert false : "Unexpected signin flow type!";
+                assert false : "Unexpected sign-in flow type!";
                 return;
         }
 
@@ -145,7 +170,7 @@ public class SigninFragment extends SigninFragmentBase {
                 histogram = "Signin.SigninStartedAccessPoint.NewAccount";
                 break;
             default:
-                assert false : "Unexpected signin flow type!";
+                assert false : "Unexpected sign-in flow type!";
                 return;
         }
 

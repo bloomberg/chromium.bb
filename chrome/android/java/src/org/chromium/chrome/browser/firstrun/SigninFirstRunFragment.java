@@ -30,7 +30,7 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
         String forceAccountTo =
                 freProperties.getString(AccountFirstRunFragment.FORCE_SIGNIN_ACCOUNT_TO);
         if (forceAccountTo == null) {
-            mArguments = createArguments(SigninAccessPoint.START_PAGE);
+            mArguments = createArguments(SigninAccessPoint.START_PAGE, null);
         } else {
             @ChildAccountStatus.Status int childAccountStatus =
                     freProperties.getInt(AccountFirstRunFragment.CHILD_ACCOUNT_STATUS);

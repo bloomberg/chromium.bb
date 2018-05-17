@@ -2413,6 +2413,11 @@ Customize this anytime in <ph name="BEGIN_LINK1">&lt;LINK1&gt;</ph>Settings<ph n
       <message name="IDS_SIGNIN_PROMO_CHOOSE_ACCOUNT" desc="Button that the user can press if they are not the profile that Chrome found (opposite of 'Continue as Joe Doe').">
         Not <ph name="EMAIL">%1$s<ex>john.doe@example.com</ex></ph>?
       </message>
+      <!-- Strings for signin promos when Unified Consent is enabled. -->
+      <!-- TODO(https://crbug.com/814728): Make translatable when strings are approved. -->
+      <message name="IDS_SIGNIN_PROMO_CHOOSE_ANOTHER_ACCOUNT" desc="Button that the user can press if they are not the profile that Chrome found (opposite of 'Continue as Joe Doe')." translateable="false">
+        Choose another account
+      </message>
 
       <!-- Messages for remote media playback (casting) -->
       <message name="IDS_CAST_CASTING_VIDEO" desc="AtHome text to tell user which screen casting is happening. [CHAR LIMIT=40]">

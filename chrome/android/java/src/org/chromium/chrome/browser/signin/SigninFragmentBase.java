@@ -13,6 +13,7 @@ import android.graphics.Point;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.SystemClock;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
@@ -43,6 +44,8 @@ import org.chromium.components.signin.GmsJustUpdatedException;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -63,14 +66,24 @@ public abstract class SigninFragmentBase
     private static final String ARGUMENT_ACCOUNT_NAME = "SigninFragmentBase.AccountName";
     private static final String ARGUMENT_CHILD_ACCOUNT_STATUS =
             "SigninFragmentBase.ChildAccountStatus";
+    private static final String ARGUMENT_SIGNIN_FLOW_TYPE = "SigninFragmentBase.SigninFlowType";
 
-    public static final String ACCOUNT_PICKER_DIALOG_TAG =
+    private static final String ACCOUNT_PICKER_DIALOG_TAG =
             "SigninFragmentBase.AccountPickerDialogFragment";
 
     private static final int ADD_ACCOUNT_REQUEST_CODE = 1;
 
+    @IntDef({FLOW_DEFAULT, FLOW_FORCED, FLOW_CHOOSE_ACCOUNT, FLOW_ADD_ACCOUNT})
+    @Retention(RetentionPolicy.SOURCE)
+    @interface SigninFlowType {}
+
+    private static final int FLOW_DEFAULT = 0;
+    private static final int FLOW_FORCED = 1;
+    private static final int FLOW_CHOOSE_ACCOUNT = 2;
+    private static final int FLOW_ADD_ACCOUNT = 3;
+
     private @SigninAccessPoint int mSigninAccessPoint;
-    private boolean mForceSignin;
+    private @SigninFlowType int mSigninFlowType;
     private @ChildAccountStatus.Status int mChildAccountStatus;
 
     private SigninView mView;
@@ -97,19 +110,50 @@ public abstract class SigninFragmentBase
     private ConfirmSyncDataStateMachine mConfirmSyncDataStateMachine;
 
     /**
-     * Creates an argument bundle for the default SigninFragmentBase flow (default account will be
-     * selected, account selection is enabled, etc.).
-     * @param accessPoint The access point for starting signin flow.
+     * Creates an argument bundle for the default SigninFragmentBase flow (account selection is
+     * enabled, etc.).
+     * @param accessPoint The access point for starting sign-in flow.
+     * @param accountName The account to preselect or null to preselect the default account.
      */
-    protected static Bundle createArguments(@SigninAccessPoint int accessPoint) {
+    protected static Bundle createArguments(
+            @SigninAccessPoint int accessPoint, @Nullable String accountName) {
         Bundle result = new Bundle();
         result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, FLOW_DEFAULT);
+        result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
+        return result;
+    }
+
+    /**
+     * Creates an argument bundle for "Choose account" sign-in flow. Account selection dialog will
+     * be shown at the start of the sign-in process.
+     * @param accessPoint The access point for starting sign-in flow.
+     * @param accountName The account to preselect or null to preselect the default account.
+     */
+    protected static Bundle createArgumentsForChooseAccountFlow(
+            @SigninAccessPoint int accessPoint, @Nullable String accountName) {
+        Bundle result = new Bundle();
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, FLOW_CHOOSE_ACCOUNT);
+        result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
+        return result;
+    }
+
+    /**
+     * Creates an argument bundle for "Add account" sign-in flow. Activity to add an account will be
+     * shown at the start of the sign-in process.
+     * @param accessPoint The access point for starting sign-in flow.
+     */
+    protected static Bundle createArgumentsForAddAccountFlow(@SigninAccessPoint int accessPoint) {
+        Bundle result = new Bundle();
+        result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, FLOW_ADD_ACCOUNT);
         return result;
     }
 
     /**
      * Creates an argument bundle for a custom SigninFragmentBase flow.
-     * @param accessPoint The access point for starting signin flow.
+     * @param accessPoint The access point for starting sign-in flow.
      * @param accountName The account to preselect.
      * @param childAccountStatus Whether the selected account is a child one.
      */
@@ -117,6 +161,7 @@ public abstract class SigninFragmentBase
             String accountName, @ChildAccountStatus.Status int childAccountStatus) {
         Bundle result = new Bundle();
         result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
+        result.putInt(ARGUMENT_SIGNIN_FLOW_TYPE, FLOW_FORCED);
         result.putString(ARGUMENT_ACCOUNT_NAME, accountName);
         result.putInt(ARGUMENT_CHILD_ACCOUNT_STATUS, childAccountStatus);
         return result;
@@ -152,7 +197,7 @@ public abstract class SigninFragmentBase
 
     /** Returns whether this fragment is in "force sign-in" mode. */
     protected boolean isForcedSignin() {
-        return mForceSignin;
+        return mSigninFlowType == FLOW_FORCED;
     }
 
     @Override
@@ -164,11 +209,21 @@ public abstract class SigninFragmentBase
         mRequestedAccountName = arguments.getString(ARGUMENT_ACCOUNT_NAME, null);
         mChildAccountStatus =
                 arguments.getInt(ARGUMENT_CHILD_ACCOUNT_STATUS, ChildAccountStatus.NOT_CHILD);
-        mForceSignin = mRequestedAccountName != null;
+        mSigninFlowType = arguments.getInt(ARGUMENT_SIGNIN_FLOW_TYPE, FLOW_DEFAULT);
 
         // Don't have a selected account now, onResume will trigger the selection.
         // TODO(https://crbug.com/814728): Disable controls until an account is selected.
         mAccountSelectionPending = true;
+
+        if (savedInstanceState == null) {
+            // If this fragment is being recreated from a saved state there's no need to show
+            // account picked or starting AddAccount flow.
+            if (mSigninFlowType == FLOW_CHOOSE_ACCOUNT) {
+                showAccountPicker();
+            } else if (mSigninFlowType == FLOW_ADD_ACCOUNT) {
+                addAccount();
+            }
+        }
 
         mConsentTextTracker = new ConsentTextTracker(getResources());
 
@@ -233,7 +288,7 @@ public abstract class SigninFragmentBase
         });
         mView.getScrollView().setScrolledToBottomObserver(this::showAcceptButton);
 
-        if (mForceSignin) {
+        if (isForcedSignin()) {
             mView.getAccountPickerEndImageView().setImageResource(
                     R.drawable.ic_check_googblue_24dp);
             mView.getAccountPickerEndImageView().setAlpha(1.0f);
@@ -533,7 +588,7 @@ public abstract class SigninFragmentBase
         }
 
         // Account for forced sign-in flow disappeared before the sign-in was completed.
-        if (mForceSignin) {
+        if (isForcedSignin()) {
             onSigninRefused();
             return;
         }
