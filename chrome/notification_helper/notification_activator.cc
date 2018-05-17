@@ -94,10 +94,14 @@ HRESULT NotificationActivator::Activate(
     base::Process process(info.hProcess);
     DWORD pid = ::GetProcessId(process.Handle());
     if (!::AllowSetForegroundWindow(pid)) {
+#if !defined(NDEBUG)
       DWORD error_code = ::GetLastError();
       Trace(L"Unable to forward activation privilege; error: 0x%08X\n",
             error_code);
-      return HRESULT_FROM_WIN32(error_code);
+#endif
+      // The lack of ability to set the window to foreground is not reason
+      // enough to fail the activation call. The user will see the Chrome icon
+      // flash in the task bar if this happens, which is a graceful failure.
     }
   }
 
