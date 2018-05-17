@@ -54,12 +54,14 @@ void UseCounterPageLoadMetricsObserver::OnFeaturesUsageObserved(
     UMA_HISTOGRAM_ENUMERATION(internal::kFeaturesHistogramName, feature,
                               WebFeature::kNumberOfFeatures);
     features_recorded_.set(static_cast<size_t>(feature));
-    // TODO(kochi): https://crbug.com/806671 as ElementCreateShadowRoot is
-    // ~12% as of April, 2018, and to meet the UKM's data volume expectation,
-    // reduce the data size by sampling. Revisit and remove this code once
-    // Shadow DOM V0 is removed.
+    // TODO(kochi): https://crbug.com/806671 https://843080
+    // as ElementCreateShadowRoot is ~8% and
+    // DocumentRegisterElement is ~5% as of May, 2018, to meet UKM's data
+    // volume expectation, reduce the data size by sampling. Revisit and
+    // remove this code once Shadow DOM V0 and Custom Elements V0 are removed.
     const int kSamplingFactor = 10;
-    if (feature == WebFeature::kElementCreateShadowRoot &&
+    if ((feature == WebFeature::kElementCreateShadowRoot ||
+         feature == WebFeature::kDocumentRegisterElement) &&
         base::RandGenerator(kSamplingFactor) != 0)
       continue;
     if (IsAllowedUkmFeature(feature)) {
