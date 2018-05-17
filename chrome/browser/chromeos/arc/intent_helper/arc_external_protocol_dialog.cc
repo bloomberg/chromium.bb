@@ -76,9 +76,8 @@ void OpenUrlInChrome(int render_process_host_id,
   if (!web_contents)
     return;
 
-  // TODO(djacobo): Decide whether or not we should propagate FROM_API here.
-  const ui::PageTransition page_transition_type = ui::PageTransitionFromInt(
-      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_API);
+  const ui::PageTransition page_transition_type =
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK);
   constexpr bool kIsRendererInitiated = false;
   const content::OpenURLParams params(
       // TODO(djacobo): Send a non-empty referrer.
