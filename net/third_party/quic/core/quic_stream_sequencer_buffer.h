@@ -133,6 +133,10 @@ class QUIC_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Returns false if there is no readable region available.
   bool GetReadableRegion(iovec* iov) const;
 
+  // Copies all of the readable data into |buffer| and marks all of the copied
+  // data as consumed.
+  void Read(QuicString* buffer);
+
   // Called after GetReadableRegions() to free up |bytes_used| space if these
   // bytes are processed.
   // Pre-requisite: bytes_used <= available bytes to read.

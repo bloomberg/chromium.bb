@@ -297,15 +297,10 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     EXPECT_TRUE(QuicFramerPeer::AppendIetfResetStreamFrame(
         &framer_, transmit_frame, &writer));
     // Check that the size of the serialzed frame is in the allowed range.
-    EXPECT_LT(4u, writer.length());
-    EXPECT_GT(20u, writer.length());
+    EXPECT_LT(3u, writer.length());
+    EXPECT_GT(19u, writer.length());
     // Now set up a reader to read in the thing in.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
-
-    // Read in the frame type and check that it is IETF_RST_STREAM.
-    uint8_t received_frame_type;
-    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-    EXPECT_EQ(received_frame_type, QuicIetfFrameType::IETF_RST_STREAM);
 
     // A QuicRstStreamFrame to hold the results
     QuicRstStreamFrame receive_frame;
@@ -508,16 +503,11 @@ TEST_F(QuicIetfFramerTest, ConnectionCloseEmptyString) {
   // now set up a reader to read in the frame.
   QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
 
-  // read in the frame type
-  uint8_t received_frame_type;
-  EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-  EXPECT_EQ(received_frame_type, QuicIetfFrameType::IETF_CONNECTION_CLOSE);
-
   // a QuicConnectionCloseFrame to hold the results.
   QuicConnectionCloseFrame sink_frame;
 
-  EXPECT_TRUE(QuicFramerPeer::ProcessIetfConnectionCloseFrame(
-      &framer_, &reader, received_frame_type, &sink_frame));
+  EXPECT_TRUE(QuicFramerPeer::ProcessIetfConnectionCloseFrame(&framer_, &reader,
+                                                              &sink_frame));
 
   // Now check that received == sent
   EXPECT_EQ(sink_frame.error_code, static_cast<QuicErrorCode>(0));
@@ -811,17 +801,12 @@ TEST_F(QuicIetfFramerTest, BlockedFrame) {
                                                        &writer));
 
     // Check that buffer length is in the expected range
-    EXPECT_LE(2u, writer.length());
-    EXPECT_GE(9u, writer.length());
+    EXPECT_LE(1u, writer.length());
+    EXPECT_GE(8u, writer.length());
 
     // Set up reader and empty receive QuicFrame.
     QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
     QuicBlockedFrame receive_frame;
-
-    // Read in the frame type
-    uint8_t received_frame_type;
-    EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-    EXPECT_EQ(received_frame_type, IETF_BLOCKED);
 
     // Deframe it
     EXPECT_TRUE(QuicFramerPeer::ProcessIetfBlockedFrame(&framer_, &reader,
@@ -856,17 +841,12 @@ TEST_F(QuicIetfFramerTest, StreamBlockedFrame) {
           &framer_, transmit_frame, &writer));
 
       // Check that number of bytes in the buffer is in the expected range.
-      EXPECT_LE(3u, writer.length());
-      EXPECT_GE(17u, writer.length());
+      EXPECT_LE(2u, writer.length());
+      EXPECT_GE(16u, writer.length());
 
       // Set up reader and empty receive QuicPaddingFrame.
       QuicDataReader reader(packet_buffer, writer.length(), NETWORK_BYTE_ORDER);
       QuicBlockedFrame receive_frame;
-
-      // Read in the frame type
-      uint8_t received_frame_type;
-      EXPECT_TRUE(reader.ReadUInt8(&received_frame_type));
-      EXPECT_EQ(received_frame_type, IETF_STREAM_BLOCKED);
 
       // Deframe it
       EXPECT_TRUE(QuicFramerPeer::ProcessStreamBlockedFrame(&framer_, &reader,

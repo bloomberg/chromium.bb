@@ -137,6 +137,11 @@ bool QuicStreamSequencer::GetReadableRegion(iovec* iov) const {
   return buffered_frames_.GetReadableRegion(iov);
 }
 
+void QuicStreamSequencer::Read(QuicString* buffer) {
+  DCHECK(!blocked_);
+  buffered_frames_.Read(buffer);
+}
+
 int QuicStreamSequencer::Readv(const struct iovec* iov, size_t iov_len) {
   DCHECK(!blocked_);
   QuicString error_details;

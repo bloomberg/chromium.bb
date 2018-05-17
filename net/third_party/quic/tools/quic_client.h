@@ -59,14 +59,22 @@ class QuicClient : public QuicSpdyClientBase {
 
   ~QuicClient() override;
 
+  std::unique_ptr<QuicSession> CreateQuicClientSession(
+      QuicConnection* connection) override;
+
   // Exposed for the quic client test.
   int GetLatestFD() const { return epoll_network_helper()->GetLatestFD(); }
 
   QuicClientEpollNetworkHelper* epoll_network_helper();
   const QuicClientEpollNetworkHelper* epoll_network_helper() const;
 
+  void set_drop_response_body(bool drop_response_body) {
+    drop_response_body_ = drop_response_body;
+  }
+
  private:
   friend class test::QuicClientPeer;
+  bool drop_response_body_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(QuicClient);
 };

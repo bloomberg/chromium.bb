@@ -354,6 +354,14 @@ bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov) const {
   return GetReadableRegions(iov, 1) == 1;
 }
 
+void QuicStreamSequencerBuffer::Read(QuicString* buffer) {
+  iovec iov;
+  while (GetReadableRegion(&iov)) {
+    buffer->append(reinterpret_cast<const char*>(iov.iov_base), iov.iov_len);
+    MarkConsumed(iov.iov_len);
+  }
+}
+
 bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
   CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
 

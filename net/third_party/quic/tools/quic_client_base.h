@@ -231,6 +231,10 @@ class QuicClientBase {
 
   bool initialized() const { return initialized_; }
 
+  void SetPreSharedKey(QuicStringPiece key) {
+    crypto_config_.set_pre_shared_key(key);
+  }
+
  protected:
   // TODO(rch): Move GetNumSentClientHellosFromSession and
   // GetNumReceivedServerConfigUpdatesFromSession into a new/better

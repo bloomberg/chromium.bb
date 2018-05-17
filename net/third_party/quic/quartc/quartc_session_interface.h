@@ -19,15 +19,6 @@
 
 namespace net {
 
-// Structure holding stats exported by a QuartcSession.
-struct QUIC_EXPORT_PRIVATE QuartcSessionStats {
-  // Bandwidth estimate in bits per second.
-  QuicBandwidth bandwidth_estimate = QuicBandwidth::Zero();
-
-  // Smoothed round-trip time.
-  QuicTime::Delta smoothed_rtt = QuicTime::Delta::Zero();
-};
-
 // Send and receive packets, like a virtual UDP socket. For example, this
 // could be implemented by WebRTC's IceTransport.
 class QUIC_EXPORT_PRIVATE QuartcPacketTransport {
@@ -105,8 +96,8 @@ class QUIC_EXPORT_PRIVATE QuartcSessionInterface {
   // other QUIC activity.
   virtual bool IsOpenStream(QuicStreamId stream_id) = 0;
 
-  // Gets stats associated with this Quartc session.
-  virtual QuartcSessionStats GetStats() = 0;
+  // Gets stats associated with the current QUIC connection.
+  virtual QuicConnectionStats GetStats() = 0;
 
   // Called when CanWrite() changes from false to true.
   virtual void OnTransportCanWrite() = 0;

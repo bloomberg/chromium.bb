@@ -42,6 +42,11 @@ const size_t kQuicMaxStreamIdSize = 4;
 const size_t kQuicMaxStreamOffsetSize = 8;
 // Number of bytes reserved to store payload length in stream frame.
 const size_t kQuicStreamPayloadLengthSize = 2;
+// Number of bytes to reserve for IQ Error codes (for the Connection Close,
+// Application Close, and Reset Stream frames).
+const size_t kQuicIetfQuicErrorCodeSize = 2;
+// Minimum size of the IETF QUIC Error Phrase's length field
+const size_t kIetfQuicMinErrorPhraseLengthSize = 1;
 
 // Size in bytes reserved for the delta time of the largest observed
 // packet number in ack frames.
@@ -231,16 +236,20 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
       QuicTransportVersion version,
       QuicPacketNumberLength packet_number_length);
   // Size in bytes of all reset stream frame fields.
-  static size_t GetRstStreamFrameSize();
+  static size_t GetRstStreamFrameSize(QuicTransportVersion version,
+                                      const QuicRstStreamFrame& frame);
   // Size in bytes of all connection close frame fields without the error
   // details and the missing packets from the enclosed ack frame.
-  static size_t GetMinConnectionCloseFrameSize();
+  static size_t GetMinConnectionCloseFrameSize(
+      QuicTransportVersion version,
+      const QuicConnectionCloseFrame& frame);
   // Size in bytes of all GoAway frame fields without the reason phrase.
   static size_t GetMinGoAwayFrameSize();
   // Size in bytes of all WindowUpdate frame fields.
   static size_t GetWindowUpdateFrameSize();
   // Size in bytes of all Blocked frame fields.
-  static size_t GetBlockedFrameSize();
+  static size_t GetBlockedFrameSize(QuicTransportVersion version,
+                                    const QuicBlockedFrame& frame);
   // Size in bytes required to serialize the stream id.
   static size_t GetStreamIdSize(QuicStreamId stream_id);
   // Size in bytes required to serialize the stream offset.
@@ -391,6 +400,15 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   void set_data_producer(QuicStreamFrameDataProducer* data_producer) {
     data_producer_ = data_producer;
+  }
+
+  // Returns true if we are doing IETF-formatted packets.
+  // In the future this could encompass a wide variety of
+  // versions. Doing the test by name ("ietf format") rather
+  // than version number localizes the version/ietf-ness binding
+  // to this method.
+  bool is_ietf_format() {
+    return version_.transport_version == QUIC_VERSION_99;
   }
 
  private:
@@ -554,7 +572,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
                               uint8_t frame_type,
                               QuicStreamFrame* frame);
   bool ProcessIetfConnectionCloseFrame(QuicDataReader* reader,
-                                       const uint8_t frame_type,
                                        QuicConnectionCloseFrame* frame);
   bool ProcessApplicationCloseFrame(QuicDataReader* reader,
                                     const uint8_t frame_type,
@@ -631,8 +648,6 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
 
   void set_detailed_error(const char* error) { detailed_error_ = error; }
 
-  QuicStringPiece TruncateErrorString(QuicStringPiece error);
-
   QuicString detailed_error_;
   QuicFramerVisitorInterface* visitor_;
   QuicErrorCode error_;
@@ -683,7 +698,7 @@ class QUIC_EXPORT_PRIVATE QuicFramer {
   // owned. TODO(fayang): Consider add data producer to framer's constructor.
   QuicStreamFrameDataProducer* data_producer_;
 
-  // Latched value of quic_reloadable_flag_quic_use_incremental_ack_processing3.
+  // Latched value of quic_reloadable_flag_quic_use_incremental_ack_processing4.
   const bool use_incremental_ack_processing_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicFramer);

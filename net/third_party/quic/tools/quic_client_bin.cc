@@ -105,6 +105,8 @@ bool FLAGS_version_mismatch_ok = false;
 bool FLAGS_redirect_is_success = true;
 // Initial MTU of the connection.
 int32_t FLAGS_initial_mtu = 0;
+// If true, drop response body immediately after it is received.
+bool FLAGS_drop_response_body = false;
 
 class FakeProofVerifier : public ProofVerifier {
  public:
@@ -212,6 +214,9 @@ int main(int argc, char* argv[]) {
       return 1;
     }
   }
+  if (line->HasSwitch("drop_response_body")) {
+    FLAGS_drop_response_body = true;
+  }
 
   VLOG(1) << "server host: " << FLAGS_host << " port: " << FLAGS_port
           << " body: " << FLAGS_body << " headers: " << FLAGS_headers
@@ -281,6 +286,7 @@ int main(int argc, char* argv[]) {
                          versions, &epoll_server, std::move(proof_verifier));
   client.set_initial_max_packet_length(
       FLAGS_initial_mtu != 0 ? FLAGS_initial_mtu : net::kDefaultMaxPacketSize);
+  client.set_drop_response_body(FLAGS_drop_response_body);
   if (!client.Initialize()) {
     cerr << "Failed to initialize client." << endl;
     return 1;

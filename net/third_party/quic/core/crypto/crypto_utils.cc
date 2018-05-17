@@ -14,12 +14,14 @@
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
+#include "net/third_party/quic/core/quic_data_writer.h"
 #include "net/third_party/quic/core/quic_time.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
+#include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
@@ -78,6 +80,8 @@ namespace {
 const uint8_t kQuicVersion1Salt[] = {0xaf, 0xc8, 0x24, 0xec, 0x5f, 0xc7, 0x7e,
                                      0xca, 0x1e, 0x9d, 0x36, 0xf3, 0x7f, 0xb2,
                                      0xd4, 0x65, 0x18, 0xc3, 0x66, 0x39};
+
+const char kPreSharedKeyLabel[] = "QUIC PSK";
 
 }  // namespace
 
@@ -156,11 +160,37 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
                              QuicTag aead,
                              QuicStringPiece client_nonce,
                              QuicStringPiece server_nonce,
+                             QuicStringPiece pre_shared_key,
                              const QuicString& hkdf_input,
                              Perspective perspective,
                              Diversification diversification,
                              CrypterPair* crypters,
                              QuicString* subkey_secret) {
+  // If the connection is using PSK, concatenate it with the pre-master secret.
+  std::unique_ptr<char[]> psk_premaster_secret;
+  if (!pre_shared_key.empty()) {
+    const QuicStringPiece label(kPreSharedKeyLabel);
+    const size_t psk_premaster_secret_size = label.size() + 1 +
+                                             pre_shared_key.size() + 8 +
+                                             premaster_secret.size() + 8;
+
+    psk_premaster_secret = QuicMakeUnique<char[]>(psk_premaster_secret_size);
+    QuicDataWriter writer(psk_premaster_secret_size, psk_premaster_secret.get(),
+                          HOST_BYTE_ORDER);
+
+    if (!writer.WriteStringPiece(label) || !writer.WriteUInt8(0) ||
+        !writer.WriteStringPiece(pre_shared_key) ||
+        !writer.WriteUInt64(pre_shared_key.size()) ||
+        !writer.WriteStringPiece(premaster_secret) ||
+        !writer.WriteUInt64(premaster_secret.size()) ||
+        writer.remaining() != 0) {
+      return false;
+    }
+
+    premaster_secret =
+        QuicStringPiece(psk_premaster_secret.get(), psk_premaster_secret_size);
+  }
+
   crypters->encrypter = QuicEncrypter::Create(aead);
   crypters->decrypter = QuicDecrypter::Create(aead);
   size_t key_bytes = crypters->encrypter->GetKeySize();
@@ -315,7 +345,11 @@ QuicErrorCode CryptoUtils::ValidateServerHelloVersions(
     // reports that there was a version negotiation during the handshake.
     // Ensure that these two lists are identical.
     if (mismatch) {
-      *error_details = "Downgrade attack detected";
+      *error_details = QuicStrCat(
+          "Downgrade attack detected: ServerVersions(", server_versions.size(),
+          ")[", QuicVersionLabelVectorToString(server_versions, ",", 30),
+          "] NegotiatedVersions(", negotiated_versions.size(), ")[",
+          ParsedQuicVersionVectorToString(negotiated_versions, ",", 30), "]");
       return QUIC_VERSION_NEGOTIATION_MISMATCH;
     }
   }
@@ -357,7 +391,11 @@ QuicErrorCode CryptoUtils::ValidateClientHelloVersion(
     // downgrade attack.
     for (size_t i = 0; i < supported_versions.size(); ++i) {
       if (client_version == CreateQuicVersionLabel(supported_versions[i])) {
-        *error_details = "Downgrade attack detected";
+        *error_details = QuicStrCat(
+            "Downgrade attack detected: ClientVersion[",
+            QuicVersionLabelToString(client_version), "] SupportedVersions(",
+            supported_versions.size(), ")[",
+            ParsedQuicVersionVectorToString(supported_versions, ",", 30), "]");
         return QUIC_VERSION_NEGOTIATION_MISMATCH;
       }
     }

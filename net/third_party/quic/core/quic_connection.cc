@@ -319,9 +319,14 @@ QuicConnection::QuicConnection(
           quic_handle_write_results_for_connectivity_probe)),
       use_path_degrading_alarm_(
           GetQuicReloadableFlag(quic_path_degrading_alarm2)),
-      enable_server_proxy_(GetQuicReloadableFlag(quic_enable_server_proxy2)) {
+      enable_server_proxy_(GetQuicReloadableFlag(quic_enable_server_proxy2)),
+      deprecate_scheduler_(
+          GetQuicReloadableFlag(quic_deprecate_scoped_scheduler)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
+  }
+  if (deprecate_scheduler_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_deprecate_scoped_scheduler);
   }
   QUIC_DLOG(INFO) << ENDPOINT
                   << "Created connection with connection_id: " << connection_id
@@ -1590,6 +1595,7 @@ void QuicConnection::ProcessUdpPacket(const QuicSocketAddress& self_address,
                 << time_of_last_received_packet_.ToDebuggingValue();
 
   ScopedRetransmissionScheduler alarm_delayer(this);
+  ScopedPacketFlusher flusher(deprecate_scheduler_ ? this : nullptr, NO_ACK);
   if (!framer_.ProcessPacket(packet)) {
     // If we are unable to decrypt this packet, it might be
     // because the CHLO or SHLO packet was lost.
@@ -2389,6 +2395,14 @@ void QuicConnection::MaybeProcessUndecryptablePackets() {
   }
 
   while (connected_ && !undecryptable_packets_.empty()) {
+    if (deprecate_scheduler_) {
+      // Making sure there is no pending frames when processing next undecrypted
+      // packet because the queued ack frame may change.
+      packet_generator_.FlushAllQueuedFrames();
+      if (!connected_) {
+        return;
+      }
+    }
     QUIC_DVLOG(1) << ENDPOINT << "Attempting to process undecryptable packet";
     QuicEncryptedPacket* packet = undecryptable_packets_.front().get();
     if (!framer_.ProcessPacket(*packet) &&
@@ -2669,9 +2683,17 @@ void QuicConnection::MaybeSetMtuAlarm(QuicPacketNumber sent_packet_number) {
 QuicConnection::ScopedPacketFlusher::ScopedPacketFlusher(
     QuicConnection* connection,
     AckBundling ack_mode)
-    : connection_(connection), flush_on_delete_(false) {
+    : connection_(connection),
+      flush_on_delete_(false),
+      set_retransmission_alarm_on_delete_if_pending_(false) {
   if (connection_ == nullptr) {
     return;
+  }
+
+  if (connection_->deprecate_scheduler_) {
+    set_retransmission_alarm_on_delete_if_pending_ =
+        !connection_->delay_setting_retransmission_alarm_;
+    connection_->delay_setting_retransmission_alarm_ = true;
   }
 
   if (!connection_->packet_generator_.PacketFlusherAttached()) {
@@ -2743,17 +2765,34 @@ QuicConnection::ScopedPacketFlusher::~ScopedPacketFlusher() {
   }
   DCHECK_EQ(flush_on_delete_,
             !connection_->packet_generator_.PacketFlusherAttached());
+
+  if (connection_->deprecate_scheduler_) {
+    if (!set_retransmission_alarm_on_delete_if_pending_) {
+      return;
+    }
+    connection_->delay_setting_retransmission_alarm_ = false;
+    if (connection_->pending_retransmission_alarm_) {
+      connection_->SetRetransmissionAlarm();
+      connection_->pending_retransmission_alarm_ = false;
+    }
+  }
 }
 
 QuicConnection::ScopedRetransmissionScheduler::ScopedRetransmissionScheduler(
     QuicConnection* connection)
     : connection_(connection),
       already_delayed_(connection_->delay_setting_retransmission_alarm_) {
+  if (connection_->deprecate_scheduler()) {
+    return;
+  }
   connection_->delay_setting_retransmission_alarm_ = true;
 }
 
 QuicConnection::ScopedRetransmissionScheduler::
     ~ScopedRetransmissionScheduler() {
+  if (connection_->deprecate_scheduler()) {
+    return;
+  }
   if (already_delayed_) {
     return;
   }

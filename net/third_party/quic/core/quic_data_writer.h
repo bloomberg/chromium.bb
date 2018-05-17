@@ -15,6 +15,16 @@
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
 namespace net {
+// VarInt64 encoding masks
+// If a uint64_t anded with a mask is not 0 then the value is encoded
+// using that length (or is too big, in the case of
+// kVarInt62ErrorMask). Values must be checked in order (error, 8-,
+// 4-, and then 2- bytes) and if none are non-0, the value is encoded
+// in 1 byte.
+const uint64_t kVarInt62ErrorMask = UINT64_C(0xc000000000000000);
+const uint64_t kVarInt62Mask8Bytes = UINT64_C(0x3fffffffc0000000);
+const uint64_t kVarInt62Mask4Bytes = UINT64_C(0x000000003fffc000);
+const uint64_t kVarInt62Mask2Bytes = UINT64_C(0x0000000000003fc0);
 
 // This class provides facilities for packing QUIC data.
 //
@@ -51,6 +61,16 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
   // buffer.
   bool WriteVarInt62(uint64_t value);
 
+  // Writes a std::string piece as a consecutive length/content pair. The
+  // length is VarInt62 encoded.
+  bool WriteStringPieceVarInt62(const QuicStringPiece& string_piece);
+
+  // Utility function to return the number of bytes needed to encode
+  // the given value using IETF VarInt62 encoding. Returns the number
+  // of bytes required to encode the given integer or 0 if the value
+  // is too large to encode.
+  static int GetVarInt62Len(uint64_t value);
+
   // Writes |value| to the position |offset| from the start of the data.
   // |offset| must be less than the current length of the writer.
   bool WriteUInt8AtOffset(uint8_t value, size_t offset);
@@ -63,6 +83,7 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
   // clamped to the maximum representable (kUFloat16MaxValue). Values that can
   // not be represented directly are rounded down.
   bool WriteUFloat16(uint64_t value);
+  bool WriteStringPiece(QuicStringPiece val);
   bool WriteStringPiece16(QuicStringPiece val);
   bool WriteBytes(const void* data, size_t data_len);
   bool WriteRepeatedByte(uint8_t byte, size_t count);

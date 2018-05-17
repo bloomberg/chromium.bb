@@ -656,11 +656,12 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
     cetv.SetStringPiece(kCIDS, signature);
 
     CrypterPair crypters;
-    if (!CryptoUtils::DeriveKeys(
-            out_params->initial_premaster_secret, out_params->aead,
-            out_params->client_nonce, out_params->server_nonce, hkdf_input,
-            Perspective::IS_CLIENT, CryptoUtils::Diversification::Never(),
-            &crypters, nullptr /* subkey secret */)) {
+    if (!CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
+                                 out_params->aead, out_params->client_nonce,
+                                 out_params->server_nonce, pre_shared_key_,
+                                 hkdf_input, Perspective::IS_CLIENT,
+                                 CryptoUtils::Diversification::Never(),
+                                 &crypters, nullptr /* subkey secret */)) {
       *error_details = "Symmetric key setup failed";
       return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
     }
@@ -711,11 +712,12 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
 
   QuicString* subkey_secret = &out_params->initial_subkey_secret;
 
-  if (!CryptoUtils::DeriveKeys(
-          out_params->initial_premaster_secret, out_params->aead,
-          out_params->client_nonce, out_params->server_nonce, hkdf_input,
-          Perspective::IS_CLIENT, CryptoUtils::Diversification::Pending(),
-          &out_params->initial_crypters, subkey_secret)) {
+  if (!CryptoUtils::DeriveKeys(out_params->initial_premaster_secret,
+                               out_params->aead, out_params->client_nonce,
+                               out_params->server_nonce, pre_shared_key_,
+                               hkdf_input, Perspective::IS_CLIENT,
+                               CryptoUtils::Diversification::Pending(),
+                               &out_params->initial_crypters, subkey_secret)) {
     *error_details = "Symmetric key setup failed";
     return QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED;
   }
@@ -892,7 +894,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessServerHello(
           out_params->forward_secure_premaster_secret, out_params->aead,
           out_params->client_nonce,
           shlo_nonce.empty() ? out_params->server_nonce : shlo_nonce,
-          hkdf_input, Perspective::IS_CLIENT,
+          pre_shared_key_, hkdf_input, Perspective::IS_CLIENT,
           CryptoUtils::Diversification::Never(),
           &out_params->forward_secure_crypters, &out_params->subkey_secret)) {
     *error_details = "Symmetric key setup failed";

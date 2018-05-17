@@ -24,6 +24,7 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
+#include "net/third_party/quic/tools/quic_simple_client_session.h"
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
@@ -84,6 +85,13 @@ QuicClient::QuicClient(
 }
 
 QuicClient::~QuicClient() = default;
+
+std::unique_ptr<QuicSession> QuicClient::CreateQuicClientSession(
+    QuicConnection* connection) {
+  return QuicMakeUnique<QuicSimpleClientSession>(
+      *config(), connection, server_id(), crypto_config(), push_promise_index(),
+      drop_response_body_);
+}
 
 QuicClientEpollNetworkHelper* QuicClient::epoll_network_helper() {
   return static_cast<QuicClientEpollNetworkHelper*>(network_helper());

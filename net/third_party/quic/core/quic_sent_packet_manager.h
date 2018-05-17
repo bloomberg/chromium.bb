@@ -501,19 +501,13 @@ class QUIC_EXPORT_PRIVATE QuicSentPacketManager {
   QuicAckFrame last_ack_frame_;
 
   // Record whether RTT gets updated by last largest acked. This is only used
-  // when quic_reloadable_flag_quic_use_incremental_ack_processing3 is true.
+  // when quic_reloadable_flag_quic_use_incremental_ack_processing4 is true.
   bool rtt_updated_;
 
   // A reverse iterator of last_ack_frame_.packets. This is reset in
   // OnAckRangeStart, and gradually moves in OnAckRange. This is only used
-  // when quic_reloadable_flag_quic_use_incremental_ack_processing3 is true.
+  // when quic_reloadable_flag_quic_use_incremental_ack_processing4 is true.
   PacketNumberQueue::const_reverse_iterator acked_packets_iter_;
-
-  // Used for debugging purpose.
-  // TODO(b/78128994): Replace
-  // quic_reloadable_flag_quic_use_incremental_ack_processing3 with a new flag
-  // and remove this when the issue is fixed.
-  PacketNumberQueue received_ack_ranges_for_debugging_;
 
   // Latched value of
   // quic_reloadable_flag_quic_path_degrading_alarm

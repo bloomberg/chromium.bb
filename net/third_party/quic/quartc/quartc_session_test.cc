@@ -309,15 +309,22 @@ class FakeTransport : public QuartcPacketTransport {
             size_t buf_len,
             const PacketInfo& info) override {
     DCHECK(channel_);
+    if (packets_to_lose_ > 0) {
+      --packets_to_lose_;
+      return buf_len;
+    }
     last_packet_number_ = info.packet_number;
     return channel_->SendPacket(buffer, buf_len);
   }
 
   QuicPacketNumber last_packet_number() { return last_packet_number_; }
 
+  void set_packets_to_lose(QuicPacketCount count) { packets_to_lose_ = count; }
+
  private:
   FakeTransportChannel* channel_;
   QuicPacketNumber last_packet_number_;
+  QuicPacketCount packets_to_lose_ = 0;
 };
 
 class FakeQuartcSessionDelegate : public QuartcSessionInterface::Delegate {
@@ -787,9 +794,25 @@ TEST_F(QuartcSessionTest, GetStats) {
   ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
   ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
 
-  QuartcSessionStats stats = server_peer_->GetStats();
-  EXPECT_GT(stats.bandwidth_estimate, QuicBandwidth::Zero());
-  EXPECT_GT(stats.smoothed_rtt, QuicTime::Delta::Zero());
+  QuicConnectionStats stats = server_peer_->GetStats();
+  EXPECT_GT(stats.estimated_bandwidth, QuicBandwidth::Zero());
+  EXPECT_GT(stats.srtt_us, 0);
+  EXPECT_GT(stats.packets_sent, 0u);
+  EXPECT_EQ(stats.packets_lost, 0u);
+}
+
+TEST_F(QuartcSessionTest, DISABLED_PacketLossStats) {
+  CreateClientAndServerSessions();
+  StartHandshake();
+  ASSERT_TRUE(client_peer_->IsCryptoHandshakeConfirmed());
+  ASSERT_TRUE(server_peer_->IsCryptoHandshakeConfirmed());
+
+  // Packet loss doesn't count until the handshake is done.
+  server_transport_->set_packets_to_lose(1);
+  TestStreamConnection();
+
+  QuicConnectionStats stats = server_peer_->GetStats();
+  EXPECT_EQ(stats.packets_lost, 1u);
 }
 
 TEST_F(QuartcSessionTest, CloseConnection) {

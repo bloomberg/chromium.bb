@@ -327,9 +327,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // A window used to limit the number of bytes in flight during loss recovery.
   QuicByteCount recovery_window_;
 
-  // When true, recovery is rate based rather than congestion window based.
-  bool rate_based_recovery_;
-
   // When true, pace at 1.5x and disable packet conservation in STARTUP.
   bool slower_startup_;
   // When true, disables packet conservation in STARTUP.
