@@ -7,10 +7,10 @@
 #include <stdint.h>
 
 #include "base/files/file_util.h"
-#include "base/files/file_util_proxy.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -22,6 +22,31 @@ namespace {
 const int kOpenFlagsForRead = base::File::FLAG_OPEN |
                               base::File::FLAG_READ |
                               base::File::FLAG_ASYNC;
+
+struct GetFileInfoResults {
+  base::File::Error error;
+  base::File::Info info;
+};
+
+using GetFileInfoCallback =
+    base::OnceCallback<void(base::File::Error, const base::File::Info&)>;
+
+GetFileInfoResults DoGetFileInfo(const base::FilePath& path) {
+  GetFileInfoResults results;
+  if (!base::PathExists(path)) {
+    results.error = base::File::FILE_ERROR_NOT_FOUND;
+    return results;
+  }
+  results.error = base::GetFileInfo(path, &results.info)
+                      ? base::File::FILE_OK
+                      : base::File::FILE_ERROR_FAILED;
+  return results;
+}
+
+void SendGetFileInfoResults(GetFileInfoCallback callback,
+                            const GetFileInfoResults& results) {
+  std::move(callback).Run(results.error, results.info);
+}
 
 }  // namespace
 
@@ -48,10 +73,12 @@ int LocalFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
 
 int64_t LocalFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
-  const bool posted = base::FileUtilProxy::GetFileInfo(
-      task_runner_.get(), file_path_,
-      base::BindOnce(&LocalFileStreamReader::DidGetFileInfoForGetLength,
-                     weak_factory_.GetWeakPtr(), callback));
+  bool posted = base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE, base::BindOnce(&DoGetFileInfo, file_path_),
+      base::BindOnce(
+          &SendGetFileInfoResults,
+          base::BindOnce(&LocalFileStreamReader::DidGetFileInfoForGetLength,
+                         weak_factory_.GetWeakPtr(), callback)));
   DCHECK(posted);
   return net::ERR_IO_PENDING;
 }

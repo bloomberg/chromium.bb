@@ -52,7 +52,6 @@
 #include "v8/include/v8-version-string.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/files/file_util_proxy.h"
 #include "base/i18n/time_formatting.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos.h"

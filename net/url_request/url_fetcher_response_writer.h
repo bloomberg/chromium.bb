@@ -134,7 +134,6 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
 
   CompletionCallback callback_;
 
-  // Callbacks are created for use with base::FileUtilProxy.
   base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(URLFetcherFileWriter);

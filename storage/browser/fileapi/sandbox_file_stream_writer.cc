@@ -9,7 +9,6 @@
 #include <limits>
 #include <tuple>
 
-#include "base/files/file_util_proxy.h"
 #include "base/sequenced_task_runner.h"
 #include "base/trace_event/trace_event.h"
 #include "net/base/io_buffer.h"

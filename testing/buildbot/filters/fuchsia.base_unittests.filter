@@ -16,7 +16,6 @@
 -FilePathWatcherTest.RecursiveWatch
 -FilePathWatcherTest.WatchDirectory
 -FileProxyTest.SetTimes
--FileUtilProxyTest.Touch
 -FileUtilTest.FileToFILE
 -PlatformThreadTest.ThreadPriorityCurrentThread
 -ProcessMemoryDumpTest.CountResidentBytes

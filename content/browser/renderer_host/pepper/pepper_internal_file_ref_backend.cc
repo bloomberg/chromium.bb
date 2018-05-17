@@ -11,7 +11,6 @@
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/files/file_util_proxy.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"

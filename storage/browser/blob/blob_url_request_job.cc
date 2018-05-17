@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/files/file_util_proxy.h"
 #include "base/format_macros.h"
 #include "base/location.h"
 #include "base/numerics/safe_conversions.h"

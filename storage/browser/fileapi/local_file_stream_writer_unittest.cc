@@ -28,8 +28,7 @@ namespace content {
 
 class LocalFileStreamWriterTest : public testing::Test {
  public:
-  LocalFileStreamWriterTest()
-      : file_thread_("FileUtilProxyTestFileThread") {}
+  LocalFileStreamWriterTest() : file_thread_("TestFileThread") {}
 
   void SetUp() override {
     ASSERT_TRUE(file_thread_.Start());
