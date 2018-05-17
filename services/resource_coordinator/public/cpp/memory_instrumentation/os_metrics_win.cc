@@ -81,8 +81,10 @@ std::vector<mojom::VmRegionPtr> OSMetrics::GetProcessMemoryMaps(
 
     GUID module_guid;
     DWORD module_age;
-    if (pe_image.GetDebugId(&module_guid, &module_age)) {
+    LPCSTR pdb_file;
+    if (pe_image.GetDebugId(&module_guid, &module_age, &pdb_file)) {
       region->module_debugid = MakeDebugID(module_guid, module_age);
+      region->module_debug_path = pdb_file;
     }
 
     maps.push_back(std::move(region));

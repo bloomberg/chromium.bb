@@ -90,7 +90,7 @@ void RecordChromeModuleInfo(
 
   GUID guid;
   DWORD age;
-  pe.GetDebugId(&guid, &age);
+  pe.GetDebugId(&guid, &age, /* pdb_file= */ nullptr);
   module.age = age;
   static_assert(sizeof(module.identifier) >= sizeof(guid),
                 "Identifier field must be able to contain a GUID.");
