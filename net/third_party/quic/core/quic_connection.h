@@ -677,6 +677,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
     QuicConnection* connection_;
     // If true, flush connection when this flusher goes out of scope.
     bool flush_on_delete_;
+    // If true, set retransmission alarm if there is one pending when this
+    // flusher goes out of scope.
+    // TODO(fayang): Consider to combine flush_on_delete_ and
+    // set_retransmission_alarm_on_delete_if_pending_ when deprecating
+    // quic_reloadable_flag_quic_deprecate_scoped_scheduler.
+    bool set_retransmission_alarm_on_delete_if_pending_;
   };
 
   // Delays setting the retransmission alarm until the scope is exited.
@@ -784,6 +790,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool IsServerProxyEnabled() const { return enable_server_proxy_; }
 
   bool IsPathDegrading() const { return is_path_degrading_; }
+
+  bool deprecate_scheduler() const { return deprecate_scheduler_; }
 
  protected:
   // Calls cancel() on all the alarms owned by this connection.
@@ -1319,6 +1327,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Latched value of quic_reloadable_flag_quic_enable_server_proxy2.
   const bool enable_server_proxy_;
+
+  // Latched value of quic_reloadable_flag_quic_deprecate_scoped_scheduler.
+  // TODO(fayang): Remove ScopedRetransmissionScheduler when deprecating
+  // quic_reloadable_flag_quic_deprecate_scoped_scheduler.
+  const bool deprecate_scheduler_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

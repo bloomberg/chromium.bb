@@ -326,6 +326,9 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
                            client_supported_versions_,
                            crypto_test_utils::ProofVerifierForTesting());
     client->UseWriter(writer);
+    if (!pre_shared_key_client_.empty()) {
+      client->client()->SetPreSharedKey(pre_shared_key_client_);
+    }
     client->Connect();
     return client;
   }
@@ -450,6 +453,9 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
     server_thread_ = QuicMakeUnique<ServerThread>(test_server, server_address_);
     if (chlo_multiplier_ != 0) {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
+    }
+    if (!pre_shared_key_server_.empty()) {
+      server_thread_->server()->SetPreSharedKey(pre_shared_key_server_);
     }
     server_thread_->Initialize();
     server_address_ =
@@ -610,6 +616,8 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
   size_t chlo_multiplier_;
   QuicTestServer::StreamFactory* stream_factory_;
   bool support_server_push_;
+  QuicString pre_shared_key_client_;
+  QuicString pre_shared_key_server_;
 };
 
 class EndToEndTestWithTls : public EndToEndTest {};
@@ -2396,92 +2404,6 @@ class ServerStreamThatSendsHugeResponseFactory
   int64_t body_bytes_;
 };
 
-// A test client stream that drops all received body.
-class ClientStreamThatDropsBody : public QuicSpdyClientStream {
- public:
-  ClientStreamThatDropsBody(QuicStreamId id, QuicSpdyClientSession* session)
-      : QuicSpdyClientStream(id, session) {}
-  ~ClientStreamThatDropsBody() override = default;
-
-  void OnDataAvailable() override {
-    while (HasBytesToRead()) {
-      struct iovec iov;
-      if (GetReadableRegions(&iov, 1) == 0) {
-        break;
-      }
-      MarkConsumed(iov.iov_len);
-    }
-    if (sequencer()->IsClosed()) {
-      OnFinRead();
-    } else {
-      sequencer()->SetUnblocked();
-    }
-  }
-};
-
-class ClientSessionThatDropsBody : public QuicSpdyClientSession {
- public:
-  ClientSessionThatDropsBody(const QuicConfig& config,
-                             QuicConnection* connection,
-                             const QuicServerId& server_id,
-                             QuicCryptoClientConfig* crypto_config,
-                             QuicClientPushPromiseIndex* push_promise_index)
-      : QuicSpdyClientSession(config,
-                              connection,
-                              server_id,
-                              crypto_config,
-                              push_promise_index) {}
-
-  ~ClientSessionThatDropsBody() override = default;
-
-  std::unique_ptr<QuicSpdyClientStream> CreateClientStream() override {
-    return QuicMakeUnique<ClientStreamThatDropsBody>(GetNextOutgoingStreamId(),
-                                                     this);
-  }
-};
-
-class MockableQuicClientThatDropsBody : public MockableQuicClient {
- public:
-  MockableQuicClientThatDropsBody(
-      QuicSocketAddress server_address,
-      const QuicServerId& server_id,
-      const QuicConfig& config,
-      const ParsedQuicVersionVector& supported_versions,
-      EpollServer* epoll_server)
-      : MockableQuicClient(server_address,
-                           server_id,
-                           config,
-                           supported_versions,
-                           epoll_server) {}
-  ~MockableQuicClientThatDropsBody() override = default;
-
-  std::unique_ptr<QuicSession> CreateQuicClientSession(
-      QuicConnection* connection) override {
-    return QuicMakeUnique<ClientSessionThatDropsBody>(
-        *config(), connection, server_id(), crypto_config(),
-        push_promise_index());
-  }
-};
-
-class QuicTestClientThatDropsBody : public QuicTestClient {
- public:
-  QuicTestClientThatDropsBody(QuicSocketAddress server_address,
-                              const QuicString& server_hostname,
-                              const QuicConfig& config,
-                              const ParsedQuicVersionVector& supported_versions)
-      : QuicTestClient(server_address,
-                       server_hostname,
-                       config,
-                       supported_versions) {
-    set_client(new MockableQuicClientThatDropsBody(
-        server_address,
-        QuicServerId(server_hostname, server_address.port(),
-                     PRIVACY_MODE_DISABLED),
-        config, supported_versions, epoll_server()));
-  }
-  ~QuicTestClientThatDropsBody() override = default;
-};
-
 TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   set_smaller_flow_control_receive_window();
 
@@ -2906,9 +2828,10 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
   StartServer();
 
   // Use a quic client that drops received body.
-  QuicTestClient* client = new QuicTestClientThatDropsBody(
-      server_address_, server_hostname_, client_config_,
-      client_supported_versions_);
+  QuicTestClient* client =
+      new QuicTestClient(server_address_, server_hostname_, client_config_,
+                         client_supported_versions_);
+  client->client()->set_drop_response_body(true);
   client->UseWriter(client_writer_);
   client->Connect();
   client_.reset(client);
@@ -3054,6 +2977,56 @@ TEST_P(EndToEndTest, LastPacketSentIsConnectivityProbing) {
   client_->WaitForDelayedAcks();
 }
 
+TEST_P(EndToEndTest, PreSharedKey) {
+  client_config_.set_max_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(1));
+  client_config_.set_max_idle_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(1));
+  pre_shared_key_client_ = "foobar";
+  pre_shared_key_server_ = "foobar";
+  ASSERT_TRUE(Initialize());
+
+  ASSERT_EQ(kFooResponseBody, client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
+}
+
+TEST_P(EndToEndTest, PreSharedKeyMismatch) {
+  client_config_.set_max_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(1));
+  client_config_.set_max_idle_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(1));
+  pre_shared_key_client_ = "foo";
+  pre_shared_key_server_ = "bar";
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(QUIC_HANDSHAKE_TIMEOUT, client_->connection_error());
+}
+
+TEST_P(EndToEndTest, PreSharedKeyNoClient) {
+  client_config_.set_max_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(1));
+  client_config_.set_max_idle_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(1));
+  pre_shared_key_server_ = "foobar";
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(QUIC_HANDSHAKE_TIMEOUT, client_->connection_error());
+}
+
+TEST_P(EndToEndTest, PreSharedKeyNoServer) {
+  client_config_.set_max_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(1));
+  client_config_.set_max_idle_time_before_crypto_handshake(
+      QuicTime::Delta::FromSeconds(1));
+  pre_shared_key_client_ = "foobar";
+  ASSERT_TRUE(Initialize());
+
+  EXPECT_EQ("", client_->SendSynchronousRequest("/foo"));
+  EXPECT_EQ(QUIC_HANDSHAKE_TIMEOUT, client_->connection_error());
+}
+
 class EndToEndPacketReorderingTest : public EndToEndTest {
  public:
   void CreateClientWithWriter() override {
@@ -3151,6 +3124,7 @@ TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
   EXPECT_EQ(0u, client_stats.packets_lost);
   EXPECT_EQ(1, client_->client()->GetNumSentClientHellos());
 }
+
 }  // namespace
 }  // namespace test
 }  // namespace net

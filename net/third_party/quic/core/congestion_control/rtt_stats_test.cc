@@ -61,7 +61,6 @@ TEST_F(RttStatsTest, SmoothedRtt) {
 }
 
 TEST_F(RttStatsTest, SmoothedRttIgnoreAckDelay) {
-  SetQuicReloadableFlag(quic_max_ack_delay, true);
   rtt_stats_.set_ignore_max_ack_delay(true);
   // Verify that ack_delay is ignored in the first measurement.
   rtt_stats_.UpdateRtt(QuicTime::Delta::FromMilliseconds(300),

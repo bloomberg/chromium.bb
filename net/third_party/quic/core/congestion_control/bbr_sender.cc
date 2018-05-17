@@ -123,7 +123,6 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       recovery_state_(NOT_IN_RECOVERY),
       end_recovery_at_(0),
       recovery_window_(max_congestion_window_),
-      rate_based_recovery_(false),
       slower_startup_(false),
       rate_based_startup_(false),
       initial_conservation_in_startup_(CONSERVATION),
@@ -193,8 +192,7 @@ QuicByteCount BbrSender::GetCongestionWindow() const {
     return ProbeRttCongestionWindow();
   }
 
-  if (InRecovery() && !rate_based_recovery_ &&
-      !(rate_based_startup_ && mode_ == STARTUP)) {
+  if (InRecovery() && !(rate_based_startup_ && mode_ == STARTUP)) {
     return std::min(congestion_window_, recovery_window_);
   }
 
@@ -223,10 +221,6 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
   }
   if (config.HasClientRequestedIndependentOption(k2RTT, perspective)) {
     num_startup_rtts_ = 2;
-  }
-  if (GetQuicReloadableFlag(quic_bbr_rate_recovery) &&
-      config.HasClientRequestedIndependentOption(kBBRR, perspective)) {
-    rate_based_recovery_ = true;
   }
   if (config.HasClientRequestedIndependentOption(kBBRS, perspective)) {
     slower_startup_ = true;
@@ -409,7 +403,7 @@ bool BbrSender::UpdateBandwidthAndMinRtt(
     const AckedPacketVector& acked_packets) {
   QuicTime::Delta sample_min_rtt = QuicTime::Delta::Infinite();
   for (const auto& packet : acked_packets) {
-    if (GetQuicReloadableFlag(quic_use_incremental_ack_processing3) &&
+    if (GetQuicReloadableFlag(quic_use_incremental_ack_processing4) &&
         packet.bytes_acked == 0) {
       // Skip acked packets with 0 in flight bytes when updating bandwidth.
       continue;
@@ -663,10 +657,6 @@ void BbrSender::CalculatePacingRate() {
   }
 
   QuicBandwidth target_rate = pacing_gain_ * BandwidthEstimate();
-  if (rate_based_recovery_ && InRecovery()) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_rate_recovery);
-    pacing_rate_ = pacing_gain_ * max_bandwidth_.GetThirdBest();
-  }
   if (is_at_full_bandwidth_) {
     pacing_rate_ = target_rate;
     return;
@@ -726,7 +716,7 @@ void BbrSender::CalculateCongestionWindow(QuicByteCount bytes_acked) {
 
 void BbrSender::CalculateRecoveryWindow(QuicByteCount bytes_acked,
                                         QuicByteCount bytes_lost) {
-  if (rate_based_recovery_ || (rate_based_startup_ && mode_ == STARTUP)) {
+  if (rate_based_startup_ && mode_ == STARTUP) {
     return;
   }
 

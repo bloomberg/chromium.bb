@@ -127,6 +127,9 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // optional and, if non-empty, is mixed into the key derivation.
   // |subkey_secret| will have the same length as |premaster_secret|.
   //
+  // If |pre_shared_key| is non-empty, it is incorporated into the key
+  // derivation parameters.  If it is empty, the key derivation is unaltered.
+  //
   // If the mode of |diversification| is NEVER, the the crypters will be
   // configured to never perform key diversification. If the mode is
   // NOW (which is only for servers, then the encrypter will be keyed via a
@@ -139,6 +142,7 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
                          QuicTag aead,
                          QuicStringPiece client_nonce,
                          QuicStringPiece server_nonce,
+                         QuicStringPiece pre_shared_key,
                          const QuicString& hkdf_input,
                          Perspective perspective,
                          Diversification diversification,

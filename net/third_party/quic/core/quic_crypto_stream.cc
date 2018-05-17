@@ -44,11 +44,7 @@ QuicByteCount QuicCryptoStream::CryptoMessageFramingOverhead(
 
 void QuicCryptoStream::OnDataAvailable() {
   struct iovec iov;
-  while (true) {
-    if (sequencer()->GetReadableRegions(&iov, 1) != 1) {
-      // No more data to read.
-      break;
-    }
+  while (sequencer()->GetReadableRegion(&iov)) {
     QuicStringPiece data(static_cast<char*>(iov.iov_base), iov.iov_len);
     if (!crypto_message_parser()->ProcessInput(data,
                                                session()->perspective())) {

@@ -117,7 +117,7 @@ class QUIC_EXPORT_PRIVATE QuartcSession
 
   bool IsOpenStream(QuicStreamId stream_id) override;
 
-  QuartcSessionStats GetStats() override;
+  QuicConnectionStats GetStats() override;
 
   void SetDelegate(QuartcSessionInterface::Delegate* session_delegate) override;
 

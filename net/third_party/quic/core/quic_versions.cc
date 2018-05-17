@@ -231,6 +231,25 @@ QuicString QuicVersionLabelToString(QuicVersionLabel version_label) {
   return QuicTagToString(QuicEndian::HostToNet32(version_label));
 }
 
+QuicString QuicVersionLabelVectorToString(
+    const QuicVersionLabelVector& version_labels,
+    const QuicString& separator,
+    size_t skip_after_nth_version) {
+  QuicString result;
+  for (size_t i = 0; i < version_labels.size(); ++i) {
+    if (i != 0) {
+      result.append(separator);
+    }
+
+    if (i > skip_after_nth_version) {
+      result.append("...");
+      break;
+    }
+    result.append(QuicVersionLabelToString(version_labels[i]));
+  }
+  return result;
+}
+
 QuicTransportVersion QuicVersionLabelToQuicVersion(
     QuicVersionLabel version_label) {
   return ParseQuicVersionLabel(version_label).transport_version;
@@ -277,11 +296,17 @@ QuicString QuicTransportVersionVectorToString(
 }
 
 QuicString ParsedQuicVersionVectorToString(
-    const ParsedQuicVersionVector& versions) {
-  QuicString result = "";
+    const ParsedQuicVersionVector& versions,
+    const QuicString& separator,
+    size_t skip_after_nth_version) {
+  QuicString result;
   for (size_t i = 0; i < versions.size(); ++i) {
     if (i != 0) {
-      result.append(",");
+      result.append(separator);
+    }
+    if (i > skip_after_nth_version) {
+      result.append("...");
+      break;
     }
     result.append(ParsedQuicVersionToString(versions[i]));
   }

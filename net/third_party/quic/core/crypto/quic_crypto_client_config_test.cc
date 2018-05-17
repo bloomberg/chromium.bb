@@ -15,6 +15,8 @@
 #include "net/third_party/quic/test_tools/mock_random.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
+using testing::StartsWith;
+
 namespace net {
 namespace test {
 namespace {
@@ -332,7 +334,7 @@ TEST_F(QuicCryptoClientConfigTest, ProcessServerDowngradeAttack) {
             config.ProcessServerHello(msg, 0, supported_versions.front(),
                                       supported_versions, &cached, out_params,
                                       &error));
-  EXPECT_EQ("Downgrade attack detected", error);
+  EXPECT_THAT(error, StartsWith("Downgrade attack detected: ServerVersions"));
 }
 
 TEST_F(QuicCryptoClientConfigTest, InitializeFrom) {

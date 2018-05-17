@@ -399,6 +399,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   SSL_CTX* ssl_ctx() const;
 
+  void set_pre_shared_key(QuicStringPiece psk) {
+    pre_shared_key_ = QuicString(psk);
+  }
+
  private:
   friend class test::QuicCryptoServerConfigPeer;
   friend struct QuicSignedServerConfig;
@@ -764,6 +768,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // Does not own this observer.
   RejectionObserver* rejection_observer_;
+
+  // If non-empty, the server will operate in the pre-shared key mode by
+  // incorporating |pre_shared_key_| into the key schedule.
+  QuicString pre_shared_key_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoServerConfig);
 };

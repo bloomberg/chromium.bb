@@ -3025,7 +3025,7 @@ TEST_P(QuicConnectionTest, RetransmitAckedPacket) {
 
   // Now, ack the previous transmission.
   EXPECT_CALL(*loss_algorithm_, DetectLosses(_, _, _, _, _));
-  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing3)) {
+  if (GetQuicReloadableFlag(quic_use_incremental_ack_processing4)) {
     EXPECT_CALL(*send_algorithm_, OnCongestionEvent(false, _, _, _, _));
   }
   QuicAckFrame ack_all = InitAckFrame(3);

@@ -37,7 +37,10 @@ void QuicConnectionPeer::SetLossAlgorithm(
 // static
 const QuicFrame QuicConnectionPeer::GetUpdatedAckFrame(
     QuicConnection* connection) {
-  return connection->GetUpdatedAckFrame();
+  const bool ack_frame_updated = connection->ack_frame_updated();
+  const QuicFrame ack_frame = connection->GetUpdatedAckFrame();
+  connection->received_packet_manager_.ack_frame_updated_ = ack_frame_updated;
+  return ack_frame;
 }
 
 // static

@@ -883,11 +883,11 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     hkdf_input.append(requested_config->serialized);
 
     CrypterPair crypters;
-    if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
-                                 info.client_nonce, info.server_nonce,
-                                 hkdf_input, Perspective::IS_SERVER,
-                                 CryptoUtils::Diversification::Never(),
-                                 &crypters, nullptr /* subkey secret */)) {
+    if (!CryptoUtils::DeriveKeys(
+            params->initial_premaster_secret, params->aead, info.client_nonce,
+            info.server_nonce, pre_shared_key_, hkdf_input,
+            Perspective::IS_SERVER, CryptoUtils::Diversification::Never(),
+            &crypters, nullptr /* subkey secret */)) {
       helper.Fail(QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED,
                   "Symmetric key setup failed");
       return;
@@ -934,11 +934,11 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
                   out_diversification_nonce->size());
   CryptoUtils::Diversification diversification =
       CryptoUtils::Diversification::Now(out_diversification_nonce.get());
-  if (!CryptoUtils::DeriveKeys(params->initial_premaster_secret, params->aead,
-                               info.client_nonce, info.server_nonce, hkdf_input,
-                               Perspective::IS_SERVER, diversification,
-                               &params->initial_crypters,
-                               &params->initial_subkey_secret)) {
+  if (!CryptoUtils::DeriveKeys(
+          params->initial_premaster_secret, params->aead, info.client_nonce,
+          info.server_nonce, pre_shared_key_, hkdf_input,
+          Perspective::IS_SERVER, diversification, &params->initial_crypters,
+          &params->initial_subkey_secret)) {
     helper.Fail(QUIC_CRYPTO_SYMMETRIC_KEY_SETUP_FAILED,
                 "Symmetric key setup failed");
     return;
@@ -977,7 +977,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
   if (!CryptoUtils::DeriveKeys(
           params->forward_secure_premaster_secret, params->aead,
           info.client_nonce,
-          shlo_nonce.empty() ? info.server_nonce : shlo_nonce,
+          shlo_nonce.empty() ? info.server_nonce : shlo_nonce, pre_shared_key_,
           forward_secure_hkdf_input, Perspective::IS_SERVER,
           CryptoUtils::Diversification::Never(),
           &params->forward_secure_crypters, &params->subkey_secret)) {

@@ -255,6 +255,23 @@ TEST_F(QuicVersionsTest, CreateQuicVersionLabel) {
             ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '3')));
 }
 
+TEST_F(QuicVersionsTest, QuicVersionLabelToString) {
+  QuicVersionLabelVector version_labels = {
+      MakeVersionLabel('Q', '0', '3', '5'),
+      MakeVersionLabel('Q', '0', '3', '7'),
+      MakeVersionLabel('T', '0', '3', '8'),
+  };
+
+  EXPECT_EQ("Q035", QuicVersionLabelToString(version_labels[0]));
+  EXPECT_EQ("T038", QuicVersionLabelToString(version_labels[2]));
+
+  EXPECT_EQ("Q035,Q037,T038", QuicVersionLabelVectorToString(version_labels));
+  EXPECT_EQ("Q035:Q037:T038",
+            QuicVersionLabelVectorToString(version_labels, ":", 2));
+  EXPECT_EQ("Q035|Q037|...",
+            QuicVersionLabelVectorToString(version_labels, "|", 1));
+}
+
 TEST_F(QuicVersionsTest, QuicVersionToString) {
   EXPECT_EQ("QUIC_VERSION_35", QuicVersionToString(QUIC_VERSION_35));
   EXPECT_EQ("QUIC_VERSION_UNSUPPORTED",
@@ -295,6 +312,9 @@ TEST_F(QuicVersionsTest, ParsedQuicVersionToString) {
 
   versions_vector = {unsupported, version35};
   EXPECT_EQ("0,Q035", ParsedQuicVersionVectorToString(versions_vector));
+  EXPECT_EQ("0:Q035", ParsedQuicVersionVectorToString(versions_vector, ":",
+                                                      versions_vector.size()));
+  EXPECT_EQ("0|...", ParsedQuicVersionVectorToString(versions_vector, "|", 0));
 
   // Make sure that all supported versions are present in
   // ParsedQuicVersionToString.

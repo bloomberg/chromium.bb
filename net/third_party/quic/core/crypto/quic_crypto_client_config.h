@@ -346,6 +346,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   // Saves the |alpn| that will be passed in QUIC's CHLO message.
   void set_alpn(const QuicString& alpn) { alpn_ = alpn; }
 
+  void set_pre_shared_key(QuicStringPiece psk) {
+    pre_shared_key_ = QuicString(psk);
+  }
+
  private:
   // Sets the members to reasonable, default values.
   void SetDefaults();
@@ -393,6 +397,10 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
 
   // The |alpn_| passed in QUIC's CHLO message.
   QuicString alpn_;
+
+  // If non-empty, the client will operate in the pre-shared key mode by
+  // incorporating |pre_shared_key_| into the key schedule.
+  QuicString pre_shared_key_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicCryptoClientConfig);
 };

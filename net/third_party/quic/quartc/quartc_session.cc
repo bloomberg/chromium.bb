@@ -265,13 +265,8 @@ bool QuartcSession::IsOpenStream(QuicStreamId stream_id) {
   return QuicSession::IsOpenStream(stream_id);
 }
 
-QuartcSessionStats QuartcSession::GetStats() {
-  QuartcSessionStats stats;
-  const QuicConnectionStats& connection_stats = connection_->GetStats();
-  stats.bandwidth_estimate = connection_stats.estimated_bandwidth;
-  stats.smoothed_rtt =
-      QuicTime::Delta::FromMicroseconds(connection_stats.srtt_us);
-  return stats;
+QuicConnectionStats QuartcSession::GetStats() {
+  return connection_->GetStats();
 }
 
 void QuartcSession::OnConnectionClosed(QuicErrorCode error,

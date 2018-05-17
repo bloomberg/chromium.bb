@@ -126,6 +126,10 @@ bool QuicDataWriter::WriteStringPiece16(QuicStringPiece val) {
   return WriteBytes(val.data(), val.size());
 }
 
+bool QuicDataWriter::WriteStringPiece(QuicStringPiece val) {
+  return WriteBytes(val.data(), val.size());
+}
+
 char* QuicDataWriter::BeginWrite(size_t length) {
   if (length_ > capacity_) {
     return nullptr;
@@ -212,10 +216,10 @@ bool QuicDataWriter::WriteVarInt62(uint64_t value) {
   size_t remaining = capacity_ - length_;
   char* next = buffer_ + length_;
 
-  if ((value & UINT64_C(0xc000000000000000)) == 0) {
+  if ((value & kVarInt62ErrorMask) == 0) {
     // We know the high 2 bits are 0 so |value| is legal.
     // We can do the encoding.
-    if ((value & UINT64_C(0x3fffffffc0000000)) != 0) {
+    if ((value & kVarInt62Mask8Bytes) != 0) {
       // Someplace in the high-4 bytes is a 1-bit. Do an 8-byte
       // encoding.
       if (remaining >= 8) {
@@ -234,7 +238,7 @@ bool QuicDataWriter::WriteVarInt62(uint64_t value) {
     }
     // The high-order-4 bytes are all 0, check for a 1, 2, or 4-byte
     // encoding
-    if ((value & UINT64_C(0x000000003fffc000)) != 0) {
+    if ((value & kVarInt62Mask4Bytes) != 0) {
       // The encoding will not fit into 2 bytes, Do a 4-byte
       // encoding.
       if (remaining >= 4) {
@@ -253,7 +257,7 @@ bool QuicDataWriter::WriteVarInt62(uint64_t value) {
     // Two byte encoding has more than 6, but 14 or less significant
     // bits (bits 0xffffffff ffffc000 are 0 and 0x00000000 00003fc0
     // are not 0)
-    if ((value & UINT64_C(0x0000000000003fc0)) != 0) {
+    if ((value & kVarInt62Mask2Bytes) != 0) {
       // Do 2-byte encoding
       if (remaining >= 2) {
         *(next + 0) = ((value >> 8) & 0x3f) + 0x40;
@@ -274,4 +278,35 @@ bool QuicDataWriter::WriteVarInt62(uint64_t value) {
   // Can not encode, high 2 bits not 0
   return false;
 }
+
+// static
+int QuicDataWriter::GetVarInt62Len(uint64_t value) {
+  if ((value & kVarInt62ErrorMask) != 0) {
+    return 0;
+  }
+  if ((value & kVarInt62Mask8Bytes) != 0) {
+    return 8;
+  }
+  if ((value & kVarInt62Mask4Bytes) != 0) {
+    return 4;
+  }
+  if ((value & kVarInt62Mask2Bytes) != 0) {
+    return 2;
+  }
+  return 1;
+}
+
+bool QuicDataWriter::WriteStringPieceVarInt62(
+    const QuicStringPiece& string_piece) {
+  if (!WriteVarInt62(string_piece.size())) {
+    return false;
+  }
+  if (!string_piece.empty()) {
+    if (!WriteBytes(string_piece.data(), string_piece.size())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 }  // namespace net

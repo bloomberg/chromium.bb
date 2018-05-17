@@ -14,7 +14,7 @@ QuartcStream::~QuartcStream() {}
 
 void QuartcStream::OnDataAvailable() {
   struct iovec iov;
-  while (sequencer()->GetReadableRegions(&iov, 1) == 1) {
+  while (sequencer()->GetReadableRegion(&iov)) {
     DCHECK(delegate_);
     delegate_->OnReceived(this, reinterpret_cast<const char*>(iov.iov_base),
                           iov.iov_len);

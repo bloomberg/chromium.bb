@@ -116,34 +116,22 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     SetInitialRtt(QuicTime::Delta::FromMicroseconds(
         config.GetInitialRoundTripTimeUsToSend()));
   }
-  if (GetQuicReloadableFlag(quic_max_ack_delay) &&
-      config.HasClientSentConnectionOption(kMAD0, perspective_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay, 1, 2);
+  if (config.HasClientSentConnectionOption(kMAD0, perspective_)) {
     rtt_stats_.set_ignore_max_ack_delay(true);
   }
-  if (GetQuicReloadableFlag(quic_max_ack_delay) &&
-      config.HasClientSentConnectionOption(kMAD1, perspective_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay, 2, 2);
+  if (config.HasClientSentConnectionOption(kMAD1, perspective_)) {
     rtt_stats_.set_initial_max_ack_delay(delayed_ack_time_);
   }
-  if (GetQuicReloadableFlag(quic_max_ack_delay2) &&
-      config.HasClientSentConnectionOption(kMAD2, perspective_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay2, 1, 4);
+  if (config.HasClientSentConnectionOption(kMAD2, perspective_)) {
     min_tlp_timeout_ = QuicTime::Delta::Zero();
   }
-  if (GetQuicReloadableFlag(quic_max_ack_delay2) &&
-      config.HasClientSentConnectionOption(kMAD3, perspective_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay2, 2, 4);
+  if (config.HasClientSentConnectionOption(kMAD3, perspective_)) {
     min_rto_timeout_ = QuicTime::Delta::Zero();
   }
-  if (GetQuicReloadableFlag(quic_max_ack_delay2) &&
-      config.HasClientSentConnectionOption(kMAD4, perspective_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay2, 3, 4);
+  if (config.HasClientSentConnectionOption(kMAD4, perspective_)) {
     ietf_style_tlp_ = true;
   }
-  if (GetQuicReloadableFlag(quic_max_ack_delay2) &&
-      config.HasClientSentConnectionOption(kMAD5, perspective_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_max_ack_delay2, 4, 4);
+  if (config.HasClientSentConnectionOption(kMAD5, perspective_)) {
     ietf_style_2x_tlp_ = true;
   }
 
@@ -1128,7 +1116,6 @@ void QuicSentPacketManager::OnAckFrameStart(QuicPacketNumber largest_acked,
 
 void QuicSentPacketManager::OnAckRange(QuicPacketNumber start,
                                        QuicPacketNumber end) {
-  received_ack_ranges_for_debugging_.AddRange(start, end);
   if (end > last_ack_frame_.largest_acked + 1) {
     // Largest acked increases.
     unacked_packets_.IncreaseLargestObserved(end - 1);
@@ -1140,7 +1127,6 @@ void QuicSentPacketManager::OnAckRange(QuicPacketNumber start,
     return;
   }
   start = std::max(start, least_unacked);
-  DCHECK_LT(start, end);
   do {
     QuicPacketNumber newly_acked_start = start;
     if (acked_packets_iter_ != last_ack_frame_.packets.rend()) {
@@ -1175,9 +1161,7 @@ bool QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {
                  << acked_packet.packet_number
                  << ", last_ack_frame_: " << last_ack_frame_
                  << ", least_unacked: " << unacked_packets_.GetLeastUnacked()
-                 << ", packets_acked_: " << packets_acked_
-                 << ", received_ack_ranges_for_debugging_: "
-                 << received_ack_ranges_for_debugging_;
+                 << ", packets_acked_: " << packets_acked_;
       } else {
         QUIC_PEER_BUG << "Received ack for unackable packet: "
                       << acked_packet.packet_number << " with state: "
@@ -1207,12 +1191,10 @@ bool QuicSentPacketManager::OnAckFrameEnd(QuicTime ack_receive_time) {
   PostProcessAfterMarkingPacketHandled(last_ack_frame_, ack_receive_time,
                                        rtt_updated_, prior_bytes_in_flight);
   // TODO(fayang): Move this line to PostProcessAfterMarkingPacketHandled
-  // when deprecating quic_reloadable_flag_quic_use_incremental_ack_processing3.
+  // when deprecating quic_reloadable_flag_quic_use_incremental_ack_processing4.
   // Remove packets below least unacked from all_packets_acked_ and
   // last_ack_frame_.
   last_ack_frame_.packets.RemoveUpTo(unacked_packets_.GetLeastUnacked());
-
-  received_ack_ranges_for_debugging_.Clear();
 
   return acked_new_packet;
 }

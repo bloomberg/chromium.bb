@@ -74,10 +74,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc, false)
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
 
-// Allow a new rate based recovery in QUIC BBR to be enabled via connection
-// option.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_rate_recovery, false)
-
 // If buffered data in QUIC stream is less than this threshold, buffers all
 // provided data or asks upper layer for more data.
 QUIC_FLAG(uint32_t, FLAGS_quic_buffered_data_threshold, 8192u)
@@ -105,10 +101,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, false)
 // TLP instead of 2.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_tlp, true)
 
-// When true, allows two connection options to run experiments with using max
-// ack delay as described in QUIC IETF.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay, true)
-
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
@@ -119,14 +111,10 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_37, true)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_38, true)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_41, false)
 
-// When true, enable connection options to have no min TLP and RTO,
-// and also allow IETF style TLP.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_max_ack_delay2, true)
-
 // If true, framer will process and report ack frame incrementally.
 QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_incremental_ack_processing3,
-          false)
+          FLAGS_quic_reloadable_flag_quic_use_incremental_ack_processing4,
+          true)
 
 // If this flag and
 // FLAGS_quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash
@@ -154,7 +142,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_path_degrading_alarm2, true)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_register_static_streams, true)
 
 // If true, enable server proxy support in QUIC.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_server_proxy2, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_server_proxy2, true)
 
 // If true, compare offset with last byte acked to determine whether it is
 // disjoint before calling IntervalSet::IsDisjoint.
@@ -219,7 +207,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_rto, false)
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_version_manager_dedupe_transport_versions,
-    false)
+    true)
 
 // When true, the NRTT QUIC connection option causes receivers to ignore
 // incoming initial RTT values.
@@ -227,14 +215,20 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_irtt, false)
 
 // Fixed QUIC's PROBE_BW logic to exit low gain mode based on bytes_in_flight,
 // not prior_in_flight.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_probe_bw, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_probe_bw, true)
 
 // If true, changes when the dispatcher changes internal state.
 QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_l1_munge, false)
 
 // Don't slow down the pacing rate in STARTUP upon loss if there hasn't been
 // at least one non app-limited sample.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup2, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup2, true)
 
 // If true, use deframer from third_party/http2 instead of third_party/quic/http
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_h2_deframer, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_h2_deframer, true)
+
+// If true, put ScopedRetransmissionScheduler's functionality to
+// ScopedPacketFlusher.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_deprecate_scoped_scheduler,
+          false)
