@@ -145,8 +145,11 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
 
   media::BitstreamBuffer output_buffer(buffer_id, output_shm_handle,
                                        output_buffer_size);
-  media::BitstreamBuffer exif_buffer(buffer_id, exif_shm_handle,
-                                     exif_buffer_size);
+  std::unique_ptr<media::BitstreamBuffer> exif_buffer;
+  if (exif_buffer_size > 0) {
+    exif_buffer = std::make_unique<media::BitstreamBuffer>(
+        buffer_id, exif_shm_handle, exif_buffer_size);
+  }
   gfx::Size coded_size(coded_size_width, coded_size_height);
 
   if (encode_cb_map_.find(buffer_id) != encode_cb_map_.end()) {
@@ -187,7 +190,7 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
       base::Passed(&input_shm)));
 
   DCHECK(accelerator_);
-  accelerator_->Encode(frame, kJpegQuality, &exif_buffer, output_buffer);
+  accelerator_->Encode(frame, kJpegQuality, exif_buffer.get(), output_buffer);
 #else
   NOTREACHED();
 #endif
