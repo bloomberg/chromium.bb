@@ -35,7 +35,6 @@ class CORE_EXPORT NGLineTruncator final {
   base::Optional<LayoutUnit> EllipsisOffset(LayoutUnit line_width,
                                             LayoutUnit ellipsis_width,
                                             bool is_first_child,
-                                            LayoutObject**,
                                             NGLineBoxFragmentBuilder::Child*);
   bool TruncateChild(LayoutUnit space_for_this_child,
                      bool is_first_child,
