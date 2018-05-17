@@ -64,12 +64,15 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
+#include "content/shell/browser/shell_network_delegate.h"
 #include "content/shell/common/layout_test/layout_test_messages.h"
 #include "content/shell/common/layout_test/layout_test_switches.h"
 #include "content/shell/common/shell_messages.h"
 #include "content/shell/renderer/layout_test/blink_test_helpers.h"
 #include "content/shell/test_runner/test_common.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "ui/gfx/codec/png_codec.h"
 
@@ -106,23 +109,21 @@ std::string DumpFrameState(const ExplodedFrameState& frame_state,
   result.append("\n");
 
   std::vector<ExplodedFrameState> sorted_children = frame_state.children;
-  std::sort(sorted_children.begin(), sorted_children.end(),
-            [](const ExplodedFrameState& lhs, const ExplodedFrameState& rhs) {
-              // Child nodes should always have a target (aka unique name).
-              DCHECK(lhs.target);
-              DCHECK(rhs.target);
-              std::string lhs_name =
-                  UniqueNameHelper::ExtractStableNameForTesting(
-                      base::UTF16ToUTF8(*lhs.target));
-              std::string rhs_name =
-                  UniqueNameHelper::ExtractStableNameForTesting(
-                      base::UTF16ToUTF8(*rhs.target));
-              if (!base::EqualsCaseInsensitiveASCII(lhs_name, rhs_name))
-                return base::CompareCaseInsensitiveASCII(lhs_name, rhs_name) <
-                       0;
+  std::sort(
+      sorted_children.begin(), sorted_children.end(),
+      [](const ExplodedFrameState& lhs, const ExplodedFrameState& rhs) {
+        // Child nodes should always have a target (aka unique name).
+        DCHECK(lhs.target);
+        DCHECK(rhs.target);
+        std::string lhs_name = UniqueNameHelper::ExtractStableNameForTesting(
+            base::UTF16ToUTF8(*lhs.target));
+        std::string rhs_name = UniqueNameHelper::ExtractStableNameForTesting(
+            base::UTF16ToUTF8(*rhs.target));
+        if (!base::EqualsCaseInsensitiveASCII(lhs_name, rhs_name))
+          return base::CompareCaseInsensitiveASCII(lhs_name, rhs_name) < 0;
 
-              return lhs.item_sequence_number < rhs.item_sequence_number;
-            });
+        return lhs.item_sequence_number < rhs.item_sequence_number;
+      });
   for (const auto& child : sorted_children)
     result += DumpFrameState(child, indent + 4, false);
 
@@ -159,11 +160,9 @@ BlinkTestResultPrinter::BlinkTestResultPrinter(std::ostream* output,
       capture_text_only_(false),
       encode_binary_data_(false),
       output_(output),
-      error_(error) {
-}
+      error_(error) {}
 
-BlinkTestResultPrinter::~BlinkTestResultPrinter() {
-}
+BlinkTestResultPrinter::~BlinkTestResultPrinter() {}
 
 void BlinkTestResultPrinter::StartStateDump() {
   state_ = DURING_STATE_DUMP;
@@ -214,8 +213,8 @@ void BlinkTestResultPrinter::PrintImageBlock(
   }
 
   *output_ << "Content-Length: " << png_image.size() << "\n";
-  output_->write(
-      reinterpret_cast<const char*>(&png_image[0]), png_image.size());
+  output_->write(reinterpret_cast<const char*>(&png_image[0]),
+                 png_image.size());
 }
 
 void BlinkTestResultPrinter::PrintImageFooter() {
@@ -245,8 +244,8 @@ void BlinkTestResultPrinter::PrintAudioBlock(
   }
 
   *output_ << "Content-Length: " << audio_data.size() << "\n";
-  output_->write(
-      reinterpret_cast<const char*>(&audio_data[0]), audio_data.size());
+  output_->write(reinterpret_cast<const char*>(&audio_data[0]),
+                 audio_data.size());
 }
 
 void BlinkTestResultPrinter::PrintAudioFooter() {
@@ -340,8 +339,7 @@ BlinkTestController::BlinkTestController()
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEncodeBinary))
     printer_->set_encode_binary_data(true);
-  registrar_.Add(this,
-                 NOTIFICATION_RENDERER_PROCESS_CREATED,
+  registrar_.Add(this, NOTIFICATION_RENDERER_PROCESS_CREATED,
                  NotificationService::AllSources());
   GpuDataManager::GetInstance()->AddObserver(this);
   ResetAfterLayoutTest();
@@ -394,8 +392,9 @@ bool BlinkTestController::PrepareForLayoutTest(
           new DevToolsProtocolTestBindings(main_window_->web_contents()));
     }
     current_pid_ = base::kNullProcessId;
-    default_prefs_ =
-      main_window_->web_contents()->GetRenderViewHost()->GetWebkitPreferences();
+    default_prefs_ = main_window_->web_contents()
+                         ->GetRenderViewHost()
+                         ->GetWebkitPreferences();
     if (is_devtools_js_test)
       LoadDevToolsJSTest();
     else
@@ -533,8 +532,7 @@ void BlinkTestController::OpenURL(const GURL& url) {
   if (test_phase_ != DURING_TEST)
     return;
 
-  Shell::CreateNewWindow(main_window_->web_contents()->GetBrowserContext(),
-                         url,
+  Shell::CreateNewWindow(main_window_->web_contents()->GetBrowserContext(), url,
                          main_window_->web_contents()->GetSiteInstance(),
                          gfx::Size());
 }
@@ -712,6 +710,8 @@ bool BlinkTestController::OnMessageReceived(const IPC::Message& message) {
                         OnGetBluetoothManualChooserEvents)
     IPC_MESSAGE_HANDLER(ShellViewHostMsg_SendBluetoothManualChooserEvent,
                         OnSendBluetoothManualChooserEvent)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_BlockThirdPartyCookies,
+                        OnBlockThirdPartyCookies)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
@@ -1252,6 +1252,20 @@ void BlinkTestController::OnSendBluetoothManualChooserEvent(
     return;
   }
   bluetooth_chooser_factory_->SendEvent(event, argument);
+}
+
+void BlinkTestController::OnBlockThirdPartyCookies(bool block) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    ShellBrowserContext* browser_context =
+        ShellContentBrowserClient::Get()->browser_context();
+    browser_context->GetDefaultStoragePartition(browser_context)
+        ->GetNetworkContext()
+        ->BlockThirdPartyCookies(block);
+  } else {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(ShellNetworkDelegate::SetBlockThirdPartyCookies, block));
+  }
 }
 
 mojom::LayoutTestControl* BlinkTestController::GetLayoutTestControlPtr(

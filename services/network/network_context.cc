@@ -59,6 +59,7 @@
 #include "services/network/ignore_errors_cert_verifier.h"
 #include "services/network/mojo_net_log.h"
 #include "services/network/network_service.h"
+#include "services/network/network_service_network_delegate.h"
 #include "services/network/proxy_config_service_mojo.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
@@ -580,6 +581,10 @@ void NetworkContext::CreateNetLogExporter(
                                         std::move(request));
 }
 
+void NetworkContext::BlockThirdPartyCookies(bool block) {
+  block_third_party_cookies_ = block;
+}
+
 void NetworkContext::AddHSTSForTesting(const std::string& host,
                                        base::Time expiry,
                                        bool include_subdomains,
@@ -908,6 +913,10 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
     builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
         *command_line, nullptr, std::move(cert_verifier)));
   }
+
+  std::unique_ptr<net::NetworkDelegate> network_delegate =
+      std::make_unique<NetworkServiceNetworkDelegate>(this);
+  builder.set_network_delegate(std::move(network_delegate));
 
   // |network_service_| may be nullptr in tests.
   auto result = ApplyContextParamsToBuilder(

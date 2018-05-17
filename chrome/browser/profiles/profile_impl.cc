@@ -100,6 +100,7 @@
 #include "components/certificate_transparency/pref_names.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/domain_reliability/monitor.h"
 #include "components/domain_reliability/service.h"
 #include "components/gcm_driver/gcm_profile_service.h"
@@ -127,6 +128,7 @@
 #include "printing/buildflags/buildflags.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/mojom/constants.mojom.h"
+#include "services/network/public/cpp/features.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -289,9 +291,7 @@ std::string ExitTypeToSessionTypePrefValue(Profile::ExitType type) {
 Profile* Profile::CreateProfile(const base::FilePath& path,
                                 Delegate* delegate,
                                 CreateMode create_mode) {
-  TRACE_EVENT1("browser,startup",
-               "Profile::CreateProfile",
-               "profile_path",
+  TRACE_EVENT1("browser,startup", "Profile::CreateProfile", "profile_path",
                path.AsUTF8Unsafe());
 
   // Get sequenced task runner for making sure that file operations of
@@ -348,26 +348,21 @@ void ProfileImpl::RegisterProfilePrefs(
   registry->RegisterStringPref(prefs::kProfileName, std::string());
 #else
   registry->RegisterIntegerPref(
-      prefs::kProfileAvatarIndex,
-      -1,
+      prefs::kProfileAvatarIndex, -1,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // Whether a profile is using an avatar without having explicitely chosen it
   // (i.e. was assigned by default by legacy profile creation).
   registry->RegisterBooleanPref(
-      prefs::kProfileUsingDefaultAvatar,
-      true,
+      prefs::kProfileUsingDefaultAvatar, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(
-      prefs::kProfileUsingGAIAAvatar,
-      false,
+      prefs::kProfileUsingGAIAAvatar, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   // Whether a profile is using a default avatar name (eg. Pickles or Person 1).
   registry->RegisterBooleanPref(
-      prefs::kProfileUsingDefaultName,
-      true,
+      prefs::kProfileUsingDefaultName, true,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(prefs::kProfileName,
-                               std::string(),
+  registry->RegisterStringPref(prefs::kProfileName, std::string(),
                                user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 #endif
 
@@ -377,8 +372,7 @@ void ProfileImpl::RegisterProfilePrefs(
 #else
   uint32_t home_page_flags = user_prefs::PrefRegistrySyncable::SYNCABLE_PREF;
 #endif
-  registry->RegisterStringPref(prefs::kHomePage,
-                               std::string(),
+  registry->RegisterStringPref(prefs::kHomePage, std::string(),
                                home_page_flags);
   registry->RegisterStringPref(prefs::kNewTabPageLocationOverride,
                                std::string());
@@ -440,9 +434,9 @@ ProfileImpl::ProfileImpl(
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
-  create_session_service_timer_.Start(FROM_HERE,
-      TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS), this,
-      &ProfileImpl::EnsureSessionServiceCreated);
+  create_session_service_timer_.Start(
+      FROM_HERE, TimeDelta::FromMilliseconds(kCreateSessionServiceDelayMS),
+      this, &ProfileImpl::EnsureSessionServiceCreated);
 #endif
 
   set_is_guest_profile(path == ProfileManager::GetGuestProfilePath());
@@ -489,8 +483,8 @@ ProfileImpl::ProfileImpl(
 #endif
     RegisterUserProfilePrefs(pref_registry_.get());
 
-  BrowserContextDependencyManager::GetInstance()->
-      RegisterProfilePrefsForServices(this, pref_registry_.get());
+  BrowserContextDependencyManager::GetInstance()
+      ->RegisterProfilePrefsForServices(this, pref_registry_.get());
 
   SupervisedUserSettingsService* supervised_user_settings = nullptr;
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -555,26 +549,21 @@ void ProfileImpl::DoFinalInit() {
   // Changes in the profile avatar.
   pref_change_registrar_.Add(
       prefs::kProfileAvatarIndex,
-      base::Bind(&ProfileImpl::UpdateAvatarInStorage,
-                 base::Unretained(this)));
+      base::Bind(&ProfileImpl::UpdateAvatarInStorage, base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kProfileUsingDefaultAvatar,
-      base::Bind(&ProfileImpl::UpdateAvatarInStorage,
-                 base::Unretained(this)));
+      base::Bind(&ProfileImpl::UpdateAvatarInStorage, base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kProfileUsingGAIAAvatar,
-      base::Bind(&ProfileImpl::UpdateAvatarInStorage,
-                 base::Unretained(this)));
+      base::Bind(&ProfileImpl::UpdateAvatarInStorage, base::Unretained(this)));
 
   // Changes in the profile name.
   pref_change_registrar_.Add(
       prefs::kProfileUsingDefaultName,
-      base::Bind(&ProfileImpl::UpdateNameInStorage,
-                 base::Unretained(this)));
+      base::Bind(&ProfileImpl::UpdateNameInStorage, base::Unretained(this)));
   pref_change_registrar_.Add(
       prefs::kProfileName,
-      base::Bind(&ProfileImpl::UpdateNameInStorage,
-                 base::Unretained(this)));
+      base::Bind(&ProfileImpl::UpdateNameInStorage, base::Unretained(this)));
 
   pref_change_registrar_.Add(
       prefs::kForceEphemeralProfiles,
@@ -595,6 +584,14 @@ void ProfileImpl::DoFinalInit() {
   pref_change_registrar_.Add(
       certificate_transparency::prefs::kCTExcludedLegacySPKIs,
       base::Bind(&ProfileImpl::ScheduleUpdateCTPolicy, base::Unretained(this)));
+
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    pref_change_registrar_.Add(
+        prefs::kBlockThirdPartyCookies,
+        base::Bind(&ProfileImpl::UpdateBlockThirdPartyCookies,
+                   base::Unretained(this)));
+    UpdateBlockThirdPartyCookies();
+  }
 
   media_device_id_salt_ = new MediaDeviceIDSalt(prefs_.get());
 
@@ -657,8 +654,9 @@ void ProfileImpl::DoFinalInit() {
 #endif
 
   TRACE_EVENT0("browser", "ProfileImpl::SetSaveSessionStorageOnDisk");
-  content::BrowserContext::GetDefaultStoragePartition(this)->
-      GetDOMStorageContext()->SetSaveSessionStorageOnDisk();
+  content::BrowserContext::GetDefaultStoragePartition(this)
+      ->GetDOMStorageContext()
+      ->SetSaveSessionStorageOnDisk();
 
   // The DomDistillerViewerSource is not a normal WebUI so it must be registered
   // as a URLDataSource early.
@@ -690,8 +688,7 @@ void ProfileImpl::DoFinalInit() {
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Profile.NotifyProfileCreatedTime");
     content::NotificationService::current()->Notify(
-        chrome::NOTIFICATION_PROFILE_CREATED,
-        content::Source<Profile>(this),
+        chrome::NOTIFICATION_PROFILE_CREATED, content::Source<Profile>(this),
         content::NotificationService::NoDetails());
   }
 #if !defined(OS_CHROMEOS)
@@ -724,7 +721,7 @@ ProfileImpl::~ProfileImpl() {
   MaybeSendDestroyedNotification();
 
   bool prefs_loaded = prefs_->GetInitializationStatus() !=
-      PrefService::INITIALIZATION_STATUS_WAITING;
+                      PrefService::INITIALIZATION_STATUS_WAITING;
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
   StopCreateSessionServiceTimer();
@@ -744,8 +741,8 @@ ProfileImpl::~ProfileImpl() {
         off_the_record_profile_.get());
   } else {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-    ExtensionPrefValueMapFactory::GetForBrowserContext(this)->
-        ClearAllIncognitoSessionOnlyPreferences();
+    ExtensionPrefValueMapFactory::GetForBrowserContext(this)
+        ->ClearAllIncognitoSessionOnlyPreferences();
 #endif
   }
 
@@ -811,8 +808,8 @@ Profile* ProfileImpl::GetOffTheRecordProfile() {
 void ProfileImpl::DestroyOffTheRecordProfile() {
   off_the_record_profile_.reset();
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ExtensionPrefValueMapFactory::GetForBrowserContext(this)->
-      ClearAllIncognitoSessionOnlyPreferences();
+  ExtensionPrefValueMapFactory::GetForBrowserContext(this)
+      ->ClearAllIncognitoSessionOnlyPreferences();
 #endif
 }
 
@@ -835,7 +832,7 @@ bool ProfileImpl::IsSupervised() const {
 bool ProfileImpl::IsChild() const {
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
   return GetPrefs()->GetString(prefs::kSupervisedUserId) ==
-      supervised_users::kChildAccountSUID;
+         supervised_users::kChildAccountSUID;
 #else
   return false;
 #endif
@@ -845,8 +842,7 @@ bool ProfileImpl::IsLegacySupervised() const {
   return IsSupervised() && !IsChild();
 }
 
-ExtensionSpecialStoragePolicy*
-    ProfileImpl::GetExtensionSpecialStoragePolicy() {
+ExtensionSpecialStoragePolicy* ProfileImpl::GetExtensionSpecialStoragePolicy() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (!extension_special_storage_policy_.get()) {
     TRACE_EVENT0("browser", "ProfileImpl::GetExtensionSpecialStoragePolicy")
@@ -872,9 +868,9 @@ void ProfileImpl::OnLocaleReady() {
   const std::string exit_type_pref_value(
       prefs_->GetString(prefs::kSessionExitType));
   if (exit_type_pref_value.empty()) {
-    last_session_exit_type_ =
-        prefs_->GetBoolean(prefs::kSessionExitedCleanly) ?
-          EXIT_NORMAL : EXIT_CRASHED;
+    last_session_exit_type_ = prefs_->GetBoolean(prefs::kSessionExitedCleanly)
+                                  ? EXIT_NORMAL
+                                  : EXIT_CRASHED;
   } else {
     last_session_exit_type_ =
         SessionTypePrefValueToExitType(exit_type_pref_value);
@@ -1039,8 +1035,8 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
   // but SSLConfigServiceManager is not initialized until DoFinalInit() which is
   // invoked after all KeyedServices have been initialized (see
   // http://crbug.com/171406).
-  DCHECK(ssl_config_service_manager_) <<
-      "SSLConfigServiceManager is not initialized yet";
+  DCHECK(ssl_config_service_manager_)
+      << "SSLConfigServiceManager is not initialized yet";
   return ssl_config_service_manager_->Get();
 }
 
@@ -1095,9 +1091,10 @@ content::BackgroundSyncController* ProfileImpl::GetBackgroundSyncController() {
 net::URLRequestContextGetter* ProfileImpl::CreateRequestContext(
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_.CreateMainRequestContextGetter(
-                     protocol_handlers, std::move(request_interceptors),
-                     g_browser_process->io_thread())
+  return io_data_
+      .CreateMainRequestContextGetter(protocol_handlers,
+                                      std::move(request_interceptors),
+                                      g_browser_process->io_thread())
       .get();
 }
 
@@ -1107,9 +1104,10 @@ ProfileImpl::CreateRequestContextForStoragePartition(
     bool in_memory,
     content::ProtocolHandlerMap* protocol_handlers,
     content::URLRequestInterceptorScopedVector request_interceptors) {
-  return io_data_.CreateIsolatedAppRequestContextGetter(
-                     partition_path, in_memory, protocol_handlers,
-                     std::move(request_interceptors))
+  return io_data_
+      .CreateIsolatedAppRequestContextGetter(partition_path, in_memory,
+                                             protocol_handlers,
+                                             std::move(request_interceptors))
       .get();
 }
 
@@ -1122,7 +1120,8 @@ ProfileImpl::CreateMediaRequestContextForStoragePartition(
     const base::FilePath& partition_path,
     bool in_memory) {
   return io_data_
-      .GetIsolatedMediaRequestContextGetter(partition_path, in_memory).get();
+      .GetIsolatedMediaRequestContextGetter(partition_path, in_memory)
+      .get();
 }
 
 void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
@@ -1205,8 +1204,8 @@ void ProfileImpl::EnsureSessionServiceCreated() {
 #endif
 
 #if defined(OS_CHROMEOS)
-void ProfileImpl::ChangeAppLocale(
-    const std::string& new_locale, AppLocaleChangedVia via) {
+void ProfileImpl::ChangeAppLocale(const std::string& new_locale,
+                                  AppLocaleChangedVia via) {
   if (new_locale.empty()) {
     NOTREACHED();
     return;
@@ -1341,8 +1340,8 @@ GURL ProfileImpl::GetHomePage() {
 void ProfileImpl::UpdateSupervisedUserIdInStorage() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ProfileAttributesEntry* entry;
-  bool has_entry = profile_manager->GetProfileAttributesStorage().
-                       GetProfileAttributesWithPath(GetPath(), &entry);
+  bool has_entry = profile_manager->GetProfileAttributesStorage()
+                       .GetProfileAttributesWithPath(GetPath(), &entry);
   if (has_entry) {
     entry->SetSupervisedUserId(GetPrefs()->GetString(prefs::kSupervisedUserId));
     ProfileMetrics::UpdateReportedProfilesStatistics(profile_manager);
@@ -1351,9 +1350,9 @@ void ProfileImpl::UpdateSupervisedUserIdInStorage() {
 
 void ProfileImpl::UpdateNameInStorage() {
   ProfileAttributesEntry* entry;
-  bool has_entry =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(GetPath(), &entry);
+  bool has_entry = g_browser_process->profile_manager()
+                       ->GetProfileAttributesStorage()
+                       .GetProfileAttributesWithPath(GetPath(), &entry);
   if (has_entry) {
     entry->SetName(
         base::UTF8ToUTF16(GetPrefs()->GetString(prefs::kProfileName)));
@@ -1364,9 +1363,9 @@ void ProfileImpl::UpdateNameInStorage() {
 
 void ProfileImpl::UpdateAvatarInStorage() {
   ProfileAttributesEntry* entry;
-  bool has_entry =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(GetPath(), &entry);
+  bool has_entry = g_browser_process->profile_manager()
+                       ->GetProfileAttributesStorage()
+                       .GetProfileAttributesWithPath(GetPath(), &entry);
   if (has_entry) {
     entry->SetAvatarIconIndex(
         GetPrefs()->GetInteger(prefs::kProfileAvatarIndex));
@@ -1379,9 +1378,9 @@ void ProfileImpl::UpdateAvatarInStorage() {
 
 void ProfileImpl::UpdateIsEphemeralInStorage() {
   ProfileAttributesEntry* entry;
-  bool has_entry =
-      g_browser_process->profile_manager()->GetProfileAttributesStorage().
-          GetProfileAttributesWithPath(GetPath(), &entry);
+  bool has_entry = g_browser_process->profile_manager()
+                       ->GetProfileAttributesStorage()
+                       .GetProfileAttributesWithPath(GetPath(), &entry);
   if (has_entry) {
     entry->SetIsEphemeral(
         GetPrefs()->GetBoolean(prefs::kForceEphemeralProfiles));
@@ -1418,6 +1417,19 @@ void ProfileImpl::UpdateCTPolicy() {
       TranslateStringArray(ct_excluded_legacy_spkis));
 }
 
+void ProfileImpl::UpdateBlockThirdPartyCookies() {
+  bool block_third_party_cookies =
+      GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies);
+  content::BrowserContext::ForEachStoragePartition(
+      this, base::Bind(
+                [](bool block_third_party_cookies,
+                   content::StoragePartition* partition) {
+                  partition->GetNetworkContext()->BlockThirdPartyCookies(
+                      block_third_party_cookies);
+                },
+                block_third_party_cookies));
+}
+
 // Gets the media cache parameters from the command line. |cache_path| will be
 // set to the user provided path, or will not be touched if there is not an
 // argument. |max_size| will be the user provided value or zero by default.
@@ -1433,8 +1445,8 @@ void ProfileImpl::GetMediaCacheParameters(base::FilePath* cache_path,
 std::unique_ptr<domain_reliability::DomainReliabilityMonitor>
 ProfileImpl::CreateDomainReliabilityMonitor(PrefService* local_state) {
   domain_reliability::DomainReliabilityService* service =
-      domain_reliability::DomainReliabilityServiceFactory::GetInstance()->
-          GetForBrowserContext(this);
+      domain_reliability::DomainReliabilityServiceFactory::GetInstance()
+          ->GetForBrowserContext(this);
   if (!service)
     return std::unique_ptr<domain_reliability::DomainReliabilityMonitor>();
 

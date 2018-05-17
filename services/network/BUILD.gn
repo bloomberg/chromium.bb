@@ -46,6 +46,8 @@ component("network_service") {
     "network_sandbox_hook_linux.h",
     "network_service.cc",
     "network_service.h",
+    "network_service_network_delegate.cc",
+    "network_service_network_delegate.h",
     "network_usage_accumulator.cc",
     "network_usage_accumulator.h",
     "proxy_config_service_mojo.cc",
