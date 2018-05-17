@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
-#include "third_party/blink/renderer/platform/graphics/first_paint_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
 #include "third_party/blink/renderer/platform/graphics/link_highlight.h"
@@ -387,8 +386,6 @@ bool GraphicsLayer::PaintWithoutCommit(
   if (client_.ShouldThrottleRendering())
     return false;
 
-  if (FirstPaintInvalidationTracking::IsEnabled())
-    debug_info_.ClearAnnotatedInvalidateRects();
   IncrementPaintCount();
 
   IntRect new_interest_rect;
@@ -586,10 +583,6 @@ void GraphicsLayer::SetContentsLayer(cc::Layer* contents_layer) {
   contents_layer_id_ = contents_layer_->id();
 }
 
-GraphicsLayerDebugInfo& GraphicsLayer::DebugInfo() {
-  return debug_info_;
-}
-
 cc::Layer* GraphicsLayer::ContentsLayerIfRegistered() {
   ClearContentsLayerIfUnregistered();
   return contents_layer_;
@@ -635,9 +628,6 @@ RasterInvalidationTracking* GraphicsLayer::GetRasterInvalidationTracking()
 void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
                                             const IntRect& rect,
                                             PaintInvalidationReason reason) {
-  if (FirstPaintInvalidationTracking::IsEnabled())
-    debug_info_.AppendAnnotatedInvalidateRect(rect, reason);
-
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     EnsureRasterInvalidator().EnsureTracking();
 
@@ -873,9 +863,8 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     bool debug = flags & kLayerTreeIncludesDebugInfo;
     {
       std::unique_ptr<JSONArray> compositing_reasons_json = JSONArray::Create();
-      auto reasons = debug_info_.GetCompositingReasons();
-      auto names = debug ? CompositingReason::Descriptions(reasons)
-                         : CompositingReason::ShortNames(reasons);
+      auto names = debug ? CompositingReason::Descriptions(compositing_reasons_)
+                         : CompositingReason::ShortNames(compositing_reasons_);
       for (const char* name : names)
         compositing_reasons_json->PushString(name);
       json->SetArray("compositingReasons", std::move(compositing_reasons_json));
@@ -883,9 +872,10 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
     {
       std::unique_ptr<JSONArray> squashing_disallowed_reasons_json =
           JSONArray::Create();
-      auto reasons = debug_info_.GetSquashingDisallowedReasons();
-      auto names = debug ? SquashingDisallowedReason::Descriptions(reasons)
-                         : SquashingDisallowedReason::ShortNames(reasons);
+      auto names = debug ? SquashingDisallowedReason::Descriptions(
+                               squashing_disallowed_reasons_)
+                         : SquashingDisallowedReason::ShortNames(
+                               squashing_disallowed_reasons_);
       for (const char* name : names)
         squashing_disallowed_reasons_json->PushString(name);
       json->SetArray("squashingDisallowedReasons",
@@ -991,19 +981,6 @@ String GraphicsLayer::DebugName(cc::Layer* layer) const {
 
   NOTREACHED();
   return "";
-}
-
-void GraphicsLayer::SetCompositingReasons(CompositingReasons reasons) {
-  debug_info_.SetCompositingReasons(reasons);
-}
-
-void GraphicsLayer::SetSquashingDisallowedReasons(
-    SquashingDisallowedReasons reasons) {
-  debug_info_.SetSquashingDisallowedReasons(reasons);
-}
-
-void GraphicsLayer::SetOwnerNodeId(int node_id) {
-  debug_info_.SetOwnerNodeId(node_id);
 }
 
 void GraphicsLayer::SetPosition(const FloatPoint& point) {
@@ -1335,21 +1312,32 @@ void GraphicsLayer::ScrollableAreaDisposed() {
   scrollable_area_.Clear();
 }
 
-std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-GraphicsLayer::TakeDebugInfo(cc::Layer* layer) {
-  std::unique_ptr<base::trace_event::TracedValue> traced_value(
-      debug_info_.AsTracedValue());
+std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
+    cc::Layer* layer) {
+  auto traced_value = std::make_unique<base::trace_event::TracedValue>();
+
   traced_value->SetString(
       "layer_name", WTF::StringUTF8Adaptor(DebugName(layer)).AsStringPiece());
-  return std::move(traced_value);
+
+  traced_value->BeginArray("compositing_reasons");
+  for (const char* description :
+       CompositingReason::Descriptions(compositing_reasons_))
+    traced_value->AppendString(description);
+  traced_value->EndArray();
+
+  traced_value->BeginArray("squashing_disallowed_reasons");
+  for (const char* description :
+       SquashingDisallowedReason::Descriptions(squashing_disallowed_reasons_))
+    traced_value->AppendString(description);
+  traced_value->EndArray();
+
+  if (owner_node_id_)
+    traced_value->SetInteger("owner_node", owner_node_id_);
+
+  return traced_value;
 }
 
-void GraphicsLayer::didUpdateMainThreadScrollingReasons() {
-  debug_info_.SetMainThreadScrollingReasons(
-      PlatformLayer()->main_thread_scrolling_reasons());
-}
-
-void GraphicsLayer::didChangeScrollbarsHiddenIfOverlay(bool hidden) {
+void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
   if (scrollable_area_)
     scrollable_area_->SetScrollbarsHiddenIfOverlay(hidden);
 }

@@ -402,10 +402,9 @@ class COMPOSITOR_EXPORT Layer : public LayerAnimationDelegate,
   float device_scale_factor() const { return device_scale_factor_; }
 
   // LayerClient implementation.
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
+  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       cc::Layer* layer) override;
-  void didUpdateMainThreadScrollingReasons() override;
-  void didChangeScrollbarsHiddenIfOverlay(bool) override;
+  void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   // Triggers a call to SwitchToLayer.
   void SwitchCCLayerForTest();

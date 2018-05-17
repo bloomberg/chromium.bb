@@ -114,7 +114,7 @@ ElementListType LayerImpl::GetElementTypeForAnimation() const {
 }
 
 void LayerImpl::SetDebugInfo(
-    std::unique_ptr<base::trace_event::ConvertableToTraceFormat> debug_info) {
+    std::unique_ptr<base::trace_event::TracedValue> debug_info) {
   owned_debug_info_ = std::move(debug_info);
   debug_info_ = owned_debug_info_.get();
   SetNeedsPushProperties();
@@ -408,6 +408,9 @@ std::unique_ptr<base::DictionaryValue> LayerImpl::LayerAsJson() {
   result->SetBoolean("Is3dSorted", Is3dSorted());
   result->SetDouble("OPACITY", Opacity());
   result->SetBoolean("ContentsOpaque", contents_opaque_);
+  result->SetString(
+      "mainThreadScrollingReasons",
+      MainThreadScrollingReason::AsText(main_thread_scrolling_reasons_));
 
   if (scrollable())
     result->SetBoolean("Scrollable", true);
@@ -764,25 +767,11 @@ void LayerImpl::AsValueInto(base::trace_event::TracedValue* state) const {
 
   state->SetBoolean("trilinear_filtering", trilinear_filtering());
 
-  if (debug_info_) {
-    std::string str;
-    debug_info_->AppendAsTraceFormat(&str);
-    base::JSONReader json_reader;
-    std::unique_ptr<base::Value> debug_info_value(json_reader.ReadToValue(str));
+  MainThreadScrollingReason::AddToTracedValue(main_thread_scrolling_reasons_,
+                                              *state);
 
-    if (debug_info_value->is_dict()) {
-      base::DictionaryValue* dictionary_value = nullptr;
-      bool converted_to_dictionary =
-          debug_info_value->GetAsDictionary(&dictionary_value);
-      DCHECK(converted_to_dictionary);
-      for (base::DictionaryValue::Iterator it(*dictionary_value); !it.IsAtEnd();
-           it.Advance()) {
-        state->SetValue(it.key().data(), it.value().CreateDeepCopy());
-      }
-    } else {
-      NOTREACHED();
-    }
-  }
+  if (debug_info_)
+    state->SetValue("debug_info", *debug_info_);
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }

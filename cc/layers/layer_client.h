@@ -11,7 +11,7 @@
 
 namespace base {
 namespace trace_event {
-class ConvertableToTraceFormat;
+class TracedValue;
 }
 }
 
@@ -28,10 +28,10 @@ class CC_EXPORT LayerClient {
   //
   // A pointer to the layer is provided for the convenience of layer clients
   // which service multiple layers.
-  virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-  TakeDebugInfo(Layer* layer) = 0;
-  virtual void didUpdateMainThreadScrollingReasons() = 0;
-  virtual void didChangeScrollbarsHiddenIfOverlay(bool) = 0;
+  virtual std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
+      Layer* layer) = 0;
+
+  virtual void DidChangeScrollbarsHiddenIfOverlay(bool) = 0;
 
  protected:
   virtual ~LayerClient() {}

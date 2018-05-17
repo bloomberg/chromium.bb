@@ -113,7 +113,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer_debug_info.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -5861,36 +5860,26 @@ MainThreadScrollingReasons LocalFrameView::GetMainThreadScrollingReasons()
 }
 
 String LocalFrameView::MainThreadScrollingReasonsAsText() {
+  MainThreadScrollingReasons reasons = main_thread_scrolling_reasons_;
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kPrePaintClean);
 
     // Slimming paint v2 stores main thread scrolling reasons on property
-    // trees instead of in |m_mainThreadScrollingReasons|.
-    MainThreadScrollingReasons reasons = 0;
+    // trees instead of in |main_thread_scrolling_reasons_|.
     if (const auto* scroll_translation = this->ScrollTranslation()) {
-      reasons |=
+      reasons =
           scroll_translation->ScrollNode()->GetMainThreadScrollingReasons();
     }
-    return String(
-        MainThreadScrollingReason::mainThreadScrollingReasonsAsText(reasons)
-            .c_str());
-  }
-
-  DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
-  if (GraphicsLayer* layer_for_scrolling =
-          LayoutViewportScrollableArea()->LayerForScrolling()) {
-    if (cc::Layer* platform_layer = layer_for_scrolling->PlatformLayer()) {
-      String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-                        platform_layer->main_thread_scrolling_reasons())
-                        .c_str());
-      return result;
+  } else {
+    DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
+    if (GraphicsLayer* layer_for_scrolling =
+            LayoutViewportScrollableArea()->LayerForScrolling()) {
+      if (cc::Layer* platform_layer = layer_for_scrolling->PlatformLayer())
+        reasons = platform_layer->main_thread_scrolling_reasons();
     }
   }
 
-  String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
-                    main_thread_scrolling_reasons_)
-                    .c_str());
-  return result;
+  return String(MainThreadScrollingReason::AsText(reasons).c_str());
 }
 
 IntRect LocalFrameView::RemoteViewportIntersection() {

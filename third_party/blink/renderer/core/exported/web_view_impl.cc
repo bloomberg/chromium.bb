@@ -155,7 +155,6 @@
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_client.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_mutator_impl.h"
-#include "third_party/blink/renderer/platform/graphics/first_paint_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/drawing_buffer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/image.h"
@@ -907,7 +906,6 @@ void WebViewImpl::SetShowPaintRects(bool show) {
     TRACE_EVENT0("blink", "WebViewImpl::setShowPaintRects");
     layer_tree_view_->SetShowPaintRects(show);
   }
-  FirstPaintInvalidationTracking::SetEnabledForShowPaintRects(show);
 }
 
 void WebViewImpl::SetShowDebugBorders(bool show) {
