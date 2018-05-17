@@ -176,6 +176,10 @@ std::unique_ptr<media::AudioManager> ContentBrowserClient::CreateAudioManager(
   return nullptr;
 }
 
+bool ContentBrowserClient::OverridesAudioManager() {
+  return false;
+}
+
 std::unique_ptr<media::CdmFactory> ContentBrowserClient::CreateCdmFactory() {
   return nullptr;
 }

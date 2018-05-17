@@ -5,6 +5,7 @@
 #include "media/audio/audio_thread_impl.h"
 
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 
 namespace media {
 

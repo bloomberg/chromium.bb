@@ -540,9 +540,8 @@ ServiceManagerContext::ServiceManagerContext() {
   }
 
   if (BrowserMainLoop* bml = BrowserMainLoop::GetInstance()) {
-    // TODO((http://crbug/834666):): also check that bml->audio_manager() is not
-    // defined, see BrowserMainLoop::CreateAudioManager().
-    if (base::FeatureList::IsEnabled(features::kAudioServiceOutOfProcess)) {
+    if (bml->AudioServiceOutOfProcess()) {
+      DCHECK(base::FeatureList::IsEnabled(features::kAudioServiceAudioStreams));
       out_of_process_services[audio::mojom::kServiceName] =
           base::ASCIIToUTF16("Audio Service");
     } else {
@@ -554,6 +553,7 @@ ServiceManagerContext::ServiceManagerContext() {
           },
           bml);
       info.task_runner = bml->audio_service_runner();
+      DCHECK(info.task_runner);
       packaged_services_connection_->AddEmbeddedService(
           audio::mojom::kServiceName, info);
     }

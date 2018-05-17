@@ -1584,11 +1584,14 @@ bool RenderProcessHostImpl::Init() {
   }
 
 #if !defined(OS_MACOSX)
-  // Intentionally delay the hang monitor creation after the first renderer
-  // is created. On Mac audio thread is the UI thread, a hang monitor is not
-  // necessary or recommended.
-  media::AudioManager::StartHangMonitorIfNeeded(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  if (!BrowserMainLoop::GetInstance()->AudioServiceOutOfProcess()) {
+    DCHECK(BrowserMainLoop::GetInstance()->audio_manager());
+    // Intentionally delay the hang monitor creation after the first renderer
+    // is created. On Mac audio thread is the UI thread, a hang monitor is not
+    // necessary or recommended.
+    media::AudioManager::StartHangMonitorIfNeeded(
+        BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+  }
 #endif  // !defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
@@ -2399,6 +2402,8 @@ RenderProcessHostImpl::GetRendererAudioOutputStreamFactoryContext() {
   if (!audio_output_stream_factory_context_) {
     media::AudioManager* audio_manager =
         BrowserMainLoop::GetInstance()->audio_manager();
+    DCHECK(audio_manager) << "AudioManager is not instantiated: running the "
+                             "audio service out of process?";
     MediaStreamManager* media_stream_manager =
         BrowserMainLoop::GetInstance()->media_stream_manager();
     media::AudioSystem* audio_system =
