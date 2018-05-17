@@ -40,6 +40,7 @@ class Font;
 class ShapeCache;
 class SimpleFontData;
 struct GlyphData;
+struct TextRunPaintInfo;
 
 class PLATFORM_EXPORT CachingWordShaper final {
   STACK_ALLOCATED();

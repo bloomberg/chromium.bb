@@ -735,6 +735,7 @@ jumbo_component("platform") {
     "fonts/symbols_iterator.h",
     "fonts/text_rendering_mode.cc",
     "fonts/text_rendering_mode.h",
+    "fonts/text_run_paint_info.h",
     "fonts/typesetting_features.cc",
     "fonts/typesetting_features.h",
     "fonts/unicode_range_set.cc",

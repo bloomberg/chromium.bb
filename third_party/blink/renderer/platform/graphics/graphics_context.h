@@ -59,6 +59,7 @@ class FloatRoundedRect;
 class KURL;
 class PaintController;
 class Path;
+struct TextRunPaintInfo;
 
 class PLATFORM_EXPORT GraphicsContext {
   WTF_MAKE_NONCOPYABLE(GraphicsContext);
