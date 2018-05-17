@@ -8,7 +8,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/file_util_proxy.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,6 +21,31 @@
 namespace content {
 
 namespace {
+
+struct GetFileInfoResults {
+  base::File::Error error;
+  base::File::Info info;
+};
+
+using GetFileInfoCallback =
+    base::OnceCallback<void(base::File::Error, const base::File::Info&)>;
+
+GetFileInfoResults DoGetFileInfo(const base::FilePath& path) {
+  GetFileInfoResults results;
+  if (!base::PathExists(path)) {
+    results.error = base::File::FILE_ERROR_NOT_FOUND;
+    return results;
+  }
+  results.error = base::GetFileInfo(path, &results.info)
+                      ? base::File::FILE_OK
+                      : base::File::FILE_ERROR_FAILED;
+  return results;
+}
+
+void SendGetFileInfoResults(GetFileInfoCallback callback,
+                            const GetFileInfoResults& results) {
+  std::move(callback).Run(results.error, results.info);
+}
 
 base::File::Error CallTouchFile(const base::FilePath& path,
                                 PP_Time last_access_time,
@@ -82,10 +106,12 @@ int32_t PepperExternalFileRefBackend::Rename(
 
 int32_t PepperExternalFileRefBackend::Query(
     ppapi::host::ReplyMessageContext reply_context) {
-  bool ok = base::FileUtilProxy::GetFileInfo(
-      task_runner_.get(), path_,
-      base::BindOnce(&PepperExternalFileRefBackend::GetMetadataComplete,
-                     weak_factory_.GetWeakPtr(), reply_context));
+  bool ok = base::PostTaskAndReplyWithResult(
+      task_runner_.get(), FROM_HERE, base::BindOnce(&DoGetFileInfo, path_),
+      base::BindOnce(
+          &SendGetFileInfoResults,
+          base::BindOnce(&PepperExternalFileRefBackend::GetMetadataComplete,
+                         weak_factory_.GetWeakPtr(), reply_context)));
   DCHECK(ok);
   return PP_OK_COMPLETIONPENDING;
 }

@@ -68,8 +68,7 @@ void QuitLoop() {
 
 class LocalFileStreamReaderTest : public testing::Test {
  public:
-  LocalFileStreamReaderTest()
-      : file_thread_("FileUtilProxyTestFileThread") {}
+  LocalFileStreamReaderTest() : file_thread_("TestFileThread") {}
 
   void SetUp() override {
     ASSERT_TRUE(file_thread_.Start());

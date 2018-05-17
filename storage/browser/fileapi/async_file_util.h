@@ -12,7 +12,6 @@
 
 #include "base/callback_forward.h"
 #include "base/files/file.h"
-#include "base/files/file_util_proxy.h"
 #include "base/macros.h"
 #include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/fileapi/file_system_operation.h"

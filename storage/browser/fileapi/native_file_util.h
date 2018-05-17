@@ -11,7 +11,6 @@
 
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util_proxy.h"
 #include "base/macros.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
 #include "storage/browser/storage_browser_export.h"

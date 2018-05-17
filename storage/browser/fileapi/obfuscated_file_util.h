@@ -16,7 +16,6 @@
 #include "base/callback_forward.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/files/file_util_proxy.h"
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"

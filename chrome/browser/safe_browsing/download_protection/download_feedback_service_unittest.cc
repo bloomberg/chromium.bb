@@ -39,7 +39,6 @@ namespace {
 class FakeDownloadFeedback : public DownloadFeedback {
  public:
   FakeDownloadFeedback(base::TaskRunner* file_task_runner,
-                       const base::FilePath& file_path,
                        const std::string& ping_request,
                        const std::string& ping_response,
                        base::Closure deletion_callback)
@@ -69,7 +68,6 @@ class FakeDownloadFeedback : public DownloadFeedback {
 
  private:
   scoped_refptr<base::TaskRunner> file_task_runner_;
-  base::FilePath file_path_;
   std::string ping_request_;
   std::string ping_response_;
 
@@ -89,7 +87,7 @@ class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
       const std::string& ping_request,
       const std::string& ping_response) override {
     FakeDownloadFeedback* feedback = new FakeDownloadFeedback(
-        file_task_runner, file_path, ping_request, ping_response,
+        file_task_runner, ping_request, ping_response,
         base::Bind(&FakeDownloadFeedbackFactory::DownloadFeedbackSent,
                    base::Unretained(this), feedbacks_.size()));
     feedbacks_.push_back(feedback);
@@ -406,7 +404,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
   download_discarded_callback[2].Run(file_path[2]);
   EXPECT_EQ(2U, num_feedbacks());
 
-  // File should still exist since the FileUtilProxy task hasn't run yet.
+  // File should still exist since the file deletion task hasn't run yet.
   EXPECT_TRUE(base::PathExists(file_path[2]));
 
   content::RunAllTasksUntilIdle();

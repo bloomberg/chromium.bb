@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include "base/files/file_util_proxy.h"
 #include "base/single_thread_task_runner.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
