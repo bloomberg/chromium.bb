@@ -30,6 +30,7 @@
 #include "media/gpu/android/fake_codec_allocator.h"
 #include "media/gpu/android/mock_android_video_surface_chooser.h"
 #include "media/gpu/android/mock_device_info.h"
+#include "media/media_buildflags.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -83,10 +84,11 @@ class MockVDAClient : public VideoDecodeAccelerator::Client {
 
 }  // namespace
 
-class AndroidVideoDecodeAcceleratorTest : public testing::Test {
+class AndroidVideoDecodeAcceleratorTest
+    : public testing::TestWithParam<VideoCodecProfile> {
  public:
   // Default to baseline H264 because it's always supported.
-  AndroidVideoDecodeAcceleratorTest() : config_(H264PROFILE_BASELINE) {}
+  AndroidVideoDecodeAcceleratorTest() : config_(GetParam()) {}
 
   void SetUp() override {
     ASSERT_TRUE(gl::init::InitializeGLOneOff());
@@ -137,6 +139,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     vda_.reset(avda);
     avda->force_defer_surface_creation_for_testing_ =
         force_defer_surface_creation;
+    avda->force_allow_software_decoding_for_testing_ = true;
 
     bool result = vda_->Initialize(config_, &client_);
     base::RunLoop().RunUntilIdle();
@@ -235,14 +238,14 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   }
 };
 
-TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {
+TEST_P(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
   config_ = VideoDecodeAccelerator::Config(VIDEO_CODEC_PROFILE_UNKNOWN);
   ASSERT_FALSE(InitializeAVDA());
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        ConfigureSupportedCodecSynchronously) {
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
@@ -256,7 +259,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   testing::Mock::VerifyAndClearExpectations(chooser_);
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecSyncIsAnError) {
+TEST_P(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecSyncIsAnError) {
   // Failuew to create a codec during sync init should cause Initialize to fail.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
@@ -267,7 +270,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecSyncIsAnError) {
   ASSERT_FALSE(InitializeAVDA());
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecAsyncIsAnError) {
+TEST_P(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecAsyncIsAnError) {
   // Verify that a null codec signals error for async init when it doesn't get a
   // mediacodec instance.
   //
@@ -291,7 +294,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecAsyncIsAnError) {
   testing::Mock::VerifyAndClearExpectations(codec_allocator_.get());
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        LowEndDevicesSucceedInitWithoutASurface) {
   // If AVDA decides that we should defer surface creation, then it should
   // signal success before we provide a surface.  It should still ask for a
@@ -310,7 +313,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   InitializeAVDA(force_defer_surface_creation);
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest, AsyncInitWithTextureOwnerAndDelete) {
+TEST_P(AndroidVideoDecodeAcceleratorTest, AsyncInitWithTextureOwnerAndDelete) {
   // When configuring with a TextureOwner and deferred init, we should be
   // asked for a codec, and be notified of init success if we provide one. When
   // AVDA is destroyed, it should release the codec and texture owner.
@@ -330,7 +333,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, AsyncInitWithTextureOwnerAndDelete) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest, AsyncInitWithSurfaceAndDelete) {
+TEST_P(AndroidVideoDecodeAcceleratorTest, AsyncInitWithSurfaceAndDelete) {
   // When |config_| specifies a surface, we should be given a factory during
   // startup for it.  When |chooser_| provides an overlay, the codec should be
   // allocated using it.  Shutdown should provide the overlay when releasing the
@@ -351,7 +354,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, AsyncInitWithSurfaceAndDelete) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        SwitchesToTextureOwnerWhenSurfaceDestroyed) {
   // Provide a surface, and a codec, then destroy the surface.  AVDA should use
   // SetSurface to switch to TextureOwner.
@@ -376,7 +379,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest, SwitchesToTextureOwnerEventually) {
+TEST_P(AndroidVideoDecodeAcceleratorTest, SwitchesToTextureOwnerEventually) {
   // Provide a surface, and a codec, then request that AVDA switches to a
   // texture owner.  Verify that it does.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
@@ -400,7 +403,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, SwitchesToTextureOwnerEventually) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        SetSurfaceFailureDoesntSwitchSurfaces) {
   // Initialize AVDA with a surface, then request that AVDA switches to a
   // texture owner.  When it tries to UpdateSurface, pretend to fail.  AVDA
@@ -420,7 +423,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   LetAVDAUpdateSurface();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        SwitchToSurfaceAndBackBeforeSetSurface) {
   // Ask AVDA to switch from ST to overlay, then back to ST before it has a
   // chance to do the first switch.  It should simply drop the overlay.
@@ -448,7 +451,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   chooser_->ProvideTextureOwner();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        ChangingOutputSurfaceVoluntarilyWithoutSetSurfaceIsIgnored) {
   // If we ask AVDA to change to TextureOwner should be ignored on platforms
   // that don't support SetSurface (pre-M or blacklisted).  It should also
@@ -473,7 +476,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   LetAVDAUpdateSurface();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        OnSurfaceDestroyedWithoutSetSurfaceFreesTheCodec) {
   // If AVDA receives OnSurfaceDestroyed without support for SetSurface, then it
   // should free the codec.
@@ -499,7 +502,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
       ->VerifyAndClearExpectations();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        MultipleTextureOwnerCallbacksAreIgnored) {
   // Ask AVDA to switch to ST when it's already using ST, nothing should happen.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
@@ -513,7 +516,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        OverlayInfoWithDuplicateSurfaceIDDoesntChangeTheFactory) {
   // Send OverlayInfo with duplicate info, and verify that it doesn't change
   // the factory.
@@ -526,7 +529,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   avda()->SetOverlayInfo(overlay_info);
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest,
+TEST_P(AndroidVideoDecodeAcceleratorTest,
        OverlayInfoWithNewSurfaceIDDoesChangeTheFactory) {
   // Send OverlayInfo with new surface info, and verify that it does change the
   // overlay factory.
@@ -539,7 +542,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   avda()->SetOverlayInfo(overlay_info);
 }
 
-TEST_F(AndroidVideoDecodeAcceleratorTest, FullscreenSignalIsSentToChooser) {
+TEST_P(AndroidVideoDecodeAcceleratorTest, FullscreenSignalIsSentToChooser) {
   // Send OverlayInfo that has |is_fullscreen| set, and verify that the chooser
   // is notified about it.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
@@ -549,5 +552,24 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, FullscreenSignalIsSentToChooser) {
   avda()->SetOverlayInfo(overlay_info);
   ASSERT_EQ(chooser_->current_state_.is_fullscreen, overlay_info.is_fullscreen);
 }
+
+static std::vector<VideoCodecProfile> GetTestList() {
+  std::vector<VideoCodecProfile> test_profiles;
+
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+  if (MediaCodecUtil::IsMediaCodecAvailable())
+    test_profiles.push_back(H264PROFILE_BASELINE);
+#endif
+
+  if (MediaCodecUtil::IsVp8DecoderAvailable())
+    test_profiles.push_back(VP8PROFILE_ANY);
+  if (MediaCodecUtil::IsVp9DecoderAvailable())
+    test_profiles.push_back(VP9PROFILE_PROFILE0);
+  return test_profiles;
+}
+
+INSTANTIATE_TEST_CASE_P(AndroidVideoDecodeAcceleratorTest,
+                        AndroidVideoDecodeAcceleratorTest,
+                        testing::ValuesIn(GetTestList()));
 
 }  // namespace media

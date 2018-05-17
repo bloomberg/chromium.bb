@@ -285,6 +285,7 @@ AndroidVideoDecodeAccelerator::AndroidVideoDecodeAccelerator(
           base::FeatureList::IsEnabled(media::kUseAndroidOverlayAggressively)),
       device_info_(device_info),
       force_defer_surface_creation_for_testing_(false),
+      force_allow_software_decoding_for_testing_(false),
       overlay_factory_cb_(overlay_factory_cb),
       weak_this_factory_(this) {}
 
@@ -1761,8 +1762,10 @@ bool AndroidVideoDecodeAccelerator::IsMediaCodecSoftwareDecodingForbidden()
     const {
   // Prevent MediaCodec from using its internal software decoders when we have
   // more secure and up to date versions in the renderer process.
-  return !config_.is_encrypted() && (codec_config_->codec == kCodecVP8 ||
-                                     codec_config_->codec == kCodecVP9);
+  return !config_.is_encrypted() &&
+         (codec_config_->codec == kCodecVP8 ||
+          codec_config_->codec == kCodecVP9) &&
+         !force_allow_software_decoding_for_testing_;
 }
 
 bool AndroidVideoDecodeAccelerator::UpdateSurface() {

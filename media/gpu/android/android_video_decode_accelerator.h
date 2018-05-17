@@ -395,6 +395,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   bool force_defer_surface_creation_for_testing_;
 
+  bool force_allow_software_decoding_for_testing_;
+
   // Optional factory to produce mojo AndroidOverlay instances.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;
 
