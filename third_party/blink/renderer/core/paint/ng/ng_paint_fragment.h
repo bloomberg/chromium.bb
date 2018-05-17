@@ -76,11 +76,9 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
   LayoutRect VisualRect() const override { return visual_rect_; }
   void SetVisualRect(const LayoutRect& rect) { visual_rect_ = rect; }
   LayoutRect VisualOverflowRect() const;
-  LayoutRect OverflowClipRect(const LayoutPoint& location,
-                              OverlayScrollbarClipBehavior =
-                                  kIgnorePlatformOverlayScrollbarSize) const {
-    return {location, Size().ToLayoutSize()};
-  }
+  LayoutRect OverflowClipRect(
+      const LayoutPoint& location,
+      OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
 
   LayoutRect PartialInvalidationRect() const override;
 
