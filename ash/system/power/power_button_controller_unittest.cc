@@ -133,8 +133,6 @@ class PowerButtonControllerTest : public PowerButtonTestBase {
     }
     ReleasePowerButton();
     ASSERT_TRUE(power_button_test_api_->IsMenuOpened());
-    // Power button menu has focus after it is opened.
-    EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()->HasFocus());
   }
 
   // Tap outside of the menu view to dismiss the menu.
@@ -782,26 +780,33 @@ TEST_F(PowerButtonControllerTest, MouseClickToDismissMenu) {
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
 }
 
-// Tests the menu items according to the login status.
-TEST_F(PowerButtonControllerTest, MenuItemsToLoginStatus) {
-  // No sign out item if user is not logged in.
+// Tests the menu items according to the login and screen locked status.
+TEST_F(PowerButtonControllerTest, MenuItemsToLoginAndLockedStatus) {
+  // No sign out and lock screen item if user is not logged in.
   ClearLogin();
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::NOT_LOGGED_IN);
   OpenPowerButtonMenu();
   EXPECT_FALSE(power_button_test_api_->MenuHasSignOutItem());
+  EXPECT_FALSE(power_button_test_api_->MenuHasLockScreenItem());
   TapToDismissPowerButtonMenu();
 
-  // Should have sign out item if user is login.
+  // Should have sign out and lock screen item if user is logged in and screen
+  // is unlocked.
   CreateUserSessions(1);
   Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::USER);
   OpenPowerButtonMenu();
+  EXPECT_FALSE(GetLockedState());
   EXPECT_TRUE(power_button_test_api_->MenuHasSignOutItem());
+  EXPECT_TRUE(power_button_test_api_->MenuHasLockScreenItem());
   TapToDismissPowerButtonMenu();
 
-  // Should have sign out item if user is logged in but screen is locked.
-  Shell::Get()->UpdateAfterLoginStatusChange(LoginStatus::LOCKED);
+  // Should have sign out but not lock screen item if user is logged in but
+  // screen is locked.
+  LockScreen();
+  EXPECT_TRUE(GetLockedState());
   OpenPowerButtonMenu();
   EXPECT_TRUE(power_button_test_api_->MenuHasSignOutItem());
+  EXPECT_FALSE(power_button_test_api_->MenuHasLockScreenItem());
 }
 
 // Tests long-pressing the power button when the menu is open.
@@ -970,9 +975,31 @@ TEST_F(PowerButtonControllerTest, ESCDismissMenu) {
 // Tests the navigation of the menu.
 TEST_F(PowerButtonControllerTest, MenuNavigation) {
   OpenPowerButtonMenu();
+  ASSERT_TRUE(power_button_test_api_->MenuHasSignOutItem());
+  ASSERT_TRUE(power_button_test_api_->MenuHasLockScreenItem());
   PressKey(ui::VKEY_TAB);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
                   ->power_off_item_for_test()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_RIGHT);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->sign_out_item_for_test()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_DOWN);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->lock_screen_item_for_test()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_TAB);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->power_off_item_for_test()
+                  ->HasFocus());
+
+  PressKey(ui::VKEY_UP);
+  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
+                  ->lock_screen_item_for_test()
                   ->HasFocus());
 
   PressKey(ui::VKEY_LEFT);
@@ -980,17 +1007,7 @@ TEST_F(PowerButtonControllerTest, MenuNavigation) {
                   ->sign_out_item_for_test()
                   ->HasFocus());
 
-  PressKey(ui::VKEY_RIGHT);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->power_off_item_for_test()
-                  ->HasFocus());
-
   PressKey(ui::VKEY_UP);
-  EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
-                  ->sign_out_item_for_test()
-                  ->HasFocus());
-
-  PressKey(ui::VKEY_DOWN);
   EXPECT_TRUE(power_button_test_api_->GetPowerButtonMenuView()
                   ->power_off_item_for_test()
                   ->HasFocus());

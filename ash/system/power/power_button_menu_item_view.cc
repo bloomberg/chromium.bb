@@ -23,18 +23,14 @@ constexpr SkColor kItemIconColor = SkColorSetARGB(0xFF, 0x20, 0x21, 0x24);
 // Color of the title of the label.
 constexpr SkColor kItemTitleColor = SkColorSetARGB(0xFF, 0x5F, 0x63, 0x68);
 
-// Font size of the title should be 14p. The default font size is 12p and
-// MediumFont is 15p. We use MediumFont for the title plus the delta here.
-constexpr int kTitleFontSizeDelta = -1;
-
 // Size of the image icon in pixels.
 constexpr int kIconSize = 24;
 
 // Top padding of the image icon to the top of the item view.
-constexpr int kIconTopPadding = 16;
+constexpr int kIconTopPadding = 17;
 
 // Top padding of the label of title to the top of the item view.
-constexpr int kTitleTopPadding = 53;
+constexpr int kTitleTopPadding = 52;
 
 // The amount of rounding applied to the corners of the focused menu item.
 constexpr int kFocusedItemRoundRectRadiusDp = 8;
@@ -63,10 +59,6 @@ PowerButtonMenuItemView::PowerButtonMenuItemView(
 
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_->SetAutoColorReadabilityEnabled(false);
-
-  title_->SetFontList(ui::ResourceBundle::GetSharedInstance()
-                          .GetFontList(ui::ResourceBundle::MediumFont)
-                          .DeriveWithSizeDelta(kTitleFontSizeDelta));
   title_->SetEnabledColor(kItemTitleColor);
   title_->SetText(title_text);
   AddChildView(title_);

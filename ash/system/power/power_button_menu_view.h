@@ -48,6 +48,9 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
   PowerButtonMenuItemView* power_off_item_for_test() const {
     return power_off_item_;
   }
+  PowerButtonMenuItemView* lock_screen_item_for_test() const {
+    return lock_screen_item_;
+  }
 
   // Requests focus for |power_off_item_|.
   void FocusPowerOffButton();
@@ -66,7 +69,6 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
   void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
   gfx::Size CalculatePreferredSize() const override;
-  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -77,6 +79,7 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
   // Items in the menu. Owned by views hierarchy.
   PowerButtonMenuItemView* power_off_item_ = nullptr;
   PowerButtonMenuItemView* sign_out_item_ = nullptr;
+  PowerButtonMenuItemView* lock_screen_item_ = nullptr;
 
   // The physical display side of power button in landscape primary.
   PowerButtonController::PowerButtonPosition power_button_position_;

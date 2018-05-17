@@ -156,6 +156,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "system_menu_volume_low.icon",
     "system_menu_volume_medium.icon",
     "system_menu_volume_mute.icon",
+    "system_power_button_menu_lock_screen.icon",
     "system_power_button_menu_power_off.icon",
     "system_power_button_menu_sign_out.icon",
     "system_tray_accessibility.icon",

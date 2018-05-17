@@ -61,6 +61,9 @@ class PowerButtonControllerTestApi {
   // True if |controller_|'s menu has a sign out item.
   bool MenuHasSignOutItem() const;
 
+  // True if |controller_|'s menu has a lock screen item.
+  bool MenuHasLockScreenItem() const;
+
   PowerButtonScreenshotController* GetScreenshotController();
 
   void SetPowerButtonType(PowerButtonController::ButtonType button_type);
