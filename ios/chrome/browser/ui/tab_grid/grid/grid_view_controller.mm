@@ -103,12 +103,19 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
   [self.collectionView reloadData];
-  // Selection is invalid if there are no items.
-  if (self.items.count == 0)
-    return;
-  [self.collectionView selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
-                                    animated:animated
-                              scrollPosition:UICollectionViewScrollPositionTop];
+  // Show/hide empty state based on existence of items.
+  if (self.items.count > 0) {
+    [self animateEmptyStateOut];
+  } else {
+    [self animateEmptyStateIn];
+  }
+  // Update selection if there are items.
+  if (self.items.count > 0) {
+    [self.collectionView
+        selectItemAtIndexPath:CreateIndexPath(self.selectedIndex)
+                     animated:animated
+               scrollPosition:UICollectionViewScrollPositionTop];
+  }
   // Update the delegate, in case it wasn't set when |items| was populated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];
 }
@@ -119,8 +126,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
-  [super viewDidDisappear:animated];
   self.viewAppeared = NO;
+  [super viewDidDisappear:animated];
 }
 
 #pragma mark - Public
@@ -467,7 +474,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 // Handle the long-press gesture used to reorder cells in the collection view.
 - (void)handleItemReorderingWithGesture:(UIGestureRecognizer*)gesture {
-  DCHECK(gesture == self.itemReorderRecognizer);
+  DCHECK_EQ(gesture, self.itemReorderRecognizer);
   CGPoint location = [gesture locationInView:self.collectionView];
   switch (gesture.state) {
     case UIGestureRecognizerStateBegan: {
