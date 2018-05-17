@@ -90,9 +90,17 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
 
   [ChromeEarlGrey tapWebViewElementWithID:@"buyWithResolvingPromise"];
 
-  // Confirm that the Payment Request UI is showing.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
-      assertWithMatcher:grey_notNil()];
+  // Wait until the payment request view shows.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::PaymentRequestView()]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(
+      testing::WaitUntilConditionOrTimeout(kShowPromiseTimeout, condition),
+      @"Payment request view failed to show.");
 
   // Verify that the Buy button is not enabled.
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
@@ -100,7 +108,7 @@ id<GREYMatcher> PriceCellMatcher(NSString* accessibilityLabel) {
       assertWithMatcher:grey_not(grey_enabled())];
 
   // Wait until the Buy button becomes enabled.
-  ConditionBlock condition = ^{
+  condition = ^{
     NSError* error = nil;
     [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
                                             IDS_PAYMENTS_PAY_BUTTON)]
