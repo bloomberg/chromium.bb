@@ -74,7 +74,9 @@ WindowServiceClient::~WindowServiceClient() {
   while (!client_created_windows_.empty()) {
     // RemoveWindowFromKnownWindows() should make it such that the Window is no
     // longer recognized as being created (owned) by this client.
-    RemoveWindowFromKnownWindows(client_created_windows_.begin()->get());
+    const bool delete_if_owned = true;
+    RemoveWindowFromKnownWindows(client_created_windows_.begin()->first,
+                                 delete_if_owned);
   }
 }
 
@@ -254,7 +256,7 @@ aura::Window* WindowServiceClient::AddClientCreatedWindow(
     bool is_top_level,
     std::unique_ptr<aura::Window> window_ptr) {
   aura::Window* window = window_ptr.get();
-  client_created_windows_.insert(std::move(window_ptr));
+  client_created_windows_[window] = std::move(window_ptr);
   ClientWindow::Create(window, this, id, is_top_level);
   AddWindowToKnownWindows(window, id);
   return window;
@@ -271,14 +273,21 @@ void WindowServiceClient::AddWindowToKnownWindows(aura::Window* window,
     window->AddObserver(this);
 }
 
-void WindowServiceClient::RemoveWindowFromKnownWindows(aura::Window* window) {
+void WindowServiceClient::RemoveWindowFromKnownWindows(aura::Window* window,
+                                                       bool delete_if_owned) {
   DCHECK(IsWindowKnown(window));
   auto iter = window_to_client_window_id_map_.find(window);
   client_window_id_to_window_map_.erase(iter->second);
   window_to_client_window_id_map_.erase(iter);
-  if (client_created_windows_.count(window)) {
+  auto client_iter = client_created_windows_.find(window);
+  if (client_iter != client_created_windows_.end()) {
     window->RemoveObserver(this);
-    client_created_windows_.erase(client_created_windows_.find(window));
+    if (!delete_if_owned) {
+      // |window| is in the process of being deleted, release() to avoid double
+      // deletion.
+      client_iter->second.release();
+    }
+    client_created_windows_.erase(client_iter);
   }
 }
 
@@ -322,8 +331,10 @@ void WindowServiceClient::RemoveWindowFromKnownWindowsRecursive(
     return;
   }
 
-  if (IsWindowKnown(window))
-    RemoveWindowFromKnownWindows(window);
+  if (IsWindowKnown(window)) {
+    const bool delete_if_owned = true;
+    RemoveWindowFromKnownWindows(window, delete_if_owned);
+  }
 
   for (aura::Window* child : window->children())
     RemoveWindowFromKnownWindowsRecursive(child, created_windows);
@@ -409,7 +420,7 @@ bool WindowServiceClient::NewWindowImpl(
 
 bool WindowServiceClient::DeleteWindowImpl(const ClientWindowId& window_id) {
   aura::Window* window = GetWindowByClientId(window_id);
-  DVLOG(3) << "removing window from parent client=" << client_id_
+  DVLOG(3) << "deleting window client=" << client_id_
            << " client window_id= " << window_id.ToString();
   if (!window)
     return false;
@@ -423,11 +434,8 @@ bool WindowServiceClient::DeleteWindowImpl(const ClientWindowId& window_id) {
   if (!IsClientCreatedWindow(window))
     return false;
 
-  {
-    base::AutoReset<aura::Window*> auto_reset(&window_deleting_, window);
-    // This triggers the necessary cleanup.
-    delete window;
-  }
+  const bool delete_if_owned = true;
+  RemoveWindowFromKnownWindows(window, delete_if_owned);
   return true;
 }
 
@@ -723,6 +731,10 @@ void WindowServiceClient::OnChildBindingConnectionLost(
 void WindowServiceClient::OnWindowDestroyed(aura::Window* window) {
   DCHECK(IsWindowKnown(window));
 
+  // WARNING: this function is not necessarily called. In particular it isn't
+  // called when the client requests the window to be deleted, or from the
+  // destructor.
+
   auto iter = FindClientRootWithRoot(window);
   if (iter != client_roots_.end()) {
     // TODO(sky): add test coverage of this. I'm pretty sure this isn't wired
@@ -731,15 +743,14 @@ void WindowServiceClient::OnWindowDestroyed(aura::Window* window) {
                      WindowServiceClient::DeleteClientRootReason::kDeleted);
   }
 
-  if (window != window_deleting_) {
-    DCHECK_NE(0u, window_to_client_window_id_map_.count(window));
-    const ClientWindowId client_window_id =
-        window_to_client_window_id_map_[window];
-    window_tree_client_->OnWindowDeleted(
-        ClientWindowIdToTransportId(client_window_id));
-  }
+  DCHECK_NE(0u, window_to_client_window_id_map_.count(window));
+  const ClientWindowId client_window_id =
+      window_to_client_window_id_map_[window];
+  window_tree_client_->OnWindowDeleted(
+      ClientWindowIdToTransportId(client_window_id));
 
-  RemoveWindowFromKnownWindows(window);
+  const bool delete_if_owned = false;
+  RemoveWindowFromKnownWindows(window, delete_if_owned);
 }
 
 void WindowServiceClient::NewWindow(
@@ -844,7 +855,7 @@ void WindowServiceClient::SetWindowBounds(
 void WindowServiceClient::SetWindowTransform(uint32_t change_id,
                                              Id window_id,
                                              const gfx::Transform& transform) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetClientArea(
@@ -873,11 +884,11 @@ void WindowServiceClient::SetClientArea(
 void WindowServiceClient::SetHitTestMask(
     Id window_id,
     const base::Optional<gfx::Rect>& mask) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetCanAcceptDrops(Id window_id, bool accepts_drops) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetWindowVisibility(uint32_t change_id,
@@ -951,32 +962,32 @@ void WindowServiceClient::RemoveWindowFromParent(uint32_t change_id,
 void WindowServiceClient::AddTransientWindow(uint32_t change_id,
                                              Id window_id,
                                              Id transient_window_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::RemoveTransientWindowFromParent(
     uint32_t change_id,
     Id transient_window_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetModalType(uint32_t change_id,
                                        Id window_id,
                                        ui::ModalType type) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetChildModalParent(uint32_t change_id,
                                               Id window_id,
                                               Id parent_window_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::ReorderWindow(uint32_t change_id,
                                         Id window_id,
                                         Id relative_window_id,
                                         ::ui::mojom::OrderDirection direction) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::GetWindowTree(Id window_id,
@@ -996,47 +1007,47 @@ void WindowServiceClient::Embed(Id transport_window_id,
 
 void WindowServiceClient::ScheduleEmbed(mojom::WindowTreeClientPtr client,
                                         ScheduleEmbedCallback callback) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::ScheduleEmbedForExistingClient(
     uint32_t window_id,
     ScheduleEmbedForExistingClientCallback callback) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::EmbedUsingToken(Id window_id,
                                           const base::UnguessableToken& token,
                                           uint32_t embed_flags,
                                           EmbedUsingTokenCallback callback) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetFocus(uint32_t change_id, Id window_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetCanFocus(Id window_id, bool can_focus) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetCursor(uint32_t change_id,
                                     Id window_id,
                                     ui::CursorData cursor) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetWindowTextInputState(
     Id window_id,
     ::ui::mojom::TextInputStatePtr state) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetImeVisibility(
     Id window_id,
     bool visible,
     ::ui::mojom::TextInputStatePtr state) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::SetEventTargetingPolicy(
@@ -1054,27 +1065,27 @@ void WindowServiceClient::OnWindowInputEventAck(uint32_t event_id,
 }
 
 void WindowServiceClient::DeactivateWindow(Id window_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::StackAbove(uint32_t change_id,
                                      Id above_id,
                                      Id below_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::StackAtTop(uint32_t change_id, Id window_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::PerformWmAction(Id window_id,
                                           const std::string& action) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::GetWindowManagerClient(
     ::ui::mojom::WindowManagerClientAssociatedRequest internal) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::GetCursorLocationMemory(
@@ -1089,11 +1100,11 @@ void WindowServiceClient::PerformWindowMove(uint32_t change_id,
                                             Id window_id,
                                             ::ui::mojom::MoveLoopSource source,
                                             const gfx::Point& cursor) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::CancelWindowMove(Id window_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::PerformDragDrop(
@@ -1105,11 +1116,11 @@ void WindowServiceClient::PerformDragDrop(
     const gfx::Vector2d& drag_image_offset,
     uint32_t drag_operation,
     ::ui::mojom::PointerKind source) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 void WindowServiceClient::CancelDragDrop(Id window_id) {
-  NOTIMPLEMENTED();
+  NOTIMPLEMENTED_LOG_ONCE();
 }
 
 }  // namespace ws2

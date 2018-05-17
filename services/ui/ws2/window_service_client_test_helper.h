@@ -49,6 +49,7 @@ class WindowServiceClientTestHelper {
   aura::Window* NewWindow(
       Id transport_window_id,
       base::flat_map<std::string, std::vector<uint8_t>> properties = {});
+  void DeleteWindow(aura::Window* window);
   aura::Window* NewTopLevelWindow(
       Id transport_window_id,
       base::flat_map<std::string, std::vector<uint8_t>> properties = {});
@@ -70,6 +71,8 @@ class WindowServiceClientTestHelper {
                                mojom::EventTargetingPolicy policy);
 
  private:
+  ClientWindowId ClientWindowIdForWindow(aura::Window* window);
+
   WindowServiceClient* window_service_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServiceClientTestHelper);

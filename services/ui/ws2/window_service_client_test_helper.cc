@@ -33,6 +33,12 @@ aura::Window* WindowServiceClientTestHelper::NewWindow(
       window_service_client_->MakeClientWindowId(transport_window_id));
 }
 
+void WindowServiceClientTestHelper::DeleteWindow(aura::Window* window) {
+  const int change_id = 1u;
+  window_service_client_->DeleteWindow(
+      change_id, window_service_client_->TransportIdForWindow(window));
+}
+
 aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
     Id transport_window_id,
     base::flat_map<std::string, std::vector<uint8_t>> properties) {
@@ -45,14 +51,12 @@ aura::Window* WindowServiceClientTestHelper::NewTopLevelWindow(
 
 bool WindowServiceClientTestHelper::SetCapture(aura::Window* window) {
   return window_service_client_->SetCaptureImpl(
-      window_service_client_->MakeClientWindowId(
-          window_service_client_->TransportIdForWindow(window)));
+      ClientWindowIdForWindow(window));
 }
 
 bool WindowServiceClientTestHelper::ReleaseCapture(aura::Window* window) {
   return window_service_client_->ReleaseCaptureImpl(
-      window_service_client_->MakeClientWindowId(
-          window_service_client_->TransportIdForWindow(window)));
+      ClientWindowIdForWindow(window));
 }
 
 void WindowServiceClientTestHelper::SetWindowBounds(aura::Window* window,
@@ -88,6 +92,12 @@ void WindowServiceClientTestHelper::SetEventTargetingPolicy(
     mojom::EventTargetingPolicy policy) {
   window_service_client_->SetEventTargetingPolicy(
       window_service_client_->TransportIdForWindow(window), policy);
+}
+
+ClientWindowId WindowServiceClientTestHelper::ClientWindowIdForWindow(
+    aura::Window* window) {
+  return window_service_client_->MakeClientWindowId(
+      window_service_client_->TransportIdForWindow(window));
 }
 
 }  // namespace ws2
