@@ -375,6 +375,10 @@ IntSize RootFrameViewport::ScrollOffsetInt() const {
   return FlooredIntSize(GetScrollOffset());
 }
 
+IntPoint RootFrameViewport::ScrollOrigin() const {
+  return LayoutViewport().ScrollOrigin() + VisualViewport().ScrollOrigin();
+}
+
 ScrollOffset RootFrameViewport::GetScrollOffset() const {
   return LayoutViewport().GetScrollOffset() +
          VisualViewport().GetScrollOffset();

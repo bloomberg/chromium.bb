@@ -157,7 +157,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   }
 
   // See Source/core/layout/README.md for an explanation of scroll origin.
-  const IntPoint& ScrollOrigin() const { return scroll_origin_; }
+  virtual IntPoint ScrollOrigin() const { return scroll_origin_; }
   bool ScrollOriginChanged() const { return scroll_origin_changed_; }
 
   // This is used to determine whether the incoming fractional scroll offset

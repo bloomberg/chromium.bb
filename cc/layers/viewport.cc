@@ -150,7 +150,6 @@ gfx::Vector2dF Viewport::ScrollAnimated(const gfx::Vector2dF& delta,
     will_animate =
         host_impl_->ScrollAnimationCreate(outer_node, outer_delta, delayed_by);
   }
-
   if (will_animate) {
     // Consume entire scroll delta as long as we are starting an animation.
     return delta;

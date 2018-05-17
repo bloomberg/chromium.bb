@@ -1652,7 +1652,7 @@ TEST_F(LayerTreeHostImplTest, GetSnapFlingInfoWhenZoomed) {
   InputHandlerScrollResult result =
       host_impl_->ScrollBy(UpdateState(scroll_position, delta).get());
   EXPECT_VECTOR_EQ(gfx::Vector2dF(20, 20), overflow->CurrentScrollOffset());
-  EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), result.current_offset);
+  EXPECT_VECTOR_EQ(gfx::Vector2dF(4, 4), result.current_visual_offset);
 
   gfx::Vector2dF initial_offset, target_offset;
   EXPECT_TRUE(host_impl_->GetSnapFlingInfo(gfx::Vector2dF(10, 10),

@@ -4036,10 +4036,10 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     UpdateRootLayerStateForSynchronousInputHandler();
   }
 
-  scroll_result.current_offset = ScrollOffsetToVector2dF(
-      scroll_tree.current_scroll_offset(scroll_node->element_id));
+  scroll_result.current_visual_offset =
+      ScrollOffsetToVector2dF(GetVisualScrollOffset(*scroll_node));
   float scale_factor = active_tree()->current_page_scale_factor();
-  scroll_result.current_offset.Scale(scale_factor);
+  scroll_result.current_visual_offset.Scale(scale_factor);
 
   // Run animations which need to respond to updated scroll offset.
   mutator_host_->TickScrollAnimations(
@@ -4077,9 +4077,7 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
     return false;
 
   const SnapContainerData& data = scroll_node->snap_container_data.value();
-  ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
-  gfx::ScrollOffset current_position =
-      scroll_tree.current_scroll_offset(scroll_node->element_id);
+  gfx::ScrollOffset current_position = GetVisualScrollOffset(*scroll_node);
 
   gfx::ScrollOffset snap_position;
   if (!data.FindSnapPosition(current_position, did_scroll_x_for_scroll_gesture_,
@@ -4088,10 +4086,41 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
     return false;
   }
 
-  ScrollAnimationCreate(
-      scroll_node, ScrollOffsetToVector2dF(snap_position - current_position),
-      base::TimeDelta());
+  gfx::Vector2dF delta =
+      ScrollOffsetToVector2dF(snap_position - current_position);
+  bool scrolls_main_viewport_scroll_layer =
+      scroll_node == ViewportMainScrollNode();
+  if (scrolls_main_viewport_scroll_layer) {
+    // Flash the overlay scrollbar even if the scroll dalta is 0.
+    if (settings_.scrollbar_flash_after_any_scroll_update) {
+      FlashAllScrollbars(false);
+    } else {
+      ScrollbarAnimationController* animation_controller =
+          ScrollbarAnimationControllerForElementId(scroll_node->element_id);
+      if (animation_controller)
+        animation_controller->WillUpdateScroll();
+    }
+    gfx::Vector2dF scaled_delta(delta);
+    scaled_delta.Scale(active_tree()->current_page_scale_factor());
+    viewport()->ScrollAnimated(scaled_delta, base::TimeDelta());
+  } else {
+    ScrollAnimationCreate(scroll_node, delta, base::TimeDelta());
+  }
   return true;
+}
+
+gfx::ScrollOffset LayerTreeHostImpl::GetVisualScrollOffset(
+    const ScrollNode& scroll_node) const {
+  const ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
+
+  bool scrolls_main_viewport_scroll_layer =
+      viewport()->MainScrollLayer() &&
+      viewport()->MainScrollLayer()->scroll_tree_index() == scroll_node.id;
+
+  if (scrolls_main_viewport_scroll_layer)
+    return viewport()->TotalScrollOffset();
+  else
+    return scroll_tree.current_scroll_offset(scroll_node.element_id);
 }
 
 bool LayerTreeHostImpl::GetSnapFlingInfo(
@@ -4107,9 +4136,8 @@ bool LayerTreeHostImpl::GetSnapFlingInfo(
   gfx::Vector2dF natural_displacement_in_content =
       gfx::ScaleVector2d(natural_displacement_in_viewport, 1.f / scale_factor);
 
-  const ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
-  *initial_offset = ScrollOffsetToVector2dF(
-      scroll_tree.current_scroll_offset(scroll_node->element_id));
+  *initial_offset =
+      ScrollOffsetToVector2dF(GetVisualScrollOffset(*scroll_node));
 
   bool did_scroll_x = did_scroll_x_for_scroll_gesture_ ||
                       natural_displacement_in_content.x() != 0;
