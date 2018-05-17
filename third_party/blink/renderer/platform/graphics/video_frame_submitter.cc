@@ -253,7 +253,11 @@ void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void VideoFrameSubmitter::OnContextLost() {
-  frame_sink_destroyed_callback_.Run();
+  // TODO(lethalantidote): This check will be obsolete once other TODO to move
+  // field initialization earlier is fulfilled.
+  if (frame_sink_destroyed_callback_)
+    frame_sink_destroyed_callback_.Run();
+
   if (binding_.is_bound())
     binding_.Unbind();
 
