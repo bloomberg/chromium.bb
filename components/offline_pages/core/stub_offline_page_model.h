@@ -22,8 +22,6 @@ class StubOfflinePageModel : public OfflinePageModel {
   StubOfflinePageModel();
   ~StubOfflinePageModel() override;
 
-  void SetArchiveDirectory(const base::FilePath& path);
-
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   void SavePage(const SavePageParams& save_page_params,
