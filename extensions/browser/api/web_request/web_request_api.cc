@@ -1941,8 +1941,6 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
         has_declarative_rules);
   }
 
-  base::Time start = base::Time::Now();
-
   bool deltas_created = false;
   for (const auto& it : relevant_registries) {
     WebRequestRulesRegistry* rules_registry = it.first;
@@ -1958,10 +1956,6 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
       deltas_created = true;
     }
   }
-
-  base::TimeDelta elapsed_time = start - base::Time::Now();
-  UMA_HISTOGRAM_TIMES("Extensions.DeclarativeWebRequestNetworkDelay",
-                      elapsed_time);
 
   return deltas_created;
 }
