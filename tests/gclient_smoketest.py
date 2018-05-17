@@ -246,33 +246,20 @@ class GClientSmoke(GClientSmokeBase):
           ']\n'
           'cache_dir = None\n') % self.git_base)
 
-    test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
-
     os.remove(p)
+    results = self.gclient(['config', '--spec', '["blah blah"]'])
+    self.assertEqual(('', 'Error: No solution specified\n', 1), results)
+
+    results = self.gclient(['config', '--spec',
+                            'solutions=[{"name": "./", "url": None}]'])
+    self.assertEqual(('', 'Error: No solution specified\n', 1), results)
+
     results = self.gclient(['config', 'foo', 'faa', 'fuu'])
     err = ('Usage: gclient.py config [options] [url]\n\n'
            'gclient.py: error: Inconsistent arguments. Use either --spec or one'
            ' or 2 args\n')
     self.check(('', err, 2), results)
     self.assertFalse(os.path.exists(join(self.root_dir, '.gclient')))
-
-  def testSolutionNone(self):
-    results = self.gclient(['config', '--spec',
-                            'solutions=[{"name": "./", "url": None}]'])
-    self.check(('', '', 0), results)
-    results = self.gclient(['sync'])
-    self.check(('', '', 0), results)
-    self.assertTree({})
-    results = self.gclient(['revinfo'])
-    self.check(('./: None\n', '', 0), results)
-    self.check(('', '', 0), self.gclient(['diff']))
-    self.assertTree({})
-    self.check(('', '', 0), self.gclient(['pack']))
-    self.check(('', '', 0), self.gclient(['revert']))
-    self.assertTree({})
-    self.check(('', '', 0), self.gclient(['runhooks']))
-    self.assertTree({})
-    self.check(('', '', 0), self.gclient(['status']))
 
   def testDifferentTopLevelDirectory(self):
     # Check that even if the .gclient file does not mention the directory src

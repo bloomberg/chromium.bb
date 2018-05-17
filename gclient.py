@@ -241,7 +241,7 @@ class DependencySettings(object):
   """Immutable configuration settings."""
   def __init__(
       self, parent, raw_url, url, managed, custom_deps, custom_vars,
-      custom_hooks, deps_file, should_process, relative, condition):
+      custom_hooks, deps_file, relative, condition):
     # These are not mutable:
     self._parent = parent
     self._deps_file = deps_file
@@ -250,13 +250,9 @@ class DependencySettings(object):
     # The condition as string (or None). Useful to keep e.g. for flatten.
     self._condition = condition
     # 'managed' determines whether or not this dependency is synced/updated by
-    # gclient after gclient checks it out initially.  The difference between
-    # 'managed' and 'should_process' is that the user specifies 'managed' via
-    # the --unmanaged command-line flag or a .gclient config, where
-    # 'should_process' is dynamically set by gclient if it goes over its
-    # recursion limit and controls gclient's behavior so it does not misbehave.
+    # gclient after gclient checks it out initially. The user specifies
+    # 'managed' via the --unmanaged command-line flag or a .gclient config.
     self._managed = managed
-    self._should_process = should_process
     # If this is a recursed-upon sub-dependency, and the parent has
     # use_relative_paths set, then this dependency should check out its own
     # dependencies relative to that parent's path for this, rather than
@@ -271,15 +267,10 @@ class DependencySettings(object):
     self._custom_deps = custom_deps or {}
     self._custom_hooks = custom_hooks or []
 
-    # Post process the url to remove trailing slashes.
-    if isinstance(self.url, basestring):
-      # urls are sometime incorrectly written as proto://host/path/@rev. Replace
-      # it to proto://host/path@rev.
-      self.set_url(self.url.replace('/@', '@'))
-    elif not isinstance(self.url, (None.__class__)):
-      raise gclient_utils.Error(
-          ('dependency url must be either string or None, '
-           'instead of %s') % self.url.__class__.__name__)
+    assert self.url is not None, (self.name, self.url)
+    # urls are sometime incorrectly written as proto://host/path/@rev. Replace
+    # it to proto://host/path@rev.
+    self.set_url(self.url.replace('/@', '@'))
 
     # Make any deps_file path platform-appropriate.
     if self._deps_file:
@@ -305,11 +296,6 @@ class DependencySettings(object):
       # This line is to signal pylint that it could be a GClient instance.
       return self or GClient(None, None)
     return self.parent.root
-
-  @property
-  def should_process(self):
-    """True if this dependency should be processed, i.e. checked out."""
-    return self._should_process
 
   @property
   def custom_vars(self):
@@ -366,12 +352,12 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   """Object that represents a dependency checkout."""
 
   def __init__(self, parent, name, raw_url, url, managed, custom_deps,
-               custom_vars, custom_hooks, deps_file, should_process,
-               relative, condition, print_outbuf=False):
+               custom_vars, custom_hooks, deps_file, relative, condition,
+               print_outbuf=False):
     gclient_utils.WorkItem.__init__(self, name)
     DependencySettings.__init__(
         self, parent, raw_url, url, managed, custom_deps, custom_vars,
-        custom_hooks, deps_file, should_process, relative, condition)
+        custom_hooks, deps_file, relative, condition)
 
     # This is in both .gclient and DEPS files:
     self._deps_hooks = []
@@ -423,12 +409,10 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # None.
     self.recursedeps = None
 
-    self._OverrideUrl()
     # This is inherited from WorkItem.  We want the URL to be a resource.
-    if self.url and isinstance(self.url, basestring):
-      # The url is usually given to gclient either as https://blah@123
-      # or just https://blah.  The @123 portion is irrelevant.
-      self.resources.append(self.url.split('@')[0])
+    # The url is usually given to gclient either as https://blah@123
+    # or just https://blah.  The @123 portion is irrelevant.
+    self.resources.append(self.url.split('@')[0])
 
     # Controls whether we want to print git's output when we first clone the
     # dependency
@@ -437,40 +421,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     if not self.name and self.parent:
       raise gclient_utils.Error('Dependency without name')
 
-  def _OverrideUrl(self):
-    """Resolves the parsed url from the parent hierarchy."""
-    parsed_url = self.get_custom_deps(self._name, self.url)
-    if parsed_url != self.url:
-      logging.info('Dependency(%s)._OverrideUrl(%s) -> %s', self._name,
-                   self.url, parsed_url)
-      self.set_url(parsed_url)
-
-    elif isinstance(self.url, basestring):
-      parsed_url = urlparse.urlparse(self.url)
-      if (not parsed_url[0] and
-          not re.match(r'^\w+\@[\w\.-]+\:[\w\/]+', parsed_url[2])):
-        path = parsed_url[2]
-        if not path.startswith('/'):
-          raise gclient_utils.Error(
-              'relative DEPS entry \'%s\' must begin with a slash' % self.url)
-        # A relative url. Get the parent url, strip from the last '/'
-        # (equivalent to unix basename), and append the relative url.
-        parent_url = self.parent.url
-        parsed_url = parent_url[:parent_url.rfind('/')] + self.url
-        logging.info('Dependency(%s)._OverrideUrl(%s) -> %s', self.name,
-                     self.url, parsed_url)
-        self.set_url(parsed_url)
-
-    elif self.url is None:
-      logging.info('Dependency(%s)._OverrideUrl(None) -> None', self._name)
-
-    else:
-      raise gclient_utils.Error('Unknown url type')
-
   def PinToActualRevision(self):
     """Updates self.url and self.raw_url to the revision checked out on disk."""
-    if self.url is None:
-      return
     url = raw_url = None
     scm = self.CreateSCM()
     if os.path.isdir(scm.checkout_path):
@@ -520,7 +472,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if self.name:
       requirements |= set(
-          obj.name for obj in self.root.subtree(False)
+          obj.name for obj in self.root.subtree()
           if (obj is not self
               and obj.name and
               self.name.startswith(posixpath.join(obj.name, ''))))
@@ -559,15 +511,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       raise gclient_utils.Error(
           'The same name "%s" appears multiple times in the deps section' %
               self.name)
-    if not self.should_process:
-      # Return early, no need to set requirements.
-      return True
 
     # This require a full tree traversal with locks.
-    siblings = [d for d in self.root.subtree(False) if d.name == self.name]
+    siblings = [d for d in self.root.subtree() if d.name == self.name]
     for sibling in siblings:
-      # Allow to have only one to be None or ''.
-      if self.url != sibling.url and bool(self.url) == bool(sibling.url):
+      if self.url != sibling.url:
         raise gclient_utils.Error(
             ('Dependency %s specified more than once:\n'
             '  %s [%s]\n'
@@ -617,11 +565,30 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     return deps
 
+  def FormatUrl(self, name, url):
+    custom_deps_url = self.get_custom_deps(name, url)
+    if url != custom_deps_url:
+      return custom_deps_url
+    if url is None:
+      return None
+    if not isinstance(url, basestring):
+      raise gclient_utils.Error(
+          ('dependency url must be either string or None, '
+           'instead of %s') % self.url.__class__.__name__)
+    url = url.format(**self.get_vars())
+    # For relative URLs, strip the parent url (self.url) from the last '/'
+    # and append the relative url.
+    if url[0] == '/':
+      url = self.url[:self.url.rfind('/')] + url
+    return url
+
   def _deps_to_objects(self, deps, use_relative_paths):
     """Convert a deps dict to a dict of Dependency objects."""
+    if not self.recursion_limit:
+      return []
+
     deps_to_add = []
     for name, dep_value in deps.iteritems():
-      should_process = self.recursion_limit and self.should_process
       deps_file = self.deps_file
       if self.recursedeps is not None:
         ent = self.recursedeps.get(name)
@@ -631,31 +598,32 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         continue
 
       condition = dep_value.get('condition')
-      dep_type = dep_value.get('dep_type')
+      dep_type = dep_value.get('dep_type', 'git')
 
-      if condition and not self._get_option('process_all_deps', False):
-        should_process = should_process and gclient_eval.EvaluateCondition(
+      should_process = True
+      if condition and not self.get_option('process_all_deps', False):
+        should_process = gclient_eval.EvaluateCondition(
             condition, self.get_vars())
+
+      if not should_process:
+        continue
 
       if dep_type == 'cipd':
         cipd_root = self.GetCipdRoot()
         for package in dep_value.get('packages', []):
-          if 'version' in package:
-            # Matches version to vars value.
-            raw_version = package['version']
-            version = raw_version.format(**self.get_vars())
-            package['version'] = version
+          package['version'] = package['version'].format(**self.get_vars())
           deps_to_add.append(
               CipdDependency(
                   self, name, package, cipd_root, self.custom_vars,
-                  should_process, use_relative_paths, condition))
+                  use_relative_paths, condition))
       else:
         raw_url = dep_value.get('url')
-        url = raw_url.format(**self.get_vars()) if raw_url else None
-        deps_to_add.append(
-            GitDependency(
-                self, name, raw_url, url, None, None, self.custom_vars, None,
-                deps_file, should_process, use_relative_paths, condition))
+        url = self.FormatUrl(name, raw_url)
+        if url:
+          deps_to_add.append(
+              GitDependency(
+                  self, name, raw_url, url, None, None, self.custom_vars, None,
+                  deps_file, use_relative_paths, condition))
 
     deps_to_add.sort(key=lambda x: x.name)
     return deps_to_add
@@ -692,7 +660,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       try:
         local_scope = gclient_eval.Parse(
             deps_content, expand_vars,
-            self._get_option('validate_syntax', False),
+            self.get_option('validate_syntax', False),
             filepath, self.get_vars())
       except SyntaxError as e:
         gclient_utils.SyntaxErrorToError(filepath, e)
@@ -798,11 +766,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self.add_dependencies_and_close(deps_to_add, hooks_to_run)
     logging.info('ParseDepsFile(%s) done' % self.name)
 
-  def _get_option(self, attr, default):
-    obj = self
-    while not hasattr(obj, '_options'):
-      obj = obj.parent
-    return getattr(obj._options, attr, default)
+  def get_option(self, attr, default=None):
+    return getattr(self.root._options, attr, default)
 
   def add_dependencies_and_close(self, deps_to_add, hooks):
     """Adds the dependencies, hooks and mark the parsing as done."""
@@ -828,10 +793,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # Don't enforce this for custom_deps.
       if dep.name in self._custom_deps:
         continue
-      if isinstance(dep.url, basestring):
-        parsed_url = urlparse.urlparse(dep.url)
-        if parsed_url.netloc and parsed_url.netloc not in self._allowed_hosts:
-          bad_deps.append(dep)
+      parsed_url = urlparse.urlparse(dep.url)
+      if parsed_url.netloc and parsed_url.netloc not in self._allowed_hosts:
+        bad_deps.append(dep)
     return bad_deps
 
   def FuzzyMatchUrl(self, candidates):
@@ -873,8 +837,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     """Runs |command| then parse the DEPS file."""
     logging.info('Dependency(%s).run()' % self.name)
     assert self._file_list == []
-    if not self.should_process:
-      return
     # When running runhooks, there's no need to consult the SCM.
     # All known hooks are expected to run unconditionally regardless of working
     # copy state, so skip the SCM status check.
@@ -924,8 +886,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.RunPreDepsHooks()
       # Parse the dependencies of this dependency.
       for s in self.dependencies:
-        if s.should_process:
-          work_queue.enqueue(s)
+        work_queue.enqueue(s)
 
     if command == 'recurse':
       # Skip file only checkout.
@@ -935,10 +896,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         # Pass in the SCM type as an env variable.  Make sure we don't put
         # unicode strings in the environment.
         env = os.environ.copy()
-        if scm:
-          env['GCLIENT_SCM'] = str(scm)
-        if self.url:
-          env['GCLIENT_URL'] = str(self.url)
+        env['GCLIENT_SCM'] = str(scm)
+        env['GCLIENT_URL'] = str(self.url)
         env['GCLIENT_DEP_PATH'] = str(self.name)
         if options.prepend_dir and scm == 'git':
           print_stdout = False
@@ -969,9 +928,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           print_stdout = True
           filter_fn = None
 
-        if self.url is None:
-          print('Skipped omitted dependency %s' % cwd, file=sys.stderr)
-        elif os.path.isdir(cwd):
+        if os.path.isdir(cwd):
           try:
             gclient_utils.CheckCallAndFilter(
                 args, cwd=cwd, env=env, print_stdout=print_stdout,
@@ -1015,7 +972,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     RunOnDeps() must have been called before to load the DEPS.
     """
     result = []
-    if not self.should_process or not self.recursion_limit:
+    if not self.recursion_limit:
       # Don't run the hook when it is above recursion_limit.
       return result
     # If "--force" was specified, run all hooks regardless of what files have
@@ -1060,14 +1017,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       return None
     return self.root.GetCipdRoot()
 
-  def subtree(self, include_all):
+  def subtree(self):
     """Breadth first recursion excluding root node."""
     dependencies = self.dependencies
     for d in dependencies:
-      if d.should_process or include_all:
-        yield d
+      yield d
     for d in dependencies:
-      for i in d.subtree(include_all):
+      for i in d.subtree():
         yield i
 
   @gclient_utils.lockedmethod
@@ -1145,7 +1101,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   def __str__(self):
     out = []
     for i in ('name', 'url', 'custom_deps',
-              'custom_vars', 'deps_hooks', 'file_list', 'should_process',
+              'custom_vars', 'deps_hooks', 'file_list',
               'processed', 'hooks_ran', 'deps_parsed', 'requirements',
               'allowed_hosts'):
       # First try the native property if it exists.
@@ -1293,8 +1249,8 @@ solutions = %(solution_list)s
     # Do not change previous behavior. Only solution level and immediate DEPS
     # are processed.
     self._recursion_limit = 2
-    GitDependency.__init__(self, None, None, None, None, True, None, None, None,
-                           'unused', True, None, None, True)
+    GitDependency.__init__(self, None, None, '', '', True, None, None, None,
+                           'unused', None, None, True)
     self._options = options
     if options.deps_os:
       enforced_os = options.deps_os.split(',')
@@ -1312,7 +1268,7 @@ solutions = %(solution_list)s
     """Verify that the config matches the state of the existing checked-out
     solutions."""
     for dep in self.dependencies:
-      if dep.managed and dep.url:
+      if dep.managed:
         scm = dep.CreateSCM()
         actual_url = scm.GetActualRemoteURL(self._options)
         if actual_url and not scm.DoesRemoteURLMatch(self._options):
@@ -1384,21 +1340,24 @@ it or fix the checkout.
     deps_to_add = []
     for s in config_dict.get('solutions', []):
       try:
-        deps_to_add.append(GitDependency(
-            self, s['name'], s['url'], s['url'],
-            s.get('managed', True),
-            s.get('custom_deps', {}),
-            s.get('custom_vars', {}),
-            s.get('custom_hooks', []),
-            s.get('deps_file', 'DEPS'),
-            True,
-            None,
-            None,
-            True))
+        if s['url']:
+          deps_to_add.append(GitDependency(
+              self, s['name'], s['url'], s['url'],
+              s.get('managed', True),
+              s.get('custom_deps', {}),
+              s.get('custom_vars', {}),
+              s.get('custom_hooks', []),
+              s.get('deps_file', 'DEPS'),
+              None,
+              None,
+              True))
       except KeyError:
         raise gclient_utils.Error('Invalid .gclient file. Solution is '
                                   'incomplete: %s' % s)
     self.add_dependencies_and_close(deps_to_add, config_dict.get('hooks', []))
+    if not self.dependencies:
+      raise gclient_utils.Error('No solution specified')
+
     logging.info('SetConfig() done')
 
   def SaveConfig(self):
@@ -1458,7 +1417,7 @@ it or fix the checkout.
     # Sometimes pprint.pformat will use {', sometimes it'll use { ' ... It
     # makes testing a bit too fun.
     result = 'entries = {\n'
-    for entry in self.root.subtree(False):
+    for entry in self.root.subtree():
       result += '  %s: %s,\n' % (pprint.pformat(entry.name),
           pprint.pformat(entry.url))
     result += '}\n'
@@ -1526,9 +1485,6 @@ it or fix the checkout.
       command: The command to use (e.g., 'status' or 'diff')
       args: list of str - extra arguments to add to the command line.
     """
-    if not self.dependencies:
-      raise gclient_utils.Error('No solution specified')
-
     revision_overrides = {}
     patch_refs = {}
     # It's unnecessary to check for revision overrides for 'recurse'.
@@ -1553,8 +1509,7 @@ it or fix the checkout.
         self._options.jobs, pm, ignore_requirements=ignore_requirements,
         verbose=self._options.verbose)
     for s in self.dependencies:
-      if s.should_process:
-        work_queue.enqueue(s)
+      work_queue.enqueue(s)
     work_queue.flush(revision_overrides, command, args, options=self._options,
                      patch_refs=patch_refs)
 
@@ -1591,7 +1546,7 @@ it or fix the checkout.
       # Notify the user if there is an orphaned entry in their working copy.
       # Only delete the directory if there are no changes in it, and
       # delete_unversioned_trees is set to true.
-      entries = [i.name for i in self.root.subtree(False) if i.url]
+      entries = [i.name for i in self.root.subtree()]
       full_entries = [os.path.join(self.root_dir, e.replace('/', os.path.sep))
                       for e in entries]
 
@@ -1688,8 +1643,7 @@ it or fix the checkout.
     work_queue = gclient_utils.ExecutionQueue(
         self._options.jobs, None, False, verbose=self._options.verbose)
     for s in self.dependencies:
-      if s.should_process:
-        work_queue.enqueue(s)
+      work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=self._options, patch_refs=None)
 
     def ShouldPrintRevision(dep):
@@ -1728,7 +1682,7 @@ it or fix the checkout.
         })
     else:
       entries = {}
-      for d in self.root.subtree(False):
+      for d in self.root.subtree():
         if self._options.actual:
           d.PinToActualRevision()
         if ShouldPrintRevision(d):
@@ -1807,14 +1761,14 @@ class CipdDependency(Dependency):
 
   def __init__(
       self, parent, name, dep_value, cipd_root,
-      custom_vars, should_process, relative, condition):
+      custom_vars, relative, condition):
     package = dep_value['package']
     version = dep_value['version']
     url = urlparse.urljoin(
         cipd_root.service_url, '%s@%s' % (package, version))
     super(CipdDependency, self).__init__(
         parent, name + ':' + package, url, url, None, None, custom_vars,
-        None, None, should_process, relative, condition)
+        None, None, relative, condition)
     if relative:
       # TODO(jbudorick): Implement relative if necessary.
       raise gclient_utils.Error(
@@ -1831,8 +1785,6 @@ class CipdDependency(Dependency):
           patch_refs):
     """Runs |command| then parse the DEPS file."""
     logging.info('CipdDependency(%s).run()' % self.name)
-    if not self.should_process:
-      return
     self._CreatePackageIfNecessary()
     super(CipdDependency, self).run(revision_overrides, command, args,
                                     work_queue, options, patch_refs)
@@ -1995,9 +1947,6 @@ class Flattener(object):
     Arguments:
       dep (Dependency): dependency to process
     """
-    if dep.url is None:
-      return
-
     # Make sure the revision is always fully specified (a hash),
     # as opposed to refs or tags which might change. Similarly,
     # shortened shas might become ambiguous; make sure to always
@@ -2035,7 +1984,6 @@ class Flattener(object):
         deps_path = os.path.join(self._client.root_dir, dep.name, deps_file)
         if not os.path.exists(deps_path):
           return
-      assert dep.url
       self._deps_files.add((dep.url, deps_file, dep.hierarchy_data()))
     for dep in self._deps.itervalues():
       add_deps_file(dep)
@@ -2061,8 +2009,7 @@ class Flattener(object):
     """
     assert dep.name not in self._deps or self._deps.get(dep.name) == dep, (
         dep.name, self._deps.get(dep.name))
-    if dep.url:
-      self._deps[dep.name] = dep
+    self._deps[dep.name] = dep
 
   def _flatten_dep(self, dep):
     """Visits a dependency in order to flatten it (see CMDflatten).
@@ -2573,16 +2520,12 @@ def CMDsync(parser, args):
   ret = client.RunOnDeps('update', args)
   if options.output_json:
     slns = {}
-    for d in client.subtree(True):
+    for d in client.subtree():
       normed = d.name.replace('\\', '/').rstrip('/') + '/'
-      if normed in slns and not d.should_process:
-        # If an unprocessed dependency would override an existing dependency,
-        # ignore it.
-        continue
       slns[normed] = {
           'revision': d.got_revision,
           'scm': d.used_scm.name if d.used_scm else None,
-          'url': str(d.url) if d.url else None,
+          'url': str(d.url),
       }
     with open(options.output_json, 'wb') as f:
       json.dump({'solutions': slns}, f)
