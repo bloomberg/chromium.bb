@@ -47,6 +47,14 @@ namespace blink {
 class SecurityOrigin;
 class ContentSecurityPolicy;
 
+// Defines the security properties (such as the security origin, content
+// security policy, and other restrictions) of an environment in which
+// script execution or other activity may occur.
+//
+// Mostly 1:1 with ExecutionContext, except that while remote (i.e.,
+// out-of-process) environments do not have an ExecutionContext in the local
+// process (as execution cannot occur locally), they do have a SecurityContext
+// to allow those properties to be queried.
 class CORE_EXPORT SecurityContext : public GarbageCollectedMixin {
  public:
   void Trace(blink::Visitor*) override;

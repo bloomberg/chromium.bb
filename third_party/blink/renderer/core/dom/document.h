@@ -247,6 +247,10 @@ enum class SecureContextState { kUnknown, kNonSecure, kSecure };
 
 using DocumentClassFlags = unsigned char;
 
+// A document (https://dom.spec.whatwg.org/#concept-document) is the root node
+// of a tree of DOM nodes, generally resulting from the parsing of an markup
+// (typically, HTML) resource. It provides both the content to be displayed to
+// the user in a frame and an execution context for JavaScript code.
 class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
                              public SecurityContext,
