@@ -346,6 +346,10 @@ TEST_F(ProtoValueConversionsTest, TypedUrlSpecificsToValue) {
   TestSpecificsToValue(TypedUrlSpecificsToValue);
 }
 
+TEST_F(ProtoValueConversionsTest, UserConsentSpecificsToValue) {
+  TestSpecificsToValue(UserConsentSpecificsToValue);
+}
+
 TEST_F(ProtoValueConversionsTest, UserEventSpecificsToValue) {
   TestSpecificsToValue(UserEventSpecificsToValue);
 }

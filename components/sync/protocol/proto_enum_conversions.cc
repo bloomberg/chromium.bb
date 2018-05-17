@@ -295,6 +295,33 @@ const char* ProtoEnumToString(sync_pb::TabNavigation::PasswordState state) {
   return "";
 }
 
+const char* ProtoEnumToString(sync_pb::UserConsentSpecifics::Feature feature) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserConsentSpecifics, Feature,
+                     FEATURE_UNSPECIFIED, GOOGLE_LOCATION_SERVICE);
+  switch (feature) {
+    ENUM_CASE(sync_pb::UserConsentSpecifics, FEATURE_UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserConsentSpecifics, CHROME_SYNC);
+    ENUM_CASE(sync_pb::UserConsentSpecifics, PLAY_STORE);
+    ENUM_CASE(sync_pb::UserConsentSpecifics, BACKUP_AND_RESTORE);
+    ENUM_CASE(sync_pb::UserConsentSpecifics, GOOGLE_LOCATION_SERVICE);
+  }
+  NOTREACHED();
+  return "";
+}
+
+const char* ProtoEnumToString(
+    sync_pb::UserConsentSpecifics::ConsentStatus status) {
+  ASSERT_ENUM_BOUNDS(sync_pb::UserConsentSpecifics, ConsentStatus,
+                     CONSENT_STATUS_UNSPECIFIED, GIVEN);
+  switch (status) {
+    ENUM_CASE(sync_pb::UserConsentSpecifics, CONSENT_STATUS_UNSPECIFIED);
+    ENUM_CASE(sync_pb::UserConsentSpecifics, NOT_GIVEN);
+    ENUM_CASE(sync_pb::UserConsentSpecifics, GIVEN);
+  }
+  NOTREACHED();
+  return "";
+}
+
 const char* ProtoEnumToString(
     sync_pb::UserEventSpecifics::Translation::Interaction interaction) {
   ASSERT_ENUM_BOUNDS(sync_pb::UserEventSpecifics::Translation, Interaction,
