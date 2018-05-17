@@ -55,7 +55,7 @@ class Globals {
   static RDebug* GetRDebug() { return Get()->rdebug(); }
 
  private:
-  pthread_mutex_t lock_ = PTHREAD_MUTEX_INITIALIZER;
+  pthread_mutex_t lock_;
   LibraryList libraries_;
   SearchPathList search_paths_;
   RDebug rdebug_;
