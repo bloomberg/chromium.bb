@@ -126,6 +126,11 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   // bounds change as a result of the widget's bounds changing.
   void OnAnchorBoundsChanged();
 
+  // If this is called, enables focus to traverse from the anchor view
+  // to inside this dialog and back out. This may become the default in
+  // the future.
+  void EnableFocusTraversalFromAnchorView();
+
  protected:
   BubbleDialogDelegateView();
   // |shadow| usually doesn't need to be explicitly set, just uses the default

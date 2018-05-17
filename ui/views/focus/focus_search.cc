@@ -5,8 +5,10 @@
 #include "ui/views/focus/focus_search.h"
 
 #include "base/logging.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -28,6 +30,7 @@ View* FocusSearch::FindNextFocusableView(
     FocusSearch::SearchDirection search_direction,
     FocusSearch::TraversalDirection traversal_direction,
     FocusSearch::StartingViewPolicy check_starting_view,
+    FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
     FocusTraversable** focus_traversable,
     View** focus_traversable_view) {
   *focus_traversable = nullptr;
@@ -68,9 +71,10 @@ View* FocusSearch::FindNextFocusableView(
     // traversing the view hierarchy tree bottom-up.
     bool can_go_down = (traversal_direction == TraversalDirection::kDown) &&
                        !IsFocusable(starting_view);
-    v = FindPreviousFocusableViewImpl(
-        starting_view, check_starting_view, true, can_go_down,
-        starting_view_group, focus_traversable, focus_traversable_view);
+    v = FindPreviousFocusableViewImpl(starting_view, check_starting_view, true,
+                                      can_go_down, can_go_into_anchored_dialog,
+                                      starting_view_group, focus_traversable,
+                                      focus_traversable_view);
   }
 
   // Don't set the focus to something outside of this view hierarchy.
@@ -80,8 +84,8 @@ View* FocusSearch::FindNextFocusableView(
   // If |cycle_| is true, prefer to keep cycling rather than returning nullptr.
   if (cycle_ && !v && initial_starting_view) {
     v = FindNextFocusableView(nullptr, search_direction, traversal_direction,
-                              check_starting_view, focus_traversable,
-                              focus_traversable_view);
+                              check_starting_view, can_go_into_anchored_dialog,
+                              focus_traversable, focus_traversable_view);
     DCHECK(IsFocusable(v));
     return v;
   }
@@ -179,6 +183,15 @@ View* FocusSearch::FindNextFocusableViewImpl(
           focus_traversable_view);
       if (v || *focus_traversable)
         return v;
+    } else {
+      // Check to see if we should navigate into a dialog anchored at this view.
+      BubbleDialogDelegateView* bubble =
+          starting_view->GetProperty(kAnchoredDialogKey);
+      if (bubble) {
+        *focus_traversable = bubble->GetWidget()->GetFocusTraversable();
+        *focus_traversable_view = starting_view;
+        return nullptr;
+      }
     }
   }
 
@@ -196,6 +209,14 @@ View* FocusSearch::FindNextFocusableViewImpl(
   if (can_go_up) {
     View* parent = GetParent(starting_view);
     while (parent && parent != root_) {
+      BubbleDialogDelegateView* bubble =
+          parent->GetProperty(kAnchoredDialogKey);
+      if (bubble) {
+        *focus_traversable = bubble->GetWidget()->GetFocusTraversable();
+        *focus_traversable_view = starting_view;
+        return nullptr;
+      }
+
       sibling = parent->GetNextFocusableView();
       if (sibling) {
         return FindNextFocusableViewImpl(
@@ -221,9 +242,21 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
     FocusSearch::StartingViewPolicy check_starting_view,
     bool can_go_up,
     bool can_go_down,
+    FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
     int skip_group_id,
     FocusTraversable** focus_traversable,
     View** focus_traversable_view) {
+  // Normally when we navigate to a FocusTraversableParent, can_go_down is
+  // false so we don't navigate back in. However, if we just navigated out
+  // of an anchored dialog, allow going down in order to navigate into
+  // children of |starting_view| next.
+  if (starting_view->GetProperty(kAnchoredDialogKey) &&
+      can_go_into_anchored_dialog ==
+          AnchoredDialogPolicy::kSkipAnchoredDialog &&
+      !can_go_down) {
+    can_go_down = true;
+  }
+
   // Let's go down and right as much as we can.
   if (can_go_down) {
     // Before we go into the direct children, we have to check if this view has
@@ -234,12 +267,27 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
       return nullptr;
     }
 
+    // Check to see if we should navigate into a dialog anchored at this view.
+    if (can_go_into_anchored_dialog ==
+        AnchoredDialogPolicy::kCanGoIntoAnchoredDialog) {
+      BubbleDialogDelegateView* bubble =
+          starting_view->GetProperty(kAnchoredDialogKey);
+      if (bubble) {
+        *focus_traversable = bubble->GetWidget()->GetFocusTraversable();
+        *focus_traversable_view = starting_view;
+        return nullptr;
+      }
+    }
+
+    can_go_into_anchored_dialog =
+        AnchoredDialogPolicy::kCanGoIntoAnchoredDialog;
     if (starting_view->has_children()) {
       View* view =
           starting_view->child_at(starting_view->child_count() - 1);
       View* v = FindPreviousFocusableViewImpl(
           view, StartingViewPolicy::kCheckStartingView, false, true,
-          skip_group_id, focus_traversable, focus_traversable_view);
+          can_go_into_anchored_dialog, skip_group_id, focus_traversable,
+          focus_traversable_view);
       if (v || *focus_traversable)
         return v;
     }
@@ -261,7 +309,8 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
   if (sibling) {
     return FindPreviousFocusableViewImpl(
         sibling, StartingViewPolicy::kCheckStartingView, can_go_up, true,
-        skip_group_id, focus_traversable, focus_traversable_view);
+        can_go_into_anchored_dialog, skip_group_id, focus_traversable,
+        focus_traversable_view);
   }
 
   // Then go up the parent.
@@ -270,7 +319,8 @@ View* FocusSearch::FindPreviousFocusableViewImpl(
     if (parent)
       return FindPreviousFocusableViewImpl(
           parent, StartingViewPolicy::kCheckStartingView, true, false,
-          skip_group_id, focus_traversable, focus_traversable_view);
+          can_go_into_anchored_dialog, skip_group_id, focus_traversable,
+          focus_traversable_view);
   }
 
   // We found nothing.

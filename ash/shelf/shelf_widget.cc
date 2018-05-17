@@ -48,6 +48,7 @@ views::View* FindFirstOrLastFocusableChild(views::View* root,
                       : views::FocusSearch::SearchDirection::kForwards,
       views::FocusSearch::TraversalDirection::kDown,
       views::FocusSearch::StartingViewPolicy::kSkipStartingView,
+      views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
