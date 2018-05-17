@@ -27,6 +27,7 @@
     const notification = (await dp.Network.onceRequestWillBeSent()).params;
     const request = notification.request;
     testRunner.log(`Data included: ${request.postData !== undefined}, has post data: ${request.hasPostData}`);
+    await dp.Network.onceLoadingFinished();
     await ReportRequest(notification.requestId);
     return notification.requestId;
   }
