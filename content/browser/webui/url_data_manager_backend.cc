@@ -25,7 +25,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
-#include "content/browser/histogram_internals_request_job.h"
 #include "content/browser/net/view_blob_internals_job_factory.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/webui/shared_resources_data_source.h"
@@ -356,12 +355,6 @@ class ChromeProtocolHandler
     if (ViewBlobInternalsJobFactory::IsSupportedURL(request->url())) {
       return ViewBlobInternalsJobFactory::CreateJobForRequest(
           request, network_delegate, blob_storage_context_->context());
-    }
-
-    // Next check for chrome://histograms/, which uses its own job type.
-    if (request->url().SchemeIs(kChromeUIScheme) &&
-        request->url().host_piece() == kChromeUIHistogramHost) {
-      return new HistogramInternalsRequestJob(request, network_delegate);
     }
 
     // Check for chrome://network-error/, which uses its own job type.
