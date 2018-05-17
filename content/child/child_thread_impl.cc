@@ -220,7 +220,7 @@ void QuitClosure::BindToMainThread() {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner(
       base::ThreadTaskRunnerHandle::Get());
   base::Closure quit_closure =
-      base::MessageLoopCurrent::Get()->QuitWhenIdleClosure();
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated();
   closure_ = base::Bind(&QuitClosure::PostClosure, task_runner, quit_closure);
   cond_var_.Signal();
 }

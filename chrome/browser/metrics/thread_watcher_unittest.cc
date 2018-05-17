@@ -670,11 +670,14 @@ TEST_F(ThreadWatcherListTest, Restart) {
   // g_thread_watcher_list_ later on.
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   ThreadWatcherList::StopWatchingAll();
-  message_loop_for_ui.task_runner()->PostDelayedTask(
-      FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
-      base::TimeDelta::FromSeconds(
-          ThreadWatcherList::g_initialize_delay_seconds));
-  base::RunLoop().Run();
+  {
+    base::RunLoop run_loop;
+    message_loop_for_ui.task_runner()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitWhenIdleClosure(),
+        base::TimeDelta::FromSeconds(
+            ThreadWatcherList::g_initialize_delay_seconds));
+    run_loop.Run();
+  }
 
   CheckState(false /* has_thread_watcher_list */,
              true /* stopped */,
@@ -682,11 +685,14 @@ TEST_F(ThreadWatcherListTest, Restart) {
 
   // Proceed with just |StartWatchingAll| and ensure it'll be started.
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
-  message_loop_for_ui.task_runner()->PostDelayedTask(
-      FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
-      base::TimeDelta::FromSeconds(
-          ThreadWatcherList::g_initialize_delay_seconds + 1));
-  base::RunLoop().Run();
+  {
+    base::RunLoop run_loop;
+    message_loop_for_ui.task_runner()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitWhenIdleClosure(),
+        base::TimeDelta::FromSeconds(
+            ThreadWatcherList::g_initialize_delay_seconds + 1));
+    run_loop.Run();
+  }
 
   CheckState(true /* has_thread_watcher_list */,
              false /* stopped */,
@@ -694,11 +700,14 @@ TEST_F(ThreadWatcherListTest, Restart) {
 
   // Finally, StopWatchingAll() must stop.
   ThreadWatcherList::StopWatchingAll();
-  message_loop_for_ui.task_runner()->PostDelayedTask(
-      FROM_HERE, message_loop_for_ui.QuitWhenIdleClosure(),
-      base::TimeDelta::FromSeconds(
-          ThreadWatcherList::g_initialize_delay_seconds));
-  base::RunLoop().Run();
+  {
+    base::RunLoop run_loop;
+    message_loop_for_ui.task_runner()->PostDelayedTask(
+        FROM_HERE, run_loop.QuitWhenIdleClosure(),
+        base::TimeDelta::FromSeconds(
+            ThreadWatcherList::g_initialize_delay_seconds));
+    run_loop.Run();
+  }
 
   CheckState(false /* has_thread_watcher_list */,
              true /* stopped */,

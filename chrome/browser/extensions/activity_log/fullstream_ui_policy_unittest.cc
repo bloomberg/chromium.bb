@@ -97,7 +97,7 @@ class FullStreamUIPolicyTest : public testing::Test {
         extension_id, type, api_name, page_url, arg_url, days_ago,
         base::BindOnce(&FullStreamUIPolicyTest::CheckWrapper,
                        std::move(checker),
-                       base::MessageLoopCurrent::Get()->QuitWhenIdleClosure()));
+                       base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
 
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.
@@ -749,7 +749,7 @@ TEST_F(FullStreamUIPolicyTest, CapReturns) {
   policy->Flush();
   GetActivityLogTaskRunner()->PostTaskAndReply(
       FROM_HERE, base::DoNothing(),
-      base::MessageLoopCurrent::Get()->QuitWhenIdleClosure());
+      base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   base::RunLoop().Run();
 
   CheckReadFilteredData(

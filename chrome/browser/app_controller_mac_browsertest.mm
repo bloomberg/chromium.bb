@@ -294,7 +294,7 @@ void CreateProfileCallback(const base::Closure& quit_closure,
 void CreateAndWaitForSystemProfile() {
   ProfileManager::CreateCallback create_callback =
       base::Bind(&CreateProfileCallback,
-                 base::MessageLoopCurrent::Get()->QuitWhenIdleClosure());
+                 base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
   g_browser_process->profile_manager()->CreateProfileAsync(
       ProfileManager::GetSystemProfilePath(),
       create_callback,

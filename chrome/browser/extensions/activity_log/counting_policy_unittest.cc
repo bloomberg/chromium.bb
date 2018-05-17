@@ -106,7 +106,7 @@ class CountingPolicyTest : public testing::Test {
     policy->ReadFilteredData(
         extension_id, type, api_name, page_url, arg_url, day,
         base::BindOnce(&CountingPolicyTest::CheckWrapper, std::move(checker),
-                       base::MessageLoopCurrent::Get()->QuitWhenIdleClosure()));
+                       base::RunLoop::QuitCurrentWhenIdleClosureDeprecated()));
 
     // Set up a timeout for receiving results; if we haven't received anything
     // when the timeout triggers then assume that the test is broken.
