@@ -155,7 +155,8 @@ class CONTENT_EXPORT ByteStreamWriter {
   // available (i.e. in the case of that race either of the before
   // or after callbacks may be called).
   // The callback will not be called after ByteStreamWriter destruction.
-  virtual void RegisterCallback(const base::Closure& source_callback) = 0;
+  virtual void RegisterCallback(
+      const base::RepeatingClosure& source_callback) = 0;
 
   // Returns the number of bytes sent to the reader but not yet reported by
   // the reader as read.
@@ -191,7 +192,8 @@ class CONTENT_EXPORT ByteStreamReader {
   // with data becoming available (i.e. in the case of that race
   // either of the before or after callbacks may be called).
   // The callback will not be called after ByteStreamReader destruction.
-  virtual void RegisterCallback(const base::Closure& sink_callback) = 0;
+  virtual void RegisterCallback(
+      const base::RepeatingClosure& sink_callback) = 0;
 };
 
 CONTENT_EXPORT void CreateByteStream(
