@@ -3,6 +3,21 @@
  * found in the LICENSE file. */
 
 html {
+  /* Material Design constants */
+  --md-favicon-size: 16px;
+  --md-icon-margin-bottom: 16px;
+  --md-icon-size: 40px;
+  --md-max-tiles-row: 5;
+  --md-menu-margin-side: 2px;
+  --md-menu-margin-top: 4px;
+  --md-menu-size: 12px;
+  --md-tile-height: 104px;
+  --md-tile-margin: 8px;
+  --md-tile-padding: 8px;
+  --md-tile-width: 88px;
+  --md-title-font-size: 12px;
+  --md-title-height: 32px;
+
   /* Constants. */
   --tile-height: 128px;
   --tile-margin: 16px;
@@ -40,6 +55,11 @@ a:visited {
   user-select: none;
 }
 
+.md #most-visited {
+  margin: 10px 0;
+  width: 100%
+}
+
 #mv-tiles,
 .mv-tiles-old {
   font-size: 0;
@@ -55,6 +75,23 @@ a:visited {
   text-align: -webkit-auto;
   transition: opacity 1s;
   user-select: none;
+}
+
+.md #mv-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  height: auto;
+  justify-content: center;
+  line-height: normal;
+  margin: 0;
+  /* 5 88px tiles per row. If you change this, also change the corresponding
+   * values in local_ntp.css. */
+  max-width: calc(var(--md-tile-width) * var(--md-max-tiles-row));
+  position: static;
+}
+
+.md .mv-tiles-old {
+  display: none;
 }
 
 .mv-tile,
@@ -333,4 +370,156 @@ html[dir=rtl] .mv-favicon {
 
 .mv-favicon.failed-favicon img {
   display: none;
+}
+
+.md-tile {
+  border: 1px solid transparent;
+  border-radius: 4px;
+  box-sizing: border-box;
+  cursor: pointer;
+  height: var(--md-tile-height);
+  margin-bottom: var(--md-tile-margin);
+  opacity: 1;
+  padding: var(--md-tile-padding);
+  position: relative;
+  transition-property: background, border-color, box-shadow, opacity;
+  width: var(--md-tile-width);
+}
+
+.md-empty-tile {
+  display: none;
+}
+
+.md-tile:hover {
+  background-color: white;
+  border: 1px solid rgb(218, 220, 224);
+}
+
+.md-tile:hover > .md-menu {
+  opacity: 1;
+}
+
+.md-tile:active {
+  border-color: transparent;
+  box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3),
+      0 4px 8px 3px rgba(60, 64, 67, 0.15);
+  transition-duration: 200ms;
+  z-index: 10;
+}
+
+.md-tile.blacklisted {
+  margin: 0;
+  transform: scale(0, 0);
+  transition-property: transform, box-shadow, margin, opacity, width;
+  width: 0;
+}
+
+.md-tile-inner {
+  align-items: center;
+  display: flex;
+  flex-flow: column nowrap;
+  height: 100%;
+  width: 100%;
+}
+
+.md-link {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 100%;
+}
+
+.md-icon {
+  margin-bottom: var(--md-icon-margin-bottom);
+}
+
+.md-icon-background {
+  align-items: center;
+  background-color: rgb(241, 243, 244);
+  border-radius: 50%;
+  display: flex;
+  height: var(--md-icon-size);
+  justify-content: center;
+  width: var(--md-icon-size);
+}
+
+.md-favicon {
+  height: var(--md-favicon-size);
+  pointer-events: none;
+  width: var(--md-favicon-size);
+}
+
+.md-favicon img {
+  height: 100%;
+  width: 100%;
+}
+
+.md-favicon.failed-favicon {
+  background-image: -webkit-image-set(
+      url(chrome-search://local-ntp/images/ntp_default_favicon.png) 1x,
+      url(chrome-search://local-ntp/images/ntp_default_favicon.png@2x) 2x);
+  background-repeat: no-repeat;
+  background-size: var(--md-favicon-size) var(--md-favicon-size);
+}
+
+.md-favicon.failed-favicon img {
+  display: none;
+}
+
+.md-title {
+  color: rgb(60, 64, 67);
+  font-family: 'Roboto';
+  font-size: var(--md-title-font-size);
+  height: var(--md-title-height);
+  line-height: 1.4em;
+  text-align: center;
+  width: 100%;
+  word-wrap: break-word;
+}
+
+.md-menu {
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  height: var(--md-menu-size);
+  margin: var(--md-menu-margin-top) var(--md-menu-margin-side);
+  opacity: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: var(--md-menu-size);
+}
+
+.md-menu:focus {
+  opacity: 1;
+}
+
+/* We use ::after without content to provide the masked X element. */
+.md-menu::after {
+  --mask-width: calc(var(--md-menu-size) - 2);
+  -webkit-mask-image: -webkit-image-set(
+      url(chrome-search://local-ntp/images/close_3_mask.png) 1x,
+      url(chrome-search://local-ntp/images/close_3_mask.png@2x) 2x);
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: var(--mask-width);
+  background-color: rgb(218, 220, 224);
+  content: '';
+  display: block;
+  height: var(--md-menu-size);
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: var(--md-menu-size);
+}
+
+html[dir=rtl] .md-menu {
+  left: 0;
+  right: auto;
+}
+
+.md-menu:hover::after,
+.md-menu:focus::after {
+  background-color: rgb(154, 160, 166);
 }

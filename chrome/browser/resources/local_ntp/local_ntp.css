@@ -3,6 +3,10 @@
  * found in the LICENSE file. */
 
 html {
+  /* Material Design constants */
+  --md-tile-height: 104px;
+  --md-tile-margin: 8px;
+
   /* This will be overridden based on the viewport width, see below. */
   --column-count: 2;
 
@@ -459,6 +463,10 @@ body.fakebox-focused #fakebox-cursor {
   user-select: none;
 }
 
+.md-icons #most-visited {
+  margin-top: 30px;
+}
+
 /* Non-Google pages have no Fakebox, so don't need top margin. */
 .non-google-page #most-visited {
   margin-top: 0;
@@ -473,6 +481,13 @@ body.fakebox-focused #fakebox-cursor {
   position: relative;
   text-align: -webkit-auto;
   width: var(--content-width);
+}
+
+.md-icons #mv-tiles {
+  /* Two rows of tiles of 104px each, 8px of spacing after each row, and 10px of
+   * margin on top and bottom. If you change this, also change the corresponding
+   * values in most_visited_single.css. */
+  height: calc(2*(var(--md-tile-height) + var(--md-tile-margin)) + 2*10px);
 }
 
 #mv-notice-x {

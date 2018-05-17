@@ -8,6 +8,27 @@
 
 
 /**
+ * Enum for classnames.
+ * @enum {string}
+ * @const
+ */
+const CLASSES = {
+  FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
+  MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page.
+  // Material Design classes.
+  MD_EMPTY_TILE: 'md-empty-tile',
+  MD_FAVICON: 'md-favicon',
+  MD_LINK: 'md-link',
+  MD_ICON: 'md-icon',
+  MD_ICON_BACKGROUND: 'md-icon-background',
+  MD_MENU: 'md-menu',
+  MD_TILE: 'md-tile',
+  MD_TILE_INNER: 'md-tile-inner',
+  MD_TITLE: 'md-title',
+};
+
+
+/**
  * The different types of events that are logged from the NTP.  This enum is
  * used to transfer information from the NTP JavaScript to the renderer and is
  * not used as a UMA enum histogram's logged value.
@@ -86,6 +107,13 @@ var tiles = null;
  * @type {Object}
  */
 var queryArgs = {};
+
+
+/**
+ * True if Material Design styles should be applied.
+ * @type {boolean}
+ */
+let isMDEnabled = false;
 
 
 /**
@@ -252,6 +280,11 @@ var swapInNewTiles = function() {
   // Add new tileset.
   cur.id = 'mv-tiles';
   parent.appendChild(cur);
+  if (isMDEnabled) {
+    // Called after appending to document so that css styles are active.
+    truncateTitleText(
+        parent.lastChild.querySelectorAll('.' + CLASSES.MD_TITLE));
+  }
   // getComputedStyle causes the initial style (opacity 0) to be applied, so
   // that when we then set it to 1, that triggers the CSS transition.
   if (fadeIn) {
@@ -263,6 +296,25 @@ var swapInNewTiles = function() {
   // page sends us an updated set of tiles.
   tiles = document.createElement('div');
 };
+
+
+/**
+ * Truncates titles that are longer than two lines and appends an ellipsis. Text
+ * overflow in CSS ("text-overflow: ellipsis") cannot handle multiple lines.
+ */
+function truncateTitleText(titles) {
+  for (let i = 0; i < titles.length; i++) {
+    let el = titles[i];
+    const originalTitle = el.innerText;
+    let truncatedTitle = el.innerText;
+    while (el.scrollHeight > el.offsetHeight && truncatedTitle.length > 0) {
+      el.innerText = (truncatedTitle = truncatedTitle.slice(0, -1)) + '...';
+    }
+    if (truncatedTitle.length == 0) {
+      console.error('Title truncation failed: ' + originalTitle);
+    }
+  }
+}
 
 
 /**
@@ -326,6 +378,19 @@ var isSchemeAllowed = function(url) {
  *     data is null if you want to construct an empty tile.
  */
 var renderTile = function(data) {
+  if (isMDEnabled) {
+    return renderMaterialDesignTile(data);
+  }
+  return renderMostVisitedTile(data);
+};
+
+
+/**
+ * @param {object} data Object containing rid, url, title, favicon, thumbnail.
+ *     data is null if you want to construct an empty tile.
+ * @return {Element}
+ */
+var renderMostVisitedTile = function(data) {
   var tile = document.createElement('a');
 
   if (data == null) {
@@ -407,7 +472,7 @@ var renderTile = function(data) {
   fi.addEventListener('load', countLoad);
   fi.addEventListener('error', countLoad);
   fi.addEventListener('error', function(ev) {
-    favicon.classList.add('failed-favicon');
+    favicon.classList.add(CLASSES.FAILED_FAVICON);
   });
   favicon.appendChild(fi);
   tile.appendChild(favicon);
@@ -473,6 +538,129 @@ var renderTile = function(data) {
 
 
 /**
+ * Renders a MostVisited tile with Material Design styles.
+ * @param {object} data Object containing rid, url, title, favicon. data is null
+ *     if you want to construct an empty tile.
+ * @return {Element}
+ */
+function renderMaterialDesignTile(data) {
+  let mdTile = document.createElement('a');
+
+  if (data == null) {
+    mdTile.className = CLASSES.MD_EMPTY_TILE;
+    return mdTile;
+  }
+
+  // The tile will be appended to tiles.
+  const position = tiles.children.length;
+  // This is set in the load/error event for the favicon image.
+  let tileType = TileVisualType.NONE;
+
+  mdTile.className = CLASSES.MD_TILE;
+  mdTile.setAttribute('data-tid', data.tid);
+  mdTile.setAttribute('data-pos', position);
+  if (isSchemeAllowed(data.url)) {
+    mdTile.href = data.url;
+  }
+  mdTile.setAttribute('aria-label', data.title);
+  mdTile.title = data.title;
+
+  mdTile.addEventListener('click', function(ev) {
+    logMostVisitedNavigation(
+        position, data.tileTitleSource, data.tileSource, tileType,
+        data.dataGenerationTime);
+  });
+  mdTile.addEventListener('keydown', function(event) {
+    if (event.keyCode == 46 /* DELETE */ ||
+        event.keyCode == 8 /* BACKSPACE */) {
+      event.preventDefault();
+      event.stopPropagation();
+      blacklistTile(this);
+    } else if (
+        event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
+      event.preventDefault();
+      this.click();
+    } else if (event.keyCode == 37 /* LEFT */) {
+      const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
+      tiles[Math.max(this.getAttribute('data-pos') - 1, 0)].focus();
+    } else if (event.keyCode == 39 /* RIGHT */) {
+      const tiles = document.querySelectorAll('#mv-tiles .' + CLASSES.MD_TILE);
+      tiles[Math.min(this.getAttribute('data-pos') + 1, tiles.length - 1)]
+          .focus();
+    }
+  });
+
+  let mdTileInner = document.createElement('div');
+  mdTileInner.className = CLASSES.MD_TILE_INNER;
+
+  let mdIcon = document.createElement('div');
+  mdIcon.className = CLASSES.MD_ICON;
+  let mdIconBackground = document.createElement('div');
+  mdIconBackground.className = CLASSES.MD_ICON_BACKGROUND;
+
+  let mdFavicon = document.createElement('div');
+  mdFavicon.className = CLASSES.MD_FAVICON;
+  let fi = document.createElement('img');
+  fi.src = data.faviconUrl;
+  // Set title and alt to empty so screen readers won't say the image name.
+  fi.title = '';
+  fi.alt = '';
+  loadedCounter += 1;
+  fi.addEventListener('load', function(ev) {
+    // Store the type for a potential later navigation.
+    tileType = TileVisualType.ICON_REAL;
+    logMostVisitedImpression(
+        position, data.tileTitleSource, data.tileSource, tileType,
+        data.dataGenerationTime);
+    // Note: It's important to call countLoad last, because that might emit the
+    // NTP_ALL_TILES_LOADED event, which must happen after the impression log.
+    countLoad();
+  });
+  fi.addEventListener('error', function(ev) {
+    mdFavicon.classList.add(CLASSES.FAILED_FAVICON);
+    thumb.removeChild(img);
+    // Store the type for a potential later navigation.
+    tileType = TileVisualType.ICON_DEFAULT;
+    logMostVisitedImpression(
+        position, data.tileTitleSource, data.tileSource, tileType,
+        data.dataGenerationTime);
+    // Note: It's important to call countLoad last, because that might emit the
+    // NTP_ALL_TILES_LOADED event, which must happen after the impression log.
+    countLoad();
+  });
+  mdFavicon.appendChild(fi);
+  mdIconBackground.appendChild(mdFavicon);
+  mdIcon.appendChild(mdIconBackground);
+  mdTileInner.appendChild(mdIcon);
+
+  let mdTitle = document.createElement('div');
+  mdTitle.className = CLASSES.MD_TITLE;
+  mdTitle.innerText = data.title;
+  mdTitle.style.direction = data.direction || 'ltr';
+  mdTileInner.appendChild(mdTitle);
+
+  let mdMenu = document.createElement('button');
+  mdMenu.className = CLASSES.MD_MENU;
+  mdMenu.title = queryArgs['removeTooltip'] || '';
+  mdMenu.addEventListener('click', function(ev) {
+    removeAllOldTiles();
+    blacklistTile(mdTile);
+    ev.preventDefault();
+    ev.stopPropagation();
+  });
+  // Don't allow the event to bubble out to the containing tile, as that would
+  // trigger navigation to the tile URL.
+  mdMenu.addEventListener('keydown', function(event) {
+    event.stopPropagation();
+  });
+
+  mdTile.appendChild(mdTileInner);
+  mdTile.appendChild(mdMenu);
+  return mdTile;
+}
+
+
+/**
  * Does some initialization and parses the query arguments passed to the iframe.
  */
 var init = function() {
@@ -502,6 +690,12 @@ var init = function() {
   if (queryArgs['rtl'] == '1') {
     var html = document.querySelector('html');
     html.dir = 'rtl';
+  }
+
+  // Enable Material Design.
+  if (queryArgs['enableMD'] == '1') {
+    isMDEnabled = true;
+    document.body.classList.add(CLASSES.MATERIAL_DESIGN);
   }
 
   window.addEventListener('message', handlePostMessage);

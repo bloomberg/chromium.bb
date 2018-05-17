@@ -177,6 +177,9 @@ std::string GetConfigData(bool is_google, const GURL& google_base_url) {
   bool is_md_ui_enabled = base::FeatureList::IsEnabled(features::kNtpUIMd);
   config_data.SetBoolean("isMDUIEnabled", is_md_ui_enabled);
 
+  bool is_md_icons_enabled = base::FeatureList::IsEnabled(features::kNtpIcons);
+  config_data.SetBoolean("isMDIconsEnabled", is_md_icons_enabled);
+
   bool is_custom_backgrounds_enabled =
       base::FeatureList::IsEnabled(features::kNtpBackgrounds);
   config_data.SetBoolean("isCustomBackgroundsEnabled",

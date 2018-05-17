@@ -76,6 +76,8 @@ var CLASSES = {
   FADE: 'fade',  // Enables opacity transition on logo and doodle.
   FAKEBOX_FOCUS: 'fakebox-focused',  // Applies focus styles to the fakebox
   MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page
+  MATERIAL_DESIGN_ICONS:
+      'md-icons',  // Applies Material Design styles to Most Visited.
   // Applies drag focus style to the fakebox
   FAKEBOX_DRAG_FOCUS: 'fakebox-drag-focused',
   HIDE_FAKEBOX_AND_LOGO: 'hide-fakebox-logo',
@@ -109,6 +111,7 @@ var IDS = {
   LOGO_DOODLE_IFRAME: 'logo-doodle-iframe',
   LOGO_DOODLE_BUTTON: 'logo-doodle-button',
   LOGO_DOODLE_NOTIFIER: 'logo-doodle-notifier',
+  MOST_VISITED: 'most-visited',
   NOTIFICATION: 'mv-notice',
   NOTIFICATION_CLOSE_BUTTON: 'mv-notice-x',
   NOTIFICATION_MESSAGE: 'mv-msg',
@@ -597,6 +600,24 @@ function handlePostMessage(event) {
 
 
 /**
+ * Enables Material Design styles for all of NTP.
+ */
+function enableMD() {
+  document.body.classList.add(CLASSES.MATERIAL_DESIGN);
+  enableMDIcons();
+}
+
+
+/**
+ * Enables Material Design styles for the Most Visited section.
+ */
+function enableMDIcons() {
+  $(IDS.MOST_VISITED).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
+  $(IDS.TILES).classList.add(CLASSES.MATERIAL_DESIGN_ICONS);
+}
+
+
+/**
  * Prepares the New Tab Page by adding listeners, the most visited pages
  * section, and Google-specific elements for a Google-provided page.
  */
@@ -643,7 +664,9 @@ function init() {
 
   if (configData.isGooglePage) {
     if (configData.isMDUIEnabled) {
-      document.body.classList.add(CLASSES.MATERIAL_DESIGN);
+      enableMD();
+    } else if (configData.isMDIconsEnabled) {
+      enableMDIcons();
     }
 
     // Set up the fakebox (which only exists on the Google NTP).
@@ -769,6 +792,10 @@ function init() {
 
   args.push('removeTooltip=' +
       encodeURIComponent(configData.translatedStrings.removeThumbnailTooltip));
+
+  if (configData.isMDIconsEnabled || configData.isMDUIEnabled) {
+    args.push('enableMD=1');
+  }
 
   // Create the most visited iframe.
   var iframe = document.createElement('iframe');
