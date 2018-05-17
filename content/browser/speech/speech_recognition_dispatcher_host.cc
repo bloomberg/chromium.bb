@@ -160,7 +160,6 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
 
   SpeechRecognitionSessionConfig config;
   config.language = params->language;
-  config.grammars = params->grammars;
   config.max_hypotheses = params->max_hypotheses;
   config.origin = params->origin;
   config.initial_context = context;
@@ -169,6 +168,10 @@ void SpeechRecognitionDispatcherHost::StartSessionOnIO(
   config.continuous = params->continuous;
   config.interim_results = params->interim_results;
   config.event_listener = session->AsWeakPtr();
+
+  for (mojom::SpeechRecognitionGrammarPtr& grammar_ptr : params->grammars) {
+    config.grammars.push_back(*grammar_ptr);
+  }
 
   int session_id =
       SpeechRecognitionManager::GetInstance()->CreateSession(config);

@@ -418,9 +418,9 @@ SpeechRecognitionEngine::ConnectBothStreams(const FSMEventArgs&) {
                             base::UintToString(max_alternatives));
   }
   upstream_args.push_back("app=chromium");
-  for (const SpeechRecognitionGrammar& grammar : config_.grammars) {
+  for (const mojom::SpeechRecognitionGrammar& grammar : config_.grammars) {
     std::string grammar_value(base::NumberToString(grammar.weight) + ":" +
-                              grammar.url);
+                              grammar.url.spec());
     upstream_args.push_back(
         "grammar=" + net::EscapeQueryParamValue(grammar_value, true));
   }

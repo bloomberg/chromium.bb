@@ -4,10 +4,9 @@
 
 module content.mojom;
 
-// TODO(adithyas): Update users of content::SpeechRecognitionGrammar to use this
-// instead, then remove content::SpeechRecognitionGrammar.
+import "url/mojom/url.mojom";
+
 struct SpeechRecognitionGrammar {
-  // TODO(adithyas): Make this a mojom URL instead.
-  string url;
+  url.mojom.Url url;
   double weight;
 };
