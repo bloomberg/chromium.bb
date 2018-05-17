@@ -12,19 +12,15 @@
 
 namespace chromeos {
 
-ScreenLockServiceProvider::ScreenLockServiceProvider(
-    const std::string& interface_name,
-    const std::string& method_name)
-    : interface_name_(interface_name),
-      method_name_(method_name),
-      weak_ptr_factory_(this) {}
+ScreenLockServiceProvider::ScreenLockServiceProvider()
+    : weak_ptr_factory_(this) {}
 
-ScreenLockServiceProvider::~ScreenLockServiceProvider() {}
+ScreenLockServiceProvider::~ScreenLockServiceProvider() = default;
 
 void ScreenLockServiceProvider::Start(
     scoped_refptr<dbus::ExportedObject> exported_object) {
   exported_object->ExportMethod(
-      interface_name_, method_name_,
+      kScreenLockServiceInterface, kScreenLockServiceShowLockScreenMethod,
       base::BindRepeating(&ScreenLockServiceProvider::ShowLockScreen,
                           weak_ptr_factory_.GetWeakPtr()),
       base::BindRepeating(&ScreenLockServiceProvider::OnExported,
@@ -35,8 +31,7 @@ void ScreenLockServiceProvider::OnExported(const std::string& interface_name,
                                            const std::string& method_name,
                                            bool success) {
   if (!success) {
-    LOG(ERROR) << "Failed to export " << interface_name << "."
-               << method_name;
+    LOG(ERROR) << "Failed to export " << interface_name << "." << method_name;
   }
 }
 

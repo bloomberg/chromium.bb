@@ -333,22 +333,17 @@ class DBusServices {
     kiosk_info_service_ = CrosDBusService::Create(
         kKioskAppServiceName, dbus::ObjectPath(kKioskAppServicePath),
         CrosDBusService::CreateServiceProviderList(
-            std::make_unique<KioskInfoService>(
-                kKioskAppServiceInterface,
-                kKioskAppServiceGetRequiredPlatformVersionMethod)));
+            std::make_unique<KioskInfoService>()));
 
     liveness_service_ = CrosDBusService::Create(
         kLivenessServiceName, dbus::ObjectPath(kLivenessServicePath),
         CrosDBusService::CreateServiceProviderList(
-            std::make_unique<LivenessServiceProvider>(
-                kLivenessServiceInterface)));
+            std::make_unique<LivenessServiceProvider>()));
 
     screen_lock_service_ = CrosDBusService::Create(
         kScreenLockServiceName, dbus::ObjectPath(kScreenLockServicePath),
         CrosDBusService::CreateServiceProviderList(
-            std::make_unique<ScreenLockServiceProvider>(
-                kScreenLockServiceInterface,
-                kScreenLockServiceShowLockScreenMethod)));
+            std::make_unique<ScreenLockServiceProvider>()));
 
     virtual_file_request_service_ = CrosDBusService::Create(
         kVirtualFileRequestServiceName,
