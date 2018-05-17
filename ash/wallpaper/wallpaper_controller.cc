@@ -32,6 +32,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -59,12 +60,46 @@ namespace ash {
 namespace {
 
 // The paths of wallpaper directories.
-base::FilePath dir_user_data_path;
-base::FilePath dir_chrome_os_wallpapers_path;
-base::FilePath dir_chrome_os_custom_wallpapers_path;
+base::FilePath& GlobalUserDataDir() {
+  static base::NoDestructor<base::FilePath> dir_user_data;
+  return *dir_user_data;
+}
+
+base::FilePath& GlobalChromeOSWallpapersDir() {
+  static base::NoDestructor<base::FilePath> dir_chrome_os_wallpapers;
+  return *dir_chrome_os_wallpapers;
+}
+
+base::FilePath& GlobalChromeOSCustomWallpapersDir() {
+  static base::NoDestructor<base::FilePath> dir_chrome_os_custom_wallpapers;
+  return *dir_chrome_os_custom_wallpapers;
+}
 
 // The file path of the device policy wallpaper (if any).
-base::FilePath device_policy_wallpaper_file_path;
+base::FilePath& GlobalDevicePolicyWallpaperFile() {
+  static base::NoDestructor<base::FilePath> device_policy_wallpaper_file;
+  return *device_policy_wallpaper_file;
+}
+
+void SetGlobalUserDataDir(const base::FilePath& path) {
+  base::FilePath& global_path = GlobalUserDataDir();
+  global_path = path;
+}
+
+void SetGlobalChromeOSWallpapersDir(const base::FilePath& path) {
+  base::FilePath& global_path = GlobalChromeOSWallpapersDir();
+  global_path = path;
+}
+
+void SetGlobalChromeOSCustomWallpapersDir(const base::FilePath& path) {
+  base::FilePath& global_path = GlobalChromeOSCustomWallpapersDir();
+  global_path = path;
+}
+
+void SetGlobalDevicePolicyWallpaperFile(const base::FilePath& path) {
+  base::FilePath& global_path = GlobalDevicePolicyWallpaperFile();
+  global_path = path;
+}
 
 // Names of nodes with wallpaper info in |kUserWallpaperInfo| dictionary.
 constexpr char kNewWallpaperDateNodeName[] = "date";
@@ -329,9 +364,9 @@ base::FilePath GetExistingOnlineWallpaperPath(const GURL& url) {
 void SaveOnlineWallpaper(const GURL& url,
                          WallpaperLayout layout,
                          std::unique_ptr<gfx::ImageSkia> image) {
-  DCHECK(!dir_chrome_os_wallpapers_path.empty());
-  if (!base::DirectoryExists(dir_chrome_os_wallpapers_path) &&
-      !base::CreateDirectory(dir_chrome_os_wallpapers_path)) {
+  DCHECK(!GlobalChromeOSWallpapersDir().empty());
+  if (!base::DirectoryExists(GlobalChromeOSWallpapersDir()) &&
+      !base::CreateDirectory(GlobalChromeOSWallpapersDir())) {
     return;
   }
   WallpaperController::ResizeAndSaveWallpaper(
@@ -349,10 +384,10 @@ void SaveOnlineWallpaper(const GURL& url,
 
 // Implementation of |WallpaperController::GetOfflineWallpaper|.
 std::vector<std::string> GetOfflineWallpaperListImpl() {
-  DCHECK(!dir_chrome_os_wallpapers_path.empty());
+  DCHECK(!GlobalChromeOSWallpapersDir().empty());
   std::vector<std::string> file_names;
-  if (base::DirectoryExists(dir_chrome_os_wallpapers_path)) {
-    base::FileEnumerator files(dir_chrome_os_wallpapers_path,
+  if (base::DirectoryExists(GlobalChromeOSWallpapersDir())) {
+    base::FileEnumerator files(GlobalChromeOSWallpapersDir(),
                                /*recursive=*/false,
                                base::FileEnumerator::FILES);
     for (base::FilePath current = files.Next(); !current.empty();
@@ -459,8 +494,8 @@ base::FilePath WallpaperController::GetOnlineWallpaperPath(
                     .InsertBeforeExtension(kSmallWallpaperSuffix)
                     .value();
   }
-  DCHECK(!dir_chrome_os_wallpapers_path.empty());
-  return dir_chrome_os_wallpapers_path.Append(file_name);
+  DCHECK(!GlobalChromeOSWallpapersDir().empty());
+  return GlobalChromeOSWallpapersDir().Append(file_name);
 }
 
 // static
@@ -483,8 +518,8 @@ base::FilePath WallpaperController::GetCustomWallpaperPath(
 // static
 base::FilePath WallpaperController::GetCustomWallpaperDir(
     const std::string& sub_dir) {
-  DCHECK(!dir_chrome_os_custom_wallpapers_path.empty());
-  return dir_chrome_os_custom_wallpapers_path.Append(sub_dir);
+  DCHECK(!GlobalChromeOSCustomWallpapersDir().empty());
+  return GlobalChromeOSCustomWallpapersDir().Append(sub_dir);
 }
 
 // static
@@ -1016,10 +1051,10 @@ void WallpaperController::Init(
     bool is_device_wallpaper_policy_enforced) {
   DCHECK(!wallpaper_controller_client_.get());
   wallpaper_controller_client_ = std::move(client);
-  dir_user_data_path = user_data_path;
-  dir_chrome_os_wallpapers_path = chromeos_wallpapers_path;
-  dir_chrome_os_custom_wallpapers_path = chromeos_custom_wallpapers_path;
-  device_policy_wallpaper_file_path = device_policy_wallpaper_path;
+  SetGlobalUserDataDir(user_data_path);
+  SetGlobalChromeOSWallpapersDir(chromeos_wallpapers_path);
+  SetGlobalChromeOSCustomWallpapersDir(chromeos_custom_wallpapers_path);
+  SetGlobalDevicePolicyWallpaperFile(device_policy_wallpaper_path);
   is_device_wallpaper_policy_enforced_ = is_device_wallpaper_policy_enforced;
 }
 
@@ -1294,7 +1329,7 @@ void WallpaperController::ShowUserWallpaper(
 
   base::FilePath wallpaper_path;
   if (info.type == DEVICE) {
-    wallpaper_path = device_policy_wallpaper_file_path;
+    wallpaper_path = GlobalDevicePolicyWallpaperFile();
   } else {
     std::string sub_dir = GetCustomWallpaperSubdirForCurrentResolution();
     // Wallpaper is not resized when layout is
@@ -1450,9 +1485,9 @@ void WallpaperController::InitializePathsForTesting(
     const base::FilePath& user_data_path,
     const base::FilePath& chromeos_wallpapers_path,
     const base::FilePath& chromeos_custom_wallpapers_path) {
-  dir_user_data_path = user_data_path;
-  dir_chrome_os_wallpapers_path = chromeos_wallpapers_path;
-  dir_chrome_os_custom_wallpapers_path = chromeos_custom_wallpapers_path;
+  SetGlobalUserDataDir(user_data_path);
+  SetGlobalChromeOSWallpapersDir(chromeos_wallpapers_path);
+  SetGlobalChromeOSCustomWallpapersDir(chromeos_custom_wallpapers_path);
 }
 
 void WallpaperController::ShowDefaultWallpaperForTesting() {
@@ -1688,8 +1723,8 @@ void WallpaperController::SetWallpaperFromInfo(
     // loaded at all. On some slow devices, it caused login webui not
     // visible after upgrade to M26 from M21. See crosbug.com/38429 for
     // details.
-    DCHECK(!dir_user_data_path.empty());
-    wallpaper_path = dir_user_data_path.Append(info.location);
+    DCHECK(!GlobalUserDataDir().empty());
+    wallpaper_path = GlobalUserDataDir().Append(info.location);
 
     ReadAndDecodeWallpaper(
         base::Bind(&WallpaperController::OnWallpaperDecoded,
@@ -1947,7 +1982,7 @@ void WallpaperController::SetDevicePolicyWallpaper() {
   ReadAndDecodeWallpaper(
       base::BindRepeating(&WallpaperController::OnDevicePolicyWallpaperDecoded,
                           weak_factory_.GetWeakPtr()),
-      sequenced_task_runner_.get(), device_policy_wallpaper_file_path);
+      sequenced_task_runner_.get(), GlobalDevicePolicyWallpaperFile());
 }
 
 void WallpaperController::OnDevicePolicyWallpaperDecoded(
@@ -1963,7 +1998,7 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
     SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
                             /*show_wallpaper=*/true);
   } else {
-    WallpaperInfo info(device_policy_wallpaper_file_path.value(),
+    WallpaperInfo info(GlobalDevicePolicyWallpaperFile().value(),
                        WALLPAPER_LAYOUT_CENTER_CROPPED, DEVICE,
                        base::Time::Now().LocalMidnight());
     ShowWallpaperImage(image, info, /*preview_mode=*/false);
