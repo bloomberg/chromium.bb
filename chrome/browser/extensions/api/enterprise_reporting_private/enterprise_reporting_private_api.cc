@@ -40,7 +40,8 @@ EnterpriseReportingPrivateUploadChromeDesktopReportFunction::
   if (device_management_service)
     device_management_service->ScheduleInitialization(0);
   cloud_policy_client_ = std::make_unique<policy::CloudPolicyClient>(
-      std::string(), std::string(), device_management_service,
+      std::string() /* machine_id */, std::string() /* machine_model */,
+      std::string() /* brand_code */, device_management_service,
       g_browser_process->system_request_context(), nullptr,
       policy::CloudPolicyClient::DeviceDMTokenCallback());
   dm_token_ = policy::BrowserDMTokenStorage::Get()->RetrieveDMToken();

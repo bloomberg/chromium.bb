@@ -141,6 +141,9 @@ message DeviceRegisterRequest {
 
   // Indicates the expected lifetime of registration.
   optional Lifetime lifetime = 11 [default = LIFETIME_INDEFINITE];
+
+  // The 4-character brand code of the device.
+  optional string brand_code = 12;
 }
 
 // Response from server to device register request.
