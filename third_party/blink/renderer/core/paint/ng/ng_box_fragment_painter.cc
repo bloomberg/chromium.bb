@@ -433,9 +433,12 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   }
 
   // TODO(layout-dev): Support theme painting.
+  bool theme_painted = false;
 
-  // TODO(eae): Support SkipRootBackground painting.
-  bool should_paint_background = true;
+  bool should_paint_background =
+      !theme_painted &&
+      (!paint_info.SkipRootBackground() ||
+       paint_info.PaintContainer() != box_fragment_.GetLayoutObject());
   if (should_paint_background) {
     PaintBackground(paint_info, paint_rect,
                     box_decoration_data.background_color,
@@ -659,8 +662,12 @@ bool NGBoxFragmentPainter::
     IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
         const NGPaintFragment& fragment,
         const PaintInfo& paint_info) {
-  // TODO(layout-dev): Implement once we have support for scrolling.
-  return false;
+  // TODO(layout-dev): Change paint_info.PaintContainer to accept fragments
+  // once LayoutNG supports scrolling containers.
+  return paint_info.PaintFlags() & kPaintLayerPaintingOverflowContents &&
+         !(paint_info.PaintFlags() &
+           kPaintLayerPaintingCompositingBackgroundPhase) &&
+         box_fragment_.GetLayoutObject() == paint_info.PaintContainer();
 }
 
 // Clone of BlockPainter::PaintOverflowControlsIfNeeded
@@ -725,10 +732,37 @@ void NGBoxFragmentPainter::PaintTextClipMask(
 }
 
 LayoutRect NGBoxFragmentPainter::AdjustForScrolledContent(
-    const PaintInfo&,
-    const BoxPainterBase::FillLayerInfo&,
+    const PaintInfo& paint_info,
+    const BoxPainterBase::FillLayerInfo& info,
     const LayoutRect& rect) {
-  return rect;
+  LayoutRect scrolled_paint_rect = rect;
+  GraphicsContext& context = paint_info.context;
+  if (info.is_clipped_with_local_scrolling &&
+      !IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+          box_fragment_, paint_info)) {
+    // Clip to the overflow area.
+    // TODO(layout-dev): Get clip information from fragment (or paint fragment)
+    // once LayoutNG supports overflow.
+    if (box_fragment_.GetLayoutObject() &&
+        box_fragment_.GetLayoutObject()->IsBox()) {
+      const LayoutBox& legacy = ToLayoutBox(*box_fragment_.GetLayoutObject());
+      context.Clip(FloatRect(legacy.OverflowClipRect(rect.Location())));
+    }
+
+    // Adjust the paint rect to reflect a scrolled content box with borders at
+    // the ends.
+    // TODO(layout-dev): This should be the scrolled content offset.
+    IntSize offset;
+    scrolled_paint_rect.Move(-offset);
+    LayoutRectOutsets border = BorderOutsets(info);
+
+    // TODO(layout-dev): This should be ScrollSize, not Size.
+    scrolled_paint_rect.SetWidth(border.Left() + box_fragment_.Size().width +
+                                 border.Right());
+    scrolled_paint_rect.SetHeight(border.Top() + box_fragment_.Size().height +
+                                  border.Bottom());
+  }
+  return scrolled_paint_rect;
 }
 
 BoxPainterBase::FillLayerInfo NGBoxFragmentPainter::GetFillLayerInfo(
