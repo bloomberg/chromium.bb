@@ -21,6 +21,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_ui.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
@@ -130,6 +131,13 @@ class DialogLauncher : public content::NotificationObserver {
       if (hosted_domain == AccountTrackerService::kNoHostedDomainFound ||
           hosted_domain == "google.com")
         account_supported = true;
+    }
+
+    // Launch Assistant OOBE flow if Assistant is enabled.
+    if (account_supported && chromeos::switches::IsAssistantEnabled()) {
+      chromeos::AssistantOptInDialog::Show();
+      delete this;
+      return;
     }
 
     // If voice interaction value prop needs to be shown, the tutorial will be

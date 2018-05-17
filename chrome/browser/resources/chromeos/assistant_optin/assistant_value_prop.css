@@ -4,44 +4,82 @@
 
 #value-prop-view {
   display: block;
-  height: 372px;
+  height: 256px;
   margin: auto;
-  padding: 0;
 }
 
-.value-prop-loading #retry-button,
-.value-prop-loaded #retry-button,
-.value-prop-error #next-button {
+#retry-button,
+#more-button,
+#next-button {
   display: none;
+}
+
+.value-prop-error #retry-button,
+.value-prop-loading #more-button,
+.value-prop-loading #next-button,
+.value-prop-loaded #more-button,
+.value-prop-loaded #next-button,
+.value-prop-more #next-button {
+  display: block;
 }
 
 #loading-container,
 #error-container,
-#view-container {
+#view-container,
+#more-container {
+  height: 372px;
+  overflow: hidden;
+  padding: 48px 48px 0 48px;
   position: absolute;
   visibility: hidden;
   width: 480px;
 }
 
+#view-container {
+  padding-top: 32px;
+}
+
 .value-prop-loading-animation #loading-container,
 .value-prop-loaded #view-container,
-.value-prop-error #error-container {
+.value-prop-error #error-container,
+.value-prop-more #more-container {
+  overflow-y: scroll;
   visibility: visible;
 }
 
 .value-prop-loading #retry-button,
-.value-prop-loading #next-button,
-.value-prop-loading #skip-button {
+.value-prop-loading #more-button,
+.value-prop-loading #skip-button,
+.value-prop-loading #next-button {
   pointer-events: none;
 }
 
 .title {
   font-size: 18px;
+  padding-bottom: 10px;
 }
 
-#subtitle {
+.sub-title {
   font-size: 12px;
-  padding: 14px 0 0 0;
+  padding: 8px 0 8px 0;
+}
+
+.content {
+  color: rgba(0, 0, 0, .54);
+  font-size: 11px;
+  padding-bottom: 10px;
+}
+
+.line {
+  background-color: rgba(0, 0, 0, .14);
+  height: 1px;
+  margin: 8px 0 8px 0;
+}
+
+#footer {
+  color: rgba(0, 0, 0, .54);
+  font-size: 11px;
+  padding-top: 4px;
 }
 
 #loading-message {
@@ -65,10 +103,8 @@ paper-progress {
   color: rgb(66, 133, 244);
 }
 
-#retry-button {
-  -webkit-margin-end: 18px;
-}
-
+#retry-button,
+#more-button,
 #next-button {
   -webkit-margin-end: 18px;
 }

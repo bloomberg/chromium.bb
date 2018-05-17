@@ -4823,6 +4823,9 @@
   <message name="IDS_VOICE_INTERACTION_VALUE_PROP_NEXT_BUTTION" desc="Button label for accepting voice interaction value proposition.">
     Next
   </message>
+  <message name="IDS_VOICE_INTERACTION_VALUE_PROP_MORE_BUTTION" desc="Button label for more information in voice interaction value proposition.">
+    More
+  </message>
   <message name="IDS_WAIT_FOR_CONTAINER_READY_TITLE" desc="Title of the wait for container ready OOBE screen.">
     Just a sec
   </message>

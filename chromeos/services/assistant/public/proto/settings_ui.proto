@@ -10,20 +10,25 @@ option optimize_for = LITE_RUNTIME;
 package chromeos.assistant;
 
 import "about_me_settings_ui.proto";
+import "consent_flow_ui.proto";
 
 message SettingsUi {
   optional AboutMeSettingsUi about_me_settings = 5;
+  optional ConsentFlowUi consent_flow_ui = 27;
 }
 
 message SettingsUiUpdate {
   optional AboutMeSettingsUiUpdate about_me_settings_update = 4;
+  optional ConsentFlowUiUpdate consent_flow_ui_update = 21;
 }
 
 message SettingsUiUpdateResult {
   optional AboutMeSettingsUiUpdateResult about_me_settings_update_result = 4;
+  optional ConsentFlowUiUpdateResult consent_flow_update_result = 11;
 }
 
 // Determines which settings sub-pages should be requested to the server.
 message SettingsUiSelector {
   optional bool about_me_settings = 5;
+  optional ConsentFlowUiSelector consent_flow_ui_selector = 35;
 }
