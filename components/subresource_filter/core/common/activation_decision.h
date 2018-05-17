@@ -10,29 +10,25 @@ namespace subresource_filter {
 // NOTE: ActivationDecision backs a UMA histogram, so it is append-only.
 enum class ActivationDecision : int {
   // The activation decision is unknown, or not known yet.
-  UNKNOWN,
+  UNKNOWN = 0,
 
   // Subresource filtering was activated.
-  ACTIVATED,
+  ACTIVATED = 1,
 
   // Did not activate because subresource filtering was disabled by the
   // highest priority configuration whose activation conditions were met.
-  ACTIVATION_DISABLED,
-
-  // Did not activate because the main frame document URL had an unsupported
-  // scheme.
-  UNSUPPORTED_SCHEME,
+  ACTIVATION_DISABLED = 2,
 
   // Did not activate because although there was a configuration whose
   // activation conditions were met, the main frame URL was whitelisted.
-  URL_WHITELISTED,
+  URL_WHITELISTED = 4,
 
   // Did not activate because the main frame document URL did not match the
   // activation conditions of any of enabled configurations.
-  ACTIVATION_CONDITIONS_NOT_MET,
+  ACTIVATION_CONDITIONS_NOT_MET = 5,
 
   // Max value for enum.
-  ACTIVATION_DECISION_MAX
+  ACTIVATION_DECISION_MAX = 6
 };
 
 }  // namespace subresource_filter

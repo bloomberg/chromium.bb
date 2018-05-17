@@ -2895,10 +2895,10 @@ be describing additional metrics about the same event.
   <metric name="ActivationDecision">
     <summary>
       Enum that records the policy decision to activate subresource filtering
-      for a page load. 0 = Unknown, 1 = Activated, 2 = Disabled, 3 = Unsupported
-      scheme, 4 = URL whitelisted, 5 = Activation conditions not met.
-      'Activated' indicates that subresource filtering was activated. All other
-      reasons indicate that subresource filtering was not activated.
+      for a page load. 0 = Unknown, 1 = Activated, 2 = Disabled, 3 = Deprecated
+      value, 4 = URL whitelisted, 5 = Activation conditions not met. 'Activated'
+      indicates that subresource filtering was activated. All other reasons
+      indicate that subresource filtering was not activated.
     </summary>
   </metric>
   <metric name="DryRun">

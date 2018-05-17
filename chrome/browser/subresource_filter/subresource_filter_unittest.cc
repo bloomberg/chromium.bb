@@ -100,44 +100,6 @@ TEST_F(SubresourceFilterTest, ExplicitWhitelisting_ShouldNotClearMetadata) {
   EXPECT_NE(nullptr, GetSettingsManager()->GetSiteMetadata(url));
 }
 
-TEST_F(SubresourceFilterTest,
-       NavigationToBadSchemeUrlWithNoActivation_DoesNotReportBadScheme) {
-  // Don't report UNSUPPORTED_SCHEME if the navigation has no matching
-  // configuration.
-  scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
-      subresource_filter::ActivationLevel::DISABLED,
-      subresource_filter::ActivationScope::NO_SITES));
-
-  subresource_filter::TestSubresourceFilterObserver observer(web_contents());
-  GURL url("data:text/html,hello world");
-  SimulateNavigateAndCommit(url, main_rfh());
-  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  EXPECT_EQ(
-      subresource_filter::ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
-      observer.GetPageActivation(url));
-
-  // Also don't report UNSUPPORTED_SCHEME if the navigation matches a
-  // configuration with DISABLED activation level.
-  scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
-      subresource_filter::ActivationLevel::DISABLED,
-      subresource_filter::ActivationScope::ALL_SITES));
-
-  SimulateNavigateAndCommit(url, main_rfh());
-  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  EXPECT_EQ(subresource_filter::ActivationDecision::ACTIVATION_DISABLED,
-            observer.GetPageActivation(url));
-
-  // Sanity check that UNSUPPORTED_SCHEME is reported if the navigation does
-  // activate.
-  scoped_configuration().ResetConfiguration(subresource_filter::Configuration(
-      subresource_filter::ActivationLevel::ENABLED,
-      subresource_filter::ActivationScope::ALL_SITES));
-  SimulateNavigateAndCommit(url, main_rfh());
-  EXPECT_TRUE(CreateAndNavigateDisallowedSubframe(main_rfh()));
-  EXPECT_EQ(subresource_filter::ActivationDecision::UNSUPPORTED_SCHEME,
-            observer.GetPageActivation(url));
-}
-
 TEST_F(SubresourceFilterTest, SimpleDisallowedLoad_WithObserver) {
   GURL url("https://example.test");
   ConfigureAsSubresourceFilterOnlyURL(url);
