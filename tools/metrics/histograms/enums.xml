@@ -13227,6 +13227,8 @@ Called by update_net_error_codes.py.-->
   <int value="442" label="ChromeCleanupReportingEnabled"/>
   <int value="443" label="DeveloperToolsAvailability"/>
   <int value="444" label="AllowedLocales"/>
+  <int value="445" label="IsolateOriginsAndroid"/>
+  <int value="446" label="SitePerProcessAndroid"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

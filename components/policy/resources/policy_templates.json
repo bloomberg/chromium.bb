@@ -11132,6 +11132,8 @@
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable IsolateOrigins manually.
       If the policy is not configured, the user will be able to change this setting.
       On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME">DeviceLoginScreenIsolateOrigins</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+
+      NOTE: This policy does not apply on Android. To enable IsolateOrigins on Android, use the IsolateOriginsAndroid policy setting.
       ''',
     },
     {
@@ -11157,6 +11159,8 @@
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
       If the policy is not configured, the user will be able to change this setting.
       On <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph>, it is recommended to also set the <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME">DeviceLoginScreenSitePerProcess</ph> device policy to the same value. If the values specified by the two policies don't match, a delay may be incurred when entering a user session while the value specified by user policy is being applied.
+
+      NOTE: This policy does not apply on Android. To enable SitePerProcess on Android, use the SitePerProcessAndroid policy setting.
       ''',
     },
     {
@@ -11207,6 +11211,62 @@
       If the policy is enabled, each site will run in its own process.
       If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOrigins and SitePerProcess will be disabled. Users will still be able to enable SitePerProcess manually.
       If the policy is not configured, the user will be able to change this setting.
+      ''',
+    },
+    {
+      'name': 'IsolateOriginsAndroid',
+      'type': 'string',
+      'schema': { 'type': 'string' },
+      'supported_on': ['android:68-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': 'https://example.com/,https://othersite.org/',
+      'id': 445,
+      'caption': '''Enable Site Isolation for specified origins on Android devices''',
+      'tags': ['system-security'],
+      'desc': '''
+      If the policy is enabled, each of the named origins in a
+      comma-separated list will run in its own process. This will also isolate
+      origins named by subdomains; e.g. specifying https://example.com/ will
+      also cause https://foo.example.com/ to be isolated as part of the
+      https://example.com/ site.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOriginsAndroid and SitePerProcessAndroid will be disabled. Users will still be able to enable IsolateOrigins manually.
+      If the policy is not configured, the user will be able to change this setting.
+
+      NOTE: On Android, Site Isolation is experimental. Support will improve over time, but currently it may cause performance problems.
+
+      NOTE: This policy applies only to Chrome on Android. To apply the policy on other platforms, use IsolateOrigins.
+      ''',
+    },
+    {
+      'name': 'SitePerProcessAndroid',
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['android:68-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'example_value': True,
+      'id': 446,
+      'caption': '''Enable Site Isolation for every site''',
+      'tags': ['system-security'],
+      'desc': '''
+      You might want to look at the IsolateOriginsAndroid policy setting to get the
+      best of both worlds, isolation and limited impact for users, by using
+      IsolateOriginsAndroid with a list of the sites you want to isolate. This setting,
+      SitePerProcessAndroid, isolates all sites.
+      If the policy is enabled, each site will run in its own process.
+      If the policy is disabled, no explicit Site Isolation will happen and field trials of IsolateOriginsAndroid and SitePerProcessAndroid will be disabled. Users will still be able to enable SitePerProcess manually.
+      If the policy is not configured, the user will be able to change this setting.
+
+      NOTE: On Android, Site Isolation is experimental. Support will improve over time, but currently it may cause performance problems.
+
+      NOTE: This policy applies only to Chrome on Android. To apply the policy on other platforms, use SitePerProcess.
       ''',
     },
     {

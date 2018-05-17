@@ -885,6 +885,18 @@
     "note": "There is a pref behind this setting, but due to the fact that tests override the default with a command-line flag on some trybots, this setting cannot be verified with the common test."
   },
 
+  "IsolateOriginsAndroid": {
+    "os": ["android"],
+    "test_policy": { "IsolateOriginsAndroid": "" },
+    "note": "There is a pref behind this setting, but due to the fact that tests override the default with a command-line flag on some trybots, this setting cannot be verified with the common test."
+  },
+
+  "SitePerProcessAndroid": {
+    "os": ["android"],
+    "test_policy": { "SitePerProcessAndroid": false },
+    "note": "There is a pref behind this setting, but due to the fact that tests override the default with a command-line flag on some trybots, this setting cannot be verified with the common test."
+  },
+
   "WebDriverOverridesIncompatiblePolicies": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "WebDriverOverridesIncompatiblePolicies": true },
