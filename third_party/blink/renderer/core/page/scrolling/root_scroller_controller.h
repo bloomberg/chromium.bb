@@ -118,6 +118,14 @@ class CORE_EXPORT RootScrollerController
   // set as the root scroller (in addition to being a valid root scroller).
   bool IsValidImplicit(const Element&) const;
 
+  // Determines whether the given element is eligable as a candidate to be
+  // implicitly promoted. Intuitively, thiis is any "live" scroller on the page.
+  // We add these to a list of candidates and after layout we go through the
+  // list and promote the best candidate that satisfies the more exhaustive
+  // conditions set by IsValidImplicit above. At that time we also prune the
+  // list of any elements that no longer satisfy IsValidImplicitCandidate.
+  bool IsValidImplicitCandidate(const Element&) const;
+
   // Set certain properties to the effective root scroller. Called when a Node
   // becomes or unbecomes the effective root scroller.
   void ApplyRootScrollerProperties(Node&);

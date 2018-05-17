@@ -61,11 +61,4 @@ void LayoutIFrame::UpdateLayout() {
   ClearNeedsLayout();
 }
 
-void LayoutIFrame::UpdateAfterLayout() {
-  if (RuntimeEnabledFeatures::ImplicitRootScrollerEnabled() && GetNode())
-    GetDocument().GetRootScrollerController().ConsiderForImplicit(*GetNode());
-
-  LayoutEmbeddedContent::UpdateAfterLayout();
-}
-
 }  // namespace blink
