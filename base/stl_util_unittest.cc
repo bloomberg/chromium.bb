@@ -12,15 +12,19 @@
 #include <iterator>
 #include <list>
 #include <map>
+#include <queue>
 #include <set>
+#include <stack>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
+#include "base/containers/queue.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -228,6 +232,51 @@ TEST(STLUtilTest, Data) {
         "base::data(il) should have the same type as il.begin()");
     static_assert(il.begin() == base::data(il),
                   "base::data(il) should be equal to il.begin()");
+  }
+}
+
+TEST(STLUtilTest, GetUnderlyingContainer) {
+  {
+    std::queue<int> queue({1, 2, 3, 4, 5});
+    static_assert(std::is_same<decltype(GetUnderlyingContainer(queue)),
+                               const std::deque<int>&>::value,
+                  "GetUnderlyingContainer(queue) should be of type deque");
+    EXPECT_THAT(GetUnderlyingContainer(queue),
+                testing::ElementsAre(1, 2, 3, 4, 5));
+  }
+
+  {
+    std::queue<int> queue;
+    EXPECT_THAT(GetUnderlyingContainer(queue), testing::ElementsAre());
+  }
+
+  {
+    base::queue<int> queue({1, 2, 3, 4, 5});
+    static_assert(
+        std::is_same<decltype(GetUnderlyingContainer(queue)),
+                     const base::circular_deque<int>&>::value,
+        "GetUnderlyingContainer(queue) should be of type circular_deque");
+    EXPECT_THAT(GetUnderlyingContainer(queue),
+                testing::ElementsAre(1, 2, 3, 4, 5));
+  }
+
+  {
+    std::vector<int> values = {1, 2, 3, 4, 5};
+    std::priority_queue<int> queue(values.begin(), values.end());
+    static_assert(std::is_same<decltype(GetUnderlyingContainer(queue)),
+                               const std::vector<int>&>::value,
+                  "GetUnderlyingContainer(queue) should be of type vector");
+    EXPECT_THAT(GetUnderlyingContainer(queue),
+                testing::UnorderedElementsAre(1, 2, 3, 4, 5));
+  }
+
+  {
+    std::stack<int> stack({1, 2, 3, 4, 5});
+    static_assert(std::is_same<decltype(GetUnderlyingContainer(stack)),
+                               const std::deque<int>&>::value,
+                  "GetUnderlyingContainer(stack) should be of type deque");
+    EXPECT_THAT(GetUnderlyingContainer(stack),
+                testing::ElementsAre(1, 2, 3, 4, 5));
   }
 }
 

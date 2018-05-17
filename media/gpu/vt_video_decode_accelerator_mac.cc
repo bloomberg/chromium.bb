@@ -19,6 +19,7 @@
 #include "base/mac/mac_logging.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/sys_byteorder.h"
 #include "base/sys_info.h"
@@ -96,16 +97,6 @@ const int kNumPictureBuffers = limits::kMaxVideoFrames * 4;
 // Since the maximum possible |reorder_window| is 16 for H.264, 17 is the
 // minimum safe (static) size of the reorder queue.
 const int kMaxReorderQueueSize = 17;
-
-// Returns reference to the underlying container of a container adapter.
-// Works for std::stack, std::queue and std::priority_queue.
-template <class A>
-const typename A::container_type& GetUnderlyingContainer(const A& adapter) {
-  struct ExposedAdapter : A {
-    using A::c;
-  };
-  return adapter.*&ExposedAdapter::c;
-}
 
 // Build an |image_config| dictionary for VideoToolbox initialization.
 base::ScopedCFTypeRef<CFMutableDictionaryRef> BuildImageConfig(
@@ -495,7 +486,7 @@ bool VTVideoDecodeAccelerator::OnMemoryDump(
   {
     uint64_t total_count = 0;
     uint64_t total_size = 0;
-    for (const auto& it : GetUnderlyingContainer(task_queue_)) {
+    for (const auto& it : base::GetUnderlyingContainer(task_queue_)) {
       if (it.frame.get() && it.frame->image) {
         IOSurfaceRef io_surface = CVPixelBufferGetIOSurface(it.frame->image);
         if (io_surface) {
@@ -520,7 +511,7 @@ bool VTVideoDecodeAccelerator::OnMemoryDump(
   {
     uint64_t total_count = 0;
     uint64_t total_size = 0;
-    for (const auto& it : GetUnderlyingContainer(reorder_queue_)) {
+    for (const auto& it : base::GetUnderlyingContainer(reorder_queue_)) {
       if (it.get() && it->image) {
         IOSurfaceRef io_surface = CVPixelBufferGetIOSurface(it->image);
         if (io_surface) {

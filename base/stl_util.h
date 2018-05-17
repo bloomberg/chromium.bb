@@ -104,6 +104,16 @@ constexpr const T* data(std::initializer_list<T> il) noexcept {
   return il.begin();
 }
 
+// Returns a const reference to the underlying container of a container adapter.
+// Works for std::priority_queue, std::queue, and std::stack.
+template <class A>
+const typename A::container_type& GetUnderlyingContainer(const A& adapter) {
+  struct ExposedAdapter : A {
+    using A::c;
+  };
+  return adapter.*&ExposedAdapter::c;
+}
+
 // Clears internal memory of an STL object.
 // STL clear()/reserve(0) does not always free internal memory allocated
 // This function uses swap/destructor to ensure the internal memory is freed.
