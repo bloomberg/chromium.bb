@@ -2318,24 +2318,8 @@ void Node::CreateAndDispatchPointerEvent(const AtomicString& mouse_event_name,
   pointer_event_init.setComposed(true);
   pointer_event_init.setDetail(0);
 
-  pointer_event_init.setScreenX(mouse_event.PositionInScreen().x);
-  pointer_event_init.setScreenY(mouse_event.PositionInScreen().y);
-
-  IntPoint location_in_frame_zoomed;
-  if (view && view->GetFrame() && view->GetFrame()->View()) {
-    LocalFrame* frame = view->GetFrame();
-    LocalFrameView* frame_view = frame->View();
-    IntPoint location_in_contents = frame_view->RootFrameToContents(
-        FlooredIntPoint(mouse_event.PositionInRootFrame()));
-    location_in_frame_zoomed =
-        frame_view->ContentsToFrame(location_in_contents);
-    float scale_factor = 1 / frame->PageZoomFactor();
-    location_in_frame_zoomed.Scale(scale_factor, scale_factor);
-  }
-
-  // Set up initial values for coordinates.
-  pointer_event_init.setClientX(location_in_frame_zoomed.X());
-  pointer_event_init.setClientY(location_in_frame_zoomed.Y());
+  MouseEvent::SetCoordinatesFromWebPointerProperties(
+      mouse_event.FlattenTransform(), view, pointer_event_init);
 
   if (pointer_event_name == EventTypeNames::pointerdown ||
       pointer_event_name == EventTypeNames::pointerup) {
