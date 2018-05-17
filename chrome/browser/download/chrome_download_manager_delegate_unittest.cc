@@ -993,14 +993,17 @@ class TestDownloadLocationDialogBridge : public DownloadLocationDialogBridge {
   TestDownloadLocationDialogBridge() {}
 
   // DownloadLocationDialogBridge implementation.
-  void ShowDialog(gfx::NativeWindow native_window,
-                  DownloadLocationDialogType dialog_type,
-                  const base::FilePath& suggested_path,
-                  const DownloadTargetDeterminerDelegate::ConfirmationCallback&
-                      callback) override {
+  void ShowDialog(
+      gfx::NativeWindow native_window,
+      DownloadLocationDialogType dialog_type,
+      const base::FilePath& suggested_path,
+      DownloadLocationDialogBridge::LocationCallback callback) override {
     dialog_shown_count_++;
     dialog_type_ = dialog_type;
-    callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
+    if (callback) {
+      std::move(callback).Run(DownloadLocationDialogResult::USER_CANCELED,
+                              base::FilePath());
+    }
   }
 
   void OnComplete(

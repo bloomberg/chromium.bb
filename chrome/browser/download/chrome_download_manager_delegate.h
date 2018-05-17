@@ -62,6 +62,13 @@ class ChromeDownloadManagerDelegate
 
   void SetDownloadManager(content::DownloadManager* dm);
 #if defined(OS_ANDROID)
+
+  void ChooseDownloadLocation(
+      gfx::NativeWindow native_window,
+      DownloadLocationDialogType dialog_type,
+      const base::FilePath& suggested_path,
+      DownloadLocationDialogBridge::LocationCallback callback);
+
   void SetDownloadLocationDialogBridgeForTesting(
       DownloadLocationDialogBridge* bridge);
 #endif
