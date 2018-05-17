@@ -14,10 +14,8 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("chromecast")
 public final class CastSysInfoAndroidThings {
-    private static final UpdateManager sUpdateManager = new UpdateManager();
-
     @CalledByNative
     private static String getReleaseChannel() {
-        return sUpdateManager.getChannel();
+        return UpdateManager.getInstance().getChannel();
     }
 }
