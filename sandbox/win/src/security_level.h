@@ -9,9 +9,21 @@
 
 namespace sandbox {
 
-// List of all the integrity levels supported in the sandbox. This is used
-// only on Windows Vista and newer. You can't set the integrity level of the
-// process in the sandbox to a level higher than yours.
+// List of all the integrity levels supported in the sandbox.
+// The integrity level of the sandboxed process can't be set to a level higher
+// than the broker process.
+//
+// Note: These levels map to SIDs under the hood.
+// INTEGRITY_LEVEL_SYSTEM:      "S-1-16-16384" System Mandatory Level
+// INTEGRITY_LEVEL_HIGH:        "S-1-16-12288" High Mandatory Level
+// INTEGRITY_LEVEL_MEDIUM:      "S-1-16-8192"  Medium Mandatory Level
+// INTEGRITY_LEVEL_MEDIUM_LOW:  "S-1-16-6144"
+// INTEGRITY_LEVEL_LOW:         "S-1-16-4096"  Low Mandatory Level
+// INTEGRITY_LEVEL_BELOW_LOW:   "S-1-16-2048"
+// INTEGRITY_LEVEL_UNTRUSTED:   "S-1-16-0"     Untrusted Mandatory Level
+//
+// Not defined:                 "S-1-16-20480" Protected Process Mandatory Level
+// Not defined:                 "S-1-16-28672" Secure Process Mandatory Level
 enum IntegrityLevel {
   INTEGRITY_LEVEL_SYSTEM,
   INTEGRITY_LEVEL_HIGH,

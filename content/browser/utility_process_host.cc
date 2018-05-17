@@ -41,6 +41,7 @@
 #if defined(OS_WIN)
 #include "sandbox/win/src/sandbox_policy.h"
 #include "sandbox/win/src/sandbox_types.h"
+#include "services/network/network_sandbox_win.h"
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
@@ -86,7 +87,12 @@ class UtilitySandboxedProcessLauncherDelegate
            service_manager::SANDBOX_TYPE_NO_SANDBOX_AND_ELEVATED_PRIVILEGES;
   }
 
-  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override { return true; }
+  bool PreSpawnTarget(sandbox::TargetPolicy* policy) override {
+    if (sandbox_type_ == service_manager::SANDBOX_TYPE_NETWORK)
+      return network::NetworkPreSpawnTarget(policy);
+
+    return true;
+  }
 #endif  // OS_WIN
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
