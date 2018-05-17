@@ -246,8 +246,6 @@ source_set("skcms") {
     ]
   }
 
-  defines = [ "SKCMS_LEGACY_POWF" ]
-
   public = [
     "//third_party/skia/third_party/skcms/skcms.h",
   ]
