@@ -179,21 +179,21 @@ function manage(path, expected_manage_url) {
 /**
  * Tests sharing a file on Drive.
  */
-testcase.shareFile = function() {
+testcase.shareFileDrive = function() {
   share('world.ogv');
 };
 
 /**
  * Tests sharing a directory on Drive.
  */
-testcase.shareDirectory = function() {
+testcase.shareDirectoryDrive = function() {
   share('photos');
 };
 
 /**
  * Tests managing a hosted file (gdoc) on Drive.
  */
-testcase.manageHostedFile = function() {
+testcase.manageHostedFileDrive = function() {
   manage(
       'Test Document.gdoc', 'https://document_alternate_link/Test%20Document');
 };
@@ -201,6 +201,6 @@ testcase.manageHostedFile = function() {
 /**
  * Tests managing a hosted file on Drive.
  */
-testcase.manageFile = function() {
+testcase.manageFileDrive = function() {
   manage('world.ogv', 'https://file_alternate_link/world.ogv');
 };
