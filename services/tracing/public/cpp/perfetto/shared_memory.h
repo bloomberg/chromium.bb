@@ -19,7 +19,8 @@ namespace tracing {
 class COMPONENT_EXPORT(TRACING_CPP) MojoSharedMemory
     : public perfetto::SharedMemory {
  public:
-  class Factory : public perfetto::SharedMemory::Factory {
+  class COMPONENT_EXPORT(TRACING_CPP) Factory
+      : public perfetto::SharedMemory::Factory {
    public:
     std::unique_ptr<perfetto::SharedMemory> CreateSharedMemory(
         size_t size) override;
