@@ -24,18 +24,17 @@ namespace offline_pages {
 // inserted into) the persistent prefetching data store.
 struct PrefetchItem {
   PrefetchItem();
-  PrefetchItem(const PrefetchItem& other);
   PrefetchItem(PrefetchItem&& other);
 
   ~PrefetchItem();
 
+  // These methods are implemented in test_util.cc, for testing only.
+  PrefetchItem(const PrefetchItem& other);
   PrefetchItem& operator=(const PrefetchItem& other);
   PrefetchItem& operator=(PrefetchItem&& other);
-
   bool operator==(const PrefetchItem& other) const;
   bool operator!=(const PrefetchItem& other) const;
   bool operator<(const PrefetchItem& other) const;
-
   std::string ToString() const;
 
   // Primary key that stays consistent between prefetch item, request and
@@ -116,6 +115,7 @@ struct PrefetchItem {
   int64_t file_size = -1;
 };
 
+// Provided for test only. Implemented in test_util.cc.
 std::ostream& operator<<(std::ostream& out, const PrefetchItem& pi);
 
 }  // namespace offline_pages

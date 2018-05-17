@@ -12,6 +12,10 @@ StubOfflinePageModel::StubOfflinePageModel()
     : archive_directory_(base::FilePath(FILE_PATH_LITERAL("/archive_dir/"))) {}
 StubOfflinePageModel::~StubOfflinePageModel() {}
 
+void StubOfflinePageModel::SetArchiveDirectory(const base::FilePath& path) {
+  archive_directory_ = path;
+}
+
 void StubOfflinePageModel::AddObserver(Observer* observer) {}
 void StubOfflinePageModel::RemoveObserver(Observer* observer) {}
 void StubOfflinePageModel::SavePage(
