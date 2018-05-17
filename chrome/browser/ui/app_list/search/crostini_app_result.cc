@@ -9,6 +9,7 @@
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_context_menu.h"
 #include "chrome/browser/ui/app_list/crostini/crostini_app_icon_loader.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -32,6 +33,11 @@ CrostiniAppResult::~CrostiniAppResult() = default;
 void CrostiniAppResult::Open(int event_flags) {
   ChromeLauncherController::instance()->ActivateApp(
       id(), ash::LAUNCH_FROM_APP_LIST_SEARCH, event_flags);
+
+  // Manually dismiss the app list as it can take several seconds for apps to
+  // launch.
+  if (!controller()->IsHomeLauncherEnabledInTabletMode())
+    controller()->DismissView();
 }
 
 void CrostiniAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
