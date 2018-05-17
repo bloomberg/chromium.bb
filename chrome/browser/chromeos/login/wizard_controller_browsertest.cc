@@ -314,6 +314,14 @@ class WizardControllerTest : public WizardInProcessBrowserTest {
     return result;
   }
 
+  std::string JSExecuteStringExpression(const std::string& expression) {
+    std::string result;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        GetWebContents(),
+        "window.domAutomationController.send(" + expression + ");", &result));
+    return result;
+  }
+
   void CheckCurrentScreen(OobeScreen screen) {
     EXPECT_EQ(WizardController::default_controller()->GetScreen(screen),
               WizardController::default_controller()->current_screen());
@@ -878,6 +886,82 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
 
   system::ScopedFakeStatisticsProvider fake_statistics_provider_;
 
+  // This is invoked from the tests testing forced re-enrollment (FRE).
+  void TestControlFlowForcedReEnrollment(bool fre_explicitly_required) {
+    if (fre_explicitly_required) {
+      fake_statistics_provider_.SetMachineStatistic(
+          chromeos::system::kCheckEnrollmentKey, "1");
+    }
+
+    CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
+    EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+    EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+    OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
+
+    CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
+    EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+    EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+    EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+    OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
+
+    // Let update screen smooth time process (time = 0ms).
+    base::RunLoop().RunUntilIdle();
+
+    CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
+    EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+    EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
+    OnExit(*mock_update_screen_, ScreenExitCode::UPDATE_INSTALLED);
+
+    CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
+    EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
+    mock_auto_enrollment_check_screen_->RealShow();
+
+    // Wait for auto-enrollment controller to encounter the connection error.
+    WaitForAutoEnrollmentState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
+
+    // The error screen shows up if there's no auto-enrollment decision.
+    EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+    EXPECT_EQ(GetErrorScreen(),
+              WizardController::default_controller()->current_screen());
+
+    WaitUntilJSIsReady();
+    constexpr char guest_session_link_display[] =
+        "window.getComputedStyle($('error-guest-signin-fix-network')).display";
+    if (fre_explicitly_required) {
+      // Check that guest sign-in is not allowed on the network error screen
+      // (because the check_enrollment VPD key was set to "1", making FRE
+      // explicitly required).
+      EXPECT_EQ("none", JSExecuteStringExpression(guest_session_link_display));
+    } else {
+      // Check that guest sign-in is allowed if FRE was not explicitly required.
+      EXPECT_EQ("block", JSExecuteStringExpression(guest_session_link_display));
+    }
+
+    base::DictionaryValue device_state;
+    device_state.SetString(policy::kDeviceStateRestoreMode,
+                           policy::kDeviceStateRestoreModeReEnrollmentEnforced);
+    g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
+                                          device_state);
+    EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
+    EXPECT_CALL(
+        *mock_enrollment_screen_->view(),
+        SetParameters(mock_enrollment_screen_,
+                      EnrollmentModeMatches(
+                          policy::EnrollmentConfig::MODE_SERVER_FORCED)))
+        .Times(1);
+    OnExit(*mock_auto_enrollment_check_screen_,
+           ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
+
+    ResetAutoEnrollmentCheckScreen();
+
+    // Make sure enterprise enrollment page shows up.
+    CheckCurrentScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
+    OnExit(*mock_enrollment_screen_,
+           ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED);
+
+    EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+  }
+
  private:
   ScopedStubInstallAttributes install_attributes_;
 
@@ -886,58 +970,12 @@ class WizardControllerDeviceStateTest : public WizardControllerFlowTest {
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
                        ControlFlowForcedReEnrollment) {
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_NETWORK);
-  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
-  OnExit(*mock_network_screen_, ScreenExitCode::NETWORK_CONNECTED);
+  TestControlFlowForcedReEnrollment(false /* fre_explicitly_rquired */);
+}
 
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_EULA);
-  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
-  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
-  OnExit(*mock_eula_screen_, ScreenExitCode::EULA_ACCEPTED);
-
-  // Let update screen smooth time process (time = 0ms).
-  content::RunAllPendingInMessageLoop();
-
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_UPDATE);
-  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Show()).Times(1);
-  OnExit(*mock_update_screen_, ScreenExitCode::UPDATE_INSTALLED);
-
-  CheckCurrentScreen(OobeScreen::SCREEN_AUTO_ENROLLMENT_CHECK);
-  EXPECT_CALL(*mock_auto_enrollment_check_screen_, Hide()).Times(1);
-  mock_auto_enrollment_check_screen_->RealShow();
-
-  // Wait for auto-enrollment controller to encounter the connection error.
-  WaitForAutoEnrollmentState(policy::AUTO_ENROLLMENT_STATE_CONNECTION_ERROR);
-
-  // The error screen shows up if there's no auto-enrollment decision.
-  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
-  EXPECT_EQ(GetErrorScreen(),
-            WizardController::default_controller()->current_screen());
-  base::DictionaryValue device_state;
-  device_state.SetString(policy::kDeviceStateRestoreMode,
-                         policy::kDeviceStateRestoreModeReEnrollmentEnforced);
-  g_browser_process->local_state()->Set(prefs::kServerBackedDeviceState,
-                                        device_state);
-  EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
-  EXPECT_CALL(*mock_enrollment_screen_->view(),
-              SetParameters(mock_enrollment_screen_,
-                            EnrollmentModeMatches(
-                                policy::EnrollmentConfig::MODE_SERVER_FORCED)))
-      .Times(1);
-  OnExit(*mock_auto_enrollment_check_screen_,
-         ScreenExitCode::ENTERPRISE_AUTO_ENROLLMENT_CHECK_COMPLETED);
-
-  ResetAutoEnrollmentCheckScreen();
-
-  // Make sure enterprise enrollment page shows up.
-  CheckCurrentScreen(OobeScreen::SCREEN_OOBE_ENROLLMENT);
-  OnExit(*mock_enrollment_screen_,
-         ScreenExitCode::ENTERPRISE_ENROLLMENT_COMPLETED);
-
-  EXPECT_TRUE(StartupUtils::IsOobeCompleted());
+IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
+                       ControlFlowForcedReEnrollmentExplicitlyRequired) {
+  TestControlFlowForcedReEnrollment(true /* fre_explicitly_rquired */);
 }
 
 IN_PROC_BROWSER_TEST_F(WizardControllerDeviceStateTest,
