@@ -21,6 +21,10 @@ const char kAutoplayPolicy[] = "autoplay-policy";
 
 const char kDisableAudioOutput[] = "disable-audio-output";
 
+// Causes the AudioManager to fail creating audio streams. Used when testing
+// various failure cases.
+const char kFailAudioStreamCreation[] = "fail-audio-stream-creation";
+
 // Set number of threads to use for video decoding.
 const char kVideoThreads[] = "video-threads";
 

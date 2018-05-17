@@ -55,8 +55,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
       AudioLogFactory::AudioComponent component,
       int component_id) override;
 
-  void SetMaxStreamCountForTesting(int max_input, int max_output) final;
-
   // AudioManagerBase:
 
   // Called internally by the audio stream when it has been closed.
@@ -189,9 +187,6 @@ class MEDIA_EXPORT AudioManagerBase : public AudioManager {
   // Max number of open output streams, modified by
   // SetMaxOutputStreamsAllowed().
   int max_num_output_streams_;
-
-  // Max number of open input streams.
-  int max_num_input_streams_;
 
   // Number of currently open output streams.
   int num_output_streams_;
