@@ -33,6 +33,7 @@
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/resource_scheduler_params_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/scheme_host_port.h"
@@ -172,6 +173,12 @@ class ResourceSchedulerTest : public testing::Test {
     // mock_timer_.
     scheduler_.reset(new ResourceScheduler(enabled));
 
+    if (resource_scheduler_params_manager_) {
+      scheduler()->SetResourceSchedulerParamsManagerForTests(
+          std::make_unique<ResourceSchedulerParamsManager>(
+              *resource_scheduler_params_manager_));
+    }
+
     scheduler_->OnClientCreated(kChildId, kRouteId,
                                 &network_quality_estimator_);
     scheduler_->OnClientCreated(kBackgroundChildId, kBackgroundRouteId,
@@ -275,9 +282,7 @@ class ResourceSchedulerTest : public testing::Test {
   }
 
   void RequestLimitOverrideConfigTestHelper(bool experiment_status) {
-    base::test::ScopedFeatureList scoped_feature_list;
-    InitializeThrottleDelayableExperiment(&scoped_feature_list,
-                                          experiment_status, 0.0);
+    InitializeThrottleDelayableExperiment(experiment_status, 0.0);
 
     // Set the effective connection type to Slow-2G, which is slower than the
     // threshold configured in |InitializeThrottleDelayableExperiment|. Needs
@@ -344,159 +349,42 @@ class ResourceSchedulerTest : public testing::Test {
     }
   }
 
-  void InitializeThrottleDelayableExperiment(
-      base::test::ScopedFeatureList* scoped_feature_list,
-      bool lower_delayable_count_enabled,
-      double non_delayable_weight) {
-    std::map<std::string, std::string> params;
-    bool experiment_enabled = false;
+  void InitializeThrottleDelayableExperiment(bool lower_delayable_count_enabled,
+                                             double non_delayable_weight) {
+    std::map<net::EffectiveConnectionType,
+             ResourceSchedulerParamsManager::ParamsForNetworkQuality>
+        params_for_network_quality_container;
+    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_slow_2g(8,
+                                                                           3.0);
+    ResourceSchedulerParamsManager::ParamsForNetworkQuality params_3g(10, 0.0);
+
     if (lower_delayable_count_enabled) {
-      experiment_enabled = true;
-      params["EffectiveConnectionType1"] = "Slow-2G";
-      params["MaxDelayableRequests1"] = "2";
-      params["NonDelayableWeight1"] = "0.0";
-
-      params["EffectiveConnectionType2"] = "3G";
-      params["MaxDelayableRequests2"] = "4";
-      params["NonDelayableWeight2"] = "0.0";
+      params_slow_2g.max_delayable_requests = 2;
+      params_slow_2g.non_delayable_weight = 0.0;
+      params_3g.max_delayable_requests = 4;
+      params_3g.non_delayable_weight = 0.0;
     }
-
     if (non_delayable_weight > 0.0) {
-      experiment_enabled = true;
-      params["EffectiveConnectionType1"] = "Slow-2G";
-      if (params["MaxDelayableRequests1"] == "")
-        params["MaxDelayableRequests1"] = "8";
-      params["NonDelayableWeight1"] =
-          base::NumberToString(non_delayable_weight);
+      if (!lower_delayable_count_enabled)
+        params_slow_2g.max_delayable_requests = 8;
+      params_slow_2g.non_delayable_weight = non_delayable_weight;
     }
 
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-    const char kTrialName[] = "TrialName";
-    const char kGroupName[] = "GroupName";
+    params_for_network_quality_container
+        [net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G] = params_slow_2g;
+    params_for_network_quality_container[net::EFFECTIVE_CONNECTION_TYPE_3G] =
+        params_3g;
 
-    ASSERT_TRUE(
-        base::AssociateFieldTrialParams(kTrialName, kGroupName, params));
-    base::FieldTrial* field_trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-    ASSERT_TRUE(field_trial);
-
-    std::unique_ptr<base::FeatureList> feature_list(
-        std::make_unique<base::FeatureList>());
-
-    if (experiment_enabled) {
-      feature_list->RegisterFieldTrialOverride(
-          "ThrottleDelayable", base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-          field_trial);
-      scoped_feature_list->InitWithFeatureList(std::move(feature_list));
-    }
-
-    ResourceScheduler::ParamsForNetworkQualityContainer
-        params_network_quality_container =
-            ResourceScheduler::GetParamsForNetworkQualityContainerForTests();
-
-    if (!lower_delayable_count_enabled && non_delayable_weight <= 0.0) {
-      ASSERT_EQ(2u, params_network_quality_container.size());
-      EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-                params_network_quality_container[0].effective_connection_type);
-      EXPECT_EQ(8u, params_network_quality_container[0].max_delayable_requests);
-      EXPECT_EQ(3.0, params_network_quality_container[0].non_delayable_weight);
-
-      EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-                params_network_quality_container[1].effective_connection_type);
-      EXPECT_EQ(8u, params_network_quality_container[1].max_delayable_requests);
-      EXPECT_EQ(3.0, params_network_quality_container[1].non_delayable_weight);
-      return;
-    }
-
-    // Check that the configuration was parsed and stored correctly.
-    ASSERT_EQ(lower_delayable_count_enabled ? 3u : 2u,
-              params_network_quality_container.size());
-
-    EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-              params_network_quality_container[0].effective_connection_type);
-    EXPECT_EQ(non_delayable_weight > 0.0 ? 8u : 2u,
-              params_network_quality_container[0].max_delayable_requests);
-    EXPECT_EQ(non_delayable_weight > 0.0 ? non_delayable_weight : 0.0,
-              params_network_quality_container[0].non_delayable_weight);
-
-    EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-              params_network_quality_container[1].effective_connection_type);
-
-    if (lower_delayable_count_enabled) {
-      EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_3G,
-                params_network_quality_container[2].effective_connection_type);
-      EXPECT_EQ(4u, params_network_quality_container[2].max_delayable_requests);
-      EXPECT_EQ(0.0, params_network_quality_container[2].non_delayable_weight);
-    }
-  }
-
-  void ReadConfigTestHelper(size_t num_ranges) {
-    const char kTrialName[] = "TrialName";
-    const char kGroupName[] = "GroupName";
-    const char kThrottleDelayable[] = "ThrottleDelayable";
-
-    base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-    base::test::ScopedFeatureList scoped_feature_list;
-    std::map<std::string, std::string> params;
-    for (size_t index = 1; index <= num_ranges; index++) {
-      std::string index_str = base::NumberToString(index);
-      params["EffectiveConnectionType" + index_str] =
-          net::GetNameForEffectiveConnectionType(
-              static_cast<net::EffectiveConnectionType>(1 + index));
-      params["MaxDelayableRequests" + index_str] = index_str + "0";
-      params["NonDelayableWeight" + index_str] = "0";
-    }
-
-    base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-    base::FieldTrial* field_trial =
-        base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-    std::unique_ptr<base::FeatureList> feature_list(
-        std::make_unique<base::FeatureList>());
-    feature_list->RegisterFieldTrialOverride(
-        kThrottleDelayable, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-        field_trial);
-    scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-
-    ResourceScheduler::ParamsForNetworkQualityContainer
-        params_network_quality_container =
-            ResourceScheduler::GetParamsForNetworkQualityContainerForTests();
-
-    // Check that the configuration was parsed and stored correctly.
-    ASSERT_EQ(std::max(static_cast<size_t>(2u), num_ranges),
-              params_network_quality_container.size());
-    for (size_t index = 1; index <= params_network_quality_container.size();
-         index++) {
-      EXPECT_EQ(1 + index,
-                static_cast<size_t>(params_network_quality_container[index - 1]
-                                        .effective_connection_type));
-      if (params_network_quality_container[index - 1]
-                  .effective_connection_type <=
-              net::EFFECTIVE_CONNECTION_TYPE_2G &&
-          num_ranges < index) {
-        EXPECT_EQ(
-            8u,
-            params_network_quality_container[index - 1].max_delayable_requests);
-        EXPECT_EQ(
-            3,
-            params_network_quality_container[index - 1].non_delayable_weight);
-      } else {
-        EXPECT_EQ(
-            index * 10u,
-            params_network_quality_container[index - 1].max_delayable_requests);
-        EXPECT_EQ(
-            0,
-            params_network_quality_container[index - 1].non_delayable_weight);
-      }
-    }
+    resource_scheduler_params_manager_ =
+        std::make_unique<ResourceSchedulerParamsManager>(
+            params_for_network_quality_container);
   }
 
   void NonDelayableThrottlesDelayableHelper(double non_delayable_weight) {
-    base::test::ScopedFeatureList scoped_feature_list;
     // Should be in sync with .cc for ECT SLOW_2G,
     const int kDefaultMaxNumDelayableRequestsPerClient = 8;
     // Initialize the experiment.
-    InitializeThrottleDelayableExperiment(&scoped_feature_list, false,
-                                          non_delayable_weight);
+    InitializeThrottleDelayableExperiment(false, non_delayable_weight);
     network_quality_estimator_.set_effective_connection_type(
         net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 
@@ -530,6 +418,8 @@ class ResourceSchedulerTest : public testing::Test {
   net::HttpServerPropertiesImpl http_server_properties_;
   net::TestNetworkQualityEstimator network_quality_estimator_;
   net::TestURLRequestContext context_;
+  std::unique_ptr<ResourceSchedulerParamsManager>
+      resource_scheduler_params_manager_;
   base::FieldTrialList field_trial_list_;
 };
 
@@ -1560,7 +1450,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideDisabled) {
 // not equal to any of the values provided in the experiment configuration.
 TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
   base::test::ScopedFeatureList scoped_feature_list;
-  InitializeThrottleDelayableExperiment(&scoped_feature_list, true, 0.0);
+  InitializeThrottleDelayableExperiment(true, 0.0);
   InitializeScheduler();
   for (net::EffectiveConnectionType ect :
        {net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
@@ -1607,7 +1497,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideOutsideECTRange) {
 // change the behavior of the resource scheduler.
 TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
   base::test::ScopedFeatureList scoped_feature_list;
-  InitializeThrottleDelayableExperiment(&scoped_feature_list, true, 0.0);
+  InitializeThrottleDelayableExperiment(true, 0.0);
   // ECT value is in range for which the limit is overridden to 2.
   network_quality_estimator_.set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
@@ -1671,7 +1561,7 @@ TEST_F(ResourceSchedulerTest, RequestLimitOverrideFixedForPageLoad) {
 // start until the number of requests in flight have gone below the new limit.
 TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   base::test::ScopedFeatureList scoped_feature_list;
-  InitializeThrottleDelayableExperiment(&scoped_feature_list, true, 0.0);
+  InitializeThrottleDelayableExperiment(true, 0.0);
   // ECT value is in range for which the limit is overridden to 4.
   network_quality_estimator_.set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_3G);
@@ -1757,79 +1647,6 @@ TEST_F(ResourceSchedulerTest, RequestLimitReducedAcrossPageLoads) {
   EXPECT_FALSE(delayable_second_page.back()->started());
 }
 
-// Test that a configuration without any ECT ranges is read correctly. In this
-// case, the resource scheduler will fall back to the default limit.
-TEST_F(ResourceSchedulerTest, ReadValidConfigTest0) {
-  ReadConfigTestHelper(0);
-}
-
-// Test that a configuration with 1 range is read correctly.
-TEST_F(ResourceSchedulerTest, ReadValidConfigTest1) {
-  ReadConfigTestHelper(1);
-}
-
-// Test that a configuration with 2 ranges is read correctly.
-TEST_F(ResourceSchedulerTest, ReadValidConfigTest2) {
-  ReadConfigTestHelper(2);
-}
-
-// Test that a configuration with 3 ranges is read correctly.
-TEST_F(ResourceSchedulerTest, ReadValidConfigTest3) {
-  ReadConfigTestHelper(3);
-}
-
-// Test that a configuration with bad strings does not break the parser, and
-// the parser stops reading the configuration after it encounters the first
-// missing index.
-TEST_F(ResourceSchedulerTest, ReadInvalidConfigTest) {
-  base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
-  const char kTrialName[] = "TrialName";
-  const char kGroupName[] = "GroupName";
-  const char kThrottleDelayable[] = "ThrottleDelayable";
-
-  base::test::ScopedFeatureList scoped_feature_list;
-  std::map<std::string, std::string> params;
-  // Skip configuration parameters for index 2 to test that the parser stops
-  // when it cannot find the parameters for an index.
-  for (int range_index : {1, 3, 4}) {
-    std::string index_str = base::IntToString(range_index);
-    params["EffectiveConnectionType" + index_str] = "Slow-2G";
-    params["MaxDelayableRequests" + index_str] = index_str + "0";
-    params["NonDelayableWeight" + index_str] = "0";
-  }
-  // Add some bad configuration strigs to ensure that the parser does not break.
-  params["BadConfigParam1"] = "100";
-  params["BadConfigParam2"] = "100";
-
-  base::AssociateFieldTrialParams(kTrialName, kGroupName, params);
-  base::FieldTrial* field_trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-  std::unique_ptr<base::FeatureList> feature_list(
-      std::make_unique<base::FeatureList>());
-  feature_list->RegisterFieldTrialOverride(
-      kThrottleDelayable, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-      field_trial);
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-
-  ResourceScheduler::ParamsForNetworkQualityContainer
-      params_network_quality_container =
-          ResourceScheduler::GetParamsForNetworkQualityContainerForTests();
-
-  // Only the first configuration parameter must be read because a match was not
-  // found for index 2. The configuration parameters with index 3 and 4 must be
-  // ignored, even though they are valid configuration parameters.
-  EXPECT_EQ(2u, params_network_quality_container.size());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-            params_network_quality_container[0].effective_connection_type);
-  EXPECT_EQ(10u, params_network_quality_container[0].max_delayable_requests);
-  EXPECT_EQ(0.0, params_network_quality_container[0].non_delayable_weight);
-
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params_network_quality_container[1].effective_connection_type);
-  EXPECT_EQ(8u, params_network_quality_container[1].max_delayable_requests);
-  EXPECT_EQ(3.0, params_network_quality_container[1].non_delayable_weight);
-}
-
 TEST_F(ResourceSchedulerTest, ThrottleDelayableDisabled) {
   base::FieldTrialParamAssociator::GetInstance()->ClearAllParamsForTesting();
 
@@ -1848,21 +1665,6 @@ TEST_F(ResourceSchedulerTest, ThrottleDelayableDisabled) {
       "ThrottleDelayable", base::FeatureList::OVERRIDE_DISABLE_FEATURE,
       field_trial);
   scoped_feature_list.InitWithFeatureList(std::move(feature_list));
-
-  ResourceScheduler::ParamsForNetworkQualityContainer
-      params_network_quality_container =
-          ResourceScheduler::GetParamsForNetworkQualityContainerForTests();
-
-  EXPECT_EQ(2u, params_network_quality_container.size());
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G,
-            params_network_quality_container[0].effective_connection_type);
-  EXPECT_EQ(8u, params_network_quality_container[0].max_delayable_requests);
-  EXPECT_EQ(3.0, params_network_quality_container[0].non_delayable_weight);
-
-  EXPECT_EQ(net::EFFECTIVE_CONNECTION_TYPE_2G,
-            params_network_quality_container[1].effective_connection_type);
-  EXPECT_EQ(8u, params_network_quality_container[1].max_delayable_requests);
-  EXPECT_EQ(3.0, params_network_quality_container[1].non_delayable_weight);
 
   InitializeScheduler();
   network_quality_estimator_.set_effective_connection_type(
@@ -1902,8 +1704,7 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableOutsideECT) {
       10;  // Should be in sync with cc.
   // Initialize the experiment with |kNonDelayableWeight| as the weight of
   // non-delayable requests.
-  InitializeThrottleDelayableExperiment(&scoped_feature_list, false,
-                                        kNonDelayableWeight);
+  InitializeThrottleDelayableExperiment(false, kNonDelayableWeight);
   // Experiment should not run when the effective connection type is faster
   // than 2G.
   network_quality_estimator_.set_effective_connection_type(
@@ -1937,8 +1738,7 @@ TEST_F(ResourceSchedulerTest, NonDelayableThrottlesDelayableVaryNonDelayable) {
       8;  // Should be in sync with cc.
   // Initialize the experiment with |kNonDelayableWeight| as the weight of
   // non-delayable requests.
-  InitializeThrottleDelayableExperiment(&scoped_feature_list, false,
-                                        kNonDelayableWeight);
+  InitializeThrottleDelayableExperiment(false, kNonDelayableWeight);
   network_quality_estimator_.set_effective_connection_type(
       net::EFFECTIVE_CONNECTION_TYPE_SLOW_2G);
 

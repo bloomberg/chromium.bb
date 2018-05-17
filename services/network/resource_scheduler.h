@@ -37,6 +37,8 @@ class NetworkQualityEstimator;
 
 namespace network {
 
+class ResourceSchedulerParamsManager;
+
 // There is one ResourceScheduler. All renderer-initiated HTTP requests are
 // expected to pass through it.
 //
@@ -79,20 +81,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
    private:
     base::OnceClosure resume_callback_;
   };
-  // A struct that stores the Network Quality values and loading parameters when
-  // the observed Network Quality matches the specified network quality value.
-  struct ParamsForNetworkQuality {
-    // The observed Effective Connection Type (ECT) should be
-    // |effective_connection_type| for the loading parameters specified in this
-    // struct to apply.
-    net::EffectiveConnectionType effective_connection_type;
-    // The maximum number of delayable requests allowed.
-    size_t max_delayable_requests;
-    // The weight of a non-delayable request when counting the effective number
-    // of non-delayable requests in-flight.
-    double non_delayable_weight;
-  };
-  using ParamsForNetworkQualityContainer = std::vector<ParamsForNetworkQuality>;
 
   explicit ResourceScheduler(bool enabled);
   ~ResourceScheduler();
@@ -158,12 +146,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   void ReprioritizeRequest(net::URLRequest* request,
                            net::RequestPriority new_priority);
 
-  // Public for tests.
-  static ParamsForNetworkQualityContainer
-  GetParamsForNetworkQualityContainerForTests() {
-    return ThrottleDelayable::GetParamsForNetworkQualityContainer();
-  }
-
   bool priority_requests_delayable() const {
     return priority_requests_delayable_;
   }
@@ -196,6 +178,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
 
   static bool IsRendererSideResourceSchedulerEnabled();
 
+  void SetResourceSchedulerParamsManagerForTests(
+      std::unique_ptr<ResourceSchedulerParamsManager>
+          resource_scheduler_params_manager);
+
  private:
   class Client;
   class RequestQueue;
@@ -204,50 +190,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   struct ScheduledResourceSorter {
     bool operator()(const ScheduledResourceRequestImpl* a,
                     const ScheduledResourceRequestImpl* b) const;
-  };
-
-  // Experiment parameters and helper functions for varying the maximum number
-  // of delayable requests in-flight based on the observed Effective Connection
-  // Type (ECT), or in the presence of non-delayable requests in-flight.
-  class ThrottleDelayable {
-   public:
-    ThrottleDelayable();
-    ~ThrottleDelayable();
-
-    // Returns the parameters for resource loading based on the current
-    // value of the network quality and the parameters set by ThrottleDelayable
-    // experiment.
-    ParamsForNetworkQuality GetParamsForNetworkQuality(
-        const net::NetworkQualityEstimator* network_quality_estimator) const;
-
-   private:
-    // Friend for tests.
-    friend class ResourceScheduler;
-
-    // Reads experiment parameters and creates a vector  of
-    // |ParamsForNetworkQualityContainer| to populate
-    // |params_for_network_quality_container_|. It looks for configuration
-    // parameters with sequential numeric suffixes, and stops looking after the
-    // first failure to find an experimetal parameter. A sample configuration is
-    // given below:
-    // "EffectiveConnectionType1": "Slow-2G",
-    // "MaxDelayableRequests1": "6",
-    // "NonDelayableWeight1": "2.0",
-    // "EffectiveConnectionType2": "3G",
-    // "MaxDelayableRequests2": "12",
-    // "NonDelayableWeight2": "3.0",
-    // This config implies that when Effective Connection Type (ECT) is Slow-2G,
-    // then the maximum number of non-delayable requests should be
-    // limited to 6, and the non-delayable request weight should be set to 2.
-    // When ECT is 3G, it should be limited to 12. For all other values of ECT,
-    // the default values should be used.
-    static ParamsForNetworkQualityContainer
-    GetParamsForNetworkQualityContainer();
-
-    // The number of delayable requests in-flight for different ranges of the
-    // network quality.
-    const ParamsForNetworkQualityContainer
-        params_for_network_quality_container_;
   };
 
   using ClientId = int64_t;
@@ -285,7 +227,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) ResourceScheduler {
   int max_requests_before_yielding_;
   base::TimeDelta yield_time_;
 
-  const ThrottleDelayable throttle_delayable_;
+  std::unique_ptr<ResourceSchedulerParamsManager>
+      resource_scheduler_params_manager_;
 
   // The TaskRunner to post tasks on. Can be overridden for tests.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
