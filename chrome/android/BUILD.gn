@@ -529,6 +529,7 @@ android_library("chrome_test_java") {
     "//chrome/android/webapk/libs/client:client_java",
     "//chrome/android/webapk/libs/common:common_java",
     "//chrome/test/android:chrome_java_test_support",
+    "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
     "//components/autofill/android:autofill_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/background_task_scheduler:background_task_scheduler_javatests",
