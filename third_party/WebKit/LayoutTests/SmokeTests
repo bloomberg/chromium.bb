@@ -707,7 +707,6 @@ fast/pagination/very-tall-auto-height-crash.html
 fast/parser/broken-comment-4.html
 fast/peerconnection/RTCIceCandidate.html
 fast/plugins/keypress-event.html
-fast/plugins/plugin-without-layout-csp-error-crash.html
 fast/plugins/webview-plugin-updates-without-layout.html
 fast/preloader/style-base.html
 fast/preloader/understands-base-tag.html

@@ -128,9 +128,7 @@ TestPlugin::TestPlugin(const blink::WebPluginParams& params,
       print_user_gesture_status_(false),
       can_process_drag_(false),
       supports_keyboard_focus_(false),
-      is_persistent_(params.mime_type == PluginPersistsMimeType()),
-      can_create_without_renderer_(params.mime_type ==
-                                   CanCreateWithoutRendererMimeType()) {
+      is_persistent_(params.mime_type == PluginPersistsMimeType()) {
   DCHECK_EQ(params.attribute_names.size(), params.attribute_values.size());
   size_t size = params.attribute_names.size();
   for (size_t i = 0; i < size; ++i) {
@@ -158,9 +156,6 @@ TestPlugin::TestPlugin(const blink::WebPluginParams& params,
     else if (attribute_name == "print-user-gesture-status")
       print_user_gesture_status_ = ParseBoolean(attribute_value);
   }
-  if (can_create_without_renderer_)
-    delegate_->PrintMessage(
-        std::string("TestPlugin: canCreateWithoutRenderer\n"));
 }
 
 TestPlugin::~TestPlugin() {}
@@ -613,13 +608,6 @@ const blink::WebString& TestPlugin::MimeType() {
   return kMimeType;
 }
 
-const blink::WebString& TestPlugin::CanCreateWithoutRendererMimeType() {
-  const CR_DEFINE_STATIC_LOCAL(
-      blink::WebString, kCanCreateWithoutRendererMimeType,
-      ("application/x-webkit-test-webplugin-can-create-without-renderer"));
-  return kCanCreateWithoutRendererMimeType;
-}
-
 const blink::WebString& TestPlugin::PluginPersistsMimeType() {
   const CR_DEFINE_STATIC_LOCAL(
       blink::WebString, kPluginPersistsMimeType,
@@ -629,8 +617,7 @@ const blink::WebString& TestPlugin::PluginPersistsMimeType() {
 
 bool TestPlugin::IsSupportedMimeType(const blink::WebString& mime_type) {
   return mime_type == TestPlugin::MimeType() ||
-         mime_type == PluginPersistsMimeType() ||
-         mime_type == CanCreateWithoutRendererMimeType();
+         mime_type == PluginPersistsMimeType();
 }
 
 }  // namespace test_runner

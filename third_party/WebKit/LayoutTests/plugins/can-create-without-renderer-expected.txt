@@ -1,2 +1,0 @@
-TestPlugin: canCreateWithoutRenderer
-To pass, the line above should say: TestPlugin: canCreateWithoutRenderer

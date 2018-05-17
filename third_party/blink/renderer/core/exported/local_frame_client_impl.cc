@@ -804,22 +804,13 @@ LocalFrame* LocalFrameClientImpl::CreateFrame(
   return web_frame_->CreateChildFrame(name, owner_element);
 }
 
-bool LocalFrameClientImpl::CanCreatePluginWithoutRenderer(
-    const String& mime_type) const {
-  if (!web_frame_->Client())
-    return false;
-
-  return web_frame_->Client()->CanCreatePluginWithoutRenderer(mime_type);
-}
-
 WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
     HTMLPlugInElement& element,
     const KURL& url,
     const Vector<String>& param_names,
     const Vector<String>& param_values,
     const String& mime_type,
-    bool load_manually,
-    DetachedPluginPolicy policy) {
+    bool load_manually) {
   if (!web_frame_->Client())
     return nullptr;
 
@@ -841,7 +832,7 @@ WebPluginContainerImpl* LocalFrameClientImpl::CreatePlugin(
   if (!web_plugin->Initialize(container))
     return nullptr;
 
-  if (policy != kAllowDetachedPlugin && !element.GetLayoutObject())
+  if (!element.GetLayoutObject())
     return nullptr;
 
   return container;

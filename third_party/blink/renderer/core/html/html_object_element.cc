@@ -107,8 +107,6 @@ void HTMLObjectElement::ParseAttribute(
     // Should we suppress the reload stuff when a persistable widget-type is
     // specified?
     ReloadPluginOnAttributeChange(name);
-    if (!GetLayoutObject())
-      RequestPluginCreationWithoutLayoutObjectIfPossible();
   } else if (name == dataAttr) {
     SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
     if (GetLayoutObject() && IsImageType()) {

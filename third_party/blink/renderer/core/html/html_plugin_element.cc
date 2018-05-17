@@ -171,8 +171,7 @@ bool HTMLPlugInElement::RequestObjectInternal(
   // it be handled as a plugin to show the broken plugin icon.
   bool use_fallback =
       object_type == ObjectContentType::kNone && HasFallbackContent();
-  return LoadPlugin(completed_url, service_type_, plugin_params, use_fallback,
-                    true);
+  return LoadPlugin(completed_url, service_type_, plugin_params, use_fallback);
 }
 
 bool HTMLPlugInElement::CanProcessDrag() const {
@@ -259,37 +258,6 @@ void HTMLPlugInElement::RemovedFrom(ContainerNode* insertion_point) {
     SetPersistedPlugin(nullptr);
   }
   HTMLFrameOwnerElement::RemovedFrom(insertion_point);
-}
-
-void HTMLPlugInElement::RequestPluginCreationWithoutLayoutObjectIfPossible() {
-  if (service_type_.IsEmpty())
-    return;
-
-  if (!GetDocument().GetFrame() ||
-      !GetDocument().GetFrame()->Client()->CanCreatePluginWithoutRenderer(
-          service_type_))
-    return;
-
-  if (GetLayoutObject() && GetLayoutObject()->IsLayoutEmbeddedContent())
-    return;
-
-  CreatePluginWithoutLayoutObject();
-}
-
-void HTMLPlugInElement::CreatePluginWithoutLayoutObject() {
-  DCHECK(GetDocument().GetFrame()->Client()->CanCreatePluginWithoutRenderer(
-      service_type_));
-
-  KURL url;
-  // CSP can block src-less objects.
-  if (!AllowedToLoadObject(url, service_type_))
-    return;
-
-  PluginParameters plugin_params;
-  plugin_params.AppendNameWithValue("type", service_type_);
-
-  bool use_fallback = false;
-  LoadPlugin(url, service_type_, plugin_params, use_fallback, false);
 }
 
 bool HTMLPlugInElement::ShouldAccelerate() const {
@@ -584,8 +552,7 @@ bool HTMLPlugInElement::RequestObject(const PluginParameters& plugin_params) {
 bool HTMLPlugInElement::LoadPlugin(const KURL& url,
                                    const String& mime_type,
                                    const PluginParameters& plugin_params,
-                                   bool use_fallback,
-                                   bool require_layout_object) {
+                                   bool use_fallback) {
   if (!AllowedToLoadPlugin(url, mime_type))
     return false;
 
@@ -595,7 +562,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
 
   auto* layout_object = GetLayoutEmbeddedObject();
   // FIXME: This code should not depend on layoutObject!
-  if ((!layout_object && require_layout_object) || use_fallback)
+  if (!layout_object || use_fallback)
     return false;
 
   VLOG(1) << this << " Plugin URL: " << url_;
@@ -607,12 +574,9 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
   } else {
     bool load_manually =
         GetDocument().IsPluginDocument() && !GetDocument().ContainsPlugins();
-    LocalFrameClient::DetachedPluginPolicy policy =
-        require_layout_object ? LocalFrameClient::kFailOnDetachedPlugin
-                              : LocalFrameClient::kAllowDetachedPlugin;
     WebPluginContainerImpl* plugin = frame->Client()->CreatePlugin(
         *this, url, plugin_params.Names(), plugin_params.Values(), mime_type,
-        load_manually, policy);
+        load_manually);
     if (!plugin) {
       if (layout_object && !layout_object->ShowsUnavailablePluginIndicator()) {
         plugin_is_available_ = false;

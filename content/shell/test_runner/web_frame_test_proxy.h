@@ -78,12 +78,6 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
                                  stack_trace);
   }
 
-  bool CanCreatePluginWithoutRenderer(
-      const blink::WebString& mime_type) override {
-    const char suffix[] = "-can-create-without-renderer";
-    return mime_type.Utf8().find(suffix) != std::string::npos;
-  }
-
   void DownloadURL(const blink::WebURLRequest& request,
                    mojo::ScopedMessagePipeHandle blob_url_token) override {
     test_client()->DownloadURL(request, mojo::ScopedMessagePipeHandle());
