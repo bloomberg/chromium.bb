@@ -12,9 +12,10 @@ namespace scheduler {
 
 WorkerScheduler::WorkerScheduler(
     NonMainThreadScheduler* non_main_thread_scheduler)
-    : thread_scheduler_(non_main_thread_scheduler) {
-  non_main_thread_scheduler->RegisterWorkerScheduler(this);
-  task_queue_ = non_main_thread_scheduler->CreateTaskRunner();
+    : default_task_queue_(non_main_thread_scheduler->CreateTaskRunner()),
+      throttleable_task_queue_(non_main_thread_scheduler->CreateTaskRunner()),
+      thread_scheduler_(non_main_thread_scheduler) {
+  thread_scheduler_->RegisterWorkerScheduler(this);
 }
 
 WorkerScheduler::~WorkerScheduler() {
@@ -30,7 +31,8 @@ WorkerScheduler::OnActiveConnectionCreated() {
 
 void WorkerScheduler::Dispose() {
   thread_scheduler_->UnregisterWorkerScheduler(this);
-  task_queue_->ShutdownTaskQueue();
+  default_task_queue_->ShutdownTaskQueue();
+  throttleable_task_queue_->ShutdownTaskQueue();
 #if DCHECK_IS_ON()
   is_disposed_ = true;
 #endif
@@ -39,6 +41,9 @@ void WorkerScheduler::Dispose() {
 scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     TaskType type) const {
   switch (type) {
+    case TaskType::kJavascriptTimer:
+    case TaskType::kPostedMessage:
+      return TaskQueueWithTaskType::Create(throttleable_task_queue_, type);
     case TaskType::kDeprecatedNone:
     case TaskType::kDOMManipulation:
     case TaskType::kUserInteraction:
@@ -49,10 +54,8 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kMediaElementEvent:
     case TaskType::kCanvasBlobSerialization:
     case TaskType::kMicrotask:
-    case TaskType::kJavascriptTimer:
     case TaskType::kRemoteEvent:
     case TaskType::kWebSocket:
-    case TaskType::kPostedMessage:
     case TaskType::kUnshippedPortMessage:
     case TaskType::kFileReading:
     case TaskType::kDatabaseAccess:
@@ -74,11 +77,7 @@ scoped_refptr<base::SingleThreadTaskRunner> WorkerScheduler::GetTaskRunner(
     case TaskType::kInternalUserInteraction:
     case TaskType::kInternalInspector:
     case TaskType::kInternalWorker:
-      // UnthrottledTaskRunner is generally discouraged in future.
-      // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
-      // move them into other task runners. See also comments in
-      // Get(LocalFrame). (https://crbug.com/670534)
-      return TaskQueueWithTaskType::Create(task_queue_, type);
+      return TaskQueueWithTaskType::Create(default_task_queue_, type);
     case TaskType::kMainThreadTaskQueueV8:
     case TaskType::kMainThreadTaskQueueCompositor:
     case TaskType::kMainThreadTaskQueueDefault:
