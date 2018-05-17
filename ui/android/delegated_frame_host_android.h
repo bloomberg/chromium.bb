@@ -101,6 +101,12 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   // Returns the local surface ID for this delegated content.
   const viz::LocalSurfaceId& GetLocalSurfaceId() const;
 
+  // TODO(fsamuel): We should move the viz::ParentLocalSurfaceIdAllocator to
+  // RenderWidgetHostViewAndroid.
+  viz::ParentLocalSurfaceIdAllocator* GetLocalSurfaceIdAllocator() {
+    return &local_surface_id_allocator_;
+  }
+
   void TakeFallbackContentFrom(DelegatedFrameHostAndroid* other);
 
   void DidNavigate();
