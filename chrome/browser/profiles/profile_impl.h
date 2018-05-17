@@ -189,6 +189,7 @@ class ProfileImpl : public Profile {
   void UpdateAvatarInStorage();
   void UpdateIsEphemeralInStorage();
   void UpdateCTPolicy();
+  void UpdateBlockThirdPartyCookies();
 
   void ScheduleUpdateCTPolicy();
 

@@ -393,6 +393,9 @@ interface NetworkContext {
   // configuration summary written out at the end of the log.
   CreateNetLogExporter(NetLogExporter& exporter);
 
+  // Enables/Disables blocking of third-party cookies.
+  BlockThirdPartyCookies(bool block);
+
   [Sync]
   // Adds explicitly-specified data as if it was processed from an
   // HSTS header.

@@ -60,7 +60,7 @@
 -ProcessManagerBrowserTest.CrossExtensionEmbeddingOfWebAccessibleResources
 
 # Need support for blocking cookies via content settings:
-# https://crbug.com/803452.
+# https://crbug.com/789632.
 -ClientHintsBrowserTest.ClientHintsLifetimeNotAttachedCookiesBlocked
 -ClientHintsBrowserTest.ClientHintsNoLifetimeCookiesNotAllowed
 -ContentSettingsTest.AllowCookiesForASessionUsingExceptions

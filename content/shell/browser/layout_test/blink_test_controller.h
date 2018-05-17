@@ -239,6 +239,7 @@ class BlinkTestController : public WebContentsObserver,
   void OnGetBluetoothManualChooserEvents();
   void OnSendBluetoothManualChooserEvent(const std::string& event,
                                          const std::string& argument);
+  void OnBlockThirdPartyCookies(bool block);
   mojom::LayoutTestControl* GetLayoutTestControlPtr(RenderFrameHost* frame);
   void HandleLayoutTestControlError(RenderFrameHost* frame);
 

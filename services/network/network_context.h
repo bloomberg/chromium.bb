@@ -100,6 +100,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
+  bool block_third_party_cookies() { return block_third_party_cookies_; }
+
   // Creates a URLLoaderFactory with a ResourceSchedulerClient specified. This
   // is used to reuse the existing ResourceSchedulerClient for cloned
   // URLLoaderFactory.
@@ -165,6 +167,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                        int32_t render_frame_id,
                        const url::Origin& origin) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
+  void BlockThirdPartyCookies(bool block) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -255,6 +258,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // TODO(yhirano): Consult with switches::kDisableResourceScheduler.
   constexpr static bool enable_resource_scheduler_ = true;
+
+  bool block_third_party_cookies_ = false;
 
   std::unique_ptr<certificate_transparency::ChromeRequireCTDelegate>
       require_ct_delegate_;
