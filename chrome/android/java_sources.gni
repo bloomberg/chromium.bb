@@ -1586,6 +1586,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/browseractions/BrowserActionActivityTest.java",
   "javatests/src/org/chromium/chrome/browser/browserservices/OriginVerifierTest.java",
   "javatests/src/org/chromium/chrome/browser/browserservices/OriginTest.java",
+  "javatests/src/org/chromium/chrome/browser/browserservices/TrustedWebActivityClientTest.java",
   "javatests/src/org/chromium/chrome/browser/browsing_data/BrowsingDataRemoverIntegrationTest.java",
   "javatests/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelBaseTest.java",
   "javatests/src/org/chromium/chrome/browser/compositor/bottombar/OverlayPanelEventFilterTest.java",
