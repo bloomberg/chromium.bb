@@ -225,7 +225,7 @@ def main():
     # First gather all the information without modifying anything, except for a
     # git fetch.
     deps_path, deps_content = get_deps(current_dir)
-    gclient_dict = gclient_eval.Parse(deps_content, True, True, deps_path)
+    gclient_dict = gclient_eval.Exec(deps_content, True, True, deps_path)
     is_relative = gclient_dict.get('use_relative_paths', False)
     root_dir = current_dir if is_relative else gclient_root
     rolls = {}

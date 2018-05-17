@@ -5,4 +5,5 @@ Once upon a time, a budding web browser dev team needed a CI system.
 All they had was one poor machine under a desk, and its name was Batty,
 the Build and Test Yeti.
 
-As the CI needs of the browser grew, Batty, the Build and Test Yeti,
+As the CI needs of the browser grew, Batty, the Build and Test Yeti, got
+a new friend:
