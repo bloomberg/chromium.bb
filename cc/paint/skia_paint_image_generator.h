@@ -18,7 +18,7 @@ class CC_PAINT_EXPORT SkiaPaintImageGenerator final : public SkImageGenerator {
                           size_t frame_index);
   ~SkiaPaintImageGenerator() override;
 
-  SkData* onRefEncodedData() override;
+  sk_sp<SkData> onRefEncodedData() override;
   bool onGetPixels(const SkImageInfo&,
                    void* pixels,
                    size_t row_bytes,
