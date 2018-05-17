@@ -1637,13 +1637,14 @@ bool Textfield::ChangeTextDirectionAndLayoutAlignment(
   // Restore text directionality mode when the indicated direction matches the
   // current forced mode; otherwise, force the mode indicated. This helps users
   // manage BiDi text layout without getting stuck in forced LTR or RTL modes.
-  const gfx::DirectionalityMode mode = direction == base::i18n::RIGHT_TO_LEFT
-                                           ? gfx::DIRECTIONALITY_FORCE_RTL
-                                           : gfx::DIRECTIONALITY_FORCE_LTR;
-  if (mode == GetRenderText()->directionality_mode())
-    GetRenderText()->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_TEXT);
-  else
-    GetRenderText()->SetDirectionalityMode(mode);
+  const bool default_rtl = direction == base::i18n::RIGHT_TO_LEFT;
+  const auto new_mode = default_rtl ? gfx::DIRECTIONALITY_FORCE_RTL
+                                    : gfx::DIRECTIONALITY_FORCE_LTR;
+  auto* render_text = GetRenderText();
+  const bool modes_match = new_mode == render_text->directionality_mode();
+  render_text->SetDirectionalityMode(modes_match ? gfx::DIRECTIONALITY_FROM_TEXT
+                                                 : new_mode);
+  SetHorizontalAlignment(default_rtl ? gfx::ALIGN_RIGHT : gfx::ALIGN_LEFT);
   SchedulePaint();
   return true;
 }
