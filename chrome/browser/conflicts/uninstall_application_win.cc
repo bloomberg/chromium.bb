@@ -197,6 +197,11 @@ void UninstallAppController::AutomationControllerDelegate::OnAutomationEvent(
 void UninstallAppController::AutomationControllerDelegate::OnFocusChangedEvent(
     IUIAutomation* automation,
     IUIAutomationElement* sender) const {
+  base::string16 combo_box_id(
+      GetCachedBstrValue(sender, UIA_AutomationIdPropertyId));
+  if (combo_box_id != L"SystemSettings_AppsFeatures_AppControl_ComboBox")
+    return;
+
   base::OnceClosure callback;
   {
     base::AutoLock auto_lock(on_automation_finished_lock_);
@@ -206,11 +211,6 @@ void UninstallAppController::AutomationControllerDelegate::OnFocusChangedEvent(
   // This callback can be null if the application name was already written in
   // the search box and this instance is awaiting destruction.
   if (!callback)
-    return;
-
-  base::string16 combo_box_id(
-      GetCachedBstrValue(sender, UIA_AutomationIdPropertyId));
-  if (combo_box_id != L"SystemSettings_AppsFeatures_AppControl_ComboBox")
     return;
 
   Microsoft::WRL::ComPtr<IUIAutomationElement> search_box;
