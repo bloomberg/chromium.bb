@@ -49,7 +49,9 @@ bool WaylandConnection::Initialize() {
   }
 
   wl_registry_add_listener(registry_.get(), &registry_listener, this);
-  wl_display_roundtrip(display_.get());
+
+  while (!PrimaryOutput() || !PrimaryOutput()->is_ready())
+    wl_display_roundtrip(display_.get());
 
   if (!compositor_) {
     LOG(ERROR) << "No wl_compositor object";
@@ -299,8 +301,8 @@ void WaylandConnection::Global(void* data,
     if (!connection->output_list_.empty())
       NOTIMPLEMENTED() << "Multiple screens support is not implemented";
 
-    connection->output_list_.push_back(
-        base::WrapUnique(new WaylandOutput(output.release())));
+    connection->output_list_.push_back(base::WrapUnique(new WaylandOutput(
+        connection->get_next_display_id(), output.release())));
   } else if (!connection->data_device_manager_ &&
              strcmp(interface, "wl_data_device_manager") == 0) {
     wl::Object<wl_data_device_manager> data_device_manager =
