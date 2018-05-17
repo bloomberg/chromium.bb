@@ -79,10 +79,12 @@ constexpr char kPolicyWallpaperFile[] = "policy-controlled.jpeg";
 constexpr char kSmallWallpaperSuffix[] = "_small";
 
 // How long to wait reloading the wallpaper after the display size has changed.
-constexpr int kWallpaperReloadDelayMs = 100;
+constexpr base::TimeDelta kWallpaperReloadDelay =
+    base::TimeDelta::FromMilliseconds(100);
 
 // How long to wait for resizing of the the wallpaper.
-constexpr int kCompositorLockTimeoutMs = 750;
+constexpr base::TimeDelta kCompositorLockTimeout =
+    base::TimeDelta::FromMilliseconds(750);
 
 // Default quality for encoding wallpaper.
 constexpr int kDefaultEncodingQuality = 90;
@@ -124,24 +126,17 @@ std::vector<ColorProfile> GetProminentColorProfiles() {
 // Gets the corresponding color profile type based on the given
 // |color_profile|.
 ColorProfileType GetColorProfileType(ColorProfile color_profile) {
-  if (color_profile.saturation == SaturationRange::VIBRANT) {
-    switch (color_profile.luma) {
-      case LumaRange::DARK:
-        return ColorProfileType::DARK_VIBRANT;
-      case LumaRange::NORMAL:
-        return ColorProfileType::NORMAL_VIBRANT;
-      case LumaRange::LIGHT:
-        return ColorProfileType::LIGHT_VIBRANT;
-    }
-  } else {
-    switch (color_profile.luma) {
-      case LumaRange::DARK:
-        return ColorProfileType::DARK_MUTED;
-      case LumaRange::NORMAL:
-        return ColorProfileType::NORMAL_MUTED;
-      case LumaRange::LIGHT:
-        return ColorProfileType::LIGHT_MUTED;
-    }
+  bool vibrant = color_profile.saturation == SaturationRange::VIBRANT;
+  switch (color_profile.luma) {
+    case LumaRange::DARK:
+      return vibrant ? ColorProfileType::DARK_VIBRANT
+                     : ColorProfileType::DARK_MUTED;
+    case LumaRange::NORMAL:
+      return vibrant ? ColorProfileType::NORMAL_VIBRANT
+                     : ColorProfileType::NORMAL_MUTED;
+    case LumaRange::LIGHT:
+      return vibrant ? ColorProfileType::LIGHT_VIBRANT
+                     : ColorProfileType::LIGHT_MUTED;
   }
   NOTREACHED();
   return ColorProfileType::DARK_MUTED;
@@ -163,7 +158,7 @@ void OnWallpaperDataRead(LoadedCallback callback,
 }
 
 // Deletes a list of wallpaper files in |file_list|.
-void DeleteWallpaperInList(const std::vector<base::FilePath>& file_list) {
+void DeleteWallpaperInList(std::vector<base::FilePath> file_list) {
   for (const base::FilePath& path : file_list) {
     if (!base::DeleteFile(path, true))
       LOG(ERROR) << "Failed to remove user wallpaper at " << path.value();
@@ -249,7 +244,7 @@ bool ResizeImage(const gfx::ImageSkia& image,
   int height = image.height();
   int resized_width;
   int resized_height;
-  *output = new base::RefCountedBytes();
+  *output = base::MakeRefCounted<base::RefCountedBytes>();
 
   if (layout == WALLPAPER_LAYOUT_CENTER_CROPPED) {
     // Do not resize wallpaper if it is smaller than preferred size.
@@ -296,18 +291,15 @@ bool IsInKioskMode() {
   base::Optional<user_manager::UserType> active_user_type =
       Shell::Get()->session_controller()->GetUserType();
   // |active_user_type| is empty when there's no active user.
-  if (active_user_type &&
-      *active_user_type == user_manager::USER_TYPE_KIOSK_APP) {
-    return true;
-  }
-  return false;
+  return active_user_type &&
+         *active_user_type == user_manager::USER_TYPE_KIOSK_APP;
 }
 
 // Checks if |account_id| is the current active user.
 bool IsActiveUser(const AccountId& account_id) {
   // The current active user has index 0.
   const mojom::UserSession* const active_user_session =
-      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+      Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   return active_user_session &&
          active_user_session->user_info->account_id == account_id;
 }
@@ -361,7 +353,7 @@ std::vector<std::string> GetOfflineWallpaperListImpl() {
   std::vector<std::string> file_names;
   if (base::DirectoryExists(dir_chrome_os_wallpapers_path)) {
     base::FileEnumerator files(dir_chrome_os_wallpapers_path,
-                               false /*recursive=*/,
+                               /*recursive=*/false,
                                base::FileEnumerator::FILES);
     for (base::FilePath current = files.Next(); !current.empty();
          current = files.Next()) {
@@ -388,12 +380,13 @@ WallpaperController::WallpaperController()
     : locked_(false),
       wallpaper_mode_(WALLPAPER_NONE),
       color_profiles_(GetProminentColorProfiles()),
-      wallpaper_reload_delay_(kWallpaperReloadDelayMs),
+      wallpaper_reload_delay_(kWallpaperReloadDelay),
       sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       scoped_session_observer_(this),
       weak_factory_(this) {
+  DCHECK(!color_profiles_.empty());
   prominent_colors_ =
       std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor);
   Shell::Get()->window_tree_host_manager()->AddObserver(this);
@@ -507,14 +500,15 @@ bool WallpaperController::ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
     return false;
   }
   scoped_refptr<base::RefCountedBytes> data;
-  if (ResizeImage(image, layout, preferred_width, preferred_height, &data,
-                  output_skia)) {
-    // Saves |data| to |path| in local file system.
-    size_t written_bytes =
-        base::WriteFile(path, data->front_as<const char>(), data->size());
-    return written_bytes == data->size();
+  if (!ResizeImage(image, layout, preferred_width, preferred_height, &data,
+                   output_skia)) {
+    return false;
   }
-  return false;
+
+  // Saves |data| to |path| in local file system.
+  size_t written_bytes =
+      base::WriteFile(path, data->front_as<const char>(), data->size());
+  return written_bytes == data->size();
 }
 
 // static
@@ -578,27 +572,21 @@ SkColor WallpaperController::GetProminentColor(
 }
 
 gfx::ImageSkia WallpaperController::GetWallpaper() const {
-  if (current_wallpaper_)
-    return current_wallpaper_->image();
-  return gfx::ImageSkia();
+  return current_wallpaper_ ? current_wallpaper_->image() : gfx::ImageSkia();
 }
 
 uint32_t WallpaperController::GetWallpaperOriginalImageId() const {
-  if (current_wallpaper_)
-    return current_wallpaper_->original_image_id();
-  return 0;
+  return current_wallpaper_ ? current_wallpaper_->original_image_id() : 0;
 }
 
 WallpaperLayout WallpaperController::GetWallpaperLayout() const {
-  if (current_wallpaper_)
-    return current_wallpaper_->wallpaper_info().layout;
-  return NUM_WALLPAPER_LAYOUT;
+  return current_wallpaper_ ? current_wallpaper_->wallpaper_info().layout
+                            : NUM_WALLPAPER_LAYOUT;
 }
 
 WallpaperType WallpaperController::GetWallpaperType() const {
-  if (current_wallpaper_)
-    return current_wallpaper_->wallpaper_info().type;
-  return WALLPAPER_TYPE_COUNT;
+  return current_wallpaper_ ? current_wallpaper_->wallpaper_info().type
+                            : WALLPAPER_TYPE_COUNT;
 }
 
 bool WallpaperController::ShouldShowInitialAnimation() {
@@ -717,7 +705,7 @@ void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
   VLOG(1) << "SetWallpaper: image_id=" << WallpaperResizer::GetImageId(image)
           << " layout=" << info.layout;
 
-  if (WallpaperIsAlreadyLoaded(image, true /*compare_layouts=*/, info.layout)) {
+  if (WallpaperIsAlreadyLoaded(image, /*compare_layouts=*/true, info.layout)) {
     VLOG(1) << "Wallpaper is already loaded";
     return;
   }
@@ -732,8 +720,8 @@ void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
   }
 
   is_first_wallpaper_ = !current_wallpaper_;
-  current_wallpaper_.reset(new WallpaperResizer(
-      image, GetMaxDisplaySizeInNative(), info, sequenced_task_runner_));
+  current_wallpaper_ = std::make_unique<WallpaperResizer>(
+      image, GetMaxDisplaySizeInNative(), info, sequenced_task_runner_);
   current_wallpaper_->AddObserver(this);
   current_wallpaper_->StartResize();
 
@@ -749,9 +737,8 @@ void WallpaperController::ShowWallpaperImage(const gfx::ImageSkia& image,
 bool WallpaperController::IsPolicyControlled(const AccountId& account_id,
                                              bool is_ephemeral) const {
   WallpaperInfo info;
-  if (!GetUserWallpaperInfo(account_id, &info, is_ephemeral))
-    return false;
-  return info.type == POLICY;
+  return GetUserWallpaperInfo(account_id, &info, is_ephemeral) &&
+         info.type == POLICY;
 }
 
 bool WallpaperController::CanSetUserWallpaper(const AccountId& account_id,
@@ -760,41 +747,41 @@ bool WallpaperController::CanSetUserWallpaper(const AccountId& account_id,
   if (IsInKioskMode())
     return false;
   // Don't allow user wallpapers while policy is in effect.
-  if (IsPolicyControlled(account_id, is_ephemeral)) {
+  if (IsPolicyControlled(account_id, is_ephemeral))
     return false;
-  }
   return true;
 }
 
 void WallpaperController::PrepareWallpaperForLockScreenChange(bool locking) {
   bool needs_blur = locking && IsBlurEnabled();
-  if (needs_blur != is_wallpaper_blurred_) {
-    for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-      root_window_controller->wallpaper_widget_controller()->SetWallpaperBlur(
-          needs_blur ? login_constants::kBlurSigma
-                     : login_constants::kClearBlurSigma);
-    }
-    is_wallpaper_blurred_ = needs_blur;
-    for (auto& observer : observers_)
-      observer.OnWallpaperBlurChanged();
-    mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
-      observer->OnWallpaperBlurChanged(is_wallpaper_blurred_);
-    });
+  if (needs_blur == is_wallpaper_blurred_)
+    return;
+
+  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
+    root_window_controller->wallpaper_widget_controller()->SetWallpaperBlur(
+        needs_blur ? login_constants::kBlurSigma
+                   : login_constants::kClearBlurSigma);
   }
+  is_wallpaper_blurred_ = needs_blur;
+  for (auto& observer : observers_)
+    observer.OnWallpaperBlurChanged();
+  mojo_observers_.ForAllPtrs([this](mojom::WallpaperObserver* observer) {
+    observer->OnWallpaperBlurChanged(is_wallpaper_blurred_);
+  });
 }
 
 void WallpaperController::OnDisplayConfigurationChanged() {
   gfx::Size max_display_size = GetMaxDisplaySizeInNative();
-  if (current_max_display_size_ != max_display_size) {
-    current_max_display_size_ = max_display_size;
-    if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_) {
-      timer_.Stop();
-      GetInternalDisplayCompositorLock();
-      timer_.Start(FROM_HERE,
-                   base::TimeDelta::FromMilliseconds(wallpaper_reload_delay_),
-                   base::Bind(&WallpaperController::ReloadWallpaper,
-                              base::Unretained(this), false /*clear_cache=*/));
-    }
+  if (current_max_display_size_ == max_display_size)
+    return;
+
+  current_max_display_size_ = max_display_size;
+  if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_) {
+    timer_.Stop();
+    GetInternalDisplayCompositorLock();
+    timer_.Start(FROM_HERE, wallpaper_reload_delay_,
+                 base::Bind(&WallpaperController::ReloadWallpaper,
+                            weak_factory_.GetWeakPtr(), /*clear_cache=*/false));
   }
 }
 
@@ -808,7 +795,7 @@ void WallpaperController::OnRootWindowAdded(aura::Window* root_window) {
   if (current_max_display_size_ != max_display_size) {
     current_max_display_size_ = max_display_size;
     if (wallpaper_mode_ == WALLPAPER_IMAGE && current_wallpaper_)
-      ReloadWallpaper(true /*clear_cache=*/);
+      ReloadWallpaper(/*clear_cache=*/true);
   }
 
   InstallDesktopController(root_window);
@@ -829,7 +816,7 @@ void WallpaperController::OnSessionStateChanged(
     session_manager::SessionState state) {
   // Replace the device policy wallpaper with a user wallpaper if necessary.
   if (IsDevicePolicyWallpaper() && !ShouldSetDevicePolicyWallpaper())
-    ReloadWallpaper(false /*clear_cache=*/);
+    ReloadWallpaper(/*clear_cache=*/false);
 
   CalculateWallpaperColors();
 
@@ -999,7 +986,7 @@ bool WallpaperController::GetPathFromCache(const AccountId& account_id,
                                            base::FilePath* path) {
   CustomWallpaperMap::const_iterator it = wallpaper_cache_map_.find(account_id);
   if (it != wallpaper_cache_map_.end()) {
-    *path = (*it).second.first;
+    *path = it->second.first;
     return true;
   }
   return false;
@@ -1053,18 +1040,18 @@ void WallpaperController::SetCustomWallpaper(
     confirm_preview_wallpaper_callback_ = base::BindOnce(
         &WallpaperController::SaveAndSetWallpaper, weak_factory_.GetWeakPtr(),
         std::move(user_info), wallpaper_files_id, file_name, CUSTOMIZED, layout,
-        false /*show_wallpaper=*/, image);
+        /*show_wallpaper=*/false, image);
     reload_preview_wallpaper_callback_ =
         base::BindRepeating(&WallpaperController::ShowWallpaperImage,
                             weak_factory_.GetWeakPtr(), image,
                             WallpaperInfo{std::string(), layout, CUSTOMIZED,
                                           base::Time::Now().LocalMidnight()},
-                            true /*preview_mode=*/);
+                            /*preview_mode=*/true);
     // Show the preview wallpaper.
     reload_preview_wallpaper_callback_.Run();
   } else {
     SaveAndSetWallpaper(std::move(user_info), wallpaper_files_id, file_name,
-                        CUSTOMIZED, layout, is_active_user /*show_wallpaper=*/,
+                        CUSTOMIZED, layout, /*show_wallpaper=*/is_active_user,
                         image);
   }
 }
@@ -1103,7 +1090,7 @@ void WallpaperController::SetOnlineWallpaperFromData(
                                         preview_mode};
   LoadedCallback callback =
       base::Bind(&WallpaperController::OnOnlineWallpaperDecoded,
-                 weak_factory_.GetWeakPtr(), params, true /*save_file=*/);
+                 weak_factory_.GetWeakPtr(), params, /*save_file=*/true);
   if (bypass_decode_for_testing_)
     std::move(callback).Run(CreateSolidColorWallpaper());
   else
@@ -1127,7 +1114,7 @@ void WallpaperController::SetDefaultWallpaper(
                   "happen except in tests.";
   }
   if (show_wallpaper)
-    SetDefaultWallpaperImpl(account_id, type, true /*show_wallpaper=*/);
+    SetDefaultWallpaperImpl(account_id, type, /*show_wallpaper=*/true);
 }
 
 void WallpaperController::SetCustomizedDefaultWallpaperPaths(
@@ -1215,7 +1202,7 @@ void WallpaperController::ConfirmPreviewWallpaper() {
 void WallpaperController::CancelPreviewWallpaper() {
   confirm_preview_wallpaper_callback_.Reset();
   reload_preview_wallpaper_callback_.Reset();
-  ReloadWallpaper(false /*clear_cache=*/);
+  ReloadWallpaper(/*clear_cache=*/false);
   for (auto& observer : observers_)
     observer.OnWallpaperPreviewEnded();
 }
@@ -1227,7 +1214,7 @@ void WallpaperController::UpdateCustomWallpaperLayout(
   // have a custom wallpaper.
   // The currently active user has index 0.
   const mojom::UserSession* const active_user_session =
-      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+      Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session ||
       active_user_session->user_info->account_id != user_info->account_id) {
     return;
@@ -1273,7 +1260,7 @@ void WallpaperController::ShowUserWallpaper(
     if (!InitializeUserWallpaperInfo(account_id, is_ephemeral))
       return;
     SetDefaultWallpaperImpl(account_id, current_user_->type,
-                            true /*show_wallpaper=*/);
+                            /*show_wallpaper=*/true);
     VLOG(1) << "User is ephemeral. Fallback to default wallpaper.";
     return;
   }
@@ -1287,21 +1274,21 @@ void WallpaperController::ShowUserWallpaper(
 
   gfx::ImageSkia user_wallpaper;
   if (GetWallpaperFromCache(account_id, &user_wallpaper)) {
-    ShowWallpaperImage(user_wallpaper, info, false /*preview_mode=*/);
+    ShowWallpaperImage(user_wallpaper, info, /*preview_mode=*/false);
     return;
   }
 
   if (info.location.empty()) {
     // Uses default wallpaper when file is empty.
     SetDefaultWallpaperImpl(account_id, current_user_->type,
-                            true /*show_wallpaper=*/);
+                            /*show_wallpaper=*/true);
     return;
   }
 
   if (info.type != CUSTOMIZED && info.type != POLICY && info.type != DEVICE) {
     // Load wallpaper according to WallpaperInfo.
     SetWallpaperFromInfo(account_id, current_user_->type, info,
-                         true /*show_wallpaper=*/);
+                         /*show_wallpaper=*/true);
     return;
   }
 
@@ -1315,8 +1302,7 @@ void WallpaperController::ShowUserWallpaper(
     // Original wallpaper should be used in this case.
     if (info.layout == WALLPAPER_LAYOUT_CENTER)
       sub_dir = kOriginalWallpaperSubDir;
-    wallpaper_path = GetCustomWallpaperDir(sub_dir);
-    wallpaper_path = wallpaper_path.Append(info.location);
+    wallpaper_path = GetCustomWallpaperDir(sub_dir).Append(info.location);
   }
 
   CustomWallpaperMap::iterator it = wallpaper_cache_map_.find(account_id);
@@ -1333,7 +1319,7 @@ void WallpaperController::ShowUserWallpaper(
   sequenced_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&WallpaperController::SetWallpaperFromPath,
                                 account_id, current_user_->type, info,
-                                wallpaper_path, true /*show_wallpaper=*/,
+                                wallpaper_path, /*show_wallpaper=*/true,
                                 base::ThreadTaskRunnerHandle::Get(),
                                 weak_factory_.GetWeakPtr()));
 }
@@ -1344,7 +1330,7 @@ void WallpaperController::ShowSigninWallpaper() {
     SetDevicePolicyWallpaper();
   } else {
     SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
-                            true /*show_wallpaper=*/);
+                            /*show_wallpaper=*/true);
   }
 }
 
@@ -1397,8 +1383,8 @@ void WallpaperController::MinimizeInactiveWindows(
 void WallpaperController::RestoreMinimizedWindows(
     const std::string& user_id_hash) {
   if (!window_state_manager_) {
-    DCHECK(false) << "This should only be called after calling "
-                  << "MinimizeInactiveWindows.";
+    NOTREACHED() << "This should only be called after calling "
+                 << "MinimizeInactiveWindows.";
     return;
   }
   window_state_manager_->RestoreMinimizedWindows(user_id_hash);
@@ -1471,12 +1457,11 @@ void WallpaperController::InitializePathsForTesting(
 
 void WallpaperController::ShowDefaultWallpaperForTesting() {
   SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
-                          true /*show_wallpaper=*/);
+                          /*show_wallpaper=*/true);
 }
 
 void WallpaperController::CreateEmptyWallpaperForTesting() {
-  SetProminentColors(
-      std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor));
+  ResetProminentColors();
   current_wallpaper_.reset();
   wallpaper_mode_ = WALLPAPER_IMAGE;
   InstallDesktopControllerForAllWindows();
@@ -1496,10 +1481,9 @@ void WallpaperController::FlushForTesting() {
 void WallpaperController::InstallDesktopController(aura::Window* root_window) {
   DCHECK_EQ(WALLPAPER_IMAGE, wallpaper_mode_);
 
-  bool is_wallpaper_blurred = false;
   auto* session_controller = Shell::Get()->session_controller();
-  if (session_controller->IsUserSessionBlocked() && IsBlurEnabled())
-    is_wallpaper_blurred = true;
+  bool is_wallpaper_blurred =
+      session_controller->IsUserSessionBlocked() && IsBlurEnabled();
 
   if (is_wallpaper_blurred_ != is_wallpaper_blurred) {
     is_wallpaper_blurred_ = is_wallpaper_blurred;
@@ -1566,24 +1550,25 @@ void WallpaperController::RemoveUserWallpaperImpl(
   if (wallpaper_files_id.empty())
     return;
 
-  std::vector<base::FilePath> file_to_remove;
+  std::vector<base::FilePath> files_to_remove;
 
   // Remove small user wallpapers.
   base::FilePath wallpaper_path = GetCustomWallpaperDir(kSmallWallpaperSubDir);
-  file_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id));
+  files_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id));
 
   // Remove large user wallpapers.
   wallpaper_path = GetCustomWallpaperDir(kLargeWallpaperSubDir);
-  file_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id));
+  files_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id));
 
   // Remove original user wallpapers.
   wallpaper_path = GetCustomWallpaperDir(kOriginalWallpaperSubDir);
-  file_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id));
+  files_to_remove.push_back(wallpaper_path.Append(wallpaper_files_id));
 
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
-                            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-                           base::Bind(&DeleteWallpaperInList, file_to_remove));
+  base::PostTaskWithTraits(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&DeleteWallpaperInList, std::move(files_to_remove)));
 }
 
 void WallpaperController::SetOnlineWallpaperFromPath(
@@ -1595,7 +1580,7 @@ void WallpaperController::SetOnlineWallpaperFromPath(
   if (file_exists) {
     ReadAndDecodeWallpaper(
         base::Bind(&WallpaperController::OnOnlineWallpaperDecoded,
-                   weak_factory_.GetWeakPtr(), params, false /*save_file=*/),
+                   weak_factory_.GetWeakPtr(), params, /*save_file=*/false),
         sequenced_task_runner_, file_path);
   }
 }
@@ -1623,17 +1608,17 @@ void WallpaperController::OnOnlineWallpaperDecoded(
     DCHECK(is_active_user);
     confirm_preview_wallpaper_callback_ = base::BindOnce(
         &WallpaperController::SetOnlineWallpaperImpl,
-        weak_factory_.GetWeakPtr(), params, image, false /*show_wallpaper=*/);
+        weak_factory_.GetWeakPtr(), params, image, /*show_wallpaper=*/false);
     reload_preview_wallpaper_callback_ = base::BindRepeating(
         &WallpaperController::ShowWallpaperImage, weak_factory_.GetWeakPtr(),
         image,
         WallpaperInfo{params.url.spec(), params.layout, ONLINE,
                       base::Time::Now().LocalMidnight()},
-        true /*preview_mode=*/);
+        /*preview_mode=*/true);
     // Show the preview wallpaper.
     reload_preview_wallpaper_callback_.Run();
   } else {
-    SetOnlineWallpaperImpl(params, image, is_active_user /*show_wallpaper=*/);
+    SetOnlineWallpaperImpl(params, image, /*show_wallpaper=*/is_active_user);
   }
 }
 
@@ -1649,7 +1634,7 @@ void WallpaperController::SetOnlineWallpaperImpl(
                   "except in tests.";
   }
   if (show_wallpaper)
-    ShowWallpaperImage(image, wallpaper_info, false /*preview_mode=*/);
+    ShowWallpaperImage(image, wallpaper_info, /*preview_mode=*/false);
 
   wallpaper_cache_map_[params.account_id] =
       CustomWallpaperElement(base::FilePath(), image);
@@ -1732,7 +1717,7 @@ void WallpaperController::OnDefaultWallpaperDecoded(
     WallpaperInfo info(cached_default_wallpaper_.file_path.value(), layout,
                        DEFAULT, base::Time::Now().LocalMidnight());
     ShowWallpaperImage(cached_default_wallpaper_.image, info,
-                       false /*preview_mode=*/);
+                       /*preview_mode=*/false);
   }
 }
 
@@ -1789,7 +1774,7 @@ void WallpaperController::SaveAndSetWallpaper(
   }
 
   if (show_wallpaper)
-    ShowWallpaperImage(image, info, false /*preview_mode=*/);
+    ShowWallpaperImage(image, info, /*preview_mode=*/false);
 
   wallpaper_cache_map_[user_info->account_id] =
       CustomWallpaperElement(wallpaper_path, image);
@@ -1825,7 +1810,7 @@ void WallpaperController::OnWallpaperDecoded(
 
   wallpaper_cache_map_[account_id] = CustomWallpaperElement(path, image);
   if (show_wallpaper)
-    ShowWallpaperImage(image, info, false /*preview_mode=*/);
+    ShowWallpaperImage(image, info, /*preview_mode=*/false);
 }
 
 void WallpaperController::ReloadWallpaper(bool clear_cache) {
@@ -1854,6 +1839,12 @@ void WallpaperController::SetProminentColors(
   });
 }
 
+void WallpaperController::ResetProminentColors() {
+  static const std::vector<SkColor> kInvalidColors(color_profiles_.size(),
+                                                   kInvalidWallpaperColor);
+  SetProminentColors(kInvalidColors);
+}
+
 void WallpaperController::CalculateWallpaperColors() {
   if (!current_wallpaper_)
     return;
@@ -1878,8 +1869,7 @@ void WallpaperController::CalculateWallpaperColors() {
   // reasons. Observers outside an active session are notified of the cache, or
   // an invalid color if a previous calculation during active session failed.
   if (!ShouldCalculateColors()) {
-    SetProminentColors(
-        std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor));
+    ResetProminentColors();
     return;
   }
 
@@ -1887,15 +1877,11 @@ void WallpaperController::CalculateWallpaperColors() {
       GetWallpaper(), color_profiles_, sequenced_task_runner_);
   color_calculator_->AddObserver(this);
   if (!color_calculator_->StartCalculation()) {
-    SetProminentColors(
-        std::vector<SkColor>(color_profiles_.size(), kInvalidWallpaperColor));
+    ResetProminentColors();
   }
 }
 
 bool WallpaperController::ShouldCalculateColors() const {
-  if (color_profiles_.empty())
-    return false;
-
   gfx::ImageSkia image = GetWallpaper();
   return IsShelfColoringEnabled() &&
          Shell::Get()->session_controller()->GetSessionState() ==
@@ -1918,7 +1904,7 @@ void WallpaperController::CacheProminentColors(
 }
 
 base::Optional<std::vector<SkColor>> WallpaperController::GetCachedColors(
-    const std::string& current_location) {
+    const std::string& current_location) const {
   base::Optional<std::vector<SkColor>> cached_colors_out;
   const base::ListValue* prominent_colors = nullptr;
   if (!local_state_ ||
@@ -1927,10 +1913,10 @@ base::Optional<std::vector<SkColor>> WallpaperController::GetCachedColors(
     return cached_colors_out;
   }
   cached_colors_out = std::vector<SkColor>();
-  for (base::ListValue::const_iterator iter = prominent_colors->begin();
-       iter != prominent_colors->end(); ++iter) {
+  cached_colors_out.value().reserve(prominent_colors->GetList().size());
+  for (const auto& value : *prominent_colors) {
     cached_colors_out.value().push_back(
-        static_cast<SkColor>(iter->GetDouble()));
+        static_cast<SkColor>(value.GetDouble()));
   }
   return cached_colors_out;
 }
@@ -1952,10 +1938,8 @@ bool WallpaperController::MoveToUnlockedContainer() {
 }
 
 bool WallpaperController::IsDevicePolicyWallpaper() const {
-  if (current_wallpaper_) {
-    return current_wallpaper_->wallpaper_info().type == WallpaperType::DEVICE;
-  }
-  return false;
+  return current_wallpaper_ &&
+         current_wallpaper_->wallpaper_info().type == WallpaperType::DEVICE;
 }
 
 void WallpaperController::SetDevicePolicyWallpaper() {
@@ -1977,19 +1961,19 @@ void WallpaperController::OnDevicePolicyWallpaperDecoded(
     // If device policy wallpaper failed decoding, fall back to the default
     // wallpaper.
     SetDefaultWallpaperImpl(EmptyAccountId(), user_manager::USER_TYPE_REGULAR,
-                            true /*show_wallpaper=*/);
+                            /*show_wallpaper=*/true);
   } else {
     WallpaperInfo info(device_policy_wallpaper_file_path.value(),
                        WALLPAPER_LAYOUT_CENTER_CROPPED, DEVICE,
                        base::Time::Now().LocalMidnight());
-    ShowWallpaperImage(image, info, false /*preview_mode=*/);
+    ShowWallpaperImage(image, info, /*preview_mode=*/false);
   }
 }
 
 bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() const {
   // The currently active user has index 0.
   const mojom::UserSession* const active_user_session =
-      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+      Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session)
     return false;
   return IsPolicyControlled(active_user_session->user_info->account_id,
@@ -1999,7 +1983,7 @@ bool WallpaperController::IsActiveUserWallpaperControlledByPolicyImpl() const {
 std::string WallpaperController::GetActiveUserWallpaperLocationImpl() const {
   // The currently active user has index 0.
   const mojom::UserSession* const active_user_session =
-      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+      Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session)
     return std::string();
 
@@ -2014,7 +1998,7 @@ std::string WallpaperController::GetActiveUserWallpaperLocationImpl() const {
 bool WallpaperController::ShouldShowWallpaperSettingImpl() const {
   // The currently active user has index 0.
   const mojom::UserSession* const active_user_session =
-      Shell::Get()->session_controller()->GetUserSession(0 /*user index=*/);
+      Shell::Get()->session_controller()->GetUserSession(/*user index=*/0);
   if (!active_user_session)
     return false;
 
@@ -2027,16 +2011,16 @@ bool WallpaperController::ShouldShowWallpaperSettingImpl() const {
 }
 
 void WallpaperController::GetInternalDisplayCompositorLock() {
-  if (display::Display::HasInternalDisplay()) {
-    aura::Window* root_window =
-        Shell::GetRootWindowForDisplayId(display::Display::InternalDisplayId());
-    if (root_window) {
-      compositor_lock_ =
-          root_window->layer()->GetCompositor()->GetCompositorLock(
-              this,
-              base::TimeDelta::FromMilliseconds(kCompositorLockTimeoutMs));
-    }
-  }
+  if (!display::Display::HasInternalDisplay())
+    return;
+
+  aura::Window* root_window =
+      Shell::GetRootWindowForDisplayId(display::Display::InternalDisplayId());
+  if (!root_window)
+    return;
+
+  compositor_lock_ = root_window->layer()->GetCompositor()->GetCompositorLock(
+      this, kCompositorLockTimeout);
 }
 
 void WallpaperController::CompositorLockTimedOut() {
