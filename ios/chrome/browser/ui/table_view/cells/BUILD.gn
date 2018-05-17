@@ -30,6 +30,7 @@ source_set("cells") {
 
   deps = [
     "resources:table_view_cell_chevron",
+    "resources:table_view_cell_favicon_background",
     "//base",
     "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/browser/ui/authentication:authentication_ui",
@@ -39,6 +40,7 @@ source_set("cells") {
     "//ios/chrome/browser/ui/util:constraints_ui",
     "//ios/chrome/browser/ui/util:constraints_ui",
     "//ios/third_party/material_components_ios:material_components_ios",
+    "//url:url",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
@@ -59,6 +61,7 @@ source_set("unit_tests") {
     ":cells",
     "//base",
     "//ios/chrome/browser/ui/table_view:styler",
+    "//net:net",
     "//testing/gtest",
     "//third_party/ocmock:ocmock",
   ]

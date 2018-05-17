@@ -6,9 +6,11 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "net/base/mac/url_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+#include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -21,12 +23,13 @@ using TableViewURLItemTest = PlatformTest;
 // Tests that the UILabels are set properly after a call to |configureCell:|.
 TEST_F(TableViewURLItemTest, TextLabels) {
   NSString* titleText = @"Title text";
-  NSString* URLText = @"URL text";
+  NSString* host = @"www.google.com";
+  NSString* URLText = [NSString stringWithFormat:@"https://%@", host];
   NSString* metadataText = @"Metadata text";
 
   TableViewURLItem* item = [[TableViewURLItem alloc] initWithType:0];
   item.title = titleText;
-  item.URL = URLText;
+  item.URL = net::GURLWithNSURL([NSURL URLWithString:URLText]);
   item.metadata = metadataText;
 
   id cell = [[[item cellClass] alloc] init];
@@ -40,7 +43,7 @@ TEST_F(TableViewURLItemTest, TextLabels) {
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
   [item configureCell:URLCell withStyler:styler];
   EXPECT_NSEQ(titleText, URLCell.titleLabel.text);
-  EXPECT_NSEQ(URLText, URLCell.URLLabel.text);
+  EXPECT_NSEQ(host, URLCell.URLLabel.text);
   EXPECT_NSEQ(metadataText, URLCell.metadataLabel.text);
 }
 
