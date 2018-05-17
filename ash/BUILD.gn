@@ -108,6 +108,8 @@ component("ash") {
     "assistant/ui/assistant_bubble.h",
     "assistant/ui/assistant_bubble_view.cc",
     "assistant/ui/assistant_bubble_view.h",
+    "assistant/ui/caption_bar.cc",
+    "assistant/ui/caption_bar.h",
     "assistant/ui/dialog_plate/action_view.cc",
     "assistant/ui/dialog_plate/action_view.h",
     "assistant/ui/dialog_plate/dialog_plate.cc",

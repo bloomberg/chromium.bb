@@ -53,7 +53,11 @@ DialogPlate::~DialogPlate() {
 }
 
 gfx::Size DialogPlate::CalculatePreferredSize() const {
-  return gfx::Size(INT_MAX, kPreferredHeightDip);
+  return gfx::Size(INT_MAX, GetHeightForWidth(INT_MAX));
+}
+
+int DialogPlate::GetHeightForWidth(int width) const {
+  return kPreferredHeightDip;
 }
 
 void DialogPlate::InitLayout() {

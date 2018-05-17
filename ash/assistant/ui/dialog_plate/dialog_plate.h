@@ -25,6 +25,7 @@ class DialogPlate : public views::View,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  int GetHeightForWidth(int width) const override;
   void RequestFocus() override;
 
   // views::TextfieldController:
