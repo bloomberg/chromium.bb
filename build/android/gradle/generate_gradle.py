@@ -113,13 +113,14 @@ def _ReadPropertiesFile(path):
     return dict(l.rstrip().split('=', 1) for l in f if '=' in l)
 
 
-def _RunGnGen(output_dir, args):
+def _RunGnGen(output_dir, args=None):
   cmd = [
     os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'gn'),
     'gen',
     output_dir,
   ]
-  cmd.extend(args)
+  if args:
+    cmd.extend(args)
   logging.info('Running: %r', cmd)
   subprocess.check_call(cmd)
 
@@ -863,9 +864,11 @@ def main():
   if args.all:
     if args.native_targets:
       _RunGnGen(output_dir, ['--ide=json'])
+    elif not os.path.exists(os.path.join(output_dir, 'build.ninja')):
+      _RunGnGen(output_dir)
     else:
       # Faster than running "gn gen" in the no-op case.
-      _RunNinja(constants.GetOutDirectory(), ['build.ninja'], args.j)
+      _RunNinja(output_dir, ['build.ninja'], args.j)
     # Query ninja for all __build_config targets.
     targets = _QueryForAllGnTargets(output_dir)
   else:

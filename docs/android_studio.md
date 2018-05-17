@@ -94,10 +94,18 @@ A new experimental option is now available to enable editing native C/C++ files
 with Android Studio. Pass in any number of `--native-target [target name]` flags
 in order to try it out. The target must be the full path and name of a valid gn
 target (no shorthands). This will require you to install `cmake` and `ndk` when
-prompted. Accept Android Studio's prompts for these SDK packages. Example:
+prompted. Accept Android Studio's prompts for these SDK packages.
+
+This is not necessary, but to avoid "This file is not part of the project...",
+you can either add an extra `--native-target` flag or simply copy and paste the
+absolute path to that file into the CMakeLists.txt file alongside the existing
+file paths. Note that these changes will be overwritten on your next invocation
+of `generate_gradle.py`.
+
+Example:
 
 ```shell
-build/android/gradle/generate_gradle.py --native-target //chrome/browser:browser
+build/android/gradle/generate_gradle.py --native-target //chrome/android:monochrome
 ```
 
 ## Tips

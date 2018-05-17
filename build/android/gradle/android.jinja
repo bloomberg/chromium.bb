@@ -50,10 +50,22 @@ android {
     compileSdkVersion "{{ compile_sdk_version }}"
     buildToolsVersion "{{ build_tools_version }}"
 
+    defaultConfig {
+        vectorDrawables.useSupportLibrary = true
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
+{% if native is defined %}
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+{% endif %}
 
     sourceSets {
 {% for name in ['main', 'test', 'androidTest', 'debug', 'release'] %}
@@ -70,24 +82,11 @@ android {
 
 {{ expand_sourceset(main, 'main') }}
 {{ expand_sourceset(test, 'test') }}
-
 {% if android_test is defined %}
 {% for t in android_test %}
 {{ expand_sourceset(t, 'androidTest') }}
 {% endfor %}
 {% endif %}
-    }
-
-{% if native is defined %}
-    externalNativeBuild {
-        cmake {
-            path "CMakeLists.txt"
-        }
-    }
-{% endif %}
-
-    defaultConfig {
-        vectorDrawables.useSupportLibrary = true
     }
 }
 

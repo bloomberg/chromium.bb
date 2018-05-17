@@ -7,6 +7,14 @@ cmake_minimum_required(VERSION 3.4.1)
 
 project(chrome C CXX)
 
+{% if native.includes is defined %}
+include_directories(
+{% for path in native.includes %}
+    {{ path }}
+{% endfor %}
+)
+{% endif %}
+
 {% for name, target in native.targets.iteritems() %}
 {% if target.sources is defined %}
 add_library("{{ name }}"
@@ -16,11 +24,3 @@ add_library("{{ name }}"
 )
 {% endif %}
 {% endfor %}
-
-{% if native.includes is defined %}
-include_directories(
-{% for path in native.includes %}
-    {{ path }}
-{% endfor %}
-)
-{% endif %}
