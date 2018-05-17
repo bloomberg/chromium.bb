@@ -64,7 +64,7 @@ int FakeSpeechRecognitionManager::CreateSession(
   EXPECT_EQ(nullptr, listener_);
   listener_ = config.event_listener.get();
   if (config.grammars.size() > 0)
-    grammar_ = config.grammars[0].url;
+    grammar_ = config.grammars[0].url.spec();
   session_ctx_ = config.initial_context;
   session_config_ = config;
   session_id_ = 1;

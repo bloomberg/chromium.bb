@@ -7,7 +7,6 @@ typemaps = [
   "//content/public/common/manifest.typemap",
   "//content/public/common/referrer.typemap",
   "//content/public/common/resource_type.typemap",
-  "//content/public/common/speech_recognition_grammar.typemap",
   "//content/public/common/speech_recognition_result.typemap",
   "//content/public/common/speech_recognition_error.typemap",
   "//content/public/common/webplugininfo.typemap",

@@ -215,7 +215,6 @@ jumbo_source_set("common_sources") {
     "simple_connection_filter.h",
     "socket_permission_request.h",
     "speech_recognition_error.h",
-    "speech_recognition_grammar.h",
     "speech_recognition_result.cc",
     "speech_recognition_result.h",
     "stop_find_action.h",

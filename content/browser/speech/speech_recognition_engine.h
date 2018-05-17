@@ -18,7 +18,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/speech_recognition_session_preamble.h"
 #include "content/public/common/speech_recognition_error.h"
-#include "content/public/common/speech_recognition_grammar.h"
+#include "content/public/common/speech_recognition_grammar.mojom.h"
 #include "content/public/common/speech_recognition_result.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
@@ -78,7 +78,7 @@ class CONTENT_EXPORT SpeechRecognitionEngine : public net::URLFetcherDelegate {
     ~Config();
 
     std::string language;
-    SpeechRecognitionGrammarArray grammars;
+    std::vector<mojom::SpeechRecognitionGrammar> grammars;
     bool filter_profanities;
     bool continuous;
     bool interim_results;

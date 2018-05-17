@@ -61,8 +61,8 @@ void SpeechRecognitionDispatcher::Start(
   mojom::StartSpeechRecognitionRequestParamsPtr msg_params =
       mojom::StartSpeechRecognitionRequestParams::New();
   for (const WebSpeechGrammar& grammar : params.Grammars()) {
-    msg_params->grammars.push_back(SpeechRecognitionGrammar(
-        grammar.Src().GetString().Utf8(), grammar.Weight()));
+    msg_params->grammars.push_back(
+        mojom::SpeechRecognitionGrammar::New(grammar.Src(), grammar.Weight()));
   }
   msg_params->language = params.Language().Utf8();
   msg_params->max_hypotheses = static_cast<uint32_t>(params.MaxAlternatives());
