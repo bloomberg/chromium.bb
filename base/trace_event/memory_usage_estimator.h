@@ -28,6 +28,7 @@
 #include "base/containers/linked_list.h"
 #include "base/containers/mru_cache.h"
 #include "base/containers/queue.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/template_util.h"
 
@@ -288,16 +289,6 @@ struct EMUCaller<
     std::enable_if_t<!HasEMU<T>::value && IsKnownNonAllocatingType_v<T>>> {
   static size_t Call(const T& value) { return 0; }
 };
-
-// Returns reference to the underlying container of a container adapter.
-// Works for std::stack, std::queue and std::priority_queue.
-template <class A>
-const typename A::container_type& GetUnderlyingContainer(const A& adapter) {
-  struct ExposedAdapter : A {
-    using A::c;
-  };
-  return adapter.*&ExposedAdapter::c;
-}
 
 }  // namespace internal
 
@@ -614,17 +605,17 @@ size_t EstimateMemoryUsage(const std::deque<T, A>& deque) {
 
 template <class T, class C>
 size_t EstimateMemoryUsage(const std::queue<T, C>& queue) {
-  return EstimateMemoryUsage(internal::GetUnderlyingContainer(queue));
+  return EstimateMemoryUsage(GetUnderlyingContainer(queue));
 }
 
 template <class T, class C>
 size_t EstimateMemoryUsage(const std::priority_queue<T, C>& queue) {
-  return EstimateMemoryUsage(internal::GetUnderlyingContainer(queue));
+  return EstimateMemoryUsage(GetUnderlyingContainer(queue));
 }
 
 template <class T, class C>
 size_t EstimateMemoryUsage(const std::stack<T, C>& stack) {
-  return EstimateMemoryUsage(internal::GetUnderlyingContainer(stack));
+  return EstimateMemoryUsage(GetUnderlyingContainer(stack));
 }
 
 // base::circular_deque
