@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/password_exporter.h"
 
+#include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/metrics/histogram_macros.h"
@@ -14,8 +15,8 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/export/password_csv_writer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/common/passwords_directory_util_ios.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/passwords/passwords_directory_util.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -271,8 +272,21 @@ enum class ReauthenticationStatus {
     [self resetExportState];
     return;
   }
-
-  NSURL* uniqueDirectoryURL = [GetPasswordsDirectoryURL()
+  base::FilePath filePath;
+  if (!password_manager::GetPasswordsDirectory(&filePath)) {
+    [self showExportErrorAlertWithLocalizedReason:
+              l10n_util::GetNSString(
+                  IDS_IOS_EXPORT_PASSWORDS_UNKNOWN_ERROR_ALERT_MESSAGE)];
+    UMA_HISTOGRAM_ENUMERATION(
+        "PasswordManager.ExportPasswordsToCSVResult",
+        password_manager::metrics_util::ExportPasswordsResult::WRITE_FAILED,
+        password_manager::metrics_util::ExportPasswordsResult::COUNT);
+    [self resetExportState];
+    return;
+  }
+  NSString* filePathString =
+      [NSString stringWithUTF8String:filePath.value().c_str()];
+  NSURL* uniqueDirectoryURL = [[NSURL fileURLWithPath:filePathString]
       URLByAppendingPathComponent:[[NSUUID UUID] UUIDString]
                       isDirectory:YES];
   NSURL* passwordsTempFileURL =

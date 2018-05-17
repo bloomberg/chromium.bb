@@ -33,6 +33,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/password_manager/core/common/passwords_directory_util_ios.h"
 #include "components/payments/core/features.h"
 #include "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -87,7 +88,6 @@
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/net/cookie_util.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
-#import "ios/chrome/browser/passwords/passwords_directory_util.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
 #import "ios/chrome/browser/payments/payment_request_constants.h"
@@ -1197,7 +1197,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [[DeferredInitializationRunner sharedInstance]
       enqueueBlockNamed:kDeleteTempPasswords
                   block:^{
-                    DeletePasswordsDirectory();
+                    password_manager::DeletePasswordsDirectory();
                   }];
 }
 

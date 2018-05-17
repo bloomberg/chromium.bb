@@ -75,7 +75,22 @@ enum class ExportState {
 
 @end
 
-/** Class handling all the operations necessary to export passwords.*/
+/**
+ * Class handling all the operations necessary to export passwords.
+ * In order to pass the exported data to the user-selected app, it stores
+ * a temporary file in tmp/passwords/<UUID>/, in the sandbox.
+ *
+ * The temporary file is removed from:
+ * - the UIActivityViewController's |completionWithItemsHandler| when the
+ *   selected app/extension signals completion
+ * - at browser startup
+ * - whenever a password is deleted from local storage.
+ *
+ * The last two deletion points remove the entire passwords/ directory.
+ * They are needed for cases in which the user-selected app/extension doesn't
+ * signal completion upon finishing to process the file, causing the file to
+ * persist longer than needed.
+ */
 @interface PasswordExporter : NSObject
 
 // The designated initializer. |reauthenticationModule| and |delegate| must

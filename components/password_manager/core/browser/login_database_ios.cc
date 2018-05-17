@@ -15,6 +15,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/password_manager/core/common/passwords_directory_util_ios.h"
 
 using base::ScopedCFTypeRef;
 using autofill::PasswordForm;
@@ -130,6 +131,14 @@ void LoginDatabase::DeleteEncryptedPassword(const PasswordForm& form) {
   if (status != errSecSuccess && status != errSecItemNotFound) {
     NOTREACHED() << "Unable to remove password from keychain: " << status;
   }
+
+  // Delete the temporary passwords directory, since there might be leftover
+  // temporary files used for password export that contain the password being
+  // deleted. It can be called for a removal triggered by sync, which might
+  // happen at the same time as an export operation. In the unlikely event
+  // that the file is still needed by the consumer app, the export operation
+  // will fail.
+  password_manager::DeletePasswordsDirectory();
 }
 
 }  // namespace password_manager
