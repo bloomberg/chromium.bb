@@ -221,9 +221,9 @@
             <div class="label">$i18n{selectDriver}</div>
             <div class="secondary">
               <paper-input class="browse-file-input" no-label-float readonly
-                  value="[[getBaseName_(activePrinter.printerPPDPath)]]"
+                  value="[[newUserPPD_]]"
                   error-message="$i18n{selectDriverErrorMessage}"
-                  invalid="[[invalidPPD]]">
+                  invalid="[[invalidPPD_]]">
                 <paper-button class="browse-button" slot="suffix"
                     on-click="onBrowseFile_">
                   $i18n{selectDriverButtonText}
