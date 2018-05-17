@@ -71,14 +71,17 @@ void OnSignedExchangeReceivedOnUI(
     base::RepeatingCallback<int(void)> frame_tree_node_id_getter,
     const GURL& outer_request_url,
     scoped_refptr<network::ResourceResponse> outer_response,
-    base::Optional<const base::UnguessableToken> devtools_navigation_token) {
+    base::Optional<const base::UnguessableToken> devtools_navigation_token,
+    base::Optional<SignedExchangeHeader> header,
+    base::Optional<net::SSLInfo> ssl_info,
+    std::vector<std::string> error_messages) {
   FrameTreeNode* frame_tree_node =
       FrameTreeNode::GloballyFindByID(frame_tree_node_id_getter.Run());
   if (!frame_tree_node)
     return;
   RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
       frame_tree_node, devtools_navigation_token, outer_request_url,
-      outer_response->head);
+      outer_response->head, header, ssl_info, error_messages);
 }
 
 }  // namespace
@@ -104,6 +107,7 @@ SignedExchangeDevToolsProxy::~SignedExchangeDevToolsProxy() {
 void SignedExchangeDevToolsProxy::ReportErrorMessage(
     const std::string& message) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  error_messages_.push_back(message);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&AddErrorMessageToConsoleOnUI, frame_tree_node_id_getter_,
@@ -156,22 +160,25 @@ void SignedExchangeDevToolsProxy::CertificateRequestCompleted(
 }
 
 void SignedExchangeDevToolsProxy::OnSignedExchangeReceived(
-    const base::Optional<SignedExchangeHeader>& header) {
+    const base::Optional<SignedExchangeHeader>& header,
+    const net::SSLInfo* ssl_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!devtools_enabled_)
     return;
+  base::Optional<net::SSLInfo> ssl_info_opt;
+  if (ssl_info)
+    ssl_info_opt = *ssl_info;
 
   // Make a deep copy of ResourceResponseHead before passing it cross-thread.
   auto resource_response = base::MakeRefCounted<network::ResourceResponse>();
   resource_response->head = outer_response_;
 
-  // TODO(crbug/830505): Send |header| information to DevTools.
-
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&OnSignedExchangeReceivedOnUI, frame_tree_node_id_getter_,
                      outer_request_url_, resource_response->DeepCopy(),
-                     devtools_navigation_token_));
+                     devtools_navigation_token_, header,
+                     std::move(ssl_info_opt), std::move(error_messages_)));
 }
 
 }  // namespace content

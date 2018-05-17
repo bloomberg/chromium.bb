@@ -14,12 +14,6 @@
   BrowserSDK.networkLog.reset();
   await TestRunner.addIframe('/loading/htxg/resources/htxg-location.htxg');
   ConsoleTestRunner.dumpConsoleMessages();
-  for (var request of BrowserSDK.networkLog.requests()) {
-    TestRunner.addResult(`* ${request.url()}`);
-    TestRunner.addResult(`  failed: ${!!request.failed}`);
-    TestRunner.addResult(`  statusCode: ${request.statusCode}`);
-    TestRunner.addResult(`  resourceType: ${request.resourceType().name()}`);
-    // TODO(crbug/830505): Check the existance of signed exchange information.
-  }
+  NetworkTestRunner.dumpNetworkRequestsWithSignedExchangeInfo();
   TestRunner.completeTest();
 })();

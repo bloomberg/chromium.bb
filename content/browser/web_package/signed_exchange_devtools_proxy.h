@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_WEB_PACKAGE_SIGNED_EXCHANGE_DEVTOOLS_PROXY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -19,6 +20,10 @@ class GURL;
 namespace base {
 class UnguessableToken;
 }  // namespace base
+
+namespace net {
+class SSLInfo;
+}  // namespace net
 
 namespace network {
 struct ResourceRequest;
@@ -62,7 +67,8 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
       const network::URLLoaderCompletionStatus& status);
 
   void OnSignedExchangeReceived(
-      const base::Optional<SignedExchangeHeader>& header);
+      const base::Optional<SignedExchangeHeader>& header,
+      const net::SSLInfo* ssl_info);
 
  private:
   const GURL outer_request_url_;
@@ -70,6 +76,7 @@ class CONTENT_EXPORT SignedExchangeDevToolsProxy {
   const base::RepeatingCallback<int(void)> frame_tree_node_id_getter_;
   const base::Optional<const base::UnguessableToken> devtools_navigation_token_;
   const bool devtools_enabled_;
+  std::vector<std::string> error_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeDevToolsProxy);
 };

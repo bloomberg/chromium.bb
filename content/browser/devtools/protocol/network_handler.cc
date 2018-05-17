@@ -31,6 +31,7 @@
 #include "content/browser/frame_host/navigation_request.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
+#include "content/browser/web_package/signed_exchange_header.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -1622,13 +1623,51 @@ void NetworkHandler::LoadingComplete(
 void NetworkHandler::OnSignedExchangeReceived(
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
     const GURL& outer_request_url,
-    const network::ResourceResponseHead& outer_response) {
+    const network::ResourceResponseHead& outer_response,
+    const base::Optional<SignedExchangeHeader>& header,
+    const base::Optional<net::SSLInfo>& ssl_info,
+    const std::vector<std::string>& error_messages) {
   if (!enabled_)
     return;
   std::unique_ptr<Network::SignedExchangeInfo> signed_exchange_info =
       Network::SignedExchangeInfo::Create()
           .SetOuterResponse(BuildResponse(outer_request_url, outer_response))
           .Build();
+
+  if (header) {
+    std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
+    for (const auto it : header->response_headers())
+      headers_dict->setString(it.first, it.second);
+
+    const SignedExchangeHeaderParser::Signature& sig = header->signature();
+    std::unique_ptr<Array<Network::SignedExchangeSignature>> signatures =
+        Array<Network::SignedExchangeSignature>::create();
+    signatures->addItem(Network::SignedExchangeSignature::Create()
+                            .SetLabel(sig.label)
+                            .SetIntegrity(sig.integrity)
+                            .SetCertUrl(sig.cert_url.spec())
+                            .SetValidityUrl(sig.validity_url.spec())
+                            .SetDate(sig.date)
+                            .SetExpires(sig.expires)
+                            .Build());
+
+    signed_exchange_info->SetHeader(
+        Network::SignedExchangeHeader::Create()
+            .SetRequestUrl(header->request_url().spec())
+            .SetRequestMethod(header->request_method())
+            .SetResponseCode(header->response_code())
+            .SetResponseHeaders(Object::fromValue(headers_dict.get(), nullptr))
+            .SetSignatures(std::move(signatures))
+            .Build());
+  }
+  if (ssl_info)
+    signed_exchange_info->SetSecurityDetails(BuildSecurityDetails(*ssl_info));
+  if (error_messages.size()) {
+    std::unique_ptr<Array<String>> errors = Array<String>::create();
+    for (const auto& message : error_messages)
+      errors->addItem(message);
+    signed_exchange_info->SetErrors(std::move(errors));
+  }
 
   frontend_->SignedExchangeReceived(
       devtools_navigation_token ? devtools_navigation_token->ToString() : "",

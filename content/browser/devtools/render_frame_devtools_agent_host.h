@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
@@ -39,6 +40,10 @@ namespace viz {
 class CompositorFrameMetadata;
 }
 
+namespace net {
+class SSLInfo;
+}
+
 namespace content {
 
 class BrowserContext;
@@ -48,6 +53,7 @@ class NavigationHandleImpl;
 class NavigationRequest;
 class NavigationThrottle;
 class RenderFrameHostImpl;
+class SignedExchangeHeader;
 
 class CONTENT_EXPORT RenderFrameDevToolsAgentHost
     : public DevToolsAgentHostImpl,
@@ -93,7 +99,10 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       FrameTreeNode* frame_tree_node,
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       const GURL& outer_request_url,
-      const network::ResourceResponseHead& outer_response);
+      const network::ResourceResponseHead& outer_response,
+      const base::Optional<SignedExchangeHeader>& header,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      const std::vector<std::string>& error_messages);
   static void OnSignedExchangeCertificateRequestSent(
       FrameTreeNode* frame_tree_node,
       const base::UnguessableToken& request_id,
