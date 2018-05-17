@@ -136,6 +136,11 @@ class CORE_EXPORT NGConstraintSpace final
   // (ie. fit-content). This is used for inline-block, floats, etc.
   bool IsShrinkToFit() const { return is_shrink_to_fit_; }
 
+  // Whether this constraint space is used for an intermediate layout in a
+  // multi-pass layout. In such a case, we should not copy back the resulting
+  // layout data to the legacy tree or create a paint fragment from it.
+  bool IsIntermediateLayout() const { return is_intermediate_layout_; }
+
   // If specified a layout should produce a Fragment which fragments at the
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const;
@@ -223,6 +228,7 @@ class CORE_EXPORT NGConstraintSpace final
                     bool is_fixed_size_block,
                     bool fixed_size_block_is_definite,
                     bool is_shrink_to_fit,
+                    bool is_intermediate_layout,
                     NGFragmentationType block_direction_fragmentation_type,
                     bool separate_leading_fragmentainer_margins_,
                     bool is_new_fc,
@@ -249,6 +255,7 @@ class CORE_EXPORT NGConstraintSpace final
   unsigned fixed_size_block_is_definite_ : 1;
 
   unsigned is_shrink_to_fit_ : 1;
+  unsigned is_intermediate_layout_ : 1;
 
   unsigned block_direction_fragmentation_type_ : 2;
   unsigned separate_leading_fragmentainer_margins_ : 1;

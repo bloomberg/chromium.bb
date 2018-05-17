@@ -187,7 +187,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       ToLayoutBlockFlow(box_)->SetCachedLayoutResult(
           constraint_space, break_token, layout_result);
       block_flow->ClearPaintFragment();
-      if (first_child && first_child.IsInline())
+      if (first_child && first_child.IsInline() &&
+          !constraint_space.IsIntermediateLayout())
         block_flow->SetPaintFragment(layout_result->PhysicalFragment());
       // We may need paint invalidation even if we can reuse layout, as our
       // paint offset/visual rect may have changed due to relative positioning
@@ -213,7 +214,8 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   if (IsBlockLayoutComplete(constraint_space, *layout_result)) {
     DCHECK(layout_result->PhysicalFragment());
 
-    if (block_flow && first_child && first_child.IsInline()) {
+    if (block_flow && first_child && first_child.IsInline() &&
+        !constraint_space.IsIntermediateLayout()) {
       NGBoxStrut scrollbars = GetScrollbarSizes();
       CopyFragmentDataToLayoutBoxForInlineChildren(
           ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
@@ -344,6 +346,9 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
     const NGConstraintSpace& constraint_space,
     const NGLayoutResult& layout_result) {
   DCHECK(layout_result.PhysicalFragment());
+  if (constraint_space.IsIntermediateLayout())
+    return;
+
   const NGPhysicalBoxFragment& physical_fragment =
       ToNGPhysicalBoxFragment(*layout_result.PhysicalFragment());
 
