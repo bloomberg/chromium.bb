@@ -70,8 +70,8 @@
 
   function filterRowsIfNeeded() {
     let queryParams = new URLSearchParams(window.location.search);
-    let filterString = (queryParams.get('filter') || "").toLowerCase();
-    let filterValues = filterString.split(',');
+    let filterString = queryParams.get('filter') || "";
+    let filterValuesLower = filterString.toLowerCase().split(',');
     let tbody = document.getElementsByTagName("tbody")[0];
     let rows = tbody.getElementsByTagName("tr");
     for (let row of rows) {
@@ -79,9 +79,9 @@
       let tdContent = row.innerText.toLowerCase();
 
       // |match| should be true on empty search (show everything).
-      let match = !filterValues;
-      for (let filterValue of filterValues) {
-        if (tdContent.includes(filterValue)) {
+      let match = !filterValuesLower;
+      for (let filterValueLower of filterValuesLower) {
+        if (tdContent.includes(filterValueLower)) {
           match = true;
           break
         }
@@ -96,7 +96,7 @@
     // Update filter value in input box (for cases when filter is provided
     // as part of page load URL).
     let filter = document.getElementById("filter");
-    if (filter.value.toLowerCase() != filterString)
+    if (filter.value != filterString)
       filter.value = filterString;
   }
 
