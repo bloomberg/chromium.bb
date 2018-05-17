@@ -39,15 +39,16 @@ int main(int argc, char** argv) {
   logging::InitLogging(settings);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(kHelp)) {
-    std::cout <<
-        "Usage:\n\n"
-        "  --disable-gpu               Force software rendering\n"
-        "  --disable-surfaceless       Don't use surfaceless EGL\n"
-        "  --window-size=WIDTHxHEIGHT  Specify window size\n"
-        "  --partial-primary-plane     "
-        "Use smaller than fullscreen primary plane\n"
-        "  --enable-overlay            Use an overlay plane\n"
-        "  --disable-primary-plane     Don't use the primary plane\n";
+    std::cout << "Usage:\n\n"
+                 "  --disable-gpu               Force software rendering\n"
+                 "  --disable-surfaceless       Don't use surfaceless EGL\n"
+                 "  --window-size=WIDTHxHEIGHT  Specify window size\n"
+                 "  --partial-primary-plane     "
+                 "Use smaller than fullscreen primary plane\n"
+                 "  --enable-overlay            Use an overlay plane\n"
+                 "  --disable-primary-plane     Don't use the primary plane\n"
+                 "  --use-gpu-fences            "
+                 "Use GpuFences for buffer display synchronization\n";
 
     // TODO(hoegsberg): We should add a little more help text about how these
     // options interact and depend on each other.

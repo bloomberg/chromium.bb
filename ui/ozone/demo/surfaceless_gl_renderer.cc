@@ -16,6 +16,7 @@
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
+#include "ui/gl/gl_fence.h"
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_native_pixmap.h"
 #include "ui/gl/gl_surface.h"
@@ -173,10 +174,21 @@ bool SurfacelessGlRenderer::Initialize() {
       glViewport(0, 0, overlay_size.width(), overlay_size.height());
       glClearColor(i, 1.0, 0.0, 1.0);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+      // Ensure that the rendering has been committed to the buffer and thus
+      // that the buffer is ready for display without additional
+      // synchronization. This allows us to avoid using fences for display
+      // synchronization of the non-overlay buffers in RenderFrame.
+      glFinish();
     }
   }
 
   disable_primary_plane_ = command_line->HasSwitch("disable-primary-plane");
+
+  use_gpu_fences_ = command_line->HasSwitch("use-gpu-fences");
+  // The GLSurface needs to be prepared to accept plane fences,
+  // otherwise any fences sent to it will be ignored.
+  if (use_gpu_fences_)
+    surface_->SetUsePlaneGpuFences();
 
   // Schedule the initial render.
   PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
@@ -229,10 +241,20 @@ void SurfacelessGlRenderer::RenderFrame() {
 
   if (!disable_primary_plane_) {
     CHECK(overlay_list.front().overlay_handled);
+
+    // Optionally use a fence to synchronize overlay plane display, if
+    // requested when invoking ozone_demo. Note that currently only the primary
+    // plane needs to use a fence, since its buffers are dynamically updated
+    // every frame. The buffers for non-primary planes are only drawn to during
+    // initialization and guaranteed to be ready for display (see Initialize),
+    // so no additional fence synchronization is needed for them.
+    std::unique_ptr<gl::GLFence> gl_fence =
+        use_gpu_fences_ ? gl::GLFence::CreateForGpuFence() : nullptr;
+
     surface_->ScheduleOverlayPlane(
         0, gfx::OVERLAY_TRANSFORM_NONE, buffers_[back_buffer_]->image(),
         primary_plane_rect_, gfx::RectF(0, 0, 1, 1), false,
-        /* gpu_fence */ nullptr);
+        gl_fence ? gl_fence->GetGpuFence() : nullptr);
   }
 
   if (overlay_buffers_[0] && overlay_list.back().overlay_handled) {
