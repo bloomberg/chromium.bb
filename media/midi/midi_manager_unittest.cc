@@ -325,7 +325,13 @@ TEST_F(MidiManagerTest, AbortSession) {
   run_loop.RunUntilIdle();
 }
 
-TEST_F(MidiManagerTest, CreatePlatformMidiManager) {
+#if defined(OS_ANDROID)
+// The test sometimes fails on Android. https://crbug.com/844027
+#define MAYBE_CreatePlatformMidiManager DISABLED_CreatePlatformMidiManager
+#else
+#define MAYBE_CreatePlatformMidiManager CreatePlatformMidiManager
+#endif
+TEST_F(MidiManagerTest, MAYBE_CreatePlatformMidiManager) {
   // SystemMonitor is needed on Windows.
   base::SystemMonitor system_monitor;
 
