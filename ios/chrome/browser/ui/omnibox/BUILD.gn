@@ -75,6 +75,8 @@ source_set("omnibox_internal") {
     "omnibox_text_field_ios.mm",
     "omnibox_text_field_paste_delegate.h",
     "omnibox_text_field_paste_delegate.mm",
+    "omnibox_view_controller.h",
+    "omnibox_view_controller.mm",
     "omnibox_view_ios.h",
     "omnibox_view_ios.mm",
     "web_omnibox_edit_controller_impl.h",
