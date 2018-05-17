@@ -92,7 +92,7 @@ public class ChromeDownloadDelegate {
                 String externalStorageState = result.first;
                 File fullDirPath = result.second;
                 if (!checkExternalStorageAndNotify(
-                        fileName, fullDirPath, externalStorageState)) {
+                            downloadInfo, fullDirPath, externalStorageState)) {
                     return;
                 }
                 String url = sanitizeDownloadUrl(downloadInfo);
@@ -187,11 +187,10 @@ public class ChromeDownloadDelegate {
      * @return Whether external storage is ok for downloading.
      */
     private boolean checkExternalStorageAndNotify(
-            String filename, File fullDirPath, String externalStorageStatus) {
+            DownloadInfo downloadInfo, File fullDirPath, String externalStorageStatus) {
         if (fullDirPath == null) {
             Log.e(TAG, "Download failed: no SD card");
-            alertDownloadFailure(
-                    filename, DownloadManager.ERROR_DEVICE_NOT_FOUND);
+            alertDownloadFailure(downloadInfo, DownloadManager.ERROR_DEVICE_NOT_FOUND);
             return false;
         }
         if (!externalStorageStatus.equals(Environment.MEDIA_MOUNTED)) {
@@ -203,7 +202,7 @@ public class ChromeDownloadDelegate {
             } else {
                 Log.e(TAG, "Download failed: no SD card");
             }
-            alertDownloadFailure(filename, reason);
+            alertDownloadFailure(downloadInfo, reason);
             return false;
         }
         return true;
@@ -212,11 +211,12 @@ public class ChromeDownloadDelegate {
     /**
      * Alerts user of download failure.
      *
-     * @param fileName Name of the download file.
+     * @param downloadInfo The associated download.
      * @param reason Reason of failure defined in {@link DownloadManager}
      */
-    private void alertDownloadFailure(String fileName, int reason) {
-        DownloadManagerService.getDownloadManagerService().onDownloadFailed(fileName, reason);
+    private void alertDownloadFailure(DownloadInfo downloadInfo, int reason) {
+        DownloadItem downloadItem = new DownloadItem(false, downloadInfo);
+        DownloadManagerService.getDownloadManagerService().onDownloadFailed(downloadItem, reason);
     }
 
     /**

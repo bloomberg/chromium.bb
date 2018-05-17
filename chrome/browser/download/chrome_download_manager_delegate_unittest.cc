@@ -164,6 +164,12 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
         FROM_HERE, base::BindOnce(callback, result, path_to_return));
   }
 
+#if defined(OS_ANDROID)
+  void OnDownloadCanceled(
+      download::DownloadItem* download,
+      DownloadController::DownloadCancelReason reason) override {}
+#endif
+
   MOCK_METHOD5(
       MockReserveVirtualPath,
       base::FilePath(download::DownloadItem*,

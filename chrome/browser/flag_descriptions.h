@@ -1223,6 +1223,9 @@ extern const char kDownloadsForegroundDescription[];
 extern const char kDownloadsLocationChangeName[];
 extern const char kDownloadsLocationChangeDescription[];
 
+extern const char kDownloadProgressInfoBarName[];
+extern const char kDownloadProgressInfoBarDescription[];
+
 extern const char kEnableAndroidPayIntegrationV1Name[];
 extern const char kEnableAndroidPayIntegrationV1Description[];
 

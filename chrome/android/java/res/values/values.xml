@@ -70,4 +70,13 @@
     <integer name="list_item_level_default">0</integer>
     <integer name="list_item_level_selected">1</integer>
     <integer name="list_item_level_incognito">2</integer>
+
+    <!-- Download InfoBar animation. -->
+    <integer name="download_infobar_sweep_up_delay">500</integer>
+    <integer name="download_infobar_sweep_down_delay">800</integer>
+    <integer name="download_infobar_fill_in_delay">1200</integer>
+    <integer name="download_infobar_fill_out_delay">200</integer>
+    <integer name="download_infobar_bar_start_offset">800</integer>
+    <integer name="download_infobar_bar_fill_in_delay">400</integer>
+    <integer name="download_infobar_bar_fill_out_delay">200</integer>
 </resources>

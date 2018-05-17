@@ -24,7 +24,7 @@ public class DownloadMetrics {
     // to server logs and should not be deleted, changed or reused.
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({UNKNOWN, ANDROID_DOWNLOAD_MANAGER, DOWNLOAD_HOME, NOTIFICATION, NEW_TAP_PAGE, INFO_BAR,
-            SNACK_BAR, AUTO_OPEN, DOWNLOAD_SOURCE_BOUNDARY})
+            SNACK_BAR, AUTO_OPEN, DOWNLOAD_PROGRESS_INFO_BAR, DOWNLOAD_SOURCE_BOUNDARY})
     public @interface DownloadOpenSource {}
 
     public static final int UNKNOWN = 0;
@@ -35,7 +35,8 @@ public class DownloadMetrics {
     public static final int INFO_BAR = 5;
     public static final int SNACK_BAR = 6;
     public static final int AUTO_OPEN = 7;
-    private static final int DOWNLOAD_SOURCE_BOUNDARY = 8;
+    public static final int DOWNLOAD_PROGRESS_INFO_BAR = 8;
+    private static final int DOWNLOAD_SOURCE_BOUNDARY = 9;
 
     private static final String TAG = "DownloadMetrics";
     private static final int MAX_VIEW_RETENTION_MINUTES = 30 * 24 * 60;

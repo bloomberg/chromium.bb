@@ -1681,6 +1681,37 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Download
       </message>
 
+      <!-- DownloadProgressInfoBar -->
+      <message name="IDS_DOWNLOAD_INFOBAR_SPEEDING_UP_DOWNLOAD" desc="InfoBar text describing that the download is being accelerated by chrome">
+        Speeding up your download
+      </message>
+      <message name="IDS_DOWNLOAD_INFOBAR_DOWNLOADING_FILES" desc="InfoBar text describing that chrome is downloading one or more files">
+        {FILE_COUNT, plural,
+          =1 {Downloading file}
+          other {Downloading # files}}
+      </message>
+      <message name="IDS_DOWNLOADING_MULTIPLE_FILES_WITH_BYTES" desc="InfoBar text describing that chrome is downloading multiple files along with the total size of the files being downloaded">
+        Downloading <ph name="count">%1$d<ex>2</ex></ph> files (<ph name="megabytes">%2$s<ex>100</ex></ph>)
+      </message>
+      <message name="IDS_DOWNLOADING_FILE_WITH_BYTES" desc="Label describing that file download is in progress along with the total size information">
+        Downloading file (<ph name="megabytes">%1$s<ex>100</ex></ph>)
+      </message>
+      <message name="IDS_MULTIPLE_DOWNLOAD_COMPLETE" desc="Label describing that one or more downloads have completed">
+        {FILE_COUNT, plural,
+          =1 {1 download complete}
+          other {# downloads complete}}
+      </message>
+      <message name="IDS_MULTIPLE_DOWNLOAD_FAILED" desc="Label describing that one or more downloads have failed">
+        {FILE_COUNT, plural,
+          =1 {1 download failed}
+          other {# downloads failed}}
+      </message>
+      <message name="IDS_MULTIPLE_DOWNLOAD_PENDING" desc="Label describing that one or more downloads are pending">
+        {FILE_COUNT, plural,
+          =1 {1 download pending}
+          other {# downloads pending}}
+      </message>
+
       <!-- TranslateInfoBar -->
       <message name="IDS_TRANSLATE_INFOBAR_ERROR">
         Oops. This page could not be translated.

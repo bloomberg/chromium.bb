@@ -17,6 +17,7 @@ import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotifi
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 
 /**
@@ -91,6 +92,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     public void onDownloadSucceeded(
             DownloadInfo downloadInfo, int notificationId, long downloadId, boolean canBeResolved,
             boolean usesAndroidDownloadManager) {
+        if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
         if (getSnackbarManager() == null) return;
         Snackbar snackbar;
         if (getActivity() instanceof CustomTabActivity) {
@@ -125,6 +127,7 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
      *                         duplicated files.
      */
     public void onDownloadFailed(String errorMessage, boolean showAllDownloads) {
+        if (FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
         if (getSnackbarManager() == null) return;
         // TODO(qinmin): Coalesce snackbars if multiple downloads finish at the same time.
         Snackbar snackbar = Snackbar.make(errorMessage, this, Snackbar.TYPE_NOTIFICATION,

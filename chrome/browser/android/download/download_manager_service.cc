@@ -68,9 +68,10 @@ void DownloadManagerService::OnDownloadCanceled(
   bool has_no_external_storage =
       (reason == DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> jname =
-      ConvertUTF8ToJavaString(env, download->GetURL().ExtractFileName());
-  Java_DownloadManagerService_onDownloadItemCanceled(env, jname,
+
+  ScopedJavaLocalRef<jobject> j_item =
+      JNI_DownloadManagerService_CreateJavaDownloadItem(env, download);
+  Java_DownloadManagerService_onDownloadItemCanceled(env, j_item,
                                                      has_no_external_storage);
   DownloadController::RecordDownloadCancelReason(reason);
 }
@@ -108,7 +109,7 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       ConvertUTF8ToJavaString(env, item->GetTargetFilePath().value()),
       ConvertUTF8ToJavaString(env, item->GetTabUrl().spec()),
       ConvertUTF8ToJavaString(env, item->GetMimeType()),
-      item->GetReceivedBytes(),
+      item->GetReceivedBytes(), item->GetTotalBytes(),
       content::DownloadItemUtils::GetBrowserContext(item)->IsOffTheRecord(),
       item->GetState(), item->PercentComplete(), item->IsPaused(),
       has_user_gesture, item->CanResume(), item->IsParallelDownload(),
@@ -144,6 +145,30 @@ void DownloadManagerService::Init(
     JNIEnv* env,
     jobject obj) {
   java_ref_.Reset(env, obj);
+}
+
+void DownloadManagerService::OpenDownload(
+    JNIEnv* env,
+    jobject obj,
+    const JavaParamRef<jstring>& jdownload_guid,
+    bool is_off_the_record,
+    jint source) {
+  if (!is_history_query_complete_)
+    return;
+
+  std::string download_guid = ConvertJavaStringToUTF8(env, jdownload_guid);
+  content::DownloadManager* manager = GetDownloadManager(is_off_the_record);
+  if (!manager)
+    return;
+
+  download::DownloadItem* item = manager->GetDownloadByGuid(download_guid);
+  if (!item)
+    return;
+
+  ScopedJavaLocalRef<jobject> j_item =
+      JNI_DownloadManagerService_CreateJavaDownloadItem(env, item);
+
+  Java_DownloadManagerService_openDownloadItem(env, java_ref_, j_item, source);
 }
 
 void DownloadManagerService::ResumeDownload(

@@ -800,7 +800,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       // is no way to prompt user for a dialog. This could happen after chrome
       // gets killed, and user tries to resume a download while another app has
       // created the target file (not the temporary .crdownload file).
-      DownloadManagerService::OnDownloadCanceled(
+      OnDownloadCanceled(
           download,
           DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
       callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
@@ -853,7 +853,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
         return;
 
       case DownloadConfirmationReason::TARGET_PATH_NOT_WRITEABLE:
-        DownloadManagerService::OnDownloadCanceled(
+        OnDownloadCanceled(
             download, DownloadController::CANCEL_REASON_NO_EXTERNAL_STORAGE);
         callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
         return;
@@ -888,7 +888,7 @@ void ChromeDownloadManagerDelegate::RequestConfirmation(
       // gets killed, and user tries to resume a download while another app has
       // created the target file (not the temporary .crdownload file).
       case DownloadConfirmationReason::UNEXPECTED:
-        DownloadManagerService::OnDownloadCanceled(
+        OnDownloadCanceled(
             download,
             DownloadController::CANCEL_REASON_CANNOT_DETERMINE_DOWNLOAD_TARGET);
         callback.Run(DownloadConfirmationResult::CANCELED, base::FilePath());
@@ -920,6 +920,12 @@ void ChromeDownloadManagerDelegate::GenerateUniqueFileNameDone(
     // If the name generation failed, fail the download.
     callback.Run(DownloadConfirmationResult::FAILED, base::FilePath());
   }
+}
+
+void ChromeDownloadManagerDelegate::OnDownloadCanceled(
+    download::DownloadItem* download,
+    DownloadController::DownloadCancelReason reason) {
+  DownloadManagerService::OnDownloadCanceled(download, reason);
 }
 #endif
 

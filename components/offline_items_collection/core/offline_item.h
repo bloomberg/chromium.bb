@@ -110,6 +110,9 @@ struct OfflineItem {
   // Whether this item should show up as a suggested item for the user.
   bool is_suggested;
 
+  // Whether this item is going through accelerated download.
+  bool is_accelerated;
+
   // TODO(dtrainor): Build out custom per-item icon support.
 
   // Content Metadata.

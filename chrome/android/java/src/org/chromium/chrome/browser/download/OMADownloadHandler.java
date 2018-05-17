@@ -829,7 +829,7 @@ public class OMADownloadHandler extends BroadcastReceiver
                 if (mDownloadInfo != null) {
                     String fileName = mDownloadInfo.getFileName();
                     DownloadManagerService.getDownloadManagerService().onDownloadFailed(
-                            fileName, mFailureReason);
+                            mDownloadItem, mFailureReason);
                 }
             }
         }
