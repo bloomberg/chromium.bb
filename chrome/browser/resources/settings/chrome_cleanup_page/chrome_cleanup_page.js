@@ -139,27 +139,9 @@ Polymer({
     },
 
     /** @private */
-    uploadAllowed_: {
-      type: Boolean,
-      value: true,
-    },
-
-    /** @private */
-    uploadManaged_: {
-      type: Boolean,
-      computed: 'computeUploadManaged_(cleanupManaged_, cleanupEnabled_)',
-    },
-
-    /** @private */
     cleanupEnabled_: {
       type: Boolean,
       value: true,
-    },
-
-    /** @private */
-    cleanupManaged_: {
-      type: Boolean,
-      value: false,
     },
 
     /** @private */
@@ -342,16 +324,6 @@ Polymer({
   itemsToRemoveSectionExpandedChanged_: function(newVal, oldVal) {
     if (!oldVal && newVal)
       this.browserProxy_.notifyShowDetails(this.itemsToRemoveSectionExpanded_);
-  },
-
-  /**
-   * Uploads are managed if cleanup is controlled by policy and the policy
-   * disables the feature.  If the option is controlled by policy but enables
-   * the feature, there is no difference at all from not being managed.
-   * @return {boolean}
-   */
-  computeUploadManaged_: function() {
-    return this.cleanupManaged_ && !this.cleanupEnabled_;
   },
 
   /**
@@ -590,17 +562,17 @@ Polymer({
   },
 
   /**
+   * @param {boolean} managed Whether uploads are controlled by policy or not.
    * @param {boolean} enabled Whether logs upload is enabled.
    * @private
    */
-  onUploadPermissionChange_: function(enabled) {
-    this.uploadAllowed_ = enabled;
+  onUploadPermissionChange_: function(managed, enabled) {
     const pref = {
       key: '',
       type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: this.uploadAllowed_,
+      value: enabled,
     };
-    if (this.uploadManaged_) {
+    if (managed) {
       pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
       pref.controlledBy = chrome.settingsPrivate.ControlledBy.USER_POLICY;
     }
@@ -608,20 +580,17 @@ Polymer({
   },
 
   /**
-   * @param {boolean} managed Whether this is controlled by policy or not.
    * @param {boolean} enabled Whether cleanup is enabled.
    * @private
    */
-  onCleanupEnabledChange_: function(managed, enabled) {
-    this.cleanupManaged_ = managed;
+  onCleanupEnabledChange_: function(enabled) {
     this.cleanupEnabled_ = enabled;
-    this.onUploadPermissionChange_(this.uploadAllowed_);
   },
 
   /** @private */
   changeLogsPermission_: function() {
-    this.uploadAllowed_ = this.$.chromeCleanupLogsUploadControl.checked;
-    this.browserProxy_.setLogsUploadPermission(this.uploadAllowed_);
+    const enabled = this.$.chromeCleanupLogsUploadControl.checked;
+    this.browserProxy_.setLogsUploadPermission(enabled);
   },
 
   /**
