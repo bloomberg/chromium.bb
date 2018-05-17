@@ -49,6 +49,9 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
 
   NGConstraintSpaceBuilder& SetIsShrinkToFit(bool shrink_to_fit);
 
+  NGConstraintSpaceBuilder& SetIsIntermediateLayout(
+      bool is_intermediate_layout);
+
   NGConstraintSpaceBuilder& SetFragmentationType(NGFragmentationType);
 
   NGConstraintSpaceBuilder& SetSeparateLeadingFragmentainerMargins(bool val) {
@@ -104,6 +107,7 @@ class CORE_EXPORT NGConstraintSpaceBuilder final {
   unsigned is_fixed_size_block_ : 1;
   unsigned fixed_size_block_is_definite_ : 1;
   unsigned is_shrink_to_fit_ : 1;
+  unsigned is_intermediate_layout_ : 1;
   unsigned fragmentation_type_ : 2;
   unsigned separate_leading_fragmentainer_margins_ : 1;
   unsigned is_new_fc_ : 1;

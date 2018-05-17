@@ -13,6 +13,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(
     : NGConstraintSpaceBuilder(parent_space.GetWritingMode(),
                                parent_space.InitialContainingBlockSize()) {
   parent_percentage_resolution_size_ = parent_space.PercentageResolutionSize();
+  is_intermediate_layout_ = parent_space.IsIntermediateLayout();
 }
 
 NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
@@ -25,6 +26,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(WritingMode writing_mode,
       is_fixed_size_block_(false),
       fixed_size_block_is_definite_(true),
       is_shrink_to_fit_(false),
+      is_intermediate_layout_(false),
       fragmentation_type_(kFragmentNone),
       separate_leading_fragmentainer_margins_(false),
       is_new_fc_(false),
@@ -103,6 +105,12 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetFixedSizeBlockIsDefinite(
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsShrinkToFit(
     bool shrink_to_fit) {
   is_shrink_to_fit_ = shrink_to_fit;
+  return *this;
+}
+
+NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetIsIntermediateLayout(
+    bool is_intermediate_layout) {
+  is_intermediate_layout_ = is_intermediate_layout;
   return *this;
 }
 
@@ -212,6 +220,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
         initial_containing_block_size_, fragmentainer_block_size_,
         fragmentainer_space_at_bfc_start_, is_fixed_size_inline_,
         is_fixed_size_block_, fixed_size_block_is_definite_, is_shrink_to_fit_,
+        is_intermediate_layout_,
         static_cast<NGFragmentationType>(fragmentation_type_),
         separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
         use_first_line_style_, adjoining_floats_, margin_strut, bfc_offset,
@@ -224,7 +233,7 @@ scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
       parent_percentage_resolution_size.inline_size,
       initial_containing_block_size_, fragmentainer_block_size_,
       fragmentainer_space_at_bfc_start_, is_fixed_size_block_,
-      is_fixed_size_inline_, true, is_shrink_to_fit_,
+      is_fixed_size_inline_, true, is_shrink_to_fit_, is_intermediate_layout_,
       static_cast<NGFragmentationType>(fragmentation_type_),
       separate_leading_fragmentainer_margins_, is_new_fc_, is_anonymous_,
       use_first_line_style_, adjoining_floats_, margin_strut, bfc_offset,

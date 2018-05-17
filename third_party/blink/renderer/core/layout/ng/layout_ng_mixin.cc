@@ -179,6 +179,8 @@ void LayoutNGMixin<Base>::SetCachedLayoutResult(
     // We can't cache these yet
     return;
   }
+  if (constraint_space.IsIntermediateLayout())
+    return;
 
   cached_constraint_space_ = &constraint_space;
   cached_result_ = layout_result;
