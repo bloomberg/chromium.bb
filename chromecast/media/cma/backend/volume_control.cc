@@ -342,8 +342,6 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   DISALLOW_COPY_AND_ASSIGN(VolumeControlInternal);
 };
 
-// base::LazyInstance<VolumeControlInternal>::Leaky g_volume_control =
-//     LAZY_INSTANCE_INITIALIZER;
 VolumeControlInternal& GetVolumeControl() {
   static base::NoDestructor<VolumeControlInternal> g_volume_control;
   return *g_volume_control;
