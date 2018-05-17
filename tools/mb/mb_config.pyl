@@ -947,15 +947,15 @@
     ],
 
     'asan_clang_edge_fuzzer_static_v8_heap_x86_full_symbols_release': [
-      'asan', 'clang_tot', 'edge', 'fuzzer', 'static', 'v8_heap', 'full_symbols', 'release', 'x86',
+      'asan', 'clang_tot', 'edge', 'fuzzer', 'static', 'v8_heap', 'full_symbols', 'release', 'x64',
     ],
 
     'asan_clang_shared_v8_heap_x86_full_symbols_release': [
-      'asan', 'clang_tot', 'shared', 'v8_heap', 'full_symbols', 'release', 'x86',
+      'asan', 'clang_tot', 'shared', 'v8_heap', 'full_symbols', 'release', 'x64',
     ],
 
     'asan_clang_fuzzer_static_v8_heap_x86_full_symbols_release': [
-      'asan', 'clang_tot', 'fuzzer', 'static', 'v8_heap', 'full_symbols', 'release', 'x86',
+      'asan', 'clang_tot', 'fuzzer', 'static', 'v8_heap', 'full_symbols', 'release', 'x64',
     ],
 
     'asan_dcheck_disable_nacl_release_bot': [
