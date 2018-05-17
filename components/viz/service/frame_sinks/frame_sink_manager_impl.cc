@@ -52,10 +52,9 @@ FrameSinkManagerImpl::FrameSinkManagerImpl(
 FrameSinkManagerImpl::~FrameSinkManagerImpl() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   video_capturers_.clear();
+  sink_map_.clear();
 
-  // All mojom::CompositorFrameSinks and BeginFrameSources should be deleted by
-  // this point.
-  DCHECK(sink_map_.empty());
+  // All BeginFrameSources should be deleted by this point.
   DCHECK(registered_sources_.empty());
 
   surface_manager_.RemoveObserver(this);
