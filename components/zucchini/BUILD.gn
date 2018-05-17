@@ -212,6 +212,9 @@ group("zucchini_fuzzers") {
 
   # Ensure protoc is available.
   if (current_toolchain == host_toolchain) {
-    deps += [ "//components/zucchini/fuzzers:zucchini_raw_apply_fuzzer" ]
+    deps += [
+      "//components/zucchini/fuzzers:zucchini_raw_apply_fuzzer",
+      "//components/zucchini/fuzzers:zucchini_raw_gen_fuzzer",
+    ]
   }
 }
