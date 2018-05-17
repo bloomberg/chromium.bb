@@ -1520,6 +1520,19 @@ void WebContentsImpl::WasShown() {
 
   last_active_time_ = base::TimeTicks::Now();
   SetVisibility(Visibility::VISIBLE);
+
+  for (FrameTreeNode* node : frame_tree_.Nodes()) {
+    RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();
+    if (!parent)
+      continue;
+
+    if (parent->cross_process_frame_connector()->IsVisible()) {
+      // MaybeLogCrash will check 1) if there was a crash or not and 2) if the
+      // crash might have been already logged earlier as kCrashedWhileVisible.
+      parent->cross_process_frame_connector()->MaybeLogCrash(
+          CrossProcessFrameConnector::CrashVisibility::kShownAfterCrashing);
+    }
+  }
 }
 
 void WebContentsImpl::WasHidden() {

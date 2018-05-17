@@ -122,4 +122,8 @@ bool RenderFrameHostDelegate::IsBeingDestroyed() const {
   return false;
 }
 
+Visibility RenderFrameHostDelegate::GetVisibility() const {
+  return Visibility::HIDDEN;
+}
+
 }  // namespace content

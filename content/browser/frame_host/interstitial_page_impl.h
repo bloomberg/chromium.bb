@@ -137,6 +137,7 @@ class CONTENT_EXPORT InterstitialPageImpl : public InterstitialPage,
                          const gfx::Rect& initial_rect,
                          bool user_gesture) override;
   void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) override;
+  Visibility GetVisibility() const override;
 
   // RenderViewHostDelegate implementation:
   RenderViewHostDelegateView* GetDelegateView() override;

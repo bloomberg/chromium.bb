@@ -127,6 +127,26 @@ class CONTENT_EXPORT CrossProcessFrameConnector
     return GetRootRenderWidgetHostView();
   }
 
+  // This enum backs a histogram - please do not modify or remove the existing
+  // enum values below (adding new values is okay, but please remember to also
+  // update enums.xml in this case). See enums.xml for descriptions of enum
+  // values.
+  enum class CrashVisibility {
+    kCrashedWhileVisible = 0,
+    kShownAfterCrashing = 1,
+    kNeverVisibleAfterCrash = 2,
+    kMaxValue = kNeverVisibleAfterCrash
+  };
+  // Logs the Stability.ChildFrameCrash.Visibility metric after checking that a
+  // crash has indeed happened and checking that the crash has not already been
+  // logged in UMA.
+  void MaybeLogCrash(CrashVisibility visibility);
+
+  // Returns whether the child widget is actually visible to the user.  This is
+  // different from the IsHidden override, and takes into account viewport
+  // intersection as well as the visibility of the RenderFrameHostDelegate.
+  bool IsVisible();
+
  private:
   friend class MockCrossProcessFrameConnector;
 
@@ -159,6 +179,14 @@ class CONTENT_EXPORT CrossProcessFrameConnector
   bool is_hidden_ = false;
 
   bool is_scroll_bubbling_;
+
+  // Used to make sure we only log UMA once per renderer crash.
+  bool is_crash_already_logged_ = false;
+
+  // Used to make sure that MaybeLogCrash only logs the UMA in case of an actual
+  // crash (in case it is called from the destructor of
+  // CrossProcessFrameConnector or when WebContentsImpl::WasShown is called).
+  bool has_crashed_ = false;
 
   // The last pre-transform frame size received from the parent renderer.
   // |last_received_local_frame_size_| may be in DIP if use zoom for DSF is
