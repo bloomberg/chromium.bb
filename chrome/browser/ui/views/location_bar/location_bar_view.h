@@ -46,12 +46,12 @@ class ManagePasswordsIconViews;
 enum class OmniboxPart;
 class OmniboxPopupView;
 enum class OmniboxTint;
+class PageActionIconContainerView;
 class Profile;
 class SelectedKeywordView;
 class StarView;
 class TranslateIconView;
 class ZoomView;
-class PageActionIconContainerView;
 
 namespace autofill {
 class SaveCardIconView;

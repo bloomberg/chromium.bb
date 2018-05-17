@@ -519,6 +519,7 @@ void LocationBarViewMac::UpdatePageActionIcon(PageActionIconType) {
   // TODO(https://crbug.com/788051): Return page action icons for updating here
   // as update methods are migrated out of LocationBar to the
   // PageActionIconContainer interface.
+  NOTIMPLEMENTED();
 }
 
 PageInfoVerboseType LocationBarViewMac::GetPageInfoVerboseType() const {
