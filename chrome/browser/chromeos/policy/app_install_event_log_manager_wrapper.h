@@ -13,6 +13,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class PrefRegistrySimple;
 class Profile;
 
 namespace content {
@@ -36,6 +37,8 @@ class AppInstallEventLogManagerWrapper : public content::NotificationObserver {
   // logging for |profile|. The object returned manages its own lifetime and
   // self-destructs on logout.
   static AppInstallEventLogManagerWrapper* CreateForProfile(Profile* profile);
+
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
   // content::NotificationObserver:
   void Observe(int type,

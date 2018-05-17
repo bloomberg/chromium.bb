@@ -643,6 +643,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAllowedLocales,
     prefs::kAllowedLocales,
     base::Value::Type::LIST },
+  { key::kArcAppInstallEventLoggingEnabled,
+    prefs::kArcAppInstallEventLoggingEnabled,
+    base::Value::Type::BOOLEAN },
 #endif  // defined(OS_CHROMEOS)
 
 // Metrics reporting is controlled by a platform specific policy for ChromeOS

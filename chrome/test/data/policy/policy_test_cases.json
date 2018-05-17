@@ -3726,6 +3726,14 @@
     "note": "This policy is deprecated and removed since Chrome 68."
   },
 
+  "ArcAppInstallEventLoggingEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "ArcAppInstallEventLoggingEnabled": true },
+    "pref_mappings": [
+      { "pref": "arc.app_install_event_logging_enabled" }
+    ]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {

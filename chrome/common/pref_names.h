@@ -627,6 +627,7 @@ extern const char kPowerMetricsIdleScreenOffCount[];
 extern const char kPowerMetricsIdleSuspendCount[];
 extern const char kPowerMetricsLidClosedSuspendCount[];
 extern const char kReportingUsers[];
+extern const char kArcAppInstallEventLoggingEnabled[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];

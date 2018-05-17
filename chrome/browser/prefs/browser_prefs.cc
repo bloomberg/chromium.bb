@@ -224,6 +224,7 @@
 #include "chrome/browser/chromeos/login/users/multi_profile_user_controller.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/platform_keys/key_permissions.h"
+#include "chrome/browser/chromeos/policy/app_install_event_log_manager_wrapper.h"
 #include "chrome/browser/chromeos/policy/app_install_event_logger.h"
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -633,6 +634,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   flags_ui::PrefServiceFlagsStorage::RegisterProfilePrefs(registry);
   lock_screen_apps::StateController::RegisterProfilePrefs(registry);
   policy::AppInstallEventLogger::RegisterProfilePrefs(registry);
+  policy::AppInstallEventLogManagerWrapper::RegisterProfilePrefs(registry);
   policy::DeviceStatusCollector::RegisterProfilePrefs(registry);
   ::onc::RegisterProfilePrefs(registry);
 #endif
