@@ -82,20 +82,8 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
   // are not handled by Chrome explicitly.
   static std::vector<std::string> GetPlatformKeySystemNames();
 
-  // Returns a MediaDrmBridge instance if |key_system| and |security_level| are
-  // supported, and nullptr otherwise. The default security level will be used
-  // if |security_level| is SECURITY_LEVEL_DEFAULT.
-  static void Create(
-      const std::string& key_system,
-      const url::Origin& security_origin,
-      SecurityLevel security_level,
-      const CreateFetcherCB& create_fetcher_cb,
-      const CreateStorageCB& create_storage_cb,
-      const SessionMessageCB& session_message_cb,
-      const SessionClosedCB& session_closed_cb,
-      const SessionKeysChangeCB& session_keys_change_cb,
-      const SessionExpirationUpdateCB& session_expiration_update_cb,
-      CreatedCB created_cb);
+  // Returns the scheme UUID for |key_system|.
+  static std::vector<uint8_t> GetUUID(const std::string& key_system);
 
   // Same as Create() except that no session callbacks are provided. This is
   // used when we need to use MediaDrmBridge without creating any sessions.
@@ -249,6 +237,7 @@ class MEDIA_EXPORT MediaDrmBridge : public ContentDecryptionModule,
       bool success);
 
  private:
+  friend class MediaDrmBridgeFactory;
   // For DeleteSoon() in DeleteOnCorrectThread().
   friend class base::DeleteHelper<MediaDrmBridge>;
 

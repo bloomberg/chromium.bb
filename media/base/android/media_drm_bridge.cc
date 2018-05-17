@@ -274,24 +274,6 @@ bool IsPersistentLicenseTypeSupportedByMediaDrm() {
              base::android::SDK_VERSION_MARSHMALLOW;
 }
 
-// Callback for MediaDrmStorageBridge::Initialize.
-// |create_media_drm_bridge_cb|, factory method to create MediaDrmBridge.
-// |created_cb|, callback to return the MediaDrmBridge to caller of
-// MediaDrmBridge::Create.
-void OnStorageInitialized(CreateMediaDrmBridgeCB create_media_drm_bridge_cb,
-                          MediaDrmBridge::CreatedCB created_cb,
-                          MediaDrmStorageBridge* storage) {
-  DCHECK(storage);
-
-  // MediaDrmStorageBridge should always return a valid origin ID after
-  // initialize. Otherwise the pipe is broken and we should not create
-  // MediaDrmBridge here.
-  std::move(created_cb)
-      .Run(storage->origin_id().empty() ? nullptr
-                                        : std::move(create_media_drm_bridge_cb)
-                                              .Run(storage->origin_id()));
-}
-
 }  // namespace
 
 // MediaDrm is not generally usable without MediaCodec. Thus, both the MediaDrm
@@ -338,6 +320,11 @@ std::vector<std::string> MediaDrmBridge::GetPlatformKeySystemNames() {
 }
 
 // static
+std::vector<uint8_t> MediaDrmBridge::GetUUID(const std::string& key_system) {
+  return GetKeySystemManager()->GetUUID(key_system);
+}
+
+// static
 scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     const std::vector<uint8_t>& scheme_uuid,
     SecurityLevel security_level,
@@ -361,51 +348,6 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateInternal(
     return nullptr;
 
   return media_drm_bridge;
-}
-
-// static
-void MediaDrmBridge::Create(
-    const std::string& key_system,
-    const url::Origin& security_origin,
-    SecurityLevel security_level,
-    const CreateFetcherCB& create_fetcher_cb,
-    const CreateStorageCB& create_storage_cb,
-    const SessionMessageCB& session_message_cb,
-    const SessionClosedCB& session_closed_cb,
-    const SessionKeysChangeCB& session_keys_change_cb,
-    const SessionExpirationUpdateCB& session_expiration_update_cb,
-    CreatedCB created_cb) {
-  DVLOG(1) << __func__;
-
-  if (!IsAvailable()) {
-    std::move(created_cb).Run(nullptr);
-    return;
-  }
-
-  UUID scheme_uuid = GetKeySystemManager()->GetUUID(key_system);
-  if (scheme_uuid.empty()) {
-    std::move(created_cb).Run(nullptr);
-    return;
-  }
-
-  // MediaDrmStorage may be lazy created in MediaDrmStorageBridge.
-  auto storage = std::make_unique<MediaDrmStorageBridge>();
-  MediaDrmStorageBridge* raw_storage = storage.get();
-
-  CreateMediaDrmBridgeCB create_media_drm_bridge_cb = base::BindOnce(
-      &MediaDrmBridge::CreateInternal, scheme_uuid, security_level,
-      std::move(storage), create_fetcher_cb, session_message_cb,
-      session_closed_cb, session_keys_change_cb, session_expiration_update_cb);
-
-  if (IsPersistentLicenseTypeSupported(key_system) &&
-      !security_origin.unique() && !create_storage_cb.is_null()) {
-    raw_storage->Initialize(
-        create_storage_cb, base::BindOnce(&OnStorageInitialized,
-                                          std::move(create_media_drm_bridge_cb),
-                                          std::move(created_cb), raw_storage));
-  } else {
-    std::move(created_cb).Run(std::move(create_media_drm_bridge_cb).Run(""));
-  }
 }
 
 // static
