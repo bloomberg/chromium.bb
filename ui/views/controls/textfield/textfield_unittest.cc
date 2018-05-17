@@ -3643,4 +3643,31 @@ TEST_F(TextfieldTest, FocusReasonFocusBlurFocus) {
             textfield_->GetFocusReason());
 }
 
+TEST_F(TextfieldTest, ChangeTextDirectionAndLayoutAlignmentTest) {
+  InitTextfield();
+
+  textfield_->ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection::RIGHT_TO_LEFT);
+  EXPECT_EQ(textfield_->GetTextDirection(),
+            base::i18n::TextDirection::RIGHT_TO_LEFT);
+  EXPECT_EQ(textfield_->GetHorizontalAlignment(),
+            gfx::HorizontalAlignment::ALIGN_RIGHT);
+
+  textfield_->ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection::RIGHT_TO_LEFT);
+  const base::string16& text = test_api_->GetRenderText()->GetDisplayText();
+  base::i18n::TextDirection text_direction =
+      base::i18n::GetFirstStrongCharacterDirection(text);
+  EXPECT_EQ(textfield_->GetTextDirection(), text_direction);
+  EXPECT_EQ(textfield_->GetHorizontalAlignment(),
+            gfx::HorizontalAlignment::ALIGN_RIGHT);
+
+  textfield_->ChangeTextDirectionAndLayoutAlignment(
+      base::i18n::TextDirection::LEFT_TO_RIGHT);
+  EXPECT_EQ(textfield_->GetTextDirection(),
+            base::i18n::TextDirection::LEFT_TO_RIGHT);
+  EXPECT_EQ(textfield_->GetHorizontalAlignment(),
+            gfx::HorizontalAlignment::ALIGN_LEFT);
+}
+
 }  // namespace views
