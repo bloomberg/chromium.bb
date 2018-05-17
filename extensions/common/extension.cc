@@ -575,7 +575,9 @@ bool Extension::InitFromValue(int flags, base::string16* error) {
 
   finished_parsing_manifest_ = true;
 
-  permissions_data_.reset(new PermissionsData(this));
+  permissions_data_ = std::make_unique<PermissionsData>(
+      id(), GetType(), location(),
+      PermissionsParser::GetRequiredPermissions(this).Clone());
 
   return true;
 }
