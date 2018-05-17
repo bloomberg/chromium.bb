@@ -504,11 +504,54 @@ class GclientTest(trial_dir.TestCase):
                       [None, 'checkout_blorp'])
 
   def testOverride(self):
-    """Verifies expected behavior of OverrideURL."""
-    url = "git@github.com:dart-lang/spark.git"
-    d = gclient.Dependency(None, 'name', url, url,
-                           None, None, None, None, '', True, False, None, True)
-    self.assertEquals(url, d.url)
+    """Verifies expected behavior of URL overrides."""
+    write(
+        '.gclient',
+        'solutions = [\n'
+        '  { "name": "foo",\n'
+        '    "url": "svn://example.com/foo",\n'
+        '    "custom_deps": {\n'
+        '      "foo/bar": "svn://example.com/override",\n'
+        '      "foo/skip2": None,\n'
+        '      "foo/new": "svn://example.com/new",\n'
+        '    },\n'
+        '  },]\n')
+    write(
+        os.path.join('foo', 'DEPS'),
+        'vars = {\n'
+        '  "origin": "svn://example.com",\n'
+        '}\n'
+        'deps = {\n'
+        '  "foo/skip": None,\n'
+        '  "foo/bar": "{origin}/bar",\n'
+        '  "foo/baz": "{origin}/baz",\n'
+        '  "foo/skip2": "{origin}/skip2",\n'
+        '  "foo/rel": "/rel",\n'
+        '}')
+    parser = gclient.OptionParser()
+    options, _ = parser.parse_args(['--jobs', '1'])
+
+    obj = gclient.GClient.LoadCurrentConfig(options)
+    obj.RunOnDeps('None', [])
+
+    sol = obj.dependencies[0]
+    self.assertEqual([
+        ('foo', 'svn://example.com/foo'),
+        ('foo/bar', 'svn://example.com/override'),
+        ('foo/baz', 'svn://example.com/baz'),
+        ('foo/new', 'svn://example.com/new'),
+        ('foo/rel', 'svn://example.com/rel'),
+    ], self._get_processed())
+
+    self.assertEqual(6, len(sol.dependencies))
+    self.assertEqual([
+        ('foo/bar', 'svn://example.com/override'),
+        ('foo/baz', 'svn://example.com/baz'),
+        ('foo/new', 'svn://example.com/new'),
+        ('foo/rel', 'svn://example.com/rel'),
+        ('foo/skip', None),
+        ('foo/skip2', None),
+    ], [(dep.name, dep.url) for dep in sol.dependencies])
 
   def testDepsOsOverrideDepsInDepsFile(self):
     """Verifies that a 'deps_os' path cannot override a 'deps' path. Also
