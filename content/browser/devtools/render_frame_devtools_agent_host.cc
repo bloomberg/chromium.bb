@@ -41,6 +41,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_package/signed_exchange_header.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,6 +55,7 @@
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
@@ -228,10 +230,14 @@ void RenderFrameDevToolsAgentHost::OnSignedExchangeReceived(
     FrameTreeNode* frame_tree_node,
     base::Optional<const base::UnguessableToken> devtools_navigation_token,
     const GURL& outer_request_url,
-    const network::ResourceResponseHead& outer_response) {
-  DispatchToAgents(
-      frame_tree_node, &protocol::NetworkHandler::OnSignedExchangeReceived,
-      devtools_navigation_token, outer_request_url, outer_response);
+    const network::ResourceResponseHead& outer_response,
+    const base::Optional<SignedExchangeHeader>& header,
+    const base::Optional<net::SSLInfo>& ssl_info,
+    const std::vector<std::string>& error_messages) {
+  DispatchToAgents(frame_tree_node,
+                   &protocol::NetworkHandler::OnSignedExchangeReceived,
+                   devtools_navigation_token, outer_request_url, outer_response,
+                   header, ssl_info, error_messages);
 }
 
 // static

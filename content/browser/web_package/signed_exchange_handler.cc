@@ -255,7 +255,7 @@ bool SignedExchangeHandler::ParseHeadersAndFetchCertificate() {
 void SignedExchangeHandler::RunErrorCallback(net::Error error) {
   DCHECK_NE(state_, State::kHeadersCallbackCalled);
   if (devtools_proxy_)
-    devtools_proxy_->OnSignedExchangeReceived(header_);
+    devtools_proxy_->OnSignedExchangeReceived(header_, nullptr);
   std::move(headers_callback_)
       .Run(error, GURL(), std::string(), network::ResourceResponseHead(),
            nullptr);
@@ -375,7 +375,7 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
       !net::IsCertStatusMinorError(ssl_info.cert_status);
 
   if (devtools_proxy_)
-    devtools_proxy_->OnSignedExchangeReceived(header_);
+    devtools_proxy_->OnSignedExchangeReceived(header_, &ssl_info);
 
   response_head.ssl_info = std::move(ssl_info);
   // TODO(https://crbug.com/815025): Verify the Certificate Transparency status.

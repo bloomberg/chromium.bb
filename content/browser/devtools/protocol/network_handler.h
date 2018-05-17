@@ -6,11 +6,13 @@
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_NETWORK_HANDLER_H_
 
 #include <memory>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
@@ -26,6 +28,7 @@ class UnguessableToken;
 namespace net {
 class HttpRequestHeaders;
 class URLRequest;
+class SSLInfo;
 }  // namespace net
 
 namespace network {
@@ -43,6 +46,7 @@ class InterceptionHandle;
 class NavigationHandle;
 class NavigationRequest;
 class NavigationThrottle;
+class SignedExchangeHeader;
 class StoragePartition;
 struct GlobalRequestID;
 struct InterceptedRequestInfo;
@@ -160,7 +164,10 @@ class NetworkHandler : public DevToolsDomainHandler,
   void OnSignedExchangeReceived(
       base::Optional<const base::UnguessableToken> devtools_navigation_token,
       const GURL& outer_request_url,
-      const network::ResourceResponseHead& outer_response);
+      const network::ResourceResponseHead& outer_response,
+      const base::Optional<SignedExchangeHeader>& header,
+      const base::Optional<net::SSLInfo>& ssl_info,
+      const std::vector<std::string>& error_messages);
 
   bool enabled() const { return enabled_; }
 
