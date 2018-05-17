@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/browser/ui/webui/md_history_ui.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/find_in_page_observer.h"
@@ -1474,6 +1476,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   FindBar* find_bar = browser()->GetFindBarController()->find_bar();
   if (!find_bar->HasGlobalFindPasteboard())
     return;
+
+#if defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!views_mode_controller::IsViewsBrowserCocoa()) {
+    // TODO(http://crbug.com/843878): Remove the interactive UI test
+    // FindBarPlatformHelperMacInteractiveUITest.GlobalPasteBoardClearMatches
+    // once http://crbug.com/843878 is fixed.
+    return;
+  }
+#endif
 
   // First we navigate to any page.
   GURL url = GetURL(kSimple);
