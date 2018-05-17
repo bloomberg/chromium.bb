@@ -6,11 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_SURFACE_LAYER_BRIDGE_H_
 
 #include <memory>
+
 #include "base/memory/scoped_refptr.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -41,7 +41,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   void OnFirstSurfaceActivation(const viz::SurfaceInfo&) override;
 
   // Implementation of WebSurfaceLayerBridge.
-  WebLayer* GetWebLayer() const override { return cc_layer_.get(); }
+  cc::Layer* GetWebLayer() const override { return cc_layer_.get(); }
   void ClearSurfaceId() override;
 
   const viz::FrameSinkId& GetFrameSinkId() const override {

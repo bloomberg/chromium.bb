@@ -40,8 +40,6 @@
 #include "base/test/test_discardable_memory_allocator.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/platform/interface_provider.h"
-#include "third_party/blink/public/platform/web_external_texture_layer.h"
-#include "third_party/blink/public/platform/web_image_layer.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/platform/font_family_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"

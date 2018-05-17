@@ -28,13 +28,13 @@
 
 #include "base/callback.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/layers/layer.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "third_party/blink/public/platform/web_browser_controls_state.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_event_listener_properties.h"
 #include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -75,8 +75,7 @@ class WebLayerTreeView {
   // Initialization and lifecycle --------------------------------------
 
   // Sets the root of the tree. The root is set by way of the constructor.
-  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
-  virtual void SetRootLayer(WebLayer*) {}
+  virtual void SetRootLayer(scoped_refptr<cc::Layer>) {}
   virtual void ClearRootLayer() {}
 
   // TODO(loyso): This should use CompositorAnimationHost. crbug.com/584551
@@ -165,13 +164,12 @@ class WebLayerTreeView {
   virtual void SetDeferCommits(bool defer_commits) {}
 
   struct ViewportLayers {
-    // TODO(danakj): These should be a scoped_refptr<cc::Layer>.
-    WebLayer* overscroll_elasticity = nullptr;
-    WebLayer* page_scale = nullptr;
-    WebLayer* inner_viewport_container = nullptr;
-    WebLayer* outer_viewport_container = nullptr;
-    WebLayer* inner_viewport_scroll = nullptr;
-    WebLayer* outer_viewport_scroll = nullptr;
+    scoped_refptr<cc::Layer> overscroll_elasticity;
+    scoped_refptr<cc::Layer> page_scale;
+    scoped_refptr<cc::Layer> inner_viewport_container;
+    scoped_refptr<cc::Layer> outer_viewport_container;
+    scoped_refptr<cc::Layer> inner_viewport_scroll;
+    scoped_refptr<cc::Layer> outer_viewport_scroll;
   };
 
   // Identify key viewport layers to the compositor.

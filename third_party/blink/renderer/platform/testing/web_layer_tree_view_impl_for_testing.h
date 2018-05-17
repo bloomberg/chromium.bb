@@ -9,12 +9,12 @@
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace cc {
 class AnimationHost;
+class Layer;
 class LayerTreeHost;
 class LayerTreeSettings;
 }
@@ -35,11 +35,11 @@ class WebLayerTreeViewImplForTesting
 
   static cc::LayerTreeSettings DefaultLayerTreeSettings();
   cc::LayerTreeHost* GetLayerTreeHost() { return layer_tree_host_.get(); }
-  bool HasLayer(const WebLayer&);
+  bool HasLayer(const cc::Layer&);
   void SetViewportSize(const blink::WebSize&);
 
   // blink::WebLayerTreeView implementation.
-  void SetRootLayer(blink::WebLayer*) override;
+  void SetRootLayer(scoped_refptr<cc::Layer>) override;
   void ClearRootLayer() override;
   cc::AnimationHost* CompositorAnimationHost() override;
   WebSize GetViewportSize() const override;

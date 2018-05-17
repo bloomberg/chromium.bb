@@ -7,20 +7,19 @@
 
 #include "components/viz/common/surfaces/surface_id.h"
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 
 namespace blink {
 
-// Listens for updates made on the WebLayer by the WebSurfaceLayerBridge.
+// Listens for updates made on the cc::Layer by the WebSurfaceLayerBridge.
 class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridgeObserver {
  public:
   // Triggered by resizing or surface layer creation.
   virtual void OnWebLayerUpdated() = 0;
 
   // Called when new a SurfaceLayer is created.
-  virtual void RegisterContentsLayer(WebLayer*) = 0;
-  virtual void UnregisterContentsLayer(WebLayer*) = 0;
+  virtual void RegisterContentsLayer(cc::Layer*) = 0;
+  virtual void UnregisterContentsLayer(cc::Layer*) = 0;
 
   // Called when a SurfaceLayer is activated.
   virtual void OnSurfaceIdUpdated(viz::SurfaceId surface_id){};
@@ -33,7 +32,7 @@ class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridge {
       WebLayerTreeView*,
       WebSurfaceLayerBridgeObserver*);
   virtual ~WebSurfaceLayerBridge();
-  virtual WebLayer* GetWebLayer() const = 0;
+  virtual cc::Layer* GetWebLayer() const = 0;
   virtual const viz::FrameSinkId& GetFrameSinkId() const = 0;
   virtual void ClearSurfaceId() = 0;
 };

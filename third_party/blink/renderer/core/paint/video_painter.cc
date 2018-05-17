@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/video_painter.h"
 
-#include "third_party/blink/public/platform/web_layer.h"
+#include "cc/layers/layer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -50,7 +50,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
       !displaying_poster && !force_software_video_paint &&
       RuntimeEnabledFeatures::SlimmingPaintV2Enabled();
   if (paint_with_foreign_layer) {
-    if (WebLayer* layer = layout_video_.MediaElement()->PlatformLayer()) {
+    if (cc::Layer* layer = layout_video_.MediaElement()->PlatformLayer()) {
       IntRect pixel_snapped_rect = PixelSnappedIntRect(content_rect);
       layer->SetBounds(static_cast<gfx::Size>(pixel_snapped_rect.Size()));
       layer->SetIsDrawable(true);

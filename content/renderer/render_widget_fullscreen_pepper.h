@@ -13,9 +13,12 @@
 #include "content/renderer/mouse_lock_dispatcher.h"
 #include "content/renderer/pepper/fullscreen_container.h"
 #include "content/renderer/render_widget.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "url/gurl.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace content {
 class CompositorDependencies;
@@ -42,7 +45,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   void ScrollRect(int dx, int dy, const blink::WebRect& rect) override;
   void Destroy() override;
   void PepperDidChangeCursor(const blink::WebCursorInfo& cursor) override;
-  void SetLayer(blink::WebLayer* layer) override;
+  void SetLayer(cc::Layer* layer) override;
 
   // RenderWidget overrides.
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -81,7 +84,7 @@ class RenderWidgetFullscreenPepper : public RenderWidget,
   // The plugin instance this widget wraps.
   PepperPluginInstanceImpl* plugin_;
 
-  blink::WebLayer* layer_;
+  cc::Layer* layer_;
 
   std::unique_ptr<MouseLockDispatcher> mouse_lock_dispatcher_;
 

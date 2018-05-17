@@ -40,8 +40,6 @@ include_rules = [
     "+base/trace_event",
     "+base/values.h",
     "+base/lazy_instance.h",
-    # TODO(danakj): For WebLayer, remove it.
-    "+cc/layers/layer.h",
     "+net/base/escape.h",
     "+net/base/filename_util.h",
     "+net/http/http_util.h",

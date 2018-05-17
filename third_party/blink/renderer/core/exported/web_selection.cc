@@ -4,7 +4,6 @@
 
 #include "third_party/blink/public/web/web_selection.h"
 
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/editing/selection_type.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_selection.h"
 

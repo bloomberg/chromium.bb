@@ -211,7 +211,7 @@ GraphicsLayer* WebViewFrameWidget::RootGraphicsLayer() const {
   return web_view_->RootGraphicsLayer();
 }
 
-void WebViewFrameWidget::SetRootLayer(WebLayer* layer) {
+void WebViewFrameWidget::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   web_view_->SetRootLayer(layer);
 }
 

@@ -35,6 +35,7 @@ class UnguessableToken;
 }
 
 namespace cc {
+class Layer;
 class RenderFrameMetadata;
 }
 
@@ -220,7 +221,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
 #endif
 
   // ChildFrameCompositor:
-  blink::WebLayer* GetLayer() override;
+  cc::Layer* GetLayer() override;
   void SetLayer(scoped_refptr<cc::Layer> layer,
                 bool prevent_contents_opaque_changes) override;
   SkBitmap* GetSadPageBitmap() override;

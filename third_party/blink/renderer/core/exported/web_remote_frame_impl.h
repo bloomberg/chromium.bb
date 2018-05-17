@@ -13,6 +13,10 @@
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 
+namespace cc {
+class Layer;
+}
+
 namespace blink {
 
 class FrameOwner;
@@ -56,7 +60,7 @@ class CORE_EXPORT WebRemoteFrameImpl final
                                     const ParsedFeaturePolicy&,
                                     WebRemoteFrameClient*,
                                     WebFrame* opener) override;
-  void SetWebLayer(WebLayer*, bool prevent_contents_opaque_changes) override;
+  void SetWebLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
   void SetReplicatedOrigin(
       const WebSecurityOrigin&,
       bool is_potentially_trustworthy_unique_origin) override;

@@ -10,13 +10,16 @@
 #include "third_party/blink/public/platform/web_drag_data.h"
 #include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "third_party/blink/public/platform/web_gesture_device.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/web/web_frame_widget.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -59,8 +62,8 @@ class CORE_EXPORT WebFrameWidgetBase
   virtual void SetRootGraphicsLayer(GraphicsLayer*) = 0;
   virtual GraphicsLayer* RootGraphicsLayer() const = 0;
 
-  // Sets the root layer. |WebLayer| can be null when detaching the root layer.
-  virtual void SetRootLayer(WebLayer*) = 0;
+  // Sets the root layer. The |layer| can be null when detaching the root layer.
+  virtual void SetRootLayer(scoped_refptr<cc::Layer> layer) = 0;
 
   virtual WebLayerTreeView* GetLayerTreeView() const = 0;
   virtual CompositorAnimationHost* AnimationHost() const = 0;

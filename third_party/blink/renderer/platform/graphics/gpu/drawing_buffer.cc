@@ -47,7 +47,6 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/extensions_3d_util.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
@@ -876,7 +875,7 @@ bool DrawingBuffer::CopyToPlatformTexture(gpu::gles2::GLES2Interface* dst_gl,
   return true;
 }
 
-WebLayer* DrawingBuffer::PlatformLayer() {
+cc::Layer* DrawingBuffer::PlatformLayer() {
   if (!layer_) {
     layer_ = cc::TextureLayer::CreateForMailbox(this);
 

@@ -34,7 +34,6 @@
 #include "media/blink/webmediaplayer_util.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -1005,8 +1004,8 @@ void WebMediaPlayerMS::OnRotationChanged(media::VideoRotation video_rotation,
   DCHECK(thread_checker_.CalledOnValidThread());
   video_rotation_ = video_rotation;
 
-  // Keep the old |video_layer_| and |video_weblayer_| alive until SetWebLayer
-  // is called with a new pointer, as it may use the pointer from the last call.
+  // Keep the old |video_layer_| alive until SetWebLayer() is called with a new
+  // pointer, as it may use the pointer from the last call.
   auto new_video_layer =
       cc::VideoLayer::Create(compositor_.get(), video_rotation);
   new_video_layer->SetContentsOpaque(is_opaque);

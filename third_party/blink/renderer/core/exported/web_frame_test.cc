@@ -8144,11 +8144,11 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   PaintLayerCompositor* compositor = web_view_helper.GetWebView()->Compositor();
   GraphicsLayer* scroll_layer = compositor->ScrollLayer();
   ASSERT_TRUE(scroll_layer);
-  WebLayer* web_scroll_layer = scroll_layer->PlatformLayer();
+  cc::Layer* cc_scroll_layer = scroll_layer->PlatformLayer();
 
-  // Verify that the WebLayer is not scrollable initially.
-  ASSERT_FALSE(web_scroll_layer->user_scrollable_horizontal());
-  ASSERT_FALSE(web_scroll_layer->user_scrollable_vertical());
+  // Verify that the cc::Layer is not scrollable initially.
+  ASSERT_FALSE(cc_scroll_layer->user_scrollable_horizontal());
+  ASSERT_FALSE(cc_scroll_layer->user_scrollable_vertical());
 
   // Call javascript to make the layer scrollable, and verify it.
   WebLocalFrameImpl* frame = web_view_helper.LocalMainFrame();
@@ -8156,9 +8156,9 @@ TEST_F(WebFrameTest, overflowHiddenRewrite) {
   web_view_helper.GetWebView()->UpdateAllLifecyclePhases();
 
   scroll_layer = compositor->ScrollLayer();
-  web_scroll_layer = scroll_layer->PlatformLayer();
-  ASSERT_TRUE(web_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(web_scroll_layer->user_scrollable_vertical());
+  cc_scroll_layer = scroll_layer->PlatformLayer();
+  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
+  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
 }
 
 // Test that currentHistoryItem reflects the current page, not the provisional
@@ -8480,15 +8480,15 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
   web_view_impl->UpdateAllLifecyclePhases();
 
-  WebLayer* web_scroll_layer = web_view_impl->MainFrameImpl()
+  cc::Layer* cc_scroll_layer = web_view_impl->MainFrameImpl()
                                    ->GetFrame()
                                    ->View()
                                    ->LayoutViewportScrollableArea()
                                    ->LayerForScrolling()
                                    ->PlatformLayer();
-  ASSERT_TRUE(web_scroll_layer->scrollable());
-  ASSERT_TRUE(web_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(web_scroll_layer->user_scrollable_vertical());
+  ASSERT_TRUE(cc_scroll_layer->scrollable());
+  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
+  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   Document* document = frame->GetDocument();
@@ -8505,21 +8505,21 @@ TEST_F(WebFrameTest, FullscreenMainFrame) {
             Fullscreen::FullscreenElementFrom(*document));
 
   // Verify that the main frame is still scrollable.
-  web_scroll_layer = web_view_impl->MainFrameImpl()
-                         ->GetFrame()
-                         ->View()
-                         ->LayoutViewportScrollableArea()
-                         ->LayerForScrolling()
-                         ->PlatformLayer();
-  ASSERT_TRUE(web_scroll_layer->scrollable());
-  ASSERT_TRUE(web_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(web_scroll_layer->user_scrollable_vertical());
+  cc_scroll_layer = web_view_impl->MainFrameImpl()
+                        ->GetFrame()
+                        ->View()
+                        ->LayoutViewportScrollableArea()
+                        ->LayerForScrolling()
+                        ->PlatformLayer();
+  ASSERT_TRUE(cc_scroll_layer->scrollable());
+  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
+  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
 
   // Verify the main frame still behaves correctly after a resize.
   web_view_helper.Resize(WebSize(viewport_height, viewport_width));
-  ASSERT_TRUE(web_scroll_layer->scrollable());
-  ASSERT_TRUE(web_scroll_layer->user_scrollable_horizontal());
-  ASSERT_TRUE(web_scroll_layer->user_scrollable_vertical());
+  ASSERT_TRUE(cc_scroll_layer->scrollable());
+  ASSERT_TRUE(cc_scroll_layer->user_scrollable_horizontal());
+  ASSERT_TRUE(cc_scroll_layer->user_scrollable_vertical());
 }
 
 TEST_F(WebFrameTest, FullscreenSubframe) {
@@ -12777,14 +12777,14 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
   EXPECT_NE(nullptr, scrollable_area);
 
   // We should have a composited layer for scrolling due to will-change.
-  WebLayer* web_scroll_layer =
+  cc::Layer* cc_scroll_layer =
       scrollable_area->LayerForScrolling()->PlatformLayer();
-  EXPECT_NE(nullptr, web_scroll_layer);
+  EXPECT_NE(nullptr, cc_scroll_layer);
 
   // Ensure a synthetic impl-side scroll offset propagates to the scrollable
   // area using the DidScroll callback.
   EXPECT_EQ(ScrollOffset(), scrollable_area->GetScrollOffset());
-  web_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
+  cc_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 1));
   web_view->UpdateAllLifecyclePhases();
   EXPECT_EQ(ScrollOffset(0, 1), scrollable_area->GetScrollOffset());
 
@@ -12802,7 +12802,7 @@ TEST_F(WebFrameTest, DidScrollCallbackAfterScrollableAreaChanges) {
 
   // The web scroll layer has not been deleted yet and we should be able to
   // apply impl-side offsets without crashing.
-  web_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
+  cc_scroll_layer->SetScrollOffsetFromImplSide(gfx::ScrollOffset(0, 3));
 }
 
 class SlimmingPaintWebFrameTest : public PaintTestConfigurations,

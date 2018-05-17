@@ -150,9 +150,8 @@ Layer::~Layer() {
   for (auto& observer : observer_list_)
     observer.LayerDestroyed(this);
 
-  // Destroying the animator may cause observers to use the layer (and
-  // indirectly the WebLayer). Destroy the animator first so that the WebLayer
-  // is still around.
+  // Destroying the animator may cause observers to use the layer. Destroy the
+  // animator first so that the layer is still around.
   SetAnimator(nullptr);
   if (compositor_)
     compositor_->SetRootLayer(nullptr);

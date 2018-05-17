@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "cc/layers/layer.h"
 #include "content/public/renderer/media_stream_renderer_factory.h"
 #include "content/renderer/media/stream/webmediaplayer_ms.h"
 #include "content/renderer/media/stream/webmediaplayer_ms_compositor.h"
@@ -21,7 +22,6 @@
 #include "media/video/mock_gpu_memory_buffer_video_frame_pool.h"
 #include "media/video/mock_gpu_video_accelerator_factories.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
@@ -444,8 +444,9 @@ scoped_refptr<MediaStreamVideoRenderer> MockRenderFactory::GetVideoRenderer(
 // content::MediaStreamVideoRenderer.
 // 2. content::MediaStreamVideoRenderer will start pushing frames into
 //    WebMediaPlayerMS repeatedly.
-// 3. On WebMediaPlayerMS receiving the first frame, a WebLayer will be created.
-// 4. The WebLayer will call
+// 3. On WebMediaPlayerMS receiving the first frame, a cc::Layer will be
+//    created.
+// 4. The cc::Layer will call
 //    WebMediaPlayerMSCompositor::SetVideoFrameProviderClient, which in turn
 //    will trigger cc::VideoFrameProviderClient::StartRendering.
 // 5. Then cc::VideoFrameProviderClient will start calling
@@ -480,7 +481,7 @@ class WebMediaPlayerMSTest
             message_loop_.task_runner(),
             gpu_factories_.get(),
             blink::WebString())),
-        web_layer_set_(false),
+        layer_set_(false),
         rendering_(false),
         background_rendering_(false) {}
   ~WebMediaPlayerMSTest() override {
@@ -498,7 +499,7 @@ class WebMediaPlayerMSTest
   void DurationChanged() override {}
   void SizeChanged() override;
   void PlaybackStateChanged() override {}
-  void SetWebLayer(blink::WebLayer* layer) override;
+  void SetWebLayer(cc::Layer* layer) override;
   blink::WebMediaPlayer::TrackId AddAudioTrack(const blink::WebString& id,
                                                AudioTrackKind,
                                                const blink::WebString& label,
@@ -587,7 +588,7 @@ class WebMediaPlayerMSTest
   std::unique_ptr<WebMediaPlayerMS> player_;
   WebMediaPlayerMSCompositor* compositor_;
   ReusableMessageLoopEvent message_loop_controller_;
-  blink::WebLayer* web_layer_;
+  cc::Layer* layer_;
   bool is_audio_element_ = false;
   std::vector<base::OnceClosure> frame_ready_cbs_;
 
@@ -596,7 +597,7 @@ class WebMediaPlayerMSTest
   // rendering.
   void RenderFrame();
 
-  bool web_layer_set_;
+  bool layer_set_;
   bool rendering_;
   bool background_rendering_;
 };
@@ -646,13 +647,13 @@ void WebMediaPlayerMSTest::ReadyStateChanged() {
     player_->Play();
 }
 
-void WebMediaPlayerMSTest::SetWebLayer(blink::WebLayer* layer) {
+void WebMediaPlayerMSTest::SetWebLayer(cc::Layer* layer) {
   // Make sure that the old layer is still alive, see http://crbug.com/705448.
-  if (web_layer_set_)
-    EXPECT_TRUE(web_layer_ != nullptr);
-  web_layer_set_ = layer ? true : false;
+  if (layer_set_)
+    EXPECT_TRUE(layer_ != nullptr);
+  layer_set_ = layer ? true : false;
 
-  web_layer_ = layer;
+  layer_ = layer;
   if (layer)
     compositor_->SetVideoFrameProviderClient(this);
   DoSetWebLayer(!!layer);
@@ -988,20 +989,20 @@ TEST_F(WebMediaPlayerMSTest, OpacityChange) {
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  ASSERT_TRUE(web_layer_ != nullptr);
-  EXPECT_TRUE(web_layer_->contents_opaque());
+  ASSERT_TRUE(layer_ != nullptr);
+  EXPECT_TRUE(layer_->contents_opaque());
 
   // Push one transparent frame.
   provider->QueueFrames(timestamps, false);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  EXPECT_FALSE(web_layer_->contents_opaque());
+  EXPECT_FALSE(layer_->contents_opaque());
 
   // Push another opaque frame.
   provider->QueueFrames(timestamps, true);
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  EXPECT_TRUE(web_layer_->contents_opaque());
+  EXPECT_TRUE(layer_->contents_opaque());
 
   testing::Mock::VerifyAndClearExpectations(this);
   EXPECT_CALL(*this, DoSetWebLayer(false));

@@ -28,9 +28,9 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_HTML_MEDIA_HTML_MEDIA_ELEMENT_H_
 
 #include <memory>
+
 #include "base/optional.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
@@ -46,6 +46,10 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/web_task_runner.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -120,7 +124,7 @@ class CORE_EXPORT HTMLMediaElement
 
   bool SupportsSave() const;
 
-  WebLayer* PlatformLayer() const;
+  cc::Layer* PlatformLayer() const;
 
   enum DelayedActionType {
     kLoadMediaResource = 1 << 0,
@@ -399,7 +403,7 @@ class CORE_EXPORT HTMLMediaElement
   void SizeChanged() final;
   void PlaybackStateChanged() final;
 
-  void SetWebLayer(WebLayer*) final;
+  void SetWebLayer(cc::Layer*) final;
   WebMediaPlayer::TrackId AddAudioTrack(const WebString&,
                                         WebMediaPlayerClient::AudioTrackKind,
                                         const WebString&,
@@ -617,7 +621,7 @@ class CORE_EXPORT HTMLMediaElement
   TaskRunnerTimer<HTMLMediaElement> deferred_load_timer_;
 
   std::unique_ptr<WebMediaPlayer> web_media_player_;
-  WebLayer* web_layer_;
+  cc::Layer* cc_layer_;
 
   DisplayMode display_mode_;
 

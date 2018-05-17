@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/layers/layer.h"
 #include "components/viz/test/test_context_provider.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/gmock_callback_support.h"
@@ -44,7 +45,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/web_fullscreen_video_status.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
@@ -131,7 +131,7 @@ class MockWebMediaPlayerClient : public blink::WebMediaPlayerClient {
   MOCK_METHOD0(DurationChanged, void());
   MOCK_METHOD0(SizeChanged, void());
   MOCK_METHOD0(PlaybackStateChanged, void());
-  MOCK_METHOD1(SetWebLayer, void(blink::WebLayer*));
+  MOCK_METHOD1(SetWebLayer, void(cc::Layer*));
   MOCK_METHOD5(AddAudioTrack,
                blink::WebMediaPlayer::TrackId(
                    const blink::WebString&,
@@ -281,7 +281,7 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
 
 class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
  public:
-  MOCK_CONST_METHOD0(GetWebLayer, blink::WebLayer*());
+  MOCK_CONST_METHOD0(GetWebLayer, cc::Layer*());
   MOCK_CONST_METHOD0(GetFrameSinkId, const viz::FrameSinkId&());
   MOCK_METHOD0(ClearSurfaceId, void());
 };

@@ -94,7 +94,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
       scoped_refptr<base::SingleThreadTaskRunner>*) override;
   void SetRootGraphicsLayer(GraphicsLayer*) override;
   GraphicsLayer* RootGraphicsLayer() const override;
-  void SetRootLayer(WebLayer*) override;
+  void SetRootLayer(scoped_refptr<cc::Layer>) override;
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
   WebHitTestResult HitTestResultAt(const WebPoint&) override;

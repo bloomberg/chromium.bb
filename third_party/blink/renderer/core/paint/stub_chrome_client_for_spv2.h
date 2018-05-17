@@ -8,6 +8,10 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 #include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 
+namespace cc {
+class Layer;
+}
+
 namespace blink {
 
 // A simple ChromeClient implementation which forwards painted artifacts to a
@@ -17,13 +21,13 @@ class StubChromeClientForSPv2 : public EmptyChromeClient {
  public:
   StubChromeClientForSPv2() : layer_tree_view_() {}
 
-  bool HasLayer(const WebLayer& layer) {
+  bool HasLayer(const cc::Layer& layer) {
     return layer_tree_view_.HasLayer(layer);
   }
 
-  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
-  void AttachRootLayer(WebLayer* layer, LocalFrame* local_root) override {
-    layer_tree_view_.SetRootLayer(layer);
+  void AttachRootLayer(scoped_refptr<cc::Layer> layer,
+                       LocalFrame* local_root) override {
+    layer_tree_view_.SetRootLayer(std::move(layer));
   }
 
  private:

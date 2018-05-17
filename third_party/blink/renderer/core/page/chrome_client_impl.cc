@@ -694,7 +694,7 @@ void ChromeClientImpl::AttachRootGraphicsLayer(GraphicsLayer* root_layer,
     web_frame->FrameWidgetImpl()->SetRootGraphicsLayer(root_layer);
 }
 
-void ChromeClientImpl::AttachRootLayer(WebLayer* root_layer,
+void ChromeClientImpl::AttachRootLayer(scoped_refptr<cc::Layer> root_layer,
                                        LocalFrame* local_frame) {
   // TODO(dcheng): This seems wrong. Non-local roots shouldn't be calling this
   // function.
@@ -707,7 +707,7 @@ void ChromeClientImpl::AttachRootLayer(WebLayer* root_layer,
   // TODO(dcheng): This should be called before the widget is gone...
   DCHECK(web_frame->FrameWidget() || !root_layer);
   if (web_frame->FrameWidgetImpl())
-    web_frame->FrameWidgetImpl()->SetRootLayer(root_layer);
+    web_frame->FrameWidgetImpl()->SetRootLayer(std::move(root_layer));
 }
 
 void ChromeClientImpl::AttachCompositorAnimationTimeline(

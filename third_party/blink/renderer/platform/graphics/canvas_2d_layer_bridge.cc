@@ -34,7 +34,6 @@
 #include "components/viz/common/resources/transferable_resource.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_metrics.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
@@ -653,7 +652,7 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
   return false;
 }
 
-WebLayer* Canvas2DLayerBridge::Layer() {
+cc::Layer* Canvas2DLayerBridge::Layer() {
   DCHECK(!destruction_in_progress_);
   // Trigger lazy layer creation
   GetOrCreateResourceProvider(kPreferAcceleration);

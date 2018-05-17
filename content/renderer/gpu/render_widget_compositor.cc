@@ -66,7 +66,6 @@
 #include "media/base/media_switches.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
@@ -785,12 +784,12 @@ viz::FrameSinkId RenderWidgetCompositor::GetFrameSinkId() {
   return frame_sink_id_;
 }
 
-void RenderWidgetCompositor::SetRootLayer(blink::WebLayer* layer) {
-  layer_tree_host_->SetRootLayer(layer);
+void RenderWidgetCompositor::SetRootLayer(scoped_refptr<cc::Layer> layer) {
+  layer_tree_host_->SetRootLayer(std::move(layer));
 }
 
 void RenderWidgetCompositor::ClearRootLayer() {
-  layer_tree_host_->SetRootLayer(scoped_refptr<cc::Layer>());
+  layer_tree_host_->SetRootLayer(nullptr);
 }
 
 cc::AnimationHost* RenderWidgetCompositor::CompositorAnimationHost() {

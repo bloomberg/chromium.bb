@@ -33,7 +33,6 @@
 #include "base/memory/ptr_util.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
@@ -3403,7 +3402,7 @@ static void CollectDrawableLayersForLayerListRecursively(
   if (!layer || layer->Client().ShouldThrottleRendering())
     return;
 
-  WebLayer* contents_layer = layer->ContentsLayer();
+  scoped_refptr<cc::Layer> contents_layer = layer->ContentsLayer();
   if (layer->DrawsContent() || contents_layer) {
     ScopedPaintChunkProperties scope(context.GetPaintController(),
                                      layer->GetPropertyTreeState(), *layer,
@@ -3425,7 +3424,7 @@ static void CollectDrawableLayersForLayerListRecursively(
       auto size = contents_layer->bounds();
       RecordForeignLayer(context, *layer,
                          DisplayItem::kForeignLayerContentsWrapper,
-                         contents_layer,
+                         std::move(contents_layer),
                          layer->GetOffsetFromTransformNode() +
                              FloatSize(position.x(), position.y()),
                          IntSize(size.width(), size.height()));
@@ -5775,7 +5774,7 @@ void LocalFrameView::UpdateSubFrameScrollOnMainReason(
                                                .View()
                                                ->LayoutViewportScrollableArea()
                                                ->LayerForScrolling()) {
-    if (WebLayer* platform_layer_for_scrolling =
+    if (cc::Layer* platform_layer_for_scrolling =
             layer_for_scrolling->PlatformLayer()) {
       if (reasons) {
         platform_layer_for_scrolling->AddMainThreadScrollingReasons(reasons);
@@ -5880,7 +5879,7 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
   DCHECK(Lifecycle().GetState() >= DocumentLifecycle::kCompositingClean);
   if (GraphicsLayer* layer_for_scrolling =
           LayoutViewportScrollableArea()->LayerForScrolling()) {
-    if (WebLayer* platform_layer = layer_for_scrolling->PlatformLayer()) {
+    if (cc::Layer* platform_layer = layer_for_scrolling->PlatformLayer()) {
       String result(MainThreadScrollingReason::mainThreadScrollingReasonsAsText(
                         platform_layer->main_thread_scrolling_reasons())
                         .c_str());

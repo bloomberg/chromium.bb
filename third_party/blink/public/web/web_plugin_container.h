@@ -33,8 +33,11 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_CONTAINER_H_
 
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "v8/include/v8.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -138,7 +141,8 @@ class WebPluginContainer {
 
   // Sets the layer representing the plugin for compositing. The
   // WebPluginContainer does *not* take ownership.
-  virtual void SetWebLayer(WebLayer*, bool prevent_contents_opaque_changes) = 0;
+  virtual void SetWebLayer(cc::Layer*,
+                           bool prevent_contents_opaque_changes) = 0;
 
   virtual void RequestFullscreen() = 0;
   virtual bool IsFullscreenElement() const = 0;

@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_PAINT_FOREIGN_LAYER_DISPLAY_ITEM_H_
 
 #include "base/memory/ref_counted.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
@@ -58,7 +57,7 @@ class PLATFORM_EXPORT ForeignLayerDisplayItem final : public DisplayItem {
 PLATFORM_EXPORT void RecordForeignLayer(GraphicsContext&,
                                         const DisplayItemClient&,
                                         DisplayItem::Type,
-                                        WebLayer*,
+                                        scoped_refptr<cc::Layer>,
                                         const FloatPoint& location,
                                         const IntSize& bounds);
 

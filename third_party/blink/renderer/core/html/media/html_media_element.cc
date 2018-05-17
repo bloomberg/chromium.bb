@@ -38,7 +38,6 @@
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_inband_text_track.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -482,7 +481,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
       deferred_load_timer_(document.GetTaskRunner(TaskType::kInternalMedia),
                            this,
                            &HTMLMediaElement::DeferredLoadTimerFired),
-      web_layer_(nullptr),
+      cc_layer_(nullptr),
       display_mode_(kUnknown),
       official_playback_position_(0),
       official_playback_position_needs_update_(true),
@@ -3362,8 +3361,8 @@ bool HTMLMediaElement::IsAutoplayingMuted() {
 
 // MediaPlayerPresentation methods
 void HTMLMediaElement::Repaint() {
-  if (web_layer_)
-    web_layer_->SetNeedsDisplay();
+  if (cc_layer_)
+    cc_layer_->SetNeedsDisplay();
 
   UpdateDisplayState();
   if (GetLayoutObject())
@@ -3651,8 +3650,8 @@ void HTMLMediaElement::DidExitFullscreen() {
   in_overlay_fullscreen_video_ = false;
 }
 
-WebLayer* HTMLMediaElement::PlatformLayer() const {
-  return web_layer_;
+cc::Layer* HTMLMediaElement::PlatformLayer() const {
+  return cc_layer_;
 }
 
 bool HTMLMediaElement::HasClosedCaptions() const {
@@ -3942,20 +3941,20 @@ WebMediaPlayer::CORSMode HTMLMediaElement::CorsMode() const {
   return WebMediaPlayer::kCORSModeAnonymous;
 }
 
-void HTMLMediaElement::SetWebLayer(WebLayer* web_layer) {
-  if (web_layer == web_layer_)
+void HTMLMediaElement::SetWebLayer(cc::Layer* cc_layer) {
+  if (cc_layer == cc_layer_)
     return;
 
   // If either of the layers is null we need to enable or disable compositing.
   // This is done by triggering a style recalc.
-  if (!web_layer_ || !web_layer)
+  if (!cc_layer_ || !cc_layer)
     SetNeedsCompositingUpdate();
 
-  if (web_layer_)
-    GraphicsLayer::UnregisterContentsLayer(web_layer_);
-  web_layer_ = web_layer;
-  if (web_layer_)
-    GraphicsLayer::RegisterContentsLayer(web_layer_);
+  if (cc_layer_)
+    GraphicsLayer::UnregisterContentsLayer(cc_layer_);
+  cc_layer_ = cc_layer;
+  if (cc_layer_)
+    GraphicsLayer::RegisterContentsLayer(cc_layer_);
 }
 
 void HTMLMediaElement::MediaSourceOpened(WebMediaSource* web_media_source) {

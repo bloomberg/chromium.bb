@@ -43,7 +43,6 @@
 #include "media/renderers/paint_canvas_video_renderer.h"
 #include "third_party/blink/public/platform/web_audio_source_provider.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_result.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "url/gurl.h"
@@ -121,8 +120,8 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
 
   // WebSurfaceLayerBridgeObserver implementation.
   void OnWebLayerUpdated() override;
-  void RegisterContentsLayer(blink::WebLayer* web_layer) override;
-  void UnregisterContentsLayer(blink::WebLayer* web_layer) override;
+  void RegisterContentsLayer(cc::Layer* layer) override;
+  void UnregisterContentsLayer(cc::Layer* layer) override;
   void OnSurfaceIdUpdated(viz::SurfaceId surface_id) override;
 
   void Load(LoadType load_type,

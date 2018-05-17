@@ -11,6 +11,10 @@
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 
+namespace cc {
+class Layer;
+}
+
 namespace blink {
 
 class ImageBitmap;
@@ -38,7 +42,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final;
 
-  WebLayer* PlatformLayer() const final;
+  cc::Layer* PlatformLayer() const final;
   // TODO(junov): handle lost contexts when content is GPU-backed
   void LoseContext(LostContextMode) override {}
 

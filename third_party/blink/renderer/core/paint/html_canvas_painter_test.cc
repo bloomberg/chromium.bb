@@ -7,7 +7,7 @@
 #include <memory>
 #include <utility>
 
-#include "third_party/blink/public/platform/web_layer.h"
+#include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
@@ -60,7 +60,7 @@ class HTMLCanvasPainterTestForSPv2 : public PaintControllerPaintTest {
 
   ChromeClient& GetChromeClient() const override { return *chrome_client_; }
 
-  bool HasLayerAttached(const WebLayer& layer) {
+  bool HasLayerAttached(const cc::Layer& layer) {
     return chrome_client_->HasLayer(layer);
   }
 
@@ -102,7 +102,7 @@ TEST_P(HTMLCanvasPainterTestForSPv2, Canvas2DLayerAppearsInLayerTree) {
 
   // Fetch the layer associated with the <canvas>, and check that it was
   // correctly configured in the layer tree.
-  const WebLayer* layer = context->PlatformLayer();
+  const cc::Layer* layer = context->PlatformLayer();
   ASSERT_TRUE(layer);
   EXPECT_TRUE(HasLayerAttached(*layer));
   EXPECT_EQ(gfx::Size(300, 200), layer->bounds());

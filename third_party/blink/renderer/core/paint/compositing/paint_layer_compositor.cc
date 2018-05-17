@@ -26,7 +26,6 @@
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 
 #include "base/optional.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
 #include "third_party/blink/renderer/core/animation/document_timeline.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"

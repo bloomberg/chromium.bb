@@ -27,7 +27,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CANVAS_RENDERING_CONTEXT_2D_H_
 
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
@@ -42,6 +41,10 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -247,7 +250,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   bool IsTransformInvertible() const override;
 
-  WebLayer* PlatformLayer() const override;
+  cc::Layer* PlatformLayer() const override;
   bool IsCanvas2DBufferValid() const override;
 
   Member<HitRegionManager> hit_region_manager_;

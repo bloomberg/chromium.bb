@@ -36,6 +36,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/layers/layer.h"
 #include "third_party/blink/public/mojom/page/page_visibility_state.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_point.h"
@@ -2240,7 +2241,7 @@ WebPagePopupImpl* WebViewImpl::GetPagePopup() const {
 }
 
 bool WebViewImpl::IsAcceleratedCompositingActive() const {
-  return root_layer_;
+  return !!root_layer_;
 }
 
 void WebViewImpl::WillCloseLayerTreeView() {
@@ -3525,14 +3526,14 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
   // Get the outer viewport scroll layers.
   GraphicsLayer* layout_viewport_container_layer =
       GetPage()->GlobalRootScrollerController().RootContainerLayer();
-  WebLayer* layout_viewport_container_web_layer =
+  cc::Layer* layout_viewport_container_cc_layer =
       layout_viewport_container_layer
           ? layout_viewport_container_layer->PlatformLayer()
           : nullptr;
 
   GraphicsLayer* layout_viewport_scroll_layer =
       GetPage()->GlobalRootScrollerController().RootScrollerLayer();
-  WebLayer* layout_viewport_scroll_web_layer =
+  cc::Layer* layout_viewport_scroll_cc_layer =
       layout_viewport_scroll_layer
           ? layout_viewport_scroll_layer->PlatformLayer()
           : nullptr;
@@ -3546,11 +3547,10 @@ void WebViewImpl::RegisterViewportLayersWithCompositor() {
       visual_viewport.PageScaleLayer()->PlatformLayer();
   viewport_layers.inner_viewport_container =
       visual_viewport.ContainerLayer()->PlatformLayer();
-  viewport_layers.outer_viewport_container =
-      layout_viewport_container_web_layer;
+  viewport_layers.outer_viewport_container = layout_viewport_container_cc_layer;
   viewport_layers.inner_viewport_scroll =
       visual_viewport.ScrollLayer()->PlatformLayer();
-  viewport_layers.outer_viewport_scroll = layout_viewport_scroll_web_layer;
+  viewport_layers.outer_viewport_scroll = layout_viewport_scroll_cc_layer;
 
   layer_tree_view_->RegisterViewportLayers(viewport_layers);
 }
@@ -3592,8 +3592,7 @@ void WebViewImpl::SetRootGraphicsLayer(GraphicsLayer* graphics_layer) {
   }
 }
 
-// TODO(danakj): This should be a scoped_refptr<cc::Layer>.
-void WebViewImpl::SetRootLayer(WebLayer* layer) {
+void WebViewImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   if (!layer_tree_view_)
     return;
 

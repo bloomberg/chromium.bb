@@ -151,7 +151,8 @@ class CORE_EXPORT ChromeClientImpl final : public ChromeClient {
 
   void AttachRootGraphicsLayer(GraphicsLayer*, LocalFrame* local_root) override;
 
-  void AttachRootLayer(WebLayer*, LocalFrame* local_root) override;
+  void AttachRootLayer(scoped_refptr<cc::Layer>,
+                       LocalFrame* local_root) override;
 
   void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                          LocalFrame*) override;

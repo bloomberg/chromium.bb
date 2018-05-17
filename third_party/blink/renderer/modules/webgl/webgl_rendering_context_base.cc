@@ -6424,7 +6424,7 @@ uint32_t WebGLRenderingContextBase::NumberOfContextLosses() const {
   return context_group_->NumberOfContextLosses();
 }
 
-WebLayer* WebGLRenderingContextBase::PlatformLayer() const {
+cc::Layer* WebGLRenderingContextBase::PlatformLayer() const {
   return isContextLost() ? nullptr : GetDrawingBuffer()->PlatformLayer();
 }
 

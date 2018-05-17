@@ -34,8 +34,8 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "cc/animation/scroll_offset_animation_curve.h"
+#include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/animation/compositor_keyframe_model.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -47,7 +47,7 @@ namespace blink {
 
 namespace {
 
-WebLayer* ToWebLayer(GraphicsLayer* layer) {
+cc::Layer* ToCcLayer(GraphicsLayer* layer) {
   return layer ? layer->PlatformLayer() : nullptr;
 }
 
@@ -371,16 +371,16 @@ void ScrollAnimator::AddMainThreadScrollingReason() {
   // is a special case because its subframes cannot be scrolled
   // when the reason is set. When the subframes are ready to scroll
   // the reason has benn reset.
-  if (WebLayer* scroll_layer =
-          ToWebLayer(GetScrollableArea()->LayerForScrolling())) {
+  if (cc::Layer* scroll_layer =
+          ToCcLayer(GetScrollableArea()->LayerForScrolling())) {
     scroll_layer->AddMainThreadScrollingReasons(
         MainThreadScrollingReason::kHandlingScrollFromMainThread);
   }
 }
 
 void ScrollAnimator::RemoveMainThreadScrollingReason() {
-  if (WebLayer* scroll_layer =
-          ToWebLayer(GetScrollableArea()->LayerForScrolling())) {
+  if (cc::Layer* scroll_layer =
+          ToCcLayer(GetScrollableArea()->LayerForScrolling())) {
     scroll_layer->ClearMainThreadScrollingReasons(
         MainThreadScrollingReason::kHandlingScrollFromMainThread);
   }

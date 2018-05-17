@@ -32,12 +32,15 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_EXPORTED_WEB_PAGE_POPUP_IMPL_H_
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/web/web_page_popup.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/page/page_popup.h"
 #include "third_party/blink/renderer/core/page/page_widget_delegate.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -121,14 +124,13 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   Persistent<Page> page_;
   Persistent<PagePopupChromeClient> chrome_client_;
   PagePopupClient* popup_client_;
-  bool closing_;
+  bool closing_ = false;
 
-  WebLayerTreeView* layer_tree_view_;
-  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
-  WebLayer* root_layer_;
-  GraphicsLayer* root_graphics_layer_;
+  WebLayerTreeView* layer_tree_view_ = nullptr;
+  scoped_refptr<cc::Layer> root_layer_;
+  GraphicsLayer* root_graphics_layer_ = nullptr;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
-  bool is_accelerated_compositing_active_;
+  bool is_accelerated_compositing_active_ = false;
 
   friend class WebPagePopup;
   friend class PagePopupChromeClient;

@@ -32,7 +32,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/web_layer.h"
+#include "cc/layers/layer.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_base.h"
@@ -77,8 +77,8 @@ void PageOverlay::Update() {
 
     // This is required for contents of overlay to stay in sync with the page
     // while scrolling.
-    WebLayer* platform_layer = layer_->PlatformLayer();
-    platform_layer->AddMainThreadScrollingReasons(
+    cc::Layer* cc_layer = layer_->PlatformLayer();
+    cc_layer->AddMainThreadScrollingReasons(
         MainThreadScrollingReason::kPageOverlay);
     if (frame->IsMainFrame()) {
       frame->GetPage()->GetVisualViewport().ContainerLayer()->AddChild(

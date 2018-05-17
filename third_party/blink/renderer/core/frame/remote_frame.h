@@ -6,11 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_H_
 
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/remote_security_context.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -41,8 +44,8 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   void DidResume() override;
   void SetIsInert(bool) override;
 
-  void SetWebLayer(WebLayer*, bool prevent_contents_opaque_changes);
-  WebLayer* GetWebLayer() const { return web_layer_; }
+  void SetWebLayer(cc::Layer*, bool prevent_contents_opaque_changes);
+  cc::Layer* GetWebLayer() const { return cc_layer_; }
   bool WebLayerHasFixedContentsOpaque() const {
     return prevent_contents_opaque_changes_;
   }
@@ -68,7 +71,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
 
   Member<RemoteFrameView> view_;
   Member<RemoteSecurityContext> security_context_;
-  WebLayer* web_layer_ = nullptr;
+  cc::Layer* cc_layer_ = nullptr;
   bool prevent_contents_opaque_changes_ = false;
 };
 
