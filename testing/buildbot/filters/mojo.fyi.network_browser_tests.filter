@@ -10,16 +10,10 @@
 -DisabledSignInIsolationBrowserTest.SyntheticTrial
 -DomainReliabilityBrowserTest.Upload
 -EnabledSignInIsolationBrowserTest.SyntheticTrial
--ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
--ExpectCTBrowserTest.TestDynamicExpectCTReporting
 -ExtensionUnloadBrowserTest.UnloadWithContentScripts
 -MediaGalleriesPlatformAppBrowserTest.ToURL
 -NetInternalsTest.netInternalsSessionBandwidthSucceed
 -NewlibPackagedAppTest.SuccessfulLoad
--PKPModelClientTest.PKPBypass/0
--PKPModelClientTest.PKPBypass/1
--PKPModelClientTest.PKPEnforced/0
--PKPModelClientTest.PKPEnforced/1
 -PolicyTest.DefaultCookiesSetting
 -PreviewsOptimizationGuideBrowserTest.NoScriptPreviewsEnabledByWhitelist
 -ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed
@@ -27,11 +21,31 @@
 -ProxySettingsApiTest.ProxyEventsInvalidProxy
 -RegisterProtocolHandlerBrowserTest.CustomHandler
 -SubresourceFilterBrowserTest.FailedProvisionalLoadInMainframe
--TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
 -WebstoreInstallerBrowserTest.SimultaneousInstall
+-WebViewTest.WebViewInBackgroundPage
+
+# Move ChromeExpectCTReporter to services/network
+# https://crbug.com/844032
+-ExpectCTBrowserTest.TestDynamicExpectCTHeaderProcessing
+-ExpectCTBrowserTest.TestDynamicExpectCTReporting
+
+# Add a testing method to call AddHPKP in NetworkContext.
+# https://crbug.com/844034
+-PKPModelClientTest.PKPBypass/0
+-PKPModelClientTest.PKPBypass/1
+-PKPModelClientTest.PKPEnforced/0
+-PKPModelClientTest.PKPEnforced/1
+
+# Task manager and network service. https://crbug.com/822415
+-TaskManagerUtilityProcessBrowserTest.UtilityJSHeapMemory
+
+# https://crbug.com/721398
 -WebViewTest.ClearData
 -WebViewTest.ClearDataCache
--WebViewTest.WebViewInBackgroundPage
+
+# Non-navigation downloads don't go through RequestLimiter (
+# https://crbug.com/843631). Once that's fixed, WebContentsDelegate::CanDownload
+# will be called for other downloads and that'll fix the test.
 -WebViewTest.DownloadPermission
 
 # Need a test interface API that allows us to check on the CT status.
@@ -209,7 +223,8 @@
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeader
 -ChromeResourceDispatcherHostDelegateBrowserTest.PolicyHeaderForRedirect
 
-# Add support of download_to_file for URLLoader.
+# download_to_file is only used by PNaCl at this point and it will be removed
+# soon as it has almost zero usage. At that point these tests should be deleted.
 # http://crbug.com/791702
 -OutOfProcessPPAPITest.FileRef1
 -OutOfProcessPPAPITest.FileRef2
@@ -217,12 +232,12 @@
 -PPAPINaClNewlibTest.FileRef1
 -PPAPINaClNewlibTest.FileRef2
 -PPAPINaClNewlibTest.URLLoader1
-# Note: the next 3 tests pass locally but fail on bot.
 -PPAPINaClPNaClNonSfiTest.FileRef1
 -PPAPINaClPNaClNonSfiTest.FileRef2
 -PPAPINaClPNaClNonSfiTest.URLLoader1
 
 # Requires a replacement for ChromeNetworkDelegate.
+# http://crbug.com/841309
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromResourceRequest
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
 
