@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
+#include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
 
 namespace blink {
 
@@ -90,6 +91,15 @@ bool NGPhysicalBoxFragment::ShouldClipOverflow() const {
   DCHECK(layout_object);
   return layout_object->IsBox() &&
          ToLayoutBox(layout_object)->ShouldClipOverflow();
+}
+
+LayoutRect NGPhysicalBoxFragment::OverflowClipRect(
+    const LayoutPoint& location,
+    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
+  const LayoutObject* layout_object = GetLayoutObject();
+  DCHECK(layout_object && layout_object->IsBox());
+  return ToLayoutBox(layout_object)
+      ->OverflowClipRect(location, overlay_scrollbar_clip_behavior);
 }
 
 NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfVisualRect() const {
