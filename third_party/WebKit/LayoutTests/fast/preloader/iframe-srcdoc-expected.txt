@@ -1,5 +1,5 @@
 CONSOLE MESSAGE: line 1: PASS
-This test has to be run using `ContentShell --run-layout-tests` in order to see if resources were loaded and the test passed. 
+This test has to be run using `ContentShell --run-web-tests` in order to see if resources were loaded and the test passed. 
 
 --------
 Frame: '<!--framePath //<!--frame0-->-->'
