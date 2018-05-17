@@ -16,7 +16,6 @@
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/app_list/search/history_types.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/test/fake_app_list_model_updater.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -119,8 +118,7 @@ class MixerTest : public testing::Test {
     mixer_ = std::make_unique<Mixer>(model_updater_.get());
 
     // TODO(warx): when fullscreen app list is default enabled, modify this test
-    // to (1) test answer card/apps group having relevance boost, (2) remove
-    // known results boost tests.
+    // to test answer card/apps group having relevance boost.
     size_t apps_group_id = mixer_->AddGroup(kMaxAppsGroupResults, 1.0, 0.0);
     size_t omnibox_group_id = mixer_->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
     size_t webstore_group_id = mixer_->AddGroup(kMaxWebstoreResults, 0.5, 0.0);
@@ -136,7 +134,7 @@ class MixerTest : public testing::Test {
     for (size_t i = 0; i < providers_.size(); ++i)
       providers_[i]->Start(query);
 
-    mixer_->MixAndPublish(known_results_, kMaxSearchResults);
+    mixer_->MixAndPublish(kMaxSearchResults);
   }
 
   std::string GetResults() const {
@@ -157,14 +155,9 @@ class MixerTest : public testing::Test {
   TestSearchProvider* omnibox_provider() { return providers_[1].get(); }
   TestSearchProvider* webstore_provider() { return providers_[2].get(); }
 
-  void AddKnownResult(const std::string& id, KnownResultType type) {
-    known_results_[id] = type;
-  }
-
  private:
   std::unique_ptr<Mixer> mixer_;
   std::unique_ptr<FakeAppListModelUpdater> model_updater_;
-  KnownResults known_results_;
 
   std::vector<std::unique_ptr<TestSearchProvider>> providers_;
 
@@ -241,26 +234,6 @@ TEST_F(MixerTest, RemoveDuplicates) {
 
   // Only three results with unique id are kept.
   EXPECT_EQ("dup0,dup1,dup2", GetResults());
-}
-
-// Tests that "known results" are not considered for recommendation results.
-TEST_F(MixerTest, KnownResultsIgnoredForRecommendations) {
-  // This gives omnibox 0 -- 5.
-  omnibox_provider()->set_count(6);
-  omnibox_provider()->SetDisplayType(
-      ash::SearchResultDisplayType::kRecommendation);
-
-  // omnibox 1 -- 4 are "known results".
-  AddKnownResult("omnibox1", PREFIX_SECONDARY);
-  AddKnownResult("omnibox2", PERFECT_SECONDARY);
-  AddKnownResult("omnibox3", PREFIX_PRIMARY);
-  AddKnownResult("omnibox4", PERFECT_PRIMARY);
-
-  RunQuery();
-
-  // omnibox 1 -- 4 should be unaffected despite being known results.
-  EXPECT_EQ("omnibox0,omnibox1,omnibox2,omnibox3,omnibox4,omnibox5",
-            GetResults());
 }
 
 }  // namespace test
