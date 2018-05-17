@@ -8,7 +8,6 @@
 #include "base/memory/ref_counted.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class SequencedTaskRunner;
 }  // namespace base
 
@@ -16,12 +15,12 @@ namespace mojo {
 namespace internal {
 
 // Returns the SequencedTaskRunner to use from the optional user-provided
-// SingleThreadTaskRunner. If |runner| is provided non-null, it is returned.
-// Otherwise, the current SequencedTaskRunner is returned. If |runner| is
-// non-null, it must run on the current thread.
+// SequencedTaskRunner. If |runner| is provided non-null, it is returned.
+// Otherwise, SequencedTaskRunnerHandle::Get() is returned. If |runner| is non-
+// null, it must run tasks on the current sequence.
 scoped_refptr<base::SequencedTaskRunner>
 GetTaskRunnerToUseFromUserProvidedTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> runner);
+    scoped_refptr<base::SequencedTaskRunner> runner);
 
 }  // namespace internal
 }  // namespace mojo

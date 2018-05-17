@@ -58,7 +58,7 @@ void AssociatedInterfacePtrStateBase::Bind(
     ScopedInterfaceEndpointHandle handle,
     uint32_t version,
     std::unique_ptr<MessageReceiver> validator,
-    scoped_refptr<base::SingleThreadTaskRunner> runner) {
+    scoped_refptr<base::SequencedTaskRunner> runner) {
   DCHECK(!endpoint_client_);
   DCHECK_EQ(0u, version_);
   DCHECK(handle.is_valid());

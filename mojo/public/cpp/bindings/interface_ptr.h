@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/interface_ptr_state.h"
@@ -78,12 +78,12 @@ class InterfacePtr {
   // has the same effect as reset(). In this case, the InterfacePtr is not
   // considered as bound.
   //
-  // |runner| must belong to the same thread. It will be used to dispatch all
-  // callbacks and connection error notification. It is useful when you attach
-  // multiple task runners to a single thread for the purposes of task
-  // scheduling.
+  // Optionally, |runner| is a SequencedTaskRunner bound to the current sequence
+  // on which all callbacks and connection error notifications will be
+  // dispatched. It is only useful to specify this to use a different
+  // SequencedTaskRunner than SequencedTaskRunnerHandle::Get().
   void Bind(InterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
+            scoped_refptr<base::SequencedTaskRunner> runner = nullptr) {
     reset();
     if (info.is_valid())
       internal_state_.Bind(std::move(info), std::move(runner));
@@ -219,7 +219,7 @@ class InterfacePtr {
 template <typename Interface>
 InterfacePtr<Interface> MakeProxy(
     InterfacePtrInfo<Interface> info,
-    scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
+    scoped_refptr<base::SequencedTaskRunner> runner = nullptr) {
   InterfacePtr<Interface> ptr;
   if (info.is_valid())
     ptr.Bind(std::move(info), std::move(runner));

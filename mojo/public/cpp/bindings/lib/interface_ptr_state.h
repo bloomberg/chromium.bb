@@ -19,7 +19,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
@@ -71,7 +70,7 @@ class MOJO_CPP_BINDINGS_EXPORT InterfacePtrStateBase {
   void Swap(InterfacePtrStateBase* other);
   void Bind(ScopedMessagePipeHandle handle,
             uint32_t version,
-            scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+            scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   ScopedMessagePipeHandle PassMessagePipe() {
     endpoint_client_.reset();
@@ -144,7 +143,7 @@ class InterfacePtrState : public InterfacePtrStateBase {
   }
 
   void Bind(InterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SingleThreadTaskRunner> runner) {
+            scoped_refptr<base::SequencedTaskRunner> runner) {
     DCHECK(!proxy_);
     InterfacePtrStateBase::Bind(info.PassHandle(), info.version(),
                                 std::move(runner));

@@ -46,7 +46,7 @@ void InterfacePtrStateBase::Swap(InterfacePtrStateBase* other) {
 void InterfacePtrStateBase::Bind(
     ScopedMessagePipeHandle handle,
     uint32_t version,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   DCHECK(!router_);
   DCHECK(!endpoint_client_);
   DCHECK(!handle_.is_valid());

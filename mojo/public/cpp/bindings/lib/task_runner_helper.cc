@@ -5,19 +5,16 @@
 #include "mojo/public/cpp/bindings/lib/task_runner_helper.h"
 
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_task_runner_handle.h"
 
 namespace mojo {
 namespace internal {
 
 scoped_refptr<base::SequencedTaskRunner>
 GetTaskRunnerToUseFromUserProvidedTaskRunner(
-    scoped_refptr<base::SingleThreadTaskRunner> runner) {
+    scoped_refptr<base::SequencedTaskRunner> runner) {
   if (runner) {
-    DCHECK(base::ThreadTaskRunnerHandle::IsSet() &&
-           runner->RunsTasksInCurrentSequence());
+    DCHECK(runner->RunsTasksInCurrentSequence());
     return runner;
   }
   return base::SequencedTaskRunnerHandle::Get();
