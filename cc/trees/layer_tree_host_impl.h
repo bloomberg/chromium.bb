@@ -450,6 +450,7 @@ class CC_EXPORT LayerTreeHostImpl
   LayerTreeFrameSink* layer_tree_frame_sink() const {
     return layer_tree_frame_sink_;
   }
+  int max_texture_size() const { return max_texture_size_; }
   void ReleaseLayerTreeFrameSink();
 
   std::string LayerListAsJson() const;
@@ -864,7 +865,14 @@ class CC_EXPORT LayerTreeHostImpl
   // associated with them anymore, as that is freed at the time of eviction.
   std::set<UIResourceId> evicted_ui_resources_;
 
-  LayerTreeFrameSink* layer_tree_frame_sink_;
+  // These are valid when has_valid_layer_tree_frame_sink_ is true.
+  //
+  // A pointer used for communicating with and submitting output to the display
+  // compositor.
+  LayerTreeFrameSink* layer_tree_frame_sink_ = nullptr;
+  // The maximum size (either width or height) that any texture can be. Also
+  // holds a reasonable value for software compositing bitmaps.
+  int max_texture_size_ = 0;
 
   // The following scoped variables must not outlive the
   // |layer_tree_frame_sink_|.

@@ -39,10 +39,8 @@ namespace cc {
 // created on (in practice, the impl thread).
 class CC_EXPORT LayerTreeResourceProvider {
  public:
-  LayerTreeResourceProvider(
-      viz::ContextProvider* compositor_context_provider,
-      bool delegated_sync_points_required,
-      const viz::ResourceSettings& resource_settings);
+  LayerTreeResourceProvider(viz::ContextProvider* compositor_context_provider,
+                            bool delegated_sync_points_required);
   ~LayerTreeResourceProvider();
 
   static gpu::SyncToken GenerateSyncTokenHelper(gpu::gles2::GLES2Interface* gl);
@@ -88,8 +86,6 @@ class CC_EXPORT LayerTreeResourceProvider {
 
   bool IsSoftware() const { return !compositor_context_provider_; }
 
-  int max_texture_size() const { return settings_.max_texture_size; }
-
   class CC_EXPORT ScopedSkSurface {
    public:
     ScopedSkSurface(GrContext* gr_context,
@@ -112,21 +108,13 @@ class CC_EXPORT LayerTreeResourceProvider {
   };
 
  private:
-  // Holds const settings for the ResourceProvider. Never changed after init.
-  struct Settings {
-    Settings(viz::ContextProvider* compositor_context_provider,
-             bool delegated_sync_points_needed,
-             const viz::ResourceSettings& resource_settings);
-
-    int max_texture_size = 0;
-    bool delegated_sync_points_required = false;
-  } const settings_;
-
   struct ImportedResource;
 
   THREAD_CHECKER(thread_checker_);
+  const bool delegated_sync_points_required_;
+  viz::ContextProvider* const compositor_context_provider_;
+
   base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;
-  viz::ContextProvider* compositor_context_provider_;
   viz::ResourceId next_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeResourceProvider);

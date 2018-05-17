@@ -22,21 +22,6 @@ using gpu::gles2::GLES2Interface;
 
 namespace cc {
 
-LayerTreeResourceProvider::Settings::Settings(
-    viz::ContextProvider* compositor_context_provider,
-    bool delegated_sync_points_required,
-    const viz::ResourceSettings& resource_settings)
-    : delegated_sync_points_required(delegated_sync_points_required) {
-  if (!compositor_context_provider) {
-    // Pick an arbitrary limit here similar to what hardware might.
-    max_texture_size = 16 * 1024;
-    return;
-  }
-
-  GLES2Interface* gl = compositor_context_provider->ContextGL();
-  gl->GetIntegerv(GL_MAX_TEXTURE_SIZE, &max_texture_size);
-}
-
 namespace {
 // The resource id in LayerTreeResourceProvider starts from 1 to avoid
 // conflicts with id from DisplayResourceProvider.
@@ -73,11 +58,8 @@ struct LayerTreeResourceProvider::ImportedResource {
 
 LayerTreeResourceProvider::LayerTreeResourceProvider(
     viz::ContextProvider* compositor_context_provider,
-    bool delegated_sync_points_required,
-    const viz::ResourceSettings& resource_settings)
-    : settings_(compositor_context_provider,
-                delegated_sync_points_required,
-                resource_settings),
+    bool delegated_sync_points_required)
+    : delegated_sync_points_required_(delegated_sync_points_required),
       compositor_context_provider_(compositor_context_provider),
       next_id_(kLayerTreeInitialResourceId) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -133,7 +115,7 @@ void LayerTreeResourceProvider::PrepareSendToParent(
 
   // Lazily create any mailboxes and verify all unverified sync tokens.
   std::vector<GLbyte*> unverified_sync_tokens;
-  if (settings_.delegated_sync_points_required) {
+  if (delegated_sync_points_required_) {
     for (ImportedResource* imported : imports) {
       if (!imported->resource.is_software &&
           !imported->resource.mailbox_holder.sync_token.verified_flush()) {
@@ -144,7 +126,7 @@ void LayerTreeResourceProvider::PrepareSendToParent(
   }
 
   if (!unverified_sync_tokens.empty()) {
-    DCHECK(settings_.delegated_sync_points_required);
+    DCHECK(delegated_sync_points_required_);
     DCHECK(context_provider);
     context_provider->ContextGL()->VerifySyncTokensCHROMIUM(
         unverified_sync_tokens.data(), unverified_sync_tokens.size());

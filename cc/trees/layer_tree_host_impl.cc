@@ -260,7 +260,6 @@ LayerTreeHostImpl::LayerTreeHostImpl(
     : client_(client),
       task_runner_provider_(task_runner_provider),
       current_begin_frame_tracker_(BEGINFRAMETRACKER_FROM_HERE),
-      layer_tree_frame_sink_(nullptr),
       need_update_gpu_rasterization_status_(false),
       content_has_slow_paths_(false),
       content_has_non_aa_paint_(false),
@@ -2696,15 +2695,12 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
       use_gpu_rasterization_);
 
   if (use_gpu_rasterization_) {
-    int max_texture_size = layer_tree_frame_sink_->context_provider()
-                               ->ContextCapabilities()
-                               .max_texture_size;
     image_decode_cache_ = std::make_unique<GpuImageDecodeCache>(
         layer_tree_frame_sink_->worker_context_provider(),
         use_oop_rasterization_,
         viz::ResourceFormatToClosestSkColorType(/*gpu_compositing=*/true,
                                                 tile_format),
-        settings_.decoded_image_working_set_budget_bytes, max_texture_size);
+        settings_.decoded_image_working_set_budget_bytes, max_texture_size_);
   } else {
     bool gpu_compositing = !!layer_tree_frame_sink_->context_provider();
     image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
@@ -2921,10 +2917,19 @@ bool LayerTreeHostImpl::InitializeRenderer(
 
   layer_tree_frame_sink_ = layer_tree_frame_sink;
   has_valid_layer_tree_frame_sink_ = true;
+
+  auto* context_provider = layer_tree_frame_sink_->context_provider();
+  if (context_provider) {
+    max_texture_size_ =
+        context_provider->ContextCapabilities().max_texture_size;
+  } else {
+    // Pick an arbitrary limit here similar to what hardware might.
+    max_texture_size_ = 16 * 1024;
+  }
+
   resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
       layer_tree_frame_sink_->context_provider(),
-      layer_tree_frame_sink_->capabilities().delegated_sync_points_required,
-      settings_.resource_settings);
+      layer_tree_frame_sink_->capabilities().delegated_sync_points_required);
   resource_pool_ = std::make_unique<ResourcePool>(
       resource_provider_.get(), layer_tree_frame_sink_->context_provider(),
       GetTaskRunner(), ResourcePool::kDefaultExpirationDelay,
@@ -4695,13 +4700,12 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   // UIResources are assumed to be rastered in SRGB.
   const gfx::ColorSpace& color_space = gfx::ColorSpace::CreateSRGB();
 
-  int max_texture_size = resource_provider_->max_texture_size();
-  if (source_size.width() > max_texture_size ||
-      source_size.height() > max_texture_size) {
+  if (source_size.width() > max_texture_size_ ||
+      source_size.height() > max_texture_size_) {
     // Must resize the bitmap to fit within the max texture size.
     scaled = true;
     int edge = std::max(source_size.width(), source_size.height());
-    float scale = static_cast<float>(max_texture_size - 1) / edge;
+    float scale = static_cast<float>(max_texture_size_ - 1) / edge;
     DCHECK_LT(scale, 1.f);
     upload_size = gfx::ScaleToCeiledSize(source_size, scale, scale);
   }

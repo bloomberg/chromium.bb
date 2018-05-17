@@ -771,6 +771,10 @@ void PictureLayerImpl::UpdateRasterSource(
   // We could do this after doing UpdateTiles, which would avoid doing this for
   // tilings that are going to disappear on the pending tree (if scale changed).
   // But that would also be more complicated, so we just do it here for now.
+  //
+  // TODO(crbug.com/843787): If the LayerTreeFrameSink is lost, and we activate,
+  // this ends up running with the old LayerTreeFrameSink, or possibly with a
+  // null LayerTreeFrameSink, which can give incorrect results or maybe crash.
   if (pending_set) {
     tilings_->UpdateTilingsToCurrentRasterSourceForActivation(
         raster_source_, pending_set, invalidation_, MinimumContentsScale(),
@@ -932,8 +936,7 @@ bool PictureLayerImpl::ShouldAnimate(PaintImage::Id paint_image_id) const {
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
     const gfx::Size& content_bounds) const {
-  int max_texture_size =
-      layer_tree_impl()->resource_provider()->max_texture_size();
+  int max_texture_size = layer_tree_impl()->max_texture_size();
 
   if (mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK) {
     // Masks are not tiled, so if we can't cover the whole mask with one tile,
@@ -1452,10 +1455,10 @@ float PictureLayerImpl::MaximumContentsScale() const {
   // have tilings that would become larger than the max_texture_size since they
   // use a single tile for the entire tiling. Other layers can have tilings such
   // that dimension * scale does not overflow.
-  float max_dimension = static_cast<float>(
-      mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK
-          ? layer_tree_impl()->resource_provider()->max_texture_size()
-          : std::numeric_limits<int>::max());
+  float max_dimension =
+      static_cast<float>(mask_type_ == Layer::LayerMaskType::SINGLE_TEXTURE_MASK
+                             ? layer_tree_impl()->max_texture_size()
+                             : std::numeric_limits<int>::max());
   float max_scale_width = max_dimension / bounds().width();
   float max_scale_height = max_dimension / bounds().height();
   float max_scale = std::min(max_scale_width, max_scale_height);

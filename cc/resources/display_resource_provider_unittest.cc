@@ -44,8 +44,6 @@
 namespace cc {
 namespace {
 
-static const bool kUseGpuMemoryBufferResources = false;
-
 MATCHER_P(MatchesSyncToken, sync_token, "") {
   gpu::SyncToken other;
   memcpy(&other, arg, sizeof(other));
@@ -79,13 +77,6 @@ static viz::SharedBitmapId CreateAndFillSharedBitmap(
 
   std::fill_n(static_cast<uint32_t*>(shm->memory()), size.GetArea(), value);
   return shared_bitmap_id;
-}
-
-static viz::ResourceSettings CreateResourceSettings() {
-  viz::ResourceSettings resource_settings;
-  resource_settings.use_gpu_memory_buffer_resources =
-      kUseGpuMemoryBufferResources;
-  return resource_settings;
 }
 
 // Shared data between multiple ResourceProviderContext. This contains mailbox
@@ -377,8 +368,7 @@ class DisplayResourceProviderTest : public testing::TestWithParam<bool> {
 
   void MakeChildResourceProvider() {
     child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider_.get(), child_needs_sync_token_,
-        CreateResourceSettings());
+        child_context_provider_.get(), child_needs_sync_token_);
   }
 
   static void CollectResources(

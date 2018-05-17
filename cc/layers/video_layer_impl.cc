@@ -109,7 +109,8 @@ bool VideoLayerImpl::WillDraw(DrawMode draw_mode,
         layer_tree_impl()->resource_provider(),
         settings.use_stream_video_draw_quad,
         settings.resource_settings.use_gpu_memory_buffer_resources,
-        settings.resource_settings.use_r16_texture);
+        settings.resource_settings.use_r16_texture,
+        layer_tree_impl()->max_texture_size());
   }
   updater_->ObtainFrameResources(frame_);
   return true;

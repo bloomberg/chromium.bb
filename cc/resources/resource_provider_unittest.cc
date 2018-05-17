@@ -50,7 +50,6 @@ using testing::AnyNumber;
 namespace cc {
 namespace {
 
-static const bool kUseGpuMemoryBufferResources = false;
 static const bool kDelegatedSyncPointsRequired = true;
 
 MATCHER_P(MatchesSyncToken, sync_token, "") {
@@ -99,13 +98,6 @@ viz::SharedBitmapId CreateAndFillSharedBitmap(viz::SharedBitmapManager* manager,
 
   std::fill_n(static_cast<uint32_t*>(shm->memory()), size.GetArea(), value);
   return shared_bitmap_id;
-}
-
-viz::ResourceSettings CreateResourceSettings() {
-  viz::ResourceSettings resource_settings;
-  resource_settings.use_gpu_memory_buffer_resources =
-      kUseGpuMemoryBufferResources;
-  return resource_settings;
 }
 
 class TextureStateTrackingContext : public viz::TestWebGraphicsContext3D {
@@ -385,8 +377,7 @@ class ResourceProviderTest : public testing::TestWithParam<bool> {
 
   void MakeChildResourceProvider() {
     child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider_.get(), child_needs_sync_token_,
-        CreateResourceSettings());
+        child_context_provider_.get(), child_needs_sync_token_);
   }
 
   static void CollectResources(
@@ -611,8 +602,7 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
 
   bool need_sync_tokens = false;
   auto no_token_resource_provider = std::make_unique<LayerTreeResourceProvider>(
-      child_context_provider_.get(), need_sync_tokens,
-      CreateResourceSettings());
+      child_context_provider_.get(), need_sync_tokens);
 
   GLuint external_texture_id = child_context_->createExternalTexture();
 
@@ -1250,7 +1240,7 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
       nullptr, shared_bitmap_manager_.get());
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      nullptr, kDelegatedSyncPointsRequired, CreateResourceSettings()));
+      nullptr, kDelegatedSyncPointsRequired));
 
   gpu::SyncToken release_sync_token;
   bool lost_resource = false;
@@ -1326,8 +1316,7 @@ class ResourceProviderTestImportedResourceGLFilters
     child_context_provider->BindToCurrentThread();
 
     auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-        child_context_provider.get(), kDelegatedSyncPointsRequired,
-        CreateResourceSettings()));
+        child_context_provider.get(), kDelegatedSyncPointsRequired));
 
     unsigned texture_id = 1;
     gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
@@ -1487,8 +1476,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   child_context_provider->BindToCurrentThread();
 
   auto child_resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      child_context_provider.get(), kDelegatedSyncPointsRequired,
-      CreateResourceSettings()));
+      child_context_provider.get(), kDelegatedSyncPointsRequired));
 
   gpu::SyncToken sync_token(gpu::CommandBufferNamespace::GPU_IO,
                             gpu::CommandBufferId::FromUnsafeValue(0x12), 0x34);
@@ -1724,8 +1712,7 @@ TEST_P(ResourceProviderTest, ImportedResource_PrepareSendToParent_NoSyncToken) {
   context_provider->BindToCurrentThread();
 
   auto resource_provider(std::make_unique<LayerTreeResourceProvider>(
-      context_provider.get(), kDelegatedSyncPointsRequired,
-      CreateResourceSettings()));
+      context_provider.get(), kDelegatedSyncPointsRequired));
 
   EXPECT_CALL(*context, bindTexture(_, _)).Times(0);
   EXPECT_CALL(*context, waitSyncToken(_)).Times(0);

@@ -344,13 +344,15 @@ VideoResourceUpdater::VideoResourceUpdater(
     LayerTreeResourceProvider* resource_provider,
     bool use_stream_video_draw_quad,
     bool use_gpu_memory_buffer_resources,
-    bool use_r16_texture)
+    bool use_r16_texture,
+    int max_resource_size)
     : context_provider_(context_provider),
       shared_bitmap_reporter_(shared_bitmap_reporter),
       resource_provider_(resource_provider),
       use_stream_video_draw_quad_(use_stream_video_draw_quad),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
       use_r16_texture_(use_r16_texture),
+      max_resource_size_(max_resource_size),
       tracing_id_(g_next_video_resource_updater_id.GetNext()),
       weak_ptr_factory_(this) {
   DCHECK(context_provider_ || shared_bitmap_reporter_);
@@ -806,14 +808,13 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
   // TODO(kylechar): Delete resources that are the wrong size for all output
   // planes.
 
-  const int max_resource_size = resource_provider_->max_texture_size();
   std::vector<PlaneResource*> plane_resources;
   for (size_t i = 0; i < output_plane_count; ++i) {
     gfx::Size output_plane_resource_size =
         SoftwarePlaneDimension(video_frame.get(), software_compositor(), i);
     if (output_plane_resource_size.IsEmpty() ||
-        output_plane_resource_size.width() > max_resource_size ||
-        output_plane_resource_size.height() > max_resource_size) {
+        output_plane_resource_size.width() > max_resource_size_ ||
+        output_plane_resource_size.height() > max_resource_size_) {
       // This output plane has invalid geometry. Clean up and return an empty
       // external resources.
       for (auto* plane_resource : plane_resources)

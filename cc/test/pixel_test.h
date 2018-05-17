@@ -71,7 +71,6 @@ class PixelTest : public testing::Test {
   viz::ResourceId AllocateAndFillSoftwareResource(const gfx::Size& size,
                                                   const SkBitmap& source);
 
-  LayerTreeSettings settings_;
   viz::RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;
   bool disable_picture_quad_image_filtering_;
