@@ -31,10 +31,6 @@ constexpr float kDragWindowScale = 0.04f;
 // vertically for it to be closed on release.
 constexpr float kDragToCloseDistanceThresholdDp = 160.f;
 
-// If an item is in drag to close mode, dragging it more than this amount
-// horizontally will change the item to drag to snap mode.
-constexpr int kDragToSnapDistanceThresholdDp = 100;
-
 // Flings with less velocity than this will not close the dragged item.
 constexpr float kFlingToCloseVelocityThreshold = 3000.f;
 constexpr float kItemMinOpacity = 0.4f;
@@ -79,19 +75,7 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
     }
   }
 
-  // Update the drag behavior if needed.
   int x_offset = 0;
-  if (current_drag_behavior_ == DragBehavior::kDragToClose &&
-      std::abs(location_in_screen.x() - initial_event_location_.x()) >
-          kDragToSnapDistanceThresholdDp) {
-    // If the window has moved enough in a horizontal direction while in drag
-    // to close mode, enter drag to snap mode. Reposition the window selector
-    // item to be centered at the latest event location.
-    item_->SetOpacity(original_opacity_);
-    x_offset = location_in_screen.x() - initial_event_location_.x();
-    current_drag_behavior_ = DragBehavior::kDragToSnap;
-  }
-
   // Update the state based on the drag behavior.
   if (current_drag_behavior_ == DragBehavior::kDragToClose) {
     // Update |item_|'s opacity based on its distance. |item_|'s x coordinate
@@ -107,15 +91,14 @@ void OverviewWindowDragController::Drag(const gfx::Point& location_in_screen) {
     item_->SetOpacity(opacity);
   } else if (current_drag_behavior_ == DragBehavior::kDragToSnap) {
     UpdateDragIndicatorsAndWindowGrid(location_in_screen);
-    if (x_offset == 0)
-      x_offset = location_in_screen.x() - previous_event_location_.x();
+    x_offset = location_in_screen.x() - previous_event_location_.x();
   }
 
   // Update the dragged |item_|'s bounds accordingly.
   gfx::Rect bounds(item_->target_bounds());
   bounds.Offset(x_offset,
                 location_in_screen.y() - previous_event_location_.y());
-  item_->SetBounds(bounds, OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
+  item_->SetBounds(bounds, OVERVIEW_ANIMATION_NONE);
   previous_event_location_ = location_in_screen;
 }
 
@@ -166,8 +149,7 @@ void OverviewWindowDragController::StartSplitViewDragMode(
   gfx::Rect scaled_bounds(item_->target_bounds());
   scaled_bounds.Inset(-scaled_bounds.width() * kDragWindowScale,
                       -scaled_bounds.height() * kDragWindowScale);
-  item_->SetBounds(scaled_bounds,
-                   OverviewAnimationType::OVERVIEW_ANIMATION_NONE);
+  item_->SetBounds(scaled_bounds, OVERVIEW_ANIMATION_LAY_OUT_SELECTOR_ITEMS);
 
   did_move_ = true;
   current_drag_behavior_ = DragBehavior::kDragToSnap;

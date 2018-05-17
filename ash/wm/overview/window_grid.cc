@@ -969,6 +969,11 @@ bool WindowGrid::FitWindowRectsInBounds(const gfx::Rect& bounds,
       if (top + height > bounds.bottom() ||
           bounds.x() + width > bounds.right()) {
         windows_fit = false;
+        // If the |ignored_item| is the last item, update |out_max_bottom|
+        // before breaking the loop, but no need to add the height, as the last
+        // item does not contribute to the grid bounds.
+        if (ignored_item && ignored_item == window_list_.back().get())
+          *out_max_bottom = top;
         break;
       }
       left = bounds.x();
