@@ -25,6 +25,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
+#include "base/metrics/histogram_base.h"
+#include "base/metrics/histogram_samples.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
@@ -3647,36 +3650,15 @@ IN_PROC_BROWSER_TEST_F(PolicyStatisticsCollectorTest, Startup) {
   // CompleteInitialization() task has executed as well.
   content::RunAllPendingInMessageLoop();
 
-  GURL kAboutHistograms = GURL(std::string(url::kAboutScheme) +
-                               std::string(url::kStandardSchemeSeparator) +
-                               std::string(content::kChromeUIHistogramHost));
-  ui_test_utils::NavigateToURL(browser(), kAboutHistograms);
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  std::string text;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      contents,
-      "var nodes = document.querySelectorAll('body > pre');"
-      "var result = '';"
-      "for (var i = 0; i < nodes.length; ++i) {"
-      "  var text = nodes[i].innerHTML;"
-      "  if (text.indexOf('Histogram: Enterprise.Policies') === 0) {"
-      "    result = text;"
-      "    break;"
-      "  }"
-      "}"
-      "domAutomationController.send(result);",
-      &text));
-  ASSERT_FALSE(text.empty());
-  const std::string kExpectedLabel =
-      "Histogram: Enterprise.Policies recorded 3 samples";
-  EXPECT_EQ(kExpectedLabel, text.substr(0, kExpectedLabel.size()));
+  base::HistogramBase* histogram =
+      base::StatisticsRecorder::FindHistogram("Enterprise.Policies");
+  std::unique_ptr<base::HistogramSamples> samples(histogram->SnapshotSamples());
   // HomepageLocation has policy ID 1.
-  EXPECT_NE(std::string::npos, text.find("<br>1   ---"));
+  EXPECT_GT(samples->GetCount(1), 0);
   // ShowHomeButton has policy ID 35.
-  EXPECT_NE(std::string::npos, text.find("<br>35  ---"));
+  EXPECT_GT(samples->GetCount(35), 0);
   // BookmarkBarEnabled has policy ID 82.
-  EXPECT_NE(std::string::npos, text.find("<br>82  ---"));
+  EXPECT_GT(samples->GetCount(82), 0);
 }
 
 class MediaStreamDevicesControllerBrowserTest
