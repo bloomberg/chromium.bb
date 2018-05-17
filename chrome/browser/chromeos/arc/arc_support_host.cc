@@ -663,21 +663,27 @@ void ArcSupportHost::OnMessage(const base::DictionaryValue& message) {
           consent_auditor::ConsentStatus::GIVEN);
     }
 
-    // If the user - not policy - chose Backup and Restore, record consent.
-    if (is_backup_restore_enabled && !is_backup_restore_managed) {
+    // If the user - not policy - controls Backup and Restore setting, record
+    // whether consent was given.
+    if (!is_backup_restore_managed) {
       ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
           account_id, consent_auditor::Feature::BACKUP_AND_RESTORE,
           {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE},
           IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
-          consent_auditor::ConsentStatus::GIVEN);
+          is_backup_restore_enabled
+              ? consent_auditor::ConsentStatus::GIVEN
+              : consent_auditor::ConsentStatus::NOT_GIVEN);
     }
 
-    // If the user - not policy - chose Location Services, record consent.
-    if (is_location_service_enabled && !is_location_service_managed) {
+    // If the user - not policy - controls Location Services setting, record
+    // whether consent was given.
+    if (!is_location_service_managed) {
       ConsentAuditorFactory::GetForProfile(profile_)->RecordGaiaConsent(
           account_id, consent_auditor::Feature::GOOGLE_LOCATION_SERVICE,
           {IDS_ARC_OPT_IN_LOCATION_SETTING}, IDS_ARC_OPT_IN_DIALOG_BUTTON_AGREE,
-          consent_auditor::ConsentStatus::GIVEN);
+          is_location_service_enabled
+              ? consent_auditor::ConsentStatus::GIVEN
+              : consent_auditor::ConsentStatus::NOT_GIVEN);
     }
 
     tos_delegate_->OnTermsAgreed(is_metrics_enabled, is_backup_restore_enabled,

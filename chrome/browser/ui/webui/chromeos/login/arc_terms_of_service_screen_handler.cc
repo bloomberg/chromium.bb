@@ -281,21 +281,25 @@ void ArcTermsOfServiceScreenHandler::HandleAccept(
       ArcSupportHost::ComputePlayToSConsentIds(tos_content),
       IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT, consent_auditor::ConsentStatus::GIVEN);
 
-  // If the user - not policy - chose Backup and Restore, record consent.
-  if (enable_backup_restore && !backup_restore_managed_) {
+  // If the user - not policy - controls Backup and Restore setting, record
+  // whether consent was given.
+  if (!backup_restore_managed_) {
     consent_auditor->RecordGaiaConsent(
         account_id, consent_auditor::Feature::BACKUP_AND_RESTORE,
         {IDS_ARC_OPT_IN_DIALOG_BACKUP_RESTORE},
         IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
-        consent_auditor::ConsentStatus::GIVEN);
+        enable_backup_restore ? consent_auditor::ConsentStatus::GIVEN
+                              : consent_auditor::ConsentStatus::NOT_GIVEN);
   }
 
-  // If the user - not policy - chose Location Services, record consent.
-  if (enable_location_services && !location_services_managed_) {
+  // If the user - not policy - controls Location Services setting, record
+  // whether onsent was given.
+  if (!location_services_managed_) {
     consent_auditor->RecordGaiaConsent(
         account_id, consent_auditor::Feature::GOOGLE_LOCATION_SERVICE,
         {IDS_ARC_OPT_IN_LOCATION_SETTING}, IDS_ARC_OOBE_TERMS_BUTTON_ACCEPT,
-        consent_auditor::ConsentStatus::GIVEN);
+        enable_location_services ? consent_auditor::ConsentStatus::GIVEN
+                                 : consent_auditor::ConsentStatus::NOT_GIVEN);
   }
 
   for (auto& observer : observer_list_)
