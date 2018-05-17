@@ -12,6 +12,7 @@
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 
 namespace blink {
@@ -33,6 +34,28 @@ class BlockPainterDelegate : public LayoutBlock {
 };
 
 }  // namespace
+
+void SVGForeignObjectPainter::PaintLayer(const PaintInfo& paint_info) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelection)
+    return;
+
+  // Early out in the case of trying to paint an image filter before
+  // pre-paint has finished.
+  if (!layout_svg_foreign_object_.FirstFragment().HasLocalBorderBoxProperties())
+    return;
+
+  // <foreignObject> is a replaced normal-flow stacking element.
+  // See IsReplacedNormalFlowStacking in paint_layer_painter.cc.
+  PaintLayerPaintingInfo layer_painting_info(
+      layout_svg_foreign_object_.Layer(),
+      LayoutRect(paint_info.GetCullRect().rect_),
+      paint_info.GetGlobalPaintFlags(), LayoutSize());
+  PaintLayerPainter(*layout_svg_foreign_object_.Layer())
+      .Paint(paint_info.context, layer_painting_info, paint_info.PaintFlags());
+}
 
 void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {

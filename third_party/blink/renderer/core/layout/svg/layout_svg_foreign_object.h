@@ -100,6 +100,8 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
   bool needs_transform_update_;
 };
 
+DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutSVGForeignObject, IsSVGForeignObject());
+
 }  // namespace blink
 
 #endif
