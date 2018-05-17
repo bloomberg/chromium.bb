@@ -2907,7 +2907,14 @@ void Document::SetPrinting(PrintingState state) {
   // LayoutView::CanHaveChildren.
   // https://crbug.com/819327.
   if ((was_printing != is_printing) && documentElement() && GetFrame() &&
-      !GetFrame()->IsMainFrame()) {
+      !GetFrame()->IsMainFrame() && GetFrame()->Owner() &&
+      GetFrame()->Owner()->IsDisplayNone()) {
+    // LazyReattachIfAttached() is not idempotent. HTMLObjectElements will lose
+    // their contents, which must be asynchronously regenerated. As such, we
+    // avoid calling this method unless we think that this is a display-none
+    // iframe and calling this is necessary.
+    // This still leaves the edge case of a display: none iframe with an
+    // HTMLObjectElement that doesn't print properly. https://crbug.com/838760.
     documentElement()->LazyReattachIfAttached();
   }
 }
