@@ -11,6 +11,7 @@ commands, and passing the appropriate command line flags and configuration file
 """
 
 import base64
+import hashlib
 import os
 import shutil
 import subprocess
@@ -39,11 +40,11 @@ SEPTEMBER_1_2015_UTC = '150901120000Z'
 # January 1st, 2016 12:00 UTC
 JANUARY_1_2016_UTC = '160101120000Z'
 
+# March 10, 2018 12:00 UTC
+MARCH_10_2018_UTC = '180310120000Z'
+
 # January 1st, 2021 12:00 UTC
 JANUARY_1_2021_UTC = '210101120000Z'
-
-# The default time tests should use when verifying.
-DEFAULT_TIME = MARCH_2_2015_UTC
 
 KEY_PURPOSE_ANY = 'anyExtendedKeyUsage'
 KEY_PURPOSE_SERVER_AUTH = 'serverAuth'
@@ -60,11 +61,12 @@ g_cur_path_id = {}
 
 # See init() for how these are assigned.
 g_tmp_dir = None
+g_invoking_script_path = None
 
 # The default validity range of generated certificates. Can be modified with
 # set_default_validity_range().
-g_default_start_date = JANUARY_1_2015_UTC
-g_default_end_date = JANUARY_1_2016_UTC
+g_default_start_date = MARCH_10_2018_UTC
+g_default_end_date = JANUARY_1_2021_UTC
 
 
 def set_default_validity_range(start_date, end_date):
@@ -226,10 +228,12 @@ class Certificate(object):
     self.finalized = False
 
     # Initialize any files that will be needed if this certificate is used to
-    # sign other certificates. Starts off serial numbers at 1, and will
-    # increment them for each signed certificate.
+    # sign other certificates. Picks a pseudo-random starting serial number
+    # based on the file system path, and will increment this for each signed
+    # certificate.
     if not os.path.exists(self.get_serial_path()):
-      write_string_to_file('01\n', self.get_serial_path())
+      write_string_to_file('%s\n' % self.make_serial_number(),
+                           self.get_serial_path())
     if not os.path.exists(self.get_database_path()):
       write_string_to_file('', self.get_database_path())
 
@@ -295,6 +299,38 @@ class Certificate(object):
 
   def get_serial_path(self):
     return self.get_name_path('.serial')
+
+
+  def make_serial_number(self):
+    """Returns a hex number that is generated based on the certificate file
+    path. This serial number will likely be globally unique, which makes it
+    easier to use the certificates with NSS (which assumes certificate
+    equivalence based on issuer and serial number)."""
+
+    # Hash some predictable values together to get the serial number. The
+    # predictability is so that re-generating certificate chains is
+    # a no-op, however each certificate ends up with a unique serial number.
+    m = hashlib.sha1()
+
+    # Mix in up to the last 3 components of the path for the generating script.
+    # For example,
+    # "verify_certificate_chain_unittest/my_test/generate_chains.py"
+    script_path = os.path.realpath(g_invoking_script_path)
+    script_path = "/".join(script_path.split(os.sep)[-3:])
+    m.update(script_path)
+
+    # Mix in the path_id, which corresponds to a unique path for the
+    # certificate under out/ (and accounts for non-unique certificate names).
+    m.update(self.path_id)
+
+    serial_bytes = m.digest()
+
+    # SHA1 digest is 20 bytes long, which is appropriate for a serial number.
+    # However, need to also make sure the most significant bit is 0 so it is
+    # not a "negative" number.
+    serial_bytes = chr(ord(serial_bytes[0]) & 0x7F) + serial_bytes[1:]
+
+    return serial_bytes.encode("hex")
 
 
   def get_csr_path(self):
@@ -496,6 +532,9 @@ def init(invoking_script_path):
   """
 
   global g_tmp_dir
+  global g_invoking_script_path
+
+  g_invoking_script_path = invoking_script_path
 
   # The scripts assume to be run from within their containing directory (paths
   # to things like "keys/" are written relative).
@@ -508,7 +547,7 @@ def init(invoking_script_path):
         % (expected_cwd))
     sys.exit(1)
 
-  # Use an output directory with the same name as the invoking script.
+  # Use an output directory that is a sibling of the invoking script.
   g_tmp_dir = 'out'
 
   # Ensure the output directory exists and is empty.

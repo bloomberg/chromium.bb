@@ -72,6 +72,8 @@ newintermediate.set_validity_range(JANUARY_2_2015_UTC,
 
 # Target certificate.
 target = gencerts.create_end_entity_certificate('Target', oldintermediate)
+target.set_validity_range(gencerts.JANUARY_1_2015_UTC,
+                          gencerts.JANUARY_1_2016_UTC)
 
 gencerts.write_chain(__doc__,
     [target, oldintermediate, oldroot], out_pem="oldchain.pem")
