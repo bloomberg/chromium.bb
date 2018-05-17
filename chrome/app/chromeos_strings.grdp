@@ -5057,12 +5057,23 @@ Installing the <ph name="APP_NAME">$2<ex>Terminal</ex></ph> will download <ph na
     This will uninstall the <ph name="APP_NAME">$1<ex>Terminal</ex></ph>, and remove all Linux data and applications from your <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>. Are you sure?
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_UNINSTALL_BUTTON" desc="Label for the button in the Crostini uninstaller dialog to uninstall the 'Terminal'.">
-  Uninstall
+    Uninstall
   </message>
   <message name="IDS_CROSTINI_UNINSTALLER_UNINSTALLING_MESSAGE" desc="Text shown in the Crostini installer dialog when the 'Terminal' uninstall is in progress.">
-  Uninstalling...
+    Uninstalling...
   </message>
-    <message name="IDS_CROSTINI_UNINSTALLER_ERROR" desc="Text shown in the Crostini uninstaller dialog when the 'Terminal' uninstall process fails.">
+  <message name="IDS_CROSTINI_UNINSTALLER_ERROR" desc="Text shown in the Crostini uninstaller dialog when the 'Terminal' uninstall process fails.">
     ERROR: Failed to uninstall <ph name="APP_NAME">$1<ex>Terminal</ex></ph>.
+  </message>
+
+  <!-- Time limit notification -->
+  <message name="IDS_SCREEN_TIME_NOTIFICATION_TITLE" desc="The title of the notification when screen usage limit reaches before locking the device.">
+    Almost time for a break
+  </message>
+  <message name="IDS_BED_TIME_NOTIFICATION_TITLE" desc="The title of the notification when bedtime reaches before locking the device.">
+    Lights out soon
+  </message>
+  <message name="IDS_TIME_LIMIT_NOTIFICATION_DISPLAY_SOURCE" desc="The string shown as the display source of the bedtime or screen time notifications.">
+    Family Link
   </message>
 </grit-part>
