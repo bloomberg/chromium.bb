@@ -1260,10 +1260,15 @@ PositionWithAffinity LayoutBlock::PositionForPointIfOutsideAtomicInlineLevel(
   LayoutUnit point_logical_top =
       IsHorizontalWritingMode() ? point.Y() : point.X();
 
-  if (point_logical_left < 0)
-    return CreatePositionWithAffinity(CaretMinOffset());
-  if (point_logical_left >= LogicalWidth())
-    return CreatePositionWithAffinity(CaretMaxOffset());
+  const bool is_ltr = IsLtr(ResolvedDirection());
+  if (point_logical_left < 0) {
+    return CreatePositionWithAffinity(is_ltr ? CaretMinOffset()
+                                             : CaretMaxOffset());
+  }
+  if (point_logical_left >= LogicalWidth()) {
+    return CreatePositionWithAffinity(is_ltr ? CaretMaxOffset()
+                                             : CaretMinOffset());
+  }
   if (point_logical_top < 0)
     return CreatePositionWithAffinity(CaretMinOffset());
   if (point_logical_top >= LogicalHeight())
