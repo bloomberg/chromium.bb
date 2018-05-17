@@ -336,7 +336,6 @@ source_set("blink_headers") {
     "platform/web_public_suffix_list.h",
     "platform/web_rect.h",
     "platform/web_referrer_policy.h",
-    "platform/web_rendering_stats.h",
     "platform/web_resource_timing_info.h",
     "platform/web_rtc_answer_options.h",
     "platform/web_rtc_api_name.h",
