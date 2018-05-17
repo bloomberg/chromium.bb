@@ -27,6 +27,7 @@ if (is_android) {
       ":crazy_linker_bench_load_library",
       ":crazy_linker_test_constructors_destructors",
       ":crazy_linker_test_dl_wrappers",
+      ":crazy_linker_test_dl_wrappers_recursive",
       ":crazy_linker_test_dl_wrappers_valid_handles",
       ":crazy_linker_test_dl_wrappers_with_system_handle",
       ":crazy_linker_test_load_library",
@@ -188,6 +189,9 @@ if (is_android) {
       if (defined(invoker.libs)) {
         libs += invoker.libs
       }
+      if (defined(invoker.defines)) {
+        defines = invoker.defines
+      }
 
       # This is not Chromium code.
       configs -= [ "//build/config/compiler:chromium_code" ]
@@ -272,6 +276,35 @@ if (is_android) {
     libs = [ "dl" ]
   }
 
+  crazy_linker_test_library("crazy_linker_tests_libzoo_dlopen_in_initializer") {
+    sources = [
+      "src/tests/zoo_with_dlopen_in_elf_initializer.cpp",
+    ]
+    defines = [
+      "THIS_LIB_NAME=\"libzoo_dlopen_in_initializer\"",
+      "LIB_NAME=\"libcrazy_linker_tests_libzoo_dlopen_in_initializer_inner.so\"",
+    ]
+    data_deps = [
+      ":crazy_linker_tests_libzoo_dlopen_in_initializer_inner",
+    ]
+    libs = [ "dl" ]
+  }
+
+  crazy_linker_test_library(
+      "crazy_linker_tests_libzoo_dlopen_in_initializer_inner") {
+    sources = [
+      "src/tests/zoo_with_dlopen_in_elf_initializer.cpp",
+    ]
+    defines = [
+      "THIS_LIB_NAME=\"libzoo_dlopen_in_initializer_inner\"",
+      "LIB_NAME=\"libcrazy_linker_tests_libzoo.so\"",
+    ]
+    data_deps = [
+      ":crazy_linker_tests_libzoo",
+    ]
+    libs = [ "dl" ]
+  }
+
   # Integration tests are provided as standalone executables for now.
 
   executable("crazy_linker_bench_load_library") {
@@ -340,6 +373,18 @@ if (is_android) {
     ]
     data_deps = [
       ":crazy_linker_tests_libzoo",
+    ]
+    deps = [
+      ":android_crazy_linker",
+    ]
+  }
+
+  executable("crazy_linker_test_dl_wrappers_recursive") {
+    sources = [
+      "src/tests/test_dl_wrappers_recursive.cpp",
+    ]
+    data_deps = [
+      ":crazy_linker_tests_libzoo_dlopen_in_initializer",
     ]
     deps = [
       ":android_crazy_linker",
