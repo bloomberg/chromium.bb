@@ -43,8 +43,7 @@ void ShowToast(const std::string& id, const std::string& text) {
 // AssistantController ---------------------------------------------------------
 
 AssistantController::AssistantController()
-    : assistant_controller_binding_(this),
-      assistant_event_subscriber_binding_(this),
+    : assistant_event_subscriber_binding_(this),
       assistant_bubble_(std::make_unique<AssistantBubble>(this)) {
   AddInteractionModelObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
@@ -54,13 +53,13 @@ AssistantController::~AssistantController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
   RemoveInteractionModelObserver(this);
 
-  assistant_controller_binding_.Close();
+  assistant_controller_bindings_.CloseAllBindings();
   assistant_event_subscriber_binding_.Close();
 }
 
 void AssistantController::BindRequest(
     mojom::AssistantControllerRequest request) {
-  assistant_controller_binding_.Bind(std::move(request));
+  assistant_controller_bindings_.AddBinding(this, std::move(request));
 }
 
 void AssistantController::SetAssistant(
