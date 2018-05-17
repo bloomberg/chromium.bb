@@ -4,32 +4,53 @@
 
 #include "ui/views/widget/desktop_aura/desktop_screen_ozone.h"
 
+#include "ui/display/display.h"
+#include "ui/display/types/display_constants.h"
+#include "ui/display/types/display_snapshot.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/ozone/public/ozone_platform.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"
 
 namespace views {
 
-DesktopScreenOzone::DesktopScreenOzone() {
-  // TODO(msisov): Turn this hack into a real fetching of displays snapshot,
-  // which will be used to create a real display::Display based on the
-  // information from snapshots.
+DesktopScreenOzone::DesktopScreenOzone()
+    : delegate_(
+          ui::OzonePlatform::GetInstance()->CreateNativeDisplayDelegate()) {
+  delegate_->AddObserver(this);
+  delegate_->Initialize();
+}
+
+DesktopScreenOzone::~DesktopScreenOzone() = default;
+
+void DesktopScreenOzone::OnHostDisplaysReady(
+    const std::vector<display::DisplaySnapshot*>& displays) {
+  DCHECK(!displays.empty());
+  // TODO(msisov): Add support for multiple displays.
+  display::DisplaySnapshot* display_snapshot = displays.front();
+  DCHECK(display_snapshot);
+
   float device_scale_factor = 1.f;
   if (display::Display::HasForceDeviceScaleFactor())
     device_scale_factor = display::Display::GetForcedDeviceScaleFactor();
 
-  gfx::Size scaled_size =
-      gfx::ConvertSizeToDIP(device_scale_factor, gfx::Size(800, 600));
+  gfx::Size scaled_size = gfx::ConvertSizeToDIP(
+      device_scale_factor, display_snapshot->current_mode()->size());
 
-  const int64_t display_id = 1;
-  display::Display display(display_id);
+  display::Display display(display_snapshot->display_id());
   display.set_bounds(gfx::Rect(scaled_size));
-  display.set_work_area(gfx::Rect(0, 0, 800, 600));
+  display.set_work_area(display.bounds());
   display.set_device_scale_factor(device_scale_factor);
 
   ProcessDisplayChanged(display, true /* is_primary */);
 }
 
-DesktopScreenOzone::~DesktopScreenOzone() = default;
+void DesktopScreenOzone::OnConfigurationChanged() {
+  delegate_->GetDisplays(base::BindOnce(
+      &DesktopScreenOzone::OnHostDisplaysReady, base::Unretained(this)));
+}
+
+void DesktopScreenOzone::OnDisplaySnapshotsInvalidated() {}
 
 //////////////////////////////////////////////////////////////////////////////
 

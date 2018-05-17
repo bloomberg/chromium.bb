@@ -11,6 +11,7 @@
 #include "ui/events/system_input_injector.h"
 #include "ui/ozone/common/stub_overlay_manager.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
+#include "ui/ozone/platform/wayland/wayland_native_display_delegate.h"
 #include "ui/ozone/platform/wayland/wayland_surface_factory.h"
 #include "ui/ozone/platform/wayland/wayland_window.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
@@ -70,7 +71,7 @@ class OzonePlatformWayland : public OzonePlatform {
 
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return std::make_unique<display::FakeDisplayDelegate>();
+    return std::make_unique<WaylandNativeDisplayDelegate>(connection_.get());
   }
 
   void InitializeUI(const InitParams& args) override {

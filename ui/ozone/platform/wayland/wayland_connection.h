@@ -49,6 +49,7 @@ class WaylandConnection : public PlatformEventSource,
   void AddWindow(gfx::AcceleratedWidget widget, WaylandWindow* window);
   void RemoveWindow(gfx::AcceleratedWidget widget);
 
+  int64_t get_next_display_id() { return next_display_id_++; }
   const std::vector<std::unique_ptr<WaylandOutput>>& GetOutputList() const;
   WaylandOutput* PrimaryOutput() const;
 
@@ -133,6 +134,7 @@ class WaylandConnection : public PlatformEventSource,
 
   uint32_t serial_ = 0;
 
+  int64_t next_display_id_ = 0;
   std::vector<std::unique_ptr<WaylandOutput>> output_list_;
 
   // Holds a temporary instance of the client's clipboard content

@@ -32,6 +32,8 @@ source_set("wayland") {
     "wayland_data_source.h",
     "wayland_keyboard.cc",
     "wayland_keyboard.h",
+    "wayland_native_display_delegate.cc",
+    "wayland_native_display_delegate.h",
     "wayland_object.cc",
     "wayland_object.h",
     "wayland_output.cc",

@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "ui/display/types/display_snapshot.h"
+#include "ui/display/types/native_display_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/ozone/platform/wayland/wayland_object.h"
 
@@ -22,13 +24,15 @@ class WaylandOutput {
     virtual void OnOutputReadyForUse() = 0;
   };
 
-  WaylandOutput(wl_output*);
+  WaylandOutput(const int64_t display_id, wl_output* output);
   ~WaylandOutput();
 
-  // Returns the geometry of the output.
-  gfx::Rect Geometry() const { return rect_; }
-  void SetObserver(Observer* observer) { observer_ = observer; }
+  void SetObserver(Observer* observer);
   Observer* observer() { return observer_; }
+
+  bool is_ready() const { return !!current_mode_; }
+
+  void GetDisplaysSnapshot(display::GetDisplaysCallback callback);
 
  private:
   // Callback functions used for setting geometric properties of the output
@@ -51,10 +55,13 @@ class WaylandOutput {
                                int32_t height,
                                int32_t refresh);
 
+  const int64_t display_id_ = 0;
   wl::Object<wl_output> output_;
-  gfx::Rect rect_;
 
   Observer* observer_;
+
+  std::unique_ptr<display::DisplaySnapshot> current_snapshot_;
+  std::unique_ptr<display::DisplayMode> current_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandOutput);
 };

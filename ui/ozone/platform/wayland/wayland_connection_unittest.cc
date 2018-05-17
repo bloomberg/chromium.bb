@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/ozone/platform/wayland/fake_server.h"
 #include "ui/ozone/platform/wayland/wayland_connection.h"
 #include "ui/ozone/platform/wayland/wayland_output.h"
@@ -15,7 +16,20 @@
 namespace ui {
 
 namespace {
+
 const uint32_t kXdgVersion5 = 5;
+const uint32_t kNumOfDisplays = 1;
+const uint32_t kWidth = 800;
+const uint32_t kHeight = 600;
+
+void CheckDisplaySize(const std::vector<display::DisplaySnapshot*>& displays) {
+  ASSERT_TRUE(displays.size() == kNumOfDisplays);
+
+  // TODO(msisov): add multiple displays support.
+  display::DisplaySnapshot* display_snapshot = displays.front();
+  ASSERT_TRUE(display_snapshot->current_mode()->size() ==
+              gfx::Size(kWidth, kHeight));
+}
 }
 
 class OutputObserver : public WaylandOutput::Observer {
@@ -68,7 +82,7 @@ TEST(WaylandConnectionTest, Output) {
   base::MessageLoopForUI message_loop;
   wl::FakeServer server;
   ASSERT_TRUE(server.Start(kXdgVersion5));
-  server.output()->SetRect(gfx::Rect(0, 0, 800, 600));
+  server.output()->SetRect(gfx::Rect(0, 0, kWidth, kHeight));
   WaylandConnection connection;
   ASSERT_TRUE(connection.Initialize());
   connection.StartProcessingEvents();
@@ -78,10 +92,8 @@ TEST(WaylandConnectionTest, Output) {
   connection.PrimaryOutput()->SetObserver(&observer);
   run_loop.Run();
 
-  ASSERT_TRUE(connection.GetOutputList().size() == 1);
-  WaylandOutput* output = connection.PrimaryOutput();
-  ASSERT_TRUE(output->Geometry().width() == 800);
-  ASSERT_TRUE(output->Geometry().height() == 600);
+  connection.PrimaryOutput()->GetDisplaysSnapshot(
+      base::BindOnce(&CheckDisplaySize));
 
   server.Resume();
   base::RunLoop().RunUntilIdle();
