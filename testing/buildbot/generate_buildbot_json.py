@@ -647,8 +647,8 @@ class BBJSONGenerator(object):
   def get_valid_bot_names(self):
     # Extract bot names from infra/config/global/luci-milo.cfg.
     bot_names = set()
-    for l in open(os.path.join(self.this_dir, '..', '..', 'infra', 'config',
-                               'global', 'luci-milo.cfg')).readlines():
+    for l in self.read_file(os.path.join(
+        '..', '..', 'infra', 'config', 'global', 'luci-milo.cfg')).splitlines():
       if (not 'name: "buildbucket/luci.chromium.' in l and
           not 'name: "buildbot/chromium.' in l):
         continue
@@ -669,11 +669,11 @@ class BBJSONGenerator(object):
           if waterfall['name'] in ['chromium.android.fyi', 'chromium.fyi',
                                    'chromium.lkgr', 'client.v8.chromium']:
             # TODO(thakis): Remove this once these bots move to luci.
-            continue
+            continue  # pragma: no cover
           if waterfall['name'] in ['tryserver.webrtc']:
             # These waterfalls have their bot configs in a different repo.
             # so we don't know about their bot names.
-            continue
+            continue  # pragma: no cover
           raise self.unknown_bot(bot_name, waterfall['name'])
 
     # All test suites must be referenced.

@@ -13,12 +13,13 @@ import generate_buildbot_json
 
 
 class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
-  def __init__(self, waterfalls, test_suites, exceptions):
+  def __init__(self, waterfalls, test_suites, exceptions, luci_milo_cfg):
     super(FakeBBGen, self).__init__()
     self.files = {
       'waterfalls.pyl': waterfalls,
       'test_suites.pyl': test_suites,
       'test_suite_exceptions.pyl': exceptions,
+      '../../infra/config/global/luci-milo.cfg': luci_milo_cfg,
     }
 
   def read_file(self, relative_path):
@@ -26,9 +27,6 @@ class FakeBBGen(generate_buildbot_json.BBJSONGenerator):
 
   def write_file(self, relative_path, contents):
     self.files[relative_path] = contents
-
-  def get_valid_bot_names(self):
-    return set(['Fake Tester'])
 
 
 FOO_GTESTS_WATERFALL = """\
@@ -975,6 +973,14 @@ MULTI_DIMENSION_OUTPUT = """\
 }
 """
 
+LUCI_MILO_CFG = """\
+consoles {
+  builders {
+    name: "buildbucket/luci.chromium.ci/Fake Tester"
+  }
+}
+"""
+
 class UnitTest(unittest.TestCase):
   def test_base_generator(self):
     # Only needed for complete code coverage.
@@ -988,25 +994,29 @@ class UnitTest(unittest.TestCase):
   def test_good_test_suites_are_ok(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.check_input_file_consistency()
 
   def test_good_multi_dimension_test_suites_are_ok(self):
     fbb = FakeBBGen(FOO_GTESTS_MULTI_DIMENSION_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.check_input_file_consistency()
 
   def test_good_composition_test_suites_are_ok(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.check_input_file_consistency()
 
   def test_bad_composition_test_suites_are_caught(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     BAD_COMPOSITION_TEST_SUITES,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                             'Composition test suites may not refer to.*',
                             fbb.check_input_file_consistency)
@@ -1014,7 +1024,8 @@ class UnitTest(unittest.TestCase):
   def test_unknown_test_suites_are_caught(self):
     fbb = FakeBBGen(UNKNOWN_TEST_SUITE_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                             'Test suite baz_tests from machine.*',
                             fbb.check_input_file_consistency)
@@ -1022,7 +1033,8 @@ class UnitTest(unittest.TestCase):
   def test_unknown_test_suite_types_are_caught(self):
     fbb = FakeBBGen(UNKNOWN_TEST_SUITE_TYPE_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                             'Unknown test suite type foo_test_type.*',
                             fbb.check_input_file_consistency)
@@ -1030,7 +1042,8 @@ class UnitTest(unittest.TestCase):
   def test_unrefed_test_suite_caught(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     UNREFED_TEST_SUITE,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                             '.*unreferenced.*bar_tests.*',
                             fbb.check_input_file_consistency)
@@ -1038,56 +1051,64 @@ class UnitTest(unittest.TestCase):
   def test_good_waterfall_output(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_reusing_gtest_targets(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     REUSING_TEST_WITH_DIFFERENT_NAME,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = VARIATION_GTEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_noop_exception_does_nothing(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_BAR_TEST_EXCEPTIONS)
+                    EMPTY_BAR_TEST_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_test_arg_merges(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE_WITH_ARGS,
-                    FOO_TEST_MODIFICATIONS)
+                    FOO_TEST_MODIFICATIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MERGED_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_enable_features_arg_merges(self):
     fbb = FakeBBGen(FOO_GTESTS_WITH_ENABLE_FEATURES_WATERFALL,
                     FOO_TEST_SUITE_WITH_ENABLE_FEATURES,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MERGED_ENABLE_FEATURES_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_test_filtering(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS)
+                    NO_BAR_TEST_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_FILTERED_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_test_modifications(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    FOO_TEST_MODIFICATIONS)
+                    FOO_TEST_MODIFICATIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MODIFIED_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_isolated_script_tests(self):
     fbb = FakeBBGen(FOO_ISOLATED_SCRIPTS_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS)
+                    NO_BAR_TEST_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = ISOLATED_SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
@@ -1095,42 +1116,47 @@ class UnitTest(unittest.TestCase):
     fbb = FakeBBGen(FOO_SCRIPT_WATERFALL,
                     SCRIPT_SUITE,
                     SCRIPT_WITH_ARGS_EXCEPTIONS,
-                    )
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = SCRIPT_WITH_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_script(self):
     fbb = FakeBBGen(FOO_SCRIPT_WATERFALL,
                     FOO_SCRIPT_SUITE,
-                    NO_BAR_TEST_EXCEPTIONS)
+                    NO_BAR_TEST_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = SCRIPT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_junit_tests(self):
     fbb = FakeBBGen(FOO_JUNIT_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS)
+                    NO_BAR_TEST_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = JUNIT_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_cts_tests(self):
     fbb = FakeBBGen(FOO_CTS_WATERFALL,
                     FOO_CTS_SUITE,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = CTS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_instrumentation_tests(self):
     fbb = FakeBBGen(FOO_INSTRUMENTATION_TEST_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS)
+                    NO_BAR_TEST_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = INSTRUMENTATION_TEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_instrumentation_tests_with_different_names(self):
     fbb = FakeBBGen(FOO_INSTRUMENTATION_TEST_WATERFALL,
                     INSTRUMENTATION_TESTS_WITH_DIFFERENT_NAMES,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = \
         INSTRUMENTATION_TEST_DIFFERENT_NAMES_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -1138,7 +1164,8 @@ class UnitTest(unittest.TestCase):
   def test_ungenerated_output_files_are_caught(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    NO_BAR_TEST_EXCEPTIONS)
+                    NO_BAR_TEST_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = (
       '\n' + COMPOSITION_WATERFALL_FILTERED_OUTPUT)
     self.assertRaises(generate_buildbot_json.BBGenErr,
@@ -1147,14 +1174,16 @@ class UnitTest(unittest.TestCase):
   def test_android_output_options(self):
     fbb = FakeBBGen(ANDROID_WATERFALL,
                     FOO_TEST_SUITE,
-                    ANDROID_TEST_EXCEPTIONS)
+                    ANDROID_TEST_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = ANDROID_WATERFALL_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_nonexistent_removal_raises(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    NONEXISTENT_REMOVAL)
+                    NONEXISTENT_REMOVAL,
+                    LUCI_MILO_CFG)
     self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                             'The following nonexistent machines.*',
                             fbb.check_input_file_consistency)
@@ -1162,7 +1191,8 @@ class UnitTest(unittest.TestCase):
   def test_nonexistent_modification_raises(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    NONEXISTENT_MODIFICATION)
+                    NONEXISTENT_MODIFICATION,
+                    LUCI_MILO_CFG)
     self.assertRaisesRegexp(generate_buildbot_json.BBGenErr,
                             'The following nonexistent machines.*',
                             fbb.check_input_file_consistency)
@@ -1170,32 +1200,37 @@ class UnitTest(unittest.TestCase):
   def test_nonexistent_key_removal_raises(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    NONEXISTENT_KEY_REMOVAL)
+                    NONEXISTENT_KEY_REMOVAL,
+                    LUCI_MILO_CFG)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_output_file_consistency(verbose=True)
 
   def test_waterfall_args(self):
     fbb = FakeBBGen(COMPOSITION_GTEST_SUITE_WITH_ARGS_WATERFALL,
                     GOOD_COMPOSITION_TEST_SUITES,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = COMPOSITION_WATERFALL_WITH_ARGS_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_multi_dimension_output(self):
     fbb = FakeBBGen(FOO_GTESTS_MULTI_DIMENSION_WATERFALL,
                     FOO_TEST_SUITE,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.files['chromium.test.json'] = MULTI_DIMENSION_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
 
   def test_relative_pyl_file_dir(self):
     fbb = FakeBBGen(FOO_GTESTS_WATERFALL,
                     REUSING_TEST_WITH_DIFFERENT_NAME,
-                    EMPTY_EXCEPTIONS)
+                    EMPTY_EXCEPTIONS,
+                    LUCI_MILO_CFG)
     fbb.args = argparse.Namespace(pyl_files_dir='relative/path/')
     for file_name in list(fbb.files):
-      fbb.files[os.path.join('relative/path/', file_name)] = (
-          fbb.files.pop(file_name))
+      if not 'luci-milo.cfg' in file_name:
+        fbb.files[os.path.join('relative/path/', file_name)] = (
+            fbb.files.pop(file_name))
     fbb.check_input_file_consistency()
     fbb.files['relative/path/chromium.test.json'] = VARIATION_GTEST_OUTPUT
     fbb.check_output_file_consistency(verbose=True)
@@ -1203,11 +1238,11 @@ class UnitTest(unittest.TestCase):
   def test_nonexistent_bot_raises(self):
     fbb = FakeBBGen(UNKNOWN_BOT_GTESTS_WATERFALL,
                     FOO_TEST_SUITE,
-                    NONEXISTENT_KEY_REMOVAL)
+                    NONEXISTENT_KEY_REMOVAL,
+                    LUCI_MILO_CFG)
     with self.assertRaises(generate_buildbot_json.BBGenErr):
       fbb.check_input_file_consistency()
 
 
 if __name__ == '__main__':
   unittest.main()
-
