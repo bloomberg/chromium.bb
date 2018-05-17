@@ -2892,11 +2892,6 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   ClearUIResources();
   resource_provider_ = nullptr;
 
-  if (layer_tree_frame_sink_->context_provider()) {
-    auto* gl = layer_tree_frame_sink_->context_provider()->ContextGL();
-    gl->Finish();
-  }
-
   // Release any context visibility before we destroy the LayerTreeFrameSink.
   SetContextVisibility(false);
 
