@@ -96,10 +96,21 @@ bool NGPhysicalBoxFragment::ShouldClipOverflow() const {
 LayoutRect NGPhysicalBoxFragment::OverflowClipRect(
     const LayoutPoint& location,
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
-  const LayoutObject* layout_object = GetLayoutObject();
-  DCHECK(layout_object && layout_object->IsBox());
-  return ToLayoutBox(layout_object)
-      ->OverflowClipRect(location, overlay_scrollbar_clip_behavior);
+  DCHECK(GetLayoutObject() && GetLayoutObject()->IsBox());
+  const LayoutBox* box = ToLayoutBox(GetLayoutObject());
+  return box->OverflowClipRect(location, overlay_scrollbar_clip_behavior);
+}
+
+IntSize NGPhysicalBoxFragment::ScrolledContentOffset() const {
+  DCHECK(GetLayoutObject() && GetLayoutObject()->IsBox());
+  const LayoutBox* box = ToLayoutBox(GetLayoutObject());
+  return box->ScrolledContentOffset();
+}
+
+LayoutSize NGPhysicalBoxFragment::ScrollSize() const {
+  DCHECK(GetLayoutObject() && GetLayoutObject()->IsBox());
+  const LayoutBox* box = ToLayoutBox(GetLayoutObject());
+  return LayoutSize(box->ScrollWidth(), box->ScrollHeight());
 }
 
 NGPhysicalOffsetRect NGPhysicalBoxFragment::SelfVisualRect() const {

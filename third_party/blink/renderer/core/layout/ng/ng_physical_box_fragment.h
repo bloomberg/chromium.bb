@@ -40,9 +40,15 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // overflow clip; i.e., AllowOverflowClip() returns false.
   bool HasOverflowClip() const;
   bool ShouldClipOverflow() const;
+
+  // TODO(layout-dev): These three methods delegate to legacy layout for now,
+  // update them to use LayoutNG based overflow information from the fragment
+  // and change them to use NG geometry types once LayoutNG supports overflow.
   LayoutRect OverflowClipRect(
       const LayoutPoint& location,
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize) const;
+  IntSize ScrolledContentOffset() const;
+  LayoutSize ScrollSize() const;
 
   // Visual rect of this box in the local coordinate. Does not include children
   // even if they overflow this box.
