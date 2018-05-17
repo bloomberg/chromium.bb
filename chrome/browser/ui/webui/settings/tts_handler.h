@@ -18,6 +18,7 @@ class TtsHandler : public SettingsPageUIHandler, public VoicesChangedDelegate {
 
   void HandleGetAllTtsVoiceData(const base::ListValue* args);
   void HandleGetTtsExtensions(const base::ListValue* args);
+  void HandlePreviewTtsVoice(const base::ListValue* args);
 
   // SettingsPageUIHandler implementation.
   void RegisterMessages() override;

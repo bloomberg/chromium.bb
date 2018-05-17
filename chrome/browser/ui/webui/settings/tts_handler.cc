@@ -5,11 +5,13 @@
 #include "chrome/browser/ui/webui/settings/tts_handler.h"
 
 #include "base/bind.h"
+#include "base/json/json_reader.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_api.h"
 #include "chrome/browser/speech/extension_api/tts_engine_extension_observer.h"
+#include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_controller_impl.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "content/public/browser/web_ui.h"
@@ -71,6 +73,7 @@ void TtsHandler::OnVoicesChanged() {
     std::string language_code = l10n_util::GetLanguage(voice.lang);
     response.SetPath({"name"}, base::Value(voice.name));
     response.SetPath({"languageCode"}, base::Value(language_code));
+    response.SetPath({"fullLanguageCode"}, base::Value(voice.lang));
     response.SetPath({"extensionId"}, base::Value(voice.extension_id));
     response.SetPath(
         {"displayLanguage"},
@@ -86,6 +89,33 @@ void TtsHandler::OnVoicesChanged() {
   HandleGetTtsExtensions(nullptr);
 }
 
+void TtsHandler::HandlePreviewTtsVoice(const base::ListValue* args) {
+  DCHECK_EQ(2U, args->GetSize());
+  std::string text;
+  std::string voice_id;
+  args->GetString(0, &text);
+  args->GetString(1, &voice_id);
+
+  if (text.empty() || voice_id.empty())
+    return;
+
+  std::unique_ptr<base::DictionaryValue> json =
+      base::DictionaryValue::From(base::JSONReader::Read(voice_id));
+  std::string name;
+  std::string extension_id;
+  json->GetString("name", &name);
+  json->GetString("extension", &extension_id);
+
+  Utterance* utterance = new Utterance(Profile::FromWebUI(web_ui()));
+  utterance->set_text(text);
+  utterance->set_voice_name(name);
+  utterance->set_extension_id(extension_id);
+  utterance->set_src_url(GURL("chrome://settings/manageAccessibility/tts"));
+  utterance->set_event_delegate(nullptr);
+  TtsController::GetInstance()->Stop();
+  TtsController::GetInstance()->SpeakOrEnqueue(utterance);
+}
+
 void TtsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getAllTtsVoiceData",
@@ -95,6 +125,9 @@ void TtsHandler::RegisterMessages() {
       "getTtsExtensions",
       base::BindRepeating(&TtsHandler::HandleGetTtsExtensions,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "previewTtsVoice", base::BindRepeating(&TtsHandler::HandlePreviewTtsVoice,
+                                             base::Unretained(this)));
 }
 
 void TtsHandler::OnJavascriptAllowed() {

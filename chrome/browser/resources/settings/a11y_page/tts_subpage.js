@@ -26,8 +26,34 @@ Polymer({
      */
     languagesToVoices: {
       type: Array,
+      notify: true,
+    },
+
+    /**
+     * All voices.
+     * @type {Array<TtsHandlerVoice>}
+     */
+    allVoices: {
+      type: Array,
       value: [],
       notify: true,
+    },
+
+    /**
+     * Default preview voice.
+     */
+    defaultPreviewVoice: {
+      type: String,
+      notify: true,
+    },
+
+    /**
+     * Whether any voices are loaded.
+     * @type {Boolean}
+     */
+    hasVoices: {
+      type: Boolean,
+      computed: 'hasVoices_(allVoices)',
     },
   },
 
@@ -96,6 +122,16 @@ Polymer({
   },
 
   /**
+   * Returns true if any voices are loaded.
+   * @param {!Array<TtsHandlerVoice>} voices
+   * @return {boolean}
+   * @private
+   */
+  hasVoices_: function(voices) {
+    return voices.length > 0;
+  },
+
+  /**
    * Populates the list of languages and voices for the UI to use in display.
    * @param {Array<TtsHandlerVoice>} voices
    * @private
@@ -103,6 +139,7 @@ Polymer({
   populateVoiceList_: function(voices) {
     // Build a map of language code to human-readable language and voice.
     let result = {};
+    let languageCodeMap = {};
     voices.forEach(voice => {
       if (!result[voice.languageCode]) {
         result[voice.languageCode] = {
@@ -117,8 +154,11 @@ Polymer({
       // TODO(katie): Make voices a map rather than an array to enforce
       // uniqueness, then convert back to an array for polymer repeat.
       result[voice.languageCode].voices.push(voice);
+      languageCodeMap[voice.fullLanguageCode] = voice.languageCode;
     });
     this.set('languagesToVoices', Object.values(result));
+    this.set('allVoices', voices);
+    this.setDefaultPreviewVoiceForLocale_(languageCodeMap);
   },
 
   /**
@@ -164,13 +204,38 @@ Polymer({
     });
   },
 
+  /**
+   * Sets the voice to show in the preview drop-down as default, based on the
+   * current locale and voice preferences.
+   * @param {Object<string, string>} languageCodeMap Mapping from language code
+   *     to simple language code without locale.
+   * @private
+   */
+  setDefaultPreviewVoiceForLocale_: function(languageCodeMap) {
+    if (!this.allVoices)
+      return;
+
+    let browserProxy = settings.LanguagesBrowserProxyImpl.getInstance();
+    browserProxy.getProspectiveUILanguage().then(prospectiveUILanguage => {
+      if (!prospectiveUILanguage)
+        return;
+      let code = languageCodeMap[prospectiveUILanguage];
+      if (!code)
+        return;
+      let result = this.prefs.settings['tts']['lang_to_voice_name'].value[code];
+      if (!result)
+        return;
+      // Force a synchronous render so that we can set the default.
+      this.$.previewVoiceOptions.render();
+      this.set('defaultPreviewVoice', result);
+    });
+  },
+
   /** @private */
   onPreviewTtsClick_: function() {
-    let utter = new window.SpeechSynthesisUtterance();
-    if (!utter)
-      return;
-    utter.text = this.$.previewInput.value;
-    window.speechSynthesis.speak(utter);
+    chrome.send(
+        'previewTtsVoice',
+        [this.$.previewInput.value, this.$.previewVoice.value]);
   },
 
 });
