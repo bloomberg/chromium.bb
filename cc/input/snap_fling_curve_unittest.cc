@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/blink/snap_fling_curve.h"
+#include "cc/input/snap_fling_curve.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ui {
+namespace cc {
 namespace test {
 
 TEST(SnapFlingCurveTest, CurveInitialization) {
@@ -68,4 +68,4 @@ TEST(SnapFlingCurveTest, ReturnsZeroAfterFinished) {
 }
 
 }  // namespace test
-}  // namespace ui
+}  // namespace cc

@@ -10,13 +10,13 @@
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
 #include "cc/input/input_handler.h"
+#include "cc/input/snap_fling_controller.h"
 #include "third_party/blink/public/platform/web_gesture_curve.h"
 #include "third_party/blink/public/platform/web_gesture_curve_target.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/web/web_active_fling_parameters.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
-#include "ui/events/blink/snap_fling_controller.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
@@ -53,7 +53,7 @@ struct DidOverscrollParams;
 class InputHandlerProxy : public cc::InputHandlerClient,
                           public SynchronousInputHandlerProxy,
                           public blink::WebGestureCurveTarget,
-                          public SnapFlingClient {
+                          public cc::SnapFlingClient {
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
                     InputHandlerProxyClient* client,
@@ -275,7 +275,7 @@ class InputHandlerProxy : public cc::InputHandlerClient,
 
   std::unique_ptr<FlingBooster> fling_booster_;
 
-  std::unique_ptr<SnapFlingController> snap_fling_controller_;
+  std::unique_ptr<cc::SnapFlingController> snap_fling_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };

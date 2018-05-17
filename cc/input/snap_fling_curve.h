@@ -2,18 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_BLINK_SNAP_FLING_CURVE_H_
-#define UI_EVENTS_BLINK_SNAP_FLING_CURVE_H_
+#ifndef CC_INPUT_SNAP_FLING_CURVE_H_
+#define CC_INPUT_SNAP_FLING_CURVE_H_
 
 #include "base/time/time.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace ui {
+namespace cc {
 
 // The curve for the snap fling animation. The curve would generate a geometric
 // sequence of deltas to be scrolled at each frame.
-class SnapFlingCurve {
+class CC_EXPORT SnapFlingCurve {
  public:
   // Creates the curve based on the start offset, target offset, and the first
   // inertial GSU's time_stamp.
@@ -72,6 +73,6 @@ class SnapFlingCurve {
   double ratio_y_;
 };
 
-}  // namespace ui
+}  // namespace cc
 
-#endif  // UI_EVENTS_BLINK_SNAP_FLING_CURVE_H_
+#endif  // CC_INPUT_SNAP_FLING_CURVE_H_

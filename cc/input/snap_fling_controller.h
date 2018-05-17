@@ -2,20 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_EVENTS_BLINK_SNAP_FLING_CONTROLLER_H_
-#define UI_EVENTS_BLINK_SNAP_FLING_CONTROLLER_H_
+#ifndef CC_INPUT_SNAP_FLING_CONTROLLER_H_
+#define CC_INPUT_SNAP_FLING_CONTROLLER_H_
 
 #include <memory>
 
 #include "base/time/time.h"
+#include "cc/cc_export.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace blink {
-class WebGestureEvent;
-class WebInputEvent;
-}  // namespace blink
-
-namespace ui {
+namespace cc {
 namespace test {
 class SnapFlingControllerTest;
 }
@@ -35,8 +31,22 @@ class SnapFlingClient {
   virtual void RequestAnimationForSnapFling() = 0;
 };
 
-class SnapFlingController {
+// SnapFlingController ensures that an incoming fling event (or inertial-phase
+// scroll event) would land on a snap position if there is a valid one nearby.
+// It takes an input event, filters it if it conflicts with the current fling,
+// or generates a curve if the SnapFlingClient finds a valid snap position.
+// It also animates the curve by notifying the client to scroll when clock
+// ticks.
+class CC_EXPORT SnapFlingController {
  public:
+  enum class GestureScrollType { kBegin, kUpdate, kEnd };
+
+  struct GestureScrollUpdateInfo {
+    gfx::Vector2dF delta;
+    bool is_in_inertial_phase;
+    base::TimeTicks event_time;
+  };
+
   explicit SnapFlingController(SnapFlingClient* client);
 
   static std::unique_ptr<SnapFlingController> CreateForTests(
@@ -47,12 +57,12 @@ class SnapFlingController {
 
   // Returns true if the event should be consumed for snapping and should not be
   // processed further.
-  bool FilterEventForSnap(const blink::WebInputEvent& event);
+  bool FilterEventForSnap(GestureScrollType gesture_scroll_type);
 
   // Creates the snap fling curve from the first inertial GSU. Returns true if
   // the event if a snap fling curve has been created and the event should not
   // be processed further.
-  bool HandleGestureScrollUpdate(const blink::WebGestureEvent& event);
+  bool HandleGestureScrollUpdate(const GestureScrollUpdateInfo& info);
 
   // Notifies the snap fling controller to update or end the scroll animation.
   void Animate(base::TimeTicks time);
@@ -91,6 +101,6 @@ class SnapFlingController {
   DISALLOW_COPY_AND_ASSIGN(SnapFlingController);
 };
 
-}  // namespace ui
+}  // namespace cc
 
-#endif  // UI_EVENTS_BLINK_SNAP_FLING_CONTROLLER_H_
+#endif  // CC_INPUT_SNAP_FLING_CONTROLLER_H_

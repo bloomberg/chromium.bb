@@ -1130,6 +1130,17 @@ bool IsGestureScrollOrFlingOrPinch(WebInputEvent::Type type) {
   }
 }
 
+bool IsGestureScroll(WebInputEvent::Type type) {
+  switch (type) {
+    case blink::WebGestureEvent::kGestureScrollBegin:
+    case blink::WebGestureEvent::kGestureScrollUpdate:
+    case blink::WebGestureEvent::kGestureScrollEnd:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool IsContinuousGestureEvent(WebInputEvent::Type type) {
   switch (type) {
     case blink::WebGestureEvent::kGestureScrollUpdate:

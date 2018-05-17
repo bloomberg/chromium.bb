@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/blink/snap_fling_curve.h"
+#include "cc/input/snap_fling_curve.h"
 
 #include <cmath>
 #include "build/build_config.h"
 
-namespace ui {
+namespace cc {
 namespace {
 
 #if defined(OS_ANDROID)
@@ -116,4 +116,4 @@ bool SnapFlingCurve::IsFinished() const {
   return is_finished_;
 }
 
-}  // namespace ui
+}  // namespace cc

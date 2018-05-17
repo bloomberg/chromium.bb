@@ -2,12 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/events/blink/snap_fling_controller.h"
+#include "cc/input/snap_fling_controller.h"
 
-#include "third_party/blink/public/platform/web_gesture_event.h"
-#include "ui/events/blink/snap_fling_curve.h"
+#include "cc/input/snap_fling_curve.h"
 
-namespace ui {
+namespace cc {
 
 SnapFlingController::SnapFlingController(SnapFlingClient* client)
     : client_(client), state_(State::kIdle) {}
@@ -15,20 +14,18 @@ SnapFlingController::SnapFlingController(SnapFlingClient* client)
 SnapFlingController::~SnapFlingController() = default;
 
 bool SnapFlingController::FilterEventForSnap(
-    const blink::WebInputEvent& event) {
-  switch (event.GetType()) {
-    case blink::WebInputEvent::kGestureScrollBegin: {
+    SnapFlingController::GestureScrollType gesture_scroll_type) {
+  switch (gesture_scroll_type) {
+    case GestureScrollType::kBegin: {
       ClearSnapFling();
       return false;
     }
     // TODO(sunyunjia): Need to update the existing snap curve if the GSU is
     // from a fling boosting event.
-    case blink::WebInputEvent::kGestureScrollUpdate:
-    case blink::WebInputEvent::kGestureScrollEnd: {
+    case GestureScrollType::kUpdate:
+    case GestureScrollType::kEnd: {
       return state_ == State::kActive || state_ == State::kFinished;
     }
-    default:
-      return false;
   }
 }
 
@@ -41,20 +38,16 @@ void SnapFlingController::ClearSnapFling() {
 }
 
 bool SnapFlingController::HandleGestureScrollUpdate(
-    const blink::WebGestureEvent& event) {
+    const SnapFlingController::GestureScrollUpdateInfo& info) {
   DCHECK(state_ != State::kActive && state_ != State::kFinished);
   if (state_ != State::kIdle)
     return false;
 
-  if (event.data.scroll_update.inertial_phase !=
-      blink::WebGestureEvent::kMomentumPhase) {
+  if (!info.is_in_inertial_phase)
     return false;
-  }
 
-  gfx::Vector2dF event_delta(-event.data.scroll_update.delta_x,
-                             -event.data.scroll_update.delta_y);
   gfx::Vector2dF ending_displacement =
-      SnapFlingCurve::EstimateDisplacement(event_delta);
+      SnapFlingCurve::EstimateDisplacement(info.delta);
 
   gfx::Vector2dF target_offset, start_offset;
   if (!client_->GetSnapFlingInfo(ending_displacement, &start_offset,
@@ -69,9 +62,9 @@ bool SnapFlingController::HandleGestureScrollUpdate(
   }
 
   curve_ = std::make_unique<SnapFlingCurve>(start_offset, target_offset,
-                                            event.TimeStamp());
+                                            info.event_time);
   state_ = State::kActive;
-  Animate(event.TimeStamp());
+  Animate(info.event_time);
   return true;
 }
 
@@ -96,4 +89,4 @@ void SnapFlingController::SetCurveForTest(
   state_ = State::kActive;
 }
 
-}  // namespace ui
+}  // namespace cc
