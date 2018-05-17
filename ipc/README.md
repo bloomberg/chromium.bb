@@ -464,15 +464,15 @@ errors look like:
 
 ```sh
 [ERROR:service_manager.cc(158)] Connection InterfaceProviderSpec prevented
-service: content_renderer from binding interface: content::mojom::Logger
+service: content_renderer from binding interface: content.mojom.Logger
 exposed by: content_browser
 ```
 
 This means something in the renderer process (called "content_renderer") was
-trying to bind to `content::mojom::Logger` in the browser process (called
+trying to bind to `content.mojom.Logger` in the browser process (called
 "content_browser"). To add a capability for this, we need to find the json file
 with the capabilities for "content_browser", and add our new interface with name
-`content::mojom::Logger` to the "renderer" section.
+`content.mojom.Logger` to the "renderer" section.
 
 In this example, the capabilities for "content_browser" are implemented in
 [content_browser_manifest.json](/content/public/app/mojo/content_browser_manifest.json).
@@ -490,14 +490,14 @@ It should look like:
           //...
 ```
 
-To add permission for `content::mojom::Logger`, add the string
-`"content::mojom::Logger"` to the "renderer" list.
+To add permission for `content.mojom.Logger`, add the string
+`"content.mojom.Logger"` to the "renderer" list.
 
 Similarly, if the error was:
 
 ```sh
 [ERROR:service_manager.cc(158)] Connection InterfaceProviderSpec prevented
-service: content_browser from binding interface: content::mojom::Logger exposed
+service: content_browser from binding interface: content.mojom.Logger exposed
 by: content_renderer
 ```
 
