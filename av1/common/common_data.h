@@ -113,7 +113,7 @@ static const TX_SIZE max_txsize_lookup[BLOCK_SIZES_ALL] = {
 };
 
 static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES_ALL] = {
-      //                   4X4
+      // 4X4
       TX_4X4,
       // 4X8,    8X4,      8X8
       TX_4X8,    TX_8X4,   TX_8X8,

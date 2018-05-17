@@ -4954,19 +4954,31 @@ static int find_tx_size_rd_records(MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   return 1;
 }
 
+// origin_threshold * 128 / 100
 static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
   {
-      50, 50, 50, 55, 47, 47, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 50, 50, 55, 55, 53, 53,
+      64, 64, 64, 70, 60, 60, 68, 68, 68, 68, 68,
+      68, 68, 68, 68, 68, 64, 64, 70, 70, 68, 68,
   },
   {
-      69, 69, 69, 67, 68, 68, 53, 53, 53, 53, 53,
-      53, 53, 53, 53, 53, 69, 69, 67, 67, 53, 53,
+      88, 88, 88, 86, 87, 87, 68, 68, 68, 68, 68,
+      68, 68, 68, 68, 68, 88, 88, 86, 86, 68, 68,
   },
   {
-      70, 73, 73, 70, 73, 73, 58, 58, 58, 58, 58,
-      58, 58, 58, 58, 58, 70, 70, 70, 70, 58, 58,
-  }
+      90, 93, 93, 90, 93, 93, 74, 74, 74, 74, 74,
+      74, 74, 74, 74, 74, 90, 90, 90, 90, 74, 74,
+  },
+};
+
+// lookup table for predict_skip_flag
+// int max_tx_size = max_txsize_rect_lookup[bsize];
+// if (tx_size_high[max_tx_size] > 16 || tx_size_wide[max_tx_size] > 16)
+//   max_tx_size = AOMMIN(max_txsize_lookup[bsize], TX_16X16);
+static const TX_SIZE max_predict_sf_tx_size[BLOCK_SIZES_ALL] = {
+  TX_4X4,   TX_4X8,   TX_8X4,   TX_8X8,   TX_8X16,  TX_16X8,
+  TX_16X16, TX_16X16, TX_16X16, TX_16X16, TX_16X16, TX_16X16,
+  TX_16X16, TX_16X16, TX_16X16, TX_16X16, TX_4X16,  TX_16X4,
+  TX_8X8,   TX_8X8,   TX_16X16, TX_16X16,
 };
 
 // Uses simple features on top of DCT coefficients to quickly predict
@@ -4974,26 +4986,24 @@ static const uint32_t skip_pred_threshold[3][BLOCK_SIZES_ALL] = {
 // The sse value is stored in dist.
 static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
                              int reduced_tx_set) {
-  int max_tx_size = max_txsize_rect_lookup[bsize];
-  if (tx_size_high[max_tx_size] > 16 || tx_size_wide[max_tx_size] > 16)
-    max_tx_size = AOMMIN(max_txsize_lookup[bsize], TX_16X16);
-  const int tx_h = tx_size_high[max_tx_size];
-  const int tx_w = tx_size_wide[max_tx_size];
   const int bw = block_size_wide[bsize];
   const int bh = block_size_high[bsize];
   const MACROBLOCKD *xd = &x->e_mbd;
-  const uint32_t dc_q = (uint32_t)av1_dc_quant_QTX(x->qindex, 0, xd->bd);
+  const int16_t dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd);
 
   *dist = pixel_diff_dist(x, 0, x->plane[0].src_diff, bw, 0, 0, bsize, bsize);
   const int64_t mse = *dist / bw / bh;
   // Normalized quantizer takes the transform upscaling factor (8 for tx size
   // smaller than 32) into account.
-  const uint32_t normalized_dc_q = dc_q >> 3;
+  const int16_t normalized_dc_q = dc_q >> 3;
   const int64_t mse_thresh = (int64_t)normalized_dc_q * normalized_dc_q / 8;
   // Predict not to skip when mse is larger than threshold.
   if (mse > mse_thresh) return 0;
 
-  DECLARE_ALIGNED(32, tran_low_t, DCT_coefs[32 * 32]);
+  const int max_tx_size = max_predict_sf_tx_size[bsize];
+  const int tx_h = tx_size_high[max_tx_size];
+  const int tx_w = tx_size_wide[max_tx_size];
+  DECLARE_ALIGNED(32, tran_low_t, coefs[32 * 32]);
   TxfmParam param;
   param.tx_type = DCT_DCT;
   param.tx_size = max_tx_size;
@@ -5002,28 +5012,27 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   param.lossless = 0;
   param.tx_set_type = av1_get_ext_tx_set_type(
       param.tx_size, is_inter_block(xd->mi[0]), reduced_tx_set);
-  const uint32_t ac_q = (uint32_t)av1_ac_quant_QTX(x->qindex, 0, xd->bd);
-  uint32_t max_quantized_coef = 0;
   const int bd_idx = (xd->bd == 8) ? 0 : ((xd->bd == 10) ? 1 : 2);
   const uint32_t max_qcoef_thresh = skip_pred_threshold[bd_idx][bsize];
   const int16_t *src_diff = x->plane[0].src_diff;
+  const int n_coeff = tx_w * tx_h;
+  const int16_t ac_q = av1_ac_quant_QTX(x->qindex, 0, xd->bd);
+  const uint32_t dc_thresh = max_qcoef_thresh * dc_q;
+  const uint32_t ac_thresh = max_qcoef_thresh * ac_q;
   for (int row = 0; row < bh; row += tx_h) {
     for (int col = 0; col < bw; col += tx_w) {
-      av1_fwd_txfm(src_diff + col, DCT_coefs, bw, &param);
-
+      av1_fwd_txfm(src_diff + col, coefs, bw, &param);
       // Operating on TX domain, not pixels; we want the QTX quantizers
-      for (int i = 0; i < tx_w * tx_h; ++i) {
-        uint32_t cur_quantized_coef =
-            (100 * (uint32_t)abs(DCT_coefs[i])) / (i ? ac_q : dc_q);
-        if (cur_quantized_coef > max_quantized_coef) {
-          max_quantized_coef = cur_quantized_coef;
-          if (max_quantized_coef >= max_qcoef_thresh) return 0;
-        }
+      const uint32_t dc_coef = (((uint32_t)abs(coefs[0])) << 7);
+      if (dc_coef >= dc_thresh) return 0;
+      for (int i = 1; i < n_coeff; ++i) {
+        const uint32_t ac_coef = (((uint32_t)abs(coefs[i])) << 7);
+        if (ac_coef >= ac_thresh) return 0;
       }
     }
     src_diff += tx_h * bw;
   }
-  return max_quantized_coef < max_qcoef_thresh;
+  return 1;
 }
 
 // Used to set proper context for early termination with skip = 1.
