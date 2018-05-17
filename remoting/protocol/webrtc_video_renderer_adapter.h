@@ -14,7 +14,7 @@
 #include "remoting/protocol/client_video_stats_dispatcher.h"
 #include "remoting/protocol/video_stats_stub.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
-#include "third_party/webrtc/api/videosinkinterface.h"
+#include "third_party/webrtc/api/video/video_sink_interface.h"
 
 namespace base {
 class SingleThreadTaskRunner;
