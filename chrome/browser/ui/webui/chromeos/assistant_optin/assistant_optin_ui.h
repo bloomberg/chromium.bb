@@ -9,15 +9,13 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_screen_exit_code.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
+#include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
-
-namespace arc {
-class ArcVoiceInteractionArcHomeService;
-}
 
 namespace chromeos {
 
@@ -34,9 +32,16 @@ class AssistantOptInUI : public ui::WebDialogUI {
   // Called by a screen when user's done with it.
   void OnExit(AssistantOptInScreenExitCode exit_code);
 
-  // Get ArcHomeService for user action handling.
-  arc::ArcVoiceInteractionArcHomeService* GetVoiceInteractionHomeService();
+  // Handle response from the settings manager.
+  void HandleGetSettingsResponse(const std::string& settings);
+  void HandleUpdateSettingsResponse(const std::string& settings);
 
+  // Consent token used to complete the opt-in.
+  std::string consent_token_;
+
+  AssistantOptInHandler* assistant_handler_ = nullptr;
+  std::unique_ptr<JSCallsContainer> js_calls_container_;
+  assistant::mojom::AssistantSettingsManagerPtr settings_manager_;
   std::vector<BaseWebUIHandler*> screen_handlers_;
   base::WeakPtrFactory<AssistantOptInUI> weak_factory_;
 

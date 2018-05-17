@@ -30,19 +30,17 @@ ValuePropScreenHandler::~ValuePropScreenHandler() = default;
 void ValuePropScreenHandler::DeclareLocalizedValues(
     ::login::LocalizedValuesBuilder* builder) {
   builder->Add("locale", g_browser_process->GetApplicationLocale());
-  builder->Add("voiceInteractionValuePropLoading",
-               IDS_VOICE_INTERACTION_VALUE_PROP_LOADING);
-  builder->Add("voiceInteractionValuePropLoadErrorTitle",
+  // TODO(updowndota) Replace this with new string constants.
+  // Use string constant for old flow for now before we have final UX.
+  builder->Add("valuePropLoading", IDS_VOICE_INTERACTION_VALUE_PROP_LOADING);
+  builder->Add("valuePropLoadErrorTitle",
                IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_TITLE);
-  builder->Add("voiceInteractionValuePropLoadErrorMessage",
+  builder->Add("valuePropLoadErrorMessage",
                IDS_VOICE_INTERACTION_VALUE_PROP_LOAD_ERROR_MESSAGE);
-  builder->Add("voiceInteractionValuePropSkipButton",
-               IDS_VOICE_INTERACTION_VALUE_PROP_SKIP_BUTTON);
-  builder->Add("voiceInteractionValuePropRetryButton",
+  builder->Add("valuePropRetryButton",
                IDS_VOICE_INTERACTION_VALUE_PROP_RETRY_BUTTON);
-  builder->Add("voiceInteractionValuePropNextButton",
-               IDS_VOICE_INTERACTION_VALUE_PROP_NEXT_BUTTION);
-
+  builder->Add("valuePropMoreButton",
+               IDS_VOICE_INTERACTION_VALUE_PROP_MORE_BUTTION);
   builder->Add("back", IDS_EULA_BACK_BUTTON);
   builder->Add("next", IDS_EULA_NEXT_BUTTON);
 }
