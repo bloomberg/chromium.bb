@@ -33,18 +33,6 @@ std::unique_ptr<T, BrowserThread::DeleteOnUIThread> RescopeToUIThread(
   return std::unique_ptr<T, BrowserThread::DeleteOnUIThread>(ptr.release());
 }
 
-// Sets up a mojo message pipe and requests the HostFrameSinkManager create a
-// new capturer instance bound to it. Returns the client-side interface.
-viz::mojom::FrameSinkVideoCapturerPtrInfo CreateCapturer() {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-  viz::HostFrameSinkManager* const manager = GetHostFrameSinkManager();
-  DCHECK(manager);
-  viz::mojom::FrameSinkVideoCapturerPtr capturer;
-  manager->CreateVideoCapturer(mojo::MakeRequest(&capturer));
-  return capturer.PassInterface();
-}
-
 // Adapter for a VideoFrameReceiver to notify once frame consumption is
 // complete. VideoFrameReceiver requires owning an object that it will destroy
 // once consumption is complete. This class adapts between that scheme and
@@ -61,8 +49,7 @@ class ScopedFrameDoneHelper
 }  // namespace
 
 FrameSinkVideoCaptureDevice::FrameSinkVideoCaptureDevice()
-    : capturer_creator_(base::BindRepeating(&CreateCapturer)),
-      binding_(this),
+    : binding_(this),
       cursor_renderer_(RescopeToUIThread(CursorRenderer::Create(
           CursorRenderer::CURSOR_DISPLAYED_ON_MOUSE_MOVEMENT))),
       weak_factory_(this) {
@@ -104,12 +91,8 @@ void FrameSinkVideoCaptureDevice::AllocateAndStartWithReceiver(
                          &FrameSinkVideoCaptureDevice::RequestRefreshFrame,
                          weak_factory_.GetWeakPtr()))));
 
-  // Hop to the UI thread to request a Mojo connection to a new capturer
-  // instance, and then hop back to the device thread to start using it.
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::UI, FROM_HERE, base::BindOnce(capturer_creator_),
-      base::BindOnce(&FrameSinkVideoCaptureDevice::OnCapturerCreated,
-                     weak_factory_.GetWeakPtr()));
+  CreateCapturer(base::BindOnce(&FrameSinkVideoCaptureDevice::OnCapturerCreated,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void FrameSinkVideoCaptureDevice::AllocateAndStart(
@@ -288,14 +271,31 @@ void FrameSinkVideoCaptureDevice::OnTargetPermanentlyLost() {
   OnFatalError("Capture target has been permanently lost.");
 }
 
-void FrameSinkVideoCaptureDevice::SetCapturerCreatorForTesting(
-    CapturerCreatorCallback creator) {
-  capturer_creator_ = std::move(creator);
-}
-
 void FrameSinkVideoCaptureDevice::WillStart() {}
 
 void FrameSinkVideoCaptureDevice::DidStop() {}
+
+void FrameSinkVideoCaptureDevice::CreateCapturer(
+    CreatedCapturerCallback callback) {
+  CreateCapturerViaGlobalManager(std::move(callback));
+}
+
+// static
+void FrameSinkVideoCaptureDevice::CreateCapturerViaGlobalManager(
+    CreatedCapturerCallback callback) {
+  // Hop to the UI thread to request a Mojo connection to a new capturer
+  // instance, then hop back to the device thread to deliver the client-side
+  // interface via |callback|.
+  BrowserThread::PostTaskAndReplyWithResult(
+      BrowserThread::UI, FROM_HERE, base::BindOnce([]() {
+        viz::HostFrameSinkManager* const manager = GetHostFrameSinkManager();
+        DCHECK(manager);
+        viz::mojom::FrameSinkVideoCapturerPtr capturer;
+        manager->CreateVideoCapturer(mojo::MakeRequest(&capturer));
+        return capturer.PassInterface();
+      }),
+      std::move(callback));
+}
 
 void FrameSinkVideoCaptureDevice::OnCapturerCreated(
     viz::mojom::FrameSinkVideoCapturerPtrInfo info) {
@@ -308,6 +308,11 @@ void FrameSinkVideoCaptureDevice::OnCapturerCreated(
   // Shutdown the prior capturer, if any.
   MaybeStopConsuming();
   capturer_.reset();
+
+  if (!info) {
+    OnFatalError("Failed to create/connect to the replacement capturer.");
+    return;
+  }
 
   // Bind and configure the new capturer.
   capturer_.Bind(std::move(info));
