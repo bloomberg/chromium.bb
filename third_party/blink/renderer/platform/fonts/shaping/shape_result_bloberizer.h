@@ -20,6 +20,7 @@
 namespace blink {
 
 class Font;
+struct TextRunPaintInfo;
 
 class PLATFORM_EXPORT ShapeResultBloberizer {
   WTF_MAKE_NONCOPYABLE(ShapeResultBloberizer);

@@ -26,7 +26,6 @@
 
 #include "base/optional.h"
 #include "third_party/blink/renderer/platform/fonts/glyph.h"
-#include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/tab_size.h"
@@ -300,19 +299,6 @@ inline void TextRun::SetTabSize(bool allow, TabSize size) {
   tab_size_ = size;
 }
 
-// Container for parameters needed to paint TextRun.
-struct TextRunPaintInfo {
-  STACK_ALLOCATED();
-
- public:
-  explicit TextRunPaintInfo(const TextRun& r)
-      : run(r), from(0), to(r.length()) {}
-
-  const TextRun& run;
-  unsigned from;
-  unsigned to;
-  FloatRect bounds;
-};
-
 }  // namespace blink
+
 #endif
