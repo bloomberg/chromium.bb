@@ -67,7 +67,6 @@
         "quick_launch_app": [ "mash:launchable" ],
         "service_manager": [ "service_manager:singleton" ],
         "ui": [ "display_dev", "window_manager", "video_detector" ],
-        "touch_hud_app": [ "mash:launchable" ],
         "data_decoder": [ "image_decoder" ]
       }
     }

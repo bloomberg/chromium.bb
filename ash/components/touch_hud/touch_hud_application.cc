@@ -10,7 +10,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
@@ -26,10 +25,7 @@
 
 namespace touch_hud {
 
-TouchHudApplication::TouchHudApplication() : binding_(this) {
-  registry_.AddInterface<mash::mojom::Launchable>(base::BindRepeating(
-      &TouchHudApplication::Create, base::Unretained(this)));
-}
+TouchHudApplication::TouchHudApplication() = default;
 
 TouchHudApplication::~TouchHudApplication() {
   display::Screen::GetScreen()->RemoveObserver(this);
@@ -37,27 +33,7 @@ TouchHudApplication::~TouchHudApplication() {
       this);
 }
 
-void TouchHudApplication::OnStart() {
-  const bool register_path_provider = running_standalone_;
-  aura_init_ = views::AuraInit::Create(
-      context()->connector(), context()->identity(), "views_mus_resources.pak",
-      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS2,
-      register_path_provider);
-  if (!aura_init_) {
-    context()->QuitNow();
-    return;
-  }
-  Launch(mash::mojom::kWindow, mash::mojom::LaunchMode::DEFAULT);
-}
-
-void TouchHudApplication::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
-}
-
-void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
+void TouchHudApplication::Start() {
   // Watches moves so the user can drag around a touch point.
   views::MusClient::Get()->pointer_watcher_event_router()->AddPointerWatcher(
       this, true /* want_moves */);
@@ -66,6 +42,19 @@ void TouchHudApplication::Launch(uint32_t what, mash::mojom::LaunchMode how) {
        display::Screen::GetScreen()->GetAllDisplays()) {
     CreateWidgetForDisplay(display.id());
   }
+}
+
+void TouchHudApplication::OnStart() {
+  const bool register_path_provider = false;
+  aura_init_ = views::AuraInit::Create(
+      context()->connector(), context()->identity(), "views_mus_resources.pak",
+      std::string(), nullptr, views::AuraInit::Mode::AURA_MUS2,
+      register_path_provider);
+  if (!aura_init_) {
+    context()->QuitNow();
+    return;
+  }
+  Start();
 }
 
 void TouchHudApplication::OnPointerEventObserved(
@@ -116,11 +105,6 @@ void TouchHudApplication::CreateWidgetForDisplay(int64_t display_id) {
 
   display_id_to_renderer_[display_id] =
       std::make_unique<TouchHudRenderer>(std::move(widget));
-}
-
-void TouchHudApplication::Create(mash::mojom::LaunchableRequest request) {
-  binding_.Close();
-  binding_.Bind(std::move(request));
 }
 
 }  // namespace touch_hud

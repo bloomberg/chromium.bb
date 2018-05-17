@@ -1336,7 +1336,6 @@ component("ash") {
 
   data_deps = [
     "//ash/components/autoclick:autoclick_app",
-    "//ash/components/touch_hud:touch_hud_app",
     ":dbus_service_files",
   ]
 
