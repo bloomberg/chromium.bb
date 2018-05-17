@@ -17,6 +17,7 @@
 #include "base/macros.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace base {
@@ -122,7 +123,7 @@ class AssistantController
                          RequestScreenshotCallback callback) override;
 
  private:
-  mojo::Binding<mojom::AssistantController> assistant_controller_binding_;
+  mojo::BindingSet<mojom::AssistantController> assistant_controller_bindings_;
   mojo::Binding<chromeos::assistant::mojom::AssistantEventSubscriber>
       assistant_event_subscriber_binding_;
   AssistantInteractionModel assistant_interaction_model_;
