@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
-import android.support.v4.view.ViewPager;
 import android.view.View;
 
 import org.chromium.chrome.browser.autofill.keyboard_accessory.AccessorySheetModel.PropertyKey;
@@ -15,8 +14,7 @@ import org.chromium.chrome.browser.modelutil.LazyViewBinderAdapter;
  * {@link AccessorySheetViewBinder} which will modify the view accordingly.
  */
 class AccessorySheetViewBinder
-        implements LazyViewBinderAdapter
-                           .SimpleViewBinder<AccessorySheetModel, ViewPager, PropertyKey> {
+        implements LazyViewBinderAdapter.SimpleViewBinder<AccessorySheetModel, View, PropertyKey> {
     @Override
     public PropertyKey getVisibilityProperty() {
         return PropertyKey.VISIBLE;
@@ -28,21 +26,12 @@ class AccessorySheetViewBinder
     }
 
     @Override
-    public void onInitialInflation(AccessorySheetModel model, ViewPager inflatedView) {
-        if (model.getActiveTabIndex() != -1) inflatedView.setCurrentItem(model.getActiveTabIndex());
-        inflatedView.setAdapter(AccessorySheetCoordinator.createTabViewAdapter(model));
-    }
+    public void onInitialInflation(AccessorySheetModel model, View inflatedView) {}
 
     @Override
-    public void bind(AccessorySheetModel model, ViewPager inflatedView, PropertyKey propertyKey) {
+    public void bind(AccessorySheetModel model, View inflatedView, PropertyKey propertyKey) {
         if (propertyKey == PropertyKey.VISIBLE) {
             inflatedView.setVisibility(model.isVisible() ? View.VISIBLE : View.GONE);
-            return;
-        }
-        if (propertyKey == PropertyKey.ACTIVE_TAB_INDEX) {
-            if (model.getActiveTabIndex() != AccessorySheetModel.NO_ACTIVE_TAB) {
-                inflatedView.setCurrentItem(model.getActiveTabIndex());
-            }
             return;
         }
         assert false : "Every possible property update needs to be handled!";

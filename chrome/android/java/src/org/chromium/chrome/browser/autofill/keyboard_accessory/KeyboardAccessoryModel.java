@@ -7,9 +7,9 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 import org.chromium.chrome.browser.autofill.AutofillKeyboardSuggestions;
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -31,6 +31,53 @@ class KeyboardAccessoryModel extends PropertyObservable<KeyboardAccessoryModel.P
 
         private PropertyKey() {
             ALL_PROPERTIES.add(this);
+        }
+    }
+
+    /** A {@link ListObservable} containing an {@link ArrayList} of Tabs or Actions. */
+    class SimpleListObservable<T> extends ListObservable {
+        private final List<T> mItems = new ArrayList<>();
+
+        public T get(int index) {
+            return mItems.get(index);
+        }
+
+        @Override
+        public int getItemCount() {
+            return mItems.size();
+        }
+
+        void add(T item) {
+            mItems.add(item);
+            notifyItemRangeInserted(mItems.size() - 1, 1);
+        }
+
+        void remove(T item) {
+            int position = mItems.indexOf(item);
+            if (position == -1) {
+                return;
+            }
+            mItems.remove(position);
+            notifyItemRangeRemoved(position, 1);
+        }
+
+        void set(T[] newItems) {
+            if (mItems.isEmpty()) {
+                if (newItems.length == 0) {
+                    return; // Nothing to do, nothing changes.
+                }
+                mItems.addAll(Arrays.asList(newItems));
+                notifyItemRangeInserted(0, mItems.size());
+                return;
+            }
+            int oldSize = mItems.size();
+            mItems.clear();
+            if (newItems.length == 0) {
+                notifyItemRangeRemoved(0, oldSize);
+                return;
+            }
+            mItems.addAll(Arrays.asList(newItems));
+            notifyItemRangeChanged(0, Math.max(oldSize, mItems.size()), this);
         }
     }
 
