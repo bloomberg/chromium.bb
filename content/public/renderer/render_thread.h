@@ -15,6 +15,7 @@
 #include "content/common/content_export.h"
 #include "content/public/child/child_thread.h"
 #include "ipc/ipc_channel_proxy.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 class GURL;
 
@@ -110,6 +111,9 @@ class CONTENT_EXPORT RenderThread : virtual public ChildThread {
   // Set the renderer process type.
   virtual void SetRendererProcessType(
       blink::scheduler::RendererProcessType type) = 0;
+
+  // Returns the user-agent string.
+  virtual blink::WebString GetUserAgent() const = 0;
 };
 
 }  // namespace content

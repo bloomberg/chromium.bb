@@ -389,6 +389,7 @@ class EmbeddedWorkerTestHelper::MockRendererInterface : public mojom::Renderer {
     NOTREACHED();
   }
   void SetWebKitSharedTimersSuspended(bool suspend) override { NOTREACHED(); }
+  void SetUserAgent(const std::string& user_agent) override { NOTREACHED(); }
   void UpdateScrollbarTheme(
       mojom::UpdateScrollbarThemeParamsPtr params) override {
     NOTREACHED();

@@ -14,6 +14,7 @@
 #include "base/compiler_specific.h"
 #include "base/containers/id_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -83,6 +84,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                                      size_t length) override;
   bool IsLinkVisited(unsigned long long linkHash) override;
   blink::WebPrescientNetworking* PrescientNetworking() override;
+  blink::WebString UserAgent() override;
   void CacheMetadata(const blink::WebURL&,
                      base::Time,
                      const char*,

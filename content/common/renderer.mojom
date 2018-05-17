@@ -225,6 +225,12 @@ interface Renderer {
   // Android.
   SetWebKitSharedTimersSuspended(bool suspend);
 
+  // Sets the user-agent string. This is needed because getting the value in the
+  // renderer from the system leads to a wrong value due to sandboxing. This
+  // must be called as early as possible, during the renderer process
+  // initialization.
+  SetUserAgent(string user_agent);
+
   // Tells the renderer about a scrollbar appearance change. Only for use on
   // OS X.
   UpdateScrollbarTheme(UpdateScrollbarThemeParams params);

@@ -447,6 +447,14 @@ RendererBlinkPlatformImpl::PrescientNetworking() {
   return GetContentClient()->renderer()->GetPrescientNetworking();
 }
 
+blink::WebString RendererBlinkPlatformImpl::UserAgent() {
+  auto* render_thread = RenderThreadImpl::current();
+  // RenderThreadImpl is null in some tests.
+  if (!render_thread)
+    return WebString();
+  return render_thread->GetUserAgent();
+}
+
 void RendererBlinkPlatformImpl::CacheMetadata(const blink::WebURL& url,
                                               base::Time response_time,
                                               const char* data,

@@ -1603,6 +1603,11 @@ void RenderThreadImpl::SetRendererProcessType(
   main_thread_scheduler_->SetRendererProcessType(type);
 }
 
+blink::WebString RenderThreadImpl::GetUserAgent() const {
+  DCHECK(!user_agent_.IsNull());
+  return user_agent_;
+}
+
 bool RenderThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   if (file_system_dispatcher_->OnMessageReceived(msg))
     return true;
@@ -2291,6 +2296,11 @@ void RenderThreadImpl::SetWebKitSharedTimersSuspended(bool suspend) {
 #else
   NOTREACHED();
 #endif
+}
+
+void RenderThreadImpl::SetUserAgent(const std::string& user_agent) {
+  DCHECK(user_agent_.IsNull());
+  user_agent_ = WebString::FromUTF8(user_agent);
 }
 
 void RenderThreadImpl::UpdateScrollbarTheme(
