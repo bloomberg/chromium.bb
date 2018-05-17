@@ -688,11 +688,7 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest,
 }
 
 TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
-  // Strictly use two workers for this test to avoid depending on the
-  // scheduler's logic to always keep one extra idle worker.
-  constexpr size_t kTwoWorkers = 2;
-  CreateAndStartWorkerPool(kReclaimTimeForCleanupTests, kTwoWorkers);
-
+  CreateWorkerPool();
   auto histogrammed_thread_task_runner =
       worker_pool_->CreateSequencedTaskRunnerWithTraits(
           {WithBaseSyncPrimitives()});
@@ -736,6 +732,23 @@ TEST_F(TaskSchedulerWorkerPoolHistogramTest, NumTasksBeforeCleanup) {
           Unretained(&thread_ref), Unretained(&cleanup_thread_running),
           Unretained(&cleanup_thread_continue)));
 
+  // Start the worker pool with 2 workers, to avoid depending on the scheduler's
+  // logic to always keep one extra idle worker.
+  //
+  // The pool is started after the 3 initial tasks have been posted to ensure
+  // that they are scheduled on the same worker. If the tasks could run as they
+  // are posted, there would be a chance that:
+  // 1. Worker #1:        Runs a tasks and empties the sequence, without adding
+  //                      itself to the idle stack yet.
+  // 2. Posting thread:   Posts another task to the now empty sequence. Wakes
+  //                      up a new worker, since worker #1 isn't on the idle
+  //                      stack yet.
+  // 3: Worker #2:        Runs the tasks, violating the expectation that the 3
+  //                      initial tasks run on the same worker.
+  constexpr size_t kTwoWorkers = 2;
+  StartWorkerPool(kReclaimTimeForCleanupTests, kTwoWorkers);
+
+  // Wait until the 3rd task is scheduled.
   cleanup_thread_running.Wait();
 
   // To allow the SchedulerWorker associated with
