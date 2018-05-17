@@ -10,9 +10,11 @@
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/time/default_clock.h"
 #include "media/audio/audio_manager.h"
 #include "services/audio/debug_recording.h"
 #include "services/audio/device_notifier.h"
+#include "services/audio/service_metrics.h"
 #include "services/audio/system_info.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
@@ -41,6 +43,8 @@ Service::~Service() {
 void Service::OnStart() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(4) << "audio::Service::OnStart";
+  metrics_ =
+      std::make_unique<ServiceMetrics>(base::DefaultClock::GetInstance());
   ref_factory_ = std::make_unique<service_manager::ServiceContextRefFactory>(
       base::BindRepeating(&Service::MaybeRequestQuitDelayed,
                           base::Unretained(this)));
@@ -60,15 +64,22 @@ void Service::OnBindInterface(
     const service_manager::BindSourceInfo& source_info,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle interface_pipe) {
+  DCHECK(ref_factory_);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(4) << "audio::Service::OnBindInterface";
+
+  if (ref_factory_->HasNoRefs())
+    metrics_->HasConnections();
+
   registry_.BindInterface(interface_name, std::move(interface_pipe));
-  DCHECK(ref_factory_ && !ref_factory_->HasNoRefs());
+  DCHECK(!ref_factory_->HasNoRefs());
   quit_timer_.AbandonAndStop();
 }
 
 bool Service::OnServiceManagerConnectionLost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  metrics_.reset();
+
   // Reset |debug_recording_| to disable debug recording before AudioManager
   // shutdown.
   debug_recording_.reset();
@@ -96,13 +107,22 @@ void Service::BindSystemInfoRequest(mojom::SystemInfoRequest request) {
 void Service::BindDebugRecordingRequest(mojom::DebugRecordingRequest request) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(ref_factory_);
+
+  // Reuse ref if there is an ongoing debug session that will be overriden, to
+  // avoid MaybeRequestQuitDelayed() call.
+  std::unique_ptr<service_manager::ServiceContextRef> service_ref;
+  if (debug_recording_)
+    service_ref = debug_recording_->ReleaseServiceRef();
+  else
+    service_ref = ref_factory_->CreateRef();
+
   // Accept only one bind request at a time. Old request is overwritten.
   // |debug_recording_| must be reset first to disable debug recording, and then
   // create a new DebugRecording instance to enable debug recording.
   debug_recording_.reset();
   debug_recording_ = std::make_unique<DebugRecording>(
       std::move(request), audio_manager_accessor_->GetAudioManager(),
-      ref_factory_->CreateRef());
+      std::move(service_ref));
 }
 
 void Service::BindStreamFactoryRequest(mojom::StreamFactoryRequest request) {
@@ -129,6 +149,7 @@ void Service::BindDeviceNotifierRequest(mojom::DeviceNotifierRequest request) {
 
 void Service::MaybeRequestQuitDelayed() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  metrics_->HasNoConnections();
   if (quit_timeout_ <= base::TimeDelta())
     return;
   quit_timer_.Start(FROM_HERE, quit_timeout_, this, &Service::MaybeRequestQuit);
