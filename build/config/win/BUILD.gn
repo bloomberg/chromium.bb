@@ -118,6 +118,12 @@ config("compiler") {
       "/FIXED:NO",
     ]
 
+    if (use_lld) {
+      # String tail merging leads to smaller binaries, but they don't compress
+      # as well, leading to increased mini_installer size (crbug.com/838449).
+      ldflags += [ "/OPT:NOLLDTAILMERGE" ]
+    }
+
     # TODO(siggi): Is this of any use anymore?
     # /PROFILE ensures that the PDB file contains FIXUP information (growing the
     # PDB file by about 5%) but does not otherwise alter the output binary. It
