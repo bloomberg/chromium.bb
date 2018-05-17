@@ -281,6 +281,10 @@ class TestWebGraphicsContext3D {
     return test_capabilities_;
   }
 
+  void set_capabilities(const gpu::Capabilities& caps) {
+    test_capabilities_ = caps;
+  }
+
   void set_context_lost(bool context_lost) { context_lost_ = context_lost; }
   void set_times_bind_texture_succeeds(int times) {
     times_bind_texture_succeeds_ = times;

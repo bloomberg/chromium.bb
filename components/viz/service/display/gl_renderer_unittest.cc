@@ -824,10 +824,6 @@ class ClearCountingGLES2Interface : public TestGLES2Interface {
  public:
   ClearCountingGLES2Interface() = default;
 
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
-    context->set_have_discard_framebuffer(true);
-  }
-
   MOCK_METHOD3(DiscardFramebufferEXT,
                void(GLenum target,
                     GLsizei numAttachments,
@@ -837,7 +833,9 @@ class ClearCountingGLES2Interface : public TestGLES2Interface {
 
 TEST_F(GLRendererTest, OpaqueBackground) {
   auto gl_owned = std::make_unique<ClearCountingGLES2Interface>();
-  ClearCountingGLES2Interface* gl = gl_owned.get();
+  gl_owned->set_have_discard_framebuffer(true);
+
+  auto* gl = gl_owned.get();
 
   auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
@@ -881,7 +879,8 @@ TEST_F(GLRendererTest, OpaqueBackground) {
 
 TEST_F(GLRendererTest, TransparentBackground) {
   auto gl_owned = std::make_unique<ClearCountingGLES2Interface>();
-  ClearCountingGLES2Interface* gl = gl_owned.get();
+  auto* gl = gl_owned.get();
+  gl_owned->set_have_discard_framebuffer(true);
 
   auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
@@ -918,7 +917,8 @@ TEST_F(GLRendererTest, TransparentBackground) {
 
 TEST_F(GLRendererTest, OffscreenOutputSurface) {
   auto gl_owned = std::make_unique<ClearCountingGLES2Interface>();
-  ClearCountingGLES2Interface* gl = gl_owned.get();
+  auto* gl = gl_owned.get();
+  gl_owned->set_have_discard_framebuffer(true);
 
   auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
@@ -956,10 +956,6 @@ class TextureStateTrackingGLES2Interface : public TestGLES2Interface {
  public:
   TextureStateTrackingGLES2Interface() : active_texture_(GL_INVALID_ENUM) {}
 
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
-    context->set_have_extension_egl_image(true);
-  }
-
   MOCK_METHOD1(WaitSyncTokenCHROMIUM, void(const GLbyte* sync_token));
   MOCK_METHOD3(TexParameteri, void(GLenum target, GLenum pname, GLint param));
   MOCK_METHOD4(
@@ -979,7 +975,8 @@ class TextureStateTrackingGLES2Interface : public TestGLES2Interface {
 
 TEST_F(GLRendererTest, ActiveTextureState) {
   auto gl_owned = std::make_unique<TextureStateTrackingGLES2Interface>();
-  TextureStateTrackingGLES2Interface* gl = gl_owned.get();
+  gl_owned->set_have_extension_egl_image(true);
+  auto* gl = gl_owned.get();
 
   auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
@@ -1218,11 +1215,6 @@ class DiscardCheckingGLES2Interface : public TestGLES2Interface {
  public:
   DiscardCheckingGLES2Interface() = default;
 
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
-    context->set_have_post_sub_buffer(true);
-    context->set_have_discard_framebuffer(true);
-  }
-
   void DiscardFramebufferEXT(GLenum target,
                              GLsizei numAttachments,
                              const GLenum* attachments) override {
@@ -1238,6 +1230,9 @@ class DiscardCheckingGLES2Interface : public TestGLES2Interface {
 
 TEST_F(GLRendererTest, NoDiscardOnPartialUpdates) {
   auto gl_owned = std::make_unique<DiscardCheckingGLES2Interface>();
+  gl_owned->set_have_post_sub_buffer(true);
+  gl_owned->set_have_discard_framebuffer(true);
+
   auto* gl = gl_owned.get();
 
   auto provider = TestContextProvider::Create(std::move(gl_owned));
@@ -1477,10 +1472,6 @@ TEST_F(GLRendererTest, NoResourceLeak) {
 
 class DrawElementsGLES2Interface : public TestGLES2Interface {
  public:
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
-    context->set_have_post_sub_buffer(true);
-  }
-
   MOCK_METHOD4(
       DrawElements,
       void(GLenum mode, GLsizei count, GLenum type, const void* indices));
@@ -1490,6 +1481,7 @@ class GLRendererSkipTest : public GLRendererTest {
  protected:
   GLRendererSkipTest() {
     auto gl_owned = std::make_unique<StrictMock<DrawElementsGLES2Interface>>();
+    gl_owned->set_have_post_sub_buffer(true);
     gl_ = gl_owned.get();
 
     auto provider = TestContextProvider::Create(std::move(gl_owned));
@@ -1891,10 +1883,6 @@ class OutputSurfaceMockGLES2Interface : public TestGLES2Interface {
  public:
   OutputSurfaceMockGLES2Interface() = default;
 
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
-    context->set_have_post_sub_buffer(true);
-  }
-
   // Specifically override methods even if they are unused (used in conjunction
   // with StrictMock). We need to make sure that GLRenderer does not issue
   // framebuffer-related GLuint calls directly. Instead these are supposed to go
@@ -1945,6 +1933,7 @@ class MockOutputSurfaceTest : public GLRendererTest {
  protected:
   void SetUp() override {
     auto gl = std::make_unique<StrictMock<OutputSurfaceMockGLES2Interface>>();
+    gl->set_have_post_sub_buffer(true);
     gl_ = gl.get();
     auto provider = TestContextProvider::Create(std::move(gl));
     provider->BindToCurrentThread();
@@ -2464,10 +2453,11 @@ class GenerateMipmapMockGLESInterface : public TestGLES2Interface {
 TEST_F(GLRendererTest, GenerateMipmap) {
   // Initialize the mock GL interface, the output surface and the renderer.
   auto gl_owned = std::make_unique<GenerateMipmapMockGLESInterface>();
+  gl_owned->set_support_texture_npot(true);
+
   auto* gl = gl_owned.get();
   auto provider = TestContextProvider::Create(std::move(gl_owned));
   provider->BindToCurrentThread();
-  provider->TestContext3d()->set_support_texture_npot(true);
 
   std::unique_ptr<FakeOutputSurface> output_surface(
       FakeOutputSurface::Create3d(std::move(provider)));
@@ -2510,28 +2500,21 @@ TEST_F(GLRendererTest, GenerateMipmap) {
 
 class PartialSwapMockGLES2Interface : public TestGLES2Interface {
  public:
-  explicit PartialSwapMockGLES2Interface(bool support_dc_layers)
-      : support_dc_layers_(support_dc_layers) {}
-
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
-    context->set_have_post_sub_buffer(true);
-    context->set_enable_dc_layers(support_dc_layers_);
-  }
+  PartialSwapMockGLES2Interface() = default;
 
   MOCK_METHOD1(Enable, void(GLenum cap));
   MOCK_METHOD1(Disable, void(GLenum cap));
   MOCK_METHOD4(Scissor, void(GLint x, GLint y, GLsizei width, GLsizei height));
   MOCK_METHOD1(SetEnableDCLayersCHROMIUM, void(GLboolean enable));
-
- private:
-  bool support_dc_layers_;
 };
 
 class GLRendererPartialSwapTest : public GLRendererTest {
  protected:
   void RunTest(bool partial_swap, bool set_draw_rectangle) {
-    auto gl_owned =
-        std::make_unique<PartialSwapMockGLES2Interface>(set_draw_rectangle);
+    auto gl_owned = std::make_unique<PartialSwapMockGLES2Interface>();
+    gl_owned->set_have_post_sub_buffer(true);
+    gl_owned->set_enable_dc_layers(set_draw_rectangle);
+
     auto* gl = gl_owned.get();
 
     auto provider = TestContextProvider::Create(std::move(gl_owned));
@@ -2644,7 +2627,9 @@ class DCLayerValidator : public OverlayCandidateValidator {
 TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(features::kDirectCompositionUnderlays);
-  auto gl_owned = std::make_unique<PartialSwapMockGLES2Interface>(true);
+  auto gl_owned = std::make_unique<PartialSwapMockGLES2Interface>();
+  gl_owned->set_have_post_sub_buffer(true);
+  gl_owned->set_enable_dc_layers(true);
   auto* gl = gl_owned.get();
 
   auto provider = TestContextProvider::Create(std::move(gl_owned));
@@ -2803,13 +2788,6 @@ TEST_F(GLRendererWithMockContextTest,
   Mock::VerifyAndClearExpectations(context_support_ptr_);
 }
 
-class SwapWithBoundsMockGLES2Interface : public TestGLES2Interface {
- public:
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
-    context->set_have_swap_buffers_with_bounds(true);
-  }
-};
-
 class ContentBoundsOverlayProcessor : public OverlayProcessor {
  public:
   class Strategy : public OverlayProcessor::Strategy {
@@ -2850,7 +2828,8 @@ class ContentBoundsOverlayProcessor : public OverlayProcessor {
 class GLRendererSwapWithBoundsTest : public GLRendererTest {
  protected:
   void RunTest(const std::vector<gfx::Rect>& content_bounds) {
-    auto gl_owned = std::make_unique<SwapWithBoundsMockGLES2Interface>();
+    auto gl_owned = std::make_unique<TestGLES2Interface>();
+    gl_owned->set_have_swap_buffers_with_bounds(true);
 
     auto provider = TestContextProvider::Create(std::move(gl_owned));
     provider->BindToCurrentThread();
@@ -2933,16 +2912,6 @@ class MockCALayerGLES2Interface : public TestGLES2Interface {
                     GLuint filter));
   MOCK_METHOD2(ScheduleCALayerInUseQueryCHROMIUM,
                void(GLsizei count, const GLuint* textures));
-
-  void InitializeTestContext(TestWebGraphicsContext3D* context) override {
-    // Support image storage for GpuMemoryBuffers, needed for
-    // CALayers/IOSurfaces backed by textures.
-    context->set_support_texture_storage_image(true);
-
-    // Allow the renderer to make an empty SwapBuffers - skipping even the
-    // root RenderPass.
-    context->set_have_commit_overlay_planes(true);
-  }
 };
 
 class CALayerGLRendererTest : public GLRendererTest {
@@ -2950,6 +2919,13 @@ class CALayerGLRendererTest : public GLRendererTest {
   void SetUp() override {
     // A mock GLES2Interface that can watch CALayer stuff happen.
     auto gles2_interface = std::make_unique<MockCALayerGLES2Interface>();
+    // Support image storage for GpuMemoryBuffers, needed for
+    // CALayers/IOSurfaces backed by textures.
+    gles2_interface->set_support_texture_storage_image(true);
+    // Allow the renderer to make an empty SwapBuffers - skipping even the
+    // root RenderPass.
+    gles2_interface->set_have_commit_overlay_planes(true);
+
     gl_ = gles2_interface.get();
 
     auto provider = TestContextProvider::Create(std::move(gles2_interface));

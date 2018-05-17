@@ -461,14 +461,14 @@ class LayerTreeHostContextCacheTest : public LayerTreeHostTest {
     // Create the main viz::ContextProvider with a MockContextSupport.
     auto main_support = std::make_unique<MockContextSupport>();
     mock_main_context_support_ = main_support.get();
-    auto test_main_context_provider = viz::TestContextProvider::Create(
-        viz::TestWebGraphicsContext3D::Create(), std::move(main_support));
+    auto test_main_context_provider =
+        viz::TestContextProvider::Create(std::move(main_support));
 
     // Create the main viz::ContextProvider with a MockContextSupport.
     auto worker_support = std::make_unique<MockContextSupport>();
     mock_worker_context_support_ = worker_support.get();
-    auto test_worker_context_provider = viz::TestContextProvider::CreateWorker(
-        viz::TestWebGraphicsContext3D::Create(), std::move(worker_support));
+    auto test_worker_context_provider =
+        viz::TestContextProvider::CreateWorker(std::move(worker_support));
 
     // At init, visibility is set to true, so SetAggressivelyFreeResources will
     // be disabled.
@@ -7727,15 +7727,6 @@ class LayerTreeHostTestSubmitFrameMetadata : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestSubmitFrameMetadata);
 
-class VideoGLES2Interface : public viz::TestGLES2Interface {
- public:
-  VideoGLES2Interface() = default;
-
-  void InitializeTestContext(viz::TestWebGraphicsContext3D* context) override {
-    context->set_have_extension_egl_image(true);
-  }
-};
-
 class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
  protected:
   std::unique_ptr<viz::TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
@@ -7744,8 +7735,9 @@ class LayerTreeHostTestSubmitFrameResources : public LayerTreeHostTest {
       scoped_refptr<viz::ContextProvider> compositor_context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider)
       override {
-    auto provider = viz::TestContextProvider::Create(
-        std::make_unique<VideoGLES2Interface>());
+    auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+    gl_owned->set_have_extension_egl_image(true);
+    auto provider = viz::TestContextProvider::Create(std::move(gl_owned));
     return LayerTreeTest::CreateLayerTreeFrameSink(
         renderer_settings, refresh_rate, std::move(provider),
         std::move(worker_context_provider));

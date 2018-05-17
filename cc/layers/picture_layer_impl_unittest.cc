@@ -1451,10 +1451,10 @@ TEST_F(PictureLayerImplTest, ClampTilesToMaxTileSize) {
   ResetTilingsAndRasterScales();
 
   // Change the max texture size on the output surface context.
-  std::unique_ptr<viz::TestWebGraphicsContext3D> context =
-      viz::TestWebGraphicsContext3D::Create();
-  context->set_max_texture_size(140);
-  ResetLayerTreeFrameSink(FakeLayerTreeFrameSink::Create3d(std::move(context)));
+  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+  gl_owned->set_max_texture_size(140);
+  ResetLayerTreeFrameSink(
+      FakeLayerTreeFrameSink::Create3d(std::move(gl_owned)));
 
   SetupDrawPropertiesAndUpdateTiles(pending_layer(), 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);
@@ -1486,10 +1486,10 @@ TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
   ResetTilingsAndRasterScales();
 
   // Change the max texture size on the output surface context.
-  std::unique_ptr<viz::TestWebGraphicsContext3D> context =
-      viz::TestWebGraphicsContext3D::Create();
-  context->set_max_texture_size(140);
-  ResetLayerTreeFrameSink(FakeLayerTreeFrameSink::Create3d(std::move(context)));
+  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+  gl_owned->set_max_texture_size(140);
+  ResetLayerTreeFrameSink(
+      FakeLayerTreeFrameSink::Create3d(std::move(gl_owned)));
 
   SetupDrawPropertiesAndUpdateTiles(active_layer(), 1.f, 1.f, 1.f, 1.f, 0.f,
                                     false);

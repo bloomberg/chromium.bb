@@ -48,10 +48,18 @@ class TestContextProvider
   static scoped_refptr<TestContextProvider> CreateWorker(
       std::unique_ptr<TestWebGraphicsContext3D> context,
       std::unique_ptr<TestContextSupport> support);
+  static scoped_refptr<TestContextProvider> CreateWorker(
+      std::unique_ptr<TestContextSupport> support);
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestContextSupport> support);
+
+  explicit TestContextProvider(
+      std::unique_ptr<TestContextSupport> support,
+      std::unique_ptr<TestGLES2Interface> gl,
+      std::unique_ptr<TestWebGraphicsContext3D> context,
+      bool support_locking);
 
   // ContextProvider / RasterContextProvider implementation.
   void AddRef() const override;
@@ -81,12 +89,6 @@ class TestContextProvider
 
  protected:
   friend class base::RefCountedThreadSafe<TestContextProvider>;
-
-  explicit TestContextProvider(
-      std::unique_ptr<TestContextSupport> support,
-      std::unique_ptr<TestGLES2Interface> gl,
-      std::unique_ptr<TestWebGraphicsContext3D> context,
-      bool support_locking);
   ~TestContextProvider() override;
 
  private:

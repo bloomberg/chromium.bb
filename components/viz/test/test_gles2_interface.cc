@@ -10,7 +10,11 @@
 
 namespace viz {
 
-TestGLES2Interface::TestGLES2Interface() = default;
+TestGLES2Interface::TestGLES2Interface() {
+  set_have_extension_egl_image(true);  // For stream textures.
+  set_max_texture_size(2048);
+}
+
 TestGLES2Interface::~TestGLES2Interface() = default;
 
 void TestGLES2Interface::GenTextures(GLsizei n, GLuint* textures) {
@@ -387,11 +391,109 @@ size_t TestGLES2Interface::NumTextures() const {
 void TestGLES2Interface::set_test_context(TestWebGraphicsContext3D* context) {
   DCHECK(!test_context_);
   test_context_ = context;
-  InitializeTestContext(test_context_);
+  InitializeTestContext();
+  test_context_->set_capabilities(test_capabilities_);
 }
 
 void TestGLES2Interface::set_times_bind_texture_succeeds(int times) {
   test_context_->set_times_bind_texture_succeeds(times);
+}
+
+void TestGLES2Interface::set_have_extension_io_surface(bool have) {
+  test_capabilities_.iosurface = have;
+  test_capabilities_.texture_rectangle = have;
+}
+
+void TestGLES2Interface::set_have_extension_egl_image(bool have) {
+  test_capabilities_.egl_image_external = have;
+}
+
+void TestGLES2Interface::set_have_post_sub_buffer(bool have) {
+  test_capabilities_.post_sub_buffer = have;
+}
+
+void TestGLES2Interface::set_have_swap_buffers_with_bounds(bool have) {
+  test_capabilities_.swap_buffers_with_bounds = have;
+}
+
+void TestGLES2Interface::set_have_commit_overlay_planes(bool have) {
+  test_capabilities_.commit_overlay_planes = have;
+}
+
+void TestGLES2Interface::set_have_discard_framebuffer(bool have) {
+  test_capabilities_.discard_framebuffer = have;
+}
+
+void TestGLES2Interface::set_support_compressed_texture_etc1(bool support) {
+  test_capabilities_.texture_format_etc1 = support;
+}
+
+void TestGLES2Interface::set_support_texture_format_bgra8888(bool support) {
+  test_capabilities_.texture_format_bgra8888 = support;
+}
+
+void TestGLES2Interface::set_support_texture_storage(bool support) {
+  test_capabilities_.texture_storage = support;
+}
+
+void TestGLES2Interface::set_support_texture_usage(bool support) {
+  test_capabilities_.texture_usage = support;
+}
+
+void TestGLES2Interface::set_support_sync_query(bool support) {
+  test_capabilities_.sync_query = support;
+}
+
+void TestGLES2Interface::set_support_texture_rectangle(bool support) {
+  test_capabilities_.texture_rectangle = support;
+}
+
+void TestGLES2Interface::set_support_texture_half_float_linear(bool support) {
+  test_capabilities_.texture_half_float_linear = support;
+  // TODO(xing.xu) : Below workaround should be removed when set_test_context
+  // removed.
+  if (test_context_)
+    test_context_->set_support_texture_half_float_linear(support);
+}
+
+void TestGLES2Interface::set_support_texture_norm16(bool support) {
+  test_capabilities_.texture_norm16 = support;
+  // TODO(xing.xu) : Below workaround should be removed when set_test_context
+  // removed.
+  if (test_context_)
+    test_context_->set_support_texture_norm16(support);
+}
+
+void TestGLES2Interface::set_msaa_is_slow(bool msaa_is_slow) {
+  test_capabilities_.msaa_is_slow = msaa_is_slow;
+}
+
+void TestGLES2Interface::set_gpu_rasterization(bool gpu_rasterization) {
+  test_capabilities_.gpu_rasterization = gpu_rasterization;
+}
+
+void TestGLES2Interface::set_avoid_stencil_buffers(bool avoid_stencil_buffers) {
+  test_capabilities_.avoid_stencil_buffers = avoid_stencil_buffers;
+}
+
+void TestGLES2Interface::set_enable_dc_layers(bool support) {
+  test_capabilities_.dc_layers = support;
+}
+
+void TestGLES2Interface::set_support_multisample_compatibility(bool support) {
+  test_capabilities_.multisample_compatibility = support;
+}
+
+void TestGLES2Interface::set_support_texture_storage_image(bool support) {
+  test_capabilities_.texture_storage_image = support;
+}
+
+void TestGLES2Interface::set_support_texture_npot(bool support) {
+  test_capabilities_.texture_npot = support;
+}
+
+void TestGLES2Interface::set_max_texture_size(int size) {
+  test_capabilities_.max_texture_size = size;
 }
 
 }  // namespace viz
