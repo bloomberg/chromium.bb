@@ -10,12 +10,9 @@ public_headers = [
   "//base/memory/writable_shared_memory_region.h",
 ]
 traits_headers = [ "//mojo/public/cpp/base/shared_memory_mojom_traits.h" ]
-sources = [
-  "//mojo/public/cpp/base/shared_memory_mojom_traits.cc",
-  "//mojo/public/cpp/base/shared_memory_mojom_traits.h",
-]
 public_deps = [
   "//base",
+  "//mojo/public/cpp/base:shared_typemap_traits",
 ]
 type_mappings = [
   "mojo_base.mojom.PlatformSharedMemoryHandle=base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle[move_only]",
