@@ -9,9 +9,6 @@ sys.path += ['..']
 
 import gencerts
 
-gencerts.set_default_validity_range(gencerts.JANUARY_1_2015_UTC,
-                                    gencerts.JANUARY_1_2021_UTC)
-
 # Generate the keys -- the same key is used between all intermediate certs and
 # between all leaf certs.
 root_key = gencerts.get_or_generate_rsa_key(2048,
