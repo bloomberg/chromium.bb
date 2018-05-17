@@ -136,6 +136,32 @@ cc::InputHandler::ScrollInputType GestureScrollInputType(
              : cc::InputHandler::TOUCHSCREEN;
 }
 
+cc::SnapFlingController::GestureScrollType GestureScrollEventType(
+    WebInputEvent::Type web_event_type) {
+  switch (web_event_type) {
+    case WebInputEvent::kGestureScrollBegin:
+      return cc::SnapFlingController::GestureScrollType::kBegin;
+    case WebInputEvent::kGestureScrollUpdate:
+      return cc::SnapFlingController::GestureScrollType::kUpdate;
+    case WebInputEvent::kGestureScrollEnd:
+      return cc::SnapFlingController::GestureScrollType::kEnd;
+    default:
+      NOTREACHED();
+      return cc::SnapFlingController::GestureScrollType::kBegin;
+  }
+}
+
+cc::SnapFlingController::GestureScrollUpdateInfo GetGestureScrollUpdateInfo(
+    const WebGestureEvent& event) {
+  cc::SnapFlingController::GestureScrollUpdateInfo info;
+  info.delta = gfx::Vector2dF(-event.data.scroll_update.delta_x,
+                              -event.data.scroll_update.delta_y);
+  info.is_in_inertial_phase = event.data.scroll_update.inertial_phase ==
+                              blink::WebGestureEvent::kMomentumPhase;
+  info.event_time = event.TimeStamp();
+  return info;
+}
+
 enum ScrollingThreadStatus {
   SCROLLING_ON_COMPOSITOR,
   SCROLLING_ON_COMPOSITOR_BLOCKED_ON_MAIN,
@@ -177,7 +203,7 @@ InputHandlerProxy::InputHandlerProxy(
       has_ongoing_compositor_scroll_fling_pinch_(false),
       is_first_gesture_scroll_update_(false),
       tick_clock_(base::DefaultTickClock::GetInstance()),
-      snap_fling_controller_(std::make_unique<SnapFlingController>(this)) {
+      snap_fling_controller_(std::make_unique<cc::SnapFlingController>(this)) {
   DCHECK(client);
   input_handler_->BindToClient(this,
                                touchpad_and_wheel_scroll_latching_enabled_);
@@ -391,8 +417,11 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
     }
   }
 
-  if (snap_fling_controller_->FilterEventForSnap(event))
+  if (IsGestureScroll(event.GetType()) &&
+      (snap_fling_controller_->FilterEventForSnap(
+          GestureScrollEventType(event.GetType())))) {
     return DROP_EVENT;
+  }
 
   switch (event.GetType()) {
     case WebInputEvent::kMouseWheel:
@@ -806,7 +835,8 @@ InputHandlerProxy::HandleGestureScrollUpdate(
     }
   }
 
-  if (snap_fling_controller_->HandleGestureScrollUpdate(gesture_event)) {
+  if (snap_fling_controller_->HandleGestureScrollUpdate(
+          GetGestureScrollUpdateInfo(gesture_event))) {
 #ifndef NDEBUG
     expect_scroll_update_end_ = false;
 #endif

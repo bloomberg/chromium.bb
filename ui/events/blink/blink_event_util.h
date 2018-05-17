@@ -95,6 +95,8 @@ blink::WebInputEvent::Modifiers DomCodeToWebInputEventModifiers(
 
 bool IsGestureScrollOrFlingOrPinch(blink::WebInputEvent::Type);
 
+bool IsGestureScroll(blink::WebInputEvent::Type);
+
 bool IsContinuousGestureEvent(blink::WebInputEvent::Type);
 
 EventPointerType WebPointerTypeToEventPointerType(
