@@ -157,6 +157,56 @@
    "dns_api_endpoint": "digicert2.ct.googleapis.com"
   },
   {
+   "description": "DigiCert Yeti2018 Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAESYlKFDLLFmA9JScaiaNnqlU8oWDytxIYMfswHy9Esg0aiX+WnP/yj4O0ViEHtLwbmOQeSWBGkIu9YK9CLeer+g==",
+   "url": "yeti2018.ct.digicert.com/log/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    2
+   ],
+   "dns_api_endpoint": "digicert-yeti2018.ct.googleapis.com"
+  },
+  {
+   "description": "DigiCert Yeti2019 Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEkZd/ow8X+FSVWAVSf8xzkFohcPph/x6pS1JHh7g1wnCZ5y/8Hk6jzJxs6t3YMAWz2CPd4VkCdxwKexGhcFxD9A==",
+   "url": "yeti2019.ct.digicert.com/log/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    2
+   ],
+   "dns_api_endpoint": "digicert-yeti2019.ct.googleapis.com"
+  },
+  {
+   "description": "DigiCert Yeti2020 Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEURAG+Zo0ac3n37ifZKUhBFEV6jfcCzGIRz3tsq8Ca9BP/5XUHy6ZiqsPaAEbVM0uI3Tm9U24RVBHR9JxDElPmg==",
+   "url": "yeti2020.ct.digicert.com/log/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    2
+   ],
+   "dns_api_endpoint": "digicert-yeti2020.ct.googleapis.com"
+  },
+  {
+   "description": "DigiCert Yeti2021 Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE6J4EbcpIAl1+AkSRsbhoY5oRTj3VoFfaf1DlQkfi7Rbe/HcjfVtrwN8jaC+tQDGjF+dqvKhWJAQ6Q6ev6q9Mew==",
+   "url": "yeti2021.ct.digicert.com/log/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    2
+   ],
+   "dns_api_endpoint": "digicert-yeti2021.ct.googleapis.com"
+  },
+  {
+   "description": "DigiCert Yeti2022 Log",
+   "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEn/jYHd77W1G1+131td5mEbCdX/1v/KiYW5hPLcOROvv+xA8Nw2BDjB7y+RGyutD2vKXStp/5XIeiffzUfdYTJg==",
+   "url": "yeti2022.ct.digicert.com/log/",
+   "maximum_merge_delay": 86400,
+   "operated_by": [
+    2
+   ],
+   "dns_api_endpoint": "digicert-yeti2022.ct.googleapis.com"
+  },
+  {
    "description": "Symantec log",
    "key": "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEluqsHEYMG1XcDfy1lCdGV0JwOmkY4r87xNuroPS2bMBTP01CEDPwWJePa75y9CrsHEKqAy8afig1dpkIPSEUhg==",
    "url": "ct.ws.symantec.com/",
