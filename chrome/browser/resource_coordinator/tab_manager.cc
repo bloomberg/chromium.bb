@@ -119,8 +119,11 @@ std::unique_ptr<base::trace_event::ConvertableToTraceFormat> DataAsTraceValue(
 int GetNumLoadedLifecycleUnits(LifecycleUnitSet lifecycle_unit_set) {
   int num_loaded_lifecycle_units = 0;
   for (auto* lifecycle_unit : lifecycle_unit_set) {
-    if (lifecycle_unit->GetState() != LifecycleState::DISCARDED)
+    LifecycleState state = lifecycle_unit->GetState();
+    if (state != LifecycleState::DISCARDED &&
+        state != LifecycleState::PENDING_DISCARD) {
       num_loaded_lifecycle_units++;
+    }
   }
   return num_loaded_lifecycle_units;
 }
@@ -1001,9 +1004,15 @@ void TabManager::UpdateProactiveDiscardTimerIfNecessary() {
 
 void TabManager::OnLifecycleUnitStateChanged(LifecycleUnit* lifecycle_unit,
                                              LifecycleState last_state) {
-  if (lifecycle_unit->GetState() == LifecycleState::DISCARDED)
+  LifecycleState state = lifecycle_unit->GetState();
+  bool was_discarded = (last_state == LifecycleState::PENDING_DISCARD ||
+                        last_state == LifecycleState::DISCARDED);
+  bool is_discarded = (state == LifecycleState::PENDING_DISCARD ||
+                       state == LifecycleState::DISCARDED);
+
+  if (is_discarded && !was_discarded)
     num_loaded_lifecycle_units_--;
-  else if (last_state == LifecycleState::DISCARDED)
+  else if (was_discarded && !is_discarded)
     num_loaded_lifecycle_units_++;
 
   DCHECK_EQ(num_loaded_lifecycle_units_,
@@ -1019,8 +1028,10 @@ void TabManager::OnLifecycleUnitVisibilityChanged(
 }
 
 void TabManager::OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) {
-  if (lifecycle_unit->GetState() != LifecycleState::DISCARDED)
+  if (lifecycle_unit->GetState() != LifecycleState::DISCARDED &&
+      lifecycle_unit->GetState() != LifecycleState::PENDING_DISCARD) {
     num_loaded_lifecycle_units_--;
+  }
   lifecycle_units_.erase(lifecycle_unit);
 
   DCHECK_EQ(num_loaded_lifecycle_units_,

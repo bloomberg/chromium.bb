@@ -485,7 +485,7 @@ TEST_F(TabManagerTest, MAYBE_DiscardTabWithNonVisibleTabs) {
   tab_strip2->GetWebContentsAt(1)->WasHidden();
 
   for (int i = 0; i < 4; ++i)
-    tab_manager_->DiscardTab(DiscardReason::kProactive);
+    tab_manager_->DiscardTab(DiscardReason::kUrgent);
 
   // Active tab in a visible window should not be discarded.
   EXPECT_FALSE(IsTabDiscarded(tab_strip1->GetWebContentsAt(0)));
