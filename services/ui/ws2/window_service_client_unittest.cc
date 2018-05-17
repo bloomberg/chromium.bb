@@ -24,6 +24,7 @@
 #include "ui/aura/test/aura_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/compositor/test/context_factories_for_test.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gl/test/gl_surface_test_support.h"
@@ -522,6 +523,29 @@ TEST(WindowServiceClientTest, Capture) {
   window->Show();
   EXPECT_TRUE(helper.helper()->SetCapture(window));
   EXPECT_TRUE(helper.helper()->ReleaseCapture(window));
+}
+
+TEST(WindowServiceClientTest, DeleteWindow) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(1);
+  ASSERT_TRUE(window);
+  aura::WindowTracker tracker;
+  tracker.Add(window);
+  helper.changes()->clear();
+  helper.helper()->DeleteWindow(window);
+  EXPECT_TRUE(tracker.windows().empty());
+  EXPECT_EQ("ChangeCompleted id=1 sucess=true",
+            SingleChangeToDescription(*helper.changes()));
+}
+
+TEST(WindowServiceClientTest, ExternalDeleteWindow) {
+  WindowServiceTestHelper helper;
+  aura::Window* window = helper.helper()->NewWindow(1);
+  ASSERT_TRUE(window);
+  helper.changes()->clear();
+  delete window;
+  EXPECT_EQ("WindowDeleted window=0,1",
+            SingleChangeToDescription(*helper.changes()));
 }
 
 }  // namespace

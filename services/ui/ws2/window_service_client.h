@@ -11,7 +11,6 @@
 
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
-#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/ws2/ids.h"
@@ -145,7 +144,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   // Adds/removes a Window from the set of windows known to the client. This
   // also adds or removes any observers that may need to be installed.
   void AddWindowToKnownWindows(aura::Window* window, const ClientWindowId& id);
-  void RemoveWindowFromKnownWindows(aura::Window* window);
+
+  // |delete_if_owned| indicates if |window| should be deleted if this client
+  // created it. |delete_if_owned| is false only if the window was externally
+  // deleted.
+  void RemoveWindowFromKnownWindows(aura::Window* window, bool delete_if_owned);
 
   // Unregisters |window| and all its descendants. This stops at windows created
   // by this client, adding to |created_windows|.
@@ -352,8 +355,11 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
 
   ClientRoots client_roots_;
 
-  // The set of windows created by this client.
-  std::set<std::unique_ptr<aura::Window>, base::UniquePtrComparator>
+  // Set of windows this client created. The values are the same as key, but
+  // put inside a unique_ptr to reinforce this class owns these Windows.
+  // Ideally set would be used, but sets have some painful restrictions
+  // (c++17's set::extract() may make it possible to use a set again).
+  std::unordered_map<aura::Window*, std::unique_ptr<aura::Window>>
       client_created_windows_;
 
   // These contain mappings for known windows. At a minimum this contains the
@@ -365,9 +371,6 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClient
   std::map<aura::Window*, ClientWindowId> window_to_client_window_id_map_;
   std::unordered_map<ClientWindowId, aura::Window*, ClientWindowIdHash>
       client_window_id_to_window_map_;
-
-  // If non-null the window the client requested to delete.
-  aura::Window* window_deleting_ = nullptr;
 
   // WindowServiceClientBindings created by way of Embed().
   std::vector<std::unique_ptr<WindowServiceClientBinding>>
