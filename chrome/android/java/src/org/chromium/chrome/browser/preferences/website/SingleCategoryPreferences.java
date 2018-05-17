@@ -595,6 +595,8 @@ public class SingleCategoryPreferences extends PreferenceFragment
             }
         }
 
+        mAllowedSiteCount = 0;
+
         if (websites.size() == 0) {
             updateBlockedHeader(0);
             updateAllowedHeader(0, true);
@@ -602,7 +604,6 @@ public class SingleCategoryPreferences extends PreferenceFragment
         }
 
         Collections.sort(websites);
-        mAllowedSiteCount = 0;
         int blocked = 0;
 
         if (!mGroupByAllowBlock) {
