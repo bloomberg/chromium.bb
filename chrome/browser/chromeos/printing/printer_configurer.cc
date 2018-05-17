@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/md5.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -116,7 +117,10 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
   void OnIpResolved(std::unique_ptr<Printer> printer,
                     PrinterSetupCallback cb,
                     const net::IPEndPoint& endpoint) {
-    if (!endpoint.address().IsValid()) {
+    bool address_resolved = endpoint.address().IsValid();
+    UMA_HISTOGRAM_BOOLEAN("Printing.CUPS.AddressResolutionResult",
+                          address_resolved);
+    if (!address_resolved) {
       PRINTER_LOG(ERROR) << printer->make_and_model()
                          << " IP Resolution failed";
       // |endpoint| does not have a valid address. Address was not resolved.
