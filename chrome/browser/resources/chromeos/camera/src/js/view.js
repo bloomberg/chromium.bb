@@ -147,8 +147,6 @@ camera.View.prototype.leave = function() {
  * Activates the view. Makes all of the elements on the view focusable.
  */
 camera.View.prototype.activate = function() {
-  document.body.classList.add(this.name_ + '-active');
-
   // Restore tabIndex attribute values.
   for (var index = 0; index < this.tabIndexes_.length; index++) {
     var element = this.tabIndexes_[index][0];
@@ -182,8 +180,6 @@ camera.View.prototype.inactivate = function() {
     ]);
     element.tabIndex = -1;
   }
-
-  document.body.classList.remove(this.name_ + '-active');
 };
 
 /**
