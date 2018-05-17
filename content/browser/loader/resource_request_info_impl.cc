@@ -318,6 +318,11 @@ ResourceRequestInfo::DevToolsStatus ResourceRequestInfoImpl::GetDevToolsStatus()
   return devtools_status_;
 }
 
+base::Optional<blink::ResourceRequestBlockedReason>
+ResourceRequestInfoImpl::GetResourceRequestBlockedReason() const {
+  return resource_request_blocked_reason_;
+}
+
 base::StringPiece ResourceRequestInfoImpl::GetCustomCancelReason() const {
   return custom_cancel_reason_;
 }

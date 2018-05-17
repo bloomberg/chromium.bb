@@ -1051,11 +1051,18 @@ void InspectorNetworkAgent::DidFailLoading(unsigned long identifier,
                                            const ResourceError& error) {
   String request_id = IdentifiersFactory::RequestId(loader, identifier);
   bool canceled = error.IsCancellation();
+  base::Optional<ResourceRequestBlockedReason> resource_request_blocked_reason =
+      error.GetResourceRequestBlockedReason();
+  blink::protocol::Maybe<String> blocked_reason;
+  if (resource_request_blocked_reason) {
+    blocked_reason =
+        BuildBlockedReason(resource_request_blocked_reason.value());
+  }
   GetFrontend()->loadingFailed(
       request_id, CurrentTimeTicksInSeconds(),
       InspectorPageAgent::ResourceTypeJson(
           resources_data_->GetResourceType(request_id)),
-      error.LocalizedDescription(), canceled);
+      error.LocalizedDescription(), canceled, std::move(blocked_reason));
 }
 
 void InspectorNetworkAgent::ScriptImported(unsigned long identifier,

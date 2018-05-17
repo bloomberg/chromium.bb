@@ -1371,8 +1371,7 @@ void NavigationURLLoaderImpl::OnComplete(
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
                          "&NavigationURLLoaderImpl", this, "success", false);
 
-  delegate_->OnRequestFailed(status.exists_in_cache, status.error_code,
-                             status.ssl_info);
+  delegate_->OnRequestFailed(status);
 }
 
 void NavigationURLLoaderImpl::SetBeginNavigationInterceptorForTesting(

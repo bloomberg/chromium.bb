@@ -18,6 +18,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
+#include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 
 namespace content {
 
@@ -768,6 +769,14 @@ Response InterceptionJob::InnerContinueRequest(
                                                        : net::ERR_FAILED);
     network::URLLoaderCompletionStatus status(error);
     status.completion_time = base::TimeTicks::Now();
+    if (modifications->error_reason == net::ERR_BLOCKED_BY_CLIENT) {
+      // So we know that these modifications originated from devtools
+      // (also known as inspector), and can therefore annotate the
+      // request. We only do this for one specific error code thus
+      // far, to minimize risk of breaking other usages.
+      status.extended_error_code =
+          static_cast<int>(blink::ResourceRequestBlockedReason::kInspector);
+    }
     client_->OnComplete(status);
     Shutdown();
     return Response::OK();

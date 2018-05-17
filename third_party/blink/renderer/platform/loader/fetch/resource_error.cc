@@ -149,6 +149,9 @@ bool ResourceError::Compare(const ResourceError& a, const ResourceError& b) {
   if (a.CORSErrorStatus() != b.CORSErrorStatus())
     return false;
 
+  if (a.extended_error_code_ != b.extended_error_code_)
+    return false;
+
   return true;
 }
 
@@ -168,9 +171,54 @@ bool ResourceError::WasBlockedByResponse() const {
   return error_code_ == net::ERR_BLOCKED_BY_RESPONSE;
 }
 
+base::Optional<ResourceRequestBlockedReason>
+ResourceError::GetResourceRequestBlockedReason() const {
+  if (error_code_ != net::ERR_BLOCKED_BY_CLIENT &&
+      error_code_ != net::ERR_BLOCKED_BY_RESPONSE) {
+    return base::nullopt;
+  }
+  return static_cast<ResourceRequestBlockedReason>(extended_error_code_);
+}
+
+namespace {
+String DescriptionForBlockedByClientOrResponse(int error, int extended_error) {
+  if (extended_error == 0)
+    return WebString::FromASCII(net::ErrorToString(error));
+  std::string detail;
+  switch (static_cast<ResourceRequestBlockedReason>(extended_error)) {
+    case ResourceRequestBlockedReason::kOther:
+      NOTREACHED();  // extended_error == 0, handled above
+      break;
+    case ResourceRequestBlockedReason::kCSP:
+      detail = "CSP";
+      break;
+    case ResourceRequestBlockedReason::kMixedContent:
+      detail = "MixedContent";
+      break;
+    case ResourceRequestBlockedReason::kOrigin:
+      detail = "Origin";
+      break;
+    case ResourceRequestBlockedReason::kInspector:
+      detail = "Inspector";
+      break;
+    case ResourceRequestBlockedReason::kSubresourceFilter:
+      detail = "SubresourceFilter";
+      break;
+    case ResourceRequestBlockedReason::kContentType:
+      detail = "ContentType";
+      break;
+  }
+  return WebString::FromASCII(net::ErrorToString(error) + "." + detail);
+}
+}  // namespace
+
 void ResourceError::InitializeDescription() {
   if (error_code_ == net::ERR_TEMPORARILY_THROTTLED) {
     localized_description_ = WebString::FromASCII(kThrottledErrorDescription);
+  } else if (error_code_ == net::ERR_BLOCKED_BY_CLIENT ||
+             error_code_ == net::ERR_BLOCKED_BY_RESPONSE) {
+    localized_description_ = DescriptionForBlockedByClientOrResponse(
+        error_code_, extended_error_code_);
   } else {
     localized_description_ = WebString::FromASCII(
         net::ExtendedErrorToString(error_code_, extended_error_code_));

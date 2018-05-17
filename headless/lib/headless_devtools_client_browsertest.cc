@@ -44,6 +44,7 @@
 
 using testing::ElementsAre;
 using testing::NotNull;
+using testing::UnorderedElementsAre;
 
 namespace headless {
 
@@ -1509,6 +1510,109 @@ class UrlRequestFailedTest_Abort : public UrlRequestFailedTest {
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(UrlRequestFailedTest_Abort);
+
+// A test for recording failed URL loading events, much like
+// UrlRequestFailedTest{_Failed,Abort} above, but without overriding
+// HeadlessBrowserContext::Observer. Instead, this feature uses
+// network observation and works exactly and only for
+// network::ErrorReason::BLOCKED_BY_CLIENT modifications that are initiated
+// via network::ExperimentalObserver.
+class BlockedByClient_NetworkObserver_Test
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public network::ExperimentalObserver,
+      public page::Observer {
+ public:
+  void RunDevTooledTest() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+
+    // Intercept all network requests.
+    devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
+    devtools_client_->GetNetwork()->Enable();
+    std::vector<std::unique_ptr<network::RequestPattern>> patterns;
+    patterns.emplace_back(
+        network::RequestPattern::Builder().SetUrlPattern("*").Build());
+    devtools_client_->GetNetwork()->GetExperimental()->SetRequestInterception(
+        network::SetRequestInterceptionParams::Builder()
+            .SetPatterns(std::move(patterns))
+            .Build());
+
+    // For observing OnLoadEventFired.
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/resource_cancel_test.html").spec());
+  }
+
+  // Overrides network::ExperimentalObserver.
+  void OnRequestIntercepted(
+      const network::RequestInterceptedParams& params) override {
+    urls_seen_.push_back(GURL(params.GetRequest()->GetUrl()).ExtractFileName());
+
+    auto continue_intercept_params =
+        network::ContinueInterceptedRequestParams::Builder()
+            .SetInterceptionId(params.GetInterceptionId())
+            .Build();
+
+    // We *abort* fetching Ahem.ttf, and *fail* for test.jpg
+    // to verify that both ways result in a failed loading event,
+    // which we'll observe in OnLoadingFailed below.
+    // Also, we abort iframe2.html because it turns out frame interception
+    // uses a very different codepath than other resources.
+    if (EndsWith(params.GetRequest()->GetUrl(), "/test.jpg",
+                 base::CompareCase::SENSITIVE)) {
+      continue_intercept_params->SetErrorReason(
+          network::ErrorReason::BLOCKED_BY_CLIENT);
+    } else if (EndsWith(params.GetRequest()->GetUrl(), "/Ahem.ttf",
+                        base::CompareCase::SENSITIVE)) {
+      continue_intercept_params->SetErrorReason(
+          network::ErrorReason::BLOCKED_BY_CLIENT);
+    } else if (EndsWith(params.GetRequest()->GetUrl(), "/iframe2.html",
+                        base::CompareCase::SENSITIVE)) {
+      continue_intercept_params->SetErrorReason(
+          network::ErrorReason::BLOCKED_BY_CLIENT);
+    }
+
+    devtools_client_->GetNetwork()
+        ->GetExperimental()
+        ->ContinueInterceptedRequest(std::move(continue_intercept_params));
+  }
+
+  // Overrides network::ExperimentalObserver.
+  void OnRequestWillBeSent(
+      const network::RequestWillBeSentParams& params) override {
+    // Here, we just record the URLs (filenames) for each request ID, since
+    // we won't have access to them in ::OnLoadingFailed below.
+    urls_by_id_[params.GetRequestId()] =
+        GURL(params.GetRequest()->GetUrl()).ExtractFileName();
+  }
+
+  // Overrides network::ExperimentalObserver.
+  void OnLoadingFailed(const network::LoadingFailedParams& params) override {
+    // Record the failed loading events so we can verify below that we
+    // received the events.
+    urls_that_failed_to_load_.push_back(urls_by_id_[params.GetRequestId()]);
+    EXPECT_EQ(network::BlockedReason::INSPECTOR, params.GetBlockedReason());
+  }
+
+  // Overrides page::ExperimentalObserver.
+  void OnLoadEventFired(const page::LoadEventFiredParams&) override {
+    EXPECT_THAT(urls_that_failed_to_load_,
+                UnorderedElementsAre("test.jpg", "Ahem.ttf", "iframe2.html"));
+    EXPECT_THAT(urls_seen_, UnorderedElementsAre("resource_cancel_test.html",
+                                                 "dom_tree_test.css",
+                                                 "test.jpg", "iframe.html",
+                                                 "iframe2.html", "Ahem.ttf"));
+    FinishAsynchronousTest();
+  }
+
+ private:
+  std::vector<std::string> urls_seen_;
+  std::vector<std::string> urls_that_failed_to_load_;
+  std::map<std::string, std::string> urls_by_id_;
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(BlockedByClient_NetworkObserver_Test);
 
 class DevToolsSetCookieTest : public HeadlessAsyncDevTooledBrowserTest,
                               public network::Observer {

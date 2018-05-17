@@ -51,7 +51,7 @@ void TestNavigationURLLoader::SimulateServerRedirect(const GURL& redirect_url) {
 }
 
 void TestNavigationURLLoader::SimulateError(int error_code) {
-  delegate_->OnRequestFailed(false, error_code, base::nullopt);
+  delegate_->OnRequestFailed(network::URLLoaderCompletionStatus(error_code));
 }
 
 void TestNavigationURLLoader::CallOnRequestRedirected(

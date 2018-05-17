@@ -98,6 +98,10 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool ShouldReportRawHeaders() const;
   NavigationUIData* GetNavigationUIData() const override;
   DevToolsStatus GetDevToolsStatus() const override;
+
+  base::Optional<blink::ResourceRequestBlockedReason>
+  GetResourceRequestBlockedReason() const override;
+
   base::StringPiece GetCustomCancelReason() const override;
 
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
@@ -178,6 +182,11 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     devtools_status_ = devtools_status;
   }
 
+  void set_resource_request_blocked_reason(
+      base::Optional<blink::ResourceRequestBlockedReason> reason) {
+    resource_request_blocked_reason_ = reason;
+  }
+
   void SetBlobHandles(BlobHandles blob_handles);
 
   bool blocked_cross_site_document() const {
@@ -230,6 +239,8 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   bool report_raw_headers_;
   bool is_async_;
   DevToolsStatus devtools_status_;
+  base::Optional<blink::ResourceRequestBlockedReason>
+      resource_request_blocked_reason_;
   PreviewsState previews_state_;
   scoped_refptr<network::ResourceRequestBody> body_;
   bool initiated_in_secure_context_;
