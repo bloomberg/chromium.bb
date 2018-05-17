@@ -145,9 +145,12 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 444
+#   For your editing convenience: highest ID currently used: 445
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
+#   A policy can be delete if and only if a policy is never launched but has
+#   been introduced in this file. To prevent reuse of its id it has to be then
+#   added to the 'deleted_policy_ids' list.
 #
 # Placeholders:
 #   The following placeholder strings are automatically substituted:
@@ -12103,4 +12106,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     },
   },
   'placeholders': [],
+  'deleted_policy_ids': []
 }
