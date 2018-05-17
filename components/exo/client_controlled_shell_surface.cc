@@ -4,6 +4,8 @@
 
 #include "components/exo/client_controlled_shell_surface.h"
 
+#include <utility>
+
 #include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/custom_frame_view_ash.h"
 #include "ash/frame/wide_frame_view.h"
@@ -24,6 +26,7 @@
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/window_util.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
@@ -42,8 +45,14 @@
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
+
 namespace {
-ClientControlledShellSurface::DelegateFactoryCallback g_factory_callback;
+
+ClientControlledShellSurface::DelegateFactoryCallback& GetFactoryForTesting() {
+  using CallbackType = ClientControlledShellSurface::DelegateFactoryCallback;
+  static base::NoDestructor<CallbackType> factory;
+  return *factory;
+}
 
 // Maximum amount of time to wait for contents that match the display's
 // orientation in tablet mode.
@@ -226,7 +235,7 @@ class CaptionButtonModel : public ash::CaptionButtonModel {
 
 class ClientControlledShellSurface::ScopedSetBoundsLocally {
  public:
-  ScopedSetBoundsLocally(ClientControlledShellSurface* shell_surface)
+  explicit ScopedSetBoundsLocally(ClientControlledShellSurface* shell_surface)
       : state_(shell_surface->client_controlled_state_) {
     state_->set_bounds_locally(true);
   }
@@ -240,7 +249,7 @@ class ClientControlledShellSurface::ScopedSetBoundsLocally {
 
 class ClientControlledShellSurface::ScopedLockedToRoot {
  public:
-  ScopedLockedToRoot(views::Widget* widget)
+  explicit ScopedLockedToRoot(views::Widget* widget)
       : window_(widget->GetNativeWindow()) {
     window_->SetProperty(ash::kLockedToRootKey, true);
   }
@@ -392,7 +401,7 @@ void ClientControlledShellSurface::SetResizeOutset(int outset) {
 void ClientControlledShellSurface::OnWindowStateChangeEvent(
     ash::mojom::WindowStateType current_state,
     ash::mojom::WindowStateType next_state) {
-  if (!state_changed_callback_.is_null())
+  if (state_changed_callback_)
     state_changed_callback_.Run(current_state, next_state);
 }
 
@@ -419,7 +428,6 @@ void ClientControlledShellSurface::AttemptToStartDrag(
   // 2) mouse was pressed on the target or its subsurfaces.
   if (toplevel_handler->gesture_target() ||
       (mouse_pressed_handler && target->Contains(mouse_pressed_handler))) {
-
     gfx::Point point_in_root(location);
     wm::ConvertPointFromScreen(target->GetRootWindow(), &point_in_root);
     toplevel_handler->AttemptToStartDrag(
@@ -492,7 +500,7 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
     int bounds_change) {
   // Do no update the bounds unless we have geometry from client.
   if (!geometry().IsEmpty() && !window_bounds.IsEmpty() &&
-      !bounds_changed_callback_.is_null()) {
+      bounds_changed_callback_) {
     // Sends the client bounds, which matches the geometry
     // when frame is enabled.
     ash::CustomFrameViewAsh* frame_view = GetFrameView();
@@ -512,13 +520,13 @@ void ClientControlledShellSurface::OnBoundsChangeEvent(
 }
 
 void ClientControlledShellSurface::OnDragStarted(int component) {
-  if (!drag_started_callback_.is_null())
+  if (drag_started_callback_)
     drag_started_callback_.Run(component);
 }
 
 void ClientControlledShellSurface::OnDragFinished(bool canceled,
                                                   const gfx::Point& location) {
-  if (!drag_finished_callback_.is_null())
+  if (drag_finished_callback_)
     drag_finished_callback_.Run(location.x(), location.y(), canceled);
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -565,7 +573,7 @@ void ClientControlledShellSurface::OnSurfaceCommit() {
   UpdateFrame();
   UpdateBackdrop();
 
-  if (!geometry_changed_callback_.is_null())
+  if (geometry_changed_callback_)
     geometry_changed_callback_.Run(GetVisibleBounds());
 
   // Apply new top inset height.
@@ -642,9 +650,9 @@ views::NonClientFrameView*
 ClientControlledShellSurface::CreateNonClientFrameView(views::Widget* widget) {
   ash::wm::WindowState* window_state = GetWindowState();
   std::unique_ptr<ash::wm::ClientControlledState::Delegate> delegate =
-      g_factory_callback.is_null()
-          ? std::make_unique<ClientControlledStateDelegate>(this)
-          : g_factory_callback.Run();
+      GetFactoryForTesting()
+          ? GetFactoryForTesting().Run()
+          : std::make_unique<ClientControlledStateDelegate>(this);
 
   auto window_delegate = std::make_unique<ClientControlledWindowStateDelegate>(
       this, delegate.get());
@@ -901,18 +909,17 @@ gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
     // bounds.
     if (widget_->IsMaximized())
       return GetVisibleBounds();
-    else
-      return frame_view->GetWindowBoundsForClientBounds(GetVisibleBounds());
-  } else {
-    gfx::Rect bounds(GetVisibleBounds());
-    bounds.Offset(-origin_offset_.x(), -origin_offset_.y());
-    return bounds;
+    return frame_view->GetWindowBoundsForClientBounds(GetVisibleBounds());
   }
+
+  gfx::Rect bounds(GetVisibleBounds());
+  bounds.Offset(-origin_offset_.x(), -origin_offset_.y());
+  return bounds;
 }
 
 gfx::Point ClientControlledShellSurface::GetSurfaceOrigin() const {
   DCHECK(resize_component_ == HTCAPTION);
-  if (!geometry_changed_callback_.is_null())
+  if (geometry_changed_callback_)
     return gfx::Point();
   // TODO(oshima): geometry_changed_callback_ must be always set by now, so
   // this is not necessary any more. Remove this.
@@ -1012,7 +1019,8 @@ const ash::CustomFrameViewAsh* ClientControlledShellSurface::GetFrameView()
 void ClientControlledShellSurface::
     SetClientControlledStateDelegateFactoryForTest(
         const DelegateFactoryCallback& callback) {
-  g_factory_callback = callback;
+  auto& factory = GetFactoryForTesting();
+  factory = callback;
 }
 
 }  // namespace exo
