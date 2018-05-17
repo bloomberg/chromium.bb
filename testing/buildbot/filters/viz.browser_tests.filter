@@ -33,3 +33,6 @@
 
 # Flaking with missing browser. https://crbug.com/842664
 -IndependentOTRProfileManagerTest.DeleteImmediatelyWhenBrowsersAlreadyClosed
+
+# https://crbug.com/843921
+-ThumbnailTest.ShouldCaptureOnNavigatingAwaySlowPageLoad
