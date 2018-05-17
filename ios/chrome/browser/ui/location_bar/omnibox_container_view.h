@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_EDIT_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_EDIT_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_LOCATION_BAR_OMNIBOX_CONTAINER_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_LOCATION_BAR_OMNIBOX_CONTAINER_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
@@ -13,7 +13,7 @@
 // bar" space of the toolbar. Everything that's located in the white rectangle
 // is the location bar: the button on the left, the buttons on the right, the
 // omnibox textfield.
-@interface LocationBarEditView : UIView
+@interface OmniboxContainerView : UIView
 
 // Initialize the location bar with the given frame, font, text color, and tint
 // color for omnibox.
@@ -46,4 +46,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_LOCATION_BAR_EDIT_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_LOCATION_BAR_OMNIBOX_CONTAINER_VIEW_H_

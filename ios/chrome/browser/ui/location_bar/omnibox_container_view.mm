@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/location_bar/location_bar_edit_view.h"
+#import "ios/chrome/browser/ui/location_bar/omnibox_container_view.h"
 
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/omnibox/clipping_textfield_container.h"
@@ -52,9 +52,9 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 
 @end
 
-#pragma mark - LocationBarEditView
+#pragma mark - OmniboxContainerView
 
-@interface LocationBarEditView ()
+@interface OmniboxContainerView ()
 // Constraints the leading textfield side to the leading of |self|.
 // Active when the |leadingView| is nil or hidden.
 @property(nonatomic, strong) NSLayoutConstraint* leadingTextfieldConstraint;
@@ -67,7 +67,7 @@ const CGFloat kTextFieldLeadingOffsetImage = 6;
 @property(nonatomic, strong) ClippingTextFieldContainer* textFieldContainer;
 @end
 
-@implementation LocationBarEditView
+@implementation OmniboxContainerView
 @synthesize textField = _textField;
 @synthesize leadingButton = _leadingButton;
 @synthesize leadingTextfieldConstraint = _leadingTextfieldConstraint;

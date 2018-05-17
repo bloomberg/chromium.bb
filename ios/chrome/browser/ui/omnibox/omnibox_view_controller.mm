@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/omnibox/omnibox_view_controller.h"
 
-#import "ios/chrome/browser/ui/location_bar/location_bar_edit_view.h"
+#import "ios/chrome/browser/ui/location_bar/omnibox_container_view.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -13,7 +13,7 @@
 @interface OmniboxViewController ()
 
 // Override of UIViewController's view with a different type.
-@property(nonatomic, strong) LocationBarEditView* view;
+@property(nonatomic, strong) OmniboxContainerView* view;
 
 @property(nonatomic, strong) UIFont* textFieldFont;
 @property(nonatomic, strong) UIColor* textFieldTintColor;
@@ -43,10 +43,10 @@
 
 - (void)loadView {
   self.view =
-      [[LocationBarEditView alloc] initWithFrame:CGRectZero
-                                            font:self.textFieldFont
-                                       textColor:self.textFieldTextColor
-                                       tintColor:self.textFieldTintColor];
+      [[OmniboxContainerView alloc] initWithFrame:CGRectZero
+                                             font:self.textFieldFont
+                                        textColor:self.textFieldTextColor
+                                        tintColor:self.textFieldTintColor];
 }
 
 #pragma mark - public methods

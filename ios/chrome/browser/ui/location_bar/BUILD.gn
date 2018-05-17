@@ -8,8 +8,6 @@ source_set("location_bar") {
     "location_bar_consumer.h",
     "location_bar_coordinator.h",
     "location_bar_coordinator.mm",
-    "location_bar_edit_view.h",
-    "location_bar_edit_view.mm",
     "location_bar_generic_coordinator.h",
     "location_bar_legacy_consumer.h",
     "location_bar_legacy_coordinator.h",
@@ -25,6 +23,8 @@ source_set("location_bar") {
     "location_bar_url_loader.h",
     "location_bar_view_controller.h",
     "location_bar_view_controller.mm",
+    "omnibox_container_view.h",
+    "omnibox_container_view.mm",
   ]
   deps = [
     ":constants",

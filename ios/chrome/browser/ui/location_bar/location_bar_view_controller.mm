@@ -8,8 +8,8 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
-#include "ios/chrome/browser/ui/location_bar/location_bar_edit_view.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
+#include "ios/chrome/browser/ui/location_bar/omnibox_container_view.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 
@@ -29,7 +29,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 @interface LocationBarViewController ()
 // Location bar view that contains the omnibox and leading/trailing buttons.
-@property(nonatomic, strong) LocationBarEditView* locationBarEditView;
+@property(nonatomic, strong) OmniboxContainerView* locationBarEditView;
 
 // The view that displays current location when the omnibox is not focused.
 @property(nonatomic, strong) LocationBarSteadyView* locationBarSteadyView;
@@ -60,10 +60,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self = [super init];
   if (self) {
     _locationBarEditView =
-        [[LocationBarEditView alloc] initWithFrame:frame
-                                              font:font
-                                         textColor:textColor
-                                         tintColor:tintColor];
+        [[OmniboxContainerView alloc] initWithFrame:frame
+                                               font:font
+                                          textColor:textColor
+                                          tintColor:tintColor];
     _locationBarSteadyView = [[LocationBarSteadyView alloc] init];
     [_locationBarSteadyView addTarget:self
                                action:@selector(locationBarSteadyViewTapped)
