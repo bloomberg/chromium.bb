@@ -74,6 +74,11 @@ config("skia_config") {
       "SKIA_DLL",
       "GR_GL_IGNORE_ES3_MSAA=0",
     ]
+    if (is_win) {
+      defines += [ "SKCMS_API=__declspec(dllexport)" ]
+    } else {
+      defines += [ "SKCMS_API=__attribute__((visibility(\"default\")))" ]
+    }
   }
 
   if (skia_support_gpu) {
