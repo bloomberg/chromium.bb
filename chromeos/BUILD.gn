@@ -555,7 +555,6 @@ copy("dbus_service_files") {
     "dbus/services/org.chromium.DisplayService.conf",
     "dbus/services/org.chromium.DriveFileStreamService.conf",
     "dbus/services/org.chromium.KioskAppService.conf",
-    "dbus/services/org.chromium.LibCrosService.conf",
     "dbus/services/org.chromium.LivenessService.conf",
     "dbus/services/org.chromium.NetworkProxyService.conf",
     "dbus/services/org.chromium.VirtualFileRequestService.conf",

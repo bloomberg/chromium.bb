@@ -36,7 +36,7 @@ namespace chromeos {
 class CHROMEOS_EXPORT LivenessServiceProvider
     : public CrosDBusService::ServiceProviderInterface {
  public:
-  explicit LivenessServiceProvider(const std::string& service_interface);
+  LivenessServiceProvider();
   ~LivenessServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface overrides:
@@ -52,11 +52,6 @@ class CHROMEOS_EXPORT LivenessServiceProvider
   // Called on UI thread in response to a D-Bus request.
   void CheckLiveness(dbus::MethodCall* method_call,
                      dbus::ExportedObject::ResponseSender response_sender);
-
-  // Name of the service interface to install LivenessService on.
-  // TODO(teravest): Remove this once CheckLiveness is removed from
-  // LibCrosService.
-  const std::string service_interface_;
 
   // Keep this last so that all weak pointers will be invalidated at the
   // beginning of destruction.
