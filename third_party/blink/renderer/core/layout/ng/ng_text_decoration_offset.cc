@@ -16,7 +16,8 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
     float text_decoration_thickness,
     FontVerticalPositionType position_type) const {
   LayoutUnit offset = LayoutUnit::Max();
-  FontBaseline baseline_type = text_fragment_.BaselineType();
+  const ComputedStyle& style = text_fragment_.Style();
+  FontBaseline baseline_type = style.GetFontBaseline();
 
   if (decorating_box_) {
     // TODO(eae): Replace with actual baseline once available.
@@ -32,8 +33,7 @@ int NGTextDecorationOffset::ComputeUnderlineOffsetForUnder(
   if (offset == LayoutUnit::Max()) {
     // TODO(layout-dev): How do we compute the baseline offset with a
     // decorating_box?
-    const SimpleFontData* font_data =
-        text_fragment_.Style().GetFont().PrimaryFont();
+    const SimpleFontData* font_data = style.GetFont().PrimaryFont();
     if (!font_data)
       return 0;
     offset = font_data->GetFontMetrics().Ascent(baseline_type) -

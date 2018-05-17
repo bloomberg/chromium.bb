@@ -8,6 +8,7 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_input_node.h"
+#include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 
 namespace blink {
 
@@ -55,6 +56,7 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
 
   // Layout an atomic inline; e.g., inline block.
   scoped_refptr<NGLayoutResult> LayoutAtomicInline(const NGConstraintSpace&,
+                                                   FontBaseline,
                                                    bool use_first_line_style);
 
   // Runs layout on the underlying LayoutObject and creates a fragment for the

@@ -225,14 +225,9 @@ void NGTextFragmentPainter::Paint(const PaintInfo& paint_info,
       const ComputedStyle* decorating_box_style =
           decorating_box ? &decorating_box->Style() : nullptr;
 
-      const FontDescription& font_description = font.GetFontDescription();
-      FontBaseline baseline_type = font_description.IsVerticalAnyUpright()
-                                       ? kIdeographicBaseline
-                                       : kAlphabeticBaseline;
-
-      text_painter.ComputeDecorationInfo(decoration_info, box_origin,
-                                         local_origin, width, baseline_type,
-                                         style, decorating_box_style);
+      text_painter.ComputeDecorationInfo(
+          decoration_info, box_origin, local_origin, width,
+          style.GetFontBaseline(), style, decorating_box_style);
 
       NGTextDecorationOffset decoration_offset(*decoration_info.style,
                                                text_fragment, decorating_box);

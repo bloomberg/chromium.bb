@@ -25,6 +25,7 @@ struct NGLineHeightMetrics {
 
   // Compute from ComputedStyle, using the font metrics of the prikmary font.
   // The leading is not included.
+  NGLineHeightMetrics(const ComputedStyle&);
   NGLineHeightMetrics(const ComputedStyle&, FontBaseline);
 
   // Compute from FontMetrics. The leading is not included.

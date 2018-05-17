@@ -104,9 +104,6 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   bool IsHorizontal() const {
     return LineOrientation() == NGLineOrientation::kHorizontal;
   }
-  FontBaseline BaselineType() const {
-    return IsHorizontal() ? kAlphabeticBaseline : kIdeographicBaseline;
-  }
 
   // Compute the inline position from text offset, in logical coordinate
   // relative to this fragment.

@@ -916,6 +916,10 @@ class ComputedStyle : public ComputedStyleBase,
   // font-stretch
   FontSelectionValue GetFontStretch() const;
 
+  // Child is aligned to the parent by matching the parent’s dominant baseline
+  // to the same baseline in the child.
+  FontBaseline GetFontBaseline() const;
+
   // -webkit-locale
   const AtomicString& Locale() const {
     return LayoutLocale::LocaleString(GetFontDescription().Locale());

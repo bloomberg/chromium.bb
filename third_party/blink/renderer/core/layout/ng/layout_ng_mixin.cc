@@ -111,9 +111,7 @@ template <typename Base>
 const NGBaseline* LayoutNGMixin<Base>::FragmentBaseline(
     NGBaselineAlgorithmType type) const {
   if (const NGPhysicalFragment* physical_fragment = CurrentFragment()) {
-    FontBaseline baseline_type = Base::IsHorizontalWritingMode()
-                                     ? kAlphabeticBaseline
-                                     : kIdeographicBaseline;
+    FontBaseline baseline_type = Base::StyleRef().GetFontBaseline();
     return ToNGPhysicalBoxFragment(physical_fragment)
         ->Baseline({type, baseline_type});
   }

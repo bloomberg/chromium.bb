@@ -2673,8 +2673,7 @@ LayoutUnit LayoutBlockFlow::FirstLineBoxBaseline() const {
       NGLineHeightMetrics metrics =
           box_fragment.BaselineMetricsWithoutSynthesize(
               {NGBaselineAlgorithmType::kFirstLine,
-               IsHorizontalWritingMode() ? kAlphabeticBaseline
-                                         : kIdeographicBaseline});
+               StyleRef().GetFontBaseline()});
       if (!metrics.IsEmpty())
         return metrics.ascent;
     }
