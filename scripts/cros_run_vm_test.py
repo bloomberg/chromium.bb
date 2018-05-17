@@ -99,9 +99,9 @@ class VMTest(object):
     """Build chrome."""
     if not self.build:
       return
+
     cros_build_lib.RunCommand(['autoninja', '-C', self.build_dir, 'chrome',
-                               'chrome_sandbox', 'nacl_helper'],
-                              log_output=True)
+                               'chrome_sandbox', 'nacl_helper'])
 
   def _Deploy(self):
     """Deploy chrome."""
@@ -119,7 +119,7 @@ class VMTest(object):
       deploy_cmd += ['--board', self.board]
     if self.cache_dir:
       deploy_cmd += ['--cache-dir', self.cache_dir]
-    cros_build_lib.RunCommand(deploy_cmd, log_output=True)
+    cros_build_lib.RunCommand(deploy_cmd)
     self._vm.WaitForBoot()
 
   def _RunCatapultTests(self):
@@ -134,7 +134,7 @@ class VMTest(object):
         'python',
         '/usr/local/telemetry/src/third_party/catapult/telemetry/bin/run_tests',
         '--browser=%s' % browser,
-    ] + self.catapult_tests)
+    ] + self.catapult_tests, stream_output=True)
 
   def _RunAutotest(self):
     """Run an autotest using test_that.
@@ -152,7 +152,7 @@ class VMTest(object):
         '--ssh_options', '-F /dev/null -i /dev/null',
         'localhost:%d' % self._vm.ssh_port,
     ] + self.autotest
-    return cros_build_lib.RunCommand(cmd, log_output=True)
+    return self._RunCommand(cmd)
 
   def _RunTests(self):
     """Run tests.
@@ -166,13 +166,14 @@ class VMTest(object):
     if self.remote_cmd:
       result = self._RunVMCmd()
     elif self.host_cmd:
-      result = cros_build_lib.RunCommand(self.args, log_output=True)
+      result = self._RunCommand(self.args)
     elif self.catapult_tests:
       result = self._RunCatapultTests()
     elif self.autotest:
       result = self._RunAutotest()
     else:
-      result = self._vm.RemoteCommand(['/usr/local/autotest/bin/vm_sanity.py'])
+      result = self._vm.RemoteCommand(['/usr/local/autotest/bin/vm_sanity.py'],
+                                      stream_output=True)
 
     self._OutputResults(result)
     self._FetchResults()

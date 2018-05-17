@@ -90,7 +90,14 @@ class VM(object):
     # moblab, etc.
 
   def _RunCommand(self, *args, **kwargs):
-    """Use SudoRunCommand or RunCommand as necessary."""
+    """Use SudoRunCommand or RunCommand as necessary.
+
+    Args:
+      args and kwargs: positional and optional args to RunCommand.
+
+    Returns:
+      cros_build_lib.CommandResult object.
+    """
     if self.use_sudo:
       return cros_build_lib.SudoRunCommand(*args, **kwargs)
     else:
@@ -247,18 +254,16 @@ class VM(object):
     logging.debug('VM image path: %s', self.image_path)
 
   def Run(self):
-    """Performs an action, one of start, stop, or run a command in the VM.
-
-    Returns:
-      cmd output.
-    """
-
+    """Performs an action, one of start, stop, or run a command in the VM."""
     if not self.start and not self.stop and not self.cmd:
       raise VMError('Must specify one of start, stop, or cmd.')
+
     if self.start:
       self.Start()
     if self.cmd:
-      return self.RemoteCommand(self.cmd)
+      if not self.IsRunning():
+        raise VMError('VM not running.')
+      self.RemoteCommand(self.cmd, stream_output=True)
     if self.stop:
       self.Stop()
 
@@ -416,6 +421,9 @@ class VM(object):
       cmd: command to run.
       stream_output: Stream output of long-running commands.
       kwargs: additional args (see documentation for RemoteDevice.RunCommand).
+
+    Returns:
+      cros_build_lib.CommandResult object.
     """
     if not self.dry_run:
       kwargs.setdefault('error_code_ok', True)
