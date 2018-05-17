@@ -331,7 +331,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkCallback) {
   // Setup callback
   int num_callbacks = 0;
   byte_stream_output->RegisterCallback(
-      base::Bind(CountCallbacks, &num_callbacks));
+      base::BindRepeating(CountCallbacks, &num_callbacks));
 
   EXPECT_TRUE(Write(byte_stream_input.get(), 4000));
   base::RunLoop().RunUntilIdle();
@@ -383,7 +383,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceCallback) {
   // Add data.
   int num_callbacks = 0;
   byte_stream_input->RegisterCallback(
-      base::Bind(CountCallbacks, &num_callbacks));
+      base::BindRepeating(CountCallbacks, &num_callbacks));
   EXPECT_TRUE(Write(byte_stream_input.get(), 2000));
   EXPECT_TRUE(Write(byte_stream_input.get(), 2001));
   EXPECT_FALSE(Write(byte_stream_input.get(), 6000));
@@ -437,7 +437,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkInterrupt) {
   // Record initial state.
   int num_callbacks = 0;
   byte_stream_output->RegisterCallback(
-      base::Bind(CountCallbacks, &num_callbacks));
+      base::BindRepeating(CountCallbacks, &num_callbacks));
 
   // Add data, and pass it across.
   EXPECT_TRUE(Write(byte_stream_input.get(), 4000));
@@ -451,7 +451,7 @@ TEST_F(ByteStreamTest, ByteStream_SinkInterrupt) {
   // (simulates race with post task).
   int num_alt_callbacks = 0;
   byte_stream_output->RegisterCallback(
-      base::Bind(CountCallbacks, &num_alt_callbacks));
+      base::BindRepeating(CountCallbacks, &num_alt_callbacks));
   task_runner->RunUntilIdle();
   EXPECT_EQ(0, num_callbacks);
   EXPECT_EQ(1, num_alt_callbacks);
@@ -483,7 +483,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceInterrupt) {
   // Setup state for test.
   int num_callbacks = 0;
   byte_stream_input->RegisterCallback(
-      base::Bind(CountCallbacks, &num_callbacks));
+      base::BindRepeating(CountCallbacks, &num_callbacks));
   EXPECT_TRUE(Write(byte_stream_input.get(), 2000));
   EXPECT_TRUE(Write(byte_stream_input.get(), 2001));
   EXPECT_FALSE(Write(byte_stream_input.get(), 6000));
@@ -503,7 +503,7 @@ TEST_F(ByteStreamTest, ByteStream_SourceInterrupt) {
   // Which should do the right thing when it's run.
   int num_alt_callbacks = 0;
   byte_stream_input->RegisterCallback(
-      base::Bind(CountCallbacks, &num_alt_callbacks));
+      base::BindRepeating(CountCallbacks, &num_alt_callbacks));
   task_runner->RunUntilIdle();
   EXPECT_EQ(0, num_callbacks);
   EXPECT_EQ(1, num_alt_callbacks);
@@ -532,7 +532,7 @@ TEST_F(ByteStreamTest, ByteStream_ZeroCallback) {
   // Record initial state.
   int num_callbacks = 0;
   byte_stream_output->RegisterCallback(
-      base::Bind(CountCallbacks, &num_callbacks));
+      base::BindRepeating(CountCallbacks, &num_callbacks));
 
   // Immediately close the stream.
   byte_stream_input->Close(0);

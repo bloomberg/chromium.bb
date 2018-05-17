@@ -210,7 +210,7 @@ DownloadRequestCore::~DownloadRequestCore() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Remove output stream callback if a stream exists.
   if (stream_writer_)
-    stream_writer_->RegisterCallback(base::Closure());
+    stream_writer_->RegisterCallback(base::RepeatingClosure());
 }
 
 std::unique_ptr<download::DownloadCreateInfo>
@@ -280,7 +280,7 @@ bool DownloadRequestCore::OnResponseStarted(
                    download::GetDownloadTaskRunner(), kDownloadByteStreamSize,
                    &stream_writer_, &stream_reader);
   stream_writer_->RegisterCallback(
-      base::Bind(&DownloadRequestCore::ResumeRequest, AsWeakPtr()));
+      base::BindRepeating(&DownloadRequestCore::ResumeRequest, AsWeakPtr()));
 
   if (!override_mime_type.empty())
     create_info->mime_type = override_mime_type;

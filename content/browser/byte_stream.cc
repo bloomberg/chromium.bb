@@ -60,7 +60,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
   bool Write(scoped_refptr<net::IOBuffer> buffer, size_t byte_count) override;
   void Flush() override;
   void Close(int status) override;
-  void RegisterCallback(const base::Closure& source_callback) override;
+  void RegisterCallback(const base::RepeatingClosure& source_callback) override;
   size_t GetTotalBufferedBytes() const override;
 
   // PostTask target from |ByteStreamReaderImpl::MaybeUpdateInput|.
@@ -83,7 +83,7 @@ class ByteStreamWriterImpl : public ByteStreamWriter {
   // True while this object is alive.
   scoped_refptr<LifetimeFlag> my_lifetime_flag_;
 
-  base::Closure space_available_callback_;
+  base::RepeatingClosure space_available_callback_;
   ContentVector input_contents_;
   size_t input_contents_size_;
 
@@ -118,7 +118,7 @@ class ByteStreamReaderImpl : public ByteStreamReader {
   // Overridden from ByteStreamReader.
   StreamState Read(scoped_refptr<net::IOBuffer>* data, size_t* length) override;
   int GetStatus() const override;
-  void RegisterCallback(const base::Closure& sink_callback) override;
+  void RegisterCallback(const base::RepeatingClosure& sink_callback) override;
 
   // PostTask target from |ByteStreamWriterImpl::Write| and
   // |ByteStreamWriterImpl::Close|.
@@ -154,7 +154,7 @@ class ByteStreamReaderImpl : public ByteStreamReader {
   bool received_status_;
   int status_;
 
-  base::Closure data_available_callback_;
+  base::RepeatingClosure data_available_callback_;
 
   // Time of last point at which data in stream transitioned from full
   // to non-full.  Nulled when a callback is sent.
