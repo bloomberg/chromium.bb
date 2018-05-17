@@ -865,9 +865,7 @@ DeveloperPrivateUpdateExtensionConfigurationFunction::Run() {
   }
   if (update.run_on_all_urls) {
     ScriptingPermissionsModifier modifier(browser_context(), extension);
-    if (!modifier.CanAffectExtension(
-            extension->permissions_data()->active_permissions()) &&
-        !modifier.HasAffectedExtension()) {
+    if (!modifier.CanAffectExtension()) {
       return RespondNow(
           Error("Cannot modify all urls of extension: " + extension->id()));
     }

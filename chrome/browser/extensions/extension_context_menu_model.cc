@@ -373,7 +373,7 @@ ExtensionContextMenuModel::GetCurrentPageAccess(
     const Extension* extension,
     content::WebContents* web_contents) const {
   ScriptingPermissionsModifier modifier(profile_, extension);
-  DCHECK(modifier.HasAffectedExtension());
+  DCHECK(modifier.CanAffectExtension());
   if (modifier.IsAllowedOnAllUrls())
     return PAGE_ACCESS_RUN_ON_ALL_SITES;
   if (modifier.HasGrantedHostPermission(
@@ -386,8 +386,7 @@ void ExtensionContextMenuModel::CreatePageAccessSubmenu(
     const Extension* extension) {
   content::WebContents* web_contents = GetActiveWebContents();
   if (!web_contents ||
-      !ScriptingPermissionsModifier(profile_, extension)
-           .HasAffectedExtension()) {
+      !ScriptingPermissionsModifier(profile_, extension).CanAffectExtension()) {
     return;
   }
   page_access_submenu_.reset(new ui::SimpleMenuModel(this));
@@ -425,7 +424,7 @@ void ExtensionContextMenuModel::HandlePageAccessCommand(
 
   const GURL& url = web_contents->GetLastCommittedURL();
   ScriptingPermissionsModifier modifier(profile_, extension);
-  DCHECK(modifier.HasAffectedExtension());
+  DCHECK(modifier.CanAffectExtension());
   switch (command_id) {
     case PAGE_ACCESS_RUN_ON_CLICK:
       if (current_access == PAGE_ACCESS_RUN_ON_ALL_SITES)

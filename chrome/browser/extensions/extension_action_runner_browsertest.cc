@@ -172,8 +172,7 @@ const Extension* ExtensionActionRunnerBrowserTest::CreateExtension(
 
     ScriptingPermissionsModifier modifier(profile(), extension);
     if (withhold_permissions == WITHHOLD_PERMISSIONS &&
-        modifier.CanAffectExtension(
-            extension->permissions_data()->active_permissions())) {
+        modifier.CanAffectExtension()) {
       modifier.SetAllowedOnAllUrls(false);
     }
   }
