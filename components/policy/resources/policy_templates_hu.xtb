@@ -2343,17 +2343,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha igaz értékre van állítva, és a Chrome Szoftvereltávolító eszköz kéretlen szoftvert észlel, jelentheti az ellenőrzés metaadatait a Google-nak a SafeBrowsingExtendedReportingEnabled házirend beállításának megfelelően. A Ha nincs beállítva, és a Chrome Szoftvereltávolító eszköz kéretlen szoftvert észlel, jelentheti az ellenőrzés metaadatait a Google-nak megkérdezi a felhasználót, hogy szeretné-e eltávolítani a kéretlen szoftvert. A böngésző jelenti az eltávolítás eredményét a Google-nak, és ezt a felhasználó nem tudja megakadályozni.
 
       Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem csatlakoztak <ph name="MS_AD_NAME" />-domainhez.</translation>
-<translation id="7978060394348264922">
-      Tekintse át az IsolateOrigins házirend beállításait, és annak érdekében,
-      hogy az izoláció is megvalósuljon, és a felhasználók számára is korlátozottan
-      legyen érzékelhető a hatás, alkalmazza az IsolateOrigins házirendet
-      az izolálni kívánt webhelyek listáján.
-      Ez a SitePerProcess beállítás minden webhelyet izolál.
-      Ha engedélyezi a házirendet, minden webhely önálló folyamatként fut majd.
-      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az IsolateOrigins és a SitePerProcess tesztverziói pedig le lesznek tiltva. A felhasználók manuálisan továbbra is engedélyezhetik a SitePerProcess házirendet.
-      Ha nem állítja be a házirendet, a felhasználó módosíthatja ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> alatt javasolt a <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirend beállítása azonos értékre. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      </translation>
 <translation id="7980227303582973781">Speciális korlátozás nélkül</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Képernyő elforgatása 0 fokkal</translation>
@@ -2682,16 +2671,6 @@ A házirend konfigurálásának ajánlott módja Windows rendszerben a GPO, noha
 <translation id="8976248126101463034">Gnubby hitelesítés engedélyezése a távoli hitelesítésű gazdagépeknél</translation>
 <translation id="8976531594979650914">A rendszer alapértelmezett nyomtatójának használata alapértelmezettként</translation>
 <translation id="8992176907758534924">Egy webhely sem jeleníthet meg képeket</translation>
-<translation id="9034729899149506577">
-      Ha a házirend engedélyezve van, a vesszővel tagolt listában szereplő összes
-      megnevezett eredet önálló folyamatként fut majd. Ez aldomainek szerint is
-      letiltja a megnevezett eredeteket; pl. a https://example.com/ megadása
-      a https://foo.example.com/ webhely izolálását is eredményezi, mert ez a
-      https://example.com/ webhely része.
-      Ha letiltja a házirendet, nem történik kifejezett webhely-izoláció, az IsolateOrigins és SitePerProcess házirendek próbaverziói pedig le lesznek tiltva. A felhasználók manuálisan továbbra is engedélyezhetik az IsolateOrigins házirendet.
-      Ha nem állítja be a házirendet, a felhasználók módosíthatják ezt a beállítást.
-      <ph name="PRODUCT_OS_NAME" /> alatt javasolt a <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> eszközházirend beállítása azonos értékre. Ha a két házirendben szereplő értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
-      </translation>
 <translation id="9035964157729712237">A feketelista alól kivételt képező bővítményazonosítók.</translation>
 <translation id="9042911395677044526">Lehetővé teszi a hálózati konfiguráció push módszerrel történő alkalmazását <ph name="PRODUCT_OS_NAME" /> eszközre. A hálózati konfiguráció a JSON formátumú karakterlánc által meghatározott Open Network Configuration formában leírt karakterlánc, amely a következő helyen van meghatározva: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Megadja, hogy a videotevékenység hatással van-e az energiagazdálkodásra</translation>

@@ -403,11 +403,11 @@
           Saat kebijakan ini tidak disetel, dialog peringatan tidak akan ditampilkan.
 
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dibatasi agar kurang dari atau sama dengan penundaan menganggur.</translation>
-<translation id="2289578386193672044">Menentukan daftar aplikasi dan ekstensi yang diinstal tanpa menampilkan notifikasi kepada pengguna, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna. Semua izin yang diminta oleh aplikasi/ekstensi akan diberikan secara implisit, tanpa interaksi pengguna, termasuk izin tambahan apa pun yang diminta oleh versi aplikasi/ekstensi yang berikutnya. Selain itu, izin diberikan untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys. (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal paksa.)
+<translation id="2289578386193672044">Menentukan daftar aplikasi dan ekstensi yang diinstal tanpa menampilkan notifikasi kepada pengguna, tanpa interaksi pengguna, dan yang tidak dapat di-uninstal atau dinonaktifkan oleh pengguna. Semua izin yang diminta oleh aplikasi/ekstensi akan diberikan secara implisit, tanpa interaksi pengguna, termasuk izin tambahan apa pun yang diminta oleh versi aplikasi/ekstensi yang berikutnya. Selain itu, izin diberikan untuk API ekstensi enterprise.deviceAttributes dan enterprise.platformKeys. (Kedua API ini tidak tersedia untuk aplikasi/ekstensi yang tidak diinstal otomatis.)
 
-Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bertentangan. Jika aplikasi atau ekstensi yang sebelumnya diinstal paksa telah dihapus dari daftar ini, aplikasi/ekstensi tersebut otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
+Kebijakan ini lebih diutamakan daripada kebijakan <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME" /> yang berpotensi bertentangan. Jika aplikasi atau ekstensi yang sebelumnya diinstal otomatis telah dihapus dari daftar ini, aplikasi/ekstensi tersebut otomatis di-uninstal oleh <ph name="PRODUCT_NAME" />.
 
-Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan paksa dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Web Store.
+Untuk instance Windows yang tidak tergabung dalam domain <ph name="MS_AD_NAME" />, penginstalan otomatis dibatasi untuk aplikasi dan ekstensi yang tercantum di Chrome Web Store.
 
 Perlu diperhatikan bahwa kode sumber untuk ekstensi apa pun dapat diubah oleh pengguna melalui Fitur Developer (berpotensi mengganggu fungsi ekstensi). Jika hal ini menjadi masalah, kebijakan <ph name="DEVELOPER_TOOLS_POLICY_NAME" /> sebaiknya disetel.
 
@@ -2329,9 +2329,6 @@ Jika kebijakan ini tidak disetel, fungsi update firmware <ph name="TPM_FIRMWARE_
       Jika ditetapkan ke true, apabila mendeteksi software yang tidak diinginkan, Pembersih Chrome dapat melaporkan metadata tentang pemindaian ke Google sesuai dengan kebijakan yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Pembersih Chrome akan menanyakan kepada pengguna apakah ia ingin menghapus software yang tidak diinginkan tersebut atau tidak. Hasil pembersihan akan dilaporkan ke Google dan pengguna tidak akan memiliki opsi untuk mencegahnya.
 
       Kebijakan ini tidak tersedia pada instance Windows yang tidak digabungkan dengan domain <ph name="MS_AD_NAME" />.</translation>
-<translation id="7978060394348264922">
-      Anda dapat mempertimbangkan setelan kebijakan IsolateOrigins untuk mendapatkan yang terbaik dari kedua fungsi, yaitu isolasi dan dampak terbatas bagi pengguna, dengan menggunakan IsolateOrigins yang berisi daftar situs yang ingin Anda isolasi. Setelan ini, SitePerProcess, mengisolasi semua situs. Jika kebijakan diaktifkan, tiap situs akan dijalankan dalam prosesnya sendiri. Jika kebijakan dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan SitePerProcess secara manual. Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini. Di <ph name="PRODUCT_OS_NAME" />, sebaiknya setel juga kebijakan perangkat <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> ke nilai yang sama. Jika nilai yang ditentukan oleh kedua kebijakan tidak cocok, mungkin terjadi keterlambatan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-      </translation>
 <translation id="7980227303582973781">Tidak ada batasan khusus</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Putar layar sebesar 0 derajat</translation>
@@ -2654,9 +2651,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
 <translation id="8976248126101463034">Izinkan autentikasi gnubby untuk host akses jarak jauh</translation>
 <translation id="8976531594979650914">Menggunakan Printer Default Sistem sebagai Default</translation>
 <translation id="8992176907758534924">Jangan izinkan situs apa pun menampilkan gambar</translation>
-<translation id="9034729899149506577">
-      Jika kebijakan ini diaktifkan, setiap asal bernama dalam daftar yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Hal ini juga akan mengisolasi asal yang diberi nama menurut subdomain; mis. menentukan https://example.com/ juga akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari situs https://example.com/. Jika kebijakan ini dinonaktifkan, Isolasi Situs eksplisit tidak akan terjadi dan uji coba kolom IsolateOrigins dan SitePerProcess akan dinonaktifkan. Pengguna tetap dapat mengaktifkan IsolateOrigins secara manual. Jika kebijakan tidak dikonfigurasi, pengguna dapat mengubah setelan ini. Di <ph name="PRODUCT_OS_NAME" />, sebaiknya setel juga kebijakan perangkat <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> ke nilai yang sama. Jika nilai yang ditentukan oleh kedua kebijakan tidak cocok, mungkin terjadi penundaan saat masuk sesi pengguna sementara nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
-      </translation>
 <translation id="9035964157729712237">ID Ekstensi yang dikeluarkan dari daftar hitam</translation>
 <translation id="9042911395677044526">Memungkinkan konfigurasi jaringan dorongan untuk diterapkan per pengguna ke perangkat <ph name="PRODUCT_OS_NAME" />. Konfigurasi jaringan adalah string berformat JSON seperti yang didefinisikan oleh format Konfigurasi Jaringan Terbuka yang diuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Tentukan apakah aktivitas video memengaruhi pengelolaan daya</translation>

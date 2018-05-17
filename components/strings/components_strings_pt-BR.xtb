@@ -20,6 +20,7 @@
 <translation id="1110994991967754504">Selecione uma permissão para <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Favoritos recentes</translation>
 <translation id="1113869188872983271">&amp;Desfazer reordenar</translation>
+<translation id="1125573121925420732">Avisos podem ser comuns enquanto os sites atualizam a segurança. Isso deve melhorar em breve.</translation>
 <translation id="1126551341858583091">O tamanho no armazenamento local é de <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Cache da política OK</translation>
 <translation id="1150979032973867961">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o sistema operacional do seu computador. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">Remover itens selecionados</translation>
 <translation id="277133753123645258">Método de envio</translation>
 <translation id="277499241957683684">Registro de dispositivo não encontrado</translation>
+<translation id="2781030394888168909">Exportar para MacOS</translation>
 <translation id="2784949926578158345">A conexão foi redefinida.</translation>
 <translation id="2788784517760473862">Cartões de crédito aceitos</translation>
 <translation id="2794233252405721443">Site bloqueado</translation>
@@ -509,6 +511,7 @@
 <translation id="4415426530740016218">Endereço de Retirada</translation>
 <translation id="4424024547088906515">Este servidor não conseguiu provar que é <ph name="DOMAIN" />. O certificado de segurança não é confiável para o Chrome. Isso pode ser causado por uma configuração incorreta ou pela interceptação da sua conexão por um invasor.</translation>
 <translation id="4432688616882109544">O certificado de login não foi aceito por <ph name="HOST_NAME" /> ou não foi fornecido.</translation>
+<translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
 <translation id="443673843213245140">O uso de um proxy está desativado, mas uma configuração explícita de proxy é especificada.</translation>
 <translation id="445100540951337728">Cartões de débito aceitos</translation>
 <translation id="4506176782989081258">Erro de validação: <ph name="VALIDATION_ERROR" /></translation>
@@ -883,6 +886,7 @@
 <translation id="7455133967321480974">Usar padrão global (Bloquear)</translation>
 <translation id="7460163899615895653">Suas guias recentes de outros dispositivos são exibidas aqui</translation>
 <translation id="7469372306589899959">Confirmando cartão</translation>
+<translation id="7473891865547856676">Não, obrigado</translation>
 <translation id="7481312909269577407">Avançar</translation>
 <translation id="7485870689360869515">Nenhum dado encontrado</translation>
 <translation id="7508255263130623398">O código do dispositivo da política retornado está em branco ou não corresponde ao código do dispositivo atual</translation>

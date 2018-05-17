@@ -20,6 +20,7 @@
 <translation id="1110994991967754504">Izbira dovoljenja za: <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Nedavni zaznamki</translation>
 <translation id="1113869188872983271">&amp;Razveljavi razvrstitev</translation>
+<translation id="1125573121925420732">Medtem ko spletne strani posodabljajo varnost, se lahko opozorila pogosto prikažejo. To se bo kmalu izboljšalo.</translation>
 <translation id="1126551341858583091">Velikosti v lokalni shrambi je <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Predpomnilnik pravilnika ustrezen</translation>
 <translation id="1150979032973867961">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; operacijski sistem vašega računalnika ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">Odstrani izbrane elemente</translation>
 <translation id="277133753123645258">Način pošiljanja</translation>
 <translation id="277499241957683684">Manjka zapis o napravi</translation>
+<translation id="2781030394888168909">Izvozi za macOS</translation>
 <translation id="2784949926578158345">Povezava je bila obnovljena.</translation>
 <translation id="2788784517760473862">Sprejete kreditne kartice</translation>
 <translation id="2794233252405721443">Spletno mesto blokirano</translation>
@@ -509,6 +511,7 @@
 <translation id="4415426530740016218">Naslov za prevzem</translation>
 <translation id="4424024547088906515">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; Chrome ne zaupa njegovemu varnostnemu potrdilu. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="4432688616882109544">Spletno mesto <ph name="HOST_NAME" /> ni sprejelo potrdila za prijavo ali pa to ni bilo posredovano.</translation>
+<translation id="4434045419905280838">Pojavna okna in preusmeritve</translation>
 <translation id="443673843213245140">Uporaba strežnika proxy je onemogočena, vendar je njegova konfiguracija izrecno določena.</translation>
 <translation id="445100540951337728">Sprejete debetne kartice</translation>
 <translation id="4506176782989081258">Napaka pri preverjanju veljavnosti: <ph name="VALIDATION_ERROR" /></translation>
@@ -883,6 +886,7 @@
 <translation id="7455133967321480974">Uporabi globalno privzeto (Blokiraj)</translation>
 <translation id="7460163899615895653">Tu so prikazani nedavni zavihki iz drugih naprav</translation>
 <translation id="7469372306589899959">Potrjevanje kartice</translation>
+<translation id="7473891865547856676">Ne, hvala</translation>
 <translation id="7481312909269577407">Naprej</translation>
 <translation id="7485870689360869515">Ni podatkov.</translation>
 <translation id="7508255263130623398">Vrnjen ID naprave pravilnika je prazen ali se ne ujema s trenutnim ID-jem naprave</translation>

@@ -20,6 +20,7 @@
 <translation id="1110994991967754504"><ph name="PERMISSION_NAME" /> の権限を選択します</translation>
 <translation id="1111153019813902504">最近アクセスしたブックマーク</translation>
 <translation id="1113869188872983271">順序変更の取り消し（&amp;U）</translation>
+<translation id="1125573121925420732">ウェブサイトのセキュリティ更新中は警告メッセージが表示されることがあります。これはまもなく改善される予定です。</translation>
 <translation id="1126551341858583091">ローカル ストレージ上のサイズは <ph name="CRASH_SIZE" /> です。</translation>
 <translation id="112840717907525620">ポリシー キャッシュは正常です</translation>
 <translation id="1150979032973867961">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は、ご使用のパソコンのオペレーティング システムによって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">選択したアイテムを削除</translation>
 <translation id="277133753123645258">配送方法</translation>
 <translation id="277499241957683684">デバイス レコードがありません</translation>
+<translation id="2781030394888168909">Mac OS 形式でエクスポート</translation>
 <translation id="2784949926578158345">接続がリセットされました。</translation>
 <translation id="2788784517760473862">利用可能なクレジット カード</translation>
 <translation id="2794233252405721443">サイトがブロックされています</translation>
@@ -509,6 +511,7 @@
 <translation id="4415426530740016218">集荷先住所</translation>
 <translation id="4424024547088906515">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は Chrome によって信頼されているものではありません。原因としては、不適切な設定や、悪意のあるユーザーによる接続妨害が考えられます。</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> でログイン証明書が承認されなかったか、ログイン証明書が提示されていない可能性があります。</translation>
+<translation id="4434045419905280838">ポップアップとリダイレクト</translation>
 <translation id="443673843213245140">プロキシの使用は無効ですが、プロキシの設定が明示的に指定されています。</translation>
 <translation id="445100540951337728">利用可能なデビットカード</translation>
 <translation id="4506176782989081258">検証エラー: <ph name="VALIDATION_ERROR" /></translation>
@@ -883,6 +886,7 @@
 <translation id="7455133967321480974">グローバルのデフォルト値（[ブロック]）を使用</translation>
 <translation id="7460163899615895653">他の端末で最近使ったタブがここに表示されます</translation>
 <translation id="7469372306589899959">カードを確認中です</translation>
+<translation id="7473891865547856676">スキップ</translation>
 <translation id="7481312909269577407">進む</translation>
 <translation id="7485870689360869515">データが見つかりません。</translation>
 <translation id="7508255263130623398">返されたポリシーの端末 ID が空であるか、現在の端末 ID と一致しません</translation>

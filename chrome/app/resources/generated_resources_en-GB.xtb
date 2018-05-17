@@ -5091,7 +5091,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8902667442496790482">Open Select to Speak settings</translation>
 <translation id="8903921497873541725">Zoom in</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8908902564709148335">Warning: You've enabled the -scripts-require-action flag on this computer, which limits the capabilities of this extension. However, other devices may not support this flag or have it enabled. On these devices, this extension can also:</translation>
 <translation id="8909233240676134608">Can't join the machine to the domain. The server does not support specified Kerberos encryption types. Tick 'More options' for encryption settings.</translation>
 <translation id="8909833622202089127">Site is tracking your location</translation>
 <translation id="8910146161325739742">Share your screen</translation>
@@ -5111,7 +5110,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8940081510938872932">Your computer is doing too many things right now.  Try again later.</translation>
 <translation id="8941173171815156065">Revoke the permission '<ph name="PERMISSION" />'</translation>
 <translation id="8941882480823041320">Previous word</translation>
-<translation id="8943076760234179177">File Share URL</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">Use the battery more quickly (currently <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> is sharing a window with <ph name="TAB_NAME" />.</translation>

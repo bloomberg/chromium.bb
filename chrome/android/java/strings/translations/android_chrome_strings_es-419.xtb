@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">Usar las predicciones de página</translation>
 <translation id="4412992751769744546">Permitir cookies de terceros</translation>
 <translation id="4432792777822557199">De ahora en más, las páginas en <ph name="SOURCE_LANGUAGE" /> se traducirán al <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">Ventanas emergentes y redireccionamientos</translation>
 <translation id="4445444302979002552">Usar los servicios de predicción para sugerir términos de búsqueda y sitios web</translation>
 <translation id="4452411734226507615">Cierra la pestaña <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Se agregó a favoritos en <ph name="FOLDER_NAME" /></translation>
@@ -516,6 +517,7 @@ Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación 
 <translation id="5765780083710877561">Descripción:</translation>
 <translation id="5777170031995031090">Controla la forma en que Google usa tu historial de navegación para personalizar Búsqueda, Ads y otros servicios de Google.</translation>
 <translation id="5779929835642192302">Sugerencias disponibles</translation>
+<translation id="5793665092639000975"><ph name="SPACE_USED" /> de <ph name="SPACE_AVAILABLE" /> en uso</translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Hace # hora}other{Hace # horas}}</translation>
 <translation id="5817918615728894473">Sincronizar</translation>
@@ -600,6 +602,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="6556716549745717622">Bloquear si el sitio tiende a mostrar anuncios intrusivos (opción recomendada)</translation>
 <translation id="6560414384669816528">Buscar con Sogou</translation>
 <translation id="6566259936974865419">Chrome te permitió ahorrar <ph name="GIGABYTES" /> gigabytes</translation>
+<translation id="6573096386450695060">Permitir siempre</translation>
 <translation id="6573431926118603307">Aquí aparecerán las pestañas que abriste en Chrome en tus otros dispositivos.</translation>
 <translation id="6575643671698722332">Error al restablecer. Comprueba la conexión y vuelve a intentarlo.</translation>
 <translation id="6583199322650523874">Agregar la página actual a favoritos</translation>
@@ -659,6 +662,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7034608350006174882">Tarjetas y direcciones que usan Google Pay</translation>
 <translation id="7053983685419859001">Bloquear</translation>
+<translation id="7055152154916055070">Se bloqueó el redireccionamiento:</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 seleccionado}other{# seleccionados}}</translation>
@@ -667,6 +671,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7121362699166175603">Borra el historial y las sugerencias de autocompletado en la barra de direcciones. Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Habilitar el motor de búsqueda actual</translation>
 <translation id="7138678301420049075">Otros</translation>
+<translation id="7141896414559753902">Bloquea las ventanas emergentes y los redireccionamientos en los sitios (recomendado)</translation>
 <translation id="7144878232160441200">Volver a intentarlo</translation>
 <translation id="7149893636342594995">Últimas 24 horas</translation>
 <translation id="7177466738963138057">Puedes cambiar esta opción más tarde en Configuración</translation>
@@ -883,6 +888,7 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="932327136139879170">Página principal</translation>
 <translation id="932599481871055447">Guarda datos y navega la Web más rápido</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">No hay suficiente espacio en la tarjeta SD</translation>
 <translation id="945522503751344254">Enviar comentarios</translation>
 <translation id="945632385593298557">Acceso al micrófono</translation>
 <translation id="951339005376969845">Borra los datos existentes. Para recuperarlos, cambia de nuevo a <ph name="FROM_ACCOUNT" />.</translation>

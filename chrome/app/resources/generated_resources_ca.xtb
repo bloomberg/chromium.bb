@@ -659,6 +659,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> vol emmagatzemar una gran quantitat de dades a l'ordinador local de manera permanent</translation>
 <translation id="1997616988432401742">Els meus certificats</translation>
 <translation id="1999115740519098545">A l'inici</translation>
+<translation id="2001796770603320721">Gestiona a Drive</translation>
 <translation id="2006638907958895361">Obre l'enllaç a <ph name="APP" /></translation>
 <translation id="2007404777272201486">Informeu d'un problema...</translation>
 <translation id="2016430552235416146">Tradicional</translation>
@@ -2085,6 +2086,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="42137655013211669">El servidor ha prohibit l'accés a aquest recurs.</translation>
 <translation id="4215350869199060536">El nom conté símbols no permesos.</translation>
 <translation id="4215448920900139318">S'estan afegint <ph name="FILE_COUNT" /> a la còpia de seguretat</translation>
+<translation id="4217571870635786043">Dictat</translation>
 <translation id="4225397296022057997">En tots els llocs web</translation>
 <translation id="4235200303672858594">Tota la pantalla</translation>
 <translation id="4235813040357936597">Afegeix un compte per a: <ph name="PROFILE_NAME" /></translation>
@@ -2197,6 +2199,7 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="4425149324548788773">La meva unitat</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4430369329743628066">S'ha afegit a les adreces d'interès</translation>
+<translation id="4434045419905280838">Finestres emergents i redireccions</translation>
 <translation id="443454694385851356">Heretats (opció no segura)</translation>
 <translation id="443464694732789311">Continua</translation>
 <translation id="443475966875174318">Actualitza o suprimeix les aplicacions incompatibles</translation>
@@ -3892,6 +3895,7 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7052237160939977163">Envia dades de traça del rendiment</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
+<translation id="7055152154916055070">S'ha bloquejat la redirecció:</translation>
 <translation id="7056526158851679338">&amp;Inspecciona els dispositius</translation>
 <translation id="7059858479264779982">Defineix com a inici automàtic</translation>
 <translation id="7059893117020417984">Per navegar de manera privada, fes clic a la icona dels tres punts per obrir una finestra d'incògnit</translation>
@@ -4247,6 +4251,7 @@ En instal·lar <ph name="APP_NAME" />, s'utilitzaran <ph name="DOWNLOAD_SIZE" />
 <translation id="7617366389578322136">S'està connectant al dispositiu <ph name="DEVICE_NAME" /></translation>
 <translation id="7622114377921274169">S'està carregant.</translation>
 <translation id="7624337243375417909">bloqueig de majúscules desactivat</translation>
+<translation id="7625568159987162309">Mostra els permisos i les dades emmagatzemades als llocs web</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> ja existeix. Canvieu-ne el nom i torneu-ho a provar.</translation>
 <translation id="7628127343934101653">Obre els fitxers PDF a l'aplicació predeterminada de lector de PDF.</translation>
 <translation id="7629827748548208700">Pestanya: <ph name="TAB_NAME" /></translation>
@@ -4569,6 +4574,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="806812017500012252">Torna a ordenar per títol</translation>
 <translation id="8068253693380742035">Toca per iniciar la sessió</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="806972267388474605">Fitxers de Linux</translation>
 <translation id="8071432093239591881">Imprimeix com a imatge</translation>
 <translation id="8072988827236813198">Fixa les pestanyes</translation>
 <translation id="8074127646604999664">Permet que els llocs tancats fa poc acabin d'enviar i rebre dades</translation>
@@ -5077,7 +5083,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8902667442496790482">Obre la configuració d'Escolta la selecció</translation>
 <translation id="8903921497873541725">Amplia</translation>
 <translation id="8904976895050290827">Sincronització de Google Chrome</translation>
-<translation id="8908902564709148335">Advertiment: heu activat la marca --scripts-require-action en aquest ordinador, fet que limita les capacitats d'aquesta extensió. Tot i així, és possible que els altres dispositius no admetin aquesta marca o que la tinguin activada. En aquests dispositius, aquesta extensió també pot fer el següent:</translation>
 <translation id="8909233240676134608">No es pot connectar l'ordinador al domini. El servidor no admet els tipus d'encriptació de Kerberos especificats. Pots accedir a la configuració d'encriptació des de "Més opcions".</translation>
 <translation id="8909833622202089127">El lloc web està fent un seguiment de la teva ubicació</translation>
 <translation id="8910146161325739742">Compartiu la pantalla</translation>
@@ -5097,7 +5102,6 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8940081510938872932">L'equip està fent massa coses en aquests moments. Torneu-ho a provar més tard.</translation>
 <translation id="8941173171815156065">Revoca el permís <ph name="PERMISSION" /></translation>
 <translation id="8941882480823041320">Paraula anterior</translation>
-<translation id="8943076760234179177">URL de l'ús compartit del fitxer</translation>
 <translation id="894360074127026135">Entrada progressiva internacional de Netscape</translation>
 <translation id="8944099748578356325">Consumirà la bateria més ràpidament (actualment està al <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> està compartint una finestra amb <ph name="TAB_NAME" />.</translation>

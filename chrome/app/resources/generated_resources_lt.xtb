@@ -659,6 +659,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> prašo leidimo nuolat saugoti daug duomenų vietiniame kompiuteryje</translation>
 <translation id="1997616988432401742">Jūsų sertifikatai</translation>
 <translation id="1999115740519098545">Paleidžiant</translation>
+<translation id="2001796770603320721">Tvarkyti Diske</translation>
 <translation id="2006638907958895361">Atidaryti nuorodą programoje „<ph name="APP" />“</translation>
 <translation id="2007404777272201486">Pranešti apie problemą...</translation>
 <translation id="2016430552235416146">Tradicinis</translation>
@@ -2087,6 +2088,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="42137655013211669">Prieigą prie šio ištekliaus uždraudė serveris.</translation>
 <translation id="4215350869199060536">Oi, pavadinime yra netinkamų simbolių.</translation>
 <translation id="4215448920900139318">Kuriama atsarginė kopija: <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">Diktavimas</translation>
 <translation id="4225397296022057997">Visose svetainėse</translation>
 <translation id="4235200303672858594">Visas ekranas</translation>
 <translation id="4235813040357936597">Pridėti paskyrą, skirtą <ph name="PROFILE_NAME" /></translation>
@@ -2199,6 +2201,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="4425149324548788773">Mano Diskas</translation>
 <translation id="4430019312045809116">Apimtis</translation>
 <translation id="4430369329743628066">Žymė pridėta</translation>
+<translation id="4434045419905280838">Iššok. langai ir peradresavimai</translation>
 <translation id="443454694385851356">Pasenę (nesaugūs)</translation>
 <translation id="443464694732789311">Tęsti</translation>
 <translation id="443475966875174318">Nesuderinamų programų atnaujinimas arba pašalinimas</translation>
@@ -3893,6 +3896,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7052237160939977163">Siųsti našumo stebėjimo duomenis</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Blokuoti</translation>
+<translation id="7055152154916055070">Peradresavimas užblokuotas:</translation>
 <translation id="7056526158851679338">&amp;Tikrinti įrenginius</translation>
 <translation id="7059858479264779982">Nustatyti automatinį paleidimą</translation>
 <translation id="7059893117020417984">Kad galėtumėte naršyti privačiai, spustelėdami taškų piktogramos meniu atidarykite inkognito langą</translation>
@@ -4256,6 +4260,7 @@ Ar norite paleisti „<ph name="CONTROL_PANEL_APPLET_NAME" />“?</translation>
 <translation id="7617366389578322136">Prisijungiama prie „<ph name="DEVICE_NAME" />“</translation>
 <translation id="7622114377921274169">Įkraunama.</translation>
 <translation id="7624337243375417909">didžiųjų raidžių režimas išjungtas</translation>
+<translation id="7625568159987162309">Peržiūrėti leidimus ir saugomus svetainių duomenis</translation>
 <translation id="7627790789328695202">Oi, „<ph name="FILE_NAME" />“ jau yra. Pervardykite jį ir bandykite dar kartą.</translation>
 <translation id="7628127343934101653">Atidaryti PDF failus numatytoje PDF peržiūros priemonės programoje.</translation>
 <translation id="7629827748548208700">Skirtukas: <ph name="TAB_NAME" /></translation>
@@ -4578,6 +4583,7 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="806812017500012252">Rikiuoti pagal pavadinimą</translation>
 <translation id="8068253693380742035">Palieskite, kad prisijungtumėte</translation>
 <translation id="8069615408251337349">„Google“ spausdinimas iš debesies</translation>
+<translation id="806972267388474605">„Linux“ failai</translation>
 <translation id="8071432093239591881">Spausdinti kaip vaizdą</translation>
 <translation id="8072988827236813198">Prisegti skirtukus</translation>
 <translation id="8074127646604999664">Leisti pastaruoju metu uždarytoms svetainėms baigti duomenų siuntimą ir gavimą</translation>
@@ -5086,7 +5092,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8902667442496790482">Atidaryti funkcijos „Teksto ištarimas“ nustatymus</translation>
 <translation id="8903921497873541725">Artinti</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8908902564709148335">Įspėjimas: šiame kompiuteryje įgalinote bandymą „--scripts-require-action“, kuris apriboja šio plėtinio galimybes. Tačiau kiti įrenginiai gali nepalaikyti šio bandymo arba jis juose gali nebūti įgalintas. Tokiuose įrenginiuose šis plėtinys taip pat gali:</translation>
 <translation id="8909233240676134608">Nepavyksta susieti įrenginio su domenu. Paslauga nepalaiko nurodytų „Kerberos“ šifruotės tipų. Jei reikia daugiau šifruotės nustatymų, žr. „Daugiau parinkčių“.</translation>
 <translation id="8909833622202089127">Svetainė stebi jūsų vietą</translation>
 <translation id="8910146161325739742">Ekrano vaizdo bendrinimas</translation>
@@ -5106,7 +5111,6 @@ Rakto failą laikykite saugioje vietoje. Jo reikės, kai norėsite sukurti nauja
 <translation id="8940081510938872932">Kompiuteriu atliekama per daug veiksmų šiuo metu. Vėliau bandykite dar kartą.</translation>
 <translation id="8941173171815156065">Anuliuoti leidimą „<ph name="PERMISSION" />“</translation>
 <translation id="8941882480823041320">Ankstesnis žodis</translation>
-<translation id="8943076760234179177">Failo bendrinimo URL</translation>
 <translation id="894360074127026135">„Netscape“ tarptautinė sąranka</translation>
 <translation id="8944099748578356325">Greičiau naudos akumuliatoriaus energiją (šiuo metu <ph name="BATTERY_PERCENTAGE" /> %)</translation>
 <translation id="8944964446326379280">„<ph name="APP_NAME" />“ bendrina langą su <ph name="TAB_NAME" />.</translation>

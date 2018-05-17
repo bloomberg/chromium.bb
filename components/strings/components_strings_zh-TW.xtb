@@ -20,6 +20,7 @@
 <translation id="1110994991967754504">選取<ph name="PERMISSION_NAME" />權限設定</translation>
 <translation id="1111153019813902504">最近使用過的書籤</translation>
 <translation id="1113869188872983271">復原重新排序(&amp;U)</translation>
+<translation id="1125573121925420732">網站更新安全性設定期間，可能會經常顯示警告。這項行為將於近期內改善。</translation>
 <translation id="1126551341858583091">佔用的本機儲存空間大小：<ph name="CRASH_SIZE" />。</translation>
 <translation id="112840717907525620">政策快取正確</translation>
 <translation id="1150979032973867961">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得你電腦作業系統的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">移除選取的項目</translation>
 <translation id="277133753123645258">運送方式</translation>
 <translation id="277499241957683684">沒有裝置記錄</translation>
+<translation id="2781030394888168909">匯出 MacOS</translation>
 <translation id="2784949926578158345">連線已重設。</translation>
 <translation id="2788784517760473862">接受的信用卡</translation>
 <translation id="2794233252405721443">網站遭到封鎖</translation>
@@ -509,6 +511,7 @@
 <translation id="4415426530740016218">取件地址</translation>
 <translation id="4424024547088906515">伺服器無法證明其屬於 <ph name="DOMAIN" /> 網域；其安全性憑證未取得 Chrome 的信任。這可能是因為設定錯誤，或有攻擊者攔截你的連線所致。</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> 不接受你的登入憑證，或是你可能未提供登入憑證。</translation>
+<translation id="4434045419905280838">彈出式視窗與重新導向</translation>
 <translation id="443673843213245140">雖然已停用 Proxy，不過已指定明確 Proxy 設定。</translation>
 <translation id="445100540951337728">接受的簽帳金融卡</translation>
 <translation id="4506176782989081258">驗證錯誤：<ph name="VALIDATION_ERROR" /></translation>
@@ -883,6 +886,7 @@
 <translation id="7455133967321480974">使用全域預設值 (封鎖)</translation>
 <translation id="7460163899615895653">你最近在其他裝置上開啟的分頁會顯示在這裡</translation>
 <translation id="7469372306589899959">正在驗證信用卡</translation>
+<translation id="7473891865547856676">不用了，謝謝</translation>
 <translation id="7481312909269577407">往前</translation>
 <translation id="7485870689360869515">找不到任何資料。</translation>
 <translation id="7508255263130623398">傳回的政策裝置 ID 沒有任何內容，或是與目前的裝置 ID 不符</translation>

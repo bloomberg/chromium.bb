@@ -20,6 +20,7 @@
 <translation id="1110994991967754504">Pumili ng pahintulot para sa <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Mga kamakailang bookmark</translation>
 <translation id="1113869188872983271">&amp;I-undo ang pagbabago sa ayos</translation>
+<translation id="1125573121925420732">Maaaring karaniwang may mga babala habang nag-a-update para sa seguridad ang mga website. Maaayos din ito sa lalong madaling panahon.</translation>
 <translation id="1126551341858583091">Ang laki sa lokal na storage ay <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">OK ang cache ng patakaran</translation>
 <translation id="1150979032973867961">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng operating system ng iyong computer ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">Alisin ang mga napiling item</translation>
 <translation id="277133753123645258">Pamamaraan ng pagpapadala</translation>
 <translation id="277499241957683684">Nawawalang tala ng device</translation>
+<translation id="2781030394888168909">I-export para sa MacOS</translation>
 <translation id="2784949926578158345">Na-reset ang koneksyon.</translation>
 <translation id="2788784517760473862">Mga tinatanggap na credit card</translation>
 <translation id="2794233252405721443">Naka-block ang site</translation>
@@ -509,6 +511,7 @@
 <translation id="4415426530740016218">Address sa Pag-pick up</translation>
 <translation id="4424024547088906515">Hindi mapatunayan ng server na ito na ito ay <ph name="DOMAIN" />; hindi pinagkakatiwalaan ng Chrome ang certificate ng seguridad nito. Maaaring dulot ito ng maling configuration o isang umaatake na hinahadlangan ang iyong koneksyon.</translation>
 <translation id="4432688616882109544">Hindi tinanggap ng <ph name="HOST_NAME" /> ang iyong certificate sa pag-log in o maaaring walang ibinigay.</translation>
+<translation id="4434045419905280838">Mga pop-up at pag-redirect</translation>
 <translation id="443673843213245140">Hindi pinagana ang paggamit ng isang proxy ngunit tinutukoy ang isang tahasang configuration ng proxy.</translation>
 <translation id="445100540951337728">Mga tinatanggap na debit card</translation>
 <translation id="4506176782989081258">Error sa pagpapatunay: <ph name="VALIDATION_ERROR" /></translation>
@@ -883,6 +886,7 @@
 <translation id="7455133967321480974">Gamitin ang pangkalahatang default (I-block)</translation>
 <translation id="7460163899615895653">Lumalabas dito ang mga kamakailan mong tab mula sa iba pang mga device</translation>
 <translation id="7469372306589899959">Kinukumpirma ang card</translation>
+<translation id="7473891865547856676">Hindi, Salamat</translation>
 <translation id="7481312909269577407">Sumulong</translation>
 <translation id="7485870689360869515">Walang nahanap na data.</translation>
 <translation id="7508255263130623398">Walang laman ang ibinalik na device id ng patakaran o hindi ito tumutugma sa kasalukuyang device id</translation>

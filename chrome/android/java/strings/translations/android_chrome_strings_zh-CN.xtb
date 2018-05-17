@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">使用网页联想查询功能</translation>
 <translation id="4412992751769744546">允许第三方 Cookie</translation>
 <translation id="4432792777822557199">从现在开始，源语言为<ph name="SOURCE_LANGUAGE" />的网页一律会被翻译成<ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="4445444302979002552">使用联想查询服务可让系统提供搜索字词和网站建议</translation>
 <translation id="4452411734226507615">关闭“<ph name="TAB_TITLE" />”标签页</translation>
 <translation id="4452548195519783679">已将书签添加到“<ph name="FOLDER_NAME" />”</translation>
@@ -516,6 +517,7 @@
 <translation id="5765780083710877561">说明：</translation>
 <translation id="5777170031995031090">控制 Google 如何利用您的浏览记录为您提供个性化的 Google 搜索、广告和其他 Google 服务。</translation>
 <translation id="5779929835642192302">有自动填充建议</translation>
+<translation id="5793665092639000975">已使用 <ph name="SPACE_USED" />，共 <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">权限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小时前}other{# 小时前}}</translation>
 <translation id="5817918615728894473">配对</translation>
@@ -600,6 +602,7 @@
 <translation id="6556716549745717622">如果网站常常会展示侵扰性广告，则予以阻止（推荐）</translation>
 <translation id="6560414384669816528">改用搜狗搜索</translation>
 <translation id="6566259936974865419">Chrome 已为您保存的数据量：<ph name="GIGABYTES" /> GB</translation>
+<translation id="6573096386450695060">一律允许</translation>
 <translation id="6573431926118603307">您在其他设备上的 Chrome 中打开的标签页将列在此处。</translation>
 <translation id="6575643671698722332">重置失败。请确保您的设备已联网，然后重试。</translation>
 <translation id="6583199322650523874">为当前网页添加书签</translation>
@@ -659,6 +662,7 @@
 <translation id="7031882061095297553">同步到</translation>
 <translation id="7034608350006174882">Google Pay 中存储的卡片和地址信息</translation>
 <translation id="7053983685419859001">禁止</translation>
+<translation id="7055152154916055070">已阻止重定向：</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已选择 1 项}other{已选择 # 项}}</translation>
@@ -667,6 +671,7 @@
 <translation id="7121362699166175603">清除历史记录和地址栏中的自动填充项。您的 Google 帐号在 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> 上可能有其他形式的浏览记录。</translation>
 <translation id="7128222689758636196">适用于当前的搜索引擎</translation>
 <translation id="7138678301420049075">其他</translation>
+<translation id="7141896414559753902">禁止网站显示弹出式窗口和重定向（推荐）</translation>
 <translation id="7144878232160441200">重试</translation>
 <translation id="7149893636342594995">过去 24 小时</translation>
 <translation id="7177466738963138057">以后，您可以在“设置”中更改此设置。</translation>
@@ -883,6 +888,7 @@
 <translation id="932327136139879170">首页</translation>
 <translation id="932599481871055447">节省数据流量，加快浏览速度</translation>
 <translation id="938850635132480979">错误：<ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">SD 卡上的存储空间不足</translation>
 <translation id="945522503751344254">发送反馈</translation>
 <translation id="945632385593298557">使用您的麦克风</translation>
 <translation id="951339005376969845">删除现有数据。您可通过切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据。</translation>

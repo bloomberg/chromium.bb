@@ -660,6 +660,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> pretende armazenar permanentemente dados de grandes dimensões no seu computador local.</translation>
 <translation id="1997616988432401742">Os seus certificados</translation>
 <translation id="1999115740519098545">No arranque</translation>
+<translation id="2001796770603320721">Gerir no Drive</translation>
 <translation id="2006638907958895361">Abrir link na aplicação <ph name="APP" /></translation>
 <translation id="2007404777272201486">Comunicar um problema...</translation>
 <translation id="2016430552235416146">Tradicional</translation>
@@ -2089,6 +2090,7 @@ Pretende pará-lo?</translation>
 <translation id="42137655013211669">O acesso a este recurso foi proibido pelo servidor.</translation>
 <translation id="4215350869199060536">Existem símbolos ilegais no nome.</translation>
 <translation id="4215448920900139318">A fazer uma cópia de segurança de <ph name="FILE_COUNT" />...</translation>
+<translation id="4217571870635786043">Ditado</translation>
 <translation id="4225397296022057997">Em todos os sites</translation>
 <translation id="4235200303672858594">Ecrã inteiro</translation>
 <translation id="4235813040357936597">Adicionar conta para <ph name="PROFILE_NAME" /></translation>
@@ -2201,6 +2203,7 @@ Pretende pará-lo?</translation>
 <translation id="4425149324548788773">O meu disco</translation>
 <translation id="4430019312045809116">Volume</translation>
 <translation id="4430369329743628066">Marcador adicionado</translation>
+<translation id="4434045419905280838">Pop-ups e redirecionamentos</translation>
 <translation id="443454694385851356">Antigos (inseguros)</translation>
 <translation id="443464694732789311">Continuar</translation>
 <translation id="443475966875174318">Atualizar ou remover aplicações incompatíveis</translation>
@@ -3895,6 +3898,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7052237160939977163">Enviar dados de rastreio do desempenho</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Bloquear</translation>
+<translation id="7055152154916055070">Redirecionamento bloqueado:</translation>
 <translation id="7056526158851679338">&amp;Inspecionar dispositivos</translation>
 <translation id="7059858479264779982">Definir para iniciação automática</translation>
 <translation id="7059893117020417984">Para navegar em privado, clique no menu dos três pontos de forma a abrir uma janela de navegação anónima</translation>
@@ -4258,6 +4262,7 @@ A instalação da aplicação <ph name="APP_NAME" /> implica uma transferência 
 <translation id="7617366389578322136">A estabelecer ligação a "<ph name="DEVICE_NAME" />"…</translation>
 <translation id="7622114377921274169">A carregar…</translation>
 <translation id="7624337243375417909">caps lock desligado</translation>
+<translation id="7625568159987162309">Ver autorizações e dados armazenados em sites</translation>
 <translation id="7627790789328695202">Ups, <ph name="FILE_NAME" /> já existe. Dê um nome novo e tente novamente.</translation>
 <translation id="7628127343934101653">Abrir ficheiros PDF na aplicação do visualizador de PDF predefinida.</translation>
 <translation id="7629827748548208700">Separador: <ph name="TAB_NAME" /></translation>
@@ -4580,6 +4585,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8068253693380742035">Toque para iniciar sessão</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="806972267388474605">Ficheiros Linux</translation>
 <translation id="8071432093239591881">Imprimir como imagem</translation>
 <translation id="8072988827236813198">Fixar Separadores</translation>
 <translation id="8074127646604999664">Permitir que os sites fechados recentemente concluam o envio e a receção de dados</translation>
@@ -5088,7 +5094,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8902667442496790482">Abrir as definições de Selecionar para ativar voz</translation>
 <translation id="8903921497873541725">Ampliar</translation>
 <translation id="8904976895050290827">Sincronização do Google Chrome</translation>
-<translation id="8908902564709148335">Aviso: Ativou o sinalizador --scripts-require-action neste computador, o que limita as capacidades desta extensão. Contudo, outros dispositivos poderão não suportar este sinalizador ou tê-lo ativado. Nesses dispositivos, esta extensão também pode:</translation>
 <translation id="8909233240676134608">Não é possível associar a máquina ao domínio. O servidor não suporta os tipos de encriptação Kerberos especificados. Selecione "Mais opções" para aceder às definições de encriptação.</translation>
 <translation id="8909833622202089127">O site está a monitorizar a sua localização.</translation>
 <translation id="8910146161325739742">Partilhar o ecrã</translation>
@@ -5108,7 +5113,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8940081510938872932">O seu computador está a executar demasiadas operações neste momento. Tente novamente mais tarde.</translation>
 <translation id="8941173171815156065">Revogar a autorização "<ph name="PERMISSION" />"</translation>
 <translation id="8941882480823041320">Palavra anterior</translation>
-<translation id="8943076760234179177">URL de partilha de ficheiros</translation>
 <translation id="894360074127026135">Step-Up Internacional Netscape</translation>
 <translation id="8944099748578356325">Utilizar a bateria mais rapidamente (atualmente, <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> está a partilhar uma janela com <ph name="TAB_NAME" />.</translation>

@@ -2342,16 +2342,6 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se postavi na True, u slučaju da Chromeov alat za čišćenje otkrije neželjeni softver, može Googleu prijaviti metapodatke o pretraživanju u skladu s pravilima postavljenima pravilom SafeBrowsingExtendedReportingEnabled. Chromeov alat za čišćenje pitat će korisnika želi li ukloniti neželjeni softver. Rezultati čišćenja prijavit će se Googleu i korisnik to neće moći spriječiti.
 
       To pravilo nije dostupno u instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
-<translation id="7978060394348264922">
-      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste
-      iskoristili prednosti obje značajke, izolacije i ograničenog utjecaja za
-      korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati.
-      Ova postavka, SitePerProcess, izolira sve web-lokacije.
-      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
-      Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti SitePerProcess.
-      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučujemo da pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> također postavite na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-      </translation>
 <translation id="7980227303582973781">Nema posebnih ograničenja</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Zakreni zaslon 0 stupnjeva</translation>
@@ -2684,16 +2674,6 @@ Za sustav Windows preporučuje se konfiguriranje pravila putem GPO-a, iako se pr
 <translation id="8976248126101463034">Dopusti autentifikaciju "gnubby" za hostove daljinskog pristupa</translation>
 <translation id="8976531594979650914">Upotrijebi zadani pisač sustava kao zadani</translation>
 <translation id="8992176907758534924">Ne dopuštaj web-lokacijama prikazivanje slika</translation>
-<translation id="9034729899149506577">
-      Ako se to pravilo omogući, svaki od navedenih izvora na popisu
-      odijeljenom zarezima izvodit će se u svojem procesu. Time će se također
-      izolirati izvori navedeni prema poddomenama, npr. ako se navede
-      https://example.com/, izolirat će se i https://foo.example.com/ kao dio
-      web-lokacije https://example.com/.
-      Ako se to pravilo onemogući, neće doći do eksplicitne izolacije web-lokacija i onemogućit će se radne verzije postavki IsolateOrigins i SitePerProcess. Korisnici će i dalje moći ručno omogućiti IsolateOrigins.
-      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
-      U sustavu <ph name="PRODUCT_OS_NAME" /> preporučujemo da pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> također postavite na istu vrijednost. Ako se vrijednosti koje navode ta dva pravila ne podudaraju, možda će prilikom otvaranja korisničke sesije biti potrebno pričekati dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
-      </translation>
 <translation id="9035964157729712237">ID-jevi proširenja za izuzimanje s crne liste</translation>
 <translation id="9042911395677044526">Omogućuje nametanje mrežne konfiguracije za primjenu po korisniku na uređaju <ph name="PRODUCT_OS_NAME" />. Mrežna je konfiguracija niz u formatu JSON, kao što je definirano formatom "Open Network Configuration" koji je opisan na adresi <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Odredi utječe li aktivnost videozapisa na upravljanje napajanjem</translation>

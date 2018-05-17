@@ -27,7 +27,7 @@
       Si se asigna un valor a esta política, la pantalla de inicio de sesión se mostrará siempre en la configuración regional proporcionada por el primer valor de esta política (esta se define como lista para que sea compatible con versiones posteriores). Si no se le asigna ningún valor o se le asigna una lista vacía, la pantalla de inicio de sesión se mostrará en la configuración regional de la sesión del último usuario. Si el valor que se le asigna no es una configuración regional válida, la pantalla de inicio de sesión se mostrará en una configuración regional establecida antes (actualmente: en-US).</translation>
 <translation id="1062011392452772310">Habilitar confirmación remota para el dispositivo</translation>
 <translation id="1062407476771304334">Sustituir</translation>
-<translation id="1079801999187584280">No permitir el uso de Herramientas para desarrolladores</translation>
+<translation id="1079801999187584280">No permitir el uso de herramientas para desarrolladores</translation>
 <translation id="109166998561583554">Activar advertencia de protección de contraseña sobre cuenta en riesgo</translation>
 <translation id="1093082332347834239">Si se habilita esta opción, el host de asistencia remota se ejecutará en un proceso con permisos de <ph name="UIACCESS_PERMISSION_NAME" />. Esto permitirá que los usuarios remotos interactúen con ventanas a las que se puede acceder con permisos de administrador en el ordenador del usuario local.
 
@@ -92,12 +92,12 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1387596372902085462">Confiar o no en la infraestructura de clave pública antigua de Symantec Corporation</translation>
 <translation id="1393485621820363363">Impresoras de dispositivos de empresa habilitadas</translation>
 <translation id="1397855852561539316">URL de sugerencia del proveedor de búsquedas predeterminadas</translation>
-<translation id="1424081297104898791">Te permite controlar dónde se pueden usar las Herramientas para desarrolladores.
+<translation id="1424081297104898791">Te permite controlar dónde se pueden usar las herramientas para desarrolladores.
 
-      Si se asigna a esta política el valor DeveloperToolsDisallowedForForceInstalledExtensions (el valor 0, que es el predeterminado para usuarios de empresa), se podrá acceder a las Herramientas para desarrolladores y a la consola de JavaScript en general, excepto en extensiones instaladas por la política de empresa.
-      Si se asigna a esta política el valor DeveloperToolsAllowed (el valor 1, que es el predeterminado para usuarios no administrados), se podrá acceder a las Herramientas para desarrolladores y a la consola de JavaScript sin excepciones, incluso en extensiones instaladas por la política de empresa.
-      Si se asigna a esta política el valor DeveloperToolsDisallowed (el valor 2), no se podrá acceder a las Herramientas para desarrolladores y no se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o menús contextuales que permiten abrir las Herramientas para desarrolladores y la consola de JavaScript.
-      Si se asigna el valor "True" a la antigua política DeveloperToolsDisabled, el valor de esta política se ignorará y las Herramientas para desarrolladores se inhabilitarán.</translation>
+      Si se asigna a esta política el valor DeveloperToolsDisallowedForForceInstalledExtensions (el valor 0, que es el predeterminado para usuarios de empresa), se podrá acceder a las herramientas para desarrolladores y a la consola de JavaScript en general, excepto en extensiones instaladas por la política de empresa.
+      Si se asigna a esta política el valor DeveloperToolsAllowed (el valor 1, que es el predeterminado para usuarios no administrados), se podrá acceder a las herramientas para desarrolladores y a la consola de JavaScript sin excepciones, incluso en extensiones instaladas por la política de empresa.
+      Si se asigna a esta política el valor DeveloperToolsDisallowed (el valor 2), no se podrá acceder a las herramientas para desarrolladores y no se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o menús contextuales que permiten abrir las herramientas para desarrolladores y la consola de JavaScript.
+      Si se asigna el valor "True" a la antigua política DeveloperToolsDisabled, el valor de esta política se ignorará y las herramientas para desarrolladores se inhabilitarán.</translation>
 <translation id="1426410128494586442">Sí</translation>
 <translation id="1427655258943162134">Dirección o URL de servidor proxy</translation>
 <translation id="1435659902881071157">Configuración de red de dispositivos</translation>
@@ -209,7 +209,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
 <translation id="1803646570632580723">Lista de aplicaciones fijadas que deben aparecer en la barra de aplicaciones</translation>
 <translation id="1808715480127969042">Bloquear cookies en estos sitios</translation>
 <translation id="1810261428246410396">Permitir conexión compartida instantánea.</translation>
-<translation id="1826282708349731794">Controla cómo el Limpiador de Chrome envía datos a Google</translation>
+<translation id="1826282708349731794">Controla cómo envía datos a Google el Limpiador de Chrome</translation>
 <translation id="1827523283178827583">Utilizar servidores proxy fijos</translation>
 <translation id="1843117931376765605">Frecuencia con la que se actualiza la política de usuario</translation>
 <translation id="1844620919405873871">Configura las políticas relacionadas con el desbloqueo rápido.</translation>
@@ -1266,14 +1266,14 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4554651132977135445">Modo de procesamiento loopback de políticas del usuario</translation>
 <translation id="4555850956567117258">Habilitar confirmación remota para el usuario</translation>
 <translation id="4557134566541205630">URL de la página Nueva pestaña del proveedor de búsqueda predeterminado</translation>
-<translation id="4567137030726189378">Permite el uso de las Herramientas para desarrolladores</translation>
+<translation id="4567137030726189378">Permite el uso de las herramientas para desarrolladores</translation>
 <translation id="4600786265870346112">Habilitar cursor grande</translation>
 <translation id="4604931264910482931">Configurar la lista negra de mensajes nativos</translation>
 <translation id="4613508646038788144">Si se le asigna el valor "False" a esta política, el software de terceros podrá insertar código ejecutable en los procesos de Chrome. Si no se asigna ningún valor a esta política o se le asigna el valor "True", el software de terceros no podrá insertar código ejecutable en los procesos de Chrome.</translation>
 <translation id="4617338332148204752">Omitir la comprobación de metaetiquetas en <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar lista de admisión de instalación de extensiones</translation>
 <translation id="4632343302005518762">Permitir que <ph name="PRODUCT_FRAME_NAME" /> procese los tipos de contenido mostrados</translation>
-<translation id="4632566332417930481">No permite el uso de las Herramientas para desarrolladores en extensiones instaladas por la política de empresa, pero sí permite su uso en otros contextos</translation>
+<translation id="4632566332417930481">No permite el uso de las herramientas para desarrolladores en extensiones instaladas por la política de empresa, pero sí permite su uso en otros contextos</translation>
 <translation id="4633786464238689684">Permite modificar el comportamiento predeterminado de las teclas de la fila superior para convertirlas en teclas de funciones.
 
           Si esta política se establece en True, las teclas de la fila superior del teclado realizarán comandos de teclas de funciones de forma predeterminada. debes pulsar la tecla de búsqueda para que las teclas multimedia vuelvan a su comportamiento original.
@@ -1890,13 +1890,13 @@ Si la política está establecida en False, no se informará sobre los usuarios.
       Para controlar los sitios web que permiten contenido Flash, consulta las políticas "DefaultPluginsSetting", "PluginsAllowedForUrls" y "PluginsBlockedForUrls".
 
       Si esta opción está inhabilitada o no se le asigna ningún valor, es posible que se bloquee el contenido poco importante o el contenido Flash de otros orígenes.</translation>
-<translation id="6535639183431116351">Esta política está obsoleta en M68. Utilice en su lugar DeveloperToolsAvailability.
+<translation id="6535639183431116351">Esta política está obsoleta en M68. Utiliza en su lugar DeveloperToolsAvailability.
 
-      Inhabilita las Herramientas para desarrolladores y la consola de JavaScript.
+      Inhabilita las herramientas para desarrolladores y la consola de JavaScript.
 
-      Si habilita esta opción, no se podrá acceder a las Herramientas para desarrolladores y no se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o menús contextuales que permiten abrir las Herramientas para desarrolladores y la consola de JavaScript.
+      Si habilita esta opción, no se podrá acceder a las herramientas para desarrolladores y no se podrán inspeccionar los elementos de los sitios web. También se inhabilitarán las combinaciones de teclas y las entradas de menús o menús contextuales que permiten abrir las Herramientas para desarrolladores y la consola de JavaScript.
 
-      Si se inhabilita esta opción o si no se le asigna ningún valor, se podrán usar las Herramientas para desarrolladores y la consola de JavaScript.</translation>
+      Si se inhabilita esta opción o si no se le asigna ningún valor, se podrán usar las herramientas para desarrolladores y la consola de JavaScript.</translation>
 <translation id="653608967792832033">Permite especificar el tiempo transcurrido hasta el bloqueo de la pantalla (sin que el usuario realice ninguna acción) cuando el dispositivo funciona con la batería.
 
           Cuando esta política se establece en un valor superior a cero, especifica el tiempo en que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
@@ -2461,23 +2461,13 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 
           Si se inhabilita esta opción y el firewall filtra las conexiones UDP salientes, el ordenador solo podrá establecer conexión con hosts dentro de la red local.</translation>
 <translation id="7976157349247117979">Nombre del destino de <ph name="PRODUCT_NAME" /></translation>
-<translation id="7977445800390854860">Si no se le asigna ningún valor, cuando el Limpiador de Chrome detecta software no deseado, podrá enviar metadatos sobre el análisis a Google, según la política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado, quien podrá elegir si quiere compartir los resultados de la limpieza con Google para ayudar a detectar software no deseado en el futuro. Estos resultados contienen metadatos de archivos y claves de registro, tal como se describe en la página de información sobre privacidad de Google Chrome.
+<translation id="7977445800390854860">Si no se le asigna ningún valor, cuando el Limpiador de Chrome detecte software no deseado, podrá enviar metadatos sobre el análisis a Google, según la política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. El usuario tendrá la opción de compartir los resultados de la limpieza con Google para ayudar a detectar software no deseado en el futuro. Estos resultados contienen metadatos de archivos y claves de registro, tal como se describe en la página de información sobre privacidad de Google Chrome.
 
-      Si se le asigna el valor "False", cuando el Limpiador de Chrome detecta software no deseado, no enviará metadatos sobre el análisis a Google, anulando cualquier política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. Los resultados de la limpieza no se enviarán a Google y el usuario no tendrá la opción de hacerlo.
+      Si se le asigna el valor "False", cuando el Limpiador de Chrome detecte software no deseado, no enviará metadatos sobre el análisis a Google, anulando cualquier política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. Los resultados de la limpieza no se enviarán a Google y el usuario no tendrá la opción de hacerlo.
 
-      Si se le asigna el valor "True", cuando el Limpiador de Chrome detecta software no deseado, podrá enviar metadatos sobre el análisis de acuerdo con la política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. Los resultados de la limpieza se enviarán a Google y el usuario no tendrá la opción de impedirlo.
+      Si se le asigna el valor "True", cuando el Limpiador de Chrome detecte software no deseado, podrá enviar metadatos sobre el análisis de acuerdo con la política establecida por SafeBrowsingExtendedReportingEnabled. El Limpiador de Chrome preguntará al usuario si quiere eliminar el software no deseado. Los resultados de la limpieza se enviarán a Google y el usuario no tendrá la opción de impedirlo.
 
       Esta política no está disponible en instancias de Windows que no estén unidas a un dominio <ph name="MS_AD_NAME" />.</translation>
-<translation id="7978060394348264922">
-      Para conseguir tanto aislamiento como
-      un impacto limitado para los usuarios, utiliza la política
-      IsolateOrigins con una lista de los sitios web que quieras aislar. La opción
-      SitePerProcess aísla todos los sitios web.
-      Si se habilita la política, cada sitio web se ejecuta en un proceso propio.
-      Si se inhabilita, no se aplica ningún aislamiento explícito de sitios web y se inhabilitan las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política SitePerProcess manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" />, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      </translation>
 <translation id="7980227303582973781">Sin restricciones especiales</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Girar la pantalla 0 grados</translation>
@@ -2590,7 +2580,7 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8300455783946254851">Si se utiliza el valor true para esta política, se inhabilita la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /> cuando se utiliza una conexión móvil, en cuyo caso los datos solo se sincronizan con Google Drive cuando se establece una conexión Wi-Fi o Ethernet.
 
           Si se utiliza el valor false o no se establece la política, los usuarios podrán transferir archivos a Google Drive a través de conexiones móviles.</translation>
-<translation id="8300992833374611099">Controla dónde se pueden usar las Herramientas para desarrolladores</translation>
+<translation id="8300992833374611099">Controla dónde se pueden usar las herramientas para desarrolladores</translation>
 <translation id="8312129124898414409">Permite establecer si los sitios web tienen permiso para utilizar la generación de claves. El uso de la generación de claves se puede permitir o rechazar en todos los sitios web.
 
           Si no se establece esta política, se utilizará BlockKeygen y el usuario podrá modificarla.</translation>
@@ -2814,16 +2804,6 @@ Te recomendamos que utilices GPO para configurar la política en Windows, aunque
 <translation id="8976248126101463034">Permitir la autenticación gnubby para los hosts de acceso remoto</translation>
 <translation id="8976531594979650914">Usar impresora predeterminada del sistema como opción predeterminada</translation>
 <translation id="8992176907758534924">No permitir que todos los sitios muestren imágenes</translation>
-<translation id="9034729899149506577">
-      Si se habilita la política, cada uno de los orígenes especificados en una
-      lista de elementos separados por comas se ejecutará en un proceso propio. También se aislarán
-      los orígenes de los subdominios correspondientes (p. ej., si especificas https://example.com/
-      se aislará https://foo.example.com/ como parte del sitio web
-      https://example.com/).
-      Si se inhabilita, no se aplica ningún aislamiento explícito de sitios web y se inhabilitan las pruebas de campo de IsolateOrigins y SitePerProcess. Los usuarios podrán seguir habilitando la política IsolateOrigins manualmente.
-      Si no se configura la política, el usuario podrá cambiar esta opción.
-      En <ph name="PRODUCT_OS_NAME" />, también se recomienda asignar el mismo valor a la política de dispositivos <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Si los valores especificados por las dos políticas no coinciden, es posible que se produzca un retraso al acceder a una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
-      </translation>
 <translation id="9035964157729712237">ID de extensiones que no deben estar incluidas en la lista negra</translation>
 <translation id="9042911395677044526">Permite aplicar la configuración de red al dispositivo <ph name="PRODUCT_OS_NAME" /> de cada usuario. La configuración de red es una cadena escrita en formato JSON, tal como se define en la siguiente página sobre el formato Open Network Configuration: <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especificar si la actividad de vídeo afecta a la administración de energía</translation>

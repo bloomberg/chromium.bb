@@ -2407,17 +2407,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
       Pokud je tato zásada nastavena na hodnotu true a Chrome Cleanup nalezne nežádoucí software, může metadata o kontrole nahlásit do Googlu v souladu s nastavením zásady SafeBrowsingExtendedReportingEnabled. Chrome Cleanup se uživatele zeptá, zda chce nežádoucí software odstranit. Výsledky čištění budou nahlášeny Googlu a uživatel tomu nebude moci zabránit.
 
       V instancích systému Windows, které nejsou zařazeny do domény <ph name="MS_AD_NAME" />, tato zásada není k dispozici.</translation>
-<translation id="7978060394348264922">
-      Chcete-li využívat izolaci, ale omezit její dopad na uživatele, použijte zásadu IsolateOrigins se seznamem webů, které chcete izolovat. Toto nastavení SitePerProcess izoluje všechny weby.
-
-      Pokud tuto zásadu povolíte, bude se každý web spouštět ve vlastním procesu.
-
-      Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu SitePerProcess moci povolit ručně.
-
-      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-
-V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Pokud se hodnoty neshodují, může při zahajování uživatelské relace dojít ke zpoždění způsobenému používáním hodnoty zadané v zásadě pro uživatele.
-      </translation>
 <translation id="7980227303582973781">Bez zvláštních omezení</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Otočit obrazovku o 0 stupňů</translation>
@@ -2744,12 +2733,6 @@ POZNÁMKA: Až do verze 45 byla tato zásada podporována pouze v režimu veře
 <translation id="8976248126101463034">Povolit ověřování gnubby pro hostitele vzdáleného přístupu</translation>
 <translation id="8976531594979650914">Jako výchozí tiskárnu použít výchozí tiskárnu systému</translation>
 <translation id="8992176907758534924">Nepovolit zobrazení obrázků žádným webovým stránkám</translation>
-<translation id="9034729899149506577">
-      Pokud tuto zásadu povolíte, každý z uvedených zdrojů v seznamu odděleném čárkami bude spouštěn ve vlastním procesu. Budou izolovány i zdroje uvedené v subdoménách – např. pokud zadáte web https://example.com/, bude izolována také subdoména https://foo.example.com/, která je jeho součástí.
-      Pokud je tato zásada zakázána, žádná explicitní izolace webů se provádět nebude a zkušební verze zásad IsolateOrigins a SitePerProcess budou zakázány. Uživatelé budou zásadu IsolateOrigins moci povolit ručně.
-      Pokud tuto zásadu nenakonfigurujete, uživatel toto nastavení bude moci změnit.
-      V systému <ph name="PRODUCT_OS_NAME" /> je doporučeno nastavit na stejnou hodnotu také zásadu zařízení <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Pokud se hodnoty obou zásad nebudou shodovat, při zahájení uživatelské relace může dojít k prodlevě, zatímco se bude přecházet na hodnotu nastavenou zásadou pro uživatele.
-      </translation>
 <translation id="9035964157729712237">ID rozšíření, která mají být vyňata ze seznamu zakázaných</translation>
 <translation id="9042911395677044526">Umožňuje přenést nastavení sítě, která se uplatní pro jednotlivé uživatele v zařízení se systémem <ph name="PRODUCT_OS_NAME" />. Konfigurace sítě je řetězec ve formátu JSON, který se řídí definicí formátu Open Network Configuration popsanou na stránce <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Určuje, zda aktivita videa ovlivňuje správu napájení</translation>

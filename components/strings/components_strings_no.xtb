@@ -20,6 +20,7 @@
 <translation id="1110994991967754504">Velg tillatelse for <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Nylige bokmerker</translation>
 <translation id="1113869188872983271">&amp;Angre omorganiseringen</translation>
+<translation id="1125573121925420732">Det kan hende du ser mange advarsler mens nettstedene oppdaterer sikkerheten sin. Dette forbedres snart.</translation>
 <translation id="1126551341858583091">Størrelsen på den lokale lagringsplassen er <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Bufferen for enhetsinnstillinger er OK</translation>
 <translation id="1150979032973867961">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av datamaskinens operativsystem. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">Fjern valgte elementer</translation>
 <translation id="277133753123645258">Leveringsmetode</translation>
 <translation id="277499241957683684">Manglende enhetsoppføring</translation>
+<translation id="2781030394888168909">Eksportér til MacOS</translation>
 <translation id="2784949926578158345">Tilkoblingen ble tilbakestilt.</translation>
 <translation id="2788784517760473862">Godkjente kredittkort</translation>
 <translation id="2794233252405721443">Nettstedet er blokkert</translation>
@@ -509,6 +511,7 @@
 <translation id="4415426530740016218">Henteadresse</translation>
 <translation id="4424024547088906515">Denne tjeneren kunne ikke bevise at den er <ph name="DOMAIN" />. Sikkerhetssertifikatet til tjeneren er ikke klarert av Chrome. Dette kan være forårsaket av en feilkonfigurering eller en angriper som avskjærer tilkoblingen din.</translation>
 <translation id="4432688616882109544">Enten godtok ikke <ph name="HOST_NAME" /> påloggingssertifikatet ditt, eller så ble det ikke oppgitt.</translation>
+<translation id="4434045419905280838">Forgrunnsvinduer/viderekoblinger</translation>
 <translation id="443673843213245140">Bruk av mellomtjener er deaktivert, men det er angitt en uttrykkelig mellomtjenerkonfigurasjon.</translation>
 <translation id="445100540951337728">Godkjente debetkort</translation>
 <translation id="4506176782989081258">Valideringsfeil: <ph name="VALIDATION_ERROR" /></translation>
@@ -883,6 +886,7 @@
 <translation id="7455133967321480974">Bruk global standardinnstilling (Blokkér)</translation>
 <translation id="7460163899615895653">De nylige fanene dine fra andre enheter vises her</translation>
 <translation id="7469372306589899959">Bekrefter kortet</translation>
+<translation id="7473891865547856676">Nei takk</translation>
 <translation id="7481312909269577407">Frem</translation>
 <translation id="7485870689360869515">Ingen data ble funnet.</translation>
 <translation id="7508255263130623398">Den returnerte enhets-ID-en for regelen er tom eller samsvarer ikke med den faktiske enhets-ID-en</translation>

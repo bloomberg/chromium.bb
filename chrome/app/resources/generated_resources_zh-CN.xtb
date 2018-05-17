@@ -656,6 +656,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> 想在您的本地计算机上永久存储大量数据</translation>
 <translation id="1997616988432401742">您的证书</translation>
 <translation id="1999115740519098545">启动时</translation>
+<translation id="2001796770603320721">在云端硬盘中管理</translation>
 <translation id="2006638907958895361">在<ph name="APP" />中打开链接</translation>
 <translation id="2007404777272201486">报告问题...</translation>
 <translation id="2016430552235416146">传统</translation>
@@ -2080,6 +2081,7 @@
 <translation id="42137655013211669">服务器禁止访问此资源。</translation>
 <translation id="4215350869199060536">糟糕，名称中包含非法符号！</translation>
 <translation id="4215448920900139318">正在备份 <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">语音输入</translation>
 <translation id="4225397296022057997">在所有网站上</translation>
 <translation id="4235200303672858594">整个屏幕</translation>
 <translation id="4235813040357936597">为<ph name="PROFILE_NAME" />添加帐号</translation>
@@ -2192,6 +2194,7 @@
 <translation id="4425149324548788773">我的云端硬盘</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4430369329743628066">已添加书签</translation>
+<translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="443454694385851356">旧版（不安全）</translation>
 <translation id="443464694732789311">继续</translation>
 <translation id="443475966875174318">更新或卸载不兼容的应用</translation>
@@ -3878,6 +3881,7 @@
 <translation id="7052237160939977163">发送性能跟踪数据</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">禁止</translation>
+<translation id="7055152154916055070">已阻止重定向：</translation>
 <translation id="7056526158851679338">检查设备(&amp;I)</translation>
 <translation id="7059858479264779982">设为自动启动</translation>
 <translation id="7059893117020417984">要想私密地浏览，请点击三点状图标菜单以打开一个无痕式窗口</translation>
@@ -4232,6 +4236,7 @@
 <translation id="7617366389578322136">正在连接“<ph name="DEVICE_NAME" />”</translation>
 <translation id="7622114377921274169">正在充电。</translation>
 <translation id="7624337243375417909">已关闭大写锁定模式</translation>
+<translation id="7625568159987162309">查看各网站的权限及储存的数据</translation>
 <translation id="7627790789328695202">糟糕，<ph name="FILE_NAME" />已存在。请改用其他名称并重试。</translation>
 <translation id="7628127343934101653">在默认 PDF 查看器应用中打开 PDF 文件。</translation>
 <translation id="7629827748548208700">标签页：<ph name="TAB_NAME" /></translation>
@@ -4554,6 +4559,7 @@
 <translation id="806812017500012252">按标题重新排序</translation>
 <translation id="8068253693380742035">触摸以登录</translation>
 <translation id="8069615408251337349">Google 云打印</translation>
+<translation id="806972267388474605">Linux 文件</translation>
 <translation id="8071432093239591881">以图片形式打印</translation>
 <translation id="8072988827236813198">固定标签页</translation>
 <translation id="8074127646604999664">允许最近关闭的网站完成数据收发操作</translation>
@@ -5062,7 +5068,6 @@
 <translation id="8902667442496790482">打开“随选朗读”设置</translation>
 <translation id="8903921497873541725">放大</translation>
 <translation id="8904976895050290827">Chrome 浏览器同步</translation>
-<translation id="8908902564709148335">警告：您已在此计算机上启用“--scripts-require-action”，这会限制此扩展程序的功能。不过，其他设备可能不支持或未启用此项。在这些设备上，此扩展程序还可以：</translation>
 <translation id="8909233240676134608">无法将此设备加入到该网域中。相应的服务器不支持指定的 Kerberos 加密类型。请前往“更多选项”以检查加密设置。</translation>
 <translation id="8909833622202089127">该网站正在跟踪您的位置</translation>
 <translation id="8910146161325739742">共享屏幕</translation>
@@ -5082,7 +5087,6 @@
 <translation id="8940081510938872932">计算机当前处理的内容过多。请稍后重试。</translation>
 <translation id="8941173171815156065">撤消“<ph name="PERMISSION" />”权限</translation>
 <translation id="8941882480823041320">上一个字</translation>
-<translation id="8943076760234179177">文件共享网址</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">这样会更快消耗电量（目前电量：<ph name="BATTERY_PERCENTAGE" />%）</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> 正在与 <ph name="TAB_NAME" /> 共享窗口。</translation>

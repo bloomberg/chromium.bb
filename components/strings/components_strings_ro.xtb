@@ -20,6 +20,7 @@
 <translation id="1110994991967754504">Selectează permisiunea pentru <ph name="PERMISSION_NAME" /></translation>
 <translation id="1111153019813902504">Marcaje accesate recent</translation>
 <translation id="1113869188872983271">&amp;Anulați reordonarea</translation>
+<translation id="1125573121925420732">Este posibil să apară frecvent avertismente pe durata actualizării setărilor de securitate ale site-urilor. Acest aspect va fi îmbunătățit în curând.</translation>
 <translation id="1126551341858583091">Dimensiunea spațiului de stocare local este <ph name="CRASH_SIZE" />.</translation>
 <translation id="112840717907525620">Memoria cache pentru politică este OK</translation>
 <translation id="1150979032973867961">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; sistemul de operare al computerului nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">Elimină elementele selectate</translation>
 <translation id="277133753123645258">Metodă de expediere</translation>
 <translation id="277499241957683684">Lipsește o înregistrare pentru gadget</translation>
+<translation id="2781030394888168909">Exportă în format MacOS</translation>
 <translation id="2784949926578158345">Conexiunea a fost resetată.</translation>
 <translation id="2788784517760473862">Carduri de credit acceptate</translation>
 <translation id="2794233252405721443">Site blocat</translation>
@@ -509,6 +511,7 @@
 <translation id="4415426530740016218">Adresă de preluare</translation>
 <translation id="4424024547088906515">Acest server nu a putut dovedi că este <ph name="DOMAIN" />; Chrome nu consideră că certificatul său de securitate este de încredere. Cauza poate fi o configurare greșită sau interceptarea conexiunii de către un atacator.</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> nu a acceptat certificatul de conectare sau un astfel de certificat nu a fost oferit.</translation>
+<translation id="4434045419905280838">Ferestre pop-up și redirecționări</translation>
 <translation id="443673843213245140">Utilizarea unui proxy este dezactivată, dar o configurare proxy este specificată în mod explicit.</translation>
 <translation id="445100540951337728">Carduri de debit acceptate</translation>
 <translation id="4506176782989081258">Eroare de validare: <ph name="VALIDATION_ERROR" /></translation>
@@ -883,6 +886,7 @@
 <translation id="7455133967321480974">Utilizați setarea prestabilită la nivel global (Blocați)</translation>
 <translation id="7460163899615895653">Filele recente de pe alte dispozitive sunt afișate aici</translation>
 <translation id="7469372306589899959">Se confirmă cardul</translation>
+<translation id="7473891865547856676">Nu, mulțumesc</translation>
 <translation id="7481312909269577407">Înainte</translation>
 <translation id="7485870689360869515">Nu s-au găsit date.</translation>
 <translation id="7508255263130623398">ID-ul de dispozitiv returnat pentru politică este gol sau nu corespunde cu ID-ul de dispozitiv actual</translation>

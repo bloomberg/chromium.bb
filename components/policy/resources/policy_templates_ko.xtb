@@ -27,6 +27,7 @@
       이 정책이 설정되면 로그인 화면이 항상 이 정책의 첫 번째 값에 의해 주어지는 언어로 표시됩니다(이 정책은 향후 호환성을 위해 목록으로 정의됨). 이 정책이 설정되지 않거나 빈 목록으로 설정되는 경우 로그인 화면이 최종 사용자 세션의 언어로 표시됩니다. 이 정책이 유효한 언어가 아닌 값으로 설정되는 경우 로그인 화면이 대체 언어(현재 en-US)로 표시됩니다.</translation>
 <translation id="1062011392452772310">기기에 대한 원격 인증을 사용합니다.</translation>
 <translation id="1062407476771304334">바꾸기</translation>
+<translation id="1079801999187584280">Developer Tools 사용 금지</translation>
 <translation id="109166998561583554">위험 계정 비밀번호 보호 경고 트리거</translation>
 <translation id="1093082332347834239">이 설정을 사용 설정하면 <ph name="UIACCESS_PERMISSION_NAME" /> 권한을 사용하여 원격 지원 호스트가 실행됩니다. 이 경우 원격 사용자가 로컬 사용자의 데스크톱에서 관리자 창으로 상호 작용하도록 허용합니다.
 
@@ -79,6 +80,7 @@
 
           배율은 100% 이상이어야 합니다.</translation>
 <translation id="131353325527891113">로그인 화면에 사용자 이름 표시</translation>
+<translation id="1325295456374328159">사용자 세션에서 허용되는 언어 구성</translation>
 <translation id="1327466551276625742">오프라인일 때 네트워크 설정 프롬프트를 사용하도록 설정</translation>
 <translation id="1330145147221172764">터치 키보드 사용</translation>
 <translation id="13356285923490863">정책 이름</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">Symantec Corporation의 Legacy PKI Infrastructure 신뢰 사용 여부</translation>
 <translation id="1393485621820363363">사용 설정된 엔터프라이즈 기기 프린터</translation>
 <translation id="1397855852561539316">기본 검색 공급자 추천 URL</translation>
+<translation id="1424081297104898791">Developer Tools 사용 가능 위치를 제어할 수 있도록 허용합니다.
+
+      이 정책이 'DeveloperToolsDisallowedForForceInstalledExtensions'(값 0, 엔터프라이즈 사용자 기본값)로 설정되면 일반적인 경우 Developer Tools 및 자바스크립트 콘솔에 액세스할 수 있으나 엔터프라이즈 정책에 의해 설치된 확장 프로그램 컨텍스트에서는 액세스할 수 없습니다.
+      이 정책이 'DeveloperToolsAllowed'(값 1, 관리되지 않는 사용자 기본값)로 설정되면 엔터프라이즈 정책에 의해 설치된 확장 프로그램을 포함한 모든 컨텍스트에서 Developer Tools 및 자바스크립트 콘솔에 액세스하고 사용할 수 있습니다.
+      이 정책이 'DeveloperToolsDisallowed'(값 2)로 설정되면 Developer Tools에 액세스할 수 없으며 더 이상 웹사이트 요소를 검사할 수 없습니다. Developers Tools나 자바스크립트 콘솔을 여는 모든 단축키와 메뉴 항목 또는 컨텍스트 메뉴 항목의 사용이 중지됩니다.
+      기존 정책인 DeveloperToolsDisabled가 true로 설정되면 이 정책의 값은 무시되며 Developer Tools는 사용 중지됩니다.</translation>
 <translation id="1426410128494586442">예</translation>
 <translation id="1427655258943162134">프록시 서버의 주소 또는 URL</translation>
 <translation id="1435659902881071157">기기 수준 네트워크 설정</translation>
@@ -206,6 +214,7 @@
 <translation id="1803646570632580723">런처에 표시되는 고정된 앱 목록</translation>
 <translation id="1808715480127969042">이 사이트에서 쿠키 차단</translation>
 <translation id="1810261428246410396">인스턴트 테더링 사용 허용</translation>
+<translation id="1826282708349731794">Chrome 정리도구가 Google에 데이터를 보고하는 방법 제어</translation>
 <translation id="1827523283178827583">고정 프록시 서버 사용</translation>
 <translation id="1843117931376765605">사용자 정책에 대한 새로고침 빈도</translation>
 <translation id="1844620919405873871">빠른 잠금 해제 관련 정책을 설정합니다.</translation>
@@ -608,6 +617,7 @@
       이 정책은 사용자가 개별 기기에서 프린터를 설정할 수 있는지에 영향을 미치지 않으며, 개별 사용자의 프린터 설정을 보완하기 위한 정책입니다.
       </translation>
 <translation id="2633084400146331575">음성 피드백 사용</translation>
+<translation id="2640843331263301324">Windows에서 Chrome 정리도구를 사용하도록 설정</translation>
 <translation id="2646290749315461919">웹사이트에서 사용자의 실제 위치를 추적하도록 허용할지 여부를 설정할 수 있습니다. 사용자의 실제 위치 추적은 기본적으로 허용 또는 거부하거나 웹사이트에서 실제 위치를 요청할 때마다 사용자에게 확인하도록 할 수 있습니다.
 
           이 정책을 설정하지 않은 경우 'AskGeolocation'이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
@@ -1252,12 +1262,14 @@
 <translation id="4554651132977135445">사용자 정책 루프백 처리 모드</translation>
 <translation id="4555850956567117258">사용자에 대한 원격 인증을 사용합니다.</translation>
 <translation id="4557134566541205630">기본 검색 공급자 새 탭 페이지 URL</translation>
+<translation id="4567137030726189378">Developer Tools를 사용하도록 허용</translation>
 <translation id="4600786265870346112">큰 커서 사용</translation>
 <translation id="4604931264910482931">기본 메시지 차단 목록 설정</translation>
 <translation id="4613508646038788144">이 정책이 false로 설정되면 타사 소프트웨어에서 Chrome의 프로세스에 실행 가능한 코드를 삽입할 수 있습니다. 정책이 설정되어 있지 않거나 true로 설정되면 타사 소프트웨어에서 Chrome의 프로세스에 실행 가능한 코드를 삽입할 수 없습니다.</translation>
 <translation id="4617338332148204752"><ph name="PRODUCT_FRAME_NAME" />에서 메타 태그 검사 건너뛰기</translation>
 <translation id="4625915093043961294">확장 프로그램 설치 허용목록 설정</translation>
 <translation id="4632343302005518762"><ph name="PRODUCT_FRAME_NAME" />이(가) 목록에 있는 콘텐츠 유형을 처리하도록 허용</translation>
+<translation id="4632566332417930481">엔터프라이즈 정책에 의해 설치된 확장 프로그램에서는 Developer Tools 사용 금지, 다른 컨텍스트에서는 Developer Tools 사용 허용</translation>
 <translation id="4633786464238689684">맨 윗줄에 있는 키의 기본 동작을 기능 키로 변경합니다.
 
           이 정책을 true로 설정하면 키보드의 맨 윗줄에 있는 키가 기본적으로 기본 키 명령어를 생성합니다. 다시 미디어 키 명령어를 생성하도록 되돌리려면 검색 키를 눌러야 합니다.
@@ -1529,10 +1541,14 @@
 
       설정하지 않으면 검색엔진을 가져올지 여부를 사용자에게 확인하거나 자동으로 가져올 수 있습니다.</translation>
 <translation id="5423197884968724595">Android WebView 제한 이름:</translation>
+<translation id="5442026853063570579">이 정책은 Android 개발자 옵션 액세스 권한도 제어합니다. 이 정책을 'DeveloperToolsDisallowed'(값 2)로 설정하는 경우 사용자는 개발자 옵션에 액세스할 수 없습니다. 이 정책을 다른 값으로 설정하거나 설정하지 않은 채로 두는 경우 사용자는 Android 설정 앱에서 빌드 번호를 7번 탭하여 개발자 옵션에 액세스할 수 있습니다.</translation>
 <translation id="5447306928176905178">메모리 정보(JS 더미 크기)를 페이지로 보고하기 사용(지원 중단됨)</translation>
 <translation id="5457065417344056871">브라우저에서 게스트 모드 사용</translation>
 <translation id="5457924070961220141"><ph name="PRODUCT_FRAME_NAME" />이(가) 설치되면 기본 HTML 렌더러를 설정할 수 있습니다.
           이 정책을 설정하지 않으면 기본 설정에 따라 호스트 브라우저가 렌더링을 수행하지만, 이 설정을 무시하고 기본적으로 <ph name="PRODUCT_FRAME_NAME" />에서 HTML 페이지를 렌더링하도록 할 수 있습니다.</translation>
+<translation id="5459155981813668716"><ph name="PRODUCT_OS_NAME" />의 표시 언어를 구성합니다.
+
+      이 정책이 설정되면 사용자는 이 정책에서 지정된 언어 중 하나로만 <ph name="PRODUCT_OS_NAME" />이(가) 표시되도록 구성할 수 있습니다. 이 정책이 설정되지 않거나 빈 목록으로 설정될 경우 <ph name="PRODUCT_OS_NAME" />이(가) 지원되는 모든 언어로 표시될 수 있습니다. 이 정책이 잘못된 값을 포함하는 목록으로 설정될 경우 모든 잘못된 값은 무시됩니다. 사용자가 이전에 <ph name="PRODUCT_OS_NAME" />이(가) 이 정책에서 허용되지 않는 언어로 표시되도록 구성한 경우 다음번에 사용자가 로그인하면 표시 언어가 허용되는 언어로 전환됩니다. 사용자가 기본 언어를 구성했으며 기본 언어 중 하나가 이 정책에서 허용되는 경우 <ph name="PRODUCT_OS_NAME" />이(가) 이 언어로 전환됩니다. 그렇지 않은 경우 <ph name="PRODUCT_OS_NAME" />이(가) 이 정책에서 지정된 첫 번째 유효한 값으로 전환되거나, 이 정책에 잘못된 값만 있는 경우 대체 언어(현재 en-US)로 전환됩니다.</translation>
 <translation id="5464816904705580310">관리 사용자에 대한 설정 구성</translation>
 <translation id="546726650689747237">AC 전원으로 실행할 때 화면 어둡게 하기 지연</translation>
 <translation id="5469484020713359236">쿠키 설정이 허용되는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
@@ -1757,6 +1773,7 @@
 <translation id="6036523166753287175">원격 액세스 호스트의 방화벽 통과 허용</translation>
 <translation id="6070667616071269965">기기 로그인 화면 키보드 레이아웃</translation>
 <translation id="6074963268421707432">모든 사이트에서 데스크톱 알림 표시 허용 안함</translation>
+<translation id="6074964551275531965">업데이트 알림 표시 기간 설정</translation>
 <translation id="6076099373507468537">웹 애플리케이션 내에서 chrome.usb API를 통해 사용하기 위해 커널 드라이버에서 분리될 수 있는 USB 기기 목록을 정의합니다. 항목은 특정 하드웨어를 판별하기 위한 USB 공급업체 식별자 및 제품 식별자 쌍입니다.
 
       이 정책이 구성되지 않은 경우 분리 가능한 USB 기기 목록은 비어 있습니다.</translation>
@@ -1839,6 +1856,11 @@
       이 설정을 사용하거나 값을 설정하지 않으면 자동 완성을 사용자가 관리할 수 있게 됩니다. 사용자가 자동 완성 프로필을 설정하고 원하는 대로 자동 완성을 설정하거나 해제할 수 있습니다.</translation>
 <translation id="6394350458541421998">이 정책은 <ph name="PRODUCT_OS_NAME" /> 버전 29를 기준으로 지원 중단되었습니다. 대신 PresentationScreenDimDelayScale 정책을 사용해 주시기 바랍니다.</translation>
 <translation id="6401669939808766804">사용자 로그아웃</translation>
+<translation id="6412477120967771054">False로 설정되는 경우 Chrome 정리도구가 시스템을 검색하여 원치 않는 소프트웨어를 찾아 정리를 수행할 수 없습니다. chrome://settings/cleanup에서의 Chrome 정리도구 수동 트리거가 사용 중지됩니다.
+
+      True로 설정되거나 설정되지 않은 경우 Chrome 정리도구가 정기적으로 시스템을 검색해 원치 않는 소프트웨어를 찾으며, 그러한 소프트웨어가 발견되면 사용자에게 삭제할 것인지 묻습니다. chrome://settings/cleanup에서의 Chrome 정리도구 수동 트리거가 사용 설정됩니다.
+
+      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입하지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
 <translation id="6417861582779909667">쿠키 설정이 허용되지 않는 사이트를 지정하는 URL 패턴 목록을 설정할 수 있습니다.
 
          이 정책을 설정하지 않은 경우 'DefaultImagesSetting' 정책이 설정되면 해당 정책의, 그렇지 않으면 사용자 개인 설정의 전체 기본값이 모든 사이트에서 사용됩니다.</translation>
@@ -1861,6 +1883,13 @@
       플래시를 실행하도록 허용된 웹사이트를 관리하려면 'DefaultPluginsSetting', 'PluginsAllowedForUrls', 'PluginsBlockedForUrls' 정책을 확인하세요.
 
       이 설정을 사용 중지하거나 설정하지 않으면 다른 출처의 플래시 콘텐츠나 용량이 작은 플래시 콘텐츠가 차단될 수 있습니다.</translation>
+<translation id="6535639183431116351">이 정책은 M68에서 지원이 중단되었습니다. 대신 DeveloperToolsAvailability를 사용하시기 바랍니다.
+
+      Developer Tools 및 자바스크립트 콘솔을 사용 중지합니다.
+
+      이 설정을 사용하면 Developer Tools에 액세스할 수 없으며 더 이상 웹사이트 요소를 검사할 수 없습니다. Developer Tools나 자바스크립트 콘솔을 열기 위한 모든 단축키와 메뉴, 컨텍스트 메뉴 항목이 사용 중지됩니다.
+
+      이 옵션을 사용하지 않도록 설정하거나 설정하지 않은 채로 두면 사용자가 Developer Tools와 자바스크립트 콘솔을 사용할 수 있습니다.</translation>
 <translation id="653608967792832033">배터리 전원으로 실행할 때 사용자 입력이 없어서 화면이 잠길 때까지 걸리는 시간을 지정합니다.
 
           이 정책이 0보다 큰 값으로 설정되어 있으면 이는 <ph name="PRODUCT_OS_NAME" />에서 화면을 잠그기 전에 사용자가 유휴 상태여야 하는 시간을 의미합니다.
@@ -2293,6 +2322,7 @@
       세이프 브라우징에 관해 자세히 알아보려면 https://developers.google.com/safe-browsing 페이지를 참조하세요.</translation>
 <translation id="7643883929273267746"><ph name="PRODUCT_NAME" />에 표시되는 계정 제한</translation>
 <translation id="7651739109954974365">데이터 로밍을 기기에 사용할 지 여부를 결정합니다. true로 설정하면 데이터 로밍이 허용됩니다. 구성하지 않거나 false로 설정하면 데이터 로밍은 사용할 수 없습니다.</translation>
+<translation id="7673194325208122247">기간(밀리초)</translation>
 <translation id="7683777542468165012">동적 정책 새로고침</translation>
 <translation id="7694807474048279351"><ph name="PRODUCT_OS_NAME" /> 업데이트가 적용된 후 자동 재부팅을 예약합니다.
 
@@ -2425,16 +2455,13 @@
 
           이 설정을 사용 중지하고 발신 UDP 연결이 방화벽에 의해 필터링되는 경우 이 컴퓨터는 로컬 네트워크 내에 있는 호스트 컴퓨터에만 연결할 수 있습니다.</translation>
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> 전송 대상의 이름</translation>
-<translation id="7978060394348264922">
-      IsolateOrigins 정책 설정을 확인하고, 격리하려는 사이트 목록이
-      포함된 IsolateOrigins를 사용하여 사이트를 격리하는 동시에
-      사용자에게 미치는 영향을 제한하는 것이 좋습니다. SitePerProcess
-      설정은 모든 사이트를 격리합니다.
-      정책을 사용 설정하면 각 사이트는 자체 프로세스로 작동합니다.
-      정책이 사용 중지되면 명시적인 사이트 격리는 이루어지지 않고 IsolateOrigins 및 SitePerProcess 필드 평가판이 사용 중지됩니다. 사용자는 계속해서 SitePerProcess를 직접 사용 설정할 수 있습니다.
-      정책을 구성하지 않으면 사용자가 이 설정을 변경할 수 있게 됩니다.
-      <ph name="PRODUCT_OS_NAME" />에서 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 기기 정책을 같은 값으로 설정하는 것이 좋습니다. 두 정책을 다른 값으로 설정하면 사용자 세션을 시작할 때 지연이 발생할 수 있으며 사용자 정책으로 지정된 값이 적용됩니다.
-      </translation>
+<translation id="7977445800390854860">설정되지 않는 경우 Chrome 정리도구에서 원치 않는 소프트웨어를 감지하면 SafeBrowsingExtendedReportingEnabled에서 설정된 정책에 따라 Google에 검색 관련 메타데이터를 보고합니다. 그런 다음 Chrome 정리도구가 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 사용자는 향후 원치 않는 소프트웨어 감지에 도움이 되도록 Google에 정리 결과를 공유하겠다고 선택할 수 있습니다. 이러한 결과에는 Chrome 개인정보 보호 백서에 설명된 바와 같이 파일 메타데이터 및 레지스트리 키가 포함됩니다.
+
+      False로 설정되는 경우 Chrome 정리도구에서 원치 않는 소프트웨어를 감지하면 Google에 검색 관련 메타데이터를 전송하지 않고 SafeBrowsingExtendedReportingEnabled에서 설정된 모든 정책을 무시합니다. Chrome 정리도구는 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 정리 결과는 Google에 보고되지 않으며 사용자는 결과를 보고할 수 없습니다.
+
+      True로 설정되는 경우 Chrome 정리도구에서 원치 않는 소프트웨어를 감지하면 SafeBrowsingExtendedReportingEnabled에서 설정된 정책에 따라 Google에 검색 관련 메타데이터를 전송합니다. Chrome 정리도구는 사용자에게 원치 않는 소프트웨어를 정리할 것인지 묻습니다. 정리 결과는 Google에 보고되며 사용자는 결과가 보고되지 않도록 할 수 있습니다.
+
+      이 정책은 <ph name="MS_AD_NAME" /> 도메인에 가입하지 않은 Windows 인스턴스에서는 사용할 수 없습니다.</translation>
 <translation id="7980227303582973781">특별한 제한 없음</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">화면을 0도 회전</translation>
@@ -2547,6 +2574,7 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8300455783946254851">True로 설정하면 셀룰러 연결을 사용할 때 <ph name="PRODUCT_OS_NAME" /> 파일 앱에서 Google 드라이브 동기화를 사용 중지합니다. 이런 경우 Wi-Fi나 이더넷을 통해 연결되었을 때에만 데이터가 Google 드라이브에 동기화됩니다.
 
           설정하지 않거나 False로 설정한 사용자는 셀룰러 연결을 통해 Google 드라이브에 파일을 전송할 수 있습니다.</translation>
+<translation id="8300992833374611099">Developer Tools 사용 가능 위치 제어</translation>
 <translation id="8312129124898414409">웹사이트에서 키 생성을 사용하도록 허용할지 여부를 설정할 수 있습니다. 키 생성 사용은 모든 웹사이트를 대상으로 허용 또는 거부하도록 설정합니다.
 
           이 정책을 설정하지 않은 경우 'BlockKeygen'이 사용되며 사용자가 설정을 변경할 수 있습니다.</translation>
@@ -2770,19 +2798,14 @@ Windows에서는 GPO를 통해 정책을 설정하는 것이 좋습니다. 하�
 <translation id="8976248126101463034">원격 액세스 호스트에 대한 gnubby 인증 허용</translation>
 <translation id="8976531594979650914">시스템 기본 프린터를 기본값으로 사용</translation>
 <translation id="8992176907758534924">모든 사이트에서 이미지 표시 허용 안함</translation>
-<translation id="9034729899149506577">
-      정책을 사용 설정하면 쉼표로 구분된 목록에 이름이 지정된 각 출처는
-      자체 프로세스로 작동합니다. 이 정책은 하위 도메인으로 이름이 지정된
-      출처도 격리합니다. 예를 들어, https://example.com/을
-      지정하면 https://foo.example.com/ 또한 https://example.com/
-      사이트의 일부로 여겨져 격리됩니다.
-      정책이 사용 중지되면 명시적인 사이트 격리는 이루어지지 않고 IsolateOrigins 및 SitePerProcess 필드 평가판이 사용 중지됩니다. 사용자는 계속해서 IsolateOrigins를 직접 사용 설정할 수 있습니다.
-      정책을 구성하지 않으면 사용자가 이 설정을 변경할 수 있게 됩니다.
-      <ph name="PRODUCT_OS_NAME" />에서 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 기기 정책을 같은 값으로 설정하는 것이 좋습니다. 두 정책을 다른 값으로 설정하면 사용자 세션을 시작할 때 지연이 발생할 수 있으며 사용자 정책으로 지정된 값이 적용됩니다.
-      </translation>
 <translation id="9035964157729712237">차단목록에서 제외할 확장 프로그램 ID</translation>
 <translation id="9042911395677044526"><ph name="PRODUCT_OS_NAME" /> 기기에 사용자별로 적용되는 네트워크 구성을 사용하도록 허용합니다. 네트워크 구성은 <ph name="ONC_SPEC_URL" />에서 설명한 개방형 네트워크 구성에서 정의한 대로 JSON 형식의 문자열입니다. </translation>
 <translation id="9084985621503260744">동영상 활동이 전원 관리에 영향을 미치는지 여부 지정</translation>
+<translation id="9085839450090699752">대기 중인 업데이트를 적용하려면 <ph name="PRODUCT_NAME" />을(를) 재실행해야 하거나 <ph name="PRODUCT_OS_NAME" /> 기기를 다시 시작해야 한다는 알림을 사용자에게 표시할 기간을 밀리초로 설정할 수 있습니다.
+
+      이 기간 동안 업데이트를 해야 한다는 알림이 사용자에게 반복적으로 표시됩니다. <ph name="PRODUCT_OS_NAME" /> 기기의 경우 업그레이드가 감지되면 재시작 알림이 작업 표시줄에 표시됩니다. 알림 기간이 절반 정도 지나면 알림의 색상이 바뀌며, 알림 기간이 모두 지나면 색상이 다시 한번 더 바뀝니다. <ph name="PRODUCT_NAME" /> 브라우저의 경우 알림 기간 중 3분의 1이 지나면 앱 메뉴가 변경되면서 재실행이 필요하다는 알림이 표시됩니다. 알림 기간 중 3분의 2가 지나면 알림 색상이 또 바뀌며 알림 기간이 모두 지나면 알림 색상이 다시 한번 더 바뀝니다. <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 정책을 통해 사용 설정되는 추가 알림도 이와 동일한 일정을 따릅니다.
+
+      설정되지 않는 경우 <ph name="PRODUCT_OS_NAME" /> 기기의 경우 345600000밀리초(4일), 브라우저의 경우 604800000밀리초(1주일)가 기본값으로 사용됩니다.</translation>
 <translation id="9088433379343318874">관리 대상 사용자 콘텐츠 제공업체 사용</translation>
 <translation id="9088444059179765143">자동 시간대 감지 방법 설정</translation>
 <translation id="9096086085182305205">인증 서버 허용목록</translation>

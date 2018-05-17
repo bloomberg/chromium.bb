@@ -2447,14 +2447,6 @@
       ወደ እውነት ከተቀናበረ፣ Chrome ማጽጃ የማይፈለግ ሶፍትዌር መኖሩን ፈልጎ ከደረሰበት፣ ስለ ቅኝቱ ዲበውሂብ ወደ Google በSafeBrowsingExtendedReportingEnabled በተቀመጠው መመሪያ መሠረት ሪፖርት ያደርጋል። Chrome ማጽጃ በመቀጠል ተጠቃሚውን የማይፈልገውን ሶፍትዌር ማጽዳት ይፈልጉ እንደሆነ ይጠይቃቸዋል። የማጽጃ ውጤቶቹ ወደ Google ሪፖርት ይደረጋሉ እና ተጠቃሚው ለመከላከል የሚያስችል ምርጫ አይኖራቸውም።
 
       ይህ መመሪያ ወደ <ph name="MS_AD_NAME" /> ጎራ ባልተቀላቀሉ  በWindows ቅጽበቶች ላይ አይገኝም።</translation>
-<translation id="7978060394348264922">
-      IsolateOriginsን እርስዎ ሊያገልሏቸው በሚፈልጓቸው የጣቢያዎች ዝርዝር ላይ በመጠቀም ከሁለቱም ዓለም፣ የማግለል እና ለተጠቃሚዎች የተወሰነ ተጽዕኖ፣ ምርጡን ለማግኘት የIsolateOrigins መመሪያውን መመልከቱ ከግምት ውስጥ ማስገባቱ ሳይሻል አይቀርም። ይህ ቅንብር SitePerProcess ሁሉንም ጣቢያዎች ያገልላል።
-      መመሪያው ከነቃ እያንዳንዱ ጣቢያ በራሱ ሂደት ውስጥ ነው የሚያሄደው።
-      መመሪያው ከተሰናከለ ምንም ግልጽ የጣቢያ ማግለል አይከሰትም፣ እና የIsolateOrigins እና የSitePerProcess የመስክ ሙከራዎች ይሰናከላሉ። ተጠቃሚዎች አሁንም ራሳቸው SitePerProcessን ማንቃት ይችላሉ።
-
-      መመሪያው ካልተዋቀረ ተጠቃሚው ይህን ቅንብር መቀየር ይችላል።
-      <ph name="PRODUCT_OS_NAME" /> ላይ እንዲሁም የ<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> መሣሪያ መመሪያው ወደ ተመሳሳዩ እሴት እንዲዋቀር ይመከራል። በሁለቱ መመሪያዎች የተገለጹት እሴቶች የማይዛመዱ ከሆኑ ወደ የተጠቃሚ ክፍለ-ጊዜ ሲገቡ በተጠቃሚ መመሪያው የተገለጸው እሴት እየተተገበረ ሳለ መዘግየት ሊከሰት ይችላል።
-      </translation>
 <translation id="7980227303582973781">ምንም ልዩ ገደቦች የሉም</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">ማያ ገጹን በ0 ዲግሪ አሽከርክር</translation>
@@ -2792,12 +2784,6 @@
 <translation id="8976248126101463034">የgnubby ማረጋገጫ ለርቀት መዳረሻ አስተናጋጆች ይፍቀዱ</translation>
 <translation id="8976531594979650914">የሥርዓቱን ነባሪ ማተሚያ እንደ ነባሪ ይጠቀሙ</translation>
 <translation id="8992176907758534924">ማንኛውም ጣቢያ ምስሎችን እንዲያሳይ አትፍቀድ</translation>
-<translation id="9034729899149506577">
-      መመሪያው ከነቃ በኮማ በተለየ ዝርዝር ውስጥ ያለ እያንዳንዱ የተሰየመ ምንጭ በራሱ ሂደት ውስጥ ያሂዳል። ይህ እንዲሁም በንዑስ ጎራዎች የተሰየሙትን ምንጮች ያገልላል፤ ለምሳሌ፣ https://example.com/ ን መግለጽ እንዲሁም https://foo.example.com/ እንደ የ https://example.com/ ጣቢያው አካል እንዲገለል ያደርገዋል።
-      መመሪያው ከተሰናከለ ምንም ግልጽ የጣቢያ ማግለል አይከሰትም፣ እና የIsolateOrigins እና የSitePerProcess የመስክ ሙከራዎች ይሰናከላሉ። ተጠቃሚዎች ራሳቸው IsolateOriginsን ማንቃት ይችላሉ።
-      መመሪያው ካልተዋቀረ ተጠቃሚው ይህን ቅንብር መቀየር ይችላል።
-      <ph name="PRODUCT_OS_NAME" /> ላይ እንዲሁም የ<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> መሣሪያ መመሪያው ወደ ተመሳሳዩ እሴት እንዲዋቀር ይመከራል። በሁለቱ መመሪያዎች የተገለጹት እሴቶች የማይዛመዱ ከሆኑ ወደ የተጠቃሚ ክፍለ-ጊዜ ሲገቡ በተጠቃሚ መመሪያው የተገለጸው እሴት እየተተገበረ ሳለ መዘግየት ሊከሰት ይችላል።
-      </translation>
 <translation id="9035964157729712237">ከተከለከሉት ዝርዝር ነፃ የሚደረጉ የቅጥያ መታወቂያዎች</translation>
 <translation id="9042911395677044526">የአውታረ መረብ ውቅር መግፋት በእያንዳንዱ ተጠቃሚ በ<ph name="PRODUCT_OS_NAME" /> መሣሪያ ላይ እንዲተገበር ያስችላል። የአውታረ መረቡ ውቅር በ<ph name="ONC_SPEC_URL" /> ላይ እንደተብራራው በክፍት አውታረ መረብ ውቅር ቅርጸት የተገለጸ የJSON ቅርጸት ህብረቁምፊ ነው</translation>
 <translation id="9084985621503260744">የቪዲዮ እንቅስቃሴ የኃይል አስተዳደሩ ላይ ተጽዕኖ ይኖርበት ወይም አይኖርበት ይገልጻል</translation>

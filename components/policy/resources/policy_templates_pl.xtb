@@ -2328,16 +2328,6 @@ Więcej opcji i szczegółowych przykładów znajdziesz na:
       Gdy zasada jest ustawiona na wartość prawda, Narzędzie do czyszczenia Chrome po wykryciu niechcianego oprogramowania może przesłać metadane skanowania do Google zgodnie z ustawieniem zasady SafeBrowsingExtendedReportingEnabled. Narzędzie do czyszczenia Chrome zapyta użytkownika, czy usunąć niechciane oprogramowanie. Wyniki czyszczenia będą przesyłane do Google, a użytkownik nie będzie pytany, czy się na to zgadza.
 
       Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
-<translation id="7978060394348264922">
-      Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać optymalne 
-      efekty – izolację i ograniczony wpływ na użytkowników. W tym celu
-      dodaj do zasady IsolateOrigins listę witryn, które chcesz izolować.
-      Ustawienie SitePerProcess izoluje wszystkie witryny.
-      Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie własnego procesu.
-      Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie SitePerProcess.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W przypadku systemu <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady dla urządzeń <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na tę samą wartość. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę obowiązującą dla użytkownika.
-      </translation>
 <translation id="7980227303582973781">Brak ograniczeń specjalnych</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Obróć ekran o 0 stopni</translation>
@@ -2671,16 +2661,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
 <translation id="8976248126101463034">Zezwalaj na uwierzytelnianie Gnubby w przypadku hostów dostępu zdalnego</translation>
 <translation id="8976531594979650914">Użyj domyślnej drukarki systemowej</translation>
 <translation id="8992176907758534924">Nie zezwalaj na pokazywanie grafik w żadnej witrynie</translation>
-<translation id="9034729899149506577">
-      Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej
-      przecinkami będzie działać w obrębie własnego procesu. Powoduje to też
-      izolację źródeł z nazwami subdomen, np. określenie https://example.com/
-      spowoduje, że także adres https://foo.example.com/ będzie izolowany jako
-      część witryny https://example.com/
-      Jeśli zasada jest wyłączona, izolacja witryn nie będzie stosowana wprost, a testowe funkcje IsolateOrigins i SitePerProcess będą wyłączone. Użytkownicy będą mogli ręcznie włączyć ustawienie IsolateOrigins.
-      Jeśli zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
-      W przypadku systemu <ph name="PRODUCT_OS_NAME" /> zalecane jest ustawienie zasady dla urządzeń <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> na tę samą wartość. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasadę obowiązującą dla użytkownika.
-      </translation>
 <translation id="9035964157729712237">Identyfikatory rozszerzeń nieobjętych czarną listą</translation>
 <translation id="9042911395677044526">Pozwala na przesyłanie konfiguracji sieciowej w trybie push do urządzeń z <ph name="PRODUCT_OS_NAME" /> dla poszczególnych użytkowników. Konfiguracja sieci to łańcuch w formacie JSON zgodny z formatem Open Network Configuration opisanym na <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Określ, czy aktywność związana z filmami wpływa na zarządzanie energią</translation>

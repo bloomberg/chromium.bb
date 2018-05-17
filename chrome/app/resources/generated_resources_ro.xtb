@@ -659,6 +659,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> dorește să stocheze permanent cantități mari de date pe computer</translation>
 <translation id="1997616988432401742">Certificatele tale</translation>
 <translation id="1999115740519098545">La pornire</translation>
+<translation id="2001796770603320721">Gestionează în Drive</translation>
 <translation id="2006638907958895361">Deschide linkul în <ph name="APP" /></translation>
 <translation id="2007404777272201486">Raportează o problemă...</translation>
 <translation id="2016430552235416146">Tradițională</translation>
@@ -2087,6 +2088,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="42137655013211669">Accesul la această resursă a fost interzis de server.</translation>
 <translation id="4215350869199060536">Hopa, în nume apar simboluri nepermise!</translation>
 <translation id="4215448920900139318">Se face backup pentru <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">Dictare</translation>
 <translation id="4225397296022057997">Pe toate site-urile</translation>
 <translation id="4235200303672858594">Întregul ecran</translation>
 <translation id="4235813040357936597">Adăugați un cont pentru <ph name="PROFILE_NAME" /></translation>
@@ -2199,6 +2201,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="4425149324548788773">Contul meu Drive</translation>
 <translation id="4430019312045809116">Volum</translation>
 <translation id="4430369329743628066">Marcajul a fost adăugat</translation>
+<translation id="4434045419905280838">Ferestre pop-up și redirecționări</translation>
 <translation id="443454694385851356">Vechi (nesigur)</translation>
 <translation id="443464694732789311">Continuați</translation>
 <translation id="443475966875174318">Actualizează sau elimină aplicațiile incompatibile</translation>
@@ -3892,6 +3895,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="7052237160939977163">Trimiteți datele privind urmărirea performanței</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Blochează</translation>
+<translation id="7055152154916055070">Redirecționarea a fost blocată:</translation>
 <translation id="7056526158851679338">&amp;Inspectați dispozitivele</translation>
 <translation id="7059858479264779982">Setați pentru lansare automată</translation>
 <translation id="7059893117020417984">Pentru a naviga privat, dă clic pe meniul pictogramei cu puncte pentru a deschide o fereastră incognito</translation>
@@ -4255,6 +4259,7 @@ Dacă instalezi <ph name="APP_NAME" />, se vor descărca <ph name="DOWNLOAD_SIZE
 <translation id="7617366389578322136">Se conectează la „<ph name="DEVICE_NAME" />”</translation>
 <translation id="7622114377921274169">Se încarcă.</translation>
 <translation id="7624337243375417909">tasta Caps Lock este dezactivată</translation>
+<translation id="7625568159987162309">Vezi permisiunile și datele stocate pe toate site-urile</translation>
 <translation id="7627790789328695202">Hopa, <ph name="FILE_NAME" /> există deja. Redenumiți și încercați din nou.</translation>
 <translation id="7628127343934101653">Deschide fișierele PDF în aplicația prestabilită de vizualizare a fișierelor PDF.</translation>
 <translation id="7629827748548208700">Fila: <ph name="TAB_NAME" /></translation>
@@ -4577,6 +4582,7 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="806812017500012252">Reordonați după titlu</translation>
 <translation id="8068253693380742035">Atinge pentru a te conecta</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="806972267388474605">Fișiere Linux</translation>
 <translation id="8071432093239591881">Printează ca imagine</translation>
 <translation id="8072988827236813198">Fixează file</translation>
 <translation id="8074127646604999664">Permite site-urilor închise recent să finalizeze trimiterea sau primirea datelor</translation>
@@ -5085,7 +5091,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8902667442496790482">Deschide setările „Selectează și ascultă”</translation>
 <translation id="8903921497873541725">Mărește</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8908902564709148335">Avertisment: ai activat marcajul scripts-require-action pe acest computer, care limitează capacitățile acestei extensii. Totuși, este posibil ca alte dispozitive să nu accepte acest marcaj sau să îl aibă activat. Pe aceste dispozitive, această extensie poate să:</translation>
 <translation id="8909233240676134608">Computerul nu a putut fi asociat domeniului. Serverul nu acceptă tipurile de criptare Kerberos specificate. Accesează „Mai multe opțiuni” pentru setările de criptare.</translation>
 <translation id="8909833622202089127">Site-ul îți urmărește locația</translation>
 <translation id="8910146161325739742">Permite accesul la ecran</translation>
@@ -5105,7 +5110,6 @@ Păstrează fișierul cu cheia într-un loc sigur. Acesta va fi necesar la crear
 <translation id="8940081510938872932">Computerul dvs. efectuează prea multe lucruri în acest moment. Încercați din nou mai târziu.</translation>
 <translation id="8941173171815156065">Revocă permisiunea „<ph name="PERMISSION" />”</translation>
 <translation id="8941882480823041320">Cuvântul anterior</translation>
-<translation id="8943076760234179177">Adresa URL a dispozitivului de stocare în rețea</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">va consuma bateria mai rapid (în prezent, <ph name="BATTERY_PERCENTAGE" />%);</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> trimite conținutul unei ferestre către <ph name="TAB_NAME" />.</translation>

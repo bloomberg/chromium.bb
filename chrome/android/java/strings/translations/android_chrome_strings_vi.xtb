@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">Sử dụng truy vấn dự đoán trang</translation>
 <translation id="4412992751769744546">Cho phép cookie của bên thứ ba</translation>
 <translation id="4432792777822557199">Kể từ bây giờ trở đi, các trang viết bằng <ph name="SOURCE_LANGUAGE" /> sẽ được dịch sang <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">Cửa sổ bật lên và liên kết chuyển hướng</translation>
 <translation id="4445444302979002552">Sử dụng các dịch vụ dự đoán để đề xuất cụm từ tìm kiếm và trang web</translation>
 <translation id="4452411734226507615">Đóng tab <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Đã đánh dấu trang vào <ph name="FOLDER_NAME" /></translation>
@@ -516,6 +517,7 @@ Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn 
 <translation id="5765780083710877561">Mô tả:</translation>
 <translation id="5777170031995031090">Kiểm soát cách Google sử dụng lịch sử duyệt web của bạn để cá nhân hóa Tìm kiếm, quảng cáo và các dịch vụ khác của Google.</translation>
 <translation id="5779929835642192302">Có đề xuất</translation>
+<translation id="5793665092639000975">Sử dụng <ph name="SPACE_USED" />/<ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Quyền</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# giờ trước}other{# giờ trước}}</translation>
 <translation id="5817918615728894473">Ghép nối</translation>
@@ -600,6 +602,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6556716549745717622">Chặn nếu trang web thường hiển thị quảng cáo xâm nhập (được đề xuất)</translation>
 <translation id="6560414384669816528">Tìm kiếm với Sogou</translation>
 <translation id="6566259936974865419">Chrome đã tiết kiệm <ph name="GIGABYTES" /> GB cho bạn</translation>
+<translation id="6573096386450695060">Luôn cho phép</translation>
 <translation id="6573431926118603307">Các tab bạn đã mở trong Chrome trên thiết bị khác sẽ xuất hiện tại đây.</translation>
 <translation id="6575643671698722332">Không đặt lại được. Hãy đảm bảo thiết bị ở chế độ trực tuyến và thử lại.</translation>
 <translation id="6583199322650523874">Đánh dấu trang hiện tại</translation>
@@ -659,6 +662,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7031882061095297553">Đồng bộ hóa với</translation>
 <translation id="7034608350006174882">Thẻ và địa chỉ sử dụng Google Pay</translation>
 <translation id="7053983685419859001">Chặn</translation>
+<translation id="7055152154916055070">Liên kết chuyển hướng đã chặn:</translation>
 <translation id="7062545763355031412">Chấp nhận và chuyển đổi tài khoản</translation>
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Đã chọn 1 mục}other{Đã chọn # mục}}</translation>
@@ -667,6 +671,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7121362699166175603">Xóa lịch sử và tự động hoàn thành trong thanh địa chỉ. Tài khoản Google của bạn có thể có các dạng lịch sử duyệt web khác tại <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Cho phép đối với công cụ tìm kiếm hiện tại</translation>
 <translation id="7138678301420049075">Khác</translation>
+<translation id="7141896414559753902">Chặn trang web hiển thị cửa sổ bật lên và liên kết chuyển hướng (được đề xuất)</translation>
 <translation id="7144878232160441200">Thử lại</translation>
 <translation id="7149893636342594995">24 giờ qua</translation>
 <translation id="7177466738963138057">Bạn có thể thay đổi cài đặt này sau trong Cài đặt</translation>
@@ -883,6 +888,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="932327136139879170">Trang chủ</translation>
 <translation id="932599481871055447">Lưu dữ liệu và duyệt web nhanh hơn</translation>
 <translation id="938850635132480979">Lỗi: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">Thẻ SD không có đủ dung lượng</translation>
 <translation id="945522503751344254">Gửi phản hồi</translation>
 <translation id="945632385593298557">Truy cập micrô của bạn</translation>
 <translation id="951339005376969845">Xóa dữ liệu hiện có. Bạn có thể truy xuất dữ liệu bằng cách chuyển về <ph name="FROM_ACCOUNT" />.</translation>

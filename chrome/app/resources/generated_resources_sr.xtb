@@ -5082,7 +5082,6 @@
 <translation id="8902667442496790482">Отвори подешавања за услугу Изаберите за говор</translation>
 <translation id="8903921497873541725">Увећавање</translation>
 <translation id="8904976895050290827">Синхронизација Chrome прегледача</translation>
-<translation id="8908902564709148335">Упозорење: Омогућили сте ознаку --scripts-require-action на овом рачунару, што ограничава функције овог додатка. Међутим, други уређаји можда не подржавају ову ознаку или на њима није омогућена. На овим уређајима овај додатак такође може:</translation>
 <translation id="8909233240676134608">Уређај не може да се придружи домену. Сервер не подржава наведене типове шифровања Kerberos. Погледајте „Још опција“ да бисте пронашли подешавања шифровања.</translation>
 <translation id="8909833622202089127">Сајт прати локацију</translation>
 <translation id="8910146161325739742">Делите екран</translation>
@@ -5102,7 +5101,6 @@
 <translation id="8940081510938872932">Рачунар тренутно ради превише ствари. Пробајте поново касније.</translation>
 <translation id="8941173171815156065">Опозовите дозволу „<ph name="PERMISSION" />“</translation>
 <translation id="8941882480823041320">Претходна реч</translation>
-<translation id="8943076760234179177">URL адреса дељења датотека</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">бржа потрошња батерије (тренутно <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> дели прозор са <ph name="TAB_NAME" />.</translation>

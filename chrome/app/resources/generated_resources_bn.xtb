@@ -883,7 +883,7 @@
 <translation id="2359808026110333948">অবিরত</translation>
 <translation id="236141728043665931">মাইক্রোফোনের অ্যাক্সেস সর্বদা অবরুদ্ধ রাখুন</translation>
 <translation id="2365507699358342471">এই সাইটটি ক্লিপবোর্ডে কপি করা টেক্সট এবং ছবি দেখতে পায়।</translation>
-<translation id="2366463953911599217">সমস্যা: <ph name="APP_NAME" /> ইনস্টল করা যায়নি।</translation>
+<translation id="2366463953911599217">সমস্যা: <ph name="APP_NAME" /> আনইনস্টল করা যায়নি।</translation>
 <translation id="2367199180085172140">ফাইল শেয়ার যোগ করুন</translation>
 <translation id="2367972762794486313">অ্যাপ্লিকেশানগুলি দেখান</translation>
 <translation id="2371076942591664043">&amp;সম্পন্ন হলে খুলুন</translation>
@@ -935,7 +935,7 @@
 <translation id="2462724976360937186">শংসাপত্র কর্তৃত্ব কী ID</translation>
 <translation id="2462752602710430187"><ph name="PRINTER_NAME" /> যোগ করা হয়েছে</translation>
 <translation id="2464089476039395325">HTTP প্রক্সী</translation>
-<translation id="2468205691404969808">আপনার পছন্দ মনে রাখার জন্য কুকি ব্যবহার করুন - সেই সমস্ত পৃষ্ঠায় যদি না যান, তাহলেও</translation>
+<translation id="2468205691404969808">আপনার পছন্দ মনে রাখার জন্য কুকি ব্যবহার করুন, সেই সমস্ত পৃষ্ঠায় যদি না যান, তাহলেও</translation>
 <translation id="2468902267404883140">আপনার ফোন সংযুক্ত করা যাচ্ছে না। নিশ্চিত করুন আপনার একটি উপযুক্ত Android ফোন আছে যেটি চালু রয়েছে এবং সহজে ব্যবহার করা যায়। &lt;a&gt;আরও জানুন&lt;/a&gt;</translation>
 <translation id="2470702053775288986">অসমর্থিত এক্সটেনশানগুলি নিষ্ক্রিয় করা আছে</translation>
 <translation id="2473195200299095979">এই পৃষ্ঠাটি অনুবাদ করুন</translation>
@@ -1620,7 +1620,7 @@
 <translation id="3504135463003295723">গ্রুপ নাম:</translation>
 <translation id="3505030558724226696">ডিভাইসের অ্যাক্সেস প্রত্যাহার করুন</translation>
 <translation id="3507421388498836150">"<ph name="EXTENSION_NAME" />" এর জন্য বর্তমান অনুমতিগুলি</translation>
-<translation id="3507547268929739059">Chromebook থেকে Linux-এর অ্যাপ সরিয়ে দিন</translation>
+<translation id="3507547268929739059">Chromebook থেকে Linux অ্যাপ সরিয়ে দিন</translation>
 <translation id="3507888235492474624">ব্লুটুথ ডিভাইস আবার স্ক্যান করুন</translation>
 <translation id="3508920295779105875">অন্য ফোল্ডার বেছে নিন...</translation>
 <translation id="3510797500218907545">WiMAX</translation>
@@ -2017,7 +2017,7 @@
 <translation id="4109135793348361820"><ph name="USER_NAME" /> (<ph name="USER_EMAIL" />) এ উইন্ডো সরান</translation>
 <translation id="4110559665646603267">শেল্ফে ফোকাস করুন</translation>
 <translation id="4110895898888439383">উচ্চ কনট্রাস্ট মোডে ওয়েব ব্রাউজ করুন</translation>
-<translation id="4112774766611964959">এর ফলে <ph name="APP_NAME" /> ইনস্টল করা হবে এবং Linux-এর সমস্ত ডেটা ও অ্যাপ্লিকেশন আপনার <ph name="DEVICE_TYPE" /> থেকে সরিয়ে দেওয়া হবে। আপনি সত্যিই এটি করতে চান?</translation>
+<translation id="4112774766611964959">এর ফলে <ph name="APP_NAME" /> অ্যাপ আনইনস্টল করা হবে এবং Linux-এর সমস্ত ডেটা ও অ্যাপ্লিকেশন আপনার <ph name="DEVICE_TYPE" /> থেকে সরিয়ে দেওয়া হবে। আপনি সত্যিই এটি করতে চান?</translation>
 <translation id="4114360727879906392">পূর্ববর্তী উইন্ডো</translation>
 <translation id="4115002065223188701">নেটওয়ার্ক সীমার বাইরে</translation>
 <translation id="4115080753528843955">কিছু কনটেন্ট পরিষেবা অনন্য আইডেন্টিফায়ার ব্যবহার করে সুরক্ষিত কনটেন্টে অ্যাক্সেস দেয়</translation>
@@ -2655,7 +2655,7 @@
 <translation id="5186650237607254032">আপনার ফোনের স্ক্রিন লক আপডেট করুন, যাতে করে আপনি যখন কাছাকাছি থাকবেন তখন এটি বন্ধ হয়৷ আপনি দ্রুত ফোনটি আনলক করবেন, এবং আপনার <ph name="DEVICE_TYPE" /> এ আরও ভালো Smart Lock-এর অভিজ্ঞতা উপভোগ করতে পারবেন৷</translation>
 <translation id="5187295959347858724">আপনি এখন <ph name="SHORT_PRODUCT_NAME" />এ প্রবেশ করেছেন৷ আপনার বুকমার্ক, ইতিহাস এবং অন্য সেটিংস আপনার Google অ্যাকাউন্টে সমন্বিত করা হচ্ছে৷</translation>
 <translation id="5187826826541650604"><ph name="KEY_NAME" /> (<ph name="DEVICE" />)</translation>
-<translation id="5196721203029902230">ব্রাউজিং এবং Chrome আরও উন্নত করে তুলতে Google-এর সাথে তথ্য আদান প্রদান করুন</translation>
+<translation id="5196721203029902230">ব্রাউজিংয়ের অভিজ্ঞতা এবং Chrome আরও উন্নত করে তুলতে Google-এর সাথে তথ্য আদান প্রদান করুন</translation>
 <translation id="5204967432542742771">পাসওয়ার্ড প্রবেশ করান</translation>
 <translation id="5206215183583316675">"<ph name="CERTIFICATE_NAME" />" মুছবেন?</translation>
 <translation id="520621735928254154">শংসাপত্রের আমদানি ত্রুটি</translation>
@@ -4352,7 +4352,7 @@
       <ph name="LIST_ITEM" />OS ফাইলে পরিবর্তন করার জন্য rootfs যাচাইকরণের ধাপটি সরিয়ে দিতে পারেন
       <ph name="LIST_ITEM" /><ph name="BEGIN_CODE" />'cros flash'<ph name="END_CODE" />-এর মতো টুলের মাধ্যমে ডিভাইস অ্যাক্সেস করার জন্য স্ট্যান্ডার্ড টেস্ট কী ব্যবহার করে ডিভাইসে SSH অ্যাক্সেস চালু করতে পারেন
       <ph name="LIST_ITEM" />ইউএসবি ড্রাইভ থেকে OS ইমেজ ইনস্টল করার জন্য ইউএসবি থেকে বুট করার সুবিধা চালু করতে পারেন
-      <ph name="LIST_ITEM" />ডিভাইসে ম্যানুয়ালি SSH করার জন্য ডেভেলপার এবং সিস্টেম রুট লগ-গিন পাসওয়ার্ড দুটি কাস্টম মানে সেট করতে পারেন
+      <ph name="LIST_ITEM" />ডিভাইসে ম্যানুয়ালি SSH করার জন্য ডেভেলপার এবং সিস্টেম রুট লগ-ইন পাসওয়ার্ড দুটি কাস্টম মানে সেট করতে পারেন
     <ph name="END_LIST" />
     <ph name="BR" />
     ডিবাগিং চালু করা হলে এর বেশিরভাগ বৈশিষ্ট্য পাওয়ারওয়াশ করা অথবা এন্টারপ্রাইজ দ্বারা পরিচালিত ডিভাইস থেকে ডেটা মুছে দেওয়ার পরেও চালু রয়ে যাবে।  সমস্ত ডিবাগিং বৈশিষ্ট্য বন্ধ করার জন্য Chrome OS ফিরিয়ে আনার সম্পূর্ণ প্রক্রিয়াটি অনুসরণ করুন
@@ -4652,7 +4652,7 @@
 <translation id="825483282309623688">আপনার ডেটা পুনরুদ্ধার করতে, আপনার একটি ইন্টারনেট সংযোগ প্রয়োজন।</translation>
 <translation id="8256319818471787266">স্পার্কি</translation>
 <translation id="8257950718085972371">ক্যামেরা অ্যাক্সেস অবরোধ করা অবিরত রাখুন</translation>
-<translation id="8259239505248583312">চলুন যাই</translation>
+<translation id="8259239505248583312">শুরু করা যাক</translation>
 <translation id="8260126382462817229">আবার সাইন ইন করার চেষ্টা করুন</translation>
 <translation id="8260864402787962391">মাউস</translation>
 <translation id="8261378640211443080">এই এক্সটেনশানটি <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> এ তালিকাভুক্ত নেই এবং হয়ত আপনাকে না জানিয়ে যোগ করা হয়েছে৷</translation>
@@ -5045,7 +5045,6 @@
 <translation id="8902667442496790482">'বাছুন ও শুনুন'-এর সেটিংস খুলুন</translation>
 <translation id="8903921497873541725">জুম বাড়ান</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8908902564709148335">সতর্কতা: আপনি এই কম্পিউটারে --স্ক্রিপ্টের-প্রয়োজনীয়-অ্যাকশন ফ্ল্যাগ সক্ষম করেছেন, যা এই এক্সটেনশানটির কার্যক্ষমতাকে সীমিত করে৷ যদিও, অন্য ডিভাইসগুলি এই পতাকা সমর্থন নাও করতে পারে বা এটি হয়ত সক্ষম করা নাও থাকতে পারে৷ এছাড়াও সেই ডিভাইসগুলিতে, এই এক্সটেনশানটি এগুলি করতে পারে:</translation>
 <translation id="8909233240676134608">ডোমেনে মেশিনটি যোগ করা যাবে না। সার্ভারটি নির্দিষ্ট Kerberos এনক্রিপশন ধরন সমর্থন করে না। এনক্রিপশন সেটিংসগুলির জন্য "আরও বিকল্প" দেখুন।</translation>
 <translation id="8909833622202089127">সাইটটি আপনার লোকেশন ট্র্যাক করছে</translation>
 <translation id="8910146161325739742">আপনার স্ক্রিন শেয়ার করুন</translation>
@@ -5065,7 +5064,6 @@
 <translation id="8940081510938872932">আপনার কম্পিউটারটি এই মুহুর্তে অনেকগুলি কাজ করছে৷ পরে আবার চেষ্টা করুন৷</translation>
 <translation id="8941173171815156065">অনুমতি '<ph name="PERMISSION" />' প্রত্যাহার করুন</translation>
 <translation id="8941882480823041320">পূর্ববর্তী শব্দ</translation>
-<translation id="8943076760234179177">ফাইল শেয়ার ইউআরএল</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">ব্যাটারি আরও দ্রুত শেষ হবে (বর্তমানে <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> <ph name="TAB_NAME" /> এর সঙ্গে একটি উইন্ডো শেয়ার করছে।</translation>

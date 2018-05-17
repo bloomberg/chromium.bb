@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">استفاده از پیش‌بینی صفحه</translation>
 <translation id="4412992751769744546">اجازه به کوکی‌های طرف ثالث</translation>
 <translation id="4432792777822557199">از این به بعد، صفحه‌های <ph name="SOURCE_LANGUAGE" />، به <ph name="TARGET_LANGUAGE" /> ترجمه خواهند شد</translation>
+<translation id="4434045419905280838">پنجره‌های بازشو و هدایت‌ها</translation>
 <translation id="4445444302979002552">استفاده از سرویس‌های پیش‌بینی برای پیشنهاد عبارت‌های جستجو و وب‌سایت‌ها</translation>
 <translation id="4452411734226507615">بستن برگه <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">در <ph name="FOLDER_NAME" /> نشانک گذاشته شد</translation>
@@ -515,6 +516,7 @@
 <translation id="5765780083710877561">توضیح:</translation>
 <translation id="5777170031995031090">‏نحوه استفاده Google را از سابقه مرورتان برای شخصی‌سازی جستجو، آگهی‌ها و سایر سرویس‌های Google کنترل کنید.</translation>
 <translation id="5779929835642192302">پیشنهادهایی در دسترس هستند</translation>
+<translation id="5793665092639000975">درحال استفاده از <ph name="SPACE_USED" /> از <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">مجوزها</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{۱ ساعت قبل}one{# ساعت قبل}other{# ساعت قبل}}</translation>
 <translation id="5817918615728894473">مرتبط‌سازی</translation>
@@ -599,6 +601,7 @@
 <translation id="6556716549745717622">اگر سایت تمایل دارد آگهی‌های مزاحم نشان دهد مسدود شود (توصیه می‌شود)</translation>
 <translation id="6560414384669816528">‏جستجو با Sogou</translation>
 <translation id="6566259936974865419">‏Chrome‏ <ph name="GIGABYTES" /> گیگابایت از داده‌های شما را ذخیره کرده است</translation>
+<translation id="6573096386450695060">همیشه مجاز</translation>
 <translation id="6573431926118603307">‏برگه‌هایی که در دستگاه‌های دیگر در Chrome باز کرده‌اید، در اینجا نمایان می‌شوند.</translation>
 <translation id="6575643671698722332">بازنشانی انجام نشد. مطمئن شوید دستگاهتان آنلاین است و دوباره امتحان کنید.</translation>
 <translation id="6583199322650523874">نشانک گذاشتن صفحه کنونی</translation>
@@ -658,6 +661,7 @@
 <translation id="7031882061095297553">همگام‌سازی در</translation>
 <translation id="7034608350006174882">‏کارت‌‌ها و نشانی‌های مورداستفاده در Google Pay</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
+<translation id="7055152154916055070">هدایت کردن مسدود شده است:</translation>
 <translation id="7062545763355031412">پذیرش و تغییر حساب‌ها</translation>
 <translation id="7063006564040364415">اتصال به سرور همگام‌سازی ممکن نیست.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{۱ مورد انتخاب شد}one{# مورد انتخاب شد}other{# مورد انتخاب شد}}</translation>
@@ -666,6 +670,7 @@
 <translation id="7121362699166175603">‏سابقه و تکمیل‌های خودکار را در نوار نشانی پاک می‌کند. ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد.</translation>
 <translation id="7128222689758636196">مجاز کردن موتور جستجوی کنونی</translation>
 <translation id="7138678301420049075">دیگر</translation>
+<translation id="7141896414559753902">مسدود کردن نمایش پنجره‌های بازشو و هدایت‌ها در سایت‌ها (توصیه می‌شود)</translation>
 <translation id="7144878232160441200">سعی مجدد</translation>
 <translation id="7149893636342594995">۲۴ ساعت گذشته</translation>
 <translation id="7177466738963138057">می‌توانید بعداً این مورد را در تنظیمات تغییر دهید</translation>
@@ -882,6 +887,7 @@
 <translation id="932327136139879170">منزل</translation>
 <translation id="932599481871055447">ذخیره داده و مرور سریع‌تر</translation>
 <translation id="938850635132480979">خطا: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">‏کارت SD فضای کافی ندارد</translation>
 <translation id="945522503751344254">ارسال بازخورد</translation>
 <translation id="945632385593298557">دسترسی به میکروفن</translation>
 <translation id="951339005376969845">حذف داده‌های موجود. می‌توانید با جابه‌جایی به <ph name="FROM_ACCOUNT" /> آن را بازیابی کنید.</translation>

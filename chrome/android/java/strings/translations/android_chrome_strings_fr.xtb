@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">Utiliser le service de prédiction</translation>
 <translation id="4412992751769744546">Autoriser les cookies tiers</translation>
 <translation id="4432792777822557199">Les pages en <ph name="SOURCE_LANGUAGE" /> seront désormais traduites en <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">Pop-ups et redirections</translation>
 <translation id="4445444302979002552">Utiliser des services de prédiction pour suggérer des termes de recherche et des sites Web</translation>
 <translation id="4452411734226507615">Fermer l'onglet <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Ajouté aux favoris dans "<ph name="FOLDER_NAME" />"</translation>
@@ -516,6 +517,7 @@ Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation pr
 <translation id="5765780083710877561">Description :</translation>
 <translation id="5777170031995031090">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
 <translation id="5779929835642192302">Suggestions disponibles</translation>
+<translation id="5793665092639000975">Utilisation de <ph name="SPACE_USED" /> sur <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Autorisations</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Il y a # heure}one{Il y a # heure}other{Il y a # heures}}</translation>
 <translation id="5817918615728894473">Associer</translation>
@@ -600,6 +602,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="6556716549745717622">Bloquer si le site a tendance à afficher des annonces intrusives (recommandé)</translation>
 <translation id="6560414384669816528">Rechercher avec Sogou</translation>
 <translation id="6566259936974865419">Chrome vous a permis de gagner <ph name="GIGABYTES" /> Go</translation>
+<translation id="6573096386450695060">Toujours autoriser</translation>
 <translation id="6573431926118603307">Les onglets que vous avez ouverts dans Chrome sur vos autres appareils s'affichent ici.</translation>
 <translation id="6575643671698722332">Échec de la réinitialisation. Veuillez vous assurer que l'appareil connecté, puis réessayez.</translation>
 <translation id="6583199322650523874">Marquer la page actuelle en tant que favori</translation>
@@ -659,6 +662,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7031882061095297553">Synchroniser avec</translation>
 <translation id="7034608350006174882">Cartes et adresses utilisées dans Google Pay</translation>
 <translation id="7053983685419859001">Bloquer</translation>
+<translation id="7055152154916055070">Redirection bloquée :</translation>
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7063006564040364415">Impossible de se connecter au serveur de synchronisation.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 élément sélectionné}one{# élément sélectionné}other{# éléments sélectionnés}}</translation>
@@ -667,6 +671,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7121362699166175603">Efface l'historique et les saisies semi-automatiques dans la barre d'adresse. Votre compte Google conserve peut-être d'autres formes d'historique de navigation sur la page <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Autoriser l'accès pour le moteur de recherche actuel</translation>
 <translation id="7138678301420049075">Autre</translation>
+<translation id="7141896414559753902">Bloquer l'affichage de fenêtres pop-up et de redirections par les sites (recommandé)</translation>
 <translation id="7144878232160441200">Réessayer</translation>
 <translation id="7149893636342594995">Dernières 24 heures</translation>
 <translation id="7177466738963138057">Vous pourrez modifier le moteur de recherche plus tard dans les paramètres</translation>
@@ -883,6 +888,7 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="932327136139879170">Accueil</translation>
 <translation id="932599481871055447">Consommez moins de données et naviguez plus vite</translation>
 <translation id="938850635132480979">Erreur <ph name="ERROR_CODE" />.</translation>
+<translation id="945360730947989880">Il n'y a pas suffisamment d'espace sur la carte SD</translation>
 <translation id="945522503751344254">Envoyer le commentaire</translation>
 <translation id="945632385593298557">Accéder à votre micro</translation>
 <translation id="951339005376969845">Supprimer les données actuelles. Vous pouvez les récupérer en repassant sur le compte <ph name="FROM_ACCOUNT" />.</translation>

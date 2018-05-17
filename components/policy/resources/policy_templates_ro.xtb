@@ -27,6 +27,7 @@
       Dacă această politică este configurată, ecranul de conectare va fi afișat întotdeauna în limba specificată de prima valoare a politicii (politica este definită ca o listă pentru postcompatibilitate). Dacă această politică nu este configurată sau este configurată la o listă necompletată, ecranul de conectare va fi afișat în limba ultimei sesiuni a utilizatorului. Dacă politica este configurată la o valoare care nu este o limbă validă, ecranul de conectare va fi afișat într-o limbă de rezervă (în prezent, en-US).</translation>
 <translation id="1062011392452772310">Activați atestarea la distanță pentru dispozitiv</translation>
 <translation id="1062407476771304334">Înlocuiți</translation>
+<translation id="1079801999187584280">Nu permite folosirea Instrumentelor pentru dezvoltatori</translation>
 <translation id="109166998561583554">Declanșarea semnalării unui cont protejat prin parolă care prezintă un risc</translation>
 <translation id="1093082332347834239">Dacă această setare este activată, gazda asistenței la distanță va rula într-un proces cu permisiunile <ph name="UIACCESS_PERMISSION_NAME" />. Astfel, utilizatorii la distanță pot să interacționeze cu ferestrele cu privilegii superioare de pe computerul utilizatorului local.
 
@@ -79,6 +80,7 @@
 
           Acesta trebuie să fie de minimum 100 %.</translation>
 <translation id="131353325527891113">Afișați numele de utilizator pe ecranul de conectare</translation>
+<translation id="1325295456374328159">Configurează codurile locale permise într-o sesiune a utilizatorului</translation>
 <translation id="1327466551276625742">Activați solicitarea privind configurația rețelei, în modul offline</translation>
 <translation id="1330145147221172764">Activați tastatura pe ecran</translation>
 <translation id="13356285923490863">Numele politicii</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">Dacă se acordă încredere infrastructurii PKI vechi a Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantele activate asociate dispozitivelor companiei</translation>
 <translation id="1397855852561539316">Adresă URL de sugerare a furnizorului de căutare prestabilit</translation>
+<translation id="1424081297104898791">Îți permite să stabilești unde pot fi folosite Instrumentele pentru dezvoltatori.
+
+      Dacă această politică este setată la „DeveloperToolsDisallowedForForceInstalledExtensions” (valoarea 0, care este valoarea prestabilită pentru utilizatorii din companii), Instrumentele pentru dezvoltatori și consola JavaScript pot fi accesate la modul general, dar nu pot fi accesate în contextul extensiilor instalate pe baza politicii de companie.
+      Dacă această politică este setată la „DeveloperToolsAllowed” (valoarea 1, care este valoarea prestabilită pentru utilizatorii care nu sunt gestionați), Instrumentele pentru dezvoltatori și consola JavaScript pot fi accesate și folosite în orice context, inclusiv în contextul extensiilor instalate pe baza politicii de companie.
+      Dacă această politică este setată la „DeveloperToolsDisallowed” (valoarea 2), Instrumentele pentru dezvoltatori nu pot fi accesate și elementele site-urilor nu mai pot fi inspectate. Comenzile rapide de la tastatură și intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate.
+      Dacă vechea politică DeveloperToolsDisabled este activată, valoarea acestei politici este ignorată și Instrumentele pentru dezvoltatori sunt dezactivate.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1427655258943162134">Adresa IP sau adresa URL a serverului proxy</translation>
 <translation id="1435659902881071157">Configurare de rețea la nivel de dispozitiv</translation>
@@ -205,6 +213,7 @@
 <translation id="1803646570632580723">Listare aplicații fixate de afișat în lansator</translation>
 <translation id="1808715480127969042">Blochează cookie-urile de pe aceste site-uri</translation>
 <translation id="1810261428246410396">Permite folosirea funcției Tethering instantaneu.</translation>
+<translation id="1826282708349731794">Stabilește modul în care Chrome Cleanup trimite rapoarte privind datele la Google</translation>
 <translation id="1827523283178827583">Utilizează servere proxy fixe</translation>
 <translation id="1843117931376765605">Rata de actualizare pentru politica privind utilizatorii</translation>
 <translation id="1844620919405873871">Configurează politicile privind deblocarea rapidă.</translation>
@@ -593,6 +602,7 @@
       Această politică nu afectează opțiunea utilizatorilor de a configura imprimantele pe dispozitive individuale. Este menită să fie suplimentară față de configurarea imprimantelor de către utilizatori individuali.
       </translation>
 <translation id="2633084400146331575">Activați feedbackul vocal</translation>
+<translation id="2640843331263301324">Activează Chrome Cleanup în Windows</translation>
 <translation id="2646290749315461919">Vă permite să setați dacă site-urile web au permisiunea să urmărească locația fizică a utilizatorilor. Urmărirea locației fizice a utilizatorilor poate fi permisă în mod prestabilit, refuzată în mod prestabilit sau utilizatorul poate fi întrebat de fiecare dată când un site web solicită locația fizică. Dacă politica este lăsată nesetată, va fi utilizată politica „AskGeolocation”, dar utilizatorul va putea să o schimbe.</translation>
 <translation id="2647069081229792812">Activează sau dezactivează modificarea marcajelor</translation>
 <translation id="2650049181907741121">Măsura care se va lua atunci când utilizatorul închide capacul</translation>
@@ -1217,12 +1227,14 @@
 <translation id="4554651132977135445">Modul de procesare loopback conform politicii privind utilizatorii</translation>
 <translation id="4555850956567117258">Activați atestarea la distanță pentru utilizator</translation>
 <translation id="4557134566541205630">Adresa URL pentru pagina Filă nouă a furnizorului de căutare prestabilit</translation>
+<translation id="4567137030726189378">Permite folosirea Instrumentelor pentru dezvoltatori</translation>
 <translation id="4600786265870346112">Activați cursorul mare</translation>
 <translation id="4604931264910482931">Configurați lista neagră a mesageriei native</translation>
 <translation id="4613508646038788144">Dacă politica este setată la false, atunci software-ului de la o terță parte i se va permite să introducă un cod executabil în procesele Chrome. Dacă politica nu este configurată sau este setată la true, atunci software-ul de la o terță parte va fi împiedicat să introducă codul executabil în procesele Chrome.</translation>
 <translation id="4617338332148204752">Ignoră verificarea existenței unor metaetichete în <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurează lista albă pentru instalarea extensiilor</translation>
 <translation id="4632343302005518762">Permiteți ca <ph name="PRODUCT_FRAME_NAME" /> să gestioneze tipurile de conținut indicate</translation>
+<translation id="4632566332417930481">Nu permite folosirea Instrumentelor pentru dezvoltatori pentru extensiile instalate pe baza politicii de companie, permite folosirea instrumentelor pentru dezvoltatori în alte contexte</translation>
 <translation id="4633786464238689684">Schimbă comportamentul prestabilit al tastelor din rândul de sus la taste pentru funcții.
 
           Dacă politica este activată, tastele din rândul de sus al tastaturii vor genera în mod prestabilit comenzile tastelor pentru funcții. Comportamentul acestora poate fi restabilit la cel al tastelor media prin apăsarea tastei de căutare.
@@ -1478,9 +1490,13 @@
       Dacă această politică este configurată la o listă de identificatori ai metodei de introducere a textului, metodele specificate vor fi disponibile pe ecranul de conectare. Prima metodă de introducere a textului specificată va fi preselectată. Deși tastatura utilizatorului este focalizată pe ecranul de conectare, cea mai puțin folosită recent metodă de introducere a textului va fi disponibilă, pe lângă metodele de introducere a textului specificate de această politică. Dacă această politică nu este configurată, metodele de introducere a textului de pe ecranul de conectare se vor baza pe limba în care este afișat ecranul de conectare. Valorile care nu sunt identificatori valizi ai metodei de introducere a textului vor fi ignorate.</translation>
 <translation id="5423001109873148185">Dacă este activată, această politică forțează importarea motoarelor de căutare din browserul prestabilit. Dacă este activată, politica afectează, de asemenea, caseta de dialog de importare. Dacă este dezactivată, motorul de căutare prestabilit nu este importat. În cazul în care nu este setată, utilizatorul poate fi întrebat dacă dorește importarea sau aceasta poate avea loc în mod automat.</translation>
 <translation id="5423197884968724595">Numele restricției Android WebView:</translation>
+<translation id="5442026853063570579">Această politică controlează și accesul la Opțiunile pentru dezvoltatori Android. Dacă este setată la „DeveloperToolsDisallowed”, utilizatorii nu pot accesa setarea Opțiuni dezvoltator. Dacă este setată la altă valoare sau dacă nu este configurată, utilizatorii pot accesa setarea Opțiuni dezvoltator dacă ating de șapte ori numărul versiunii în aplicația Setări Android.</translation>
 <translation id="5447306928176905178">Activați raportarea informațiilor privind memoria (dimensiunea de heap JavaScript) în pagină (s-a renunțat la dezvoltare)</translation>
 <translation id="5457065417344056871">Activează modul pentru invitați în browser</translation>
 <translation id="5457924070961220141">Vă permite să configurați motorul de redare HTML prestabilit atunci când <ph name="PRODUCT_FRAME_NAME" /> este instalat. Setarea prestabilită este să permiteți browserului gazdă să efectueze redarea, dar opțional o puteți anula, pentru ca <ph name="PRODUCT_FRAME_NAME" /> să redea paginile HTML în mod prestabilit.</translation>
+<translation id="5459155981813668716">Configurează limbile în care poate fi afișat <ph name="PRODUCT_OS_NAME" />.
+
+      Dacă această politică este configurată, utilizatorul poate să configureze afișarea <ph name="PRODUCT_OS_NAME" /> numai într-una dintre limbile specificate de această politică. Dacă această politică nu este configurată sau dacă este configurată la o listă necompletată, <ph name="PRODUCT_OS_NAME" /> poate fi afișat în toate limbile acceptate. Dacă această politică este configurată la o listă cu valori nevalide, toate valorile nevalide vor fi ignorate. Dacă un utilizator a configurat anterior afișarea <ph name="PRODUCT_OS_NAME" /> într-o limbă care nu este permisă de această politică, limba de afișare va fi înlocuită cu o limbă permisă la următoarea conectare a utilizatorului. Dacă utilizatorul a configurat limbile preferate și una dintre ele este permisă de această politică, <ph name="PRODUCT_OS_NAME" /> va comuta la limba respectivă. În caz contrar, <ph name="PRODUCT_OS_NAME" /> va comuta la prima valoare validă specificată de această politică sau la o limbă alternativă (în prezent, en-US), în cazul în care politica nu conține decât intrări nevalide.</translation>
 <translation id="5464816904705580310">Configurați setările pentru utilizatorii gestionați.</translation>
 <translation id="546726650689747237">Interval până la reducerea luminozității ecranului la funcționarea pe c.a.</translation>
 <translation id="5469484020713359236">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care nu sunt autorizate să seteze cookie-uri. Dacă această politică nu este setată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultCookiesSetting”, în cazul în care este setată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
@@ -1697,6 +1713,7 @@
 <translation id="6036523166753287175">Activați trecerea prin firewall de la gazda de acces la distanță</translation>
 <translation id="6070667616071269965">Aspectele tastaturii de pe ecranul de conectare al dispozitivului</translation>
 <translation id="6074963268421707432">Nu permite niciunui site să afișeze notificări pe desktop</translation>
+<translation id="6074964551275531965">Setează perioada pentru notificările privind actualizările</translation>
 <translation id="6076099373507468537">Definește lista de dispozitive USB care pot fi detașate de driverul kernel pentru a fi folosite prin API-ul chrome.usb direct într-o aplicație web. Pentru a se identifica un anumit hardware, intrările sunt perechi formate din Identificatorul furnizorului USB și Identificatorul produsului USB.
 
       Dacă această politică nu este configurată, lista de dispozitive USB detașabile este necompletată.</translation>
@@ -1769,6 +1786,11 @@
 <translation id="6392973646875039351">Activează funcția de Completare automată din <ph name="PRODUCT_NAME" /> și permite utilizatorilor să completeze în mod automat formularele web folosind informațiile stocate anterior, cum ar fi informațiile adresei fizice sau ale cardului de credit. Dacă dezactivați această setare, Completarea automată va fi inaccesibilă pentru utilizatori. Dacă activați această setare sau nu configurați o valoare, Completarea automată va rămâne sub controlul utilizatorului. Acest lucru va permite utilizatorilor să configureze profiluri pentru Completarea automată și să activeze sau să dezactiveze funcția Completare automată după cum doresc.</translation>
 <translation id="6394350458541421998">Această politică a fost retrasă începând cu <ph name="PRODUCT_OS_NAME" /> versiunea 29. Utilizați, în schimb, politica PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Deconectați utilizatorul</translation>
+<translation id="6412477120967771054">Dacă este dezactivată, împiedică Chrome Cleanup să scaneze sistemul pentru a detecta software nedorit și să îl elimine. Activarea manuală a funcției Chrome Cleanup din chrome://settings/cleanup este dezactivată.
+
+      Dacă este activată sau neconfigurată, Chrome Cleanup efectuează scanări periodice pentru a detecta software nedorit și, dacă detectează un astfel de software, va întreba utilizatorul dacă dorește să îl elimine. Activarea manuală a funcției Chrome Cleanup din chrome://settings este activată.
+
+      Această politică nu este disponibilă în instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="6417861582779909667">Vă permite să setați o listă cu modele pentru adresele URL ce specifică site-urile care nu sunt autorizate să seteze cookie-uri. Dacă această politică este lăsată nesetată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, din politica „DefaultCookiesSetting” în cazul în care este setată sau din configurația personală a utilizatorului, în caz contrar.</translation>
 <translation id="6426205278746959912">Nu poți forța aplicațiile Android să folosească un proxy. Un subset al setărilor de proxy este pus la dispoziția aplicațiilor Android, pe care acestea pot alege în mod voluntar să îl respecte:
 
@@ -1789,6 +1811,13 @@
       Pentru a controla căror site-uri li se permite să ruleze Flash, vezi politicile „DefaultPluginsSetting”, „PluginsAllowedForUrls” și „PluginsBlockedForUrls”.
 
       Dacă această setare este dezactivată sau nu este configurată, conținutul Flash cu alte origini sau conținutul redus ca importanță poate fi blocat.</translation>
+<translation id="6535639183431116351">Această politică este învechită în M68. Folosește DeveloperToolsAvailability.
+
+      Dezactivează Instrumentele pentru dezvoltatori și consola JavaScript.
+
+      Dacă activezi această setare, Instrumentele pentru dezvoltatori nu pot fi accesate, iar elementele site-urilor nu mai pot fi inspectate. Comenzile rapide de la tastatură și intrările din meniuri sau din meniurile contextuale pentru deschiderea Instrumentelor pentru dezvoltatori sau a consolei JavaScript vor fi dezactivate.
+
+      Dacă dezactivezi această opțiune sau nu o configurezi, utilizatorul va putea să folosească Instrumentele pentru dezvoltatori și consola JavaScript.</translation>
 <translation id="653608967792832033">Indică intervalul de timp fără intervenția utilizatorului după care ecranul este blocat atunci când dispozitivul funcționează pe baterie.
 
           Dacă politica este setată la o valoare mai mare decât zero, specifică intervalul de timp în care utilizatorul trebuie să fie inactiv înainte ca <ph name="PRODUCT_OS_NAME" /> să blocheze ecranul.
@@ -2198,6 +2227,7 @@ nu poate fi stabilit de utilizator din setările browserului.
       Consultă https://developers.google.com/safe-browsing pentru mai multe informații despre Navigarea sigură.</translation>
 <translation id="7643883929273267746">Restricționează conturile vizibile în <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Această politică stabilește dacă roamingul de date trebuie să fie activat pentru dispozitiv. Dacă această politică este activată, roamingul de date este permis. Dacă politica nu este configurată sau este neactivată, roamingul de date nu va fi disponibil.</translation>
+<translation id="7673194325208122247">Perioadă de timp (milisecunde)</translation>
 <translation id="7683777542468165012">Actualizează politica dinamică</translation>
 <translation id="7694807474048279351">Programați o repornire automată după aplicarea unei actualizări <ph name="PRODUCT_OS_NAME" />.
 
@@ -2323,16 +2353,13 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7961779417826583251">Dezactivează aplicarea politicii privind Transparența certificatului pentru o listă de autorități de certificare vechi</translation>
 <translation id="7974114691960514888">Această politică nu mai este acceptată. Permite utilizarea de servere STUN și de retransmisie în cazul conectării la un client la distanță. Dacă această setare este activată, atunci acest computer poate să descopere computere gazdă la distanță și să se conecteze la acestea, chiar dacă există un firewall. Dacă această setare este dezactivată, iar conexiunile UDP de ieșire sunt filtrate de firewall, atunci acest computer se poate conecta numai la computerele gazdă aflate în rețeaua locală.</translation>
 <translation id="7976157349247117979">Numele destinației pentru <ph name="PRODUCT_NAME" /></translation>
-<translation id="7978060394348264922">
-      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a
-      beneficia la maximum de fiecare, de izolare și de impact limitat asupra
-      utilizatorilor, folosind IsolateOrigins cu o listă a site-urilor pe care
-      vrei să le izolezi. Această setare, SitePerProcess, izolează toate site-urile.
-      Dacă politica este activată, fiecare site va rula propriul proces.
-      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările limitate de IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa SitePerProcess manual.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      </translation>
+<translation id="7977445800390854860">Dacă nu este configurată, în cazul în care Chrome Cleanup detectează software nedorit, poate să trimită la Google rapoarte cu metadate privind scanarea, conform politicii setate de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba apoi utilizatorul dacă dorește să elimine software-ul nedorit. Utilizatorul poate alege să trimită la Google rezultatele curățării pentru a contribui la detectarea software-ului nedorit în viitor. Aceste rezultate conțin metadate ale fișierului și chei registry, așa cum este prevăzut în Documentația privind confidențialitatea Google Chrome.
+
+      Dacă este dezactivată, în cazul în care Chrome Cleanup detectează software nedorit, nu va trimite la Google rapoarte cu metadate privind scanarea, ignorând orice politică setată de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba utilizatorul dacă dorește să elimine software-ul nedorit. Rezultatele curățării nu vor fi trimise la Google și utilizatorul nu va avea opțiunea de a le raporta.
+
+      Dacă este dezactivată, în cazul în care Chrome Cleanup detectează software nedorit, poate să trimită la Google rapoarte cu metadate privind scanarea, conform politicii setate de SafeBrowsingExtendedReportingEnabled. Chrome Cleanup va întreba utilizatorul dacă dorește să elimine software-ul nedorit. Rezultatele curățării vor fi trimise la Google și utilizatorul nu va avea opțiunea de a împiedica această acțiune.
+
+      Această politică nu este disponibilă în instanțele Windows neasociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Fără restricții speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotește ecranul la 0 grade</translation>
@@ -2444,6 +2471,7 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8300455783946254851">Dacă este activată, dezactivează sincronizarea cu Google Drive în aplicația Fișiere din <ph name="PRODUCT_OS_NAME" /> la folosirea unei conexiuni celulare. În acest caz, datele sunt sincronizate cu Google Drive numai când există o conexiune Wi-Fi sau Ethernet.
 
           Dacă nu este configurată sau dacă este dezactivată, utilizatorii vor putea să transfere fișiere în Google Drive prin conexiuni celulare.</translation>
+<translation id="8300992833374611099">Stabilește unde pot fi folosite Instrumentele pentru dezvoltatori</translation>
 <translation id="8312129124898414409">Îți permite să setezi dacă site-urile au permisiunea de a folosi generarea cheilor. Folosirea generării cheilor poate fi permisă sau refuzată în bloc pentru toate site-urile.
 
           Dacă această politică nu este configurată, va fi folosită opțiunea „BlockKeygen”, iar utilizatorul o va putea modifica.</translation>
@@ -2661,19 +2689,14 @@ Este recomandat să configurezi politica în Windows prin GPO, cu toate că gest
 <translation id="8976248126101463034">Permite autentificarea gnubby pentru gazdele de acces la distanță</translation>
 <translation id="8976531594979650914">Folosește imprimanta prestabilită a sistemului ca setare prestabilită</translation>
 <translation id="8992176907758534924">Nu permite niciunui site să afișeze imagini</translation>
-<translation id="9034729899149506577">
-      Dacă politica este activată, fiecare dintre originile indicate într-o listă
-      de valori separate prin virgulă va rula propriul proces. Aceasta va izola
-      și originile denumite după subdomenii; de exemplu, specificarea
-      https://example.com/ va cauza și izolarea https://foo.example.com/ ca parte
-      a site-ului https://example.com/.
-      Dacă politica este dezactivată, nu va avea loc o izolare explicită a site-ului, iar testările limitate de IsolateOrigins și SitePerProcess vor fi dezactivate. Utilizatorii vor putea activa manual IsolateOrigins.
-      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
-      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului până ce se aplică valoarea specificată în politica privind utilizatorii.
-      </translation>
 <translation id="9035964157729712237">ID-urile extensiilor excluse din lista neagră</translation>
 <translation id="9042911395677044526">Această politică permite trimiterea configurației rețelei pentru a fi aplicată pentru fiecare utilizator pe un dispozitiv cu <ph name="PRODUCT_OS_NAME" />. Configurația rețelei este un șir în formatul JSON, conform definirii acestuia de către formatul Open Network Configuration descris la <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Specificați dacă activitatea video afectează gestionarea consumului de energie</translation>
+<translation id="9085839450090699752">Îți permite să setezi perioada, în milisecunde, în care utilizatorii sunt informați că <ph name="PRODUCT_NAME" /> trebuie relansat sau că un dispozitiv <ph name="PRODUCT_OS_NAME" /> trebuie repornit pentru a aplica o actualizare în așteptare.
+
+      În această perioadă, utilizatorul va fi informat în mod repetat despre necesitatea unei actualizări. Pentru dispozitivele <ph name="PRODUCT_OS_NAME" />, notificarea privind repornirea apare în bara de sistem atunci când se detectează un upgrade. Această notificare își schimbă culoarea după expirarea primei jumătăți a perioadei de notificare și încă o dată, după încheierea întregii perioade de notificare. Pentru browserele <ph name="PRODUCT_NAME" />, meniul aplicației se modifică, indicând faptul că este necesară o relansare după expirarea unei treimi din perioada de notificare. Această notificare își schimbă culoarea după expirarea a două treimi din perioada de notificare și încă o dată, după încheierea întregii perioade de notificare. Notificările suplimentare activate de politica <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pentru browsere urmează aceeași regulă.
+
+      Dacă nu este configurată, se aplică o perioadă prestabilită de 345.600.000 de milisecunde (4 zile) pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> și o perioadă prestabilită de 604.800.000 de milisecunde (o săptămână) pentru browsere.</translation>
 <translation id="9088433379343318874">Activează furnizorul de conținut pentru utilizatori monitorizați</translation>
 <translation id="9088444059179765143">Configurează metoda de detectare automată a fusului orar</translation>
 <translation id="9096086085182305205">Lista albă de autentificare a serverelor</translation>

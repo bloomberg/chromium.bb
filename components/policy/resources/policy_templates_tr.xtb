@@ -2457,16 +2457,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
       True (doğru) değerine ayarlanırsa Chrome Temizleme Aracı istenmeyen yazılımları tespit eder, SafeBrowsingExtendedReportingEnabled tarafından ayarlanan politikaya uygun şekilde taramayla ilgili meta verileri Google'a raporlayabilir. Chrome Temizleme Aracı, kullanıcıya istenmeyen yazılımın temizlenmesini isteyip istemediğini sorar. Temizleme işleminin sonuçları Google'a bildirilir ve kullanıcıya bunu önleme seçeneği sunulmaz.
 
       Bu politika, <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde kullanılamaz.</translation>
-<translation id="7978060394348264922">
-      Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder. 
-      Bu politikanın etkinleştirilmesi halinde her site kendi işleminde çalışır.
-      Bu politikanın devre dışı bırakılması halinde hiçbir Site İzolasyonu 
-      yapılmaz ve IsolateOrigins ile SitePerProcess’in saha denemeleri devre 
-      dışı  kalır. Ancak kullanıcılar yine de SitePerProcess’i manuel olarak 
-      etkinleştirebilirler.
-      Politika yapılandırılmazsa kullanıcı bu ayarı değiştirebilir.
-      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde, <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-      </translation>
 <translation id="7980227303582973781">Özel kısıtlama yok</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Ekranı 0 derece döndür</translation>
@@ -2809,17 +2799,6 @@ olan sanal makineleri kapatmaz.
 <translation id="8976248126101463034">Uzak erişim ana makineleri için gnubby kimlik doğrulamasına izin ver</translation>
 <translation id="8976531594979650914">Varsayılan Olarak Sistem Varsayılan Yazıcısını Kullan</translation>
 <translation id="8992176907758534924">Hiçbir sitenin resimleri görüntülemesine izin verme</translation>
-<translation id="9034729899149506577">
-      Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede
-      adı verilen her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan
-      adlarıyla adlandırılan kaynakları da izole eder; örneğin https://example.com/  
-      adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak
-      https://foo.example.com/ sitesinin de izole edilmesine neden olur.      .
-      Bu politikanın devre dışı bırakılması halinde hiçbir Site İzolasyonu yapılmaz 
-ve IsolateOrigins ile SitePerProcess'in saha denemeleri devre dışı  
-kalır. Ancak kullanıcılar yine de IsolateOrigins'i manuel olarak etkinleştirebilir.
-      Politika yapılandırılmazsa, kullanıcı bu ayarı değiştirebilir. <ph name="PRODUCT_OS_NAME" /> işletim sisteminde <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> cihaz politikasının da aynı değere ayarlanması önerilir. İki politikanın belirttiği değerler eşleşmezse kullanıcı oturumuna giriş sırasında kullanıcı politikası tarafından belirtilen değer uygulanırken gecikme olabilir.
-      </translation>
 <translation id="9035964157729712237">Kara listeden muaf tutulacak uzantı kimlikleri</translation>
 <translation id="9042911395677044526">Kullanıcılara ayrı ayrı uygulanacak ağ yapılandırmasını bir <ph name="PRODUCT_OS_NAME" /> cihazına iletmeye olanak verir. Ağ yapılandırması, Açık Ağ Yapılandırma biçimi tarafından <ph name="ONC_SPEC_URL" /> adresinde tanımlandığı gibi, JSON biçimli bir dizedir.</translation>
 <translation id="9084985621503260744">Video etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>

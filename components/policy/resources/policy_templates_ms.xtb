@@ -2468,16 +2468,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika ditetapkan kepada benar, sekiranya Chrome Cleanup mengesan perisian yang tidak dikehendaki, Chrome Cleanup boleh melaporkan metadata tentang imbasan itu kepada Google menurut dasar yang ditetapkan oleh SafeBrowsingExtendedReportingEnabled. Chrome Cleanup akan menanyakan pengguna jika mereka ingin membersihkan perisian yang tidak dikehendaki itu.  Keputusan pembersihan akan dilaporkan kepada Google dan pengguna tidak mempunyai pilihan untuk menghalangnya.
 
       Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
-<translation id="7978060394348264922">
-      Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk memanfaatkan
-      kedua-dua keadaan, pengasingan dan kesan yang terhad untuk pengguna,
-      dengan menggunakan IsolateOrigins yang mempunyai senarai tapak yang
-      hendak diasingkan. Tetapan SitePerProcess ini mengasingkan semua tapak.
-      Jika dasar ini didayakan, setiap tapak akan dijalankan dalam prosesnya sendiri.
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan lapangan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan SitePerProcess secara manual.
-      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan untuk turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> pada nilai yang sama. Jika nilai yang dinyatakan oleh kedua-dua dasar tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      </translation>
 <translation id="7980227303582973781">Tiada sekatan khas</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Putar skrin 0 darjah</translation>
@@ -2817,17 +2807,6 @@ Cara yang disyorkan untuk mengkonfigurasikan dasar pada Windows adalah melalui G
 <translation id="8976248126101463034">Benarkan pengesahan gnubby untuk hos akses jauh</translation>
 <translation id="8976531594979650914">Gunakan Pencetak Lalai Sistem sebagai Lalai</translation>
 <translation id="8992176907758534924">Jangan benarkan mana-mana tapak untuk menunjukkan imej</translation>
-<translation id="9034729899149506577">
-      Jika dasar ini didayakan, setiap tempat asal yang dinamakan dalam senarai
-      yang dipisahkan koma akan dijalankan dalam prosesnya sendiri. Tindakan ini
-      turut mengasingkan tempat asal yang dinamakan mengikut subdomain;
-      mis. menyatakan https://example.com/ akan turut menyebabkan
-      https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
-      https://example.com/. 
-      Jika dasar ini dilumpuhkan, tiada Pengasingan Tapak eksplisit akan berlaku dan percubaan lapangan IsolateOrigins dan SitePerProcess akan dilumpuhkan. Pengguna masih dapat mendayakan IsolateOrigins secara manual.
-      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan untuk turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> pada nilai yang sama. Jika nilai yang dinyatakan oleh kedua-dua dasar tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
-      </translation>
 <translation id="9035964157729712237">ID sambungan untuk dikecualikan daripada senarai hitam</translation>
 <translation id="9042911395677044526">Membenarkan penolakan konfigurasi rangkaian digunakan untuk setiap pengguna pada peranti <ph name="PRODUCT_OS_NAME" />. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Menyatakan sama ada aktiviti video menjejaskan pengurusan kuasa</translation>

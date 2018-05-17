@@ -2300,16 +2300,6 @@ Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il v
       Se la norma viene impostata su true e Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà all'utente se vuole ripulire il software indesiderato. I risultati della pulizia verranno segnalati a Google e l'utente non avrà la possibilità di impedire la segnalazione.
 
       Questa norma non è disponibile sulle istanze di Windows che non fanno parte di un dominio <ph name="MS_AD_NAME" />.</translation>
-<translation id="7978060394348264922">
-      Potresti considerare l'impostazione della norma IsolateOrigins per ottenere
-      sia l'isolamento sia un impatto limitato per gli utenti. Usa
-      IsolateOrigins con un elenco dei siti che vuoi isolare. Questa impostazione,
-      SitePerProcess, isola tutti i siti.
-      Se la norma è attivata, ciascun sito verrà eseguito nel proprio processo.
-      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non è configurata, l'utente potrà modificare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      </translation>
 <translation id="7980227303582973781">Nessuna limitazione speciale</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Ruota lo schermo di 0°</translation>
@@ -2625,16 +2615,6 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="8976248126101463034">Consenti l'autenticazione Gnubby per gli host di accesso remoto</translation>
 <translation id="8976531594979650914">Usa stampante di sistema come predefinita</translation>
 <translation id="8992176907758534924">Non consentire la visualizzazione di immagini nei siti</translation>
-<translation id="9034729899149506577">
-      Se la norma viene attivata, ogni origine indicata in un
-      elenco di valori separati da virgole verrà eseguita in un proprio processo. Verranno inoltre isolate
-      le origini indicate dai sottodomini; ad esempio, se viene specificato il sito https://example.com/ viene
-      isolato anche https://foo.example.com/, perché fa parte
-      del sito https://example.com/.
-      Se la norma è disattivata, non avverrà alcun isolamento esplicito dei siti e le prove sul campo di IsolateOrigins e SitePerProcess saranno disattivate. Gli utenti potranno ancora attivare SitePerProcess manualmente.
-      Se la norma non è configurata, l'utente potrà cambiare questa impostazione.
-      In <ph name="PRODUCT_OS_NAME" />, si consiglia di impostare anche la norma relativa ai dispositivi <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sullo stesso valore. Se i valori specificati dalle due norme non corrispondono, può verificarsi un ritardo durante l'accesso a una sessione utente mentre viene applicato il valore specificato dalla norma relativa agli utenti.
-      </translation>
 <translation id="9035964157729712237">ID delle estensioni da escludere dalla blacklist</translation>
 <translation id="9042911395677044526">Consente di forzare l'applicazione della configurazione di rete per utente su un dispositivo <ph name="PRODUCT_OS_NAME" />. La configurazione di rete è una stringa in formato JSON definita secondo il formato Open Network Configuration descritto all'indirizzo <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Specifica se l'attività video incide sulla gestione dell'alimentazione</translation>

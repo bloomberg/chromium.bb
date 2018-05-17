@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">Utilitza les prediccions de pàgines</translation>
 <translation id="4412992751769744546">Permet les galetes de tercers</translation>
 <translation id="4432792777822557199">A partir d'ara, les pàgines en <ph name="SOURCE_LANGUAGE" /> es traduiran a <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">Finestres emergents i redireccions</translation>
 <translation id="4445444302979002552">Utilitza els serveis de predicció per suggerir llocs web i termes de cerca</translation>
 <translation id="4452411734226507615">Tanca la pestanya <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Adreça d'interès afegida a <ph name="FOLDER_NAME" /></translation>
@@ -516,6 +517,7 @@ Tanmateix, no sou invisible. El vostre cap, el vostre proveïdor de serveis d'In
 <translation id="5765780083710877561">Descripció:</translation>
 <translation id="5777170031995031090">Controleu com utilitza Google el vostre historial de navegació per personalitzar la Cerca, els anuncis i altres serveis de Google.</translation>
 <translation id="5779929835642192302">Suggeriments disponibles</translation>
+<translation id="5793665092639000975">S'estan utilitzant <ph name="SPACE_USED" /> de <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Permisos</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{fa # hora}other{fa # hores}}</translation>
 <translation id="5817918615728894473">Vincula</translation>
@@ -600,6 +602,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="6556716549745717622">Bloqueja si el lloc web acostuma a mostrar anuncis intrusius (opció recomanada)</translation>
 <translation id="6560414384669816528">Cerca amb Sogou</translation>
 <translation id="6566259936974865419">Chrome t'ha estalviat <ph name="GIGABYTES" /> GB</translation>
+<translation id="6573096386450695060">Permet sempre</translation>
 <translation id="6573431926118603307">Les pestanyes que tingueu obertes a Chrome als altres dispositius es mostraran aquí.</translation>
 <translation id="6575643671698722332">El restabliment ha fallat. Assegureu-vos que el dispositiu estigui en línia i torneu-ho a provar.</translation>
 <translation id="6583199322650523874">Afegeix la pàgina actual a les adreces d'interès</translation>
@@ -659,6 +662,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7031882061095297553">Sincronitza amb</translation>
 <translation id="7034608350006174882">Targetes i adreces que fan servir Google Pay</translation>
 <translation id="7053983685419859001">Bloqueja</translation>
+<translation id="7055152154916055070">S'ha bloquejat la redirecció:</translation>
 <translation id="7062545763355031412">Accepta i canvia de compte</translation>
 <translation id="7063006564040364415">No s'ha pogut connectar amb el servidor de sincronització.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 element seleccionat}other{# elements seleccionats}}</translation>
@@ -667,6 +671,7 @@ Per exemple, és possible que alguns llocs web responguin a aquesta sol·licitud
 <translation id="7121362699166175603">Esborra l'historial i les complecions automàtiques a la barra d'adreces. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />, trobaràs altres maneres d'explorar l'historial del teu compte de Google.</translation>
 <translation id="7128222689758636196">Permet al motor de cerca actual</translation>
 <translation id="7138678301420049075">Altres</translation>
+<translation id="7141896414559753902">Bloqueja les finestres emergents i les redireccions als llocs web (opció recomanada)</translation>
 <translation id="7144878232160441200">Torna-ho a provar</translation>
 <translation id="7149893636342594995">Les darreres 24 hores</translation>
 <translation id="7177466738963138057">Pots canviar aquesta opció més endavant a Configuració</translation>
@@ -883,6 +888,7 @@ Per obtenir llicències noves, connecteu-vos a Internet i reproduïu el contingu
 <translation id="932327136139879170">Pàgina d'inici</translation>
 <translation id="932599481871055447">Estalvia dades i navega més de pressa</translation>
 <translation id="938850635132480979">Error: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">No hi ha prou espai a la targeta SD</translation>
 <translation id="945522503751344254">Envia suggeriments</translation>
 <translation id="945632385593298557">Accés al micròfon</translation>
 <translation id="951339005376969845">Suprimeix les dades existents. Per recuperar-les, torna a <ph name="FROM_ACCOUNT" />.</translation>

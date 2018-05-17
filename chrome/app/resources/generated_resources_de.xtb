@@ -5091,7 +5091,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8902667442496790482">Einstellungen für "Vorlesen" öffnen</translation>
 <translation id="8903921497873541725">Vergrößern</translation>
 <translation id="8904976895050290827">Google Chrome Sync</translation>
-<translation id="8908902564709148335">Warnung: Sie haben auf diesem Computer den Parameter --scripts-require-action aktiviert, durch den diese Erweiterung funktional eingeschränkt wird. Andere Geräte unterstützen den Parameter jedoch möglicherweise nicht oder er ist dort aktiviert. Auf solchen Geräten ist diese Erweiterung auch zu Folgendem in der Lage:</translation>
 <translation id="8909233240676134608">Der Computer konnte der Domain nicht beitreten. Der Server bietet keine Unterstützung für die angegebenen Kerberos-Verschlüsselungstypen. Unter "Weitere Optionen" finden Sie die Verschlüsselungseinstellungen.</translation>
 <translation id="8909833622202089127">Die Website verfolgt Ihren Standort</translation>
 <translation id="8910146161325739742">Bildschirm freigeben</translation>
@@ -5111,7 +5110,6 @@ Andere Personen mit langsamen Verbindungen sehen Ihre Inhalte möglicherweise ni
 <translation id="8940081510938872932">Ihr Computer erledigt momentan zu viele Aufgaben gleichzeitig. Bitte versuchen Sie es später erneut.</translation>
 <translation id="8941173171815156065">Berechtigung "<ph name="PERMISSION" />" aufheben</translation>
 <translation id="8941882480823041320">Vorheriges Wort</translation>
-<translation id="8943076760234179177">Netzwerkfreigabe-URL</translation>
 <translation id="894360074127026135">Netscape International Step-up</translation>
 <translation id="8944099748578356325">Den Akku schneller verbrauchen (aktueller Stand: <ph name="BATTERY_PERCENTAGE" /> %)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> teilt ein Fenster mit <ph name="TAB_NAME" />.</translation>
