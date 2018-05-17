@@ -151,6 +151,7 @@
 <translation id="3995138139523574647">USB-C-enhet (porten bak på høyre side)</translation>
 <translation id="4017989525502048489">Laserpeker</translation>
 <translation id="4072264167173457037">Middels sterkt signal</translation>
+<translation id="4217571870635786043">Diktering</translation>
 <translation id="4279490309300973883">Speiling</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -167,6 +168,7 @@
 <translation id="4527045527269911712">Bluetooth-enheten «<ph name="DEVICE_NAME" />» ber om tillatelse til å koble til.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> til batteriet er fulladet</translation>
 <translation id="4544944664594876241">Snarveien for å låse skjermen er endret. Bruk <ph name="NEW_SHORTCUT" /> i stedet for <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Tekstopplesingsknapp</translation>
 <translation id="4659419629803378708">ChromeVox er slått på</translation>
 <translation id="4776917500594043016">Passord for <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">søk</translation>
@@ -254,6 +256,7 @@
 <translation id="6700713906295497288">IME-menyknappen</translation>
 <translation id="6713285437468012787">Nå er Bluetooth-enheten «<ph name="DEVICE_NAME" />» koblet til og tilgjengelig for alle brukere. Du kan oppheve denne tilkoblingen via Innstillinger.</translation>
 <translation id="6715542151869432661">Fant ingen mobilenheter.</translation>
+<translation id="671928215901716392">Lås skjerm</translation>
 <translation id="6785414152754474415">Batteriet er <ph name="PERCENTAGE" /> % fullt og til lading.</translation>
 <translation id="6803622936009808957">Kunne ikke speile skjermene fordi ingen støttede oppløsninger ble funnet. Utvidet skrivebord ble brukt i stedet.</translation>
 <translation id="683971173229319003">Søk+L</translation>
@@ -287,6 +290,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (eier)</translation>
 <translation id="7647488630410863958">Lås opp enheten for å se varslene dine</translation>
 <translation id="7649070708921625228">Hjelp</translation>
+<translation id="7654687942625752712">Trykk og hold på begge volumknappene i fem sekunder for å slå av taletilbakemelding.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
 <translation id="7692480393933218409">Lader de tilkoblede USB-C-enhetene</translation>
 <translation id="776344839111254542">Klikk for å se oppdateringsdetaljene</translation>

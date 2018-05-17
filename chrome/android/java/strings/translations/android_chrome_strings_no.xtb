@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">Bruk sideforslag</translation>
 <translation id="4412992751769744546">Tillat informasjonskapsler fra tredjeparter</translation>
 <translation id="4432792777822557199">Fra nå av oversettes sider på <ph name="SOURCE_LANGUAGE" /> til <ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">Forgrunnsvinduer/viderekoblinger</translation>
 <translation id="4445444302979002552">Bruk forslagstjenester for å få forslag til søketermer og nettsteder</translation>
 <translation id="4452411734226507615">Lukk <ph name="TAB_TITLE" />-fanen</translation>
 <translation id="4452548195519783679">Satt som bokmerke i <ph name="FOLDER_NAME" /></translation>
@@ -516,6 +517,7 @@ Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for 
 <translation id="5765780083710877561">Beskrivelse:</translation>
 <translation id="5777170031995031090">Kontrollér hvordan Google bruker nettlesingsloggen din for å gi Søk, annonser og andre Google-tjenester et personlig preg.</translation>
 <translation id="5779929835642192302">Det finnes tilgjengelige forslag</translation>
+<translation id="5793665092639000975">Bruker <ph name="SPACE_USED" /> av <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Tillatelser</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{for # time siden}other{for # timer siden}}</translation>
 <translation id="5817918615728894473">Koble sammen</translation>
@@ -600,6 +602,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="6556716549745717622">Blokkér hvis nettstedet ofte viser forstyrrende annonser (anbefalt)</translation>
 <translation id="6560414384669816528">Søk med Sogou</translation>
 <translation id="6566259936974865419">Chrome har spart deg for <ph name="GIGABYTES" /> GB</translation>
+<translation id="6573096386450695060">Tillat alltid</translation>
 <translation id="6573431926118603307">Faner du har åpnet i Chrome på de andre enhetene dine, vises her.</translation>
 <translation id="6575643671698722332">Tilbakestillingen var mislykket. Sjekk at enheten din har Internett-tilkobling og prøv på nytt.</translation>
 <translation id="6583199322650523874">Sett den aktive siden som bokmerke</translation>
@@ -659,6 +662,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7031882061095297553">Synkroniser med</translation>
 <translation id="7034608350006174882">Kort og adresser ved bruk av Google Pay</translation>
 <translation id="7053983685419859001">Blokkér</translation>
+<translation id="7055152154916055070">Viderekoblingen er blokkert:</translation>
 <translation id="7062545763355031412">Godta og bytt konto</translation>
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 er valgt}other{# er valgt}}</translation>
@@ -667,6 +671,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7121362699166175603">Tømmer loggen og fjerner autofullføringer i adressefeltet. Det kan hende Google-kontoen din har andre typer nettlesingslogger på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Tillat for den aktive søkemotoren</translation>
 <translation id="7138678301420049075">Annet</translation>
+<translation id="7141896414559753902">Blokkér nettsteder fra å vise forgrunnsvinduer og viderekoblinger (anbefales)</translation>
 <translation id="7144878232160441200">Prøv på nytt</translation>
 <translation id="7149893636342594995">Siste døgn</translation>
 <translation id="7177466738963138057">Du kan endre dette senere i Innstillinger</translation>
@@ -883,6 +888,7 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="932327136139879170">Gå til startsiden</translation>
 <translation id="932599481871055447">Spar data og surf raskere</translation>
 <translation id="938850635132480979">Feil: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">Ikke nok plass på SD-kortet</translation>
 <translation id="945522503751344254">Gi tilbakemelding</translation>
 <translation id="945632385593298557">Tilgang til mikrofonen din</translation>
 <translation id="951339005376969845">Slett de eksisterende dataene. Du kan hente dem ut ved å bytte tilbake til <ph name="FROM_ACCOUNT" />.</translation>

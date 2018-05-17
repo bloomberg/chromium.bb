@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">Folosește predicțiile pentru pagini</translation>
 <translation id="4412992751769744546">Permite cookie-urile terță parte</translation>
 <translation id="4432792777822557199">Paginile în <ph name="SOURCE_LANGUAGE" /> vor fi traduse în <ph name="TARGET_LANGUAGE" /> de acum înainte</translation>
+<translation id="4434045419905280838">Ferestre pop-up și redirecționări</translation>
 <translation id="4445444302979002552">Folosește serviciile de predicție pentru sugerarea de termeni de căutare și de site-uri</translation>
 <translation id="4452411734226507615">Închide fila <ph name="TAB_TITLE" /></translation>
 <translation id="4452548195519783679">Marcaj adăugat în <ph name="FOLDER_NAME" /></translation>
@@ -516,6 +517,7 @@ Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activit
 <translation id="5765780083710877561">Descriere:</translation>
 <translation id="5777170031995031090">Stabilește cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea, anunțurile și alte servicii Google.</translation>
 <translation id="5779929835642192302">Sugestii disponibile</translation>
+<translation id="5793665092639000975">Se utilizează <ph name="SPACE_USED" /> din <ph name="SPACE_AVAILABLE" /></translation>
 <translation id="5804241973901381774">Permisiuni</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{Acum # oră}few{Acum # ore}other{Acum # de ore}}</translation>
 <translation id="5817918615728894473">Asociază</translation>
@@ -600,6 +602,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="6556716549745717622">Blochează dacă site-ul tinde să afișeze anunțuri deranjante (recomandat)</translation>
 <translation id="6560414384669816528">Caută cu Sogou</translation>
 <translation id="6566259936974865419">Chrome a economisit <ph name="GIGABYTES" /> GB</translation>
+<translation id="6573096386450695060">Permite întotdeauna</translation>
 <translation id="6573431926118603307">Filele deschise în Chrome pe alte dispozitive vor apărea aici.</translation>
 <translation id="6575643671698722332">Nu s-a resetat. Asigură-te că ești online și încearcă din nou.</translation>
 <translation id="6583199322650523874">Marchează pagina curentă</translation>
@@ -659,6 +662,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7031882061095297553">Sincronizează cu</translation>
 <translation id="7034608350006174882">Carduri și adrese care folosesc Google Pay</translation>
 <translation id="7053983685419859001">Blochează</translation>
+<translation id="7055152154916055070">Redirecționarea a fost blocată:</translation>
 <translation id="7062545763355031412">Acceptă și comută conturile</translation>
 <translation id="7063006564040364415">Nu s-a putut stabili conexiunea cu serverul de sincronizare.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selectat}few{# selectate}other{# selectate}}</translation>
@@ -667,6 +671,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7121362699166175603">Șterge istoricul și completările automate din bara de adrese. Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
 <translation id="7128222689758636196">Permite pentru motorul de căutare actual</translation>
 <translation id="7138678301420049075">Altele</translation>
+<translation id="7141896414559753902">Blochează afișarea ferestrelor pop-up de către site-uri (recomandat)</translation>
 <translation id="7144878232160441200">Reîncearcă</translation>
 <translation id="7149893636342594995">Ultimele 24 de ore</translation>
 <translation id="7177466738963138057">Poți modifica ulterior această opțiune în Setări</translation>
@@ -883,6 +888,7 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="932327136139879170">Pagina de pornire</translation>
 <translation id="932599481871055447">Economisește date și navighează mai rapid</translation>
 <translation id="938850635132480979">Eroare: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">Nu există spațiu suficient pe cardul SD</translation>
 <translation id="945522503751344254">Trimite feedback</translation>
 <translation id="945632385593298557">Accesează microfonul</translation>
 <translation id="951339005376969845">Șterge datele existente. Le poți recupera comutând înapoi la <ph name="FROM_ACCOUNT" />.</translation>

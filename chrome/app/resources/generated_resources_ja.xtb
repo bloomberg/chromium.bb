@@ -660,6 +660,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> から、ローカルのパソコンに大きなデータを永続的に保存する許可を求められています</translation>
 <translation id="1997616988432401742">ユーザーの証明書</translation>
 <translation id="1999115740519098545">起動時</translation>
+<translation id="2001796770603320721">ドライブで管理</translation>
 <translation id="2006638907958895361"><ph name="APP" /> でリンクを開く</translation>
 <translation id="2007404777272201486">問題の報告...</translation>
 <translation id="2016430552235416146">通常</translation>
@@ -2088,6 +2089,7 @@
 <translation id="42137655013211669">このリソースへのアクセスはサーバーにより禁止されています。</translation>
 <translation id="4215350869199060536">名前に間違った記号が含まれています。</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" />をバックアップしています</translation>
+<translation id="4217571870635786043">音声入力</translation>
 <translation id="4225397296022057997">すべてのサイト</translation>
 <translation id="4235200303672858594">画面全体</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME" /> のアカウントを追加</translation>
@@ -2200,6 +2202,7 @@
 <translation id="4425149324548788773">マイドライブ</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4430369329743628066">ブックマークを追加しました</translation>
+<translation id="4434045419905280838">ポップアップとリダイレクト</translation>
 <translation id="443454694385851356">以前の暗号化タイプ（安全ではありません）</translation>
 <translation id="443464694732789311">続行</translation>
 <translation id="443475966875174318">互換性のないアプリケーションの更新または削除</translation>
@@ -3893,6 +3896,7 @@
 <translation id="7052237160939977163">パフォーマンス追跡データを送信する</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">ブロック</translation>
+<translation id="7055152154916055070">リダイレクトがブロックされました:</translation>
 <translation id="7056526158851679338">デバイスを検証(&amp;I)</translation>
 <translation id="7059858479264779982">自動起動に設定する</translation>
 <translation id="7059893117020417984">シークレット モードを使うには、その他アイコンのメニューからシークレット ウィンドウを開きます</translation>
@@ -4258,6 +4262,7 @@
 <translation id="7617366389578322136">「<ph name="DEVICE_NAME" />」に接続しています</translation>
 <translation id="7622114377921274169">充電しています。</translation>
 <translation id="7624337243375417909">CapsLock オフ</translation>
+<translation id="7625568159987162309">すべてのサイトに保存されている権限とデータを表示</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" /> は既に存在しています。名前を変更してもう一度お試しください。</translation>
 <translation id="7628127343934101653">PDF ファイルをデフォルトの PDF ビューア アプリで開く。</translation>
 <translation id="7629827748548208700">タブ:<ph name="TAB_NAME" /></translation>
@@ -4580,6 +4585,7 @@
 <translation id="806812017500012252">タイトルで並べ替え</translation>
 <translation id="8068253693380742035">タップしてログイン</translation>
 <translation id="8069615408251337349">Google クラウド プリント</translation>
+<translation id="806972267388474605">Linux ファイル</translation>
 <translation id="8071432093239591881">画像として印刷する</translation>
 <translation id="8072988827236813198">複数のタブを固定</translation>
 <translation id="8074127646604999664">最近閉じたサイトがデータの送受信を完了できるようにする</translation>
@@ -5088,7 +5094,6 @@
 <translation id="8902667442496790482">「選択して読み上げ」の設定を開く</translation>
 <translation id="8903921497873541725">拡大する</translation>
 <translation id="8904976895050290827">Chrome の同期</translation>
-<translation id="8908902564709148335">警告: このパソコンで --scripts-require-action フラグを有効にしました。この拡張機能は限られた操作のみを行うことができます。ただし他のデバイスではこのフラグがサポートされていないか有効になっていない可能性があります。そのようなデバイスでは、この拡張機能は次の操作も行うことができます:</translation>
 <translation id="8909233240676134608">パソコンをドメインに追加できません。指定した Kerberos 暗号化タイプがサーバーでサポートされていません。[その他のオプション] で暗号化の設定をご確認ください。</translation>
 <translation id="8909833622202089127">サイトで現在地が追跡されています</translation>
 <translation id="8910146161325739742">画面を共有する</translation>
@@ -5108,7 +5113,6 @@
 <translation id="8940081510938872932">お使いのパソコンは現在、多くの処理を実施しています。しばらくしてからもう一度お試しください。</translation>
 <translation id="8941173171815156065">権限「<ph name="PERMISSION" />」を取り消します</translation>
 <translation id="8941882480823041320">前の単語</translation>
-<translation id="8943076760234179177">ファイル共有 URL</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">バッテリー消費が速くなります（現在 <ph name="BATTERY_PERCENTAGE" />%）</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> が <ph name="TAB_NAME" /> のウィンドウを共有しています。</translation>

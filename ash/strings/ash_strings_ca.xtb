@@ -151,6 +151,7 @@
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4017989525502048489">Punter làser</translation>
 <translation id="4072264167173457037">Senyal mitjà</translation>
+<translation id="4217571870635786043">Dictat</translation>
 <translation id="4279490309300973883">S'està creant una rèplica</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -167,6 +168,7 @@
 <translation id="4527045527269911712">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> per completar la càrrega</translation>
 <translation id="4544944664594876241">La drecera per bloquejar la pantalla ha canviat. Utilitzeu <ph name="NEW_SHORTCUT" /> en lloc de la drecera <ph name="OLD_SHORTCUT" />.</translation>
+<translation id="4570957409596482333">Botó Escolta la selecció</translation>
 <translation id="4659419629803378708">S'ha activat ChromeVox</translation>
 <translation id="4776917500594043016">Contrasenya per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">cerca</translation>
@@ -254,6 +256,7 @@
 <translation id="6700713906295497288">Botó del menú d'IME</translation>
 <translation id="6713285437468012787">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" s'ha vinculat i ja està disponible per a tots els usuaris. Podeu eliminar la vinculació a Configuració.</translation>
 <translation id="6715542151869432661">No s'ha trobat cap dispositiu mòbil.</translation>
+<translation id="671928215901716392">Bloqueja la pantalla</translation>
 <translation id="6785414152754474415">La bateria està carregada fins al <ph name="PERCENTAGE" />% i s'està carregant.</translation>
 <translation id="6803622936009808957">No s'ha pogut fer la rèplica de les pantalles, perquè no s'ha trobat cap resolució compatible. S'està entrant al mode d'escriptori ampliat.</translation>
 <translation id="683971173229319003">Cerca + L</translation>
@@ -287,6 +290,7 @@
 <translation id="7645176681409127223"><ph name="USER_NAME" /> (propietari)</translation>
 <translation id="7647488630410863958">Desbloqueja el dispositiu per veure les notificacions</translation>
 <translation id="7649070708921625228">Ajuda</translation>
+<translation id="7654687942625752712">Mantén premudes les dues tecles de volum durant cinc segons per desactivar els comentaris de veu.</translation>
 <translation id="7658239707568436148">Cancel·la</translation>
 <translation id="7692480393933218409">S'estan carregant els dispositius USB-C connectats</translation>
 <translation id="776344839111254542">Fes clic per veure els detalls de l'actualització</translation>

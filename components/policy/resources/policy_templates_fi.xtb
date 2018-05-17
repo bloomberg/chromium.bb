@@ -2344,16 +2344,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
       Jos arvoksi on asetettu tosi, Chrome Cleanup voi ei-toivottuja ohjelmistoja havaitessaan raportoida skannauksen sisällönkuvausdataa Googlelle SafeBrowsingExtendedReportingEnabled-käytännön mukaisesti. Chrome Cleanup kysyy käyttäjältä, poistetaanko ei-toivottu ohjelmisto. Poiston tulokset raportoidaan Googlelle, mitä käyttäjä ei voi estää.
 
       Tämä käytäntö ei ole saatavilla Windowsin esiintymissä, jotka eivät liity verkkotunnukseen <ph name="MS_AD_NAME" />.</translation>
-<translation id="7978060394348264922">
-      On suositeltavaa tarkistaa IsolateOrigins-käytännön asetus, jotta voidaan
-      päästä parhaaseen lopputulokseen ja huolehtia sivustojen eristyksestä pienentäen samalla käyttäjille aiheutuvaa haittaa.
-      IsolateOrigins-käytäntöön lisätään luettelo kaikista eristettävistä sivustoista. Tämä asetus
-      (SitePerProcess) eristää kaikki sivustot.
-      Jos tämä käytäntö on käytössä, jokainen sivusto suoritetaan omana prosessinaan.
-      Jos tämä käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa SitePerProcess-asetuksen käyttöön.
-      Jos käytäntöä ei määritetä, käyttäjä voi muuttaa tätä asetusta.
-      Suositus (<ph name="PRODUCT_OS_NAME" />): aseta sama arvo myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Jos näiden kahden käytännön arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon käyttöönoton vuoksi.
-      </translation>
 <translation id="7980227303582973781">Ei erikoisrajoituksia</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Kierrä näyttöä 0 astetta.</translation>
@@ -2682,16 +2672,6 @@ Suosittelemme määrittämään käytännöt Windowsissa ryhmäkäytäntöobjekt
 <translation id="8976248126101463034">Salli etäkäytön isäntien gnubby-todennus</translation>
 <translation id="8976531594979650914">Käytä oletuksena järjestelmän oletustulostinta</translation>
 <translation id="8992176907758534924">Älä anna sivustojen näyttää kuvia</translation>
-<translation id="9034729899149506577">
-      Jos tämä käytäntö on käytössä, jokainen pilkuilla erotetussa luettelossa
-      nimetty alkuperäkohde suoritetaan omana prosessinaan. Tällöin myös nimettyjen
-      kohteiden aliverkkotunnukset eristetään. Esimerkiksi jos luetteloon lisätään osoite https://example.com/,
-      myös https://foo.example.com/ eristetään osana
-      https://example.com/-sivustoa.
-      Jos tämä käytäntö ei ole käytössä, sivustoja ei eristetä ja IsolateOrigins- ja SitePerProcess-käytäntöjen kokeilut poistetaan käytöstä. Käyttäjät voivat edelleen ottaa IsolateOrigins-asetuksen käyttöön manuaalisesti.
-      Jos käytäntöä ei määritetä, käyttäjä voi muuttaa tätä asetusta.
-      Suositus (<ph name="PRODUCT_OS_NAME" />): aseta sama arvo myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Jos näiden kahden käytännön arvot eivät täsmää, käyttökerran aloittaminen voi viivästyä käyttäjäkäytännössä määritetyn arvon käyttöönoton vuoksi.
-      </translation>
 <translation id="9035964157729712237">Kieltoluettelosta poistettavat laajennuksien tunnukset</translation>
 <translation id="9042911395677044526">Antaa määrittää tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävien laitteiden verkkoasetukset käyttäjäkohtaisesti. Verkkoasetukset määritetään JSON-muotoiltuna merkkijonona Open Network Configuration -muodossa, josta on lisätietoja osoitteessa <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Määritä, vaikuttaako videotoiminta virranhallintaan</translation>

@@ -27,6 +27,7 @@
       如果此政策已设置，登录屏幕将会始终以此政策的第一个值指定的语言区域显示（为便于向前兼容，此政策会以列表的形式进行指定）。如果此政策未设置或设为空列表，登录屏幕则会以最后一次用户会话所采用的语言区域显示。如果此政策设为无效的语言区域值，登录屏幕便会以相应的后备语言区域显示（当前的后备语言区域是“en-US”）。</translation>
 <translation id="1062011392452772310">为设备启用远程认证</translation>
 <translation id="1062407476771304334">替换</translation>
+<translation id="1079801999187584280">禁止使用开发者工具</translation>
 <translation id="109166998561583554">“密码保护服务举报面临风险的帐号”功能触发条件</translation>
 <translation id="1093082332347834239">启用此设置后，远程协助主机会在具有 <ph name="UIACCESS_PERMISSION_NAME" /> 权限的进程中运行。这样，远程用户就可以在本地用户桌面上操控提权后的窗口。
 
@@ -78,6 +79,7 @@
 
           调整因子不得小于 100%。</translation>
 <translation id="131353325527891113">在登录屏幕上显示用户名</translation>
+<translation id="1325295456374328159">配置可在用户会话中使用的语言区域</translation>
 <translation id="1327466551276625742">离线时，弹出网络配置提示</translation>
 <translation id="1330145147221172764">启用屏幕键盘</translation>
 <translation id="13356285923490863">政策名称</translation>
@@ -90,6 +92,12 @@
 <translation id="1387596372902085462">是否信任赛门铁克公司的旧版 PKI 基础架构</translation>
 <translation id="1393485621820363363">已启用企业设备打印机</translation>
 <translation id="1397855852561539316">默认搜索服务提供商建议网址</translation>
+<translation id="1424081297104898791">让您能够控制可在什么情况下使用开发者工具。
+
+      如果此政策设为“DeveloperToolsDisallowedForForceInstalledExtensions”（值为 0，即企业用户的默认设置），那么在通常情况下，用户都可以访问开发者工具以及 JavaScript 控制台，但在运行由企业政策安装的扩展程序的情况下，则无法使用它们。
+      如果此政策设为“DeveloperToolsAllowed”（值为 1，即非受管用户的默认设置），那么无论在什么情况下（包括在运行由企业政策安装的扩展程序的情况下），用户都可以访问和使用开发者工具以及 JavaScript 控制台。
+      如果此政策设为“DeveloperToolsDisallowed”（值为 2），用户便无法再访问开发者工具和查看网站元素。用于打开开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单（或上下文菜单）条目都会被停用。
+      如果旧版政策 DeveloperToolsDisabled 设为 true，系统就会忽略此政策的值，并会停用开发者工具。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">代理服务器的地址或网址</translation>
 <translation id="1435659902881071157">设备级网络配置</translation>
@@ -191,6 +199,7 @@
 <translation id="1803646570632580723">要在启动程序中显示的固定应用的列表</translation>
 <translation id="1808715480127969042">在这些网站上阻止 Cookie</translation>
 <translation id="1810261428246410396">允许使用即时网络共享功能。</translation>
+<translation id="1826282708349731794">控制 Chrome 清理工具向 Google 报告数据的方式</translation>
 <translation id="1827523283178827583">使用固定的代理服务器</translation>
 <translation id="1843117931376765605">用户策略的更新频率</translation>
 <translation id="1844620919405873871">配置快速解锁相关政策。</translation>
@@ -562,6 +571,7 @@
       此政策对用户能否在各台设备上配置打印机没有影响。它旨在对各用户的打印机配置进行补充。
       </translation>
 <translation id="2633084400146331575">启用语音反馈</translation>
+<translation id="2640843331263301324">在 Windows 上启用 Chrome 清理工具</translation>
 <translation id="2646290749315461919">可让您设置是否允许网站跟踪用户的地理位置。默认情况下，可以允许或拒绝跟踪用户的地理位置，也可以在每次网站请求地理位置时询问用户。如果未设置此政策，系统将使用“AskGeolocation”并允许用户更改此设置。</translation>
 <translation id="2647069081229792812">启用或停用书签修改功能</translation>
 <translation id="2650049181907741121">当用户合上屏幕时执行的操作</translation>
@@ -1166,12 +1176,14 @@
 <translation id="4554651132977135445">用户政策环回处理模式</translation>
 <translation id="4555850956567117258">为该用户启用远程认证</translation>
 <translation id="4557134566541205630">默认搜索服务提供商新标签页网址</translation>
+<translation id="4567137030726189378">允许使用开发者工具</translation>
 <translation id="4600786265870346112">启用大号光标</translation>
 <translation id="4604931264910482931">配置本地消息传递主机黑名单</translation>
 <translation id="4613508646038788144">如果此政策设为 false，系统便会允许第三方软件将可执行代码插入到 Chrome 进程中。如果此政策设为 true 或未设置，系统则会阻止第三方软件将可执行代码插入到 Chrome 进程中。</translation>
 <translation id="4617338332148204752">跳过“<ph name="PRODUCT_FRAME_NAME" />”中的元标记检查</translation>
 <translation id="4625915093043961294">配置扩展程序安装白名单</translation>
 <translation id="4632343302005518762">允许 <ph name="PRODUCT_FRAME_NAME" />处理列出的内容类型</translation>
+<translation id="4632566332417930481">禁止在由企业政策安装的扩展程序中使用开发者工具，允许在其他情境中使用开发者工具</translation>
 <translation id="4633786464238689684">将顶行按键的默认行为模式更改为功能键。
 
           如果此政策设为“true”，默认情况下，按键盘的顶行按键将发出功能键命令。您必须按搜索键才能将其行为模式恢复为媒体键。
@@ -1419,9 +1431,13 @@
       如果此政策设为一个输入法标识符列表，登录屏幕上将会提供所有已指定的输入法以供选用。系统将会预先选择所指定的第一种输入法。当登录屏幕上显示已激活的用户操作大图标时，屏幕上除了会提供通过此政策指定的各种输入法外，还会提供相应用户最近一次用过的输入法。如果此政策未设置，系统则会根据显示登录屏幕时使用的语言区域提供登录屏幕上的输入法。系统将会忽略无效的输入法标识符。</translation>
 <translation id="5423001109873148185">如果启用此政策，就会强制从当前默认浏览器导入搜索引擎，还会影响导入对话框。如果停用此政策，就不会导入默认搜索引擎。如果未设置此政策，系统就会询问用户是否导入默认搜索引擎，或者系统自动进行导入。</translation>
 <translation id="5423197884968724595">Android WebView 限制名称：</translation>
+<translation id="5442026853063570579">此政策亦用于控制对 Android 开发者选项的访问权限。如果此政策设为“DeveloperToolsDisallowed”（值为 2），用户将无法访问开发者选项。如果此政策设为其他值或未设置，用户只需在 Android 的“设置”应用中连续点按 7 次版本号即可访问开发者选项。</translation>
 <translation id="5447306928176905178">向网页报告内存信息（JS堆内存大小）（已停止使用）</translation>
 <translation id="5457065417344056871">在浏览器中启用访客模式</translation>
 <translation id="5457924070961220141">可让您在安装 <ph name="PRODUCT_FRAME_NAME" />时配置默认 HTML 呈现器。如果未设置此政策，则使用默认设置，即允许托管浏览器进行呈现。不过您可以视情况替换此设置，让 <ph name="PRODUCT_FRAME_NAME" />默认呈现 HTML 网页。</translation>
+<translation id="5459155981813668716">配置 <ph name="PRODUCT_OS_NAME" />可以使用哪些语言区域进行显示。
+
+      如果已设置此政策，则用户只能将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策中指定的语言区域之一进行显示。如果此政策设为空列表或未设置，则 <ph name="PRODUCT_OS_NAME" />可以使用所有受支持的语言区域进行显示。如果此政策设为一个包含无效值的列表，则系统会忽略所有无效值。如果用户曾将 <ph name="PRODUCT_OS_NAME" />配置为使用此政策所不允许的某种语言进行显示，那么当用户下次登录时，相应的显示语言区域将会切换到所允许的某种语言区域。如果用户已配置了首选语言区域，并且此政策允许其中的某一种首选语言区域，<ph name="PRODUCT_OS_NAME" />将会切换到此语言区域。否则，<ph name="PRODUCT_OS_NAME" />将会切换到此政策中指定的第一个有效值；如果此政策所含的条目都无效，就会切换到后备语言区域（目前为 en-US）。</translation>
 <translation id="5464816904705580310">为托管用户配置设置。</translation>
 <translation id="546726650689747237">使用交流电源供电时的屏幕变暗延迟时间</translation>
 <translation id="5469484020713359236">可让您设置网址格式的列表，这些网址格式用于指定允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
@@ -1637,6 +1653,7 @@
 <translation id="6036523166753287175">支持通过远程访问主机穿越防火墙</translation>
 <translation id="6070667616071269965">设备登录屏幕键盘布局</translation>
 <translation id="6074963268421707432">不允许任何网站显示桌面通知</translation>
+<translation id="6074964551275531965">设置一个时间段以用于显示更新通知</translation>
 <translation id="6076099373507468537">定义可从其内核驱动程序分离以便直接通过网络应用内的 chrome.usb API 使用的 USB 设备列表。列表中的条目是成对的用于标识特定硬件的 USB 供应商标识符和产品标识符。
 
       如果此政策未配置，则分离式 USB 设备列表为空。</translation>
@@ -1709,6 +1726,11 @@
 <translation id="6392973646875039351">启用 <ph name="PRODUCT_NAME" />的自动填充功能，并允许用户使用以前存储的信息（例如地址或信用卡信息）自动填写网络表单。如果您停用了此设置，用户就无法使用自动填充功能。如果您启用了此设置或未设置值，那么自动填充功能仍由用户控制。这样，用户就可以配置自动填充个人资料，并自行决定是启用还是停用自动填充功能。</translation>
 <translation id="6394350458541421998">此政策从 <ph name="PRODUCT_OS_NAME" />版本 29 起开始弃用。请改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">使用户退出</translation>
+<translation id="6412477120967771054">如果此政策设为 false，Chrome 清理工具将无法扫描系统以检测是否存在垃圾软件并进行清理。在这种情况下，系统禁止通过 chrome://settings/cleanup 手动触发 Chrome 清理。
+
+      如果此政策设为 true 或未设置，Chrome 清理工具将会定期扫描系统以检测是否存在垃圾软件。如果发现了垃圾软件，则会询问用户是否要将其移除。在这种情况下，系统允许通过 chrome://settings 手动触发 Chrome 清理。
+
+      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="6417861582779909667">可让您设置网址格式的列表，这些网址格式用于指定不允许设置 Cookie 的网站。在未设置此政策的情况下，如果设置了“DefaultCookiesSetting”政策，那么将对该政策中的所有网站使用全局默认值，否则将对用户个人配置中的所有网站使用全局默认值。</translation>
 <translation id="6426205278746959912">您无法强制 Android 应用使用代理。一小部分代理设置已可供 Android 应用使用，此类应用可能会主动选择使用这些设置：
 
@@ -1729,6 +1751,13 @@
       要控制哪些网站可以运行 Flash，请参见“DefaultPluginsSetting”、“PluginsAllowedForUrls”和“PluginsBlockedForUrls”政策。
 
       如果停用或未设定此设置，来自其他来源的 Flash 内容或不重要的内容可能会被屏蔽。</translation>
+<translation id="6535639183431116351">我们已在 M68 中弃用了此政策，请改用 DeveloperToolsAvailability。
+
+      停用开发者工具和 JavaScript 控制台。
+
+      如果您启用了此设置，用户便无法再访问开发者工具和查看网站元素。用于打开开发者工具或 JavaScript 控制台的任何键盘快捷键以及任何菜单（或上下文菜单）条目都会被停用。
+
+      如果您停用了或未设置此选项，用户将能够使用开发者工具和 JavaScript 控制台。</translation>
 <translation id="653608967792832033">指定在使用电池供电时用户停止输入后隔多久锁定屏幕。
 
           当此政策的值设置为大于 0 时，只要机器闲置的时间达到此处指定的时长，<ph name="PRODUCT_OS_NAME" />就会锁定屏幕。
@@ -2126,6 +2155,7 @@
       要详细了解安全浏览功能，请访问 https://developers.google.com/safe-browsing。</translation>
 <translation id="7643883929273267746">限制可在<ph name="PRODUCT_NAME" />中显示的帐号</translation>
 <translation id="7651739109954974365">确定是否应为设备启用数据漫游。如果将此政策设置为 true，数据漫游就可以使用。如果未配置此政策或将其设置为 false，数据漫游就无法使用。</translation>
+<translation id="7673194325208122247">时间段（毫秒）</translation>
 <translation id="7683777542468165012">动态政策刷新</translation>
 <translation id="7694807474048279351">安排在应用 <ph name="PRODUCT_OS_NAME" />更新后自动重启。
 
@@ -2251,13 +2281,13 @@
 <translation id="7961779417826583251">对于指定的一系列旧版证书授权机构，不强制执行证书透明化要求</translation>
 <translation id="7974114691960514888">此政策已不再受支持。在连接到远程客户端时，允许使用 STUN 和中继服务器。如果启用此设置，那么即使远程客户端受到防火墙隔离，也仍然可以检测到并连接到此计算机。如果停用此设置，并且防火墙过滤了外发 UDP 连接，那么此计算机将只能与本地网络内的客户端计算机建立连接。</translation>
 <translation id="7976157349247117979"><ph name="PRODUCT_NAME" /> 目标名称</translation>
-<translation id="7978060394348264922">
-      若想做到两全其美（既能实现隔离，又能减少给用户带来的影响），您最好先查看一下 IsolateOrigins 政策设置，了解如何使用 IsolateOrigins 政策来设置您想隔离的一系列网站。SitePerProcess 这项设置会隔离所有网站。
-      如果启用了此政策，每个网站都会在自己的进程中运行。
-      如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 SitePerProcess。
-      如果未配置此政策，用户将能够更改此设置。
-      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 设为相同的值。如果这两项政策指定的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
-      </translation>
+<translation id="7977445800390854860">如果此政策未设置，当 Chrome 清理工具检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 所指定的政策将与扫描相关的元数据报告给 Google。然后，它会询问用户是否要清理垃圾软件。用户可以选择与 Google 分享清理结果，以协助其在日后更好地检测垃圾软件。这些结果包含文件元数据以及注册密钥（如 Chrome 隐私权白皮书中所述）。
+
+      如果此政策设为 false，当 Chrome 清理工具检测到垃圾软件时，它不会将与扫描相关的元数据报告给 Google，并会替换 SafeBrowsingExtendedReportingEnabled 所指定的任何政策。Chrome 清理工具会询问用户是否要清理垃圾软件，但不会将清理结果报告给 Google（用户无法自行选择这样做）。
+
+      如果此政策设为 true，当 Chrome 清理工具检测到垃圾软件时，它可能会按照 SafeBrowsingExtendedReportingEnabled 所指定的政策将与扫描相关的元数据报告给 Google。Chrome 清理会询问用户是否要清理垃圾软件，并会将清理结果报告给 Google（用户无法禁止此操作）。
+
+      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="7980227303582973781">无特殊限制</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">将屏幕旋转 0 度</translation>
@@ -2361,6 +2391,7 @@
 <translation id="8300455783946254851">此政策设为 True 时，在使用移动网络连接的情况下，系统会在 <ph name="PRODUCT_OS_NAME" /> 的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，只有当通过 WiFi 网络或以太网连接时，才能将数据同步到 Google 云端硬盘。
 
           如果此政策未设置或设为 False，那么用户将能够通过移动网络连接将文件传输到 Google 云端硬盘。</translation>
+<translation id="8300992833374611099">控制可在哪些情况下使用开发者工具</translation>
 <translation id="8312129124898414409">可让您设置是否允许网站使用密钥生成功能。您可以允许或禁止所有网站使用密钥生成功能。
 
           如果此政策未设置，系统将使用“BlockKeygen”，并且用户可以更改此设置。</translation>
@@ -2574,15 +2605,14 @@
 <translation id="8976248126101463034">允许针对远程访问主机进行 gnubby 身份验证</translation>
 <translation id="8976531594979650914">使用系统默认打印机作为默认选项</translation>
 <translation id="8992176907758534924">不允许任何网站显示图片</translation>
-<translation id="9034729899149506577">
-      如果启用了此政策，则相关列表中以英文逗号分隔的每个指定来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
-      如果停用了此政策，则不会发生明确的网站隔离，IsolateOrigins 和 SitePerProcess 的现场试验也将停用。用户仍可手动启用 IsolateOrigins。
-      如果未配置此政策，用户将能够更改此设置。
-      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将设备政策 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 设为相同的值。如果这两项政策指定的值不一致，系统在进入用户会话时，在应用由用户政策指定的值的过程中，便可能会出现延迟。
-      </translation>
 <translation id="9035964157729712237">要从黑名单中排除的扩展程序 ID</translation>
 <translation id="9042911395677044526">允许将要按用户应用的网络配置推送到 <ph name="PRODUCT_OS_NAME" />设备。网络配置是 JSON 格式的字符串，具体定义如 <ph name="ONC_SPEC_URL" /> 中的开放网络配置格式所述。</translation>
 <translation id="9084985621503260744">指定视频活动是否影响电源管理</translation>
+<translation id="9085839450090699752">让您能够设置一个时间段（以毫秒为单位），以供系统用于通知用户必须重新启动 <ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />设备以应用尚未应用的更新。
+
+      在该时间段内，系统将会反复提示用户需要进行更新。对于 <ph name="PRODUCT_OS_NAME" />设备，当检测到待处理的升级时，系统任务栏中就会显示重新启动通知。此通知会在通知时段过半后改变一次颜色，并会在整个通知时段过后再次改变颜色。对于 <ph name="PRODUCT_NAME" /> 浏览器，应用菜单会发生变化以指示在通知时段的三分之一过后需要重新启动。此通知会在通知时段的三分之二过后改变一次颜色，并会在整个通知时段过后再次改变颜色。<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策为浏览器启用的其他通知也会遵循这一时间表。
+
+      如果未设置此政策，系统将会使用 345600000 毫秒（4 天）作为 <ph name="PRODUCT_OS_NAME" />设备默认的通知时间段，并会使用 604800000 毫秒（1 周）作为所有浏览器默认的通知时间段。</translation>
 <translation id="9088433379343318874">启用受监管用户内容提供方</translation>
 <translation id="9088444059179765143">配置自动检测时区方法</translation>
 <translation id="9096086085182305205">身份验证服务器白名单</translation>

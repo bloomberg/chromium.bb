@@ -20,6 +20,7 @@
 <translation id="1110994991967754504">选择对<ph name="PERMISSION_NAME" />的权限</translation>
 <translation id="1111153019813902504">最近用过的书签</translation>
 <translation id="1113869188872983271">撤消顺序调整(&amp;U)</translation>
+<translation id="1125573121925420732">网站在更新其安全设置期间可能会经常显示警告。此问题应该很快就会得到改进。</translation>
 <translation id="1126551341858583091">占用的本地存储空间为 <ph name="CRASH_SIZE" />。</translation>
 <translation id="112840717907525620">策略缓存良好</translation>
 <translation id="1150979032973867961">此服务器无法证明它是<ph name="DOMAIN" />；您计算机的操作系统不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
@@ -262,6 +263,7 @@
 <translation id="2742870351467570537">移除所选项</translation>
 <translation id="277133753123645258">送货方式</translation>
 <translation id="277499241957683684">缺少设备记录</translation>
+<translation id="2781030394888168909">以 MacOS 格式导出</translation>
 <translation id="2784949926578158345">连接已重置。</translation>
 <translation id="2788784517760473862">接受的信用卡</translation>
 <translation id="2794233252405721443">网站已被屏蔽</translation>
@@ -506,6 +508,7 @@
 <translation id="4415426530740016218">取货地址</translation>
 <translation id="4424024547088906515">此服务器无法证明它是<ph name="DOMAIN" />；Chrome不信任其安全证书。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="4432688616882109544"><ph name="HOST_NAME" /> 不接受您的登录证书，或者您可能没有提供登录证书。</translation>
+<translation id="4434045419905280838">弹出式窗口和重定向</translation>
 <translation id="443673843213245140">已停用代理，但是指定了明确的代理配置。</translation>
 <translation id="445100540951337728">接受的借记卡</translation>
 <translation id="4506176782989081258">验证错误：<ph name="VALIDATION_ERROR" /></translation>
@@ -879,6 +882,7 @@
 <translation id="7455133967321480974">使用全局默认设置（阻止）</translation>
 <translation id="7460163899615895653">此处将会显示您最近从其他设备打开的标签页</translation>
 <translation id="7469372306589899959">确认信用卡</translation>
+<translation id="7473891865547856676">不，谢谢</translation>
 <translation id="7481312909269577407">前进</translation>
 <translation id="7485870689360869515">找不到数据。</translation>
 <translation id="7508255263130623398">返回的政策设备 ID 为空，或与当前的设备 ID 不一致</translation>

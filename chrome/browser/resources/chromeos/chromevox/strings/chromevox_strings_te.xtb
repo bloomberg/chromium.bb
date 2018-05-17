@@ -90,6 +90,7 @@
 <translation id="1810107444790159527">జాబితా పెట్టె</translation>
 <translation id="1828385960365606039">మే</translation>
 <translation id="1834891354138622109">నిలువు వరుస</translation>
+<translation id="1845944666972354496">యాక్టివేట్ చేయడానికి రెండుసార్లు నొక్కండి</translation>
 <translation id="1865601187525349519">వచనం యొక్క ముగింపు</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">ప్రస్తుత సమయాన్ని మరియు తేదీని చదివి వినిపించండి.</translation>
@@ -121,6 +122,7 @@
 <translation id="2179452035581866348">ChromeVox మీకు ఆవశ్యకమైన మరియు అదనపు సమాచారాన్ని అందించడానికి ధ్వనులను ఉపయోగిస్తుంది. మీరు ప్రతి ధ్వనికి అర్థాన్ని తెలుసుకోవడం ద్వారా మరింత శీఘ్రంగా నావిగేట్ చేయడానికి ఈ ధ్వనులను ఉపయోగించవచ్చు. మీకు వీటి గురించి బాగా తెలిసిన తర్వాత, మీరు ప్రసంగంలో విశదీకృత వివరణలను ఆఫ్ చేయవచ్చు మరియు పేజీ గురించి ఆవశ్యకమైన సమాచారం కోసం వాటిపై ఆధారపడవచ్చు. ధ్వనులు మరియు వాటి అర్థాలతో పూర్తి జాబితా ఇక్కడ అందించబడింది.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{మూసిన కుండలీకరణ గుర్తు}other{# మూసిన కుండలీకరణ గుర్తులు}}</translation>
 <translation id="2199994615414171367">మునుపటి గణితం</translation>
+<translation id="2203046366315513658">విలువను తగ్గిస్తుంది</translation>
 <translation id="2220529011494928058">సమస్యను నివేదించు</translation>
 <translation id="2223693656926968778">ప్రస్తుత అంశంపై చర్య తీసుకోండి</translation>
 <translation id="225732394367814946">ప్రసంగ రేటు పెంచండి</translation>
@@ -159,6 +161,7 @@
 <translation id="2637227747952042642">గణితం</translation>
 <translation id="2639750663247012216">ChromeVox మాడిఫైయర్</translation>
 <translation id="2644542693584024604">అక్షరక్రమం తప్పుగా ఉంది</translation>
+<translation id="2673280813984708147">సవరిస్తున్నారు</translation>
 <translation id="267442004702508783">రీఫ్రెష్ చేస్తుంది</translation>
 <translation id="2684412629217766642">ChromeVox ట్యుటోరియల్‌ను మూసివేస్తుంది</translation>
 <translation id="2697408785920771974">autoinl</translation>
@@ -210,6 +213,7 @@
 <translation id="3060756054951570867"><ph name="TITLE" /> మెను తెరవబడింది</translation>
 <translation id="3078345202707391975">తదుపరి స్థాయి 2 శీర్షిక</translation>
 <translation id="3078740164268491126">పట్టిక</translation>
+<translation id="3082249673510793544">వెనుకకు స్క్రోల్ చేస్తుంది</translation>
 <translation id="3082557070674409251">క్లిక్ చేయబడింది</translation>
 <translation id="3084806535845658316">టైపింగ్ అనుకరణ లేదు</translation>
 <translation id="3086746722712840547">note</translation>
@@ -397,6 +401,7 @@
 <translation id="4372705107434148843">ప్రసంగాన్ని ఆపివేయండి</translation>
 <translation id="4373197658375206385">లింక్ కానటువంటి మునుపటి అంశం లేదు.</translation>
 <translation id="4376316291247992553">గ్రాఫిక్‌ను బ్రెయిలీ వలె వీక్షించండి</translation>
+<translation id="4378308539633073595">ముందుకు స్క్రోల్ చేస్తుంది</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
 <translation id="443163561286008705">రీసెట్</translation>
 <translation id="4457472090507035117">ప్రస్తుత వాయిస్‌ని ఎంచుకోండి:</translation>
@@ -404,6 +409,7 @@
 <translation id="4476183483923481720">కొత్త పంక్తి</translation>
 <translation id="4482330759234983253">మునుపటి పట్టిక</translation>
 <translation id="4491109536499578614">చిత్రం</translation>
+<translation id="4517854969512651305">విలువను పెంచుతుంది</translation>
 <translation id="4529987814483543472">క్లాసిక్ కీమ్యాప్</translation>
 <translation id="4532633738839459153">{COUNT,plural, =1{స్లాష్ గుర్తు}other{# స్లాష్ గుర్తులు}}</translation>
 <translation id="4547556996012970016">తదుపరి స్థాయి 5 శీర్షిక</translation>
@@ -419,6 +425,7 @@
 <translation id="461613135510474570">వాక్యం</translation>
 <translation id="463135993322337640">కొత్తవి ఏమిటో కనుగొనడం కోసం ChromeVox o, n నొక్కండి</translation>
 <translation id="4647836961514597010">రంగు ఎంపిక</translation>
+<translation id="4652110509054054146">Home లేదా End బదులుగా Search Left లేదా Rightని, Control Home లేదా Endకి బదులుగా Search Control Left లేదా Rightని, Page Up లేదా Downకి బదులుగా Search Up లేదా Downని ఉపయోగించండి.</translation>
 <translation id="4660783501463101648">క్లాసిక్ తీసివేయబడింది. కీబోర్డ్ టోగుల్ ద్వారా తిరిగి ChromeVox క్లాసిక్‌కి మారడం అనేది తీసివేయబడింది.</translation>
 <translation id="4661075872484491155">tree</translation>
 <translation id="4668929960204016307">,</translation>

@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">페이지 예측 사용</translation>
 <translation id="4412992751769744546">타사 쿠키 허용</translation>
 <translation id="4432792777822557199">지금부터 <ph name="SOURCE_LANGUAGE" />로 된 페이지가 <ph name="TARGET_LANGUAGE" />로 번역됩니다.</translation>
+<translation id="4434045419905280838">팝업 및 리디렉션</translation>
 <translation id="4445444302979002552">예상 검색어 서비스를 사용하여 검색어 및 웹사이트를 제안합니다.</translation>
 <translation id="4452411734226507615"><ph name="TAB_TITLE" /> 탭 닫기</translation>
 <translation id="4452548195519783679">북마크를 <ph name="FOLDER_NAME" />에 추가함</translation>
@@ -516,6 +517,7 @@
 <translation id="5765780083710877561">설명:</translation>
 <translation id="5777170031995031090">Google이 검색, 광고 및 다른 Google 서비스를 맞춤설정하기 위하여 내 인터넷 사용 기록을 사용하는 방법을 제어하세요.</translation>
 <translation id="5779929835642192302">제안 사용 가능</translation>
+<translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> 중 <ph name="SPACE_USED" /> 사용 중</translation>
 <translation id="5804241973901381774">권한</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{#시간 전}other{#시간 전}}</translation>
 <translation id="5817918615728894473">페어링</translation>
@@ -600,6 +602,7 @@
 <translation id="6556716549745717622">사이트에 방해가 되는 광고를 표시하는 경향이 있는 경우 차단(권장)</translation>
 <translation id="6560414384669816528">Sogou로 검색</translation>
 <translation id="6566259936974865419">Chrome을 통해 <ph name="GIGABYTES" />GB를 절약했습니다.</translation>
+<translation id="6573096386450695060">항상 허용</translation>
 <translation id="6573431926118603307">다른 기기의 Chrome에서 연 탭이 여기에 표시됩니다.</translation>
 <translation id="6575643671698722332">재설정하지 못했습니다. 온라인 연결을 확인하고 다시 시도하세요.</translation>
 <translation id="6583199322650523874">현재 페이지 북마크</translation>
@@ -659,6 +662,7 @@
 <translation id="7031882061095297553">동기화 가능 계정</translation>
 <translation id="7034608350006174882">Google Pay에 사용되는 카드 및 주소</translation>
 <translation id="7053983685419859001">차단</translation>
+<translation id="7055152154916055070">다음 주소로의 리디렉션이 차단됨:</translation>
 <translation id="7062545763355031412">동의 및 계정 전환</translation>
 <translation id="7063006564040364415">동기화 서버에 연결할 수 없습니다.</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1개 선택됨}other{#개 선택됨}}</translation>
@@ -667,6 +671,7 @@
 <translation id="7121362699166175603">검색주소창에 저장된 방문 기록과 자동 완성 내역을 지웁니다. Google 계정의 내 활동(<ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />)에는 인터넷 사용 기록이 다른 형식으로 남아 있을 수도 있습니다.</translation>
 <translation id="7128222689758636196">현재 검색 엔진에 허용</translation>
 <translation id="7138678301420049075">기타</translation>
+<translation id="7141896414559753902">사이트에서 팝업 및 리디렉션을 표시하지 못하도록 차단(권장)</translation>
 <translation id="7144878232160441200">다시 시도</translation>
 <translation id="7149893636342594995">지난 24시간</translation>
 <translation id="7177466738963138057">나중에 설정에서 변경 가능</translation>
@@ -883,6 +888,7 @@
 <translation id="932327136139879170">홈</translation>
 <translation id="932599481871055447">데이터 절약 모드</translation>
 <translation id="938850635132480979">오류: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">SD 카드에 공간이 부족합니다.</translation>
 <translation id="945522503751344254">의견 보내기</translation>
 <translation id="945632385593298557">마이크에 액세스</translation>
 <translation id="951339005376969845">기존 데이터를 삭제합니다. <ph name="FROM_ACCOUNT" />(으)로 전환하여 기존 데이터를 가져올 수 있습니다.</translation>

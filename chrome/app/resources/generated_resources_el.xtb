@@ -660,6 +660,7 @@
 <translation id="1997484222658892567">Ο ιστότοπος <ph name="URL" /> θέλει να αποθηκεύσει μόνιμα δεδομένα μεγάλου όγκου στον τοπικό υπολογιστή σας</translation>
 <translation id="1997616988432401742">Τα πιστοποιητικά σας</translation>
 <translation id="1999115740519098545">Κατά την εκκίνηση</translation>
+<translation id="2001796770603320721">Διαχείριση στο Drive</translation>
 <translation id="2006638907958895361">Άνοιγμα Συνδέσμου στην εφαρμογή <ph name="APP" /></translation>
 <translation id="2007404777272201486">Αναφορά προβλήματος...</translation>
 <translation id="2016430552235416146">Τυπική</translation>
@@ -2088,6 +2089,7 @@
 <translation id="42137655013211669">Η πρόσβαση σε αυτόν τον πόρο απαγορεύεται από το διακομιστή.</translation>
 <translation id="4215350869199060536">Ωχ! Υπάρχουν μη έγκυρα σύμβολα στο όνομα!</translation>
 <translation id="4215448920900139318">Δημιουργία αντιγράφου ασφαλείας για το <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">Υπαγόρευση</translation>
 <translation id="4225397296022057997">Σε όλους τους ιστοτόπους</translation>
 <translation id="4235200303672858594">Πλήρης οθόνη</translation>
 <translation id="4235813040357936597">Προσθήκη λογαριασμού για <ph name="PROFILE_NAME" /></translation>
@@ -2200,6 +2202,7 @@
 <translation id="4425149324548788773">Το Drive μου</translation>
 <translation id="4430019312045809116">Ένταση</translation>
 <translation id="4430369329743628066">Προστέθηκε σελιδοδείκτης</translation>
+<translation id="4434045419905280838">Αναδυόμενα παράθυρα και ανακατευθύνσεις</translation>
 <translation id="443454694385851356">Παλαιού τύπου (μη ασφαλές)</translation>
 <translation id="443464694732789311">Συνέχεια</translation>
 <translation id="443475966875174318">Ενημέρωση ή κατάργηση μη συμβατών εφαρμογών</translation>
@@ -3894,6 +3897,7 @@
 <translation id="7052237160939977163">Αποστολή δεδομένων εντοπισμού απόδοσης</translation>
 <translation id="7052633198403197513">Πλήκτρο F1</translation>
 <translation id="7053983685419859001">Αποκλεισμός</translation>
+<translation id="7055152154916055070">Η ανακατεύθυνση αποκλείστηκε:</translation>
 <translation id="7056526158851679338">&amp;Επιθεώρηση συσκευών</translation>
 <translation id="7059858479264779982">Ορισμός σε αυτόματη εκκίνηση</translation>
 <translation id="7059893117020417984">Για να περιηγηθείτε ιδιωτικά, κάντε κλικ στο μενού με τα εικονίδια κουκίδων για να ανοίξετε ένα παράθυρο για ανώνυμη περιήγηση</translation>
@@ -4257,6 +4261,7 @@
 <translation id="7617366389578322136">Σύνδεση σε "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7622114377921274169">Φόρτιση σε εξέλιξη.</translation>
 <translation id="7624337243375417909">η λειτουργία Caps Lock ενεργοποιήθηκε</translation>
+<translation id="7625568159987162309">Δείτε άδειες και δεδομένα που έχουν αποθηκευτεί σε ιστοτόπους</translation>
 <translation id="7627790789328695202">Ωχ! Το αρχείο <ph name="FILE_NAME" /> υπάρχει ήδη. Μετονομάστε το και δοκιμάστε ξανά.</translation>
 <translation id="7628127343934101653">Άνοιγμα αρχείων PDF στο προεπιλεγμένο πρόγραμμα προβολής PDF.</translation>
 <translation id="7629827748548208700">Καρτέλα: <ph name="TAB_NAME" /></translation>
@@ -4579,6 +4584,7 @@
 <translation id="806812017500012252">Αναδιάταξη ανά τίτλο</translation>
 <translation id="8068253693380742035">Αγγίξτε για να συνδεθείτε</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="806972267388474605">Αρχεία Linux</translation>
 <translation id="8071432093239591881">Εκτύπωση ως εικόνα</translation>
 <translation id="8072988827236813198">Καρφίτσωμα καρτελων </translation>
 <translation id="8074127646604999664">Να επιτρέπεται στους ιστότοπους που έκλεισαν πρόσφατα να ολοκληρώνουν την αποστολή και τη λήψη δεδομένων</translation>
@@ -5085,7 +5091,6 @@
 <translation id="8902667442496790482">Άνοιγμα ρυθμίσεων λειτουργίας "Επιλέξτε για εκφώνηση"</translation>
 <translation id="8903921497873541725">Μεγέθυνση</translation>
 <translation id="8904976895050290827">Συγχρονισμός Chrome</translation>
-<translation id="8908902564709148335">Προειδοποίηση: Ενεργοποιήσατε την επισήμανση "scripts-require-action" σε αυτόν τον υπολογιστή, γεγονός που περιορίζει τις δυνατότητες αυτής της επέκτασης. Ωστόσο, σε άλλες συσκευές ενδεχομένως αυτή η επέκταση να μην υποστηρίζεται ή να μην είναι ενεργοποιημένη. Σε αυτές τις συσκευές, αυτή η επέκταση μπορεί επίσης να:</translation>
 <translation id="8909233240676134608">Δεν είναι δυνατή η σύνδεση του μηχανήματος στον τομέα. Ο διακομιστής δεν υποστηρίζει τους προσδιορισμένους τύπους κρυπτογράφησης Kerberos. Ελέγξτε τις ενότητα "Περισσότερες επιλογές" για τις ρυθμίσεις κρυπτογράφησης.</translation>
 <translation id="8909833622202089127">Ο ιστότοπος παρακολουθεί την τοποθεσία σας</translation>
 <translation id="8910146161325739742">Μοιραστείτε την οθόνη σας</translation>
@@ -5105,7 +5110,6 @@
 <translation id="8940081510938872932">Αυτήν τη στιγμή, ο υπολογιστής σας εκτελεί πολλές εργασίες. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="8941173171815156065">Ανάκληση της άδειας "<ph name="PERMISSION" />"</translation>
 <translation id="8941882480823041320">Προηγούμενη λέξη</translation>
-<translation id="8943076760234179177">URL κοινόχρηστου αρχείου</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">Χρησιμοποιεί τη μπαταρία πιο γρήγορα (αυτήν τη στιγμή <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280">Η εφαρμογή <ph name="APP_NAME" /> μοιράζεται ένα παράθυρο με την καρτέλα <ph name="TAB_NAME" />.</translation>

@@ -27,6 +27,7 @@
       Se esta política estiver definida, o ecrã de início de sessão é sempre apresentado no local que é fornecido pelo primeiro valor desta política (a política está definida como uma lista para a compatibilidade com as versões futuras). Se esta política não estiver definida ou estiver definida como uma lista vazia, o ecrã de início de sessão é apresentado no local da última sessão do utilizador. Se esta política estiver definida como um valor que não é um local válido, o ecrã de início de sessão é apresentado num local alternativo (atualmente, en-US).</translation>
 <translation id="1062011392452772310">Ativar a comprovação remota para o dispositivo</translation>
 <translation id="1062407476771304334">Substituir</translation>
+<translation id="1079801999187584280">Não permitir a utilização das Ferramentas para programadores.</translation>
 <translation id="109166998561583554">Acionador de sinalização de conta protegida por palavra-passe em risco.</translation>
 <translation id="1093082332347834239">Se esta definição estiver ativada, o anfitrião de assistência remota é executado num processo com autorizações <ph name="UIACCESS_PERMISSION_NAME" />. Isto permite que os utilizadores remotos interajam com janelas elevadas no ambiente de trabalho do utilizador local.
 
@@ -79,6 +80,7 @@
 
           O fator de escala deve ser de 100% ou mais.</translation>
 <translation id="131353325527891113">Mostrar nomes de utilizador no ecrã de início de sessão</translation>
+<translation id="1325295456374328159">Configurar os locais permitidos numa sessão de utilizador</translation>
 <translation id="1327466551276625742">Ativar o pedido de configuração da rede quando estiver offline</translation>
 <translation id="1330145147221172764">Ativar o teclado no ecrã</translation>
 <translation id="13356285923490863">Nome da Política</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">Ativar ou não ativar confiança na Infraestrutura PKI antiga da Symantec Corporation.</translation>
 <translation id="1393485621820363363">Impressoras empresariais de dispositivos ativadas</translation>
 <translation id="1397855852561539316">URL de sugestão do fornecedor de pesquisas padrão</translation>
+<translation id="1424081297104898791">Permite controlar onde é que as Ferramentas para programadores podem ser utilizadas.
+
+      Se esta política estiver definida como "DeveloperToolsDisallowedForForceInstalledExtensions" (valor 0, que corresponde à predefinição para utilizadores empresariais), é possível aceder normalmente às Ferramentas para programadores e à Consola de JavaScript , exceto no contexto das extensões instaladas pela política empresarial.
+      Se esta política estiver definida como "DeveloperToolsAllowed" (valor 1, que corresponde à predefinição para utilizadores não geridos), é possível aceder às Ferramentas para programadores e à Consola de JavaScript e utilizá-las em todos os contextos, incluindo o contexto das extensões instaladas pela política empresarial.
+      Se esta política estiver definida como "DeveloperToolsDisallowed" (valor 2), não é possível aceder às Ferramentas para programadores e os elementos do Website deixam de poder ser inspecionados. Todos os atalhos de teclado e todas as entradas de menu ou de menu de contexto para abrir as Ferramentas para programadores ou a Consola de JavaScript serão desativados.
+      Se a anterior política DeveloperToolsDisabled estiver definida como verdadeira, o respetivo valor é ignorado e as Ferramentas para programadores são desativadas.</translation>
 <translation id="1426410128494586442">Sim</translation>
 <translation id="1427655258943162134">Endereço ou URL do servidor proxy</translation>
 <translation id="1435659902881071157">Configuração de rede ao nível do aparelho</translation>
@@ -204,6 +212,7 @@
 <translation id="1803646570632580723">Lista de aplicações fixadas a mostrar no iniciador</translation>
 <translation id="1808715480127969042">Bloquear cookies nestes sites</translation>
 <translation id="1810261428246410396">Permitir a utilização da ligação via telemóvel instantânea</translation>
+<translation id="1826282708349731794">Controla a forma como a ferramenta de limpeza do Chrome envia dados para a Google.</translation>
 <translation id="1827523283178827583">Utilizar servidores proxy fixos</translation>
 <translation id="1843117931376765605">Taxa de atualização para a política de utilizador</translation>
 <translation id="1844620919405873871">Configura políticas relacionadas com o desbloqueio rápido.</translation>
@@ -598,6 +607,7 @@
       Esta política não influencia a possibilidade de os utilizadores poderem configurar impressoras em dispositivos individuais e destina-se a complementar a configuração das impressoras por parte de utilizadores individuais.
       </translation>
 <translation id="2633084400146331575">Ativar comentários falados</translation>
+<translation id="2640843331263301324">Ativa a ferramenta de limpeza do Chrome no Windows.</translation>
 <translation id="2646290749315461919">Permite definir se os Web sites têm permissão para monitorizar a localização física dos utilizadores. A monitorização da localização física dos utilizadores pode ser permitida por predefinição, negada por predefinição ou o utilizador pode ser questionado sempre que um Web site solicitar a localização física. Se esta política não for definida, será utilizada a definição "AskGeolocation" e o utilizador poderá alterá-la.</translation>
 <translation id="2647069081229792812">Ativar ou desativar a edição de marcadores</translation>
 <translation id="2650049181907741121">Ação a realizar quando o utilizador fecha a tampa</translation>
@@ -1215,12 +1225,14 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="4554651132977135445">Modo de processamento de loopback da Política do Utilizador.</translation>
 <translation id="4555850956567117258">Permitir a comprovação remota para o utilizador</translation>
 <translation id="4557134566541205630">URL da página Novo separador do motor de pesquisa predefinido</translation>
+<translation id="4567137030726189378">Permite a utilização das Ferramentas para programadores.</translation>
 <translation id="4600786265870346112">Ativar cursor grande</translation>
 <translation id="4604931264910482931">Configurar a lista negra de mensagens nativas</translation>
 <translation id="4613508646038788144">Se a política estiver definida como falsa, o software de terceiros está autorizado a injetar código executável nos processos do Chrome. Se a política não estiver definida ou estiver definida como verdadeira, o software de terceiros é impedido de injetar código executável nos processos do Chrome.</translation>
 <translation id="4617338332148204752">Ignorar a verificação de metatags em <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurar lista de permissões de instalação de extensões</translation>
 <translation id="4632343302005518762">Permitir que o <ph name="PRODUCT_FRAME_NAME" /> processe os tipos de conteúdo listados</translation>
+<translation id="4632566332417930481">Não permite a utilização das Ferramentas para programadores nas extensões instaladas pela política empresarial, mas permite a utilização das Ferramentas para programadores noutros contextos.</translation>
 <translation id="4633786464238689684">Altera o comportamento predefinido das teclas da linha superior para teclas de função.
 
           Se definir esta política como verdadeira, a linha superior das teclas do teclado produz comandos de teclas de função por predefinição. Tem de premir a tecla de pesquisa para reverter o comportamento novamente para teclas de multimédia.
@@ -1472,9 +1484,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver definida como uma lista de identificadores do método de introdução, os métodos de introdução fornecidos são disponibilizados no ecrã de início de sessão. O primeiro método de introdução fornecido é pré-selecionado. Quando um agrupamento de utilizadores está centrado no ecrã de início de sessão, é disponibilizado o método de introdução utilizado mais recentemente, para além dos métodos de introdução fornecidos por esta política. Se esta política não estiver definida, os métodos de introdução no ecrã de início de sessão serão provenientes do local no qual o ecrã de início de sessão é apresentado. Os valores que não forem identificadores de métodos de introdução válidos serão ignorados.</translation>
 <translation id="5423001109873148185">Se esta política estiver ativada, força a importação de motores de pesquisa a partir do navegador predefinido atual e também afeta a caixa de diálogo de importação. Se estiver desativada, o motor de pesquisa predefinido não é importado. Se não for definida, o utilizador poderá ser questionado se pretende importá-lo ou a importação poderá ocorrer automaticamente.</translation>
 <translation id="5423197884968724595">Nome da restrição WebView do Android:</translation>
+<translation id="5442026853063570579">Esta política também controla o acesso às Opções de programador do Android. Se definir esta política como "DeveloperToolsDisallowed" (valor 2), os utilizadores não podem aceder às Opções de programador. Se definir esta política com outro valor ou não a definir, os utilizadores podem aceder às Opções de programador ao tocar sete vezes no número da compilação na aplicação Definições do Android.</translation>
 <translation id="5447306928176905178">Ativar informações de memória de relatórios (tamanho da área dinâmica para dados JS) para a página (descontinuado)</translation>
 <translation id="5457065417344056871">Ativar o modo convidado no navegador</translation>
 <translation id="5457924070961220141">Permite configurar o processador de HTML predefinido quando o <ph name="PRODUCT_FRAME_NAME" /> é instalado. Se esta política não for definida, será utilizada a predefinição para permitir que o processamento seja efetuado pelo navegador anfitrião. Opcionalmente, pode substituir esta definição e configurar o <ph name="PRODUCT_FRAME_NAME" /> para processar páginas HTML por predefinição.</translation>
+<translation id="5459155981813668716">Configura os locais em que o <ph name="PRODUCT_OS_NAME" /> pode ser apresentado.
+
+      Se esta política estiver definida, o utilizador pode configurar apenas a apresentação do <ph name="PRODUCT_OS_NAME" /> num dos locais especificados por esta política. Se esta política não for definida ou for definida com uma lista vazia, o <ph name="PRODUCT_OS_NAME" /> pode ser apresentado em todos os locais suportados. Se esta política estiver definida com uma lista com valores inválidos, os mesmos serão ignorados. Se um utilizador configurou o <ph name="PRODUCT_OS_NAME" /> anteriormente de forma a ser apresentado num idioma não permitido por esta política, o local da apresentação será alterado para um local permitido da próxima vez que o utilizador iniciar sessão. Se o utilizador tiver configurado locais preferidos e um destes for permitido por esta política, o <ph name="PRODUCT_OS_NAME" /> mudará para esse local. Caso contrário, o <ph name="PRODUCT_OS_NAME" /> mudará para o primeiro valor válido especificado por esta política ou para um local alternativo (atualmente, en-US), se esta política incluir apenas entradas inválidas.</translation>
 <translation id="5464816904705580310">Configura definições para utilizadores geridos.</translation>
 <translation id="546726650689747237">Atraso do escurecimento do ecrã quando o dispositivo está ligado à eletricidade</translation>
 <translation id="5469484020713359236">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a definir cookies. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultCookiesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
@@ -1691,6 +1707,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6036523166753287175">Ativar transposição da firewall a partir do anfitrião de acesso remoto</translation>
 <translation id="6070667616071269965">Esquemas de teclado do ecrã de início de sessão do dispositivo</translation>
 <translation id="6074963268421707432">Não permitir que os sites mostrem notificações do ambiente de trabalho</translation>
+<translation id="6074964551275531965">Define o período de tempo para notificações de atualização.</translation>
 <translation id="6076099373507468537">Define a lista de dispositivos USB que estão autorizados a ser desligados do respetivo controlador de kernel para serem utilizados diretamente através da API chrome.usb numa aplicação Web. As entradas são pares de identificador de fornecedor de USB e identificador de produto para identificar um hardware específico.
 
       Se esta política não estiver configurada, a lista de dispositivos USB amovíveis fica vazia.</translation>
@@ -1763,6 +1780,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6392973646875039351">Ativa a funcionalidade de Preenchimento Automático do <ph name="PRODUCT_NAME" /> e permite que os utilizadores preencham automaticamente formulários Web utilizando informações anteriormente armazenadas, como endereços ou dados de cartões de crédito. Se desativar esta definição, os utilizadores não poderão aceder à funcionalidade de Preenchimento Automático. Se ativar esta definição ou não definir qualquer valor, os utilizadores poderão controlar o Preenchimento Automático, o que lhes permitirá configurar perfis de Preenchimento Automático e ligar ou desligar esta funcionalidade conforme pretendam.</translation>
 <translation id="6394350458541421998">Esta política foi removida a partir da versão 29 do <ph name="PRODUCT_OS_NAME" />. Em vez disso, utilize a política PresentationScreenDimDelayScale.</translation>
 <translation id="6401669939808766804">Terminar a sessão do utilizador</translation>
+<translation id="6412477120967771054">Se estiver definida como falsa, impede que a ferramenta de limpeza do Chrome procure software indesejado no sistema e realize limpezas. O acionamento manual da ferramenta de limpeza do Chrome a partir de chrome://settings/cleanup está desativado.
+
+      Se estiver definida como verdadeira ou não estiver definida, a ferramenta de limpeza do Chrome procura periodicamente software indesejado no sistema e, caso encontre algum, pergunta ao utilizador se o pretende remover. O acionamento manual da ferramenta de limpeza do Chrome a partir de chrome://settings está ativado.
+
+      Esta política não está disponível em instâncias do Windows que não pertençam a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="6417861582779909667">Permite definir uma lista de padrões de URL que especificam os Web sites não autorizados a definir cookies. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultCookiesSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="6426205278746959912">Não pode forçar as aplicações Android a utilizar um proxy. É disponibilizado um subconjunto de definições de proxy para aplicações Android, que estas podem optar voluntariamente por aceitar:
 
@@ -1783,6 +1805,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Para controlar os Websites autorizados a executar o Flash, consulte as políticas "DefaultPluginsSetting", "PluginsAllowedForUrls" e "PluginsBlockedForUrls".
 
       Se esta definição estiver desativada ou não estiver definida, o conteúdo Flash de outras origens ou o conteúdo de dimensões reduzidas pode ser bloqueado.</translation>
+<translation id="6535639183431116351">Esta política foi descontinuada no M68. Em alternativa, utilize a política DeveloperToolsAvailability.
+
+      Desativa as Ferramentas para programadores e a Consola de JavaScript.
+
+      Se ativar esta definição, não é possível aceder às Ferramentas para programadores e os elementos do Website deixam de poder ser inspecionados. Todos os atalhos de teclado e todas as entradas de menu ou de menu de contexto para abrir as Ferramentas para programadores ou a Consola de JavaScript serão desativados.
+
+      Se desativar ou não definir esta opção, permite que o utilizador use as Ferramentas para programadores e a Consola de JavaScript.</translation>
 <translation id="653608967792832033">Especifica o período de tempo sem atividade por parte do utilizador após o qual se bloqueia o ecrã quando se está a utilizar a energia da bateria.
 
           Quando esta política está definida para um valor superior a zero, especifica o período de tempo que o utilizador tem de permanecer inativo antes de o <ph name="PRODUCT_OS_NAME" /> bloquear o ecrã.
@@ -2194,6 +2223,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Consulte https://developers.google.com/safe-browsing para obter mais informações sobre a Navegação segura.</translation>
 <translation id="7643883929273267746">Restrinja as contas que estão visíveis no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="7651739109954974365">Determina se o roaming de dados deve estar ativado para o aparelho. Se a política estiver definida como verdadeira, o roaming de dados é permitido. Se ficar por configurar ou for definida como falsa, o roaming de dados não estará disponível.</translation>
+<translation id="7673194325208122247">Período de tempo (milissegundos)</translation>
 <translation id="7683777542468165012">Atualização Dinâmica de Políticas</translation>
 <translation id="7694807474048279351">Agendar um reinício automático depois de ter sido aplicada uma atualização do <ph name="PRODUCT_OS_NAME" />.
 
@@ -2319,16 +2349,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7961779417826583251">Desativar a aplicação da Transparência de certificados para uma lista de autoridades de certificação antigas</translation>
 <translation id="7974114691960514888">Esta política já não é suportada. Ativa a utilização de servidores STUN e de transmissão ao estabelecer ligação a um cliente remoto. Se esta definição estiver ativada, o computador poderá localizar e estabelecer ligação a computadores anfitrião remotos, mesmo que estejam separados por uma firewall. Se esta definição estiver desativada e as ligações UDP de saída forem filtradas pela firewall, este computador apenas poderá estabelecer ligação a computadores anfitrião dentro da rede local.</translation>
 <translation id="7976157349247117979">Nome do destino do <ph name="PRODUCT_NAME" /></translation>
-<translation id="7978060394348264922">
-      Recomendamos que consulte a definição da política IsolateOrigins para obter o
-      melhor de dois mundos: isolamento e impacto limitado para os utilizadores,
-      ao utilizar a IsolateOrigins com uma lista dos sites que pretende isolar.
-      Esta definição, SitePerProcess, isola todos os sites.
-      Se a política estiver ativada, cada site é executado no seu próprio processo.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar SitePerProcess manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina também a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      </translation>
+<translation id="7977445800390854860">Se não for definida, caso a ferramenta de limpeza do Chrome detete software indesejado, esta pode comunicar os metadados da análise à Google de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A ferramenta de limpeza do Chrome pergunta então ao utilizador se pretende limpar o software indesejado. O utilizador pode optar por partilhar os resultados da limpeza com a Google para ajudar em futuras deteções de software indesejado. Estes resultados contêm metadados de ficheiros e chaves de base de dados de registo, conforme descrito pelo documento técnico da Privacidade do Chrome.
+
+      Se estiver definida como falsa, caso a ferramenta de limpeza do Chrome detete software indesejado, não comunicará os metadados da análise à Google e substituirá qualquer política definida por SafeBrowsingExtendedReportingEnabled. A ferramenta de limpeza do Chrome perguntará ao utilizador se pretende limpar o software indesejado. Os resultados da limpeza não serão comunicados à Google e o utilizador deixará de ter a opção para realizar essa ação.
+
+      Se for definida como verdadeira, caso a ferramenta de limpeza do Chrome detete software indesejado, poderá comunicar metadados sobre a análise à Google de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A ferramenta de limpeza do Chrome perguntará ao utilizador se pretende limpar o software indesejado. Os resultados da limpeza serão comunicados à Google e o utilizador deixará de ter a opção para impedir essa ação.
+
+      Esta política não está disponível em instâncias do Windows que não pertençam a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Sem restrições especiais</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rodar o ecrã 0 graus</translation>
@@ -2443,6 +2470,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8300455783946254851">Desativa a sincronização do Google Drive na aplicação Ficheiros do <ph name="PRODUCT_OS_NAME" /> ao utilizar uma rede móvel e a definição de verdadeiro. Nesse caso, os dados só são sincronizados com o Google Drive quando estiver ligado por Wi-Fi ou Ethernet.
 
           Se não estiver definido ou estiver definido como falso, os utilizadores poderão transferir ficheiros para o Google Drive através de redes móveis.</translation>
+<translation id="8300992833374611099">Controla onde é possível utilizar as Ferramentas para programadores.</translation>
 <translation id="8312129124898414409">Permite definir se os Sites estão autorizados a utilizar a geração de chaves. É possível permitir a geração de chaves para todos os Sites ou negá-la para todos os Sites.
           Se esta política não for definida, é utilizada a opção "BlockKeygen" e o utilizador pode alterá-la.</translation>
 <translation id="8329984337216493753">Esta política está ativa apenas no modo de retalho.
@@ -2657,19 +2685,14 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8976248126101463034">Permitir autenticação gnubby para anfitriões de acesso remoto</translation>
 <translation id="8976531594979650914">Utilizar a impressora predefinida do sistema como a predefinição</translation>
 <translation id="8992176907758534924">Não permitir que os sites mostrem imagens</translation>
-<translation id="9034729899149506577">
-      Se a política estiver ativada, cada uma das origens nomeadas numa
-      lista separada por vírgulas é executada no seu próprio processo. Deste
-      modo, são também isoladas as origens nomeadas por subdomínios. Por
-      exemplo, ao especificar https://example.com/, https://foo.example.com/
-      também é isolado como parte do site https://example.com/.
-      Se a política estiver desativada, não ocorre qualquer isolamento de site e os testes de campo de IsolateOrigins e SitePerProcess serão desativados. Os utilizadores ainda conseguem ativar IsolateOrigins manualmente.
-      Se a política não estiver configurada, o utilizador pode alterar esta definição.
-      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas não coincidirem, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
-      </translation>
 <translation id="9035964157729712237">IDs de extensões a excluir da lista negra</translation>
 <translation id="9042911395677044526">Permite que a configuração de rede seja aplicada por utilizador para um aparelho <ph name="PRODUCT_OS_NAME" />. A configuração de rede é uma cadeia de formato JSON, conforme definido pelo formato de Configuração de Rede Aberta descrito em <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Especificar se a atividade do vídeo afeta a gestão da energia</translation>
+<translation id="9085839450090699752">Permite-lhe definir o período de tempo, em milissegundos, durante o qual os utilizadores são notificados de que é necessário reiniciar o <ph name="PRODUCT_NAME" /> ou de que é necessário reiniciar um dispositivo do <ph name="PRODUCT_OS_NAME" /> para aplicar uma atualização pendente.
+
+      Durante este período de tempo, o utilizador é repetidamente informado da necessidade de aplicar uma atualização. Para os dispositivos do <ph name="PRODUCT_OS_NAME" />, é apresentada uma notificação de reinício no tabuleiro do sistema quando é detetada uma atualização. Esta notificação muda de cor assim que for atingida metade do período de notificação e, novamente, assim que for concluído todo o período de notificação. Para os navegadores do <ph name="PRODUCT_NAME" />, o menu de aplicações muda para indicar que é necessário um reinício assim que for atingido um terço do período de notificação. Esta notificação muda de cor novamente assim que forem atingidos dois terços do período de notificação e, por fim, após a conclusão de todo o período de notificação. As notificações adicionais ativadas pela política <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> para navegadores seguem o mesmo esquema.
+
+      Se não for definido, é utilizado o período predefinido de 345 600 000 milissegundos (quatro dias) para os dispositivos do <ph name="PRODUCT_OS_NAME" /> e de 604 800 000 milissegundos (uma semana) para navegadores.</translation>
 <translation id="9088433379343318874">Ativar o fornecedor de conteúdos do utilizador supervisionado</translation>
 <translation id="9088444059179765143">Configurar o método de deteção automática do fuso horário</translation>
 <translation id="9096086085182305205">Lista de permissões do servidor de autenticação</translation>

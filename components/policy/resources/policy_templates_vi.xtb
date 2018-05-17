@@ -27,6 +27,7 @@
       Nếu chính sách này được đặt, màn hình đăng nhập sẽ luôn được hiển thị bằng ngôn ngữ được cung cấp theo giá trị đầu tiên của chính sách (chính sách được định nghĩa là danh sách về khả năng tương thích chuyển tiếp).  Nếu chính sách này chưa được đặt hoặc được đặt thành danh sách trống, màn hình đăng nhập sẽ được hiển thị bằng ngôn ngữ của phiên người dùng cuối cùng.  Nếu chính sách này được đặt thành giá trị không phải là ngôn ngữ hợp lệ, màn hình đăng nhập sẽ được hiển thị bằng ngôn ngữ dự phòng (hiện tại là en-US).</translation>
 <translation id="1062011392452772310">Cho phép chứng thực từ xa cho thiết bị</translation>
 <translation id="1062407476771304334">Thay thế</translation>
+<translation id="1079801999187584280">Không cho phép sử dụng Công cụ dành cho nhà phát triển</translation>
 <translation id="109166998561583554">Trình kích hoạt gắn cờ tài khoản gặp rủi ro về bảo vệ mật khẩu</translation>
 <translation id="1093082332347834239">Nếu cài đặt này được bật, máy chủ hỗ trợ từ xa sẽ chạy theo quy trình với các quyền <ph name="UIACCESS_PERMISSION_NAME" />. Điều này sẽ cho phép người dùng ở xa tương tác với cửa sổ bật lên trên màn hình của người dùng cục bộ.
 
@@ -79,6 +80,7 @@
 
           Hệ số tỷ lệ phải từ 100% trở lên.</translation>
 <translation id="131353325527891113">Hiển thị tên người dùng trên màn hình đăng nhập</translation>
+<translation id="1325295456374328159">Định cấu hình ngôn ngữ được phép trong phiên người dùng</translation>
 <translation id="1327466551276625742">Bật lời nhắc về cấu hình mạng khi ngoại tuyến</translation>
 <translation id="1330145147221172764">Bật bàn phím ảo</translation>
 <translation id="13356285923490863">Tên chính sách</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">Xem có cho phép tin cậy Cơ sở hạ tầng khóa công khai (KPI) cũ của Symantec Corporation hay không</translation>
 <translation id="1393485621820363363">Đã bật máy in kết nối với thiết bị dành cho doanh nghiệp</translation>
 <translation id="1397855852561539316">URL đề xuất của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="1424081297104898791">Cho phép bạn kiểm soát vị trí có thể sử dụng Công cụ dành cho nhà phát triển.
+
+      Nếu đặt chính sách này thành 'DeveloperToolsDisallowedForForceInstalledExtensions' (giá trị 0 là giá trị mặc định cho người dùng doanh nghiệp) thì nói chung, bạn có thể truy cập vào Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript. Tuy nhiên, trong ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp, thì bạn không thể truy cập vào những mục này.
+      Nếu đặt chính sách này thành 'DeveloperToolsAllowed' (giá trị 1 là giá trị mặc định cho những người dùng không được quản lý) thì bạn có thể truy cập cũng như sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript trong tất cả các ngữ cảnh, bao gồm cả ngữ cảnh đã cài đặt các tiện ích theo chính sách doanh nghiệp.
+      Nếu đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2) thì bạn không thể truy cập vào Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.
+      Nếu chính sách cũ DeveloperToolsDisabled được đặt thành true, giá trị của chính sách này sẽ bị bỏ qua, đồng thời Công cụ dành cho nhà phát triển cũng sẽ bị tắt.</translation>
 <translation id="1426410128494586442">Có</translation>
 <translation id="1427655258943162134">Địa chỉ hoặc URL của máy chủ proxy</translation>
 <translation id="1435659902881071157">Cấu hình mạng ở mức thiết bị</translation>
@@ -206,6 +214,7 @@
 <translation id="1803646570632580723">Danh sách các ứng dụng được ghim sẽ hiển thị trong trình chạy</translation>
 <translation id="1808715480127969042">Chặn cookie trên các trang web này</translation>
 <translation id="1810261428246410396">Cho phép sử dụng tính năng Chia sẻ kết nối tức thì.</translation>
+<translation id="1826282708349731794">Kiểm soát cách tính năng Làm sạch Chrome báo cáo dữ liệu cho Google</translation>
 <translation id="1827523283178827583">Sử dụng máy chủ proxy cố định</translation>
 <translation id="1843117931376765605">Chính sách tốc độ làm mới cho người dùng</translation>
 <translation id="1844620919405873871">Định cấu hình chính sách liên quan đến mở khóa nhanh.</translation>
@@ -608,6 +617,7 @@
      Chính sách này không ảnh hưởng đến việc người dùng có thể định cấu hình máy in trên từng thiết bị hay không.  Chính sách này nhằm bổ sung cho cấu hình của các máy in theo từng người dùng.
       </translation>
 <translation id="2633084400146331575">Bật tính năng phản hồi bằng giọng nói</translation>
+<translation id="2640843331263301324">Bật tính năng Làm sạch Chrome trên Windows</translation>
 <translation id="2646290749315461919">Cho phép bạn đặt liệu các trang web có được phép theo dõi vị trí thực của người dùng hay không. Theo dõi vị trí thực của người dùng có thể được cho phép theo mặc định, từ chối theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web yêu cầu cung cấp vị trí thực.
 
           Nếu không thiết lập chính sách này, 'AskGeolocation' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -1251,12 +1261,14 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4554651132977135445">Chế độ xử lý vòng lặp trở lại của chính sách người dùng</translation>
 <translation id="4555850956567117258">Cho phép chứng thực từ xa cho người dùng</translation>
 <translation id="4557134566541205630">URL trang tab mới của nhà cung cấp dịch vụ tìm kiếm mặc định</translation>
+<translation id="4567137030726189378">Cho phép sử dụng Công cụ dành cho nhà phát triển</translation>
 <translation id="4600786265870346112">Bật con trỏ lớn</translation>
 <translation id="4604931264910482931">Định cấu hình danh sách cấm nhắn tin gốc</translation>
 <translation id="4613508646038788144">Nếu bạn đặt chính sách thành false thì phần mềm của bên thứ ba sẽ được phép đưa mã thực thi vào các quy trình của Chrome. Nếu bạn không đặt hoặc đặt chính sách thành true thì phần mềm của bên thứ ba sẽ không được đưa đoạn mã thực thi vào các quy trình của Chrome.</translation>
 <translation id="4617338332148204752">Bỏ qua kiểm tra thẻ meta trong <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Định cấu hình danh sách trắng cài đặt tiện ích</translation>
 <translation id="4632343302005518762">Cho phép <ph name="PRODUCT_FRAME_NAME" /> xử lý các loại nội dung được liệt kê</translation>
+<translation id="4632566332417930481">Không cho phép sử dụng Công cụ dành cho nhà phát triển trên các tiện ích được cài đặt theo chính sách doanh nghiệp, nhưng lại cho phép sử dụng Công cụ dành cho nhà phát triển trong các ngữ cảnh khác</translation>
 <translation id="4633786464238689684">Thay đổi trạng thái mặc định của các phím hàng trên cùng thành các phím chức năng.
 
           Nếu chính sách này được thiết lập thành true, các phím ở hàng trên cùng của bàn phím sẽ tạo các lệnh phím chức năng mỗi mặc định. Phải nhấn phím tìm kiếm để hoàn nguyên hoạt động của chúng về phím phương tiện.
@@ -1531,10 +1543,14 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
 <translation id="5423197884968724595">Tên giới hạn Android WebView:</translation>
+<translation id="5442026853063570579">Chính sách này cũng kiểm soát quyền truy cập vào Tùy chọn của nhà phát triển Android. Nếu bạn đặt chính sách này thành 'DeveloperToolsDisallowed' (giá trị 2), người dùng sẽ không thể truy cập vào Tùy chọn của nhà phát triển. Nếu bạn đặt chính sách này thành một giá trị khác hoặc không đặt chính sách này thì người dùng có thể truy cập vào Tùy chọn của nhà phát triển bằng cách nhấn bảy lần vào số bản dựng trong ứng dụng cài đặt Android.</translation>
 <translation id="5447306928176905178">Bật báo cáo thông tin bộ nhớ (kích thước khối xếp JS) tới trang (không dùng nữa)</translation>
 <translation id="5457065417344056871">Bật chế độ khách trong trình duyệt</translation>
 <translation id="5457924070961220141">Cho phép bạn định cấu hình trình kết xuất HTML mặc định khi  <ph name="PRODUCT_FRAME_NAME" /> được cài đặt.
           Cài đặt mặc định, được sử dụng khi không thiết lập chính sách này, cho phép trình duyệt chính thực hiện chức năng hiển thị nhưng bạn có thể tùy chọn ghi đè cài đặt này và yêu cầu  <ph name="PRODUCT_FRAME_NAME" /> hiển thị các trang HTML theo mặc định.</translation>
+<translation id="5459155981813668716">Định cấu hình các ngôn ngữ có thể hiển thị trong <ph name="PRODUCT_OS_NAME" />.
+
+      Nếu đặt chính sách này thì người dùng chỉ có thể định cấu hình hiển thị <ph name="PRODUCT_OS_NAME" /> bằng một trong các ngôn ngữ mà chính sách này chỉ định. Nếu không đặt hoặc đặt chính sách này thành một danh sách trống thì có thể hiển thị <ph name="PRODUCT_OS_NAME" /> bằng tất cả các ngôn ngữ được hỗ trợ. Nếu đặt chính sách này thành một danh sách gồm các giá trị không hợp lệ thì tất cả các giá trị không hợp lệ sẽ bị bỏ qua. Nếu trước đây người dùng đã định cấu hình hiển thị <ph name="PRODUCT_OS_NAME" /> bằng một ngôn ngữ không được chính sách này cho phép thì ngôn ngữ hiển thị sẽ được chuyển thành ngôn ngữ được phép trong lần tiếp theo người dùng đăng nhập. Nếu người dùng đã định cấu hình các ngôn ngữ ưu tiên và chính sách này cho phép sử dụng một trong các ngôn ngữ ưu tiên đó thì <ph name="PRODUCT_OS_NAME" /> sẽ chuyển sang ngôn ngữ đó. Nếu không, <ph name="PRODUCT_OS_NAME" /> sẽ chuyển về giá trị hợp lệ đầu tiên được chính sách này chỉ định hoặc chuyển về ngôn ngữ dự phòng (hiện đang là en-US), khi chính sách này chỉ chứa các mục không hợp lệ.</translation>
 <translation id="5464816904705580310">Định cấu hình cài đặt cho người dùng được quản lý.</translation>
 <translation id="546726650689747237">Độ trễ mờ màn hình khi chạy trên nguồn AC</translation>
 <translation id="5469484020713359236">Cho phép bạn thiết lập danh sách các mẫu url chỉ định những trang web được phép đặt cookie.
@@ -1759,6 +1775,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6036523166753287175">Bật tính năng chặn tường lửa từ máy chủ truy cập từ xa</translation>
 <translation id="6070667616071269965">Bố cục bàn phím màn hình đăng nhập thiết bị</translation>
 <translation id="6074963268421707432">Không cho phép bất kỳ trang web nào hiển thị thông báo trên màn hình</translation>
+<translation id="6074964551275531965">Đặt khoảng thời gian cho thông báo cập nhật</translation>
 <translation id="6076099373507468537">Xác định danh sách thiết bị USB được phép tách khỏi trình điều khiển nhân hệ điều hành để sử dụng thông qua API chrome.usb ngay bên trong ứng dụng web. Mục nhập là các cặp Số nhận dạng nhà cung cấp USB và Số nhận dạng sản phẩm để xác định một phần cứng cụ thể.
 
       Nếu chính sách này chưa được định cấu hình, danh sách thiết bị USB có thể tách là trống.</translation>
@@ -1837,6 +1854,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6392973646875039351">Bật tính năng Tự động điền của <ph name="PRODUCT_NAME" /> và cho phép người dùng tự động hoàn thành các biểu mẫu web bằng cách sử dụng thông tin được lưu trữ trước đây, chẳng hạn như địa chỉ hoặc thông tin thẻ tín dụng. Nếu bạn tắt cài đặt này, người dùng sẽ không sử dụng được tính năng Tự động điền. Nếu bạn bật cài đặt này hoặc không đặt giá trị, Tự động điền sẽ vẫn thuộc quyền kiểm soát của người dùng. Điều này sẽ cho phép họ thiết lập cấu hình Tự động điền và bật hoặc tắt Tự động điền tùy theo ý họ.</translation>
 <translation id="6394350458541421998">Chính sách này đã chấm dứt kể từ phiên bản <ph name="PRODUCT_OS_NAME" /> 29. Vui lòng sử dụng chính sách PresentationScreenDimDelayScale thay vào đó.</translation>
 <translation id="6401669939808766804">Đăng xuất người dùng</translation>
+<translation id="6412477120967771054">Nếu đặt thành false, tính năng Làm sạch Chrome sẽ không được quét hệ thống để tìm phần mềm không mong muốn và thực hiện các thao tác làm sạch. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome từ chrome://settings/cleanup đã tắt.
+
+      Nếu đặt thành true hoặc không đặt chính sách này thì tính năng Làm sạch Chrome sẽ định kỳ quét hệ thống để tìm phần mềm không mong muốn và khi tìm được bất kỳ phần mềm không mong muốn nào thì sẽ hỏi người dùng xem họ có muốn xóa chúng không. Tùy chọn kích hoạt thủ công tính năng Làm sạch Chrome từ chrome://settings đã bật.
+
+      Chính sách này không có trên các phiên bản Windows chưa tham gia miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="6417861582779909667">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web không được phép đặt cookie.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultCookiesSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>
@@ -1859,6 +1881,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Để kiểm soát những trang web nào được phép chạy Flash, hãy xem chính sách "DefaultPluginsSetting", "PluginsAllowedForUrls" và "PluginsBlockedForUrls".
 
       Nếu bạn tắt hoặc không đặt cài đặt này, nội dung Flash từ các nguồn khác hoặc nội dung nhỏ có thể bị chặn.</translation>
+<translation id="6535639183431116351">Chính sách này không còn được dùng trong M68 nữa, vui lòng sử dụng chính sách DeveloperToolsAvailability để thay thế.
+
+      Tắt Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript.
+
+      Nếu bật cài đặt này, bạn sẽ không thể truy cập Công cụ dành cho nhà phát triển, cũng như không thể kiểm tra các phần tử của trang web được nữa. Mọi phím tắt và mọi menu hoặc các mục nhập menu ngữ cảnh để mở Công cụ dành cho nhà phát triển hoặc Bảng điều khiển JavaScript đều bị tắt.
+
+      Đặt thành tắt hoặc không đặt tùy chọn này sẽ cho phép người dùng sử dụng Công cụ dành cho nhà phát triển và Bảng điều khiển JavaScript.</translation>
 <translation id="653608967792832033">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị khóa khi chạy trên nguồn pin.
 
           Khi được đặt thành một giá trị lớn hơn không, chính sách này chỉ định khoảng thời gian mà người dùng phải duy trì chế độ không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
@@ -2284,6 +2313,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Truy cập vào https://developers.google.com/safe-browsing để biết thêm thông tin về dịch vụ Duyệt web an toàn.</translation>
 <translation id="7643883929273267746">Hạn chế các tài khoản được hiển thị trong <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Xác định liệu chuyển vùng dữ liệu có được bật cho thiết bị hay không. Nếu được đặt thành đúng, chuyển vùng dữ liệu sẽ được phép. Nếu không được định cấu hình hoặc được đặt thành sai, chuyển vùng dữ liệu sẽ không khả dụng.</translation>
+<translation id="7673194325208122247">Khoảng thời gian (mili giây)</translation>
 <translation id="7683777542468165012">Làm mới chính sách động</translation>
 <translation id="7694807474048279351">Lên lịch tự động khởi động lại sau khi áp dụng cập nhật <ph name="PRODUCT_OS_NAME" />.
       Khi chính sách này được đặt thành true, tự động khởi động lại được lên lịch khi áp dụng cập nhật <ph name="PRODUCT_OS_NAME" /> và yêu cầu khởi động lại để hoàn thành quy trình cập nhật. Khởi động lại được lên lịch ngay lập tức nhưng có thể bị trễ trên thiết bị tới 24 giờ nếu người dùng hiện đang sử dụng thiết bị.
@@ -2413,16 +2443,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Nếu cài đặt này bị tắt và kết nối UDP đi bị lọc bởi tường lửa, máy này chỉ có thể kết nối với máy chủ trong mạng cục bộ.</translation>
 <translation id="7976157349247117979">Tên của đích <ph name="PRODUCT_NAME" /></translation>
-<translation id="7978060394348264922">
-      Bạn nên xem tùy chọn cài đặt của chính sách IsolateOrigins để khai thác
-      tối đa cả hai khía cạnh, cách cô lập và cách hạn chế tác động đến người dùng, bằng việc sử dụng
-      IsolateOrigins cùng với danh sách các trang web mà bạn muốn cô lập. Tùy chọn cài đặt này,
-      SitePerProcess sẽ cô lập mọi trang web.
-      Nếu bạn bật chính sách này, mỗi trang web sẽ chạy theo quy trình riêng.
-      Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật SitePerProcess theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách này, người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị mà hai chính sách này chỉ định không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      </translation>
+<translation id="7977445800390854860">Nếu không đặt thì trong trường hợp phát hiện thấy phần mềm không mong muốn, tính năng Làm sạch Chrome có thể báo cáo siêu dữ liệu về thao tác quét cho Google theo chính sách do SafeBrowsingExtendedReportingEnabled đặt ra. Sau đó, tính năng này sẽ hỏi người dùng xem họ có muốn làm sạch phần mềm không mong muốn không. Người dùng có thể chọn chia sẻ kết quả làm sạch với Google để trợ giúp hoạt động phát hiện phần mềm không mong muốn trong tương lai. Các kết quả này có chứa khóa đăng ký và siêu dữ liệu tệp như mô tả trong Báo cáo bạch về bảo mật của Chrome.
+
+      Nếu đặt thành false thì trong trường hợp phát hiện thấy phần mềm không mong muốn, tính năng Làm sạch Chrome sẽ không báo cáo siêu dữ liệu về thao tác quét cho Google, ghi đè mọi chính sách do SafeBrowsingExtendedReportingEnabled đặt ra. Tính năng này sẽ hỏi người dùng xem họ có muốn làm sạch phần mềm không mong muốn không.  Kết quả của quá trình làm sạch sẽ không được báo cáo cho Google và người dùng sẽ không có tùy chọn để thực hiện như vậy.
+
+      Nếu đặt thành true thì trong trường hợp phát hiện thấy phần mềm không mong muốn, tính năng Làm sạch Chrome có thể báo cáo siêu dữ liệu về thao tác quét cho Google theo chính sách do SafeBrowsingExtendedReportingEnabled đặt ra. Tính năng này sẽ hỏi người dùng xem họ có muốn làm sạch phần mềm không mong muốn không.  Kết quả của quá trình làm sạch sẽ được báo cáo cho Google và người dùng sẽ không có tùy chọn để ngăn thực hiện việc đó.
+
+      Chính sách này không có trên các phiên bản Windows chưa tham gia miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Không có hạn chế đặc biệt</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Xoay màn hình 0 độ</translation>
@@ -2535,6 +2562,7 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8300455783946254851">Tắt đồng bộ hóa Google Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /> khi sử dụng kết nối di động đã đặt thành True. Trong trường hợp đó, dữ liệu chỉ được đồng bộ hóa với Google Drive khi được kết nối qua WiFi hoặc Ethernet.
 
           Nếu không được đặt hoặc được đặt thành False, người dùng có thể chuyển tệp sang Google Drive qua kết nối mạng di động.</translation>
+<translation id="8300992833374611099">Kiểm soát vị trí có thể sử dụng Công cụ dành cho nhà phát triển</translation>
 <translation id="8312129124898414409">Cho phép bạn đặt liệu các trang web có được phép sử dụng tạo khóa hay không. Bạn có thể cho phép hoặc từ chối sử dụng tạo khóa đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockKeygen' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
@@ -2758,19 +2786,14 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8976248126101463034">Cho phép xác thực gnubby cho máy chủ truy cập từ xa</translation>
 <translation id="8976531594979650914">Sử dụng máy in có sẵn trong hệ thống làm máy in mặc định</translation>
 <translation id="8992176907758534924">Không cho phép bất kỳ trang web nào hiển thị hình ảnh</translation>
-<translation id="9034729899149506577">
-      Nếu bạn bật chính sách này, mỗi nguồn gốc có tên trong
-      danh sách phân tách bằng dấu phẩy sẽ chạy theo quy trình riêng. Việc này cũng sẽ cô lập
-      các nguồn gốc được đặt tên theo miền phụ; chẳng hạn như việc chỉ định https://example.com/
-      cũng sẽ khiến cho https://foo.example.com/ bị cô lập vì là một phần của
-      trang web https://example.com/.
-      Nếu bạn tắt chính sách này, sẽ không có sự Cô lập trang web rõ ràng nào xảy ra và các phiên bản dùng thử tại chỗ của IsolateOrigins và SitePerProcess sẽ bị tắt. Người dùng sẽ vẫn có thể bật IsolateOrigins theo cách thủ công.
-      Nếu bạn không định cấu hình chính sách, người dùng sẽ có thể thay đổi tùy chọn cài đặt này.
-      Trên <ph name="PRODUCT_OS_NAME" />, bạn cũng nên đặt chính sách thiết bị <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> thành cùng một giá trị. Nếu các giá trị mà hai chính sách này chỉ định không khớp nhau, thì có thể xảy ra hiện tượng chậm trễ khi vào một phiên người dùng trong khi áp dụng giá trị mà chính sách người dùng chỉ định.
-      </translation>
 <translation id="9035964157729712237">Các ID tiện ích được miễn khỏi danh sách đen</translation>
 <translation id="9042911395677044526">Cho phép áp dụng cấu hình mạng cho mỗi người dùng thiết bị <ph name="PRODUCT_OS_NAME" />. Cấu hình mạng là chuỗi có định dạng JSON như được định nghĩa theo định dạng Cấu hình mạng mở được mô tả tại <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Chỉ định xem hoạt động video có ảnh hưởng đến việc quản lý nguồn không</translation>
+<translation id="9085839450090699752">Cho phép bạn đặt khoảng thời gian, tính bằng mili giây mà qua đó người dùng được thông báo rằng phải chạy lại <ph name="PRODUCT_NAME" /> hoặc khởi động lại thiết bị chạy <ph name="PRODUCT_OS_NAME" /> để áp dụng bản cập nhật đang chờ xử lý.
+
+      Quá khoảng thời gian này, người dùng sẽ được nhắc lại nhiều lần về việc cần phải cập nhật. Đối với các thiết bị chạy <ph name="PRODUCT_OS_NAME" />, thông báo khởi động lại sẽ xuất hiện trong khay hệ thống khi phát hiện có bản nâng cấp. Thông báo này sẽ đổi màu khi hết một nửa thời gian thông báo và đổi màu một lần nữa khi hết toàn bộ thời gian thông báo. Đối với các trình duyệt <ph name="PRODUCT_NAME" />, menu ứng dụng sẽ thay đổi để cho thấy cần chạy lại sau khi đã qua một phần ba thời gian thông báo. Thông báo này sẽ đổi màu sau khi đã qua hai phần ba thời gian thông báo và đổi màu một lần nữa khi hết toàn bộ thời gian thông báo. Những thông báo bổ sung được chính sách <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> bật cho các trình duyệt sẽ tuân theo lịch biểu tương tự này.
+
+      Nếu không được đặt, chúng tôi sẽ sử dụng khoảng thời gian mặc định là 345.600.000 mili giây (bốn ngày) cho các thiết bị chạy <ph name="PRODUCT_OS_NAME" /> và 604.800.000 mili giây (một tuần) cho các trình duyệt.</translation>
 <translation id="9088433379343318874">Cho phép nhà cung cấp nội dung của người dùng được giám sát</translation>
 <translation id="9088444059179765143">Định cấu hình phương thức phát hiện múi giờ tự động</translation>
 <translation id="9096086085182305205">Danh sách trắng máy chủ xác thực</translation>

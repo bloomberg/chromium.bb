@@ -2350,16 +2350,6 @@ Dynamisk opdatering af denne politik understøttes i M56 og nyere versioner.</tr
       Hvis den er angivet som sand, kan Oprydningsværktøj til Chrome rapportere metadata om scanningen til Google i overensstemmelse med den politik, der er angivet af SafeBrowsingExtendedReportingEnabled, hvis scanningen finder uønsket software. Oprydningsværktøj til Chrome spørger brugeren, om den uønskede software skal fjernes. Resultaterne af oprydningen rapporteres til Google, og brugeren har ikke mulighed for at forhindre det.
 
       Denne politik er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
-<translation id="7978060394348264922">
-      Det er en god idé at kigge på politikindstillingen IsolateOrigins for at få
-      det bedste fra begge verdener (isolering og begrænset indvirkning på brugerne)
-      ved at bruge IsolateOrigins sammen med en liste over de websites, du vil isolere.
-      Denne indstilling, SitePerProcess, isolerer alle websites.
-      Hvis politikken er aktiveret, kører hvert website sin egen proces.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere SitePerProcess manuelt.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      </translation>
 <translation id="7980227303582973781">Ingen særlige begrænsninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Roter skærmen 0 grader</translation>
@@ -2683,16 +2673,6 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="8976248126101463034">Tillad gnubby-godkendelse for hosts for fjernadgang</translation>
 <translation id="8976531594979650914">Brug systemets standardprinter som standard</translation>
 <translation id="8992176907758534924">Tillad ikke, at websites viser billeder</translation>
-<translation id="9034729899149506577">
-      Hvis politikken er aktiveret, kører hvert af de angivne websites
-      på en kommasepareret liste sin egen proces. Dette isolerer også websites,
-      der er angivet af underdomæner. Hvis f.eks. https://eksempel.dk/ angives,
-      isoleres https://foo.eksempel.dk/ også som en del af websitet
-      https://eksempel.dk/.
-      Hvis politikken er deaktiveret, sker der ingen udtrykkelig isolering af websites, og brugstest af IsolateOrigins og SitePerProcess deaktiveres. Brugere kan stadig aktivere IsolateOrigins manuelt.
-      Hvis politikken ikke konfigureres, kan brugerne ændre denne indstilling.
-      I <ph name="PRODUCT_OS_NAME" /> anbefales det, at der også angives den samme værdi for enhedspolitikken <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis de to politikker har forskellige værdier, kan der ske forsinkelser ved opstart af en brugersession, mens den værdi, der er angivet af brugerpolitikken, anvendes.
-      </translation>
 <translation id="9035964157729712237">Udvidelses-id'er, der skal udelades fra sortlisten</translation>
 <translation id="9042911395677044526">Tillader, at netværkskonfigurationen gøres gældende pr. bruger til en <ph name="PRODUCT_OS_NAME" />-enhed. Netværkskonfigurationen er en JSON-formateret streng, sådan som den er defineret af formatet Open Network Configuration som beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angiv, om videoaktiviteten påvirker strømstyringen</translation>

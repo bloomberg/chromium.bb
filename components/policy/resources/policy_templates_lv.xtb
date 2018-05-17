@@ -93,10 +93,10 @@
 <translation id="1387596372902085462">Vai norādīt, ka Symantec Corporation mantotā PKI infrastruktūra ir uzticama</translation>
 <translation id="1393485621820363363">Iespējoti uzņēmuma ierīču printeri</translation>
 <translation id="1397855852561539316">Noklusējuma meklētājprogrammas ieteikumu URL</translation>
-<translation id="1424081297104898791">Ļauj noteikt, kādos kontekstos izstrādātāja rīkus var lietot.
+<translation id="1424081297104898791">Ļauj noteikt, kādos gadījumos izstrādātāja rīki ir lietojami.
 
       Ja politikai ir iestatīta vērtība “DeveloperToolsDisallowedForForceInstalledExtensions” (vērtība “0” — noklusējuma vērtība korporatīvajiem lietotājiem), izstrādātāja rīki un JavaScript konsole ir pieejami, taču tiem nevar piekļūt paplašinājumos, kuri ir instalēti saskaņā ar uzņēmuma politiku.
-      Ja politikai ir iestatīta vērtība “DeveloperToolsAllowed” (vērtība “1” — noklusējuma vērtība nepārvaldītiem lietotājiem), izstrādātāja rīkiem un JavaScript konsolei var piekļūt un tos var izmantot visos kontekstos, tostarp arī paplašinājumos, kuri ir instalēti saskaņā ar uzņēmuma politiku.
+      Ja politikai ir iestatīta vērtība “DeveloperToolsAllowed” (vērtība “1” — noklusējuma vērtība nepārvaldītiem lietotājiem), izstrādātāja rīkiem un JavaScript konsolei var piekļūt un tos var izmantot visos gadījumos, tostarp arī paplašinājumos, kuri ir instalēti saskaņā ar uzņēmuma politiku.
       Ja politikai ir iestatīta vērtība “DeveloperToolsDisallowed” (vērtība “2”), izstrādātāja rīkiem nevar piekļūt un tīmekļa vietnes elementus vairs nevar pārbaudīt. Tiek atspējoti visi īsinājumtaustiņi un izvēļņu vai kontekstizvēļņu komandas, ar kuru palīdzību tiek atvērti izstrādātāju rīki vai JavaScript konsole.
       Ja mantotajai politikai DeveloperToolsDisabled ir iestatīta vērtība “True”, šīs politikas vērtība tiek ignorēta un izstrādātāju rīki tiek atspējoti.</translation>
 <translation id="1426410128494586442">Jā</translation>
@@ -1273,7 +1273,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="4617338332148204752">Izlaist metataga pārbaudīšanu spraudnī <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurē paplašinājumu instalēšanas balto sarakstu</translation>
 <translation id="4632343302005518762">Atļauja produktam <ph name="PRODUCT_FRAME_NAME" /> apstrādāt sarakstā iekļautos satura veidus</translation>
-<translation id="4632566332417930481">Neatļauj izstrādātāju rīku lietošanu paplašinājumos, kuri ir instalēti saskaņā ar uzņēmuma politiku; atļauj izstrādātāju rīku lietošanu citos kontekstos.</translation>
+<translation id="4632566332417930481">Neatļauj izstrādātāju rīku lietošanu paplašinājumos, kuri ir instalēti saskaņā ar uzņēmuma politiku; atļauj izstrādātāju rīku lietošanu citos gadījumos.</translation>
 <translation id="4633786464238689684">Augšējās rindas taustiņu noklusējuma darbība tiek mainīta, un tie tiek izmantoti kā funkciju taustiņi.
 
           Ja šai politikai tiek iestatīta vērtība “true”, tastatūras augšējā taustiņu rinda pēc noklusējuma izpildīs funkciju taustiņu komandas. Lai tos atkal izmantotu kā multivides taustiņus, jānospiež meklēšanas taustiņš.
@@ -2466,16 +2466,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
       Ja politikai ir iestatīta vērtība “True”, Chrome tīrīšanas rīki saskaņā ar SafeBrowsingExtendedReportingEnabled politiku pēc nevēlamas programmatūras noteikšanas meklēšanas metadatus nosūtīs Google serveriem. Lietotājam tiks parādīts Chrome tīrīšanas rīku ziņojums ar jautājumu, vai nevēlamo programmatūru noņemt. Tīrīšanas rezultāti tiks nosūtīti Google serveriem, un lietotājam nebūs pieejamas opcijas, lai nosūtīšanu liegtu.
 
       Šī politika nav pieejama Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam.</translation>
-<translation id="7978060394348264922">
-      Ieteicams izmantot politikas IsolateOrigins iestatījumu,
-      lai gūtu vislabākos rezultātus, izolētu tikai vietnes,
-      kuras vēlaties izolēt, un ierobežotu ietekmi lietotājiem. Izmantojot politiku
-      SitePerProcess, tiek izolētas visas vietnes.
-      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
-      Ja politika ir atspējota, neviena saite netiks izolēta un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku SitePerProcess.
-      Ja šī politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      </translation>
 <translation id="7980227303582973781">Nav specifisku ierobežojumu</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Pagriezt ekrānu par 0 grādiem</translation>
@@ -2588,7 +2578,7 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8300455783946254851">Ja šai opcijai ir iestatīta vērtība Patiesa, tiek atspējota failu sinhronizācija ar Google disku operētājsistēmas <ph name="PRODUCT_OS_NAME" /> lietotnē Faili, kad tiek izmantots mobilais savienojums. Dati tiek sinhronizēti ar Google disku tikai tad, ja ir izveidots Wi-Fi vai Ethernet savienojums.
 
           Ja šī opcija nav iestatīta vai tai ir iestatīta vērtība Nepatiesa, lietotāji varēs pārsūtīt failus uz Google disku, izmantojot mobilos savienojumus.</translation>
-<translation id="8300992833374611099">Nosaka, kādos kontekstos izstrādātāju rīkus var lietot</translation>
+<translation id="8300992833374611099">Nosaka, kādos gadījumos izstrādātāju rīki ir lietojami</translation>
 <translation id="8312129124898414409">Ļauj iestatīt, vai vietnēs ir atļauts izmantot atslēgu ģenerēšanu. Atslēgu ģenerēšanas izmantošana var tikt atļauta vai noraidīta visām vietnēm.
 
           Ja šī politika nav iestatīta, tiks lietota politika “BlockKeygen” un lietotājs to varēs mainīt.</translation>
@@ -2812,16 +2802,6 @@ Operētājsistēmā Windows politikas konfigurēšanai ieteicams izmantot GPO, t
 <translation id="8976248126101463034">Gnubby autentifikācijas atļaušana attālās piekļuves saimniekdatoriem</translation>
 <translation id="8976531594979650914">Sistēmas noklusējuma printera izmantošana pēc noklusējuma</translation>
 <translation id="8992176907758534924">Neatļaut nevienai vietnei rādīt attēlus</translation>
-<translation id="9034729899149506577">
-      Ja politika ir iespējota, katrai komatatdalītā sarakstā
-      norādītajai vietnei tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas
-      pēc apakšdomēniem, piemēram, norādot https://example.com/,
-      tiks izolēta arī vietne https://foo.example.com/ kā daļa no vietnes
-      https://example.com/.
-      Ja politika ir atspējota, neviena saite netiks izolēta un tiks atspējoti IsolateOrigins un SitePerProcess eksperimenti. Lietotāji joprojām varēs manuāli iespējot politiku IsolateOrigins.
-      Ja šī politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
-      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
-      </translation>
 <translation id="9035964157729712237">Paplašinājumu ID numuri, kas noņemami no melnā saraksta</translation>
 <translation id="9042911395677044526">Ļauj pārsūtīšanas tīkla konfigurāciju izmantot konkrētam lietotājam <ph name="PRODUCT_OS_NAME" /> ierīcē. Tīkla konfigurācija ir JSON formatēta virkne, kā 
 definēts Atvērta tīkla konfigurācijas formātā, kas aprakstīts šeit: <ph name="ONC_SPEC_URL" /></translation>

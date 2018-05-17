@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">使用網頁預測功能</translation>
 <translation id="4412992751769744546">允許第三方 Cookie</translation>
 <translation id="4432792777822557199">從現在起，系統會將<ph name="SOURCE_LANGUAGE" />網頁內容翻譯成<ph name="TARGET_LANGUAGE" /></translation>
+<translation id="4434045419905280838">彈出式視窗與重新導向</translation>
 <translation id="4445444302979002552">運用預測服務取得建議的搜尋字詞和網站</translation>
 <translation id="4452411734226507615">關閉 [<ph name="TAB_TITLE" />] 分頁</translation>
 <translation id="4452548195519783679">已將書籤加入「<ph name="FOLDER_NAME" />」</translation>
@@ -516,6 +517,7 @@
 <translation id="5765780083710877561">說明：</translation>
 <translation id="5777170031995031090">控管 Google 使用您瀏覽記錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定。</translation>
 <translation id="5779929835642192302">有自動填入建議</translation>
+<translation id="5793665092639000975">使用量：<ph name="SPACE_USED" /> (共 <ph name="SPACE_AVAILABLE" />)</translation>
 <translation id="5804241973901381774">權限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 小時前}other{# 小時前}}</translation>
 <translation id="5817918615728894473">配對</translation>
@@ -600,6 +602,7 @@
 <translation id="6556716549745717622">針對經常顯示侵入式廣告的網站封鎖廣告 (建議)</translation>
 <translation id="6560414384669816528">使用 Sogou 搜尋</translation>
 <translation id="6566259936974865419">Chrome 為你節省了 <ph name="GIGABYTES" /> GB</translation>
+<translation id="6573096386450695060">一律允許</translation>
 <translation id="6573431926118603307">您在其他裝置上透過 Chrome 開啟的分頁會顯示在這裡。</translation>
 <translation id="6575643671698722332">重設失敗。請確認裝置已連上網路，然後再試一次。</translation>
 <translation id="6583199322650523874">將目前的網頁加入書籤</translation>
@@ -659,6 +662,7 @@
 <translation id="7031882061095297553">同步處理</translation>
 <translation id="7034608350006174882">使用 Google Pay 儲存的卡片和地址資訊</translation>
 <translation id="7053983685419859001">封鎖</translation>
+<translation id="7055152154916055070">已禁止重新導向：</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
 <translation id="7063006564040364415">無法連線至同步處理伺服器。</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{已選取 1 個項目}other{已選取 # 個項目}}</translation>
@@ -667,6 +671,7 @@
 <translation id="7121362699166175603">將歷史記錄和自動即時查詢從網址列中清除。你的 Google 帳戶可能會儲存其他形式的瀏覽記錄，請參閱 <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />。</translation>
 <translation id="7128222689758636196">對目前的搜尋引擎開放</translation>
 <translation id="7138678301420049075">其他</translation>
+<translation id="7141896414559753902">禁止網站顯示彈出式視窗及重新導向 (建議)</translation>
 <translation id="7144878232160441200">重試</translation>
 <translation id="7149893636342594995">過去 24 小時</translation>
 <translation id="7177466738963138057">日後可前往設定頁面進行變更</translation>
@@ -883,6 +888,7 @@
 <translation id="932327136139879170">首頁</translation>
 <translation id="932599481871055447">節省數據用量，加快瀏覽速度</translation>
 <translation id="938850635132480979">錯誤：<ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">SD 卡空間不足</translation>
 <translation id="945522503751344254">提供意見</translation>
 <translation id="945632385593298557">存取您的麥克風</translation>
 <translation id="951339005376969845">刪除現有資料。你可以切換回 <ph name="FROM_ACCOUNT" />，重新取得現有資料。</translation>

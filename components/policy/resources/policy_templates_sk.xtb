@@ -2443,12 +2443,6 @@ Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adr
       Ak pravidlo nastavíte na hodnotu True, Chrome Cleanup pri zistení nechceného softvéru môže nahlásiť metadáta hľadania do Googlu s súlade s pravidlom nastaveným možnosťou SafeBrowsingExtendedReportingEnabled. Chrome Cleanup sa opýta používateľa, či chce nechcený softvér odstrániť. Výsledky vyčistenia sa nahlásia Googlu a používateľ nebude mať možnosť tomu zabrániť.
 
       Toto pravidlo nie je k dispozícii v reláciách systému Windows, ktoré nie sú pripojené k doméne <ph name="MS_AD_NAME" />.</translation>
-<translation id="7978060394348264922">
-      Ak chcete vyťažiť z oboch možností, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Toto nastavenie – SitePerProcess – izoluje všetky weby.
-      Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť. Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      V prehliadači <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu tiež pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ak sa hodnoty nastavené v týchto dvoch pravidlách nezhodujú, môže pri začatí relácie používateľa nastať oneskorenie spôsobené použitím hodnoty zadanej v pravidle pre používateľa.
-      </translation>
 <translation id="7980227303582973781">Žiadne špeciálne obmedzenia</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Otočiť obrazovku o 0 stupňov</translation>
@@ -2784,12 +2778,6 @@ Odporúčaný spôsob nastavenia pravidiel v systéme Windows je prostredníctv
 <translation id="8976248126101463034">Povoliť overovanie gnubby pre hostiteľov so vzdialeným prístupom</translation>
 <translation id="8976531594979650914">Ako predvolenú tlačiareň použiť predvolenú tlačiareň systému</translation>
 <translation id="8992176907758534924">Zakázať všetkým stránkam zobrazovať obrázky</translation>
-<translation id="9034729899149506577">
-      Ak toto pravidlo povolíte, jednotlivé zdroje v zozname (oddelené čiarkami) sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
-      Ak toto pravidlo zakážete, nenastane žiadna explicitná izoláciu webu a skúšobné testy pravidiel IsolateOrigins a SitePerProcess budú zakázané. Používatelia budú môcť ale pravidlo SitePerProcess ručne povoliť.
-      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť dané nastavenie zmeniť.
-      V prehliadači <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu tiež pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ak sa hodnoty nastavené v týchto dvoch pravidlách nezhodujú, môže pri začatí relácie používateľa nastať oneskorenie spôsobené použitím hodnoty zadanej v pravidle pre používateľa.
-      </translation>
 <translation id="9035964157729712237">ID rozšírení, ktoré majú byť zo zoznamu zakázaných rozšírení vyňaté</translation>
 <translation id="9042911395677044526">Umožňuje preniesť konfiguráciu siete, ktorá sa použije pre jednotlivých používateľov v zariadení so systémom <ph name="PRODUCT_OS_NAME" />. Konfigurácia siete je reťazec vo formáte JSON, ktorý sa riadi definíciou formátu Open Network Configuration uvedenou na adrese <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Určuje, či prehrávanie videa ovplyvňuje správu napájania</translation>

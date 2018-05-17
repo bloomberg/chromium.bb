@@ -660,6 +660,7 @@
 <translation id="1997484222658892567"><ph name="URL" />에서 로컬 컴퓨터에 대용량 데이터를 영구 저장하려고 합니다</translation>
 <translation id="1997616988432401742">내 인증서</translation>
 <translation id="1999115740519098545">시작 그룹</translation>
+<translation id="2001796770603320721">드라이브에서 관리</translation>
 <translation id="2006638907958895361"><ph name="APP" />에서 링크 열기</translation>
 <translation id="2007404777272201486">문제 신고...</translation>
 <translation id="2016430552235416146">기본</translation>
@@ -2087,6 +2088,7 @@
 <translation id="42137655013211669">서버에서 이 리소스에 대한 액세스를 금지했습니다.</translation>
 <translation id="4215350869199060536">이름에 사용할 수 없는 기호가 포함되어 있습니다.</translation>
 <translation id="4215448920900139318">파일 <ph name="FILE_COUNT" />개 백업 중</translation>
+<translation id="4217571870635786043">음성기록</translation>
 <translation id="4225397296022057997">모든 사이트에서</translation>
 <translation id="4235200303672858594">전체 화면</translation>
 <translation id="4235813040357936597"><ph name="PROFILE_NAME" />에 계정 추가</translation>
@@ -2199,6 +2201,7 @@
 <translation id="4425149324548788773">내 드라이브</translation>
 <translation id="4430019312045809116">볼륨</translation>
 <translation id="4430369329743628066">북마크 추가됨</translation>
+<translation id="4434045419905280838">팝업 및 리디렉션</translation>
 <translation id="443454694385851356">이전(안전하지 않음)</translation>
 <translation id="443464694732789311">계속</translation>
 <translation id="443475966875174318">호환되지 않는 애플리케이션 업데이트 또는 삭제</translation>
@@ -3892,6 +3895,7 @@
 <translation id="7052237160939977163">성능 추적 데이터 전송</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">차단</translation>
+<translation id="7055152154916055070">다음 주소로의 리디렉션이 차단됨:</translation>
 <translation id="7056526158851679338">기기 검사(&amp;I)</translation>
 <translation id="7059858479264779982">자동 실행 설정</translation>
 <translation id="7059893117020417984">비공개로 탐색하려면 점 아이콘 메뉴를 클릭하여 시크릿 창을 여세요.</translation>
@@ -4255,6 +4259,7 @@
 <translation id="7617366389578322136">'<ph name="DEVICE_NAME" />'에 연결 중입니다.</translation>
 <translation id="7622114377921274169">충전 중</translation>
 <translation id="7624337243375417909">Caps Lock 사용 안함</translation>
+<translation id="7625568159987162309">사이트 전체에 저장된 권한 및 데이터 보기</translation>
 <translation id="7627790789328695202"><ph name="FILE_NAME" />이(가) 이미 있습니다. 이름을 변경한 후 다시 시도해 주세요.</translation>
 <translation id="7628127343934101653">기본 PDF 뷰어 애플리케이션에서 PDF 파일 열기</translation>
 <translation id="7629827748548208700">탭: <ph name="TAB_NAME" /></translation>
@@ -4577,6 +4582,7 @@
 <translation id="806812017500012252">제목순으로 다시 정렬</translation>
 <translation id="8068253693380742035">로그인하려면 터치하세요.</translation>
 <translation id="8069615408251337349">Google 클라우드 프린트</translation>
+<translation id="806972267388474605">Linux 파일</translation>
 <translation id="8071432093239591881">이미지로 인쇄</translation>
 <translation id="8072988827236813198">탭 고정</translation>
 <translation id="8074127646604999664">최근에 닫은 사이트에서 데이터 전송 및 수신을 완료하도록 허용</translation>
@@ -5085,7 +5091,6 @@
 <translation id="8902667442496790482">텍스트 읽어주기 설정 열기</translation>
 <translation id="8903921497873541725">확대</translation>
 <translation id="8904976895050290827">크롬 동기화</translation>
-<translation id="8908902564709148335">경고: 이 컴퓨터에 확장 프로그램 기능을 제한하는 --scripts-require-action 플래그를 사용하도록 설정했습니다. 하지만 다른 기기에서 이 플래그를 지원하지 않거나 사용하도록 설정하지 않았을 수도 있습니다. 이러한 기기에서 이 확장 프로그램이 수행할 수 있는 작업은 다음과 같습니다.</translation>
 <translation id="8909233240676134608">컴퓨터가 도메인에 가입하지 못했습니다. 서버가 지정된 Kerberos 암호화 유형을 지원하지 않습니다. '옵션 더보기'에서 암호화 설정을 확인하세요.</translation>
 <translation id="8909833622202089127">사이트에서 내 위치를 추적하고 있습니다.</translation>
 <translation id="8910146161325739742">화면 공유하기</translation>
@@ -5105,7 +5110,6 @@
 <translation id="8940081510938872932">현재 컴퓨터의 처리량이 너무 많습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="8941173171815156065">'<ph name="PERMISSION" />' 권한 취소</translation>
 <translation id="8941882480823041320">이전 글자</translation>
-<translation id="8943076760234179177">파일 공유 URL</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">배터리 소모가 빨라짐(현재 <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" />에서 <ph name="TAB_NAME" />와(과) 창을 공유 중입니다.</translation>

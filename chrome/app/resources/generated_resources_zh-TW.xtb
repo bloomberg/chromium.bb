@@ -659,6 +659,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> 要求在你的本機電腦上永久儲存大量資料</translation>
 <translation id="1997616988432401742">您的憑證</translation>
 <translation id="1999115740519098545">起始畫面</translation>
+<translation id="2001796770603320721">在雲端硬碟中管理</translation>
 <translation id="2006638907958895361">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="2007404777272201486">回報問題...</translation>
 <translation id="2016430552235416146">傳統</translation>
@@ -2086,6 +2087,7 @@
 <translation id="42137655013211669">伺服器禁止存取這個資源。</translation>
 <translation id="4215350869199060536">糟糕，名稱中有非法符號！</translation>
 <translation id="4215448920900139318">正在備份 <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">語音輸入</translation>
 <translation id="4225397296022057997">在所有網站上</translation>
 <translation id="4235200303672858594">整個畫面</translation>
 <translation id="4235813040357936597">為<ph name="PROFILE_NAME" />新增帳戶</translation>
@@ -2198,6 +2200,7 @@
 <translation id="4425149324548788773">我的雲端硬碟</translation>
 <translation id="4430019312045809116">音量</translation>
 <translation id="4430369329743628066">已新增書籤</translation>
+<translation id="4434045419905280838">彈出式視窗與重新導向</translation>
 <translation id="443454694385851356">舊版 (不安全)</translation>
 <translation id="443464694732789311">繼續</translation>
 <translation id="443475966875174318">更新或移除不相容的應用程式</translation>
@@ -3889,6 +3892,7 @@
 <translation id="7052237160939977163">傳送效能追蹤資料</translation>
 <translation id="7052633198403197513">F1 鍵</translation>
 <translation id="7053983685419859001">封鎖</translation>
+<translation id="7055152154916055070">已禁止重新導向：</translation>
 <translation id="7056526158851679338">檢查裝置 (&amp;I)</translation>
 <translation id="7059858479264779982">設為自動啟動</translation>
 <translation id="7059893117020417984">如果想要進行私密瀏覽，請按一下三個圓點圖示的選單，然後開啟無痕式視窗</translation>
@@ -4249,6 +4253,7 @@
 <translation id="7617366389578322136">正在連線至「<ph name="DEVICE_NAME" />」</translation>
 <translation id="7622114377921274169">充電中。</translation>
 <translation id="7624337243375417909">大寫鎖定模式已關閉</translation>
+<translation id="7625568159987162309">查看各網站的權限及儲存的資料</translation>
 <translation id="7627790789328695202">糟糕！已存在名為 <ph name="FILE_NAME" /> 的檔案。請重新命名檔案並再試一次。</translation>
 <translation id="7628127343934101653">在預設的 PDF 檢視器應用程式中開啟 PDF 檔案。</translation>
 <translation id="7629827748548208700">分頁：<ph name="TAB_NAME" /></translation>
@@ -4571,6 +4576,7 @@
 <translation id="806812017500012252">按標題重新排序</translation>
 <translation id="8068253693380742035">輕觸即可登入</translation>
 <translation id="8069615408251337349">Google 雲端列印</translation>
+<translation id="806972267388474605">Linux 檔案</translation>
 <translation id="8071432093239591881">以圖片形式列印</translation>
 <translation id="8072988827236813198">固定分頁</translation>
 <translation id="8074127646604999664">允許最近關閉的網站完成資料收發作業</translation>
@@ -5079,7 +5085,6 @@
 <translation id="8902667442496790482">開啟隨選朗讀設定</translation>
 <translation id="8903921497873541725">放大</translation>
 <translation id="8904976895050290827">Google Chrome 同步功能</translation>
-<translation id="8908902564709148335">警告：這台電腦上已啟用 --scripts-require-action 標記，所以這個擴充功能可執行的功能有限。不過，在其他不支援或未啟用這個標記的裝置上，這個擴充功能可以：</translation>
 <translation id="8909233240676134608">無法將這個裝置加入網域，伺服器不支援指定的 Kerberos 加密類型。請前往「更多選項」檢查加密設定。</translation>
 <translation id="8909833622202089127">網站正在追蹤你的位置</translation>
 <translation id="8910146161325739742">分享螢幕畫面</translation>
@@ -5099,7 +5104,6 @@
 <translation id="8940081510938872932">目前電腦過於繁忙，請稍後再試。</translation>
 <translation id="8941173171815156065">撤銷「<ph name="PERMISSION" />」權限</translation>
 <translation id="8941882480823041320">上一個字詞</translation>
-<translation id="8943076760234179177">檔案共用網址</translation>
 <translation id="894360074127026135">Netscape International Step-Up</translation>
 <translation id="8944099748578356325">更快耗盡電量 (目前為 <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> 正在與 <ph name="TAB_NAME" /> 共用視窗。</translation>

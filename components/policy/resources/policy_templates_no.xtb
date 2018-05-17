@@ -27,6 +27,7 @@
       Hvis denne regelen er spesifisert, vises påloggingsskjermen alltid med lokaliteten som er angitt av den første verdien i denne regelen. (Regelen defineres som en liste for fremoverkompatibilitet.) Hvis regelen ikke er spesifisert eller den er angitt som en tom liste, vises påloggingsskjermen med lokaliteten for den forrige brukerøkten. Hvis regelen er angitt som en verdi som ikke er noen gyldig lokalitet, vises påloggingsskjermen med en reservelokalitet (som for øyeblikket er en-US).</translation>
 <translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="1062407476771304334">Erstatt</translation>
+<translation id="1079801999187584280">Ikke tillat bruk av utviklerverktøy</translation>
 <translation id="109166998561583554">Utløser for rapportering av kontoer der passordbeskyttelsen kan være kompromittert</translation>
 <translation id="1093082332347834239">Hvis denne innstillingen er slått på, kjøres verten for fjernhjelp i en prosess med <ph name="UIACCESS_PERMISSION_NAME" />-tillatelser. Dette tillater at eksterne brukere kommuniserer via uthevede vinduer i på skrivebordet til den lokale brukeren.
 
@@ -79,6 +80,7 @@
 
           Skaleringsfaktoren må være 100 % eller mer.</translation>
 <translation id="131353325527891113">Vis brukernavn på påloggingssiden</translation>
+<translation id="1325295456374328159">Konfigurer tillatte lokaliteter i brukerøkter</translation>
 <translation id="1327466551276625742">Aktiver melding om nettverkskonfigurasjon når du er uten nett.</translation>
 <translation id="1330145147221172764">Slå på skjermtastaturet</translation>
 <translation id="13356285923490863">Navn på retningslinje</translation>
@@ -91,6 +93,11 @@
 <translation id="1387596372902085462">Angir om Symantec Corporations eldre PKI-infrastruktur skal klareres eller ikke</translation>
 <translation id="1393485621820363363">Aktiverte bedriftsskrivere</translation>
 <translation id="1397855852561539316">Foreslått nettadresse for standard søkeleverandør</translation>
+<translation id="1424081297104898791">Lar deg styre hvor utviklerverktøy kan brukes.
+      Hvis denne regelen er angitt som «DeveloperToolsDisallowedForForceInstalledExtensions» (verdi 0, som er standardverdien for bedriftsbrukere), kan utviklerverktøyene og JavaScript-konsollen brukes generelt, men de kan ikke brukes i konteksten til utvidelser installert av virksomhetens retningslinjer.
+      Hvis denne regelen er angitt som «DeveloperToolsAllowed» (verdi 1, som er standardverdien for brukere som ikke administreres), kan utviklerverktøyene og JavaScript-konsollen brukes i alle kontekster, inkludert konteksten til utvidelser installer av virksomhetens retningslinjer.
+      Hvis denne regelen er angitt som «DeveloperToolsDisallowed» (verdi 2), kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres lenger. Alle hurtigtaster og alle oppføringer for menyer eller hurtigmenyer for å åpne utviklerverktøy eller JavaScript-konsollen deaktiveres.
+      Hvis den eldre regelen DeveloperToolsDisabled er angitt som «true» (sann), ignoreres denne regelen, og utviklerverktøyene deaktiveres.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1427655258943162134">Adresse eller nettadresse for proxy-tjener</translation>
 <translation id="1435659902881071157">Nettverkskonfigurasjon på enhetsnivå</translation>
@@ -206,6 +213,7 @@
 <translation id="1803646570632580723">Liste over programmer som er festet i programlisten</translation>
 <translation id="1808715480127969042">Blokkér informasjonskapsler på disse nettstedene</translation>
 <translation id="1810261428246410396">Tillat bruk av Umiddelbar internettdeling.</translation>
+<translation id="1826282708349731794">Kontrollerer hvordan opprydningsverktøyet for Chrome rapporterer data til Google</translation>
 <translation id="1827523283178827583">Bruk faste proxytjenere</translation>
 <translation id="1843117931376765605">Oppdateringsfrekvens for brukerinnstilling</translation>
 <translation id="1844620919405873871">Konfigurerer retningslinjer for hurtigopplåsing.</translation>
@@ -600,6 +608,7 @@
       Denne regelen kan ikke brukes til å bestemme om brukere kan konfigurere skrivere på individuelle enheter. Den er ment å være et supplement til konfigureringen av skrivere som er gjort av individuelle brukere.
       </translation>
 <translation id="2633084400146331575">Aktiverer talerespons</translation>
+<translation id="2640843331263301324">Aktiverer opprydningsverktøyet for Chrome på Windows</translation>
 <translation id="2646290749315461919">Gjør at du kan angi om nettsteder tillates å spore brukernes fysiske posisjon. Sporing av brukernes fysiske posisjon kan tillates som standard, nektes som standard, eller brukeren kan blir spurt hver gang et nettsted ber om den fysiske posisjonen. Hvis denne retningslinjen ikke angis, brukes AskGeolocation, og brukeren kan endre på dette.</translation>
 <translation id="2647069081229792812">Slå på eller av bokmerkeredigering</translation>
 <translation id="2650049181907741121">Handling som skal utføres når brukeren lukker lokket</translation>
@@ -1230,12 +1239,14 @@
 <translation id="4554651132977135445">Behandlingsmodus for tilbakekobling av brukerinnstillinger</translation>
 <translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
 <translation id="4557134566541205630">Nettadresse for ny fane for standard søkeleverandør</translation>
+<translation id="4567137030726189378">Tillat bruk av utviklerverktøy</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
 <translation id="4604931264910482931">Konfigurer svarteliste for innebygde meldinger</translation>
 <translation id="4613508646038788144">Hvis regelen er satt til «usann», kan tredjepartsprogramvare sette inn kjørbar kode i Chromes prosesser. Hvis regelen ikke er spesifisert eller er satt til «sann», forhindres tredjepartsprogramvare fra å sette inn kjørbar kode i Chromes prosesser.</translation>
 <translation id="4617338332148204752">Hopp over sjekk av metatag i <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Konfigurer godkjenningslisten for installasjon av utvidelser</translation>
 <translation id="4632343302005518762">Gi <ph name="PRODUCT_FRAME_NAME" /> tillatelse til å håndtere de oppførte innholdstypene</translation>
+<translation id="4632566332417930481">Ikke tillat bruk av utviklerverktøy på utvidelser installert av virksomhetens retningslinjer. Tillat bruk av utviklerverktøy i andre sammenhenger</translation>
 <translation id="4633786464238689684">Endrer standardatferden til tastene på den øverste raden til funksjonstaster.
 
           Hvis denne innstillingen er angitt som sann (true), kan du bruke den øverste raden med taster på tastaturet som funksjonstaster. Da må du holde inne søketasten for å bruke dem som medietaster igjen.
@@ -1502,10 +1513,14 @@
 
       Hvis den ikke er angitt, kan det hende at brukeren blir spurt om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="5423197884968724595">Navn på Android WebView-begrensning:</translation>
+<translation id="5442026853063570579">Denne regelen kontrollerer også tilgangen til utvikleralternativene for Android. Hvis du angir denne regelen som «DeveloperToolsDisallowed» (verdi 2), fjerner du brukernes tilgang til utvikleralternativene. Hvis du angir denne regelen som en annen verdi eller ikke angir den, kan brukere få tilgang til utvikleralternativene ved å trykke sju ganger på delversjonsnummeret i appen for Android-innstillinger.</translation>
 <translation id="5447306928176905178">Slå på rapportering av minneinformasjon (heap-størrelse for JavaScript) til siden (avviklet)</translation>
 <translation id="5457065417344056871">Slå på gjestemodus i nettleseren</translation>
 <translation id="5457924070961220141">Gjør at du kan konfigurere standard HTML-gjengivelsen når <ph name="PRODUCT_FRAME_NAME" /> er installert.
           Standardinnstillingen som brukes når denne retningslinjen er angitt, er for å tillate vertstjeneren å foreta gjengivelsen, men du kan velge å overstyre dette sånn at <ph name="PRODUCT_FRAME_NAME" /> som standard gjengir HTML-sider.</translation>
+<translation id="5459155981813668716">Konfigurerer hvilke lokaliteter <ph name="PRODUCT_OS_NAME" /> kan vises i.
+
+      Hvis denne regelen er angitt, kan brukeren bare konfigurere <ph name="PRODUCT_OS_NAME" /> til å vises i en av lokalitetene som er angitt av denne regelen. Hvis regelen ikke er angitt eller er angitt med en tom liste, kan <ph name="PRODUCT_OS_NAME" /> vises i alle lokalitetene som støttes. Hvis regelen er angitt med en liste med ugyldige verdier, ignoreres alle de ugyldige verdiene. Hvis en bruker tidligere konfigurerte <ph name="PRODUCT_OS_NAME" /> til å bli vist på et språk som ikke tillates av denne regelen, byttes den viste lokaliteten til en tillat lokalitet nesten gang brukeren logger på. Hvis brukeren har konfigurert foretrukne lokaliteter og en av de foretrukne lokaliteter tillates av denne regelen, bytter <ph name="PRODUCT_OS_NAME" /> til denne lokaliteten. Ellers bytter <ph name="PRODUCT_OS_NAME" /> til den første gyldige verdien angitt av denne regelen eller til en reservelokalitet (en-US) hvis denne regelen bare inneholder ugyldige oppføringer.</translation>
 <translation id="5464816904705580310">Konfigurer innstillinger for administrerte brukere.</translation>
 <translation id="546726650689747237">Forsinkelse for lysdemping på skjermen når enheten kjører på vekselstrøm</translation>
 <translation id="5469484020713359236">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får angi informasjonskapsler.
@@ -1730,6 +1745,7 @@
 <translation id="6036523166753287175">Muliggjør kryssing av brannmur fra ekstern tilgangsvert</translation>
 <translation id="6070667616071269965">Tastaturoppsett for påloggingsskjermen på enheten</translation>
 <translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarsler</translation>
+<translation id="6074964551275531965">Angi tidsperioden for oppdateringsvarsler</translation>
 <translation id="6076099373507468537">Definerer listen over USB-enheter som kan kobles fra kjernedriveren, så de kan brukes via chrome.usb API direkte i nettprogrammer. Oppføringene er parvise leverandør- og produktkoder som identifiserer spesifikke USB-enheter.
 
       Hvis denne regelen ikke er spesifisert, er listen over frakoblingsbare USB-enheter tom.</translation>
@@ -1812,6 +1828,11 @@
       Hvis du aktiverer denne innstillingen eller ikke angir noen verdi, fortsetter autofyll-funksjonen å være under brukerens kontroll. Dette gjør at de kan konfigurere autofyll-profiler og slå autofyll-funksjonen på og av etter eget ønske.</translation>
 <translation id="6394350458541421998">Denne innstillingen ble trukket tilbake fra og med <ph name="PRODUCT_OS_NAME" /> versjon 29. Bruk innstillingen PresentationScreenDimDelayScale i stedet.</translation>
 <translation id="6401669939808766804">Logg brukeren av</translation>
+<translation id="6412477120967771054">Hvis denne regelen er angitt som «false» (usann), stoppes opprydningsverktøyet for Chrome i å gjennomsøke systemet etter unønsket programvare og gjennomføre opprydning. Manuell utløsing av opprydningsverktøyet for Chrome via chrome://settings/cleanup er deaktivert.
+
+      Hvis regelen er angitt som «true» (sann) eller ikke er angitt, gjennomsøker opprydningsverktøyet for Chrome systemet regelmessig etter uønsket programvare, og hvis det blir oppdaget, blir brukeren spurt om det skal fjernes. Manuell utløsing av opprydningsverktøyet for Chrome via chrome://settings/cleanup er aktivert.
+
+      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="6417861582779909667">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer nettsteder som ikke tillates å stille inn informasjonskapsler.
 
          Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra  retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
@@ -1834,6 +1855,12 @@
 For å kontrollere hvilke nettsteder som tillates å kjøre Flash, kan du lese mer om reglene «DefaultPluginsSetting», «PluginsAllowedForUrls» og «PluginsBlockedForUrls».
 
 Hvis denne regelen er deaktivert eller ikke angitt, kan Flash-innhold av annen opprinnelse eller med lite innhold bli blokkert.</translation>
+<translation id="6535639183431116351">Denne regelen er avviklet i M68. Bruk DeveloperToolsAvailability i stedet.
+
+      Deaktiverer utviklerverktøyene og JavaScript-konsollen.
+
+      Hvis du aktiverer denne innstillingen, kan ikke utviklerverktøyene brukes, og elementer på nettsteder kan ikke inspiseres. Alle tastatursnarveier og eventuelle oppføringer i menyer eller kontekstmenyer som kan åpne utviklerverktøyene eller JavaScript-konsollen, blir deaktivert.
+      Hvis dette alternativet slås av eller ikke angis, kan utviklerverktøyene og JavaScript-konsollen brukes.</translation>
 <translation id="653608967792832033">Angir hvor lenge skjermen kan stå ubrukt før den låses når enheten bruker batteriet.
 
           Når denne innstillingen er satt til en verdi som er høyere enn null, angir den tiden brukeren kan være inaktiv før  <ph name="PRODUCT_OS_NAME" /> låser skjermen.
@@ -2261,6 +2288,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Gå til https://developers.google.com/safe-browsing for å få mer informasjon om Safe Browsing.</translation>
 <translation id="7643883929273267746">Begrens kontoer som er synlige i <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Avgjør om datastreifing skal aktiveres for enheten. Hvis innstillingen er angitt som Sann, tillates datastreifing. Hvis innstillingen er angitt som Usann eller ikke er konfigurert, blir ikke datastreifing tilgjengelig.</translation>
+<translation id="7673194325208122247">Tidsperiode (millisekunder)</translation>
 <translation id="7683777542468165012">Dynamisk oppdatering av retningslinje</translation>
 <translation id="7694807474048279351">Angi en automatisk omstart etter en oppdatering for <ph name="PRODUCT_OS_NAME" /> er lagt til.
 
@@ -2388,16 +2416,13 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7961779417826583251">Slå av tvungen sertifikatåpenhet for en liste med eldre sertifiseringsinstanser</translation>
 <translation id="7974114691960514888">Denne retningslinjen støttes ikke lenger. Aktiverer bruk av STUN og relétjenere ved tilkobling til en ekstern klient. Hvis denne innstillingen er aktivert, kan maskinen oppdage og koble seg til eksterne vertsmaskiner selv om de er adskilt av en brannmur. Hvis denne innstillingen er deaktivert og utgående UDP-tilkoblinger filtreres av brannmuren, kan denne maskinen bare koble seg til vertsmaskiner i det lokale nettverket.</translation>
 <translation id="7976157349247117979">Navnet på <ph name="PRODUCT_NAME" />-destinasjonen</translation>
-<translation id="7978060394348264922">
-      Du kan endre innstillingen av IsolateOrigins-regelen for å få det beste
-      fra begge verdener – isolering og begrenset innvirkning for brukere – ved
-      å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
-      Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
-      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
-      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere SitePerProcess manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      </translation>
+<translation id="7977445800390854860">Hvis denne regelen ikke er angitt og opprydningsverktøyet for Chrome oppdager uønsket programvare, kan det rapportere metadata om gjennomsøkingen til Google i henhold til regelen angitt av «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om han/hun ønsker å rydde opp den uønskede programvaren. Disse resultatene inneholder filmetadata og registernøkler, som beskrevet i det tekniske dokumentet om personvern i Google Chrome.
+
+      Hvis den er angitt som «false» (usann) og opprydningsverktøyet for Chrome oppdager uønsket programvare, rapporteres ingen metadata om gjennomsøkingen til Google. Dette overstyrer regelen som kan være angitt for «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om den uønskede programvaren skal ryddes opp. Resultatene av opprydningen rapporteres ikke til Google, og brukeren får ikke noe valg om å gjøre dette.
+
+      Hvis den er angitt som «sann» (true) og opprydningsverktøyet for Chrome oppdager uønsket programvare, kan det rapportere metadata om gjennomsøkingen til Google, i henhold til regelen angitt for «SafeBrowsingExtendedReportingEnabled». Opprydningsverktøyet for Chrome spør brukeren om han/hun ønsker å rydde opp den uønskede programvaren. Resultatene av opprydningen rapporteres til Google, og brukeren får ikke noe valg om å forhindre dette.
+
+      Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er knyttet til et <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7980227303582973781">Ingen spesielle begrensninger</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotér skjermen 0 grader</translation>
@@ -2512,6 +2537,7 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8300455783946254851">Når denne regelen er satt til true (sann), blir Google Disk-synkronisering i Filer-appen for <ph name="PRODUCT_OS_NAME" /> slått av. Ved slike tilfeller synkroniseres dataene bare med Google Disk når enheten er tilkoblet via Wi-Fi eller Ethernet.
 
           Hvis denne regelen ikke er spesifisert, eller hvis den er satt til false (usann), kan brukerne overføre filer til Google Disk via mobiltilkoblinger.</translation>
+<translation id="8300992833374611099">Kontrollér hvor utviklerverktøy kan brukes</translation>
 <translation id="8312129124898414409">Gjør det mulig å angi om nettsteder har tillatelse til å bruke nøkkelgenerering. Bruk av nøkkelgenerering kan enten være tillatt for alle nettsteder eller blokkert for alle nettsteder.
 
           Hvis denne regelen ikke angis, brukes «BlockKeygen», og brukeren kan endre den.</translation>
@@ -2730,19 +2756,14 @@ Vi anbefaler å konfigurere regler på Windows via GPO, men tildeling av regler 
 <translation id="8976248126101463034">Tillat gnubby-autentisering for fjerntilgangsverter</translation>
 <translation id="8976531594979650914">Bruk standardskriveren i systemet, som standard</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
-<translation id="9034729899149506577">
-      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
-      kommadelte lister i egne prosesser. Da isoleres også opprinnelser som har
-      navn basert på underdomener. Hvis for eksempel https://example.com/
-      angis, isoleres også https://foo.example.com/ som en del av nettstedet
-      https://example.com/.
-      Hvis regelen er deaktivert, skjer det ingen eksplisitt nettstedsisolering, og feltprøver for IsolateOrigins og SitePerProcess deaktiveres. Brukerne kan fortsatt aktivere IsolateOrigins manuelt.
-      Hvis regelen ikke er konfigurert, kan brukerne endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
-      </translation>
 <translation id="9035964157729712237">Utvidelses-ID-er som skal unntas sperrelisten</translation>
 <translation id="9042911395677044526">Tillater skyving av nettverkskonfigurasjon for enkeltbrukere på en <ph name="PRODUCT_OS_NAME" />-enhet. Nettverkskonfigurasjon er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Angi om videoaktivitet skal påvirke strømbehandling</translation>
+<translation id="9085839450090699752">Lar deg angi en tidsperiode i millisekunder hvor brukere blir varslet om at <ph name="PRODUCT_NAME" /> må startes på nytt eller at en <ph name="PRODUCT_OS_NAME" />-enhet må startes på nytt på grunn av en oppdatering som ikke er installert ennå.
+
+      I denne tidsperioden blir brukeren gjentatte ganger informert om at oppdateringen må installeres. På <ph name="PRODUCT_OS_NAME" />-enheter vises varselet om omstart i systemfeltet når en oppgradering oppdages. Dette varselet skifter farge når halvparten av varselperioden har passert og igjen når hele varselperioden har passert. I <ph name="PRODUCT_NAME" />-nettlesere endres appmenyen for å vise at en omstart er påkrevd når en tredjedel av varselperioden har passert. Dette varselet skifter farge når to tredjedeler av varselperioden har passert og igjen når hele varselperioden har passert. Ekstra varsler aktivert av <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" />-regelen for nettlesere følger samme tidsplan.
+
+      Hvis regelen ikke er angitt, brukes standardperioden på 345600000 millisekunder (fire dager) på <ph name="PRODUCT_OS_NAME" />-enheter og 604800000 millisekunder (én uke) i nettlesere.</translation>
 <translation id="9088433379343318874">Slå på innholdsleverandøren for administrerte brukere</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk påvisning av tidssoner</translation>
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>

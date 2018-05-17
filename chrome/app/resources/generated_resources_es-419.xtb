@@ -656,6 +656,7 @@
 <translation id="1997484222658892567"><ph name="URL" /> desea almacenar de forma permanente los datos de gran tamaño en tu computadora local</translation>
 <translation id="1997616988432401742">Tus certificados</translation>
 <translation id="1999115740519098545">En inicio</translation>
+<translation id="2001796770603320721">Administrar en Drive</translation>
 <translation id="2006638907958895361">Abrir vínculo en <ph name="APP" /></translation>
 <translation id="2007404777272201486">Informar de un problema...</translation>
 <translation id="2016430552235416146">Tradicional</translation>
@@ -2084,6 +2085,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="42137655013211669">El servidor prohibió el acceso a este recurso.</translation>
 <translation id="4215350869199060536">El nombre incluye símbolos no permitidos.</translation>
 <translation id="4215448920900139318">Guardando una copia de seguridad de <ph name="FILE_COUNT" /></translation>
+<translation id="4217571870635786043">Dictado</translation>
 <translation id="4225397296022057997">En todos los sitios</translation>
 <translation id="4235200303672858594">Toda la pantalla</translation>
 <translation id="4235813040357936597">Agregar cuenta para <ph name="PROFILE_NAME" /></translation>
@@ -2196,6 +2198,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="4425149324548788773">Mi unidad</translation>
 <translation id="4430019312045809116">Volumen</translation>
 <translation id="4430369329743628066">Se agregó el marcador</translation>
+<translation id="4434045419905280838">Ventanas emergentes y redireccionamientos</translation>
 <translation id="443454694385851356">Heredados (inseguro)</translation>
 <translation id="443464694732789311">Continuar</translation>
 <translation id="443475966875174318">Actualizar o quitar las aplicaciones incompatibles</translation>
@@ -3889,6 +3892,7 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="7052237160939977163">Enviar datos de seguimiento de rendimiento</translation>
 <translation id="7052633198403197513">F1</translation>
 <translation id="7053983685419859001">Bloquear</translation>
+<translation id="7055152154916055070">Se bloqueó el redireccionamiento:</translation>
 <translation id="7056526158851679338">&amp;Inspeccionar dispositivos</translation>
 <translation id="7059858479264779982">Permitir inicio automático</translation>
 <translation id="7059893117020417984">Haz clic en el menú con el ícono de puntos para abrir una ventana de incógnito y navegar de forma privada</translation>
@@ -4252,6 +4256,7 @@ La instalación de <ph name="APP_NAME" /> descargará <ph name="DOWNLOAD_SIZE" /
 <translation id="7617366389578322136">Conectando a "<ph name="DEVICE_NAME" />"</translation>
 <translation id="7622114377921274169">Cargando</translation>
 <translation id="7624337243375417909">bloqueo de mayúscula desactivado</translation>
+<translation id="7625568159987162309">Ver permisos y datos almacenados de los sitios</translation>
 <translation id="7627790789328695202">El archivo <ph name="FILE_NAME" /> ya existe. Cambia el nombre y vuelve a intentarlo.</translation>
 <translation id="7628127343934101653">Abrir archivos PDF en la aplicación predeterminada para ver archivos PDF.</translation>
 <translation id="7629827748548208700">Pestaña: <ph name="TAB_NAME" /></translation>
@@ -4574,6 +4579,7 @@ Mantén el archivo de clave en un lugar seguro. Debes crear las nuevas versiones
 <translation id="806812017500012252">Reordenar por título</translation>
 <translation id="8068253693380742035">Tocar para acceder</translation>
 <translation id="8069615408251337349">Google Cloud Print</translation>
+<translation id="806972267388474605">Archivos de Linux</translation>
 <translation id="8071432093239591881">Imprimir como imagen</translation>
 <translation id="8072988827236813198">Marcar pestañas</translation>
 <translation id="8074127646604999664">Permitir que los sitios cerrados recientemente terminen de enviar y recibir datos</translation>
@@ -5083,7 +5089,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8902667442496790482">Abrir configuración de Seleccionar para pronunciar</translation>
 <translation id="8903921497873541725">Acercar</translation>
 <translation id="8904976895050290827">Chrome Sync</translation>
-<translation id="8908902564709148335">Advertencia: Habilitaste la marca --scripts-require-action en esta computadora, lo que limita las capacidades de esta extensión. Sin embargo, es posible que otros dispositivos no admitan la marca o que la tengan habilitada. En esos dispositivos, la extensión también puede realizar lo siguiente:</translation>
 <translation id="8909233240676134608">No se puede unir el dispositivo con el dominio. Este servidor no es compatible con los tipos de encriptación de Kerberos especificados. Para conocer la configuración de la encriptación, consulta "Más opciones".</translation>
 <translation id="8909833622202089127">El sitio está haciendo un seguimiento de tu ubicación</translation>
 <translation id="8910146161325739742">Compartir la pantalla</translation>
@@ -5103,7 +5108,6 @@ Es posible que los usuarios con conexiones lentas no puedan ver tu contenido.</t
 <translation id="8940081510938872932">El equipo está trabajando demasiado en este momento. Intenta nuevamente más tarde.</translation>
 <translation id="8941173171815156065">Revocar el permiso "<ph name="PERMISSION" />"</translation>
 <translation id="8941882480823041320">La palabra anterior</translation>
-<translation id="8943076760234179177">URL del uso compartido de archivos</translation>
 <translation id="894360074127026135">Suplemento especial internacional de Netscape</translation>
 <translation id="8944099748578356325">Usa la batería de forma más rápida (nivel actual: <ph name="BATTERY_PERCENTAGE" />%).</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> comparte una ventana con <ph name="TAB_NAME" />.</translation>

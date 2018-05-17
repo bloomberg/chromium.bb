@@ -27,6 +27,7 @@
       如果設定這項政策，系統將一律以這項政策第一個值指定的語言代碼顯示登入畫面 (為了日後的相容性，系統會將政策定義為清單)。  如果未設定這項政策，或將政策設定為空白清單，系統將以上一個使用者工作階段的語言代碼顯示登入畫面。  如果這項政策設定的值不是有效的語言代碼，系統則將以備用語言代碼 (目前為 en-US) 顯示登入畫面。</translation>
 <translation id="1062011392452772310">為裝置啟用遠端認證機制</translation>
 <translation id="1062407476771304334">取代</translation>
+<translation id="1079801999187584280">禁止使用開發人員工具</translation>
 <translation id="109166998561583554">保護密碼的危險帳戶標記功能觸發條件</translation>
 <translation id="1093082332347834239">如果啟用這項設定，選端協助主機會在具備 <ph name="UIACCESS_PERMISSION_NAME" /> 的處理程序中執行，讓遠端使用者在本機使用者桌面上操控權限較高的視窗。
 
@@ -79,6 +80,7 @@
 
           比例因數必須為 100% 以上的值。</translation>
 <translation id="131353325527891113">在登入畫面中顯示使用者名稱</translation>
+<translation id="1325295456374328159">設定可在使用者工作階段中使用的語言代碼</translation>
 <translation id="1327466551276625742">離線時啟用網路設定提示</translation>
 <translation id="1330145147221172764">啟用螢幕小鍵盤</translation>
 <translation id="13356285923490863">政策名稱</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">是否信任 Symantec 公司的舊版 PKI 基礎架構</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
+<translation id="1424081297104898791">讓你控制是否能使用開發人員工具。
+
+      如果將這項政策設為「DeveloperToolsDisallowedForForceInstalledExtensions」(值 0，企業使用者的預設值)，使用者可在一般情況下存取開發人員工具和 JavaScript 控制台，但無法在由企業政策安裝的擴充功能中存取開發人員工具和 JavaScript 控制台。
+      如果將這項政策設為「DeveloperToolsAllowed」(值 1，未受管理使用者的預設值)，使用者可在所有情況下存取開發人員工具和 JavaScript 控制台，包括在由企業政策安裝的擴充功能中。
+      如果將這項政策設為「DeveloperToolsDisallowed」(值 2)，使用者將無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。
+      如果舊政策 DeveloperToolsDisabled 設為 true，系統會忽略這項政策的值，並停用開發人員工具。</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1427655258943162134">Proxy 伺服器的地址或網址</translation>
 <translation id="1435659902881071157">裝置層級網路設定</translation>
@@ -204,6 +212,7 @@
 <translation id="1803646570632580723">要顯示在啟動器中的固定應用程式清單</translation>
 <translation id="1808715480127969042">封鎖這些網站的 Cookie</translation>
 <translation id="1810261428246410396">允許使用即時網路共用功能。</translation>
+<translation id="1826282708349731794">控制 Chrome Cleanup 回報資料給 Google 的方式</translation>
 <translation id="1827523283178827583">使用固定的 Proxy 伺服器</translation>
 <translation id="1843117931376765605">使用者政策的重新整理頻率</translation>
 <translation id="1844620919405873871">設定快速解鎖相關政策。</translation>
@@ -590,6 +599,7 @@
       這項政策旨在補足個別使用者的印表機設定， 對使用者能否在個別裝置上設定印表機沒有影響。
       </translation>
 <translation id="2633084400146331575">啟用互動朗讀</translation>
+<translation id="2640843331263301324">在 Windows 裝置上啟用 Chrome Cleanup</translation>
 <translation id="2646290749315461919">允許你設定是否要讓網站追蹤使用者的實際位置。你可以直接預設為允許或不允許追蹤使用者的實際位置，或讓網站每次要求實際位置時都詢問使用者一次。如果未設定這項政策，系統會使用「AskGeolocation」，不過使用者可以變更設定。</translation>
 <translation id="2647069081229792812">允許或禁止編輯書籤</translation>
 <translation id="2650049181907741121">使用者蓋上螢幕時所採取的動作</translation>
@@ -1206,12 +1216,14 @@
 <translation id="4554651132977135445">使用者政策回送處理模式</translation>
 <translation id="4555850956567117258">為使用者啟用遠端認證機制</translation>
 <translation id="4557134566541205630">預設搜尋引擎新分頁網址</translation>
+<translation id="4567137030726189378">允許使用開發人員工具</translation>
 <translation id="4600786265870346112">啟用大型游標</translation>
 <translation id="4604931264910482931">設定內建訊息傳遞黑名單</translation>
 <translation id="4613508646038788144">如果將這項政策設為 false，第三方軟體將可在 Chrome 的處理程序中置入可執行的程式碼。如果將這項政策設為 true 或不予設定，第三方軟體將無法在 Chrome 的處理程序中置入可執行的程式碼。</translation>
 <translation id="4617338332148204752">在 <ph name="PRODUCT_FRAME_NAME" /> 內略過中繼標記檢查</translation>
 <translation id="4625915093043961294">設定擴充功能安裝許可清單</translation>
 <translation id="4632343302005518762">允許 <ph name="PRODUCT_FRAME_NAME" /> 處理下列內容類型</translation>
+<translation id="4632566332417930481">禁止在由企業政策安裝的擴充功能中使用開發人員工具，允許在其他情況下使用開發人員工具</translation>
 <translation id="4633786464238689684">變更以鍵盤最上方一排按鍵做為功能鍵的預設行為。
 
           如果將這項政策設為 True，鍵盤最上方一排按鍵預設會產生功能鍵指令。如要恢復使用媒體鍵指令，請按下搜尋鍵。
@@ -1463,9 +1475,13 @@
       如果將這項政策設為輸入法識別碼清單，登入畫面即可顯示指定的輸入法。系統會預先選取第一個指定的輸入法。在特定使用者視窗的登入畫面中，除了這項政策指定的輸入法之外，還會提供使用者最後一次使用的輸入法。如果未設定這項政策，系統會根據登入畫面顯示的語言代碼提供登入畫面的輸入法。如果值不是有效的輸入法識別碼，則會遭到忽略。</translation>
 <translation id="5423001109873148185">如果啟用這項政策，則會強制從目前的預設瀏覽器匯入搜尋引擎，並影響匯入對話方塊。如果停用這項政策，則不會匯入搜尋引擎。如果未設定這項政策，系統會自動匯入搜尋引擎，或詢問使用者是否要匯入搜尋引擎。</translation>
 <translation id="5423197884968724595">Android WebView 限制名稱：</translation>
+<translation id="5442026853063570579">這項政策也可以控制 Android 開發人員選項的存取權。如果將這項政策設為「DeveloperToolsDisallowed」(值 2)，使用者將無法存取開發人員選項。如果將這項政策設為其他值或不予設定，使用者只要在 Android 設定應用程式中輕觸版本號碼七次，即可存取開發人員選項。</translation>
 <translation id="5447306928176905178">在網頁上回報記憶體資訊 (JavaScript 堆積大小) (已不適用)</translation>
 <translation id="5457065417344056871">在瀏覽器中啟用訪客模式</translation>
 <translation id="5457924070961220141">允許你在安裝「<ph name="PRODUCT_FRAME_NAME" />」之後，設定預設的 HTML 轉譯器。如果未設定這項政策，系統就會使用預設設定，允許主機瀏覽器進行轉譯，但是你可以覆寫這項預設，改由「<ph name="PRODUCT_FRAME_NAME" />」轉譯 HTML 網頁。</translation>
+<translation id="5459155981813668716">控制 <ph name="PRODUCT_OS_NAME" />顯示語言的語言代碼。
+
+      如果設定這項政策，使用者就只能將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為這項政策指定的其中一個語言代碼。如果未設定這項政策，或是設定了空白清單，則可將 <ph name="PRODUCT_OS_NAME" />的顯示語言設為任一支援的語言代碼。如果將這項政策設為有效值清單，所有無效的值都會遭到忽略。如果使用者先前設定的 <ph name="PRODUCT_OS_NAME" />顯示語言不是這項政策所允許的值，當使用者下次登入時，顯示語言代碼將切換成允許的語言代碼。如果使用者已設定偏好的語言代碼，而其中一個偏好的語言代碼是這項政策所允許的值，<ph name="PRODUCT_OS_NAME" />將改用該語言代碼。否則，<ph name="PRODUCT_OS_NAME" />將改用這項政策指定的第一個有效值，或是在這項政策指定的值均無效時改用備用語言代碼 (目前為 en-US)。</translation>
 <translation id="5464816904705580310">為管理化環境下的使用者調整設定。</translation>
 <translation id="546726650689747237">在 AC 供電環境下執行時的螢幕調暗延遲時間</translation>
 <translation id="5469484020713359236">允許你設定網址模式清單，指定可以設定 Cookie 的網站。如果未設定這項政策，系統會從「DefaultCookiesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
@@ -1682,6 +1698,7 @@
 <translation id="6036523166753287175">允許遠端存取主機穿越防火牆</translation>
 <translation id="6070667616071269965">裝置登入畫面鍵盤配置</translation>
 <translation id="6074963268421707432">不允許任何網站顯示桌面通知</translation>
+<translation id="6074964551275531965">設定更新通知的時間範圍</translation>
 <translation id="6076099373507468537">定義可從核心驅動程式卸離的 USB 裝置 (以便直接在網路應用程式中透過 chrome.usb API 使用) 清單。清單中的項目必須是一組 USB 供應商識別碼和產品識別碼，用於識別特定硬體。
 
       如果未設定這項政策，卸離式 USB 裝置清單就不會顯示任何項目。</translation>
@@ -1754,6 +1771,11 @@
 <translation id="6392973646875039351">啟用「<ph name="PRODUCT_NAME" />」的「自動填入」功能，並允許使用者使用先前儲存的地址或信用卡資料等資訊自動填寫網路表單。如果你停用這項設定，使用者就無法使用「自動填入」功能。如果你啟用這項設定或未設定任何值，使用者就能掌控「自動填入」功能。這允許使用者設定「自動填入」設定檔，並可自行決定是否要開啟「自動填入」功能。</translation>
 <translation id="6394350458541421998">我們已於 <ph name="PRODUCT_OS_NAME" />版本 29 中移除這項政策。請改用 PresentationScreenDimDelayScale 政策。</translation>
 <translation id="6401669939808766804">登出使用者</translation>
+<translation id="6412477120967771054">如果設為 false，系統會禁止 Chrome Cleanup 掃描系統中的垃圾軟體並執行清理作業。此外，透過 chrome://settings/cleanup 手動觸發 Chrome Cleanup 的功能也會遭到停用。
+
+      如果設為 true 或不設定，Chrome Cleanup 會定期掃描系統中的垃圾軟體，並且在找到垃圾軟體時詢問使用者是否要予以移除。此外，使用者也可以透過 chrome://settings 手動觸發 Chrome Cleanup。
+
+      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="6417861582779909667">允許你設定網址模式清單，指定不可以設定 Cookie 的網站。如果未設定這項政策，系統會從「DefaultCookiesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="6426205278746959912">你無法強制 Android 應用程式使用 Proxy。有一部分 Proxy 設定可供 Android 應用程式使用，Android 應用程式可以選擇是否使用：
 
@@ -1774,6 +1796,13 @@
       如要控制哪些網站可執行 Flash，請查看「DefaultPluginsSetting」、「PluginsAllowedForUrls」和「PluginsBlockedForUrls」政策。
 
       如果這項設定已停用或尚未設定，系統可能會封鎖來自其他來源的 Flash 內容或檔案較小的內容。</translation>
+<translation id="6535639183431116351">這項政策自 M68 起已淘汰，請改用 DeveloperToolsAvailability。
+
+      停用開發人員工具和 JavaScript 控制台。
+
+      如果啟用這項設定，使用者將無法再存取開發人員工具，也無法再檢查網站元素。此外，所有可開啟開發人員工具或 JavaScript 控制台的鍵盤快速鍵、選單項目或內容選單項目都會遭到停用。
+
+      如果將這個選項設為停用或不設定這個選項，使用者即可使用開發人員工具和 JavaScript 控制台。</translation>
 <translation id="653608967792832033">指定時間長度，如果系統在電池供電環境下執行且未偵測到使用者輸入行為，就會在這段時間過後鎖定螢幕。
 
           如果你將這項政策設為大於 0 以上的值，表示使用者必須維持該值所指定的時間長度後，<ph name="PRODUCT_OS_NAME" /> 才會鎖定螢幕。
@@ -2182,6 +2211,7 @@
       如要進一步瞭解安全瀏覽功能，請前往 https://developers.google.com/safe-browsing。</translation>
 <translation id="7643883929273267746">限制在 <ph name="PRODUCT_NAME" /> 中顯示的帳戶</translation>
 <translation id="7651739109954974365">決定是否要為裝置啟用數據漫遊。如果設為 True，就會允許數據漫遊。如未設定或設為 False，就不支援數據漫遊。</translation>
+<translation id="7673194325208122247">時間範圍 (毫秒)</translation>
 <translation id="7683777542468165012">動態政策更新</translation>
 <translation id="7694807474048279351">在系統已套用 <ph name="PRODUCT_OS_NAME" />更新之後安排自動重新啟動。
 
@@ -2307,16 +2337,13 @@
 <translation id="7961779417826583251">不針對列出的舊版憑證授權單位強制執行憑證透明化政策</translation>
 <translation id="7974114691960514888">系統不再支援這項政策。連線至遠端用戶時，啟用 STUN 使用量和轉送伺服器。如果啟用這項設定，那麼即使遠端主機電腦被防火牆隔開，這台電腦也能發現遠端主機電腦並建立連結。如果停用這項設定，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會與當地網路內的主機電腦建立連線。</translation>
 <translation id="7976157349247117979">「<ph name="PRODUCT_NAME" />」目的地名稱</translation>
-<translation id="7978060394348264922">
-      為了盡可能減少隔離功能對使用者的影響，
-      建議你先查看 IsolateOrigins 政策設定，
-      使用 IsolateOrigins 設定需要隔離的網站清單。
-      SitePerProcess 這項設定會隔離所有網站。
-      如果啟用這項政策，每個網站就會以獨立程序執行。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
-      如果未設定這項政策，使用者將可以變更這項設定。
-      在 <ph name="PRODUCT_OS_NAME" /> 上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      </translation>
+<translation id="7977445800390854860">如果不設定，Chrome Cleanup 會偵測垃圾軟體，並可能根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。此外，Chrome Cleanup 會詢問使用者是否要將偵測到的垃圾軟體清除。使用者可以選擇將清理作業的執行結果分享給 Google，讓日後的垃圾軟體偵測作業更精確。分享的結果包括檔案中繼資料和登錄機碼，詳情請見《Chrome 隱私權白皮書》。
+
+      如果設為 false，當 Chrome Cleanup 偵測到垃圾軟體時，不會將掃描作業的相關中繼資料回報給 Google (覆寫 SafeBrowsingExtendedReportingEnabled 設定的政策)。此外，Chrome Cleanup 會詢問使用者是否要將偵測到的垃圾軟體清除。清理作業的執行結果不會回報給 Google，使用者也無法選擇回報。
+
+      如果設為 true，當 Chrome Cleanup 偵測到垃圾軟體時，可能會根據 SafeBrowsingExtendedReportingEnabled 設定的政策，將掃描作業的相關中繼資料回報給 Google。此外，Chrome Cleanup 會詢問使用者是否要將偵測到的垃圾軟體清除。清理作業的執行結果將回報給 Google，且使用者無法選擇不回報。
+
+      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="7980227303582973781">無特殊限制</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">將畫面旋轉 0 度</translation>
@@ -2420,6 +2447,7 @@
 <translation id="8300455783946254851">如果你設為 Ture，<ph name="PRODUCT_OS_NAME" />的「檔案」應用程式就會在使用行動網路連線時停用 Google 雲端硬碟同步功能。這種情形下，系統只有在連上 WiFi 或乙太網路連線時才會將資料同步處理至 Google 雲端硬碟。
 
           如果你設為 False 或未設定，使用者即可透過行動網路連線將檔案傳輸至 Google 雲端硬碟。</translation>
+<translation id="8300992833374611099">控制是否能使用開發人員工具</translation>
 <translation id="8312129124898414409">允許您設定網站是否可以使用金鑰產生功能。您可以允許或禁止所有網站使用金鑰產生功能。
 
           如果未設定這項政策，系統會使用「BlockKeygen」，不過使用者可以變更此設定。</translation>
@@ -2635,19 +2663,14 @@
 <translation id="8976248126101463034">允許針對遠端存取主機進行 gnubby 驗證機制</translation>
 <translation id="8976531594979650914">使用系統預設印表機做為預設值</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
-<translation id="9034729899149506577">
-      如果啟用這項政策，逗號分隔的清單中的已命名來源
-      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
-      例如，指定 https://example.com/
-      也會造成 https://foo.example.com/ 遭到隔離，
-      因為後者同樣屬於 https://example.com/ 網站。
-      如果停用這項政策，系統就不會明確隔離任何網站，且 IsolateOrigins 和 SitePerProcess 的實場測試將會停用。使用者還是可以手動啟用 IsolateOrigins。
-      如果未設定這項政策，使用者將可以變更這項設定。
-      在 <ph name="PRODUCT_OS_NAME" /> 上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
-      </translation>
 <translation id="9035964157729712237">要從黑名單上移除的擴充功能 ID</translation>
 <translation id="9042911395677044526">允許將網路設定按照使用者套用至安裝了 <ph name="PRODUCT_OS_NAME" /> 的裝置。本網路設定是由開放網路設定格式 (網址為：<ph name="ONC_SPEC_URL" />) 所定義的 JSON 格式字串。</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
+<translation id="9085839450090699752">讓你設定時間範圍 (毫秒)，系統會在這段時間內通知使用者，<ph name="PRODUCT_NAME" /> 或 <ph name="PRODUCT_OS_NAME" />裝置必須重新啟動，才能套用未安裝的更新。
+
+      在你設定的時間範圍內，使用者會持續收到更新通知。在 <ph name="PRODUCT_OS_NAME" />裝置上，當系統偵測到升級時，會在系統匣中顯示重新啟動通知。這項通知會在時間過了一半後變更顏色，並於時間過完後再次變色。在 <ph name="PRODUCT_NAME" /> 瀏覽器中，當通知時間過了三分之一後，應用程式選單會有所變更，表示瀏覽器需要重新啟動。這項通知會在時間過了三分之二後變更顏色，並於時間過完後再次變色。<ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> 政策所啟用的其他瀏覽器通知也會按照同樣的時間安排發生變更。
+
+      如果不設定，<ph name="PRODUCT_OS_NAME" />裝置的預設通知時間為 345600000 毫秒 (四天)，瀏覽器的預設通知時間則為 604800000 毫秒 (一週)。</translation>
 <translation id="9088433379343318874">啟用受監管的使用者內容提供者</translation>
 <translation id="9088444059179765143">設定自動偵測時區方式</translation>
 <translation id="9096086085182305205">驗證伺服器許可清單</translation>

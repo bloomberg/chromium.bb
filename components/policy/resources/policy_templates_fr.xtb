@@ -27,6 +27,7 @@
       Si cette règle est définie, l'écran de connexion est toujours affiché dans les paramètres régionaux indiqués par la première valeur de cette règle (cette dernière est définie en tant que liste pour la compatibilité ascendante). Si cette règle n'est pas définie, ou si elle est définie sur une liste vide, l'écran de connexion est affiché dans les paramètres régionaux de la dernière session de l'utilisateur. Si cette règle est définie sur une valeur qui ne constitue pas des paramètres régionaux valides, l'écran de connexion est affiché dans des paramètres régionaux de remplacement (actuellement "en-US").</translation>
 <translation id="1062011392452772310">Activer l'attestation à distance pour l'appareil</translation>
 <translation id="1062407476771304334">Remplacer</translation>
+<translation id="1079801999187584280">Interdire l'utilisation des outils pour les développeurs</translation>
 <translation id="109166998561583554">Déclencheur du signalement de compte à risque au niveau de la protection par mot de passe</translation>
 <translation id="1093082332347834239">Si ce paramètre est activé, l'hôte d'assistance à distance est exécuté dans un processus avec des autorisations <ph name="UIACCESS_PERMISSION_NAME" />. Cela permet aux utilisateurs distants d'interagir avec des fenêtres élevées sur le bureau de l'utilisateur local.
 
@@ -79,6 +80,7 @@
 
           Ce facteur doit être de 100 % ou plus.</translation>
 <translation id="131353325527891113">Afficher les noms d'utilisateur sur l'écran de connexion</translation>
+<translation id="1325295456374328159">Configurer les paramètres régionaux autorisés dans une session utilisateur</translation>
 <translation id="1327466551276625742">Activer l'invite de configuration réseau lorsque l'utilisateur n'est pas connecté</translation>
 <translation id="1330145147221172764">Activer le clavier à l'écran</translation>
 <translation id="13356285923490863">Nom de stratégie</translation>
@@ -91,6 +93,12 @@
 <translation id="1387596372902085462">Faire confiance à l'ancienne infrastructure PKI de Symantec Corporation</translation>
 <translation id="1393485621820363363">Imprimantes d'appareils d'entreprise activées</translation>
 <translation id="1397855852561539316">URL de suggestions de recherche du moteur de recherche par défaut</translation>
+<translation id="1424081297104898791">Cette option vous permet de définir dans quels cas les outils pour les développeurs peuvent être utilisés.
+
+      Si cette règle est définie sur "'DeveloperToolsDisallowedForForceInstalledExtensions" (valeur 0, la valeur par défaut pour les utilisateurs professionnels), il est possible d'accéder aux outils pour les développeurs et à la console JavaScript dans tous les cas, sauf dans le cadre des extensions installées par la stratégie d'entreprise.
+      Si cette règle est définie sur "DeveloperToolsAllowed" (valeur 1, la valeur par défaut pour les utilisateurs non gérés), il est possible d'accéder aux outils pour les développeurs et à la console JavaScript et de les utiliser dans tous les cas, y compris dans le cadre des extensions installées par la stratégie d'entreprise.
+      Si cette règle est définie sur "DeveloperToolsDisallowed" (valeur 2), il n'est pas possible d'accéder aux outils pour les développeurs, et il n'est plus possible d'inspecter les éléments des sites Web. Les raccourcis clavier, ainsi que les entrées de menu ou de menu contextuel permettant d'ouvrir les outils pour les développeurs ou la console JavaScript, sont désactivés.
+      Si l'ancienne règle "DeveloperToolsDisabled" est définie sur "true", la valeur de cette règle est ignorée et les outils pour les développeurs sont désactivés.</translation>
 <translation id="1426410128494586442">Oui</translation>
 <translation id="1427655258943162134">Adresse ou URL du serveur proxy</translation>
 <translation id="1435659902881071157">Configuration réseau au niveau de l'appareil</translation>
@@ -208,6 +216,7 @@ Pour consulter des exemples détaillés, rendez-vous sur :
 <translation id="1803646570632580723">Liste des applications épinglées à afficher dans le lanceur d'applications</translation>
 <translation id="1808715480127969042">Bloquer les cookies sur ces sites</translation>
 <translation id="1810261428246410396">Autoriser le partage de connexion instantané</translation>
+<translation id="1826282708349731794">Contrôle la manière dont l'outil de nettoyage de Chrome transmet des données à Google</translation>
 <translation id="1827523283178827583">Utiliser des serveurs proxy déterminés</translation>
 <translation id="1843117931376765605">Fréquence d'actualisation des règles relatives aux utilisateurs</translation>
 <translation id="1844620919405873871">Permet de configurer les règles associées au déverrouillage rapide.</translation>
@@ -618,6 +627,7 @@ Cette règle n'est respectée que si la règle "DefaultSearchProviderEnabled" es
       Cette règle n'a aucune incidence sur la capacité ou non des utilisateurs à configurer des imprimantes sur différents appareils. Elle est destinée à compléter la configuration des imprimantes effectuée par les différents utilisateurs.
       </translation>
 <translation id="2633084400146331575">Activer les commentaires audio</translation>
+<translation id="2640843331263301324">Active l'outil de nettoyage de Chrome sur Windows</translation>
 <translation id="2646290749315461919">Permet de définir si les sites Web sont autorisés à suivre la position géographique des utilisateurs. Ce suivi peut être autorisé par défaut, refusée par défaut, ou l'utilisateur peut recevoir un message chaque fois qu'un site Web demande sa position géographique. 
 
 Si cette règle n'est pas configurée, le paramètre "AskGeolocation" est utilisé et l'utilisateur est en mesure de le modifier.</translation>
@@ -1269,12 +1279,14 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 <translation id="4554651132977135445">Mode de traitement du bouclage pour les règles relatives aux utilisateurs</translation>
 <translation id="4555850956567117258">Activer l'attestation à distance pour l'utilisateur</translation>
 <translation id="4557134566541205630">URL de la page Nouvel onglet du moteur de recherche par défaut</translation>
+<translation id="4567137030726189378">Autoriser l'utilisation des outils pour les développeurs</translation>
 <translation id="4600786265870346112">Activer le grand curseur</translation>
 <translation id="4604931264910482931">Configurer la liste noire de messagerie native</translation>
 <translation id="4613508646038788144">Si cette règle est définie sur "false", le logiciel tiers sera autorisé à injecter du code exécutable dans les processus de Chrome. Si elle est définie sur "true" ou si elle n'est pas configurée, le logiciel tiers ne pourra pas injecter de code exécutable dans les processus de Chrome.</translation>
 <translation id="4617338332148204752">Ignorer la vérification des balises Meta dans <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="4625915093043961294">Configurer la liste blanche d'installation des extensions</translation>
 <translation id="4632343302005518762">Autoriser <ph name="PRODUCT_FRAME_NAME" /> à gérer les types de contenu répertoriés</translation>
+<translation id="4632566332417930481">Interdire l'utilisation des outils pour les développeurs avec les extensions installées par la stratégie d'entreprise, mais autoriser l'utilisation des outils pour les développeurs dans les autres cas</translation>
 <translation id="4633786464238689684">Modifie le comportement par défaut de la première rangée de touches, qui deviennent des touches de fonction.
 
           Si cette règle est définie sur la valeur "true", les touches de la première rangée du clavier deviennent par défaut des touches de fonction. Le comportement d'origine des touches multimédias est rétabli en appuyant sur la touche de recherche.
@@ -1548,11 +1560,15 @@ Si elle est désactivée, le moteur de recherche par défaut n'est pas importé.
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
 <translation id="5423197884968724595">Nom de la restriction Android WebView :</translation>
+<translation id="5442026853063570579">Cette règle permet également de contrôler l'accès aux options pour les développeurs Android. Si vous définissez cette règle sur "DeveloperToolsDisallowed" (valeur 2), les utilisateurs ne pourront pas accéder aux options pour les développeurs. Si vous la définissez sur une autre valeur ou si vous ne la modifiez pas, les utilisateurs pourront accéder aux options pour les développeurs en appuyant sept fois sur le numéro de version dans l'application des paramètres Android.</translation>
 <translation id="5447306928176905178">Activer l'envoi d'informations sur la mémoire (taille du tas JS) à la page (obsolète)</translation>
 <translation id="5457065417344056871">Activer le mode Invité dans le navigateur</translation>
 <translation id="5457924070961220141">Permet de configurer le moteur de rendu HTML par défaut lorsque <ph name="PRODUCT_FRAME_NAME" /> est installé. 
 
 Lorsque cette règle n'est pas configurée, le paramètre par défaut utilisé consiste à permettre au navigateur d'accueil d'effectuer le rendu. Mais vous avez la possibilité de remplacer ce paramètre et de demander que les pages HTML soient affichées par <ph name="PRODUCT_FRAME_NAME" /> par défaut.</translation>
+<translation id="5459155981813668716">Configure les langues dans lesquelles <ph name="PRODUCT_OS_NAME" /> peut s'afficher.
+
+      Si cette règle est définie, l'utilisateur ne peut configurer l'affichage de <ph name="PRODUCT_OS_NAME" /> que dans l'une des langues définies par cette règle. Si cette règle n'est pas définie ou si elle est définie sur une liste vide, <ph name="PRODUCT_OS_NAME" /> peut s'afficher dans toutes les langues compatibles. Si la règle est définie sur une liste contenant des valeurs non valides, toutes les valeurs non valides sont ignorées. Si un utilisateur a précédemment configuré l'affichage de <ph name="PRODUCT_OS_NAME" /> dans une langue qui n'est pas autorisée par cette règle, la langue d'affichage basculera sur une langue autorisée la prochaine fois que l'utilisateur de connectera. Si l'utilisateur a configuré des langues préférées et que l'une d'entre elles est autorisée par cette règle, <ph name="PRODUCT_OS_NAME" /> s'affiche dans cette langue. Sinon, <ph name="PRODUCT_OS_NAME" /> s'affiche dans la langue définie par la première valeur valide spécifiée par cette règle, ou dans une langue de remplacement (actuellement, en-US), si cette règle contient uniquement des entrées non valides.</translation>
 <translation id="5464816904705580310">Configurer les paramètres des utilisateurs gérés</translation>
 <translation id="546726650689747237">Délai d'assombrissement de l'écran (secteur)</translation>
 <translation id="5469484020713359236">Permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à définir des cookies. 
@@ -1779,6 +1795,7 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="6036523166753287175">Activer la traversée de pare-feu depuis l'hôte d'accès à distance</translation>
 <translation id="6070667616071269965">Dispositions de clavier de l'écran de connexion de l'appareil</translation>
 <translation id="6074963268421707432">Interdire à tous les sites d'afficher des notifications sur le Bureau</translation>
+<translation id="6074964551275531965">Définir la période d'affichage des notifications de mise à jour</translation>
 <translation id="6076099373507468537">Définit la liste des appareils USB autorisés à être dissociés de leur pilote de noyau afin d'être utilisés directement au sein d'une application Web via l'API chrome.usb. Les entrées sont des paires composées d'un identifiant de fournisseur USB et d'un identifiant produit associé à un appareil spécifique.
 
       Si cette règle n'est pas configurée, la liste des appareils USB amovibles est vide.</translation>
@@ -1860,6 +1877,11 @@ Si vous désactivez ce paramètre, la fonction de saisie automatique n'est pas a
 Si vous activez ce paramètre ou ne définissez pas de valeur, la fonction de saisie automatique peut être contrôlée par les utilisateurs. Ces derniers peuvent ainsi configurer des profils de saisie automatique et activer ou désactiver la fonction de saisie automatique à leur guise.</translation>
 <translation id="6394350458541421998">Cette règle a été supprimée à partir de la version 29 de <ph name="PRODUCT_OS_NAME" />. Veuillez utiliser la règle PresentationScreenDimDelayScale à la place.</translation>
 <translation id="6401669939808766804">Déconnecter l'utilisateur</translation>
+<translation id="6412477120967771054">Si cette règle est définie sur "false", l'outil de nettoyage de Chrome ne peut pas analyser le système pour détecter et supprimer les logiciels indésirables. Le déclenchement manuel de l'outil de nettoyage de Chrome à partir de chrome://settings/cleanup est désactivé.
+
+      Si elle est définie sur "true" ou qu'elle n'est pas définie, l'outil de nettoyage de Chrome analyse régulièrement le système pour détecter les éventuels logiciels indésirables et, s'il trouve en trouve, un message s'affiche demandant à l'utilisateur s'il souhaite les supprimer. Le déclenchement manuel de l'outil de nettoyage de Chrome à partir de chrome://settings est activé.
+
+      Cette règle n'est pas disponible pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="6417861582779909667">Permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à définir des cookies. 
 
 Si cette règle n'est pas configurée, la valeur par défaut globale est utilisée pour tous les sites à partir de la règle "DefaultCookiesSetting ", ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
@@ -1882,6 +1904,13 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
       Pour contrôler quels sites Web sont autorisés à exécuter Flash, reportez-vous aux règles "DefaultPluginsSetting", "PluginsAllowedForUrls" et "PluginsBlockedForUrls".
 
       Si ce paramètre est désactivé ou s'il n'est pas défini, le contenu Flash provenant d'autres sources ou de petite taille risque d'être bloqué.</translation>
+<translation id="6535639183431116351">Cette règle est obsolète dans M68. Veuillez utiliser DeveloperToolsAvailability à la place.
+
+      Désactive les outils de développement et la console JavaScript.
+
+      Si vous activez ce paramètre, les outils de développement ne sont plus accessibles et les éléments du site Web ne peuvent plus être inspectés. Tous les raccourcis clavier et toutes les entrées de menu ou de menu contextuel permettant d'ouvrir les outils de développement ou la console JavaScript sont désactivés.
+
+      Si vous désactivez cette option ou si vous ne la configurez pas, l'utilisateur a accès aux outils de développement et à la console JavaScript.</translation>
 <translation id="653608967792832033">Indiquer le délai d'inactivité au terme duquel l'écran est verrouillé en cas d'utilisation de la batterie
 
           Lorsque cette règle est définie sur une valeur supérieure à zéro, elle indique la durée pendant laquelle l'utilisateur doit rester inactif avant que <ph name="PRODUCT_OS_NAME" /> verrouille l'écran.
@@ -2315,6 +2344,7 @@ Si ce paramètre est désactivé ou s'il n'est pas configuré, <ph name="PRODUCT
       Pour en savoir plus sur la navigation sécurisée, consultez la page https://developers.google.com/safe-browsing.</translation>
 <translation id="7643883929273267746">Limiter les comptes visibles dans <ph name="PRODUCT_NAME" /></translation>
 <translation id="7651739109954974365">Détermine si l'itinérance des données doit être activée pour l'appareil. Si cette règle est définie sur "true", l'itinérance des données est autorisée. Si cette règle n'est pas configurée ou si elle est définie sur "false", l'itinérance des données n'est pas possible.</translation>
+<translation id="7673194325208122247">Période (millisecondes)</translation>
 <translation id="7683777542468165012">Actualisation dynamique des stratégies</translation>
 <translation id="7694807474048279351">Planifie un démarrage automatique après une mise à jour de <ph name="PRODUCT_OS_NAME" />.
 
@@ -2448,16 +2478,13 @@ Si ce paramètre est activé, cette machine peut découvrir et se connecter à d
 
 Si ce paramètre est désactivé et que les connexions UDP sortantes sont filtrées par le pare-feu, cette machine peut uniquement se connecter aux machines hôte au sein du réseau local.</translation>
 <translation id="7976157349247117979">Nom de la destination <ph name="PRODUCT_NAME" /></translation>
-<translation id="7978060394348264922">
-      Nous vous conseillons d'examiner le paramètre de la règle IsolateOrigins pour obtenir
-      le meilleur résultat, c'est-à-dire l'isolation avec un impact limité sur les utilisateurs,
-      et d'utiliser IsolateOrigins avec une liste des sites que vous souhaitez isoler.
-      Le paramètre SitePerProcess isole tous les sites.
-      Si cette règle est activée, chaque site exécute son propre processus.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles de IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer SitePerProcess manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      </translation>
+<translation id="7977445800390854860">Si cette règle n'est pas définie et que l'outil de nettoyage de Chrome détecte des logiciels indésirables, celui-ci peut nous transmettre des métadonnées concernant l'analyse, conformément à la règle définie par "SafeBrowsingExtendedReportingEnabled". L'outil de nettoyage de Chrome demande ensuite à l'utilisateur s'il souhaite supprimer les logiciels indésirables. Il peut choisir de partager les résultats du nettoyage avec nous afin de nous aider à améliorer la détection des logiciels indésirables. Ces résultats contiennent des métadonnées de fichier et des clés de registre, tel que décrit par le livre blanc sur la confidentialité dans Google Chrome.
+
+      Si elle est définie sur "false" et que l'outil de nettoyage de Chrome détecte des logiciels indésirables, aucune métadonnée sur l'analyse ne nous est transmise, contournant toute règle définie par "SafeBrowsingExtendedReportingEnabled". L'outil de nettoyage de Chrome demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables. Les résultats du nettoyage ne nous sont pas transmis et l'utilisateur n'a pas non plus la possibilité de le faire.
+
+      Si elle est définie sur "true" et que l'outil de nettoyage de Chrome détecte des logiciels indésirables, celui-ci peut nous transmettre des métadonnées sur l'analyse conformément à la règle définie par "SafeBrowsingExtendedReportingEnabled". L'outil de nettoyage de Chrome demande à l'utilisateur s'il souhaite supprimer les logiciels indésirables. Les résultats du nettoyage nous sont transmis, et l'utilisateur n'a pas la possibilité d'empêcher cette transmission.
+
+      Cette règle n'est pas disponible pour les instances Windows qui ne sont pas associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="7980227303582973781">Aucune restriction particulière</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Faire pivoter l'écran de 0 degré</translation>
@@ -2571,6 +2598,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 <translation id="8300455783946254851">Cette règle désactive la synchronisation avec Google Drive dans l'application Fichiers de <ph name="PRODUCT_OS_NAME" /> en cas de connexion à un réseau mobile lorsque vous la définissez sur "True". Dans ce cas, les données ne sont synchronisées avec Google Drive qu'en cas de connexion Wi-Fi ou Ethernet.
 
           Si vous ne définissez pas cette règle ou si vous la définissez sur "False", les utilisateurs peuvent transférer des fichiers vers Google Drive via des connexions mobiles.</translation>
+<translation id="8300992833374611099">Contrôler les cas d'utilisation des outils pour les développeurs</translation>
 <translation id="8312129124898414409">Permet d'indiquer si des sites Web sont autorisés à utiliser la génération de clé. Celle-ci peut être autorisée ou interdite pour tous les sites.
 
           Si cette règle n'est pas définie, le paramètre "BlockKeygen" est utilisé, et l'utilisateur est en mesure de le modifier.</translation>
@@ -2797,19 +2825,14 @@ indique uniquement les imprimantes qui peuvent être choisies.
 <translation id="8976248126101463034">Autoriser l'authentification gnubby pour les hôtes d'accès à distance</translation>
 <translation id="8976531594979650914">Utiliser l'imprimante système par défaut</translation>
 <translation id="8992176907758534924">Interdire à tous les sites d'afficher des images</translation>
-<translation id="9034729899149506577">
-      Si cette règle est activée, chacune des origines définies et répertoriées
-      dans une liste d'éléments séparés par une virgule exécute son propre processus.
-      Elle isole également les origines par sous-domaines. Par exemple, si vous indiquez
-      "https://example.com/", https://foo.example.com/ est également isolé en tant que partie
-      du site https://example.com/.
-      Si cette règle est désactivée, aucune isolation de sites explicite n'est effectuée, et les tests en conditions réelles de IsolateOrigins et SitePerProcess sont désactivés. Les utilisateurs peuvent toujours activer IsolateOrigins manuellement.
-      Si cette règle n'est pas configurée, l'utilisateur peut modifier ce paramètre.
-      Pour <ph name="PRODUCT_OS_NAME" />, nous vous recommandons de définir également la règle relative aux appareils <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sur la même valeur. Si les valeurs spécifiées par les deux règles sont différentes, un retard peut être constaté lors de l'accès à une session utilisateur du fait de l'application de la valeur spécifiée par la règle relative aux utilisateurs.
-      </translation>
 <translation id="9035964157729712237">Identifiants d'extension à exclure de la liste noire</translation>
 <translation id="9042911395677044526">Permet de transférer l'application de la configuration réseau par utilisateur vers un appareil utilisant <ph name="PRODUCT_OS_NAME" />. La configuration réseau correspond à une chaîne formatée par JSON conformément au format de configuration de réseau ouvert, décrit sous <ph name="ONC_SPEC_URL" />.</translation>
 <translation id="9084985621503260744">Indiquer si l'activité vidéo a une incidence sur la gestion de l'alimentation</translation>
+<translation id="9085839450090699752">Permet de fixer la période, en millisecondes, pendant laquelle les utilisateurs sont avertis que <ph name="PRODUCT_NAME" /> doit être relancé ou qu'un appareil <ph name="PRODUCT_OS_NAME" /> doit être redémarré pour appliquer une mise à jour en attente.
+
+      Au cours de cette période, l'utilisateur est régulièrement informé de la nécessité d'appliquer la mise à jour. Pour les appareils <ph name="PRODUCT_OS_NAME" />, une notification de redémarrage s'affiche dans la barre d'état système lorsqu'une mise à niveau est détectée. Cette notification change de couleur une première fois lorsque la moitié de la période de notification s'est écoulée et une deuxième fois à l'issue de cette période. Pour les navigateurs <ph name="PRODUCT_NAME" />, lorsqu'un tiers de la période de notification s'est écoulé, le menu d'application change pour indiquer qu'il est nécessaire de redémarrer le navigateur. La notification change de couleur une première fois lorsque les deux tiers de la période de notification se sont écoulés et une deuxième fois à l'issue de cette période. Les notifications supplémentaires activées par la règle <ph name="RELAUNCH_NOTIFICATION_POLICY_NAME" /> pour les navigateurs suivent ce même programme.
+
+      Si ce paramètre n'est pas défini, la période par défaut est fixée à 345 600 000 millisecondes (quatre jours) pour les appareils <ph name="PRODUCT_OS_NAME" /> et à 604 800 000 millisecondes (une semaine) pour les navigateurs.</translation>
 <translation id="9088433379343318874">Activer le fournisseur de contenu de l'utilisateur supervisé</translation>
 <translation id="9088444059179765143">Configurer la méthode de détection automatique du fuseau horaire</translation>
 <translation id="9096086085182305205">Liste blanche des serveurs d'authentification</translation>

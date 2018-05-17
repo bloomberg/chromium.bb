@@ -349,6 +349,7 @@
 <translation id="4409723563706114196">ページ予測を使用する</translation>
 <translation id="4412992751769744546">サードパーティの Cookie を許可</translation>
 <translation id="4432792777822557199">今後、<ph name="SOURCE_LANGUAGE" />のページは<ph name="TARGET_LANGUAGE" />に翻訳されます</translation>
+<translation id="4434045419905280838">ポップアップとリダイレクト</translation>
 <translation id="4445444302979002552">予測サービスを使用して検索キーワードやウェブサイトの候補を表示します</translation>
 <translation id="4452411734226507615">「<ph name="TAB_TITLE" />」タブを閉じます</translation>
 <translation id="4452548195519783679">「<ph name="FOLDER_NAME" />」にブックマークしました</translation>
@@ -516,6 +517,7 @@
 <translation id="5765780083710877561">説明:</translation>
 <translation id="5777170031995031090">検索、広告、その他の Google サービスをカスタマイズするために Google が閲覧履歴をどのような方法で使用するかを設定します。</translation>
 <translation id="5779929835642192302">候補があります</translation>
+<translation id="5793665092639000975"><ph name="SPACE_AVAILABLE" /> 中 <ph name="SPACE_USED" /> を使用中</translation>
 <translation id="5804241973901381774">権限</translation>
 <translation id="5809361687334836369">{HOURS,plural, =1{# 時間前}other{# 時間前}}</translation>
 <translation id="5817918615728894473">ペア設定</translation>
@@ -600,6 +602,7 @@
 <translation id="6556716549745717622">煩わしい広告がよく表示されるサイトの場合にブロック（推奨）</translation>
 <translation id="6560414384669816528">Sogou で検索します</translation>
 <translation id="6566259936974865419">Chrome で <ph name="GIGABYTES" /> GB の容量を節約しました</translation>
+<translation id="6573096386450695060">常に許可</translation>
 <translation id="6573431926118603307">他の端末の Chrome で開いているタブがここに表示されます。</translation>
 <translation id="6575643671698722332">再設定できませんでした。デバイスがオンラインになっていることを確認してもう一度お試しください。</translation>
 <translation id="6583199322650523874">現在のページをブックマークする</translation>
@@ -659,6 +662,7 @@
 <translation id="7031882061095297553">同期先</translation>
 <translation id="7034608350006174882">Google Pay のカードと住所</translation>
 <translation id="7053983685419859001">ブロック</translation>
+<translation id="7055152154916055070">リダイレクトがブロックされました:</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 件のアイテムを選択済み}other{# 件のアイテムを選択済み}}</translation>
@@ -667,6 +671,7 @@
 <translation id="7121362699166175603">アドレスバーの履歴とオートコンプリートを削除します。お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります。</translation>
 <translation id="7128222689758636196">現在の検索エンジンを許可する</translation>
 <translation id="7138678301420049075">その他</translation>
+<translation id="7141896414559753902">サイトでのポップアップ表示とリダイレクトをブロックする（推奨）</translation>
 <translation id="7144878232160441200">再読み込み</translation>
 <translation id="7149893636342594995">過去 24 時間</translation>
 <translation id="7177466738963138057">これは後から [設定] で変更できます</translation>
@@ -883,6 +888,7 @@
 <translation id="932327136139879170">ホーム</translation>
 <translation id="932599481871055447">データ使用量を抑えてブラウジングを高速化</translation>
 <translation id="938850635132480979">エラー: <ph name="ERROR_CODE" /></translation>
+<translation id="945360730947989880">SD カードの空き容量が足りません</translation>
 <translation id="945522503751344254">フィードバックを送信</translation>
 <translation id="945632385593298557">マイクへのアクセス</translation>
 <translation id="951339005376969845">既存のデータを削除します。<ph name="FROM_ACCOUNT" /> に切り替えると、削除したデータを取得できます。</translation>

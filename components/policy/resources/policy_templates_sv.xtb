@@ -2473,16 +2473,6 @@
       Om principen är inställd på sant och Chrome Cleanup upptäcker oönskad programvara rapporteras inte metadata om genomsökningen till Google i enlighet med principer som anges i SafeBrowsingExtendedReportingEnabled. Chrome Cleanup frågar om användaren vill rensa den oönskade programvaran. Resultaten från rensningen rapporteras till Google och användaren får inte alternativet att förhindra det.
 
       Principen är inte tillgänglig på Windows-instanser som inte är kopplade till en <ph name="MS_AD_NAME" /> domän.</translation>
-<translation id="7978060394348264922">
-      Ta gärna en titt på principen IsolateOrigins också: du kan få det bästa av två
-      världar, isolering och begränsad inverkan på användarna, genom att ange en
-      lista med webbplatser som ska isoleras med IsolateOrigins. Med den här
-      inställningen, SitePerProcess, isoleras alla webbplatser.
-      Om principen aktiveras körs varje webbplats som en egen process.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera SitePerProcess manuellt.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      Om du kör <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att samma värde används även för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
-      </translation>
 <translation id="7980227303582973781">Inga särskilda begränsningar</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME" /></translation>
 <translation id="802147957407376460">Rotera skärmen 0 grader</translation>
@@ -2821,15 +2811,6 @@ Det rekommenderade sättet att konfigurera principer på när du använder Windo
 <translation id="8976248126101463034">Tillåt gnubby-autentisering för fjärråtkomstvärdar</translation>
 <translation id="8976531594979650914">Använd systemets standardskrivare som standard</translation>
 <translation id="8992176907758534924">Tillåt inte att bilder visas på någon webbplats</translation>
-<translation id="9034729899149506577">
-      Om principen aktiveras körs varje namngivet ursprung i en kommaavgränsad lista
-      som en egen process. Även underdomäner isoleras. Om du exempelvis
-      anger https://example.com/ isoleras även https://foo.example.com/ som en del
-      av webbplatsen https://example.com/.
-      Om principen inaktiveras görs ingen uttrycklig webbplatsisolering och testfunktionerna IsolateOrigins och SitePerProcess inaktiveras. Användarna kan fortfarande aktivera IsolateOrigins manuellt.
-      Om principen inte konfigureras kan användaren ändra inställningen.
-      Om du kör <ph name="PRODUCT_OS_NAME" /> rekommenderar vi att samma värde används även för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Om de båda principerna ställs in på olika värden kan det uppstå en fördröjning när en användarsession startas medan värdet för användarprincipen tillämpas.
-      </translation>
 <translation id="9035964157729712237">Tilläggs-ID:n att undanta från svartlistan</translation>
 <translation id="9042911395677044526">Tillåter att en pushad nätverkskonfiguration används per användare på en <ph name="PRODUCT_OS_NAME" />-enhet. Nätverkskonfigurationen är en JSON-formaterad sträng som definieras av formatet för öppen nätverkskonfiguration som beskrivs på <ph name="ONC_SPEC_URL" /></translation>
 <translation id="9084985621503260744">Ange om videoaktivitet påverkar energihanteringen</translation>
