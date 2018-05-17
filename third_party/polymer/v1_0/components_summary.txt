@@ -232,12 +232,6 @@ Tree: v2.0.1
 Revision: abe7b27bb1651e1adac99d9878a4c87cd9b40d7d
 Tree link: https://github.com/PolymerElements/paper-progress/tree/v2.0.1
 
-Name: paper-radio-button
-Repository: https://github.com/PolymerElements/paper-radio-button.git
-Tree: v2.0.0
-Revision: 7ec23aea273d04b8426866e914cfa662331698b8
-Tree link: https://github.com/PolymerElements/paper-radio-button/tree/v2.0.0
-
 Name: paper-radio-group
 Repository: https://github.com/PolymerElements/paper-radio-group.git
 Tree: v2.1.0

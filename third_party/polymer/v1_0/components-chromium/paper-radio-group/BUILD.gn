@@ -10,6 +10,5 @@ js_library("paper-radio-group-extracted") {
   deps = [
     "../iron-a11y-keys-behavior:iron-a11y-keys-behavior-extracted",
     "../iron-menu-behavior:iron-menubar-behavior-extracted",
-    "../paper-radio-button:paper-radio-button-extracted",
   ]
 }
