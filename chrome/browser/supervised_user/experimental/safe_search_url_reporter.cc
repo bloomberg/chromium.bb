@@ -16,16 +16,17 @@
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/browser/signin_manager_base.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
-
-using net::URLFetcher;
 
 const char kSafeSearchReportApiUrl[] =
     "https://safesearch.googleapis.com/v1:report";
@@ -35,7 +36,7 @@ const char kSafeSearchReportApiScope[] =
 const int kNumSafeSearchReportRetries = 1;
 
 struct SafeSearchURLReporter::Report {
-  Report(const GURL& url, SuccessCallback callback, int url_fetcher_id);
+  Report(const GURL& url, SuccessCallback callback);
   ~Report();
 
   GURL url;
@@ -43,29 +44,22 @@ struct SafeSearchURLReporter::Report {
   std::unique_ptr<OAuth2TokenService::Request> access_token_request;
   std::string access_token;
   bool access_token_expired;
-  int url_fetcher_id;
-  std::unique_ptr<URLFetcher> url_fetcher;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader;
 };
 
-SafeSearchURLReporter::Report::Report(const GURL& url,
-                                      SuccessCallback callback,
-                                      int url_fetcher_id)
-    : url(url),
-      callback(std::move(callback)),
-      access_token_expired(false),
-      url_fetcher_id(url_fetcher_id) {}
+SafeSearchURLReporter::Report::Report(const GURL& url, SuccessCallback callback)
+    : url(url), callback(std::move(callback)), access_token_expired(false) {}
 
 SafeSearchURLReporter::Report::~Report() {}
 
 SafeSearchURLReporter::SafeSearchURLReporter(
     OAuth2TokenService* oauth2_token_service,
     const std::string& account_id,
-    net::URLRequestContextGetter* context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : OAuth2TokenService::Consumer("safe_search_url_reporter"),
       oauth2_token_service_(oauth2_token_service),
       account_id_(account_id),
-      context_(context),
-      url_fetcher_id_(0) {}
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 SafeSearchURLReporter::~SafeSearchURLReporter() {}
 
@@ -77,13 +71,13 @@ std::unique_ptr<SafeSearchURLReporter> SafeSearchURLReporter::CreateWithProfile(
   SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
   return base::WrapUnique(new SafeSearchURLReporter(
       token_service, signin->GetAuthenticatedAccountId(),
-      profile->GetRequestContext()));
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess()));
 }
 
 void SafeSearchURLReporter::ReportUrl(const GURL& url,
                                       SuccessCallback callback) {
-  reports_.push_back(
-      std::make_unique<Report>(url, std::move(callback), url_fetcher_id_));
+  reports_.push_back(std::make_unique<Report>(url, std::move(callback)));
   StartFetching(reports_.back().get());
 }
 
@@ -98,7 +92,7 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
-  ReportIterator it = reports_.begin();
+  ReportList::iterator it = reports_.begin();
   while (it != reports_.end()) {
     if (request == (*it)->access_token_request.get())
       break;
@@ -133,35 +127,37 @@ void SafeSearchURLReporter::OnGetTokenSuccess(
             }
           }
         })");
-  (*it)->url_fetcher =
-      URLFetcher::Create((*it)->url_fetcher_id, GURL(kSafeSearchReportApiUrl),
-                         URLFetcher::POST, this, traffic_annotation);
-
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      (*it)->url_fetcher.get(),
-      data_use_measurement::DataUseUserData::SUPERVISED_USER);
-  (*it)->url_fetcher->SetRequestContext(context_);
-  (*it)->url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                                   net::LOAD_DO_NOT_SAVE_COOKIES);
-  (*it)->url_fetcher->SetAutomaticallyRetryOnNetworkChanges(
-      kNumSafeSearchReportRetries);
-  (*it)->url_fetcher->AddExtraRequestHeader(base::StringPrintf(
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = GURL(kSafeSearchReportApiUrl);
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->method = "POST";
+  resource_request->headers.AddHeaderFromString(base::StringPrintf(
       supervised_users::kAuthorizationHeaderFormat, access_token.c_str()));
+  (*it)->simple_url_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
 
   base::DictionaryValue dict;
   dict.SetKey("url", base::Value((*it)->url.spec()));
-
   std::string body;
   base::JSONWriter::Write(dict, &body);
-  (*it)->url_fetcher->SetUploadData("application/json", body);
-
-  (*it)->url_fetcher->Start();
+  (*it)->simple_url_loader->AttachStringForUpload(body, "application/json");
+  (*it)->simple_url_loader->SetRetryOptions(
+      kNumSafeSearchReportRetries,
+      network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::SUPERVISED_USER
+  (*it)->simple_url_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&SafeSearchURLReporter::OnSimpleLoaderComplete,
+                     base::Unretained(this), std::move(it)));
 }
 
 void SafeSearchURLReporter::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
-  ReportIterator it = reports_.begin();
+  ReportList::iterator it = reports_.begin();
   while (it != reports_.end()) {
     if (request == (*it)->access_token_request.get())
       break;
@@ -172,43 +168,37 @@ void SafeSearchURLReporter::OnGetTokenFailure(
   DispatchResult(it, false);
 }
 
-void SafeSearchURLReporter::OnURLFetchComplete(const URLFetcher* source) {
-  ReportIterator it = reports_.begin();
-  while (it != reports_.end()) {
-    if (source == (*it)->url_fetcher.get())
-      break;
-    ++it;
+void SafeSearchURLReporter::OnSimpleLoaderComplete(
+    ReportList::iterator it,
+    std::unique_ptr<std::string> response_body) {
+  Report* report = it->get();
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader =
+      std::move(report->simple_url_loader);
+  int response_code = -1;
+  if (simple_url_loader->ResponseInfo() &&
+      simple_url_loader->ResponseInfo()->headers) {
+    response_code = simple_url_loader->ResponseInfo()->headers->response_code();
   }
-  DCHECK(it != reports_.end());
-
-  const net::URLRequestStatus& status = source->GetStatus();
-  if (!status.is_success()) {
-    LOG(WARNING) << "Network error " << status.error();
-    DispatchResult(it, false);
-    return;
-  }
-
-  int response_code = source->GetResponseCode();
-  if (response_code == net::HTTP_UNAUTHORIZED && !(*it)->access_token_expired) {
+  if (response_code == net::HTTP_UNAUTHORIZED &&
+      !report->access_token_expired) {
     (*it)->access_token_expired = true;
     OAuth2TokenService::ScopeSet scopes;
     scopes.insert(kSafeSearchReportApiScope);
     oauth2_token_service_->InvalidateAccessToken(account_id_, scopes,
-                                                 (*it)->access_token);
-    StartFetching((*it).get());
+                                                 report->access_token);
+    StartFetching(report);
     return;
   }
-
-  if (response_code != net::HTTP_OK) {
+  if (response_code > 0) {
     LOG(WARNING) << "HTTP error " << response_code;
-    DispatchResult(it, false);
-    return;
+  } else if (!response_body) {
+    LOG(WARNING) << "Network error " << simple_url_loader->NetError();
   }
-
-  DispatchResult(it, true);
+  DispatchResult(std::move(it), response_body != nullptr);
 }
 
-void SafeSearchURLReporter::DispatchResult(ReportIterator it, bool success) {
+void SafeSearchURLReporter::DispatchResult(ReportList::iterator it,
+                                           bool success) {
   std::move((*it)->callback).Run(success);
   reports_.erase(it);
 }
