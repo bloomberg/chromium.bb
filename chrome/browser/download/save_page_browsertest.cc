@@ -1087,16 +1087,15 @@ class SavePageOriginalVsSavedComparisonTest
     // (pdf and png objects do not get a separate frame)
     int expected_number_of_frames = 7;
 
-    std::string arr[] = {
+    std::vector<std::string> expected_substrings = {
         "frames-objects.htm: 8da13db4-a512-4d9b-b1c5-dc1c134234b9",
         "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
         "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
         "frames-nested.htm: 4388232f-8d45-4d2e-9807-721b381be153",
         "frames-nested2.htm: 6d23dc47-f283-4977-96ec-66bcf72301a4",
         "text-object.txt: ae52dd09-9746-4b7e-86a6-6ada5e2680c2",
+        "svg: 0875fd06-131d-4708-95e1-861853c6b8dc",
     };
-    std::vector<std::string> expected_substrings(std::begin(arr),
-                                                 std::end(arr));
 
     // TODO(lukasza): crbug.com/553478: Enable <object> testing of MHTML.
     if (save_page_type == content::SAVE_PAGE_TYPE_AS_MHTML)
@@ -1160,12 +1159,11 @@ class SavePageOriginalVsSavedComparisonTest
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, CrossSite) {
   content::SavePageType save_page_type = GetParam();
 
-  std::string arr[] = {
+  std::vector<std::string> expected_substrings = {
       "frames-xsite.htm: 896fd88d-a77a-4f46-afd8-24db7d5af9c2",
       "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
       "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
   };
-  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-xsite.htm"));
@@ -1201,13 +1199,12 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest,
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, AboutBlank) {
   content::SavePageType save_page_type = GetParam();
 
-  std::string arr[] = {
+  std::vector<std::string> expected_substrings = {
       "main: acb0609d-eb10-4c26-83e2-ad8afb7b0ff3",
       "sub1: b124df3a-d39f-47a1-ae04-5bb5d0bf549e",
       "sub2: 07014068-604d-45ae-884f-a068cfe7bc0a",
       "sub3: 06cc8fcc-c692-4a1a-a10f-1645b746e8f4",
   };
-  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   GURL url(embedded_test_server()->GetURL("a.com",
                                           "/save_page/frames-about-blank.htm"));
@@ -1221,12 +1218,11 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, AboutBlank) {
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, NestedFrames) {
   content::SavePageType save_page_type = GetParam();
 
-  std::string arr[] = {
+  std::vector<std::string> expected_substrings = {
       "frames-nested.htm: 4388232f-8d45-4d2e-9807-721b381be153",
       "frames-nested2.htm: 6d23dc47-f283-4977-96ec-66bcf72301a4",
       "b.htm: 3a35f7fa-96a9-4487-9f18-4470263907fa",
   };
-  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   GURL url(
       embedded_test_server()->GetURL("a.com", "/save_page/frames-nested.htm"));
@@ -1242,14 +1238,13 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, NestedFrames) {
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, RuntimeChanges) {
   content::SavePageType save_page_type = GetParam();
 
-  std::string arr[] = {
+  std::vector<std::string> expected_substrings = {
       "frames-runtime-changes.htm: 4388232f-8d45-4d2e-9807-721b381be153",
       "subframe1: 21595339-61fc-4854-b6df-0668328ea263",
       "subframe2: adf55719-15e7-45be-9eda-d12fe782a1bd",
       "subframe3: 50e294bf-3a5b-499d-8772-651ead26952f",
       "subframe4: e0ea9289-7467-4d32-ba5c-c604e8d84cb7",
   };
-  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   GURL url(embedded_test_server()->GetURL(
       "a.com", "/save_page/frames-runtime-changes.htm?do_runtime_changes=1"));
@@ -1265,7 +1260,7 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, RuntimeChanges) {
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Encoding) {
   content::SavePageType save_page_type = GetParam();
 
-  std::string arr[] = {
+  std::vector<std::string> expected_substrings = {
       "frames-encodings.htm: f53295dd-a95b-4b32-85f5-b6e15377fb20",
       "iso-8859-2.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
       "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
@@ -1277,7 +1272,6 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Encoding) {
       "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84",
       "utf16-be-bom.htm: Za\xc5\xbc\xc3\xb3\xc5\x82\xc4\x87 "
       "g\xc4\x99\xc5\x9bl\xc4\x85 ja\xc5\xba\xc5\x84"};
-  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   GURL url(embedded_test_server()->GetURL("a.com",
                                           "/save_page/frames-encodings.htm"));
@@ -1298,11 +1292,10 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Encoding) {
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Style) {
   content::SavePageType save_page_type = GetParam();
 
-  std::string arr[] = {
+  std::vector<std::string> expected_substrings = {
       "style.htm: af84c3ca-0fc6-4b0d-bf7a-5ac18a4dab62",
       "frameF: c9539ccd-47b0-47cf-a03b-734614865872",
   };
-  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   GURL url(embedded_test_server()->GetURL("a.com", "/save_page/style.htm"));
 
@@ -1317,15 +1310,30 @@ IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, Style) {
 IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, BrokenImage) {
   content::SavePageType save_page_type = GetParam();
 
-  std::string arr[] = {
+  std::vector<std::string> expected_substrings = {
       "broken-image.htm: 1e846775-b3ed-4d9c-a124-029554a1eb9d",
   };
-  std::vector<std::string> expected_substrings(std::begin(arr), std::end(arr));
 
   GURL url(embedded_test_server()->GetURL("127.0.0.1",
                                           "/save_page/broken-image.htm"));
 
   TestOriginalVsSavedPage(save_page_type, url, 1, 1, expected_substrings);
+}
+
+// Test for saving a page with a cross-site <object> element.
+IN_PROC_BROWSER_TEST_P(SavePageOriginalVsSavedComparisonTest, CrossSiteObject) {
+  content::SavePageType save_page_type = GetParam();
+
+  std::vector<std::string> expected_substrings = {
+      "cross-site-object.htm: f727dd87-2048-44cf-beee-19fa9863f046",
+      "a.htm: 1b8aae2b-e164-462f-bd5b-98aa366205f2",
+      "svg: 0875fd06-131d-4708-95e1-861853c6b8dc",
+  };
+
+  GURL url(embedded_test_server()->GetURL("a.com",
+                                          "/save_page/cross-site-object.htm"));
+
+  TestOriginalVsSavedPage(save_page_type, url, 4, 4, expected_substrings);
 }
 
 INSTANTIATE_TEST_CASE_P(
