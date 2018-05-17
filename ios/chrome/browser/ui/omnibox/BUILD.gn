@@ -9,6 +9,7 @@ source_set("omnibox") {
     "location_bar_controller.cc",
     "location_bar_controller.h",
     "location_bar_delegate.h",
+    "omnibox_left_image_consumer.h",
     "web_omnibox_edit_controller.cc",
     "web_omnibox_edit_controller.h",
   ]

@@ -10,6 +10,7 @@
 #include <memory>
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/toolbar/toolbar_model.h"
+#import "ios/chrome/browser/ui/omnibox/omnibox_left_image_consumer.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #include "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_provider.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_view_suggestions_delegate.h"
@@ -27,13 +28,6 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-// Allows setting left images.
-class LeftImageProvider {
- public:
-  // Sets the left image.
-  virtual void SetLeftImage(int imageId) = 0;
-};
-
 // iOS implementation of OmniBoxView.  Wraps a UITextField and
 // interfaces with the rest of the autocomplete system.
 class OmniboxViewIOS : public OmniboxView,
@@ -42,7 +36,7 @@ class OmniboxViewIOS : public OmniboxView,
   // Retains |field|.
   OmniboxViewIOS(OmniboxTextFieldIOS* field,
                  WebOmniboxEditController* controller,
-                 LeftImageProvider* left_image_provider,
+                 id<OmniboxLeftImageConsumer> left_image_consumer,
                  ios::ChromeBrowserState* browser_state);
   ~OmniboxViewIOS() override;
 
@@ -191,7 +185,7 @@ class OmniboxViewIOS : public OmniboxView,
 
   OmniboxTextFieldPasteDelegate* paste_delegate_;
   WebOmniboxEditController* controller_;  // weak, owns us
-  LeftImageProvider* left_image_provider_;  // weak
+  __weak id<OmniboxLeftImageConsumer> left_image_consumer_;
 
   State state_before_change_;
   NSString* marked_text_before_change_;
