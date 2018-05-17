@@ -62,6 +62,8 @@ class CC_EXPORT Viewport {
   gfx::Vector2dF ScrollAnimated(const gfx::Vector2dF& delta,
                                 base::TimeDelta delayed_by);
 
+  gfx::ScrollOffset TotalScrollOffset() const;
+
   void PinchUpdate(float magnify_delta, const gfx::Point& anchor);
   void PinchEnd(const gfx::Point& anchor, bool snap_to_min);
 
@@ -84,7 +86,6 @@ class CC_EXPORT Viewport {
   gfx::Vector2dF ScrollBrowserControls(const gfx::Vector2dF& delta);
 
   gfx::ScrollOffset MaxTotalScrollOffset() const;
-  gfx::ScrollOffset TotalScrollOffset() const;
 
   LayerImpl* InnerScrollLayer() const;
   LayerImpl* OuterScrollLayer() const;

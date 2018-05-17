@@ -1223,12 +1223,9 @@ bool InputHandlerProxy::GetSnapFlingInfo(
 gfx::Vector2dF InputHandlerProxy::ScrollByForSnapFling(
     const gfx::Vector2dF& delta) {
   cc::ScrollState scroll_state = CreateScrollStateForInertialUpdate(delta);
-  // TODO(sunyunjia): We should consider moving the scroll to main, handling
-  // overscroll, and handling elastic scroll after ScrollBy().
-  // https://crbug.com/819855
   cc::InputHandlerScrollResult scroll_result =
       input_handler_->ScrollBy(&scroll_state);
-  return scroll_result.current_offset;
+  return scroll_result.current_visual_offset;
 }
 
 void InputHandlerProxy::ScrollEndForSnapFling() {

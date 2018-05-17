@@ -72,6 +72,7 @@ class CORE_EXPORT RootFrameViewport final
   IntRect ScrollCornerRect() const override;
   void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
   IntSize ScrollOffsetInt() const override;
+  IntPoint ScrollOrigin() const override;
   ScrollOffset GetScrollOffset() const override;
   IntSize MinimumScrollOffsetInt() const override;
   IntSize MaximumScrollOffsetInt() const override;

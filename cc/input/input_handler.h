@@ -50,8 +50,10 @@ struct CC_EXPORT InputHandlerScrollResult {
   // property scroll-boundary-behavior.
   OverscrollBehavior overscroll_behavior;
   // The current offset of the currently scrolling node. It is in DIP or
-  // physical pixels depending on the use-zoom-for-dsf flag.
-  gfx::Vector2dF current_offset;
+  // physical pixels depending on the use-zoom-for-dsf flag. If the currently
+  // scrolling node is the viewport, this would be the sum of the scroll offsets
+  // of the inner and outer node, representing the visual scroll offset.
+  gfx::Vector2dF current_visual_offset;
 };
 
 class CC_EXPORT InputHandlerClient {

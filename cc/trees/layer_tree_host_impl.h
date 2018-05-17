@@ -600,6 +600,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual bool IsUIResourceOpaque(UIResourceId uid) const;
 
+  // This method gets the scroll offset for a regular scroller, or the combined
+  // visual and layout offsets of the viewport.
+  gfx::ScrollOffset GetVisualScrollOffset(const ScrollNode& scroll_node) const;
+
   bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement_in_viewport,
                         gfx::Vector2dF* initial_offset,
                         gfx::Vector2dF* target_offset) const override;

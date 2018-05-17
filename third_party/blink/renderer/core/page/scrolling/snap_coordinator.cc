@@ -83,7 +83,7 @@ void SnapCoordinator::UpdateAllSnapContainerData() {
 
 static ScrollableArea* ScrollableAreaForSnapping(const LayoutBox& layout_box) {
   return layout_box.IsLayoutView()
-             ? layout_box.GetFrameView()->LayoutViewportScrollableArea()
+             ? layout_box.GetFrameView()->GetScrollableArea()
              : layout_box.GetScrollableArea();
 }
 
