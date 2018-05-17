@@ -17,9 +17,11 @@
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/scheduler_lock.h"
+#include "base/task_scheduler/scheduler_worker_observer.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
+#include "base/task_scheduler/test_utils.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
@@ -771,6 +773,49 @@ TEST(TaskSchedulerWorkerTest, BumpPriorityOfAliveThreadDuringShutdown) {
   delegate_raw->WaitForPriorityVerifiedInGetWork();
 
   worker->JoinForTesting();
+}
+
+namespace {
+
+class VerifyCallsToObserverDelegate : public SchedulerWorkerDefaultDelegate {
+ public:
+  VerifyCallsToObserverDelegate(test::MockSchedulerWorkerObserver* observer)
+      : observer_(observer) {}
+
+  // SchedulerWorker::Delegate:
+  void OnMainEntry(const SchedulerWorker* worker) override {
+    Mock::VerifyAndClear(observer_);
+  }
+
+  void OnMainExit(SchedulerWorker* worker) override {
+    EXPECT_CALL(*observer_, OnSchedulerWorkerMainExit());
+  }
+
+ private:
+  test::MockSchedulerWorkerObserver* const observer_;
+
+  DISALLOW_COPY_AND_ASSIGN(VerifyCallsToObserverDelegate);
+};
+
+}  // namespace
+
+// Verify that the SchedulerWorkerObserver is notified when the worker enters
+// and exits its main function.
+TEST(TaskSchedulerWorkerTest, SchedulerWorkerObserver) {
+  StrictMock<test::MockSchedulerWorkerObserver> observer;
+  {
+    TaskTracker task_tracker("Test");
+    auto delegate = std::make_unique<VerifyCallsToObserverDelegate>(&observer);
+    auto worker = MakeRefCounted<SchedulerWorker>(ThreadPriority::NORMAL,
+                                                  std::move(delegate),
+                                                  task_tracker.GetTrackedRef());
+
+    EXPECT_CALL(observer, OnSchedulerWorkerMainEntry());
+    worker->Start(&observer);
+    worker->Cleanup();
+    worker = nullptr;
+  }
+  Mock::VerifyAndClear(&observer);
 }
 
 #if defined(OS_WIN)

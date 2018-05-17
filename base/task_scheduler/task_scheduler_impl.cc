@@ -81,7 +81,9 @@ TaskSchedulerImpl::~TaskSchedulerImpl() {
 #endif
 }
 
-void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
+void TaskSchedulerImpl::Start(
+    const TaskScheduler::InitParams& init_params,
+    SchedulerWorkerObserver* scheduler_worker_observer) {
   // This is set in Start() and not in the constructor because variation params
   // are usually not ready when TaskSchedulerImpl is instantiated in a process.
   if (base::GetFieldTrialParamValue("BrowserScheduler",
@@ -118,7 +120,7 @@ void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
       service_thread_->task_runner();
   delayed_task_manager_.Start(service_thread_task_runner);
 
-  single_thread_task_runner_manager_.Start();
+  single_thread_task_runner_manager_.Start(scheduler_worker_observer);
 
   const SchedulerWorkerPoolImpl::WorkerEnvironment worker_environment =
 #if defined(OS_WIN)
@@ -130,18 +132,20 @@ void TaskSchedulerImpl::Start(const TaskScheduler::InitParams& init_params) {
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE;
 #endif
 
-  worker_pools_[BACKGROUND]->Start(init_params.background_worker_pool_params,
-                                   service_thread_task_runner,
-                                   worker_environment);
+  worker_pools_[BACKGROUND]->Start(
+      init_params.background_worker_pool_params, service_thread_task_runner,
+      scheduler_worker_observer, worker_environment);
   worker_pools_[BACKGROUND_BLOCKING]->Start(
       init_params.background_blocking_worker_pool_params,
-      service_thread_task_runner, worker_environment);
-  worker_pools_[FOREGROUND]->Start(init_params.foreground_worker_pool_params,
-                                   service_thread_task_runner,
-                                   worker_environment);
+      service_thread_task_runner, scheduler_worker_observer,
+      worker_environment);
+  worker_pools_[FOREGROUND]->Start(
+      init_params.foreground_worker_pool_params, service_thread_task_runner,
+      scheduler_worker_observer, worker_environment);
   worker_pools_[FOREGROUND_BLOCKING]->Start(
       init_params.foreground_blocking_worker_pool_params,
-      service_thread_task_runner, worker_environment);
+      service_thread_task_runner, scheduler_worker_observer,
+      worker_environment);
 }
 
 void TaskSchedulerImpl::PostDelayedTaskWithTraits(const Location& from_here,

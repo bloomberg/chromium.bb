@@ -410,7 +410,11 @@ SchedulerSingleThreadTaskRunnerManager::
   g_manager_is_alive = false;
 }
 
-void SchedulerSingleThreadTaskRunnerManager::Start() {
+void SchedulerSingleThreadTaskRunnerManager::Start(
+    SchedulerWorkerObserver* scheduler_worker_observer) {
+  DCHECK(!scheduler_worker_observer_);
+  scheduler_worker_observer_ = scheduler_worker_observer;
+
   decltype(workers_) workers_to_start;
   {
     AutoSchedulerLock auto_lock(lock_);
@@ -421,7 +425,7 @@ void SchedulerSingleThreadTaskRunnerManager::Start() {
   // Start workers that were created before this method was called. Other
   // workers are started as they are created.
   for (scoped_refptr<SchedulerWorker> worker : workers_to_start) {
-    worker->Start();
+    worker->Start(scheduler_worker_observer_);
     worker->WakeUp();
   }
 }
@@ -494,7 +498,7 @@ SchedulerSingleThreadTaskRunnerManager::CreateTaskRunnerWithTraitsImpl(
   }
 
   if (new_worker && started)
-    worker->Start();
+    worker->Start(scheduler_worker_observer_);
 
   return MakeRefCounted<SchedulerSingleThreadTaskRunner>(this, traits, worker,
                                                          thread_mode);

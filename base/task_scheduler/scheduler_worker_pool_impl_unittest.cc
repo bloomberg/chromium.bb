@@ -101,7 +101,7 @@ class TaskSchedulerWorkerPoolImplTestBase {
     ASSERT_TRUE(worker_pool_);
     worker_pool_->Start(
         SchedulerWorkerPoolParams(num_workers, suggested_reclaim_time),
-        service_thread_.task_runner(),
+        service_thread_.task_runner(), nullptr,
         SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
   }
 
@@ -327,7 +327,7 @@ class TaskSchedulerWorkerPoolImplTestCOMMTAParam
     ASSERT_TRUE(worker_pool_);
     worker_pool_->Start(
         SchedulerWorkerPoolParams(num_workers, suggested_reclaim_time),
-        service_thread_.task_runner(),
+        service_thread_.task_runner(), nullptr,
         SchedulerWorkerPoolImpl::WorkerEnvironment::COM_MTA);
   }
 
@@ -813,7 +813,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, InitOne) {
       "OnePolicyWorkerPool", "A", ThreadPriority::NORMAL,
       task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool->Start(SchedulerWorkerPoolParams(8U, TimeDelta::Max()),
-                     service_thread_task_runner,
+                     service_thread_task_runner, nullptr,
                      SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
   ASSERT_TRUE(worker_pool);
   EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
@@ -835,7 +835,7 @@ TEST(TaskSchedulerWorkerPoolStandbyPolicyTest, VerifyStandbyThread) {
       task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool->Start(
       SchedulerWorkerPoolParams(kWorkerCapacity, kReclaimTimeForCleanupTests),
-      service_thread_task_runner,
+      service_thread_task_runner, nullptr,
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
   ASSERT_TRUE(worker_pool);
   EXPECT_EQ(1U, worker_pool->NumberOfWorkersForTesting());
@@ -1303,7 +1303,7 @@ TEST(TaskSchedulerWorkerPoolOverWorkerCapacityTest, VerifyCleanup) {
       task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool.Start(
       SchedulerWorkerPoolParams(kWorkerCapacity, kReclaimTimeForCleanupTests),
-      service_thread_task_runner,
+      service_thread_task_runner, nullptr,
       SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
 
   scoped_refptr<TaskRunner> task_runner =
@@ -1523,7 +1523,7 @@ TEST(TaskSchedulerWorkerPoolTest, RacyCleanup) {
       task_tracker.GetTrackedRef(), &delayed_task_manager);
   worker_pool.Start(SchedulerWorkerPoolParams(kWorkerCapacity,
                                               kReclaimTimeForRacyCleanupTest),
-                    service_thread_task_runner,
+                    service_thread_task_runner, nullptr,
                     SchedulerWorkerPoolImpl::WorkerEnvironment::NONE);
 
   scoped_refptr<TaskRunner> task_runner =

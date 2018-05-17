@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
+#include "base/task_scheduler/scheduler_worker_observer.h"
 #include "base/task_scheduler/task_tracker.h"
 #include "base/trace_event/trace_event.h"
 
@@ -56,12 +57,16 @@ SchedulerWorker::SchedulerWorker(
   DCHECK(task_tracker_);
 }
 
-bool SchedulerWorker::Start() {
+bool SchedulerWorker::Start(
+    SchedulerWorkerObserver* scheduler_worker_observer) {
   AutoSchedulerLock auto_lock(thread_lock_);
   DCHECK(thread_handle_.is_null());
 
   if (should_exit_.IsSet())
     return true;
+
+  DCHECK(!scheduler_worker_observer_);
+  scheduler_worker_observer_ = scheduler_worker_observer;
 
   self_ = this;
 
@@ -271,6 +276,9 @@ void SchedulerWorker::RunWorker() {
   DCHECK_EQ(self_, this);
   TRACE_EVENT_BEGIN0("task_scheduler", "SchedulerWorkerThread active");
 
+  if (scheduler_worker_observer_)
+    scheduler_worker_observer_->OnSchedulerWorkerMainEntry();
+
   delegate_->OnMainEntry(this);
 
   // A SchedulerWorker starts out waiting for work.
@@ -330,6 +338,9 @@ void SchedulerWorker::RunWorker() {
   // after invoking OnMainExit().
 
   delegate_->OnMainExit(this);
+
+  if (scheduler_worker_observer_)
+    scheduler_worker_observer_->OnSchedulerWorkerMainExit();
 
   // Release the self-reference to |this|. This can result in deleting |this|
   // and as such no more member accesses should be made after this point.

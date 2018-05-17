@@ -61,7 +61,8 @@ class BASE_EXPORT TaskSchedulerImpl : public TaskScheduler {
   ~TaskSchedulerImpl() override;
 
   // TaskScheduler:
-  void Start(const TaskScheduler::InitParams& init_params) override;
+  void Start(const TaskScheduler::InitParams& init_params,
+             SchedulerWorkerObserver* scheduler_worker_observer) override;
   void PostDelayedTaskWithTraits(const Location& from_here,
                                  const TaskTraits& traits,
                                  OnceClosure task,
