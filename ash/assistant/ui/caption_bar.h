@@ -6,11 +6,12 @@
 #define ASH_ASSISTANT_UI_CAPTION_BAR_H_
 
 #include "base/macros.h"
+#include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
 namespace ash {
 
-class CaptionBar : public views::View {
+class CaptionBar : public views::View, views::ButtonListener {
  public:
   CaptionBar();
   ~CaptionBar() override;
@@ -18,6 +19,9 @@ class CaptionBar : public views::View {
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
+
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   void InitLayout();

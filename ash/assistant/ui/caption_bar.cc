@@ -9,20 +9,48 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
 namespace {
 
 // Appearance.
+constexpr int kCaptionButtonSizeDip = 12;
 constexpr int kIconSizeDip = 24;
 constexpr int kPaddingDip = 14;
 constexpr int kPreferredHeightDip = 48;
-constexpr int kWindowControlSizeDip = 12;
+
+// CaptionButton ---------------------------------------------------------------
+
+class CaptionButton : public views::ImageButton {
+ public:
+  explicit CaptionButton(views::ButtonListener* listener)
+      : views::ImageButton(listener) {
+    // Currently there is only a single caption button for close. We can easily
+    // parameterize the icon to support additional caption buttons if need be.
+    SetImage(views::Button::ButtonState::STATE_NORMAL,
+             gfx::CreateVectorIcon(kWindowControlCloseIcon,
+                                   kCaptionButtonSizeDip, gfx::kGoogleGrey700));
+  }
+
+  ~CaptionButton() override = default;
+
+  // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(kCaptionButtonSizeDip, kCaptionButtonSizeDip);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CaptionButton);
+};
 
 }  // namespace
+
+// CaptionBar ------------------------------------------------------------------
 
 CaptionBar::CaptionBar() {
   InitLayout();
@@ -60,16 +88,13 @@ void CaptionBar::InitLayout() {
 
   layout_manager->SetFlexForView(spacer, 1);
 
-  // TODO(dmblack): Handle close button.
   // Close.
-  views::ImageView* close_view = new views::ImageView();
-  close_view->SetImage(gfx::CreateVectorIcon(
-      kWindowControlCloseIcon, kWindowControlSizeDip, gfx::kGoogleGrey700));
-  close_view->SetImageSize(
-      gfx::Size(kWindowControlSizeDip, kWindowControlSizeDip));
-  close_view->SetPreferredSize(
-      gfx::Size(kWindowControlSizeDip, kWindowControlSizeDip));
-  AddChildView(close_view);
+  AddChildView(new CaptionButton(this));
+}
+
+void CaptionBar::ButtonPressed(views::Button* sender, const ui::Event& event) {
+  // There is currently only a single caption button for close.
+  GetWidget()->Close();
 }
 
 }  // namespace ash
