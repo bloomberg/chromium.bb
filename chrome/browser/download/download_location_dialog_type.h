@@ -17,4 +17,11 @@ enum class DownloadLocationDialogType {
   NAME_TOO_LONG,       // Error dialog, the file name is too long.
 };
 
+// Result of download location dialog.
+enum class DownloadLocationDialogResult {
+  USER_CONFIRMED = 0,  // User confirmed a file path.
+  USER_CANCELED,       // User canceled file path selection.
+  DUPLICATE_DIALOG,    // Dialog is already showing.
+};
+
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_LOCATION_DIALOG_TYPE_H_
