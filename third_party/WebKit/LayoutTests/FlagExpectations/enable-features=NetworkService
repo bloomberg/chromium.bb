@@ -10,13 +10,6 @@ Bug(none) external/wpt/html/browsers/offline/appcache/workers/appcache-worker.ht
 crbug.com/829417 external/wpt/html/browsers/offline/appcache/workers/appcache-worker.https.html [ Timeout ]
 Bug(none) external/wpt/service-workers/service-worker/fetch-request-xhr-sync-on-worker.https.html [ Timeout ]
 crbug.com/771118 external/wpt/service-workers/service-worker/mime-sniffing.https.html [ Failure ]
-Bug(none) http/tests/appcache/top-frame-3.html [ Pass Timeout ]
-Bug(none) http/tests/appcache/top-frame-4.html [ Pass Timeout ]
-Bug(none) http/tests/appcache/local-content.html [ Pass Timeout ]
-Bug(none) http/tests/appcache/offline-access.html [ Pass Timeout ]
-Bug(none) http/tests/appcache/foreign-fallback.html [ Pass Timeout ]
-Bug(none) http/tests/appcache/main-resource-redirect.html [ Pass Timeout ]
-Bug(none) http/tests/appcache/reload.html [ Pass Timeout ]
 
 # Passes on NetworkService and fails on non-NetworkService because
 # NetworkService isn't affected by https://crbug.com/595993.
