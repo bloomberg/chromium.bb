@@ -5,6 +5,7 @@
 #ifndef SERVICES_AUDIO_DEBUG_RECORDING_H_
 #define SERVICES_AUDIO_DEBUG_RECORDING_H_
 
+#include <memory>
 #include <utility>
 
 #include "base/gtest_prod_util.h"
@@ -36,6 +37,11 @@ class DebugRecording : public mojom::DebugRecording {
 
   // Enables audio debug recording.
   void Enable(mojom::DebugRecordingFileProviderPtr file_provider) override;
+
+  // Releases and returns service ref. Used when creating a new debug recording
+  // session while there is an ongoing debug recording session. Ref is
+  // transfered to the latest debug recording session.
+  std::unique_ptr<service_manager::ServiceContextRef> ReleaseServiceRef();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DebugRecordingTest,

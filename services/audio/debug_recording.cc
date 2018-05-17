@@ -48,6 +48,11 @@ void DebugRecording::Enable(
       &DebugRecording::CreateWavFile, weak_factory_.GetWeakPtr()));
 }
 
+std::unique_ptr<service_manager::ServiceContextRef>
+DebugRecording::ReleaseServiceRef() {
+  return std::move(service_ref_);
+}
+
 void DebugRecording::Disable() {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
   // Client connection is lost, resetting the reference.

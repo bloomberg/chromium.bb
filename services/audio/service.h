@@ -38,6 +38,7 @@ class ServiceContextRefFactory;
 namespace audio {
 class DebugRecording;
 class DeviceNotifier;
+class ServiceMetrics;
 class SystemInfo;
 
 class Service : public service_manager::Service {
@@ -110,6 +111,7 @@ class Service : public service_manager::Service {
   std::unique_ptr<DebugRecording> debug_recording_;
   base::Optional<StreamFactory> stream_factory_;
   std::unique_ptr<DeviceNotifier> device_notifier_;
+  std::unique_ptr<ServiceMetrics> metrics_;
 
   service_manager::BinderRegistry registry_;
 
