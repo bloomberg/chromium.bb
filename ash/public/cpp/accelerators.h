@@ -125,7 +125,8 @@ struct AcceleratorData {
 };
 
 // A mask of all the modifiers used for debug accelerators.
-ASH_PUBLIC_EXPORT extern const int kDebugModifier;
+ASH_PUBLIC_EXPORT constexpr int kDebugModifier =
+    ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN | ui::EF_SHIFT_DOWN;
 
 // Accelerators handled by AcceleratorController.
 ASH_PUBLIC_EXPORT extern const AcceleratorData kAcceleratorData[];
