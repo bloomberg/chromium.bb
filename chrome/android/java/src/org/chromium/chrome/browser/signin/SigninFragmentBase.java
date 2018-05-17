@@ -101,7 +101,7 @@ public abstract class SigninFragmentBase
     private List<String> mAccountNames;
     private boolean mResumed;
     private boolean mDestroyed;
-    // TODO(https://crbug.com/814728): Ignore button clicks if GMS reported an error.
+    private boolean mIsSigninInProgress;
     private boolean mHasGmsError;
 
     private UserRecoverableErrorHandler.ModalDialog mGooglePlayServicesUpdateErrorHandler;
@@ -186,9 +186,10 @@ public abstract class SigninFragmentBase
      * @param accountName The name of the account
      * @param isDefaultAccount Whether selected account is a default one (first of all accounts)
      * @param settingsClicked Whether the user requested to see their sync settings
+     * @param callback The callback invoke when sign-in process is finished or aborted
      */
-    protected abstract void onSigninAccepted(
-            String accountName, boolean isDefaultAccount, boolean settingsClicked);
+    protected abstract void onSigninAccepted(String accountName, boolean isDefaultAccount,
+            boolean settingsClicked, Runnable callback);
 
     /** Returns the access point that initiated the sign-in flow. */
     protected @SigninAccessPoint int getSigninAccessPoint() {
@@ -212,7 +213,6 @@ public abstract class SigninFragmentBase
         mSigninFlowType = arguments.getInt(ARGUMENT_SIGNIN_FLOW_TYPE, FLOW_DEFAULT);
 
         // Don't have a selected account now, onResume will trigger the selection.
-        // TODO(https://crbug.com/814728): Disable controls until an account is selected.
         mAccountSelectionPending = true;
 
         if (savedInstanceState == null) {
@@ -356,17 +356,17 @@ public abstract class SigninFragmentBase
     }
 
     private void onAccountPickerClicked() {
-        // TODO(https://crbug.com/814728): Ignore clicks if GMS reported an error.
+        if (isForcedSignin() || !areControlsEnabled()) return;
         showAccountPicker();
     }
 
     private void onRefuseButtonClicked(View button) {
-        // TODO(https://crbug.com/814728): Disable controls.
         onSigninRefused();
     }
 
     private void onAcceptButtonClicked(View button) {
-        // TODO(https://crbug.com/814728): Disable controls.
+        if (!areControlsEnabled()) return;
+        mIsSigninInProgress = true;
         RecordUserAction.record("Signin_Signin_WithDefaultSyncSettings");
 
         // Record the fact that the user consented to the consent text by clicking on a button
@@ -375,12 +375,21 @@ public abstract class SigninFragmentBase
     }
 
     private void onSettingsLinkClicked(View view) {
-        // TODO(https://crbug.com/814728): Disable controls.
+        if (!areControlsEnabled()) return;
+        mIsSigninInProgress = true;
         RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
 
         // Record the fact that the user consented to the consent text by clicking on a link
         recordConsent((TextView) view);
         seedAccountsAndSignin(true);
+    }
+
+    /**
+     * Whether account picker and accept button should react to clicks. This doesn't change the
+     * visual appearance of these controls. Refuse button is always enabled.
+     */
+    private boolean areControlsEnabled() {
+        return !mAccountSelectionPending && !mIsSigninInProgress && !mHasGmsError;
     }
 
     private void seedAccountsAndSignin(boolean settingsClicked) {
@@ -425,14 +434,14 @@ public abstract class SigninFragmentBase
                         if (mDestroyed) return;
                         SigninManager.wipeSyncUserDataIfRequired(wipeData).then((Void v) -> {
                             onSigninAccepted(mSelectedAccountName, mIsDefaultAccountSelected,
-                                    settingsClicked);
+                                    settingsClicked, () -> mIsSigninInProgress = false);
                         });
                     }
 
                     @Override
                     public void onCancel() {
                         mConfirmSyncDataStateMachine = null;
-                        // TODO(https://crbug.com/814728): Re-enable controls.
+                        mIsSigninInProgress = false;
                     }
                 });
     }

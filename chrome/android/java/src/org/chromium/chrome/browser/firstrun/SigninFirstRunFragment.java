@@ -62,12 +62,13 @@ public class SigninFirstRunFragment extends SigninFragmentBase implements FirstR
     }
 
     @Override
-    protected void onSigninAccepted(
-            String accountName, boolean isDefaultAccount, boolean settingsClicked) {
+    protected void onSigninAccepted(String accountName, boolean isDefaultAccount,
+            boolean settingsClicked, Runnable callback) {
         getPageDelegate().acceptSignIn(accountName, isDefaultAccount);
         if (settingsClicked) {
             getPageDelegate().askToOpenSignInSettings();
         }
         getPageDelegate().advanceToNextPage();
+        callback.run();
     }
 }
