@@ -1027,6 +1027,8 @@ void BrowserCommandController::UpdateCommandsForTabState() {
 
   command_updater_.UpdateCommandEnabled(IDC_CREATE_HOSTED_APP,
                                         CanCreateBookmarkApp(browser_));
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_PWA_WINDOW,
+                                        CanCreateBookmarkApp(browser_));
 
   command_updater_.UpdateCommandEnabled(
       IDC_TOGGLE_REQUEST_TABLET_SITE,
