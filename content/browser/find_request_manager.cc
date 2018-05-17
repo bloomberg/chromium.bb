@@ -462,7 +462,8 @@ void FindRequestManager::ActivateNearestFindResult(float x, float y) {
       rfh->GetFindInPage()->GetNearestFindResult(
           gfx::PointF(activate_.x, activate_.y),
           base::BindOnce(&FindRequestManager::OnGetNearestFindResultReply,
-                         base::Unretained(this), rfh, current_session_id_));
+                         base::Unretained(this), rfh,
+                         activate_.current_request_id));
     }
   }
 }
