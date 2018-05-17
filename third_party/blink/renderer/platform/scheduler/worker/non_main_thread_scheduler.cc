@@ -88,8 +88,7 @@ NonMainThreadScheduler::PauseScheduler() {
   return nullptr;
 }
 
-base::TimeTicks NonMainThreadScheduler::MonotonicallyIncreasingVirtualTime()
-    const {
+base::TimeTicks NonMainThreadScheduler::MonotonicallyIncreasingVirtualTime() {
   return base::TimeTicks::Now();
 }
 

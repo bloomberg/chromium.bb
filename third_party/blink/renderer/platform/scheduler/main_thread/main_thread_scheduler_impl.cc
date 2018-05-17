@@ -290,6 +290,12 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
   ipc_task_queue_ = NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
       MainThreadTaskQueue::QueueType::kIPC));
 
+  // TODO(kraynov): Ditch kDeprecatedNone here.
+  v8_task_runner_ =
+      TaskQueueWithTaskType::Create(v8_task_queue_, TaskType::kDeprecatedNone);
+  compositor_task_runner_ = TaskQueueWithTaskType::Create(
+      compositor_task_queue_, TaskType::kDeprecatedNone);
+
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "MainThreadScheduler",
       this);
@@ -644,12 +650,6 @@ std::unique_ptr<blink::WebThread> MainThreadSchedulerImpl::CreateMainThread() {
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::DefaultTaskRunner() {
   return helper_.DefaultMainThreadTaskQueue();
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-MainThreadSchedulerImpl::CompositorTaskRunner() {
-  helper_.CheckOnValidThread();
-  return compositor_task_queue_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
@@ -1013,7 +1013,7 @@ void MainThreadSchedulerImpl::OnAudioStateChanged() {
   main_thread_only().is_audio_playing = is_audio_playing;
 }
 
-std::unique_ptr<MainThreadSchedulerImpl::RendererPauseHandle>
+std::unique_ptr<ThreadScheduler::RendererPauseHandle>
 MainThreadSchedulerImpl::PauseRenderer() {
   return std::make_unique<RendererPauseHandleImpl>(this);
 }
@@ -2401,6 +2401,57 @@ MainThreadSchedulerImpl::CreateWebScopedVirtualTimePauser(
     WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
   return WebScopedVirtualTimePauser(this, duration,
                                     WebString(WTF::String(name)));
+}
+
+void MainThreadSchedulerImpl::RunIdleTask(WebThread::IdleTask task,
+                                          base::TimeTicks deadline) {
+  std::move(task).Run((deadline - base::TimeTicks()).InSecondsF());
+}
+
+void MainThreadSchedulerImpl::PostIdleTask(const base::Location& location,
+                                           WebThread::IdleTask task) {
+  IdleTaskRunner()->PostIdleTask(
+      location,
+      base::BindOnce(&MainThreadSchedulerImpl::RunIdleTask, std::move(task)));
+}
+
+void MainThreadSchedulerImpl::PostNonNestableIdleTask(
+    const base::Location& location,
+    WebThread::IdleTask task) {
+  IdleTaskRunner()->PostNonNestableIdleTask(
+      location,
+      base::BindOnce(&MainThreadSchedulerImpl::RunIdleTask, std::move(task)));
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+MainThreadSchedulerImpl::V8TaskRunner() {
+  return v8_task_runner_;
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+MainThreadSchedulerImpl::CompositorTaskRunner() {
+  return compositor_task_runner_;
+}
+
+std::unique_ptr<PageScheduler> MainThreadSchedulerImpl::CreatePageScheduler(
+    PageScheduler::Delegate* delegate) {
+  return std::make_unique<PageSchedulerImpl>(
+      delegate, this,
+      !RuntimeEnabledFeatures::TimerThrottlingForBackgroundTabsEnabled());
+}
+
+std::unique_ptr<ThreadScheduler::RendererPauseHandle>
+MainThreadSchedulerImpl::PauseScheduler() {
+  return PauseRenderer();
+}
+
+base::TimeTicks MainThreadSchedulerImpl::MonotonicallyIncreasingVirtualTime() {
+  return GetActiveTimeDomain()->Now();
+}
+
+WebMainThreadScheduler*
+MainThreadSchedulerImpl::GetWebMainThreadSchedulerForTest() {
+  return this;
 }
 
 void MainThreadSchedulerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
