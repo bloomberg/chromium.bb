@@ -16,9 +16,7 @@ namespace media {
 struct MediaLogEvent {
   MediaLogEvent() {}
 
-  MediaLogEvent(const MediaLogEvent& event) {
-    *this = event;
-  }
+  MediaLogEvent(const MediaLogEvent& event) { *this = event; }
 
   MediaLogEvent& operator=(const MediaLogEvent& event) {
     id = event.id;
@@ -75,6 +73,10 @@ struct MediaLogEvent {
     // Error log reported by media code such as reasons of playback error.
     MEDIA_ERROR_LOG_ENTRY,
     // params: "error": Error string describing the error detected.
+
+    // Warning log reported by media code such as playback quality issues.
+    MEDIA_WARNING_LOG_ENTRY,
+    // params: "warning": String describing the warning.
 
     // Informative log reported by media code.
     MEDIA_INFO_LOG_ENTRY,
