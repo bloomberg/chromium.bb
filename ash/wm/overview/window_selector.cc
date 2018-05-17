@@ -647,6 +647,8 @@ void WindowSelector::Fling(WindowSelectorItem* item,
     return;
 
   window_drag_controller_->Fling(location_in_screen, velocity_x, velocity_y);
+  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
+    grid->OnSelectorItemDragEnded();
 }
 
 void WindowSelector::ActivateDraggedWindow() {

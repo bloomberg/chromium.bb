@@ -3392,14 +3392,6 @@ TEST_F(SplitViewWindowSelectorTest, OverviewDragControllerBehavior) {
     generator.MoveTouchBy(0, 1);
   EXPECT_EQ(DragBehavior::kDragToClose,
             drag_controller->current_drag_behavior());
-
-  // Verify that if the drag has a large enough horizontal displacement we will
-  // enter drag to snap state.
-  generator.MoveTouchBy(200, 0);
-  EXPECT_EQ(DragBehavior::kDragToSnap,
-            drag_controller->current_drag_behavior());
-  generator.ReleaseTouch();
-  EXPECT_EQ(DragBehavior::kNoDrag, drag_controller->current_drag_behavior());
 }
 
 // Verify that if the window item has been dragged enough vertically, the window
