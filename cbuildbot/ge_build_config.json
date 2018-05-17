@@ -1082,18 +1082,6 @@
       ]
     },
     {
-      "name": "octopus",
-      "configs": [
-        {
-          "builder": "RELEASE",
-          "experimental": true,
-          "leader_board": true,
-          "board_group": "",
-          "arch": "X86_INTERNAL"
-        }
-      ]
-    },
-    {
       "name": "orco",
       "configs": [
         {
@@ -1875,7 +1863,28 @@
         },
         {
           "board_name": "nami",
+          "name": "sona",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        },
+        {
+          "board_name": "nami",
           "name": "vayne",
+          "cq_test_enabled": false,
+          "release_builder_test_pool": "bvt"
+        }
+      ]
+    },
+    {
+      "name": "octopus",
+      "reference_board_name": "octopus",
+      "arch": "X86_INTERNAL",
+      "builder": "RELEASE",
+      "experimental": true,
+      "models": [
+        {
+          "board_name": "octopus",
+          "name": "yorp",
           "cq_test_enabled": false,
           "release_builder_test_pool": "bvt"
         }
