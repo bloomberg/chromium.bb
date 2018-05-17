@@ -216,6 +216,7 @@ const int kRelativeTimeMaxHours = 4;
   TableViewAccessoryItem* historyItem =
       [[TableViewAccessoryItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
+  historyItem.image = [UIImage imageNamed:@"show_history"];
   [model addItem:historyItem
       toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
 }
