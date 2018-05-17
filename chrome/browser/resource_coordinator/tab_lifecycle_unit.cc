@@ -24,22 +24,6 @@
 
 namespace resource_coordinator {
 
-namespace {
-
-// Translates a mojom::LifecycleState to resource_coordinator::LifecycleState.
-LifecycleState GetLifecycleStateFromMojoState(mojom::LifecycleState state) {
-  switch (state) {
-    case mojom::LifecycleState::kDiscarded:
-      return LifecycleState::DISCARDED;
-    case mojom::LifecycleState::kFrozen:
-      return LifecycleState::FROZEN;
-    case mojom::LifecycleState::kRunning:
-      return LifecycleState::ACTIVE;
-  }
-}
-
-}  // namespace
-
 TabLifecycleUnitSource::TabLifecycleUnit::TabLifecycleUnit(
     base::ObserverList<TabLifecycleObserver>* observers,
     content::WebContents* web_contents,
@@ -73,14 +57,26 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetFocused(bool focused) {
     return;
   last_focused_time_ = focused ? base::TimeTicks::Max() : NowTicks();
 
-  if (focused && GetState() == LifecycleState::DISCARDED) {
+  if (focused && (GetState() == LifecycleState::DISCARDED ||
+                  GetState() == LifecycleState::PENDING_DISCARD)) {
+    bool was_discarded = GetState() == LifecycleState::DISCARDED;
     SetState(LifecycleState::ACTIVE);
-    // See comment in Discard() for an explanation of why "needs reload" is
-    // false when a tab is discarded.
-    // TODO(fdoray): Remove NavigationControllerImpl::needs_reload_ once session
-    // restore is handled by LifecycleManager.
-    GetWebContents()->GetController().SetNeedsReload();
-    GetWebContents()->GetController().LoadIfNecessary();
+
+    // If the tab was fully discarded, the tab needs to be reloaded.
+    if (was_discarded) {
+      // See comment in Discard() for an explanation of why "needs reload" is
+      // false when a tab is discarded.
+      // TODO(fdoray): Remove NavigationControllerImpl::needs_reload_ once
+      // session restore is handled by LifecycleManager.
+      GetWebContents()->GetController().SetNeedsReload();
+      GetWebContents()->GetController().LoadIfNecessary();
+    }
+
+    // Stop |freeze_timeout_timer_| to avoid completing the discard, as the tab
+    // was focused.
+    if (freeze_timeout_timer_)
+      freeze_timeout_timer_->Stop();
+
     OnDiscardedStateChange();
   }
 }
@@ -96,7 +92,58 @@ void TabLifecycleUnitSource::TabLifecycleUnit::SetRecentlyAudible(
 void TabLifecycleUnitSource::TabLifecycleUnit::UpdateLifecycleState(
     mojom::LifecycleState state) {
   DCHECK_NE(mojom::LifecycleState::kDiscarded, state);
-  SetState(GetLifecycleStateFromMojoState(state));
+
+  switch (state) {
+    case mojom::LifecycleState::kFrozen: {
+      if (GetState() == LifecycleState::PENDING_DISCARD) {
+        freeze_timeout_timer_->Stop();
+        FinishDiscard(discard_reason_);
+      } else {
+        SetState(LifecycleState::FROZEN);
+      }
+      break;
+    }
+
+    case mojom::LifecycleState::kRunning: {
+      SetState(LifecycleState::ACTIVE);
+      break;
+    }
+
+    default: {
+      NOTREACHED();
+      break;
+    }
+  }
+}
+
+void TabLifecycleUnitSource::TabLifecycleUnit::RequestFreezeForDiscard(
+    DiscardReason reason) {
+  // Ensure this isn't happening on an urgent discard.
+  DCHECK_EQ(reason, DiscardReason::kProactive);
+
+  // Ensure the tab is not already pending a discard.
+  DCHECK_NE(GetState(), LifecycleState::PENDING_DISCARD);
+
+  SetState(LifecycleState::PENDING_DISCARD);
+
+  // External observers should now view this tab as discarded, hiding the
+  // pending discard implementation detail.
+  // TODO(fdoray) This should be done as part of SetState() instead of manually
+  // after each SetState() that might change IsDiscarded(). We would have less
+  // chances of breaking things in a future change.
+  OnDiscardedStateChange();
+
+  if (!freeze_timeout_timer_) {
+    freeze_timeout_timer_ =
+        std::make_unique<base::OneShotTimer>(GetTickClock());
+  }
+
+  freeze_timeout_timer_->Start(
+      FROM_HERE, kProactiveDiscardFreezeTimeout,
+      base::BindRepeating(&TabLifecycleUnit::FinishDiscard,
+                          base::Unretained(this), reason));
+
+  Freeze();
 }
 
 TabLifecycleUnitExternal*
@@ -133,6 +180,12 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Freeze() {
   // Can't request to freeze a discarded tab.
   if (GetState() == LifecycleState::DISCARDED)
     return false;
+
+  // If currently in PENDING_DISCARD, the tab IsDiscarded() to external
+  // observers. To maintain this, don't set it to PENDING_FREEZE, but keep the
+  // tab in the PENDING_DISCARD state.
+  if (GetState() != LifecycleState::PENDING_DISCARD)
+    SetState(LifecycleState::PENDING_FREEZE);
 
   GetWebContents()->FreezePage();
   return true;
@@ -225,9 +278,47 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
     DiscardReason discard_reason) {
-  if (!tab_strip_model_ || GetState() == LifecycleState::DISCARDED)
+  // Can't discard a tab when it isn't in a tabstrip.
+  if (!tab_strip_model_)
     return false;
 
+  // Can't discard a tab if it is already discarded.
+  if (GetState() == LifecycleState::DISCARDED)
+    return false;
+
+  // If a non-urgent discard is requested when the state is PENDING_DISCARD,
+  // returns false to indicate that it is incorrect to request a non-urgent
+  // discard again.
+  if (GetState() == LifecycleState::PENDING_DISCARD &&
+      discard_reason == DiscardReason::kProactive) {
+    return false;
+  }
+
+  discard_reason_ = discard_reason;
+
+  // If the tab is not going through an urgent discard, it should be frozen
+  // first. Freeze the tab and set a timer to callback to FinishDiscard() incase
+  // the freeze callback takes too long.
+  //
+  // TODO(fdoray): Request a freeze for kExternal discards too once that doesn't
+  // cause asynchronous change of tab id. https://crbug.com/632839
+  if (discard_reason == DiscardReason::kProactive &&
+      GetState() != LifecycleState::FROZEN) {
+    RequestFreezeForDiscard(discard_reason);
+
+    // Returning true because even though the discard did not happen yet, the
+    // tab is in PENDING_DISCARD state and will be discarded either when the
+    // freeze callback occurs, or the kProactiveDiscardFreezeTimeout timeout is
+    // reached.
+    return true;
+  }
+
+  FinishDiscard(discard_reason);
+  return true;
+}
+
+void TabLifecycleUnitSource::TabLifecycleUnit::FinishDiscard(
+    DiscardReason discard_reason) {
   UMA_HISTOGRAM_BOOLEAN(
       "TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler",
       GetWebContents()->NeedToFireBeforeUnload());
@@ -295,11 +386,11 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
   // RenderFrameProxyHosts.
   old_contents_deleter.reset();
 
+  LifecycleState previous_state = GetState();
   SetState(LifecycleState::DISCARDED);
+  if (previous_state != LifecycleState::PENDING_DISCARD)
+    OnDiscardedStateChange();
   ++discard_count_;
-  OnDiscardedStateChange();
-
-  return true;
 }
 
 content::WebContents* TabLifecycleUnitSource::TabLifecycleUnit::GetWebContents()
@@ -351,11 +442,21 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::FreezeTab() {
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsDiscarded() const {
-  return GetState() == LifecycleState::DISCARDED;
+  // External code does not need to know about the intermediary PENDING_DISCARD
+  // state. To external callers, the tab is discarded while in the
+  // PENDING_DISCARD state.
+  LifecycleState current_state = GetState();
+  return current_state == LifecycleState::PENDING_DISCARD ||
+         current_state == LifecycleState::DISCARDED;
 }
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::IsFrozen() const {
-  return GetState() == LifecycleState::FROZEN;
+  // External code does not need to know about the intermediary PENDING_FREEZE
+  // state.  To external callers, the tab is frozen while in the PENDING_FREEZE
+  // state.
+  LifecycleState current_state = GetState();
+  return current_state == LifecycleState::PENDING_FREEZE ||
+         current_state == LifecycleState::FROZEN;
 }
 
 int TabLifecycleUnitSource::TabLifecycleUnit::GetDiscardCount() const {

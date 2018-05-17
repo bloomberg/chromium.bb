@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_base.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_source.h"
@@ -29,6 +30,11 @@ class TabLifecycleObserver;
 // Time during which a tab cannot be discarded after having played audio.
 static constexpr base::TimeDelta kTabAudioProtectionTime =
     base::TimeDelta::FromMinutes(1);
+
+// Timeout after which a tab is proactively discarded if the freeze callback
+// hasn't been received.
+static constexpr base::TimeDelta kProactiveDiscardFreezeTimeout =
+    base::TimeDelta::FromMilliseconds(500);
 
 // Represents a tab.
 class TabLifecycleUnitSource::TabLifecycleUnit
@@ -66,6 +72,10 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   // "recently audible" state of the tab changes.
   void SetRecentlyAudible(bool recently_audible);
 
+  // Updates the tab's lifecycle state when changed outside the tab lifecycle
+  // unit.
+  void UpdateLifecycleState(mojom::LifecycleState state);
+
   // LifecycleUnit:
   TabLifecycleUnitExternal* AsTabLifecycleUnitExternal() override;
   base::string16 GetTitle() const override;
@@ -90,16 +100,28 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   int GetDiscardCount() const override;
 
  protected:
+  friend class TabManagerTest;
+
   // TabLifecycleUnitSource needs to update the state when a external lifecycle
   // state change is observed.
   friend class TabLifecycleUnitSource;
-  // Updates the tab's lifecycle state when changed outside the tab lifecycle
-  // unit.
-  void UpdateLifecycleState(mojom::LifecycleState state);
 
  private:
-  // Invoked when the state goes from DISCARDED to non-DISCARDED and vice-versa.
+  // For non-urgent discarding, sends a request for freezing to occur prior to
+  // discarding the tab.
+  void RequestFreezeForDiscard(DiscardReason reason);
+
+  // Invoked when the state goes from DISCARDED or PENDING_DISCARD to any
+  // non-DISCARDED state and vice-versa.
   void OnDiscardedStateChange();
+
+  // Finishes a tab discard. For an urgent discard, this is invoked by
+  // Discard(). For a proactive or external discard, where the tab is frozen
+  // prior to being discarded, this is called by UpdateLifecycleState() once the
+  // callback has been received, or by |freeze_timeout_timer_| if the
+  // kProactiveDiscardFreezeTimeout timeout has passed without receiving the
+  // callback.
+  void FinishDiscard(DiscardReason discard_reason);
 
   // Returns the RenderProcessHost associated with this tab.
   content::RenderProcessHost* GetRenderProcessHost() const;
@@ -129,6 +151,13 @@ class TabLifecycleUnitSource::TabLifecycleUnit
 
   // When this is false, CanDiscard() always returns false.
   bool auto_discardable_ = true;
+
+  // Maintains the most recent DiscardReason that was pased into Discard().
+  DiscardReason discard_reason_;
+
+  // Timer that ensures that this tab does not wait forever for the callback
+  // when it is being frozen.
+  std::unique_ptr<base::OneShotTimer> freeze_timeout_timer_;
 
   // TimeTicks::Max() if the tab is currently "recently audible", null
   // TimeTicks() if the tab was never "recently audible", last time at which the
