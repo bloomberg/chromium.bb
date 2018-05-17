@@ -4,6 +4,7 @@
 
 #include "components/viz/service/display/overlay_strategy_underlay.h"
 
+#include "build/build_config.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/service/display/overlay_candidate_validator.h"
@@ -11,8 +12,9 @@
 namespace viz {
 
 OverlayStrategyUnderlay::OverlayStrategyUnderlay(
-    OverlayCandidateValidator* capability_checker)
-    : capability_checker_(capability_checker) {
+    OverlayCandidateValidator* capability_checker,
+    OpaqueMode opaque_mode)
+    : capability_checker_(capability_checker), opaque_mode_(opaque_mode) {
   DCHECK(capability_checker);
 }
 
@@ -29,7 +31,8 @@ bool OverlayStrategyUnderlay::Attempt(
     cc::OverlayCandidate candidate;
     if (!cc::OverlayCandidate::FromDrawQuad(
             resource_provider, output_color_matrix, *it, &candidate) ||
-      !candidate.is_opaque) {
+        (opaque_mode_ == OpaqueMode::RequireOpaqueCandidates &&
+         !candidate.is_opaque)) {
       continue;
     }
 
