@@ -174,7 +174,9 @@ void ResourceDispatcher::OnReceivedResponse(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->response_start = base::TimeTicks::Now();
+  request_info->local_response_start = base::TimeTicks::Now();
+  request_info->remote_request_start =
+      initial_response_head.load_timing.request_start;
   // Now that response_start has been set, we can properly set the TimeTicks in
   // the ResourceResponseInfo.
   network::ResourceResponseInfo renderer_response_info;
@@ -256,7 +258,8 @@ void ResourceDispatcher::OnReceivedRedirect(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->response_start = base::TimeTicks::Now();
+  request_info->local_response_start = base::TimeTicks::Now();
+  request_info->remote_request_start = response_head.load_timing.request_start;
 
   network::ResourceResponseInfo renderer_response_info;
   ToResourceResponseInfo(*request_info, response_head, &renderer_response_info);
@@ -296,7 +299,7 @@ void ResourceDispatcher::FollowPendingRedirect(
       request_info->should_follow_redirect) {
     request_info->has_pending_redirect = false;
     // net::URLRequest clears its request_start on redirect, so should we.
-    request_info->request_start = base::TimeTicks::Now();
+    request_info->local_request_start = base::TimeTicks::Now();
     request_info->url_loader->FollowRedirect();
   }
 }
@@ -309,7 +312,6 @@ void ResourceDispatcher::OnRequestComplete(
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
-  request_info->completion_time = base::TimeTicks::Now();
   request_info->buffer.reset();
   request_info->buffer_size = 0;
 
@@ -349,15 +351,34 @@ void ResourceDispatcher::OnRequestComplete(
     request_info->peer = std::move(new_peer);
   }
 
+  network::URLLoaderCompletionStatus renderer_status(status);
+  if (status.completion_time.is_null()) {
+    // No completion timestamp is provided, leave it as is.
+  } else if (request_info->remote_request_start.is_null() ||
+             request_info->load_timing_info.request_start.is_null()) {
+    // We cannot convert the remote time to a local time, let's use the current
+    // timestamp. This happens when
+    //  - We get an error before OnReceivedRedirect or OnReceivedResponse is
+    //    called, or
+    //  - Somehow such a timestamp was missing in the LoadTimingInfo.
+    renderer_status.completion_time = base::TimeTicks::Now();
+  } else {
+    // We have already converted the request start timestamp, let's use that
+    // conversion information.
+    // Note: We cannot create a InterProcessTimeTicksConverter with
+    // (local_request_start, now, remote_request_start, remote_completion_time)
+    // as that may result in inconsistent timestamps.
+    renderer_status.completion_time =
+        std::min(status.completion_time - request_info->remote_request_start +
+                     request_info->load_timing_info.request_start,
+                 base::TimeTicks::Now());
+  }
   // The request ID will be removed from our pending list in the destructor.
   // Normally, dispatching this message causes the reference-counted request to
   // die immediately.
   // TODO(kinuko): Revisit here. This probably needs to call request_info->peer
   // but the past attempt to change it seems to have caused crashes.
   // (crbug.com/547047)
-  network::URLLoaderCompletionStatus renderer_status(status);
-  renderer_status.completion_time =
-      ToRendererCompletionTime(*request_info, status.completion_time);
   peer->OnCompletedRequest(renderer_status);
 }
 
@@ -467,7 +488,7 @@ ResourceDispatcher::PendingRequestInfo::PendingRequestInfo(
       response_method(method),
       response_referrer(referrer),
       download_to_file(download_to_file),
-      request_start(base::TimeTicks::Now()),
+      local_request_start(base::TimeTicks::Now()),
       buffer_size(0),
       navigation_response_override(
           std::move(navigation_response_override_params)) {}
@@ -589,16 +610,16 @@ void ResourceDispatcher::ToResourceResponseInfo(
     network::ResourceResponseInfo* renderer_info) const {
   *renderer_info = browser_info;
   if (base::TimeTicks::IsConsistentAcrossProcesses() ||
-      request_info.request_start.is_null() ||
-      request_info.response_start.is_null() ||
+      request_info.local_request_start.is_null() ||
+      request_info.local_response_start.is_null() ||
       browser_info.request_start.is_null() ||
       browser_info.response_start.is_null() ||
       browser_info.load_timing.request_start.is_null()) {
     return;
   }
   InterProcessTimeTicksConverter converter(
-      LocalTimeTicks::FromTimeTicks(request_info.request_start),
-      LocalTimeTicks::FromTimeTicks(request_info.response_start),
+      LocalTimeTicks::FromTimeTicks(request_info.local_request_start),
+      LocalTimeTicks::FromTimeTicks(request_info.local_response_start),
       RemoteTimeTicks::FromTimeTicks(browser_info.request_start),
       RemoteTimeTicks::FromTimeTicks(browser_info.response_start));
 
@@ -619,23 +640,6 @@ void ResourceDispatcher::ToResourceResponseInfo(
   RemoteToLocalTimeTicks(converter, &load_timing->push_end);
   RemoteToLocalTimeTicks(converter, &renderer_info->service_worker_start_time);
   RemoteToLocalTimeTicks(converter, &renderer_info->service_worker_ready_time);
-}
-
-base::TimeTicks ResourceDispatcher::ToRendererCompletionTime(
-    const PendingRequestInfo& request_info,
-    const base::TimeTicks& browser_completion_time) const {
-  if (request_info.completion_time.is_null()) {
-    return browser_completion_time;
-  }
-
-  // TODO(simonjam): The optimal lower bound should be the most recent value of
-  // TimeTicks::Now() returned to WebKit. Is it worth trying to cache that?
-  // Until then, |response_start| is used as it is the most recent value
-  // returned for this request.
-  int64_t result = std::max(browser_completion_time.ToInternalValue(),
-                            request_info.response_start.ToInternalValue());
-  result = std::min(result, request_info.completion_time.ToInternalValue());
-  return base::TimeTicks::FromInternalValue(result);
 }
 
 void ResourceDispatcher::ContinueForNavigation(int request_id) {
