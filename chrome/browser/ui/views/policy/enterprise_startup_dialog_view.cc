@@ -129,7 +129,7 @@ bool EnterpriseStartupDialogView::ShouldShowCloseButton() const {
 }
 
 ui::ModalType EnterpriseStartupDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+  return ui::MODAL_TYPE_NONE;
 }
 
 views::View* EnterpriseStartupDialogView::CreateExtraView() {
