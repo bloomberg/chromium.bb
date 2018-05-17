@@ -2000,11 +2000,13 @@ void ProfileSyncService::OnSyncManagedPrefChange(bool is_sync_managed) {
 void ProfileSyncService::OnPrimaryAccountSet(
     const AccountInfo& primary_account_info) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (!IsEngineInitialized() ||
-      GetAuthError().state() != GoogleServiceAuthError::NONE) {
-    // Track the fact that we're still waiting for auth to complete.
-    is_auth_in_progress_ = true;
-  }
+  // TODO(treib): We should be able to check that the engine doesn't even exist
+  // at this point, but some tests call this method directly (through
+  // ProfileSyncServiceHarness) after the engine has been created.
+  DCHECK(!IsEngineInitialized());
+
+  // Track the fact that we're still waiting for auth to complete.
+  is_auth_in_progress_ = true;
 
   if (oauth2_token_service_->RefreshTokenIsAvailable(
           primary_account_info.account_id)) {
@@ -2019,6 +2021,7 @@ void ProfileSyncService::OnPrimaryAccountCleared(
   UMA_HISTOGRAM_ENUMERATION("Sync.StopSource", syncer::SIGN_OUT,
                             syncer::STOP_SOURCE_LIMIT);
   RequestStop(CLEAR_DATA);
+  DCHECK(!engine_);
 }
 
 void ProfileSyncService::OnGaiaAccountsInCookieUpdated(
