@@ -7394,7 +7394,9 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketNegotiatesHttp2) {
   auto ssl_provider = std::make_unique<SSLSocketDataProvider>(ASYNC, OK);
   // Test that request has empty |alpn_protos|, that is, HTTP/2 is disabled.
   ssl_provider->next_protos_expected_in_ssl_config = NextProtoVector{};
-  // Force socket to use HTTP/1.1, the default protocol without ALPN.
+  // Force socket to use HTTP/2, which should never happen (TLS implementation
+  // should fail TLS handshake if server chooses HTTP/2 without client
+  // advertising support).
   ssl_provider->next_proto = kProtoHTTP2;
   ssl_provider->ssl_info.cert =
       ImportCertFromFile(GetTestCertsDirectory(), "spdy_pooling.pem");
