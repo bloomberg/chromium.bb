@@ -158,6 +158,8 @@ GpuPreferences ParseGpuPreferences(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kIgnoreGpuBlacklist);
   gpu_preferences.enable_oop_rasterization =
       command_line->HasSwitch(switches::kEnableOOPRasterization);
+  gpu_preferences.use_gpu_fences_for_overlay_planes =
+      command_line->HasSwitch(switches::kUseGpuFencesForOverlayPlanes);
   return gpu_preferences;
 }
 

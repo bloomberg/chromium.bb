@@ -2234,12 +2234,14 @@ class WaitSyncTokenCountingGLES2Interface : public TestGLES2Interface {
 
 class MockOverlayScheduler {
  public:
-  MOCK_METHOD5(Schedule,
+  MOCK_METHOD7(Schedule,
                void(int plane_z_order,
                     gfx::OverlayTransform plane_transform,
                     unsigned overlay_texture_id,
                     const gfx::Rect& display_bounds,
-                    const gfx::RectF& uv_rect));
+                    const gfx::RectF& uv_rect,
+                    bool enable_blend,
+                    unsigned gpu_fence_id));
 };
 
 TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
@@ -2348,7 +2350,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
   EXPECT_CALL(
       overlay_scheduler,
       Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _, gfx::Rect(viewport_size),
-               BoundingRect(uv_top_left, uv_bottom_right)))
+               BoundingRect(uv_top_left, uv_bottom_right), _, _))
       .Times(1);
 
   DrawFrame(&renderer, viewport_size);

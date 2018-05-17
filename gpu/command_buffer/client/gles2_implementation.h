@@ -118,7 +118,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
                             unsigned overlay_texture_id,
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& uv_rect,
-                            bool enable_blend) override;
+                            bool enable_blend,
+                            unsigned gpu_fence_id) override;
   uint64_t ShareGroupTracingGUID() const override;
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)> callback) override;

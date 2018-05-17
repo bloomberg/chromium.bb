@@ -169,6 +169,9 @@ struct GPU_EXPORT GpuPreferences {
   // Enable GPU rasterization in the GPU process.
   bool enable_oop_rasterization = false;
 
+  // Use GpuFence objects to synchronize display of overlay planes.
+  bool use_gpu_fences_for_overlay_planes = false;
+
   // Please update gpu_preferences_util_unittest.cc when making additions or
   // changes to this struct.
 };

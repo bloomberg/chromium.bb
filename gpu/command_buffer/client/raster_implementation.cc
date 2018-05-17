@@ -357,7 +357,8 @@ void RasterImplementation::ScheduleOverlayPlane(
     unsigned /* overlay_texture_id */,
     const gfx::Rect& /* display_bounds */,
     const gfx::RectF& /* uv_rect */,
-    bool /* enable_blend */) {
+    bool /* enable_blend */,
+    unsigned /* gpu_fence_id */) {
   NOTREACHED();
 }
 

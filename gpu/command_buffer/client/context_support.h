@@ -74,7 +74,8 @@ class ContextSupport {
                                     unsigned overlay_texture_id,
                                     const gfx::Rect& display_bounds,
                                     const gfx::RectF& uv_rect,
-                                    bool enable_blend) = 0;
+                                    bool enable_blend,
+                                    unsigned gpu_fence_id) = 0;
 
   // Returns an ID that can be used to globally identify the share group that
   // this context's resources belong to.

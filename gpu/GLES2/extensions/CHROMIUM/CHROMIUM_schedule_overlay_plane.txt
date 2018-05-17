@@ -8,7 +8,7 @@ Name Strings
 
 Version
 
-    Last Modified Date: March 18, 2018
+    Last Modified Date: March 28, 2018
 
 Dependencies
 
@@ -53,7 +53,8 @@ New Procedures and Functions
                                         GLfloat uv_y,
                                         GLfloat uv_width,
                                         GLfloat uv_height
-					GLboolean enable_blend);
+                                        GLboolean enable_blend,
+                                        GLuint gpu_fence_id);
 
     Sets the overlay plane to be presented synchronously along with the primary
     framebuffer during the call to swap buffers.
@@ -68,6 +69,8 @@ New Procedures and Functions
     buffer to be placed inside the bounds.
     <enable_blend> specifies whether alpha blending should be enabled or
     disabled when the buffer is presented.
+    <gpu_fence_id> is the id of a gpu fence which when signaled marks that the
+    the buffer is ready to be presented as an overlay.
 
 Errors
 
@@ -76,3 +79,9 @@ Errors
 New State
 
     None.
+
+Revision History
+
+    04/02/2014    Documented the extension
+    03/18/2018    Added enable_blend parameter
+    03/28/2018    Added gpu_fence_id parameter

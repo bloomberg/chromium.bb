@@ -2748,13 +2748,14 @@ void ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                   GLfloat uv_y,
                                   GLfloat uv_width,
                                   GLfloat uv_height,
-                                  GLboolean enable_blend) {
+                                  GLboolean enable_blend,
+                                  GLuint gpu_fence_id) {
   gles2::cmds::ScheduleOverlayPlaneCHROMIUM* c =
       GetCmdSpace<gles2::cmds::ScheduleOverlayPlaneCHROMIUM>();
   if (c) {
     c->Init(plane_z_order, plane_transform, overlay_texture_id, bounds_x,
             bounds_y, bounds_width, bounds_height, uv_x, uv_y, uv_width,
-            uv_height, enable_blend);
+            uv_height, enable_blend, gpu_fence_id);
   }
 }
 

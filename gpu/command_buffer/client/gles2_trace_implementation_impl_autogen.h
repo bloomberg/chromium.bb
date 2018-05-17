@@ -2143,13 +2143,14 @@ void GLES2TraceImplementation::ScheduleOverlayPlaneCHROMIUM(
     GLfloat uv_y,
     GLfloat uv_width,
     GLfloat uv_height,
-    GLboolean enable_blend) {
+    GLboolean enable_blend,
+    GLuint gpu_fence_id) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::ScheduleOverlayPlaneCHROMIUM");
-  gl_->ScheduleOverlayPlaneCHROMIUM(plane_z_order, plane_transform,
-                                    overlay_texture_id, bounds_x, bounds_y,
-                                    bounds_width, bounds_height, uv_x, uv_y,
-                                    uv_width, uv_height, enable_blend);
+  gl_->ScheduleOverlayPlaneCHROMIUM(
+      plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
+      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height,
+      enable_blend, gpu_fence_id);
 }
 
 void GLES2TraceImplementation::ScheduleCALayerSharedStateCHROMIUM(

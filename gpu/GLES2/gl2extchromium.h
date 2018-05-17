@@ -740,7 +740,8 @@ glScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                GLfloat uv_y,
                                GLfloat uv_width,
                                GLfloat uv_height,
-                               GLboolean enable_blend);
+                               GLboolean enable_blend,
+                               GLuint gpu_fence_id);
 #endif
 typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
     GLint plane_z_order,
@@ -754,7 +755,8 @@ typedef void(GL_APIENTRYP PFNGLSCHEDULEOVERLAYPLANECHROMIUMPROC)(
     GLfloat uv_y,
     GLfloat uv_width,
     GLfloat uv_height,
-    GLboolean enable_blend);
+    GLboolean enable_blend,
+    GLuint gpu_fence_id);
 #endif /* GL_CHROMIUM_schedule_overlay_plane */
 
 #ifndef GL_CHROMIUM_schedule_ca_layer

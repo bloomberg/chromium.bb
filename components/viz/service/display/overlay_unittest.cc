@@ -2478,12 +2478,14 @@ class OverlayInfoRendererGL : public GLRenderer {
 
 class MockOverlayScheduler {
  public:
-  MOCK_METHOD5(Schedule,
+  MOCK_METHOD7(Schedule,
                void(int plane_z_order,
                     gfx::OverlayTransform plane_transform,
                     unsigned overlay_texture_id,
                     const gfx::Rect& display_bounds,
-                    const gfx::RectF& uv_rect));
+                    const gfx::RectF& uv_rect,
+                    bool enable_blend,
+                    unsigned gpu_fence_id));
 };
 
 class GLRendererWithOverlaysTest : public testing::Test {
@@ -2578,11 +2580,12 @@ TEST_F(GLRendererWithOverlaysTest, OverlayQuadNotDrawn) {
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(2);
   EXPECT_CALL(scheduler_,
               Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, _,
-                       gfx::Rect(kDisplaySize), gfx::RectF(0, 0, 1, 1)))
+                       gfx::Rect(kDisplaySize), gfx::RectF(0, 0, 1, 1), _, _))
       .Times(1);
-  EXPECT_CALL(scheduler_, Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _,
-                                   kOverlayBottomRightRect,
-                                   BoundingRect(kUVTopLeft, kUVBottomRight)))
+  EXPECT_CALL(
+      scheduler_,
+      Schedule(1, gfx::OVERLAY_TRANSFORM_NONE, _, kOverlayBottomRightRect,
+               BoundingRect(kUVTopLeft, kUVBottomRight), _, _))
       .Times(1);
   DrawFrame(&pass_list, kDisplaySize);
   EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
@@ -2617,11 +2620,11 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadInUnderlay) {
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(3);
   EXPECT_CALL(scheduler_,
               Schedule(0, gfx::OVERLAY_TRANSFORM_NONE, _,
-                       gfx::Rect(kDisplaySize), gfx::RectF(0, 0, 1, 1)))
+                       gfx::Rect(kDisplaySize), gfx::RectF(0, 0, 1, 1), _, _))
       .Times(1);
   EXPECT_CALL(scheduler_,
               Schedule(-1, gfx::OVERLAY_TRANSFORM_NONE, _, kOverlayRect,
-                       BoundingRect(kUVTopLeft, kUVBottomRight)))
+                       BoundingRect(kUVTopLeft, kUVBottomRight), _, _))
       .Times(1);
   DrawFrame(&pass_list, kDisplaySize);
   EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
@@ -2654,7 +2657,7 @@ TEST_F(GLRendererWithOverlaysTest, NoValidatorNoOverlay) {
   // Should not see the primary surface's overlay.
   output_surface_->set_is_displayed_as_overlay_plane(false);
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(3);
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(0);
   DrawFrame(&pass_list, kDisplaySize);
   EXPECT_EQ(1U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
@@ -2685,7 +2688,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenPartialSwapEnabled) {
 
   output_surface_->set_is_displayed_as_overlay_plane(true);
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(0);
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   DrawFrame(&pass_list, kDisplaySize);
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
@@ -2716,7 +2719,7 @@ TEST_F(GLRendererWithOverlaysTest, OccludedQuadNotDrawnWhenEmptySwapAllowed) {
 
   output_surface_->set_is_displayed_as_overlay_plane(true);
   EXPECT_CALL(*renderer_, DoDrawQuad(_, _)).Times(0);
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   DrawFrame(&pass_list, kDisplaySize);
   EXPECT_EQ(0U, output_surface_->bind_framebuffer_count());
   SwapBuffers();
@@ -2774,7 +2777,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   overlay3.resource_id = mapped_resource3;
   overlay3.plane_z_order = 1;
 
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
@@ -2798,7 +2801,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
   EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame2);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
@@ -2814,7 +2817,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   EXPECT_TRUE(resource_provider_->InUse(mapped_resource2));
   EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame3);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
@@ -2832,7 +2835,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
   EXPECT_TRUE(resource_provider_->InUse(mapped_resource3));
   // No overlays, release the resource.
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(0);
   DirectRenderer::DrawingFrame frame_no_overlays;
   frame_no_overlays.render_passes_in_draw_order = &pass_list;
   renderer_->set_expect_overlays(false);
@@ -2855,7 +2858,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
 
   // Use the same buffer twice.
   renderer_->set_expect_overlays(true);
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
@@ -2873,7 +2876,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
   EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
@@ -2891,7 +2894,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedWithDelay) {
   EXPECT_FALSE(resource_provider_->InUse(mapped_resource2));
   EXPECT_FALSE(resource_provider_->InUse(mapped_resource3));
 
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(0);
   renderer_->set_expect_overlays(false);
   renderer_->SetCurrentFrame(frame_no_overlays);
   renderer_->BeginDrawingFrame();
@@ -2963,7 +2966,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   overlay3.plane_z_order = 1;
 
   // First frame, with no swap completion.
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame1);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
@@ -2973,7 +2976,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
   Mock::VerifyAndClearExpectations(&scheduler_);
 
   // Second frame, with no swap completion.
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame2);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();
@@ -2986,7 +2989,7 @@ TEST_F(GLRendererWithOverlaysTest, ResourcesExportedAndReturnedAfterGpuQuery) {
 
   // Third frame, still with no swap completion (where the resources would
   // otherwise have been released).
-  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _)).Times(2);
+  EXPECT_CALL(scheduler_, Schedule(_, _, _, _, _, _, _)).Times(2);
   renderer_->SetCurrentFrame(frame3);
   renderer_->BeginDrawingFrame();
   renderer_->FinishDrawingFrame();

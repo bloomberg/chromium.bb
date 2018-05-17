@@ -13550,7 +13550,8 @@ struct ScheduleOverlayPlaneCHROMIUM {
             GLfloat _uv_y,
             GLfloat _uv_width,
             GLfloat _uv_height,
-            GLboolean _enable_blend) {
+            GLboolean _enable_blend,
+            GLuint _gpu_fence_id) {
     SetHeader();
     plane_z_order = _plane_z_order;
     plane_transform = _plane_transform;
@@ -13564,6 +13565,7 @@ struct ScheduleOverlayPlaneCHROMIUM {
     uv_width = _uv_width;
     uv_height = _uv_height;
     enable_blend = _enable_blend;
+    gpu_fence_id = _gpu_fence_id;
   }
 
   void* Set(void* cmd,
@@ -13578,11 +13580,12 @@ struct ScheduleOverlayPlaneCHROMIUM {
             GLfloat _uv_y,
             GLfloat _uv_width,
             GLfloat _uv_height,
-            GLboolean _enable_blend) {
+            GLboolean _enable_blend,
+            GLuint _gpu_fence_id) {
     static_cast<ValueType*>(cmd)->Init(
         _plane_z_order, _plane_transform, _overlay_texture_id, _bounds_x,
         _bounds_y, _bounds_width, _bounds_height, _uv_x, _uv_y, _uv_width,
-        _uv_height, _enable_blend);
+        _uv_height, _enable_blend, _gpu_fence_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -13599,10 +13602,11 @@ struct ScheduleOverlayPlaneCHROMIUM {
   float uv_width;
   float uv_height;
   uint32_t enable_blend;
+  uint32_t gpu_fence_id;
 };
 
-static_assert(sizeof(ScheduleOverlayPlaneCHROMIUM) == 52,
-              "size of ScheduleOverlayPlaneCHROMIUM should be 52");
+static_assert(sizeof(ScheduleOverlayPlaneCHROMIUM) == 56,
+              "size of ScheduleOverlayPlaneCHROMIUM should be 56");
 static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, header) == 0,
               "offset of ScheduleOverlayPlaneCHROMIUM header should be 0");
 static_assert(
@@ -13635,6 +13639,9 @@ static_assert(offsetof(ScheduleOverlayPlaneCHROMIUM, uv_height) == 44,
 static_assert(
     offsetof(ScheduleOverlayPlaneCHROMIUM, enable_blend) == 48,
     "offset of ScheduleOverlayPlaneCHROMIUM enable_blend should be 48");
+static_assert(
+    offsetof(ScheduleOverlayPlaneCHROMIUM, gpu_fence_id) == 52,
+    "offset of ScheduleOverlayPlaneCHROMIUM gpu_fence_id should be 52");
 
 struct ScheduleCALayerSharedStateCHROMIUM {
   typedef ScheduleCALayerSharedStateCHROMIUM ValueType;

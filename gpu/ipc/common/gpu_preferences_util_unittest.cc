@@ -70,6 +70,8 @@ void CheckGpuPreferencesEqual(GpuPreferences left, GpuPreferences right) {
             right.disable_gpu_driver_bug_workarounds);
   EXPECT_EQ(left.ignore_gpu_blacklist, right.ignore_gpu_blacklist);
   EXPECT_EQ(left.enable_oop_rasterization, right.enable_oop_rasterization);
+  EXPECT_EQ(left.use_gpu_fences_for_overlay_planes,
+            right.use_gpu_fences_for_overlay_planes);
 }
 
 }  // namespace
@@ -143,6 +145,7 @@ TEST(GpuPreferencesUtilTest, EncodeDecode) {
     GPU_PREFERENCES_FIELD(disable_gpu_driver_bug_workarounds, true)
     GPU_PREFERENCES_FIELD(ignore_gpu_blacklist, true)
     GPU_PREFERENCES_FIELD(enable_oop_rasterization, true)
+    GPU_PREFERENCES_FIELD(use_gpu_fences_for_overlay_planes, true)
 
     input_prefs.texture_target_exception_list.emplace_back(
         gfx::BufferUsage::SCANOUT, gfx::BufferFormat::RGBA_8888);

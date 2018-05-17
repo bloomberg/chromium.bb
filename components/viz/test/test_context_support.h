@@ -51,7 +51,8 @@ class TestContextSupport : public gpu::ContextSupport {
                             unsigned overlay_texture_id,
                             const gfx::Rect& display_bounds,
                             const gfx::RectF& uv_rect,
-                            bool enable_blend) override;
+                            bool enable_blend,
+                            unsigned gpu_fence_id) override;
   uint64_t ShareGroupTracingGUID() const override;
   void SetErrorMessageCallback(
       base::RepeatingCallback<void(const char*, int32_t)> callback) override;
@@ -82,7 +83,9 @@ class TestContextSupport : public gpu::ContextSupport {
                                    gfx::OverlayTransform plane_transform,
                                    unsigned overlay_texture_id,
                                    const gfx::Rect& display_bounds,
-                                   const gfx::RectF& crop_rect)>;
+                                   const gfx::RectF& crop_rect,
+                                   bool enable_blend,
+                                   unsigned gpu_fence_id)>;
   void SetScheduleOverlayPlaneCallback(
       const ScheduleOverlayPlaneCallback& schedule_overlay_plane_callback);
 
