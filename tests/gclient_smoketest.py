@@ -823,6 +823,68 @@ class GClientSmokeGIT(GClientSmokeBase):
     }]
     self.assertEqual(out, output_json)
 
+  def testSetDep(self):
+    fake_deps = os.path.join(self.root_dir, 'DEPS.fake')
+    with open(fake_deps, 'w') as f:
+      f.write('\n'.join([
+          'vars = { ',
+          '  "foo_var": "foo_val",',
+          '  "foo_rev": "foo_rev",',
+          '}',
+          'deps = {',
+          '  "foo": {',
+          '    "url": "url@{foo_rev}",',
+          '  },',
+          '  "bar": "url@bar_rev",',
+          '}',
+      ]))
+
+    self.gclient([
+        'setdep', '-r', 'foo@new_foo', '-r', 'bar@new_bar',
+        '--var', 'foo_var=new_val', '--deps-file', fake_deps])
+
+    with open(fake_deps) as f:
+      contents = f.read().splitlines()
+
+    self.assertEqual([
+          'vars = { ',
+          '  "foo_var": "new_val",',
+          '  "foo_rev": "new_foo",',
+          '}',
+          'deps = {',
+          '  "foo": {',
+          '    "url": "url@{foo_rev}",',
+          '  },',
+          '  "bar": "url@new_bar",',
+          '}',
+    ], contents)
+
+  def testGetDep(self):
+    fake_deps = os.path.join(self.root_dir, 'DEPS.fake')
+    with open(fake_deps, 'w') as f:
+      f.write('\n'.join([
+          'vars = { ',
+          '  "foo_var": "foo_val",',
+          '  "foo_rev": "foo_rev",',
+          '}',
+          'deps = {',
+          '  "foo": {',
+          '    "url": "url@{foo_rev}",',
+          '  },',
+          '  "bar": "url@bar_rev",',
+          '}',
+      ]))
+
+    results = self.gclient([
+        'getdep', '-r', 'foo', '-r', 'bar','--var', 'foo_var',
+        '--deps-file', fake_deps])
+
+    self.assertEqual([
+        'foo_val',
+        'foo_rev',
+        'bar_rev',
+    ], results[0].splitlines())
+
   def testFlatten(self):
     if not self.enabled:
       return
