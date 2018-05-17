@@ -62,6 +62,22 @@ const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
   return EventTargetNames::SharedWorkerGlobalScope;
 }
 
+// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+void SharedWorkerGlobalScope::ImportModuleScript(
+    const KURL& module_url_record,
+    network::mojom::FetchCredentialsMode credentials_mode) {
+  // Step 12: "Let destination be "sharedworker" if is shared is true, and
+  // "worker" otherwise."
+
+  // Step 13: "... Fetch a module worker script graph given url, outside
+  // settings, destination, the value of the credentials member of options, and
+  // inside settings."
+
+  // TODO(nhiroki): Implement module loading for shared workers.
+  // (https://crbug.com/824646)
+  NOTREACHED();
+}
+
 void SharedWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
   WorkerGlobalScope::ExceptionThrown(event);
   if (WorkerThreadDebugger* debugger =

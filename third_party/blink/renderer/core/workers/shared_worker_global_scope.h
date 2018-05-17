@@ -57,6 +57,10 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
   // EventTarget
   const AtomicString& InterfaceName() const override;
 
+  // WorkerGlobalScope
+  void ImportModuleScript(const KURL& module_url_record,
+                          network::mojom::FetchCredentialsMode) override;
+
   // Setters/Getters for attributes in SharedWorkerGlobalScope.idl
   DEFINE_ATTRIBUTE_EVENT_LISTENER(connect);
   String name() const { return name_; }

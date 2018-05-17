@@ -70,6 +70,8 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
       const KURL& script_url,
       String source_code,
       std::unique_ptr<Vector<char>> cached_meta_data) override;
+  void ImportModuleScript(const KURL& module_url_record,
+                          network::mojom::FetchCredentialsMode) override;
 
   // Counts an evaluated script and its size. Called for the main worker script.
   void CountWorkerScript(size_t script_size, size_t cached_metadata_size);

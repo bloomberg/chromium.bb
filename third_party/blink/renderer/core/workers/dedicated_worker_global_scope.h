@@ -58,6 +58,10 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   // EventTarget
   const AtomicString& InterfaceName() const override;
 
+  // WorkerGlobalScope
+  void ImportModuleScript(const KURL& module_url_record,
+                          network::mojom::FetchCredentialsMode) override;
+
   void postMessage(ScriptState*,
                    scoped_refptr<SerializedScriptValue>,
                    const MessagePortArray&,

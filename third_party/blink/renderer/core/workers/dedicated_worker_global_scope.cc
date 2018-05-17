@@ -33,14 +33,17 @@
 #include <memory>
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
+#include "third_party/blink/renderer/bindings/core/v8/worker_or_worklet_script_controller.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
+#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_object_proxy.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_thread.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
+#include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
 namespace blink {
@@ -55,6 +58,22 @@ DedicatedWorkerGlobalScope::~DedicatedWorkerGlobalScope() = default;
 
 const AtomicString& DedicatedWorkerGlobalScope::InterfaceName() const {
   return EventTargetNames::DedicatedWorkerGlobalScope;
+}
+
+// https://html.spec.whatwg.org/multipage/workers.html#worker-processing-model
+void DedicatedWorkerGlobalScope::ImportModuleScript(
+    const KURL& module_url_record,
+    network::mojom::FetchCredentialsMode credentials_mode) {
+  // Step 12: "Let destination be "sharedworker" if is shared is true, and
+  // "worker" otherwise."
+  WebURLRequest::RequestContext destination =
+      WebURLRequest::kRequestContextWorker;
+  Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
+  // Step 13: "... Fetch a module worker script graph given url, outside
+  // settings, destination, the value of the credentials member of options, and
+  // inside settings."
+  FetchModuleScript(module_url_record, destination, credentials_mode,
+                    new WorkerModuleTreeClient(modulator));
 }
 
 void DedicatedWorkerGlobalScope::postMessage(

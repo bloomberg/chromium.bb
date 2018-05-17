@@ -62,6 +62,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
   }
 
   void FetchTree(const KURL& url,
+                 WebURLRequest::RequestContext,
                  const ScriptFetchOptions&,
                  ModuleTreeClient* client) final {
     EXPECT_EQ(expected_fetch_tree_url_, url);

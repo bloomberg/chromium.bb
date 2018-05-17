@@ -136,8 +136,8 @@ class CORE_EXPORT WorkerGlobalScope
       std::unique_ptr<Vector<char>> cached_meta_data);
 
   // Imports the top-level module script for |module_url_record|.
-  void ImportModuleScript(const KURL& module_url_record,
-                          network::mojom::FetchCredentialsMode);
+  virtual void ImportModuleScript(const KURL& module_url_record,
+                                  network::mojom::FetchCredentialsMode) = 0;
 
   double TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }

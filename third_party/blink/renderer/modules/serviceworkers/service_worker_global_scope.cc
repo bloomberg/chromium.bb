@@ -165,6 +165,14 @@ void ServiceWorkerGlobalScope::EvaluateClassicScript(
                                            std::move(cached_meta_data));
 }
 
+void ServiceWorkerGlobalScope::ImportModuleScript(
+    const KURL& module_url_record,
+    network::mojom::FetchCredentialsMode credentials_mode) {
+  // TODO(nhiroki): Implement module loading for service workers.
+  // (https://crbug.com/824647)
+  NOTREACHED();
+}
+
 void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
                                                  size_t cached_metadata_size) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(

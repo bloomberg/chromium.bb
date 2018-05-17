@@ -49,12 +49,10 @@
 #include "third_party/blink/renderer/core/loader/worker_threadable_loader.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_location.h"
-#include "third_party/blink/renderer/core/workers/worker_module_tree_client.h"
 #include "third_party/blink/renderer/core/workers/worker_navigator.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
@@ -325,14 +323,6 @@ void WorkerGlobalScope::EvaluateClassicScript(
                        script_url),
       nullptr /* error_event */, v8_cache_options_);
   ReportingProxy().DidEvaluateClassicScript(success);
-}
-
-void WorkerGlobalScope::ImportModuleScript(
-    const KURL& module_url_record,
-    network::mojom::FetchCredentialsMode credentials_mode) {
-  Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());
-  FetchModuleScript(module_url_record, credentials_mode,
-                    new WorkerModuleTreeClient(modulator));
 }
 
 WorkerGlobalScope::WorkerGlobalScope(

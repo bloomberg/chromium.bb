@@ -43,6 +43,30 @@
 
 namespace blink {
 
+namespace {
+
+// Returns true if the given request context is a script-like destination
+// defined in the Fetch spec:
+// https://fetch.spec.whatwg.org/#request-destination-script-like
+bool IsRequestContextSupported(WebURLRequest::RequestContext request_context) {
+  // TODO(nhiroki): Support |kRequestContextSharedWorker| for module loading for
+  // shared workers (https://crbug.com/824646).
+  // TODO(nhiroki): Support |kRequestContextServiceWorker| for module loading
+  // for service workers (https://crbug.com/824647).
+  // TODO(nhiroki): Support "audioworklet" and "paintworklet" destinations.
+  switch (request_context) {
+    case WebURLRequest::kRequestContextScript:
+    case WebURLRequest::kRequestContextWorker:
+      return true;
+    default:
+      break;
+  }
+  NOTREACHED() << "Incompatible request context type: " << request_context;
+  return false;
+}
+
+}  // namespace
+
 // SingleCachedMetadataHandlerImpl should be created when a response is
 // received, and can be used independently from Resource. - It doesn't have any
 // references to Resource. Necessary data are captured
@@ -151,7 +175,8 @@ ScriptResource* ScriptResource::Fetch(FetchParameters& params,
                                       ResourceClient* client) {
   DCHECK_EQ(params.GetResourceRequest().GetFrameType(),
             network::mojom::RequestContextFrameType::kNone);
-  params.SetRequestContext(WebURLRequest::kRequestContextScript);
+  DCHECK(IsRequestContextSupported(
+      params.GetResourceRequest().GetRequestContext()));
   return ToScriptResource(
       fetcher->RequestResource(params, ScriptResourceFactory(), client));
 }

@@ -101,7 +101,11 @@ void WorkletGlobalScope::FetchAndInvokeScript(
   WorkletModuleTreeClient* client = new WorkletModuleTreeClient(
       modulator, std::move(outside_settings_task_runner), pending_tasks);
 
-  FetchModuleScript(module_url_record, credentials_mode, client);
+  // TODO(nhiroki): Specify an appropriate destination defined in each worklet
+  // spec (e.g., "paint worklet", "audio worklet").
+  WebURLRequest::RequestContext destination =
+      WebURLRequest::kRequestContextScript;
+  FetchModuleScript(module_url_record, destination, credentials_mode, client);
 }
 
 WorkerOrWorkletModuleFetchCoordinatorProxy*
