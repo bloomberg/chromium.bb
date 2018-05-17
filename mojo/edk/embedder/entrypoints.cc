@@ -122,7 +122,7 @@ MojoResult MojoGetMessageContextImpl(
 MojoResult MojoNotifyBadMessageImpl(
     MojoMessageHandle message,
     const char* error,
-    size_t error_num_bytes,
+    uint32_t error_num_bytes,
     const MojoNotifyBadMessageOptions* options) {
   return g_core->NotifyBadMessage(message, error, error_num_bytes, options);
 }

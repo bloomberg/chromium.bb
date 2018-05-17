@@ -1373,16 +1373,19 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
       MojoMessageHandle message;
       ASSERT_EQ(MOJO_RESULT_OK, ::MojoReadMessage(a, nullptr, &message));
       EXPECT_EQ(MOJO_RESULT_OK,
-                MojoNotifyBadMessage(message, kFirstErrorMessage.data(),
-                                     kFirstErrorMessage.size(), nullptr));
+                MojoNotifyBadMessage(
+                    message, kFirstErrorMessage.data(),
+                    static_cast<uint32_t>(kFirstErrorMessage.size()), nullptr));
       EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
       // Read a message from the pipe we sent to child2 and flag it as bad.
       ASSERT_EQ(MOJO_RESULT_OK, WaitForSignals(c, MOJO_HANDLE_SIGNAL_READABLE));
       ASSERT_EQ(MOJO_RESULT_OK, ::MojoReadMessage(c, nullptr, &message));
-      EXPECT_EQ(MOJO_RESULT_OK,
-                MojoNotifyBadMessage(message, kSecondErrorMessage.data(),
-                                     kSecondErrorMessage.size(), nullptr));
+      EXPECT_EQ(
+          MOJO_RESULT_OK,
+          MojoNotifyBadMessage(
+              message, kSecondErrorMessage.data(),
+              static_cast<uint32_t>(kSecondErrorMessage.size()), nullptr));
       EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
       WriteMessage(child2, "bye");

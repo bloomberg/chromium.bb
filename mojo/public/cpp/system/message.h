@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/string_piece.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -90,8 +91,9 @@ inline MojoResult GetMessageData(MessageHandle message,
 inline MojoResult NotifyBadMessage(MessageHandle message,
                                    const base::StringPiece& error) {
   DCHECK(message.is_valid());
-  return MojoNotifyBadMessage(message.value(), error.data(), error.size(),
-                              nullptr);
+  DCHECK(base::IsValueInRangeForNumericType<uint32_t>(error.size()));
+  return MojoNotifyBadMessage(message.value(), error.data(),
+                              static_cast<uint32_t>(error.size()), nullptr);
 }
 
 }  // namespace mojo

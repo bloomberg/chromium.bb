@@ -307,7 +307,7 @@ MojoResult MojoGetMessageContext(MojoMessageHandle message,
 
 MojoResult MojoNotifyBadMessage(MojoMessageHandle message,
                                 const char* error,
-                                size_t error_num_bytes,
+                                uint32_t error_num_bytes,
                                 const MojoNotifyBadMessageOptions* options) {
   return g_thunks.NotifyBadMessage(message, error, error_num_bytes, options);
 }
