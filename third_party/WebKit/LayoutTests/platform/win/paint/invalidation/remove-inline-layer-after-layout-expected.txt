@@ -18,34 +18,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutInline SPAN id='target'",
-          "rect": [112, 193, 170, 19],
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 688, 204],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 688, 204],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [282, 108, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [112, 108, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "LayoutBlockFlow DIV",
-          "rect": [8, 108, 100, 100],
-          "reason": "geometry"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [108, 193, 4, 19],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox '\n'",
-          "rect": [108, 193, 4, 19],
-          "reason": "disappeared"
+          "object": "LayoutInline SPAN id='target'",
+          "rect": [112, 193, 170, 19],
+          "reason": "chunk disappeared"
         }
       ]
     }

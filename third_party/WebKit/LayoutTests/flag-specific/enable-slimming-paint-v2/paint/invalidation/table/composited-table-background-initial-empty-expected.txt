@@ -8,13 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 523, 152],
+          "rect": [8, 96, 186, 64],
           "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [8, 8, 523, 129],
-          "reason": "chunk disappeared"
         }
       ]
     },

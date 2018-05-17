@@ -19,26 +19,20 @@
       "paintInvalidations": [
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [8, 16, 464, 320],
+          "rect": [8, 8, 633, 18],
           "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow HTML",
-          "rect": [8, 16, 464, 320],
+          "rect": [8, 8, 633, 18],
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
-          "rect": [8, 236, 200, 100],
-          "reason": "chunk appeared"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [100, 100, 100, 100],
+          "reason": "chunk disappeared"
         }
       ]
-    }
-  ],
-  "objectPaintInvalidations": [
-    {
-      "object": "LayoutBlockFlow DIV id='item2' class='sizedToGridArea green'",
-      "reason": "style change"
     }
   ]
 }

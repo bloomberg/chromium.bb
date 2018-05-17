@@ -19,22 +19,22 @@ Hi!
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
           "rect": [425, 980, 360, 90],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
           "rect": [425, 980, 360, 90],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
           "rect": [425, 480, 360, 90],
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='abs'",
+          "object": "LayoutBlockFlow (positioned) DIV id='fixed'",
           "rect": [425, 480, 360, 90],
           "reason": "paint property change"
         }

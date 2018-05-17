@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='border-image'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [10, 10, 200, 200],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

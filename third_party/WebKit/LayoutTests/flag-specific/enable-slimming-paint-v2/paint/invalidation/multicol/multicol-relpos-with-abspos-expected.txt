@@ -7,9 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [618, 28, 20, 20],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

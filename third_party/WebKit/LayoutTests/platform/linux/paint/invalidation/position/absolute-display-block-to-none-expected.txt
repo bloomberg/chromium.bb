@@ -18,9 +18,19 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='absolute'",
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 621, 19],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 621, 19],
+          "reason": "chunk disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
           "rect": [100, 100, 100, 100],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

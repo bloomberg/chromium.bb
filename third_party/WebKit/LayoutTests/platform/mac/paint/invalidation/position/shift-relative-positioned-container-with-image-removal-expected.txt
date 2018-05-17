@@ -23,14 +23,14 @@
           "reason": "disappeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
-          "rect": [58, 234, 489, 537],
-          "reason": "chunk disappeared"
+          "object": "LayoutImage IMG",
+          "rect": [58, 136, 489, 537],
+          "reason": "geometry"
         },
         {
           "object": "LayoutImage IMG",
-          "rect": [58, 136, 489, 537],
-          "reason": "appeared"
+          "rect": [58, 234, 489, 501],
+          "reason": "geometry"
         }
       ]
     }

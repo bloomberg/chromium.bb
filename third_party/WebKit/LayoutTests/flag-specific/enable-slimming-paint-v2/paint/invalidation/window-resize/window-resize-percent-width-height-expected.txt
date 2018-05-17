@@ -76,7 +76,7 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
+          "object": "LayoutBlockFlow HTML",
           "rect": [0, 125, 200, 175],
           "reason": "incremental"
         }
@@ -113,7 +113,7 @@
           "reason": "incremental"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV",
+          "object": "LayoutBlockFlow HTML",
           "rect": [200, 0, 200, 300],
           "reason": "incremental"
         }

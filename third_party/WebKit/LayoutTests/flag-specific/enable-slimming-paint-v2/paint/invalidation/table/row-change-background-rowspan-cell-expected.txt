@@ -7,14 +7,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutTable (relative positioned) TABLE",
-          "rect": [8, 206, 110, 198],
-          "reason": "chunk appeared"
-        },
-        {
-          "object": "LayoutTable (relative positioned) TABLE",
-          "rect": [11, 206, 74, 181],
-          "reason": "chunk disappeared"
+          "object": "LayoutTableRow TR id='target'",
+          "rect": [8, 298, 110, 106],
+          "reason": "appeared"
         }
       ]
     }

@@ -23,9 +23,9 @@
           "reason": "chunk appeared"
         },
         {
-          "object": "InlineTextBox 'Lorem Ipsum'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [48, 108, 81, 19],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         }
       ]
     }

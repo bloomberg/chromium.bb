@@ -94,6 +94,12 @@ class PLATFORM_EXPORT PaintController {
     return new_paint_chunks_.CurrentPaintChunkProperties();
   }
 
+  void ForceNewChunk(const DisplayItemClient& client, DisplayItem::Type type) {
+    new_paint_chunks_.ForceNewChunk();
+    new_paint_chunks_.UpdateCurrentPaintChunkProperties(
+        PaintChunk::Id(client, type), CurrentPaintChunkProperties());
+  }
+
   template <typename DisplayItemClass, typename... Args>
   void CreateAndAppend(Args&&... args) {
     static_assert(WTF::IsSubclass<DisplayItemClass, DisplayItem>::value,
