@@ -21,19 +21,6 @@ enum class DomCode;
 
 enum class DomKeyLocation { STANDARD, LEFT, RIGHT, NUMPAD };
 
-// An array of DomCodes that identifies the Writing System Keys on the
-// keyboard.
-//
-// The Writing System Keys are those that change meaning (i.e., they produce
-// a different KeyboardEvent key value) based on the current keyboard layout.
-// See https://www.w3.org/TR/uievents-code/#key-alphanumeric-writing-system
-//
-// This is used by the Keyboard Map API
-// (see https://wicg.github.io/keyboard-map/)
-extern const DomCode writing_system_key_domcodes[];
-
-extern const size_t kWritingSystemKeyDomCodeEntries;
-
 // This structure is used to define the keycode mapping table.
 // It is defined here because the unittests need access to it.
 typedef struct {
