@@ -121,14 +121,6 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                                suggestions);
   }
 
-  for (const auto& usernames : fill_data.other_possible_usernames) {
-    for (size_t i = 0; i < usernames.second.size(); ++i) {
-      AppendSuggestionIfMatching(usernames.second[i], current_username,
-                                 usernames.first.realm, show_all,
-                                 is_password_field, suggestions);
-    }
-  }
-
   // Prefix matches should precede other token matches.
   if (autofill::IsFeatureSubstringMatchEnabled()) {
     std::sort(suggestions->begin(), suggestions->end(),
@@ -459,19 +451,6 @@ bool PasswordAutofillManager::GetPasswordAndRealmForUsername(
     if (iter->first == current_username) {
       *password_and_realm = iter->second;
       return true;
-    }
-  }
-
-  for (autofill::PasswordFormFillData::UsernamesCollection::const_iterator
-           usernames_iter = fill_data.other_possible_usernames.begin();
-       usernames_iter != fill_data.other_possible_usernames.end();
-       ++usernames_iter) {
-    for (size_t i = 0; i < usernames_iter->second.size(); ++i) {
-      if (usernames_iter->second[i] == current_username) {
-        password_and_realm->password = usernames_iter->first.password;
-        password_and_realm->realm = usernames_iter->first.realm;
-        return true;
-      }
     }
   }
 

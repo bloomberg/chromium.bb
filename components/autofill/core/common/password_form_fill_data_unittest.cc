@@ -54,7 +54,6 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
                            matches,
                            &preferred_match,
                            true,
-                           false,
                            &result);
 
   // |wait_for_username| should reflect the |wait_for_username_before_autofill|
@@ -68,7 +67,6 @@ TEST(PasswordFormFillDataTest, TestSinglePreferredMatch) {
   InitPasswordFormFillData(form_on_page,
                            matches,
                            &preferred_match,
-                           false,
                            false,
                            &result2);
 
@@ -149,7 +147,6 @@ TEST(PasswordFormFillDataTest, TestPublicSuffixDomainMatching) {
                            matches,
                            &preferred_match,
                            true,
-                           false,
                            &result);
   EXPECT_TRUE(result.wait_for_username);
   // The preferred realm should match the signon realm from the
@@ -227,7 +224,7 @@ TEST(PasswordFormFillDataTest, TestAffiliationMatch) {
 
   PasswordFormFillData result;
   InitPasswordFormFillData(form_on_page, matches, &preferred_match, false,
-                           false, &result);
+                           &result);
   EXPECT_FALSE(result.wait_for_username);
   // The preferred realm should match the signon realm from the
   // preferred match so the user can see where the result came from.

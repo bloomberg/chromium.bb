@@ -321,12 +321,6 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     password3.password = password3_;
     fill_data_.additional_logins[username3_] = password3;
 
-    UsernamesCollectionKey key;
-    key.username = username3_;
-    key.password = password3_;
-    key.realm = "google.com";
-    fill_data_.other_possible_usernames[key].push_back(alternate_username3_);
-
     // We need to set the origin so it matches the frame URL and the action so
     // it matches the form action, otherwise we won't autocomplete.
     UpdateOriginForHTML(kFormHTML);
@@ -2148,7 +2142,6 @@ TEST_F(PasswordAutofillAgentTest, FillOnAccountSelectOnlyNoUsername) {
   fill_data_.username_field = FormFieldData();
   UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
   fill_data_.additional_logins.clear();
-  fill_data_.other_possible_usernames.clear();
 
   password_element_.SetValue("");
   password_element_.SetAutofilled(false);
@@ -2168,7 +2161,6 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnEmptyPasswordField) {
   fill_data_.username_field = FormFieldData();
   UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
   fill_data_.additional_logins.clear();
-  fill_data_.other_possible_usernames.clear();
 
   password_element_.SetValue("");
   password_element_.SetAutofilled(false);
@@ -2194,7 +2186,6 @@ TEST_F(PasswordAutofillAgentTest, ShowPopupOnAutofilledPasswordField) {
   fill_data_.username_field = FormFieldData();
   UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
   fill_data_.additional_logins.clear();
-  fill_data_.other_possible_usernames.clear();
 
   password_element_.SetValue("");
   password_element_.SetAutofilled(false);
@@ -2220,7 +2211,6 @@ TEST_F(PasswordAutofillAgentTest, NotShowPopupPasswordField) {
   fill_data_.username_field = FormFieldData();
   UpdateOriginForHTML(kVisibleFormWithNoUsernameHTML);
   fill_data_.additional_logins.clear();
-  fill_data_.other_possible_usernames.clear();
 
   password_element_.SetValue("");
   password_element_.SetAutofilled(false);
@@ -2920,7 +2910,6 @@ TEST_F(PasswordAutofillAgentTest,
       fill_data_.password_field.name =
           ASCIIToUTF16(test_case.fill_data_password_field_name);
       fill_data_.additional_logins.clear();
-      fill_data_.other_possible_usernames.clear();
 
       ClearUsernameAndPasswordFields();
 

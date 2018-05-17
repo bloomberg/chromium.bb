@@ -138,8 +138,7 @@ class CredentialsFilterTest : public SyncUsernameTestBase {
     }
     fetcher_.SetNonFederated(matches, 0u);
 
-    form_manager_.ProvisionallySave(
-        pending_, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager_.ProvisionallySave(pending_);
   }
 
  protected:

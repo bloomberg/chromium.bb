@@ -201,8 +201,6 @@ PasswordFormManager::PasswordFormManager(
     FormFetcher* form_fetcher)
     : observed_form_(observed_form),
       observed_form_signature_(CalculateFormSignature(observed_form.form_data)),
-      other_possible_username_action_(
-          PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES),
       is_new_login_(true),
       has_generated_password_(false),
       generated_password_changed_(false),
@@ -361,9 +359,7 @@ bool PasswordFormManager::IsPendingCredentialsPublicSuffixMatch() const {
   return pending_credentials_.is_public_suffix_match;
 }
 
-void PasswordFormManager::ProvisionallySave(
-    const PasswordForm& credentials,
-    OtherPossibleUsernamesAction action) {
+void PasswordFormManager::ProvisionallySave(const PasswordForm& credentials) {
   std::unique_ptr<autofill::PasswordForm> mutable_submitted_form(
       new PasswordForm(credentials));
   if (credentials.IsPossibleChangePasswordForm() &&
@@ -374,7 +370,6 @@ void PasswordFormManager::ProvisionallySave(
     is_possible_change_password_form_without_username_ = true;
   }
   submitted_form_ = std::move(mutable_submitted_form);
-  other_possible_username_action_ = action;
 
   if (form_fetcher_->GetState() == FormFetcher::State::NOT_WAITING)
     CreatePendingCredentials();
@@ -482,7 +477,7 @@ void PasswordFormManager::UpdateUsername(const base::string16& new_username) {
         submitted_form_->username_value, submitted_form_->username_element));
   }
 
-  ProvisionallySave(credential, IGNORE_OTHER_POSSIBLE_USERNAMES);
+  ProvisionallySave(credential);
 }
 
 void PasswordFormManager::UpdatePasswordValue(
@@ -514,7 +509,7 @@ void PasswordFormManager::UpdatePasswordValue(
     }
   }
 
-  ProvisionallySave(credential, IGNORE_OTHER_POSSIBLE_USERNAMES);
+  ProvisionallySave(credential);
 }
 
 void PasswordFormManager::PresaveGeneratedPassword(
@@ -681,20 +676,6 @@ void PasswordFormManager::ProcessUpdate() {
     SendVoteOnCredentialsReuse(observed_form_, &pending_credentials_);
 }
 
-bool PasswordFormManager::UpdatePendingCredentialsIfOtherPossibleUsername(
-    const base::string16& username) {
-  for (const auto& key_value : best_matches_) {
-    const PasswordForm& match = *key_value.second;
-    for (size_t i = 0; i < match.other_possible_usernames.size(); ++i) {
-      if (match.other_possible_usernames[i].first == username) {
-        pending_credentials_ = match;
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 bool PasswordFormManager::FindUsernameInOtherPossibleUsernames(
     const autofill::PasswordForm& match,
     const base::string16& username) {
@@ -751,7 +732,7 @@ void PasswordFormManager::SendVoteOnCredentialsReuse(
     // Also bypass uploading if the username was edited. Offering generation
     // in cases where we currently save the wrong username isn't great.
     // TODO(gcasto): Determine if generation should be offered in this case.
-    if (pending->times_used == 1 && selected_username_.empty()) {
+    if (pending->times_used == 1) {
       if (UploadPasswordVote(*pending, autofill::ACCOUNT_CREATION_PASSWORD,
                              observed_structure.FormSignatureAsStr())) {
         pending->generation_upload_status =
@@ -955,11 +936,6 @@ void PasswordFormManager::CreatePendingCredentials() {
       SetUserAction(password_overridden_ ? UserAction::kOverridePassword
                                          : UserAction::kChoosePslMatch);
 
-      // Since this credential will not overwrite a previously saved credential,
-      // username_value can be updated now.
-      if (!selected_username_.empty())
-        pending_credentials_.username_value = selected_username_;
-
       // Update credential to reflect that it has been used for submission.
       // If this isn't updated, then password generation uploads are off for
       // sites where PSL matching is required to fill the login form, as two
@@ -1008,16 +984,6 @@ void PasswordFormManager::CreatePendingCredentials() {
         SetUserAction(UserAction::kOverridePassword);
       }
     }
-  } else if (other_possible_username_action_ ==
-                 ALLOW_OTHER_POSSIBLE_USERNAMES &&
-             UpdatePendingCredentialsIfOtherPossibleUsername(
-                 submitted_form_->username_value)) {
-    // |pending_credentials_| is now set. Note we don't update
-    // |pending_credentials_.username_value| to |credentials.username_value|
-    // yet because we need to keep the original username to modify the stored
-    // credential.
-    selected_username_ = submitted_form_->username_value;
-    is_new_login_ = false;
   } else if (!best_matches_.empty() &&
              submitted_form_->type != autofill::PasswordForm::TYPE_API &&
              submitted_form_->username_value.empty()) {
@@ -1298,7 +1264,6 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   //       by the cloned FormFetcher.
   if (submitted_form_)
     result->submitted_form_ = std::make_unique<PasswordForm>(*submitted_form_);
-  result->other_possible_username_action_ = other_possible_username_action_;
   if (username_correction_vote_) {
     result->username_correction_vote_ =
         std::make_unique<PasswordForm>(*username_correction_vote_);
@@ -1316,7 +1281,6 @@ std::unique_ptr<PasswordFormManager> PasswordFormManager::Clone() {
   result->password_overridden_ = password_overridden_;
   result->retry_password_form_password_update_ =
       retry_password_form_password_update_;
-  result->selected_username_ = selected_username_;
   result->is_possible_change_password_form_without_username_ =
       is_possible_change_password_form_without_username_;
   result->user_action_ = user_action_;
@@ -1386,21 +1350,11 @@ base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
   base::Optional<PasswordForm> old_primary_key;
   bool update_related_credentials = false;
 
-  if (!selected_username_.empty()) {
-    // Username has changed. We set this selected username as the real
-    // username. Given that |username_value| is part of the Sync and
-    // PasswordStore primary key, the old primary key must be supplied.
-    old_primary_key = pending_credentials_;
-    pending_credentials_.username_value = selected_username_;
-    // TODO(crbug.com/188908) This branch currently never executes (bound to
-    // the other usernames experiment). Updating related credentials would be
-    // complicated, so we skip that, given it influences no users.
-    update_related_credentials = false;
-  } else if (pending_credentials_.federation_origin.unique() &&
-             !IsValidAndroidFacetURI(pending_credentials_.signon_realm) &&
-             (pending_credentials_.password_element.empty() ||
-              pending_credentials_.username_element.empty() ||
-              pending_credentials_.submit_element.empty())) {
+  if (pending_credentials_.federation_origin.unique() &&
+      !IsValidAndroidFacetURI(pending_credentials_.signon_realm) &&
+      (pending_credentials_.password_element.empty() ||
+       pending_credentials_.username_element.empty() ||
+       pending_credentials_.submit_element.empty())) {
     // Given that |password_element| and |username_element| are part of Sync and
     // PasswordStore primary key, the old primary key must be used in order to
     // match and update the existing entry.

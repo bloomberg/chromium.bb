@@ -91,11 +91,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // caused by the enum values implicitly converting to signed int.
   typedef int MatchResultMask;
 
-  enum OtherPossibleUsernamesAction {
-    ALLOW_OTHER_POSSIBLE_USERNAMES,
-    IGNORE_OTHER_POSSIBLE_USERNAMES
-  };
-
   // The upper limit on how many times Chrome will try to autofill the same
   // form.
   static constexpr int kMaxTimesAutofill = 5;
@@ -142,13 +137,8 @@ class PasswordFormManager : public FormFetcher::Consumer {
 
   // If the user has submitted observed_form_, provisionally hold on to
   // the submitted credentials until we are told by PasswordManager whether
-  // or not the login was successful. |action| describes how we deal with
-  // possible usernames. If |action| is ALLOW_OTHER_POSSIBLE_USERNAMES we will
-  // treat a possible usernames match as a sign that our original heuristics
-  // were wrong and that the user selected the correct username from the
-  // Autofill UI.
-  void ProvisionallySave(const autofill::PasswordForm& credentials,
-                         OtherPossibleUsernamesAction action);
+  // or not the login was successful.
+  void ProvisionallySave(const autofill::PasswordForm& credentials);
 
   // Handles save-as-new or update of the form managed by this manager.
   // Note the basic data of updated_credentials must match that of
@@ -478,10 +468,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // Stores a submitted form.
   std::unique_ptr<const autofill::PasswordForm> submitted_form_;
 
-  // Stores if for creating |pending_credentials_| other possible usernames
-  // option should apply.
-  OtherPossibleUsernamesAction other_possible_username_action_;
-
   // If the user typed username that doesn't match any saved credentials, but
   // matches an entry from |other_possible_usernames| of a saved credential,
   // then |username_correction_vote_| stores the credential with matched
@@ -531,10 +517,6 @@ class PasswordFormManager : public FormFetcher::Consumer {
   // a password that is not part of any password form stored for this origin
   // and it was entered on a retry password form.
   bool retry_password_form_password_update_;
-
-  // Set if the user has selected one of the other possible usernames in
-  // |pending_credentials_|.
-  base::string16 selected_username_;
 
   // PasswordManager owning this.
   PasswordManager* const password_manager_;
