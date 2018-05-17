@@ -346,6 +346,10 @@ that will be merged into the final `.jar` file for distribution.
 The list of paths to all `deps_info['dex_path']` entries for all library
 dependencies for this APK.
 
+* `deps_info['proto_resources_path']`:
+The path of an zip archive containing the APK's resources compiled to the
+protocol buffer format (instead of regular binary xml + resources.arsc).
+
 * `native['libraries']`
 List of native libraries for the primary ABI to be embedded in this APK.
 E.g. [ "libchrome.so" ] (i.e. this doesn't include any ABI sub-directory
@@ -835,6 +839,10 @@ def main(argv):
   parser.add_option('--fail',
       help='GN-list of error message lines to fail with.')
 
+  parser.add_option('--apk-proto-resources',
+                    help='Path to resources compiled in protocol buffer format '
+                         ' for this apk.')
+
   parser.add_option('--generate-markdown-format-doc', action='store_true',
                     help='Dump the Markdown .build_config format documentation '
                     'then exit immediately.')
@@ -872,6 +880,11 @@ def main(argv):
     raise Exception('Unknown type: <%s>' % options.type)
 
   build_utils.CheckOptions(options, parser, required_options)
+
+  if options.apk_proto_resources:
+    if options.type != 'android_apk':
+      raise Exception('--apk-proto-resources can only be used with '
+                      '--type=android_apk')
 
   if options.jar_path and options.supports_android and not options.dex_path:
     raise Exception('java_library that supports Android requires a dex path.')
@@ -965,6 +978,9 @@ def main(argv):
     if options.java_sources_file:
       all_java_sources.append(options.java_sources_file)
     config['jni']['all_source'] = all_java_sources
+
+    if options.apk_proto_resources:
+      deps_info['proto_resources_path'] = options.apk_proto_resources
 
   if is_java_target:
     deps_info['requires_android'] = bool(options.requires_android)

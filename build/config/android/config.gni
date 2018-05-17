@@ -350,6 +350,21 @@ if (is_android || is_chromeos) {
   if (android_libcpp_lib_dir == "") {
     android_libcpp_lib_dir = "${android_libcpp_root}/libs/${android_app_abi}"
   }
+
+  # Dynamic app bundles -------------------------------------------------------
+
+  # TODO(digit): Remove this once we roll a version of the Android SDK that
+  # has the proper build-tools binaries to both public and internal.
+  declare_args() {
+    # To enable generation of application bundles, define
+    # android_sdk_app_bundle_build_tools to point to an Android SDK build-tools
+    # directory that has the relevant aapt2 and bundletool binaries.
+    #
+    android_sdk_app_bundle_build_tools = ""
+  }
+
+  # Whether building application bundles is supported.
+  android_enable_app_bundles = android_sdk_app_bundle_build_tools != ""
 }
 
 declare_args() {

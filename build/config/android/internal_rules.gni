@@ -258,6 +258,12 @@ template("write_build_config") {
       args += [ "--resource-dirs=$resource_dirs" ]
     }
 
+    if (defined(invoker.proto_resources_path)) {
+      _rebased_proto_resources =
+          rebase_path(invoker.proto_resources_path, root_build_dir)
+      args += [ "--apk-proto-resources=$_rebased_proto_resources" ]
+    }
+
     if (defined(invoker.shared_libraries_runtime_deps_file)) {
       # Don't list shared_libraries_runtime_deps_file as an input in order to
       # avoid having to depend on the runtime_deps target. See comment in
@@ -1729,6 +1735,8 @@ if (enable_java_templates) {
   #
   #   post_process_script: (optional)
   #
+  #   proto_format: (optional). If true, compiles resources into protocol
+  #     buffer format.
   #
   # Output variables:
   #   output:  Path to a zip file containing the compiled resources.
@@ -1775,6 +1783,9 @@ if (enable_java_templates) {
       outputs = []
 
       _android_aapt_path = android_default_aapt_path
+      if (defined(invoker.proto_format) && invoker.proto_format) {
+        _android_aapt_path = "$android_sdk_app_bundle_build_tools/aapt"
+      }
 
       _android_sdk_jar = android_sdk_jar
       if (defined(invoker.alternative_android_sdk_jar)) {
@@ -1866,6 +1877,11 @@ if (enable_java_templates) {
         ]
       }
 
+      _proto_format = defined(invoker.proto_format) && invoker.proto_format
+      if (_proto_format) {
+        args += [ "--proto-format" ]
+      }
+
       # Define the flags related to shared resources.
       #
       # Note the small sanity check to ensure that the package ID of the
@@ -1881,7 +1897,13 @@ if (enable_java_templates) {
         args += [ "--app-as-shared-lib" ]
       }
 
-      args += [ "--check-resources-pkg-id=$_expected_resources_pkg_id" ]
+      # NOTE: It is not possible to check the resources package ID of
+      # proto-compiled APKs at the moment.
+      if (!_proto_format) {
+        args += [ "--check-resources-pkg-id=$_expected_resources_pkg_id" ]
+      } else {
+        assert(_expected_resources_pkg_id != "")  # Mark as used.
+      }
 
       if (defined(invoker.shared_resources_whitelist)) {
         inputs += [ invoker.shared_resources_whitelist ]
@@ -1972,6 +1994,57 @@ if (enable_java_templates) {
         public_deps = [
           ":${_compile_resources_target_name}",
         ]
+      }
+    }
+  }
+
+  # Compile resources for an APK.
+  #
+  # This is very similar to compile_resources, except that it can *also*
+  # compile the same set of inputs using the new protocol-buffer based
+  # format, if proto_outut and proto_resources_target are set.
+  #
+  # Takes the same variables as compile_resources, with the following
+  # extras:
+  #
+  #   proto_output: optional. If provided, the path to an output file that
+  #     will contain the resources compiled in the new protocol buffer format.
+  #   proto_resources_target: required when proto_output is set. Name of the
+  #     target associated with compiling the protocol-buffer based resources.
+  #
+  template("compile_apk_resources") {
+    # First call to compile_resources() is used to generate the compiled
+    # resources using the standard binary xml + resources.arsc format.
+    compile_resources(target_name) {
+      forward_variables_from(invoker,
+                             "*",
+                             [
+                               "proto_format",
+                               "proto_output",
+                               "proto_resources_target",
+                             ])
+    }
+
+    # The second call is optional, and is only used to compile the resources
+    # using the new protocol buffer based format. This omits the generation of
+    # R.txt, /srcjar and proguard files (performed during the first call), or
+    # resources post-processing.
+    if (defined(invoker.proto_output)) {
+      compile_resources(invoker.proto_resources_target) {
+        forward_variables_from(invoker,
+                               "*",
+                               [
+                                 "output",
+                                 "post_process_script",
+                                 "proguard_file",
+                                 "proguard_file_main_dex",
+                                 "proto_output",
+                                 "proto_resources_target",
+                                 "r_text_out_path",
+                                 "srcjar_path",
+                               ])
+        output = invoker.proto_output
+        proto_format = true
       }
     }
   }
@@ -2840,6 +2913,7 @@ if (enable_java_templates) {
               "incremental_apk_path",
               "incremental_install_json_path",
               "non_native_packed_relocations",
+              "proto_resources_path",
               "shared_libraries_runtime_deps_file",
               "secondary_abi_shared_libraries_runtime_deps_file",
             ])
