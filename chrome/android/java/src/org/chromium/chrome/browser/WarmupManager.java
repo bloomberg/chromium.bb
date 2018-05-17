@@ -219,6 +219,19 @@ public final class WarmupManager {
         }
     }
 
+    /**
+     * Starts asynchronous initialization of the preconnect predictor.
+     *
+     * Without this call, |maybePreconnectUrlAndSubresources()| will not use a database of origins
+     * to connect to, unless the predictor has already been initialized in another way.
+     *
+     * @param profile The profile to use for the predictor.
+     */
+    public static void startPreconnectPredictorInitialization(Profile profile) {
+        ThreadUtils.assertOnUiThread();
+        nativeStartPreconnectPredictorInitialization(profile);
+    }
+
     /** Asynchronously preconnects to a given URL if the data reduction proxy is not in use.
      *
      * @param profile The profile to use for the preconnection.
@@ -344,6 +357,7 @@ public final class WarmupManager {
                 WEBCONTENTS_STATUS_HISTOGRAM, status, WEBCONTENTS_STATUS_COUNT);
     }
 
+    private static native void nativeStartPreconnectPredictorInitialization(Profile profile);
     private static native void nativePreconnectUrlAndSubresources(Profile profile, String url);
     private static native void nativeWarmupSpareRenderer(Profile profile);
 }
