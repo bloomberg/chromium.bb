@@ -201,13 +201,10 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   } else {
     base::Optional<Configuration> config =
         GetHighestPriorityConfiguration(matched_list);
-    activation_decision = GetActivationDecision(config, warning);
-    // If the config is present, and the scheme is supported, assign the match.
-    // TODO(ericrobinson): Remove UNSUPPORTED_SCHEME from here and tests.
-    if (config.has_value() &&
-        activation_decision != ActivationDecision::UNSUPPORTED_SCHEME) {
+    if (config.has_value()) {
       matched_configuration = config.value();
     }
+    activation_decision = GetActivationDecision(config);
   }
   DCHECK_NE(activation_decision, ActivationDecision::UNKNOWN);
 
@@ -258,22 +255,21 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
 
 base::Optional<Configuration> SubresourceFilterSafeBrowsingActivationThrottle::
     GetHighestPriorityConfiguration(ActivationList matched_list) {
-  const GURL& url(navigation_handle()->GetURL());
-  const auto config_list = GetEnabledConfigurations();
-  bool scheme_is_http_or_https = url.SchemeIsHTTPOrHTTPS();
-  const auto selected_config_itr =
-      std::find_if(config_list->configs_by_decreasing_priority().begin(),
-                   config_list->configs_by_decreasing_priority().end(),
-                   [&url, scheme_is_http_or_https, matched_list,
-                    this](const Configuration& config) {
-                     return DoesMainFrameURLSatisfyActivationConditions(
-                         url, scheme_is_http_or_https,
-                         config.activation_conditions, matched_list);
-                   });
   base::Optional<Configuration> selected_config;
-  if (selected_config_itr !=
-      config_list->configs_by_decreasing_priority().end()) {
-    selected_config = *selected_config_itr;
+
+  // If it's http or https, find the best config.
+  if (navigation_handle()->GetURL().SchemeIsHTTPOrHTTPS()) {
+    const auto& decreasing_configs =
+        GetEnabledConfigurations()->configs_by_decreasing_priority();
+    const auto selected_config_itr =
+        std::find_if(decreasing_configs.begin(), decreasing_configs.end(),
+                     [matched_list, this](const Configuration& config) {
+                       return DoesMainFrameURLSatisfyActivationConditions(
+                           config.activation_conditions, matched_list);
+                     });
+    if (selected_config_itr != decreasing_configs.end()) {
+      selected_config = *selected_config_itr;
+    }
   }
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SubresourceFilterSafeBrowsingActivationThrottle::"
@@ -287,20 +283,12 @@ base::Optional<Configuration> SubresourceFilterSafeBrowsingActivationThrottle::
 
 ActivationDecision
 SubresourceFilterSafeBrowsingActivationThrottle::GetActivationDecision(
-    const base::Optional<Configuration>& config,
-    bool warning) {
+    const base::Optional<Configuration>& config) {
   if (!config.has_value()) {
     return ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
   }
 
-  bool scheme_is_http_or_https =
-      navigation_handle()->GetURL().SchemeIsHTTPOrHTTPS();
   auto activation_level = config->activation_options.activation_level;
-  if (!scheme_is_http_or_https &&
-      activation_level != ActivationLevel::DISABLED) {
-    return ActivationDecision::UNSUPPORTED_SCHEME;
-  }
-
   return activation_level == ActivationLevel::DISABLED
              ? ActivationDecision::ACTIVATION_DISABLED
              : ActivationDecision::ACTIVATED;
@@ -308,8 +296,6 @@ SubresourceFilterSafeBrowsingActivationThrottle::GetActivationDecision(
 
 bool SubresourceFilterSafeBrowsingActivationThrottle::
     DoesMainFrameURLSatisfyActivationConditions(
-        const GURL& url,
-        bool scheme_is_http_or_https,
         const Configuration::ActivationConditions& conditions,
         ActivationList matched_list) const {
   // Avoid copies when tracing disabled.
@@ -327,9 +313,6 @@ bool SubresourceFilterSafeBrowsingActivationThrottle::
     case ActivationScope::ALL_SITES:
       return true;
     case ActivationScope::ACTIVATION_LIST:
-      // ACTIVATION_LIST does not support non http/s URLs.
-      if (!scheme_is_http_or_https)
-        return false;
       if (matched_list == ActivationList::NONE)
         return false;
       if (conditions.activation_list == matched_list)

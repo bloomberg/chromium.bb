@@ -852,16 +852,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
     if (test_data.url_matches_activation_list)
       ConfigureForMatch(GURL(url));
     SimulateNavigateAndCommit({GURL(url)}, main_rfh());
-    ActivationDecision expected_decision =
-        ActivationDecision::UNSUPPORTED_SCHEME;
-    // We only log UNSUPPORTED_SCHEME if the navigation would have otherwise
-    // activated. Note that non http/s URLs will never match an activation list.
-    if (test_data.expected_activation_decision ==
-            ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET ||
-        test_data.activation_scope == ActivationScope::ACTIVATION_LIST) {
-      expected_decision = ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET;
-    }
-    EXPECT_EQ(expected_decision,
+    EXPECT_EQ(ActivationDecision::ACTIVATION_CONDITIONS_NOT_MET,
               *observer()->GetPageActivationForLastCommittedLoad());
   }
 
