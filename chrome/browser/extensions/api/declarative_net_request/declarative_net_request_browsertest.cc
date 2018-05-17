@@ -35,6 +35,7 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
@@ -47,7 +48,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
-#include "extensions/browser/runtime_data.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/constants.h"
@@ -118,7 +118,7 @@ class DeclarativeNetRequestBrowserTest
  public:
   DeclarativeNetRequestBrowserTest() {}
 
-  // ExtensionBrowserTest override.
+  // ExtensionBrowserTest overrides:
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
 
@@ -134,6 +134,19 @@ class DeclarativeNetRequestBrowserTest
     host_resolver()->AddRule("*", "127.0.0.1");
 
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  }
+  void CreatedBrowserMainParts(
+      content::BrowserMainParts* browser_main_parts) override {
+    // At this point, the notification service is initialized but the profile
+    // and extensions have not. Initialize |background_page_ready_listener_| to
+    // listen for messages from extensions.
+    CHECK(content::NotificationService::current());
+
+    background_page_ready_listener_ =
+        std::make_unique<ExtensionTestMessageListener>("ready",
+                                                       false /*will_reply*/);
+
+    ExtensionBrowserTest::CreatedBrowserMainParts(browser_main_parts);
   }
 
  protected:
@@ -187,7 +200,7 @@ class DeclarativeNetRequestBrowserTest
                             kJSONRulesFilename, rules, hosts,
                             has_background_script_);
 
-    ExtensionTestMessageListener listener("ready", false /*will_reply*/);
+    background_page_ready_listener_->Reset();
     const Extension* extension = nullptr;
     switch (GetParam()) {
       case ExtensionLoadType::PACKED:
@@ -207,7 +220,7 @@ class DeclarativeNetRequestBrowserTest
 
     // Wait for the background page to load if needed.
     if (has_background_script_)
-      WaitForBackgroundScriptToLoad(&listener, extension->id());
+      WaitForBackgroundScriptToLoad(extension->id());
 
     // Ensure no load errors were reported.
     EXPECT_TRUE(LoadErrorReporter::GetInstance()->GetErrors()->empty());
@@ -228,10 +241,11 @@ class DeclarativeNetRequestBrowserTest
                            {URLPattern::kAllUrlsPattern});
   }
 
-  void WaitForBackgroundScriptToLoad(ExtensionTestMessageListener* listener,
-                                     const ExtensionId& extension_id) {
-    ASSERT_TRUE(listener->WaitUntilSatisfied());
-    ASSERT_EQ(extension_id, listener->extension_id_for_message());
+  void WaitForBackgroundScriptToLoad(const ExtensionId& extension_id) {
+    ASSERT_TRUE(background_page_ready_listener_->WaitUntilSatisfied());
+    ASSERT_EQ(extension_id,
+              background_page_ready_listener_->extension_id_for_message());
+    background_page_ready_listener_->Reset();
   }
 
   void AddWhitelistedPages(const ExtensionId& extension_id,
@@ -301,6 +315,7 @@ class DeclarativeNetRequestBrowserTest
 
   base::ScopedTempDir temp_dir_;
   bool has_background_script_ = false;
+  std::unique_ptr<ExtensionTestMessageListener> background_page_ready_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestBrowserTest);
 };
@@ -1245,15 +1260,7 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
   ASSERT_TRUE(dnr_extension);
 
   // Ensure the background page is ready before dispatching the script to it.
-  // TODO(karandeepb): Remove the need to check IsBackgroundPageReady by
-  // creating the ExtensionTestMessageListener early. This should also ensure
-  // that the we start listening for messages from extension early enough to
-  // avoid any races. See crbug.com/838536.
-  if (!ExtensionSystem::Get(profile())->runtime_data()->IsBackgroundPageReady(
-          dnr_extension)) {
-    ExtensionTestMessageListener listener("ready", false /*will_reply*/);
-    WaitForBackgroundScriptToLoad(&listener, dnr_extension->id());
-  }
+  WaitForBackgroundScriptToLoad(dnr_extension->id());
 
   constexpr char kGoogleDotCom[] = "https://www.google.com/";
 
