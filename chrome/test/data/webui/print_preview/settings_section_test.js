@@ -423,13 +423,13 @@ cr.define('settings_sections_tests', function() {
         assertTrue(headerFooter.hidden);
         assertTrue(duplex.hidden);
         assertTrue(cssBackground.hidden);
-        expectEquals(cr.isWindows || cr.isMac, rasterize.hidden);
+        assertEquals(cr.isWindows || cr.isMac, rasterize.hidden);
         assertTrue(selectionOnly.hidden);
       }
 
       // Add a selection - should do nothing for PDFs.
       initDocumentInfo(true, true);
-      expectEquals(cr.isWindows || cr.isMac, optionsElement.hidden);
+      assertEquals(cr.isWindows || cr.isMac, optionsElement.hidden);
       assertTrue(selectionOnly.hidden);
 
       // Add duplex.
@@ -541,14 +541,14 @@ cr.define('settings_sections_tests', function() {
        * @param {boolean} valid Whether the input string is valid.
        */
       const validateInputState = function(allChecked, inputString, valid) {
-        expectEquals(allChecked, allRadio.checked);
-        expectEquals(!allChecked, customRadio.checked);
-        expectEquals(inputString, pagesInput.value);
-        expectEquals(valid, hint.hidden);
+        assertEquals(allChecked, allRadio.checked);
+        assertEquals(!allChecked, customRadio.checked);
+        assertEquals(inputString, pagesInput.value);
+        assertEquals(valid, hint.hidden);
       };
       validateInputState(true, '', true);
-      expectEquals(0, page.settings.ranges.value.length);
-      expectEquals(3, page.settings.pages.value.length);
+      assertEquals(0, page.settings.ranges.value.length);
+      assertEquals(3, page.settings.pages.value.length);
       assertTrue(page.settings.pages.valid);
 
       // Set selection of pages 1 and 2.
@@ -560,9 +560,9 @@ cr.define('settings_sections_tests', function() {
           .then(function() {
             validateInputState(false, '1-2', true);
             assertEquals(1, page.settings.ranges.value.length);
-            expectEquals(1, page.settings.ranges.value[0].from);
-            expectEquals(2, page.settings.ranges.value[0].to);
-            expectEquals(2, page.settings.pages.value.length);
+            assertEquals(1, page.settings.ranges.value[0].from);
+            assertEquals(2, page.settings.ranges.value[0].to);
+            assertEquals(2, page.settings.pages.value.length);
             assertTrue(page.settings.pages.valid);
 
             // Select pages 1 and 3
@@ -573,11 +573,11 @@ cr.define('settings_sections_tests', function() {
           .then(function() {
             validateInputState(false, '1, 3', true);
             assertEquals(2, page.settings.ranges.value.length);
-            expectEquals(1, page.settings.ranges.value[0].from);
-            expectEquals(1, page.settings.ranges.value[0].to);
-            expectEquals(3, page.settings.ranges.value[1].from);
-            expectEquals(3, page.settings.ranges.value[1].to);
-            expectEquals(2, page.settings.pages.value.length);
+            assertEquals(1, page.settings.ranges.value[0].from);
+            assertEquals(1, page.settings.ranges.value[0].to);
+            assertEquals(3, page.settings.ranges.value[1].from);
+            assertEquals(3, page.settings.ranges.value[1].to);
+            assertEquals(2, page.settings.pages.value.length);
             assertTrue(page.settings.pages.valid);
 
             // Enter an out of bounds value.
@@ -601,15 +601,15 @@ cr.define('settings_sections_tests', function() {
       const copiesInput =
           copiesElement.$$('print-preview-number-settings-section')
               .$$('.user-value');
-      expectEquals('1', copiesInput.value);
-      expectEquals(1, page.settings.copies.value);
+      assertEquals('1', copiesInput.value);
+      assertEquals(1, page.settings.copies.value);
 
       // Change to 2
       copiesInput.value = '2';
       copiesInput.dispatchEvent(new CustomEvent('input'));
       return test_util.eventToPromise('input-change', copiesElement)
           .then(function() {
-            expectEquals(2, page.settings.copies.value);
+            assertEquals(2, page.settings.copies.value);
 
             // Collate is true by default.
             const collateInput = copiesElement.$.collate;
@@ -630,7 +630,7 @@ cr.define('settings_sections_tests', function() {
 
       // Default is portrait
       const layoutInput = layoutElement.$$('select');
-      expectEquals('portrait', layoutInput.value);
+      assertEquals('portrait', layoutInput.value);
       assertFalse(page.settings.layout.value);
 
       // Change to landscape
@@ -648,7 +648,7 @@ cr.define('settings_sections_tests', function() {
 
       // Default is color
       const colorInput = colorElement.$$('select');
-      expectEquals('color', colorInput.value);
+      assertEquals('color', colorInput.value);
       assertTrue(page.settings.color.value);
 
       // Change to black and white.
@@ -673,8 +673,8 @@ cr.define('settings_sections_tests', function() {
       // Default is letter
       const mediaSizeInput =
           mediaSizeElement.$$('print-preview-settings-select').$$('select');
-      expectEquals(letterOption, mediaSizeInput.value);
-      expectEquals(letterOption, JSON.stringify(page.settings.mediaSize.value));
+      assertEquals(letterOption, mediaSizeInput.value);
+      assertEquals(letterOption, JSON.stringify(page.settings.mediaSize.value));
 
       // Change to square
       mediaSizeInput.value = squareOption;
@@ -682,7 +682,7 @@ cr.define('settings_sections_tests', function() {
 
       return test_util.eventToPromise('process-select-change', mediaSizeElement)
           .then(function() {
-            expectEquals(
+            assertEquals(
                 squareOption, JSON.stringify(page.settings.mediaSize.value));
           });
     });
@@ -727,10 +727,10 @@ cr.define('settings_sections_tests', function() {
 
       // Default is DEFAULT_MARGINS
       const marginsInput = marginsElement.$$('select');
-      expectEquals(
+      assertEquals(
           print_preview.ticket_items.MarginsTypeValue.DEFAULT.toString(),
           marginsInput.value);
-      expectEquals(
+      assertEquals(
           print_preview.ticket_items.MarginsTypeValue.DEFAULT,
           page.settings.margins.value);
 
@@ -740,7 +740,7 @@ cr.define('settings_sections_tests', function() {
       marginsInput.dispatchEvent(new CustomEvent('change'));
       return test_util.eventToPromise('process-select-change', marginsElement)
           .then(function() {
-            expectEquals(
+            assertEquals(
                 print_preview.ticket_items.MarginsTypeValue.MINIMUM,
                 page.settings.margins.value);
           });
@@ -763,12 +763,12 @@ cr.define('settings_sections_tests', function() {
           const scalingDisplay = fitToPage ?
               page.documentInfo_.fitToPageScaling.toString() :
               scalingValue;
-          expectEquals(scalingDisplay, scalingInput.value);
+          assertEquals(scalingDisplay, scalingInput.value);
         }
-        expectEquals(scalingValue, page.settings.scaling.value);
-        expectEquals(scalingValid, page.settings.scaling.valid);
-        expectEquals(fitToPage, fitToPageCheckbox.checked);
-        expectEquals(fitToPage, page.settings.fitToPage.value);
+        assertEquals(scalingValue, page.settings.scaling.value);
+        assertEquals(scalingValid, page.settings.scaling.valid);
+        assertEquals(fitToPage, fitToPageCheckbox.checked);
+        assertEquals(fitToPage, page.settings.fitToPage.value);
       };
 
       // Set PDF so both scaling and fit to page are active.
@@ -789,6 +789,11 @@ cr.define('settings_sections_tests', function() {
             // alter the scaling setting.
             fitToPageCheckbox.checked = true;
             fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+            return test_util.eventToPromise(
+                'update-checkbox-setting', scalingElement);
+          })
+          .then(function(event) {
+            assertEquals('fitToPage', event.detail);
             validateScalingState('105', true, true);
 
             // Set scaling. Should uncheck fit to page and set the settings for
@@ -812,11 +817,21 @@ cr.define('settings_sections_tests', function() {
             // Check fit to page. Should set scaling valid.
             fitToPageCheckbox.checked = true;
             fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+            return test_util.eventToPromise(
+                'update-checkbox-setting', scalingElement);
+          })
+          .then(function(event) {
+            assertEquals('fitToPage', event.detail);
             validateScalingState('95', true, true);
 
             // Uncheck fit to page. Should reset scaling to last valid.
             fitToPageCheckbox.checked = false;
             fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+            return test_util.eventToPromise(
+                'update-checkbox-setting', scalingElement);
+          })
+          .then(function(event) {
+            assertEquals('fitToPage', event.detail);
             validateScalingState('95', true, false);
           });
     });
@@ -829,35 +844,39 @@ cr.define('settings_sections_tests', function() {
       // HTML - Header/footer, duplex, and CSS background. Also add selection.
       initDocumentInfo(false, true);
 
-      const testOptionCheckbox = (element, defaultValue, optionSetting) => {
+      const testOptionCheckbox = (settingName, defaultValue) => {
+        const element = optionsElement.$$('#' + settingName);
+        const optionSetting = page.settings[settingName];
         assertFalse(element.hidden);
-        expectEquals(defaultValue, element.checked);
-        expectEquals(defaultValue, optionSetting.value);
+        assertEquals(defaultValue, element.checked);
+        assertEquals(defaultValue, optionSetting.value);
         element.checked = !defaultValue;
         element.dispatchEvent(new CustomEvent('change'));
-        expectEquals(!defaultValue, optionSetting.value);
+        return test_util
+            .eventToPromise('update-checkbox-setting', optionsElement)
+            .then(function(event) {
+              assertEquals(element.id, event.detail);
+              assertEquals(!defaultValue, optionSetting.value);
+            });
       };
 
-      // Check HTML settings
-      const ids = ['headerFooter', 'duplex', 'cssBackground', 'selectionOnly'];
-      const defaults = [true, true, false, false];
-      const optionSettings = [
-        page.settings.headerFooter, page.settings.duplex,
-        page.settings.cssBackground, page.settings.selectionOnly
-      ];
-
-      optionSettings.forEach((option, index) => {
-        testOptionCheckbox(
-            optionsElement.$$('#' + ids[index]), defaults[index],
-            optionSettings[index]);
-      });
-
-      // Set PDF to test rasterize
-      if (!cr.isWindows && !cr.isMac) {
-        initDocumentInfo(true, false);
-        testOptionCheckbox(
-            optionsElement.$$('#rasterize'), false, page.settings.rasterize);
-      }
+      return testOptionCheckbox('headerFooter', true)
+          .then(function() {
+            return testOptionCheckbox('duplex', true);
+          })
+          .then(function() {
+            return testOptionCheckbox('cssBackground', false);
+          })
+          .then(function() {
+            return testOptionCheckbox('selectionOnly', false);
+          })
+          .then(function() {
+            // Set PDF to test rasterize
+            if (!cr.isWindows && !cr.isMac) {
+              initDocumentInfo(true, false);
+              return testOptionCheckbox('rasterize', false);
+            }
+          });
     });
 
     test(assert(TestNames.PresetCopies), function() {
@@ -868,8 +887,8 @@ cr.define('settings_sections_tests', function() {
       const copiesInput =
           copiesElement.$$('print-preview-number-settings-section')
               .$$('.user-value');
-      expectEquals('1', copiesInput.value);
-      expectEquals(1, page.settings.copies.value);
+      assertEquals('1', copiesInput.value);
+      assertEquals(1, page.settings.copies.value);
 
       // Send a preset value of 2
       const copies = 2;

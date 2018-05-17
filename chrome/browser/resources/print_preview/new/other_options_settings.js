@@ -19,6 +19,33 @@ Polymer({
     'onSelectionOnlySettingChange_(settings.selectionOnly.value)',
   ],
 
+  /** @private {!Map<string, ?number>} */
+  timeouts_: new Map(),
+
+  /** @private {!Map<string, boolean>} */
+  previousValues_: new Map(),
+
+  /**
+   * @param {string} settingName The name of the setting to updated.
+   * @param {boolean} newValue The new value for the setting.
+   */
+  updateSettingWithTimeout_: function(settingName, newValue) {
+    const timeout = this.timeouts_.get(settingName);
+    if (timeout != null)
+      clearTimeout(timeout);
+
+    this.timeouts_.set(settingName, setTimeout(() => {
+                         this.timeouts_.delete(settingName);
+                         if (this.previousValues_.get(settingName) == newValue)
+                           return;
+                         this.previousValues_.set(settingName, newValue);
+                         this.setSetting(settingName, newValue);
+
+                         // For tests only
+                         this.fire('update-checkbox-setting', settingName);
+                       }, 100));
+  },
+
   /**
    * @param {boolean} value The new value of the header footer setting.
    * @private
@@ -61,26 +88,28 @@ Polymer({
 
   /** @private */
   onHeaderFooterChange_: function() {
-    this.setSetting('headerFooter', this.$.headerFooter.checked);
+    this.updateSettingWithTimeout_('headerFooter', this.$.headerFooter.checked);
   },
 
   /** @private */
   onDuplexChange_: function() {
-    this.setSetting('duplex', this.$.duplex.checked);
+    this.updateSettingWithTimeout_('duplex', this.$.duplex.checked);
   },
 
   /** @private */
   onCssBackgroundChange_: function() {
-    this.setSetting('cssBackground', this.$.cssBackground.checked);
+    this.updateSettingWithTimeout_(
+        'cssBackground', this.$.cssBackground.checked);
   },
 
   /** @private */
   onRasterizeChange_: function() {
-    this.setSetting('rasterize', this.$.rasterize.checked);
+    this.updateSettingWithTimeout_('rasterize', this.$.rasterize.checked);
   },
 
   /** @private */
   onSelectionOnlyChange_: function() {
-    this.setSetting('selectionOnly', this.$.selectionOnly.checked);
+    this.updateSettingWithTimeout_(
+        'selectionOnly', this.$.selectionOnly.checked);
   },
 });

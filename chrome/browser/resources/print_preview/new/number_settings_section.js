@@ -86,13 +86,13 @@ Polymer({
   /** @private */
   onInputChanged_: function() {
     this.inputValid = this.computeValid_();
-    if (this.inputValid)
-      this.currentValue = this.inputString_;
+    this.currentValue = this.inputString_;
   },
 
   /** @private */
   onCurrentValueChanged_: function() {
     this.inputString_ = this.currentValue;
+    this.resetString();
   },
 
   /**
