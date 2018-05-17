@@ -138,7 +138,7 @@ void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
       params.buffer_size);
   ui::OverlayPlane plane(std::move(scanout_buffer), params.plane_z_order,
                          params.transform, params.display_rect,
-                         params.crop_rect, true, base::kInvalidPlatformFile);
+                         params.crop_rect, true, nullptr);
   plane_list_.push_back(plane);
 }
 
@@ -276,7 +276,7 @@ TEST_F(DrmOverlayValidatorTest,
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(primary_rect_.size())),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
   gfx::RectF crop_rect = gfx::RectF(0, 0, 0.5, 0.5);
@@ -338,7 +338,7 @@ TEST_F(DrmOverlayValidatorTest, OptimalFormatYUV_MirroredControllers) {
       new ui::CrtcController(drm_.get(), kSecondaryCrtc, kSecondaryConnector)));
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(primary_rect_.size())),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller->Modeset(plane1, kDefaultMode));
 
   overlay_params_.back().buffer_size = overlay_rect_.size();

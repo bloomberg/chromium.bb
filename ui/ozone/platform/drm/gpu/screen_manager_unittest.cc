@@ -502,8 +502,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
       drm_, DRM_FORMAT_XRGB8888, {}, GetPrimaryBounds().size());
   window->SchedulePageFlip(
-      std::vector<ui::OverlayPlane>(
-          1, ui::OverlayPlane(buffer, base::kInvalidPlatformFile)),
+      std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(buffer, nullptr)),
       base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
 
@@ -529,8 +528,7 @@ TEST_F(ScreenManagerTest, RejectBufferWithIncompatibleModifiers) {
                                             GetPrimaryBounds().size());
 
   window->SchedulePageFlip(
-      std::vector<ui::OverlayPlane>(
-          1, ui::OverlayPlane(buffer, base::kInvalidPlatformFile)),
+      std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(buffer, nullptr)),
       base::DoNothing());
   screen_manager_->AddWindow(1, std::move(window));
 

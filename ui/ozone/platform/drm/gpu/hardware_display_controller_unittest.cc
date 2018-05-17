@@ -88,7 +88,7 @@ void HardwareDisplayControllerTest::PageFlipCallback(
 TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
   ui::OverlayPlane plane(scoped_refptr<ui::ScanoutBuffer>(
                              new ui::MockScanoutBuffer(kDefaultModeSize)),
-                         base::kInvalidPlatformFile);
+                         nullptr);
 
   EXPECT_TRUE(controller_->Modeset(plane, kDefaultMode));
   EXPECT_FALSE(plane.buffer->HasOneRef());
@@ -97,13 +97,13 @@ TEST_F(HardwareDisplayControllerTest, CheckModesettingResult) {
 TEST_F(HardwareDisplayControllerTest, CheckStateAfterPageFlip) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane2);
   controller_->SchedulePageFlip(
@@ -124,7 +124,7 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfModesetFails) {
 
   ui::OverlayPlane plane(scoped_refptr<ui::ScanoutBuffer>(
                              new ui::MockScanoutBuffer(kDefaultModeSize)),
-                         base::kInvalidPlatformFile);
+                         nullptr);
 
   EXPECT_FALSE(controller_->Modeset(plane, kDefaultMode));
 }
@@ -134,13 +134,13 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane2);
   controller_->SchedulePageFlip(
@@ -158,11 +158,11 @@ TEST_F(HardwareDisplayControllerTest, CheckStateIfPageFlipFails) {
 TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   ui::OverlayPlane plane2(
       scoped_refptr<ui::ScanoutBuffer>(new ui::MockScanoutBuffer(kOverlaySize)),
       1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
-      gfx::RectF(kDefaultModeSizeF), true, base::kInvalidPlatformFile);
+      gfx::RectF(kDefaultModeSizeF), true, nullptr);
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
@@ -183,11 +183,11 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayPresent) {
 TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   ui::OverlayPlane plane2(
       scoped_refptr<ui::ScanoutBuffer>(new ui::MockScanoutBuffer(kOverlaySize)),
       1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
-      gfx::RectF(kDefaultModeSizeF), true, base::kInvalidPlatformFile);
+      gfx::RectF(kDefaultModeSizeF), true, nullptr);
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
@@ -221,12 +221,12 @@ TEST_F(HardwareDisplayControllerTest, CheckOverlayTestMode) {
 TEST_F(HardwareDisplayControllerTest, AcceptUnderlays) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
-  ui::OverlayPlane plane2(
-      scoped_refptr<ui::ScanoutBuffer>(
-          new ui::MockScanoutBuffer(kDefaultModeSize)),
-      -1, gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kDefaultModeSize),
-      gfx::RectF(kDefaultModeSizeF), true, base::kInvalidPlatformFile);
+                          nullptr);
+  ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
+                              new ui::MockScanoutBuffer(kDefaultModeSize)),
+                          -1, gfx::OVERLAY_TRANSFORM_NONE,
+                          gfx::Rect(kDefaultModeSize),
+                          gfx::RectF(kDefaultModeSizeF), true, nullptr);
 
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
@@ -248,13 +248,13 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   EXPECT_EQ(2, drm_->get_set_crtc_call_count());
 
   ui::OverlayPlane plane2(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane2);
   controller_->SchedulePageFlip(
@@ -270,7 +270,7 @@ TEST_F(HardwareDisplayControllerTest, PageflipMirroredControllers) {
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -310,7 +310,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterRemoveCrtc) {
 TEST_F(HardwareDisplayControllerTest, PlaneStateAfterDestroyingCrtc) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -342,7 +342,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -391,7 +391,7 @@ TEST_F(HardwareDisplayControllerTest, PlaneStateAfterAddCrtc) {
 TEST_F(HardwareDisplayControllerTest, ModesetWhilePageFlipping) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -410,7 +410,7 @@ TEST_F(HardwareDisplayControllerTest, FailPageFlipping) {
 
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -428,7 +428,7 @@ TEST_F(HardwareDisplayControllerTest, CheckNoPrimaryPlane) {
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
                           1, gfx::OVERLAY_TRANSFORM_NONE,
                           gfx::Rect(kDefaultModeSize), gfx::RectF(0, 0, 1, 1),
-                          true, base::kInvalidPlatformFile);
+                          true, nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -444,7 +444,7 @@ TEST_F(HardwareDisplayControllerTest, CheckNoPrimaryPlane) {
 TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -463,7 +463,7 @@ TEST_F(HardwareDisplayControllerTest, AddCrtcMidPageFlip) {
 TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
   std::vector<ui::OverlayPlane> planes =
       std::vector<ui::OverlayPlane>(1, plane1);
@@ -482,13 +482,12 @@ TEST_F(HardwareDisplayControllerTest, RemoveCrtcMidPageFlip) {
 TEST_F(HardwareDisplayControllerTest, Disable) {
   ui::OverlayPlane plane1(scoped_refptr<ui::ScanoutBuffer>(
                               new ui::MockScanoutBuffer(kDefaultModeSize)),
-                          base::kInvalidPlatformFile);
+                          nullptr);
   EXPECT_TRUE(controller_->Modeset(plane1, kDefaultMode));
 
   ui::OverlayPlane plane2(new ui::MockScanoutBuffer(kOverlaySize), 1,
                           gfx::OVERLAY_TRANSFORM_NONE, gfx::Rect(kOverlaySize),
-                          gfx::RectF(kDefaultModeSizeF), true,
-                          base::kInvalidPlatformFile);
+                          gfx::RectF(kDefaultModeSizeF), true, nullptr);
   std::vector<ui::OverlayPlane> planes;
   planes.push_back(plane1);
   planes.push_back(plane2);

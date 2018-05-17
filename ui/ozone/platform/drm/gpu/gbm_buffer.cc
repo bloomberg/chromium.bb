@@ -381,7 +381,7 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
   if (buffer_->GetFramebufferId()) {
     surface_manager_->GetSurface(widget)->QueueOverlayPlane(
         OverlayPlane(buffer_, plane_z_order, plane_transform, display_bounds,
-                     crop_rect, enable_blend, base::kInvalidPlatformFile));
+                     crop_rect, enable_blend, gpu_fence));
   }
 
   return true;
