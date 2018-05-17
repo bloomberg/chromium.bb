@@ -864,6 +864,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   base::WeakPtrFactory<ServiceWorkerVersion> weak_factory_;
 
+  static bool s_dumped_for_timeout_;
+
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerVersion);
 };
 
