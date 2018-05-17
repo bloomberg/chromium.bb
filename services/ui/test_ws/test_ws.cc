@@ -113,6 +113,8 @@ class TestWindowService : public service_manager::Service,
   TestWindowService() = default;
 
   ~TestWindowService() override {
+    // Has dependencies upon Screen, which is owned by AuraTestHelper.
+    window_service_.reset();
     // AuraTestHelper expects TearDown() to be called.
     aura_test_helper_->TearDown();
     aura_test_helper_.reset();
