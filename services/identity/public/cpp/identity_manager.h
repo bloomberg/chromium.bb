@@ -54,6 +54,12 @@ class IdentityManager : public SigninManagerBase::Observer,
  public:
   class Observer {
    public:
+    Observer() = default;
+    virtual ~Observer() = default;
+
+    Observer(const Observer&) = delete;
+    Observer& operator=(const Observer&) = delete;
+
     // Called when an account becomes the user's primary account.
     // This method is not called during a reauth.
     virtual void OnPrimaryAccountSet(const AccountInfo& primary_account_info) {}
@@ -65,23 +71,23 @@ class IdentityManager : public SigninManagerBase::Observer,
 
     // TODO(blundell): Eventually we might need a callback for failure to log in
     // to the primary account.
-
-   protected:
-    virtual ~Observer() {}
   };
 
   // Observer interface for classes that want to monitor status of various
   // requests. Mostly useful in tests and debugging contexts (e.g., WebUI).
   class DiagnosticsObserver {
    public:
+    DiagnosticsObserver() = default;
+    virtual ~DiagnosticsObserver() = default;
+
+    DiagnosticsObserver(const DiagnosticsObserver&) = delete;
+    DiagnosticsObserver& operator=(const DiagnosticsObserver&) = delete;
+
     // Called when receiving request for access token.
     virtual void OnAccessTokenRequested(
         const std::string& account_id,
         const std::string& consumer_id,
         const OAuth2TokenService::ScopeSet& scopes) {}
-
-   protected:
-    virtual ~DiagnosticsObserver() {}
   };
 
   IdentityManager(SigninManagerBase* signin_manager,
