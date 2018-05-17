@@ -51,7 +51,8 @@ class NET_EXPORT_PRIVATE WebSocketHandshakeStreamCreateHelper
 
   // WebSocketHandshakeStreamCreateHelper methods
 
-  // This method must be called before CreateBasicStream().
+  // This method must be called before calling CreateBasicStream()
+  // or CreateHttp2Stream().
   // The |request| pointer must remain valid as long as this object exists.
   void set_stream_request(WebSocketStreamRequest* request) {
     request_ = request;
