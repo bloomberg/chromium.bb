@@ -510,6 +510,9 @@ void NGBoxFragmentPainter::PaintAllPhasesAtomically(
     return;
 
   PaintInfo info(paint_info);
+
+  NGBoxClipper box_clipper(box_fragment_, info);
+
   info.phase = PaintPhase::kBlockBackground;
   PaintObject(info, paint_offset);
 
