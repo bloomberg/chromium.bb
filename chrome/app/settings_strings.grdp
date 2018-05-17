@@ -1392,6 +1392,18 @@
     <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_ERROR_MESSAGE" desc="The message shown when mounting a new SMB share fails.">
       Error mounting share. Check the file share URL and try again.
     </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_AUTH_FAILED_MESSAGE" desc="The message shown when mounting a new SMB share fails due to an authentication failure.">
+      Error mounting share. Please check your credentials and try again.
+    </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_NOT_FOUND_MESSAGE" desc="The message shown when mounting a new SMB share fails because the share cannot be found.">
+      Error mounting share. The specified share was not found on the network.
+    </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_UNSUPPORTED_DEVICE_MESSAGE" desc="The message shown when mounting a new SMB share fails because the specified device is not supported.">
+      Error mounting share. The specified share is not supported.
+    </message>
+    <message name="IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE" desc="The message shown when mounting a new SMB share fails because the share is already mounted.">
+      Error mounting share. The specified share is already mounted.
+    </message>
 
     <!-- Date/Time Page -->
     <message name="IDS_SETTINGS_DATE_TIME" desc="Name of the settings page which displays date and time preferences.">

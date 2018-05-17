@@ -49,10 +49,8 @@ void SmbHandler::HandleSmbMount(const base::ListValue* args) {
 }
 
 void SmbHandler::HandleSmbMountResponse(SmbMountResult result) {
-  std::string status =
-      result == smb_client::SmbMountResult::SUCCESS ? "success" : "failure";
   AllowJavascript();
-  FireWebUIListener("on-add-smb-share", base::Value(status));
+  FireWebUIListener("on-add-smb-share", base::Value(result));
 }
 
 }  // namespace settings

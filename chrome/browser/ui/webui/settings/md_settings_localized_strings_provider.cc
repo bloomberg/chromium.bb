@@ -819,6 +819,14 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_SUCCESS_MESSAGE},
     {"smbShareAddedErrorMessage",
      IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_ERROR_MESSAGE},
+    {"smbShareAddedAuthFailedMessage",
+     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_AUTH_FAILED_MESSAGE},
+    {"smbShareAddedNotFoundMessage",
+     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_NOT_FOUND_MESSAGE},
+    {"smbShareAddedUnsupportedDeviceMessage",
+     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_UNSUPPORTED_DEVICE_MESSAGE},
+    {"smbShareAddedMountExistsMessage",
+     IDS_SETTINGS_DOWNLOADS_SHARE_ADDED_MOUNT_EXISTS_MESSAGE},
 #endif
   };
   AddLocalizedStringsBulk(html_source, localized_strings,

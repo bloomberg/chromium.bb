@@ -28,7 +28,9 @@ namespace chromeos {
 namespace smb_client {
 
 // These values are written to logs. New enum values may be added, but existing
-// enums must never be runumbered or deleted and reused.
+// enums must never be runumbered or deleted and reused. Must be kept in sync
+// with the SmbMountResult enum in
+// chrome/browser/resources/settings/downloads_page/smb_browser_proxy.js.
 enum SmbMountResult {
   SUCCESS = 0,                // Mount succeeded
   UNKNOWN_FAILURE = 1,        // Mount failed in an unrecognized way
