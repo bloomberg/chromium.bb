@@ -416,33 +416,36 @@ IN_PROC_BROWSER_TEST_P(RoundedOmniboxPopupContentsViewTest,
 }
 
 // Check that, for the rounded popup, the location bar background (and the
-// background of the textfield it contains) changes when the popup opens, and
+// background of the textfield it contains) changes when it receives focus, and
 // matches the popup background color.
 IN_PROC_BROWSER_TEST_P(RoundedOmniboxPopupContentsViewTest,
                        PopupMatchesLocationBarBackground) {
-  const SkColor color_before_open = location_bar()->background()->get_color();
-  EXPECT_EQ(color_before_open, omnibox_view()->GetBackgroundColor());
+  // Start with the Omnibox unfocused.
+  omnibox_view()->GetFocusManager()->ClearFocus();
+  const SkColor color_before_focus = location_bar()->background()->get_color();
+  EXPECT_EQ(color_before_focus, omnibox_view()->GetBackgroundColor());
 
-  CreatePopupForTestQuery();
-  const SkColor color_after_open = location_bar()->background()->get_color();
+  // Give the Omnibox focus and get its focused color.
+  omnibox_view()->RequestFocus();
+  const SkColor color_after_focus = location_bar()->background()->get_color();
 
   // Sanity check that the colors are different, otherwise this test will not be
   // testing anything useful. It is possible that a particular theme could
   // configure these colors to be the same. In that case, this test should be
   // updated to detect that, or switch to a theme where they are different.
-  EXPECT_NE(color_before_open, color_after_open);
-
-  EXPECT_EQ(color_after_open, omnibox_view()->GetBackgroundColor());
+  EXPECT_NE(color_before_focus, color_after_focus);
+  EXPECT_EQ(color_after_focus, omnibox_view()->GetBackgroundColor());
 
   // For the rounded popup, the background is hosted in the view that contains
   // the results area.
+  CreatePopupForTestQuery();
   views::View* background_host = popup_view()->parent();
-  EXPECT_EQ(color_after_open, background_host->background()->get_color());
+  EXPECT_EQ(color_after_focus, background_host->background()->get_color());
 
-  // Closing the popup should restore the original colors.
-  edit_model()->StopAutocomplete();
-  EXPECT_EQ(color_before_open, location_bar()->background()->get_color());
-  EXPECT_EQ(color_before_open, omnibox_view()->GetBackgroundColor());
+  // Blurring the Omnibox should restore the original colors.
+  omnibox_view()->GetFocusManager()->ClearFocus();
+  EXPECT_EQ(color_before_focus, location_bar()->background()->get_color());
+  EXPECT_EQ(color_before_focus, omnibox_view()->GetBackgroundColor());
 }
 
 INSTANTIATE_TEST_CASE_P(,

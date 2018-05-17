@@ -762,10 +762,16 @@ int LocationBarView::GetAvailableTextHeight() {
 void LocationBarView::OnOmniboxFocused() {
   if (ShouldUseFocusRingView(show_focus_rect_))
     focus_ring_ = InstallFocusRing(this);
+
+  if (IsRounded())
+    RefreshBackground();
 }
 
 void LocationBarView::OnOmniboxBlurred() {
   focus_ring_ = UninstallFocusRing(this);
+
+  if (IsRounded())
+    RefreshBackground();
 }
 
 // static
@@ -812,12 +818,12 @@ void LocationBarView::RefreshBackground() {
   SkColor border_color = GetBorderColor();
 
   if (IsRounded()) {
-    // When the omnibox dropdown is open, match its color and remove the focus
-    // ring.
-    if (GetOmniboxPopupView()->IsOpen()) {
+    // Match the background color to the popup if the Omnibox is focused.
+    if (omnibox_view_->HasFocus()) {
       background_color = border_color =
           GetColor(OmniboxPart::RESULTS_BACKGROUND);
     }
+    // Remove the focus ring if the omnibox popup is open.
     if (focus_ring_)
       focus_ring_->SetVisible(!GetOmniboxPopupView()->IsOpen());
   }
