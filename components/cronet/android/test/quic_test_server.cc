@@ -17,7 +17,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/test/test_data_directory.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/tools/quic/quic_simple_server.h"
 
 using base::android::JavaParamRef;
@@ -30,7 +30,7 @@ namespace {
 static const int kServerPort = 6121;
 
 base::Thread* g_quic_server_thread = nullptr;
-net::QuicHttpResponseCache* g_quic_response_cache = nullptr;
+net::QuicMemoryCacheBackend* g_quic_memory_cache_backend = nullptr;
 net::QuicSimpleServer* g_quic_server = nullptr;
 
 void StartOnServerThread(const base::FilePath& test_files_root,
@@ -41,8 +41,8 @@ void StartOnServerThread(const base::FilePath& test_files_root,
   // Set up in-memory cache.
   base::FilePath file_dir = test_files_root.Append("quic_data");
   CHECK(base::PathExists(file_dir)) << "Quic data does not exist";
-  g_quic_response_cache = new net::QuicHttpResponseCache();
-  g_quic_response_cache->InitializeFromDirectory(file_dir.value());
+  g_quic_memory_cache_backend = new net::QuicMemoryCacheBackend();
+  g_quic_memory_cache_backend->InitializeBackend(file_dir.value());
   net::QuicConfig config;
 
   // Set up server certs.
@@ -56,7 +56,7 @@ void StartOnServerThread(const base::FilePath& test_files_root,
   g_quic_server = new net::QuicSimpleServer(
       std::move(proof_source), config,
       net::QuicCryptoServerConfig::ConfigOptions(), net::AllSupportedVersions(),
-      g_quic_response_cache);
+      g_quic_memory_cache_backend);
 
   // Start listening.
   int rv = g_quic_server->Listen(
@@ -70,7 +70,7 @@ void ShutdownOnServerThread() {
   DCHECK(g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   g_quic_server->Shutdown();
   delete g_quic_server;
-  delete g_quic_response_cache;
+  delete g_quic_memory_cache_backend;
 }
 
 }  // namespace

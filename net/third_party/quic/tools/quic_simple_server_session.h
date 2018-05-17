@@ -22,7 +22,8 @@
 #include "net/third_party/quic/core/quic_server_session_base.h"
 #include "net/third_party/quic/core/quic_spdy_session.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_backend_response.h"
+#include "net/third_party/quic/tools/quic_simple_server_backend.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 
 namespace net {
@@ -58,7 +59,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
                           QuicCryptoServerStream::Helper* helper,
                           const QuicCryptoServerConfig* crypto_config,
                           QuicCompressedCertsCache* compressed_certs_cache,
-                          QuicHttpResponseCache* response_cache);
+                          QuicSimpleServerBackend* quic_simple_server_backend);
 
   ~QuicSimpleServerSession() override;
 
@@ -75,8 +76,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   // And enqueue HEADERS block in those PUSH_PROMISED for sending push response
   // later.
   virtual void PromisePushResources(
-      const std::string& request_url,
-      const std::list<QuicHttpResponseCache::ServerPushInfo>& resources,
+      const QuicString& request_url,
+      const std::list<QuicBackendResponse::ServerPushInfo>& resources,
       QuicStreamId original_stream_id,
       const SpdyHeaderBlock& original_request_headers);
 
@@ -98,7 +99,9 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override;
 
-  QuicHttpResponseCache* response_cache() { return response_cache_; }
+  QuicSimpleServerBackend* server_backend() {
+    return quic_simple_server_backend_;
+  }
 
  private:
   friend class test::QuicSimpleServerSessionPeer;
@@ -110,8 +113,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   // Copying the rest headers ensures they are the same as the original
   // request, especially cookies.
   SpdyHeaderBlock SynthesizePushRequestHeaders(
-      std::string request_url,
-      QuicHttpResponseCache::ServerPushInfo resource,
+      QuicString request_url,
+      QuicBackendResponse::ServerPushInfo resource,
       const SpdyHeaderBlock& original_request_headers);
 
   // Send PUSH_PROMISE frame on headers stream.
@@ -145,7 +148,7 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   // highest_promised_stream_id_.
   QuicDeque<PromisedStreamInfo> promised_streams_;
 
-  QuicHttpResponseCache* response_cache_;  // Not owned.
+  QuicSimpleServerBackend* quic_simple_server_backend_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerSession);
 };

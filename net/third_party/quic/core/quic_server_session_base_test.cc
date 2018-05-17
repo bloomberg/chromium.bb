@@ -35,6 +35,7 @@
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_sustained_bandwidth_recorder_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 
 using testing::_;
@@ -69,14 +70,14 @@ class TestServerSession : public QuicServerSessionBase {
                     QuicCryptoServerStream::Helper* helper,
                     const QuicCryptoServerConfig* crypto_config,
                     QuicCompressedCertsCache* compressed_certs_cache,
-                    QuicHttpResponseCache* response_cache)
+                    QuicSimpleServerBackend* quic_simple_server_backend)
       : QuicServerSessionBase(config,
                               connection,
                               visitor,
                               helper,
                               crypto_config,
                               compressed_certs_cache),
-        response_cache_(response_cache) {}
+        quic_simple_server_backend_(quic_simple_server_backend) {}
 
   ~TestServerSession() override { delete connection(); };
 
@@ -86,7 +87,7 @@ class TestServerSession : public QuicServerSessionBase {
       return nullptr;
     }
     QuicSpdyStream* stream =
-        new QuicSimpleServerStream(id, this, response_cache_);
+        new QuicSimpleServerStream(id, this, quic_simple_server_backend_);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
@@ -97,7 +98,7 @@ class TestServerSession : public QuicServerSessionBase {
     }
 
     QuicSpdyStream* stream = new QuicSimpleServerStream(
-        GetNextOutgoingStreamId(), this, response_cache_);
+        GetNextOutgoingStreamId(), this, quic_simple_server_backend_);
     ActivateStream(QuicWrapUnique(stream));
     return stream;
   }
@@ -112,7 +113,8 @@ class TestServerSession : public QuicServerSessionBase {
   }
 
  private:
-  QuicHttpResponseCache* response_cache_;  // Owned by QuicServerSessionBaseTest
+  QuicSimpleServerBackend*
+      quic_simple_server_backend_;  // Owned by QuicServerSessionBaseTest
 };
 
 const size_t kMaxStreamsForTest = 10;
@@ -143,7 +145,7 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
         &helper_, &alarm_factory_, Perspective::IS_SERVER, supported_versions);
     session_ = QuicMakeUnique<TestServerSession>(
         config_, connection_, &owner_, &stream_helper_, &crypto_config_,
-        &compressed_certs_cache_, &response_cache_);
+        &compressed_certs_cache_, &memory_cache_backend_);
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
@@ -170,7 +172,7 @@ class QuicServerSessionBaseTest : public QuicTestWithParam<ParsedQuicVersion> {
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   QuicCompressedCertsCache compressed_certs_cache_;
-  QuicHttpResponseCache response_cache_;
+  QuicMemoryCacheBackend memory_cache_backend_;
   std::unique_ptr<TestServerSession> session_;
   std::unique_ptr<CryptoHandshakeMessage> handshake_message_;
   QuicConnectionVisitorInterface* visitor_;

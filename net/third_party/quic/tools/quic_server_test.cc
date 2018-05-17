@@ -18,6 +18,7 @@
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quic/test_tools/mock_quic_dispatcher.h"
 #include "net/third_party/quic/test_tools/quic_server_peer.h"
+#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
 
 using ::testing::_;
@@ -36,14 +37,14 @@ class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
-      QuicHttpResponseCache* response_cache)
+      QuicSimpleServerBackend* quic_simple_server_backend)
       : QuicSimpleDispatcher(config,
                              crypto_config,
                              version_manager,
                              std::move(helper),
                              std::move(session_helper),
                              std::move(alarm_factory),
-                             response_cache) {}
+                             quic_simple_server_backend) {}
   ~MockQuicSimpleDispatcher() override = default;
 
   MOCK_METHOD0(OnCanWrite, void());
@@ -56,7 +57,7 @@ class TestQuicServer : public QuicServer {
  public:
   TestQuicServer()
       : QuicServer(crypto_test_utils::ProofSourceForTesting(),
-                   &response_cache_) {}
+                   &quic_simple_server_backend_) {}
 
   ~TestQuicServer() override = default;
 
@@ -73,12 +74,12 @@ class TestQuicServer : public QuicServer {
             new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
         std::unique_ptr<QuicEpollAlarmFactory>(
             new QuicEpollAlarmFactory(epoll_server())),
-        &response_cache_);
+        &quic_simple_server_backend_);
     return mock_dispatcher_;
   }
 
   MockQuicSimpleDispatcher* mock_dispatcher_ = nullptr;
-  QuicHttpResponseCache response_cache_;
+  QuicMemoryCacheBackend quic_simple_server_backend_;
 };
 
 class QuicServerEpollInTest : public QuicTest {
@@ -165,7 +166,7 @@ class QuicServerDispatchPacketTest : public QuicTest {
                     QuicRandom::GetInstance())),
             std::unique_ptr<QuicEpollAlarmFactory>(
                 new QuicEpollAlarmFactory(&eps_)),
-            &response_cache_) {
+            &quic_simple_server_backend_) {
     dispatcher_.InitializeWithWriter(new QuicDefaultPacketWriter(1234));
   }
 
@@ -179,7 +180,7 @@ class QuicServerDispatchPacketTest : public QuicTest {
   QuicCryptoServerConfig crypto_config_;
   QuicVersionManager version_manager_;
   EpollServer eps_;
-  QuicHttpResponseCache response_cache_;
+  QuicMemoryCacheBackend quic_simple_server_backend_;
   MockQuicDispatcher dispatcher_;
 };
 
