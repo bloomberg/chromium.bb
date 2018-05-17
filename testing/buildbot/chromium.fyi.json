@@ -2359,9 +2359,6 @@
         }
       },
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -2877,9 +2874,6 @@
   "Dummy WebKit Mac10.13": {
     "isolated_scripts": [
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -4828,9 +4822,6 @@
         }
       },
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
@@ -5308,8 +5299,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--enable-features=NetworkService",
-          "--zero-tests-executed-ok"
+          "--additional-driver-flag=--enable-features=NetworkService"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -5463,8 +5453,7 @@
     "isolated_scripts": [
       {
         "args": [
-          "--additional-driver-flag=--enable-features=NetworkService",
-          "--zero-tests-executed-ok"
+          "--additional-driver-flag=--enable-features=NetworkService"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -7361,7 +7350,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "--zero-tests-executed-ok",
           "--additional-driver-flag=--enable-blink-features=LayoutNG",
           "--additional-driver-flag=--enable-slimming-paint-v175"
         ],
@@ -7392,7 +7380,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "--zero-tests-executed-ok",
           "--additional-driver-flag=--root-layer-scrolls"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -7422,7 +7409,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "--zero-tests-executed-ok",
           "--additional-driver-flag=--enable-slimming-paint-v2"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -7963,7 +7949,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "--zero-tests-executed-ok",
           "--additional-driver-flag=--enable-blink-gen-property-trees"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
@@ -9118,9 +9103,6 @@
         }
       },
       {
-        "args": [
-          "--zero-tests-executed-ok"
-        ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
