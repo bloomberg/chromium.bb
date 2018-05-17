@@ -511,15 +511,6 @@ void PowerButtonController::LockScreenIfRequired() {
 
 void PowerButtonController::SetShowMenuAnimationDone() {
   show_menu_animation_done_ = true;
-
-  DCHECK(menu_widget_->GetContentsView());
-  // TODO(minch): Define GetInitiallyFocusedView in
-  // PowerButtonMenuScreenView instead of RequestFocus here.
-  // Focus on power button menu when it is shown.
-  static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
-      ->power_button_menu_view()
-      ->RequestFocus();
-
   pre_shutdown_timer_.Start(FROM_HERE, kStartShutdownAnimationTimeout, this,
                             &PowerButtonController::OnPreShutdownTimeout);
 }

@@ -36744,6 +36744,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Escape to dismiss"/>
   <int value="3" label="Mouse click to dismiss"/>
   <int value="4" label="Touch to dismiss"/>
+  <int value="5" label="Lock screen"/>
 </enum>
 
 <enum name="PowerButtonPressType">
