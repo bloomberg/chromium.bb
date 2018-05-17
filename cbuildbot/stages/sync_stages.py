@@ -54,14 +54,6 @@ site_config = config_lib.GetConfig()
 
 PRE_CQ = validation_pool.PRE_CQ
 
-PRECQ_LAUNCH_TIMEOUT_MSG = (
-    'We were not able to launch a %s trybot for your change within '
-    '%s minutes.\n\n'
-    'This problem can happen if the trybot waterfall is very '
-    'busy, or if there is an infrastructure issue. Please '
-    'notify the sheriff and mark your change as ready again. If '
-    'this problem occurs multiple times in a row, please file a '
-    'bug.')
 PRECQ_INFLIGHT_TIMEOUT_MSG = (
     'The %s trybot for your change timed out after %s minutes.'
     '\n\n'
@@ -1194,9 +1186,6 @@ class PreCQLauncherStage(SyncStage):
   # tryjob on any of the patches until the user has been idle for 2 minutes.
   LAUNCH_DELAY = 2
 
-  # The number of minutes we allow before considering a launch attempt failed.
-  LAUNCH_TIMEOUT = 90
-
   # The number of minutes we allow before considering an in-flight job failed.
   INFLIGHT_TIMEOUT = 240
 
@@ -1643,7 +1632,7 @@ class PreCQLauncherStage(SyncStage):
         db.InsertCLActions(build_id, [action])
 
   def _ProcessTimeouts(self, change, progress_map, pool, current_time):
-    """Enforce per-config launch and inflight timeouts.
+    """Enforce per-config inflight timeouts.
 
     Args:
       change: GerritPatch instance to process.
@@ -1651,23 +1640,18 @@ class PreCQLauncherStage(SyncStage):
       pool: The current validation pool.
       current_time: datetime.datetime timestamp giving current database time.
     """
-    timeout_statuses = (constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED,
-                        constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT)
     config_progress = progress_map[change]
-    for config, pre_cq_progress_tuple in config_progress.iteritems():
-      if not pre_cq_progress_tuple.status in timeout_statuses:
+    for config, progress in config_progress.iteritems():
+      # Note: only "INFLIGHT" status has the timeout.
+      if (progress.status != constants.CL_PRECQ_CONFIG_STATUS_INFLIGHT or
+          not self._HasTimedOut(
+              progress.timestamp, current_time, self.INFLIGHT_TIMEOUT)):
         continue
-      launched = (pre_cq_progress_tuple.status ==
-                  constants.CL_PRECQ_CONFIG_STATUS_LAUNCHED)
-      timeout = self.LAUNCH_TIMEOUT if launched else self.INFLIGHT_TIMEOUT
-      msg = (PRECQ_LAUNCH_TIMEOUT_MSG if launched
-             else PRECQ_INFLIGHT_TIMEOUT_MSG) % (config, timeout)
 
-      if self._HasTimedOut(pre_cq_progress_tuple.timestamp, current_time,
-                           timeout):
-        pool.SendNotification(change, '%(details)s', details=msg)
-        pool.RemoveReady(change, reason=config)
-        pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
+      msg = PRECQ_INFLIGHT_TIMEOUT_MSG % (config, self.INFLIGHT_TIMEOUT)
+      pool.SendNotification(change, '%(details)s', details=msg)
+      pool.RemoveReady(change, reason=config)
+      pool.UpdateCLPreCQStatus(change, constants.CL_STATUS_FAILED)
 
   def _CancelPreCQIfNeeded(self, db, old_build_action):
     """Cancel the pre-cq if it's still running.
