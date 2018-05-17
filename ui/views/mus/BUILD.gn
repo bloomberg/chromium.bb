@@ -56,6 +56,7 @@ jumbo_component("mus") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/mojom",
     "//services/ui/public/cpp",
+    "//services/ui/public/cpp/input_devices",
     "//services/ui/public/interfaces",
     "//skia",
     "//third_party/icu",

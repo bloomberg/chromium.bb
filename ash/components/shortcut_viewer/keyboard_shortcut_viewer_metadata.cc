@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/events/keyboard_layout_util.h"
+#include "ui/events/devices/input_device_manager.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
@@ -75,6 +76,9 @@ base::Optional<base::string16> GetSpecialStringForKeyboardCode(
       msg_id = IDS_KSV_MODIFIER_SHIFT;
       break;
     case ui::VKEY_COMMAND:
+      // DeviceUsesKeyboardLayout2() relies on InputDeviceManager.
+      DCHECK(ui::InputDeviceManager::HasInstance());
+      DCHECK(ui::InputDeviceManager::GetInstance()->AreDeviceListsComplete());
       msg_id = ui::DeviceUsesKeyboardLayout2() ? IDS_KSV_MODIFIER_LAUNCHER
                                                : IDS_KSV_MODIFIER_SEARCH;
       break;

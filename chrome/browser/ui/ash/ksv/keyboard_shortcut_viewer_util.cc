@@ -11,8 +11,10 @@ namespace keyboard_shortcut_viewer_util {
 
 void ShowKeyboardShortcutViewer() {
   // TODO(https://crbug.com/833673): Remove the dependency on aura::Window.
+  // TODO(https://crbug.com/764009): GetRootWindowForNewWindows Mash support.
   keyboard_shortcut_viewer::KeyboardShortcutView::Show(
-      ash::Shell::GetRootWindowForNewWindows());
+      ash::Shell::HasInstance() ? ash::Shell::GetRootWindowForNewWindows()
+                                : nullptr);
 }
 
 }  // namespace keyboard_shortcut_viewer_util

@@ -11,6 +11,7 @@
 #include "base/threading/thread.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/cpp/gpu/gpu.h"
+#include "services/ui/public/cpp/input_devices/input_device_client.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/event_matcher.mojom.h"
@@ -112,6 +113,13 @@ MusClient::MusClient(service_manager::Connector* connector,
 
   pointer_watcher_event_router_ =
       std::make_unique<PointerWatcherEventRouter>(window_tree_client_.get());
+
+  if (connector) {
+    input_device_client_ = std::make_unique<ui::InputDeviceClient>();
+    ui::mojom::InputDeviceServerPtr input_device_server;
+    connector->BindInterface(ui::mojom::kServiceName, &input_device_server);
+    input_device_client_->Connect(std::move(input_device_server));
+  }
 
   screen_ = std::make_unique<ScreenMus>(this);
   screen_->Init(connector);

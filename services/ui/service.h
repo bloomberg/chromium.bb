@@ -39,6 +39,7 @@
 #include "services/ui/ws/window_server_delegate.h"
 
 #if defined(OS_CHROMEOS)
+#include "services/ui/input_devices/touch_device_server.h"
 #include "services/ui/public/interfaces/arc.mojom.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -148,6 +149,8 @@ class Service : public service_manager::Service,
 
   void BindIMEDriverRequest(mojom::IMEDriverRequest request);
 
+  void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
+
   void BindUserActivityMonitorRequest(
       mojom::UserActivityMonitorRequest request,
       const service_manager::BindSourceInfo& source_info);
@@ -176,6 +179,7 @@ class Service : public service_manager::Service,
 
 #if defined(OS_CHROMEOS)
   void BindArcRequest(mojom::ArcRequest request);
+  void BindTouchDeviceServerRequest(mojom::TouchDeviceServerRequest request);
 #endif  // defined(OS_CHROMEOS)
 
   std::unique_ptr<ws::WindowServer> window_server_;
@@ -198,6 +202,7 @@ class Service : public service_manager::Service,
 
 #if defined(OS_CHROMEOS)
   std::unique_ptr<InputDeviceController> input_device_controller_;
+  TouchDeviceServer touch_device_server_;
 #endif
 
   // Manages display hardware and handles display management. May register Mojo

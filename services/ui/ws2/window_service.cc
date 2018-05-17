@@ -25,6 +25,8 @@ WindowService::WindowService(WindowServiceDelegate* delegate,
   // MouseLocationManager is necessary for providing the shared memory with the
   // location of the mouse to clients.
   aura::Env::GetInstance()->CreateMouseLocationManager();
+
+  input_device_server_.RegisterAsObserver();
 }
 
 WindowService::~WindowService() {}
@@ -68,6 +70,8 @@ void WindowService::OnStart() {
   registry_.AddInterface(base::BindRepeating(
       &WindowService::BindImeDriverRequest, base::Unretained(this)));
   registry_.AddInterface(base::BindRepeating(
+      &WindowService::BindInputDeviceServerRequest, base::Unretained(this)));
+  registry_.AddInterface(base::BindRepeating(
       &WindowService::BindWindowTreeFactoryRequest, base::Unretained(this)));
 
   // |gpu_support_| may be null in tests.
@@ -104,6 +108,11 @@ void WindowService::BindScreenProviderRequest(
 void WindowService::BindImeDriverRequest(mojom::IMEDriverRequest request) {
   // TODO: https://crbug.com/837710.
   NOTIMPLEMENTED();
+}
+
+void WindowService::BindInputDeviceServerRequest(
+    mojom::InputDeviceServerRequest request) {
+  input_device_server_.AddBinding(std::move(request));
 }
 
 void WindowService::BindWindowTreeFactoryRequest(

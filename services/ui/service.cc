@@ -316,8 +316,15 @@ void Service::OnStart() {
 
   // On non-Linux platforms there will be no DeviceDataManager instance and no
   // purpose in adding the Mojo interface to connect to.
-  if (input_device_server_.IsRegisteredAsObserver())
-    input_device_server_.AddInterface(&registry_with_source_info_);
+  if (input_device_server_.IsRegisteredAsObserver()) {
+    registry_.AddInterface<mojom::InputDeviceServer>(base::BindRepeating(
+        &Service::BindInputDeviceServerRequest, base::Unretained(this)));
+  }
+
+#if defined(OS_CHROMEOS)
+  registry_.AddInterface<mojom::TouchDeviceServer>(base::BindRepeating(
+      &Service::BindTouchDeviceServerRequest, base::Unretained(this)));
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()->AddInterfaces(&registry_with_source_info_);
@@ -453,6 +460,11 @@ void Service::BindIMEDriverRequest(mojom::IMEDriverRequest request) {
   ime_driver_.AddBinding(std::move(request));
 }
 
+void Service::BindInputDeviceServerRequest(
+    mojom::InputDeviceServerRequest request) {
+  input_device_server_.AddBinding(std::move(request));
+}
+
 void Service::BindUserActivityMonitorRequest(
     mojom::UserActivityMonitorRequest request,
     const service_manager::BindSourceInfo& source_info) {
@@ -523,6 +535,12 @@ void Service::BindVideoDetectorRequest(mojom::VideoDetectorRequest request) {
 void Service::BindArcRequest(mojom::ArcRequest request) {
   window_server_->gpu_host()->AddArc(std::move(request));
 }
+
+void Service::BindTouchDeviceServerRequest(
+    mojom::TouchDeviceServerRequest request) {
+  touch_device_server_.AddBinding(std::move(request));
+}
+
 #endif  // defined(OS_CHROMEOS)
 
 }  // namespace ui

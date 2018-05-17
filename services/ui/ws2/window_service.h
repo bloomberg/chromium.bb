@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "services/ui/input_devices/input_device_server.h"
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/screen_provider.mojom.h"
@@ -80,6 +81,7 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
   void BindClipboardRequest(mojom::ClipboardRequest request);
   void BindScreenProviderRequest(mojom::ScreenProviderRequest request);
   void BindImeDriverRequest(mojom::IMEDriverRequest request);
+  void BindInputDeviceServerRequest(mojom::InputDeviceServerRequest request);
   void BindWindowTreeFactoryRequest(
       ui::mojom::WindowTreeFactoryRequest request);
 
@@ -96,6 +98,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowService
 
   // Helper used to serialize and deserialize window properties.
   aura::PropertyConverter property_converter_;
+
+  // Provides info to InputDeviceClient users, via InputDeviceManager.
+  ui::InputDeviceServer input_device_server_;
 
   // Id for the next WindowServiceClient.
   ClientSpecificId next_client_id_ = kWindowServerClientId + 1;
