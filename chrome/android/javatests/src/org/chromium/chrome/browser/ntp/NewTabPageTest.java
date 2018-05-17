@@ -202,6 +202,7 @@ public class NewTabPageTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
+    @DisableFeatures({ChromeFeatureList.SIMPLIFIED_NTP})
     @ParameterAnnotations.UseMethodParameter(ModernParams.class)
     public void testRender(boolean modern) throws IOException {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
