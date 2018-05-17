@@ -86,8 +86,6 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     private boolean mFocused;
     private boolean mTemporarilyHidden;
     private boolean mAttachedToWindow;
-    // This should be set only from onVisibilityInputChanged.
-    private boolean mWasShowingAllowed;
     private boolean mRotationChanged;
 
     // Gesture accounting for handle hiding while scrolling.
@@ -413,8 +411,8 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     private void onVisibilityInputChanged() {
         if (!mContainer.isShowing()) return;
         boolean allowed = isShowingAllowed();
-        if (mWasShowingAllowed == allowed) return;
-        mWasShowingAllowed = allowed;
+        boolean wasShowingAllowed = getVisibility() == VISIBLE;
+        if (wasShowingAllowed == allowed) return;
         cancelFadeIn();
         if (allowed) {
             if (mDeferredHandleFadeInRunnable == null) {
