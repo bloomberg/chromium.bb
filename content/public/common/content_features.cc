@@ -21,10 +21,6 @@ const base::Feature kAllowContentInitiatedDataUrlNavigations{
     "AllowContentInitiatedDataUrlNavigations",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables Array.prototype.values method
-const base::Feature kArrayPrototypeValues{"ArrayPrototypeValues",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables asm.js to WebAssembly V8 backend.
 // http://asmjs.org/spec/latest/
 const base::Feature kAsmJsToWebAssembly{"AsmJsToWebAssembly",

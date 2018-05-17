@@ -58,9 +58,6 @@ extern const char kAshSidebarDescription[];
 extern const char kSystemTrayUnifiedName[];
 extern const char kSystemTrayUnifiedDescription[];
 
-extern const char kArrayPrototypeValuesName[];
-extern const char kArrayPrototypeValuesDescription[];
-
 extern const char kAsyncImageDecodingName[];
 extern const char kAsyncImageDecodingDescription[];
 

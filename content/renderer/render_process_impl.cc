@@ -154,10 +154,6 @@ RenderProcessImpl::RenderProcessImpl(
 
   SetV8FlagIfNotFeature(features::kWebAssemblyTrapHandler,
                         "--no-wasm-trap-handler");
-  SetV8FlagIfFeature(features::kArrayPrototypeValues,
-                     "--harmony-array-prototype-values");
-  SetV8FlagIfNotFeature(features::kArrayPrototypeValues,
-                        "--no-harmony-array-prototype-values");
 #if defined(OS_LINUX) && defined(ARCH_CPU_X86_64) && !defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
     bool use_v8_signal_handler = false;

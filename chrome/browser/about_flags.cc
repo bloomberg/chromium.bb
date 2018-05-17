@@ -3658,11 +3658,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     kSimplifyHttpsIndicatorVariations,
                                     "SimplifyHttpsIndicator")},
 
-    {"enable-array-prototype-values",
-     flag_descriptions::kArrayPrototypeValuesName,
-     flag_descriptions::kArrayPrototypeValuesDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kArrayPrototypeValues)},
-
 #if defined(OS_CHROMEOS)
     {"ash-enable-trilinear-filtering",
      flag_descriptions::kAshEnableTrilinearFilteringName,
