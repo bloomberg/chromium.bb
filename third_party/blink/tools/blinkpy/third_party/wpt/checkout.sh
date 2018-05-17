@@ -9,7 +9,7 @@ cd $DIR
 
 TARGET_DIR=$DIR/wpt
 REMOTE_REPO="https://chromium.googlesource.com/external/w3c/web-platform-tests.git"
-WPT_HEAD=7f2b38f30a61b02545c289179be4676629727c5f
+WPT_HEAD=ad84337c037685845f96d63618bb9b46ae9e9468
 
 function clone {
   # Remove existing repo if already exists.
@@ -21,9 +21,9 @@ function clone {
   echo "WPTHead: " `git rev-parse HEAD`
 
   # Apply local changes.
-  cd $DIR && git apply chromium.patch
+  git apply $DIR/chromium.patch
   # Chromium presubmit requires scripts with shebang to be executable.
-  chmod 755 $TARGET_DIR/tools/manifest/update.py
+  chmod 755 tools/manifest/update.py
 }
 
 function reduce {

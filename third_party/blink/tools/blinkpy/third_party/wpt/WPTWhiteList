@@ -1,7 +1,6 @@
 ./.gitignore
 ./CONTRIBUTING.md
 ./LICENSE.md
-./config.default.json
 ./serve.py
 ./wpt
 ./wpt.py
@@ -85,11 +84,6 @@
 ./tools/six/LICENSE
 ./tools/six/README
 ./tools/six/six.py
-./tools/sslutils
-./tools/sslutils/__init__.py
-./tools/sslutils/base.py
-./tools/sslutils/openssl.py
-./tools/sslutils/pregenerated.py
 ./tools/wpt
 ./tools/wpt/__init__.py
 ./tools/wpt/browser.py
@@ -119,6 +113,11 @@
 ./tools/wptserve/wptserve/router.py
 ./tools/wptserve/wptserve/routes.py
 ./tools/wptserve/wptserve/server.py
+./tools/wptserve/wptserve/sslutils
+./tools/wptserve/wptserve/sslutils/__init__.py
+./tools/wptserve/wptserve/sslutils/base.py
+./tools/wptserve/wptserve/sslutils/openssl.py
+./tools/wptserve/wptserve/sslutils/pregenerated.py
 ./tools/wptserve/wptserve/stash.py
 ./tools/wptserve/wptserve/utils.py
 ./tools/wptserve/wptserve/wptserve.py
