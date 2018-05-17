@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 #include <gdk/gdk.h>
+#include <gdk/gdkkeysyms.h>
 #include <math.h>
 #include <pango/pango.h>
 
@@ -14,6 +15,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/flat_map.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
 #include "base/i18n/rtl.h"
@@ -47,6 +49,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/display/display.h"
 #include "ui/events/keycodes/dom/dom_code.h"
+#include "ui/events/keycodes/dom/dom_keyboard_layout_manager.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_render_params.h"
@@ -841,16 +844,28 @@ std::unique_ptr<views::NavButtonProvider> GtkUi::CreateNavButtonProvider() {
 }
 #endif
 
+// Mapping from GDK dead keys to corresponding printable character.
+static struct {
+  guint gdk_key;
+  guint16 unicode;
+} kDeadKeyMapping[] = {
+    {GDK_KEY_dead_grave, 0x0060},      {GDK_KEY_dead_acute, 0x0027},
+    {GDK_KEY_dead_circumflex, 0x005e}, {GDK_KEY_dead_tilde, 0x007e},
+    {GDK_KEY_dead_diaeresis, 0x00a8},
+};
+
 base::flat_map<std::string, std::string> GtkUi::GetKeyboardLayoutMap() {
   GdkDisplay* display = gdk_display_get_default();
   GdkKeymap* keymap = gdk_keymap_get_for_display(display);
-
-  auto map = base::flat_map<std::string, std::string>();
   if (!keymap)
-    return map;
+    return {};
 
-  for (unsigned int i = 0; i < ui::kWritingSystemKeyDomCodeEntries; ++i) {
-    ui::DomCode domcode = ui::writing_system_key_domcodes[i];
+  ui::DomKeyboardLayoutManager* layouts = new ui::DomKeyboardLayoutManager();
+  auto map = base::flat_map<std::string, std::string>();
+
+  for (unsigned int i_domcode = 0;
+       i_domcode < ui::kWritingSystemKeyDomCodeEntries; ++i_domcode) {
+    ui::DomCode domcode = ui::writing_system_key_domcodes[i_domcode];
     guint16 keycode = ui::KeycodeConverter::DomCodeToNativeKeycode(domcode);
     GdkKeymapKey* keys = nullptr;
     guint* keyvals = nullptr;
@@ -862,16 +877,20 @@ base::flat_map<std::string, std::string> GtkUi::GetKeyboardLayoutMap() {
     if (gdk_keymap_get_entries_for_keycode(keymap, keycode, &keys, &keyvals,
                                            &n_entries)) {
       for (gint i = 0; i < n_entries; ++i) {
-        // There are 4 entries per layout, one each for shift level 0..3.
+        // There are 4 entries per layout group, one each for shift level 0..3.
         // We only care about the unshifted values (level = 0).
-        if (keys[i].level != 0 || keyvals[i] >= 255)
-          continue;
-        char keystring[2];
-        keystring[0] = keyvals[i];
-        keystring[1] = '\0';
-        map.emplace(ui::KeycodeConverter::DomCodeToCodeString(domcode),
-                    keystring);
-        break;
+        if (keys[i].level == 0) {
+          uint16_t unicode = gdk_keyval_to_unicode(keyvals[i]);
+          if (unicode == 0) {
+            for (unsigned int i_dead = 0; i_dead < base::size(kDeadKeyMapping);
+                 ++i_dead) {
+              if (keyvals[i] == kDeadKeyMapping[i_dead].gdk_key)
+                unicode = kDeadKeyMapping[i_dead].unicode;
+            }
+          }
+          if (unicode != 0)
+            layouts->GetLayout(keys[i].group)->AddKeyMapping(domcode, unicode);
+        }
       }
     }
     g_free(keys);
@@ -879,7 +898,7 @@ base::flat_map<std::string, std::string> GtkUi::GetKeyboardLayoutMap() {
     g_free(keyvals);
     keyvals = nullptr;
   }
-  return map;
+  return layouts->GetFirstAsciiCapableLayout()->GetMap();
 }
 
 bool GtkUi::MatchEvent(const ui::Event& event,
