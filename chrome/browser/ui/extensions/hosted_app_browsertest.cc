@@ -570,7 +570,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, CreateShortcutDisabledInIncognito) {
   app_menu_model->Init();
   ui::MenuModel* model = app_menu_model.get();
   int index = -1;
-  EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
+  ASSERT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
       IDC_CREATE_HOSTED_APP, &model, &index));
   EXPECT_FALSE(model->IsEnabledAt(index));
 }
@@ -937,6 +937,26 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, MixedContentInBookmarkApp) {
 }
 
 using HostedAppPWAOnlyTest = HostedAppTest;
+
+// Tests that the command for popping a tab out to a PWA window is disabled in
+// incognito.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, PopOutDisabledInIncognito) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecurePWA();
+
+  Browser* incognito_browser =
+      OpenURLOffTheRecord(profile(), GetSecureAppURL());
+  auto app_menu_model =
+      std::make_unique<AppMenuModel>(nullptr, incognito_browser);
+  app_menu_model->Init();
+  ui::MenuModel* model = app_menu_model.get();
+  int index = -1;
+  ASSERT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
+      IDC_OPEN_IN_PWA_WINDOW, &model, &index));
+  EXPECT_FALSE(model->IsEnabledAt(index));
+}
 
 // Tests that the command for OpenActiveTabInPwaWindow is available for secure
 // pages in an app's scope.
