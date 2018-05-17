@@ -17,6 +17,59 @@
 
 namespace content {
 
+// An inner helper class to manage the SyncLoadContext's events and timeouts,
+// so that we can stop or resumse all of them at once.
+class SyncLoadContext::SignalHelper final {
+ public:
+  SignalHelper(SyncLoadContext* context,
+               base::WaitableEvent* redirect_or_response_event,
+               base::WaitableEvent* abort_event,
+               double timeout)
+      : context_(context),
+        redirect_or_response_event_(redirect_or_response_event),
+        abort_event_(abort_event) {
+    Start(base::TimeDelta::FromSecondsD(timeout));
+  }
+
+  void SignalRedirectOrResponseComplete() {
+    abort_watcher_.StopWatching();
+    timeout_timer_.AbandonAndStop();
+    redirect_or_response_event_->Signal();
+  }
+
+  bool RestartAfterRedirect() {
+    if (abort_event_ && abort_event_->IsSignaled())
+      return false;
+    base::TimeDelta timeout_remainder =
+        timeout_timer_.desired_run_time() - base::TimeTicks::Now();
+    if (timeout_remainder <= base::TimeDelta())
+      return false;
+    Start(timeout_remainder);
+    return true;
+  }
+
+ private:
+  void Start(const base::TimeDelta& timeout) {
+    DCHECK(!redirect_or_response_event_->IsSignaled());
+    if (abort_event_) {
+      abort_watcher_.StartWatching(
+          abort_event_,
+          base::BindOnce(&SyncLoadContext::OnAbort, base::Unretained(context_)),
+          context_->task_runner_);
+    }
+    if (timeout > base::TimeDelta()) {
+      timeout_timer_.Start(FROM_HERE, timeout, context_,
+                           &SyncLoadContext::OnTimeout);
+    }
+  }
+
+  SyncLoadContext* context_;
+  base::WaitableEvent* redirect_or_response_event_;
+  base::WaitableEvent* abort_event_;
+  base::WaitableEventWatcher abort_watcher_;
+  base::OneShotTimer timeout_timer_;
+};
+
 // static
 void SyncLoadContext::StartAsyncWithWaitableEvent(
     std::unique_ptr<network::ResourceRequest> request,
@@ -27,14 +80,14 @@ void SyncLoadContext::StartAsyncWithWaitableEvent(
         url_loader_factory_info,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     SyncLoadResponse* response,
-    base::WaitableEvent* completed_event,
+    base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,
     double timeout,
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry) {
   bool download_to_blob = download_to_blob_registry.is_valid();
   auto* context = new SyncLoadContext(
       request.get(), std::move(url_loader_factory_info), response,
-      completed_event, abort_event, timeout,
+      redirect_or_response_event, abort_event, timeout,
       std::move(download_to_blob_registry), loading_task_runner);
   context->request_id_ = context->resource_dispatcher_->StartAsync(
       std::move(request), routing_id, std::move(loading_task_runner),
@@ -49,27 +102,21 @@ SyncLoadContext::SyncLoadContext(
     network::ResourceRequest* request,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory,
     SyncLoadResponse* response,
-    base::WaitableEvent* completed_event,
+    base::WaitableEvent* redirect_or_response_event,
     base::WaitableEvent* abort_event,
     double timeout,
     blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : response_(response),
-      completed_event_(completed_event),
       download_to_blob_registry_(std::move(download_to_blob_registry)),
-      task_runner_(std::move(task_runner)) {
+      task_runner_(std::move(task_runner)),
+      signals_(std::make_unique<SignalHelper>(this,
+                                              redirect_or_response_event,
+                                              abort_event,
+                                              timeout)),
+      fetch_request_mode_(request->fetch_request_mode) {
   url_loader_factory_ =
       network::SharedURLLoaderFactory::Create(std::move(url_loader_factory));
-  if (abort_event) {
-    abort_watcher_.StartWatching(
-        abort_event,
-        base::BindOnce(&SyncLoadContext::OnAbort, base::Unretained(this)),
-        task_runner_);
-  }
-  if (timeout) {
-    timeout_timer_.Start(FROM_HERE, base::TimeDelta::FromSecondsD(timeout),
-                         this, &SyncLoadContext::OnTimeout);
-  }
 
   // Constructs a new ResourceDispatcher specifically for this request.
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
@@ -87,7 +134,13 @@ bool SyncLoadContext::OnReceivedRedirect(
     const net::RedirectInfo& redirect_info,
     const network::ResourceResponseInfo& info) {
   DCHECK(!Completed());
-  if (redirect_info.new_url.GetOrigin() != response_->url.GetOrigin()) {
+  // Synchronous loads in blink aren't associated with a ResourceClient, and
+  // CORS checks are performed by ResourceClient subclasses, so there's
+  // currently no way to perform CORS checks for redirects.
+  // Err on the side of extreme caution and block any cross origin redirect
+  // that might have CORS implications.
+  if (fetch_request_mode_ != network::mojom::FetchRequestMode::kNoCORS &&
+      redirect_info.new_url.GetOrigin() != response_->url.GetOrigin()) {
     LOG(ERROR) << "Cross origin redirect denied";
     response_->error_code = net::ERR_ABORTED;
 
@@ -99,7 +152,31 @@ bool SyncLoadContext::OnReceivedRedirect(
   }
 
   response_->url = redirect_info.new_url;
+  response_->info = info;
+  response_->redirect_info = redirect_info;
+  response_->context_for_redirect = this;
+  resource_dispatcher_->SetDefersLoading(request_id_, true);
+  signals_->SignalRedirectOrResponseComplete();
   return true;
+}
+
+void SyncLoadContext::FollowRedirect() {
+  if (!signals_->RestartAfterRedirect()) {
+    CancelRedirect();
+    return;
+  }
+
+  response_->redirect_info = net::RedirectInfo();
+  response_->context_for_redirect = nullptr;
+
+  resource_dispatcher_->SetDefersLoading(request_id_, false);
+}
+
+void SyncLoadContext::CancelRedirect() {
+  response_->redirect_info = net::RedirectInfo();
+  response_->context_for_redirect = nullptr;
+  response_->error_code = net::ERR_ABORTED;
+  CompleteRequest(true);
 }
 
 void SyncLoadContext::OnReceivedResponse(
@@ -182,12 +259,8 @@ void SyncLoadContext::OnTimeout() {
 }
 
 void SyncLoadContext::CompleteRequest(bool remove_pending_request) {
-  abort_watcher_.StopWatching();
-  timeout_timer_.AbandonAndStop();
-
-  completed_event_->Signal();
-
-  completed_event_ = nullptr;
+  signals_->SignalRedirectOrResponseComplete();
+  signals_ = nullptr;
   response_ = nullptr;
 
   if (remove_pending_request) {
@@ -197,7 +270,7 @@ void SyncLoadContext::CompleteRequest(bool remove_pending_request) {
 }
 
 bool SyncLoadContext::Completed() const {
-  DCHECK_EQ(!completed_event_, !response_);
+  DCHECK_EQ(!signals_, !response_);
   return !response_;
 }
 

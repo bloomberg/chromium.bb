@@ -17,6 +17,8 @@
 
 namespace content {
 
+class SyncLoadContext;
+
 // See the SyncLoad method. (The name of this struct is not
 // suffixed with "Info" because it also contains the response data.)
 struct CONTENT_EXPORT SyncLoadResponse {
@@ -25,6 +27,9 @@ struct CONTENT_EXPORT SyncLoadResponse {
   ~SyncLoadResponse();
 
   SyncLoadResponse& operator=(SyncLoadResponse&& other);
+
+  base::Optional<net::RedirectInfo> redirect_info;
+  SyncLoadContext* context_for_redirect = nullptr;
 
   network::ResourceResponseInfo info;
 

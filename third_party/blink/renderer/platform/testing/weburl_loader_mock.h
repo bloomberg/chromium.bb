@@ -46,6 +46,7 @@ class WebURLLoaderMock : public WebURLLoader {
 
   // WebURLLoader methods:
   void LoadSynchronously(const WebURLRequest&,
+                         WebURLLoaderClient* client,
                          WebURLResponse&,
                          base::Optional<WebURLError>&,
                          WebData&,

@@ -57,6 +57,7 @@ class WebURLLoader {
   // |downloaded_blob|.
   virtual void LoadSynchronously(
       const WebURLRequest&,
+      WebURLLoaderClient*,
       WebURLResponse&,
       base::Optional<WebURLError>&,
       WebData&,

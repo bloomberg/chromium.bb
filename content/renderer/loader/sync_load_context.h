@@ -55,6 +55,9 @@ class SyncLoadContext : public RequestPeer {
 
   ~SyncLoadContext() override;
 
+  void FollowRedirect();
+  void CancelRedirect();
+
  private:
   SyncLoadContext(
       network::ResourceRequest* request,
@@ -91,10 +94,6 @@ class SyncLoadContext : public RequestPeer {
   // Set to null after CompleteRequest() is called.
   SyncLoadResponse* response_;
 
-  // This event is signaled when the request is complete.
-  // Set to null after CompleteRequest() is called.
-  base::WaitableEvent* completed_event_;
-
   // State necessary to run a request on an independent thread.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
@@ -111,8 +110,10 @@ class SyncLoadContext : public RequestPeer {
 
   base::Optional<int64_t> downloaded_file_length_;
 
-  base::WaitableEventWatcher abort_watcher_;
-  base::OneShotTimer timeout_timer_;
+  class SignalHelper;
+  std::unique_ptr<SignalHelper> signals_;
+
+  const network::mojom::FetchRequestMode fetch_request_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncLoadContext);
 };

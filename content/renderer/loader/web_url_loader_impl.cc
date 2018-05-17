@@ -730,6 +730,16 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     extra_data = &empty_extra_data;
   extra_data->CopyToResourceRequest(resource_request.get());
 
+  std::unique_ptr<RequestPeer> peer;
+  if (extra_data->download_to_network_cache_only()) {
+    peer = std::make_unique<SinkPeer>(this);
+  } else {
+    const bool discard_body =
+        (resource_request->resource_type == RESOURCE_TYPE_PREFETCH);
+    peer =
+        std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this, discard_body);
+  }
+
   if (sync_load_response) {
     DCHECK(defers_loading_ == NOT_DEFERRING);
 
@@ -742,18 +752,9 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
         std::move(resource_request), request.RequestorID(),
         GetTrafficAnnotationTag(request), sync_load_response,
         url_loader_factory_, extra_data->TakeURLLoaderThrottles(),
-        request.TimeoutInterval(), std::move(download_to_blob_registry));
+        request.TimeoutInterval(), std::move(download_to_blob_registry),
+        std::move(peer));
     return;
-  }
-
-  std::unique_ptr<RequestPeer> peer;
-  if (extra_data->download_to_network_cache_only()) {
-    peer = std::make_unique<SinkPeer>(this);
-  } else {
-    const bool discard_body =
-        (resource_request->resource_type == RESOURCE_TYPE_PREFETCH);
-    peer =
-        std::make_unique<WebURLLoaderImpl::RequestPeerImpl>(this, discard_body);
   }
 
   TRACE_EVENT_WITH_FLOW0("loading", "WebURLLoaderImpl::Context::Start", this,
@@ -1290,6 +1291,7 @@ void WebURLLoaderImpl::PopulateURLResponse(
 
 void WebURLLoaderImpl::LoadSynchronously(
     const WebURLRequest& request,
+    WebURLLoaderClient* client,
     WebURLResponse& response,
     base::Optional<WebURLError>& error,
     WebData& data,
@@ -1299,6 +1301,9 @@ void WebURLLoaderImpl::LoadSynchronously(
     blink::WebBlobInfo& downloaded_blob) {
   TRACE_EVENT0("loading", "WebURLLoaderImpl::loadSynchronously");
   SyncLoadResponse sync_load_response;
+
+  DCHECK(!context_->client());
+  context_->set_client(client);
   context_->Start(request, &sync_load_response);
 
   const GURL& final_url = sync_load_response.url;
