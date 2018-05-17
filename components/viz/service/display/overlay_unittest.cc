@@ -156,6 +156,14 @@ class UnderlayOverlayValidator : public SingleOverlayValidator {
   }
 };
 
+class TransparentUnderlayOverlayValidator : public SingleOverlayValidator {
+ public:
+  void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
+    strategies->push_back(std::make_unique<OverlayStrategyUnderlay>(
+        this, OverlayStrategyUnderlay::OpaqueMode::AllowTransparentCandidates));
+  }
+};
+
 class UnderlayCastOverlayValidator : public SingleOverlayValidator {
  public:
   void GetStrategies(OverlayProcessor::StrategyList* strategies) override {
@@ -545,6 +553,8 @@ class OverlayTest : public testing::Test {
 using FullscreenOverlayTest = OverlayTest<FullscreenOverlayValidator>;
 using SingleOverlayOnTopTest = OverlayTest<SingleOnTopOverlayValidator>;
 using UnderlayTest = OverlayTest<UnderlayOverlayValidator>;
+using TransparentUnderlayTest =
+    OverlayTest<TransparentUnderlayOverlayValidator>;
 using UnderlayCastTest = OverlayTest<UnderlayCastOverlayValidator>;
 using CALayerOverlayTest = OverlayTest<CALayerValidator>;
 
@@ -1263,6 +1273,84 @@ TEST_F(UnderlayTest, Allow270DegreeRotation) {
       nullptr, nullptr, &damage_rect_, &content_bounds_);
   ASSERT_EQ(1U, candidate_list.size());
   EXPECT_EQ(gfx::OVERLAY_TRANSFORM_ROTATE_270, candidate_list.back().transform);
+}
+
+TEST_F(UnderlayTest, AllowsOpaqueCandidates) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  CreateFullscreenCandidateQuad(
+      resource_provider_.get(), child_resource_provider_.get(),
+      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get())
+      ->needs_blending = false;
+  pass->shared_quad_state_list.front()->opacity = 1.0;
+
+  cc::OverlayCandidateList candidate_list;
+  OverlayProcessor::FilterOperationsMap render_pass_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_background_filters, &candidate_list,
+      nullptr, nullptr, &damage_rect_, &content_bounds_);
+  ASSERT_EQ(1U, candidate_list.size());
+}
+
+TEST_F(UnderlayTest, DisallowsTransparentCandidates) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  CreateFullscreenCandidateQuad(
+      resource_provider_.get(), child_resource_provider_.get(),
+      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get())
+      ->needs_blending = true;
+
+  cc::OverlayCandidateList candidate_list;
+  OverlayProcessor::FilterOperationsMap render_pass_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_background_filters, &candidate_list,
+      nullptr, nullptr, &damage_rect_, &content_bounds_);
+  ASSERT_EQ(0U, candidate_list.size());
+}
+
+TEST_F(TransparentUnderlayTest, AllowsOpaqueCandidates) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  CreateFullscreenCandidateQuad(
+      resource_provider_.get(), child_resource_provider_.get(),
+      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get())
+      ->needs_blending = false;
+  pass->shared_quad_state_list.front()->opacity = 1.0;
+
+  cc::OverlayCandidateList candidate_list;
+  OverlayProcessor::FilterOperationsMap render_pass_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_background_filters, &candidate_list,
+      nullptr, nullptr, &damage_rect_, &content_bounds_);
+  ASSERT_EQ(1U, candidate_list.size());
+}
+
+TEST_F(TransparentUnderlayTest, AllowsTransparentCandidates) {
+  std::unique_ptr<RenderPass> pass = CreateRenderPass();
+  CreateFullscreenCandidateQuad(
+      resource_provider_.get(), child_resource_provider_.get(),
+      child_provider_.get(), pass->shared_quad_state_list.back(), pass.get())
+      ->needs_blending = true;
+
+  cc::OverlayCandidateList candidate_list;
+  OverlayProcessor::FilterOperationsMap render_pass_filters;
+  OverlayProcessor::FilterOperationsMap render_pass_background_filters;
+  RenderPassList pass_list;
+  pass_list.push_back(std::move(pass));
+  overlay_processor_->ProcessForOverlays(
+      resource_provider_.get(), &pass_list, GetIdentityColorMatrix(),
+      render_pass_filters, render_pass_background_filters, &candidate_list,
+      nullptr, nullptr, &damage_rect_, &content_bounds_);
+  ASSERT_EQ(1U, candidate_list.size());
 }
 
 TEST_F(SingleOverlayOnTopTest, AllowNotTopIfNotOccluded) {
