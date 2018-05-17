@@ -47,8 +47,7 @@ class StandardManagementPolicyProviderTest : public testing::Test {
 // Tests the behavior of the ManagementPolicy provider methods for an
 // extension required by policy.
 TEST_F(StandardManagementPolicyProviderTest, RequiredExtension) {
-  scoped_refptr<const Extension> extension =
-      CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  auto extension = CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD);
 
   base::string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
@@ -60,13 +59,52 @@ TEST_F(StandardManagementPolicyProviderTest, RequiredExtension) {
   EXPECT_NE(base::string16(), error16);
   EXPECT_TRUE(provider_.MustRemainEnabled(extension.get(), &error16));
   EXPECT_NE(base::string16(), error16);
+
+  // Component/policy extensions can modify and disable policy extensions, while
+  // all others cannot.
+  auto component = CreateExtension(Manifest::COMPONENT);
+  auto policy = extension;
+  auto policy2 = CreateExtension(Manifest::EXTERNAL_POLICY);
+  auto internal = CreateExtension(Manifest::INTERNAL);
+  EXPECT_TRUE(provider_.ExtensionMayModifySettings(component.get(),
+                                                   policy.get(), nullptr));
+  EXPECT_TRUE(provider_.ExtensionMayModifySettings(policy2.get(), policy.get(),
+                                                   nullptr));
+  EXPECT_FALSE(provider_.ExtensionMayModifySettings(internal.get(),
+                                                    policy.get(), nullptr));
 }
 
-// Tests the behavior of the ManagementPolicy provider methods for an
-// extension required by policy.
+// Tests the behavior of the ManagementPolicy provider methods for a component
+// extension.
+TEST_F(StandardManagementPolicyProviderTest, ComponentExtension) {
+  auto extension = CreateExtension(Manifest::COMPONENT);
+
+  base::string16 error16;
+  EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
+  EXPECT_EQ(base::string16(), error16);
+
+  EXPECT_FALSE(provider_.UserMayModifySettings(extension.get(), &error16));
+  EXPECT_NE(base::string16(), error16);
+  EXPECT_TRUE(provider_.MustRemainEnabled(extension.get(), &error16));
+  EXPECT_NE(base::string16(), error16);
+
+  // No extension can modify or disable component extensions.
+  auto component = extension;
+  auto component2 = CreateExtension(Manifest::COMPONENT);
+  auto policy = CreateExtension(Manifest::EXTERNAL_POLICY);
+  auto internal = CreateExtension(Manifest::INTERNAL);
+  EXPECT_FALSE(provider_.ExtensionMayModifySettings(component2.get(),
+                                                    component.get(), nullptr));
+  EXPECT_FALSE(provider_.ExtensionMayModifySettings(policy.get(),
+                                                    component.get(), nullptr));
+  EXPECT_FALSE(provider_.ExtensionMayModifySettings(internal.get(),
+                                                    component.get(), nullptr));
+}
+
+// Tests the behavior of the ManagementPolicy provider methods for a regular
+// extension.
 TEST_F(StandardManagementPolicyProviderTest, NotRequiredExtension) {
-  scoped_refptr<const Extension> extension =
-      CreateExtension(Manifest::INTERNAL);
+  auto extension = CreateExtension(Manifest::INTERNAL);
 
   base::string16 error16;
   EXPECT_TRUE(provider_.UserMayLoad(extension.get(), &error16));
@@ -75,6 +113,18 @@ TEST_F(StandardManagementPolicyProviderTest, NotRequiredExtension) {
   EXPECT_EQ(base::string16(), error16);
   EXPECT_FALSE(provider_.MustRemainEnabled(extension.get(), &error16));
   EXPECT_EQ(base::string16(), error16);
+
+  // All extension types can modify or disable internal extensions.
+  auto component = CreateExtension(Manifest::COMPONENT);
+  auto policy = CreateExtension(Manifest::EXTERNAL_POLICY);
+  auto internal = extension;
+  auto external_pref = CreateExtension(Manifest::EXTERNAL_PREF);
+  EXPECT_TRUE(provider_.ExtensionMayModifySettings(component.get(),
+                                                   internal.get(), nullptr));
+  EXPECT_TRUE(provider_.ExtensionMayModifySettings(policy.get(), internal.get(),
+                                                   nullptr));
+  EXPECT_TRUE(provider_.ExtensionMayModifySettings(external_pref.get(),
+                                                   internal.get(), nullptr));
 }
 
 }  // namespace extensions

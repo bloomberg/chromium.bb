@@ -43,6 +43,10 @@ class TestManagementPolicyProvider : public ManagementPolicy::Provider {
   bool UserMayModifySettings(const Extension* extension,
                              base::string16* error) const override;
 
+  bool ExtensionMayModifySettings(const Extension* source_extension,
+                                  const Extension* extension,
+                                  base::string16* error) const override;
+
   bool MustRemainEnabled(const Extension* extension,
                          base::string16* error) const override;
 

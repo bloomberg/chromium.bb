@@ -21,12 +21,27 @@ namespace {
 
 // Returns whether the extension can be modified under admin policy or not, and
 // fills |error| with corresponding error message if necessary.
-bool AdminPolicyIsModifiable(const extensions::Extension* extension,
+bool AdminPolicyIsModifiable(const Extension* source_extension,
+                             const Extension* extension,
                              base::string16* error) {
-  if (!extensions::Manifest::IsComponentLocation(extension->location()) &&
-      !extensions::Manifest::IsPolicyLocation(extension->location())) {
-    return true;
+  // Component and force installed extensions can enable/disable all other
+  // extensions including force installed ones (but component are off limits).
+  const bool component_or_force_installed =
+      source_extension &&
+      (Manifest::IsComponentLocation(source_extension->location()) ||
+       Manifest::IsPolicyLocation(source_extension->location()));
+
+  bool is_modifiable = true;
+
+  if (Manifest::IsComponentLocation(extension->location()))
+    is_modifiable = false;
+  if (!component_or_force_installed &&
+      Manifest::IsPolicyLocation(extension->location())) {
+    is_modifiable = false;
   }
+
+  if (is_modifiable)
+    return true;
 
   if (error) {
     *error = l10n_util::GetStringFUTF16(
@@ -121,13 +136,20 @@ bool StandardManagementPolicyProvider::UserMayLoad(
 bool StandardManagementPolicyProvider::UserMayModifySettings(
     const Extension* extension,
     base::string16* error) const {
-  return AdminPolicyIsModifiable(extension, error);
+  return AdminPolicyIsModifiable(nullptr, extension, error);
+}
+
+bool StandardManagementPolicyProvider::ExtensionMayModifySettings(
+    const Extension* source_extension,
+    const Extension* extension,
+    base::string16* error) const {
+  return AdminPolicyIsModifiable(source_extension, extension, error);
 }
 
 bool StandardManagementPolicyProvider::MustRemainEnabled(
     const Extension* extension,
     base::string16* error) const {
-  return !AdminPolicyIsModifiable(extension, error);
+  return !AdminPolicyIsModifiable(nullptr, extension, error);
 }
 
 bool StandardManagementPolicyProvider::MustRemainDisabled(

@@ -5,6 +5,7 @@
 #ifndef EXTENSIONS_BROWSER_MANAGEMENT_POLICY_H_
 #define EXTENSIONS_BROWSER_MANAGEMENT_POLICY_H_
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -68,6 +69,12 @@ class ManagementPolicy {
     virtual bool UserMayModifySettings(const Extension* extension,
                                        base::string16* error) const;
 
+    // Providers should return false if the originating extension
+    // |source_extension| cannot disable the |extension|.
+    virtual bool ExtensionMayModifySettings(const Extension* source_extension,
+                                            const Extension* extension,
+                                            base::string16* error) const;
+
     // Providers should return true if the |extension| must always remain
     // enabled. This is distinct from UserMayModifySettings() in that the latter
     // also prohibits enabling the extension if it is currently disabled.
@@ -117,6 +124,12 @@ class ManagementPolicy {
   // TODO(treib,pam): Misleading name; see comment in Provider. crbug.com/461747
   bool UserMayModifySettings(const Extension* extension,
                              base::string16* error) const;
+
+  // Returns true if the originating extension is permitted to disable the
+  // given extension. If not, |error| may be set to an appropriate message.
+  bool ExtensionMayModifySettings(const Extension* source_extension,
+                                  const Extension* extension,
+                                  base::string16* error) const;
 
   // Returns true if the extension must remain enabled at all times (e.g. a
   // component extension). In that case, |error| may be set to an appropriate

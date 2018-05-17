@@ -37,6 +37,7 @@
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_icon_set.h"
+#include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handlers/icons_handler.h"
 #include "extensions/common/manifest_handlers/offline_enabled_info.h"
 #include "extensions/common/manifest_handlers/options_page_info.h"
@@ -96,6 +97,7 @@ std::vector<management::LaunchType> GetAvailableLaunchTypes(
 }
 
 management::ExtensionInfo CreateExtensionInfo(
+    const Extension* source_extension,
     const Extension& extension,
     content::BrowserContext* context) {
   ExtensionSystem* system = ExtensionSystem::Get(context);
@@ -116,8 +118,8 @@ management::ExtensionInfo CreateExtensionInfo(
   info.options_url = OptionsPageInfo::GetOptionsPage(&extension).spec();
   info.homepage_url.reset(
       new std::string(ManifestURL::GetHomepageURL(&extension).spec()));
-  info.may_disable =
-      system->management_policy()->UserMayModifySettings(&extension, NULL);
+  info.may_disable = system->management_policy()->ExtensionMayModifySettings(
+      source_extension, &extension, nullptr);
   info.is_app = extension.is_app();
   if (info.is_app) {
     if (extension.is_legacy_packaged_app())
@@ -144,8 +146,8 @@ management::ExtensionInfo CreateExtensionInfo(
     }
 
     info.may_enable = std::make_unique<bool>(
-        system->management_policy()->UserMayModifySettings(&extension,
-                                                           nullptr) &&
+        system->management_policy()->ExtensionMayModifySettings(
+            source_extension, &extension, nullptr) &&
         !system->management_policy()->MustRemainDisabled(&extension, nullptr,
                                                          nullptr));
   }
@@ -257,7 +259,8 @@ management::ExtensionInfo CreateExtensionInfo(
   return info;
 }
 
-void AddExtensionInfo(const ExtensionSet& extensions,
+void AddExtensionInfo(const Extension* source_extension,
+                      const ExtensionSet& extensions,
                       ExtensionInfoList* extension_list,
                       content::BrowserContext* context) {
   for (ExtensionSet::const_iterator iter = extensions.begin();
@@ -267,7 +270,8 @@ void AddExtensionInfo(const ExtensionSet& extensions,
     if (!extension.ShouldExposeViaManagementAPI())
       continue;
 
-    extension_list->push_back(CreateExtensionInfo(extension, context));
+    extension_list->push_back(
+        CreateExtensionInfo(source_extension, extension, context));
   }
 }
 
@@ -277,11 +281,11 @@ ExtensionFunction::ResponseAction ManagementGetAllFunction::Run() {
   ExtensionInfoList extensions;
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
 
-  AddExtensionInfo(registry->enabled_extensions(), &extensions,
+  AddExtensionInfo(extension(), registry->enabled_extensions(), &extensions,
                    browser_context());
-  AddExtensionInfo(registry->disabled_extensions(), &extensions,
+  AddExtensionInfo(extension(), registry->disabled_extensions(), &extensions,
                    browser_context());
-  AddExtensionInfo(registry->terminated_extensions(), &extensions,
+  AddExtensionInfo(extension(), registry->terminated_extensions(), &extensions,
                    browser_context());
 
   return RespondNow(
@@ -294,18 +298,18 @@ ExtensionFunction::ResponseAction ManagementGetFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
   ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context());
 
-  const Extension* extension =
+  const Extension* target_extension =
       registry->GetExtensionById(params->id, ExtensionRegistry::EVERYTHING);
-  if (!extension)
+  if (!target_extension)
     return RespondNow(Error(keys::kNoExtensionError, params->id));
 
   return RespondNow(ArgumentList(management::Get::Results::Create(
-      CreateExtensionInfo(*extension, browser_context()))));
+      CreateExtensionInfo(extension(), *target_extension, browser_context()))));
 }
 
 ExtensionFunction::ResponseAction ManagementGetSelfFunction::Run() {
   return RespondNow(ArgumentList(management::Get::Results::Create(
-      CreateExtensionInfo(*extension_, browser_context()))));
+      CreateExtensionInfo(extension(), *extension_, browser_context()))));
 }
 
 ExtensionFunction::ResponseAction
@@ -436,8 +440,8 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
   bool enabled = params->enabled;
   const ManagementPolicy* policy =
       ExtensionSystem::Get(browser_context())->management_policy();
-  if (!policy->UserMayModifySettings(target_extension, nullptr) ||
-      (!enabled && policy->MustRemainEnabled(target_extension, nullptr)) ||
+  if (!policy->ExtensionMayModifySettings(extension(), target_extension,
+                                          nullptr) ||
       (enabled &&
        policy->MustRemainDisabled(target_extension, nullptr, nullptr))) {
     return RespondNow(Error(keys::kUserCantModifyError, extension_id_));
@@ -471,8 +475,11 @@ ExtensionFunction::ResponseAction ManagementSetEnabledFunction::Run() {
     }
     delegate->EnableExtension(browser_context(), extension_id_);
   } else if (currently_enabled && !params->enabled) {
-    delegate->DisableExtension(browser_context(), extension_id_,
-                               disable_reason::DISABLE_USER_ACTION);
+    delegate->DisableExtension(
+        browser_context(), extension(), extension_id_,
+        Manifest::IsPolicyLocation(target_extension->location())
+            ? disable_reason::DISABLE_BLOCKED_BY_POLICY
+            : disable_reason::DISABLE_USER_ACTION);
   }
 
   return RespondNow(NoArguments());
@@ -769,9 +776,10 @@ void ManagementGenerateAppForLinkFunction::FinishCreateBookmarkApp(
     const Extension* extension,
     const WebApplicationInfo& web_app_info) {
   ResponseValue response =
-      extension ? ArgumentList(management::GenerateAppForLink::Results::Create(
-                      CreateExtensionInfo(*extension, browser_context())))
-                : Error(keys::kGenerateAppForLinkInstallError);
+      extension
+          ? ArgumentList(management::GenerateAppForLink::Results::Create(
+                CreateExtensionInfo(nullptr, *extension, browser_context())))
+          : Error(keys::kGenerateAppForLinkInstallError);
   Respond(std::move(response));
   Release();  // Balanced in Run().
 }
@@ -859,7 +867,8 @@ void ManagementEventRouter::BroadcastEvent(
   if (event_name == management::OnUninstalled::kEventName) {
     args->AppendString(extension->id());
   } else {
-    args->Append(CreateExtensionInfo(*extension, browser_context_).ToValue());
+    args->Append(
+        CreateExtensionInfo(nullptr, *extension, browser_context_).ToValue());
   }
 
   EventRouter::Get(browser_context_)

@@ -292,6 +292,9 @@ class ExtensionAdminPolicyTest : public ExtensionManagementServiceTest {
                    const Extension* extension,
                    base::string16* error);
   bool UserMayModifySettings(const Extension* extension, base::string16* error);
+  bool ExtensionMayModifySettings(const Extension* source_extension,
+                                  const Extension* extension,
+                                  base::string16* error);
   bool MustRemainEnabled(const Extension* extension, base::string16* error);
 
  protected:
@@ -330,6 +333,15 @@ bool ExtensionAdminPolicyTest::UserMayModifySettings(const Extension* extension,
                                                      base::string16* error) {
   SetUpPolicyProvider();
   return provider_->UserMayModifySettings(extension, error);
+}
+
+bool ExtensionAdminPolicyTest::ExtensionMayModifySettings(
+    const Extension* source_extension,
+    const Extension* extension,
+    base::string16* error) {
+  SetUpPolicyProvider();
+  return provider_->ExtensionMayModifySettings(source_extension, extension,
+                                               error);
 }
 
 bool ExtensionAdminPolicyTest::MustRemainEnabled(const Extension* extension,
@@ -916,6 +928,36 @@ TEST_F(ExtensionAdminPolicyTest, UserMayModifySettings) {
   EXPECT_FALSE(UserMayModifySettings(extension_.get(), NULL));
   EXPECT_FALSE(UserMayModifySettings(extension_.get(), &error));
   EXPECT_FALSE(error.empty());
+}
+
+TEST_F(ExtensionAdminPolicyTest, ExtensionMayModifySettings) {
+  CreateExtension(Manifest::EXTERNAL_POLICY_DOWNLOAD);
+  auto external_policy_download = extension_;
+  CreateExtension(Manifest::EXTERNAL_POLICY);
+  auto external_policy = extension_;
+  CreateExtension(Manifest::EXTERNAL_PREF);
+  auto external_pref = extension_;
+  CreateExtension(Manifest::COMPONENT);
+  auto component = extension_;
+  CreateExtension(Manifest::COMPONENT);
+  auto component2 = extension_;
+  // Make sure that component/policy/external extensions cannot modify component
+  // extensions (no extension may modify a component extension).
+  EXPECT_FALSE(ExtensionMayModifySettings(external_policy_download.get(),
+                                          component.get(), nullptr));
+  EXPECT_FALSE(
+      ExtensionMayModifySettings(component2.get(), component.get(), nullptr));
+  EXPECT_FALSE(ExtensionMayModifySettings(external_pref.get(), component.get(),
+                                          nullptr));
+
+  // Only component/policy extensions *can* modify policy extensions, and eg.
+  // external cannot.
+  EXPECT_TRUE(ExtensionMayModifySettings(
+      external_policy.get(), external_policy_download.get(), nullptr));
+  EXPECT_TRUE(ExtensionMayModifySettings(
+      component.get(), external_policy_download.get(), nullptr));
+  EXPECT_FALSE(ExtensionMayModifySettings(
+      external_pref.get(), external_policy_download.get(), nullptr));
 }
 
 TEST_F(ExtensionAdminPolicyTest, MustRemainEnabled) {
