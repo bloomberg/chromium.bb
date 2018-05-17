@@ -10,15 +10,12 @@
 #include "ash/assistant/model/assistant_ui_element.h"
 #include "ash/assistant/ui/caption_bar.h"
 #include "ash/assistant/ui/dialog_plate/dialog_plate.h"
+#include "ash/assistant/ui/suggestion_container_view.h"
 #include "ash/public/cpp/app_list/answer_card_contents_registry.h"
-#include "ash/resources/vector_icons/vector_icons.h"
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
-#include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/color_palette.h"
-#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -313,96 +310,6 @@ class UiElementContainer : public views::View {
   DISALLOW_COPY_AND_ASSIGN(UiElementContainer);
 };
 
-// TODO(dmblack): Container should wrap chips in a horizontal scroll view.
-// SuggestionsContainer --------------------------------------------------------
-
-class SuggestionsContainer : public views::View {
- public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
-
-  explicit SuggestionsContainer(app_list::SuggestionChipListener* listener)
-      : suggestion_chip_listener_(listener) {}
-
-  ~SuggestionsContainer() override = default;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override {
-    int width = 0;
-    int height = 0;
-
-    for (int i = 0; i < child_count(); i++) {
-      const views::View* child = child_at(i);
-      gfx::Size child_size = child->GetPreferredSize();
-
-      if (i > 0) {
-        // Add spacing between chips.
-        width += kSpacingDip;
-      }
-
-      width += child_size.width();
-      height = std::max(child_size.height(), height);
-    }
-
-    if (width > 0) {
-      // Add horizontal padding.
-      width += 2 * kPaddingDip;
-    }
-
-    return gfx::Size(width, height);
-  }
-
-  // views::View:
-  void Layout() override {
-    const int height = views::View::height();
-    int left = kPaddingDip;
-
-    for (int i = 0; i < child_count(); i++) {
-      views::View* child = child_at(i);
-      gfx::Size child_size = child->GetPreferredSize();
-
-      child->SetBounds(left, (height - child_size.height()) / 2,
-                       child_size.width(), child_size.height());
-
-      left += child_size.width() + kSpacingDip;
-    }
-  }
-
-  void AddSuggestions(const std::map<int, AssistantSuggestion*>& suggestions) {
-    for (const std::pair<int, AssistantSuggestion*>& suggestion : suggestions) {
-      app_list::SuggestionChipView::Params params;
-      params.text = base::UTF8ToUTF16(suggestion.second->text);
-
-      // TODO(dmblack): Here we are using a placeholder image for the suggestion
-      // chip icon but we need to handle the actual icon URL.
-      if (!suggestion.second->icon_url.is_empty())
-        params.icon = gfx::CreateVectorIcon(
-            kCircleIcon, app_list::SuggestionChipView::kIconSizeDip,
-            gfx::kGoogleGrey300);
-
-      views::View* suggestion_chip_view =
-          new app_list::SuggestionChipView(params, suggestion_chip_listener_);
-
-      // When adding a SuggestionChipView, we give the view the same id by which
-      // the interaction model identifies the corresponding suggestion. This
-      // allows us to look up the suggestion for the view during event handling.
-      suggestion_chip_view->set_id(suggestion.first);
-
-      AddChildView(suggestion_chip_view);
-    }
-    PreferredSizeChanged();
-  }
-
-  void ClearSuggestions() {
-    RemoveAllChildViews(true);
-    PreferredSizeChanged();
-  }
-
- private:
-  app_list::SuggestionChipListener* const suggestion_chip_listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(SuggestionsContainer);
-};
-
 }  // namespace
 
 // AssistantBubbleView ---------------------------------------------------------
@@ -414,7 +321,7 @@ AssistantBubbleView::AssistantBubbleView(
       interaction_container_(
           new InteractionContainer(assistant_controller->interaction_model())),
       ui_element_container_(new UiElementContainer()),
-      suggestions_container_(new SuggestionsContainer(this)),
+      suggestions_container_(new SuggestionContainerView(assistant_controller)),
       dialog_plate_(new DialogPlate(assistant_controller)),
       render_request_weak_factory_(this) {
   InitLayout();
@@ -608,22 +515,6 @@ void AssistantBubbleView::OnQueryChanged(const AssistantQuery& query) {
 
 void AssistantBubbleView::OnQueryCleared() {
   interaction_container_->ClearQuery();
-}
-
-void AssistantBubbleView::OnSuggestionsAdded(
-    const std::map<int, AssistantSuggestion*>& suggestions) {
-  suggestions_container_->AddSuggestions(suggestions);
-  suggestions_container_->SetVisible(true);
-}
-
-void AssistantBubbleView::OnSuggestionsCleared() {
-  suggestions_container_->ClearSuggestions();
-  suggestions_container_->SetVisible(false);
-}
-
-void AssistantBubbleView::OnSuggestionChipPressed(
-    app_list::SuggestionChipView* suggestion_chip_view) {
-  assistant_controller_->OnSuggestionChipPressed(suggestion_chip_view->id());
 }
 
 void AssistantBubbleView::OnTextAdded(

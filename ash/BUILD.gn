@@ -114,6 +114,8 @@ component("ash") {
     "assistant/ui/dialog_plate/action_view.h",
     "assistant/ui/dialog_plate/dialog_plate.cc",
     "assistant/ui/dialog_plate/dialog_plate.h",
+    "assistant/ui/suggestion_container_view.cc",
+    "assistant/ui/suggestion_container_view.h",
     "autoclick/autoclick_controller.cc",
     "autoclick/autoclick_controller.h",
     "cancel_mode.cc",

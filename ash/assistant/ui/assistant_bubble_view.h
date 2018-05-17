@@ -12,7 +12,6 @@
 
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
 #include "base/macros.h"
-#include "ui/app_list/views/suggestion_chip_view.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -26,19 +25,16 @@ class AssistantController;
 class AssistantTextElement;
 class AssistantUiElement;
 class DialogPlate;
+class SuggestionContainerView;
 
 namespace {
 class InteractionContainer;
-class SuggestionsContainer;
 class UiElementContainer;
 }  // namespace
 
 class AssistantBubbleView : public views::View,
-                            public AssistantInteractionModelObserver,
-                            public app_list::SuggestionChipListener {
+                            public AssistantInteractionModelObserver {
  public:
-  using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
-
   explicit AssistantBubbleView(AssistantController* assistant_controller);
   ~AssistantBubbleView() override;
 
@@ -54,13 +50,6 @@ class AssistantBubbleView : public views::View,
   void OnUiElementsCleared() override;
   void OnQueryChanged(const AssistantQuery& query) override;
   void OnQueryCleared() override;
-  void OnSuggestionsAdded(
-      const std::map<int, AssistantSuggestion*>& suggestions) override;
-  void OnSuggestionsCleared() override;
-
-  // app_list::SuggestionChipListener:
-  void OnSuggestionChipPressed(
-      app_list::SuggestionChipView* suggestion_chip_view) override;
 
  private:
   void InitLayout();
@@ -82,7 +71,7 @@ class AssistantBubbleView : public views::View,
   views::View* caption_bar_;                     // Owned by view hierarchy.
   InteractionContainer* interaction_container_;  // Owned by view hierarchy.
   UiElementContainer* ui_element_container_;     // Owned by view hierarchy.
-  SuggestionsContainer* suggestions_container_;  // Owned by view hierarchy.
+  SuggestionContainerView* suggestions_container_;  // Owned by view hierarchy.
   DialogPlate* dialog_plate_;                    // Owned by view hierarchy.
 
   views::BoxLayout* layout_manager_ = nullptr;  // Owned by view hierarchy.
