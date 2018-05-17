@@ -32,8 +32,13 @@ enum class NavigationInitiationType {
   // if a navigation is already committed.
   NONE = 0,
 
-  // Navigation was initiated by actual user action.
-  USER_INITIATED,
+  // Navigation was initiated by the browser by calling NavigationManager
+  // methods. Examples of methods which cause browser-initiated navigations
+  // include:
+  //  * NavigationManager::Reload()
+  //  * NavigationManager::GoBack()
+  //  * NavigationManager::GoForward()
+  BROWSER_INITIATED,
 
   // Navigation was initiated by renderer. Examples of renderer-initiated
   // navigations include:

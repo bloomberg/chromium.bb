@@ -49,7 +49,7 @@ class HtmlWebInterstitialImplTest : public WebTest {
     web_state_->GetNavigationManagerImpl().AddPendingItem(
         GURL(kTestHostName), Referrer(),
         ui::PageTransition::PAGE_TRANSITION_TYPED,
-        NavigationInitiationType::USER_INITIATED,
+        NavigationInitiationType::BROWSER_INITIATED,
         NavigationManager::UserAgentOverrideOption::INHERIT);
   }
 

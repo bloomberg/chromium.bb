@@ -54,7 +54,7 @@ TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   // Start with NavigationManager that only has a pending item.
   manager_->AddPendingItem(
       GURL("http://chromium.org"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   NavigationItem* item = manager_->GetPendingItem();
   int unique_id = item->GetUniqueID();
@@ -72,7 +72,7 @@ TEST_P(NavigationManagerUtilTest, GetCommittedItemWithUniqueID) {
   // for removing the item with |unique_id|.
   manager_->AddPendingItem(
       GURL("http://test.org"), Referrer(), ui::PAGE_TRANSITION_TYPED,
-      web::NavigationInitiationType::USER_INITIATED,
+      web::NavigationInitiationType::BROWSER_INITIATED,
       web::NavigationManager::UserAgentOverrideOption::INHERIT);
   manager_->CommitPendingItem();
   manager_->RemoveItemAtIndex(0);

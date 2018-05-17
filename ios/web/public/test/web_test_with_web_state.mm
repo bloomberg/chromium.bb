@@ -63,7 +63,7 @@ void WebTestWithWebState::AddPendingItem(const GURL& url,
   GetWebController(web_state())
       .webStateImpl->GetNavigationManagerImpl()
       .AddPendingItem(url, Referrer(), transition,
-                      web::NavigationInitiationType::USER_INITIATED,
+                      web::NavigationInitiationType::BROWSER_INITIATED,
                       web::NavigationManager::UserAgentOverrideOption::INHERIT);
 }
 

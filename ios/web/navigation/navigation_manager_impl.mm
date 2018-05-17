@@ -226,7 +226,7 @@ void NavigationManagerImpl::GoToIndex(int index,
 }
 
 void NavigationManagerImpl::GoToIndex(int index) {
-  GoToIndex(index, NavigationInitiationType::USER_INITIATED,
+  GoToIndex(index, NavigationInitiationType::BROWSER_INITIATED,
             /*has_user_gesture=*/true);
 }
 
@@ -251,7 +251,7 @@ void NavigationManagerImpl::LoadURLWithParams(
   NavigationInitiationType initiation_type =
       params.is_renderer_initiated
           ? NavigationInitiationType::RENDERER_INITIATED
-          : NavigationInitiationType::USER_INITIATED;
+          : NavigationInitiationType::BROWSER_INITIATED;
   AddPendingItem(params.url, params.referrer, params.transition_type,
                  initiation_type, params.user_agent_override_option);
 
