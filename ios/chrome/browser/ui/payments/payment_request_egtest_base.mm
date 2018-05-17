@@ -67,6 +67,12 @@ const NSTimeInterval kPDMMaxDelaySeconds = 10.0;
   _personalDataManager =
       autofill::PersonalDataManagerFactory::GetForBrowserState(
           chrome_test_util::GetOriginalBrowserState());
+
+  // Before starting, clear existing profiles.
+  for (const auto* profile : _personalDataManager->GetProfiles()) {
+    [self personalDataManager]->RemoveByGUID(profile->guid());
+  }
+
   _personalDataManager->SetSyncingForTest(true);
 }
 
