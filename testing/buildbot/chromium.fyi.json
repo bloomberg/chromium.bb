@@ -7945,7 +7945,7 @@
               "pool": "Chrome-CrOS-VM"
             }
           ],
-          "hard_timeout": 960,
+          "hard_timeout": 1200,
           "shards": 12
         }
       }

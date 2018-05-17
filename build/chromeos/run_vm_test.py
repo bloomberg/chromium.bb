@@ -26,11 +26,6 @@ from pylib.results import json_results
 
 CHROMITE_PATH = os.path.abspath(os.path.join(
     CHROMIUM_SRC_PATH, 'third_party', 'chromite'))
-# cros_vm is a tool for managing VMs.
-CROS_VM_PATH = os.path.abspath(os.path.join(
-    CHROMITE_PATH, 'bin', 'cros_vm'))
-# cros_run_vm_test is a helper tool for running tests inside VMs and wraps
-# cros_vm.
 CROS_RUN_VM_TEST_PATH = os.path.abspath(os.path.join(
     CHROMITE_PATH, 'bin', 'cros_run_vm_test'))
 
@@ -66,27 +61,25 @@ def host_cmd(args):
     logging.error('Must specify command to run on the host.')
     return 1
 
-  cros_vm_cmd_args = [
-      CROS_VM_PATH,
+  cros_run_vm_test_cmd = [
+      CROS_RUN_VM_TEST_PATH,
+      '--start',
       '--board', args.board,
       '--cache-dir', args.cros_cache,
   ]
   if args.verbose:
-    cros_vm_cmd_args.append('--debug')
+    cros_run_vm_test_cmd.append('--debug')
 
-  rc = subprocess.call(
-      cros_vm_cmd_args + ['--start'], stdout=sys.stdout, stderr=sys.stderr)
-  if rc:
-    logging.error('VM start-up failed. Quitting early.')
-    return rc
+  cros_run_vm_test_cmd += [
+      '--host-cmd',
+      '--',
+  ] + args.cmd
 
-  try:
-    return subprocess.call(args.cmd, stdout=sys.stdout, stderr=sys.stderr)
-  finally:
-    rc = subprocess.call(
-        cros_vm_cmd_args + ['--stop'], stdout=sys.stdout, stderr=sys.stderr)
-    if rc:
-      logging.error('VM tear-down failed.')
+  logging.info('Running the following command:')
+  logging.info(' '.join(cros_run_vm_test_cmd))
+
+  return subprocess.call(
+      cros_run_vm_test_cmd, stdout=sys.stdout, stderr=sys.stderr)
 
 
 def vm_test(args):
