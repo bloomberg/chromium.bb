@@ -23,13 +23,15 @@ SRC_PATH = os.path.join(
     os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir, os.pardir)
 LAYOUT_TESTS_RESOURCES_PATH = os.path.join(
     SRC_PATH, 'third_party', 'WebKit', 'LayoutTests', 'resources')
+WEB_PLATFORM_TESTS_RESOURCES_PATH = os.path.join(
+    SRC_PATH, 'third_party', 'WebKit', 'LayoutTests', 'external', 'wpt',
+    'bluetooth', 'resources')
 COMMON_FUZZER_RESOURCES_PATH = os.path.join(
     SRC_PATH, 'testing', 'clusterfuzz', 'common')
 RESOURCES = [
     os.path.join(LAYOUT_TESTS_RESOURCES_PATH, 'testharness.js'),
     os.path.join(LAYOUT_TESTS_RESOURCES_PATH, 'testharnessreport.js'),
-    os.path.join(LAYOUT_TESTS_RESOURCES_PATH, 'bluetooth',
-                 'bluetooth-helpers.js'),
+    os.path.join(WEB_PLATFORM_TESTS_RESOURCES_PATH, 'bluetooth-helpers.js'),
     os.path.join(COMMON_FUZZER_RESOURCES_PATH, 'fuzzy_types.py'),
     os.path.join(COMMON_FUZZER_RESOURCES_PATH, 'utils.py'),
     os.path.join(COMMON_FUZZER_RESOURCES_PATH, '__init__.py'),
