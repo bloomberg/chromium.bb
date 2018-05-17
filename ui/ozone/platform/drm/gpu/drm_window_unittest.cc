@@ -176,7 +176,7 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   ui::DrmWindow* window = screen_manager_->GetWindow(kDefaultWidgetHandle);
   ui::OverlayPlane plane(
       buffer_generator.Create(drm_, DRM_FORMAT_XRGB8888, {}, window_size),
-      base::kInvalidPlatformFile);
+      nullptr);
 
   drm_->set_page_flip_expectation(false);
 

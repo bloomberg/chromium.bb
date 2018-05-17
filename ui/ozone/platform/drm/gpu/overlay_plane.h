@@ -13,6 +13,10 @@
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/overlay_transform.h"
 
+namespace gfx {
+class GpuFence;
+}
+
 namespace ui {
 
 class ScanoutBuffer;
@@ -23,7 +27,7 @@ typedef std::vector<OverlayPlane> OverlayPlaneList;
 struct OverlayPlane {
   // Simpler constructor for the primary plane.
   explicit OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
-                        int fence_fd);
+                        gfx::GpuFence* gpu_fence);
 
   OverlayPlane(const scoped_refptr<ScanoutBuffer>& buffer,
                int z_order,
@@ -31,7 +35,7 @@ struct OverlayPlane {
                const gfx::Rect& display_bounds,
                const gfx::RectF& crop_rect,
                bool enable_blend,
-               int fence_fd);
+               gfx::GpuFence* gpu_fence);
   OverlayPlane(const OverlayPlane& other);
 
   bool operator<(const OverlayPlane& plane) const;
@@ -47,7 +51,7 @@ struct OverlayPlane {
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;
   bool enable_blend;
-  int fence_fd;
+  gfx::GpuFence* gpu_fence;
 };
 
 }  // namespace ui

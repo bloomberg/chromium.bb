@@ -84,7 +84,7 @@ std::vector<OverlayCheckReturn_Params> DrmOverlayValidator::TestPageFlip(
 
     OverlayPlane plane(buffer, params[i].plane_z_order, params[i].transform,
                        params[i].display_rect, params[i].crop_rect,
-                       /* enable_blend */ true, base::kInvalidPlatformFile);
+                       /* enable_blend */ true, /* gpu_fence */ nullptr);
     test_list.push_back(plane);
 
     if (buffer && controller->TestPageFlip(test_list)) {

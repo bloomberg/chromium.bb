@@ -11,6 +11,8 @@
 #include "base/files/platform_file.h"
 #include "base/stl_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "ui/gfx/gpu_fence.h"
+#include "ui/gfx/gpu_fence_handle.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
@@ -193,10 +195,22 @@ bool HardwareDisplayPlaneManagerAtomic::SetPlaneData(
   uint32_t framebuffer_id = overlay.enable_blend
                                 ? overlay.buffer->GetFramebufferId()
                                 : overlay.buffer->GetOpaqueFramebufferId();
+  int fence_fd = base::kInvalidPlatformFile;
+
+  if (overlay.gpu_fence) {
+    const auto& gpu_fence_handle = overlay.gpu_fence->GetGpuFenceHandle();
+    if (gpu_fence_handle.type !=
+        gfx::GpuFenceHandleType::kAndroidNativeFenceSync) {
+      LOG(ERROR) << "Received invalid gpu fence";
+      return false;
+    }
+    fence_fd = gpu_fence_handle.native_fd.fd;
+  }
+
   if (!atomic_plane->SetPlaneData(plane_list->atomic_property_set.get(),
                                   crtc_id, framebuffer_id,
                                   overlay.display_bounds, src_rect,
-                                  overlay.plane_transform, overlay.fence_fd)) {
+                                  overlay.plane_transform, fence_fd)) {
     LOG(ERROR) << "Failed to set plane properties";
     return false;
   }
