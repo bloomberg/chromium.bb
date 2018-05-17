@@ -171,8 +171,6 @@ void FullscreenControlHost::OnTouchEvent(ui::TouchEvent* event) {
   // popup.
   if (event->type() == ui::ET_TOUCH_PRESSED && !IsAnimating()) {
     Hide(true);
-  } else if (event->type() == ui::ET_TOUCH_RELEASED) {
-    StartPopupTimeout(InputEntryMethod::TOUCH);
   }
 }
 

@@ -310,9 +310,13 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MAYBE_TouchPopupInteraction) {
       ui::ET_TOUCH_RELEASED, gfx::Point(1, 1), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   host->OnTouchEvent(&touch_event);
-
   ASSERT_TRUE(host->IsVisible());
-  // Wait for the popup to time out.
+
+  // Simulate pressing outside the popup, which should hide the popup.
+  touch_event = ui::TouchEvent(
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
+  host->OnTouchEvent(&touch_event);
   RunLoopUntilVisibilityChanges();
   ASSERT_FALSE(host->IsVisible());
 
@@ -420,9 +424,9 @@ IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest,
   RunLoopUntilVisibilityChanges();
   ASSERT_TRUE(host->IsVisible());
 
-  // Release the touch. The UI should then timeout.
+  // Press outside the popup, which should hide the popup.
   touch_event = ui::TouchEvent(
-      ui::ET_TOUCH_RELEASED, gfx::Point(1, 1), ui::EventTimeForNow(),
+      ui::ET_TOUCH_PRESSED, gfx::Point(1, 1), ui::EventTimeForNow(),
       ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
   host->OnTouchEvent(&touch_event);
   RunLoopUntilVisibilityChanges();
