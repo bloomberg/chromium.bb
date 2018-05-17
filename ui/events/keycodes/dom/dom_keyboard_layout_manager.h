@@ -6,6 +6,7 @@
 #define UI_EVENTS_KEYCODES_DOM_DOM_KEYBOARD_LAYOUT_MANAGER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "ui/events/keycodes/dom/dom_keyboard_layout.h"
