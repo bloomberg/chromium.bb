@@ -36,8 +36,8 @@ TEST_F(ChromePermissionManifestTest, ChromeURLPermissionAllowedWithFlag) {
     LoadAndExpectSuccess("permission_chrome_url_invalid.json");
   EXPECT_EQ("", error);
   const GURL newtab_url(chrome::kChromeUINewTabURL);
-  EXPECT_TRUE(extension->permissions_data()->CanAccessPage(
-      extension.get(), newtab_url, 0, &error))
+  EXPECT_TRUE(
+      extension->permissions_data()->CanAccessPage(newtab_url, 0, &error))
       << error;
 }
 

@@ -267,8 +267,8 @@ TEST_F(ScriptingPermissionsModifierUnitTest, GrantHostPermission) {
   EXPECT_FALSE(modifier.HasGrantedHostPermission(kUrl2));
 
   const PermissionsData* permissions = extension->permissions_data();
-  auto get_page_access = [&permissions, &extension](const GURL& url) {
-    return permissions->GetPageAccess(extension.get(), url, 0, nullptr);
+  auto get_page_access = [&permissions](const GURL& url) {
+    return permissions->GetPageAccess(url, 0, nullptr);
   };
 
   EXPECT_EQ(PermissionsData::PageAccess::kWithheld, get_page_access(kUrl));

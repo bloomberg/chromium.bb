@@ -151,7 +151,7 @@ bool CanRequestAutomation(const Extension* extension,
 
   int tab_id = ExtensionTabUtil::GetTabId(contents);
   std::string unused_error;
-  return extension->permissions_data()->CanAccessPage(extension, url, tab_id,
+  return extension->permissions_data()->CanAccessPage(url, tab_id,
                                                       &unused_error);
 }
 

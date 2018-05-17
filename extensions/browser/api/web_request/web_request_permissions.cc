@@ -53,7 +53,7 @@ PermissionsData::PageAccess GetHostAccessForURL(
     return PermissionsData::PageAccess::kAllowed;
   }
 
-  return extension.permissions_data()->GetPageAccess(&extension, url, tab_id,
+  return extension.permissions_data()->GetPageAccess(url, tab_id,
                                                      nullptr /*error*/);
 }
 

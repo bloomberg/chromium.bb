@@ -323,11 +323,10 @@ bool PermissionsData::HasWithheldImpliedAllHosts() const {
          !withheld_permissions_unsafe_->scriptable_hosts().is_empty();
 }
 
-bool PermissionsData::CanAccessPage(const Extension* extension,
-                                    const GURL& document_url,
+bool PermissionsData::CanAccessPage(const GURL& document_url,
                                     int tab_id,
                                     std::string* error) const {
-  PageAccess result = GetPageAccess(extension, document_url, tab_id, error);
+  PageAccess result = GetPageAccess(document_url, tab_id, error);
 
   // TODO(rdevlin.cronin) Update callers so that they only need
   // PageAccess::kAllowed.
@@ -335,7 +334,6 @@ bool PermissionsData::CanAccessPage(const Extension* extension,
 }
 
 PermissionsData::PageAccess PermissionsData::GetPageAccess(
-    const Extension* extension,
     const GURL& document_url,
     int tab_id,
     std::string* error) const {
@@ -343,18 +341,15 @@ PermissionsData::PageAccess PermissionsData::GetPageAccess(
 
   const PermissionSet* tab_permissions = GetTabSpecificPermissions(tab_id);
   return CanRunOnPage(
-      extension, document_url, tab_id,
-      active_permissions_unsafe_->explicit_hosts(),
+      document_url, tab_id, active_permissions_unsafe_->explicit_hosts(),
       withheld_permissions_unsafe_->explicit_hosts(),
       tab_permissions ? &tab_permissions->explicit_hosts() : nullptr, error);
 }
 
-bool PermissionsData::CanRunContentScriptOnPage(const Extension* extension,
-                                                const GURL& document_url,
+bool PermissionsData::CanRunContentScriptOnPage(const GURL& document_url,
                                                 int tab_id,
                                                 std::string* error) const {
-  PageAccess result =
-      GetContentScriptAccess(extension, document_url, tab_id, error);
+  PageAccess result = GetContentScriptAccess(document_url, tab_id, error);
 
   // TODO(rdevlin.cronin) Update callers so that they only need
   // PageAccess::kAllowed.
@@ -362,7 +357,6 @@ bool PermissionsData::CanRunContentScriptOnPage(const Extension* extension,
 }
 
 PermissionsData::PageAccess PermissionsData::GetContentScriptAccess(
-    const Extension* extension,
     const GURL& document_url,
     int tab_id,
     std::string* error) const {
@@ -370,14 +364,12 @@ PermissionsData::PageAccess PermissionsData::GetContentScriptAccess(
 
   const PermissionSet* tab_permissions = GetTabSpecificPermissions(tab_id);
   return CanRunOnPage(
-      extension, document_url, tab_id,
-      active_permissions_unsafe_->scriptable_hosts(),
+      document_url, tab_id, active_permissions_unsafe_->scriptable_hosts(),
       withheld_permissions_unsafe_->scriptable_hosts(),
       tab_permissions ? &tab_permissions->scriptable_hosts() : nullptr, error);
 }
 
 bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
-                                            const Extension* extension,
                                             int tab_id,
                                             std::string* error) const {
   bool has_active_tab = false;
@@ -394,8 +386,7 @@ bool PermissionsData::CanCaptureVisiblePage(const GURL& document_url,
   // GetPageAccess() will still (correctly) return false if, for instance, the
   // URL is a file:// URL and the extension does not have file access.
   // See https://crbug.com/810220.
-  if (GetPageAccess(extension, document_url, tab_id, error) !=
-      PageAccess::kAllowed) {
+  if (GetPageAccess(document_url, tab_id, error) != PageAccess::kAllowed) {
     if (!document_url.SchemeIs(content::kChromeUIScheme))
       return false;
 
@@ -446,7 +437,6 @@ bool PermissionsData::IsPolicyBlockedHostUnsafe(const GURL& url) const {
 }
 
 PermissionsData::PageAccess PermissionsData::CanRunOnPage(
-    const Extension* extension,
     const GURL& document_url,
     int tab_id,
     const URLPatternSet& permitted_url_patterns,
@@ -454,8 +444,8 @@ PermissionsData::PageAccess PermissionsData::CanRunOnPage(
     const URLPatternSet* tab_url_patterns,
     std::string* error) const {
   runtime_lock_.AssertAcquired();
-  if (extension->location() != Manifest::COMPONENT &&
-      extension->permissions_data()->IsPolicyBlockedHostUnsafe(document_url)) {
+  if (location_ != Manifest::COMPONENT &&
+      IsPolicyBlockedHostUnsafe(document_url)) {
     if (error)
       *error = extension_misc::kPolicyBlockedScripting;
     return PageAccess::kDenied;
@@ -474,8 +464,7 @@ PermissionsData::PageAccess PermissionsData::CanRunOnPage(
     return PageAccess::kWithheld;
 
   if (error) {
-    if (extension->permissions_data()->active_permissions().HasAPIPermission(
-            APIPermission::kTab)) {
+    if (active_permissions_unsafe_->HasAPIPermission(APIPermission::kTab)) {
       *error = ErrorUtils::FormatErrorMessage(
           manifest_errors::kCannotAccessPageWithUrl, document_url.spec());
     } else {

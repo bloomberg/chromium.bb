@@ -156,12 +156,10 @@ class ActiveTabTest : public ChromeRenderViewHostTestHarness {
                  PermittedFeature feature,
                  int tab_id) {
     const PermissionsData* permissions_data = extension->permissions_data();
-    bool script = permissions_data->CanAccessPage(extension.get(), url, tab_id,
-                                                  nullptr) &&
-                  permissions_data->CanRunContentScriptOnPage(
-                      extension.get(), url, tab_id, nullptr);
-    bool capture = permissions_data->CanCaptureVisiblePage(url, extension.get(),
-                                                           tab_id, NULL);
+    bool script =
+        permissions_data->CanAccessPage(url, tab_id, nullptr) &&
+        permissions_data->CanRunContentScriptOnPage(url, tab_id, nullptr);
+    bool capture = permissions_data->CanCaptureVisiblePage(url, tab_id, NULL);
     switch (feature) {
       case PERMITTED_SCRIPT_ONLY:
         return script && !capture;
@@ -606,11 +604,11 @@ TEST_F(ActiveTabWithServiceTest, FileURLs) {
   EXPECT_NE(extension_misc::kUnknownTabId, tab_id);
 
   EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
-      web_contents->GetLastCommittedURL(), extension.get(), tab_id, nullptr));
+      web_contents->GetLastCommittedURL(), tab_id, nullptr));
 
   permission_granter->GrantIfRequested(extension.get());
   EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
-      web_contents->GetLastCommittedURL(), extension.get(), tab_id, nullptr));
+      web_contents->GetLastCommittedURL(), tab_id, nullptr));
 
   permission_granter->RevokeForTesting();
   TestExtensionRegistryObserver observer(registry(), id);
@@ -620,10 +618,10 @@ TEST_F(ActiveTabWithServiceTest, FileURLs) {
   ASSERT_TRUE(extension);
 
   EXPECT_FALSE(extension->permissions_data()->CanCaptureVisiblePage(
-      web_contents->GetLastCommittedURL(), extension.get(), tab_id, nullptr));
+      web_contents->GetLastCommittedURL(), tab_id, nullptr));
   permission_granter->GrantIfRequested(extension.get());
   EXPECT_TRUE(extension->permissions_data()->CanCaptureVisiblePage(
-      web_contents->GetLastCommittedURL(), extension.get(), tab_id, nullptr));
+      web_contents->GetLastCommittedURL(), tab_id, nullptr));
 }
 
 }  // namespace

@@ -179,51 +179,47 @@ class PermissionsData {
   // something close to it), but has had it withheld.
   bool HasWithheldImpliedAllHosts() const;
 
-  // Returns true if the |extension| has permission to access and interact with
-  // the specified page, in order to do things like inject scripts or modify
-  // the content.
+  // Returns true if the associated extension has permission to access and
+  // interact with the specified page, in order to do things like inject
+  // scripts or modify the content.
   // If this returns false and |error| is non-NULL, |error| will be popualted
   // with the reason the extension cannot access the page.
-  bool CanAccessPage(const Extension* extension,
-                     const GURL& document_url,
+  bool CanAccessPage(const GURL& document_url,
                      int tab_id,
                      std::string* error) const;
   // Like CanAccessPage, but also takes withheld permissions into account.
   // TODO(rdevlin.cronin) We shouldn't have two functions, but not all callers
   // know how to wait for permission.
-  PageAccess GetPageAccess(const Extension* extension,
-                           const GURL& document_url,
+  PageAccess GetPageAccess(const GURL& document_url,
                            int tab_id,
                            std::string* error) const;
 
-  // Returns true if the |extension| has permission to inject a content script
-  // on the page.
+  // Returns true if the associated extension has permission to inject a
+  // content script on the page.
   // If this returns false and |error| is non-NULL, |error| will be popualted
   // with the reason the extension cannot script the page.
   // NOTE: You almost certainly want to use CanAccessPage() instead of this
   // method.
-  bool CanRunContentScriptOnPage(const Extension* extension,
-                                 const GURL& document_url,
+  bool CanRunContentScriptOnPage(const GURL& document_url,
                                  int tab_id,
                                  std::string* error) const;
   // Like CanRunContentScriptOnPage, but also takes withheld permissions into
   // account.
   // TODO(rdevlin.cronin) We shouldn't have two functions, but not all callers
   // know how to wait for permission.
-  PageAccess GetContentScriptAccess(const Extension* extension,
-                                    const GURL& document_url,
+  PageAccess GetContentScriptAccess(const GURL& document_url,
                                     int tab_id,
                                     std::string* error) const;
 
-  // Returns true if extension is allowed to obtain the contents of a page as
-  // an image. Pages may contain multiple sources (e.g., example.com may embed
-  // google.com), so simply checking the top-frame's URL is insufficient.
+  // Returns true if the associated extension is allowed to obtain the contents
+  // of a page as an image. Pages may contain multiple sources (e.g.,
+  // example.com may embed google.com), so simply checking the top-frame's URL
+  // is insufficient.
   // Instead:
   // - If the page is a chrome:// page, require activeTab.
   // - For all other pages, require host permissions to the document
   //   (GetPageAccess()) and one of either <all_urls> or granted activeTab.
   bool CanCaptureVisiblePage(const GURL& document_url,
-                             const Extension* extension,
                              int tab_id,
                              std::string* error) const;
 
@@ -291,8 +287,7 @@ class PermissionsData {
   // checking against |permitted_url_patterns| and |tab_url_patterns| in
   // addition to blocking special sites (like the webstore or chrome:// urls).
   // Must be called with |runtime_lock_| acquired.
-  PageAccess CanRunOnPage(const Extension* extension,
-                          const GURL& document_url,
+  PageAccess CanRunOnPage(const GURL& document_url,
                           int tab_id,
                           const URLPatternSet& permitted_url_patterns,
                           const URLPatternSet& withheld_url_patterns,

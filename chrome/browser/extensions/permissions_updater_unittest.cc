@@ -280,8 +280,7 @@ TEST_F(PermissionsUpdaterTest, RevokingPermissions) {
       [](scoped_refptr<const extensions::Extension> extension,
          const GURL& document_url) -> bool {
     PermissionsData::PageAccess access =
-        extension.get()->permissions_data()->GetPageAccess(
-            extension.get(), document_url, -1, nullptr);
+        extension->permissions_data()->GetPageAccess(document_url, -1, nullptr);
     return access == PermissionsData::PageAccess::kAllowed;
   };
 
