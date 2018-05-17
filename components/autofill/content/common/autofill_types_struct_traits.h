@@ -155,6 +155,10 @@ struct StructTraits<autofill::mojom::FormFieldDataDataView,
     return r.css_classes;
   }
 
+  static uint32_t unique_renderer_id(const autofill::FormFieldData& r) {
+    return r.unique_renderer_id;
+  }
+
   static uint32_t properties_mask(const autofill::FormFieldData& r) {
     return r.properties_mask;
   }
@@ -247,6 +251,10 @@ struct StructTraits<autofill::mojom::FormDataDataView, autofill::FormData> {
 
   static bool is_formless_checkout(const autofill::FormData& r) {
     return r.is_formless_checkout;
+  }
+
+  static uint32_t unique_renderer_id(const autofill::FormData& r) {
+    return r.unique_renderer_id;
   }
 
   static const std::vector<autofill::FormFieldData>& fields(

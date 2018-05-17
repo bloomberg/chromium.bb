@@ -2675,6 +2675,7 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   EXPECT_TRUE(WebFormElementToFormData(forms[0], input_element, nullptr,
                                        EXTRACT_VALUE, &form, &field));
   EXPECT_EQ(ASCIIToUTF16("TestForm"), form.name);
+  EXPECT_EQ(forms[0].UniqueRendererFormId(), form.unique_renderer_id);
   EXPECT_EQ(GetCanonicalOriginForDocument(frame->GetDocument()), form.origin);
   EXPECT_FALSE(form.origin.is_empty());
   EXPECT_EQ(GURL("http://cnn.com/submit/"), form.action);
@@ -2724,6 +2725,13 @@ TEST_F(FormAutofillTest, WebFormElementToFormData) {
   expected.form_control_type = "month";
   expected.max_length = 0;
   EXPECT_FORM_FIELD_DATA_EQUALS(expected, fields[5]);
+
+  // Check unique_renderer_id.
+  WebVector<WebFormControlElement> form_control_elements;
+  forms[0].GetFormControlElements(form_control_elements);
+  for (size_t i = 0; i < fields.size(); ++i)
+    EXPECT_EQ(form_control_elements[i].UniqueRendererFormControlId(),
+              fields[i].unique_renderer_id);
 }
 
 TEST_F(FormAutofillTest, WebFormElementConsiderNonControlLabelableElements) {

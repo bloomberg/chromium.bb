@@ -110,6 +110,7 @@ bool FormData::SimilarFormAs(const FormData& form) const {
 
 bool FormData::operator==(const FormData& form) const {
   return name == form.name && origin == form.origin && action == form.action &&
+         unique_renderer_id == form.unique_renderer_id &&
          is_form_tag == form.is_form_tag &&
          is_formless_checkout == form.is_formless_checkout &&
          fields == form.fields;
