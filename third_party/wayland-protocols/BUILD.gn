@@ -322,3 +322,24 @@ source_set("input_timestamps_protocol") {
 
   public_configs = [ ":input_timestamps_protocol_config" ]
 }
+
+config("cursor_shapes_protocol_config") {
+  include_dirs = [ "include/protocol" ]
+}
+
+source_set("cursor_shapes_protocol") {
+  sources = [
+    "include/protocol/cursor-shapes-unstable-v1-client-protocol.h",
+    "include/protocol/cursor-shapes-unstable-v1-server-protocol.h",
+    "protocol/cursor-shapes-protocol.c",
+  ]
+
+  deps = [
+    "//third_party/wayland:wayland_util",
+  ]
+
+  configs -= [ "//build/config/compiler:chromium_code" ]
+  configs += [ "//build/config/compiler:no_chromium_code" ]
+
+  public_configs = [ ":cursor_shapes_protocol_config" ]
+}
