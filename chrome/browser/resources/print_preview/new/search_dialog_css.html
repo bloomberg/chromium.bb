@@ -14,8 +14,8 @@
            backdrop. See context at crbug.com/827397 */
         --cr-dialog-close-image: {
           -webkit-margin-end: 7px;
-          margin-top: 10px;
           background-image: url(chrome://theme/IDR_CLOSE_DIALOG);
+          margin-top: 10px;
         };
         --cr-dialog-close-image-active: {
           background-image: url(chrome://theme/IDR_CLOSE_DIALOG_P);
@@ -30,9 +30,15 @@
         };
         --cr-icon-ripple-size: 14px;
         --cr-icon-size: 14px;
+        --cr-dialog-title: {
+          padding: 16px;
+        };
         --cr-dialog-body: {
           box-sizing: border-box;
-          padding-top: 0;
+          padding: 0 16px 12px 16px;
+        };
+        --cr-dialog-button-container: {
+          padding: 16px;
         };
         --cr-dialog-wrapper: {
           max-height: calc(100vh - 40px);
