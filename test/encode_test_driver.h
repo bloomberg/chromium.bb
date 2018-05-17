@@ -206,7 +206,6 @@ class EncoderTest {
     return !(::testing::Test::HasFatalFailure() || abort_);
   }
 
-  const CodecFactory *codec_;
   // Hook to determine whether to decode frame after encoding
   virtual bool DoDecode() const { return 1; }
 
@@ -233,6 +232,7 @@ class EncoderTest {
     return pkt;
   }
 
+  const CodecFactory *codec_;
   bool abort_;
   aom_codec_enc_cfg_t cfg_;
   unsigned int passes_;
