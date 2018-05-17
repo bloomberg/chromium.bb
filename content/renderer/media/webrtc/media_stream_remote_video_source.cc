@@ -18,7 +18,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_util.h"
 #include "third_party/webrtc/api/video/i420_buffer.h"
-#include "third_party/webrtc/api/videosinkinterface.h"
+#include "third_party/webrtc/api/video/video_sink_interface.h"
 
 namespace content {
 
