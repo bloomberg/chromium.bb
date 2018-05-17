@@ -53,6 +53,7 @@ class PLATFORM_EXPORT CullRect {
   // TODO(chrishtr): temporary while we implement CullRect everywhere.
   friend class FramePainter;
   friend class GridPainter;
+  friend class SVGForeignObjectPainter;
   friend class SVGInlineTextBoxPainter;
   friend class SVGPaintContext;
   friend class SVGRootInlineBoxPainter;

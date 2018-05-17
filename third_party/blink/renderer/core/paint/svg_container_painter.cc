@@ -7,11 +7,13 @@
 #include "base/optional.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_container.h"
+#include "third_party/blink/renderer/core/layout/svg/layout_svg_foreign_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/paint/float_clip_recorder.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
+#include "third_party/blink/renderer/core/paint/svg_foreign_object_painter.h"
 #include "third_party/blink/renderer/core/paint/svg_paint_context.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 
@@ -83,8 +85,11 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     if (continue_rendering) {
       for (LayoutObject* child = layout_svg_container_.FirstChild(); child;
            child = child->NextSibling()) {
-        if (!child->IsBoxModelObject() ||
-            !ToLayoutBoxModelObject(child)->HasSelfPaintingLayer()) {
+        if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
+            child->IsSVGForeignObject()) {
+          SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
+              .PaintLayer(paint_context.GetPaintInfo());
+        } else {
           child->Paint(paint_context.GetPaintInfo(), IntPoint());
         }
       }
