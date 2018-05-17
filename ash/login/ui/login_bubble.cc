@@ -20,6 +20,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -367,10 +368,8 @@ LoginBubble::LoginBubble() {
 
 LoginBubble::~LoginBubble() {
   Shell::Get()->RemovePreTargetHandler(this);
-  if (bubble_view_) {
-    bubble_view_->GetWidget()->RemoveObserver(this);
+  if (bubble_view_)
     CloseImmediately();
-  }
 }
 
 void LoginBubble::ShowErrorBubble(views::View* content,
@@ -446,9 +445,7 @@ void LoginBubble::Close() {
 
 void LoginBubble::CloseImmediately() {
   DCHECK(bubble_view_);
-  bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
-  bubble_view_->GetWidget()->Close();
-  is_visible_ = false;
+  Reset(false /*widget_already_closing*/);
 }
 
 bool LoginBubble::IsVisible() {
@@ -456,10 +453,8 @@ bool LoginBubble::IsVisible() {
 }
 
 void LoginBubble::OnWidgetClosing(views::Widget* widget) {
-  bubble_opener_ = nullptr;
-  bubble_view_ = nullptr;
-  flags_ = kFlagsNone;
-  widget->RemoveObserver(this);
+  DCHECK_EQ(bubble_view_->GetWidget(), widget);
+  Reset(true /*widget_already_closing*/);
 }
 
 void LoginBubble::OnWidgetDestroying(views::Widget* widget) {
@@ -502,15 +497,32 @@ void LoginBubble::OnLayerAnimationEnded(ui::LayerAnimationSequence* sequence) {
 
   bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
   if (!is_visible_)
-    bubble_view_->GetWidget()->Close();
+    CloseImmediately();
+}
+
+void LoginBubble::OnWindowFocused(aura::Window* gained_focus,
+                                  aura::Window* lost_focus) {
+  if (!bubble_view_ || !IsVisible())
+    return;
+
+  aura::Window* bubble_window = bubble_view_->GetWidget()->GetNativeView();
+  // Bubble window has the focus, do nothing.
+  if (gained_focus && bubble_window->Contains(gained_focus))
+    return;
+
+  if (!(flags_ & kFlagPersistent))
+    Close();
 }
 
 void LoginBubble::Show() {
   DCHECK(bubble_view_);
-  views::BubbleDialogDelegateView::CreateBubble(bubble_view_)->ShowInactive();
+  views::Widget* widget =
+      views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
+  widget->ShowInactive();
+  widget->AddObserver(this);
+  widget->StackAtTop();
+  aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
   bubble_view_->SetAlignment(views::BubbleBorder::ALIGN_EDGE_TO_ANCHOR_EDGE);
-  bubble_view_->GetWidget()->AddObserver(this);
-  bubble_view_->GetWidget()->StackAtTop();
 
   ScheduleAnimation(true /*visible*/);
 
@@ -573,6 +585,21 @@ void LoginBubble::ScheduleAnimation(bool visible) {
         ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
     layer->SetOpacity(opacity_end);
   }
+}
+
+void LoginBubble::Reset(bool widget_already_closing) {
+  DCHECK(bubble_view_);
+  aura::client::GetFocusClient(bubble_view_->GetWidget()->GetNativeView())
+      ->RemoveObserver(this);
+  bubble_view_->GetWidget()->RemoveObserver(this);
+  bubble_view_->layer()->GetAnimator()->RemoveObserver(this);
+
+  if (!widget_already_closing)
+    bubble_view_->GetWidget()->Close();
+  is_visible_ = false;
+  bubble_opener_ = nullptr;
+  bubble_view_ = nullptr;
+  flags_ = kFlagsNone;
 }
 
 }  // namespace ash
