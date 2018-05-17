@@ -104,10 +104,14 @@ set(AOM_TEST_INTRA_PRED_SPEED_SOURCES "${AOM_CONFIG_DIR}/usage_exit.c"
 
 if(NOT BUILD_SHARED_LIBS)
   if(CONFIG_AV1_DECODER OR CONFIG_AV1_ENCODER)
-    set(AOM_UNIT_TEST_COMMON_SOURCES ${AOM_UNIT_TEST_COMMON_SOURCES}
-        "${AOM_ROOT}/test/cdef_test.cc" "${AOM_ROOT}/test/intrabc_test.cc"
-        "${AOM_ROOT}/test/intrapred_test.cc" "${AOM_ROOT}/test/lpf_test.cc"
-        "${AOM_ROOT}/test/onyxc_int_test.cc" "${AOM_ROOT}/test/scan_test.cc"
+    set(AOM_UNIT_TEST_COMMON_SOURCES
+        ${AOM_UNIT_TEST_COMMON_SOURCES}
+        "${AOM_ROOT}/test/cdef_test.cc"
+        "${AOM_ROOT}/test/intrabc_test.cc"
+        "${AOM_ROOT}/test/intrapred_test.cc"
+        "${AOM_ROOT}/test/lpf_test.cc"
+        "${AOM_ROOT}/test/onyxc_int_test.cc"
+        "${AOM_ROOT}/test/scan_test.cc"
         "${AOM_ROOT}/test/simd_cmp_impl.h"
         "${AOM_ROOT}/test/hiprec_convolve_test.cc"
         "${AOM_ROOT}/test/hiprec_convolve_test_util.cc"
