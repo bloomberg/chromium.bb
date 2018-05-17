@@ -16,7 +16,7 @@
 namespace mojo {
 
 template <>
-struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
     StructTraits<mojo_base::mojom::ReadOnlySharedMemoryRegionDataView,
                  base::ReadOnlySharedMemoryRegion> {
   static bool IsNull(const base::ReadOnlySharedMemoryRegion& region);
@@ -28,7 +28,7 @@ struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
 };
 
 template <>
-struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
     StructTraits<mojo_base::mojom::UnsafeSharedMemoryRegionDataView,
                  base::UnsafeSharedMemoryRegion> {
   static bool IsNull(const base::UnsafeSharedMemoryRegion& region);
@@ -40,7 +40,7 @@ struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
 };
 
 template <>
-struct COMPONENT_EXPORT(MOJO_BASE_MOJOM)
+struct COMPONENT_EXPORT(MOJO_BASE_SHARED_TRAITS)
     StructTraits<mojo_base::mojom::WritableSharedMemoryRegionDataView,
                  base::WritableSharedMemoryRegion> {
   static bool IsNull(const base::WritableSharedMemoryRegion& region);
