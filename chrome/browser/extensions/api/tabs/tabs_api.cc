@@ -1404,7 +1404,6 @@ bool TabsUpdateFunction::UpdateURL(const std::string &url_string,
   // we need to check host permissions before allowing them.
   if (is_javascript_scheme) {
     if (!extension()->permissions_data()->CanAccessPage(
-            extension(),
             web_contents_->GetURL(),
             tab_id,
             &error_)) {
@@ -1745,7 +1744,7 @@ WebContents* TabsCaptureVisibleTabFunction::GetWebContentsForID(
   }
 
   if (!extension()->permissions_data()->CanCaptureVisiblePage(
-          contents->GetLastCommittedURL(), extension(),
+          contents->GetLastCommittedURL(),
           SessionTabHelper::IdForTab(contents).id(), error)) {
     return nullptr;
   }
@@ -2013,8 +2012,8 @@ bool ExecuteCodeInTabFunction::CanExecuteScriptOnPage(std::string* error) {
 
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  if (!extension()->permissions_data()->CanAccessPage(
-          extension(), effective_document_url, execute_tab_id_, error)) {
+  if (!extension()->permissions_data()->CanAccessPage(effective_document_url,
+                                                      execute_tab_id_, error)) {
     if (is_about_url &&
         extension()->permissions_data()->active_permissions().HasAPIPermission(
             APIPermission::kTab)) {

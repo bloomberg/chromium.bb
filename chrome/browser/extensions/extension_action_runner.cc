@@ -207,11 +207,10 @@ ExtensionActionRunner::RequiresUserConsentForScriptInjection(
   int tab_id = SessionTabHelper::IdForTab(web_contents()).id();
   switch (type) {
     case UserScript::CONTENT_SCRIPT:
-      return extension->permissions_data()->GetContentScriptAccess(
-          extension, url, tab_id, nullptr);
+      return extension->permissions_data()->GetContentScriptAccess(url, tab_id,
+                                                                   nullptr);
     case UserScript::PROGRAMMATIC_SCRIPT:
-      return extension->permissions_data()->GetPageAccess(extension, url,
-                                                          tab_id, nullptr);
+      return extension->permissions_data()->GetPageAccess(url, tab_id, nullptr);
   }
 
   NOTREACHED();

@@ -66,13 +66,11 @@ PermissionsData::PageAccess ExtensionInjectionHost::CanExecuteOnFrame(
   PermissionsData::PageAccess access = PermissionsData::PageAccess::kAllowed;
   if (is_declarative) {
     access = extension_->permissions_data()->GetPageAccess(
-        extension_,
         document_url,
         tab_id,
         nullptr /* ignore error */);
   } else {
     access = extension_->permissions_data()->GetContentScriptAccess(
-        extension_,
         document_url,
         tab_id,
         nullptr /* ignore error */);

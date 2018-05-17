@@ -407,7 +407,7 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
                                 int tab_id) {
     bool allowed_script = IsAllowedScript(extension, url, tab_id);
     bool allowed_capture = extension->permissions_data()->CanCaptureVisiblePage(
-        url, extension, tab_id, nullptr);
+        url, tab_id, nullptr);
 
     if (allowed_script && allowed_capture)
       return ALLOWED_SCRIPT_AND_CAPTURE;
@@ -466,8 +466,7 @@ class ExtensionScriptAndCaptureVisibleTest : public testing::Test {
   bool IsAllowedScript(const Extension* extension,
                        const GURL& url,
                        int tab_id) {
-    return extension->permissions_data()->CanAccessPage(extension, url, tab_id,
-                                                        nullptr);
+    return extension->permissions_data()->CanAccessPage(url, tab_id, nullptr);
   }
 
   // The set of all URLs above.
@@ -879,20 +878,19 @@ TEST(PermissionsDataTest, ChromeWebstoreUrl) {
         kTabId, tab_permissions);
     for (const GURL& url : kWebstoreUrls) {
       EXPECT_EQ(PermissionsData::PageAccess::kDenied,
-                extension->permissions_data()->GetPageAccess(extension, url, -1,
-                                                             &error))
+                extension->permissions_data()->GetPageAccess(url, -1, &error))
+          << extension->name() << ": " << url;
+      EXPECT_EQ(PermissionsData::PageAccess::kDenied,
+                extension->permissions_data()->GetContentScriptAccess(url, -1,
+                                                                      &error))
+          << extension->name() << ": " << url;
+      EXPECT_EQ(
+          PermissionsData::PageAccess::kDenied,
+          extension->permissions_data()->GetPageAccess(url, kTabId, &error))
           << extension->name() << ": " << url;
       EXPECT_EQ(PermissionsData::PageAccess::kDenied,
                 extension->permissions_data()->GetContentScriptAccess(
-                    extension, url, -1, &error))
-          << extension->name() << ": " << url;
-      EXPECT_EQ(PermissionsData::PageAccess::kDenied,
-                extension->permissions_data()->GetPageAccess(extension, url,
-                                                             kTabId, &error))
-          << extension->name() << ": " << url;
-      EXPECT_EQ(PermissionsData::PageAccess::kDenied,
-                extension->permissions_data()->GetContentScriptAccess(
-                    extension, url, kTabId, &error))
+                    url, kTabId, &error))
           << extension->name() << ": " << url;
     }
   }
