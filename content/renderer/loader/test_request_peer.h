@@ -11,6 +11,8 @@
 #include <vector>
 #include "base/time/time.h"
 #include "content/public/renderer/request_peer.h"
+#include "net/base/load_timing_info.h"
+#include "services/network/public/cpp/url_loader_completion_status.h"
 
 namespace net {
 struct RedirectInfo;
@@ -77,6 +79,9 @@ class TestRequestPeer : public RequestPeer {
     bool complete = false;
     bool cancelled = false;
     int request_id = -1;
+
+    net::LoadTimingInfo last_load_timing;
+    network::URLLoaderCompletionStatus completion_status;
   };
 
  private:

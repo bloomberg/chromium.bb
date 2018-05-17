@@ -203,9 +203,9 @@ class CONTENT_EXPORT ResourceDispatcher {
     GURL response_referrer;
     bool download_to_file;
     bool has_pending_redirect = false;
-    base::TimeTicks request_start;
-    base::TimeTicks response_start;
-    base::TimeTicks completion_time;
+    base::TimeTicks local_request_start;
+    base::TimeTicks local_response_start;
+    base::TimeTicks remote_request_start;
     net::LoadTimingInfo load_timing_info;
     linked_ptr<base::SharedMemory> buffer;
     int buffer_size;
@@ -252,10 +252,6 @@ class CONTENT_EXPORT ResourceDispatcher {
       const PendingRequestInfo& request_info,
       const network::ResourceResponseHead& browser_info,
       network::ResourceResponseInfo* renderer_info) const;
-
-  base::TimeTicks ToRendererCompletionTime(
-      const PendingRequestInfo& request_info,
-      const base::TimeTicks& browser_completion_time) const;
 
   void ContinueForNavigation(int request_id);
 

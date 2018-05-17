@@ -378,4 +378,85 @@ TEST_F(TimeConversionTest, NotInitialized) {
             response_info().load_timing.connect_timing.dns_start);
 }
 
+class CompletionTimeConversionTest : public ResourceDispatcherTest {
+ public:
+  void PerformTest(base::TimeTicks remote_request_start,
+                   base::TimeTicks completion_time,
+                   base::TimeDelta delay) {
+    std::unique_ptr<network::ResourceRequest> request(CreateResourceRequest());
+    StartAsync(std::move(request), nullptr, &peer_context_);
+
+    ASSERT_EQ(1u, loader_and_clients_.size());
+    auto client = std::move(loader_and_clients_[0].second);
+    network::ResourceResponseHead response_head;
+    response_head.request_start = remote_request_start;
+    response_head.load_timing.request_start = remote_request_start;
+    response_head.load_timing.receive_headers_end = remote_request_start;
+    // We need to put somthing non-null time, otherwise no values will be
+    // copied.
+    response_head.load_timing.request_start_time =
+        base::Time() + base::TimeDelta::FromSeconds(99);
+    client->OnReceiveResponse(response_head, {});
+
+    network::URLLoaderCompletionStatus status;
+    status.completion_time = completion_time;
+
+    client->OnComplete(status);
+
+    const base::TimeTicks until = base::TimeTicks::Now() + delay;
+    while (base::TimeTicks::Now() < until)
+      base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(1));
+    base::RunLoop().RunUntilIdle();
+    loader_and_clients_.clear();
+  }
+
+  base::TimeTicks request_start() const {
+    EXPECT_TRUE(peer_context_.received_response);
+    return peer_context_.last_load_timing.request_start;
+  }
+  base::TimeTicks completion_time() const {
+    EXPECT_TRUE(peer_context_.complete);
+    return peer_context_.completion_status.completion_time;
+  }
+
+ private:
+  TestRequestPeer::Context peer_context_;
+};
+
+TEST_F(CompletionTimeConversionTest, NullCompletionTimestamp) {
+  const auto remote_request_start =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(4);
+
+  PerformTest(remote_request_start, base::TimeTicks(), base::TimeDelta());
+
+  EXPECT_EQ(base::TimeTicks(), completion_time());
+}
+
+TEST_F(CompletionTimeConversionTest, RemoteRequestStartIsUnavailable) {
+  base::TimeTicks begin = base::TimeTicks::Now();
+
+  const auto remote_completion_time =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(8);
+
+  PerformTest(base::TimeTicks(), remote_completion_time, base::TimeDelta());
+
+  base::TimeTicks end = base::TimeTicks::Now();
+  EXPECT_LE(begin, completion_time());
+  EXPECT_LE(completion_time(), end);
+}
+
+TEST_F(CompletionTimeConversionTest, Convert) {
+  const auto remote_request_start =
+      base::TimeTicks() + base::TimeDelta::FromMilliseconds(4);
+
+  const auto remote_completion_time =
+      remote_request_start + base::TimeDelta::FromMilliseconds(3);
+
+  PerformTest(remote_request_start, remote_completion_time,
+              base::TimeDelta::FromMilliseconds(15));
+
+  EXPECT_EQ(completion_time(),
+            request_start() + base::TimeDelta::FromMilliseconds(3));
+}
+
 }  // namespace content

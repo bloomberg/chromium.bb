@@ -27,6 +27,7 @@ bool TestRequestPeer::OnReceivedRedirect(
   EXPECT_FALSE(context_->cancelled);
   EXPECT_FALSE(context_->complete);
   ++context_->seen_redirects;
+  context_->last_load_timing = info.load_timing;
   if (context_->defer_on_redirect)
     dispatcher_->SetDefersLoading(context_->request_id, true);
   return context_->follow_redirects;
@@ -38,6 +39,7 @@ void TestRequestPeer::OnReceivedResponse(
   EXPECT_FALSE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   context_->received_response = true;
+  context_->last_load_timing = info.load_timing;
   if (context_->cancel_on_receive_response) {
     dispatcher_->Cancel(
         context_->request_id,
@@ -101,6 +103,7 @@ void TestRequestPeer::OnCompletedRequest(
   EXPECT_TRUE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   context_->complete = true;
+  context_->completion_status = status;
 }
 
 TestRequestPeer::Context::Context() = default;
