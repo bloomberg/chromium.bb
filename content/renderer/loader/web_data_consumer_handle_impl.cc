@@ -81,7 +81,7 @@ Result WebDataConsumerHandleImpl::ReaderImpl::Read(void* data,
       context_->handle()->ReadData(data, &size_to_pass, flags_to_pass);
   if (rv == MOJO_RESULT_OK)
     *read_size = size_to_pass;
-  if (rv == MOJO_RESULT_OK || rv == MOJO_RESULT_SHOULD_WAIT)
+  if (rv == MOJO_RESULT_SHOULD_WAIT)
     handle_watcher_.ArmOrNotify();
 
   return HandleReadResult(rv);
@@ -104,13 +104,13 @@ Result WebDataConsumerHandleImpl::ReaderImpl::BeginRead(const void** buffer,
       context_->handle()->BeginReadData(buffer, &size_to_pass, flags_to_pass);
   if (rv == MOJO_RESULT_OK)
     *available = size_to_pass;
+  if (rv == MOJO_RESULT_SHOULD_WAIT)
+    handle_watcher_.ArmOrNotify();
   return HandleReadResult(rv);
 }
 
 Result WebDataConsumerHandleImpl::ReaderImpl::EndRead(size_t read_size) {
   MojoResult rv = context_->handle()->EndReadData(read_size);
-  if (rv == MOJO_RESULT_OK)
-    handle_watcher_.ArmOrNotify();
   return rv == MOJO_RESULT_OK ? kOk : kUnexpectedError;
 }
 
