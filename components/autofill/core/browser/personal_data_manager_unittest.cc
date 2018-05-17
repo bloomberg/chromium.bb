@@ -59,13 +59,6 @@ namespace {
 
 enum UserMode { USER_MODE_NORMAL, USER_MODE_INCOGNITO };
 
-const char kUTF8MidlineEllipsis[] =
-    "  "
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86";
-
 const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
 const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
 const base::Time kMuchLaterTime = base::Time::FromDoubleT(5000);
@@ -2438,12 +2431,12 @@ TEST_F(PersonalDataManagerTest,
             /*include_server_cards=*/true);
 
     ASSERT_EQ(2U, suggestions.size());
-    EXPECT_EQ(
-        base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "3456"),
-        suggestions[0].value);
-    EXPECT_EQ(
-        base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "6543"),
-        suggestions[1].value);
+    EXPECT_EQ(base::UTF8ToUTF16(std::string("Visa  ") +
+                                test::ObfuscatedCardDigitsAsUTF8("3456")),
+              suggestions[0].value);
+    EXPECT_EQ(base::UTF8ToUTF16(std::string("Visa  ") +
+                                test::ObfuscatedCardDigitsAsUTF8("6543")),
+              suggestions[1].value);
   }
 }
 
@@ -2484,9 +2477,9 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_NumberMissing) {
           /* field_contents= */ base::string16(),
           /*include_server_cards=*/true);
   ASSERT_EQ(1U, suggestions.size());
-  EXPECT_EQ(
-      base::UTF8ToUTF16(std::string("Amex") + kUTF8MidlineEllipsis + "0005"),
-      suggestions[0].value);
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("Amex  ") +
+                              test::ObfuscatedCardDigitsAsUTF8("0005")),
+            suggestions[0].value);
   EXPECT_EQ(base::ASCIIToUTF16("04/99"), suggestions[0].label);
 }
 
@@ -2552,18 +2545,18 @@ TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ServerDuplicates) {
       AutofillType(CREDIT_CARD_NUMBER), /* field_contents= */ base::string16(),
       /*include_server_cards=*/true);
   ASSERT_EQ(4U, suggestions.size());
-  EXPECT_EQ(
-      base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "3456"),
-      suggestions[0].value);
-  EXPECT_EQ(
-      base::UTF8ToUTF16(std::string("Amex") + kUTF8MidlineEllipsis + "0005"),
-      suggestions[1].value);
-  EXPECT_EQ(base::UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis +
-                              "5100"),
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("Visa  ") +
+                              test::ObfuscatedCardDigitsAsUTF8("3456")),
+            suggestions[0].value);
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("Amex  ") +
+                              test::ObfuscatedCardDigitsAsUTF8("0005")),
+            suggestions[1].value);
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("Mastercard  ") +
+                              test::ObfuscatedCardDigitsAsUTF8("5100")),
             suggestions[2].value);
-  EXPECT_EQ(
-      base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "5100"),
-      suggestions[3].value);
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("Visa  ") +
+                              test::ObfuscatedCardDigitsAsUTF8("5100")),
+            suggestions[3].value);
 }
 
 // Tests that a full server card can be a dupe of more than one local card.
@@ -2667,17 +2660,17 @@ TEST_F(PersonalDataManagerTest,
   ASSERT_EQ(3U, suggestions.size());
 
   // Local cards will show network.
-  EXPECT_EQ(
-      base::UTF8ToUTF16(std::string("Amex") + kUTF8MidlineEllipsis + "0005"),
-      suggestions[0].value);
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("Amex  ") +
+                              test::ObfuscatedCardDigitsAsUTF8("0005")),
+            suggestions[0].value);
   // Server card without bank name will show network.
-  EXPECT_EQ(
-      base::UTF8ToUTF16(std::string("Visa") + kUTF8MidlineEllipsis + "2110"),
-      suggestions[1].value);
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("Visa  ") +
+                              test::ObfuscatedCardDigitsAsUTF8("2110")),
+            suggestions[1].value);
   // Server card with bank name will show bank name.
-  EXPECT_EQ(
-      base::UTF8ToUTF16(std::string("Chase") + kUTF8MidlineEllipsis + "2111"),
-      suggestions[2].value);
+  EXPECT_EQ(base::UTF8ToUTF16(std::string("Chase  ") +
+                              test::ObfuscatedCardDigitsAsUTF8("2111")),
+            suggestions[2].value);
 }
 
 // Tests that only the full server card is kept when deduping with a local

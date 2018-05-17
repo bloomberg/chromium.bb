@@ -282,7 +282,11 @@ TEST_F(PaymentRequestMediatorTest, TestPaymentMethodItem) {
   PaymentMethodItem* payment_method_item =
       base::mac::ObjCCastStrict<PaymentMethodItem>(item);
   EXPECT_TRUE([payment_method_item.methodID hasPrefix:@"Visa"]);
-  EXPECT_TRUE([payment_method_item.methodID hasSuffix:@"1111"]);
+  // Last card digits will be preceeded by obfuscation symbols (****) and
+  // followed by a Pop Directional Formatting mark; simply check if are part of
+  // the payment method ID.
+  EXPECT_TRUE([payment_method_item.methodID rangeOfString:@"1111"].location !=
+              NSNotFound);
   EXPECT_TRUE([payment_method_item.methodDetail isEqualToString:@"Test User"]);
   EXPECT_EQ(MDCCollectionViewCellAccessoryDisclosureIndicator,
             payment_method_item.accessoryType);

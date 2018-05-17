@@ -65,14 +65,15 @@ const char* const kInvalidNumbers[] = {
   "3056 9309 0259 04aa", /* non-digit characters */
 };
 
-const char kUTF8MidlineEllipsis[] =
-    "  "
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86";
-
 }  // namespace
+
+TEST(CreditCardTest, GetObfuscatedStringForCardDigits) {
+  const base::string16 digits = base::ASCIIToUTF16("1235");
+  const base::string16 expected =
+      base::string16() + base::i18n::kLeftToRightEmbeddingMark +
+      kMidlineEllipsis + digits + base::i18n::kPopDirectionalFormatting;
+  EXPECT_EQ(expected, internal::GetObfuscatedStringForCardDigits(digits));
+}
 
 // Tests credit card summary string generation.  This test simulates a variety
 // of different possible summary strings.  Variations occur based on the
@@ -107,39 +108,39 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
   test::SetCreditCardInfo(&credit_card2, "John Dillinger",
                           "5105 1051 0510 5100", "", "2010", "1");
   base::string16 summary2 = credit_card2.Label();
-  EXPECT_EQ(
-      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
-      summary2);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            summary2);
   base::string16 obfuscated2 = credit_card2.NetworkAndLastFourDigits();
-  EXPECT_EQ(
-      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
-      obfuscated2);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            obfuscated2);
 
   // Case 3: No year.
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card3, "John Dillinger",
                           "5105 1051 0510 5100", "01", "", "1");
   base::string16 summary3 = credit_card3.Label();
-  EXPECT_EQ(
-      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
-      summary3);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            summary3);
   base::string16 obfuscated3 = credit_card3.NetworkAndLastFourDigits();
-  EXPECT_EQ(
-      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
-      obfuscated3);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            obfuscated3);
 
   // Case 4: Have everything.
   CreditCard credit_card4(base::GenerateGUID(), "https://www.example.com/");
   test::SetCreditCardInfo(&credit_card4, "John Dillinger",
                           "5105 1051 0510 5100", "01", "2010", "1");
   base::string16 summary4 = credit_card4.Label();
-  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis +
-                        "5100, 01/2010"),
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100") + ", 01/2010"),
             summary4);
   base::string16 obfuscated4 = credit_card4.NetworkAndLastFourDigits();
-  EXPECT_EQ(
-      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
-      obfuscated4);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            obfuscated4);
 
   // Case 5: Very long credit card
   CreditCard credit_card5(base::GenerateGUID(), "https://www.example.com/");
@@ -148,11 +149,12 @@ TEST(CreditCardTest, PreviewSummaryAndNetworkAndLastFourDigitsStrings) {
       "0123456789 0123456789 0123456789 5105 1051 0510 5100", "01", "2010",
       "1");
   base::string16 summary5 = credit_card5.Label();
-  EXPECT_EQ(
-      UTF8ToUTF16(std::string("Card") + kUTF8MidlineEllipsis + "5100, 01/2010"),
-      summary5);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Card  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100") + ", 01/2010"),
+            summary5);
   base::string16 obfuscated5 = credit_card5.NetworkAndLastFourDigits();
-  EXPECT_EQ(UTF8ToUTF16(std::string("Card") + kUTF8MidlineEllipsis + "5100"),
+  EXPECT_EQ(UTF8ToUTF16(std::string("Card  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
             obfuscated5);
 }
 
@@ -165,7 +167,8 @@ TEST(CreditCardTest, BankNameAndLastFourDigitsStrings) {
   credit_card1.set_bank_name("Chase");
   base::string16 obfuscated1 = credit_card1.BankNameAndLastFourDigits();
   EXPECT_FALSE(credit_card1.bank_name().empty());
-  EXPECT_EQ(UTF8ToUTF16(std::string("Chase") + kUTF8MidlineEllipsis + "5100"),
+  EXPECT_EQ(UTF8ToUTF16(std::string("Chase  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
             obfuscated1);
 
   // Case 2: Have no bank name and not show bank name.
@@ -174,8 +177,9 @@ TEST(CreditCardTest, BankNameAndLastFourDigitsStrings) {
                           "5105 1051 0510 5100", "01", "2010", "1");
   base::string16 obfuscated2 = credit_card2.BankNameAndLastFourDigits();
   EXPECT_TRUE(credit_card2.bank_name().empty());
-  EXPECT_EQ(UTF8ToUTF16(std::string(kUTF8MidlineEllipsis) + "5100"),
-            obfuscated2);
+  EXPECT_EQ(
+      internal::GetObfuscatedStringForCardDigits(base::ASCIIToUTF16("5100")),
+      obfuscated2);
 
   // Case 3: Have bank name but no last four digits, only show bank name.
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
@@ -198,9 +202,9 @@ TEST(CreditCardTest, NetworkOrBankNameAndLastFourDigitsStrings) {
   base::string16 obfuscated1 =
       credit_card1.NetworkOrBankNameAndLastFourDigits();
   EXPECT_FALSE(credit_card1.bank_name().empty());
-  EXPECT_EQ(
-      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
-      obfuscated1);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            obfuscated1);
 
   // Turn on feature flag.
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -214,9 +218,9 @@ TEST(CreditCardTest, NetworkOrBankNameAndLastFourDigitsStrings) {
   EXPECT_TRUE(credit_card2.bank_name().empty());
   base::string16 obfuscated2 =
       credit_card2.NetworkOrBankNameAndLastFourDigits();
-  EXPECT_EQ(
-      UTF8ToUTF16(std::string("Mastercard") + kUTF8MidlineEllipsis + "5100"),
-      obfuscated2);
+  EXPECT_EQ(UTF8ToUTF16(std::string("Mastercard  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
+            obfuscated2);
 
   // Case 3: Experiment on && bank name not empty -> show bank name.
   CreditCard credit_card3(base::GenerateGUID(), "https://www.example.com/");
@@ -227,7 +231,8 @@ TEST(CreditCardTest, NetworkOrBankNameAndLastFourDigitsStrings) {
   base::string16 obfuscated3 =
       credit_card3.NetworkOrBankNameAndLastFourDigits();
   EXPECT_FALSE(credit_card3.bank_name().empty());
-  EXPECT_EQ(UTF8ToUTF16(std::string("Chase") + kUTF8MidlineEllipsis + "5100"),
+  EXPECT_EQ(UTF8ToUTF16(std::string("Chase  ") +
+                        test::ObfuscatedCardDigitsAsUTF8("5100")),
             obfuscated3);
 }
 
@@ -1050,24 +1055,27 @@ INSTANTIATE_TEST_CASE_P(
 TEST(CreditCardTest, LastFourDigits) {
   CreditCard card(base::GenerateGUID(), "https://www.example.com/");
   ASSERT_EQ(base::string16(), card.LastFourDigits());
-  ASSERT_EQ(base::UTF8ToUTF16(std::string(kUTF8MidlineEllipsis)),
+  ASSERT_EQ(internal::GetObfuscatedStringForCardDigits(base::string16()),
             card.ObfuscatedLastFourDigits());
 
   test::SetCreditCardInfo(&card, "Baby Face Nelson", "5212341234123489", "01",
                           "2010", "1");
   ASSERT_EQ(base::ASCIIToUTF16("3489"), card.LastFourDigits());
-  ASSERT_EQ(base::UTF8ToUTF16(std::string(kUTF8MidlineEllipsis) + "3489"),
-            card.ObfuscatedLastFourDigits());
+  ASSERT_EQ(
+      internal::GetObfuscatedStringForCardDigits(base::ASCIIToUTF16("3489")),
+      card.ObfuscatedLastFourDigits());
 
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("3489"));
   ASSERT_EQ(base::ASCIIToUTF16("3489"), card.LastFourDigits());
-  ASSERT_EQ(base::UTF8ToUTF16(std::string(kUTF8MidlineEllipsis) + "3489"),
-            card.ObfuscatedLastFourDigits());
+  ASSERT_EQ(
+      internal::GetObfuscatedStringForCardDigits(base::ASCIIToUTF16("3489")),
+      card.ObfuscatedLastFourDigits());
 
   card.SetRawInfo(CREDIT_CARD_NUMBER, ASCIIToUTF16("489"));
   ASSERT_EQ(base::ASCIIToUTF16("489"), card.LastFourDigits());
-  ASSERT_EQ(base::UTF8ToUTF16(std::string(kUTF8MidlineEllipsis) + "489"),
-            card.ObfuscatedLastFourDigits());
+  ASSERT_EQ(
+      internal::GetObfuscatedStringForCardDigits(base::ASCIIToUTF16("489")),
+      card.ObfuscatedLastFourDigits());
 }
 
 // Verifies that a credit card should be updated.

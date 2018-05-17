@@ -490,5 +490,10 @@ void GenerateTestAutofillPopup(
   autofill_external_delegate->OnSuggestionsReturned(query_id, suggestions);
 }
 
+std::string ObfuscatedCardDigitsAsUTF8(const std::string& str) {
+  return base::UTF16ToUTF8(
+      internal::GetObfuscatedStringForCardDigits(base::ASCIIToUTF16(str)));
+}
+
 }  // namespace test
 }  // namespace autofill

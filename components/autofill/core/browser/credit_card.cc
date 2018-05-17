@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/guid.h"
+#include "base/i18n/rtl.h"
 #include "base/i18n/string_search.h"
 #include "base/i18n/time_formatting.h"
 #include "base/i18n/unicodestring.h"
@@ -44,11 +45,8 @@ using base::ASCIIToUTF16;
 
 namespace autofill {
 
-const base::char16 kMidlineEllipsis[] = { 0x0020, 0x0020,
-                                          0x2022, 0x2006,
-                                          0x2022, 0x2006,
-                                          0x2022, 0x2006,
-                                          0x2022, 0x2006, 0 };
+const base::char16 kMidlineEllipsis[] = {0x2022, 0x2006, 0x2022, 0x2006, 0x2022,
+                                         0x2006, 0x2022, 0x2006, 0};
 
 namespace {
 
@@ -110,11 +108,17 @@ base::string16 GetLastFourDigits(const base::string16& number) {
   return stripped.substr(stripped.size() - kNumLastDigits, kNumLastDigits);
 }
 
+}  // namespace
+
+namespace internal {
+
 base::string16 GetObfuscatedStringForCardDigits(const base::string16& digits) {
-  return base::string16(kMidlineEllipsis) + digits;
+  base::string16 obfuscated_string = base::string16(kMidlineEllipsis) + digits;
+  base::i18n::WrapStringWithLTRFormatting(&obfuscated_string);
+  return obfuscated_string;
 }
 
-}  // namespace
+}  // namespace internal
 
 CreditCard::CreditCard(const std::string& guid, const std::string& origin)
     : AutofillDataModel(guid, origin),
@@ -740,27 +744,35 @@ base::string16 CreditCard::NetworkForDisplay() const {
 }
 
 base::string16 CreditCard::ObfuscatedLastFourDigits() const {
-  return GetObfuscatedStringForCardDigits(LastFourDigits());
+  return internal::GetObfuscatedStringForCardDigits(LastFourDigits());
 }
 
 base::string16 CreditCard::NetworkAndLastFourDigits() const {
-  base::string16 network = NetworkForDisplay();
+  const base::string16 network = NetworkForDisplay();
   // TODO(crbug.com/734197): truncate network.
 
-  base::string16 digits = LastFourDigits();
+  const base::string16 digits = LastFourDigits();
   if (digits.empty())
     return network;
 
   // TODO(estade): i18n?
-  return network + GetObfuscatedStringForCardDigits(digits);
+  const base::string16 obfuscated_string =
+      internal::GetObfuscatedStringForCardDigits(digits);
+  return network.empty() ? obfuscated_string
+                         : network + ASCIIToUTF16("  ") + obfuscated_string;
 }
 
 base::string16 CreditCard::BankNameAndLastFourDigits() const {
-  base::string16 digits = LastFourDigits();
+  const base::string16 digits = LastFourDigits();
   // TODO(crbug.com/734197): truncate bank name.
   if (digits.empty())
     return ASCIIToUTF16(bank_name_);
-  return ASCIIToUTF16(bank_name_) + GetObfuscatedStringForCardDigits(digits);
+
+  const base::string16 obfuscated_string =
+      internal::GetObfuscatedStringForCardDigits(digits);
+  return bank_name_.empty() ? obfuscated_string
+                            : ASCIIToUTF16(bank_name_) + ASCIIToUTF16("  ") +
+                                  obfuscated_string;
 }
 
 base::string16 CreditCard::NetworkOrBankNameAndLastFourDigits() const {
