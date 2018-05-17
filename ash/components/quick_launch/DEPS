@@ -1,10 +1,5 @@
 include_rules = [
-  "+base",
   "+mash/public",
-  "+mojo/public",
   "+services/catalog/public",
-  "+services/service_manager/public",
-  "+ui/aura",
-  "+ui/views",
   "+url",
 ]
