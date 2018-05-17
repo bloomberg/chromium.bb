@@ -47,7 +47,7 @@ class Mixer::Group {
     providers_.emplace_back(provider);
   }
 
-  void FetchResults(const KnownResults& known_results) {
+  void FetchResults() {
     results_.clear();
 
     for (const SearchProvider* provider : providers_) {
@@ -96,9 +96,8 @@ void Mixer::AddProviderToGroup(size_t group_id, SearchProvider* provider) {
   groups_[group_id]->AddProvider(provider);
 }
 
-void Mixer::MixAndPublish(const KnownResults& known_results,
-                          size_t num_max_results) {
-  FetchResults(known_results);
+void Mixer::MixAndPublish(size_t num_max_results) {
+  FetchResults();
 
   SortedResults results;
   results.reserve(num_max_results);
@@ -159,9 +158,9 @@ void Mixer::RemoveDuplicates(SortedResults* results) {
   results->swap(final);
 }
 
-void Mixer::FetchResults(const KnownResults& known_results) {
+void Mixer::FetchResults() {
   for (const auto& group : groups_)
-    group->FetchResults(known_results);
+    group->FetchResults();
 }
 
 }  // namespace app_list

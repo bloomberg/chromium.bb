@@ -15,14 +15,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
-#include "chrome/browser/ui/app_list/search/history.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 
 namespace app_list {
 
-SearchController::SearchController(AppListModelUpdater* model_updater,
-                                   History* history)
-    : mixer_(std::make_unique<Mixer>(model_updater)), history_(history) {}
+SearchController::SearchController(AppListModelUpdater* model_updater)
+    : mixer_(std::make_unique<Mixer>(model_updater)) {}
 
 SearchController::~SearchController() {}
 
@@ -49,9 +47,6 @@ void SearchController::OpenResult(ChromeSearchResult* result, int event_flags) {
     return;
 
   result->Open(event_flags);
-
-  if (history_ && history_->IsReady())
-    history_->AddLaunchEvent(base::UTF16ToUTF8(last_raw_query_), result->id());
 }
 
 void SearchController::InvokeResultAction(ChromeSearchResult* result,
@@ -79,15 +74,9 @@ void SearchController::OnResultsChanged() {
   if (dispatching_query_)
     return;
 
-  KnownResults known_results;
-  if (history_ && history_->IsReady()) {
-    history_->GetKnownResults(base::UTF16ToUTF8(last_raw_query_))
-        ->swap(known_results);
-  }
-
   size_t num_max_results =
       query_for_recommendation_ ? kNumStartPageTiles : kMaxSearchResults;
-  mixer_->MixAndPublish(known_results, num_max_results);
+  mixer_->MixAndPublish(num_max_results);
 }
 
 ChromeSearchResult* SearchController::FindSearchResult(

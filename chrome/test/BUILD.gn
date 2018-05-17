@@ -4380,8 +4380,6 @@ test("unit_tests") {
       "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider_unittest.cc",
       "../browser/ui/app_list/search/settings_shortcut/settings_shortcut_result_unittest.cc",
       "../browser/ui/app_list/search/tests/app_search_provider_unittest.cc",
-      "../browser/ui/app_list/search/tests/history_data_store_unittest.cc",
-      "../browser/ui/app_list/search/tests/history_unittest.cc",
       "../browser/ui/app_list/search/tests/mixer_unittest.cc",
       "../browser/ui/app_list/search/tests/omnibox_result_unittest.cc",
       "../browser/ui/app_list/search/tests/term_break_iterator_unittest.cc",

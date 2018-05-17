@@ -12,7 +12,6 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "chrome/browser/ui/app_list/search/history_types.h"
 
 class AppListModelUpdater;
 class ChromeSearchResult;
@@ -46,7 +45,7 @@ class Mixer {
   void AddProviderToGroup(size_t group_id, SearchProvider* provider);
 
   // Collects the results, sorts and publishes them.
-  void MixAndPublish(const KnownResults& known_results, size_t num_max_results);
+  void MixAndPublish(size_t num_max_results);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(test::MixerTest, Publish);
@@ -72,7 +71,7 @@ class Mixer {
   // |results| may not have been sorted yet.
   static void RemoveDuplicates(SortedResults* results);
 
-  void FetchResults(const KnownResults& known_results);
+  void FetchResults();
 
   AppListModelUpdater* const model_updater_;  // Not owned.
 

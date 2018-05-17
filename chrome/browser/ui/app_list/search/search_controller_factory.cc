@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/app_list/search/app_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_data_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
-#include "chrome/browser/ui/app_list/search/history_factory.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
@@ -59,8 +58,7 @@ std::unique_ptr<SearchController> CreateSearchController(
     AppListModelUpdater* model_updater,
     AppListControllerDelegate* list_controller) {
   std::unique_ptr<SearchController> controller =
-      std::make_unique<SearchController>(
-          model_updater, HistoryFactory::GetForBrowserContext(profile));
+      std::make_unique<SearchController>(model_updater);
 
   // Add mixer groups. There are four main groups: answer card, apps, webstore
   // and omnibox. Each group has a "soft" maximum number of results. However, if

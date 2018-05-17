@@ -20,7 +20,6 @@ class ChromeSearchResult;
 
 namespace app_list {
 
-class History;
 class SearchProvider;
 
 // Controller that collects query from given SearchBoxModel, dispatches it
@@ -28,7 +27,7 @@ class SearchProvider;
 // results to the given SearchResults UI model.
 class SearchController {
  public:
-  SearchController(AppListModelUpdater* model_updater, History* history);
+  explicit SearchController(AppListModelUpdater* model_updater);
   virtual ~SearchController();
 
   // TODO(hejq): can we accept a trimmed query here?
@@ -62,7 +61,6 @@ class SearchController {
   using Providers = std::vector<std::unique_ptr<SearchProvider>>;
   Providers providers_;
   std::unique_ptr<Mixer> mixer_;
-  History* history_;  // KeyedService, not owned.
 
   DISALLOW_COPY_AND_ASSIGN(SearchController);
 };
