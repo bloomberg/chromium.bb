@@ -1898,32 +1898,30 @@ static unsigned pixel_dist(const AV1_COMP *const cpi, const MACROBLOCK *x,
 
 // Compute the pixel domain distortion from diff on all visible 4x4s in the
 // transform block.
-static int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
-                               const int16_t *diff, const int diff_stride,
-                               int blk_row, int blk_col,
-                               const BLOCK_SIZE plane_bsize,
-                               const BLOCK_SIZE tx_bsize) {
+static INLINE int64_t pixel_diff_dist(const MACROBLOCK *x, int plane,
+                                      int blk_row, int blk_col,
+                                      const BLOCK_SIZE plane_bsize,
+                                      const BLOCK_SIZE tx_bsize) {
   int visible_rows, visible_cols;
   const MACROBLOCKD *xd = &x->e_mbd;
+  get_txb_dimensions(xd, plane, plane_bsize, blk_row, blk_col, tx_bsize, NULL,
+                     NULL, &visible_cols, &visible_rows);
+  const int diff_stride = block_size_wide[plane_bsize];
+  const int16_t *diff = x->plane[plane].src_diff;
 #if CONFIG_DIST_8X8
   int txb_height = block_size_high[tx_bsize];
   int txb_width = block_size_wide[tx_bsize];
-  const int src_stride = x->plane[plane].src.stride;
-  const int src_idx = (blk_row * src_stride + blk_col) << tx_size_wide_log2[0];
-  const uint8_t *src = &x->plane[plane].src.buf[src_idx];
-#endif
-
-  get_txb_dimensions(xd, plane, plane_bsize, blk_row, blk_col, tx_bsize, NULL,
-                     NULL, &visible_cols, &visible_rows);
-
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8 && plane == 0 && txb_width >= 8 && txb_height >= 8)
+  if (x->using_dist_8x8 && plane == 0 && txb_width >= 8 && txb_height >= 8) {
+    const int src_stride = x->plane[plane].src.stride;
+    const int src_idx = (blk_row * src_stride + blk_col)
+                        << tx_size_wide_log2[0];
+    const uint8_t *src = &x->plane[plane].src.buf[src_idx];
     return dist_8x8_diff(x, src, src_stride, diff, diff_stride, txb_width,
                          txb_height, visible_cols, visible_rows, x->qindex);
-  else
+  }
 #endif
-    return aom_sum_squares_2d_i16(diff, diff_stride, visible_cols,
-                                  visible_rows);
+  diff += ((blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]);
+  return aom_sum_squares_2d_i16(diff, diff_stride, visible_cols, visible_rows);
 }
 
 int av1_count_colors(const uint8_t *src, int stride, int rows, int cols,
@@ -2004,129 +2002,100 @@ static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
          tx_size;
 }
 
-static void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
-                       BLOCK_SIZE plane_bsize, int block, int blk_row,
-                       int blk_col, TX_SIZE tx_size, int64_t *out_dist,
-                       int64_t *out_sse, OUTPUT_STATUS output_status,
-                       int use_transform_domain_distortion) {
+static INLINE void dist_block_tx_domain(MACROBLOCK *x, int plane, int block,
+                                        TX_SIZE tx_size, int64_t *out_dist,
+                                        int64_t *out_sse) {
+  MACROBLOCKD *const xd = &x->e_mbd;
+  const struct macroblock_plane *const p = &x->plane[plane];
+  const struct macroblockd_plane *const pd = &xd->plane[plane];
+  // Transform domain distortion computation is more efficient as it does
+  // not involve an inverse transform, but it is less accurate.
+  const int buffer_length = av1_get_max_eob(tx_size);
+  int64_t this_sse;
+  // TX-domain results need to shift down to Q2/D10 to match pixel
+  // domain distortion values which are in Q2^2
+  int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
+  tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
+  tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length, &this_sse,
+                                       xd->bd);
+  else
+    *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
+
+  *out_dist = RIGHT_SIGNED_SHIFT(*out_dist, shift);
+  *out_sse = RIGHT_SIGNED_SHIFT(this_sse, shift);
+}
+
+static INLINE int64_t dist_block_px_domain(const AV1_COMP *cpi, MACROBLOCK *x,
+                                           int plane, BLOCK_SIZE plane_bsize,
+                                           int block, int blk_row, int blk_col,
+                                           TX_SIZE tx_size) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const uint16_t eob = p->eobs[block];
+  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
+  const int bsw = block_size_wide[tx_bsize];
+  const int bsh = block_size_high[tx_bsize];
+  const int src_stride = x->plane[plane].src.stride;
+  const int dst_stride = xd->plane[plane].dst.stride;
+  // Scale the transform block index to pixel unit.
+  const int src_idx = (blk_row * src_stride + blk_col) << tx_size_wide_log2[0];
+  const int dst_idx = (blk_row * dst_stride + blk_col) << tx_size_wide_log2[0];
+  const uint8_t *src = &x->plane[plane].src.buf[src_idx];
+  const uint8_t *dst = &xd->plane[plane].dst.buf[dst_idx];
+  const tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
 
-  // When eob is 0, pixel domain distortion is more efficient and accurate.
-  if (!eob) use_transform_domain_distortion = 0;
-  if (use_transform_domain_distortion) {
-    // Transform domain distortion computation is more efficient as it does
-    // not involve an inverse transform, but it is less accurate.
-    const int buffer_length = av1_get_max_eob(tx_size);
-    int64_t this_sse;
-    // TX-domain results need to shift down to Q2/D10 to match pixel
-    // domain distortion values which are in Q2^2
-    int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
-    tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
-    tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+  assert(cpi != NULL);
+  assert(tx_size_wide_log2[0] == tx_size_high_log2[0]);
 
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-      *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length,
-                                         &this_sse, xd->bd);
-    else
-      *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
+  uint8_t *recon;
+  DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
 
-    *out_dist = RIGHT_SIGNED_SHIFT(*out_dist, shift);
-    *out_sse = RIGHT_SIGNED_SHIFT(this_sse, shift);
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+    recon = CONVERT_TO_BYTEPTR(recon16);
+    av1_highbd_convolve_2d_copy_sr(CONVERT_TO_SHORTPTR(dst), dst_stride,
+                                   CONVERT_TO_SHORTPTR(recon), MAX_TX_SIZE, bsw,
+                                   bsh, NULL, NULL, 0, 0, NULL, xd->bd);
   } else {
-    const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
-    const int bsw = block_size_wide[tx_bsize];
-    const int bsh = block_size_high[tx_bsize];
-    const int src_stride = x->plane[plane].src.stride;
-    const int dst_stride = xd->plane[plane].dst.stride;
-    // Scale the transform block index to pixel unit.
-    const int src_idx = (blk_row * src_stride + blk_col)
-                        << tx_size_wide_log2[0];
-    const int dst_idx = (blk_row * dst_stride + blk_col)
-                        << tx_size_wide_log2[0];
-    const uint8_t *src = &x->plane[plane].src.buf[src_idx];
-    const uint8_t *dst = &xd->plane[plane].dst.buf[dst_idx];
-    const tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
+    recon = (uint8_t *)recon16;
+    av1_convolve_2d_copy_sr(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh, NULL,
+                            NULL, 0, 0, NULL);
+  }
 
-    assert(cpi != NULL);
-    assert(tx_size_wide_log2[0] == tx_size_high_log2[0]);
-
-    {
-      const int diff_stride = block_size_wide[plane_bsize];
-      const int diff_idx = (blk_row * diff_stride + blk_col)
-                           << tx_size_wide_log2[0];
-      const int16_t *diff = &p->src_diff[diff_idx];
-      *out_sse = pixel_diff_dist(x, plane, diff, diff_stride, blk_row, blk_col,
-                                 plane_bsize, tx_bsize);
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-        *out_sse = ROUND_POWER_OF_TWO(*out_sse, (xd->bd - 8) * 2);
-    }
-    *out_sse *= 16;
-
-    if (eob) {
-      if (output_status == OUTPUT_HAS_DECODED_PIXELS) {
-        *out_dist = pixel_dist(cpi, x, plane, src, src_stride, dst, dst_stride,
-                               blk_row, blk_col, plane_bsize, tx_bsize);
-      } else {
-        uint8_t *recon;
-        DECLARE_ALIGNED(16, uint16_t, recon16[MAX_TX_SQUARE]);
-
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-          recon = CONVERT_TO_BYTEPTR(recon16);
-        else
-          recon = (uint8_t *)recon16;
-
-        if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-          av1_highbd_convolve_2d_copy_sr(
-              CONVERT_TO_SHORTPTR(dst), dst_stride, CONVERT_TO_SHORTPTR(recon),
-              MAX_TX_SIZE, bsw, bsh, NULL, NULL, 0, 0, NULL, xd->bd);
-        } else {
-          av1_convolve_2d_copy_sr(dst, dst_stride, recon, MAX_TX_SIZE, bsw, bsh,
-                                  NULL, NULL, 0, 0, NULL);
-        }
-
-        const PLANE_TYPE plane_type = get_plane_type(plane);
-        TX_TYPE tx_type =
-            av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
-                            cpi->common.reduced_tx_set_used);
-        av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, recon,
-                                    MAX_TX_SIZE, eob,
+  const PLANE_TYPE plane_type = get_plane_type(plane);
+  TX_TYPE tx_type = av1_get_tx_type(plane_type, xd, blk_row, blk_col, tx_size,
                                     cpi->common.reduced_tx_set_used);
-
+  av1_inverse_transform_block(xd, dqcoeff, plane, tx_type, tx_size, recon,
+                              MAX_TX_SIZE, eob,
+                              cpi->common.reduced_tx_set_used);
 #if CONFIG_DIST_8X8
-        if (x->using_dist_8x8 && plane == 0 && (bsw < 8 || bsh < 8)) {
-          // Save decoded pixels for inter block in pd->pred to avoid
-          // block_8x8_rd_txfm_daala_dist() need to produce them
-          // by calling av1_inverse_transform_block() again.
-          const int pred_stride = block_size_wide[plane_bsize];
-          const int pred_idx = (blk_row * pred_stride + blk_col)
-                               << tx_size_wide_log2[0];
-          int16_t *pred = &x->pred_luma[pred_idx];
-          int i, j;
+  if (x->using_dist_8x8 && plane == 0 && (bsw < 8 || bsh < 8)) {
+    // Save decoded pixels for inter block in pd->pred to avoid
+    // block_8x8_rd_txfm_daala_dist() need to produce them
+    // by calling av1_inverse_transform_block() again.
+    const int pred_stride = block_size_wide[plane_bsize];
+    const int pred_idx = (blk_row * pred_stride + blk_col)
+                         << tx_size_wide_log2[0];
+    int16_t *pred = &x->pred_luma[pred_idx];
+    int i, j;
 
-          if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-            for (j = 0; j < bsh; j++)
-              for (i = 0; i < bsw; i++)
-                pred[j * pred_stride + i] =
-                    CONVERT_TO_SHORTPTR(recon)[j * MAX_TX_SIZE + i];
-          } else {
-            for (j = 0; j < bsh; j++)
-              for (i = 0; i < bsw; i++)
-                pred[j * pred_stride + i] = recon[j * MAX_TX_SIZE + i];
-          }
-        }
-#endif  // CONFIG_DIST_8X8
-        *out_dist =
-            pixel_dist(cpi, x, plane, src, src_stride, recon, MAX_TX_SIZE,
-                       blk_row, blk_col, plane_bsize, tx_bsize);
-      }
-      *out_dist *= 16;
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      for (j = 0; j < bsh; j++)
+        for (i = 0; i < bsw; i++)
+          pred[j * pred_stride + i] =
+              CONVERT_TO_SHORTPTR(recon)[j * MAX_TX_SIZE + i];
     } else {
-      *out_dist = *out_sse;
+      for (j = 0; j < bsh; j++)
+        for (i = 0; i < bsw; i++)
+          pred[j * pred_stride + i] = recon[j * MAX_TX_SIZE + i];
     }
   }
+#endif  // CONFIG_DIST_8X8
+  return 16 * pixel_dist(cpi, x, plane, src, src_stride, recon, MAX_TX_SIZE,
+                         blk_row, blk_col, plane_bsize, tx_bsize);
 }
 
   // NOTE: CONFIG_COLLECT_RD_STATS takes 3 possible values
@@ -2536,12 +2505,22 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #if CONFIG_DIST_8X8
   if (x->using_dist_8x8) use_transform_domain_distortion = 0;
 #endif
+  const uint16_t *eobs_ptr = x->plane[plane].eobs;
+
+  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
+  int64_t block_sse =
+      pixel_diff_dist(x, plane, blk_row, blk_col, plane_bsize, tx_bsize);
+  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
+    block_sse = ROUND_POWER_OF_TWO(block_sse, (xd->bd - 8) * 2);
+  block_sse *= 16;
+
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (!allowed_tx_mask[tx_type]) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
     last_tx_type = tx_type;
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
+
     if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
       av1_xform_quant(
           cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
@@ -2552,11 +2531,10 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);
       if (cpi->sf.optimize_b_precheck && best_rd < INT64_MAX &&
-          x->plane[plane].eobs[block] >= 4) {
+          eobs_ptr[block] >= 4) {
         // Calculate distortion quickly in transform domain.
-        dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
-                   &this_rd_stats.dist, &this_rd_stats.sse,
-                   OUTPUT_HAS_PREDICTED_PIXELS, 1);
+        dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
+                             &this_rd_stats.sse);
         rate_cost =
             av1_cost_coeffs(cm, x, plane_bsize, plane, blk_row, blk_col, block,
                             tx_size, a, l, use_fast_coef_costing);
@@ -2569,9 +2547,17 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
       av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1, &rate_cost);
     }
-    dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
-               &this_rd_stats.dist, &this_rd_stats.sse,
-               OUTPUT_HAS_PREDICTED_PIXELS, use_transform_domain_distortion);
+    if (eobs_ptr[block] == 0) {
+      // When eob is 0, pixel domain distortion is more efficient and accurate.
+      this_rd_stats.dist = this_rd_stats.sse = block_sse;
+    } else if (use_transform_domain_distortion) {
+      dist_block_tx_domain(x, plane, block, tx_size, &this_rd_stats.dist,
+                           &this_rd_stats.sse);
+    } else {
+      this_rd_stats.dist = dist_block_px_domain(
+          cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size);
+      this_rd_stats.sse = block_sse;
+    }
 
     this_rd_stats.rate = rate_cost;
 
@@ -4991,7 +4977,7 @@ static int predict_skip_flag(MACROBLOCK *x, BLOCK_SIZE bsize, int64_t *dist,
   const MACROBLOCKD *xd = &x->e_mbd;
   const int16_t dc_q = av1_dc_quant_QTX(x->qindex, 0, xd->bd);
 
-  *dist = pixel_diff_dist(x, 0, x->plane[0].src_diff, bw, 0, 0, bsize, bsize);
+  *dist = pixel_diff_dist(x, 0, 0, 0, bsize, bsize);
   const int64_t mse = *dist / bw / bh;
   // Normalized quantizer takes the transform upscaling factor (8 for tx size
   // smaller than 32) into account.

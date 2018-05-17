@@ -54,11 +54,6 @@ static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
 }
 #endif
 
-typedef enum OUTPUT_STATUS {
-  OUTPUT_HAS_PREDICTED_PIXELS,
-  OUTPUT_HAS_DECODED_PIXELS
-} OUTPUT_STATUS;
-
 // Returns the number of colors in 'src'.
 int av1_count_colors(const uint8_t *src, int stride, int rows, int cols,
                      int *val_count);
