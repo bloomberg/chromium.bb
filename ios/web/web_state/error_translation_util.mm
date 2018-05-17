@@ -91,14 +91,12 @@ bool GetNetErrorFromIOSErrorCode(NSInteger ios_error_code,
       *net_error_code = net::ERR_INVALID_RESPONSE;
       break;
     case kCFURLErrorInternationalRoamingOff:
-      // TODO(crbug.com/546165): Create new net error for disabled intl roaming.
       *net_error_code = net::ERR_INTERNET_DISCONNECTED;
       break;
     case kCFURLErrorCallIsActive:
       *net_error_code = net::ERR_CONNECTION_FAILED;
       break;
     case kCFURLErrorDataNotAllowed:
-      // TODO(crbug.com/546167): Create new net error for disabled data usage.
       *net_error_code = net::ERR_INTERNET_DISCONNECTED;
       break;
     case kCFURLErrorRequestBodyStreamExhausted:
