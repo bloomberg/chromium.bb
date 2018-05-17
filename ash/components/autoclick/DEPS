@@ -1,14 +1,5 @@
 include_rules = [
   "+ash/autoclick/common",
-  "+ash/components/autoclick",
-  "+base",
   "+mash/public/mojom",
-  "+mojo/public",
-  "+services/service_manager/public",
   "+services/ui/public",
-  "+ui/aura/mus",
-  "+ui/base",
-  "+ui/display",
-  "+ui/events",
-  "+ui/views",
 ]

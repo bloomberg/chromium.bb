@@ -1,23 +1,10 @@
 include_rules = [
   # KSV is intended to be a small app with restrictive DEPS in order to make it
   # easy to be migrated to a completely independent mojo app under mustash.
-  "-ash",
-  "+ash/components/shortcut_viewer",
   "+ash/components/strings",
-  "+ash/public/cpp",
-  "+base",
-  "+cc/paint",
-  "+testing/gtest",
   "+ui/accessibility",
-  "+ui/aura",
-  "+ui/base",
-  "+ui/display",
-  "+ui/events",
   "+ui/chromeos/events",
   "+ui/chromeos/search_box",
-  "+ui/gfx",
-  "+ui/gl",
-  "+ui/views",
 ]
 
 specific_include_rules = {
