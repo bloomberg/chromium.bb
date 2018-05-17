@@ -79,6 +79,10 @@ void DumpCodeStatistics(
       "bytecode_and_metadata_size",
       base::trace_event::MemoryAllocatorDump::kUnitsBytes,
       code_statistics.bytecode_and_metadata_size());
+  heap_spaces_dump->AddScalar(
+      "external_script_source_size",
+      base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+      code_statistics.external_script_source_size());
 }
 
 // Dump the number of native and detached contexts.
