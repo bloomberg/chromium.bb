@@ -15,6 +15,7 @@
 #include "base/debug/stack_trace.h"
 #include "base/files/file_path.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task_scheduler/post_task.h"
@@ -132,6 +133,21 @@ bool AlwaysAccessNetwork(
          headers->HasHeaderValue("vary", "*");
 }
 
+int GetInitialRequestID() {
+  // Starting with a random number speculatively avoids RDH_INVALID_REQUEST_ID
+  // which are assumed to have been caused by restarting RequestID at 0 when
+  // restarting a renderer after a crash - this would cause collisions if
+  // requests from the previously crashed renderer are still active.  See
+  // https://crbug.com/614281#c61 for more details about this hypothesis.
+  //
+  // To avoid increasing the likelyhood of overflowing the range of available
+  // RequestIDs, kMax is set to a relatively low value of 2^20 (rather than
+  // to something higher like 2^31).
+  const int kMin = 0;
+  const int kMax = 1 << 20;
+  return base::RandInt(kMin, kMax);
+}
+
 }  // namespace
 
 // static
@@ -139,8 +155,9 @@ int ResourceDispatcher::MakeRequestID() {
   // NOTE: The resource_dispatcher_host also needs probably unique
   // request_ids, so they count down from -2 (-1 is a special "we're
   // screwed value"), while the renderer process counts up.
+  static const int kInitialRequestID = GetInitialRequestID();
   static base::AtomicSequenceNumber sequence;
-  return sequence.GetNext();  // We start at zero.
+  return kInitialRequestID + sequence.GetNext();
 }
 
 ResourceDispatcher::ResourceDispatcher()
