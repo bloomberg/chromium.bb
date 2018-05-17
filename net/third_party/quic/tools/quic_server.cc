@@ -13,6 +13,7 @@
 
 #include <memory>
 
+#include "base/run_loop.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quic/core/crypto/quic_random.h"
 #include "net/third_party/quic/core/quic_crypto_stream.h"
@@ -28,9 +29,9 @@
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/impl/quic_epoll_clock.h"
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
 #include "net/third_party/quic/tools/quic_simple_dispatcher.h"
+#include "net/third_party/quic/tools/quic_simple_server_backend.h"
 
 #ifndef SO_RXQ_OVFL
 #define SO_RXQ_OVFL 40
@@ -40,11 +41,6 @@ namespace net {
 
 namespace {
 
-// Specifies the directory used during QuicHttpResponseCache
-// construction to seed the cache. Cache directory can be
-// generated using `wget -p --save-headers <url>`
-std::string FLAGS_quic_response_cache_dir = "";
-
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 const char kSourceAddressTokenSecret[] = "secret";
 
@@ -53,19 +49,19 @@ const char kSourceAddressTokenSecret[] = "secret";
 const size_t kNumSessionsToCreatePerSocketEvent = 16;
 
 QuicServer::QuicServer(std::unique_ptr<ProofSource> proof_source,
-                       QuicHttpResponseCache* response_cache)
+                       QuicSimpleServerBackend* quic_simple_server_backend)
     : QuicServer(std::move(proof_source),
                  QuicConfig(),
                  QuicCryptoServerConfig::ConfigOptions(),
                  AllSupportedVersions(),
-                 response_cache) {}
+                 quic_simple_server_backend) {}
 
 QuicServer::QuicServer(
     std::unique_ptr<ProofSource> proof_source,
     const QuicConfig& config,
     const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
     const ParsedQuicVersionVector& supported_versions,
-    QuicHttpResponseCache* response_cache)
+    QuicSimpleServerBackend* quic_simple_server_backend)
     : port_(0),
       fd_(-1),
       packets_dropped_(0),
@@ -79,7 +75,8 @@ QuicServer::QuicServer(
       crypto_config_options_(crypto_config_options),
       version_manager_(supported_versions),
       packet_reader_(new QuicPacketReader()),
-      response_cache_(response_cache) {
+      quic_simple_server_backend_(quic_simple_server_backend),
+      weak_factory_(this) {
   Initialize();
 }
 
@@ -100,10 +97,6 @@ void QuicServer::Initialize() {
   }
 
   epoll_server_.set_timeout_in_us(50 * 1000);
-
-  if (!FLAGS_quic_response_cache_dir.empty()) {
-    response_cache_->InitializeFromDirectory(FLAGS_quic_response_cache_dir);
-  }
 
   QuicEpollClock clock(&epoll_server_);
 
@@ -161,11 +154,22 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
           new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
       std::unique_ptr<QuicEpollAlarmFactory>(
           new QuicEpollAlarmFactory(&epoll_server_)),
-      response_cache_);
+      quic_simple_server_backend_);
 }
 
 void QuicServer::WaitForEvents() {
   epoll_server_.WaitForEventsAndExecuteCallbacks();
+}
+
+void QuicServer::Start() {
+  Run();
+  base::RunLoop().Run();
+}
+
+void QuicServer::Run() {
+  WaitForEvents();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&QuicServer::Run, weak_factory_.GetWeakPtr()));
 }
 
 void QuicServer::Shutdown() {

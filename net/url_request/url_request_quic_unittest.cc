@@ -22,7 +22,7 @@
 #include "net/test/test_with_scoped_task_environment.h"
 #include "net/third_party/quic/core/quic_dispatcher.h"
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quic/tools/quic_simple_dispatcher.h"
 #include "net/tools/quic/quic_simple_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -138,9 +138,9 @@ class URLRequestQuicTest : public TestWithScopedTaskEnvironment {
  private:
   void StartQuicServer() {
     // Set up in-memory cache.
-    response_cache_.AddSimpleResponse(kTestServerHost, kHelloPath, kHelloStatus,
-                                      kHelloBodyValue);
-    response_cache_.InitializeFromDirectory(ServerPushCacheDirectory());
+    memory_cache_backend_.AddSimpleResponse(kTestServerHost, kHelloPath,
+                                            kHelloStatus, kHelloBodyValue);
+    memory_cache_backend_.InitializeBackend(ServerPushCacheDirectory());
     net::QuicConfig config;
     // Set up server certs.
     std::unique_ptr<net::ProofSourceChromium> proof_source(
@@ -153,7 +153,7 @@ class URLRequestQuicTest : public TestWithScopedTaskEnvironment {
     server_.reset(new QuicSimpleServer(
         test::crypto_test_utils::ProofSourceForTesting(), config,
         net::QuicCryptoServerConfig::ConfigOptions(), AllSupportedVersions(),
-        &response_cache_));
+        &memory_cache_backend_));
     int rv =
         server_->Listen(net::IPEndPoint(net::IPAddress::IPv4AllZeros(), 0));
     EXPECT_GE(rv, 0) << "Quic server fails to start";
@@ -181,7 +181,7 @@ class URLRequestQuicTest : public TestWithScopedTaskEnvironment {
   std::unique_ptr<QuicSimpleServer> server_;
   std::unique_ptr<TestURLRequestContext> context_;
   TestNetLog net_log_;
-  QuicHttpResponseCache response_cache_;
+  QuicMemoryCacheBackend memory_cache_backend_;
   MockCertVerifier cert_verifier_;
 };
 

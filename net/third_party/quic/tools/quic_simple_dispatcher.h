@@ -7,7 +7,7 @@
 
 #include "net/third_party/quic/core/quic_dispatcher.h"
 #include "net/third_party/quic/core/quic_server_session_base.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_simple_server_backend.h"
 
 namespace net {
 
@@ -20,7 +20,7 @@ class QuicSimpleDispatcher : public QuicDispatcher {
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
-      QuicHttpResponseCache* response_cache);
+      QuicSimpleServerBackend* quic_simple_server_backend);
 
   ~QuicSimpleDispatcher() override;
 
@@ -34,10 +34,12 @@ class QuicSimpleDispatcher : public QuicDispatcher {
       const QuicSocketAddress& client_address,
       QuicStringPiece alpn) override;
 
-  QuicHttpResponseCache* response_cache() { return response_cache_; }
+  QuicSimpleServerBackend* server_backend() {
+    return quic_simple_server_backend_;
+  }
 
  private:
-  QuicHttpResponseCache* response_cache_;  // Unowned.
+  QuicSimpleServerBackend* quic_simple_server_backend_;  // Unowned.
 
   // The map of the reset error code with its counter.
   std::map<QuicRstStreamErrorCode, int> rst_error_map_;

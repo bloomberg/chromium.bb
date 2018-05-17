@@ -21,7 +21,7 @@
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_version_manager.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_simple_server_backend.h"
 #include "net/tools/epoll_server/epoll_server.h"
 
 namespace net {
@@ -36,12 +36,12 @@ class QuicPacketReader;
 class QuicServer : public EpollCallbackInterface {
  public:
   QuicServer(std::unique_ptr<ProofSource> proof_source,
-             QuicHttpResponseCache* response_cache);
+             QuicSimpleServerBackend* quic_simple_server_backend);
   QuicServer(std::unique_ptr<ProofSource> proof_source,
              const QuicConfig& config,
              const QuicCryptoServerConfig::ConfigOptions& server_config_options,
              const ParsedQuicVersionVector& supported_versions,
-             QuicHttpResponseCache* response_cache);
+             QuicSimpleServerBackend* quic_simple_server_backend);
 
   ~QuicServer() override;
 
@@ -50,6 +50,9 @@ class QuicServer : public EpollCallbackInterface {
 
   // Wait up to 50ms, and handle any events which occur.
   void WaitForEvents();
+
+  void Start();
+  void Run();
 
   // Server deletion is imminent.  Start cleaning up the epoll server.
   virtual void Shutdown();
@@ -89,7 +92,9 @@ class QuicServer : public EpollCallbackInterface {
 
   QuicVersionManager* version_manager() { return &version_manager_; }
 
-  QuicHttpResponseCache* response_cache() { return response_cache_; }
+  QuicSimpleServerBackend* server_backend() {
+    return quic_simple_server_backend_;
+  }
 
   void set_silent_close(bool value) { silent_close_ = value; }
 
@@ -138,7 +143,9 @@ class QuicServer : public EpollCallbackInterface {
   // space than allowed on the stack.
   std::unique_ptr<QuicPacketReader> packet_reader_;
 
-  QuicHttpResponseCache* response_cache_;  // unowned.
+  QuicSimpleServerBackend* quic_simple_server_backend_;  // unowned.
+
+  base::WeakPtrFactory<QuicServer> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };

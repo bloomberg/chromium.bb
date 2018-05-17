@@ -31,7 +31,7 @@
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/tools/quic/quic_simple_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
@@ -143,12 +143,12 @@ class URLRequestQuicPerfTest : public ::testing::Test {
  private:
   void StartQuicServer() {
     net::QuicConfig config;
-    response_cache_.AddSimpleResponse(kOriginHost, kHelloPath, kHelloStatus,
-                                      kHelloAltSvcResponse);
+    memory_cache_backend_.AddSimpleResponse(kOriginHost, kHelloPath,
+                                            kHelloStatus, kHelloAltSvcResponse);
     quic_server_.reset(new QuicSimpleServer(
         test::crypto_test_utils::ProofSourceForTesting(), config,
         net::QuicCryptoServerConfig::ConfigOptions(), AllSupportedVersions(),
-        &response_cache_));
+        &memory_cache_backend_));
     int rv = quic_server_->Listen(
         net::IPEndPoint(net::IPAddress::IPv4AllZeros(), kAltSvcPort));
     ASSERT_GE(rv, 0) << "Quic server fails to start";
@@ -178,7 +178,7 @@ class URLRequestQuicPerfTest : public ::testing::Test {
   std::unique_ptr<QuicSimpleServer> quic_server_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<TestURLRequestContext> context_;
-  QuicHttpResponseCache response_cache_;
+  QuicMemoryCacheBackend memory_cache_backend_;
   MockCertVerifier cert_verifier_;
 };
 

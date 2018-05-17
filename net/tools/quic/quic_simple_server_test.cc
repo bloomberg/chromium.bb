@@ -12,6 +12,7 @@
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quic/test_tools/mock_quic_dispatcher.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
+#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/tools/quic/quic_simple_server_session_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -38,7 +39,7 @@ class QuicChromeServerDispatchPacketTest : public QuicTest {
             std::unique_ptr<QuicCryptoServerStream::Helper>(
                 new QuicSimpleServerSessionHelper(QuicRandom::GetInstance())),
             std::unique_ptr<MockAlarmFactory>(new net::test::MockAlarmFactory),
-            &response_cache_) {
+            &memory_cache_backend_) {
     dispatcher_.InitializeWithWriter(nullptr);
   }
 
@@ -54,7 +55,7 @@ class QuicChromeServerDispatchPacketTest : public QuicTest {
   QuicCryptoServerConfig crypto_config_;
   QuicVersionManager version_manager_;
   net::test::MockQuicDispatcher dispatcher_;
-  QuicHttpResponseCache response_cache_;
+  QuicMemoryCacheBackend memory_cache_backend_;
 };
 
 TEST_F(QuicChromeServerDispatchPacketTest, DispatchPacket) {

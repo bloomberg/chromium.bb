@@ -12,8 +12,6 @@
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 
-using std::string;
-
 namespace net {
 
 QuicSimpleServerSession::QuicSimpleServerSession(
@@ -23,7 +21,7 @@ QuicSimpleServerSession::QuicSimpleServerSession(
     QuicCryptoServerStream::Helper* helper,
     const QuicCryptoServerConfig* crypto_config,
     QuicCompressedCertsCache* compressed_certs_cache,
-    QuicHttpResponseCache* response_cache)
+    QuicSimpleServerBackend* quic_simple_server_backend)
     : QuicServerSessionBase(config,
                             connection,
                             visitor,
@@ -31,7 +29,7 @@ QuicSimpleServerSession::QuicSimpleServerSession(
                             crypto_config,
                             compressed_certs_cache),
       highest_promised_stream_id_(0),
-      response_cache_(response_cache) {}
+      quic_simple_server_backend_(quic_simple_server_backend) {}
 
 QuicSimpleServerSession::~QuicSimpleServerSession() {
   delete connection();
@@ -66,15 +64,15 @@ void QuicSimpleServerSession::OnStreamFrame(const QuicStreamFrame& frame) {
 }
 
 void QuicSimpleServerSession::PromisePushResources(
-    const string& request_url,
-    const std::list<QuicHttpResponseCache::ServerPushInfo>& resources,
+    const QuicString& request_url,
+    const std::list<QuicBackendResponse::ServerPushInfo>& resources,
     QuicStreamId original_stream_id,
     const SpdyHeaderBlock& original_request_headers) {
   if (!server_push_enabled()) {
     return;
   }
 
-  for (QuicHttpResponseCache::ServerPushInfo resource : resources) {
+  for (QuicBackendResponse::ServerPushInfo resource : resources) {
     SpdyHeaderBlock headers = SynthesizePushRequestHeaders(
         request_url, resource, original_request_headers);
     highest_promised_stream_id_ += 2;
@@ -95,7 +93,7 @@ QuicSpdyStream* QuicSimpleServerSession::CreateIncomingDynamicStream(
   }
 
   QuicSpdyStream* stream =
-      new QuicSimpleServerStream(id, this, response_cache_);
+      new QuicSimpleServerStream(id, this, quic_simple_server_backend_);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
 }
@@ -106,7 +104,7 @@ QuicSimpleServerStream* QuicSimpleServerSession::CreateOutgoingDynamicStream() {
   }
 
   QuicSimpleServerStream* stream = new QuicSimpleServerStream(
-      GetNextOutgoingStreamId(), this, response_cache_);
+      GetNextOutgoingStreamId(), this, quic_simple_server_backend_);
   ActivateStream(QuicWrapUnique(stream));
   return stream;
 }
@@ -148,8 +146,8 @@ void QuicSimpleServerSession::HandleRstOnValidNonexistentStream(
 }
 
 SpdyHeaderBlock QuicSimpleServerSession::SynthesizePushRequestHeaders(
-    string request_url,
-    QuicHttpResponseCache::ServerPushInfo resource,
+    QuicString request_url,
+    QuicBackendResponse::ServerPushInfo resource,
     const SpdyHeaderBlock& original_request_headers) {
   QuicUrl push_request_url = resource.request_url;
 

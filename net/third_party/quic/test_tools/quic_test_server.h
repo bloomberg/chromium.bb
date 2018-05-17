@@ -8,6 +8,7 @@
 #include "net/third_party/quic/core/quic_dispatcher.h"
 #include "net/third_party/quic/core/quic_session.h"
 #include "net/third_party/quic/tools/quic_server.h"
+#include "net/third_party/quic/tools/quic_simple_server_backend.h"
 #include "net/third_party/quic/tools/quic_simple_server_session.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 
@@ -33,7 +34,7 @@ class QuicTestServer : public QuicServer {
         QuicCryptoServerStream::Helper* helper,
         const QuicCryptoServerConfig* crypto_config,
         QuicCompressedCertsCache* compressed_certs_cache,
-        QuicHttpResponseCache* response_cache) = 0;
+        QuicSimpleServerBackend* quic_simple_server_backend) = 0;
   };
 
   // Factory for creating QuicSimpleServerStreams.
@@ -45,7 +46,7 @@ class QuicTestServer : public QuicServer {
     virtual QuicSimpleServerStream* CreateStream(
         QuicStreamId id,
         QuicSpdySession* session,
-        QuicHttpResponseCache* response_cache) = 0;
+        QuicSimpleServerBackend* quic_simple_server_backend) = 0;
   };
 
   class CryptoStreamFactory {
@@ -59,11 +60,11 @@ class QuicTestServer : public QuicServer {
   };
 
   QuicTestServer(std::unique_ptr<ProofSource> proof_source,
-                 QuicHttpResponseCache* response_cache);
+                 QuicSimpleServerBackend* quic_simple_server_backend);
   QuicTestServer(std::unique_ptr<ProofSource> proof_source,
                  const QuicConfig& config,
                  const ParsedQuicVersionVector& supported_versions,
-                 QuicHttpResponseCache* response_cache);
+                 QuicSimpleServerBackend* quic_simple_server_backend);
 
   // Create a custom dispatcher which creates custom sessions.
   QuicDispatcher* CreateQuicDispatcher() override;
@@ -94,7 +95,7 @@ class ImmediateGoAwaySession : public QuicSimpleServerSession {
                          QuicCryptoServerStream::Helper* helper,
                          const QuicCryptoServerConfig* crypto_config,
                          QuicCompressedCertsCache* compressed_certs_cache,
-                         QuicHttpResponseCache* response_cache);
+                         QuicSimpleServerBackend* quic_simple_server_backend);
 
   // Override to send GoAway.
   void OnStreamFrame(const QuicStreamFrame& frame) override;

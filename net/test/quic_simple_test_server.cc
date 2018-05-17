@@ -21,7 +21,7 @@
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
 #include "net/test/test_data_directory.h"
 #include "net/third_party/quic/core/quic_dispatcher.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/spdy/core/spdy_header_block.h"
 #include "net/tools/quic/quic_simple_server.h"
 
@@ -51,7 +51,7 @@ const char kSimpleHeaderName[] = "hello_header";
 const char kSimpleHeaderValue[] = "hello header value";
 
 base::Thread* g_quic_server_thread = nullptr;
-net::QuicHttpResponseCache* g_quic_response_cache = nullptr;
+net::QuicMemoryCacheBackend* g_quic_cache_backend = nullptr;
 net::QuicSimpleServer* g_quic_server = nullptr;
 int g_quic_server_port = 0;
 
@@ -131,21 +131,21 @@ const std::string QuicSimpleTestServer::GetSimpleHeaderValue() {
   return kSimpleHeaderValue;
 }
 
-void SetupQuicHttpResponseCache() {
+void SetupQuicMemoryCacheBackend() {
   SpdyHeaderBlock headers;
   headers[kHelloHeaderName] = kHelloHeaderValue;
   headers[kStatusHeader] = kHelloStatus;
   SpdyHeaderBlock trailers;
   trailers[kHelloTrailerName] = kHelloTrailerValue;
-  g_quic_response_cache = new QuicHttpResponseCache();
-  g_quic_response_cache->AddResponse(base::StringPrintf("%s", kTestServerHost),
-                                     kHelloPath, std::move(headers),
-                                     kHelloBodyValue, std::move(trailers));
+  g_quic_cache_backend = new QuicMemoryCacheBackend();
+  g_quic_cache_backend->AddResponse(base::StringPrintf("%s", kTestServerHost),
+                                    kHelloPath, std::move(headers),
+                                    kHelloBodyValue, std::move(trailers));
   headers[kSimpleHeaderName] = kSimpleHeaderValue;
   headers[kStatusHeader] = kSimpleStatus;
-  g_quic_response_cache->AddResponse(base::StringPrintf("%s", kTestServerHost),
-                                     kSimplePath, std::move(headers),
-                                     kSimpleBodyValue);
+  g_quic_cache_backend->AddResponse(base::StringPrintf("%s", kTestServerHost),
+                                    kSimplePath, std::move(headers),
+                                    kSimpleBodyValue);
 }
 
 void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
@@ -161,11 +161,11 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
   CHECK(proof_source->Initialize(directory.AppendASCII("quic-chain.pem"),
                                  directory.AppendASCII("quic-leaf-cert.key"),
                                  base::FilePath()));
-  SetupQuicHttpResponseCache();
+  SetupQuicMemoryCacheBackend();
 
   g_quic_server = new QuicSimpleServer(
       std::move(proof_source), config, QuicCryptoServerConfig::ConfigOptions(),
-      AllSupportedVersions(), g_quic_response_cache);
+      AllSupportedVersions(), g_quic_cache_backend);
 
   // Start listening on an unbound port.
   int rv = g_quic_server->Listen(IPEndPoint(IPAddress::IPv4AllZeros(), 0));
@@ -179,8 +179,8 @@ void ShutdownOnServerThread(base::WaitableEvent* server_stopped_event) {
   g_quic_server->Shutdown();
   delete g_quic_server;
   g_quic_server = nullptr;
-  delete g_quic_response_cache;
-  g_quic_response_cache = nullptr;
+  delete g_quic_cache_backend;
+  g_quic_cache_backend = nullptr;
   server_stopped_event->Signal();
 }
 

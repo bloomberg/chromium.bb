@@ -10,6 +10,7 @@
 #include "net/third_party/quic/core/quic_config.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/tools/quic_simple_dispatcher.h"
+#include "net/third_party/quic/tools/quic_simple_server_backend.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace net {
@@ -24,7 +25,7 @@ class MockQuicDispatcher : public QuicSimpleDispatcher {
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
-      QuicHttpResponseCache* response_cache);
+      QuicSimpleServerBackend* quic_simple_server_backend);
 
   ~MockQuicDispatcher() override;
 

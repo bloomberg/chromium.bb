@@ -63,7 +63,8 @@
 #include "net/third_party/quic/test_tools/quic_test_server.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/test_tools/server_thread.h"
-#include "net/third_party/quic/tools/quic_http_response_cache.h"
+#include "net/third_party/quic/tools/quic_backend_response.h"
+#include "net/third_party/quic/tools/quic_memory_cache_backend.h"
 #include "net/third_party/quic/tools/quic_server.h"
 #include "net/third_party/quic/tools/quic_simple_server_stream.h"
 #include "net/tools/epoll_server/epoll_server.h"
@@ -449,7 +450,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
 
     auto* test_server = new QuicTestServer(
         crypto_test_utils::ProofSourceForTesting(), server_config_,
-        server_supported_versions_, &response_cache_);
+        server_supported_versions_, &memory_cache_backend_);
     server_thread_ = QuicMakeUnique<ServerThread>(test_server, server_address_);
     if (chlo_multiplier_ != 0) {
       server_thread_->server()->SetChloMultiplier(chlo_multiplier_);
@@ -489,8 +490,8 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
   void AddToCache(QuicStringPiece path,
                   int response_code,
                   QuicStringPiece body) {
-    response_cache_.AddSimpleResponse(server_hostname_, path, response_code,
-                                      body);
+    memory_cache_backend_.AddSimpleResponse(server_hostname_, path,
+                                            response_code, body);
   }
 
   void SetPacketLossPercentage(int32_t loss) {
@@ -602,7 +603,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
   bool initialized_;
   QuicSocketAddress server_address_;
   QuicString server_hostname_;
-  QuicHttpResponseCache response_cache_;
+  QuicMemoryCacheBackend memory_cache_backend_;
   std::unique_ptr<ServerThread> server_thread_;
   std::unique_ptr<QuicTestClient> client_;
   PacketDroppingTestWriter* client_writer_;
@@ -2260,11 +2261,12 @@ TEST_P(EndToEndTestWithTls, CanceledStreamDoesNotBecomeZombie) {
 // A test stream that gives |response_body_| as an error response body.
 class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
  public:
-  ServerStreamWithErrorResponseBody(QuicStreamId id,
-                                    QuicSpdySession* session,
-                                    QuicHttpResponseCache* response_cache,
-                                    QuicString response_body)
-      : QuicSimpleServerStream(id, session, response_cache),
+  ServerStreamWithErrorResponseBody(
+      QuicStreamId id,
+      QuicSpdySession* session,
+      QuicSimpleServerBackend* quic_simple_server_backend,
+      QuicString response_body)
+      : QuicSimpleServerStream(id, session, quic_simple_server_backend),
         response_body_(std::move(response_body)) {}
 
   ~ServerStreamWithErrorResponseBody() override = default;
@@ -2295,9 +2297,9 @@ class StreamWithErrorFactory : public QuicTestServer::StreamFactory {
   QuicSimpleServerStream* CreateStream(
       QuicStreamId id,
       QuicSpdySession* session,
-      QuicHttpResponseCache* response_cache) override {
-    return new ServerStreamWithErrorResponseBody(id, session, response_cache,
-                                                 response_body_);
+      QuicSimpleServerBackend* quic_simple_server_backend) override {
+    return new ServerStreamWithErrorResponseBody(
+        id, session, quic_simple_server_backend, response_body_);
   }
 
  private:
@@ -2309,8 +2311,8 @@ class ServerStreamThatDropsBody : public QuicSimpleServerStream {
  public:
   ServerStreamThatDropsBody(QuicStreamId id,
                             QuicSpdySession* session,
-                            QuicHttpResponseCache* response_cache)
-      : QuicSimpleServerStream(id, session, response_cache) {}
+                            QuicSimpleServerBackend* quic_simple_server_backend)
+      : QuicSimpleServerStream(id, session, quic_simple_server_backend) {}
 
   ~ServerStreamThatDropsBody() override = default;
 
@@ -2353,26 +2355,28 @@ class ServerStreamThatDropsBodyFactory : public QuicTestServer::StreamFactory {
   QuicSimpleServerStream* CreateStream(
       QuicStreamId id,
       QuicSpdySession* session,
-      QuicHttpResponseCache* response_cache) override {
-    return new ServerStreamThatDropsBody(id, session, response_cache);
+      QuicSimpleServerBackend* quic_simple_server_backend) override {
+    return new ServerStreamThatDropsBody(id, session,
+                                         quic_simple_server_backend);
   }
 };
 
 // A test server stream that sends response with body size greater than 4GB.
 class ServerStreamThatSendsHugeResponse : public QuicSimpleServerStream {
  public:
-  ServerStreamThatSendsHugeResponse(QuicStreamId id,
-                                    QuicSpdySession* session,
-                                    QuicHttpResponseCache* response_cache,
-                                    int64_t body_bytes)
-      : QuicSimpleServerStream(id, session, response_cache),
+  ServerStreamThatSendsHugeResponse(
+      QuicStreamId id,
+      QuicSpdySession* session,
+      QuicSimpleServerBackend* quic_simple_server_backend,
+      int64_t body_bytes)
+      : QuicSimpleServerStream(id, session, quic_simple_server_backend),
         body_bytes_(body_bytes) {}
 
   ~ServerStreamThatSendsHugeResponse() override = default;
 
  protected:
   void SendResponse() override {
-    QuicHttpResponseCache::Response response;
+    QuicBackendResponse response;
     QuicString body(body_bytes_, 'a');
     response.set_body(body);
     SendHeadersAndBodyAndTrailers(response.headers().Clone(), response.body(),
@@ -2396,9 +2400,9 @@ class ServerStreamThatSendsHugeResponseFactory
   QuicSimpleServerStream* CreateStream(
       QuicStreamId id,
       QuicSpdySession* session,
-      QuicHttpResponseCache* response_cache) override {
-    return new ServerStreamThatSendsHugeResponse(id, session, response_cache,
-                                                 body_bytes_);
+      QuicSimpleServerBackend* quic_simple_server_backend) override {
+    return new ServerStreamThatSendsHugeResponse(
+        id, session, quic_simple_server_backend, body_bytes_);
   }
 
   int64_t body_bytes_;
@@ -2492,8 +2496,9 @@ TEST_P(EndToEndTestWithTls, Trailers) {
   SpdyHeaderBlock trailers;
   trailers["some-trailing-header"] = "trailing-header-value";
 
-  response_cache_.AddResponse(server_hostname_, "/trailer_url",
-                              std::move(headers), kBody, trailers.Clone());
+  memory_cache_backend_.AddResponse(server_hostname_, "/trailer_url",
+                                    std::move(headers), kBody,
+                                    trailers.Clone());
 
   EXPECT_EQ(kBody, client_->SendSynchronousRequest("/trailer_url"));
   EXPECT_EQ("200", client_->response_headers()->find(":status")->second);
@@ -2530,7 +2535,7 @@ class EndToEndTestServerPush : public EndToEndTest {
       // push response.
       large_resource = QuicString(resource_size, 'a');
     }
-    std::list<QuicHttpResponseCache::ServerPushInfo> push_resources;
+    std::list<QuicBackendResponse::ServerPushInfo> push_resources;
     for (size_t i = 0; i < num_resources; ++i) {
       QuicString url = push_urls[i];
       QuicUrl resource_url(url);
@@ -2543,11 +2548,11 @@ class EndToEndTestServerPush : public EndToEndTest {
       response_headers[":status"] = "200";
       response_headers["content-length"] =
           QuicTextUtils::Uint64ToString(body.size());
-      push_resources.push_back(QuicHttpResponseCache::ServerPushInfo(
+      push_resources.push_back(QuicBackendResponse::ServerPushInfo(
           resource_url, std::move(response_headers), kV3LowestPriority, body));
     }
 
-    response_cache_.AddSimpleResponseWithServerPushResources(
+    memory_cache_backend_.AddSimpleResponseWithServerPushResources(
         host, path, 200, response_body, push_resources);
   }
 };
