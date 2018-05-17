@@ -15,8 +15,10 @@
   "permissions": [
     "clipboardRead",
     "clipboardWrite",
-    "unlimitedStorage",
+    "notifications",
     "storage",
-    "terminalPrivate"
+    "terminalPrivate",
+    "unlimitedStorage",
+    "accessibilityFeatures.read"
   ]
 }
