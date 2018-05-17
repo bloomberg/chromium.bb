@@ -43,9 +43,6 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
     : public media::VideoCaptureDevice,
       public viz::mojom::FrameSinkVideoConsumer {
  public:
-  using CapturerCreatorCallback =
-      base::RepeatingCallback<viz::mojom::FrameSinkVideoCapturerPtrInfo()>;
-
   FrameSinkVideoCaptureDevice();
   ~FrameSinkVideoCaptureDevice() override;
 
@@ -87,15 +84,23 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   void OnTargetChanged(const viz::FrameSinkId& frame_sink_id);
   void OnTargetPermanentlyLost();
 
-  // Overrides the callback that is run to create the capturer.
-  void SetCapturerCreatorForTesting(CapturerCreatorCallback creator);
-
  protected:
   CursorRenderer* cursor_renderer() const { return cursor_renderer_.get(); }
 
   // Subclasses override these to perform additional start/stop tasks.
   virtual void WillStart();
   virtual void DidStop();
+
+  // Creates a capturer and then runs the given |callback| to deliver the
+  // client-side interface. The default implementation calls
+  // CreateCapturerViaGlobalManager(), but subclasses and/or tests may provide
+  // alternatives.
+  using CreatedCapturerCallback =
+      base::OnceCallback<void(viz::mojom::FrameSinkVideoCapturerPtrInfo)>;
+  virtual void CreateCapturer(CreatedCapturerCallback callback);
+
+  // Creates a capturer using the global viz::HostFrameSinkManager.
+  static void CreateCapturerViaGlobalManager(CreatedCapturerCallback callback);
 
  private:
   using BufferId = decltype(media::VideoCaptureDevice::Client::Buffer::id);
@@ -134,11 +139,6 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   // video capture stack. This is set by AllocateAndStartWithReceiver(), and
   // cleared by StopAndDeAllocate().
   std::unique_ptr<media::VideoFrameReceiver> receiver_;
-
-  // Callback that is run to request a capturer be created and returns the
-  // client-side interface. This callback will be run on the UI BrowserThread.
-  // The constructor provides a default, but unit tests can override this.
-  CapturerCreatorCallback capturer_creator_;
 
   // Mojo pointer to the capturer instance in VIZ.
   viz::mojom::FrameSinkVideoCapturerPtr capturer_;
