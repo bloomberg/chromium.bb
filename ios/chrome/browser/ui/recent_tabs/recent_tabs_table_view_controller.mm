@@ -16,6 +16,8 @@
 #include "components/sync/driver/sync_service.h"
 #include "components/sync_sessions/open_tabs_ui_delegate.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/favicon/favicon_loader.h"
+#include "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios.h"
 #include "ios/chrome/browser/sessions/tab_restore_service_delegate_impl_ios_factory.h"
@@ -106,6 +108,8 @@ const int kRelativeTimeMaxHours = 4;
 @property(nonatomic, strong) SigninPromoViewMediator* signinPromoViewMediator;
 // The sectionIdentifier for the last tapped header, 0 if no header was tapped.
 @property(nonatomic, assign) NSInteger lastTappedHeaderSectionIdentifier;
+// Favicon Loader to retrieve favicons for URLCells.
+@property(nonatomic, assign) FaviconLoader* faviconLoader;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
@@ -120,6 +124,7 @@ const int kRelativeTimeMaxHours = 4;
 @synthesize sessionState = _sessionState;
 @synthesize signinPromoViewMediator = _signinPromoViewMediator;
 @synthesize tabRestoreService = _tabRestoreService;
+@synthesize faviconLoader = _faviconLoader;
 
 #pragma mark - Public Interface
 
@@ -161,6 +166,9 @@ const int kRelativeTimeMaxHours = 4;
                                               action:@selector(handleTap:)];
   tapGesture.delegate = self;
   [self.tableView addGestureRecognizer:tapGesture];
+
+  self.faviconLoader =
+      IOSChromeFaviconLoaderFactory::GetForBrowserState(self.browserState);
 
   // If the NavigationBar is not translucent, set
   // |self.extendedLayoutIncludesOpaqueBars| to YES in order to avoid a top
@@ -208,7 +216,6 @@ const int kRelativeTimeMaxHours = 4;
   TableViewAccessoryItem* historyItem =
       [[TableViewAccessoryItem alloc] initWithType:ItemTypeShowFullHistory];
   historyItem.title = l10n_util::GetNSString(IDS_HISTORY_SHOWFULLHISTORY_LINK);
-  //  historyItem.image = [UIImage imageNamed:@"show_history"];
   [model addItem:historyItem
       toSectionWithIdentifier:SectionIdentifierRecentlyClosedTabs];
 }
@@ -227,27 +234,21 @@ const int kRelativeTimeMaxHours = 4;
     DCHECK(entry);
     // Use the page's title for the label, or its URL if title is empty.
     NSString* entryTitle;
-    NSString* entryURL = @"";
-    GURL entryGURL;
+    GURL entryURL;
     switch (entry->type) {
       case sessions::TabRestoreService::TAB: {
         const sessions::TabRestoreService::Tab* tab =
             static_cast<const sessions::TabRestoreService::Tab*>(entry);
         const sessions::SerializedNavigationEntry& entry =
             tab->navigations[tab->current_navigation_index];
-        // Use the page's title for the label, or its URL if title is empty.
-        if (entry.title().size()) {
           entryTitle = base::SysUTF16ToNSString(entry.title());
-          entryURL = base::SysUTF8ToNSString(entry.virtual_url().spec());
-        } else {
-          entryTitle = base::SysUTF8ToNSString(entry.virtual_url().spec());
-        }
-        entryGURL = entry.virtual_url();
-        break;
+          entryURL = entry.virtual_url();
+          break;
       }
       case sessions::TabRestoreService::WINDOW: {
         // Only TAB type is handled.
-        entryTitle = @"Window type - NOTIMPLEMENTED";
+        NOTREACHED()
+            << "Window type should not have been stored in TabRestoreService.";
         break;
       }
     }
@@ -319,12 +320,11 @@ const int kRelativeTimeMaxHours = 4;
   for (int i = 0; i < numberOfTabs; i++) {
     synced_sessions::DistantTab const* sessionTab = session->tabs[i].get();
     NSString* title = base::SysUTF16ToNSString(sessionTab->title);
-    GURL url = sessionTab->virtual_url;
 
     TableViewURLItem* sessionTabItem =
         [[TableViewURLItem alloc] initWithType:ItemTypeSessionTabData];
     sessionTabItem.title = title;
-    sessionTabItem.URL = base::SysUTF8ToNSString(url.host());
+    sessionTabItem.URL = sessionTab->virtual_url;
     [model addItem:sessionTabItem
         toSectionWithIdentifier:[self sectionIdentifierForSession:session]];
   }
@@ -628,13 +628,21 @@ const int kRelativeTimeMaxHours = 4;
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(tableView, self.tableView);
+  UITableViewCell* cell =
+      [super tableView:tableView cellForRowAtIndexPath:indexPath];
   NSInteger itemTypeSelected =
       [self.tableViewModel itemTypeForIndexPath:indexPath];
   // If SigninPromo will be shown, |self.signinPromoViewMediator| must know.
   if (itemTypeSelected == ItemTypeOtherDevicesSigninPromo) {
     [self.signinPromoViewMediator signinPromoViewVisible];
   }
-  return [super tableView:tableView cellForRowAtIndexPath:indexPath];
+  // Retrieve favicons for closed tabs and remote sessions.
+  if (itemTypeSelected == ItemTypeRecentlyClosed ||
+      itemTypeSelected == ItemTypeSessionTabData) {
+    [self loadFaviconForCell:cell indexPath:indexPath];
+  }
+
+  return cell;
 }
 
 #pragma mark - Recently closed tab helpers
@@ -670,6 +678,32 @@ const int kRelativeTimeMaxHours = 4;
 - (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
   return 1.0;
+}
+
+// Retrieves favicon from FaviconLoader and sets image in URLCell.
+- (void)loadFaviconForCell:(UITableViewCell*)cell
+                 indexPath:(NSIndexPath*)indexPath {
+  TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
+  DCHECK(item);
+  DCHECK(cell);
+
+  TableViewURLItem* URLItem = base::mac::ObjCCastStrict<TableViewURLItem>(item);
+  TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
+
+  NSString* itemIdentifier = URLItem.uniqueIdentifier;
+  favicon_base::IconTypeSet faviconTypes = {
+      favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
+      favicon_base::IconType::kTouchPrecomposedIcon};
+  UIImage* cachedFavicon = self.faviconLoader->ImageForURL(
+      URLItem.URL, faviconTypes, ^(UIImage* favicon) {
+        // Only set favicon if the cell hasn't been reused.
+        if ([URLCell.cellUniqueIdentifier isEqualToString:itemIdentifier]) {
+          URLCell.faviconView.image = favicon;
+        }
+
+      });
+  DCHECK(cachedFavicon);
+  URLCell.faviconView.image = cachedFavicon;
 }
 
 #pragma mark - Distant Sessions helpers

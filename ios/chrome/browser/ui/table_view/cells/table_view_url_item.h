@@ -9,14 +9,17 @@
 
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 
+class GURL;
+
 // TableViewURLItem contains the model data for a TableViewURLCell.
 @interface TableViewURLItem : TableViewItem
 
-// Sets the faviconView in the cell. If nil, will use the default favicon.
-@property(nonatomic, readwrite, strong) UIImage* favicon;
 @property(nonatomic, readwrite, copy) NSString* title;
-@property(nonatomic, readwrite, copy) NSString* URL;
+// GURL from which the cell will retrieve a favicon and display the host name.
+@property(nonatomic, assign) GURL URL;
 @property(nonatomic, readwrite, copy) NSString* metadata;
+// Identifier to match a URLItem with its URLCell.
+@property(nonatomic, readonly) NSString* uniqueIdentifier;
 
 @end
 
@@ -29,17 +32,20 @@
 // contains a favicon composited on top of an off-white background.
 @property(nonatomic, readonly, strong) UIImageView* faviconView;
 
+// Container View for the faviconView.
+@property(nonatomic, readonly, strong) UIImageView* faviconContainerView;
+
 // The cell title.
 @property(nonatomic, readonly, strong) UILabel* titleLabel;
 
-// The URL associated with this cell.
+// The host URL associated with this cell.
 @property(nonatomic, readonly, strong) UILabel* URLLabel;
 
 // Optional metadata that is displayed at the trailing edge of the cell.
 @property(nonatomic, readonly, strong) UILabel* metadataLabel;
 
-// Sets the faviconView image. If nil passed, then default favicon image used.
-- (void)setFavicon:(UIImage*)favicon;
+// Unique identifier that matches with one URLItem.
+@property(nonatomic, strong) NSString* cellUniqueIdentifier;
 
 @end
 
