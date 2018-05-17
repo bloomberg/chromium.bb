@@ -198,6 +198,7 @@ class UserDropdownWidgetContents : public views::View,
         SearchDirection search_direction,
         TraversalDirection traversal_direction,
         StartingViewPolicy check_starting_view,
+        AnchoredDialogPolicy can_go_into_anchored_dialog,
         views::FocusTraversable** focus_traversable,
         views::View** focus_traversable_view) override {
       int index = view_model_->GetIndexOfView(starting_view);

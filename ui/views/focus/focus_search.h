@@ -36,6 +36,11 @@ class VIEWS_EXPORT FocusSearch {
     kCheckStartingView,
   };
 
+  enum class AnchoredDialogPolicy {
+    kSkipAnchoredDialog,
+    kCanGoIntoAnchoredDialog,
+  };
+
   // Constructor.
   // - |root| is the root of the view hierarchy to traverse. Focus will be
   //   trapped inside.
@@ -69,17 +74,21 @@ class VIEWS_EXPORT FocusSearch {
   //   child views).
   // - |check_starting_view| indicated if starting_view may obtain the next
   //   focus.
+  // - |can_go_into_anchored_dialog| controls if focus is allowed to jump
+  //   into a dialog anchored at one of the views being traversed.
   // - |focus_traversable| is set to the focus traversable that should be
   //   traversed if one is found (in which case the call returns NULL).
   // - |focus_traversable_view| is set to the view associated with the
   //   FocusTraversable set in the previous parameter (it is used as the
   //   starting view when looking for the next focusable view).
-  virtual View* FindNextFocusableView(View* starting_view,
-                                      SearchDirection search_direction,
-                                      TraversalDirection traversal_direction,
-                                      StartingViewPolicy check_starting_view,
-                                      FocusTraversable** focus_traversable,
-                                      View** focus_traversable_view);
+  virtual View* FindNextFocusableView(
+      View* starting_view,
+      SearchDirection search_direction,
+      TraversalDirection traversal_direction,
+      StartingViewPolicy check_starting_view,
+      AnchoredDialogPolicy can_go_into_anchored_dialog,
+      FocusTraversable** focus_traversable,
+      View** focus_traversable_view);
 
  protected:
   // Get the parent, but stay within the root. Returns NULL if asked for
@@ -122,13 +131,15 @@ class VIEWS_EXPORT FocusSearch {
                                   View** focus_traversable_view);
 
   // Same as FindNextFocusableViewImpl but returns the previous focusable view.
-  View* FindPreviousFocusableViewImpl(View* starting_view,
-                                      StartingViewPolicy check_starting_view,
-                                      bool can_go_up,
-                                      bool can_go_down,
-                                      int skip_group_id,
-                                      FocusTraversable** focus_traversable,
-                                      View** focus_traversable_view);
+  View* FindPreviousFocusableViewImpl(
+      View* starting_view,
+      StartingViewPolicy check_starting_view,
+      bool can_go_up,
+      bool can_go_down,
+      AnchoredDialogPolicy can_go_into_anchored_dialog,
+      int skip_group_id,
+      FocusTraversable** focus_traversable,
+      View** focus_traversable_view);
 
   View* root_;
   bool cycle_;

@@ -16,11 +16,13 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/accessible_pane_view.h"
+#include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/focus/focus_manager_delegate.h"
 #include "ui/views/focus/focus_manager_factory.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/test/focus_manager_test.h"
 #include "ui/views/test/widget_test.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/widget/widget.h"
 
 namespace views {
@@ -861,6 +863,19 @@ class AdvanceFocusWidgetDelegate : public WidgetDelegate {
   DISALLOW_COPY_AND_ASSIGN(AdvanceFocusWidgetDelegate);
 };
 
+class TestBubbleDialogDelegateView : public BubbleDialogDelegateView {
+ public:
+  TestBubbleDialogDelegateView(View* anchor)
+      : BubbleDialogDelegateView(anchor, BubbleBorder::NONE) {}
+  ~TestBubbleDialogDelegateView() override {}
+
+  // ui::DialogModel override.
+  int GetDialogButtons() const override { return 0; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestBubbleDialogDelegateView);
+};
+
 }  // namespace
 
 // Verifies focus wrapping happens in the same widget.
@@ -913,19 +928,123 @@ TEST_F(FocusManagerTest, AdvanceFocusStaysInWidget) {
   EXPECT_EQ(widget_view, GetFocusManager()->GetFocusedView());
 }
 
-// Verifies if a key event is a tab traversal key event or not.
-TEST_F(FocusManagerTest, IsTabTraversalKeyEvent) {
-  ui::KeyEvent event(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_NONE);
-  EXPECT_TRUE(FocusManager::IsTabTraversalKeyEvent(event));
+TEST_F(FocusManagerTest, NavigateIntoAnchoredDialog) {
+  // The parent Widget has four focusable views. A child widget dialog has
+  // two focusable views, and it's anchored to the 3rd parent view. Ensure
+  // that focus traverses into the anchored dialog after the 3rd parent
+  // view, and then back to the 4th parent view.
 
-  event = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_SHIFT_DOWN);
-  EXPECT_TRUE(FocusManager::IsTabTraversalKeyEvent(event));
+  View* parent1 = new View();
+  View* parent2 = new View();
+  View* parent3 = new View();
+  View* parent4 = new View();
 
-  event = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_CONTROL_DOWN);
-  EXPECT_FALSE(FocusManager::IsTabTraversalKeyEvent(event));
+  parent1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  parent2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  parent3->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  parent4->SetFocusBehavior(View::FocusBehavior::ALWAYS);
 
-  event = ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_TAB, ui::EF_ALT_DOWN);
-  EXPECT_FALSE(FocusManager::IsTabTraversalKeyEvent(event));
+  GetWidget()->GetRootView()->AddChildView(parent1);
+  GetWidget()->GetRootView()->AddChildView(parent2);
+  GetWidget()->GetRootView()->AddChildView(parent3);
+  GetWidget()->GetRootView()->AddChildView(parent4);
+
+  BubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(parent3);
+  test::WidgetTest::WidgetAutoclosePtr bubble_widget(
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate));
+  bubble_delegate->EnableFocusTraversalFromAnchorView();
+  View* child1 = new View();
+  View* child2 = new View();
+  child1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  child2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  bubble_widget->GetRootView()->AddChildView(child1);
+  bubble_widget->GetRootView()->AddChildView(child2);
+  bubble_delegate->set_close_on_deactivate(false);
+  bubble_widget->Show();
+
+  parent1->RequestFocus();
+
+  // Navigate forwards
+  GetWidget()->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(parent2->HasFocus());
+  GetWidget()->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(parent3->HasFocus());
+  GetWidget()->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(child1->HasFocus());
+  bubble_widget->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(child2->HasFocus());
+  bubble_widget->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(parent4->HasFocus());
+
+  // Navigate backwards
+  GetWidget()->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_TRUE(child2->HasFocus());
+  bubble_widget->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_TRUE(child1->HasFocus());
+  bubble_widget->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_TRUE(parent3->HasFocus());
+}
+
+TEST_F(FocusManagerTest, AnchoredDialogOnContainerView) {
+  // The parent Widget has four focusable views, with the middle two views
+  // inside of a non-focusable grouping View. A child widget dialog has
+  // two focusable views, and it's anchored to the group View. Ensure
+  // that focus traverses into the anchored dialog after the 3rd parent
+  // view, and then back to the 4th parent view.
+
+  View* parent1 = new View();
+  View* parent2 = new View();
+  View* parent3 = new View();
+  View* parent4 = new View();
+  View* parent_group = new View();
+
+  parent1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  parent2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  parent3->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  parent4->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+
+  GetWidget()->GetRootView()->AddChildView(parent1);
+  GetWidget()->GetRootView()->AddChildView(parent_group);
+  parent_group->AddChildView(parent2);
+  parent_group->AddChildView(parent3);
+  GetWidget()->GetRootView()->AddChildView(parent4);
+
+  BubbleDialogDelegateView* bubble_delegate =
+      new TestBubbleDialogDelegateView(parent_group);
+  test::WidgetTest::WidgetAutoclosePtr bubble_widget(
+      BubbleDialogDelegateView::CreateBubble(bubble_delegate));
+  bubble_delegate->EnableFocusTraversalFromAnchorView();
+  View* child1 = new View();
+  View* child2 = new View();
+  child1->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  child2->SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  bubble_widget->GetRootView()->AddChildView(child1);
+  bubble_widget->GetRootView()->AddChildView(child2);
+  bubble_delegate->set_close_on_deactivate(false);
+  bubble_widget->Show();
+
+  parent1->RequestFocus();
+
+  // Navigate forwards
+  GetWidget()->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(parent2->HasFocus());
+  GetWidget()->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(parent3->HasFocus());
+  GetWidget()->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(child1->HasFocus());
+  bubble_widget->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(child2->HasFocus());
+  bubble_widget->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(parent4->HasFocus());
+
+  // Navigate backwards
+  GetWidget()->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_TRUE(child2->HasFocus());
+  bubble_widget->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_TRUE(child1->HasFocus());
+  bubble_widget->GetFocusManager()->AdvanceFocus(true);
+  EXPECT_TRUE(parent3->HasFocus());
 }
 
 }  // namespace views

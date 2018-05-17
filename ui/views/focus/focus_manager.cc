@@ -19,6 +19,7 @@
 #include "ui/views/focus/focus_search.h"
 #include "ui/views/focus/widget_focus_manager.h"
 #include "ui/views/view.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
@@ -124,8 +125,14 @@ void FocusManager::AdvanceFocus(bool reverse) {
     v->AboutToRequestFocusFromTabTraversal(reverse);
     // AboutToRequestFocusFromTabTraversal() may have changed focus. If it did,
     // don't change focus again.
-    if (focused_view == focused_view_)
-      SetFocusedViewWithReason(v, kReasonFocusTraversal);
+    if (focused_view != focused_view_)
+      return;
+
+    // Note that GetNextFocusableView may have returned a View in a different
+    // FocusManager.
+    DCHECK(v->GetWidget());
+    v->GetWidget()->GetFocusManager()->SetFocusedViewWithReason(
+        v, kReasonFocusTraversal);
   }
 }
 
@@ -262,6 +269,7 @@ View* FocusManager::GetNextFocusableView(View* original_starting_view,
         reverse ? FocusSearch::SearchDirection::kBackwards
                 : FocusSearch::SearchDirection::kForwards,
         FocusSearch::TraversalDirection::kUp, check_starting_view,
+        FocusSearch::AnchoredDialogPolicy::kSkipAnchoredDialog,
         &new_focus_traversable, &new_starting_view);
 
     if (new_focus_traversable) {
@@ -308,6 +316,7 @@ void FocusManager::SetFocusedViewWithReason(View* view,
                                             FocusChangeReason reason) {
   if (focused_view_ == view)
     return;
+
   // TODO(oshima|achuith): This is to diagnose crbug.com/687232.
   // Change this to DCHECK once it's resolved.
   CHECK(!view || ContainsView(view));
@@ -447,13 +456,15 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
                                       bool reverse) {
   FocusTraversable* new_focus_traversable = nullptr;
   View* new_starting_view = nullptr;
+  auto can_go_into_anchored_dialog =
+      FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog;
   View* v = focus_traversable->GetFocusSearch()->FindNextFocusableView(
       starting_view,
       reverse ? FocusSearch::SearchDirection::kBackwards
               : FocusSearch::SearchDirection::kForwards,
       FocusSearch::TraversalDirection::kDown,
       FocusSearch::StartingViewPolicy::kSkipStartingView,
-      &new_focus_traversable, &new_starting_view);
+      can_go_into_anchored_dialog, &new_focus_traversable, &new_starting_view);
 
   // Let's go down the FocusTraversable tree as much as we can.
   while (new_focus_traversable) {
@@ -467,7 +478,8 @@ View* FocusManager::FindFocusableView(FocusTraversable* focus_traversable,
                 : FocusSearch::SearchDirection::kForwards,
         FocusSearch::TraversalDirection::kDown,
         FocusSearch::StartingViewPolicy::kSkipStartingView,
-        &new_focus_traversable, &new_starting_view);
+        can_go_into_anchored_dialog, &new_focus_traversable,
+        &new_starting_view);
   }
   return v;
 }

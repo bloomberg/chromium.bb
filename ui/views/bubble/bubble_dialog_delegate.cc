@@ -16,6 +16,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/layout/layout_provider.h"
+#include "ui/views/view_properties.h"
 #include "ui/views/view_tracker.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/widget.h"
@@ -218,6 +219,16 @@ void BubbleDialogDelegateView::OnAnchorBoundsChanged() {
   SizeToContents();
 }
 
+void BubbleDialogDelegateView::EnableFocusTraversalFromAnchorView() {
+  DCHECK(GetWidget());
+  DCHECK(GetAnchorView());
+  GetWidget()->SetFocusTraversableParent(
+      anchor_widget()->GetFocusTraversable());
+  GetWidget()->SetFocusTraversableParentView(GetAnchorView());
+  GetAnchorView()->SetProperty(kAnchoredDialogKey,
+                               static_cast<BubbleDialogDelegateView*>(this));
+}
+
 BubbleDialogDelegateView::BubbleDialogDelegateView()
     : BubbleDialogDelegateView(nullptr, BubbleBorder::TOP_LEFT) {}
 
@@ -274,6 +285,9 @@ void BubbleDialogDelegateView::OnNativeThemeChanged(
 void BubbleDialogDelegateView::Init() {}
 
 void BubbleDialogDelegateView::SetAnchorView(View* anchor_view) {
+  if (GetAnchorView())
+    GetAnchorView()->ClearProperty(kAnchoredDialogKey);
+
   // When the anchor view gets set the associated anchor widget might
   // change as well.
   if (!anchor_view || anchor_widget() != anchor_view->GetWidget()) {

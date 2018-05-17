@@ -133,6 +133,7 @@ class ShelfFocusSearch : public views::FocusSearch {
       FocusSearch::SearchDirection search_direction,
       FocusSearch::TraversalDirection traversal_direction,
       FocusSearch::StartingViewPolicy check_starting_view,
+      FocusSearch::AnchoredDialogPolicy can_go_into_anchored_dialog,
       views::FocusTraversable** focus_traversable,
       View** focus_traversable_view) override {
     int index = view_model_->GetIndexOfView(starting_view);

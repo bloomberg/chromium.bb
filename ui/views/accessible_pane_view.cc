@@ -138,6 +138,7 @@ views::View* AccessiblePaneView::GetFirstFocusableChild() {
       nullptr, FocusSearch::SearchDirection::kForwards,
       FocusSearch::TraversalDirection::kDown,
       FocusSearch::StartingViewPolicy::kSkipStartingView,
+      FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
@@ -148,6 +149,7 @@ views::View* AccessiblePaneView::GetLastFocusableChild() {
       this, FocusSearch::SearchDirection::kBackwards,
       FocusSearch::TraversalDirection::kDown,
       FocusSearch::StartingViewPolicy::kSkipStartingView,
+      FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
       &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
