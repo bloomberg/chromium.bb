@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/content/content_gpu_support.h"
 #include "ash/display/display_prefs.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
@@ -40,6 +41,7 @@ void CreateClassicShell() {
   shell_init_params.context_factory = content::GetContextFactory();
   shell_init_params.context_factory_private =
       content::GetContextFactoryPrivate();
+  shell_init_params.gpu_support = std::make_unique<ash::ContentGpuSupport>();
   // Pass the initial display prefs to ash::Shell as a Value dictionary.
   // This is done this way to avoid complexities with registering the display
   // prefs in multiple places (i.e. in g_browser_process->local_state() and

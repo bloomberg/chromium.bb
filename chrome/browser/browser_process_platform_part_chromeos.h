@@ -109,7 +109,8 @@ class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
   std::unique_ptr<policy::ChromeBrowserPolicyConnector>
   CreateBrowserPolicyConnector() override;
   void RegisterInProcessServices(
-      content::ContentBrowserClient::StaticServiceMap* services) override;
+      content::ContentBrowserClient::StaticServiceMap* services,
+      content::ServiceManagerConnection* connection) override;
 
   chromeos::system::SystemClock* GetSystemClock();
   void DestroySystemClock();

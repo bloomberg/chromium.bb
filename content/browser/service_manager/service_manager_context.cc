@@ -496,7 +496,8 @@ ServiceManagerContext::ServiceManagerContext() {
   }
 
   ContentBrowserClient::StaticServiceMap services;
-  GetContentClient()->browser()->RegisterInProcessServices(&services);
+  GetContentClient()->browser()->RegisterInProcessServices(
+      &services, packaged_services_connection_.get());
   for (const auto& entry : services) {
     packaged_services_connection_->AddEmbeddedService(entry.first,
                                                       entry.second);

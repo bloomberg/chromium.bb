@@ -153,7 +153,7 @@
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_shadow_controller_delegate.h"
 #include "ash/wm/workspace_controller.h"
-#include "ash/ws/window_service_delegate_impl.h"
+#include "ash/ws/window_service_owner.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -173,6 +173,7 @@
 #include "services/preferences/public/mojom/preferences.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
+#include "services/ui/ws2/gpu_support.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
@@ -274,7 +275,8 @@ Shell* Shell::CreateInstance(ShellInitParams init_params) {
                         std::move(init_params.shell_port));
   instance_->Init(init_params.context_factory,
                   init_params.context_factory_private,
-                  std::move(init_params.initial_display_prefs));
+                  std::move(init_params.initial_display_prefs),
+                  std::move(init_params.gpu_support));
   return instance_;
 }
 
@@ -700,7 +702,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
       window_selector_controller_(std::make_unique<WindowSelectorController>()),
-      window_service_delegate_(std::make_unique<WindowServiceDelegateImpl>()),
       tray_bluetooth_helper_(std::make_unique<TrayBluetoothHelper>()),
       display_configurator_(new display::DisplayConfigurator()),
       native_cursor_manager_(nullptr),
@@ -893,6 +894,10 @@ Shell::~Shell() {
   // Similarly for DockedMagnifierController.
   docked_magnifier_controller_ = nullptr;
 
+  // May own windows and other objects that have indirect hooks into
+  // WindowTreeHostManager.
+  window_service_owner_.reset();
+
   shell_port_->Shutdown();
   window_tree_host_manager_->Shutdown();
 
@@ -952,7 +957,8 @@ Shell::~Shell() {
 
 void Shell::Init(ui::ContextFactory* context_factory,
                  ui::ContextFactoryPrivate* context_factory_private,
-                 std::unique_ptr<base::Value> initial_display_prefs) {
+                 std::unique_ptr<base::Value> initial_display_prefs,
+                 std::unique_ptr<ui::ws2::GpuSupport> gpu_support) {
   const Config config = shell_port_->GetAshConfig();
 
   // This creates the MessageCenter object which is used by some other objects
@@ -1283,6 +1289,11 @@ void Shell::Init(ui::ContextFactory* context_factory,
           switches::kShowTapsApp)) {
     shell_delegate_->GetShellConnector()->StartService(
         touch_hud::mojom::kServiceName);
+  }
+
+  if (config != Config::MASH) {
+    window_service_owner_ =
+        std::make_unique<WindowServiceOwner>(std::move(gpu_support));
   }
 
   for (auto& observer : shell_observers_)

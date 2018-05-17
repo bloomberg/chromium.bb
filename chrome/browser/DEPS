@@ -213,9 +213,8 @@ specific_include_rules = {
   "ash_service_registry\.cc": [
     # The following are needed for classic mode to create the WindowService.
     # Once Ash runs out of process no longer needed.
-    "+ash/content/content_gpu_support.h",
     "+ash/shell.h",
-    "+ash/ws/window_service_util.h",
+    "+ash/ws/window_service_owner.h",
     "+services/ui/ws2/window_service.h",
 
     # Needed for classic mode.

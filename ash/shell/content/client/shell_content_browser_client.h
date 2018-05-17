@@ -36,7 +36,9 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       base::StringPiece name) override;
   std::vector<ServiceManifestInfo> GetExtraServiceManifests() override;
   void RegisterOutOfProcessServices(OutOfProcessServiceMap* services) override;
-  void RegisterInProcessServices(StaticServiceMap* services) override;
+  void RegisterInProcessServices(
+      StaticServiceMap* services,
+      content::ServiceManagerConnection* connection) override;
 
  private:
   ShellBrowserMainParts* shell_browser_main_parts_;

@@ -7,20 +7,19 @@
 #include "ash/ash_service.h"
 #include "ash/components/quick_launch/public/mojom/constants.mojom.h"
 #include "ash/components/touch_hud/public/mojom/constants.mojom.h"
-#include "ash/content/content_gpu_support.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/public/interfaces/window_properties.mojom.h"
 #include "ash/shell.h"
-#include "ash/ws/window_service_util.h"
+#include "ash/ws/window_service_owner.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/prefs/pref_connector_service.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
+#include "content/public/common/service_manager_connection.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/ws2/window_service.h"
 #include "ui/base/ui_base_features.h"
 
 using content::ContentBrowserClient;
@@ -68,11 +67,6 @@ void RegisterOutOfProcessServicesImpl(
   }
 }
 
-// A factory function used in creation of the WindowService.
-std::unique_ptr<ui::ws2::GpuSupport> CreateContentGpuSupport() {
-  return std::make_unique<ash::ContentGpuSupport>();
-}
-
 }  // namespace
 
 void RegisterOutOfProcessServices(
@@ -89,7 +83,8 @@ void RegisterOutOfProcessServices(
 }
 
 void RegisterInProcessServices(
-    content::ContentBrowserClient::StaticServiceMap* services) {
+    content::ContentBrowserClient::StaticServiceMap* services,
+    content::ServiceManagerConnection* connection) {
   {
     service_manager::EmbeddedServiceInfo info;
     info.factory =
@@ -106,11 +101,10 @@ void RegisterInProcessServices(
   (*services)[ash::mojom::kServiceName] =
       ash::AshService::CreateEmbeddedServiceInfo();
 
-  service_manager::EmbeddedServiceInfo ui_service_info;
-  ui_service_info.factory = base::BindRepeating(
-      &ash::CreateWindowService, base::BindRepeating(&CreateContentGpuSupport));
-  ui_service_info.task_runner = base::ThreadTaskRunnerHandle::Get();
-  (*services)[ui::mojom::kServiceName] = ui_service_info;
+  connection->AddServiceRequestHandler(
+      ui::mojom::kServiceName,
+      base::BindRepeating(&ash::BindWindowServiceOnIoThread,
+                          base::ThreadTaskRunnerHandle::Get()));
 }
 
 bool IsAshRelatedServiceName(const std::string& name) {

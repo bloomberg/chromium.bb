@@ -3369,7 +3369,8 @@ void ChromeContentBrowserClient::BindInterfaceRequest(
 }
 
 void ChromeContentBrowserClient::RegisterInProcessServices(
-    StaticServiceMap* services) {
+    StaticServiceMap* services,
+    content::ServiceManagerConnection* connection) {
   {
     service_manager::EmbeddedServiceInfo info;
     info.factory = ChromeService::GetInstance()->CreateChromeServiceFactory();
@@ -3401,7 +3402,8 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
         std::make_pair(proxy_resolver::mojom::kProxyResolverServiceName, info));
   }
 #endif
-  g_browser_process->platform_part()->RegisterInProcessServices(services);
+  g_browser_process->platform_part()->RegisterInProcessServices(services,
+                                                                connection);
 }
 
 void ChromeContentBrowserClient::RegisterOutOfProcessServices(

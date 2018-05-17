@@ -57,6 +57,9 @@ class ContextFactory;
 class ContextFactoryPrivate;
 class UserActivityDetector;
 class UserActivityPowerManagerNotifier;
+namespace ws2 {
+class GpuSupport;
+}
 }  // namespace ui
 
 namespace views {
@@ -134,6 +137,7 @@ class MultiDeviceNotificationPresenter;
 class NewWindowController;
 class NightLightController;
 class NoteTakingController;
+class NotificationTray;
 class OverlayEventFilter;
 class PartialMagnificationController;
 class PeripheralBatteryNotifier;
@@ -183,11 +187,10 @@ class VoiceInteractionController;
 class VpnList;
 class WallpaperController;
 class WaylandServerController;
-class NotificationTray;
+class WindowServiceOwner;
 class WindowCycleController;
 class WindowPositioner;
 class WindowSelectorController;
-class WindowServiceDelegateImpl;
 class WindowTreeHostManager;
 
 enum class Config;
@@ -545,8 +548,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   WindowSelectorController* window_selector_controller() {
     return window_selector_controller_.get();
   }
-  WindowServiceDelegateImpl* window_service_delegate() {
-    return window_service_delegate_.get();
+  // WindowServiceOwner is null in mash.
+  WindowServiceOwner* window_service_owner() {
+    return window_service_owner_.get();
   }
   WindowTreeHostManager* window_tree_host_manager() {
     return window_tree_host_manager_.get();
@@ -663,7 +667,8 @@ class ASH_EXPORT Shell : public SessionObserver,
 
   void Init(ui::ContextFactory* context_factory,
             ui::ContextFactoryPrivate* context_factory_private,
-            std::unique_ptr<base::Value> initial_display_prefs);
+            std::unique_ptr<base::Value> initial_display_prefs,
+            std::unique_ptr<ui::ws2::GpuSupport> gpu_support);
 
   // Initializes the display manager and related components.
   void InitializeDisplayManager();
@@ -768,7 +773,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<WallpaperController> wallpaper_controller_;
   std::unique_ptr<WindowCycleController> window_cycle_controller_;
   std::unique_ptr<WindowSelectorController> window_selector_controller_;
-  std::unique_ptr<WindowServiceDelegateImpl> window_service_delegate_;
   std::unique_ptr<::wm::ShadowController> shadow_controller_;
   std::unique_ptr<::wm::VisibilityController> visibility_controller_;
   std::unique_ptr<::wm::WindowModalityController> window_modality_controller_;
@@ -779,6 +783,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ui::UserActivityDetector> user_activity_detector_;
   std::unique_ptr<VideoDetector> video_detector_;
   std::unique_ptr<WaylandServerController> wayland_server_controller_;
+  std::unique_ptr<WindowServiceOwner> window_service_owner_;
   std::unique_ptr<WindowTreeHostManager> window_tree_host_manager_;
   std::unique_ptr<PersistentWindowController> persistent_window_controller_;
   std::unique_ptr<HighContrastController> high_contrast_controller_;

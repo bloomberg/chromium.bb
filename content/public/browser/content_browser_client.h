@@ -153,6 +153,7 @@ class RenderFrameHost;
 class RenderProcessHost;
 class RenderViewHost;
 class ResourceContext;
+class ServiceManagerConnection;
 class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class StoragePartition;
@@ -822,8 +823,11 @@ class CONTENT_EXPORT ContentBrowserClient {
       std::map<std::string, service_manager::EmbeddedServiceInfo>;
 
   // Registers services to be loaded in the browser process by the Service
-  // Manager.
-  virtual void RegisterInProcessServices(StaticServiceMap* services) {}
+  // Manager. |connection| is the ServiceManagerConnection service are
+  // registered with.
+  virtual void RegisterInProcessServices(StaticServiceMap* services,
+                                         ServiceManagerConnection* connection) {
+  }
 
   virtual void OverrideOnBindInterface(
       const service_manager::BindSourceInfo& remote_info,
