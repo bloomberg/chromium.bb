@@ -106,6 +106,10 @@ class LocalNTPTest : public InProcessBrowserTest {
     feature_list_.InitAndEnableFeature(features::kUseGoogleLocalNtp);
   }
 
+  LocalNTPTest(const std::vector<base::Feature>& enabled_features) {
+    feature_list_.InitWithFeatures(enabled_features, {});
+  }
+
  private:
   void SetUpOnMainThread() override {
     // Some tests depend on the prepopulated most visited tiles coming from
@@ -610,6 +614,56 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
   EXPECT_GT(total_thumbs, 0);
   EXPECT_EQ(total_thumbs, succeeded_imgs);
   EXPECT_EQ(0, failed_imgs);
+}
+
+class LocalNTPMDTest : public LocalNTPTest {
+ public:
+  LocalNTPMDTest()
+      : LocalNTPTest({features::kUseGoogleLocalNtp, features::kNtpUIMd}) {}
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPMDTest, LoadsMDIframe) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Get the iframe and check that the tiles loaded correctly.
+  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+
+  // Get the total number of (non-empty) tiles from the iframe and tiles with
+  // thumbnails. There should be no thumbnails in Material Design.
+  int total_thumbs = 0;
+  int total_favicons = 0;
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.mv-thumb').length", &total_thumbs));
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.md-favicon').length",
+      &total_favicons));
+  // Also get how many of the tiles succeeded and failed in loading their
+  // favicon images.
+  int succeeded_favicons = 0;
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.md-favicon img').length",
+      &succeeded_favicons));
+  int failed_favicons = 0;
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.md-favicon.failed-favicon').length",
+      &failed_favicons));
+
+  // First, sanity check that the numbers line up (none of the css classes was
+  // renamed, etc).
+  EXPECT_EQ(total_favicons, succeeded_favicons + failed_favicons);
+
+  // Since we're in a non-signed-in, fresh profile with no history, there should
+  // be the default TopSites tiles (see history::PrepopulatedPage).
+  // Check that there is at least one tile, and that all of them loaded their
+  // images successfully. Also check that no thumbnails have loaded.
+  EXPECT_EQ(total_thumbs, 0);
+  EXPECT_EQ(total_favicons, succeeded_favicons);
+  EXPECT_EQ(0, failed_favicons);
 }
 
 // A minimal implementation of an interstitial page.
