@@ -9,6 +9,7 @@
 
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "chrome/browser/android/color_helpers.h"
 #include "chrome/browser/android/shortcut_helper.h"
 #include "chrome/browser/android/webapk/webapk_icon_hasher.h"
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
@@ -223,8 +224,9 @@ void WebApkUpdateDataFetcher::OnDataAvailable(
 
   Java_WebApkUpdateDataFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
-      java_primary_icon_url, java_primary_icon_murmur2_hash,
-      java_primary_icon, java_badge_icon_url, java_badge_icon_murmur2_hash,
-      java_badge_icon, java_icon_urls, info_.display, info_.orientation,
-      info_.theme_color, info_.background_color);
+      java_primary_icon_url, java_primary_icon_murmur2_hash, java_primary_icon,
+      java_badge_icon_url, java_badge_icon_murmur2_hash, java_badge_icon,
+      java_icon_urls, info_.display, info_.orientation,
+      OptionalSkColorToJavaColor(info_.theme_color),
+      OptionalSkColorToJavaColor(info_.background_color));
 }

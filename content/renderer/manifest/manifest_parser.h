@@ -16,6 +16,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/manifest.h"
 #include "third_party/blink/public/platform/modules/manifest/manifest.mojom.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
 
@@ -72,11 +73,10 @@ class CONTENT_EXPORT ManifestParser {
                                      TrimType trim);
 
   // Helper function to parse colors present on a given |dictionary| in a given
-  // field identified by its |key|.
-  // Returns the parsed color as an int64_t if any,
-  // Manifest::kInvalidOrMissingColor if the parsing failed.
-  int64_t ParseColor(const base::DictionaryValue& dictionary,
-                     const std::string& key);
+  // field identified by its |key|. Returns a null optional if the value is not
+  // present or is not a valid color.
+  base::Optional<SkColor> ParseColor(const base::DictionaryValue& dictionary,
+                                     const std::string& key);
 
   // Helper function to parse URLs present on a given |dictionary| in a given
   // field identified by its |key|. The URL is first parsed as a string then
@@ -201,15 +201,15 @@ class CONTENT_EXPORT ManifestParser {
 
   // Parses the 'theme_color' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-theme_color-member
-  // Returns the parsed theme color if any,
-  // Manifest::kInvalidOrMissingColor if the parsing failed.
-  int64_t ParseThemeColor(const base::DictionaryValue& dictionary);
+  // Returns the parsed theme color if any, or a null optional otherwise.
+  base::Optional<SkColor> ParseThemeColor(
+      const base::DictionaryValue& dictionary);
 
   // Parses the 'background_color' field of the manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-the-background_color-member
-  // Returns the parsed background color if any,
-  // Manifest::kInvalidOrMissingColor if the parsing failed.
-  int64_t ParseBackgroundColor(const base::DictionaryValue& dictionary);
+  // Returns the parsed background color if any, or a null optional otherwise.
+  base::Optional<SkColor> ParseBackgroundColor(
+      const base::DictionaryValue& dictionary);
 
   // Parses the 'splash_screen_url' field of the manifest.
   // Returns the parsed GURL if any, an empty GURL if the parsing failed.

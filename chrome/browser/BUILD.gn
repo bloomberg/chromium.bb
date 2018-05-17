@@ -1898,6 +1898,8 @@ jumbo_split_static_library("browser") {
       "android/chrome_feature_list.h",
       "android/chrome_startup_flags.cc",
       "android/chrome_startup_flags.h",
+      "android/color_helpers.cc",
+      "android/color_helpers.h",
       "android/compositor/compositor_view.cc",
       "android/compositor/compositor_view.h",
       "android/compositor/decoration_title.cc",

@@ -6,12 +6,6 @@
 
 namespace content {
 
-// We need to provide a value here which is out of the range of a 32-bit integer
-// since otherwise we would not be able to check whether a theme color was valid
-// or not. The simplest way to do this is to simply add one to the maximum
-// possible 32-bit integer.
-const int64_t Manifest::kInvalidOrMissingColor =
-    static_cast<int64_t>(std::numeric_limits<int32_t>::max()) + 1;
 const size_t Manifest::kMaxIPCStringLength = 4 * 1024;
 
 Manifest::Icon::Icon() = default;
@@ -35,11 +29,7 @@ Manifest::RelatedApplication::~RelatedApplication() = default;
 Manifest::Manifest()
     : display(blink::kWebDisplayModeUndefined),
       orientation(blink::kWebScreenOrientationLockDefault),
-      prefer_related_applications(false),
-      theme_color(Manifest::kInvalidOrMissingColor),
-      background_color(Manifest::kInvalidOrMissingColor) {
-  share_target = base::nullopt;
-}
+      prefer_related_applications(false) {}
 
 Manifest::Manifest(const Manifest& other) = default;
 
@@ -51,10 +41,8 @@ bool Manifest::IsEmpty() const {
          orientation == blink::kWebScreenOrientationLockDefault &&
          icons.empty() && !share_target.has_value() &&
          related_applications.empty() && !prefer_related_applications &&
-         theme_color == Manifest::kInvalidOrMissingColor &&
-         background_color == Manifest::kInvalidOrMissingColor &&
-         splash_screen_url.is_empty() && gcm_sender_id.is_null() &&
-         scope.is_empty();
+         !theme_color && !background_color && splash_screen_url.is_empty() &&
+         gcm_sender_id.is_null() && scope.is_empty();
 }
 
 } // namespace content
