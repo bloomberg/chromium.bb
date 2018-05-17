@@ -2067,7 +2067,22 @@ if (enable_java_templates) {
     }
 
     _compile_resources_target = "${_template_name}__compile_resources"
-    compile_resources(_compile_resources_target) {
+
+    if (android_enable_app_bundles) {
+      # Path to the intermediate proto-format resources zip file.
+      _packaged_proto_resources_path =
+          "$root_gen_dir/proto_resources/" +
+          rebase_path(_final_apk_path_no_ext, root_build_dir) + ".proto.ap_"
+
+      # Define another target used to generate an archive containing the
+      # resources compiled in protocol buffer format. This is not used by
+      # the APK itself, but by android_bundle_module() targets that depend
+      # on it.
+      _compile_proto_resources_target =
+          "${_template_name}__compile_proto_resources"
+    }
+
+    compile_apk_resources(_compile_resources_target) {
       forward_variables_from(invoker,
                              [
                                "alternative_android_sdk_jar",
@@ -2083,6 +2098,14 @@ if (enable_java_templates) {
       android_manifest = _android_manifest
       version_code = _version_code
       version_name = _version_name
+
+      # Subtle: required to avoid GN build errors. "testonly" cannot be added
+      # to the forward_variables_from() above because it was already forwarded
+      # at the start of android_apk(). And if the assignment below is not
+      # performed, GN will complain that some test-only targets depend
+      # on non-test-only ones.
+      testonly = defined(testonly) && testonly
+
       if (defined(invoker.post_process_package_resources_script)) {
         post_process_script = invoker.post_process_package_resources_script
       }
@@ -2111,6 +2134,11 @@ if (enable_java_templates) {
         deps += [
           "${invoker.shared_resources_whitelist_target}__compile_resources",
         ]
+      }
+
+      if (android_enable_app_bundles) {
+        proto_output = _packaged_proto_resources_path
+        proto_resources_target = _compile_proto_resources_target
       }
     }
     _srcjar_deps += [ ":$_compile_resources_target" ]
@@ -2235,6 +2263,10 @@ if (enable_java_templates) {
       final_jar_path = _jar_path
       dex_path = _lib_dex_path
       apk_path = _final_apk_path
+
+      if (android_enable_app_bundles) {
+        proto_resources_path = _packaged_proto_resources_path
+      }
 
       incremental_allowed = _incremental_allowed
       incremental_apk_path = "${_final_apk_path_no_ext}_incremental.apk"

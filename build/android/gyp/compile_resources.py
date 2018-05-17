@@ -110,6 +110,9 @@ def _ParseArgs(args):
            'non-final and have their package ID changed at runtime in R.java. '
            'Implies and overrides --shared-resources.')
 
+  input_opts.add_argument('--proto-format', action='store_true',
+                          help='Compile resources to protocol buffer format.')
+
   input_opts.add_argument('--support-zh-hk', action='store_true',
                           help='Use zh-rTW resources for zh-rHK.')
 
@@ -322,7 +325,11 @@ def _CreateLinkApkArgs(options):
     for ext in options.no_compress.split(','):
       link_command += ['-0', ext]
 
-  if options.shared_resources:
+  # Note: only one of --proto-format, --shared-lib or --app-as-shared-lib
+  #       can be used with recent versions of aapt2.
+  if options.proto_format:
+    link_command.append('--proto-format')
+  elif options.shared_resources:
     link_command.append('--shared-lib')
 
   if options.locale_whitelist:
