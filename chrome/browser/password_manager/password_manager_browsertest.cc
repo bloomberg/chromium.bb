@@ -1747,47 +1747,6 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   WaitForJsElementValue("document.body.children[1].children[1]", "random");
 }
 
-// Test that an autofilled credential is deleted then the password manager
-// doesn't try to resurrect it on navigation.
-IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
-                       DeletedPasswordIsNotRevived) {
-  // At first let us save a credential to the password store.
-  scoped_refptr<password_manager::TestPasswordStore> password_store =
-      static_cast<password_manager::TestPasswordStore*>(
-          PasswordStoreFactory::GetForProfile(
-              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
-              .get());
-  autofill::PasswordForm signin_form;
-  signin_form.signon_realm = embedded_test_server()->base_url().spec();
-  signin_form.origin = embedded_test_server()->base_url();
-  signin_form.action = embedded_test_server()->base_url();
-  signin_form.username_value = base::ASCIIToUTF16("admin");
-  signin_form.password_value = base::ASCIIToUTF16("1234");
-  password_store->AddLogin(signin_form);
-
-  NavigateToFile("/password/password_form.html");
-  // Let the user interact with the page.
-  content::SimulateMouseClickAt(
-      WebContents(), 0, blink::WebMouseEvent::Button::kLeft, gfx::Point(1, 1));
-  // Wait until that interaction causes the username and the password value to
-  // be revealed.
-  WaitForElementValue("username_field", "admin");
-
-  // Now the credential is removed via the settings or the bubble.
-  password_store->RemoveLogin(signin_form);
-  WaitForPasswordStore();
-
-  // Submit the form. It shouldn't revive the credential in the store.
-  NavigationObserver observer(WebContents());
-  ASSERT_TRUE(content::ExecuteScript(
-      RenderViewHost(),
-      "document.getElementById('input_submit_button').click()"));
-  observer.Wait();
-
-  WaitForPasswordStore();
-  EXPECT_TRUE(password_store->IsEmpty());
-}
-
 IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
                        PromptForPushStateWhenFormDisappears) {
   NavigateToFile("/password/password_push_state.html");
