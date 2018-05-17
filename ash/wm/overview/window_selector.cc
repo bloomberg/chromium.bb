@@ -534,11 +534,6 @@ void WindowSelector::WindowClosing(WindowSelectorItem* window) {
   grid_list_[selected_grid_index_]->WindowClosing(window);
 }
 
-void WindowSelector::SetBoundsForWindowGridsInScreen(const gfx::Rect& bounds) {
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
-    grid->SetBoundsAndUpdatePositions(bounds);
-}
-
 void WindowSelector::SetBoundsForWindowGridsInScreenIgnoringWindow(
     const gfx::Rect& bounds,
     WindowSelectorItem* ignored_item) {
@@ -1005,7 +1000,7 @@ void WindowSelector::Move(Direction direction, bool animate) {
 void WindowSelector::OnDisplayBoundsChanged() {
   // Re-calculate the bounds for the window grids and position all the windows.
   for (std::unique_ptr<WindowGrid>& grid : grid_list_) {
-    SetBoundsForWindowGridsInScreen(
+    grid->SetBoundsAndUpdatePositions(
         GetGridBoundsInScreen(const_cast<aura::Window*>(grid->root_window())));
   }
   PositionWindows(/*animate=*/false);
