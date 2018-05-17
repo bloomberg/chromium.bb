@@ -21,13 +21,50 @@ public class SigninActivity extends SynchronousInitializationActivity {
     private static final String TAG = "SigninActivity";
 
     /**
-     * Creates an {@link Intent} which can be used to start the signin flow.
-     * @param accessPoint {@link AccessPoint} for starting signin flow. Used in metrics.
+     * Creates an {@link Intent} which can be used to start sign-in flow.
+     * @param accessPoint {@link AccessPoint} for starting sign-in flow. Used in metrics.
      */
     public static Intent createIntent(
             Context context, @AccountSigninActivity.AccessPoint int accessPoint) {
+        return createIntentInternal(context, SigninFragment.createArguments(accessPoint));
+    }
+
+    /**
+     * Creates an argument bundle to start default sign-in flow from personalized sign-in promo.
+     * @param accessPoint The access point for starting sign-in flow.
+     * @param accountName The account to preselect or null to preselect the default account.
+     */
+    public static Intent createIntentForPromoDefaultFlow(
+            Context context, @SigninAccessPoint int accessPoint, String accountName) {
+        return createIntentInternal(context,
+                SigninFragment.createArgumentsForPromoDefaultFlow(accessPoint, accountName));
+    }
+
+    /**
+     * Creates an argument bundle to start "Choose account" sign-in flow from personalized sign-in
+     * promo.
+     * @param accessPoint The access point for starting sign-in flow.
+     * @param accountName The account to preselect or null to preselect the default account.
+     */
+    public static Intent createIntentForPromoChooseAccountFlow(
+            Context context, @SigninAccessPoint int accessPoint, String accountName) {
+        return createIntentInternal(context,
+                SigninFragment.createArgumentsForPromoChooseAccountFlow(accessPoint, accountName));
+    }
+
+    /**
+     * Creates an argument bundle to start "New account" sign-in flow from personalized sign-in
+     * promo.
+     * @param accessPoint The access point for starting sign-in flow.
+     */
+    public static Intent createIntentForPromoAddAccountFlow(
+            Context context, @SigninAccessPoint int accessPoint) {
+        return createIntentInternal(
+                context, SigninFragment.createArgumentsForPromoAddAccountFlow(accessPoint));
+    }
+
+    private static Intent createIntentInternal(Context context, Bundle fragmentArguments) {
         Intent intent = new Intent(context, SigninActivity.class);
-        Bundle fragmentArguments = SigninFragment.createArguments(accessPoint);
         intent.putExtras(fragmentArguments);
         return intent;
     }
