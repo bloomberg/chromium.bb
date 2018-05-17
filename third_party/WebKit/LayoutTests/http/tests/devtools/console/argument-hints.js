@@ -78,6 +78,8 @@
   await testHints('aString.toString(');
   await testHints('aNumber.toString(');
   await testHints('[1,2,3].splice(');
+  await testHints('URL.createObjectURL(');
+  await testHints('(() => window)().URL["revokeObjectURL"](');
   await testHints('var notInAfunction');
   await testHints('some gibberish $@#)(*^@#');
   TestRunner.completeTest();

@@ -89,6 +89,14 @@ aNumber.toString(
 [1,2,3].splice(
 start,?deleteCount,...items
 
+URL.createObjectURL(
+blob
+source
+stream
+
+(() => window)().URL["revokeObjectURL"](
+url
+
 var notInAfunction
 null
 
