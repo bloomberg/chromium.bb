@@ -1695,18 +1695,6 @@
   },
   'latency_unittests': {
     'remove_from': [
-      # On chromium.android, unclear why these aren't run on all bots.
-      'KitKat Phone Tester (dbg)',
-      'KitKat Phone Tester (rel)',
-      'Lollipop Tablet Tester',
-      'Marshmallow 64 bit Tester',
-      'Marshmallow Tablet Tester',
-      'Nougat Phone Tester',
-      # chromium.android.fyi
-      'Unswarmed N5 Tests Dummy Builder',
-      'Unswarmed N5X Tests Dummy Builder',
-      'x64 Device Tester',
-      'x86 Cloud Tester',
       # chromium.fyi
       'Out of Process Profiling Android',
       'Out of Process Profiling Linux',
