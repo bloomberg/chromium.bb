@@ -305,6 +305,7 @@ static bool NodeHasRole(Node* node, const String& role) {
   if (!node || !node->IsElementNode())
     return false;
 
+  // TODO(accessibility) support role strings with multiple roles.
   return EqualIgnoringASCIICase(ToElement(node)->getAttribute(roleAttr), role);
 }
 
@@ -367,8 +368,14 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
       LayoutTableRow* table_row = ToLayoutTableRow(css_box);
       LayoutTable* containing_table = table_row->Table();
       DCHECK(containing_table);
-      if (NodeHasGridRole(containing_table->GetNode()))
-        return AXARIAGridRow::Create(layout_object, *this);
+      if (NodeHasGridRole(containing_table->GetNode())) {
+        if (node)
+          return AXARIAGridRow::Create(layout_object, *this);
+        // ARIA grids only create rows for non-anonymous nodes, because if
+        // the author accidentally leaves out some table CSS, extra unexpected
+        // anonymous layout cells exist that don't match the ARIA markup.
+        return AXLayoutObject::Create(layout_object, *this);
+      }
       return AXTableRow::Create(ToLayoutTableRow(css_box), *this);
     }
     if (css_box->IsTableCell()) {
@@ -376,8 +383,14 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
       LayoutTableCell* table_cell = ToLayoutTableCell(css_box);
       LayoutTable* containing_table = table_cell->Table();
       DCHECK(containing_table);
-      if (NodeHasGridRole(containing_table->GetNode()))
-        return AXARIAGridCell::Create(layout_object, *this);
+      if (NodeHasGridRole(containing_table->GetNode())) {
+        if (node)
+          return AXARIAGridCell::Create(layout_object, *this);
+        // ARIA grids only create cells for non-anonymous nodes, because if
+        // the author accidentally leaves out some table CSS, extra unexpected
+        // anonymous layout cells exist that don't match the ARIA markup.
+        return AXLayoutObject::Create(layout_object, *this);
+      }
       return AXTableCell::Create(ToLayoutTableCell(css_box), *this);
     }
 
