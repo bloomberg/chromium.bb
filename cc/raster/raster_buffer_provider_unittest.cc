@@ -301,12 +301,11 @@ class RasterBufferProviderTest
 
  private:
   void Create3dResourceProvider() {
-    context_provider_ = viz::TestContextProvider::Create();
+    auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+    gl_owned->set_support_sync_query(true);
+    context_provider_ = viz::TestContextProvider::Create(std::move(gl_owned));
     context_provider_->BindToCurrentThread();
     worker_context_provider_ = viz::TestContextProvider::CreateWorker();
-    viz::TestWebGraphicsContext3D* context3d =
-        context_provider_->TestContext3d();
-    context3d->set_support_sync_query(true);
     layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
     resource_provider_ = FakeResourceProvider::CreateLayerTreeResourceProvider(
         context_provider_.get());

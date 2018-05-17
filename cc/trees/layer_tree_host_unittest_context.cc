@@ -52,22 +52,6 @@ base::TimeTicks TicksFromMicroseconds(int64_t micros) {
   return base::TimeTicks() + base::TimeDelta::FromMicroseconds(micros);
 }
 
-class IOSurfaceGLES2Interface : public viz::TestGLES2Interface {
- public:
-  explicit IOSurfaceGLES2Interface(bool context_should_support_io_surface)
-      : context_should_support_io_surface_(context_should_support_io_surface) {}
-
-  void InitializeTestContext(viz::TestWebGraphicsContext3D* context) override {
-    if (context_should_support_io_surface_) {
-      context->set_have_extension_io_surface(true);
-      context->set_have_extension_egl_image(true);
-    }
-  }
-
- private:
-  bool context_should_support_io_surface_;
-};
-
 // These tests deal with losing the 3d graphics context.
 class LayerTreeHostContextTest : public LayerTreeTest {
  public:
@@ -107,8 +91,12 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       override {
     base::AutoLock lock(gl_lock_);
 
-    auto gl_owned = std::make_unique<IOSurfaceGLES2Interface>(
-        context_should_support_io_surface_);
+    auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+    if (context_should_support_io_surface_) {
+      gl_owned->set_have_extension_io_surface(true);
+      gl_owned->set_have_extension_egl_image(true);
+    }
+
     gl_ = gl_owned.get();
 
     auto provider = viz::TestContextProvider::Create(std::move(gl_owned));

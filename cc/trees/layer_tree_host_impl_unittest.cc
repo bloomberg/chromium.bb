@@ -74,6 +74,7 @@
 #include "components/viz/test/fake_output_surface.h"
 #include "components/viz/test/test_layer_tree_frame_sink.h"
 #include "components/viz/test/test_web_graphics_context_3d.h"
+#include "gpu/GLES2/gl2extchromium.h"
 #include "media/base/media.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -1063,15 +1064,23 @@ TEST_F(LayerTreeHostImplTest, ScrollWithoutRootLayer) {
             status.main_thread_scrolling_reasons);
 }
 
+class LostGLES2Interface : public viz::TestGLES2Interface {
+ public:
+  LostGLES2Interface() = default;
+
+  void InitializeTestContext() override {
+    LoseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                        GL_INNOCENT_CONTEXT_RESET_ARB);
+  }
+};
+
 TEST_F(LayerTreeHostImplTest, ScrollWithoutRenderer) {
-  std::unique_ptr<TestWebGraphicsContext3D> context_owned =
-      TestWebGraphicsContext3D::Create();
-  context_owned->set_context_lost(true);
+  auto gl_owned = std::make_unique<LostGLES2Interface>();
 
   // Initialization will fail.
-  EXPECT_FALSE(CreateHostImpl(
-      DefaultSettings(),
-      FakeLayerTreeFrameSink::Create3d(std::move(context_owned))));
+  EXPECT_FALSE(
+      CreateHostImpl(DefaultSettings(),
+                     FakeLayerTreeFrameSink::Create3d(std::move(gl_owned))));
 
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
 
@@ -9046,10 +9055,11 @@ class FakeDrawableLayerImpl : public LayerImpl {
 // submitted to the LayerTreeFrameSink, where it should request to swap only
 // the sub-buffer that is damaged.
 TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
+  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+  gl_owned->set_have_post_sub_buffer(true);
   scoped_refptr<viz::TestContextProvider> context_provider(
-      viz::TestContextProvider::Create());
+      viz::TestContextProvider::Create(std::move(gl_owned)));
   context_provider->BindToCurrentThread();
-  context_provider->TestContext3d()->set_have_post_sub_buffer(true);
 
   std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink(
       FakeLayerTreeFrameSink::Create3d(context_provider));
@@ -9183,11 +9193,10 @@ class FakeLayerWithQuads : public LayerImpl {
 };
 
 TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
-  std::unique_ptr<TestWebGraphicsContext3D> context =
-      TestWebGraphicsContext3D::Create();
-  TestWebGraphicsContext3D* context3d = context.get();
+  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+  viz::TestGLES2Interface* gl = gl_owned.get();
   std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink(
-      FakeLayerTreeFrameSink::Create3d(std::move(context)));
+      FakeLayerTreeFrameSink::Create3d(std::move(gl_owned)));
   CreateHostImpl(DefaultSettings(), std::move(layer_tree_frame_sink));
 
   std::unique_ptr<LayerImpl> root_layer =
@@ -9208,27 +9217,21 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   host_impl_->active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl_->active_tree()->BuildPropertyTreesForTesting();
 
-  EXPECT_EQ(0u, context3d->NumTextures());
+  EXPECT_EQ(0u, gl->NumTextures());
 
   TestFrameData frame;
   EXPECT_EQ(DRAW_SUCCESS, host_impl_->PrepareToDraw(&frame));
   host_impl_->DrawLayers(&frame);
   host_impl_->DidDrawAllLayers(frame);
 
-  EXPECT_GT(context3d->NumTextures(), 0u);
+  EXPECT_GT(gl->NumTextures(), 0u);
 
   // Kill the layer tree.
   host_impl_->active_tree()->DetachLayers();
   // There should be no textures left in use after.
-  EXPECT_EQ(0u, context3d->NumTextures());
+  EXPECT_EQ(0u, gl->NumTextures());
 }
 
-class MockDrawQuadsToFillScreenContext : public TestWebGraphicsContext3D {
- public:
-  MOCK_METHOD1(useProgram, void(GLuint program));
-  MOCK_METHOD4(drawElements,
-               void(GLenum mode, GLsizei count, GLenum type, GLintptr offset));
-};
 
 TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {
   SetupRootLayerImpl(LayerImpl::Create(host_impl_->active_tree(), 1));
@@ -9541,8 +9544,7 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
       AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
 
   // Gpu compositing.
-  layer_tree_frame_sink_ =
-      FakeLayerTreeFrameSink::Create3d(TestWebGraphicsContext3D::Create());
+  layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
   host_impl_->SetVisible(true);
   host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
   {
@@ -9705,58 +9707,58 @@ TEST_F(LayerTreeHostImplTestPrepareTiles, PrepareTilesWhenInvisible) {
 }
 
 TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
-  std::unique_ptr<TestWebGraphicsContext3D> context =
-      TestWebGraphicsContext3D::Create();
-  TestWebGraphicsContext3D* context3d = context.get();
+  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+  viz::TestGLES2Interface* gl = gl_owned.get();
+
   std::unique_ptr<FakeLayerTreeFrameSink> layer_tree_frame_sink =
-      FakeLayerTreeFrameSink::Create3d();
+      FakeLayerTreeFrameSink::Create3d(std::move(gl_owned));
   CreateHostImpl(DefaultSettings(), std::move(layer_tree_frame_sink));
 
-  EXPECT_EQ(0u, context3d->NumTextures());
+  EXPECT_EQ(0u, gl->NumTextures());
 
   UIResourceId ui_resource_id = 1;
   bool is_opaque = false;
   UIResourceBitmap bitmap(gfx::Size(1, 1), is_opaque);
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
-  EXPECT_EQ(1u, context3d->NumTextures());
+  EXPECT_EQ(1u, gl->NumTextures());
   viz::ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id1);
 
   // Multiple requests with the same id is allowed.  The previous texture is
   // deleted.
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
-  EXPECT_EQ(1u, context3d->NumTextures());
+  EXPECT_EQ(1u, gl->NumTextures());
   viz::ResourceId id2 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id2);
   EXPECT_NE(id1, id2);
 
   // Deleting invalid UIResourceId is allowed and does not change state.
   host_impl_->DeleteUIResource(-1);
-  EXPECT_EQ(1u, context3d->NumTextures());
+  EXPECT_EQ(1u, gl->NumTextures());
 
   // Should return zero for invalid UIResourceId.  Number of textures should
   // not change.
   EXPECT_EQ(0u, host_impl_->ResourceIdForUIResource(-1));
-  EXPECT_EQ(1u, context3d->NumTextures());
+  EXPECT_EQ(1u, gl->NumTextures());
 
   host_impl_->DeleteUIResource(ui_resource_id);
   EXPECT_EQ(0u, host_impl_->ResourceIdForUIResource(ui_resource_id));
-  EXPECT_EQ(0u, context3d->NumTextures());
+  EXPECT_EQ(0u, gl->NumTextures());
 
   // Should not change state for multiple deletion on one UIResourceId
   host_impl_->DeleteUIResource(ui_resource_id);
-  EXPECT_EQ(0u, context3d->NumTextures());
+  EXPECT_EQ(0u, gl->NumTextures());
 }
 
 TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
-  std::unique_ptr<TestWebGraphicsContext3D> context =
-      TestWebGraphicsContext3D::Create();
-  TestWebGraphicsContext3D* context3d = context.get();
-  context3d->set_support_compressed_texture_etc1(true);
-  CreateHostImpl(DefaultSettings(),
-                 FakeLayerTreeFrameSink::Create3d(std::move(context)));
+  auto gl_owned = std::make_unique<viz::TestGLES2Interface>();
+  gl_owned->set_support_compressed_texture_etc1(true);
+  viz::TestGLES2Interface* gl = gl_owned.get();
 
-  EXPECT_EQ(0u, context3d->NumTextures());
+  CreateHostImpl(DefaultSettings(),
+                 FakeLayerTreeFrameSink::Create3d(std::move(gl_owned)));
+
+  EXPECT_EQ(0u, gl->NumTextures());
 
   gfx::Size size(4, 4);
   // SkImageInfo has no support for ETC1.  The |info| below contains the right
@@ -9769,7 +9771,7 @@ TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
   UIResourceBitmap bitmap(std::move(pixel_ref), size);
   UIResourceId ui_resource_id = 1;
   host_impl_->CreateUIResource(ui_resource_id, bitmap);
-  EXPECT_EQ(1u, context3d->NumTextures());
+  EXPECT_EQ(1u, gl->NumTextures());
   viz::ResourceId id1 = host_impl_->ResourceIdForUIResource(ui_resource_id);
   EXPECT_NE(0u, id1);
 }
@@ -13456,8 +13458,7 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnLayerTreeFrameSinkChange) {
   host_impl_->SetVisible(true);
 
   // InitializeRenderer with a gpu-raster enabled output surface.
-  auto gpu_raster_layer_tree_frame_sink =
-      FakeLayerTreeFrameSink::Create3d(TestWebGraphicsContext3D::Create());
+  auto gpu_raster_layer_tree_frame_sink = FakeLayerTreeFrameSink::Create3d();
   host_impl_->InitializeRenderer(gpu_raster_layer_tree_frame_sink.get());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 

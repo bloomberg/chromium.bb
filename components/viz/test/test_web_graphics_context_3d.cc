@@ -79,8 +79,6 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       unpack_alignment_(4),
       weak_ptr_factory_(this) {
   CreateNamespace();
-  set_have_extension_egl_image(true);  // For stream textures.
-  set_max_texture_size(2048);
 }
 
 TestWebGraphicsContext3D::~TestWebGraphicsContext3D() {
