@@ -340,7 +340,7 @@ void WebFrameWidgetBase::PointerLockMouseEvent(
       event_type = EventTypeNames::mousemove;
       break;
     default:
-      NOTREACHED();
+      NOTREACHED() << input_event.GetType();
   }
 
   if (GetPage()) {
