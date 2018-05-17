@@ -53,7 +53,7 @@ void MockWebMIDIAccessor::StartSession() {
   // Add a mock input and output port.
   addInputPort(PortState::CONNECTED);
   addOutputPort(PortState::CONNECTED);
-  interfaces_->GetDelegate()->PostTask(base::Bind(
+  interfaces_->GetDelegate()->PostTask(base::BindOnce(
       &MockWebMIDIAccessor::reportStartedSession, weak_factory_.GetWeakPtr(),
       interfaces_->GetTestRunner()->midiAccessorResult()));
 }

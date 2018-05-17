@@ -561,10 +561,10 @@ void DisableAutoResizeMode(RenderView* render_view, const WebSize& new_size) {
       DisableAutoResizeForTesting(new_size);
 }
 
-void SchedulerRunIdleTasks(const base::Closure& callback) {
+void SchedulerRunIdleTasks(base::OnceClosure callback) {
   blink::scheduler::WebMainThreadScheduler* scheduler =
       content::RenderThreadImpl::current()->GetWebMainThreadScheduler();
-  blink::scheduler::RunIdleTasksForTesting(scheduler, callback);
+  blink::scheduler::RunIdleTasksForTesting(scheduler, std::move(callback));
 }
 
 void ForceTextInputStateUpdateForRenderFrame(RenderFrame* frame) {

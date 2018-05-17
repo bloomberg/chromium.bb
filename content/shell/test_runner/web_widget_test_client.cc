@@ -38,9 +38,9 @@ void WebWidgetTestClient::ScheduleAnimation() {
 
   if (!animation_scheduled_) {
     animation_scheduled_ = true;
-    delegate()->PostDelayedTask(base::Bind(&WebWidgetTestClient::AnimateNow,
-                                           weak_factory_.GetWeakPtr()),
-                                1);
+    delegate()->PostDelayedTask(base::BindOnce(&WebWidgetTestClient::AnimateNow,
+                                               weak_factory_.GetWeakPtr()),
+                                base::TimeDelta::FromMilliseconds(1));
   }
 }
 

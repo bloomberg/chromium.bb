@@ -70,8 +70,8 @@ class BlinkTestRunner : public RenderViewObserver,
   void SetDeviceOrientationData(const device::OrientationData& data) override;
   void PrintMessageToStderr(const std::string& message) override;
   void PrintMessage(const std::string& message) override;
-  void PostTask(const base::Closure& task) override;
-  void PostDelayedTask(const base::Closure& task, long long ms) override;
+  void PostTask(base::OnceClosure task) override;
+  void PostDelayedTask(base::OnceClosure task, base::TimeDelta delay) override;
   blink::WebString RegisterIsolatedFileSystem(
       const blink::WebVector<blink::WebString>& absolute_filenames) override;
   long long GetCurrentTimeInMillisecond() override;
@@ -108,10 +108,10 @@ class BlinkTestRunner : public RenderViewObserver,
   void EnableUseZoomForDSF() override;
   bool IsUseZoomForDSFEnabled() override;
   void SetBluetoothFakeAdapter(const std::string& adapter_name,
-                               const base::Closure& callback) override;
+                               base::OnceClosure callback) override;
   void SetBluetoothManualChooser(bool enable) override;
   void GetBluetoothManualChooserEvents(
-      const base::Callback<void(const std::vector<std::string>&)>& callback)
+      base::OnceCallback<void(const std::vector<std::string>&)> callback)
       override;
   void SendBluetoothManualChooserEvent(const std::string& event,
                                        const std::string& argument) override;
@@ -144,13 +144,13 @@ class BlinkTestRunner : public RenderViewObserver,
       blink::WebMediaStream* stream) override;
   void DispatchBeforeInstallPromptEvent(
       const std::vector<std::string>& event_platforms,
-      const base::Callback<void(bool)>& callback) override;
+      base::OnceCallback<void(bool)> callback) override;
   void ResolveBeforeInstallPromptPromise(
       const std::string& platform) override;
   blink::WebPlugin* CreatePluginPlaceholder(
     const blink::WebPluginParams& params) override;
   float GetDeviceScaleFactor() const override;
-  void RunIdleTasks(const base::Closure& callback) override;
+  void RunIdleTasks(base::OnceClosure callback) override;
   void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) override;
   bool IsNavigationInitiatedByRenderer(
       const blink::WebURLRequest& request) override;
@@ -205,7 +205,8 @@ class BlinkTestRunner : public RenderViewObserver,
 
   mojom::ShellTestConfigurationPtr test_config_;
 
-  base::circular_deque<base::Callback<void(const std::vector<std::string>&)>>
+  base::circular_deque<
+      base::OnceCallback<void(const std::vector<std::string>&)>>
       get_bluetooth_events_callbacks_;
 
   bool is_main_window_;

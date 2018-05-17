@@ -25,10 +25,10 @@ std::unique_ptr<WebMainThreadScheduler> CreateWebMainThreadSchedulerForTests() {
 }
 
 void RunIdleTasksForTesting(WebMainThreadScheduler* scheduler,
-                            const base::Closure& callback) {
+                            base::OnceClosure callback) {
   MainThreadSchedulerImpl* scheduler_impl =
       static_cast<MainThreadSchedulerImpl*>(scheduler);
-  scheduler_impl->RunIdleTasksForTesting(callback);
+  scheduler_impl->RunIdleTasksForTesting(std::move(callback));
 }
 
 scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunnerForTesting() {

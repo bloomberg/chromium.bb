@@ -21,7 +21,7 @@ class WebMainThreadScheduler;
 std::unique_ptr<WebMainThreadScheduler> CreateWebMainThreadSchedulerForTests();
 
 void RunIdleTasksForTesting(WebMainThreadScheduler* scheduler,
-                            const base::Closure& callback);
+                            base::OnceClosure callback);
 
 // Returns a SequencedTaskRunner. This implementation is same as
 // SequencedTaskRunnerHandle::Get(), but this is intended to be used for

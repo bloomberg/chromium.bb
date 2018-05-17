@@ -2265,20 +2265,20 @@ void EventSender::MouseLeave(
 }
 
 void EventSender::ScheduleAsynchronousClick(int button_number, int modifiers) {
-  delegate()->PostTask(base::Bind(&EventSender::MouseDown,
-                                  weak_factory_.GetWeakPtr(), button_number,
-                                  modifiers));
-  delegate()->PostTask(base::Bind(&EventSender::MouseUp,
-                                  weak_factory_.GetWeakPtr(), button_number,
-                                  modifiers));
+  delegate()->PostTask(base::BindOnce(&EventSender::MouseDown,
+                                      weak_factory_.GetWeakPtr(), button_number,
+                                      modifiers));
+  delegate()->PostTask(base::BindOnce(&EventSender::MouseUp,
+                                      weak_factory_.GetWeakPtr(), button_number,
+                                      modifiers));
 }
 
 void EventSender::ScheduleAsynchronousKeyDown(const std::string& code_str,
                                               int modifiers,
                                               KeyLocationCode location) {
-  delegate()->PostTask(base::Bind(&EventSender::KeyDown,
-                                  weak_factory_.GetWeakPtr(), code_str,
-                                  modifiers, location));
+  delegate()->PostTask(base::BindOnce(&EventSender::KeyDown,
+                                      weak_factory_.GetWeakPtr(), code_str,
+                                      modifiers, location));
 }
 
 void EventSender::ConsumeUserActivation() {

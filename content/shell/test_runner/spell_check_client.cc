@@ -82,13 +82,12 @@ void SpellCheckClient::RequestCheckingOfText(
 
   last_requested_text_checking_completion_ = completion;
   last_requested_text_check_string_ = text;
-  if (spell_check_.HasInCache(text))
+  if (spell_check_.HasInCache(text)) {
     FinishLastTextCheck();
-  else
-    delegate_->PostDelayedTask(
-        base::Bind(&SpellCheckClient::FinishLastTextCheck,
-                   weak_factory_.GetWeakPtr()),
-        0);
+  } else {
+    delegate_->PostTask(base::BindOnce(&SpellCheckClient::FinishLastTextCheck,
+                                       weak_factory_.GetWeakPtr()));
+  }
 }
 
 void SpellCheckClient::CancelAllPendingRequests() {

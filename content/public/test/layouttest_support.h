@@ -176,7 +176,7 @@ void DisableAutoResizeMode(RenderView* render_view,
                            const blink::WebSize& new_size);
 
 // Run all pending idle tasks immediately, and then invoke callback.
-void SchedulerRunIdleTasks(const base::Closure& callback);
+void SchedulerRunIdleTasks(base::OnceClosure callback);
 
 // Causes the RenderWidget corresponding to |render_frame| to update its
 // TextInputState.

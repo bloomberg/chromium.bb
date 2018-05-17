@@ -283,8 +283,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   TaskCostEstimator* GetTimerTaskCostEstimatorForTesting();
   IdleTimeEstimator* GetIdleTimeEstimatorForTesting();
   base::TimeTicks CurrentIdleTaskDeadlineForTesting() const;
-  void RunIdleTasksForTesting(const base::Closure& callback);
-  void EndIdlePeriodForTesting(const base::Closure& callback,
+  void RunIdleTasksForTesting(base::OnceClosure callback);
+  void EndIdlePeriodForTesting(base::OnceClosure callback,
                                base::TimeTicks time_remaining);
   bool PolicyNeedsUpdateForTesting();
   WakeUpBudgetPool* GetWakeUpBudgetPoolForTesting();
