@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
 #include "third_party/blink/renderer/platform/platform_chrome_client.h"
+#include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 
 namespace blink {
 
@@ -261,18 +262,23 @@ void ScrollableAreaPainter::PaintScrollCorner(
     return;
   }
 
-  // We don't want to paint white if we have overlay scrollbars, since we need
+  // We don't want to paint opaque if we have overlay scrollbars, since we need
   // to see what is behind it.
   if (GetScrollableArea().HasOverlayScrollbars())
     return;
 
-  const auto& client = DisplayItemClientForCorner();
-  if (DrawingRecorder::UseCachedDrawingIfPossible(
-          context, client, DisplayItem::kScrollbarCorner))
-    return;
+  ScrollbarTheme* theme = nullptr;
 
-  DrawingRecorder recorder(context, client, DisplayItem::kScrollbarCorner);
-  context.FillRect(abs_rect, Color::kWhite);
+  if (GetScrollableArea().HorizontalScrollbar()) {
+    theme = &GetScrollableArea().HorizontalScrollbar()->GetTheme();
+  } else if (GetScrollableArea().VerticalScrollbar()) {
+    theme = &GetScrollableArea().VerticalScrollbar()->GetTheme();
+  } else {
+    NOTREACHED();
+  }
+
+  const auto& client = DisplayItemClientForCorner();
+  theme->PaintScrollCorner(context, client, abs_rect);
 }
 
 PaintLayerScrollableArea& ScrollableAreaPainter::GetScrollableArea() const {
