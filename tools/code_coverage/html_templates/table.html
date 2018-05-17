@@ -1,3 +1,8 @@
+{% if table_entry_type == "Component" %}
+<p>
+&emsp;Filter: <input type="text" id="filter" size="30" /> (e.g. "crypto,VR")
+</p>
+{% endif %}
 <table>
   <thead>
     <tr>
@@ -46,3 +51,58 @@
     </tfoot>
   {% endif %}
 </table>
+{% if table_entry_type == "Component" %}
+<script>
+  function filterInputChanged() {
+    let filter = document.getElementById("filter");
+    let filterString = filter.value;
+
+    // Update query paramater in URL.
+    let queryParams = new URLSearchParams(window.location.search);
+    queryParams.set('filter', filterString);
+    let newPath = window.location.pathname;
+    if (filterString)
+      newPath += '?' + queryParams.toString();
+    history.pushState(null, '', newPath);
+
+    filterRowsIfNeeded();
+  }
+
+  function filterRowsIfNeeded() {
+    let queryParams = new URLSearchParams(window.location.search);
+    let filterString = (queryParams.get('filter') || "").toLowerCase();
+    let filterValues = filterString.split(',');
+    let tbody = document.getElementsByTagName("tbody")[0];
+    let rows = tbody.getElementsByTagName("tr");
+    for (let row of rows) {
+      let td = row.getElementsByTagName("td");
+      let tdContent = row.innerText.toLowerCase();
+
+      // |match| should be true on empty search (show everything).
+      let match = !filterValues;
+      for (let filterValue of filterValues) {
+        if (tdContent.includes(filterValue)) {
+          match = true;
+          break
+        }
+      }
+
+      if (match && row.style.display == 'none')
+        row.style.display = 'table-row';
+      else if (!match)
+        row.style.display = 'none';
+    }
+
+    // Update filter value in input box (for cases when filter is provided
+    // as part of page load URL).
+    let filter = document.getElementById("filter");
+    if (filter.value.toLowerCase() != filterString)
+      filter.value = filterString;
+  }
+
+  window.onload = filterRowsIfNeeded;
+
+  var filter = document.getElementById("filter");
+  filter.onchange = filter.onkeyup = filterInputChanged;
+</script>
+{% endif %}
