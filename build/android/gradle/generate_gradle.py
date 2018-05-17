@@ -626,7 +626,7 @@ def _GetNative(relative_func, target_names):
   for target_name in target_names:
     target = project_targets[target_name]
     includes.update(target.get('include_dirs', []))
-    sources = target.get('sources', [])
+    sources = [f for f in target.get('sources', []) if f.endswith('.cc')]
     if sources:
       # CMake does not like forward slashes or colons for the target name.
       filtered_name = target_name.replace('/', '.').replace(':', '-')

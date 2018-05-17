@@ -92,11 +92,12 @@ includes `R.java`) and to remove some red underlines in java files.
 
 A new experimental option is now available to enable editing native C/C++ files
 with Android Studio. Pass in any number of `--native-target [target name]` flags
-in order to try it out. This will require you to install `cmake` and `ndk` when
+in order to try it out. The target must be the full path and name of a valid gn
+target (no shorthands). This will require you to install `cmake` and `ndk` when
 prompted. Accept Android Studio's prompts for these SDK packages. Example:
 
 ```shell
-build/android/gradle/generate_gradle.py --native-target //chrome/android:monochrome
+build/android/gradle/generate_gradle.py --native-target //chrome/browser:browser
 ```
 
 ## Tips
@@ -104,7 +105,7 @@ build/android/gradle/generate_gradle.py --native-target //chrome/android:monochr
 * Use environment variables to avoid having to specify `--output-directory`.
     * Example: Append `export CHROMIUM_OUT_DIR=out; export BUILDTYPE=Debug` to
       your `~/.bashrc` to always default to `out/Debug`.
-* Using the Java debugger is documented at [android_debugging_instructions.md#android-studio](android_debugging_instructions.md#android-studio).
+* Using the Java debugger is documented [here](android_debugging_instructions.md#android-studio).
 * Configuration instructions can be found
   [here](http://tools.android.com/tech-docs/configuration). One suggestions:
     * Launch it with more RAM:
@@ -180,6 +181,7 @@ resources, native libraries, etc.
 * Import resolution and refactoring across java files.
 * Correct lint and AndroidManifest when only one target is specified.
 * Emulators (more docs coming soon).
+* Separate Android SDK for Android Studio.
 
 ### What doesn't work (yet) ([crbug](https://bugs.chromium.org/p/chromium/issues/detail?id=620034))
 
