@@ -119,6 +119,11 @@ std::vector<TestParam> GetParams() {
     }
   }
 
+// For unknown reasons, renderer profiling has become flaky on ChromeOS. This is
+// likely happening because the renderers are never being given the signal to
+// start profiling. It's unclear why this happens. https://crbug.com/843843.
+// https://crbug.com/843467.
+#if !defined(OS_CHROMEOS)
   // Non-browser processes must be profiled with a command line flag, since
   // otherwise, profiling will start after the relevant processes have been
   // created, thus that process will be not be profiled.
@@ -132,6 +137,7 @@ std::vector<TestParam> GetParams() {
            false /* should_sample */, false /* sample_everything*/});
     }
   }
+#endif  // defined(OS_CHROMEOS)
 
   // Test sampling all allocations.
   params.push_back({Mode::kBrowser, mojom::StackMode::NATIVE_WITH_THREAD_NAMES,
