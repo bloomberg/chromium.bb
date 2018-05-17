@@ -265,17 +265,19 @@ void WindowGrid::PositionWindows(bool animate,
                                  WindowSelectorItem* ignored_item) {
   if (window_selector_->IsShuttingDown())
     return;
-  if (window_list_.empty()) {
-    if (IsNewOverviewUi())
-      ShowNoRecentsWindowMessage(/*visible=*/true);
-    return;
-  }
 
   DCHECK(shield_widget_.get());
-  // Keep the background shield widget covering the whole screen.
+  // Keep the background shield widget covering the whole screen. A grid without
+  // any windows still needs the shield widget bounds updated.
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
   const gfx::Rect bounds = widget_window->parent()->bounds();
   widget_window->SetBounds(bounds);
+
+  if (IsNewOverviewUi())
+    ShowNoRecentsWindowMessage(window_list_.empty());
+
+  if (window_list_.empty())
+    return;
 
   gfx::Rect total_bounds = bounds_;
   // Windows occupy vertically centered area with additional vertical insets.
@@ -530,10 +532,7 @@ void WindowGrid::WindowClosing(WindowSelectorItem* window) {
 }
 
 void WindowGrid::SetBoundsAndUpdatePositions(const gfx::Rect& bounds) {
-  bounds_ = bounds;
-  if (shield_view_)
-    shield_view_->SetGridBounds(bounds_);
-  PositionWindows(/*animate=*/true);
+  SetBoundsAndUpdatePositionsIgnoringWindow(bounds, nullptr);
 }
 
 void WindowGrid::SetBoundsAndUpdatePositionsIgnoringWindow(
