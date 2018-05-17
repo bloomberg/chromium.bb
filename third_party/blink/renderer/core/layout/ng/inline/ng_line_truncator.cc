@@ -63,15 +63,16 @@ LayoutUnit NGLineTruncator::TruncateLine(
   // to place the ellipsis. Children maybe truncated or moved as part of the
   // process.
   LayoutUnit ellipsis_inline_offset;
-  LayoutObject* layout_object = nullptr;
+  const NGPhysicalFragment* ellipsized_fragment = nullptr;
   if (IsLtr(line_direction_)) {
     NGLineBoxFragmentBuilder::Child* first_child = line_box->FirstInFlowChild();
     for (auto it = line_box->rbegin(); it != line_box->rend(); it++) {
       auto& child = *it;
-      if (base::Optional<LayoutUnit> candidate =
-              EllipsisOffset(line_width, ellipsis_width, &child == first_child,
-                             &layout_object, &child)) {
+      if (base::Optional<LayoutUnit> candidate = EllipsisOffset(
+              line_width, ellipsis_width, &child == first_child, &child)) {
         ellipsis_inline_offset = candidate.value();
+        ellipsized_fragment = child.PhysicalFragment();
+        DCHECK(ellipsized_fragment);
         break;
       }
     }
@@ -79,20 +80,27 @@ LayoutUnit NGLineTruncator::TruncateLine(
     NGLineBoxFragmentBuilder::Child* first_child = line_box->LastInFlowChild();
     ellipsis_inline_offset = available_width_ - ellipsis_width;
     for (auto& child : *line_box) {
-      if (base::Optional<LayoutUnit> candidate =
-              EllipsisOffset(line_width, ellipsis_width, &child == first_child,
-                             &layout_object, &child)) {
+      if (base::Optional<LayoutUnit> candidate = EllipsisOffset(
+              line_width, ellipsis_width, &child == first_child, &child)) {
         ellipsis_inline_offset = candidate.value();
+        ellipsized_fragment = child.PhysicalFragment();
+        DCHECK(ellipsized_fragment);
         break;
       }
     }
   }
 
+  // Abort if ellipsis could not be placed.
+  if (!ellipsized_fragment)
+    return line_width;
+
   // Now the offset of the ellpisis is determined. Place the ellpisis into the
   // line box.
   NGTextFragmentBuilder builder(node_, line_style_->GetWritingMode());
-  builder.SetText(layout_object ? layout_object : node_.GetLayoutObject(),
-                  ellipsis_text, ellipsis_style, true /* is_ellipsis_style */,
+  DCHECK(ellipsized_fragment->GetLayoutObject() &&
+         ellipsized_fragment->GetLayoutObject()->IsInline());
+  builder.SetText(ellipsized_fragment->GetLayoutObject(), ellipsis_text,
+                  ellipsis_style, true /* is_ellipsis_style */,
                   std::move(ellipsis_shape_result));
   FontBaseline baseline_type = line_style_->GetFontBaseline();
   NGLineHeightMetrics ellipsis_metrics(font_data->GetFontMetrics(),
@@ -111,7 +119,6 @@ base::Optional<LayoutUnit> NGLineTruncator::EllipsisOffset(
     LayoutUnit line_width,
     LayoutUnit ellipsis_width,
     bool is_first_child,
-    LayoutObject** layout_object,
     NGLineBoxFragmentBuilder::Child* child) {
   // Leave out-of-flow children as is.
   if (!child->HasInFlowFragment())
@@ -126,15 +133,6 @@ base::Optional<LayoutUnit> NGLineTruncator::EllipsisOffset(
   LayoutUnit space_for_child = available_width_ - child_inline_offset;
   if (space_for_child <= 0)
     return base::nullopt;
-
-  // Keep track of the last LayoutText.
-  // TODO(kojii): Somehow, we fail to paint text fragments if they are not tied
-  // to LayoutText. This code is needed to work around the problem, but still,
-  // due to this problem, ellipsis may not be painted if the line is only of
-  // atomic inlines.
-  if (child->fragment && child->fragment->GetLayoutObject() &&
-      child->fragment->GetLayoutObject()->IsInline())
-    *layout_object = child->fragment->GetLayoutObject();
 
   // If not all of this child can fit, try to truncate.
   space_for_child -= ellipsis_width;
