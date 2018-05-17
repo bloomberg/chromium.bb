@@ -70,6 +70,7 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
                                   bool report_security_info);
   // WebURLLoader methods:
   void LoadSynchronously(const blink::WebURLRequest& request,
+                         blink::WebURLLoaderClient* client,
                          blink::WebURLResponse& response,
                          base::Optional<blink::WebURLError>& error,
                          blink::WebData& data,

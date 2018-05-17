@@ -504,12 +504,13 @@ void ResourceDispatcher::StartSync(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
     double timeout,
-    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry) {
+    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
+    std::unique_ptr<RequestPeer> peer) {
   CheckSchemeForReferrerPolicy(*request);
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info =
       url_loader_factory->Clone();
-  base::WaitableEvent completed_event(
+  base::WaitableEvent redirect_or_response_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
 
@@ -529,10 +530,32 @@ void ResourceDispatcher::StartSync(
                      std::move(request), routing_id, task_runner,
                      traffic_annotation, std::move(factory_info),
                      std::move(throttles), base::Unretained(response),
-                     base::Unretained(&completed_event),
+                     base::Unretained(&redirect_or_response_event),
                      base::Unretained(terminate_sync_load_event_), timeout,
                      std::move(download_to_blob_registry)));
-  completed_event.Wait();
+
+  // redirect_or_response_event will signal when each redirect completes, and
+  // when the final response is complete.
+  redirect_or_response_event.Wait();
+
+  while (response->context_for_redirect) {
+    DCHECK(response->redirect_info);
+    bool follow_redirect =
+        peer->OnReceivedRedirect(*response->redirect_info, response->info);
+    redirect_or_response_event.Reset();
+    if (follow_redirect) {
+      task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SyncLoadContext::FollowRedirect,
+                         base::Unretained(response->context_for_redirect)));
+    } else {
+      task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(&SyncLoadContext::CancelRedirect,
+                         base::Unretained(response->context_for_redirect)));
+    }
+    redirect_or_response_event.Wait();
+  }
 }
 
 int ResourceDispatcher::StartAsync(

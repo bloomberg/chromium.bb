@@ -107,6 +107,7 @@ WebURL WebURLLoaderMock::ServeRedirect(
 
 void WebURLLoaderMock::LoadSynchronously(
     const WebURLRequest& request,
+    WebURLLoaderClient* client,
     WebURLResponse& response,
     base::Optional<WebURLError>& error,
     WebData& data,
@@ -121,7 +122,7 @@ void WebURLLoaderMock::LoadSynchronously(
   }
   AssertFallbackLoaderAvailability(request.Url(), default_loader_.get());
   using_default_loader_ = true;
-  default_loader_->LoadSynchronously(request, response, error, data,
+  default_loader_->LoadSynchronously(request, client, response, error, data,
                                      encoded_data_length, encoded_body_length,
                                      downloaded_file_length, downloaded_blob);
 }
