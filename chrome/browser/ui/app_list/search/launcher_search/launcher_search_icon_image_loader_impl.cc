@@ -5,7 +5,9 @@
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader_impl.h"
 
 #include <utility>
+#include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "extensions/browser/image_loader.h"
 #include "extensions/common/file_util.h"
@@ -24,14 +26,13 @@ LauncherSearchIconImageLoaderImpl::LauncherSearchIconImageLoaderImpl(
                                     profile,
                                     extension,
                                     icon_dimension,
-                                    std::move(error_reporter)),
-      weak_ptr_factory_(this) {}
+                                    std::move(error_reporter)) {}
 
 LauncherSearchIconImageLoaderImpl::~LauncherSearchIconImageLoaderImpl() =
     default;
 
 const gfx::ImageSkia& LauncherSearchIconImageLoaderImpl::LoadExtensionIcon() {
-  extension_icon_image_.reset(new extensions::IconImage(
+  extension_icon_image_ = base::WrapUnique(new extensions::IconImage(
       profile_, extension_, extensions::IconsInfo::GetIcons(extension_),
       icon_size_.width(), extensions::util::GetDefaultExtensionIcon(), this));
 
@@ -53,7 +54,7 @@ void LauncherSearchIconImageLoaderImpl::LoadIconResourceFromExtension() {
   extensions::ImageLoader::Get(profile_)->LoadImagesAsync(
       extension_, info_list,
       base::Bind(&LauncherSearchIconImageLoaderImpl::OnCustomIconImageLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 this));
 }
 
 void LauncherSearchIconImageLoaderImpl::OnExtensionIconImageChanged(

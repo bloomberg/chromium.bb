@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_icon_image_loader.h"
@@ -44,7 +44,7 @@ class LauncherSearchResult : public ChromeSearchResult,
       const int discrete_value_relevance,
       Profile* profile,
       const extensions::Extension* extension,
-      const linked_ptr<LauncherSearchIconImageLoader>& icon_image_loader);
+      const scoped_refptr<LauncherSearchIconImageLoader>& icon_image_loader);
   void Initialize();
 
   // Returns search result ID. The search result ID is comprised of the
@@ -57,7 +57,7 @@ class LauncherSearchResult : public ChromeSearchResult,
   const int discrete_value_relevance_;
   Profile* profile_;
   const extensions::Extension* extension_;
-  linked_ptr<LauncherSearchIconImageLoader> icon_image_loader_;
+  scoped_refptr<LauncherSearchIconImageLoader> icon_image_loader_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherSearchResult);
 };

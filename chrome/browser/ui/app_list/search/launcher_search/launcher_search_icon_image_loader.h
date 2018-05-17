@@ -8,8 +8,11 @@
 #include <stdint.h>
 
 #include <memory>
+#include <set>
+#include <string>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/launcher_search_provider/error_reporter.h"
 #include "chrome/browser/profiles/profile.h"
 #include "extensions/common/extension.h"
@@ -20,7 +23,8 @@
 namespace app_list {
 
 // Loads icons of launcher search results.
-class LauncherSearchIconImageLoader {
+class LauncherSearchIconImageLoader
+    : public base::RefCounted<LauncherSearchIconImageLoader> {
  public:
   class Observer {
    public:
@@ -43,7 +47,6 @@ class LauncherSearchIconImageLoader {
       const int icon_dimension,
       std::unique_ptr<chromeos::launcher_search_provider::ErrorReporter>
           error_reporter);
-  virtual ~LauncherSearchIconImageLoader();
 
   // Load resources caller must call this function to generate icon image.
   void LoadResources();
@@ -62,6 +65,9 @@ class LauncherSearchIconImageLoader {
   const gfx::ImageSkia& GetBadgeIconImage() const;
 
  protected:
+  // Ref counted class.
+  virtual ~LauncherSearchIconImageLoader();
+
   // Loads |extension| icon and returns it as sync if possible. When it loads
   // icon as async, it calls OnExtensionIconImageChanged.
   virtual const gfx::ImageSkia& LoadExtensionIcon() = 0;
@@ -83,6 +89,8 @@ class LauncherSearchIconImageLoader {
   const gfx::Size icon_size_;
 
  private:
+  friend class base::RefCounted<LauncherSearchIconImageLoader>;
+
   // Notifies to observers.
   void NotifyObserversIconImageChange();
   void NotifyObserversBadgeIconImageChange();
