@@ -9,6 +9,7 @@
 #include "ash/login/ui/login_base_bubble_view.h"
 #include "base/strings/string16.h"
 #include "components/user_manager/user_type.h"
+#include "ui/aura/client/focus_change_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
@@ -22,7 +23,8 @@ class LoginMenuView;
 // and dismisses the bubble accordingly.
 class ASH_EXPORT LoginBubble : public views::WidgetObserver,
                                public ui::EventHandler,
-                               public ui::LayerAnimationObserver {
+                               public ui::LayerAnimationObserver,
+                               public aura::client::FocusChangeObserver {
  public:
   static const int kUserMenuRemoveUserButtonIdForTest;
 
@@ -89,6 +91,10 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
   void OnLayerAnimationScheduled(
       ui::LayerAnimationSequence* sequence) override{};
 
+  // aura::client::FocusChangeObserver:
+  void OnWindowFocused(aura::Window* gained_focus,
+                       aura::Window* lost_focus) override;
+
   LoginBaseBubbleView* bubble_view() { return bubble_view_; }
 
  private:
@@ -99,6 +105,11 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
 
   // Starts show/hide animation.
   void ScheduleAnimation(bool visible);
+
+  // Reset local states and close the widget if it is not already closing.
+  // |widget_already_closing| : True if we don't need to close the widget
+  // explicitly. False otherwise.
+  void Reset(bool widget_already_closing);
 
   // Flags passed to ShowErrorBubble().
   uint32_t flags_ = kFlagsNone;
