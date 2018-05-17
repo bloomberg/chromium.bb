@@ -86,6 +86,7 @@ class MockRenderThread : public RenderThread {
   int32_t GetClientId() override;
   void SetRendererProcessType(
       blink::scheduler::RendererProcessType type) override;
+  blink::WebString GetUserAgent() const override;
 #if defined(OS_WIN)
   void PreCacheFont(const LOGFONT& log_font) override;
   void ReleaseCachedFonts() override;

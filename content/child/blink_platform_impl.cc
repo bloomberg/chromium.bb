@@ -366,10 +366,6 @@ void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread,
 BlinkPlatformImpl::~BlinkPlatformImpl() {
 }
 
-WebString BlinkPlatformImpl::UserAgent() {
-  return blink::WebString::FromUTF8(GetContentClient()->GetUserAgent());
-}
-
 std::unique_ptr<blink::WebThread> BlinkPlatformImpl::CreateThread(
     const blink::WebThreadCreationParams& params) {
   std::unique_ptr<blink::scheduler::WebThreadBase> thread =

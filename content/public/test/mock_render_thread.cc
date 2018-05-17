@@ -248,6 +248,10 @@ int32_t MockRenderThread::GetClientId() {
 void MockRenderThread::SetRendererProcessType(
     blink::scheduler::RendererProcessType type) {}
 
+blink::WebString MockRenderThread::GetUserAgent() const {
+  return blink::WebString();
+}
+
 #if defined(OS_WIN)
 void MockRenderThread::PreCacheFont(const LOGFONT& log_font) {
 }

@@ -231,6 +231,7 @@ class CONTENT_EXPORT RenderThreadImpl
   int32_t GetClientId() override;
   void SetRendererProcessType(
       blink::scheduler::RendererProcessType type) override;
+  blink::WebString GetUserAgent() const override;
 
   // IPC::Listener implementation via ChildThreadImpl:
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -572,6 +573,7 @@ class CONTENT_EXPORT RenderThreadImpl
                                base::TimeDelta transport_rtt,
                                double bandwidth_kbps) override;
   void SetWebKitSharedTimersSuspended(bool suspend) override;
+  void SetUserAgent(const std::string& user_agent) override;
   void UpdateScrollbarTheme(
       mojom::UpdateScrollbarThemeParamsPtr params) override;
   void OnSystemColorsChanged(int32_t aqua_color_variant,
@@ -668,6 +670,8 @@ class CONTENT_EXPORT RenderThreadImpl
   int idle_notifications_to_skip_;
 
   bool webkit_shared_timer_suspended_;
+
+  blink::WebString user_agent_;
 
   // Used to control layout test specific behavior.
   std::unique_ptr<LayoutTestDependencies> layout_test_deps_;

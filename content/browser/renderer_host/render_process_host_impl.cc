@@ -1664,6 +1664,8 @@ bool RenderProcessHostImpl::Init() {
     ui::GpuSwitchingManager::GetInstance()->AddObserver(this);
   }
 
+  GetRendererInterface()->SetUserAgent(GetContentClient()->GetUserAgent());
+
   is_initialized_ = true;
   init_time_ = base::TimeTicks::Now();
   return true;
