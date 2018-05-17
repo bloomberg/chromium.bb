@@ -1043,7 +1043,8 @@ void GLES2InterfaceStub::ScheduleDCLayerCHROMIUM(
     GLuint /* background_color */,
     GLuint /* edge_aa_mask */,
     const GLfloat* /* bounds_rect */,
-    GLuint /* filter */) {}
+    GLuint /* filter */,
+    bool /* is_protected_video */) {}
 void GLES2InterfaceStub::MatrixLoadfCHROMIUM(GLenum /* matrixMode */,
                                              const GLfloat* /* m */) {}
 void GLES2InterfaceStub::MatrixLoadIdentityCHROMIUM(GLenum /* matrixMode */) {}

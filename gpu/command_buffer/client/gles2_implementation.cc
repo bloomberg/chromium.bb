@@ -4862,7 +4862,8 @@ void GLES2Implementation::ScheduleDCLayerCHROMIUM(
     GLuint background_color,
     GLuint edge_aa_mask,
     const GLfloat* bounds_rect,
-    GLuint filter) {
+    GLuint filter,
+    bool is_protected_video) {
   const size_t kRectsSize = 8 * sizeof(GLfloat);
   size_t textures_size = num_textures * sizeof(GLuint);
   size_t shm_size = kRectsSize + textures_size;
@@ -4878,7 +4879,8 @@ void GLES2Implementation::ScheduleDCLayerCHROMIUM(
   memcpy(static_cast<char*>(buffer.address()) + kRectsSize,
          contents_texture_ids, textures_size);
   helper_->ScheduleDCLayerCHROMIUM(num_textures, background_color, edge_aa_mask,
-                                   filter, buffer.shm_id(), buffer.offset());
+                                   filter, buffer.shm_id(), buffer.offset(),
+                                   is_protected_video);
 }
 
 void GLES2Implementation::CommitOverlayPlanesCHROMIUM(uint64_t swap_id,

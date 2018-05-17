@@ -1156,7 +1156,7 @@ bool DCLayerTree::CommitAndClearPendingOverlays() {
       false, gfx::Rect(), 0, gfx::Transform(),
       std::vector<scoped_refptr<gl::GLImage>>(),
       gfx::RectF(gfx::SizeF(surface_size)), gfx::Rect(surface_size), 0, 0, 1.0,
-      0));
+      0, false));
 
   // TODO(jbauman): Reuse swapchains that are switched between overlays and
   // underlays.

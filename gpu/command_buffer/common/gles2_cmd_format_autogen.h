@@ -13968,7 +13968,8 @@ struct ScheduleDCLayerCHROMIUM {
             GLuint _edge_aa_mask,
             GLuint _filter,
             GLuint _shm_id,
-            GLuint _shm_offset) {
+            GLuint _shm_offset,
+            bool _is_protected_video) {
     SetHeader();
     num_textures = _num_textures;
     background_color = _background_color;
@@ -13976,6 +13977,7 @@ struct ScheduleDCLayerCHROMIUM {
     filter = _filter;
     shm_id = _shm_id;
     shm_offset = _shm_offset;
+    is_protected_video = _is_protected_video;
   }
 
   void* Set(void* cmd,
@@ -13984,10 +13986,11 @@ struct ScheduleDCLayerCHROMIUM {
             GLuint _edge_aa_mask,
             GLuint _filter,
             GLuint _shm_id,
-            GLuint _shm_offset) {
+            GLuint _shm_offset,
+            bool _is_protected_video) {
     static_cast<ValueType*>(cmd)->Init(_num_textures, _background_color,
                                        _edge_aa_mask, _filter, _shm_id,
-                                       _shm_offset);
+                                       _shm_offset, _is_protected_video);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -13998,10 +14001,11 @@ struct ScheduleDCLayerCHROMIUM {
   uint32_t filter;
   uint32_t shm_id;
   uint32_t shm_offset;
+  uint32_t is_protected_video;
 };
 
-static_assert(sizeof(ScheduleDCLayerCHROMIUM) == 28,
-              "size of ScheduleDCLayerCHROMIUM should be 28");
+static_assert(sizeof(ScheduleDCLayerCHROMIUM) == 32,
+              "size of ScheduleDCLayerCHROMIUM should be 32");
 static_assert(offsetof(ScheduleDCLayerCHROMIUM, header) == 0,
               "offset of ScheduleDCLayerCHROMIUM header should be 0");
 static_assert(offsetof(ScheduleDCLayerCHROMIUM, num_textures) == 4,
@@ -14016,6 +14020,9 @@ static_assert(offsetof(ScheduleDCLayerCHROMIUM, shm_id) == 20,
               "offset of ScheduleDCLayerCHROMIUM shm_id should be 20");
 static_assert(offsetof(ScheduleDCLayerCHROMIUM, shm_offset) == 24,
               "offset of ScheduleDCLayerCHROMIUM shm_offset should be 24");
+static_assert(
+    offsetof(ScheduleDCLayerCHROMIUM, is_protected_video) == 28,
+    "offset of ScheduleDCLayerCHROMIUM is_protected_video should be 28");
 
 struct MatrixLoadfCHROMIUMImmediate {
   typedef MatrixLoadfCHROMIUMImmediate ValueType;
