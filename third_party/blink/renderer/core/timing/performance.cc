@@ -50,7 +50,6 @@
 #include "third_party/blink/renderer/core/timing/performance_observer.h"
 #include "third_party/blink/renderer/core/timing/performance_resource_timing.h"
 #include "third_party/blink/renderer/core/timing/performance_user_timing.h"
-#include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_timing_info.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -79,11 +78,6 @@ DOMHighResTimeStamp GetUnixAtZeroMonotonic() {
       {ConvertSecondsToDOMHighResTimeStamp(CurrentTime() -
                                            CurrentTimeTicksInSeconds())});
   return unix_at_zero_monotonic;
-}
-
-bool IsNavigationTimingType(
-    Performance::PerformanceMeasurePassedInParameterType type) {
-  return type != Performance::kObjectObject && type != Performance::kOther;
 }
 
 }  // namespace
@@ -728,35 +722,6 @@ PerformanceMeasure* Performance::measureInternal(
   StringOrDouble original_start = start;
   StringOrDouble original_end = end;
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Performance.PerformanceMeasurePassedInParameter.StartMark",
-      ToPerformanceMeasurePassedInParameterType(original_start),
-      kPerformanceMeasurePassedInParameterCount);
-  UMA_HISTOGRAM_ENUMERATION(
-      "Performance.PerformanceMeasurePassedInParameter.EndMark",
-      ToPerformanceMeasurePassedInParameterType(original_end),
-      kPerformanceMeasurePassedInParameterCount);
-
-  ExecutionContext* execution_context = GetExecutionContext();
-  if (execution_context) {
-    PerformanceMeasurePassedInParameterType start_type =
-        ToPerformanceMeasurePassedInParameterType(original_start);
-    PerformanceMeasurePassedInParameterType end_type =
-        ToPerformanceMeasurePassedInParameterType(original_end);
-
-    if (!detail.IsEmpty() && detail.IsObject()) {
-      UseCounter::Count(execution_context,
-                        WebFeature::kPerformanceMeasurePassedInObject);
-    }
-
-    if (IsNavigationTimingType(start_type) ||
-        IsNavigationTimingType(end_type)) {
-      UseCounter::Count(
-          execution_context,
-          WebFeature::kPerformanceMeasurePassedInNavigationTiming);
-    }
-  }
-
   if (!user_timing_)
     user_timing_ = UserTiming::Create(*this);
   PerformanceMeasure* performance_measure =
@@ -847,42 +812,6 @@ void Performance::DeliverObservationsTimerFired(TimerBase*) {
     else
       observer->Deliver();
   }
-}
-
-// static
-Performance::PerformanceMeasurePassedInParameterType
-Performance::ToPerformanceMeasurePassedInParameterType(
-    const StringOrDouble& p) {
-  if (p.IsString()) {
-    const String& s = p.GetAsString();
-    // All passed-in objects will be stringified into this type.
-    if (s == "[object Object]")
-      return Performance::kObjectObject;
-    // The following names come from
-    // https://w3c.github.io/navigation-timing/#sec-PerformanceNavigationTiming.
-    if (s == "unloadEventStart")
-      return Performance::kUnloadEventStart;
-    if (s == "unloadEventEnd")
-      return kUnloadEventEnd;
-    if (s == "domInteractive")
-      return Performance::kDomInteractive;
-    if (s == "domContentLoadedEventStart")
-      return Performance::kDomContentLoadedEventStart;
-    if (s == "domContentLoadedEventEnd")
-      return Performance::kDomContentLoadedEventEnd;
-    if (s == "domComplete")
-      return Performance::kDomComplete;
-    if (s == "loadEventStart")
-      return Performance::kLoadEventStart;
-    if (s == "loadEventEnd")
-      return Performance::kLoadEventEnd;
-    return Performance::kOther;
-  }
-  if (p.IsNull()) {
-    return Performance::kNull;
-  }
-  DCHECK(p.IsDouble());
-  return Performance::kTimeStamp;
 }
 
 // static

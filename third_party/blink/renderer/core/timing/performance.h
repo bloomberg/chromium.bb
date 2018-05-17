@@ -194,31 +194,6 @@ class CORE_EXPORT Performance : public EventTargetWithInlineData {
   void ActivateObserver(PerformanceObserver&);
   void ResumeSuspendedObservers();
 
-  // This enum is used to index different possible strings for for UMA enum
-  // histogram. New enum values can be added, but existing enums must never be
-  // renumbered or deleted and reused.
-  // This enum should be consistent with PerformanceMeasurePassedInParameterType
-  // in tools/metrics/histograms/enums.xml.
-  enum PerformanceMeasurePassedInParameterType {
-    kObjectObject = 0,
-    // 1 to 8 are navigation-timing types.
-    kUnloadEventStart = 1,
-    kUnloadEventEnd = 2,
-    kDomInteractive = 3,
-    kDomContentLoadedEventStart = 4,
-    kDomContentLoadedEventEnd = 5,
-    kDomComplete = 6,
-    kLoadEventStart = 7,
-    kLoadEventEnd = 8,
-    kOther = 9,
-    kNull = 10,
-    kTimeStamp = 11,
-    kPerformanceMeasurePassedInParameterCount
-  };
-
-  static Performance::PerformanceMeasurePassedInParameterType
-  ToPerformanceMeasurePassedInParameterType(const StringOrDouble& p);
-
   static bool AllowsTimingRedirect(const Vector<ResourceResponse>&,
                                    const ResourceResponse&,
                                    const SecurityOrigin&,

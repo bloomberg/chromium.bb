@@ -18486,8 +18486,6 @@ Called by update_net_error_codes.py.-->
   <int value="2230" label="ReplaceCharsetInXHR"/>
   <int value="2231" label="RespondToSameOriginRequestWithCrossOriginResponse"/>
   <int value="2232" label="LinkRelModulePreload"/>
-  <int value="2233" label="PerformanceMeasurePassedInObject"/>
-  <int value="2234" label="PerformanceMeasurePassedInNavigationTiming"/>
   <int value="2235" label="HTMLFrameSetElementNonNullAnonymousNamedGetter"/>
   <int value="2236" label="CSPWithUnsafeEval"/>
   <int value="2237" label="WebAssemblyInstantiation"/>
@@ -36146,6 +36144,10 @@ Called by update_net_trust_anchors.py.-->
 </enum>
 
 <enum name="PerformanceMeasurePassedInParameterType">
+  <obsolete>
+    Deprecated 05/2018. Made decision in issue 758385 with already acquired
+    data. So this is no longer needed.
+  </obsolete>
   <int value="0" label="OBJECT_OBJECT"/>
   <int value="1" label="UNLOAD_EVENT_START"/>
   <int value="2" label="UNLOAD_EVENT_END"/>

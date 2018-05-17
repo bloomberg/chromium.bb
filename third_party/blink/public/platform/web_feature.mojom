@@ -1699,8 +1699,6 @@ enum WebFeature {
   kReplaceCharsetInXHR = 2230,
   kRespondToSameOriginRequestWithCrossOriginResponse = 2231,  // Obsolete.
   kLinkRelModulePreload = 2232,
-  kPerformanceMeasurePassedInObject = 2233,
-  kPerformanceMeasurePassedInNavigationTiming = 2234,
   kHTMLFrameSetElementNonNullAnonymousNamedGetter = 2235,
   kCSPWithUnsafeEval = 2236,
   kWebAssemblyInstantiation = 2237,
