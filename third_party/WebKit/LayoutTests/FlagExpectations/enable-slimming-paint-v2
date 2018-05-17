@@ -1038,7 +1038,7 @@ crbug.com/667946 fast/compositor-wheel-scroll-latching/animated-scroll/touchpad-
 # virtual/threaded variants of sub-directories and tests already skipped or marked as failing above.
 Bug(none) virtual/threaded/http/tests/devtools/ [ Skip ]
 Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-scroll-bubble.html [ Failure Crash ]
-Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Crash ]
+Bug(none) virtual/threaded/fast/events/pinch/gesture-pinch-zoom-prevent-in-handler.html [ Failure Crash ]
 Bug(none) virtual/threaded/fast/events/pointerevents/pinch/pointerevent_touch-action-pinch_zoom_touch.html [ Pass Failure ]
 Bug(none) virtual/threaded/fast/scroll-behavior/ [ Skip ]
 Bug(none) virtual/threaded/compositing/visibility/layer-visible-content.html [ Failure ]
