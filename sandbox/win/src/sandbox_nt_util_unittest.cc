@@ -47,12 +47,13 @@ TEST(SandboxNtUtil, IsSameProcessDifferentProcess) {
   EXPECT_TRUE(TerminateProcess(process_info.process_handle(), 0));
 }
 
-#if defined(_WIN64)
 struct VirtualMemDeleter {
   void operator()(char* p) { ::VirtualFree(p, 0, MEM_RELEASE); }
 };
 
 typedef std::unique_ptr<char, VirtualMemDeleter> unique_ptr_vmem;
+
+#if defined(_WIN64)
 
 void AllocateBlock(SIZE_T size,
                    SIZE_T free_size,
@@ -192,6 +193,49 @@ TEST(SandboxNtUtil, NearestAllocator) {
 }
 
 #endif  // defined(_WIN64)
+
+// Test whether function ValidParameter works as expected, that is properly
+// checks access to the buffer and doesn't modify it in any way.
+TEST(SandboxNtUtil, ValidParameter) {
+  static constexpr unsigned int buffer_size = 4096;
+  unique_ptr_vmem buffer_guard(static_cast<char*>(
+      ::VirtualAlloc(nullptr, buffer_size, MEM_COMMIT, PAGE_READWRITE)));
+  ASSERT_NE(nullptr, buffer_guard.get());
+
+  unsigned char* ptr = reinterpret_cast<unsigned char*>(buffer_guard.get());
+
+  // Fill the buffer with some data.
+  for (unsigned int i = 0; i < buffer_size; i++)
+    ptr[i] = (i % 256);
+
+  // Setup verify function.
+  auto verify_buffer = [&]() {
+    for (unsigned int i = 0; i < buffer_size; i++) {
+      if (ptr[i] != (i % 256))
+        return false;
+    }
+
+    return true;
+  };
+
+  // Verify that the buffer can be written to and doesn't change.
+  EXPECT_TRUE(ValidParameter(ptr, buffer_size, RequiredAccess::WRITE));
+  EXPECT_TRUE(verify_buffer());
+
+  DWORD old_protection;
+  // Change the protection of buffer to READONLY.
+  EXPECT_TRUE(
+      ::VirtualProtect(ptr, buffer_size, PAGE_READONLY, &old_protection));
+
+  // Writting to buffer should fail now.
+  EXPECT_FALSE(ValidParameter(ptr, buffer_size, RequiredAccess::WRITE));
+
+  // But reading should be ok.
+  EXPECT_TRUE(ValidParameter(ptr, buffer_size, RequiredAccess::READ));
+
+  // One final check that the buffer hasn't been modified.
+  EXPECT_TRUE(verify_buffer());
+}
 
 }  // namespace
 }  // namespace sandbox
