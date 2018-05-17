@@ -14,18 +14,12 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/core/timing/dom_window_performance.h"
-#include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 
 namespace blink {
 
 static const int kTimeOrigin = 500;
 
 namespace {
-
-const char kStartMarkForMeasureHistogram[] =
-    "Performance.PerformanceMeasurePassedInParameter.StartMark";
-const char kEndMarkForMeasureHistogram[] =
-    "Performance.PerformanceMeasurePassedInParameter.EndMark";
 
 class FakeTimer {
  public:
@@ -225,51 +219,6 @@ TEST_F(WindowPerformanceTest, EnsureEntryListOrder) {
     EXPECT_EQ(String::Number(i), entries[i]->name());
     EXPECT_NEAR(4000, entries[i]->startTime(), 0.005);
   }
-}
-
-TEST_F(WindowPerformanceTest, ParameterHistogramForMeasure) {
-  V8TestingScope scope;
-  HistogramTester histogram_tester;
-  DummyExceptionStateForTesting exception_state;
-
-  histogram_tester.ExpectTotalCount(kStartMarkForMeasureHistogram, 0);
-  histogram_tester.ExpectTotalCount(kEndMarkForMeasureHistogram, 0);
-
-  performance_->measure(
-      scope.GetScriptState(), "testMark",
-      StringOrDoubleOrPerformanceMeasureOptions::FromString("unloadEventStart"),
-      StringOrDouble::FromString("unloadEventEnd"), exception_state);
-
-  histogram_tester.ExpectBucketCount(
-      kStartMarkForMeasureHistogram,
-      static_cast<int>(Performance::kUnloadEventStart), 1);
-  histogram_tester.ExpectBucketCount(
-      kEndMarkForMeasureHistogram,
-      static_cast<int>(Performance::kUnloadEventEnd), 1);
-
-  performance_->measure(
-      scope.GetScriptState(), "testMark",
-      StringOrDoubleOrPerformanceMeasureOptions::FromString("domInteractive"),
-      StringOrDouble::FromString("[object Object]"), exception_state);
-
-  histogram_tester.ExpectBucketCount(
-      kStartMarkForMeasureHistogram,
-      static_cast<int>(Performance::kDomInteractive), 1);
-  histogram_tester.ExpectBucketCount(
-      kEndMarkForMeasureHistogram, static_cast<int>(Performance::kObjectObject),
-      1);
-
-  performance_->measure(
-      scope.GetScriptState(), "testMark",
-      StringOrDoubleOrPerformanceMeasureOptions::FromString("[object Object]"),
-      StringOrDouble::FromString("[object Object]"), exception_state);
-
-  histogram_tester.ExpectBucketCount(
-      kStartMarkForMeasureHistogram,
-      static_cast<int>(Performance::kObjectObject), 1);
-  histogram_tester.ExpectBucketCount(
-      kEndMarkForMeasureHistogram, static_cast<int>(Performance::kObjectObject),
-      2);
 }
 
 }  // namespace blink
