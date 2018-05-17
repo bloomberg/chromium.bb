@@ -84,7 +84,12 @@ cr.define('print_preview_new', function() {
       }
     },
 
-    /** Called to clear the timeout and update the value. */
+    // Resets the lastValue_ so that future inputs trigger a change event.
+    resetString: function() {
+      this.lastValue_ = null;
+    },
+
+    // Called to clear the timeout and update the value.
     resetAndUpdate: function() {
       if (this.timeout_) {
         clearTimeout(this.timeout_);
