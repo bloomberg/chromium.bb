@@ -14,7 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
@@ -63,17 +63,17 @@ class AssociatedInterfacePtr {
   // Calling with an invalid |info| has the same effect as reset(). In this
   // case, the AssociatedInterfacePtr is not considered as bound.
   //
-  // |runner| must belong to the same thread. It will be used to dispatch all
-  // callbacks and connection error notification. It is useful when you attach
-  // multiple task runners to a single thread for the purposes of task
-  // scheduling.
+  // Optionally, |runner| is a SequencedTaskRunner bound to the current sequence
+  // on which all callbacks and connection error notifications will be
+  // dispatched. It is only useful to specify this to use a different
+  // SequencedTaskRunner than SequencedTaskRunnerHandle::Get().
   //
   // NOTE: The corresponding AssociatedInterfaceRequest must be sent over
   // another interface before using this object to make calls. Please see the
   // comments of MakeRequest(AssociatedInterfacePtr<Interface>*) for more
   // details.
   void Bind(AssociatedInterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
+            scoped_refptr<base::SequencedTaskRunner> runner = nullptr) {
     reset();
 
     if (info.is_valid())
@@ -187,7 +187,7 @@ class AssociatedInterfacePtr {
 template <typename Interface>
 AssociatedInterfaceRequest<Interface> MakeRequest(
     AssociatedInterfacePtr<Interface>* ptr,
-    scoped_refptr<base::SingleThreadTaskRunner> runner = nullptr) {
+    scoped_refptr<base::SequencedTaskRunner> runner = nullptr) {
   AssociatedInterfacePtrInfo<Interface> ptr_info;
   auto request = MakeRequest(&ptr_info);
   ptr->Bind(std::move(ptr_info), std::move(runner));

@@ -18,7 +18,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
-#include "base/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
@@ -82,7 +81,7 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedInterfacePtrStateBase {
   void Bind(ScopedInterfaceEndpointHandle handle,
             uint32_t version,
             std::unique_ptr<MessageReceiver> validator,
-            scoped_refptr<base::SingleThreadTaskRunner> runner);
+            scoped_refptr<base::SequencedTaskRunner> runner);
   ScopedInterfaceEndpointHandle PassHandle();
 
   InterfaceEndpointClient* endpoint_client() { return endpoint_client_.get(); }
@@ -114,7 +113,7 @@ class AssociatedInterfacePtrState : public AssociatedInterfacePtrStateBase {
   }
 
   void Bind(AssociatedInterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SingleThreadTaskRunner> runner) {
+            scoped_refptr<base::SequencedTaskRunner> runner) {
     DCHECK(!proxy_);
     AssociatedInterfacePtrStateBase::Bind(
         info.PassHandle(), info.version(),
