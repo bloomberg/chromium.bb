@@ -228,8 +228,10 @@ NSString* const kToolsMenuTextBadgeAccessibilityIdentifier =
 
 - (void)setDestructiveAction:(BOOL)destructiveAction {
   _destructiveAction = destructiveAction;
-  self.titleLabel.textColor = self.contentColor;
-  self.imageView.tintColor = self.contentColor;
+  if (self.userInteractionEnabled) {
+    self.titleLabel.textColor = self.contentColor;
+    self.imageView.tintColor = self.contentColor;
+  }
 }
 
 - (UIColor*)contentColor {
