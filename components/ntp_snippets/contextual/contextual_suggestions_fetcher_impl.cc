@@ -6,7 +6,7 @@
 
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 
 ContextualSuggestionsFetcherImpl::ContextualSuggestionsFetcherImpl(
     const scoped_refptr<network::SharedURLLoaderFactory>& loader_factory,
@@ -43,4 +43,4 @@ void ContextualSuggestionsFetcherImpl::FetchFinished(
   std::move(callback).Run(std::move(result));
 }
 
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions

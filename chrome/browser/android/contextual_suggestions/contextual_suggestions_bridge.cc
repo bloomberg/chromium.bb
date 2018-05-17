@@ -30,7 +30,6 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
-using Cluster = ntp_snippets::Cluster;
 
 namespace contextual_suggestions {
 
@@ -39,9 +38,8 @@ static jlong JNI_ContextualSuggestionsBridge_Init(
     const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
-  ntp_snippets::ContextualContentSuggestionsService*
-      contextual_suggestions_service =
-          ContextualContentSuggestionsServiceFactory::GetForProfile(profile);
+  ContextualContentSuggestionsService* contextual_suggestions_service =
+      ContextualContentSuggestionsServiceFactory::GetForProfile(profile);
 
   std::unique_ptr<ContextualContentSuggestionsServiceProxy> service_proxy =
       contextual_suggestions_service->CreateProxy();

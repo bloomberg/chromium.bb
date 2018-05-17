@@ -4,7 +4,7 @@
 
 #include "components/ntp_snippets/contextual/contextual_suggestion.h"
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 
 ContextualSuggestion::ContextualSuggestion() = default;
 
@@ -68,4 +68,4 @@ ContextualSuggestion SuggestionBuilder::Build() {
   return std::move(suggestion_);
 }
 
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions

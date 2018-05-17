@@ -26,7 +26,7 @@ GURL ImageUrlFromId(const std::string& image_id) {
 
 ContextualContentSuggestionsServiceProxy::
     ContextualContentSuggestionsServiceProxy(
-        ntp_snippets::ContextualContentSuggestionsService* service,
+        ContextualContentSuggestionsService* service,
         std::unique_ptr<ContextualSuggestionsMetricsReporter> metrics_reporter)
     : service_(service),
       metrics_reporter_(std::move(metrics_reporter)),
@@ -38,7 +38,7 @@ ContextualContentSuggestionsServiceProxy::
 
 void ContextualContentSuggestionsServiceProxy::FetchContextualSuggestions(
     const GURL& url,
-    ClustersCallback callback) {
+    FetchClustersCallback callback) {
   service_->FetchContextualSuggestionClusters(
       url,
       base::BindOnce(
@@ -128,7 +128,7 @@ void ContextualContentSuggestionsServiceProxy::FetchImageImpl(
 }
 
 void ContextualContentSuggestionsServiceProxy::CacheSuggestions(
-    ClustersCallback callback,
+    FetchClustersCallback callback,
     ContextualSuggestionsResult result) {
   suggestions_.clear();
   for (auto& cluster : result.clusters) {

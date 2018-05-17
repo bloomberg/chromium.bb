@@ -7,7 +7,7 @@
 
 #include "url/gurl.h"
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 
 // Struct containing the data for a single contextual content suggestion.
 struct ContextualSuggestion {
@@ -62,6 +62,6 @@ class SuggestionBuilder {
   ContextualSuggestion suggestion_;
 };
 
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions
 
 #endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTION_H_

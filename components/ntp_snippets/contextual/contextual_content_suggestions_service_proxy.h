@@ -25,16 +25,14 @@ namespace contextual_suggestions {
 // torn down with a part of UI that owns it, which doesn't affect other proxies.
 class ContextualContentSuggestionsServiceProxy {
  public:
-  using ClustersCallback = ntp_snippets::FetchClustersCallback;
-  using Cluster = ntp_snippets::Cluster;
-
   ContextualContentSuggestionsServiceProxy(
-      ntp_snippets::ContextualContentSuggestionsService* service,
+      ContextualContentSuggestionsService* service,
       std::unique_ptr<ContextualSuggestionsMetricsReporter> metrics_reporter);
   ~ContextualContentSuggestionsServiceProxy();
 
   // Fetches contextual suggestions for a given |url|.
-  void FetchContextualSuggestions(const GURL& url, ClustersCallback callback);
+  void FetchContextualSuggestions(const GURL& url,
+                                  FetchClustersCallback callback);
 
   // Fetches an image for a contextual suggestion with specified
   // |suggestion_id|.
@@ -62,12 +60,12 @@ class ContextualContentSuggestionsServiceProxy {
                       const std::string& image_id,
                       ntp_snippets::ImageFetchedCallback callback);
 
-  void CacheSuggestions(ClustersCallback callback,
+  void CacheSuggestions(FetchClustersCallback callback,
                         ContextualSuggestionsResult result);
   // Pointer to the service.
-  ntp_snippets::ContextualContentSuggestionsService* service_;
+  ContextualContentSuggestionsService* service_;
   // Cache of contextual suggestions.
-  std::map<std::string, ntp_snippets::ContextualSuggestion> suggestions_;
+  std::map<std::string, ContextualSuggestion> suggestions_;
 
   // Sink for reporting metrics for this proxy.
   std::unique_ptr<contextual_suggestions::ContextualSuggestionsMetricsReporter>

@@ -26,7 +26,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 
 using contextual_suggestions::AutoPeekConditions;
 using contextual_suggestions::ClusterBuilder;
@@ -524,4 +524,4 @@ TEST_F(ContextualSuggestionsFetcherTest, CorruptResponse) {
   EXPECT_EQ(callback.response_clusters.size(), 0u);
 }
 
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions

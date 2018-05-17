@@ -12,7 +12,7 @@
 using contextual_suggestions::FetchClustersCallback;
 using contextual_suggestions::ReportFetchMetricsCallback;
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 
 // Fetches contextual suggestions from the server.
 class ContextualSuggestionsFetcher {
@@ -28,6 +28,6 @@ class ContextualSuggestionsFetcher {
       ReportFetchMetricsCallback metrics_callback) = 0;
 };
 
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions
 
 #endif  // COMPONENTS_NTP_SNIPPETS_CONTEXTUAL_CONTEXTUAL_SUGGESTIONS_FETCHER_H_

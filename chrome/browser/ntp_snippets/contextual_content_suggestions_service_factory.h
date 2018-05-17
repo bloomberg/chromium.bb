@@ -17,17 +17,17 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
-namespace ntp_snippets {
+namespace contextual_suggestions {
 class ContextualContentSuggestionsService;
-}  // namespace ntp_snippets
+}  // namespace contextual_suggestions
 
 class ContextualContentSuggestionsServiceFactory
     : public BrowserContextKeyedServiceFactory {
  public:
   static ContextualContentSuggestionsServiceFactory* GetInstance();
-  static ntp_snippets::ContextualContentSuggestionsService* GetForProfile(
-      Profile* profile);
-  static ntp_snippets::ContextualContentSuggestionsService*
+  static contextual_suggestions::ContextualContentSuggestionsService*
+  GetForProfile(Profile* profile);
+  static contextual_suggestions::ContextualContentSuggestionsService*
   GetForProfileIfExists(Profile* profile);
 
  private:
