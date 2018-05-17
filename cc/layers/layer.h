@@ -41,7 +41,7 @@
 
 namespace base {
 namespace trace_event {
-class ConvertableToTraceFormat;
+class TracedValue;
 }
 }
 
@@ -351,9 +351,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   virtual bool HasSlowPaths() const;
   virtual bool HasNonAAPaint() const;
 
-  virtual std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-  TakeDebugInfo();
-  virtual void didUpdateMainThreadScrollingReasons();
+  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo();
 
   void SetLayerClient(base::WeakPtr<LayerClient> client);
 

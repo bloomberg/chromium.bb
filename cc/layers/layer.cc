@@ -896,7 +896,6 @@ void Layer::AddMainThreadScrollingReasons(
   if (inputs_.main_thread_scrolling_reasons == new_reasons)
     return;
   inputs_.main_thread_scrolling_reasons = new_reasons;
-  didUpdateMainThreadScrollingReasons();
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
@@ -910,7 +909,6 @@ void Layer::ClearMainThreadScrollingReasons(
   if (new_reasons == inputs_.main_thread_scrolling_reasons)
     return;
   inputs_.main_thread_scrolling_reasons = new_reasons;
-  didUpdateMainThreadScrollingReasons();
   SetPropertyTreesNeedRebuild();
   SetNeedsCommit();
 }
@@ -1167,10 +1165,10 @@ void Layer::SetStickyPositionConstraint(
 }
 
 void Layer::SetLayerClient(base::WeakPtr<LayerClient> client) {
-  inputs_.client = std::move(client);
   // Both binds the weak_ptr to the main thread and stores a rawptr for access
   // during commit.
   inputs_.client_rawptr = client.get();
+  inputs_.client = std::move(client);
 }
 
 bool Layer::IsSnapped() {
@@ -1325,8 +1323,7 @@ bool Layer::HasNonAAPaint() const {
   return false;
 }
 
-std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-Layer::TakeDebugInfo() {
+std::unique_ptr<base::trace_event::TracedValue> Layer::TakeDebugInfo() {
   // TakeDebugInfo is called from the compositor thread while the main thread is
   // blocked so we use the raw client pointer as we can't check whether the
   // reference is safe on the weak pointer.
@@ -1336,13 +1333,7 @@ Layer::TakeDebugInfo() {
   // the compositor thread. https://crbug.com/826455
   if (inputs_.client_rawptr)
     return inputs_.client_rawptr->TakeDebugInfo(this);
-  else
-    return nullptr;
-}
-
-void Layer::didUpdateMainThreadScrollingReasons() {
-  if (inputs_.client)
-    inputs_.client->didUpdateMainThreadScrollingReasons();
+  return nullptr;
 }
 
 void Layer::SetSubtreePropertyChanged() {
@@ -1361,7 +1352,7 @@ void Layer::SetMayContainVideo(bool yes) {
 
 void Layer::SetScrollbarsHiddenFromImplSide(bool hidden) {
   if (inputs_.client)
-    inputs_.client->didChangeScrollbarsHiddenIfOverlay(hidden);
+    inputs_.client->DidChangeScrollbarsHiddenIfOverlay(hidden);
 }
 
 // On<Property>Animated is called due to an ongoing accelerated animation.

@@ -6,6 +6,7 @@
 #define CC_TEST_MOCK_LAYER_CLIENT_H_
 
 #include "base/macros.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "cc/layers/layer_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,10 +18,8 @@ class MockLayerClient : public LayerClient {
   MockLayerClient();
   ~MockLayerClient() override;
 
-  MOCK_METHOD1(
-      TakeDebugInfo,
-      std::unique_ptr<base::trace_event::ConvertableToTraceFormat>(Layer*));
-  MOCK_METHOD0(didUpdateMainThreadScrollingReasons, void());
+  MOCK_METHOD1(TakeDebugInfo,
+               std::unique_ptr<base::trace_event::TracedValue>(Layer*));
   MOCK_METHOD1(didChangeScrollbarsHiddenIfOverlay, void(bool));
 
  private:

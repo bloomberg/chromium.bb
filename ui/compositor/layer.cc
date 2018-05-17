@@ -1044,29 +1044,14 @@ bool Layer::PrepareTransferableResource(
   return true;
 }
 
-class LayerDebugInfo : public base::trace_event::ConvertableToTraceFormat {
- public:
-  explicit LayerDebugInfo(const std::string& name) : name_(name) {}
-  ~LayerDebugInfo() override {}
-  void AppendAsTraceFormat(std::string* out) const override {
-    base::DictionaryValue dictionary;
-    dictionary.SetString("layer_name", name_);
-    std::string tmp;
-    base::JSONWriter::Write(dictionary, &tmp);
-    out->append(tmp);
-  }
-
- private:
-  std::string name_;
-};
-
-std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-Layer::TakeDebugInfo(cc::Layer* layer) {
-  return base::WrapUnique(new LayerDebugInfo(name_));
+std::unique_ptr<base::trace_event::TracedValue> Layer::TakeDebugInfo(
+    cc::Layer* layer) {
+  auto value = std::make_unique<base::trace_event::TracedValue>();
+  value->SetString("layer_name", name_);
+  return value;
 }
 
-void Layer::didUpdateMainThreadScrollingReasons() {}
-void Layer::didChangeScrollbarsHiddenIfOverlay(bool) {}
+void Layer::DidChangeScrollbarsHiddenIfOverlay(bool) {}
 
 void Layer::CollectAnimators(
     std::vector<scoped_refptr<LayerAnimator>>* animators) {

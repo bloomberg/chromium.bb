@@ -5,6 +5,7 @@
 #ifndef UI_COMPOSITOR_OVERSCROLL_SCROLL_INPUT_HANDLER_H_
 #define UI_COMPOSITOR_OVERSCROLL_SCROLL_INPUT_HANDLER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "cc/input/input_handler.h"
 #include "ui/compositor/compositor_export.h"
 

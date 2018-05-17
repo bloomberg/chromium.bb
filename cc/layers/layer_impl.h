@@ -45,7 +45,6 @@
 
 namespace base {
 namespace trace_event {
-class ConvertableToTraceFormat;
 class TracedValue;
 }
 class DictionaryValue;
@@ -388,8 +387,7 @@ class CC_EXPORT LayerImpl {
 
   virtual void RunMicroBenchmark(MicroBenchmarkImpl* benchmark);
 
-  void SetDebugInfo(
-      std::unique_ptr<base::trace_event::ConvertableToTraceFormat> debug_info);
+  void SetDebugInfo(std::unique_ptr<base::trace_event::TracedValue> debug_info);
 
   void set_contributes_to_drawn_render_surface(bool is_member) {
     contributes_to_drawn_render_surface_ = is_member;
@@ -564,9 +562,8 @@ class CC_EXPORT LayerImpl {
   DrawProperties draw_properties_;
   PerformanceProperties<LayerImpl> performance_properties_;
 
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat>
-      owned_debug_info_;
-  base::trace_event::ConvertableToTraceFormat* debug_info_;
+  std::unique_ptr<base::trace_event::TracedValue> owned_debug_info_;
+  base::trace_event::TracedValue* debug_info_;
 
   bool has_will_change_transform_hint_ : 1;
   bool trilinear_filtering_ : 1;

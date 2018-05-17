@@ -38,15 +38,16 @@
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
+#include "third_party/blink/renderer/platform/graphics/compositing_reasons.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
-#include "third_party/blink/renderer/platform/graphics/graphics_layer_debug_info.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/image_orientation.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/graphics/paint_invalidation_reason.h"
+#include "third_party/blink/renderer/platform/graphics/squashing_disallowed_reasons.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
@@ -88,14 +89,16 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   GraphicsLayerClient& Client() const { return client_; }
 
-  GraphicsLayerDebugInfo& DebugInfo();
-
-  void SetCompositingReasons(CompositingReasons);
-  CompositingReasons GetCompositingReasons() const {
-    return debug_info_.GetCompositingReasons();
+  void SetCompositingReasons(CompositingReasons reasons) {
+    compositing_reasons_ = reasons;
   }
-  void SetSquashingDisallowedReasons(SquashingDisallowedReasons);
-  void SetOwnerNodeId(int);
+  CompositingReasons GetCompositingReasons() const {
+    return compositing_reasons_;
+  }
+  void SetSquashingDisallowedReasons(SquashingDisallowedReasons reasons) {
+    squashing_disallowed_reasons_ = reasons;
+  }
+  void SetOwnerNodeId(int id) { owner_node_id_ = id; }
 
   GraphicsLayer* Parent() const { return parent_; }
   void SetParent(GraphicsLayer*);  // Internal use only.
@@ -274,10 +277,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
              GraphicsContext::DisabledMode = GraphicsContext::kNothingDisabled);
 
   // cc::LayerClient implementation.
-  std::unique_ptr<base::trace_event::ConvertableToTraceFormat> TakeDebugInfo(
+  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
       cc::Layer*) override;
-  void didUpdateMainThreadScrollingReasons() override;
-  void didChangeScrollbarsHiddenIfOverlay(bool) override;
+  void DidChangeScrollbarsHiddenIfOverlay(bool) override;
 
   PaintController& GetPaintController() const;
 
@@ -412,9 +414,10 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   Vector<GraphicsLayer*> children_;
   GraphicsLayer* parent_;
 
-  GraphicsLayer* mask_layer_;  // Reference to mask layer. We don't own this.
-  GraphicsLayer* contents_clipping_mask_layer_;  // Reference to clipping mask
-                                                 // layer. We don't own this.
+  // Reference to mask layer. We don't own this.
+  GraphicsLayer* mask_layer_;
+  // Reference to clipping mask layer. We don't own this.
+  GraphicsLayer* contents_clipping_mask_layer_;
 
   IntRect contents_rect_;
 
@@ -434,8 +437,12 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   Vector<LinkHighlight*> link_highlights_;
 
   WeakPersistent<ScrollableArea> scrollable_area_;
-  GraphicsLayerDebugInfo debug_info_;
   int rendering_context3d_;
+
+  CompositingReasons compositing_reasons_ = CompositingReason::kNone;
+  SquashingDisallowedReasons squashing_disallowed_reasons_ =
+      SquashingDisallowedReason::kNone;
+  int owner_node_id_ = 0;
 
   mutable std::unique_ptr<PaintController> paint_controller_;
 
