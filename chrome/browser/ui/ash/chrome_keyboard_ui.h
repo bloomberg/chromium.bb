@@ -119,7 +119,7 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
 
   // The BrowserContext to use for creating the WebContents hosting the
   // keyboard.
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
 
   const GURL default_url_;
 
