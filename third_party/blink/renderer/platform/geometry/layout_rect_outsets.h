@@ -33,6 +33,7 @@
 
 #include "third_party/blink/renderer/platform/geometry/float_rect_outsets.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect_outsets.h"
+#include "third_party/blink/renderer/platform/geometry/layout_size.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
@@ -83,6 +84,7 @@ class PLATFORM_EXPORT LayoutRectOutsets {
   void SetBottom(LayoutUnit value) { bottom_ = value; }
   void SetLeft(LayoutUnit value) { left_ = value; }
 
+  LayoutSize Size() const { return LayoutSize(left_ + right_, top_ + bottom_); }
   bool IsZero() const { return !top_ && !right_ && !bottom_ && !left_; }
 
   void ClampNegativeToZero();

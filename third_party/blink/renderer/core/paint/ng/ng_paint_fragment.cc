@@ -56,14 +56,6 @@ LayoutRect NGPaintFragment::VisualOverflowRect() const {
   return physical_fragment_->VisualRectWithContents().ToLayoutRect();
 }
 
-LayoutRect NGPaintFragment::OverflowClipRect(
-    const LayoutPoint& location,
-    OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior) const {
-  DCHECK(physical_fragment_ && physical_fragment_->IsBox());
-  return ToNGPhysicalBoxFragment(*physical_fragment_)
-      .OverflowClipRect(location, overlay_scrollbar_clip_behavior);
-}
-
 // Populate descendants from NGPhysicalFragment tree.
 void NGPaintFragment::PopulateDescendants(
     const NGPhysicalOffset inline_offset_to_container_box,

@@ -189,7 +189,7 @@ void NGBoxFragmentPainter::PaintObject(
         scrolled_paint_info.emplace(paint_info);
         if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
           scrolled_paint_info->UpdateCullRectForScrollingContents(
-              EnclosingIntRect(box_fragment_.OverflowClipRect(
+              EnclosingIntRect(PhysicalFragment().OverflowClipRect(
                   paint_offset, kIgnorePlatformOverlayScrollbarSize)),
               scroll_translation->Matrix().ToAffineTransform());
         } else {
@@ -740,30 +740,20 @@ LayoutRect NGBoxFragmentPainter::AdjustForScrolledContent(
     const LayoutRect& rect) {
   LayoutRect scrolled_paint_rect = rect;
   GraphicsContext& context = paint_info.context;
+  const NGPhysicalBoxFragment& physical = PhysicalFragment();
+
+  // Clip to the overflow area.
   if (info.is_clipped_with_local_scrolling &&
       !IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
           box_fragment_, paint_info)) {
-    // Clip to the overflow area.
-    // TODO(layout-dev): Get clip information from fragment (or paint fragment)
-    // once LayoutNG supports overflow.
-    if (box_fragment_.GetLayoutObject() &&
-        box_fragment_.GetLayoutObject()->IsBox()) {
-      const LayoutBox& legacy = ToLayoutBox(*box_fragment_.GetLayoutObject());
-      context.Clip(FloatRect(legacy.OverflowClipRect(rect.Location())));
-    }
+    context.Clip(FloatRect(physical.OverflowClipRect(rect.Location())));
 
     // Adjust the paint rect to reflect a scrolled content box with borders at
     // the ends.
-    // TODO(layout-dev): This should be the scrolled content offset.
-    IntSize offset;
+    IntSize offset = physical.ScrolledContentOffset();
     scrolled_paint_rect.Move(-offset);
-    LayoutRectOutsets border = BorderOutsets(info);
-
-    // TODO(layout-dev): This should be ScrollSize, not Size.
-    scrolled_paint_rect.SetWidth(border.Left() + box_fragment_.Size().width +
-                                 border.Right());
-    scrolled_paint_rect.SetHeight(border.Top() + box_fragment_.Size().height +
-                                  border.Bottom());
+    LayoutRectOutsets borders = BorderOutsets(info);
+    scrolled_paint_rect.SetSize(physical.ScrollSize() + borders.Size());
   }
   return scrolled_paint_rect;
 }
@@ -826,7 +816,7 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     // foreground rect for intersection if a layer is self painting,
     // so only do the overflow clip check here for non-self-painting layers.
     if (!box_fragment_.HasSelfPaintingLayer() &&
-        !location_in_container.Intersects(box_fragment_.OverflowClipRect(
+        !location_in_container.Intersects(PhysicalFragment().OverflowClipRect(
             adjusted_location, kExcludeOverlayScrollbarSizeForHitTesting))) {
       skip_children = true;
     }
