@@ -722,7 +722,11 @@ void AutomationInternalCustomBindings::AddRoutes() {
         if (!node->data().GetFloatAttribute(attribute, &attr_value))
           return;
 
-        result.Set(v8::Number::New(isolate, attr_value));
+        double intpart, fracpart;
+        fracpart = modf(attr_value, &intpart);
+        double value_precision_2 =
+            intpart + std::round(fracpart * 100) / 100.0f;
+        result.Set(v8::Number::New(isolate, value_precision_2));
       });
   RouteNodeIDPlusAttributeFunction(
       "GetIntListAttribute",

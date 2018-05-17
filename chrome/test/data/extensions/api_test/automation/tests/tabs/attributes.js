@@ -127,13 +127,13 @@ var allTests = [
     var spinButtons = rootNode.findAll({ role: 'spinButton' });
     assertEq(1, spinButtons.length);
     var progressIndicators = rootNode.findAll({ role: 'progressIndicator' });
-    assertEq(1, progressIndicators.length);
+    assertEq(2, progressIndicators.length);
     assertEq('progressbar-role', progressIndicators[0].name);
     var scrollBars = rootNode.findAll({ role: 'scrollBar' });
     assertEq(1, scrollBars.length);
 
     var ranges = sliders.concat(spinButtons, progressIndicators, scrollBars);
-    assertEq(5, ranges.length);
+    assertEq(6, ranges.length);
 
     for (var i = 0; i < ranges.length; i++) {
       var range = ranges[i];
@@ -162,9 +162,11 @@ var allTests = [
     assertEq(1, spinButton.minValueForRange);
     assertEq(31, spinButton.maxValueForRange);
 
-    assertEq('0.9', progressIndicators[0].valueForRange.toPrecision(1));
+    assertEq(0.9, progressIndicators[0].valueForRange);
     assertEq(0, progressIndicators[0].minValueForRange);
     assertEq(1, progressIndicators[0].maxValueForRange);
+
+    assertEq(0.05, progressIndicators[1].valueForRange);
 
     assertEq(0, scrollBars[0].valueForRange);
     assertEq(0, scrollBars[0].minValueForRange);
@@ -322,4 +324,4 @@ var allTests = [
   }
 ];
 
-setUpAndRunTests([allTests[2]], 'attributes.html');
+setUpAndRunTests(allTests, 'attributes.html');
