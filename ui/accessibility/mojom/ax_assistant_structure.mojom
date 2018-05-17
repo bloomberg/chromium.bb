@@ -7,6 +7,7 @@ module ax.mojom;
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/range/mojo/range.mojom";
+import "url/mojom/url.mojom";
 
 // Tree structure for assistant. The tree is represented as a flat array of
 // nodes, each containing a children_indices vector that points to its child
@@ -48,3 +49,9 @@ struct AssistantNode {
   string? role;
 };
 
+// Additional information to current context.
+struct AssistantExtra {
+  url.mojom.Url url;
+  gfx.mojom.Rect bounds_pixel;
+  mojo_base.mojom.String16 title;
+};

@@ -26,8 +26,8 @@ using assistant_client::ActionModule;
 namespace chromeos {
 namespace assistant {
 
-const std::string KWiFiDeviceSettingId = "WIFI";
-const std::string KBluetoothDeviceSettingId = "BLUETOOTH";
+const char kWiFiDeviceSettingId[] = "WIFI";
+const char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     mojom::AudioInputPtr audio_input)
@@ -57,7 +57,7 @@ void AssistantManagerServiceImpl::Start(const std::string& access_token,
 
 AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
   return state_;
-};
+}
 
 void AssistantManagerServiceImpl::SetAccessToken(
     const std::string& access_token) {
@@ -231,8 +231,8 @@ ActionModule::Result AssistantManagerServiceImpl::HandleModifySettingClientOp(
 bool AssistantManagerServiceImpl::IsSettingSupported(
     const std::string& setting_id) {
   DVLOG(2) << "IsSettingSupported=" << setting_id;
-  return (setting_id == KWiFiDeviceSettingId ||
-          setting_id == KBluetoothDeviceSettingId);
+  return (setting_id == kWiFiDeviceSettingId ||
+          setting_id == kBluetoothDeviceSettingId);
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(

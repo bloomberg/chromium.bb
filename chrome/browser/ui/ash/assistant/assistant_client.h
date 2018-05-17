@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/ash/assistant/assistant_context.h"
 #include "chrome/browser/ui/ash/assistant/platform_audio_input_host.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -37,7 +38,11 @@ class AssistantClient : chromeos::assistant::mojom::Client {
   chromeos::assistant::mojom::AssistantPlatformPtr assistant_connection_;
   mojo::Binding<chromeos::assistant::mojom::AudioInput> audio_input_binding_;
 
+  mojo::Binding<chromeos::assistant::mojom::Context> context_binding_;
+
   PlatformAudioInputHost audio_input_;
+
+  AssistantContext context_;
 
   std::unique_ptr<AssistantCardRenderer> assistant_card_renderer_;
 

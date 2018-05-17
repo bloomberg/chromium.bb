@@ -122,7 +122,9 @@ identity::mojom::IdentityManager* Service::GetIdentityManager() {
   return identity_manager_.get();
 }
 
-void Service::Init(mojom::ClientPtr client, mojom::AudioInputPtr audio_input) {
+void Service::Init(mojom::ClientPtr client,
+                   mojom::ContextPtr assistant_context,
+                   mojom::AudioInputPtr audio_input) {
   client_ = std::move(client);
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   assistant_manager_service_ =

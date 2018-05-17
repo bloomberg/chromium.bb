@@ -11,16 +11,19 @@
 namespace mojo {
 
 // static
-bool StructTraits<ax::mojom::AssistantTreeDataView, ui::AssistantTree>::Read(
-    ax::mojom::AssistantTreeDataView data,
-    ui::AssistantTree* out) {
-  if (!data.ReadNodes(&out->nodes))
+bool StructTraits<ax::mojom::AssistantTreeDataView,
+                  std::unique_ptr<ui::AssistantTree>>::
+    Read(ax::mojom::AssistantTreeDataView data,
+         std::unique_ptr<ui::AssistantTree>* out) {
+  DCHECK(!*out);
+  *out = std::make_unique<ui::AssistantTree>();
+  if (!data.ReadNodes(&(*out)->nodes))
     return false;
-  for (size_t i = 0; i < out->nodes.size(); i++) {
+  for (size_t i = 0; i < (*out)->nodes.size(); i++) {
     // Each child's index should be greater than its parent and within the array
     // bounds. This implies that there is no circle in the tree.
-    for (size_t child_index : out->nodes[i]->children_indices) {
-      if (child_index <= i || child_index >= out->nodes.size())
+    for (size_t child_index : (*out)->nodes[i]->children_indices) {
+      if (child_index <= i || child_index >= (*out)->nodes.size())
         return false;
     }
   }
