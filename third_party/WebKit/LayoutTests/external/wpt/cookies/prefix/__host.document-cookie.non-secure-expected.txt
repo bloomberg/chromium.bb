@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Untitled Uncaught ReferenceError: set_prefixed_cookie_via_dom_test is not defined
-Harness: the test ran to completion.
-
