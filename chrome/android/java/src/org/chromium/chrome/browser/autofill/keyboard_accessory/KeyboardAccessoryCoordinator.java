@@ -16,7 +16,6 @@ import org.chromium.chrome.browser.modelutil.ListModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.PropertyModelChangeProcessor;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
-import org.chromium.chrome.browser.modelutil.SimpleListObservable;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.WindowAndroid;
 
@@ -50,11 +49,12 @@ public class KeyboardAccessoryCoordinator {
      * @param model the {@link KeyboardAccessoryModel} the adapter gets its data from.
      * @return Returns a fully initialized and wired adapter to an ActionViewBinder.
      */
-    static RecyclerViewAdapter<SimpleListObservable<Action>, ActionViewBinder.ViewHolder>
+    static RecyclerViewAdapter<KeyboardAccessoryModel.SimpleListObservable<Action>,
+            ActionViewBinder.ViewHolder>
     createActionsAdapter(KeyboardAccessoryModel model) {
-        RecyclerViewAdapter<SimpleListObservable<Action>, ActionViewBinder.ViewHolder>
-                actionsAdapter =
-                        new RecyclerViewAdapter<>(model.getActionList(), new ActionViewBinder());
+        RecyclerViewAdapter<KeyboardAccessoryModel.SimpleListObservable<Action>,
+                ActionViewBinder.ViewHolder> actionsAdapter =
+                new RecyclerViewAdapter<>(model.getActionList(), new ActionViewBinder());
         model.addActionListObserver(new RecyclerViewModelChangeProcessor<>(actionsAdapter));
         return actionsAdapter;
     }
@@ -79,7 +79,7 @@ public class KeyboardAccessoryCoordinator {
      * the start of the accessory. It is meant to trigger various bottom sheets.
      * @param tab The tab which contains representation data and links back to a bottom sheet.
      */
-    void addTab(KeyboardAccessoryData.Tab tab) {
+    public void addTab(KeyboardAccessoryData.Tab tab) {
         mMediator.addTab(tab);
     }
 
@@ -88,7 +88,7 @@ public class KeyboardAccessoryCoordinator {
      * from the accessory.
      * @param tab The tab to be removed.
      */
-    void removeTab(KeyboardAccessoryData.Tab tab) {
+    public void removeTab(KeyboardAccessoryData.Tab tab) {
         mMediator.removeTab(tab);
     }
 

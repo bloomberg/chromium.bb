@@ -3,11 +3,14 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<android.support.v4.view.ViewPager
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/keyboard_accessory"
     android:background="@drawable/keyboard_accessory_background"
+    android:contentDescription="@string/autofill_keyboard_accessory_content_description"
     android:fillViewport="true"
     android:layout_gravity="start|bottom"
     android:layout_height="@dimen/keyboard_accessory_sheet_height"
     android:layout_width="match_parent"
+    android:orientation="vertical"
     android:visibility="gone"/>

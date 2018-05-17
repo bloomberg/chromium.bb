@@ -38,43 +38,36 @@ public class ManualFillingControllerTest {
     private KeyboardAccessoryView mMockView;
     @Mock
     private ListObservable.ListObserver mMockTabListObserver;
-    @Mock
-    private KeyboardAccessoryData.Tab mMockTab;
 
-    private ManualFillingCoordinator mController;
+    private KeyboardAccessoryCoordinator mKeyboardAccessory;
+    private ManualFillingController mController;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mMockViewStub.inflate()).thenReturn(mMockView);
-        mController = new ManualFillingCoordinator(mMockWindow, mMockViewStub, mMockViewStub);
+        mKeyboardAccessory = new KeyboardAccessoryCoordinator(mMockWindow, mMockViewStub);
+        mController = new ManualFillingController(mKeyboardAccessory);
     }
 
     @Test
     @SmallTest
     public void testCreatesValidSubComponents() {
+        assertThat(mKeyboardAccessory, is(notNullValue()));
         assertThat(mController, is(notNullValue()));
-        assertThat(mController.getKeyboardAccessory(), is(notNullValue()));
-        assertThat(mController.getAccessorySheetForTesting(), is(notNullValue()));
     }
 
     @Test
     @SmallTest
-    public void testAddingNewTabIsAddedToAccessoryAndSheet() {
+    public void testAddingBottomSheetsAddsTabsToAccessory() {
         KeyboardAccessoryModel keyboardAccessoryModel =
-                mController.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
+                mKeyboardAccessory.getMediatorForTesting().getModelForTesting();
         keyboardAccessoryModel.addTabListObserver(mMockTabListObserver);
-        AccessorySheetModel accessorySheetModel = mController.getAccessorySheetForTesting()
-                                                          .getMediatorForTesting()
-                                                          .getModelForTesting();
-        accessorySheetModel.getTabList().addObserver(mMockTabListObserver);
 
         assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(0));
-        mController.addTab(mMockTab);
+        mController.addAccessorySheet(new AccessorySheetCoordinator(mMockViewStub));
 
         verify(mMockTabListObserver).onItemRangeInserted(keyboardAccessoryModel.getTabList(), 0, 1);
-        verify(mMockTabListObserver).onItemRangeInserted(accessorySheetModel.getTabList(), 0, 1);
         assertThat(keyboardAccessoryModel.getTabList().getItemCount(), is(1));
-        assertThat(accessorySheetModel.getTabList().getItemCount(), is(1));
     }
 }
