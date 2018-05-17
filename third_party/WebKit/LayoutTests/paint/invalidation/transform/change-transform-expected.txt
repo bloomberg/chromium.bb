@@ -18,14 +18,9 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow DIV id='square'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [10, 10, 100, 100],
-          "reason": "disappeared"
-        },
-        {
-          "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
-          "rect": [35, 35, 50, 50],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
@@ -36,6 +31,11 @@
           "object": "LayoutBlockFlow DIV id='square'",
           "rect": [35, 35, 50, 50],
           "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [35, 35, 50, 50],
+          "reason": "chunk disappeared"
         }
       ]
     }

@@ -187,6 +187,14 @@ class PLATFORM_EXPORT DisplayItem {
     kBeginClipPath,
     kEndClipPath,
     kScrollHitTest,
+
+    kLayerChunkBackground,
+    kLayerChunkNegativeZOrderChildren,
+    kLayerChunkDescendantBackgrounds,
+    kLayerChunkFloat,
+    kLayerChunkForeground,
+    kLayerChunkNormalFlowAndPositiveZOrderChildren,
+
     kUninitializedType,
     kTypeLast = kUninitializedType
   };

@@ -23,14 +23,9 @@
           "reason": "chunk disappeared"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) P",
+          "object": "LayoutBlockFlow HTML",
           "rect": [8, 130, 784, 18],
-          "reason": "appeared"
-        },
-        {
-          "object": "InlineTextBox 'SUCCESS'",
-          "rect": [8, 130, 70, 18],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

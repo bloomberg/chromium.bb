@@ -218,6 +218,12 @@ WTF::String DisplayItem::TypeAsDebugString(Type type) {
     DEBUG_STRING_CASE(EndTransform);
     DEBUG_STRING_CASE(BeginClipPath);
     DEBUG_STRING_CASE(EndClipPath);
+    DEBUG_STRING_CASE(LayerChunkBackground);
+    DEBUG_STRING_CASE(LayerChunkNegativeZOrderChildren);
+    DEBUG_STRING_CASE(LayerChunkDescendantBackgrounds);
+    DEBUG_STRING_CASE(LayerChunkFloat);
+    DEBUG_STRING_CASE(LayerChunkForeground);
+    DEBUG_STRING_CASE(LayerChunkNormalFlowAndPositiveZOrderChildren);
     DEBUG_STRING_CASE(UninitializedType);
     DEFAULT_CASE;
   }

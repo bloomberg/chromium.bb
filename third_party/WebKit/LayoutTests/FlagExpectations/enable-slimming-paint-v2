@@ -634,6 +634,13 @@ Bug(none) paint/invalidation/scroll/scrollbar-ancestor-clip-change.html [ Failur
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children-2.html [ Failure ]
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children.html [ Failure ]
 
+# "Missing" raster invalidation because composited layers are re-created.
+crbug.com/842356 paint/invalidation/stacking-context-lost.html [ Failure ]
+crbug.com/842356 paint/invalidation/compositing/containing-block-added-individual.html [ Failure ]
+crbug.com/842356 paint/invalidation/compositing/containing-block-added.html [ Failure ]
+crbug.com/842356 paint/invalidation/compositing/containing-block-removed-individual.html [ Failure ]
+crbug.com/842356 paint/invalidation/compositing/containing-block-removed.html [ Failure ]
+
 # Corrupted painting or rasterization.
 Bug(none) paint/invalidation/scroll/scroll-descendant-with-cached-cliprects.html [ Failure ]
 Bug(none) paint/invalidation/svg/use-clipped-hit.svg [ Failure ]

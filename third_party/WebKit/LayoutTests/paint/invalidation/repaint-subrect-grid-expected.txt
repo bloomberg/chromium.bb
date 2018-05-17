@@ -33,9 +33,9 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='mask'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [36, 36, 19, 19],
-          "reason": "disappeared"
+          "reason": "chunk disappeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='mask'",
@@ -103,9 +103,9 @@
           "reason": "geometry"
         },
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='mask'",
+          "object": "LayoutBlockFlow HTML",
           "rect": [0, 0, 19, 19],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         },
         {
           "object": "LayoutBlockFlow (positioned) DIV id='mask'",

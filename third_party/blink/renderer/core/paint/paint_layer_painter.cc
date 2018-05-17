@@ -630,20 +630,45 @@ PaintResult PaintLayerPainter::PaintLayerContents(
         is_painting_composited_foreground;
     bool should_paint_overlay_scrollbars = is_painting_overlay_scrollbars;
 
+    base::Optional<ScopedPaintChunkProperties>
+        subsequence_forced_chunk_properties;
+    if (subsequence_recorder && paint_layer_.HasSelfPaintingLayerDescendant() &&
+        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+      // Prepare for forced paint chunks to ensure chunk id stability to avoid
+      // unnecessary full chunk raster invalidations on changed chunk ids.
+      // TODO(crbug.com/834606): This may be unnecessary after we refactor
+      // raster invalidation not to depend on chunk ids too much.
+      subsequence_forced_chunk_properties.emplace(
+          context.GetPaintController(),
+          paint_layer_.GetLayoutObject()
+              .FirstFragment()
+              .LocalBorderBoxProperties(),
+          paint_layer_, DisplayItem::kUninitializedType);
+    }
+
     if (should_paint_background) {
+      if (subsequence_forced_chunk_properties) {
+        context.GetPaintController().ForceNewChunk(
+            paint_layer_, DisplayItem::kLayerChunkBackground);
+      }
       PaintBackgroundForFragments(layer_fragments, context,
                                   local_painting_info, paint_flags);
     }
 
     if (should_paint_neg_z_order_list) {
+      if (subsequence_forced_chunk_properties) {
+        context.GetPaintController().ForceNewChunk(
+            paint_layer_, DisplayItem::kLayerChunkNegativeZOrderChildren);
+      }
       if (PaintChildren(kNegativeZOrderChildren, context, painting_info,
                         paint_flags) == kMayBeClippedByPaintDirtyRect)
         result = kMayBeClippedByPaintDirtyRect;
     }
 
     if (should_paint_own_contents) {
-      PaintForegroundForFragments(layer_fragments, context, local_painting_info,
-                                  selection_only, paint_flags);
+      PaintForegroundForFragments(
+          layer_fragments, context, local_painting_info, selection_only,
+          !!subsequence_forced_chunk_properties, paint_flags);
     }
 
     if (should_paint_self_outline) {
@@ -652,6 +677,11 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     }
 
     if (should_paint_normal_flow_and_pos_z_order_lists) {
+      if (subsequence_forced_chunk_properties) {
+        context.GetPaintController().ForceNewChunk(
+            paint_layer_,
+            DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren);
+      }
       if (PaintChildren(kNormalFlowChildren | kPositiveZOrderChildren, context,
                         painting_info,
                         paint_flags) == kMayBeClippedByPaintDirtyRect)
@@ -1249,6 +1279,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
     GraphicsContext& context,
     const PaintLayerPaintingInfo& local_painting_info,
     bool selection_only,
+    bool force_paint_chunks,
     PaintLayerFlags paint_flags) {
   DCHECK(!(paint_flags & kPaintLayerPaintingRootBackgroundOnly));
 
@@ -1268,9 +1299,6 @@ void PaintLayerPainter::PaintForegroundForFragments(
     clip_state = kHasClipped;
   }
 
-  // We have to loop through every fragment multiple times, since we have to
-  // issue paint invalidations in each specific phase in order for interleaving
-  // of the fragments to work properly.
   if (selection_only) {
     PaintForegroundForFragmentsWithPhase(
         PaintPhase::kSelection, layer_fragments, context, local_painting_info,
@@ -1278,6 +1306,10 @@ void PaintLayerPainter::PaintForegroundForFragments(
   } else {
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseDescendantBlockBackgrounds()) {
+      if (force_paint_chunks) {
+        context.GetPaintController().ForceNewChunk(
+            paint_layer_, DisplayItem::kLayerChunkDescendantBackgrounds);
+      }
       size_t size_before =
           context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(
@@ -1297,6 +1329,10 @@ void PaintLayerPainter::PaintForegroundForFragments(
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseFloat()) {
+      if (force_paint_chunks) {
+        context.GetPaintController().ForceNewChunk(
+            paint_layer_, DisplayItem::kLayerChunkFloat);
+      }
       size_t size_before =
           context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(PaintPhase::kFloat, layer_fragments,
@@ -1307,6 +1343,11 @@ void PaintLayerPainter::PaintForegroundForFragments(
           size_before;
       DCHECK(phase_is_empty || paint_layer_.NeedsPaintPhaseFloat());
       paint_layer_.SetPreviousPaintPhaseFloatEmpty(phase_is_empty);
+    }
+
+    if (force_paint_chunks) {
+      context.GetPaintController().ForceNewChunk(
+          paint_layer_, DisplayItem::kLayerChunkForeground);
     }
 
     PaintForegroundForFragmentsWithPhase(

@@ -28,14 +28,14 @@
           "reason": "appeared"
         },
         {
-          "object": "LayoutBlockFlow HTML",
+          "object": "LayoutImage IMG",
           "rect": [58, 230, 489, 537],
-          "reason": "chunk appeared"
+          "reason": "geometry"
         },
         {
           "object": "LayoutImage IMG",
           "rect": [58, 136, 489, 537],
-          "reason": "disappeared"
+          "reason": "geometry"
         }
       ]
     }

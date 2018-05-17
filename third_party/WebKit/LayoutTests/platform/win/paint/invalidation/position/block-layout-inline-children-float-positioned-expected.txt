@@ -18,14 +18,29 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
-          "rect": [162, 37, 278, 19],
-          "reason": "appeared"
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 602, 138],
+          "reason": "chunk disappeared"
         },
         {
-          "object": "InlineTextBox 'the quick brown fox jumped over the lazy dog'",
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 36, 602, 102],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [0, 0, 500, 19],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [162, 37, 278, 19],
+          "reason": "chunk appeared"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
           "rect": [324, 37, 277, 19],
-          "reason": "appeared"
+          "reason": "chunk appeared"
         }
       ]
     }

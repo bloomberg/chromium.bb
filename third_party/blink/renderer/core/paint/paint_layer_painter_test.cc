@@ -81,15 +81,15 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   auto& content2 = *GetLayoutObjectByElementId("content2");
   auto& filler2 = *GetLayoutObjectByElementId("filler2");
 
-  const auto& background_display_item_client = ViewBackgroundClient();
-  const auto& background_chunk_client =
+  const auto& view_display_item_client = ViewBackgroundClient();
+  const auto& view_chunk_client =
       RuntimeEnabledFeatures::SlimmingPaintV2Enabled()
           ? *GetLayoutView().Layer()
-          : background_display_item_client;
+          : view_display_item_client;
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 7,
-      TestDisplayItem(background_display_item_client, kDocumentBackgroundType),
+      TestDisplayItem(view_display_item_client, kDocumentBackgroundType),
       TestDisplayItem(container1, kBackgroundType),
       TestDisplayItem(content1, kBackgroundType),
       TestDisplayItem(filler1, kBackgroundType),
@@ -101,17 +101,25 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   auto* filler1_layer = ToLayoutBoxModelObject(filler1).Layer();
   auto* container2_layer = ToLayoutBoxModelObject(container2).Layer();
   auto* filler2_layer = ToLayoutBoxModelObject(filler2).Layer();
-  auto other_chunk_type = DisplayItem::PaintPhaseToDrawingType(
-      PaintPhase::kSelfBlockBackgroundOnly);
-  auto background_chunk_type = other_chunk_type;
   auto other_chunk_state = GetLayoutView().FirstFragment().ContentsProperties();
-  auto background_chunk_state = other_chunk_state;
+  auto view_chunk_state = other_chunk_state;
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    background_chunk_state =
+    view_chunk_state =
         GetLayoutView().FirstFragment().LocalBorderBoxProperties();
-  } else {
-    background_chunk_type = kDocumentBackgroundType;
   }
+
+  auto view_chunk_type = DisplayItem::PaintPhaseToDrawingType(
+      PaintPhase::kSelfBlockBackgroundOnly);
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    view_chunk_type = DisplayItem::kLayerChunkBackground;
+  else if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    view_chunk_type = kDocumentBackgroundType;
+
+  auto chunk_background_type = DisplayItem::kLayerChunkBackground;
+  auto chunk_foreground_type =
+      DisplayItem::kLayerChunkNormalFlowAndPositiveZOrderChildren;
+  auto filler_chunk_type = DisplayItem::PaintPhaseToDrawingType(
+      PaintPhase::kSelfBlockBackgroundOnly);
 
   auto check_chunks = [&]() {
     // Check that new paint chunks were forced for |container1| and
@@ -119,19 +127,23 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
     EXPECT_THAT(
         RootPaintController().GetPaintArtifact().PaintChunks(),
         ElementsAre(
-            PaintChunk(
-                0, 1,
-                PaintChunk::Id(background_chunk_client, background_chunk_type),
-                background_chunk_state),
-            PaintChunk(1, 3,
-                       PaintChunk::Id(*container1_layer, other_chunk_type),
+            PaintChunk(0, 1, PaintChunk::Id(view_chunk_client, view_chunk_type),
+                       view_chunk_state),
+            PaintChunk(1, 2,
+                       PaintChunk::Id(*container1_layer, chunk_background_type),
                        other_chunk_state),
-            PaintChunk(3, 4, PaintChunk::Id(*filler1_layer, other_chunk_type),
+            PaintChunk(2, 3,
+                       PaintChunk::Id(*container1_layer, chunk_foreground_type),
                        other_chunk_state),
-            PaintChunk(4, 6,
-                       PaintChunk::Id(*container2_layer, other_chunk_type),
+            PaintChunk(3, 4, PaintChunk::Id(*filler1_layer, filler_chunk_type),
                        other_chunk_state),
-            PaintChunk(6, 7, PaintChunk::Id(*filler2_layer, other_chunk_type),
+            PaintChunk(4, 5,
+                       PaintChunk::Id(*container2_layer, chunk_background_type),
+                       other_chunk_state),
+            PaintChunk(5, 6,
+                       PaintChunk::Id(*container2_layer, chunk_foreground_type),
+                       other_chunk_state),
+            PaintChunk(6, 7, PaintChunk::Id(*filler2_layer, filler_chunk_type),
                        other_chunk_state)));
   };
 
@@ -150,7 +162,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 7,
-      TestDisplayItem(background_display_item_client, kDocumentBackgroundType),
+      TestDisplayItem(view_display_item_client, kDocumentBackgroundType),
       TestDisplayItem(container1, kBackgroundType),
       TestDisplayItem(content1, kBackgroundType),
       TestDisplayItem(filler1, kBackgroundType),
