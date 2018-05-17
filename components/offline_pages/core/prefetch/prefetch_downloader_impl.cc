@@ -43,9 +43,6 @@ PrefetchDownloaderImpl::PrefetchDownloaderImpl(
   DCHECK(download_service);
 }
 
-PrefetchDownloaderImpl::PrefetchDownloaderImpl(version_info::Channel channel)
-    : download_service_(nullptr), channel_(channel), weak_ptr_factory_(this) {}
-
 PrefetchDownloaderImpl::~PrefetchDownloaderImpl() = default;
 
 void PrefetchDownloaderImpl::SetPrefetchService(PrefetchService* service) {
