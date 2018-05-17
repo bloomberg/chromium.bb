@@ -84,13 +84,6 @@ namespace {
 
 const int kDefaultPageID = 137;
 
-const char kUTF8MidlineEllipsis[] =
-    "  "
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86"
-    "\xE2\x80\xA2\xE2\x80\x86";
-
 class MockAutofillClient : public TestAutofillClient {
  public:
   MockAutofillClient() {}
@@ -1107,9 +1100,11 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_EmptyValue) {
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1130,9 +1125,11 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_Whitespace) {
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1153,9 +1150,11 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsOnly) {
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1176,9 +1175,11 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_InvisibleUnicodeOnly) {
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1206,11 +1207,11 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_StopCharsWithInput) {
   GetAutofillSuggestions(form, field);
 
   // Test that we sent the right value to the external delegate.
-  CheckSuggestions(
-      kDefaultPageID,
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "3123",
-                 "08/17", kMasterCard,
-                 autofill_manager_->GetPackedCreditCardID(7)));
+  CheckSuggestions(kDefaultPageID,
+                   Suggestion(std::string("Mastercard  ") +
+                                  test::ObfuscatedCardDigitsAsUTF8("3123"),
+                              "08/17", kMasterCard,
+                              autofill_manager_->GetPackedCreditCardID(7)));
 }
 
 // Test that we return only matching credit card profile suggestions when the
@@ -1229,8 +1230,9 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_MatchCharacter) {
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 // Test that we return credit card profile suggestions when the selected form
@@ -1247,14 +1249,14 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_NonCCNumber) {
 
 #if defined(OS_ANDROID)
   static const std::string kVisaSuggestion =
-      std::string("Visa") + kUTF8MidlineEllipsis + "3456";
+      std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456");
   static const std::string kMcSuggestion =
-      std::string("Mastercard") + kUTF8MidlineEllipsis + "8765";
+      std::string("Mastercard  ") + test::ObfuscatedCardDigitsAsUTF8("8765");
 #else
   static const std::string kVisaSuggestion =
-      std::string(kUTF8MidlineEllipsis) + "3456";
+      test::ObfuscatedCardDigitsAsUTF8("3456");
   static const std::string kMcSuggestion =
-      std::string(kUTF8MidlineEllipsis) + "8765";
+      test::ObfuscatedCardDigitsAsUTF8("8765");
 #endif
 
   // Test that we sent the right values to the external delegate.
@@ -1343,9 +1345,11 @@ TEST_F(AutofillManagerTest,
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1368,9 +1372,11 @@ TEST_F(AutofillManagerTest,
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -1401,12 +1407,15 @@ TEST_F(AutofillManagerTest, GetCreditCardSuggestions_RepeatedObfuscatedNumber) {
   // Test that we sent the right values to the external delegate.
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "3456",
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("3456"),
                  "05/99", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(7)));
 }
@@ -1435,9 +1444,11 @@ TEST_F(AutofillManagerTest, GetAddressAndCreditCardSuggestions) {
   // Test that we sent the credit card suggestions to the external delegate.
   CheckSuggestions(
       kPageID2,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
-      Suggestion(std::string("Mastercard") + kUTF8MidlineEllipsis + "8765",
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)),
+      Suggestion(std::string("Mastercard  ") +
+                     test::ObfuscatedCardDigitsAsUTF8("8765"),
                  "10/98", kMasterCard,
                  autofill_manager_->GetPackedCreditCardID(5)));
 }
@@ -5167,8 +5178,9 @@ TEST_F(AutofillManagerTest,
 
   CheckSuggestions(
       kDefaultPageID,
-      Suggestion(std::string("Visa") + kUTF8MidlineEllipsis + "3456", "04/99",
-                 kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
+      Suggestion(
+          std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456"),
+          "04/99", kVisaCard, autofill_manager_->GetPackedCreditCardID(4)));
 }
 
 // Test that inputs detected to be CVC inputs are forced to
@@ -5375,10 +5387,10 @@ TEST_F(AutofillManagerTest, DisplayCreditCardSuggestionsWithMatchingTokens) {
 
 #if defined(OS_ANDROID)
   static const std::string kVisaSuggestion =
-      std::string("Visa") + kUTF8MidlineEllipsis + "3456";
+      std::string("Visa  ") + test::ObfuscatedCardDigitsAsUTF8("3456");
 #else
   static const std::string kVisaSuggestion =
-      std::string(kUTF8MidlineEllipsis) + "3456";
+      test::ObfuscatedCardDigitsAsUTF8("3456");
 #endif
 
   CheckSuggestions(kDefaultPageID,

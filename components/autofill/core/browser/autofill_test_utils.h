@@ -200,6 +200,8 @@ void FillQueryField(AutofillQueryContents::Form::Field* field,
 void GenerateTestAutofillPopup(
     AutofillExternalDelegate* autofill_external_delegate);
 
+std::string ObfuscatedCardDigitsAsUTF8(const std::string& str);
+
 }  // namespace test
 }  // namespace autofill
 
