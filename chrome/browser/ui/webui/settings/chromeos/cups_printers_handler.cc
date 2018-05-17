@@ -614,6 +614,9 @@ void CupsPrintersHandler::OnAddedPrinterCommon(const Printer& printer,
     case PrinterSetupResult::kPrinterUnreachable:
       PRINTER_LOG(ERROR) << "Could not contact printer for configuration";
       break;
+    case PrinterSetupResult::kComponentUnavailable:
+      LOG(WARNING) << "Could not install component";
+      break;
     case PrinterSetupResult::kDbusError:
     case PrinterSetupResult::kFatalError:
       PRINTER_LOG(ERROR) << "Unrecoverable error.  Reboot required.";

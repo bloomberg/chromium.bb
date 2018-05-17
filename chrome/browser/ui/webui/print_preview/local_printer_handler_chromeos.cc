@@ -185,6 +185,7 @@ void LocalPrinterHandlerChromeos::HandlePrinterSetup(
       break;
     case chromeos::PrinterSetupResult::kPrinterUnreachable:
     case chromeos::PrinterSetupResult::kDbusError:
+    case chromeos::PrinterSetupResult::kComponentUnavailable:
     case chromeos::PrinterSetupResult::kPpdTooLarge:
     case chromeos::PrinterSetupResult::kInvalidPpd:
     case chromeos::PrinterSetupResult::kFatalError:

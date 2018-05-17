@@ -201,13 +201,11 @@ class PrinterConfigurerImpl : public PrinterConfigurer {
                        const std::string& ppd_contents,
                        PrinterSetupCallback cb,
                        component_updater::CrOSComponentManager::Error error,
-                       const base::FilePath& result) {
-    // Result is the component mount point, or empty
-    // if the component couldn't be loaded
-    if (result.empty()) {
+                       const base::FilePath& path) {
+    if (error != component_updater::CrOSComponentManager::Error::NONE) {
       PRINTER_LOG(ERROR) << printer.make_and_model()
                          << " Filter component installation fails.";
-      std::move(cb).Run(PrinterSetupResult::kFatalError);
+      std::move(cb).Run(PrinterSetupResult::kComponentUnavailable);
     } else {
       AddPrinter(printer, ppd_contents, std::move(cb));
     }
@@ -321,6 +319,9 @@ std::ostream& operator<<(std::ostream& out, const PrinterSetupResult& result) {
       break;
     case kInvalidPrinterUpdate:
       out << "printer edits would make printer unusable";
+      break;
+    case kComponentUnavailable:
+      out << "component driver was requested but installation failed.";
       break;
     case kPpdTooLarge:
       out << "PPD too large";

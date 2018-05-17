@@ -24,6 +24,7 @@ enum PrinterSetupResult {
   kDbusError = 3,                 // Could not contact debugd
   kNativePrintersNotAllowed = 4,  // Tried adding/editing printers policy set
   kInvalidPrinterUpdate = 5,      // Tried updating printer with invalid values
+  kComponentUnavailable = 6,      // Could not install component
   // Space left for additional errors
 
   // PPD errors
