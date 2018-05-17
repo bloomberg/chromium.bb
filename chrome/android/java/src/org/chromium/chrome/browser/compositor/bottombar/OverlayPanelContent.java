@@ -231,9 +231,7 @@ public class OverlayPanelContent {
             mLoadedUrl = url;
             mDidStartLoadingUrl = true;
             mIsProcessingPendingNavigation = true;
-            if (!mContentDelegate.handleInterceptLoadUrl(mContentViewCore, url)) {
-                mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url));
-            }
+            mWebContents.getNavigationController().loadUrl(new LoadUrlParams(url));
         }
     }
 
