@@ -76,8 +76,8 @@ std::unique_ptr<CloudPolicyClient> CreateClient(
   std::unique_ptr<CloudPolicyClient> client =
       std::make_unique<CloudPolicyClient>(
           std::string() /* machine_id */, std::string() /* machine_model */,
-          device_management_service, system_request_context,
-          nullptr /* signing_service */,
+          std::string() /* brand_code */, device_management_service,
+          system_request_context, nullptr /* signing_service */,
           base::BindRepeating(&GetDeviceDMToken, device_settings_service));
   std::vector<std::string> user_affiliation_ids(
       policy_data->user_affiliation_ids().begin(),

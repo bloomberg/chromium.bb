@@ -49,7 +49,8 @@ void MachineLevelUserCloudPolicyRegistrar::RegisterForPolicyWithEnrollmentToken(
   // reset.
   std::unique_ptr<CloudPolicyClient> policy_client =
       std::make_unique<CloudPolicyClient>(
-          std::string(), std::string(), device_management_service_,
+          std::string() /* machine_id */, std::string() /* machine_model */,
+          std::string() /* brand_code */, device_management_service_,
           system_request_context_, nullptr,
           CloudPolicyClient::DeviceDMTokenCallback());
 
@@ -86,7 +87,8 @@ MachineLevelUserCloudPolicyFetcher::MachineLevelUserCloudPolicyFetcher(
       system_request_context_(system_request_context) {
   std::unique_ptr<CloudPolicyClient> client =
       std::make_unique<CloudPolicyClient>(
-          std::string(), std::string(), device_management_service_,
+          std::string() /* machine_id */, std::string() /* machine_model */,
+          std::string() /* brand_code */, device_management_service_,
           system_request_context_, nullptr,
           CloudPolicyClient::DeviceDMTokenCallback());
   InitializeManager(std::move(client));

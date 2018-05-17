@@ -94,17 +94,18 @@ class POLICY_EXPORT CloudPolicyClient {
     virtual void OnClientError(CloudPolicyClient* client) = 0;
   };
 
-  // If non-empty, |machine_id| and |machine_model| are passed to the server
-  // verbatim. As these reveal machine identity, they must only be used where
-  // this is appropriate (i.e. device policy, but not user policy). |service|
-  // and |signing_service| are weak pointers and it's the caller's
-  // responsibility to keep them valid for the lifetime of CloudPolicyClient.
-  // The |signing_service| is used to sign sensitive requests.
-  // |device_dm_token_callback| is used to retrieve device DMToken for
+  // If non-empty, |machine_id|, |machine_model| and |brand_code| are passed
+  // to the server verbatim. As these reveal machine identity, they must only
+  // be used where this is appropriate (i.e. device policy, but not user
+  // policy). |service| and |signing_service| are weak pointers and it's the
+  // caller's responsibility to keep them valid for the lifetime of
+  // CloudPolicyClient. The |signing_service| is used to sign sensitive
+  // requests. |device_dm_token_callback| is used to retrieve device DMToken for
   // affiliated users. Could be null if it's not possible to use
   // device DMToken for user policy fetches.
   CloudPolicyClient(const std::string& machine_id,
                     const std::string& machine_model,
+                    const std::string& brand_code,
                     DeviceManagementService* service,
                     scoped_refptr<net::URLRequestContextGetter> request_context,
                     SigningService* signing_service,
@@ -264,6 +265,7 @@ class POLICY_EXPORT CloudPolicyClient {
 
   const std::string& machine_id() const { return machine_id_; }
   const std::string& machine_model() const { return machine_model_; }
+  const std::string& brand_code() const { return brand_code_; }
 
   void set_last_policy_timestamp(const base::Time& timestamp) {
     last_policy_timestamp_ = timestamp;
@@ -452,6 +454,7 @@ class POLICY_EXPORT CloudPolicyClient {
   // Data necessary for constructing policy requests.
   const std::string machine_id_;
   const std::string machine_model_;
+  const std::string brand_code_;
   PolicyTypeSet types_to_fetch_;
   std::vector<std::string> state_keys_to_upload_;
 

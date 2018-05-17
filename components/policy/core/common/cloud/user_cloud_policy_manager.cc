@@ -86,7 +86,8 @@ UserCloudPolicyManager::CreateCloudPolicyClient(
     scoped_refptr<net::URLRequestContextGetter> request_context) {
   return std::make_unique<CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
-      device_management_service, request_context, nullptr /* signing_service */,
+      std::string() /* brand_code */, device_management_service,
+      request_context, nullptr /* signing_service */,
       CloudPolicyClient::DeviceDMTokenCallback());
 }
 

@@ -44,6 +44,7 @@ namespace {
 const char kClientID[] = "fake-client-id";
 const char kMachineID[] = "fake-machine-id";
 const char kMachineModel[] = "fake-machine-model";
+const char kBrandCode[] = "fake-brand-code";
 const char kOAuthToken[] = "fake-oauth-token";
 const char kDMToken[] = "fake-dm-token";
 const char kDeviceDMToken[] = "fake-device-dm-token";
@@ -120,6 +121,7 @@ class CloudPolicyClientTest : public testing::Test {
     register_request->set_type(em::DeviceRegisterRequest::USER);
     register_request->set_machine_id(kMachineID);
     register_request->set_machine_model(kMachineModel);
+    register_request->set_brand_code(kBrandCode);
     register_request->set_lifetime(
         em::DeviceRegisterRequest::LIFETIME_INDEFINITE);
     register_request->set_flavor(
@@ -134,6 +136,7 @@ class CloudPolicyClientTest : public testing::Test {
     request->set_type(em::DeviceRegisterRequest::DEVICE);
     request->set_machine_id(kMachineID);
     request->set_machine_model(kMachineModel);
+    request->set_brand_code(kBrandCode);
     request->set_lifetime(em::DeviceRegisterRequest::LIFETIME_INDEFINITE);
     request->set_flavor(
         em::DeviceRegisterRequest::FLAVOR_ENROLLMENT_ATTESTATION);
@@ -263,7 +266,7 @@ class CloudPolicyClientTest : public testing::Test {
     request_context_ =
         new net::TestURLRequestContextGetter(loop_.task_runner());
     client_ = std::make_unique<CloudPolicyClient>(
-        kMachineID, kMachineModel, &service_, request_context_,
+        kMachineID, kMachineModel, kBrandCode, &service_, request_context_,
         &fake_signing_service_,
         base::BindRepeating(
             &MockDeviceDMTokenCallbackObserver::OnDeviceDMTokenRequested,

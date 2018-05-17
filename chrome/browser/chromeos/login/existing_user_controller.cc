@@ -1073,8 +1073,8 @@ void ExistingUserController::OnOldEncryptionDetected(
       ProfileHelper::GetSigninProfile()->GetRequestContext();
   auto cloud_policy_client = std::make_unique<policy::CloudPolicyClient>(
       std::string() /* machine_id */, std::string() /* machine_model */,
-      device_management_service, signin_profile_context,
-      nullptr /* signing_service */,
+      std::string() /* brand_code */, device_management_service,
+      signin_profile_context, nullptr /* signing_service */,
       chromeos::GetDeviceDMTokenForUserPolicyGetter(
           user_context.GetAccountId()));
   pre_signin_policy_fetcher_ = std::make_unique<policy::PreSigninPolicyFetcher>(
