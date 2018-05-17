@@ -5,6 +5,9 @@
 #include "services/network/test/test_url_loader_factory.h"
 
 #include "base/logging.h"
+#include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
+#include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_request.h"
 
@@ -38,24 +41,51 @@ void TestURLLoaderFactory::AddResponse(const GURL& url,
   response.status = status;
   responses_[url] = response;
 
-  for (auto it = pending_.begin(); it != pending_.end(); ++it) {
+  for (auto it = pending_.begin(); it != pending_.end();) {
     if (CreateLoaderAndStartInternal(it->url, it->client.get())) {
-      pending_.erase(it);
-      return;
+      it = pending_.erase(it);
+    } else {
+      ++it;
     }
   }
 }
 
 void TestURLLoaderFactory::AddResponse(const std::string& url,
-                                       const std::string& content) {
+                                       const std::string& content,
+                                       net::HttpStatusCode http_status) {
   ResourceResponseHead head;
-  std::string headers("HTTP/1.1 200 OK\nContent-type: text/html\n\n");
+  std::string headers(base::StringPrintf(
+      "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
+      static_cast<int>(http_status), GetHttpReasonPhrase(http_status)));
   head.headers = new net::HttpResponseHeaders(
       net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
   head.mime_type = "text/html";
   URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
   AddResponse(GURL(url), head, content, status);
+}
+
+bool TestURLLoaderFactory::IsPending(const std::string& url,
+                                     int* load_flags_out) {
+  base::RunLoop().RunUntilIdle();
+  for (const auto& candidate : pending_) {
+    if (candidate.url == url) {
+      if (load_flags_out)
+        *load_flags_out = candidate.load_flags;
+      return !candidate.client.encountered_error();
+    }
+  }
+  return false;
+}
+
+int TestURLLoaderFactory::NumPending() {
+  int pending = 0;
+  base::RunLoop().RunUntilIdle();
+  for (const auto& candidate : pending_) {
+    if (!candidate.client.encountered_error())
+      ++pending;
+  }
+  return pending;
 }
 
 void TestURLLoaderFactory::ClearResponses() {
@@ -82,6 +112,7 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
 
   Pending pending;
   pending.url = url_request.url;
+  pending.load_flags = url_request.load_flags;
   pending.client = std::move(client);
   pending_.push_back(std::move(pending));
 }
