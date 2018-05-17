@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "net/http/http_status_code.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
@@ -35,8 +36,20 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
                    const URLLoaderCompletionStatus& status,
                    const Redirects& redirects = Redirects());
 
-  // Simpler version of above for the common success case.
-  void AddResponse(const std::string& url, const std::string& content);
+  // Simpler version of above for the common case of success or error page.
+  void AddResponse(const std::string& url,
+                   const std::string& content,
+                   net::HttpStatusCode status = net::HTTP_OK);
+
+  // Returns true if there is a request for a given URL with a living client
+  // that did not produce a response yet. If |load_flags_out| is non-null,
+  // it will reports load flags used for the request
+  // WARNING: This does RunUntilIdle() first.
+  bool IsPending(const std::string& url, int* load_flags_out = nullptr);
+
+  // Returns the total # of pending requests.
+  // WARNING: This does RunUntilIdle() first.
+  int NumPending();
 
   // Clear all the responses that were previously set.
   void ClearResponses();
@@ -77,6 +90,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     Pending(Pending&& other);
     Pending& operator=(Pending&& other);
     GURL url;
+    int load_flags;
     mojom::URLLoaderClientPtr client;
   };
   std::vector<Pending> pending_;
