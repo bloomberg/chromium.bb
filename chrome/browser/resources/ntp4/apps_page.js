@@ -569,7 +569,7 @@ cr.define('ntp', function() {
   /**
    * Creates a new AppsPage object.
    * @constructor
-   * @extends {TilePage}
+   * @extends {ntp.TilePage}
    */
   function AppsPage() {
     var el = new TilePage(appsPageGridValues);
