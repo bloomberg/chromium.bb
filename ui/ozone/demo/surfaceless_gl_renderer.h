@@ -59,6 +59,7 @@ class SurfacelessGlRenderer : public RendererBase {
   std::unique_ptr<BufferWrapper> overlay_buffers_[2];
   bool disable_primary_plane_ = false;
   gfx::Rect primary_plane_rect_;
+  bool use_gpu_fences_ = false;
 
   std::unique_ptr<OverlayCandidatesOzone> overlay_checker_;
 
