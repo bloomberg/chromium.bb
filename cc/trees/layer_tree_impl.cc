@@ -1109,7 +1109,7 @@ bool LayerTreeImpl::UpdateDrawProperties(
         device_scale_factor(), current_page_scale_factor(), PageScaleLayer(),
         InnerViewportScrollLayer(), OuterViewportScrollLayer(),
         elastic_overscroll()->Current(IsActiveTree()),
-        OverscrollElasticityLayer(), resource_provider()->max_texture_size(),
+        OverscrollElasticityLayer(), max_texture_size(),
         settings().layer_transforms_should_scale_layer_contents,
         &render_surface_list_, &property_trees_);
     LayerTreeHostCommon::CalculateDrawProperties(&inputs);
@@ -1398,6 +1398,10 @@ TaskRunnerProvider* LayerTreeImpl::task_runner_provider() const {
 
 LayerTreeFrameSink* LayerTreeImpl::layer_tree_frame_sink() {
   return host_impl_->layer_tree_frame_sink();
+}
+
+int LayerTreeImpl::max_texture_size() const {
+  return host_impl_->max_texture_size();
 }
 
 const LayerTreeSettings& LayerTreeImpl::settings() const {

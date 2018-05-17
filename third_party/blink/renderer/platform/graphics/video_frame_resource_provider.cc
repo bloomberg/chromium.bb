@@ -29,13 +29,22 @@ void VideoFrameResourceProvider::Initialize(
     viz::SharedBitmapReporter* shared_bitmap_reporter) {
   context_provider_ = media_context_provider;
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
-      media_context_provider, true, settings_.resource_settings);
+      media_context_provider, true);
+
+  int max_texture_size;
+  if (context_provider_) {
+    max_texture_size =
+        context_provider_->ContextCapabilities().max_texture_size;
+  } else {
+    // Pick an arbitrary limit here similar to what hardware might.
+    max_texture_size = 16 * 1024;
+  }
 
   resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
       media_context_provider, shared_bitmap_reporter, resource_provider_.get(),
       settings_.use_stream_video_draw_quad,
       settings_.resource_settings.use_gpu_memory_buffer_resources,
-      settings_.resource_settings.use_r16_texture);
+      settings_.resource_settings.use_r16_texture, max_texture_size);
 }
 
 void VideoFrameResourceProvider::OnContextLost() {

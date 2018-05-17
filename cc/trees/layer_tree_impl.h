@@ -106,6 +106,7 @@ class CC_EXPORT LayerTreeImpl {
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
   LayerTreeFrameSink* layer_tree_frame_sink();
+  int max_texture_size() const;
   const LayerTreeSettings& settings() const;
   const LayerTreeDebugState& debug_state() const;
   viz::ContextProvider* context_provider() const;

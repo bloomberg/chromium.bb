@@ -14,8 +14,7 @@ class FakeResourceProvider {
  public:
   static std::unique_ptr<LayerTreeResourceProvider>
   CreateLayerTreeResourceProvider(viz::ContextProvider* context_provider) {
-    return std::make_unique<LayerTreeResourceProvider>(context_provider, true,
-                                                       viz::ResourceSettings());
+    return std::make_unique<LayerTreeResourceProvider>(context_provider, true);
   }
 
   static std::unique_ptr<DisplayResourceProvider> CreateDisplayResourceProvider(

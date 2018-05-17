@@ -86,7 +86,8 @@ class CC_EXPORT VideoResourceUpdater
                        LayerTreeResourceProvider* resource_provider,
                        bool use_stream_video_draw_quad,
                        bool use_gpu_memory_buffer_resources,
-                       bool use_r16_texture);
+                       bool use_r16_texture,
+                       int max_resource_size);
 
   ~VideoResourceUpdater() override;
 
@@ -187,6 +188,7 @@ class CC_EXPORT VideoResourceUpdater
   const bool use_gpu_memory_buffer_resources_;
   // TODO(crbug.com/759456): Remove after r16 is used without the flag.
   const bool use_r16_texture_;
+  const int max_resource_size_;
   const int tracing_id_;
   std::unique_ptr<media::PaintCanvasVideoRenderer> video_renderer_;
   uint32_t next_plane_resource_id_ = 1;

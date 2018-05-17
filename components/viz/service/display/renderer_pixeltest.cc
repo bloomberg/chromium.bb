@@ -1232,15 +1232,16 @@ class IntersectingQuadGLPixelTest
     constexpr bool kUseStreamVideoDrawQuad = false;
     constexpr bool kUseGpuMemoryBufferResources = false;
     constexpr bool kUseR16Texture = false;
+    constexpr int kMaxResourceSize = 10000;
 
     video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
         this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
-        kUseGpuMemoryBufferResources, kUseR16Texture);
+        kUseGpuMemoryBufferResources, kUseR16Texture, kMaxResourceSize);
     video_resource_updater2_ = std::make_unique<cc::VideoResourceUpdater>(
         this->child_context_provider_.get(), nullptr,
         this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
-        kUseGpuMemoryBufferResources, kUseR16Texture);
+        kUseGpuMemoryBufferResources, kUseR16Texture, kMaxResourceSize);
   }
 
  protected:
@@ -1578,9 +1579,11 @@ class VideoGLRendererPixelTest : public cc::GLRendererPixelTest {
     constexpr bool kUseStreamVideoDrawQuad = false;
     constexpr bool kUseGpuMemoryBufferResources = false;
     constexpr bool kUseR16Texture = false;
+    constexpr int kMaxResourceSize = 10000;
     video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
         child_context_provider_.get(), nullptr, child_resource_provider_.get(),
-        kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources, kUseR16Texture);
+        kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources, kUseR16Texture,
+        kMaxResourceSize);
   }
 
   std::unique_ptr<cc::VideoResourceUpdater> video_resource_updater_;

@@ -92,7 +92,7 @@ class VideoResourceUpdaterTest : public testing::Test {
     return std::make_unique<VideoResourceUpdater>(
         context_provider_.get(), nullptr, resource_provider3d_.get(),
         use_stream_video_draw_quad, /*use_gpu_memory_buffer_resources=*/false,
-        /*use_r16_texture=*/use_r16_texture_);
+        /*use_r16_texture=*/use_r16_texture_, /*max_resource_size=*/10000);
   }
 
   std::unique_ptr<VideoResourceUpdater> CreateUpdaterForSoftware() {
@@ -101,7 +101,8 @@ class VideoResourceUpdaterTest : public testing::Test {
         resource_provider_software_.get(),
         /*use_stream_video_draw_quad=*/false,
         /*use_gpu_memory_buffer_resources=*/false,
-        /*use_r16_texture=*/false);
+        /*use_r16_texture=*/false,
+        /*max_resource_size=*/10000);
   }
 
   scoped_refptr<media::VideoFrame> CreateTestYUVVideoFrame() {

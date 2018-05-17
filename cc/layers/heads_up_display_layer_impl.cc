@@ -140,12 +140,12 @@ bool HeadsUpDisplayLayerImpl::WillDraw(
   if (draw_mode == DRAW_MODE_RESOURCELESS_SOFTWARE)
     return false;
 
+  int max_texture_size = layer_tree_impl()->max_texture_size();
   internal_contents_scale_ = GetIdealContentsScale();
   internal_content_bounds_ =
       gfx::ScaleToCeiledSize(bounds(), internal_contents_scale_);
   internal_content_bounds_.SetToMin(
-      gfx::Size(resource_provider->max_texture_size(),
-                resource_provider->max_texture_size()));
+      gfx::Size(max_texture_size, max_texture_size));
 
   return LayerImpl::WillDraw(draw_mode, resource_provider);
 }

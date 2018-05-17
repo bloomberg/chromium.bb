@@ -27,8 +27,7 @@ class LayerTreeResourceProviderTest : public testing::TestWithParam<bool> {
         bound_(context_provider_->BindToCurrentThread()),
         provider_(std::make_unique<LayerTreeResourceProvider>(
             use_gpu_ ? context_provider_.get() : nullptr,
-            delegated_sync_points_required_,
-            resource_settings_)) {
+            delegated_sync_points_required_)) {
     DCHECK_EQ(bound_, gpu::ContextResult::kSuccess);
   }
 
@@ -73,7 +72,6 @@ class LayerTreeResourceProviderTest : public testing::TestWithParam<bool> {
   scoped_refptr<viz::TestContextProvider> context_provider_;
   gpu::ContextResult bound_;
   bool delegated_sync_points_required_ = true;
-  viz::ResourceSettings resource_settings_;
   std::unique_ptr<LayerTreeResourceProvider> provider_;
 };
 

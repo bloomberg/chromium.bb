@@ -46,8 +46,9 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
       const std::vector<viz::ReturnedResource>& transferable_resources);
 
  private:
+  const cc::LayerTreeSettings settings_;
+
   WebContextProviderCallback context_provider_callback_;
-  cc::LayerTreeSettings settings_;
   viz::ContextProvider* context_provider_;
   std::unique_ptr<cc::LayerTreeResourceProvider> resource_provider_;
   std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;

@@ -207,7 +207,7 @@ void PixelTest::SetUpGLWithoutRenderer(bool flipped_output_surface) {
       /*enable_oop_rasterization=*/false);
   child_context_provider_->BindToCurrentThread();
   child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-      child_context_provider_.get(), true, settings_.resource_settings);
+      child_context_provider_.get(), true);
 }
 
 void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
@@ -239,8 +239,8 @@ void PixelTest::SetUpSoftwareRenderer() {
   shared_bitmap_manager_ = std::make_unique<viz::TestSharedBitmapManager>();
   resource_provider_ = std::make_unique<DisplayResourceProvider>(
       nullptr, shared_bitmap_manager_.get());
-  child_resource_provider_ = std::make_unique<LayerTreeResourceProvider>(
-      nullptr, true, settings_.resource_settings);
+  child_resource_provider_ =
+      std::make_unique<LayerTreeResourceProvider>(nullptr, true);
 
   auto renderer = std::make_unique<viz::SoftwareRenderer>(
       &renderer_settings_, output_surface_.get(), resource_provider_.get());
