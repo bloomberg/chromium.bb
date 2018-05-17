@@ -1367,26 +1367,6 @@ error::Error GLES2DecoderPassthroughImpl::DoGetAttribLocation(GLuint program,
   return error::kNoError;
 }
 
-error::Error GLES2DecoderPassthroughImpl::DoGetBufferSubDataAsyncCHROMIUM(
-    GLenum target,
-    GLintptr offset,
-    GLsizeiptr size,
-    uint8_t* mem) {
-  CheckErrorCallbackState();
-
-  void* mapped_ptr =
-      api()->glMapBufferRangeFn(target, offset, size, GL_MAP_READ_BIT);
-  if (CheckErrorCallbackState() || mapped_ptr == nullptr) {
-    // Had an error while mapping, don't copy any data
-    return error::kNoError;
-  }
-
-  memcpy(mem, mapped_ptr, size);
-  api()->glUnmapBufferFn(target);
-
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderPassthroughImpl::DoGetBooleanv(GLenum pname,
                                                         GLsizei bufsize,
                                                         GLsizei* length,

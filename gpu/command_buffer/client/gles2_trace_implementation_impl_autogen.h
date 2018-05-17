@@ -2452,14 +2452,6 @@ void GLES2TraceImplementation::ProgramPathFragmentInputGenCHROMIUM(
                                            components, coeffs);
 }
 
-void* GLES2TraceImplementation::GetBufferSubDataAsyncCHROMIUM(GLenum target,
-                                                              GLintptr offset,
-                                                              GLsizeiptr size) {
-  TRACE_EVENT_BINARY_EFFICIENT0("gpu",
-                                "GLES2Trace::GetBufferSubDataAsyncCHROMIUM");
-  return gl_->GetBufferSubDataAsyncCHROMIUM(target, offset, size);
-}
-
 void GLES2TraceImplementation::CoverageModulationCHROMIUM(GLenum components) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu",
                                 "GLES2Trace::CoverageModulationCHROMIUM");

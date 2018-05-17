@@ -5097,24 +5097,6 @@ TEST_F(GLES2FormatTest, ProgramPathFragmentInputGenCHROMIUM) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, GetBufferSubDataAsyncCHROMIUM) {
-  cmds::GetBufferSubDataAsyncCHROMIUM& cmd =
-      *GetBufferAs<cmds::GetBufferSubDataAsyncCHROMIUM>();
-  void* next_cmd =
-      cmd.Set(&cmd, static_cast<GLenum>(11), static_cast<GLintptr>(12),
-              static_cast<GLsizeiptr>(13), static_cast<uint32_t>(14),
-              static_cast<uint32_t>(15));
-  EXPECT_EQ(static_cast<uint32_t>(cmds::GetBufferSubDataAsyncCHROMIUM::kCmdId),
-            cmd.header.command);
-  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
-  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
-  EXPECT_EQ(static_cast<GLintptr>(12), cmd.offset);
-  EXPECT_EQ(static_cast<GLsizeiptr>(13), cmd.size);
-  EXPECT_EQ(static_cast<uint32_t>(14), cmd.data_shm_id);
-  EXPECT_EQ(static_cast<uint32_t>(15), cmd.data_shm_offset);
-  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
-}
-
 TEST_F(GLES2FormatTest, CoverageModulationCHROMIUM) {
   cmds::CoverageModulationCHROMIUM& cmd =
       *GetBufferAs<cmds::CoverageModulationCHROMIUM>();

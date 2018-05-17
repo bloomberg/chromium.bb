@@ -1156,11 +1156,6 @@ void GLES2InterfaceStub::ProgramPathFragmentInputGenCHROMIUM(
     GLenum /* genMode */,
     GLint /* components */,
     const GLfloat* /* coeffs */) {}
-void* GLES2InterfaceStub::GetBufferSubDataAsyncCHROMIUM(GLenum /* target */,
-                                                        GLintptr /* offset */,
-                                                        GLsizeiptr /* size */) {
-  return 0;
-}
 void GLES2InterfaceStub::CoverageModulationCHROMIUM(GLenum /* components */) {}
 GLenum GLES2InterfaceStub::GetGraphicsResetStatusKHR() {
   return 0;

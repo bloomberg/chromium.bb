@@ -15444,67 +15444,6 @@ static_assert(offsetof(ProgramPathFragmentInputGenCHROMIUM,
               "offset of ProgramPathFragmentInputGenCHROMIUM coeffs_shm_offset "
               "should be 24");
 
-struct GetBufferSubDataAsyncCHROMIUM {
-  typedef GetBufferSubDataAsyncCHROMIUM ValueType;
-  static const CommandId kCmdId = kGetBufferSubDataAsyncCHROMIUM;
-  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(1);
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType));  // NOLINT
-  }
-
-  void SetHeader() { header.SetCmd<ValueType>(); }
-
-  void Init(GLenum _target,
-            GLintptr _offset,
-            GLsizeiptr _size,
-            uint32_t _data_shm_id,
-            uint32_t _data_shm_offset) {
-    SetHeader();
-    target = _target;
-    offset = _offset;
-    size = _size;
-    data_shm_id = _data_shm_id;
-    data_shm_offset = _data_shm_offset;
-  }
-
-  void* Set(void* cmd,
-            GLenum _target,
-            GLintptr _offset,
-            GLsizeiptr _size,
-            uint32_t _data_shm_id,
-            uint32_t _data_shm_offset) {
-    static_cast<ValueType*>(cmd)->Init(_target, _offset, _size, _data_shm_id,
-                                       _data_shm_offset);
-    return NextCmdAddress<ValueType>(cmd);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-  int32_t offset;
-  int32_t size;
-  uint32_t data_shm_id;
-  uint32_t data_shm_offset;
-};
-
-static_assert(sizeof(GetBufferSubDataAsyncCHROMIUM) == 24,
-              "size of GetBufferSubDataAsyncCHROMIUM should be 24");
-static_assert(offsetof(GetBufferSubDataAsyncCHROMIUM, header) == 0,
-              "offset of GetBufferSubDataAsyncCHROMIUM header should be 0");
-static_assert(offsetof(GetBufferSubDataAsyncCHROMIUM, target) == 4,
-              "offset of GetBufferSubDataAsyncCHROMIUM target should be 4");
-static_assert(offsetof(GetBufferSubDataAsyncCHROMIUM, offset) == 8,
-              "offset of GetBufferSubDataAsyncCHROMIUM offset should be 8");
-static_assert(offsetof(GetBufferSubDataAsyncCHROMIUM, size) == 12,
-              "offset of GetBufferSubDataAsyncCHROMIUM size should be 12");
-static_assert(
-    offsetof(GetBufferSubDataAsyncCHROMIUM, data_shm_id) == 16,
-    "offset of GetBufferSubDataAsyncCHROMIUM data_shm_id should be 16");
-static_assert(
-    offsetof(GetBufferSubDataAsyncCHROMIUM, data_shm_offset) == 20,
-    "offset of GetBufferSubDataAsyncCHROMIUM data_shm_offset should be 20");
-
 struct CoverageModulationCHROMIUM {
   typedef CoverageModulationCHROMIUM ValueType;
   static const CommandId kCmdId = kCoverageModulationCHROMIUM;

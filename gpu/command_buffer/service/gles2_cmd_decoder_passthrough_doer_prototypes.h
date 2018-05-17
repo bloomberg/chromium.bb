@@ -230,10 +230,6 @@ error::Error DoGetAttachedShaders(GLuint program,
 error::Error DoGetAttribLocation(GLuint program,
                                  const char* name,
                                  GLint* result);
-error::Error DoGetBufferSubDataAsyncCHROMIUM(GLenum target,
-                                             GLintptr offset,
-                                             GLsizeiptr size,
-                                             uint8_t* mem);
 error::Error DoGetBooleanv(GLenum pname,
                            GLsizei bufsize,
                            GLsizei* length,

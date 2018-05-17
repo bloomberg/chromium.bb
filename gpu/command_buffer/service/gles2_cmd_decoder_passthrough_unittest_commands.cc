@@ -72,7 +72,6 @@ using ES3FixedCommandTypes0 =
                      GetActiveUniformBlockiv,
                      GetActiveUniformBlockName,
                      GetActiveUniformsiv,
-                     GetBufferSubDataAsyncCHROMIUM,
                      GetFragDataLocation,
                      GetBufferParameteri64v,
                      GetInteger64v,
