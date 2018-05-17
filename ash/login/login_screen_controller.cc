@@ -348,15 +348,12 @@ void LoginScreenController::SetPublicSessionDisplayName(
 
 void LoginScreenController::SetPublicSessionLocales(
     const AccountId& account_id,
-    base::Value locales,
+    std::vector<mojom::LocaleItemPtr> locales,
     const std::string& default_locale,
     bool show_advanced_view) {
   if (DataDispatcher()) {
     DataDispatcher()->SetPublicSessionLocales(
-        account_id,
-        base::ListValue::From(
-            base::Value::ToUniquePtrValue(std::move(locales))),
-        default_locale, show_advanced_view);
+        account_id, locales, default_locale, show_advanced_view);
   }
 }
 

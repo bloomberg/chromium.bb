@@ -159,5 +159,31 @@ void SetKeyboardSettings(const AccountId& account_id) {
       rate);
 }
 
+std::vector<ash::mojom::LocaleItemPtr> FromListValueToLocaleItem(
+    std::unique_ptr<base::ListValue> locales) {
+  std::vector<ash::mojom::LocaleItemPtr> result;
+  for (const auto& locale : *locales) {
+    const base::DictionaryValue* dictionary;
+    if (!locale.GetAsDictionary(&dictionary))
+      continue;
+
+    ash::mojom::LocaleItemPtr locale_item = ash::mojom::LocaleItem::New();
+    std::string language_code;
+    dictionary->GetString("value", &language_code);
+    locale_item->language_code = language_code;
+
+    std::string title;
+    dictionary->GetString("title", &title);
+    locale_item->title = title;
+
+    std::string group_name;
+    dictionary->GetString("optionGroupName", &group_name);
+    if (!group_name.empty())
+      locale_item->group_name = group_name;
+    result.push_back(std::move(locale_item));
+  }
+  return result;
+}
+
 }  // namespace lock_screen_utils
 }  // namespace chromeos

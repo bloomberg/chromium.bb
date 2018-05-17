@@ -130,10 +130,11 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void OnPublicSessionDisplayNameChanged(
       const AccountId& account_id,
       const std::string& display_name) override;
-  void OnPublicSessionLocalesChanged(const AccountId& account_id,
-                                     const base::ListValue& locales,
-                                     const std::string& default_locale,
-                                     bool show_advanced_view) override;
+  void OnPublicSessionLocalesChanged(
+      const AccountId& account_id,
+      const std::vector<mojom::LocaleItemPtr>& locales,
+      const std::string& default_locale,
+      bool show_advanced_view) override;
   void OnPublicSessionKeyboardLayoutsChanged(
       const AccountId& account_id,
       const std::string& locale,

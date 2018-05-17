@@ -21,6 +21,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_service.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
@@ -534,7 +535,8 @@ void UserSelectionScreen::FillUserMojoStruct(
                                 &selected_locale, &has_multiple_locales);
     DCHECK(available_locales);
     user_info->public_account_info->available_locales =
-        std::move(*available_locales);
+        lock_screen_utils::FromListValueToLocaleItem(
+            std::move(available_locales));
     user_info->public_account_info->default_locale = selected_locale;
     user_info->public_account_info->show_advanced_view = has_multiple_locales;
   }
