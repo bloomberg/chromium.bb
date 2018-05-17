@@ -213,16 +213,21 @@ bool IsKeySystemSupportedWithTypeImpl(const std::string& key_system,
   }
 
   UUID scheme_uuid = GetKeySystemManager()->GetUUID(key_system);
-  if (scheme_uuid.empty())
+  if (scheme_uuid.empty()) {
+    DVLOG(1) << "Cannot get UUID for key system " << key_system;
     return false;
+  }
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_scheme_uuid =
       base::android::ToJavaByteArray(env, &scheme_uuid[0], scheme_uuid.size());
   ScopedJavaLocalRef<jstring> j_container_mime_type =
       ConvertUTF8ToJavaString(env, container_mime_type);
-  return Java_MediaDrmBridge_isCryptoSchemeSupported(env, j_scheme_uuid,
-                                                     j_container_mime_type);
+  bool supported = Java_MediaDrmBridge_isCryptoSchemeSupported(
+      env, j_scheme_uuid, j_container_mime_type);
+  DVLOG_IF(1, !supported) << "Crypto scheme not supported for " << key_system
+                          << " with " << container_mime_type;
+  return supported;
 }
 
 MediaDrmBridge::SecurityLevel GetSecurityLevelFromString(
