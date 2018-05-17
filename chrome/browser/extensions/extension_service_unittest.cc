@@ -1752,6 +1752,83 @@ TEST_F(ExtensionServiceTest,
             prefs->GetDisableReasons(id));
 }
 
+// Tests that installing an extension with a permission adds it to the granted
+// permissions, so that if it is later removed and then re-added the extension
+// is not disabled.
+TEST_F(ExtensionServiceTest,
+       ReaddingOldPermissionInUpdateDoesntDisableExtension) {
+  InitializeEmptyExtensionService();
+
+  // Borrow a PEM for consistent IDs.
+  const base::FilePath pem_path =
+      data_dir().AppendASCII("permissions/update.pem");
+  ASSERT_TRUE(base::PathExists(pem_path));
+
+  constexpr char kManifestTemplate[] =
+      R"({
+           "name": "Test",
+           "description": "Test permissions update flow",
+           "manifest_version": 2,
+           "version": "%s",
+           "permissions": [%s]
+         })";
+
+  // Install version 1, which includes the tabs permission.
+  extensions::TestExtensionDir version1;
+  version1.WriteManifest(
+      base::StringPrintf(kManifestTemplate, "1", R"("tabs")"));
+
+  const Extension* extension =
+      PackAndInstallCRX(version1.UnpackedPath(), pem_path, INSTALL_NEW);
+  ASSERT_TRUE(extension);
+
+  const std::string id = extension->id();
+
+  EXPECT_EQ(0u, GetErrors().size());
+  ASSERT_TRUE(registry()->enabled_extensions().Contains(id));
+
+  ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
+
+  auto get_granted_permissions = [prefs, id]() {
+    return prefs->GetGrantedPermissions(id);
+  };
+
+  auto get_active_permissions = [prefs, id]() {
+    return prefs->GetActivePermissions(id);
+  };
+
+  APIPermissionSet tabs_permission_set;
+  tabs_permission_set.insert(APIPermission::kTab);
+
+  EXPECT_EQ(tabs_permission_set, get_granted_permissions()->apis());
+  EXPECT_EQ(tabs_permission_set, get_active_permissions()->apis());
+
+  // Version 2 removes the tabs permission. The tabs permission should be
+  // gone from the active permissions, but retained in the granted permissions.
+  extensions::TestExtensionDir version2;
+  version2.WriteManifest(base::StringPrintf(kManifestTemplate, "2", ""));
+
+  PackCRXAndUpdateExtension(id, version2.UnpackedPath(), pem_path, ENABLED);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+
+  EXPECT_EQ(tabs_permission_set, get_granted_permissions()->apis());
+  EXPECT_TRUE(get_active_permissions()->IsEmpty());
+
+  // Version 3 re-adds the tabs permission. Even though this is an increase in
+  // privilege from version 2, it's not from the granted permissions (which
+  // include the permission from version 1). Therefore, the extension should
+  // remain enabled.
+  extensions::TestExtensionDir version3;
+  version3.WriteManifest(
+      base::StringPrintf(kManifestTemplate, "3", R"("tabs")"));
+
+  PackCRXAndUpdateExtension(id, version3.UnpackedPath(), pem_path, ENABLED);
+  EXPECT_TRUE(registry()->enabled_extensions().Contains(id));
+
+  EXPECT_EQ(tabs_permission_set, get_granted_permissions()->apis());
+  EXPECT_EQ(tabs_permission_set, get_active_permissions()->apis());
+}
+
 #if !defined(OS_CHROMEOS)
 // This tests that the granted permissions preferences are correctly set for
 // default apps.
