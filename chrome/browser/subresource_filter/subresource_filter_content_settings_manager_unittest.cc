@@ -333,22 +333,35 @@ TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
                            base::Time::Now(), history::SOURCE_BROWSED);
 
   // Ensure the website setting is set.
-  GURL url("https://example.test");
-  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
-  settings_manager()->OnDidShowUI(url);
+  GURL url1("https://example.test/1");
+  GURL url2("https://example.test/2");
+  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url1));
+  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url2));
+  settings_manager()->OnDidShowUI(url1);
 
-  // Simulate adding the page to the history.
-  history_service->AddPage(url, base::Time::Now(), history::SOURCE_BROWSED);
+  // Simulate adding two page to the history for example.test.
+  history_service->AddPage(url1, base::Time::Now(), history::SOURCE_BROWSED);
+  history_service->AddPage(url2, base::Time::Now(), history::SOURCE_BROWSED);
   history::BlockUntilHistoryProcessesPendingRequests(history_service);
 
-  EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url));
+  EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url1));
+  EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url2));
 
-  // Deleting the URL from history should clear the setting for this URL. Note
-  // that since there is another URL in the history this won't clear all items.
-  history_service->DeleteURL(url);
+  // Deleting a URL from history while there are still other urls for the
+  // same origin should not delete the setting.
+  history_service->DeleteURL(url1);
+  history::BlockUntilHistoryProcessesPendingRequests(history_service);
+  EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url1));
+  EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url2));
+
+  // Deleting all URLs of an origin from history should clear the setting for
+  // this URL. Note that since there is another URL in the history this won't
+  // clear all items.
+  history_service->DeleteURL(url2);
   history::BlockUntilHistoryProcessesPendingRequests(history_service);
 
-  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
+  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url1));
+  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url2));
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
