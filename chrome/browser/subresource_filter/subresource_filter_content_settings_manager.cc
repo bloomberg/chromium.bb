@@ -202,18 +202,16 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
 // When history URLs are deleted, clear the metadata for the smart UI.
 void SubresourceFilterContentSettingsManager::OnURLsDeleted(
     history::HistoryService* history_service,
-    bool all_history,
-    bool expired,
-    const history::URLRows& deleted_rows,
-    const std::set<GURL>& favicon_urls) {
-  if (all_history) {
+    const history::DeletionInfo& deletion_info) {
+  if (deletion_info.IsAllHistory()) {
     settings_map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_ADS_DATA);
     return;
   }
 
-  // Careful note: This clears the setting even if there are other URLs with the
-  // same origin in the history. i.e. this is an aggressive policy.
-  for (const auto& deleted_row : deleted_rows) {
-    SetSiteMetadata(deleted_row.url(), nullptr);
+  for (const auto& entry : deletion_info.deleted_urls_origin_map()) {
+    const GURL& origin = entry.first;
+    int remaining_urls = entry.second.first;
+    if (!origin.is_empty() && remaining_urls == 0)
+      SetSiteMetadata(origin, nullptr);
   }
 }
