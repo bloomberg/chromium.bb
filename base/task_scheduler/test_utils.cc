@@ -13,6 +13,9 @@ namespace base {
 namespace internal {
 namespace test {
 
+MockSchedulerWorkerObserver::MockSchedulerWorkerObserver() = default;
+MockSchedulerWorkerObserver::~MockSchedulerWorkerObserver() = default;
+
 scoped_refptr<Sequence> CreateSequenceWithTask(Task task) {
   scoped_refptr<Sequence> sequence = MakeRefCounted<Sequence>();
   sequence->PushTask(std::move(task));

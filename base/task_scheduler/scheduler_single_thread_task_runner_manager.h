@@ -22,6 +22,7 @@
 namespace base {
 
 class TaskTraits;
+class SchedulerWorkerObserver;
 class SingleThreadTaskRunner;
 
 namespace internal {
@@ -55,8 +56,11 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
   ~SchedulerSingleThreadTaskRunnerManager();
 
   // Starts threads for existing SingleThreadTaskRunners and allows threads to
-  // be started when SingleThreadTaskRunners are created in the future.
-  void Start();
+  // be started when SingleThreadTaskRunners are created in the future. If
+  // specified, |scheduler_worker_observer| will be notified when a worker
+  // enters and exits its main function. It must not be destroyed before
+  // JoinForTesting() has returned (must never be destroyed in production).
+  void Start(SchedulerWorkerObserver* scheduler_worker_observer = nullptr);
 
   // Creates a SingleThreadTaskRunner which runs tasks with |traits| on a thread
   // named "TaskSchedulerSingleThread[Shared]" +
@@ -116,6 +120,10 @@ class BASE_EXPORT SchedulerSingleThreadTaskRunnerManager final {
 
   const TrackedRef<TaskTracker> task_tracker_;
   DelayedTaskManager* const delayed_task_manager_;
+
+  // Optional observer notified when a worker enters and exits its main
+  // function. Set in Start() and never modified afterwards.
+  SchedulerWorkerObserver* scheduler_worker_observer_ = nullptr;
 
   // Synchronizes access to all members below.
   SchedulerLock lock_;

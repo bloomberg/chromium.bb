@@ -835,6 +835,7 @@ jumbo_component("base") {
     "task_scheduler/scheduler_single_thread_task_runner_manager.h",
     "task_scheduler/scheduler_worker.cc",
     "task_scheduler/scheduler_worker.h",
+    "task_scheduler/scheduler_worker_observer.h",
     "task_scheduler/scheduler_worker_params.h",
     "task_scheduler/scheduler_worker_pool.cc",
     "task_scheduler/scheduler_worker_pool.h",

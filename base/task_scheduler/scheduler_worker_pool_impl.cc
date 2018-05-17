@@ -213,6 +213,7 @@ SchedulerWorkerPoolImpl::SchedulerWorkerPoolImpl(
 void SchedulerWorkerPoolImpl::Start(
     const SchedulerWorkerPoolParams& params,
     scoped_refptr<TaskRunner> service_thread_task_runner,
+    SchedulerWorkerObserver* scheduler_worker_observer,
     WorkerEnvironment worker_environment) {
   AutoSchedulerLock auto_lock(lock_);
 
@@ -226,6 +227,9 @@ void SchedulerWorkerPoolImpl::Start(
   worker_environment_ = worker_environment;
 
   service_thread_task_runner_ = std::move(service_thread_task_runner);
+
+  DCHECK(!scheduler_worker_observer_);
+  scheduler_worker_observer_ = scheduler_worker_observer;
 
   // The initial number of workers is |num_wake_ups_before_start_| + 1 to try to
   // keep one at least one standby thread at all times (capacity permitting).
@@ -853,7 +857,7 @@ SchedulerWorkerPoolImpl::CreateRegisterAndStartSchedulerWorkerLockRequired() {
           tracked_ref_factory_.GetTrackedRef()),
       task_tracker_, &lock_, backward_compatibility_);
 
-  if (!worker->Start())
+  if (!worker->Start(scheduler_worker_observer_))
     return nullptr;
 
   workers_.push_back(worker);

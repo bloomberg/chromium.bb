@@ -35,6 +35,7 @@
 namespace base {
 
 class HistogramBase;
+class SchedulerWorkerObserver;
 class SchedulerWorkerPoolParams;
 
 namespace internal {
@@ -76,11 +77,14 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
 
   // Creates workers following the |params| specification, allowing existing and
   // future tasks to run. Uses |service_thread_task_runner| to monitor for
-  // blocked threads in the pool. |worker_environment| specifies any requested
-  // environment to execute the tasks. Can only be called once.
-  // CHECKs on failure.
+  // blocked threads in the pool. If specified, |scheduler_worker_observer| will
+  // be notified when a worker enters and exits its main function. It must not
+  // be destroyed before JoinForTesting() has returned (must never be destroyed
+  // in production). |worker_environment| specifies any requested environment to
+  // execute the tasks. Can only be called once. CHECKs on failure.
   void Start(const SchedulerWorkerPoolParams& params,
              scoped_refptr<TaskRunner> service_thread_task_runner,
+             SchedulerWorkerObserver* scheduler_worker_observer,
              WorkerEnvironment worker_environment);
 
   // Destroying a SchedulerWorkerPoolImpl returned by Create() is not allowed in
@@ -315,6 +319,10 @@ class BASE_EXPORT SchedulerWorkerPoolImpl : public SchedulerWorkerPool {
   HistogramBase* const num_tasks_between_waits_histogram_;
 
   scoped_refptr<TaskRunner> service_thread_task_runner_;
+
+  // Optional observer notified when a worker enters and exits its main
+  // function. Set in Start() and never modified afterwards.
+  SchedulerWorkerObserver* scheduler_worker_observer_ = nullptr;
 
   // Ensures recently cleaned up workers (ref.
   // SchedulerWorkerDelegateImpl::CleanupLockRequired()) had time to exit as

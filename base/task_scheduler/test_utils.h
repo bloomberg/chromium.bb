@@ -7,8 +7,9 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
-
+#include "base/task_scheduler/scheduler_worker_observer.h"
 #include "base/task_scheduler/sequence.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 namespace base {
 namespace internal {
@@ -17,6 +18,18 @@ class SchedulerWorkerPool;
 struct Task;
 
 namespace test {
+
+class MockSchedulerWorkerObserver : public SchedulerWorkerObserver {
+ public:
+  MockSchedulerWorkerObserver();
+  ~MockSchedulerWorkerObserver();
+
+  MOCK_METHOD0(OnSchedulerWorkerMainEntry, void());
+  MOCK_METHOD0(OnSchedulerWorkerMainExit, void());
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockSchedulerWorkerObserver);
+};
 
 // An enumeration of possible task scheduler TaskRunner types. Used to
 // parametrize relevant task_scheduler tests.

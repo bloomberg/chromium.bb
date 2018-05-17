@@ -26,6 +26,9 @@
 #endif
 
 namespace base {
+
+class SchedulerWorkerObserver;
+
 namespace internal {
 
 class TaskTracker;
@@ -120,8 +123,11 @@ class BASE_EXPORT SchedulerWorker
 
   // Creates a thread to back the SchedulerWorker. The thread will be in a wait
   // state pending a WakeUp() call. No thread will be created if Cleanup() was
-  // called. Returns true on success.
-  bool Start();
+  // called. If specified, |scheduler_worker_observer| will be notified when the
+  // worker enters and exits its main function. It must not be destroyed before
+  // JoinForTesting() has returned (must never be destroyed in production).
+  // Returns true on success.
+  bool Start(SchedulerWorkerObserver* scheduler_worker_observer = nullptr);
 
   // Wakes up this SchedulerWorker if it wasn't already awake. After this is
   // called, this SchedulerWorker will run Tasks from Sequences returned by the
@@ -215,6 +221,10 @@ class BASE_EXPORT SchedulerWorker
 
   const std::unique_ptr<Delegate> delegate_;
   const TrackedRef<TaskTracker> task_tracker_;
+
+  // Optional observer notified when a worker enters and exits its main
+  // function. Set in Start() and never modified afterwards.
+  SchedulerWorkerObserver* scheduler_worker_observer_ = nullptr;
 
   // Desired thread priority.
   const ThreadPriority priority_hint_;
