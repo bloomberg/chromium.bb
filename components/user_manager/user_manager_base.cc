@@ -934,6 +934,7 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
   }
 
   AddUserRecord(active_user_);
+  known_user::SetIsEphemeralUser(active_user_->GetAccountId(), false);
 
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
@@ -946,6 +947,7 @@ void UserManagerBase::RegularUserLoggedInAsEphemeral(
   SetIsCurrentUserNew(true);
   is_current_user_ephemeral_regular_user_ = true;
   active_user_ = User::CreateRegularUser(account_id, user_type);
+  known_user::SetIsEphemeralUser(active_user_->GetAccountId(), true);
 }
 
 void UserManagerBase::NotifyOnLogin() {
@@ -1075,6 +1077,8 @@ void UserManagerBase::ResetProfileEverInitialized(const AccountId& account_id) {
 
 void UserManagerBase::Initialize() {
   UserManager::Initialize();
+  if (!HasBrowserRestarted())
+    known_user::CleanEphemeralUsers();
   CallUpdateLoginState();
 }
 

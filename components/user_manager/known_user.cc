@@ -64,6 +64,10 @@ const char kMinimalMigrationAttempted[] = "minimal_migration_attempted";
 // Key of the boolean flag telling if user session requires policy.
 const char kProfileRequiresPolicy[] = "profile_requires_policy";
 
+// Key of the boolean flag telling if user is ephemeral and should be removed
+// from the local state on logout.
+const char kIsEphemeral[] = "is_ephemeral";
+
 PrefService* GetLocalState() {
   if (!UserManager::IsInitialized())
     return nullptr;
@@ -138,9 +142,11 @@ bool FindPrefs(const AccountId& account_id,
     return false;
 
   // UserManager is usually NULL in unit tests.
-  if (UserManager::IsInitialized() &&
-      UserManager::Get()->IsUserNonCryptohomeDataEphemeral(account_id))
+  if (account_id.GetAccountType() != AccountType::ACTIVE_DIRECTORY &&
+      UserManager::IsInitialized() &&
+      UserManager::Get()->IsUserNonCryptohomeDataEphemeral(account_id)) {
     return false;
+  }
 
   const base::ListValue* known_users = local_state->GetList(kKnownUsers);
   for (size_t i = 0; i < known_users->GetSize(); ++i) {
@@ -165,9 +171,11 @@ void UpdatePrefs(const AccountId& account_id,
     return;
 
   // UserManager is usually NULL in unit tests.
-  if (UserManager::IsInitialized() &&
-      UserManager::Get()->IsUserNonCryptohomeDataEphemeral(account_id))
+  if (account_id.GetAccountType() != AccountType::ACTIVE_DIRECTORY &&
+      UserManager::IsInitialized() &&
+      UserManager::Get()->IsUserNonCryptohomeDataEphemeral(account_id)) {
     return;
+  }
 
   ListPrefUpdate update(local_state, kKnownUsers);
   for (size_t i = 0; i < update->GetSize(); ++i) {
@@ -397,6 +405,24 @@ void SetGaiaIdMigrationStatusDone(const AccountId& account_id,
                  true);
 }
 
+void SaveKnownUser(const AccountId& account_id) {
+  const bool is_ephemeral =
+      UserManager::IsInitialized() &&
+      UserManager::Get()->IsUserNonCryptohomeDataEphemeral(account_id);
+  if (is_ephemeral &&
+      account_id.GetAccountType() != AccountType::ACTIVE_DIRECTORY) {
+    return;
+  }
+  UpdateId(account_id);
+  GetLocalState()->CommitPendingWrite();
+}
+
+void SetIsEphemeralUser(const AccountId& account_id, bool is_ephemeral) {
+  if (account_id.GetAccountType() != AccountType::ACTIVE_DIRECTORY)
+    return;
+  SetBooleanPref(account_id, kIsEphemeral, is_ephemeral);
+}
+
 void UpdateGaiaID(const AccountId& account_id, const std::string& gaia_id) {
   SetStringPref(account_id, kGAIAIdKey, gaia_id);
   SetStringPref(account_id, kAccountTypeKey,
@@ -541,6 +567,31 @@ void RemovePrefs(const AccountId& account_id) {
         break;
       }
     }
+  }
+}
+
+void CleanEphemeralUsers() {
+  PrefService* local_state = GetLocalState();
+
+  // Local State may not be initialized in tests.
+  if (!local_state)
+    return;
+
+  ListPrefUpdate update(local_state, kKnownUsers);
+  auto& list_storage = update->GetList();
+  for (auto it = list_storage.begin(); it < list_storage.end();) {
+    bool remove = false;
+    base::DictionaryValue* element = nullptr;
+    if (update->GetDictionary(std::distance(list_storage.begin(), it),
+                              &element)) {
+      base::Value* is_ephemeral = element->FindKey(kIsEphemeral);
+      if (is_ephemeral && is_ephemeral->GetBool())
+        remove = true;
+    }
+    if (remove)
+      it = list_storage.erase(it);
+    else
+      it++;
   }
 }
 

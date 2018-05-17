@@ -550,6 +550,11 @@ void CryptohomeAuthenticator::CompleteLogin(content::BrowserContext* context,
 
   // Reset the verified flag.
   owner_is_verified_ = false;
+  if (!user_manager::known_user::FindPrefs(user_context.GetAccountId(),
+                                           nullptr)) {
+    // Save logged in user into local state as early as possible.
+    user_manager::known_user::SaveKnownUser(user_context.GetAccountId());
+  }
 
   StartMount(current_state_->AsWeakPtr(),
              scoped_refptr<CryptohomeAuthenticator>(this),
