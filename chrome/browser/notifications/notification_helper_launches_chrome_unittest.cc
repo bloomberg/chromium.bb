@@ -241,14 +241,7 @@ class NotificationHelperLaunchesChrome : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(NotificationHelperLaunchesChrome);
 };
 
-// TODO(https://crbug.com/841475): Test is flaky on Win10.  Re-enable after
-// unflaking.
-#if defined(OS_WIN)
-#define MAYBE_ChromeLaunchTest DISABLED_ChromeLaunchTest
-#else
-#define MAYBE_ChromeLaunchTest ChromeLaunchTest
-#endif
-TEST_F(NotificationHelperLaunchesChrome, MAYBE_ChromeLaunchTest) {
+TEST_F(NotificationHelperLaunchesChrome, ChromeLaunchTest) {
   // This test requires WinRT core functions, which are not available in
   // older versions of Windows.
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
@@ -267,7 +260,7 @@ TEST_F(NotificationHelperLaunchesChrome, MAYBE_ChromeLaunchTest) {
       IID_PPV_ARGS(&notification_activator)));
   ASSERT_TRUE(notification_activator);
 
-  ASSERT_HRESULT_SUCCEEDED(
+  EXPECT_HRESULT_SUCCEEDED(
       ::CoAllowSetForegroundWindow(notification_activator.Get(), nullptr));
 
   // The notification_helper server is now invoked upon the request of creating
