@@ -1472,6 +1472,7 @@ void WebFormControlElementToFormField(
   if (id != field->name)
     field->id = id;
 
+  field->unique_renderer_id = element.UniqueRendererFormControlId();
   field->form_control_type = element.FormControlTypeForAutofill().Utf8();
   field->autocomplete_attribute = element.GetAttribute(kAutocomplete).Utf8();
   if (field->autocomplete_attribute.size() > kMaxDataLength) {
@@ -1595,6 +1596,7 @@ bool WebFormElementToFormData(
     return false;
 
   form->name = GetFormIdentifier(form_element);
+  form->unique_renderer_id = form_element.UniqueRendererFormId();
   form->origin = GetCanonicalOriginForDocument(frame->GetDocument());
   form->action = GetCanonicalActionForForm(form_element);
   if (frame->Top()) {

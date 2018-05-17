@@ -111,6 +111,7 @@ struct FormFieldData {
   string autocomplete_attribute;
   mojo_base.mojom.String16 placeholder;
   mojo_base.mojom.String16 css_classes;
+  uint32 unique_renderer_id;
   uint32 properties_mask;
 
   uint64 max_length;
@@ -141,6 +142,7 @@ struct FormData {
   url.mojom.Origin main_frame_origin;
   bool is_form_tag;
   bool is_formless_checkout;
+  uint32 unique_renderer_id;
   array<FormFieldData> fields;
 };
 

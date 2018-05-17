@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include <limits>
 #include <vector>
 
 #include "base/i18n/rtl.h"
@@ -68,6 +69,9 @@ struct FormFieldData {
     VALUE,     // label is the value of element.
   };
 
+  static constexpr uint32_t kNotSetFormControlRendererId =
+      std::numeric_limits<uint32_t>::max();
+
   FormFieldData();
   FormFieldData(const FormFieldData& other);
   ~FormFieldData();
@@ -107,6 +111,11 @@ struct FormFieldData {
   std::string autocomplete_attribute;
   base::string16 placeholder;
   base::string16 css_classes;
+  // Unique renderer id which is returned by function
+  // WebFormControlElement::UniqueRendererFormControlId(). It is not persistant
+  // between page loads, so it is not saved and not used in comparison in
+  // SameFieldAs().
+  uint32_t unique_renderer_id = kNotSetFormControlRendererId;
 
   // The unique identifier of the section (e.g. billing vs. shipping address)
   // of this field.

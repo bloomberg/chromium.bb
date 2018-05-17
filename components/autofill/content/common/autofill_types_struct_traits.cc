@@ -574,7 +574,7 @@ bool StructTraits<
     return false;
 
   out->properties_mask = data.properties_mask();
-
+  out->unique_renderer_id = data.unique_renderer_id();
   out->max_length = data.max_length();
   out->is_autofilled = data.is_autofilled();
 
@@ -622,6 +622,7 @@ bool StructTraits<autofill::mojom::FormDataDataView, autofill::FormData>::Read(
 
   out->is_form_tag = data.is_form_tag();
   out->is_formless_checkout = data.is_formless_checkout();
+  out->unique_renderer_id = data.unique_renderer_id();
 
   if (!data.ReadFields(&out->fields))
     return false;
