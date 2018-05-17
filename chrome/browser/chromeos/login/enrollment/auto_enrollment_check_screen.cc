@@ -230,7 +230,9 @@ void AutoEnrollmentCheckScreen::ShowErrorScreen(
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   ErrorScreen* error_screen = get_base_screen_delegate()->GetErrorScreen();
   error_screen->SetUIState(NetworkError::UI_STATE_AUTO_ENROLLMENT_ERROR);
-  error_screen->AllowGuestSignin(true);
+  error_screen->AllowGuestSignin(
+      auto_enrollment_controller_->GetFRERequirement() !=
+      AutoEnrollmentController::FRERequirement::kExplicitlyRequired);
   error_screen->SetErrorState(error_state,
                               network ? network->name() : std::string());
   connect_request_subscription_ = error_screen->RegisterConnectRequestCallback(
