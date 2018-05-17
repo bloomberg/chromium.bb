@@ -35,7 +35,7 @@ Studio installer that you download:
     --add Microsoft.VisualStudio.Component.VC.ATLMFC --includeRecommended
 ```
 
-You must have the version 10.0.17134 Windows 10 SDK installed. This can be
+You must have the version 10.0.15063 Windows 10 SDK installed. This can be
 installed separately or by checking the appropriate box in the Visual Studio
 Installer.
 

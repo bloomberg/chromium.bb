@@ -149,9 +149,10 @@ def _LoadToolchainEnv(cpu, sdk_dir, target_store):
     # Store target must come before any SDK version declaration
     if (target_store):
       args.append(['store'])
-    # Chromium requires the 10.0.17134.0 SDK - previous versions don't have
-    # all of the required declarations.
-    args.append('10.0.17134.0')
+    # Chromium requires the 10.0.15063.468 SDK - previous versions don't have
+    # all of the required declarations and 10.0.16299.0 has some
+    # incompatibilities (crbug.com/773476).
+    args.append('10.0.15063.0')
     variables = _LoadEnvFromBat(args)
   return _ExtractImportantEnvironment(variables)
 

@@ -335,7 +335,7 @@ def _CopyDebugger(target_dir, target_cpu):
         # TODO(crbug.com/773476): remove version requirement.
         raise Exception('%s not found in "%s"\r\nYou must install the '
                         '"Debugging Tools for Windows" feature from the Windows'
-                        ' 10 SDK. You must use v10.0.17134.0. of the SDK'
+                        ' 10 SDK. You must use v10.0.15063.468. of the SDK'
                         % (debug_file, full_path))
     target_path = os.path.join(target_dir, debug_file)
     _CopyRuntimeImpl(target_path, full_path)
@@ -346,8 +346,9 @@ def _GetDesiredVsToolchainHashes():
   to build with."""
   env_version = GetVisualStudioVersion()
   if env_version == '2017':
-    # VS 2017 Update 7.1 (15.7.1) with 10.0.17134.12 SDK.
-    toolchain_hash = '5454e45bf3764c03d3fc1024b3bf5bc41e3ab62c'
+    # VS 2017 Update 3.2 with 10.0.15063.468 SDK, patched setenv.cmd, and
+    # 10.0.16299.15 debuggers.
+    toolchain_hash = '1180cb75833ea365097e279efb2d5d7a42dee4b0'
     # Third parties that do not have access to the canonical toolchain can map
     # canonical toolchain version to their own toolchain versions.
     toolchain_hash_mapping_key = 'GYP_MSVS_HASH_%s' % toolchain_hash

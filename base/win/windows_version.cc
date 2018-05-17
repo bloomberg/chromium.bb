@@ -19,8 +19,11 @@
 #endif
 
 #if !defined(NTDDI_WIN10_RS2)
-// Windows 10 April 2018 SDK is required to build Chrome.
-#error April 2018 SDK (10.0.17134.0) or higher required.
+// Windows 10 Creators Update SDK is required to build Chrome. It is important
+// to install the 10.0.15063.468 version, released June 2017, because earlier
+// versions had bugs and could not build Chrome. See this link for details:
+// https://developercommunity.visualstudio.com/content/problem/42961/15063-sdk-is-broken-bitsh-indirectly-references-no.html
+#error Creators Update SDK (10.0.15063.468) required.
 #endif
 
 namespace {
