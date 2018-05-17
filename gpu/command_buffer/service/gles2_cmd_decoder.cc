@@ -3337,6 +3337,11 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   }
   CHECK_GL_ERROR();
 
+  if (features().chromium_gpu_fence &&
+      group_->gpu_preferences().use_gpu_fences_for_overlay_planes) {
+    surface_->SetUsePlaneGpuFences();
+  }
+
   should_use_native_gmb_for_backbuffer_ =
       attrib_helper.should_use_native_gmb_for_backbuffer;
   if (should_use_native_gmb_for_backbuffer_) {
@@ -4034,6 +4039,8 @@ Capabilities GLES2DecoderImpl::GetCapabilities() {
       feature_info_->feature_flags().chromium_texture_storage_image;
   caps.supports_oop_raster = false;
   caps.chromium_gpu_fence = feature_info_->feature_flags().chromium_gpu_fence;
+  caps.use_gpu_fences_for_overlay_planes =
+      group_->gpu_preferences().use_gpu_fences_for_overlay_planes;
   caps.unpremultiply_and_dither_copy =
       feature_info_->feature_flags().unpremultiply_and_dither_copy;
   caps.texture_target_exception_list =
@@ -12371,11 +12378,21 @@ error::Error GLES2DecoderImpl::HandleScheduleOverlayPlaneCHROMIUM(
                        "invalid transform enum");
     return error::kNoError;
   }
+  GLuint gpu_fence_id = static_cast<GLuint>(c.gpu_fence_id);
+  std::unique_ptr<gfx::GpuFence> gpu_fence;
+  if (gpu_fence_id > 0) {
+    gpu_fence = GetGpuFenceManager()->GetGpuFence(gpu_fence_id);
+    if (!gpu_fence) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_ENUM, "glScheduleOverlayPlaneCHROMIUM",
+                         "unknown fence");
+      return error::kNoError;
+    }
+  }
   if (!surface_->ScheduleOverlayPlane(
           c.plane_z_order, transform, image,
           gfx::Rect(c.bounds_x, c.bounds_y, c.bounds_width, c.bounds_height),
           gfx::RectF(c.uv_x, c.uv_y, c.uv_width, c.uv_height), c.enable_blend,
-          nullptr)) {
+          std::move(gpu_fence))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
                        "glScheduleOverlayPlaneCHROMIUM",
                        "failed to schedule overlay");

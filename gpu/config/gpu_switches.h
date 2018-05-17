@@ -17,6 +17,7 @@ GPU_EXPORT extern const char kGpuPreferences[];
 GPU_EXPORT extern const char kIgnoreGpuBlacklist[];
 GPU_EXPORT extern const char kGpuBlacklistTestGroup[];
 GPU_EXPORT extern const char kGpuDriverBugListTestGroup[];
+GPU_EXPORT extern const char kUseGpuFencesForOverlayPlanes[];
 
 }  // namespace switches
 

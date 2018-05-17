@@ -3312,7 +3312,8 @@ void GLES2Implementation::ScheduleOverlayPlaneCHROMIUM(
     GLfloat uv_y,
     GLfloat uv_width,
     GLfloat uv_height,
-    GLboolean enable_blend) {
+    GLboolean enable_blend,
+    GLuint gpu_fence_id) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix() << "] glScheduleOverlayPlaneCHROMIUM("
@@ -3320,11 +3321,12 @@ void GLES2Implementation::ScheduleOverlayPlaneCHROMIUM(
           << ", " << overlay_texture_id << ", " << bounds_x << ", " << bounds_y
           << ", " << bounds_width << ", " << bounds_height << ", " << uv_x
           << ", " << uv_y << ", " << uv_width << ", " << uv_height << ", "
-          << GLES2Util::GetStringBool(enable_blend) << ")");
-  helper_->ScheduleOverlayPlaneCHROMIUM(plane_z_order, plane_transform,
-                                        overlay_texture_id, bounds_x, bounds_y,
-                                        bounds_width, bounds_height, uv_x, uv_y,
-                                        uv_width, uv_height, enable_blend);
+          << GLES2Util::GetStringBool(enable_blend) << ", " << gpu_fence_id
+          << ")");
+  helper_->ScheduleOverlayPlaneCHROMIUM(
+      plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
+      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height,
+      enable_blend, gpu_fence_id);
   CheckGLError();
 }
 

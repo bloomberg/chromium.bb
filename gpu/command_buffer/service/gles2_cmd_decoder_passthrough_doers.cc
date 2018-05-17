@@ -4146,7 +4146,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleOverlayPlaneCHROMIUM(
     GLfloat uv_x,
     GLfloat uv_y,
     GLfloat uv_width,
-    GLfloat uv_height) {
+    GLfloat uv_height,
+    GLuint gpu_fence_id) {
   NOTIMPLEMENTED();
   return error::kNoError;
 }

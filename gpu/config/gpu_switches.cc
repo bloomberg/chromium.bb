@@ -37,4 +37,8 @@ const char kGpuBlacklistTestGroup[] = "gpu-blacklist-test-group";
 // test_group ID.
 const char kGpuDriverBugListTestGroup[] = "gpu-driver-bug-list-test-group";
 
+// Use GpuFence objects to synchronize display of overlay planes.
+const char kUseGpuFencesForOverlayPlanes[] =
+    "use-gpu-fences-for-overlay-planes";
+
 }  // namespace switches

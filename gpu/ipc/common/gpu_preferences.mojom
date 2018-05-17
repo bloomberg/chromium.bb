@@ -60,4 +60,5 @@ struct GpuPreferences {
   bool disable_gpu_driver_bug_workarounds;
   bool ignore_gpu_blacklist;
   bool enable_oop_rasterization;
+  bool use_gpu_fences_for_overlay_planes;
 };

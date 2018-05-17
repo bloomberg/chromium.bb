@@ -143,6 +143,7 @@ IPC_STRUCT_TRAITS_BEGIN(gpu::Capabilities)
   IPC_STRUCT_TRAITS_MEMBER(chromium_gpu_fence)
   IPC_STRUCT_TRAITS_MEMBER(unpremultiply_and_dither_copy)
   IPC_STRUCT_TRAITS_MEMBER(separate_stencil_ref_mask_writemask)
+  IPC_STRUCT_TRAITS_MEMBER(use_gpu_fences_for_overlay_planes)
 
   IPC_STRUCT_TRAITS_MEMBER(major_version)
   IPC_STRUCT_TRAITS_MEMBER(minor_version)

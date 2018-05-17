@@ -188,6 +188,8 @@ struct GPU_EXPORT Capabilities {
 
   bool separate_stencil_ref_mask_writemask = false;
 
+  bool use_gpu_fences_for_overlay_planes = false;
+
   int major_version = 2;
   int minor_version = 0;
 
