@@ -452,16 +452,6 @@ ProfileSyncService::GetLocalDeviceInfoProvider() const {
   return local_device_.get();
 }
 
-void ProfileSyncService::GetDataTypeControllerStates(
-    DataTypeController::StateMap* state_map) const {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  for (const auto& item : data_type_controllers_) {
-    const syncer::ModelType type = item.first;
-    const std::unique_ptr<DataTypeController>& controller = item.second;
-    state_map->emplace(type, controller->state());
-  }
-}
-
 void ProfileSyncService::OnSessionRestoreComplete() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DataTypeController::TypeMap::const_iterator iter =
