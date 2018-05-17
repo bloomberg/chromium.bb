@@ -11,6 +11,7 @@
 #include <string>
 
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
@@ -1792,6 +1793,15 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.TimeoutPhase",
                             phase,
                             EmbeddedWorkerInstance::STARTING_PHASE_MAX_VALUE);
+
+  if (IsInstalled(prestart_status) && !s_dumped_for_timeout_) {
+    // TODO(crbug.com/843456): Remove this instrumentation when the linked bug
+    // is fixed.
+    s_dumped_for_timeout_ = true;
+    DEBUG_ALIAS_FOR_GURL(script_url, script_url_);
+    base::debug::Alias(&phase);
+    base::debug::DumpWithoutCrashing();
+  }
 }
 
 bool ServiceWorkerVersion::MaybeTimeoutRequest(
@@ -2014,5 +2024,8 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
 
   return true;
 }
+
+// static
+bool ServiceWorkerVersion::s_dumped_for_timeout_ = false;
 
 }  // namespace content
