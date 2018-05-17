@@ -58,7 +58,7 @@ config("blink_pch") {
       # This is a string rather than a file GN knows about. It has to match
       # exactly what's in the /FI flag below, and what might appear in the
       # source code in quotes for an #include directive.
-      precompiled_header = rebase_path("build/win/precompile.h", root_build_dir)
+      precompiled_header = rebase_path("build/win/precompile.h", "//")
 
       # This is a file that GN will compile with the above header. It will be
       # implicitly added to the sources (potentially multiple times, with one
