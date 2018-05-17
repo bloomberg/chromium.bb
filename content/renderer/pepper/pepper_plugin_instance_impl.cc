@@ -100,7 +100,6 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/public/platform/web_rect.h"

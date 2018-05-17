@@ -39,7 +39,6 @@
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -419,7 +418,7 @@ bool GraphicsLayer::PaintWithoutCommit(
 }
 
 void GraphicsLayer::UpdateChildList() {
-  WebLayer* child_host = layer_.get();
+  cc::Layer* child_host = layer_.get();
   child_host->RemoveAllChildren();
 
   ClearContentsLayerIfUnregistered();
@@ -447,7 +446,7 @@ void GraphicsLayer::UpdateLayerIsDrawable() {
   // contentsVisible.
 
   layer_->SetIsDrawable(draws_content_ && contents_visible_);
-  if (WebLayer* contents_layer = ContentsLayerIfRegistered())
+  if (cc::Layer* contents_layer = ContentsLayerIfRegistered())
     contents_layer->SetIsDrawable(contents_visible_);
 
   if (draws_content_) {
@@ -458,7 +457,7 @@ void GraphicsLayer::UpdateLayerIsDrawable() {
 }
 
 void GraphicsLayer::UpdateContentsRect() {
-  WebLayer* contents_layer = ContentsLayerIfRegistered();
+  cc::Layer* contents_layer = ContentsLayerIfRegistered();
   if (!contents_layer)
     return;
 
@@ -501,21 +500,21 @@ void GraphicsLayer::UpdateContentsRect() {
 
 static HashSet<int>* g_registered_layer_set;
 
-void GraphicsLayer::RegisterContentsLayer(WebLayer* layer) {
+void GraphicsLayer::RegisterContentsLayer(cc::Layer* layer) {
   if (!g_registered_layer_set)
     g_registered_layer_set = new HashSet<int>;
   CHECK(!g_registered_layer_set->Contains(layer->id()));
   g_registered_layer_set->insert(layer->id());
 }
 
-void GraphicsLayer::UnregisterContentsLayer(WebLayer* layer) {
+void GraphicsLayer::UnregisterContentsLayer(cc::Layer* layer) {
   DCHECK(g_registered_layer_set);
   CHECK(g_registered_layer_set->Contains(layer->id()));
   g_registered_layer_set->erase(layer->id());
   layer->SetLayerClient(nullptr);
 }
 
-void GraphicsLayer::SetContentsTo(WebLayer* layer,
+void GraphicsLayer::SetContentsTo(cc::Layer* layer,
                                   bool prevent_contents_opaque_changes) {
   bool children_changed = false;
   if (layer) {
@@ -540,7 +539,7 @@ void GraphicsLayer::SetContentsTo(WebLayer* layer,
     UpdateChildList();
 }
 
-void GraphicsLayer::SetupContentsLayer(WebLayer* contents_layer) {
+void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   DCHECK(contents_layer);
   SetContentsLayer(contents_layer);
 
@@ -555,11 +554,11 @@ void GraphicsLayer::SetupContentsLayer(WebLayer* contents_layer) {
   // Insert the content layer first. Video elements require this, because they
   // have shadow content that must display in front of the video.
   layer_->InsertChild(contents_layer_, 0);
-  WebLayer* border_web_layer =
+  cc::Layer* border_cc_layer =
       contents_clipping_mask_layer_
           ? contents_clipping_mask_layer_->PlatformLayer()
           : nullptr;
-  contents_layer_->SetMaskLayer(border_web_layer);
+  contents_layer_->SetMaskLayer(border_cc_layer);
 
   contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
@@ -572,7 +571,7 @@ void GraphicsLayer::ClearContentsLayerIfUnregistered() {
   SetContentsLayer(nullptr);
 }
 
-void GraphicsLayer::SetContentsLayer(WebLayer* contents_layer) {
+void GraphicsLayer::SetContentsLayer(cc::Layer* contents_layer) {
   // If we have a previous contents layer which is still registered, then unset
   // this client pointer. If unregistered, it has already nulled out the client
   // pointer and may have been deleted.
@@ -591,7 +590,7 @@ GraphicsLayerDebugInfo& GraphicsLayer::DebugInfo() {
   return debug_info_;
 }
 
-WebLayer* GraphicsLayer::ContentsLayerIfRegistered() {
+cc::Layer* GraphicsLayer::ContentsLayerIfRegistered() {
   ClearContentsLayerIfUnregistered();
   return contents_layer_;
 }
@@ -642,7 +641,7 @@ void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     EnsureRasterInvalidator().EnsureTracking();
 
-  // For SPv175, this only tracks invalidations that the WebLayer is fully
+  // For SPv175, this only tracks invalidations that the cc::Layer is fully
   // invalidated directly, e.g. from SetContentsNeedsDisplay(), etc.
   if (auto* tracking = GetRasterInvalidationTracking())
     tracking->AddInvalidation(&client, client.DebugName(), rect, reason);
@@ -1089,8 +1088,8 @@ void GraphicsLayer::SetDrawsContent(bool draws_content) {
 
 void GraphicsLayer::SetContentsVisible(bool contents_visible) {
   // NOTE: This early-exit is only correct because we also properly call
-  // WebLayer::setDrawsContent() whenever |m_contentsLayer| is set to a new
-  // layer in setupContentsLayer().
+  // cc::Layer::SetIsDrawable() whenever |contents_layer_| is set to a new
+  // layer in SetupContentsLayer().
   if (contents_visible == contents_visible_)
     return;
 
@@ -1098,12 +1097,12 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
   UpdateLayerIsDrawable();
 }
 
-void GraphicsLayer::SetClipParent(WebLayer* parent) {
+void GraphicsLayer::SetClipParent(cc::Layer* parent) {
   has_clip_parent_ = !!parent;
   layer_->SetClipParent(parent);
 }
 
-void GraphicsLayer::SetScrollParent(WebLayer* parent) {
+void GraphicsLayer::SetScrollParent(cc::Layer* parent) {
   has_scroll_parent_ = !!parent;
   layer_->SetScrollParent(parent);
 }
@@ -1138,14 +1137,14 @@ void GraphicsLayer::SetContentsClippingMaskLayer(
     return;
 
   contents_clipping_mask_layer_ = contents_clipping_mask_layer;
-  WebLayer* contents_layer = ContentsLayerIfRegistered();
+  cc::Layer* contents_layer = ContentsLayerIfRegistered();
   if (!contents_layer)
     return;
-  WebLayer* contents_clipping_mask_web_layer =
+  cc::Layer* contents_clipping_mask_cc_layer =
       contents_clipping_mask_layer_
           ? contents_clipping_mask_layer_->PlatformLayer()
           : nullptr;
-  contents_layer->SetMaskLayer(contents_clipping_mask_web_layer);
+  contents_layer->SetMaskLayer(contents_clipping_mask_cc_layer);
   UpdateContentsRect();
 }
 
@@ -1182,7 +1181,7 @@ void GraphicsLayer::SetHitTestableWithoutDrawsContent(bool should_hit_test) {
 }
 
 void GraphicsLayer::SetContentsNeedsDisplay() {
-  if (WebLayer* contents_layer = ContentsLayerIfRegistered()) {
+  if (cc::Layer* contents_layer = ContentsLayerIfRegistered()) {
     contents_layer->SetNeedsDisplay();
     TrackRasterInvalidation(*this, contents_rect_,
                             PaintInvalidationReason::kFull);
@@ -1285,7 +1284,7 @@ void GraphicsLayer::SetContentsToImage(
                 /*prevent_contents_opaque_changes=*/true);
 }
 
-WebLayer* GraphicsLayer::PlatformLayer() const {
+cc::Layer* GraphicsLayer::PlatformLayer() const {
   return layer_.get();
 }
 
@@ -1368,12 +1367,12 @@ PaintController& GraphicsLayer::GetPaintController() const {
 }
 
 void GraphicsLayer::SetElementId(const CompositorElementId& id) {
-  if (WebLayer* layer = PlatformLayer())
+  if (cc::Layer* layer = PlatformLayer())
     layer->SetElementId(id);
 }
 
 CompositorElementId GraphicsLayer::GetElementId() const {
-  if (WebLayer* layer = PlatformLayer())
+  if (cc::Layer* layer = PlatformLayer())
     return layer->element_id();
   return CompositorElementId();
 }

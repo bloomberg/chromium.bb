@@ -49,7 +49,7 @@ void ImageBitmapRenderingContextBase::SetUV(const FloatPoint& left_top,
   image_layer_bridge_->SetUV(left_top, right_bottom);
 }
 
-WebLayer* ImageBitmapRenderingContextBase::PlatformLayer() const {
+cc::Layer* ImageBitmapRenderingContextBase::PlatformLayer() const {
   return image_layer_bridge_->PlatformLayer();
 }
 

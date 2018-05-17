@@ -32,7 +32,6 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "cc/layers/texture_layer_client.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
@@ -52,6 +51,7 @@
 struct SkImageInfo;
 
 namespace cc {
+class Layer;
 class TextureLayer;
 }
 
@@ -101,7 +101,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   void SetIsHidden(bool);
   void DidDraw(const FloatRect&);
   void DoPaintInvalidation(const FloatRect& dirty_rect);
-  WebLayer* Layer();
+  cc::Layer* Layer();
   bool Restore();
   void DisableDeferral(DisableDeferralReason);
   void SetFilterQuality(SkFilterQuality);

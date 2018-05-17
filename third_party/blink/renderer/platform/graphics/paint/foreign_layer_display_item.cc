@@ -5,8 +5,8 @@
 #include "third_party/blink/renderer/platform/graphics/paint/foreign_layer_display_item.h"
 
 #include <utility>
+
 #include "cc/layers/layer.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -60,7 +60,7 @@ void ForeignLayerDisplayItem::PropertiesAsJSON(JSONObject& json) const {
 void RecordForeignLayer(GraphicsContext& context,
                         const DisplayItemClient& client,
                         DisplayItem::Type type,
-                        WebLayer* web_layer,
+                        scoped_refptr<cc::Layer> layer,
                         const FloatPoint& location,
                         const IntSize& bounds) {
   PaintController& paint_controller = context.GetPaintController();
@@ -68,7 +68,7 @@ void RecordForeignLayer(GraphicsContext& context,
     return;
 
   paint_controller.CreateAndAppend<ForeignLayerDisplayItem>(
-      client, type, web_layer, location, bounds);
+      client, type, std::move(layer), location, bounds);
 }
 
 }  // namespace blink

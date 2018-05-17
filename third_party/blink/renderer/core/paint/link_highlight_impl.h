@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "cc/layers/content_layer_client.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
@@ -61,7 +60,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   ~LinkHighlightImpl() override;
 
   cc::PictureLayer* ContentLayer();
-  WebLayer* ClipLayer();
+  cc::Layer* ClipLayer();
   void StartHighlightAnimationIfNeeded();
   void UpdateGeometry();
 
@@ -79,7 +78,7 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
 
   // LinkHighlight implementation.
   void Invalidate() override;
-  WebLayer* Layer() override;
+  cc::Layer* Layer() override;
   void ClearCurrentGraphicsLayer() override;
 
   // CompositorAnimationClient implementation.

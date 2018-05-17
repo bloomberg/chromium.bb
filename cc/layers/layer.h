@@ -172,8 +172,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   const FilterOperations& filters() const { return inputs_.filters; }
 
   // Background filters are filters applied to what is behind this layer, when
-  // they are viewed through non-opaque regions in this layer. They are used
-  // through the WebLayer interface, and are not exposed to HTML.
+  // they are viewed through non-opaque regions in this layer.
   void SetBackgroundFilters(const FilterOperations& filters);
   const FilterOperations& background_filters() const {
     return inputs_.background_filters;

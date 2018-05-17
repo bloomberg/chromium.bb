@@ -444,7 +444,7 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
   if (IsTextureLayerCanvas(GetLayoutObject())) {
     CanvasRenderingContext* context =
         ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
-    WebLayer* layer = context ? context->PlatformLayer() : nullptr;
+    cc::Layer* layer = context ? context->PlatformLayer() : nullptr;
     // Determine whether the external texture layer covers the whole graphics
     // layer. This may not be the case if there are box decorations or
     // shadows.
@@ -852,7 +852,7 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
         ToHTMLFrameOwnerElement(layout_object.GetNode())->ContentFrame();
     if (frame->IsRemoteFrame()) {
       RemoteFrame* remote = ToRemoteFrame(frame);
-      WebLayer* layer = remote->GetWebLayer();
+      cc::Layer* layer = remote->GetWebLayer();
       graphics_layer_->SetContentsToPlatformLayer(
           layer, remote->WebLayerHasFixedContentsOpaque());
     }
@@ -1974,7 +1974,7 @@ void CompositedLayerMapping::UpdateDrawsContent() {
     CanvasRenderingContext* context =
         ToHTMLCanvasElement(GetLayoutObject().GetNode())->RenderingContext();
     // Content layer may be null if context is lost.
-    if (WebLayer* content_layer = context->PlatformLayer()) {
+    if (cc::Layer* content_layer = context->PlatformLayer()) {
       Color bg_color(Color::kTransparent);
       if (ContentLayerSupportsDirectBackgroundComposition(GetLayoutObject())) {
         bg_color = LayoutObjectBackgroundColor();
@@ -2364,8 +2364,8 @@ void CompositedLayerMapping::UpdateRenderingContext() {
   // NB, it is illegal at this point to query an ancestor's compositing state.
   // Some compositing reasons depend on the compositing state of ancestors. So
   // if we want a rendering context id for the context root, we cannot ask for
-  // the id of its associated WebLayer now; it may not have one yet. We could do
-  // a second pass after doing the compositing updates to get these ids, but
+  // the id of its associated cc::Layer now; it may not have one yet. We could
+  // do a second pass after doing the compositing updates to get these ids, but
   // this would actually be harmful. We do not want to attach any semantic
   // meaning to the context id other than the fact that they group a number of
   // layers together for the sake of 3d sorting. So instead we will ask the

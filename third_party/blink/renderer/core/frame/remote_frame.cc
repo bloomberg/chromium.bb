@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -107,7 +106,7 @@ void RemoteFrame::Detach(FrameDetachType type) {
   // persistent strong references to RemoteDOMWindow will prevent the GCing
   // of all these objects. Break the cycle by notifying of detachment.
   ToRemoteDOMWindow(dom_window_)->FrameDetached();
-  if (web_layer_)
+  if (cc_layer_)
     SetWebLayer(nullptr, false);
   Frame::Detach(type);
 }
@@ -172,14 +171,14 @@ RemoteFrameClient* RemoteFrame::Client() const {
   return static_cast<RemoteFrameClient*>(Frame::Client());
 }
 
-void RemoteFrame::SetWebLayer(WebLayer* web_layer,
+void RemoteFrame::SetWebLayer(cc::Layer* cc_layer,
                               bool prevent_contents_opaque_changes) {
-  if (web_layer_)
-    GraphicsLayer::UnregisterContentsLayer(web_layer_);
-  web_layer_ = web_layer;
+  if (cc_layer_)
+    GraphicsLayer::UnregisterContentsLayer(cc_layer_);
+  cc_layer_ = cc_layer;
   prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
-  if (web_layer_)
-    GraphicsLayer::RegisterContentsLayer(web_layer_);
+  if (cc_layer_)
+    GraphicsLayer::RegisterContentsLayer(cc_layer_);
 
   DCHECK(Owner());
   ToHTMLFrameOwnerElement(Owner())->SetNeedsCompositingUpdate();

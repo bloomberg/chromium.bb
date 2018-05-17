@@ -32,10 +32,13 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_MEDIA_PLAYER_CLIENT_H_
 
 #include "third_party/blink/public/platform/web_common.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_media_player.h"
 #include "ui/gfx/color_space.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -74,7 +77,7 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void DurationChanged() = 0;
   virtual void SizeChanged() = 0;
   virtual void PlaybackStateChanged() = 0;
-  virtual void SetWebLayer(WebLayer*) = 0;
+  virtual void SetWebLayer(cc::Layer*) = 0;
   virtual WebMediaPlayer::TrackId AddAudioTrack(const WebString& id,
                                                 AudioTrackKind,
                                                 const WebString& label,

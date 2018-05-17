@@ -12,7 +12,6 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/accelerated_static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
@@ -230,7 +229,7 @@ void ImageLayerBridge::ResourceReleasedSoftware(
     recycled_bitmaps_.push_back(std::move(registered));
 }
 
-WebLayer* ImageLayerBridge::PlatformLayer() const {
+cc::Layer* ImageLayerBridge::PlatformLayer() const {
   return layer_.get();
 }
 

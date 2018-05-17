@@ -5,20 +5,18 @@
 #ifndef CONTENT_RENDERER_CHILD_FRAME_COMPOSITOR_H_
 #define CONTENT_RENDERER_CHILD_FRAME_COMPOSITOR_H_
 
-#include "third_party/blink/public/platform/web_layer.h"
-
 namespace cc {
 class Layer;
 }
 
 namespace content {
 
-// A ChildFrameCompositor is an owner of a blink::WebLayer that embeds a child
+// A ChildFrameCompositor is an owner of a cc::Layer that embeds a child
 // frame.
 class ChildFrameCompositor {
  public:
-  // Get the child frame's cc::Layer wrapped as a blink::WebLayer.
-  virtual blink::WebLayer* GetLayer() = 0;
+  // Get the child frame's cc::Layer.
+  virtual cc::Layer* GetLayer() = 0;
 
   // Passes ownership of a cc::Layer to the ChildFrameCompositor.
   virtual void SetLayer(scoped_refptr<cc::Layer> layer,

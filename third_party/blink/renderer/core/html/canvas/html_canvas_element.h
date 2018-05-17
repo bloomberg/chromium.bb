@@ -56,6 +56,10 @@
 
 #define CanvasDefaultInterpolationQuality kInterpolationLow
 
+namespace cc {
+class Layer;
+}
+
 namespace blink {
 
 class Canvas2DLayerBridge;
@@ -198,8 +202,8 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // SurfaceLayerBridgeObserver implementation
   void OnWebLayerUpdated() override;
-  void RegisterContentsLayer(WebLayer*) override;
-  void UnregisterContentsLayer(WebLayer*) override;
+  void RegisterContentsLayer(cc::Layer*) override;
+  void UnregisterContentsLayer(cc::Layer*) override;
 
   // CanvasResourceHost implementation
   void NotifySurfaceInvalid() override;

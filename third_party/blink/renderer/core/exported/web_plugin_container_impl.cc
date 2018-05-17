@@ -36,7 +36,6 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
-#include "third_party/blink/public/platform/web_external_texture_layer.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -168,13 +167,13 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   if (!cull_rect.IntersectsCullRect(FrameRect()))
     return;
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && web_layer_) {
-    web_layer_->SetBounds(static_cast<gfx::Size>(frame_rect_.Size()));
-    web_layer_->SetIsDrawable(true);
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && layer_) {
+    layer_->SetBounds(static_cast<gfx::Size>(frame_rect_.Size()));
+    layer_->SetIsDrawable(true);
     // With Slimming Paint v2, composited plugins should have their layers
     // inserted rather than invoking WebPlugin::paint.
     RecordForeignLayer(context, *element_->GetLayoutObject(),
-                       DisplayItem::kForeignLayerPlugin, web_layer_,
+                       DisplayItem::kForeignLayerPlugin, layer_,
                        FrameRect().Location(), frame_rect_.Size());
     return;
   }
@@ -326,18 +325,18 @@ float WebPluginContainerImpl::PageZoomFactor() {
   return frame->PageZoomFactor();
 }
 
-void WebPluginContainerImpl::SetWebLayer(WebLayer* layer,
+void WebPluginContainerImpl::SetWebLayer(cc::Layer* new_layer,
                                          bool prevent_contents_opaque_changes) {
-  if (web_layer_ == layer &&
+  if (layer_ == new_layer &&
       prevent_contents_opaque_changes == prevent_contents_opaque_changes_)
     return;
 
-  if (web_layer_)
-    GraphicsLayer::UnregisterContentsLayer(web_layer_);
-  if (layer)
-    GraphicsLayer::RegisterContentsLayer(layer);
+  if (layer_)
+    GraphicsLayer::UnregisterContentsLayer(layer_);
+  if (new_layer)
+    GraphicsLayer::RegisterContentsLayer(new_layer);
 
-  web_layer_ = layer;
+  layer_ = new_layer;
   prevent_contents_opaque_changes_ = prevent_contents_opaque_changes;
 
   if (element_)
@@ -692,8 +691,8 @@ void WebPluginContainerImpl::DidFailLoading(const ResourceError& error) {
   web_plugin_->DidFailLoading(error);
 }
 
-WebLayer* WebPluginContainerImpl::PlatformLayer() const {
-  return web_layer_;
+cc::Layer* WebPluginContainerImpl::PlatformLayer() const {
+  return layer_;
 }
 
 bool WebPluginContainerImpl::PreventContentsOpaqueChangesToPlatformLayer()
@@ -743,7 +742,7 @@ WebPluginContainerImpl::WebPluginContainerImpl(HTMLPlugInElement& element,
     : ContextClient(element.GetDocument().GetFrame()),
       element_(element),
       web_plugin_(web_plugin),
-      web_layer_(nullptr),
+      layer_(nullptr),
       touch_event_request_type_(kTouchEventRequestTypeNone),
       prevent_contents_opaque_changes_(false),
       wants_wheel_events_(false),
@@ -773,9 +772,9 @@ void WebPluginContainerImpl::Dispose() {
     web_plugin_ = nullptr;
   }
 
-  if (web_layer_) {
-    GraphicsLayer::UnregisterContentsLayer(web_layer_);
-    web_layer_ = nullptr;
+  if (layer_) {
+    GraphicsLayer::UnregisterContentsLayer(layer_);
+    layer_ = nullptr;
   }
 }
 

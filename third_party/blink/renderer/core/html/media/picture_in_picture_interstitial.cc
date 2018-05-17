@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
 
-#include "third_party/blink/public/platform/web_layer.h"
+#include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/exception_state.h"
 #include "third_party/blink/renderer/core/dom/document.h"

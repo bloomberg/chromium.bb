@@ -14,7 +14,6 @@
 #include "cc/paint/paint_image_builder.h"
 #include "content/renderer/child_frame_compositor.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -117,9 +116,9 @@ void ChildFrameCompositingHelper::SetFallbackSurfaceId(
 }
 
 void ChildFrameCompositingHelper::UpdateVisibility(bool visible) {
-  blink::WebLayer* web_layer = child_frame_compositor_->GetLayer();
-  if (web_layer)
-    web_layer->SetIsDrawable(visible);
+  cc::Layer* layer = child_frame_compositor_->GetLayer();
+  if (layer)
+    layer->SetIsDrawable(visible);
 }
 
 }  // namespace content

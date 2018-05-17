@@ -55,7 +55,6 @@
 #include "media/filters/ffmpeg_demuxer.h"
 #include "media/media_buildflags.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
@@ -399,14 +398,14 @@ void WebMediaPlayerImpl::Load(LoadType load_type,
 
 void WebMediaPlayerImpl::OnWebLayerUpdated() {}
 
-void WebMediaPlayerImpl::RegisterContentsLayer(blink::WebLayer* web_layer) {
+void WebMediaPlayerImpl::RegisterContentsLayer(cc::Layer* layer) {
   DCHECK(bridge_);
   bridge_->GetWebLayer()->SetContentsOpaque(opaque_);
-  client_->SetWebLayer(web_layer);
+  client_->SetWebLayer(layer);
 }
 
-void WebMediaPlayerImpl::UnregisterContentsLayer(blink::WebLayer* web_layer) {
-  // |client_| will unregister its WebLayer if given a nullptr.
+void WebMediaPlayerImpl::UnregisterContentsLayer(cc::Layer* layer) {
+  // |client_| will unregister its cc::Layer if given a nullptr.
   client_->SetWebLayer(nullptr);
 }
 

@@ -30,7 +30,6 @@
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_event_listener_properties.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/animation_worklet_proxy_client.h"
 #include "third_party/blink/renderer/core/dom/ax_object_cache.h"
@@ -52,6 +51,7 @@
 #undef CreateWindow
 
 namespace cc {
+class Layer;
 struct OverscrollBehavior;
 }
 
@@ -244,10 +244,11 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   virtual void AttachRootGraphicsLayer(GraphicsLayer*,
                                        LocalFrame* local_root) = 0;
 
-  // Pass nullptr as the WebLayer to detach the root layer.
-  // This sets the WebLayer for the LocalFrame's WebWidget, if it has
+  // Pass nullptr as the cc::Layer to detach the root layer.
+  // This sets the cc::Layer for the LocalFrame's WebWidget, if it has
   // one. Otherwise it sets it for the WebViewImpl.
-  virtual void AttachRootLayer(WebLayer*, LocalFrame* local_root) = 0;
+  virtual void AttachRootLayer(scoped_refptr<cc::Layer>,
+                               LocalFrame* local_root) = 0;
 
   virtual void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*,
                                                  LocalFrame* local_root) {}

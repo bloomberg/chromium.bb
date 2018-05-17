@@ -38,7 +38,6 @@
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/webgl_image_conversion.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types_3d.h"
@@ -50,6 +49,10 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_space.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace gfx {
 class GpuMemoryBuffer;
@@ -69,7 +72,7 @@ class WebGraphicsContext3DProvider;
 class WebGraphicsContext3DProviderWrapper;
 
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can
-// publish its rendering results to a WebLayer for compositing.
+// publish its rendering results to a cc::Layer for compositing.
 class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                                       public RefCounted<DrawingBuffer> {
   WTF_MAKE_NONCOPYABLE(DrawingBuffer);
@@ -190,7 +193,7 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // default framebuffer.
   bool DefaultBufferRequiresAlphaChannelToBePreserved();
 
-  WebLayer* PlatformLayer();
+  cc::Layer* PlatformLayer();
 
   gpu::gles2::GLES2Interface* ContextGL();
   WebGraphicsContext3DProvider* ContextProvider();

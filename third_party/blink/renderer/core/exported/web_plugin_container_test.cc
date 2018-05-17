@@ -38,7 +38,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_pointer_event.h"
 #include "third_party/blink/public/platform/web_thread.h"
@@ -1367,7 +1366,7 @@ class CompositedPlugin : public FakeWebPlugin {
   explicit CompositedPlugin(const WebPluginParams& params)
       : FakeWebPlugin(params), layer_(cc::Layer::Create()) {}
 
-  WebLayer* GetWebLayer() const { return layer_.get(); }
+  cc::Layer* GetWebLayer() const { return layer_.get(); }
 
   // WebPlugin
 

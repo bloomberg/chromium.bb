@@ -28,11 +28,11 @@
 
 #include <memory>
 #include <set>
+
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_graphics_context_3d_provider.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
@@ -56,6 +56,10 @@
 #include "third_party/blink/renderer/platform/wtf/checked_numeric.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/khronos/GLES2/gl2.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace gpu {
 namespace gles2 {
@@ -649,7 +653,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   bool IsAccelerated() const override { return true; }
   void SetIsHidden(bool) override;
   bool PaintRenderingResultsToCanvas(SourceDrawingBuffer) override;
-  WebLayer* PlatformLayer() const override;
+  cc::Layer* PlatformLayer() const override;
   void Stop() override;
   void FinalizeFrame() override;
   void PushFrame() override;

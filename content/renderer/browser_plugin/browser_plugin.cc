@@ -38,7 +38,6 @@
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/web_ax_object.h"
@@ -857,7 +856,7 @@ void BrowserPlugin::OnMusEmbeddedFrameSinkIdAllocated(
 }
 #endif
 
-blink::WebLayer* BrowserPlugin::GetLayer() {
+cc::Layer* BrowserPlugin::GetLayer() {
   return embedded_layer_.get();
 }
 

@@ -35,7 +35,6 @@
 
 #include "cc/base/region.h"
 #include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -98,16 +97,16 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
                          bool report_wheel_scrollers) {
   std::unique_ptr<Array<protocol::LayerTree::ScrollRect>> scroll_rects =
       Array<protocol::LayerTree::ScrollRect>::create();
-  WebLayer* web_layer = graphics_layer->PlatformLayer();
+  cc::Layer* cc_layer = graphics_layer->PlatformLayer();
   const cc::Region& non_fast_scrollable_rects =
-      web_layer->non_fast_scrollable_region();
+      cc_layer->non_fast_scrollable_region();
   for (const gfx::Rect& rect : non_fast_scrollable_rects) {
     scroll_rects->addItem(BuildScrollRect(
         IntRect(rect),
         protocol::LayerTree::ScrollRect::TypeEnum::RepaintsOnScroll));
   }
   const cc::Region& touch_event_handler_region =
-      web_layer->touch_action_region().region();
+      cc_layer->touch_action_region().region();
 
   for (const gfx::Rect& rect : touch_event_handler_region) {
     scroll_rects->addItem(BuildScrollRect(
@@ -117,8 +116,8 @@ BuildScrollRectsForLayer(GraphicsLayer* graphics_layer,
   if (report_wheel_scrollers) {
     scroll_rects->addItem(BuildScrollRect(
         // TODO(yutak): This truncates the floating point position to integers.
-        gfx::Rect(web_layer->position().x(), web_layer->position().y(),
-                  web_layer->bounds().width(), web_layer->bounds().height()),
+        gfx::Rect(cc_layer->position().x(), cc_layer->position().y(),
+                  cc_layer->bounds().width(), cc_layer->bounds().height()),
         protocol::LayerTree::ScrollRect::TypeEnum::WheelEventHandler));
   }
   return scroll_rects->length() ? std::move(scroll_rects) : nullptr;
@@ -139,7 +138,7 @@ static GraphicsLayer* FindLayerByElementId(GraphicsLayer* root,
 }
 
 static std::unique_ptr<protocol::LayerTree::StickyPositionConstraint>
-BuildStickyInfoForLayer(GraphicsLayer* root, WebLayer* layer) {
+BuildStickyInfoForLayer(GraphicsLayer* root, cc::Layer* layer) {
   cc::LayerStickyPositionConstraint constraints =
       layer->sticky_position_constraint();
   if (!constraints.is_sticky)
@@ -181,16 +180,16 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     GraphicsLayer* graphics_layer,
     int node_id,
     bool report_wheel_event_listeners) {
-  WebLayer* web_layer = graphics_layer->PlatformLayer();
+  cc::Layer* cc_layer = graphics_layer->PlatformLayer();
   std::unique_ptr<protocol::LayerTree::Layer> layer_object =
       protocol::LayerTree::Layer::create()
           .setLayerId(IdForLayer(graphics_layer))
-          .setOffsetX(web_layer->position().x())
-          .setOffsetY(web_layer->position().y())
-          .setWidth(web_layer->bounds().width())
-          .setHeight(web_layer->bounds().height())
+          .setOffsetX(cc_layer->position().x())
+          .setOffsetY(cc_layer->position().y())
+          .setWidth(cc_layer->bounds().width())
+          .setHeight(cc_layer->bounds().height())
           .setPaintCount(graphics_layer->PaintCount())
-          .setDrawsContent(web_layer->DrawsContent())
+          .setDrawsContent(cc_layer->DrawsContent())
           .build();
 
   if (node_id)
@@ -211,15 +210,15 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
     layer_object->setTransform(std::move(transform_array));
     const FloatPoint3D& transform_origin = graphics_layer->TransformOrigin();
     // FIXME: rename these to setTransformOrigin*
-    if (web_layer->bounds().width() > 0) {
+    if (cc_layer->bounds().width() > 0) {
       layer_object->setAnchorX(transform_origin.X() /
-                               web_layer->bounds().width());
+                               cc_layer->bounds().width());
     } else {
       layer_object->setAnchorX(0.f);
     }
-    if (web_layer->bounds().height() > 0) {
+    if (cc_layer->bounds().height() > 0) {
       layer_object->setAnchorY(transform_origin.Y() /
-                               web_layer->bounds().height());
+                               cc_layer->bounds().height());
     } else {
       layer_object->setAnchorY(0.f);
     }
@@ -230,7 +229,7 @@ static std::unique_ptr<protocol::LayerTree::Layer> BuildObjectForLayer(
   if (scroll_rects)
     layer_object->setScrollRects(std::move(scroll_rects));
   std::unique_ptr<protocol::LayerTree::StickyPositionConstraint> sticky_info =
-      BuildStickyInfoForLayer(root, web_layer);
+      BuildStickyInfoForLayer(root, cc_layer);
   if (sticky_info)
     layer_object->setStickyPositionConstraint(std::move(sticky_info));
   return layer_object;

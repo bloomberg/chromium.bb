@@ -37,7 +37,6 @@
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_input_method_controller.h"
@@ -50,6 +49,10 @@
 #include "third_party/blink/renderer/platform/heap/self_keep_alive.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -142,7 +145,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   void DidCreateLocalRootView() override;
 
   void SetRootGraphicsLayer(GraphicsLayer*) override;
-  void SetRootLayer(WebLayer*) override;
+  void SetRootLayer(scoped_refptr<cc::Layer>) override;
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
   HitTestResult CoreHitTestResultAt(const WebPoint&) override;
@@ -215,8 +218,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   scoped_refptr<base::SingleThreadTaskRunner> mutator_task_runner_;
 
   WebLayerTreeView* layer_tree_view_;
-  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
-  WebLayer* root_layer_;
+  scoped_refptr<cc::Layer> root_layer_;
   GraphicsLayer* root_graphics_layer_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
   bool is_accelerated_compositing_active_;

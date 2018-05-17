@@ -34,7 +34,6 @@
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_float_point.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/blink.h"
@@ -123,7 +122,7 @@ cc::PictureLayer* LinkHighlightImpl::ContentLayer() {
   return content_layer_.get();
 }
 
-WebLayer* LinkHighlightImpl::ClipLayer() {
+cc::Layer* LinkHighlightImpl::ClipLayer() {
   return clip_layer_.get();
 }
 
@@ -409,7 +408,7 @@ void LinkHighlightImpl::Invalidate() {
   geometry_needs_update_ = true;
 }
 
-WebLayer* LinkHighlightImpl::Layer() {
+cc::Layer* LinkHighlightImpl::Layer() {
   return ClipLayer();
 }
 

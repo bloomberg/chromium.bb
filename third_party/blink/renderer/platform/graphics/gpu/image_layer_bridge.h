@@ -10,7 +10,6 @@
 #include "cc/layers/texture_layer_client.h"
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "components/viz/common/resources/resource_format.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
@@ -19,6 +18,7 @@
 
 namespace cc {
 class CrossThreadSharedBitmap;
+class Layer;
 class TextureLayer;
 }
 
@@ -49,7 +49,7 @@ class PLATFORM_EXPORT ImageLayerBridge
 
   scoped_refptr<StaticBitmapImage> GetImage() { return image_; }
 
-  WebLayer* PlatformLayer() const;
+  cc::Layer* PlatformLayer() const;
 
   void SetFilterQuality(SkFilterQuality filter_quality) {
     filter_quality_ = filter_quality;

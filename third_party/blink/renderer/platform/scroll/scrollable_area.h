@@ -493,7 +493,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   unsigned mouse_over_scrollbar_ : 1;
 
   // Indicates that the next compositing update needs to call
-  // WebLayer::showScrollbars on our scroll layer. Ignored if not composited.
+  // cc::Layer::ShowScrollbars() on our scroll layer. Ignored if not composited.
   unsigned needs_show_scrollbar_layers_ : 1;
   unsigned uses_composited_scrolling_ : 1;
 

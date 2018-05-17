@@ -44,7 +44,7 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
       canvas->RenderingContext() &&
       canvas->RenderingContext()->IsComposited()) {
-    if (WebLayer* layer = canvas->RenderingContext()->PlatformLayer()) {
+    if (cc::Layer* layer = canvas->RenderingContext()->PlatformLayer()) {
       IntRect pixel_snapped_rect = PixelSnappedIntRect(content_rect);
       layer->SetBounds(static_cast<gfx::Size>(pixel_snapped_rect.Size()));
       layer->SetIsDrawable(true);

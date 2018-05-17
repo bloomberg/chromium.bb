@@ -10,7 +10,6 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/property_tree_manager.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_controller.h"
@@ -68,9 +67,10 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
 
-  // Wraps rootLayer(), so that it can be attached as a child of another
-  // WebLayer.
-  WebLayer* GetWebLayer() const { return root_layer_.get(); }
+  // Wraps RootLayer(), so that it can be attached as a child of another
+  // cc::Layer.
+  // TODO(danakj): Remove this, use RootLayer() directly.
+  cc::Layer* GetWebLayer() const { return root_layer_.get(); }
 
   // Returns extra information recorded during unit tests.
   // While not part of the normal output of this class, this provides a simple

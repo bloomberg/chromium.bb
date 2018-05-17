@@ -2800,7 +2800,7 @@ void LayoutObject::AddLayerHitTestRects(
   // tracking those rects outweighs the benefit of doing compositor thread hit
   // testing.
   // FIXME: This limit needs to be low due to the O(n^2) algorithm in
-  // WebLayer::setTouchEventHandlerRegion - crbug.com/300282.
+  // ScrollingCoordinator::SetTouchEventTargetRects() - crbug.com/300282.
   const size_t kMaxRectsPerLayer = 100;
 
   LayerHitTestRects::iterator iter = layer_rects.find(current_layer);

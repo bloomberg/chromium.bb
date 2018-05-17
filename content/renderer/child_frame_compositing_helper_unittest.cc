@@ -4,9 +4,9 @@
 
 #include "content/renderer/child_frame_compositing_helper.h"
 
+#include "cc/layers/layer.h"
 #include "content/renderer/child_frame_compositor.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_layer.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ class MockChildFrameCompositor : public ChildFrameCompositor {
     sad_page_bitmap_.allocN32Pixels(width, height);
   }
 
-  blink::WebLayer* GetLayer() override { return layer_.get(); }
+  cc::Layer* GetLayer() override { return layer_.get(); }
 
   void SetLayer(scoped_refptr<cc::Layer> layer,
                 bool prevent_contents_opaque_changes) override {

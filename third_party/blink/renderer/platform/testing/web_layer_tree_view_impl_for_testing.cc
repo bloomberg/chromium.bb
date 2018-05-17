@@ -11,7 +11,6 @@
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_size.h"
 
@@ -47,7 +46,7 @@ WebLayerTreeViewImplForTesting::DefaultLayerTreeSettings() {
   return settings;
 }
 
-bool WebLayerTreeViewImplForTesting::HasLayer(const WebLayer& layer) {
+bool WebLayerTreeViewImplForTesting::HasLayer(const cc::Layer& layer) {
   return layer.GetLayerTreeHostForTesting() == layer_tree_host_.get();
 }
 
@@ -61,7 +60,8 @@ void WebLayerTreeViewImplForTesting::SetViewportSize(
       layer_tree_host_->local_surface_id_from_parent());
 }
 
-void WebLayerTreeViewImplForTesting::SetRootLayer(blink::WebLayer* root) {
+void WebLayerTreeViewImplForTesting::SetRootLayer(
+    scoped_refptr<cc::Layer> root) {
   layer_tree_host_->SetRootLayer(root);
 }
 

@@ -33,7 +33,6 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer_client.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -56,6 +55,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
+class Layer;
 class PictureImageLayer;
 class PictureLayer;
 }
@@ -166,8 +166,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool ContentsAreVisible() const { return contents_visible_; }
   void SetContentsVisible(bool);
 
-  void SetScrollParent(WebLayer*);
-  void SetClipParent(WebLayer*);
+  void SetScrollParent(cc::Layer*);
+  void SetClipParent(cc::Layer*);
 
   // For special cases, e.g. drawing missing tiles on Android.
   // The compositor should never paint this color in normal cases because the
@@ -224,15 +224,15 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // SetContentsOpaque() will not be passed on to the |layer|. Use when
   // the client wants to have control of the opaqueness of the contents
   // |layer| independently of what outcome painting produces.
-  void SetContentsToPlatformLayer(WebLayer* layer,
+  void SetContentsToPlatformLayer(cc::Layer* layer,
                                   bool prevent_contents_opaque_changes) {
     SetContentsTo(layer, prevent_contents_opaque_changes);
   }
   bool HasContentsLayer() const { return contents_layer_; }
-  WebLayer* ContentsLayer() const { return contents_layer_; }
+  cc::Layer* ContentsLayer() const { return contents_layer_; }
 
   // For hosting this GraphicsLayer in a native layer hierarchy.
-  WebLayer* PlatformLayer() const;
+  cc::Layer* PlatformLayer() const;
 
   int PaintCount() const { return paint_count_; }
 
@@ -264,8 +264,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   cc::PictureLayer* ContentLayer() const { return layer_.get(); }
 
-  static void RegisterContentsLayer(WebLayer*);
-  static void UnregisterContentsLayer(WebLayer*);
+  static void RegisterContentsLayer(cc::Layer*);
+  static void UnregisterContentsLayer(cc::Layer*);
 
   IntRect InterestRect();
   void PaintRecursively();
@@ -351,11 +351,11 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void UpdateLayerIsDrawable();
   void UpdateContentsRect();
 
-  void SetContentsTo(WebLayer*, bool prevent_contents_opaque_changes);
-  void SetupContentsLayer(WebLayer*);
+  void SetContentsTo(cc::Layer*, bool prevent_contents_opaque_changes);
+  void SetupContentsLayer(cc::Layer*);
   void ClearContentsLayerIfUnregistered();
-  WebLayer* ContentsLayerIfRegistered();
-  void SetContentsLayer(WebLayer*);
+  cc::Layer* ContentsLayerIfRegistered();
+  void SetContentsLayer(cc::Layer*);
 
   typedef HashMap<int, int> RenderingContextMap;
   std::unique_ptr<JSONObject> LayerTreeAsJSONInternal(
@@ -423,7 +423,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   scoped_refptr<cc::PictureLayer> layer_;
   scoped_refptr<cc::PictureImageLayer> image_layer_;
   IntSize image_size_;
-  WebLayer* contents_layer_;
+  cc::Layer* contents_layer_;
   // We don't have ownership of contents_layer_, but we do want to know if a
   // given layer is the same as our current layer in SetContentsTo(). Since
   // |contents_layer_| may be deleted at this point, we stash an ID away when we

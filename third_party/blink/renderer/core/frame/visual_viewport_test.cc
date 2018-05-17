@@ -1537,11 +1537,11 @@ TEST_P(VisualViewportTest, TestChangingContentSizeAffectsScrollBounds) {
                       "content.style.width = \"1500px\";"
                       "content.style.height = \"2400px\";"));
   frame_view.UpdateAllLifecyclePhases();
-  WebLayer* scrollLayer = frame_view.LayoutViewportScrollableArea()
-                              ->LayerForScrolling()
-                              ->PlatformLayer();
+  cc::Layer* scroll_layer = frame_view.LayoutViewportScrollableArea()
+                                ->LayerForScrolling()
+                                ->PlatformLayer();
 
-  EXPECT_EQ(gfx::Size(1500, 2400), scrollLayer->bounds());
+  EXPECT_EQ(gfx::Size(1500, 2400), scroll_layer->bounds());
 }
 
 // Tests that resizing the visual viepwort keeps its bounds within the outer

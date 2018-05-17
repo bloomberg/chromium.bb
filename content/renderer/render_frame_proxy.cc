@@ -37,7 +37,6 @@
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
 #include "third_party/blink/public/platform/url_conversion.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_resource_timing_info.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -864,7 +863,7 @@ void RenderFrameProxy::OnMusEmbeddedFrameSinkIdAllocated(
 }
 #endif
 
-blink::WebLayer* RenderFrameProxy::GetLayer() {
+cc::Layer* RenderFrameProxy::GetLayer() {
   return embedded_layer_.get();
 }
 

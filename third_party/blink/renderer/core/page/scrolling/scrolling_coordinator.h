@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"

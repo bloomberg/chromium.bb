@@ -28,9 +28,9 @@
 #include <memory>
 #include <utility>
 
+#include "cc/layers/layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
@@ -71,7 +71,7 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     page_scale_layer_->AddChild(graphics_layer_.get());
     graphics_layer_->PlatformLayer()->SetScrollable(
         clip_layer_->PlatformLayer()->bounds());
-    platform_layer_ = graphics_layer_->PlatformLayer();
+    cc_layer_ = graphics_layer_->PlatformLayer();
     layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
     DCHECK(layer_tree_view_);
     layer_tree_view_->SetRootLayer(clip_layer_->PlatformLayer());
@@ -117,7 +117,7 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     return layer.paint_controller_.get();
   }
 
-  WebLayer* platform_layer_;
+  cc::Layer* cc_layer_;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer_;
   std::unique_ptr<FakeGraphicsLayer> page_scale_layer_;
   std::unique_ptr<FakeGraphicsLayer> scroll_elasticity_layer_;
@@ -148,7 +148,7 @@ class AnimationForTesting : public CompositorAnimationClient {
 };
 
 TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
-  ASSERT_FALSE(platform_layer_->HasTickingAnimationForTesting());
+  ASSERT_FALSE(cc_layer_->HasTickingAnimationForTesting());
 
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
       CompositorFloatAnimationCurve::Create();
@@ -170,32 +170,31 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   host.AddTimeline(*compositor_timeline);
   compositor_timeline->AnimationAttached(animation);
 
-  platform_layer_->SetElementId(CompositorElementId(platform_layer_->id()));
+  cc_layer_->SetElementId(CompositorElementId(cc_layer_->id()));
 
-  animation.GetCompositorAnimation()->AttachElement(
-      platform_layer_->element_id());
+  animation.GetCompositorAnimation()->AttachElement(cc_layer_->element_id());
   ASSERT_TRUE(animation.GetCompositorAnimation()->IsElementAttached());
 
   animation.GetCompositorAnimation()->AddKeyframeModel(
       std::move(float_keyframe_model));
 
-  ASSERT_TRUE(platform_layer_->HasTickingAnimationForTesting());
+  ASSERT_TRUE(cc_layer_->HasTickingAnimationForTesting());
 
   graphics_layer_->SetShouldFlattenTransform(false);
 
-  platform_layer_ = graphics_layer_->PlatformLayer();
-  ASSERT_TRUE(platform_layer_);
+  cc_layer_ = graphics_layer_->PlatformLayer();
+  ASSERT_TRUE(cc_layer_);
 
-  ASSERT_TRUE(platform_layer_->HasTickingAnimationForTesting());
+  ASSERT_TRUE(cc_layer_->HasTickingAnimationForTesting());
   animation.GetCompositorAnimation()->RemoveKeyframeModel(keyframe_model_id);
-  ASSERT_FALSE(platform_layer_->HasTickingAnimationForTesting());
+  ASSERT_FALSE(cc_layer_->HasTickingAnimationForTesting());
 
   graphics_layer_->SetShouldFlattenTransform(true);
 
-  platform_layer_ = graphics_layer_->PlatformLayer();
-  ASSERT_TRUE(platform_layer_);
+  cc_layer_ = graphics_layer_->PlatformLayer();
+  ASSERT_TRUE(cc_layer_);
 
-  ASSERT_FALSE(platform_layer_->HasTickingAnimationForTesting());
+  ASSERT_FALSE(cc_layer_->HasTickingAnimationForTesting());
 
   animation.GetCompositorAnimation()->DetachElement();
   ASSERT_FALSE(animation.GetCompositorAnimation()->IsElementAttached());

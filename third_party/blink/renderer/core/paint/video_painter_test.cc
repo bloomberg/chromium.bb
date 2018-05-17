@@ -6,7 +6,6 @@
 
 #include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
@@ -24,7 +23,7 @@ class StubWebMediaPlayer : public EmptyWebMediaPlayer {
  public:
   StubWebMediaPlayer(WebMediaPlayerClient* client) : client_(client) {}
 
-  const WebLayer* GetWebLayer() { return layer_.get(); }
+  const cc::Layer* GetWebLayer() { return layer_.get(); }
 
   // WebMediaPlayer
   void Load(LoadType, const WebMediaPlayerSource&, CORSMode) override {
@@ -72,7 +71,7 @@ class VideoPainterTestForSPv2 : private ScopedSlimmingPaintV2ForTest,
     GetDocument().SetURL(KURL(NullURL(), "https://example.com/"));
   }
 
-  bool HasLayerAttached(const WebLayer& layer) {
+  bool HasLayerAttached(const cc::Layer& layer) {
     return chrome_client_->HasLayer(layer);
   }
 
@@ -96,7 +95,7 @@ TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
       ToHTMLMediaElement(GetDocument().body()->firstChild());
   StubWebMediaPlayer* player =
       static_cast<StubWebMediaPlayer*>(element->GetWebMediaPlayer());
-  const WebLayer* layer = player->GetWebLayer();
+  const cc::Layer* layer = player->GetWebLayer();
   ASSERT_TRUE(layer);
   EXPECT_TRUE(HasLayerAttached(*layer));
   EXPECT_EQ(gfx::Size(300, 200), layer->bounds());

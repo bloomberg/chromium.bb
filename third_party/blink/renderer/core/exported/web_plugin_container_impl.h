@@ -44,6 +44,10 @@
 #include "third_party/blink/renderer/platform/wtf/compiler.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
+namespace cc {
+class Layer;
+}
+
 namespace blink {
 
 class Event;
@@ -101,7 +105,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   void Show() override;
   void Hide() override;
 
-  WebLayer* PlatformLayer() const;
+  cc::Layer* PlatformLayer() const;
   bool PreventContentsOpaqueChangesToPlatformLayer() const;
   v8::Local<v8::Object> ScriptableObject(v8::Isolate*);
   bool SupportsKeyboardFocus() const;
@@ -148,7 +152,7 @@ class CORE_EXPORT WebPluginContainerImpl final
   float PageScaleFactor() override;
   float PageZoomFactor() override;
 
-  void SetWebLayer(WebLayer*, bool prevent_contents_opaque_changes) override;
+  void SetWebLayer(cc::Layer*, bool prevent_contents_opaque_changes) override;
 
   void RequestFullscreen() override;
   bool IsFullscreenElement() const override;
@@ -232,7 +236,7 @@ class CORE_EXPORT WebPluginContainerImpl final
 
   Member<HTMLPlugInElement> element_;
   WebPlugin* web_plugin_;
-  WebLayer* web_layer_;
+  cc::Layer* layer_;
   IntRect frame_rect_;
   TouchEventRequestType touch_event_request_type_;
   bool prevent_contents_opaque_changes_;

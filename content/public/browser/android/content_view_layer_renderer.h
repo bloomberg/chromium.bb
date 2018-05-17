@@ -5,7 +5,9 @@
 #ifndef CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_LAYER_RENDERER_H_
 #define CONTENT_PUBLIC_BROWSER_ANDROID_CONTENT_VIEW_LAYER_RENDERER_H_
 
-#include "third_party/blink/public/platform/web_layer.h"
+namespace cc {
+class Layer;
+}
 
 namespace content {
 
@@ -13,8 +15,8 @@ namespace content {
 // attach/detach layers.
 class ContentViewLayerRenderer {
  public:
-  virtual void AttachLayer(blink::WebLayer* layer) = 0;
-  virtual void DetachLayer(blink::WebLayer* layer) = 0;
+  virtual void AttachLayer(cc::Layer* layer) = 0;
+  virtual void DetachLayer(cc::Layer* layer) = 0;
 
  protected:
   virtual ~ContentViewLayerRenderer() {}

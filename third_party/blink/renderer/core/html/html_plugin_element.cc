@@ -631,7 +631,7 @@ bool HTMLPlugInElement::LoadPlugin(const KURL& url,
   }
 
   GetDocument().SetContainsPlugins();
-  // TODO(esprehn): WebPluginContainerImpl::setWebLayer also schedules a
+  // TODO(esprehn): WebPluginContainerImpl::SetWebLayer() also schedules a
   // compositing update, do we need both?
   SetNeedsCompositingUpdate();
   // Make sure any input event handlers introduced by the plugin are taken into

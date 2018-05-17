@@ -21,7 +21,6 @@
 #include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/web/web_widget.h"
@@ -333,7 +332,7 @@ void RenderWidgetFullscreenPepper::PepperDidChangeCursor(
 }
 
 // TODO(danakj): These should be a scoped_refptr<cc::Layer>.
-void RenderWidgetFullscreenPepper::SetLayer(blink::WebLayer* layer) {
+void RenderWidgetFullscreenPepper::SetLayer(cc::Layer* layer) {
   layer_ = layer;
   if (!layer_) {
     if (compositor_)

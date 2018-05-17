@@ -194,7 +194,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
   Cursor LastSetCursorForTesting() const override { return PointerCursor(); }
 
   void AttachRootGraphicsLayer(GraphicsLayer*, LocalFrame* local_root) override;
-  void AttachRootLayer(WebLayer*, LocalFrame* local_root) override {}
+  void AttachRootLayer(scoped_refptr<cc::Layer>,
+                       LocalFrame* local_root) override {}
 
   void SetEventListenerProperties(LocalFrame*,
                                   WebEventListenerClass,

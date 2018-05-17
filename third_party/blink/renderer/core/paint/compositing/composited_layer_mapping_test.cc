@@ -4,9 +4,9 @@
 
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 
+#include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box_model_object.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
@@ -2469,7 +2469,7 @@ TEST_F(CompositedLayerMappingTest, ScrollingContainerBoundsChange) {
       ToLayoutBoxModelObject(GetLayoutObjectByElementId("scroller"));
   PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
 
-  WebLayer* scrolling_layer =
+  cc::Layer* scrolling_layer =
       scrollable_area->LayerForScrolling()->PlatformLayer();
   EXPECT_EQ(0, scrolling_layer->scroll_offset().y());
   EXPECT_EQ(150, scrolling_layer->bounds().height());

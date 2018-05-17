@@ -12,7 +12,6 @@
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/clip_paint_property_node.h"

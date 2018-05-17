@@ -41,7 +41,6 @@
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_input_event_result.h"
-#include "third_party/blink/public/platform/web_layer.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -68,6 +67,10 @@
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+
+namespace cc {
+class Layer;
+}
 
 namespace blink {
 
@@ -546,7 +549,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   float DeviceScaleFactor() const;
 
   void SetRootGraphicsLayer(GraphicsLayer*);
-  void SetRootLayer(WebLayer*);
+  void SetRootLayer(scoped_refptr<cc::Layer>);
   void AttachCompositorAnimationTimeline(CompositorAnimationTimeline*);
   void DetachCompositorAnimationTimeline(CompositorAnimationTimeline*);
 
@@ -654,8 +657,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebLayerTreeView* layer_tree_view_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
 
-  // TODO(danakj): This should be a scoped_refptr<cc::Layer>.
-  WebLayer* root_layer_;
+  scoped_refptr<cc::Layer> root_layer_;
   GraphicsLayer* root_graphics_layer_;
   GraphicsLayer* visual_viewport_container_layer_;
   bool matches_heuristics_for_gpu_rasterization_;

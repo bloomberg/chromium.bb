@@ -1480,12 +1480,12 @@ void HTMLCanvasElement::OnWebLayerUpdated() {
   SetNeedsCompositingUpdate();
 }
 
-void HTMLCanvasElement::RegisterContentsLayer(WebLayer* web_layer) {
-  GraphicsLayer::RegisterContentsLayer(web_layer);
+void HTMLCanvasElement::RegisterContentsLayer(cc::Layer* layer) {
+  GraphicsLayer::RegisterContentsLayer(layer);
 }
 
-void HTMLCanvasElement::UnregisterContentsLayer(WebLayer* web_layer) {
-  GraphicsLayer::UnregisterContentsLayer(web_layer);
+void HTMLCanvasElement::UnregisterContentsLayer(cc::Layer* layer) {
+  GraphicsLayer::UnregisterContentsLayer(layer);
 }
 
 FontSelector* HTMLCanvasElement::GetFontSelector() {

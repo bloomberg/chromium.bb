@@ -1085,10 +1085,10 @@ void WebFrameWidgetImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
     layer_tree_view_->ClearRootLayer();
 }
 
-void WebFrameWidgetImpl::SetRootLayer(WebLayer* layer) {
+void WebFrameWidgetImpl::SetRootLayer(scoped_refptr<cc::Layer> layer) {
   root_layer_ = layer;
 
-  SetIsAcceleratedCompositingActive(layer);
+  SetIsAcceleratedCompositingActive(!!layer);
 
   if (!layer_tree_view_)
     return;
