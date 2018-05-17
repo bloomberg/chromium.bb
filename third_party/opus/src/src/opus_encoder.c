@@ -1688,6 +1688,12 @@ opus_int32 opus_encode_native(OpusEncoder *st, const opus_val16 *pcm, int frame_
                /* Increasingly attenuate high band when it gets allocated fewer bits */
                celt_rate = total_bitRate - st->silk_mode.bitRate;
                HB_gain = Q15ONE - SHR32(celt_exp2(-celt_rate * QCONST16(1.f/1024, 10)), 1);
+#ifndef FIXED_POINT
+               /* Sanity check of high band gain */
+               if (celt_isnan(HB_gain)) {
+                   HB_gain = Q15ONE;
+               }
+#endif
             }
         } else {
             /* SILK gets all bits */
