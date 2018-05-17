@@ -4,22 +4,18 @@
 
 #include "extensions/common/api/declarative_net_request/utils.h"
 
-#include "components/version_info/channel.h"
-#include "extensions/common/features/feature_channel.h"
+#include "extensions/common/features/feature.h"
+#include "extensions/common/features/feature_provider.h"
 
 namespace extensions {
 namespace declarative_net_request {
 
-namespace {
-
-constexpr version_info::Channel kAPIChannel = version_info::Channel::UNKNOWN;
-
-}  // namespace
-
 bool IsAPIAvailable() {
-  // TODO(http://crbug.com/748309): Use Feature::IsAvailableToEnvironment() once
-  // it behaves correctly.
-  return kAPIChannel >= GetCurrentChannel();
+  static const bool is_api_available =
+      FeatureProvider::GetAPIFeature("declarativeNetRequest")
+          ->IsAvailableToEnvironment()
+          .is_available();
+  return is_api_available;
 }
 
 }  // namespace declarative_net_request
