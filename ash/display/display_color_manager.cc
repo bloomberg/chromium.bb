@@ -226,6 +226,7 @@ bool DisplayColorManager::SetDisplayColorMatrix(
         display_id, {} /* degamma_lut */, {} /* gamma_lut */, matrix_buffer_);
   }
 
+  LOG(ERROR) << "Display ID: " << display_id << " cannot be found.";
   return false;
 }
 

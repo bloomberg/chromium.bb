@@ -125,6 +125,18 @@ SkMatrix44 MatrixFromTemperature(float temperature) {
   return matrix;
 }
 
+// Based on the result of setting the hardware CRTC matrix |crtc_matrix_result|,
+// either apply the |night_light_matrix| on the compositor, or reset it to
+// the identity matrix to avoid having double the Night Light effect.
+void UpdateCompositorMatrix(aura::WindowTreeHost* host,
+                            const SkMatrix44& night_light_matrix,
+                            bool crtc_matrix_result) {
+  if (host->compositor()) {
+    host->compositor()->SetDisplayColorMatrix(
+        crtc_matrix_result ? SkMatrix44::I() : night_light_matrix);
+  }
+}
+
 // Applies the given |temperature| to the display associated with the given
 // |host|. This is useful for when we have a host and not a display ID.
 void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
@@ -141,13 +153,10 @@ void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
   }
 
   const SkMatrix44 matrix = MatrixFromTemperature(temperature);
-  if (!Shell::Get()->display_color_manager()->SetDisplayColorMatrix(
-          host->GetDisplayId(), matrix)) {
-    // This display doesn't support CRTC matrix. Fall back to the composited
-    // matrix.
-    if (host->compositor())
-      host->compositor()->SetDisplayColorMatrix(matrix);
-  }
+  const bool crtc_result =
+      Shell::Get()->display_color_manager()->SetDisplayColorMatrix(display_id,
+                                                                   matrix);
+  UpdateCompositorMatrix(host, matrix, crtc_result);
 }
 
 // Applies the given |temperature| value by converting it to the corresponding
@@ -162,13 +171,9 @@ void ApplyTemperatureToAllDisplays(float temperature) {
        shell->display_manager()->GetCurrentDisplayIdList()) {
     DCHECK_NE(display_id, display::kUnifiedDisplayId);
 
-    if (color_manager->SetDisplayColorMatrix(display_id, matrix)) {
-      // Setting the hardware CRTC matrix was successful.
-      continue;
-    }
+    const bool crtc_result =
+        color_manager->SetDisplayColorMatrix(display_id, matrix);
 
-    // This display doesn't support CRTC matrix. Fall back to the composited
-    // matrix.
     aura::Window* root_window =
         wth_manager->GetRootWindowForDisplayId(display_id);
     if (!root_window) {
@@ -180,8 +185,7 @@ void ApplyTemperatureToAllDisplays(float temperature) {
 
     auto* host = root_window->GetHost();
     DCHECK(host);
-    if (host->compositor())
-      host->compositor()->SetDisplayColorMatrix(matrix);
+    UpdateCompositorMatrix(host, matrix, crtc_result);
   }
 }
 
@@ -255,6 +259,7 @@ NightLightController::NightLightController()
       temperature_animation_(std::make_unique<ColorTemperatureAnimation>()),
       binding_(this) {
   Shell::Get()->session_controller()->AddObserver(this);
+  Shell::Get()->window_tree_host_manager()->AddObserver(this);
   aura::Env::GetInstance()->AddObserver(this);
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
       this);
@@ -264,6 +269,7 @@ NightLightController::~NightLightController() {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
       this);
   aura::Env::GetInstance()->RemoveObserver(this);
+  Shell::Get()->window_tree_host_manager()->RemoveObserver(this);
   Shell::Get()->session_controller()->RemoveObserver(this);
 }
 
@@ -402,6 +408,12 @@ void NightLightController::SetCustomEndTime(TimeOfDay end_time) {
 
 void NightLightController::Toggle() {
   SetEnabled(!GetEnabled(), AnimationDuration::kShort);
+}
+
+void NightLightController::OnDisplayConfigurationChanged() {
+  // When display configurations changes, we should re-apply the current
+  // temperature immediately without animation.
+  ApplyTemperatureToAllDisplays(GetEnabled() ? GetColorTemperature() : 0.0f);
 }
 
 void NightLightController::OnHostInitialized(aura::WindowTreeHost* host) {

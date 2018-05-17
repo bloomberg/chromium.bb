@@ -986,6 +986,53 @@ TEST_F(NightLightCrtcTest, TestNoCrtcMatrixSupport) {
   EXPECT_FALSE(VerifyCrtcMatrix(kId2, temperature, logger_actions));
 }
 
+// Tests that switching CRTC matrix support on while Night Light is enabled
+// doesn't result in the matrix being applied twice.
+TEST_F(NightLightCrtcTest, TestNoDoubleNightLightEffect) {
+  std::vector<display::DisplaySnapshot*> outputs =
+      BuildAndGetDisplaySnapshots({false, false});
+  UpdateDisplays(outputs);
+
+  EXPECT_EQ(2u, display_manager()->GetNumDisplays());
+  ASSERT_EQ(2u, RootWindowController::root_window_controllers().size());
+
+  // Turn on Night Light:
+  NightLightController* controller = GetController();
+  SetNightLightEnabled(true);
+  const float temperature = 0.2f;
+  GetLoggerActionsAndClear();
+  controller->SetColorTemperature(temperature);
+  EXPECT_EQ(temperature, controller->GetColorTemperature());
+
+  // Compositor matrices are used on both displays.
+  TestCompositorsTemperature(temperature);
+  // With no CTRC support, software cursor must be on.
+  EXPECT_TRUE(IsCursorCompositingEnabled());
+  // No CRTC matrices have been set.
+  std::string logger_actions = GetLoggerActionsAndClear();
+  EXPECT_FALSE(VerifyCrtcMatrix(kId1, temperature, logger_actions));
+  EXPECT_FALSE(VerifyCrtcMatrix(kId2, temperature, logger_actions));
+
+  // Simulate that the two displays suddenly became able to support CRTC matrix.
+  // This shouldn't happen in practice, but we noticed multiple times on resume
+  // from suspend, or after the display turned on after it was off as a result
+  // of no user activity, we noticed that the display can get into a transient
+  // state where it is wrongly believed to have no CTM matrix capability, then
+  // later corrected. When this happened, we noticed that the Night Light effect
+  // is applied twice; once via the CRTC CTM matrix, and another via the
+  // compositor matrix. When this happens, we need to assert that the compositor
+  // matrix is set to identity, and the cursor compositing is updated correctly.
+  // TODO(afakhry): Investigate the root cause of this https://crbug.com/844067.
+  std::vector<display::DisplaySnapshot*> outputs2 =
+      BuildAndGetDisplaySnapshots({true, true});
+  UpdateDisplays(outputs2);
+  TestCompositorsTemperature(0.0f);
+  EXPECT_FALSE(IsCursorCompositingEnabled());
+  logger_actions = GetLoggerActionsAndClear();
+  EXPECT_TRUE(VerifyCrtcMatrix(kId1, temperature, logger_actions));
+  EXPECT_TRUE(VerifyCrtcMatrix(kId2, temperature, logger_actions));
+}
+
 }  // namespace
 
 }  // namespace ash

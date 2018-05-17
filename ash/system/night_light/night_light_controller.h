@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/night_light/time_of_day.h"
@@ -37,6 +38,7 @@ class ColorTemperatureAnimation;
 // display).
 class ASH_EXPORT NightLightController
     : public mojom::NightLightController,
+      public WindowTreeHostManager::Observer,
       public aura::EnvObserver,
       public SessionObserver,
       public chromeos::PowerManagerClient::Observer {
@@ -124,6 +126,9 @@ class ASH_EXPORT NightLightController
   // This is always called as a result of a user action and will always use the
   // AnimationDurationType::kShort.
   void Toggle();
+
+  // ash::WindowTreeHostManager::Observer:
+  void OnDisplayConfigurationChanged() override;
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override {}
