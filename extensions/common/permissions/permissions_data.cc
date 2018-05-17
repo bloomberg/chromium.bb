@@ -8,17 +8,13 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "base/macros.h"
 #include "base/stl_util.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
-#include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
-#include "extensions/common/manifest_handlers/permissions_parser.h"
-#include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permission_message_provider.h"
 #include "extensions/common/switches.h"
 #include "extensions/common/url_pattern_set.h"
@@ -57,18 +53,16 @@ class AutoLockOnValidThread {
 
 }  // namespace
 
-PermissionsData::PermissionsData(const Extension* extension)
-    : extension_id_(extension->id()),
-      manifest_type_(extension->GetType()),
-      location_(extension->location()) {
-  const PermissionSet& required_permissions =
-      PermissionsParser::GetRequiredPermissions(extension);
-  active_permissions_unsafe_.reset(new PermissionSet(
-      required_permissions.apis(), required_permissions.manifest_permissions(),
-      required_permissions.explicit_hosts(),
-      required_permissions.scriptable_hosts()));
-  withheld_permissions_unsafe_.reset(new PermissionSet());
-}
+PermissionsData::PermissionsData(
+    const ExtensionId& extension_id,
+    Manifest::Type manifest_type,
+    Manifest::Location location,
+    std::unique_ptr<const PermissionSet> initial_permissions)
+    : extension_id_(extension_id),
+      manifest_type_(manifest_type),
+      location_(location),
+      active_permissions_unsafe_(std::move(initial_permissions)),
+      withheld_permissions_unsafe_(std::make_unique<PermissionSet>()) {}
 
 PermissionsData::~PermissionsData() {
 }

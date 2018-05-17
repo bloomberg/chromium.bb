@@ -8,11 +8,9 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "extensions/common/extension_id.h"
@@ -24,7 +22,6 @@
 class GURL;
 
 namespace extensions {
-class Extension;
 class URLPatternSet;
 
 // A container for the permissions state of an extension, including active,
@@ -67,7 +64,10 @@ class PermissionsData {
 
   static void SetPolicyDelegate(PolicyDelegate* delegate);
 
-  explicit PermissionsData(const Extension* extension);
+  PermissionsData(const ExtensionId& extension_id,
+                  Manifest::Type manifest_type,
+                  Manifest::Location location,
+                  std::unique_ptr<const PermissionSet> initial_permissions);
   virtual ~PermissionsData();
 
   // Returns true if the extension is a COMPONENT extension or is on the
