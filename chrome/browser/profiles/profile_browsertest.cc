@@ -82,13 +82,15 @@ class TestURLFetcherDelegate : public net::URLFetcherDelegate {
   TestURLFetcherDelegate(
       scoped_refptr<net::URLRequestContextGetter> context_getter,
       const GURL& url,
-      net::URLRequestStatus expected_request_status)
+      net::URLRequestStatus expected_request_status,
+      int load_flags = net::LOAD_NORMAL)
       : expected_request_status_(expected_request_status),
         is_complete_(false),
         fetcher_(net::URLFetcher::Create(url,
                                          net::URLFetcher::GET,
                                          this,
                                          TRAFFIC_ANNOTATION_FOR_TESTS)) {
+    fetcher_->SetLoadFlags(load_flags);
     fetcher_->SetRequestContext(context_getter.get());
     fetcher_->Start();
   }
@@ -889,4 +891,79 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, LastSelectedDirectory) {
   base::FilePath home;
   base::PathService::Get(base::DIR_HOME, &home);
   ASSERT_EQ(profile_impl->last_selected_directory(), home);
+}
+
+// Verifies that, by default, there's a separate disk cache for media files.
+IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, SeparateMediaCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Do a normal load using the media URLRequestContext, populating the cache.
+  TestURLFetcherDelegate url_fetcher_delegate(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetMediaURLRequestContext(),
+      embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus(),
+      net::LOAD_NORMAL);
+  url_fetcher_delegate.WaitForCompletion();
+
+  // Cache-only load from the main request context should fail, since the media
+  // request context has its own cache.
+  TestURLFetcherDelegate url_fetcher_delegate2(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetURLRequestContext(),
+      embedded_test_server()->GetURL("/cachetime"),
+      net::URLRequestStatus(net::URLRequestStatus::FAILED, net::ERR_CACHE_MISS),
+      net::LOAD_ONLY_FROM_CACHE);
+  url_fetcher_delegate2.WaitForCompletion();
+
+  // Cache-only load from the media request context should succeed.
+  TestURLFetcherDelegate url_fetcher_delegate3(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetMediaURLRequestContext(),
+      embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus(),
+      net::LOAD_ONLY_FROM_CACHE);
+  url_fetcher_delegate3.WaitForCompletion();
+}
+
+class ProfileWithoutMediaCacheBrowserTest : public ProfileBrowserTest {
+ public:
+  ProfileWithoutMediaCacheBrowserTest() {
+    feature_list_.InitAndEnableFeature(features::kUseSameCacheForMedia);
+  }
+
+  ~ProfileWithoutMediaCacheBrowserTest() override {}
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Verifies that when kUseSameCacheForMedia is enabled, the media
+// URLRequestContext uses the same disk cache as the main one.
+IN_PROC_BROWSER_TEST_F(ProfileWithoutMediaCacheBrowserTest,
+                       NoSeparateMediaCache) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Do a normal load using the media URLRequestContext, populating the cache.
+  TestURLFetcherDelegate url_fetcher_delegate(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetMediaURLRequestContext(),
+      embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus(),
+      net::LOAD_NORMAL);
+  url_fetcher_delegate.WaitForCompletion();
+
+  // Cache-only load from the main request context should succeed, since the
+  // media request context uses the same cache.
+  TestURLFetcherDelegate url_fetcher_delegate2(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetURLRequestContext(),
+      embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus(),
+      net::LOAD_ONLY_FROM_CACHE);
+  url_fetcher_delegate2.WaitForCompletion();
+
+  // Cache-only load from the media request context should also succeed.
+  TestURLFetcherDelegate url_fetcher_delegate3(
+      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+          ->GetMediaURLRequestContext(),
+      embedded_test_server()->GetURL("/cachetime"), net::URLRequestStatus(),
+      net::LOAD_ONLY_FROM_CACHE);
+  url_fetcher_delegate3.WaitForCompletion();
 }

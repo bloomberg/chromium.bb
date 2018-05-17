@@ -331,6 +331,8 @@ extern const base::Feature kAdaptiveScreenBrightnessLogging;
 extern const base::Feature kUserActivityEventLogging;
 #endif
 
+extern const base::Feature kUseSameCacheForMedia;
+
 #if !defined(OS_ANDROID)
 extern const base::Feature kVoiceSearchOnLocalNtp;
 #endif
