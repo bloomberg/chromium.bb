@@ -40,7 +40,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
   }
 
   void TearDown() override {
-    ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(base::nullopt);
+    ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(GURL());
     InProcessBrowserTest::TearDown();
   }
 
@@ -72,6 +72,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
 
   void MockEnableIMEInDifferentExtension(const std::string& url,
                                          const gfx::Rect& init_bounds) {
+    DCHECK(!url.empty());
     ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(GURL(url));
     keyboard::KeyboardController::GetInstance()->Reload();
     // Mock window.resizeTo that is expected to be called after navigate to a

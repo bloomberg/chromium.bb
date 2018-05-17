@@ -12,6 +12,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "base/macros.h"
+#include "base/no_destructor.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -57,7 +58,10 @@ namespace virtual_keyboard_private = extensions::api::virtual_keyboard_private;
 
 namespace {
 
-base::Optional<GURL> g_override_virtual_keyboard_url;
+GURL& GetOverrideVirtualKeyboardUrl() {
+  static base::NoDestructor<GURL> url;
+  return *url;
+}
 
 class WindowBoundsChangeObserver : public aura::WindowObserver {
  public:
@@ -249,9 +253,9 @@ class AshKeyboardControllerObserver
 
 }  // namespace
 
-void ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(
-    base::Optional<GURL> url) {
-  g_override_virtual_keyboard_url = url;
+void ChromeKeyboardUI::TestApi::SetOverrideVirtualKeyboardUrl(const GURL& url) {
+  GURL& override_url = GetOverrideVirtualKeyboardUrl();
+  override_url = url;
 }
 
 ChromeKeyboardUI::ChromeKeyboardUI(content::BrowserContext* context)
@@ -451,8 +455,9 @@ void ChromeKeyboardUI::LoadContents(const GURL& url) {
 }
 
 const GURL& ChromeKeyboardUI::GetVirtualKeyboardUrl() {
-  if (g_override_virtual_keyboard_url.has_value())
-    return g_override_virtual_keyboard_url.value();
+  const GURL& override_url = GetOverrideVirtualKeyboardUrl();
+  if (!override_url.is_empty())
+    return override_url;
 
   chromeos::input_method::InputMethodManager* ime_manager =
       chromeos::input_method::InputMethodManager::Get();

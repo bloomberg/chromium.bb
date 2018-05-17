@@ -41,7 +41,8 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
  public:
   class TestApi {
    public:
-    static void SetOverrideVirtualKeyboardUrl(base::Optional<GURL> url);
+    // Use an empty |url| to clear the override.
+    static void SetOverrideVirtualKeyboardUrl(const GURL& url);
 
    private:
     DISALLOW_IMPLICIT_CONSTRUCTORS(TestApi);
