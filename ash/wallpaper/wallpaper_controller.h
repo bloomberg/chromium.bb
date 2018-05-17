@@ -5,7 +5,11 @@
 #ifndef ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
 #define ASH_WALLPAPER_WALLPAPER_CONTROLLER_H_
 
+#include <map>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
@@ -229,8 +233,8 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const base::FilePath& file_path);
 
-  void set_wallpaper_reload_delay_for_test(int value) {
-    wallpaper_reload_delay_ = value;
+  void set_wallpaper_reload_no_delay_for_test() {
+    wallpaper_reload_delay_ = base::TimeDelta::FromMilliseconds(0);
   }
 
   // Wallpaper should be dimmed for login, lock, OOBE and add user screens.
@@ -488,6 +492,10 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // Sets |prominent_colors_| and notifies the observers if there is a change.
   void SetProminentColors(const std::vector<SkColor>& prominent_colors);
 
+  // Sets all elements of |prominent_colors| to |kInvalidWallpaperColor| via
+  // SetProminentColors().
+  void ResetProminentColors();
+
   // Calculates prominent colors based on the wallpaper image and notifies
   // |observers_| of the value, either synchronously or asynchronously. In some
   // cases the wallpaper image will not actually be processed (e.g. user isn't
@@ -506,7 +514,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
   // Gets prominent color cache from the local state pref service. Returns an
   // empty value if the cache is not available.
   base::Optional<std::vector<SkColor>> GetCachedColors(
-      const std::string& current_location);
+      const std::string& current_location) const;
 
   // Move all wallpaper widgets to the locked container.
   // Returns true if the wallpaper moved.
@@ -594,7 +602,7 @@ class ASH_EXPORT WallpaperController : public mojom::WallpaperController,
 
   base::OneShotTimer timer_;
 
-  int wallpaper_reload_delay_;
+  base::TimeDelta wallpaper_reload_delay_;
 
   bool is_wallpaper_blurred_ = false;
 

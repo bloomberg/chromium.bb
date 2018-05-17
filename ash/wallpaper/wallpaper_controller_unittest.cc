@@ -291,7 +291,7 @@ class WallpaperControllerTest : public AshTestBase {
         ->wallpaper_widget_controller()
         ->ResetWidgetsForTesting();
     controller_ = Shell::Get()->wallpaper_controller();
-    controller_->set_wallpaper_reload_delay_for_test(0);
+    controller_->set_wallpaper_reload_no_delay_for_test();
     controller_->InitializePathsForTesting(user_data_dir, wallpapers_dir,
                                            custom_wallpapers_dir);
   }
