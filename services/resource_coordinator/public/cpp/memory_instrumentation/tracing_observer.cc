@@ -37,6 +37,15 @@ void OsDumpAsValueInto(TracedValue* value, const mojom::OSMemDump& os_dump) {
           static_cast<uint64_t>(os_dump.private_footprint_kb) * 1024));
 }
 
+std::string ApplyPathFiltering(const std::string& file,
+                               bool is_argument_filtering_enabled) {
+  if (is_argument_filtering_enabled) {
+    base::FilePath::StringType path(file.begin(), file.end());
+    return base::FilePath(path).BaseName().AsUTF8Unsafe();
+  }
+  return file;
+}
+
 };  // namespace
 
 TracingObserver::TracingObserver(
@@ -180,20 +189,18 @@ void TracingObserver::MemoryMapsAsValueInto(
                        base::StringPrintf(kHexFmt, region->module_timestamp));
     if (!region->module_debugid.empty())
       value->SetString("id", region->module_debugid);
+    if (!region->module_debug_path.empty()) {
+      value->SetString("df", ApplyPathFiltering(region->module_debug_path,
+                                                is_argument_filtering_enabled));
+    }
     value->SetInteger("pf", region->protection_flags);
 
     // The module path will be the basename when argument filtering is
     // activated. The whitelisting implemented for filtering string values
     // doesn't allow rewriting. Therefore, a different path is produced here
     // when argument filtering is activated.
-    if (is_argument_filtering_enabled) {
-      base::FilePath::StringType module_path(region->mapped_file.begin(),
-                                             region->mapped_file.end());
-      value->SetString("mf",
-                       base::FilePath(module_path).BaseName().AsUTF8Unsafe());
-    } else {
-      value->SetString("mf", region->mapped_file);
-    }
+    value->SetString("mf", ApplyPathFiltering(region->mapped_file,
+                                              is_argument_filtering_enabled));
 
 // The following stats are only well defined on Linux-derived OSes.
 #if !defined(OS_MACOSX) && !defined(OS_WIN)

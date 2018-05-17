@@ -104,6 +104,7 @@ struct VmRegion {
   uint64 module_timestamp;
   // Unique module debug identifier to retrieve debug information.
   string module_debugid;
+  string module_debug_path;
   uint32 protection_flags;
 
   string mapped_file;

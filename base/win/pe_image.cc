@@ -152,11 +152,7 @@ PIMAGE_SECTION_HEADER PEImage::GetImageSectionHeaderByName(
   return ret;
 }
 
-bool PEImage::GetDebugId(LPGUID guid, LPDWORD age) const {
-  if (NULL == guid || NULL == age) {
-    return false;
-  }
-
+bool PEImage::GetDebugId(LPGUID guid, LPDWORD age, LPCSTR* pdb_filename) const {
   DWORD debug_directory_size =
       GetImageDirectoryEntrySize(IMAGE_DIRECTORY_ENTRY_DEBUG);
   PIMAGE_DEBUG_DIRECTORY debug_directory =
@@ -174,8 +170,13 @@ bool PEImage::GetDebugId(LPGUID guid, LPDWORD age) const {
         // Unsupported PdbInfo signature
         return false;
       }
-      *guid = pdb_info->Guid;
-      *age = pdb_info->Age;
+
+      if (guid)
+        *guid = pdb_info->Guid;
+      if (age)
+        *age = pdb_info->Age;
+      if (pdb_filename)
+        *pdb_filename = pdb_info->PdbFileName;
       return true;
     }
   }

@@ -60,7 +60,7 @@ class PEImage {
                                       DWORD ordinal, LPCSTR name, DWORD hint,
                                       PIMAGE_THUNK_DATA iat, PVOID cookie);
 
-  // Callback to enumerate dalayed import blocks.
+  // Callback to enumerate delayed import blocks.
   // module is the dll that exports this block of symbols. cookie is the value
   // passed to the enumerate method.
   // Returns true to continue the enumeration.
@@ -130,8 +130,10 @@ class PEImage {
   // Returns the exports directory.
   PIMAGE_EXPORT_DIRECTORY GetExportDirectory() const;
 
-  // Returns the debug id (guid+age).
-  bool GetDebugId(LPGUID guid, LPDWORD age) const;
+  // Returns the debug id (guid+age) and |pdb_filename|. Parameters are optional
+  // and can be null. |pdb_filename| is a direct reference to PEImage and
+  // doesn't not need to be freed.
+  bool GetDebugId(LPGUID guid, LPDWORD age, LPCSTR* pdb_filename) const;
 
   // Returns a given export entry.
   // Use: e = image.GetExportEntry(f);

@@ -209,7 +209,12 @@ TEST(PEImageTest, GetDebugId) {
   PEImage pe(module.get());
   GUID guid = {0};
   DWORD age = 0;
-  EXPECT_TRUE(pe.GetDebugId(&guid, &age));
+  LPCSTR pdb_file = nullptr;
+  EXPECT_TRUE(pe.GetDebugId(&guid, &age, &pdb_file));
+  EXPECT_STREQ("advapi32.pdb", pdb_file);
+
+  // Should be valid to call without parameters.
+  EXPECT_TRUE(pe.GetDebugId(nullptr, nullptr, nullptr));
 
   GUID empty_guid = {0};
   EXPECT_TRUE(!IsEqualGUID(empty_guid, guid));

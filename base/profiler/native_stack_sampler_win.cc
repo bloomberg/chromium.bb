@@ -218,7 +218,7 @@ void RecordStack(CONTEXT* context, std::vector<RecordedFrame>* stack) {
 std::string GetBuildIDForModule(HMODULE module_handle) {
   GUID guid;
   DWORD age;
-  win::PEImage(module_handle).GetDebugId(&guid, &age);
+  win::PEImage(module_handle).GetDebugId(&guid, &age, /* pdb_file= */ nullptr);
   const int kGUIDSize = 39;
   std::wstring build_id;
   int result =
