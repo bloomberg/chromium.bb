@@ -299,8 +299,8 @@ void MockWebSpeechRecognizer::ClearTaskQueue() {
 
 void MockWebSpeechRecognizer::PostRunTaskFromQueue() {
   task_queue_running_ = true;
-  delegate_->PostTask(base::Bind(&MockWebSpeechRecognizer::RunTaskFromQueue,
-                                 weak_factory_.GetWeakPtr()));
+  delegate_->PostTask(base::BindOnce(&MockWebSpeechRecognizer::RunTaskFromQueue,
+                                     weak_factory_.GetWeakPtr()));
 }
 
 void MockWebSpeechRecognizer::RunTaskFromQueue() {

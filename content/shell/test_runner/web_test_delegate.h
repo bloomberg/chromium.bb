@@ -47,7 +47,6 @@ class OrientationData;
 namespace test_runner {
 
 class GamepadController;
-class WebTask;
 class WebWidgetTestProxyBase;
 struct TestPreferences;
 
@@ -79,10 +78,9 @@ class WebTestDelegate {
   // Add a message to the text dump for the layout test.
   virtual void PrintMessage(const std::string& message) = 0;
 
-  // The delegate takes ownership of the WebTask objects and is responsible
-  // for deleting them.
-  virtual void PostTask(const base::Closure& task) = 0;
-  virtual void PostDelayedTask(const base::Closure& task, long long ms) = 0;
+  virtual void PostTask(base::OnceClosure task) = 0;
+  virtual void PostDelayedTask(base::OnceClosure task,
+                               base::TimeDelta delay) = 0;
 
   // Register a new isolated filesystem with the given files, and return the
   // new filesystem id.
@@ -178,7 +176,7 @@ class WebTestDelegate {
   // Set the bluetooth adapter while running a layout test, uses Mojo to
   // communicate with the browser.
   virtual void SetBluetoothFakeAdapter(const std::string& adapter_name,
-                                       const base::Closure& callback) = 0;
+                                       base::OnceClosure callback) = 0;
 
   // If |enable| is true makes the Bluetooth chooser record its input and wait
   // for instructions from the test program on how to proceed. Otherwise
@@ -187,7 +185,7 @@ class WebTestDelegate {
 
   // Returns the events recorded since the last call to this function.
   virtual void GetBluetoothManualChooserEvents(
-      const base::Callback<void(const std::vector<std::string>& events)>&
+      base::OnceCallback<void(const std::vector<std::string>& events)>
           callback) = 0;
 
   // Calls the BluetoothChooser::EventHandler with the arguments here. Valid
@@ -265,7 +263,7 @@ class WebTestDelegate {
   // otherwise.
   virtual void DispatchBeforeInstallPromptEvent(
       const std::vector<std::string>& event_platforms,
-      const base::Callback<void(bool)>& callback) = 0;
+      base::OnceCallback<void(bool)> callback) = 0;
 
   // Resolves the in-flight beforeinstallprompt event userChoice promise with a
   // platform of |platform|.
@@ -278,7 +276,7 @@ class WebTestDelegate {
   virtual float GetDeviceScaleFactor() const = 0;
 
   // Run all pending idle tasks, and then run callback.
-  virtual void RunIdleTasks(const base::Closure& callback) = 0;
+  virtual void RunIdleTasks(base::OnceClosure callback) = 0;
 
   // Forces a text input state update for the client of WebFrameWidget
   // associated with |frame|.

@@ -1046,11 +1046,11 @@ void MainThreadSchedulerImpl::EndIdlePeriod() {
 }
 
 void MainThreadSchedulerImpl::EndIdlePeriodForTesting(
-    const base::Closure& callback,
+    base::OnceClosure callback,
     base::TimeTicks time_remaining) {
   main_thread_only().in_idle_period_for_testing = false;
   EndIdlePeriod();
-  callback.Run();
+  std::move(callback).Run();
 }
 
 bool MainThreadSchedulerImpl::PolicyNeedsUpdateForTesting() {
@@ -1296,12 +1296,12 @@ base::TimeTicks MainThreadSchedulerImpl::CurrentIdleTaskDeadlineForTesting()
 }
 
 void MainThreadSchedulerImpl::RunIdleTasksForTesting(
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   main_thread_only().in_idle_period_for_testing = true;
   IdleTaskRunner()->PostIdleTask(
       FROM_HERE,
       base::BindOnce(&MainThreadSchedulerImpl::EndIdlePeriodForTesting,
-                     weak_factory_.GetWeakPtr(), callback));
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
   idle_helper_.EnableLongIdlePeriod();
 }
 

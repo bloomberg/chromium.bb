@@ -63,8 +63,7 @@ class TestRunnerForSpecificView {
   friend class TestRunnerBindings;
 
   // Helpers for working with base and V8 callbacks.
-  void PostTask(const base::Closure& callback);
-  void PostDelayedTask(long long delay, const base::Closure& callback);
+  void PostTask(base::OnceClosure callback);
   void PostV8Callback(const v8::Local<v8::Function>& callback);
   void PostV8CallbackWithArgs(v8::UniquePersistent<v8::Function> callback,
                               int argc,
@@ -73,7 +72,7 @@ class TestRunnerForSpecificView {
   void InvokeV8CallbackWithArgs(
       const v8::UniquePersistent<v8::Function>& callback,
       const std::vector<v8::UniquePersistent<v8::Value>>& args);
-  base::Closure CreateClosureThatPostsV8Callback(
+  base::OnceClosure CreateClosureThatPostsV8Callback(
       const v8::Local<v8::Function>& callback);
 
   void LayoutAndPaintAsync();

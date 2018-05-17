@@ -105,10 +105,9 @@ void TestRunnerForSpecificView::Reset() {
 bool TestRunnerForSpecificView::RequestPointerLock() {
   switch (pointer_lock_planned_result_) {
     case PointerLockWillSucceed:
-      PostDelayedTask(
-          0,
-          base::Bind(&TestRunnerForSpecificView::DidAcquirePointerLockInternal,
-                     weak_factory_.GetWeakPtr()));
+      PostTask(base::BindOnce(
+          &TestRunnerForSpecificView::DidAcquirePointerLockInternal,
+          weak_factory_.GetWeakPtr()));
       return true;
     case PointerLockWillRespondAsync:
       DCHECK(!pointer_locked_);
@@ -123,30 +122,25 @@ bool TestRunnerForSpecificView::RequestPointerLock() {
 }
 
 void TestRunnerForSpecificView::RequestPointerUnlock() {
-  PostDelayedTask(
-      0, base::Bind(&TestRunnerForSpecificView::DidLosePointerLockInternal,
-                    weak_factory_.GetWeakPtr()));
+  PostTask(
+      base::BindOnce(&TestRunnerForSpecificView::DidLosePointerLockInternal,
+                     weak_factory_.GetWeakPtr()));
 }
 
 bool TestRunnerForSpecificView::isPointerLocked() {
   return pointer_locked_;
 }
 
-void TestRunnerForSpecificView::PostTask(const base::Closure& callback) {
-  delegate()->PostTask(callback);
-}
-
-void TestRunnerForSpecificView::PostDelayedTask(long long delay,
-                                                const base::Closure& callback) {
-  delegate()->PostDelayedTask(callback, delay);
+void TestRunnerForSpecificView::PostTask(base::OnceClosure callback) {
+  delegate()->PostTask(std::move(callback));
 }
 
 void TestRunnerForSpecificView::PostV8Callback(
     const v8::Local<v8::Function>& callback) {
-  PostTask(base::Bind(&TestRunnerForSpecificView::InvokeV8Callback,
-                      weak_factory_.GetWeakPtr(),
-                      v8::UniquePersistent<v8::Function>(
-                          blink::MainThreadIsolate(), callback)));
+  PostTask(base::BindOnce(&TestRunnerForSpecificView::InvokeV8Callback,
+                          weak_factory_.GetWeakPtr(),
+                          v8::UniquePersistent<v8::Function>(
+                              blink::MainThreadIsolate(), callback)));
 }
 
 void TestRunnerForSpecificView::PostV8CallbackWithArgs(
@@ -159,9 +153,9 @@ void TestRunnerForSpecificView::PostV8CallbackWithArgs(
         v8::UniquePersistent<v8::Value>(blink::MainThreadIsolate(), argv[i]));
   }
 
-  PostTask(base::Bind(&TestRunnerForSpecificView::InvokeV8CallbackWithArgs,
-                      weak_factory_.GetWeakPtr(), std::move(callback),
-                      std::move(args)));
+  PostTask(base::BindOnce(&TestRunnerForSpecificView::InvokeV8CallbackWithArgs,
+                          weak_factory_.GetWeakPtr(), std::move(callback),
+                          std::move(args)));
 }
 
 void TestRunnerForSpecificView::InvokeV8Callback(
@@ -192,14 +186,14 @@ void TestRunnerForSpecificView::InvokeV8CallbackWithArgs(
       local_args.size(), local_args.data());
 }
 
-base::Closure TestRunnerForSpecificView::CreateClosureThatPostsV8Callback(
+base::OnceClosure TestRunnerForSpecificView::CreateClosureThatPostsV8Callback(
     const v8::Local<v8::Function>& callback) {
-  return base::Bind(&TestRunnerForSpecificView::PostTask,
-                    weak_factory_.GetWeakPtr(),
-                    base::Bind(&TestRunnerForSpecificView::InvokeV8Callback,
-                               weak_factory_.GetWeakPtr(),
-                               v8::UniquePersistent<v8::Function>(
-                                   blink::MainThreadIsolate(), callback)));
+  return base::BindOnce(
+      &TestRunnerForSpecificView::PostTask, weak_factory_.GetWeakPtr(),
+      base::BindOnce(&TestRunnerForSpecificView::InvokeV8Callback,
+                     weak_factory_.GetWeakPtr(),
+                     v8::UniquePersistent<v8::Function>(
+                         blink::MainThreadIsolate(), callback)));
 }
 
 void TestRunnerForSpecificView::LayoutAndPaintAsync() {
@@ -316,7 +310,7 @@ void TestRunnerForSpecificView::GetManifestCallback(
 
 void TestRunnerForSpecificView::GetBluetoothManualChooserEvents(
     v8::Local<v8::Function> callback) {
-  return delegate()->GetBluetoothManualChooserEvents(base::Bind(
+  return delegate()->GetBluetoothManualChooserEvents(base::BindOnce(
       &TestRunnerForSpecificView::GetBluetoothManualChooserEventsCallback,
       weak_factory_.GetWeakPtr(),
       base::Passed(v8::UniquePersistent<v8::Function>(
@@ -393,7 +387,7 @@ void TestRunnerForSpecificView::DispatchBeforeInstallPromptEvent(
     v8::Local<v8::Function> callback) {
   delegate()->DispatchBeforeInstallPromptEvent(
       event_platforms,
-      base::Bind(
+      base::BindOnce(
           &TestRunnerForSpecificView::DispatchBeforeInstallPromptCallback,
           weak_factory_.GetWeakPtr(),
           base::Passed(v8::UniquePersistent<v8::Function>(

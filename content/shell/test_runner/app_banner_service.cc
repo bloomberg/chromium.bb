@@ -23,7 +23,7 @@ void AppBannerService::ResolvePromise(const std::string& platform) {
 
 void AppBannerService::SendBannerPromptRequest(
     const std::vector<std::string>& platforms,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   if (!controller_.is_bound())
     return;
 
@@ -32,17 +32,17 @@ void AppBannerService::SendBannerPromptRequest(
   controller_->BannerPromptRequest(
       std::move(proxy), mojo::MakeRequest(&event_), platforms,
       base::BindOnce(&AppBannerService::OnBannerPromptReply,
-                     base::Unretained(this), callback));
+                     base::Unretained(this), std::move(callback)));
 }
 
 void AppBannerService::DisplayAppBanner(bool user_gesture) { /* do nothing */
 }
 
 void AppBannerService::OnBannerPromptReply(
-    const base::Callback<void(bool)>& callback,
+    base::OnceCallback<void(bool)> callback,
     blink::mojom::AppBannerPromptReply reply,
     const std::string& referrer) {
-  callback.Run(reply == blink::mojom::AppBannerPromptReply::CANCEL);
+  std::move(callback).Run(reply == blink::mojom::AppBannerPromptReply::CANCEL);
 }
 
 }  // namespace test_runner

@@ -27,13 +27,13 @@ class TEST_RUNNER_EXPORT AppBannerService
   blink::mojom::AppBannerControllerPtr& controller() { return controller_; }
   void ResolvePromise(const std::string& platform);
   void SendBannerPromptRequest(const std::vector<std::string>& platforms,
-                               const base::Callback<void(bool)>& callback);
+                               base::OnceCallback<void(bool)> callback);
 
   // blink::mojom::AppBannerService overrides.
   void DisplayAppBanner(bool user_gesture) override;
 
  private:
-  void OnBannerPromptReply(const base::Callback<void(bool)>& callback,
+  void OnBannerPromptReply(base::OnceCallback<void(bool)> callback,
                            blink::mojom::AppBannerPromptReply,
                            const std::string& referrer);
 

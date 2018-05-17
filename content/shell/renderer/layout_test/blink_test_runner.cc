@@ -238,14 +238,15 @@ void BlinkTestRunner::PrintMessage(const std::string& message) {
   Send(new ShellViewHostMsg_PrintMessage(routing_id(), message));
 }
 
-void BlinkTestRunner::PostTask(const base::Closure& task) {
-  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(FROM_HERE,
-                                                                  task);
+void BlinkTestRunner::PostTask(base::OnceClosure task) {
+  Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
+      FROM_HERE, std::move(task));
 }
 
-void BlinkTestRunner::PostDelayedTask(const base::Closure& task, long long ms) {
+void BlinkTestRunner::PostDelayedTask(base::OnceClosure task,
+                                      base::TimeDelta delay) {
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostDelayedTask(
-      FROM_HERE, task, base::TimeDelta::FromMilliseconds(ms));
+      FROM_HERE, std::move(task), delay);
 }
 
 WebString BlinkTestRunner::RegisterIsolatedFileSystem(
@@ -395,8 +396,8 @@ void BlinkTestRunner::SetDeviceColorSpace(const std::string& name) {
 }
 
 void BlinkTestRunner::SetBluetoothFakeAdapter(const std::string& adapter_name,
-                                              const base::Closure& callback) {
-  GetBluetoothFakeAdapterSetter().Set(adapter_name, callback);
+                                              base::OnceClosure callback) {
+  GetBluetoothFakeAdapterSetter().Set(adapter_name, std::move(callback));
 }
 
 void BlinkTestRunner::SetBluetoothManualChooser(bool enable) {
@@ -404,8 +405,8 @@ void BlinkTestRunner::SetBluetoothManualChooser(bool enable) {
 }
 
 void BlinkTestRunner::GetBluetoothManualChooserEvents(
-    const base::Callback<void(const std::vector<std::string>&)>& callback) {
-  get_bluetooth_events_callbacks_.push_back(callback);
+    base::OnceCallback<void(const std::vector<std::string>&)> callback) {
+  get_bluetooth_events_callbacks_.push_back(std::move(callback));
   Send(new ShellViewHostMsg_GetBluetoothManualChooserEvents(routing_id()));
 }
 
@@ -681,13 +682,14 @@ void BlinkTestRunner::ResetPermissions() {
 
 void BlinkTestRunner::DispatchBeforeInstallPromptEvent(
     const std::vector<std::string>& event_platforms,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   app_banner_service_.reset(new test_runner::AppBannerService());
   blink::mojom::AppBannerControllerRequest request =
       mojo::MakeRequest(&app_banner_service_->controller());
   render_view()->GetMainRenderFrame()->BindLocalInterface(
       blink::mojom::AppBannerController::Name_, request.PassMessagePipe());
-  app_banner_service_->SendBannerPromptRequest(event_platforms, callback);
+  app_banner_service_->SendBannerPromptRequest(event_platforms,
+                                               std::move(callback));
 }
 
 void BlinkTestRunner::ResolveBeforeInstallPromptPromise(
@@ -712,8 +714,8 @@ float BlinkTestRunner::GetDeviceScaleFactor() const {
   return render_view()->GetDeviceScaleFactor();
 }
 
-void BlinkTestRunner::RunIdleTasks(const base::Closure& callback) {
-    SchedulerRunIdleTasks(callback);
+void BlinkTestRunner::RunIdleTasks(base::OnceClosure callback) {
+  SchedulerRunIdleTasks(std::move(callback));
 }
 
 void BlinkTestRunner::ForceTextInputStateUpdate(WebLocalFrame* frame) {
@@ -916,8 +918,8 @@ void BlinkTestRunner::OnTestFinishedInSecondaryRenderer() {
 void BlinkTestRunner::OnReplyBluetoothManualChooserEvents(
     const std::vector<std::string>& events) {
   DCHECK(!get_bluetooth_events_callbacks_.empty());
-  base::Callback<void(const std::vector<std::string>&)> callback =
-      get_bluetooth_events_callbacks_.front();
+  base::OnceCallback<void(const std::vector<std::string>&)> callback =
+      std::move(get_bluetooth_events_callbacks_.front());
   get_bluetooth_events_callbacks_.pop_front();
   std::move(callback).Run(events);
 }
