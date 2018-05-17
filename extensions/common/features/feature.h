@@ -149,8 +149,8 @@ class Feature {
   // method instead.
   virtual Availability IsAvailableToEnvironment() const = 0;
 
-  virtual bool IsIdInBlacklist(const HashedExtensionId& hashed_id) const = 0;
-  virtual bool IsIdInWhitelist(const HashedExtensionId& hashed_id) const = 0;
+  virtual bool IsIdInBlocklist(const HashedExtensionId& hashed_id) const = 0;
+  virtual bool IsIdInAllowlist(const HashedExtensionId& hashed_id) const = 0;
 
  protected:
   std::string name_;

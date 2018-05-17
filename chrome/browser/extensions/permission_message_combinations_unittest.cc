@@ -20,7 +20,7 @@
 
 namespace extensions {
 
-const char kWhitelistedExtensionID[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+const char kAllowlistedExtensionID[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 
 // Tests that ChromePermissionMessageProvider produces the expected messages for
 // various combinations of app/extension permissions.
@@ -28,7 +28,7 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
  public:
   PermissionMessageCombinationsUnittest()
       : message_provider_(new ChromePermissionMessageProvider()),
-        whitelisted_extension_id_(kWhitelistedExtensionID) {}
+        allowlisted_extension_id_(kAllowlistedExtensionID) {}
   ~PermissionMessageCombinationsUnittest() override {}
 
   // Overridden from testing::Test:
@@ -45,7 +45,7 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
                  json_manifest_with_double_quotes.end(), '\'', '"');
     app_ = env_.MakeExtension(
         *base::test::ParseJson(json_manifest_with_double_quotes),
-        kWhitelistedExtensionID);
+        kAllowlistedExtensionID);
   }
 
   // Checks whether the currently installed app or extension produces the given
@@ -200,9 +200,9 @@ class PermissionMessageCombinationsUnittest : public testing::Test {
   extensions::TestExtensionEnvironment env_;
   std::unique_ptr<ChromePermissionMessageProvider> message_provider_;
   scoped_refptr<const Extension> app_;
-  // Whitelist a known extension id so we can test all permissions. This ID
-  // will be used for each test app.
-  SimpleFeature::ScopedThreadUnsafeWhitelistForTest whitelisted_extension_id_;
+  // Add a known extension id to the explicit allowlist so we can test all
+  // permissions. This ID will be used for each test app.
+  SimpleFeature::ScopedThreadUnsafeAllowlistForTest allowlisted_extension_id_;
 
   DISALLOW_COPY_AND_ASSIGN(PermissionMessageCombinationsUnittest);
 };

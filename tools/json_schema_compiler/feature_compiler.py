@@ -365,7 +365,15 @@ def GetCodeForFeatureValues(feature_values):
   for key in sorted(feature_values.keys()):
     if key in IGNORED_KEYS:
       continue;
-    c.Append('feature->set_%s(%s);' % (key, feature_values[key]))
+
+    # TODO(devlin): Remove this hack as part of 842387.
+    set_key = key
+    if key == "whitelist":
+      set_key = "allowlist"
+    elif key == "blacklist":
+      set_key = "blocklist"
+
+    c.Append('feature->set_%s(%s);' % (set_key, feature_values[key]))
   return c
 
 class Feature(object):

@@ -30,8 +30,8 @@ namespace extensions {
 
 namespace {
 
-struct WhitelistInfo {
-  WhitelistInfo()
+struct AllowlistInfo {
+  AllowlistInfo()
       : hashed_id(HashedIdInHex(
             base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                 switches::kWhitelistedExtensionID))) {}
@@ -39,7 +39,7 @@ struct WhitelistInfo {
 };
 // A singleton copy of the --whitelisted-extension-id so that we don't need to
 // copy it from the CommandLine each time.
-base::LazyInstance<WhitelistInfo>::Leaky g_whitelist_info =
+base::LazyInstance<AllowlistInfo>::Leaky g_allowlist_info =
     LAZY_INSTANCE_INITIALIZER;
 
 Feature::Availability IsAvailableToManifestForBind(
@@ -187,26 +187,26 @@ bool IsCommandLineSwitchEnabled(base::CommandLine* command_line,
   return false;
 }
 
-bool IsWhitelistedForTest(const HashedExtensionId& hashed_id) {
-  // TODO(jackhou): Delete the commandline whitelisting mechanism.
+bool IsAllowlistedForTest(const HashedExtensionId& hashed_id) {
+  // TODO(jackhou): Delete the commandline allowlisting mechanism.
   // Since it is only used it tests, ideally it should not be set via the
   // commandline. At the moment the commandline is used as a mechanism to pass
   // the id to the renderer process.
-  const std::string& whitelisted_id = g_whitelist_info.Get().hashed_id;
-  return !whitelisted_id.empty() && whitelisted_id == hashed_id.value();
+  const std::string& allowlisted_id = g_allowlist_info.Get().hashed_id;
+  return !allowlisted_id.empty() && allowlisted_id == hashed_id.value();
 }
 
 }  // namespace
 
-SimpleFeature::ScopedThreadUnsafeWhitelistForTest::
-    ScopedThreadUnsafeWhitelistForTest(const std::string& id)
-    : previous_id_(g_whitelist_info.Get().hashed_id) {
-  g_whitelist_info.Get().hashed_id = HashedIdInHex(id);
+SimpleFeature::ScopedThreadUnsafeAllowlistForTest::
+    ScopedThreadUnsafeAllowlistForTest(const std::string& id)
+    : previous_id_(g_allowlist_info.Get().hashed_id) {
+  g_allowlist_info.Get().hashed_id = HashedIdInHex(id);
 }
 
-SimpleFeature::ScopedThreadUnsafeWhitelistForTest::
-    ~ScopedThreadUnsafeWhitelistForTest() {
-  g_whitelist_info.Get().hashed_id = previous_id_;
+SimpleFeature::ScopedThreadUnsafeAllowlistForTest::
+    ~ScopedThreadUnsafeAllowlistForTest() {
+  g_allowlist_info.Get().hashed_id = previous_id_;
 }
 
 SimpleFeature::SimpleFeature()
@@ -406,12 +406,12 @@ bool SimpleFeature::IsInternal() const {
   return is_internal_;
 }
 
-bool SimpleFeature::IsIdInBlacklist(const HashedExtensionId& hashed_id) const {
-  return IsIdInList(hashed_id, blacklist_);
+bool SimpleFeature::IsIdInBlocklist(const HashedExtensionId& hashed_id) const {
+  return IsIdInList(hashed_id, blocklist_);
 }
 
-bool SimpleFeature::IsIdInWhitelist(const HashedExtensionId& hashed_id) const {
-  return IsIdInList(hashed_id, whitelist_);
+bool SimpleFeature::IsIdInAllowlist(const HashedExtensionId& hashed_id) const {
+  return IsIdInList(hashed_id, allowlist_);
 }
 
 // static
@@ -498,9 +498,9 @@ bool SimpleFeature::IsValidHashedExtensionId(
   return hashed_id.value().length() == 40;
 }
 
-void SimpleFeature::set_blacklist(
-    std::initializer_list<const char* const> blacklist) {
-  blacklist_.assign(blacklist.begin(), blacklist.end());
+void SimpleFeature::set_blocklist(
+    std::initializer_list<const char* const> blocklist) {
+  blocklist_.assign(blocklist.begin(), blocklist.end());
 }
 
 void SimpleFeature::set_command_line_switch(
@@ -538,9 +538,9 @@ void SimpleFeature::set_platforms(std::initializer_list<Platform> platforms) {
   platforms_ = platforms;
 }
 
-void SimpleFeature::set_whitelist(
-    std::initializer_list<const char* const> whitelist) {
-  whitelist_.assign(whitelist.begin(), whitelist.end());
+void SimpleFeature::set_allowlist(
+    std::initializer_list<const char* const> allowlist) {
+  allowlist_.assign(allowlist.begin(), allowlist.end());
 }
 
 Feature::Availability SimpleFeature::GetEnvironmentAvailability(
@@ -589,7 +589,7 @@ Feature::Availability SimpleFeature::GetManifestAvailability(
     return CreateAvailability(INVALID_TYPE, type);
   }
 
-  if (!blacklist_.empty() && IsIdInBlacklist(hashed_id))
+  if (!blocklist_.empty() && IsIdInBlocklist(hashed_id))
     return CreateAvailability(FOUND_IN_BLACKLIST);
 
   // TODO(benwells): don't grant all component extensions.
@@ -599,8 +599,8 @@ Feature::Availability SimpleFeature::GetManifestAvailability(
   if (component_extensions_auto_granted_ && location == Manifest::COMPONENT)
     return CreateAvailability(IS_AVAILABLE);
 
-  if (!whitelist_.empty() && !IsIdInWhitelist(hashed_id) &&
-      !IsWhitelistedForTest(hashed_id)) {
+  if (!allowlist_.empty() && !IsIdInAllowlist(hashed_id) &&
+      !IsAllowlistedForTest(hashed_id)) {
     return CreateAvailability(NOT_FOUND_IN_WHITELIST);
   }
 

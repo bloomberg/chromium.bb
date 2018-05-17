@@ -95,21 +95,21 @@ Feature::Availability ComplexFeature::IsAvailableToEnvironment() const {
   return first_availability;
 }
 
-bool ComplexFeature::IsIdInBlacklist(const HashedExtensionId& hashed_id) const {
+bool ComplexFeature::IsIdInBlocklist(const HashedExtensionId& hashed_id) const {
   for (FeatureList::const_iterator it = features_.begin();
        it != features_.end();
        ++it) {
-    if ((*it)->IsIdInBlacklist(hashed_id))
+    if ((*it)->IsIdInBlocklist(hashed_id))
       return true;
   }
   return false;
 }
 
-bool ComplexFeature::IsIdInWhitelist(const HashedExtensionId& hashed_id) const {
+bool ComplexFeature::IsIdInAllowlist(const HashedExtensionId& hashed_id) const {
   for (FeatureList::const_iterator it = features_.begin();
        it != features_.end();
        ++it) {
-    if ((*it)->IsIdInWhitelist(hashed_id))
+    if ((*it)->IsIdInAllowlist(hashed_id))
       return true;
   }
   return false;

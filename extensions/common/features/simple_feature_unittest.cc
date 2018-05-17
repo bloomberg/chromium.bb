@@ -110,12 +110,12 @@ TEST_F(SimpleFeatureTest, IsAvailableNullCase) {
   }
 }
 
-TEST_F(SimpleFeatureTest, Whitelist) {
+TEST_F(SimpleFeatureTest, Allowlist) {
   const HashedExtensionId kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const HashedExtensionId kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   const HashedExtensionId kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
   SimpleFeature feature;
-  feature.set_whitelist({kIdFoo.value().c_str(), kIdBar.value().c_str()});
+  feature.set_allowlist({kIdFoo.value().c_str(), kIdBar.value().c_str()});
 
   EXPECT_EQ(
       Feature::IS_AVAILABLE,
@@ -157,14 +157,14 @@ TEST_F(SimpleFeatureTest, Whitelist) {
                                     Feature::UNSPECIFIED_PLATFORM).result());
 }
 
-TEST_F(SimpleFeatureTest, HashedIdWhitelist) {
+TEST_F(SimpleFeatureTest, HashedIdAllowlist) {
   // echo -n "fooabbbbccccddddeeeeffffgggghhhh" |
   //   sha1sum | tr '[:lower:]' '[:upper:]'
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdFooHashed("55BC7228A0D502A2A48C9BB16B07062A01E62897");
   SimpleFeature feature;
 
-  feature.set_whitelist({kIdFooHashed.c_str()});
+  feature.set_allowlist({kIdFooHashed.c_str()});
 
   EXPECT_EQ(Feature::IS_AVAILABLE,
             feature
@@ -196,12 +196,12 @@ TEST_F(SimpleFeatureTest, HashedIdWhitelist) {
                 .result());
 }
 
-TEST_F(SimpleFeatureTest, Blacklist) {
+TEST_F(SimpleFeatureTest, Blocklist) {
   const HashedExtensionId kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const HashedExtensionId kIdBar("barabbbbccccddddeeeeffffgggghhhh");
   const HashedExtensionId kIdBaz("bazabbbbccccddddeeeeffffgggghhhh");
   SimpleFeature feature;
-  feature.set_blacklist({kIdFoo.value().c_str(), kIdBar.value().c_str()});
+  feature.set_blocklist({kIdFoo.value().c_str(), kIdBar.value().c_str()});
 
   EXPECT_EQ(
       Feature::FOUND_IN_BLACKLIST,
@@ -234,14 +234,14 @@ TEST_F(SimpleFeatureTest, Blacklist) {
           .result());
 }
 
-TEST_F(SimpleFeatureTest, HashedIdBlacklist) {
+TEST_F(SimpleFeatureTest, HashedIdBlocklist) {
   // echo -n "fooabbbbccccddddeeeeffffgggghhhh" |
   //   sha1sum | tr '[:lower:]' '[:upper:]'
   const std::string kIdFoo("fooabbbbccccddddeeeeffffgggghhhh");
   const std::string kIdFooHashed("55BC7228A0D502A2A48C9BB16B07062A01E62897");
   SimpleFeature feature;
 
-  feature.set_blacklist({kIdFooHashed.c_str()});
+  feature.set_blocklist({kIdFooHashed.c_str()});
 
   EXPECT_EQ(Feature::FOUND_IN_BLACKLIST,
             feature
@@ -331,11 +331,11 @@ TEST_F(SimpleFeatureTest, Context) {
   EXPECT_EQ("", error);
   ASSERT_TRUE(extension.get());
 
-  feature.set_whitelist({"monkey"});
+  feature.set_allowlist({"monkey"});
   EXPECT_EQ(Feature::NOT_FOUND_IN_WHITELIST, feature.IsAvailableToContext(
       extension.get(), Feature::BLESSED_EXTENSION_CONTEXT,
       Feature::CHROMEOS_PLATFORM).result());
-  feature.set_whitelist({});
+  feature.set_allowlist({});
 
   feature.set_extension_types({Manifest::TYPE_THEME});
   {
@@ -893,7 +893,7 @@ TEST(SimpleFeatureUnitTest, TestChannelsWithoutExtension) {
   feature.set_matches({"chrome://settings/*"});
   feature.set_channel(version_info::Channel::UNKNOWN);
 
-  const GURL kWhitelistedUrl("chrome://settings/foo");
+  const GURL kAllowlistedUrl("chrome://settings/foo");
   const GURL kOtherUrl("https://example.com");
 
   {
@@ -902,7 +902,7 @@ TEST(SimpleFeatureUnitTest, TestChannelsWithoutExtension) {
     EXPECT_EQ(Feature::IS_AVAILABLE,
               feature
                   .IsAvailableToContext(nullptr, Feature::WEBUI_CONTEXT,
-                                        kWhitelistedUrl)
+                                        kAllowlistedUrl)
                   .result());
   }
   {
@@ -911,7 +911,7 @@ TEST(SimpleFeatureUnitTest, TestChannelsWithoutExtension) {
     EXPECT_EQ(Feature::UNSUPPORTED_CHANNEL,
               feature
                   .IsAvailableToContext(nullptr, Feature::WEBUI_CONTEXT,
-                                        kWhitelistedUrl)
+                                        kAllowlistedUrl)
                   .result());
   }
 }
