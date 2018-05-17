@@ -10,6 +10,7 @@ import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
@@ -26,6 +27,7 @@ import java.util.regex.Pattern;
 public class ShareActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        long activityStartTime = SystemClock.elapsedRealtime();
         super.onCreate(savedInstanceState);
 
         String startUrl = extractShareTarget();
@@ -35,7 +37,8 @@ public class ShareActivity extends Activity {
         }
 
         HostBrowserLauncher launcher = new HostBrowserLauncher(this, getIntent(), startUrl,
-                WebApkConstants.SHORTCUT_SOURCE_SHARE, true /* forceNavigation */);
+                WebApkConstants.SHORTCUT_SOURCE_SHARE, true /* forceNavigation */,
+                activityStartTime);
         launcher.selectHostBrowserAndLaunch(() -> finish());
     }
 

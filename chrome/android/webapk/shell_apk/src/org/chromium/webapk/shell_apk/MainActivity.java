@@ -6,6 +6,7 @@ package org.chromium.webapk.shell_apk;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.os.SystemClock;
 
 import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
@@ -16,6 +17,7 @@ import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        long activityStartTime = SystemClock.elapsedRealtime();
         super.onCreate(savedInstanceState);
 
         Bundle metadata = WebApkUtils.readMetaData(this);
@@ -43,8 +45,8 @@ public class MainActivity extends Activity {
         boolean forceNavigation = getIntent().getBooleanExtra(
                 WebApkConstants.EXTRA_FORCE_NAVIGATION, overrideSpecified);
 
-        HostBrowserLauncher launcher =
-                new HostBrowserLauncher(this, getIntent(), startUrl, source, forceNavigation);
+        HostBrowserLauncher launcher = new HostBrowserLauncher(
+                this, getIntent(), startUrl, source, forceNavigation, activityStartTime);
         launcher.selectHostBrowserAndLaunch(() -> finish());
     }
 
