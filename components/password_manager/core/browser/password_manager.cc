@@ -706,10 +706,6 @@ void PasswordManager::ProcessSubmittedForm(const FormData& submitted_form) {
   }
 }
 
-bool PasswordManager::OtherPossibleUsernamesEnabled() const {
-  return false;
-}
-
 void PasswordManager::ProvisionallySaveManager(
     const PasswordForm& form,
     PasswordFormManager* matched_manager,
@@ -723,16 +719,7 @@ void PasswordManager::ProvisionallySaveManager(
     logger->LogPasswordForm(Logger::STRING_PROVISIONALLY_SAVED_FORM,
                             submitted_form);
   }
-  PasswordFormManager::OtherPossibleUsernamesAction action =
-      PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES;
-  if (OtherPossibleUsernamesEnabled())
-    action = PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES;
-  if (logger) {
-    logger->LogBoolean(
-        Logger::STRING_IGNORE_POSSIBLE_USERNAMES,
-        action == PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
-  }
-  manager->ProvisionallySave(submitted_form, action);
+  manager->ProvisionallySave(submitted_form);
   provisional_save_manager_.swap(manager);
 }
 

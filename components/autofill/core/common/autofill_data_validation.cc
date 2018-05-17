@@ -70,14 +70,6 @@ bool IsValidPasswordFormFillData(const PasswordFormFillData& form) {
       return false;
   }
 
-  for (const auto& it : form.other_possible_usernames) {
-    if (!IsValidString16(it.first.username) ||
-        !IsValidString16(it.first.password) ||
-        !IsValidString(it.first.realm) ||
-        !IsValidString16Vector(it.second))
-      return false;
-  }
-
   return true;
 }
 

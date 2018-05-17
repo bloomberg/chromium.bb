@@ -62,7 +62,7 @@ void Autofill(const PasswordManagerClient& client,
 
   autofill::PasswordFormFillData fill_data;
   InitPasswordFormFillData(form_for_autofill, best_matches, &preferred_match,
-                           wait_for_username, false, &fill_data);
+                           wait_for_username, &fill_data);
   if (logger)
     logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
   UMA_HISTOGRAM_BOOLEAN(
@@ -95,7 +95,7 @@ void ShowInitialPasswordAccountSuggestions(
 
   PasswordFormFillData fill_data;
   InitPasswordFormFillData(form_for_autofill, best_matches, &preferred_match,
-                           wait_for_username, false, &fill_data);
+                           wait_for_username, &fill_data);
   if (logger)
     logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
   driver->ShowInitialPasswordAccountSuggestions(fill_data);

@@ -119,9 +119,7 @@ SavePasswordInfoBarDelegateTest::CreateMockFormManager(
       &password_manager_, &client_, driver_.AsWeakPtr(), test_form(),
       &fetcher_);
   manager->Init(metrics_recorder);
-  manager->ProvisionallySave(
-      test_form(),
-      password_manager::PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+  manager->ProvisionallySave(test_form());
   return manager;
 }
 

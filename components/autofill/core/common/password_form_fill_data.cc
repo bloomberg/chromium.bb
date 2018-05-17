@@ -35,7 +35,6 @@ void InitPasswordFormFillData(
     const std::map<base::string16, const PasswordForm*>& matches,
     const PasswordForm* const preferred_match,
     bool wait_for_username_before_autofill,
-    bool enable_other_possible_usernames,
     PasswordFormFillData* result) {
   // Note that many of the |FormFieldData| members are not initialized for
   // |username_field| and |password_field| because they are currently not used
@@ -71,19 +70,6 @@ void InitPasswordFormFillData(
           it.second->is_affiliation_based_match)
         value.realm = it.second->signon_realm;
       result->additional_logins[it.first] = value;
-    }
-    if (enable_other_possible_usernames &&
-        !it.second->other_possible_usernames.empty()) {
-      // Note that there may be overlap between other_possible_usernames and
-      // other saved usernames or with other other_possible_usernames. For now
-      // we will ignore this overlap as it should be a rare occurence. We may
-      // want to revisit this in the future.
-      UsernamesCollectionKey key;
-      key.username = it.first;
-      key.password = it.second->password_value;
-      if (it.second->is_public_suffix_match ||
-          it.second->is_affiliation_based_match)
-        key.realm = it.second->signon_realm;
     }
   }
 }

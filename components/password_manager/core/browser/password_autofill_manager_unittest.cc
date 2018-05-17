@@ -401,13 +401,6 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
 
-  autofill::UsernamesCollectionKey usernames_key;
-  usernames_key.realm = "http://yetanother.net";
-  std::vector<base::string16> other_names;
-  base::string16 other_username(base::ASCIIToUTF16("John Different"));
-  other_names.push_back(other_username);
-  data.other_possible_usernames[usernames_key] = other_names;
-
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
@@ -419,35 +412,33 @@ TEST_F(PasswordAutofillManagerTest, ExtractSuggestions) {
                   element_bounds, _,
                   testing::AllOf(
                       SuggestionVectorValuesAre(testing::UnorderedElementsAre(
-                          test_username_, additional_username, other_username)),
+                          test_username_, additional_username)),
                       SuggestionVectorLabelsAre(testing::UnorderedElementsAre(
                           base::UTF8ToUTF16(data.preferred_realm),
-                          base::UTF8ToUTF16(additional.realm),
-                          base::UTF8ToUTF16(usernames_key.realm)))),
+                          base::UTF8ToUTF16(additional.realm)))),
                   _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), false,
       element_bounds);
 
   // Now simulate displaying suggestions matching "John".
-  EXPECT_CALL(*autofill_client,
-              ShowAutofillPopup(
-                  element_bounds, _,
-                  SuggestionVectorValuesAre(testing::UnorderedElementsAre(
-                      additional_username,
-                      other_username)),
-                  _));
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(element_bounds, _,
+                        SuggestionVectorValuesAre(
+                            testing::UnorderedElementsAre(additional_username)),
+                        _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("John"), false,
       element_bounds);
 
   // Finally, simulate displaying all suggestions, without any prefix matching.
-  EXPECT_CALL(*autofill_client,
-              ShowAutofillPopup(
-                  element_bounds, _,
-                  SuggestionVectorValuesAre(testing::UnorderedElementsAre(
-                      test_username_, additional_username, other_username)),
-                  _));
+  EXPECT_CALL(
+      *autofill_client,
+      ShowAutofillPopup(element_bounds, _,
+                        SuggestionVectorValuesAre(testing::UnorderedElementsAre(
+                            test_username_, additional_username)),
+                        _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("xyz"), true,
       element_bounds);
@@ -471,24 +462,16 @@ TEST_F(PasswordAutofillManagerTest, PrettifiedAndroidRealmsAreShownAsLabels) {
   base::string16 additional_username(base::ASCIIToUTF16("John Foo"));
   data.additional_logins[additional_username] = additional;
 
-  autofill::UsernamesCollectionKey usernames_key;
-  usernames_key.realm = "android://hash@com.example3.android/";
-  std::vector<base::string16> other_names;
-  base::string16 other_username(base::ASCIIToUTF16("John Different"));
-  other_names.push_back(other_username);
-  data.other_possible_usernames[usernames_key] = other_names;
-
   const int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
 
-  EXPECT_CALL(
-      *autofill_client,
-      ShowAutofillPopup(
-          _, _, SuggestionVectorLabelsAre(testing::UnorderedElementsAre(
-                    base::ASCIIToUTF16("android://com.example1.android/"),
-                    base::ASCIIToUTF16("android://com.example2.android/"),
-                    base::ASCIIToUTF16("android://com.example3.android/"))),
-          _));
+  EXPECT_CALL(*autofill_client,
+              ShowAutofillPopup(
+                  _, _,
+                  SuggestionVectorLabelsAre(testing::UnorderedElementsAre(
+                      base::ASCIIToUTF16("android://com.example1.android/"),
+                      base::ASCIIToUTF16("android://com.example2.android/"))),
+                  _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::string16(), false,
       gfx::RectF());
@@ -513,10 +496,6 @@ TEST_F(PasswordAutofillManagerTest, FillSuggestionPasswordField) {
 
   autofill::UsernamesCollectionKey usernames_key;
   usernames_key.realm = "http://yetanother.net";
-  std::vector<base::string16> other_names;
-  base::string16 other_username(base::ASCIIToUTF16("John Different"));
-  other_names.push_back(other_username);
-  data.other_possible_usernames[usernames_key] = other_names;
 
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
@@ -573,10 +552,6 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
 
   autofill::UsernamesCollectionKey usernames_key;
   usernames_key.realm = "http://yetanother.net";
-  std::vector<base::string16> other_names;
-  base::string16 other_username(base::ASCIIToUTF16("example@foo.com"));
-  other_names.push_back(other_username);
-  data.other_possible_usernames[usernames_key] = other_names;
 
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
@@ -585,7 +560,7 @@ TEST_F(PasswordAutofillManagerTest, DisplaySuggestionsWithMatchingTokens) {
       *autofill_client,
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(testing::UnorderedElementsAre(
-                            username, additional_username, other_username)),
+                            username, additional_username)),
                         _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo"), false,
@@ -618,10 +593,6 @@ TEST_F(PasswordAutofillManagerTest, NoSuggestionForNonPrefixTokenMatch) {
 
   autofill::UsernamesCollectionKey usernames_key;
   usernames_key.realm = "http://yetanother.net";
-  std::vector<base::string16> other_names;
-  base::string16 other_username(base::ASCIIToUTF16("example@foo.com"));
-  other_names.push_back(other_username);
-  data.other_possible_usernames[usernames_key] = other_names;
 
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
@@ -661,10 +632,6 @@ TEST_F(PasswordAutofillManagerTest,
 
   autofill::UsernamesCollectionKey usernames_key;
   usernames_key.realm = "http://yetanother.net";
-  std::vector<base::string16> other_names;
-  base::string16 other_username(base::ASCIIToUTF16("example@foo.com"));
-  other_names.push_back(other_username);
-  data.other_possible_usernames[usernames_key] = other_names;
 
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
@@ -708,10 +675,6 @@ TEST_F(PasswordAutofillManagerTest,
 
   autofill::UsernamesCollectionKey usernames_key;
   usernames_key.realm = "http://yetanother.net";
-  std::vector<base::string16> other_names;
-  base::string16 other_username(base::ASCIIToUTF16("example@foo.com"));
-  other_names.push_back(other_username);
-  data.other_possible_usernames[usernames_key] = other_names;
 
   int dummy_key = 0;
   password_autofill_manager_->OnAddPasswordFormMapping(dummy_key, data);
@@ -720,7 +683,7 @@ TEST_F(PasswordAutofillManagerTest,
       *autofill_client,
       ShowAutofillPopup(element_bounds, _,
                         SuggestionVectorValuesAre(testing::UnorderedElementsAre(
-                            other_username, username, additional_username)),
+                            username, additional_username)),
                         _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, base::ASCIIToUTF16("foo"), false,

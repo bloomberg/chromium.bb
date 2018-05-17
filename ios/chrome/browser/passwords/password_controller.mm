@@ -429,7 +429,7 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
       // InitPasswordFormFillData() that the preferred match (3rd parameter)
       // should be one of the |matches|.
       matches.insert(std::make_pair(form.username_value, &form));
-      autofill::InitPasswordFormFillData(form, matches, &form, false, false,
+      autofill::InitPasswordFormFillData(form, matches, &form, false,
                                          &formData);
       [self fillPasswordForm:formData
                 withUsername:base::SysNSStringToUTF16(username)

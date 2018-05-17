@@ -126,7 +126,7 @@ PasswordFormFillData GetTestPasswordFormFillData() {
   matches[non_preferred_match.username_value] = &non_preferred_match;
 
   PasswordFormFillData result;
-  InitPasswordFormFillData(form_on_page, matches, &preferred_match, true, false,
+  InitPasswordFormFillData(form_on_page, matches, &preferred_match, true,
                            &result);
   return result;
 }

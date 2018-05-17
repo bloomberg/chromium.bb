@@ -585,8 +585,7 @@ class PasswordFormManagerTest : public testing::Test {
                   StartUploadRequest(_, _, _, _, _))
           .Times(0);
     }
-    form_manager.ProvisionallySave(
-        form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.ProvisionallySave(form_to_save);
     form_manager.Save();
     Mock::VerifyAndClearExpectations(
         client()->mock_driver()->mock_autofill_download_manager());
@@ -635,8 +634,7 @@ class PasswordFormManagerTest : public testing::Test {
     if (has_confirmation_field)
       submitted_form.confirmation_password_element = ASCIIToUTF16("ConfPwd");
     submitted_form.preferred = true;
-    form_manager.ProvisionallySave(
-        submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.ProvisionallySave(submitted_form);
 
     // Successful login. The PasswordManager would instruct PasswordFormManager
     // to update.
@@ -804,8 +802,7 @@ class PasswordFormManagerTest : public testing::Test {
                                              generated_password_changed)),
             false, expected_available_field_types, std::string(), true));
 
-    form_manager.ProvisionallySave(
-        submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.ProvisionallySave(submitted_form);
     switch (interaction) {
       case SAVE:
         form_manager.Save();
@@ -917,8 +914,7 @@ class PasswordFormManagerTest : public testing::Test {
           submitted_password ? base::ASCIIToUTF16(submitted_password)
                              : base::ASCIIToUTF16(filled_password);
 
-      form_manager.ProvisionallySave(
-          submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      form_manager.ProvisionallySave(submitted_form);
       if (submit_result == SimulatedSubmitResult::PASSED) {
         form_manager.LogSubmitPassed();
         form_manager.Save();
@@ -962,8 +958,7 @@ TEST_F(PasswordFormManagerTest, TestNewLogin) {
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = saved_match()->password_value;
   credentials.preferred = true;
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, which should know this is a new login.
@@ -999,8 +994,7 @@ TEST_F(PasswordFormManagerTest, TestAdditionalLogin) {
   new_login.password_value = new_pass;
   new_login.preferred = true;
 
-  form_manager()->ProvisionallySave(
-      new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(new_login);
 
   // The username value differs from the saved match, so this is a new login.
   EXPECT_TRUE(form_manager()->IsNewLogin());
@@ -1027,8 +1021,7 @@ TEST_F(PasswordFormManagerTest, TestBlacklist) {
   new_login.username_value = ASCIIToUTF16("newuser");
   new_login.password_value = ASCIIToUTF16("newpass");
   // Pretend Chrome detected a form submission with |new_login|.
-  form_manager()->ProvisionallySave(
-      new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(new_login);
 
   EXPECT_TRUE(form_manager()->IsNewLogin());
   EXPECT_EQ(observed_form()->origin.spec(),
@@ -1121,8 +1114,7 @@ TEST_F(PasswordFormManagerTest,
   credentials.username_value = saved_match()->username_value;
   credentials.password_value =
       saved_match()->password_value + ASCIIToUTF16("modify");
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   EXPECT_TRUE(form_manager()->IsNewLogin());
   EXPECT_FALSE(form_manager()->IsPendingCredentialsPublicSuffixMatch());
@@ -1139,8 +1131,7 @@ TEST_F(PasswordFormManagerTest, PSLMatchedCredentialsMetadataUpdated) {
   submitted_form.preferred = true;
   submitted_form.username_value = saved_match()->username_value;
   submitted_form.password_value = saved_match()->password_value;
-  form_manager()->ProvisionallySave(
-      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(submitted_form);
 
   PasswordForm expected_saved_form(submitted_form);
   expected_saved_form.times_used = 1;
@@ -1185,8 +1176,7 @@ TEST_F(PasswordFormManagerTest, TestNewLoginFromNewPasswordElement) {
   credentials.password_value = ASCIIToUTF16("oldpassword");
   credentials.new_password_value = ASCIIToUTF16("newpassword");
   credentials.preferred = true;
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, which should know this is a new login.
@@ -1222,8 +1212,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePassword) {
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = new_pass;
   credentials.preferred = true;
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -1260,8 +1249,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePasswordFromNewPasswordElement) {
   credentials.password_value = saved_match()->password_value;
   credentials.new_password_value = ASCIIToUTF16("test2");
   credentials.preferred = true;
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -1324,8 +1312,7 @@ TEST_F(PasswordFormManagerTest, TestEmptyAction) {
   PasswordForm login = *observed_form();
   login.username_value = saved_match()->username_value;
   login.password_value = saved_match()->password_value;
-  form_manager()->ProvisionallySave(
-      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(login);
   EXPECT_FALSE(form_manager()->IsNewLogin());
   // Chrome updates the saved PasswordForm entry with the action URL of the
   // observed form.
@@ -1343,8 +1330,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateAction) {
   login.username_value = saved_match()->username_value;
   login.password_value = saved_match()->password_value;
 
-  form_manager()->ProvisionallySave(
-      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(login);
   EXPECT_FALSE(form_manager()->IsNewLogin());
   // The observed action URL is different from the previously saved one. Chrome
   // should update the store by setting the pending credential's action URL to
@@ -1361,8 +1347,7 @@ TEST_F(PasswordFormManagerTest, TestDynamicAction) {
   // The submitted action URL is different from the one observed on page load.
   login.action = GURL("http://www.google.com/new_action");
 
-  form_manager()->ProvisionallySave(
-      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(login);
   EXPECT_TRUE(form_manager()->IsNewLogin());
   // Check that the provisionally saved action URL is the same as the submitted
   // action URL, not the one observed on page load.
@@ -1388,8 +1373,7 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
   login.username_value = saved_match()->username_value;
   login.password_value = saved_match()->password_value;
 
-  form_manager()->ProvisionallySave(
-      login, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(login);
 
   EXPECT_FALSE(form_manager()->IsNewLogin());
 
@@ -1403,45 +1387,6 @@ TEST_F(PasswordFormManagerTest, TestAlternateUsername_NoChange) {
   // Should be only one password stored, and should not have
   // |other_possible_usernames| set anymore.
   EXPECT_EQ(saved_match()->username_value, saved_result.username_value);
-  EXPECT_TRUE(saved_result.other_possible_usernames.empty());
-}
-
-// Test that if the saved match has other possible usernames stored, and the
-// user chooses an alternative one, then the other possible usernames are
-// dropped on update, but the main username is changed to the one chosen by the
-// user.
-TEST_F(PasswordFormManagerTest, TestAlternateUsername_OtherUsername) {
-  EXPECT_CALL(*client()->mock_driver(), AllowPasswordGenerationForForm(_));
-
-  const ValueElementPair kOtherUsername(
-      ASCIIToUTF16("other_possible@gmail.com"), ASCIIToUTF16("other_username"));
-  PasswordForm saved_form = *saved_match();
-  saved_form.other_possible_usernames.push_back(kOtherUsername);
-
-  fake_form_fetcher()->SetNonFederated({&saved_form}, 0u);
-
-  // The user chooses an alternative username.
-  PasswordForm login(*observed_form());
-  login.preferred = true;
-  login.username_value = kOtherUsername.first;
-  login.password_value = saved_match()->password_value;
-
-  form_manager()->ProvisionallySave(
-      login, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
-
-  EXPECT_FALSE(form_manager()->IsNewLogin());
-
-  PasswordForm saved_result;
-  // Changing the username changes the primary key of the stored credential.
-  EXPECT_CALL(MockFormSaver::Get(form_manager()),
-              Update(_, _, _, UsernamePtrIs(saved_form.username_value)))
-      .WillOnce(SaveArg<0>(&saved_result));
-
-  form_manager()->Save();
-
-  // |other_possible_usernames| should also be empty, but username_value should
-  // be changed to match |new_username|.
-  EXPECT_EQ(kOtherUsername.first, saved_result.username_value);
   EXPECT_TRUE(saved_result.other_possible_usernames.empty());
 }
 
@@ -1557,10 +1502,7 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
   credentials.username_value = ASCIIToUTF16("test@gmail.com");
   credentials.preferred = true;
 
-  // Pass in ALLOW_OTHER_POSSIBLE_USERNAMES, although it will not make a
-  // difference as no matches coming from the password store were autofilled.
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   PasswordForm saved_result;
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _))
@@ -1593,10 +1535,7 @@ TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernamesDuplicates) {
   credentials.username_value = kUsernameEmail.first;
   credentials.preferred = true;
 
-  // Pass in ALLOW_OTHER_POSSIBLE_USERNAMES, although it will not make a
-  // difference as no matches coming from the password store were autofilled.
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::ALLOW_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   PasswordForm saved_result;
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Save(_, _))
@@ -1621,8 +1560,7 @@ TEST_F(PasswordFormManagerTest, TestAllPossiblePasswords) {
   credentials.all_possible_passwords.push_back(pair2);
   credentials.all_possible_passwords.push_back(pair3);
 
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   EXPECT_THAT(form_manager()->pending_credentials().all_possible_passwords,
               UnorderedElementsAre(pair1, pair2, pair3));
@@ -1672,8 +1610,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateIncompleteCredentials) {
   // Feed the incomplete credentials to the manager.
   fetcher.SetNonFederated({&incomplete_form}, 0u);
 
-  form_manager.ProvisionallySave(
-      complete_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(complete_form);
   // By now that form has been used once.
   complete_form.times_used = 1;
   obsolete_form.times_used = 1;
@@ -1743,8 +1680,7 @@ TEST_F(PasswordFormManagerTest, AndroidCredentialsAreAutofilled) {
   credential.username_value = android_login.username_value;
   credential.password_value = android_login.password_value;
   credential.preferred = true;
-  form_manager()->ProvisionallySave(
-      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credential);
   EXPECT_FALSE(form_manager()->IsNewLogin());
 
   PasswordForm updated_credential;
@@ -1993,8 +1929,7 @@ TEST_F(PasswordFormManagerTest, CorrectlyUpdatePasswordsWithSameUsername) {
   login.username_value = saved_match()->username_value;
   login.password_value = ASCIIToUTF16("third");
   login.preferred = true;
-  form_manager()->ProvisionallySave(
-      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(login);
 
   EXPECT_FALSE(form_manager()->IsNewLogin());
 
@@ -2041,8 +1976,7 @@ TEST_F(PasswordFormManagerTest, UploadFormData_NewPassword) {
   EXPECT_CALL(
       *client()->mock_driver()->mock_autofill_download_manager(),
       StartUploadRequest(_, false, expected_available_field_types, _, true));
-  form_manager.ProvisionallySave(
-      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(form_to_save);
   form_manager.Save();
 }
 
@@ -2113,8 +2047,7 @@ TEST_F(PasswordFormManagerTest, CorrectlySavePasswordWithoutUsernameFields) {
   login.password_value = ASCIIToUTF16("password");
   login.preferred = true;
 
-  form_manager()->ProvisionallySave(
-      login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(login);
 
   EXPECT_TRUE(form_manager()->IsNewLogin());
 
@@ -2269,8 +2202,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateMethod) {
   credentials.password_value = saved_match()->password_value;
   credentials.new_password_value = ASCIIToUTF16("test2");
   credentials.preferred = true;
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -2326,8 +2258,7 @@ TEST_F(PasswordFormManagerTest, TestUpdateNoUsernameTextfieldPresent) {
   credentials.password_value = saved_match()->password_value;
   credentials.new_password_value = ASCIIToUTF16("test2");
   credentials.preferred = true;
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -2396,8 +2327,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueOfAnotherField) {
     credential.other_possible_usernames.push_back(
         ValueElementPair(ASCIIToUTF16("edited_username"),
                          ASCIIToUTF16("correct_username_element")));
-    form_manager.ProvisionallySave(
-        credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.ProvisionallySave(credential);
 
     // User edits username in a prompt.
     form_manager.UpdateUsername(ASCIIToUTF16("edited_username"));
@@ -2462,8 +2392,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_ValueSavedInStore) {
                                     : ASCIIToUTF16("different_username");
     credential.password_value = ASCIIToUTF16("different_pass");
     credential.preferred = true;
-    form_manager()->ProvisionallySave(
-        credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager()->ProvisionallySave(credential);
 
     // User edits username in a prompt to one already existing.
     form_manager()->UpdateUsername(saved_match()->username_value);
@@ -2531,8 +2460,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_NoMatchNeitherOnFormNorInStore) {
                                     : ASCIIToUTF16("captured_username");
     credential.password_value = ASCIIToUTF16("different_pass");
     credential.preferred = true;
-    form_manager.ProvisionallySave(
-        credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.ProvisionallySave(credential);
 
     // User edits username. The username doesn't exist neither in the store nor
     // on the form.
@@ -2591,8 +2519,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_UserRemovedUsername) {
   credential.password_value = ASCIIToUTF16("password");
   credential.other_possible_usernames.push_back(
       ValueElementPair(base::string16(), ASCIIToUTF16("empty_field")));
-  form_manager.ProvisionallySave(
-      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credential);
 
   // The user clears the username value in the prompt.
   form_manager.UpdateUsername(base::string16());
@@ -2627,8 +2554,7 @@ TEST_F(PasswordFormManagerTest, UpdateUsername_PslMatch) {
   PasswordForm credential(*observed_form());
   credential.username_value = ASCIIToUTF16("some_username");
   credential.password_value = ASCIIToUTF16("some_pass");
-  form_manager()->ProvisionallySave(
-      credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credential);
 
   // The user edits the username to match the PSL entry.
   form_manager()->UpdateUsername(psl_saved_match()->username_value);
@@ -2702,8 +2628,7 @@ TEST_F(PasswordFormManagerTest, TestSelectPasswordMethod) {
              ASCIIToUTF16("correct_password_element")},
             {ASCIIToUTF16("not-a-password"),
              ASCIIToUTF16("other_password_element")}};
-        form_manager.ProvisionallySave(
-            credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+        form_manager.ProvisionallySave(credential);
 
         // Pending credentials have the wrong values.
         EXPECT_EQ(form_manager.pending_credentials().password_value,
@@ -2767,8 +2692,7 @@ TEST_F(PasswordFormManagerTest, WipeStoreCopyIfOutdated_BeforeStoreCallback) {
 
   PasswordForm submitted_form(form);
   submitted_form.password_value += ASCIIToUTF16("add stuff, make it different");
-  form_manager.ProvisionallySave(
-      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(submitted_form);
 
   base::HistogramTester histogram_tester;
   EXPECT_CALL(MockFormSaver::Get(&form_manager),
@@ -2790,8 +2714,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusChangedWithPassword) {
 
   fake_form_fetcher()->SetNonFederated({&generated_form}, 0u);
 
-  form_manager()->ProvisionallySave(
-      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(submitted_form);
 
   PasswordForm new_credentials;
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
@@ -2814,8 +2737,7 @@ TEST_F(PasswordFormManagerTest, GenerationStatusNotUpdatedIfPasswordUnchanged) {
 
   fake_form_fetcher()->SetNonFederated({&generated_form}, 0u);
 
-  form_manager()->ProvisionallySave(
-      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(submitted_form);
 
   PasswordForm new_credentials;
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
@@ -2923,8 +2845,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatePSLMatchedCredentials) {
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -2977,8 +2898,7 @@ TEST_F(PasswordFormManagerTest,
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -3019,8 +2939,7 @@ TEST_F(PasswordFormManagerTest,
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, and since this is an update, it should know not to save as a new
@@ -3059,8 +2978,7 @@ TEST_F(PasswordFormManagerTest, TestNotUpdateWhenOnlyPslMatched) {
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   EXPECT_TRUE(form_manager.IsNewLogin());
 
@@ -3093,8 +3011,7 @@ TEST_F(PasswordFormManagerTest,
   credentials.new_password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
   form_manager()->PresaveGeneratedPassword(credentials);
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to save, which should know this is a new login.
@@ -3130,8 +3047,7 @@ TEST_F(PasswordFormManagerTest, TestUpdatingOnChangePasswordFormGeneration) {
   credentials.new_password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
   form_manager()->PresaveGeneratedPassword(credentials);
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   EXPECT_FALSE(form_manager()->IsNewLogin());
   // Make sure the credentials that would be submitted on successful login
@@ -3167,8 +3083,7 @@ TEST_F(PasswordFormManagerTest,
   credentials.new_password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
   form_manager()->PresaveGeneratedPassword(credentials);
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   EXPECT_TRUE(form_manager()->IsNewLogin());
   // Make sure the credentials that would be submitted on successful login
@@ -3218,8 +3133,7 @@ TEST_F(PasswordFormManagerTest,
   submitted_form.password_value = saved_match()->password_value;
   submitted_form.new_password_value = ASCIIToUTF16("test2");
   submitted_form.preferred = true;
-  form_manager.ProvisionallySave(
-      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(submitted_form);
 
   // Successful login. The PasswordManager would instruct PasswordFormManager
   // to update.
@@ -3336,8 +3250,7 @@ TEST_F(PasswordFormManagerTest, FormClassifierVoteUpload) {
                                found_generation_element, generation_element),
                            false, _, _, true));
 
-    form_manager.ProvisionallySave(
-        submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager.ProvisionallySave(submitted_form);
     form_manager.Save();
   }
 }
@@ -3376,8 +3289,7 @@ TEST_F(PasswordFormManagerTest, FieldPropertiesMasksUpload) {
               StartUploadRequest(
                   UploadedFieldPropertiesMasksAre(expected_field_properties),
                   false, _, _, true));
-  form_manager.ProvisionallySave(
-      submitted_form, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(submitted_form);
   form_manager.Save();
 }
 
@@ -3404,8 +3316,7 @@ TEST_F(PasswordFormManagerTest, TestSavingAPIFormsWithSamePassword) {
   credentials.password_value = saved_match()->password_value;
   credentials.preferred = true;
 
-  form_manager.ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(credentials);
 
   EXPECT_TRUE(form_manager.IsNewLogin());
 
@@ -3433,8 +3344,7 @@ TEST_F(PasswordFormManagerTest, SkipZeroClickIntact) {
   credentials.username_value = saved_match()->username_value;
   credentials.password_value = ASCIIToUTF16("new_password");
   credentials.preferred = true;
-  form_manager()->ProvisionallySave(
-      credentials, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(credentials);
 
   // Trigger saving to exercise some special case handling during updating.
   PasswordForm new_credentials;
@@ -3465,8 +3375,7 @@ TEST_F(PasswordFormManagerTest, ReportProcessingUpdate) {
   PasswordForm pending = *observed_form();
   pending.username_value = saved_match()->username_value;
   pending.password_value = saved_match()->password_value;
-  form_manager()->ProvisionallySave(
-      pending, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(pending);
 
   EXPECT_FALSE(form_manager()->IsNewLogin());
   EXPECT_CALL(*client()->mock_driver()->mock_autofill_download_manager(),
@@ -3607,8 +3516,7 @@ TEST_F(PasswordFormManagerTest, UploadUsernameCorrectionVote) {
 
       base::HistogramTester histogram_tester;
       fake_form_fetcher()->SetNonFederated({saved_credential}, 0u);
-      form_manager.ProvisionallySave(
-          new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+      form_manager.ProvisionallySave(new_login);
       histogram_tester.ExpectUniqueSample(
           "PasswordManager.UsernameCorrectionFound", 1, 1);
       // No match found (because usernames are different).
@@ -3681,8 +3589,7 @@ TEST_F(PasswordFormManagerTest, NoUsernameCorrectionVote) {
   new_login.password_value = ASCIIToUTF16("newpass");
 
   base::HistogramTester histogram_tester;
-  form_manager()->ProvisionallySave(
-      new_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(new_login);
   histogram_tester.ExpectUniqueSample("PasswordManager.UsernameCorrectionFound",
                                       0, 1);
 
@@ -3716,8 +3623,7 @@ TEST_F(PasswordFormManagerTest,
     PasswordForm credential(*saved_match());
     credential.username_value.clear();
     credential.preferred = true;
-    form_manager()->ProvisionallySave(
-        credential, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+    form_manager()->ProvisionallySave(credential);
     EXPECT_FALSE(form_manager()->IsNewLogin());
 
     // Create the expected credential to be saved.
@@ -3769,8 +3675,7 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
   // Trigger Update to verify that there is a non-best match.
   PasswordForm updated(best_match1);
   updated.password_value = ASCIIToUTF16("updated password");
-  form_manager()->ProvisionallySave(
-      updated, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(updated);
   std::vector<PasswordForm> credentials_to_update;
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
       .WillOnce(SaveArgPointee<2>(&credentials_to_update));
@@ -3791,8 +3696,7 @@ TEST_F(PasswordFormManagerTest, ResetStoredMatches) {
   fake_form_fetcher()->Fetch();
   fake_form_fetcher()->SetNonFederated({&best_match1}, 0u);
 
-  form_manager()->ProvisionallySave(
-      updated, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager()->ProvisionallySave(updated);
   credentials_to_update.clear();
   EXPECT_CALL(MockFormSaver::Get(form_manager()), Update(_, _, _, nullptr))
       .WillOnce(SaveArgPointee<2>(&credentials_to_update));
@@ -3909,8 +3813,7 @@ TEST_F(PasswordFormManagerTest, UploadSignInForm_WithAutofillTypes) {
   EXPECT_CALL(*mock_autofill_manager,
               MaybeStartVoteUploadProcessPtr(_, _, true))
       .WillOnce(WithArg<0>(SaveToUniquePtr(&uploaded_form_structure)));
-  form_manager.ProvisionallySave(
-      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(form_to_save);
   form_manager.Save();
 
   ASSERT_EQ(2u, uploaded_form_structure->field_count());
@@ -3945,8 +3848,7 @@ TEST_F(PasswordFormManagerTest, NoUploadsForSubmittedFormWithOnlyOneField) {
       client()->mock_driver()->mock_autofill_manager();
   EXPECT_CALL(*mock_autofill_manager, MaybeStartVoteUploadProcessPtr(_, _, _))
       .Times(0);
-  form_manager.ProvisionallySave(
-      form_to_save, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager.ProvisionallySave(form_to_save);
   form_manager.Save();
 }
 
@@ -4210,8 +4112,7 @@ TEST_F(PasswordFormManagerTest, Clone_OnSave) {
   PasswordForm saved_login = *observed_form();
   saved_login.username_value = ASCIIToUTF16("newuser");
   saved_login.password_value = ASCIIToUTF16("newpass");
-  form_manager->ProvisionallySave(
-      saved_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager->ProvisionallySave(saved_login);
 
   const PasswordForm pending = form_manager->pending_credentials();
 
@@ -4239,8 +4140,7 @@ TEST_F(PasswordFormManagerTest, Clone_OnNeverClicked) {
   PasswordForm saved_login = *observed_form();
   saved_login.username_value = ASCIIToUTF16("newuser");
   saved_login.password_value = ASCIIToUTF16("newpass");
-  form_manager->ProvisionallySave(
-      saved_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager->ProvisionallySave(saved_login);
 
   std::unique_ptr<PasswordFormManager> clone = form_manager->Clone();
 
@@ -4262,8 +4162,7 @@ TEST_F(PasswordFormManagerTest, Clone_SurvivesOriginal) {
   PasswordForm saved_login = *observed_form();
   saved_login.username_value = ASCIIToUTF16("newuser");
   saved_login.password_value = ASCIIToUTF16("newpass");
-  form_manager->ProvisionallySave(
-      saved_login, PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  form_manager->ProvisionallySave(saved_login);
 
   const PasswordForm pending = form_manager->pending_credentials();
 

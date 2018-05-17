@@ -168,23 +168,6 @@ void CheckEqualPasswordFormFillData(const PasswordFormFillData& expected,
     ASSERT_EQ(iter2, end2);
   }
 
-  {
-    EXPECT_EQ(expected.other_possible_usernames.size(),
-              actual.other_possible_usernames.size());
-    auto iter1 = expected.other_possible_usernames.begin();
-    auto end1 = expected.other_possible_usernames.end();
-    auto iter2 = actual.other_possible_usernames.begin();
-    auto end2 = actual.other_possible_usernames.end();
-    for (; iter1 != end1 && iter2 != end2; ++iter1, ++iter2) {
-      EXPECT_EQ(iter1->first.username, iter2->first.username);
-      EXPECT_EQ(iter1->first.password, iter2->first.password);
-      EXPECT_EQ(iter1->first.realm, iter2->first.realm);
-      EXPECT_EQ(iter1->second, iter2->second);
-    }
-    ASSERT_EQ(iter1, end1);
-    ASSERT_EQ(iter2, end2);
-  }
-
   EXPECT_EQ(expected.wait_for_username, actual.wait_for_username);
   EXPECT_EQ(expected.is_possible_change_password_form,
             actual.is_possible_change_password_form);

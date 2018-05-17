@@ -268,8 +268,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Blocked password due to same origin but insecure scheme";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM:
       return "provisionally_saved_form";
-    case SavePasswordProgressLogger::STRING_IGNORE_POSSIBLE_USERNAMES:
-      return "Ignore other possible usernames";
     case SavePasswordProgressLogger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD:
       return "PasswordManager::OnPasswordFormsRendered";
     case SavePasswordProgressLogger::STRING_ON_SAME_DOCUMENT_NAVIGATION:
