@@ -41,7 +41,7 @@ const int kDefaultMaxOutputStreams = 16;
 
 // Default maximum number of input streams that can be open simultaneously
 // for all platforms.
-const int kDefaultMaxInputStreams = 16;
+const int kMaxInputStreams = 16;
 
 const int kMaxInputChannels = 3;
 
@@ -108,7 +108,6 @@ AudioManagerBase::AudioManagerBase(std::unique_ptr<AudioThread> audio_thread,
                                    AudioLogFactory* audio_log_factory)
     : AudioManager(std::move(audio_thread)),
       max_num_output_streams_(kDefaultMaxOutputStreams),
-      max_num_input_streams_(kDefaultMaxInputStreams),
       num_output_streams_(0),
       // TODO(dalecurtis): Switch this to an base::ObserverListThreadSafe, so we
       // don't block the UI thread when swapping devices.
@@ -196,9 +195,14 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
     const LogCallback& log_callback) {
   CHECK(GetTaskRunner()->BelongsToCurrentThread());
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kFailAudioStreamCreation)) {
+    return nullptr;
+  }
+
   if (!params.IsValid()) {
     DLOG(ERROR) << "Audio parameters are invalid";
-    return NULL;
+    return nullptr;
   }
 
   // Limit the number of audio streams opened. This is to prevent using
@@ -210,7 +214,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
                 << num_output_streams_
                 << " exceed the max allowed number "
                 << max_num_output_streams_;
-    return NULL;
+    return nullptr;
   }
 
   AudioOutputStream* stream;
@@ -231,7 +235,7 @@ AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
       stream = FakeAudioOutputStream::MakeFakeStream(this, params);
       break;
     default:
-      stream = NULL;
+      stream = nullptr;
       break;
   }
 
@@ -255,17 +259,22 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
     const LogCallback& log_callback) {
   CHECK(GetTaskRunner()->BelongsToCurrentThread());
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kFailAudioStreamCreation)) {
+    return nullptr;
+  }
+
   if (!params.IsValid() || (params.channels() > kMaxInputChannels) ||
       device_id.empty()) {
     DLOG(ERROR) << "Audio parameters are invalid for device " << device_id;
-    return NULL;
+    return nullptr;
   }
 
-  if (input_stream_count() >= max_num_input_streams_) {
+  if (input_stream_count() >= kMaxInputStreams) {
     DLOG(ERROR) << "Number of opened input audio streams "
                 << input_stream_count() << " exceed the max allowed number "
-                << max_num_input_streams_;
-    return NULL;
+                << kMaxInputStreams;
+    return nullptr;
   }
 
   DVLOG(2) << "Creating a new AudioInputStream with buffer size = "
@@ -283,7 +292,7 @@ AudioInputStream* AudioManagerBase::MakeAudioInputStream(
       stream = FakeAudioInputStream::MakeFakeStream(this, params);
       break;
     default:
-      stream = NULL;
+      stream = nullptr;
       break;
   }
 
@@ -597,12 +606,6 @@ AudioManagerBase::CreateAudioDebugRecordingManager(
 AudioDebugRecordingManager* AudioManagerBase::GetAudioDebugRecordingManager() {
   DCHECK(GetTaskRunner()->BelongsToCurrentThread());
   return debug_recording_manager_.get();
-}
-
-void AudioManagerBase::SetMaxStreamCountForTesting(int max_input,
-                                                   int max_output) {
-  max_num_output_streams_ = max_output;
-  max_num_input_streams_ = max_input;
 }
 
 }  // namespace media

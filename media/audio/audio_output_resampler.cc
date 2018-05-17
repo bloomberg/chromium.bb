@@ -7,7 +7,9 @@
 #include <stdint.h>
 
 #include <algorithm>
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -274,7 +276,6 @@ AudioOutputResampler::AudioOutputResampler(
 
   // Record UMA statistics for the hardware configuration.
   RecordStats(output_params);
-
 }
 
 AudioOutputResampler::~AudioOutputResampler() {
@@ -397,7 +398,7 @@ bool AudioOutputResampler::OpenStream() {
   }
 
   // Resetting the malfunctioning dispatcher.
-  dispatcher_.reset();
+  Reinitialize();
   UMA_HISTOGRAM_ENUMERATION("Media.AudioOutputResampler.OpenLowLatencyStream",
                             OPEN_STREAM_FAIL, OPEN_STREAM_MAX + 1);
   return false;

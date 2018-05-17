@@ -27,6 +27,7 @@ MEDIA_EXPORT extern const char kAudioServiceQuitTimeoutMs[];
 MEDIA_EXPORT extern const char kAutoplayPolicy[];
 
 MEDIA_EXPORT extern const char kDisableAudioOutput[];
+MEDIA_EXPORT extern const char kFailAudioStreamCreation[];
 
 MEDIA_EXPORT extern const char kVideoThreads[];
 

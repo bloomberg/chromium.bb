@@ -24,6 +24,7 @@
 #include "content/shell/browser/shell.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_input_stream.h"
+#include "media/base/media_switches.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
 #if defined(OS_WIN)
@@ -479,9 +480,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcGetUserMediaBrowserTest,
   GURL url(embedded_test_server()->GetURL("/media/getusermedia.html"));
   NavigateToURL(shell(), url);
 
-  // Set the maximum allowed input and output streams to 0
-  // so that the call to create a new audio input stream will fail.
-  media::AudioManager::Get()->SetMaxStreamCountForTesting(0, 0);
+  // Make sure we'll fail creating the audio stream.
+  base::CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kFailAudioStreamCreation);
 
   const std::string call = base::StringPrintf(
       "%s({video: false, audio: true});", kGetUserMediaAndExpectFailure);
