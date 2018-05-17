@@ -251,7 +251,8 @@ class PictureLayerTilingSetTestWithResources : public testing::Test {
         FakeResourceProvider::CreateLayerTreeResourceProvider(
             context_provider.get());
 
-    FakePictureLayerTilingClient client(resource_provider.get());
+    FakePictureLayerTilingClient client(resource_provider.get(),
+                                        context_provider.get());
     client.SetTileSize(gfx::Size(256, 256));
     gfx::Size layer_bounds(1000, 800);
     std::unique_ptr<TestablePictureLayerTilingSet> set =

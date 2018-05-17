@@ -26,8 +26,8 @@ class ResourcePoolTest : public testing::Test {
         context_provider_.get());
     task_runner_ = base::ThreadTaskRunnerHandle::Get();
     resource_pool_ = std::make_unique<ResourcePool>(
-        resource_provider_.get(), task_runner_,
-        ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu, false);
+        resource_provider_.get(), context_provider_.get(), task_runner_,
+        ResourcePool::kDefaultExpirationDelay, false);
   }
 
  protected:
@@ -165,7 +165,8 @@ TEST_F(ResourcePoolTest, LostResource) {
 
   std::vector<viz::ResourceId> export_ids = {resource.resource_id_for_export()};
   std::vector<viz::TransferableResource> transferable_resources;
-  resource_provider_->PrepareSendToParent(export_ids, &transferable_resources);
+  resource_provider_->PrepareSendToParent(export_ids, &transferable_resources,
+                                          context_provider_.get());
   auto returned_resources =
       viz::TransferableResource::ReturnResources(transferable_resources);
   ASSERT_EQ(1u, returned_resources.size());
@@ -181,8 +182,8 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
   // Set a quick resource expiration delay so that this test doesn't take long
   // to run.
   resource_pool_ = std::make_unique<ResourcePool>(
-      resource_provider_.get(), task_runner_,
-      base::TimeDelta::FromMilliseconds(10), ResourcePool::Mode::kGpu, false);
+      resource_provider_.get(), context_provider_.get(), task_runner_,
+      base::TimeDelta::FromMilliseconds(10), false);
 
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
@@ -203,7 +204,7 @@ TEST_F(ResourcePoolTest, BusyResourcesNotFreed) {
 
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
-                                          &transfers);
+                                          &transfers, context_provider_.get());
 
   resource_pool_->ReleaseResource(std::move(resource));
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
@@ -228,8 +229,8 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
   // Set a quick resource expiration delay so that this test doesn't take long
   // to run.
   resource_pool_ = std::make_unique<ResourcePool>(
-      resource_provider_.get(), task_runner_,
-      base::TimeDelta::FromMilliseconds(100), ResourcePool::Mode::kGpu, false);
+      resource_provider_.get(), context_provider_.get(), task_runner_,
+      base::TimeDelta::FromMilliseconds(100), false);
 
   // Limits high enough to not be hit by this test.
   size_t bytes_limit = 10 * 1024 * 1024;
@@ -252,7 +253,7 @@ TEST_F(ResourcePoolTest, UnusedResourcesEventuallyFreed) {
   resource_pool_->PrepareForExport(resource);
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
-                                          &transfers);
+                                          &transfers, context_provider_.get());
 
   resource_pool_->ReleaseResource(std::move(resource));
   EXPECT_EQ(40000u, resource_pool_->GetTotalMemoryUsageForTesting());
@@ -474,7 +475,7 @@ TEST_F(ResourcePoolTest, PurgedMemory) {
   // released.
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
-                                          &transfers);
+                                          &transfers, context_provider_.get());
 
   // Release the resource making it busy.
   resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
@@ -530,7 +531,7 @@ TEST_F(ResourcePoolTest, MemoryStateSuspended) {
   // released.
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
-                                          &transfers);
+                                          &transfers, context_provider_.get());
 
   // Release the resource making it busy.
   resource_pool_->OnMemoryStateChange(base::MemoryState::NORMAL);
@@ -593,7 +594,8 @@ TEST_F(ResourcePoolTest, InvalidateResources) {
   // once released.
   std::vector<viz::TransferableResource> transfers;
   resource_provider_->PrepareSendToParent(
-      {busy_resource.resource_id_for_export()}, &transfers);
+      {busy_resource.resource_id_for_export()}, &transfers,
+      context_provider_.get());
 
   // Release the resource making it busy.
   resource_pool_->ReleaseResource(std::move(busy_resource));
@@ -629,8 +631,8 @@ TEST_F(ResourcePoolTest, ExactRequestsRespected) {
   gfx::ColorSpace color_space = gfx::ColorSpace::CreateSRGB();
 
   resource_pool_ = std::make_unique<ResourcePool>(
-      resource_provider_.get(), task_runner_,
-      base::TimeDelta::FromMilliseconds(100), ResourcePool::Mode::kGpu, true);
+      resource_provider_.get(), context_provider_.get(), task_runner_,
+      base::TimeDelta::FromMilliseconds(100), true);
 
   // Create unused resource with size 100x100.
   CheckAndReturnResource(resource_pool_->AcquireResource(gfx::Size(100, 100),
@@ -686,7 +688,7 @@ TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
 
   std::vector<viz::TransferableResource> transfer;
   resource_provider_->PrepareSendToParent({resource.resource_id_for_export()},
-                                          &transfer);
+                                          &transfer, context_provider_.get());
 
   // The verified_flush flag will be set by the ResourceProvider when it exports
   // the resource.

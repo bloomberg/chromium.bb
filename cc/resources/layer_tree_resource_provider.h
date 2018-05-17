@@ -55,7 +55,8 @@ class CC_EXPORT LayerTreeResourceProvider {
   // "in use".
   void PrepareSendToParent(
       const std::vector<viz::ResourceId>& resource_ids,
-      std::vector<viz::TransferableResource>* transferable_resources);
+      std::vector<viz::TransferableResource>* transferable_resources,
+      viz::ContextProvider* context_provider);
 
   // Receives resources from the parent, moving them from mailboxes. ResourceIds
   // passed are in the child namespace.
@@ -78,11 +79,6 @@ class CC_EXPORT LayerTreeResourceProvider {
 
   // Checks whether a resource is in use by a consumer.
   bool InUseByConsumer(viz::ResourceId id);
-
-  // In the case of GPU resources, we may need to flush the GL context to ensure
-  // that texture deletions are seen in a timely fashion. This function should
-  // be called after texture deletions that may happen during an idle state.
-  void FlushPendingDeletions() const;
 
   bool IsTextureFormatSupported(viz::ResourceFormat format) const;
 
@@ -127,8 +123,6 @@ class CC_EXPORT LayerTreeResourceProvider {
   } const settings_;
 
   struct ImportedResource;
-  // Returns null if we do not have a viz::ContextProvider.
-  gpu::gles2::GLES2Interface* ContextGL() const;
 
   THREAD_CHECKER(thread_checker_);
   base::flat_map<viz::ResourceId, ImportedResource> imported_resources_;

@@ -22,14 +22,12 @@ VideoFrameResourceProvider::VideoFrameResourceProvider(
     const cc::LayerTreeSettings& settings)
     : settings_(settings) {}
 
-VideoFrameResourceProvider::~VideoFrameResourceProvider() {
-  resource_updater_.reset();
-  resource_provider_.reset();
-}
+VideoFrameResourceProvider::~VideoFrameResourceProvider() = default;
 
 void VideoFrameResourceProvider::Initialize(
     viz::ContextProvider* media_context_provider,
     viz::SharedBitmapReporter* shared_bitmap_reporter) {
+  context_provider_ = media_context_provider;
   resource_provider_ = std::make_unique<cc::LayerTreeResourceProvider>(
       media_context_provider, true, settings_.resource_settings);
 
@@ -43,6 +41,7 @@ void VideoFrameResourceProvider::Initialize(
 void VideoFrameResourceProvider::OnContextLost() {
   resource_updater_ = nullptr;
   resource_provider_ = nullptr;
+  context_provider_ = nullptr;
 }
 
 void VideoFrameResourceProvider::AppendQuads(
@@ -101,7 +100,8 @@ void VideoFrameResourceProvider::ReleaseFrameResources() {
 void VideoFrameResourceProvider::PrepareSendToParent(
     const std::vector<viz::ResourceId>& resource_ids,
     std::vector<viz::TransferableResource>* transferable_resources) {
-  resource_provider_->PrepareSendToParent(resource_ids, transferable_resources);
+  resource_provider_->PrepareSendToParent(resource_ids, transferable_resources,
+                                          context_provider_);
 }
 
 void VideoFrameResourceProvider::ReceiveReturnsFromParent(

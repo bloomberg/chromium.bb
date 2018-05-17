@@ -187,17 +187,10 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
         layer_tree_impl()->task_runner_provider()->HasImplThread()
             ? layer_tree_impl()->task_runner_provider()->ImplThreadTaskRunner()
             : layer_tree_impl()->task_runner_provider()->MainThreadTaskRunner();
-    if (draw_mode == DRAW_MODE_HARDWARE) {
-      pool_ = std::make_unique<ResourcePool>(
-          resource_provider, std::move(task_runner),
-          ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
-          layer_tree_impl()->settings().disallow_non_exact_resource_reuse);
-    } else {
-      pool_ = std::make_unique<ResourcePool>(
-          resource_provider, std::move(task_runner),
-          ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kSoftware,
-          layer_tree_impl()->settings().disallow_non_exact_resource_reuse);
-    }
+    pool_ = std::make_unique<ResourcePool>(
+        resource_provider, layer_tree_frame_sink->context_provider(),
+        std::move(task_runner), ResourcePool::kDefaultExpirationDelay,
+        layer_tree_impl()->settings().disallow_non_exact_resource_reuse);
   }
 
   // Return ownership of the previous frame's resource to the pool, so we

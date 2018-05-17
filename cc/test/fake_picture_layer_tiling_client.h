@@ -12,6 +12,10 @@
 #include "cc/tiles/tile_manager.h"
 #include "ui/gfx/geometry/rect.h"
 
+namespace viz {
+class ContextProvider;
+}
+
 namespace cc {
 class LayerTreeResourceProvider;
 
@@ -19,7 +23,8 @@ class FakePictureLayerTilingClient : public PictureLayerTilingClient {
  public:
   FakePictureLayerTilingClient();
   explicit FakePictureLayerTilingClient(
-      LayerTreeResourceProvider* resource_provider);
+      LayerTreeResourceProvider* resource_provider,
+      viz::ContextProvider* context_provider);
   ~FakePictureLayerTilingClient() override;
 
   // PictureLayerTilingClient implementation.

@@ -64,6 +64,9 @@ class LayerTreeResourceProviderTest : public testing::TestWithParam<bool> {
 
   bool use_gpu() const { return use_gpu_; }
   LayerTreeResourceProvider& provider() const { return *provider_; }
+  viz::ContextProvider* context_provider() const {
+    return context_provider_.get();
+  }
 
  private:
   bool use_gpu_;
@@ -110,7 +113,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendToParent) {
   // Export the resource.
   std::vector<viz::ResourceId> to_send = {id};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
   ASSERT_EQ(exported.size(), 1u);
 
   // Exported resource matches except for the id which was mapped
@@ -159,7 +162,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceSendTwoToParent) {
   // Export the resource.
   std::vector<viz::ResourceId> to_send = {id1, id2};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
   ASSERT_EQ(exported.size(), 2u);
 
   // Exported resource matches except for the id which was mapped
@@ -191,7 +194,7 @@ TEST_P(LayerTreeResourceProviderTest,
   // Export the resource.
   std::vector<viz::ResourceId> to_send = {id};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
   ASSERT_EQ(exported.size(), 1u);
   EXPECT_EQ(exported[0].id, id);
 
@@ -207,7 +210,7 @@ TEST_P(LayerTreeResourceProviderTest,
 
   // Then export again, it still sends.
   exported.clear();
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
   ASSERT_EQ(exported.size(), 1u);
   EXPECT_EQ(exported[0].id, id);
 }
@@ -223,7 +226,7 @@ TEST_P(LayerTreeResourceProviderTest,
   // Export the resource.
   std::vector<viz::ResourceId> to_send = {id};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   EXPECT_CALL(release, Released(_, true));
   Shutdown();
@@ -239,7 +242,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceRemovedAfterReturn) {
   // Export the resource.
   std::vector<viz::ResourceId> to_send = {id};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Return the resource. This does not release the resource back to
   // the client.
@@ -269,7 +272,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceExportedTwice) {
   // Export the resource once.
   std::vector<viz::ResourceId> to_send = {id};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Exported resources are not released when removed, until all exports are
   // returned.
@@ -278,7 +281,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceExportedTwice) {
 
   // Export the resource twice.
   exported = {};
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Return the resource the first time.
   std::vector<viz::ReturnedResource> returned;
@@ -308,7 +311,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceReturnedTwiceAtOnce) {
   // Export the resource once.
   std::vector<viz::ResourceId> to_send = {id};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Exported resources are not released when removed, until all exports are
   // returned.
@@ -317,7 +320,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceReturnedTwiceAtOnce) {
 
   // Export the resource twice.
   exported = {};
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Return both exports at once.
   std::vector<viz::ReturnedResource> returned;
@@ -343,7 +346,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnReturn) {
   // Export the resource once.
   std::vector<viz::ResourceId> to_send = {id};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Exported resources are not released when removed, until all exports are
   // returned.
@@ -352,7 +355,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnReturn) {
 
   // Export the resource twice.
   exported = {};
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Return the resource the first time, not lost.
   std::vector<viz::ReturnedResource> returned;
@@ -378,7 +381,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnFirstReturn) {
   // Export the resource once.
   std::vector<viz::ResourceId> to_send = {id};
   std::vector<viz::TransferableResource> exported;
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Exported resources are not released when removed, until all exports are
   // returned.
@@ -387,7 +390,7 @@ TEST_P(LayerTreeResourceProviderTest, TransferableResourceLostOnFirstReturn) {
 
   // Export the resource twice.
   exported = {};
-  provider().PrepareSendToParent(to_send, &exported);
+  provider().PrepareSendToParent(to_send, &exported, context_provider());
 
   // Return the resource the first time, marked as lost.
   std::vector<viz::ReturnedResource> returned;

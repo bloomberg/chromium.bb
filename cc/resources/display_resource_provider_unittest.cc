@@ -501,8 +501,8 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
   resource_ids_to_transfer.push_back(id1);
 
   std::vector<viz::TransferableResource> list;
-  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer,
-                                                &list);
+  child_resource_provider_->PrepareSendToParent(resource_ids_to_transfer, &list,
+                                                child_context_provider_.get());
   ASSERT_EQ(1u, list.size());
   EXPECT_TRUE(child_resource_provider_->InUseByConsumer(id1));
 

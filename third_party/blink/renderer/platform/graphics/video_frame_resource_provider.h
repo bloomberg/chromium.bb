@@ -48,8 +48,9 @@ class PLATFORM_EXPORT VideoFrameResourceProvider {
  private:
   WebContextProviderCallback context_provider_callback_;
   cc::LayerTreeSettings settings_;
-  std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;
+  viz::ContextProvider* context_provider_;
   std::unique_ptr<cc::LayerTreeResourceProvider> resource_provider_;
+  std::unique_ptr<cc::VideoResourceUpdater> resource_updater_;
 };
 
 }  // namespace blink

@@ -32,6 +32,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
+namespace viz {
+class ContextProvider;
+}
+
 namespace cc {
 class LayerTreeResourceProvider;
 
@@ -161,14 +165,13 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
     PoolResource* resource_ = nullptr;
   };
 
-  enum class Mode { kGpu, kSoftware };
-
-  // This takes a hint for if the pool will be holding gpu or software
-  // resources, which is used for consistency checking.
+  // When holding gpu resources, the |context_provider| should be non-null,
+  // and when holding software resources, it should be null. It is used for
+  // consistency checking as well as for correctness.
   ResourcePool(LayerTreeResourceProvider* resource_provider,
+               viz::ContextProvider* context_provider,
                scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                const base::TimeDelta& expiration_delay,
-               Mode resource_mode,
                bool disallow_non_exact_reuse);
 
   ~ResourcePool() override;
@@ -343,8 +346,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   bool HasEvictableResources() const;
   base::TimeTicks GetUsageTimeForLRUResource() const;
 
-  LayerTreeResourceProvider* const resource_provider_ = nullptr;
-  const bool using_gpu_resources_ = false;
+  LayerTreeResourceProvider* const resource_provider_;
+  viz::ContextProvider* const context_provider_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   const base::TimeDelta resource_expiration_delay_;
   const bool disallow_non_exact_reuse_ = false;

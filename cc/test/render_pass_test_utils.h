@@ -81,6 +81,7 @@ void AddOneOfEveryQuadTypeInDisplayResourceProvider(
     viz::RenderPass* to_pass,
     DisplayResourceProvider* resource_provider,
     LayerTreeResourceProvider* child_resource_provider,
+    viz::ContextProvider* child_context_provider,
     viz::RenderPassId child_pass_id,
     gpu::SyncToken* sync_token_for_mailbox_texture);
 

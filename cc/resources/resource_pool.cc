@@ -21,7 +21,9 @@
 #include "build/build_config.h"
 #include "cc/base/container_util.h"
 #include "cc/resources/layer_tree_resource_provider.h"
+#include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_sizes.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 
 using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpLevelOfDetail;
@@ -66,12 +68,12 @@ constexpr base::TimeDelta ResourcePool::kDefaultExpirationDelay;
 
 ResourcePool::ResourcePool(
     LayerTreeResourceProvider* resource_provider,
+    viz::ContextProvider* context_provider,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     const base::TimeDelta& expiration_delay,
-    Mode resource_mode,
     bool disallow_non_exact_reuse)
     : resource_provider_(resource_provider),
-      using_gpu_resources_(resource_mode == Mode::kGpu),
+      context_provider_(context_provider),
       task_runner_(std::move(task_runner)),
       resource_expiration_delay_(expiration_delay),
       disallow_non_exact_reuse_(disallow_non_exact_reuse),
@@ -161,7 +163,7 @@ ResourcePool::InUsePoolResource ResourcePool::AcquireResource(
   PoolResource* resource = ReuseResource(size, format, color_space);
   if (!resource)
     resource = CreateResource(size, format, color_space);
-  return InUsePoolResource(resource, using_gpu_resources_);
+  return InUsePoolResource(resource, !!context_provider_);
 }
 
 // Iterate over all three resource lists (unused, in-use, and busy), updating
@@ -242,7 +244,7 @@ ResourcePool::TryAcquireResourceForPartialRaster(
     // These will be updated when raster completes successfully.
     resource->set_invalidated_rect(gfx::Rect());
     resource->set_content_id(0);
-    return InUsePoolResource(resource, using_gpu_resources_);
+    return InUsePoolResource(resource, !!context_provider_);
   }
 
   return InUsePoolResource();
@@ -276,7 +278,7 @@ void ResourcePool::OnResourceReleased(size_t unique_id,
   }
 
   resource->set_resource_id(0);
-  if (using_gpu_resources_)
+  if (context_provider_)
     resource->gpu_backing()->returned_sync_token = sync_token;
   DidFinishUsingResource(std::move(*busy_it));
   busy_resources_.erase(busy_it);
@@ -484,7 +486,8 @@ void ResourcePool::EvictExpiredResources() {
     // If nothing is evictable, we have deleted one (and possibly more)
     // resources without any new activity. Flush to ensure these deletions are
     // processed.
-    resource_provider_->FlushPendingDeletions();
+    if (context_provider_)
+      context_provider_->ContextGL()->ShallowFlushCHROMIUM();
     return;
   }
 

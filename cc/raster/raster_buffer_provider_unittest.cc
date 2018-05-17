@@ -158,9 +158,6 @@ class RasterBufferProviderTest
             std::make_unique<ZeroCopyRasterBufferProvider>(
                 &gpu_memory_buffer_manager_, context_provider_.get(),
                 viz::RGBA_8888);
-        pool_ = std::make_unique<ResourcePool>(
-            resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
-            base::TimeDelta(), ResourcePool::Mode::kGpu, true);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_ONE_COPY:
         Create3dResourceProvider();
@@ -169,31 +166,25 @@ class RasterBufferProviderTest
             worker_context_provider_.get(), &gpu_memory_buffer_manager_,
             kMaxBytesPerCopyOperation, false, false, kMaxStagingBuffers,
             viz::RGBA_8888);
-        pool_ = std::make_unique<ResourcePool>(
-            resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
-            base::TimeDelta(), ResourcePool::Mode::kGpu, true);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_GPU:
         Create3dResourceProvider();
         raster_buffer_provider_ = std::make_unique<GpuRasterBufferProvider>(
             context_provider_.get(), worker_context_provider_.get(), false, 0,
             viz::RGBA_8888, gfx::Size(), true, false);
-        pool_ = std::make_unique<ResourcePool>(
-            resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
-            base::TimeDelta(), ResourcePool::Mode::kGpu, true);
         break;
       case RASTER_BUFFER_PROVIDER_TYPE_BITMAP:
         CreateSoftwareResourceProvider();
         raster_buffer_provider_ = std::make_unique<BitmapRasterBufferProvider>(
             layer_tree_frame_sink_.get());
-        pool_ = std::make_unique<ResourcePool>(
-            resource_provider_.get(), base::ThreadTaskRunnerHandle::Get(),
-            base::TimeDelta(), ResourcePool::Mode::kSoftware, true);
         break;
     }
 
     DCHECK(raster_buffer_provider_);
 
+    pool_ = std::make_unique<ResourcePool>(
+        resource_provider_.get(), context_provider_.get(),
+        base::ThreadTaskRunnerHandle::Get(), base::TimeDelta(), true);
     tile_task_manager_ = TileTaskManagerImpl::Create(&task_graph_runner_);
   }
 
