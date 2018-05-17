@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8">
     <link rel="import" href="chrome://resources/html/polymer.html">
+    <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-    <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-button/paper-radio-button.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
     <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
     <link rel="import" href="signin_shared_css.html">
@@ -65,8 +65,9 @@
           $i18n{signinEmailConfirmationTitle}
       </div>
       <div class="details">
-        <paper-radio-group selected="createNewUser">
-          <paper-radio-button id="createNewUserRadioButton"
+        <paper-radio-group selected="createNewUser"
+            selectable="cr-radio-button">
+          <cr-radio-button id="createNewUserRadioButton"
               name="createNewUser">
             <div class="radio-button-title-container">
               $i18n{signinEmailConfirmationCreateProfileButtonTitle}
@@ -75,8 +76,8 @@
                 id="createNewUserRadioButtonSubtitle">
               $i18n{signinEmailConfirmationCreateProfileButtonSubtitle}
             </div>
-          </paper-radio-button>
-          <paper-radio-button id="startSyncRadioButton" name="startSync">
+          </cr-radio-button>
+          <cr-radio-button id="startSyncRadioButton" name="startSync">
             <div class="radio-button-title-container">
               $i18n{signinEmailConfirmationStartSyncButtonTitle}
             </div>
@@ -84,7 +85,7 @@
                 id="startSyncRadioButtonSubtitle">
               $i18n{signinEmailConfirmationStartSyncButtonSubtitle}
             </div>
-          </paper-radio-button>
+          </cr-radio-button>
         </paper-radio-group>
       </div>
       <div class="action-container">
