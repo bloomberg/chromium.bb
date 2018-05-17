@@ -5824,6 +5824,18 @@
             {
               "device_type": "coho"
             }
+          ],
+          "hard_timeout": 300
+        },
+        "test": "mojo_test_apk"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "device_type": "coho"
+            }
           ]
         },
         "test": "mojo_unittests"
