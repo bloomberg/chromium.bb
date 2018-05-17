@@ -32,7 +32,7 @@ bool IsVirtualKeyboardEnabled() {
       keyboard::switches::kEnableVirtualKeyboard);
 }
 
-void MoveKeyboardToDisplayInternal(const int64_t display_id) {
+void MoveKeyboardToDisplayInternal(const display::Display& display) {
   // Remove the keyboard from curent root window controller
   TRACE_EVENT0("vk", "MoveKeyboardToDisplayInternal");
   Shell::Get()->keyboard_ui()->Hide();
@@ -44,7 +44,7 @@ void MoveKeyboardToDisplayInternal(const int64_t display_id) {
        Shell::Get()->GetAllRootWindowControllers()) {
     if (display::Screen::GetScreen()
             ->GetDisplayNearestWindow(controller->GetRootWindow())
-            .id() == display_id) {
+            .id() == display.id()) {
       controller->ActivateKeyboard(keyboard::KeyboardController::GetInstance());
       break;
     }
@@ -55,7 +55,7 @@ void MoveKeyboardToFirstTouchableDisplay() {
   // Move the keyboard to the first display with touch capability.
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
     if (display.touch_support() == display::Display::TouchSupport::AVAILABLE) {
-      MoveKeyboardToDisplayInternal(display.id());
+      MoveKeyboardToDisplayInternal(display);
       return;
     }
   }
@@ -108,21 +108,22 @@ void VirtualKeyboardController::ToggleIgnoreExternalKeyboard() {
   UpdateKeyboardEnabled();
 }
 
-void VirtualKeyboardController::MoveKeyboardToDisplay(int64_t display_id) {
-  DCHECK(keyboard::KeyboardController::GetInstance() != nullptr);
-  DCHECK(display_id != display::kInvalidDisplayId);
+void VirtualKeyboardController::MoveKeyboardToDisplay(
+    const display::Display& display) {
+  DCHECK(keyboard::KeyboardController::GetInstance());
+  DCHECK(display.is_valid());
 
   TRACE_EVENT0("vk", "MoveKeyboardToDisplay");
 
   aura::Window* container =
       keyboard::KeyboardController::GetInstance()->GetContainerWindow();
-  DCHECK(container != nullptr);
+  DCHECK(container);
   const display::Screen* screen = display::Screen::GetScreen();
   const display::Display current_display =
       screen->GetDisplayNearestWindow(container);
 
-  if (display_id != current_display.id())
-    MoveKeyboardToDisplayInternal(display_id);
+  if (display.id() != current_display.id())
+    MoveKeyboardToDisplayInternal(display);
 }
 
 void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
@@ -148,7 +149,7 @@ void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
         focused_display.id() != display::kInvalidDisplayId &&
         focused_display.touch_support() ==
             display::Display::TouchSupport::AVAILABLE) {
-      MoveKeyboardToDisplayInternal(focused_display.id());
+      MoveKeyboardToDisplayInternal(focused_display);
       return;
     }
   }

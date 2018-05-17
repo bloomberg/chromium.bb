@@ -608,7 +608,7 @@ void KeyboardController::PopulateKeyboardContent(
 
   if (layout_delegate_ != nullptr) {
     if (display.is_valid())
-      layout_delegate_->MoveKeyboardToDisplay(display.id());
+      layout_delegate_->MoveKeyboardToDisplay(display);
     else
       layout_delegate_->MoveKeyboardToTouchableDisplay();
   }

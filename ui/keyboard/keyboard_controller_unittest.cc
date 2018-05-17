@@ -169,7 +169,7 @@ class TestKeyboardLayoutDelegate : public KeyboardLayoutDelegate {
   ~TestKeyboardLayoutDelegate() override {}
 
   // Overridden from keyboard::KeyboardLayoutDelegate
-  void MoveKeyboardToDisplay(int64_t /* display_id */) override {}
+  void MoveKeyboardToDisplay(const display::Display& display) override {}
   void MoveKeyboardToTouchableDisplay() override {}
 
  private:
