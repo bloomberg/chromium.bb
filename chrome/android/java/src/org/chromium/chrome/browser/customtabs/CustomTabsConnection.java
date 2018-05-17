@@ -445,7 +445,7 @@ public class CustomTabsConnection {
                 try (TraceEvent e = TraceEvent.scoped("WarmupInternalFinishInitialization")) {
                     // (4)
                     Profile profile = Profile.getLastUsedProfile();
-                    new LoadingPredictor(profile).startInitialization();
+                    WarmupManager.getInstance().startPreconnectPredictorInitialization(profile);
 
                     // (5)
                     // The throttling database uses shared preferences, that can cause a
