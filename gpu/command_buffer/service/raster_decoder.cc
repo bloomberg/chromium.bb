@@ -747,6 +747,7 @@ class RasterDecoderImpl final : public RasterDecoder,
   sk_sp<SkSurface> sk_surface_;
   std::unique_ptr<SkCanvas> raster_canvas_;
   uint32_t raster_color_space_id_;
+  std::vector<SkDiscardableHandleId> locked_handles_;
 
   bool need_context_state_reset_ = false;
 
@@ -2867,6 +2868,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     return;
   }
 
+  DCHECK(locked_handles_.empty());
   DCHECK(!raster_canvas_);
   need_context_state_reset_ = true;
 
@@ -3020,7 +3022,6 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
   DCHECK(transfer_cache_);
   need_context_state_reset_ = true;
 
-  std::vector<SkDiscardableHandleId> locked_handles;
   if (font_shm_size > 0) {
     // Deserialize fonts before raster.
     volatile char* font_buffer_memory =
@@ -3032,7 +3033,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
     }
 
     if (!font_manager_.Deserialize(font_buffer_memory, font_shm_size,
-                                   &locked_handles)) {
+                                   &locked_handles_)) {
       LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
                          "Invalid font buffer.");
       return;
@@ -3077,14 +3078,6 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
     paint_buffer_memory += skip;
     op_idx++;
   }
-
-  // Unlock all font handles.
-  // TODO(khushalsagar): We just unlocked a bunch of handles, do we need to give
-  // a call to skia to attempt to purge any unlocked handles?
-  if (!font_manager_.Unlock(locked_handles)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
-                       "Invalid font discardable handle.");
-  }
 }
 
 void RasterDecoderImpl::DoEndRasterCHROMIUM() {
@@ -3099,6 +3092,17 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
   raster_canvas_.reset();
   sk_surface_->prepareForExternalIO();
   sk_surface_.reset();
+
+  // Unlock all font handles. This needs to be deferred until
+  // SkSurface::prepareForExternalIO since that flushes batched Gr operations in
+  // skia that access the glyph data.
+  // TODO(khushalsagar): We just unlocked a bunch of handles, do we need to give
+  // a call to skia to attempt to purge any unlocked handles?
+  if (!font_manager_.Unlock(locked_handles_)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glRasterCHROMIUM",
+                       "Invalid font discardable handle.");
+  }
+  locked_handles_.clear();
 }
 
 void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
