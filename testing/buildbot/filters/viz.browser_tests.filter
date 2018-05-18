@@ -1,13 +1,3 @@
-#### HostFrameSinkManager Crashes
-# HostFrameSinkManager::CreateRootCompositorFrameSink Crash crbug.com/796575
--AppWindowApiTest.OnBoundsChangedEvent
--ForceMaximizeOnFirstRunTest.*TwoRuns
--ForceMaximizePolicyFalseTest.GeneralFirstRun
--SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_AllowCreatingNewWindows
--SafeBrowsingTriggeredPopupBlockerBrowserTest.NoFeature_NoMessages
--ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus0
--ShelfAppBrowserTest.LaunchAppFromDisplayWithoutFocus1
-
 #### HostFrameSinkManager::CreateCompositorFrameSinkSupport crash.
 # http://crbug.com/807465
 -ArcAccessibilityHelperBridgeBrowserTest.PreferenceChange
