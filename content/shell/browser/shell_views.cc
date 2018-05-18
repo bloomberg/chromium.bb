@@ -345,12 +345,8 @@ void Shell::PlatformInitialize(const gfx::Size& default_window_size) {
       ServiceManagerConnection::GetForProcess()->GetConnector(),
       ui_context_factory);
 #else
-#if defined(USE_AURA)
   wm_state_ = new wm::WMState;
-#endif
-#if !defined(USE_OZONE)
-  display::Screen::SetScreenInstance(views::CreateDesktopScreen());
-#endif
+  views::InstallDesktopScreenIfNecessary();
 #endif
   views_delegate_ = new views::DesktopTestViewsDelegate();
 }
