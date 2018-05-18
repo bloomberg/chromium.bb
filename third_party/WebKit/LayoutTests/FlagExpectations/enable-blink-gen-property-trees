@@ -264,14 +264,8 @@ crbug.com/840017 compositing/layer-creation/fixed-position-out-of-view-scaled.ht
 crbug.com/840017 compositing/overflow/overflow-scaled-descendant-overlapping.html [ Crash ]
 crbug.com/840017 compositing/scaling/tiled-layer-recursion.html [ Crash ]
 
-# Reflection drawn at wrong position.
-crbug.com/840038 compositing/reflections/ [ Skip ]
-crbug.com/840038 compositing/overflow/reflected-overlay-scrollbars-should-appear-without-compositing.html [ Failure ]
-crbug.com/840038 compositing/overlap-blending/reflection-opacity-huge.html [ Failure ]
-crbug.com/840038 compositing/plugins/webplugin-reflection.html [ Failure ]
-crbug.com/840038 compositing/squashing/squashing-reflection-disallowed.html [ Failure ]
-crbug.com/840038 compositing/video/video-reflection.html [ Failure ]
-crbug.com/840038 compositing/webgl/webgl-reflection.html [ Failure ]
+# Reflection / mask ordering issue
+crbug.com/767318 compositing/reflections/nested-reflection-mask-change.html [ Failure ]
 
 # Rounding differences.
 # Maybe due to different render surface generation? (Needs investigation.)
