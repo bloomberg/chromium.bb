@@ -36,6 +36,8 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWin
   static base::WeakPtr<BluetoothAdapter> CreateAdapter(
       InitCallback init_callback);
 
+  static bool UseNewBLEWinImplementation();
+
   // BluetoothAdapter:
   std::string GetAddress() const override;
   std::string GetName() const override;
