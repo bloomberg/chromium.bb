@@ -12,10 +12,10 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_byteorder.h"
 #include "base/values.h"
+#include "components/policy/core/common/schema.h"
 
 #if defined(OS_WIN)
 #include "base/win/registry.h"
-#include "components/policy/core/common/schema.h"
 
 using base::win::RegistryKeyIterator;
 using base::win::RegistryValueIterator;
@@ -25,18 +25,16 @@ namespace policy {
 
 namespace {
 
-#if defined(OS_WIN)
 // Validates that a key is numerical. Used for lists below.
 bool IsKeyNumerical(const std::string& key) {
   int temp = 0;
   return base::StringToInt(key, &temp);
 }
 
-// Converts a value (as read from the registry) to meet |schema|, converting
-// types as necessary. Unconvertible types will show up as null values in the
-// result.
-std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
-                                          const Schema& schema) {
+}  // namespace
+
+std::unique_ptr<base::Value> ConvertRegistryValue(const base::Value& value,
+                                                  const Schema& schema) {
   if (!schema.valid())
     return value.CreateDeepCopy();
 
@@ -50,8 +48,8 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
           new base::DictionaryValue());
       for (base::DictionaryValue::Iterator entry(*dict); !entry.IsAtEnd();
            entry.Advance()) {
-        std::unique_ptr<base::Value> converted =
-            ConvertValue(entry.value(), schema.GetProperty(entry.key()));
+        std::unique_ptr<base::Value> converted = ConvertRegistryValue(
+            entry.value(), schema.GetProperty(entry.key()));
         if (converted)
           result->SetWithoutPathExpansion(entry.key(), std::move(converted));
       }
@@ -61,7 +59,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
       for (base::ListValue::const_iterator entry(list->begin());
            entry != list->end(); ++entry) {
         std::unique_ptr<base::Value> converted =
-            ConvertValue(*entry, schema.GetItems());
+            ConvertRegistryValue(*entry, schema.GetItems());
         if (converted)
           result->Append(std::move(converted));
       }
@@ -115,7 +113,7 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
           if (!IsKeyNumerical(it.key()))
             continue;
           std::unique_ptr<base::Value> converted =
-              ConvertValue(it.value(), schema.GetItems());
+              ConvertRegistryValue(it.value(), schema.GetItems());
           if (converted)
             result->Append(std::move(converted));
         }
@@ -144,9 +142,6 @@ std::unique_ptr<base::Value> ConvertValue(const base::Value& value,
                << schema.type();
   return nullptr;
 }
-#endif  // #if defined(OS_WIN)
-
-}  // namespace
 
 bool CaseInsensitiveStringCompare::operator()(const std::string& a,
                                               const std::string& b) const {
@@ -287,9 +282,8 @@ void RegistryDict::ReadRegistry(HKEY hive, const base::string16& root) {
         break;
     }
 
-    LOG(WARNING) << "Failed to read hive " << hive << " at "
-                 << root << "\\" << name
-                 << " type " << it.Type();
+    LOG(WARNING) << "Failed to read hive " << hive << " at " << root << "\\"
+                 << name << " type " << it.Type();
   }
 
   // Recurse for all subkeys.
@@ -314,7 +308,7 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
         Schema subschema =
             schema.valid() ? schema.GetProperty(entry->first) : Schema();
         std::unique_ptr<base::Value> converted =
-            ConvertValue(*entry->second, subschema);
+            ConvertRegistryValue(*entry->second, subschema);
         if (converted)
           result->SetWithoutPathExpansion(entry->first, std::move(converted));
       }
@@ -346,7 +340,7 @@ std::unique_ptr<base::Value> RegistryDict::ConvertToJSON(
         if (!IsKeyNumerical(entry->first))
           continue;
         std::unique_ptr<base::Value> converted =
-            ConvertValue(*entry->second, item_schema);
+            ConvertRegistryValue(*entry->second, item_schema);
         if (converted)
           result->Append(std::move(converted));
       }

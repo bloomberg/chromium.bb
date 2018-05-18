@@ -23,6 +23,14 @@ class Value;
 
 namespace policy {
 
+class Schema;
+
+// Converts a value (as read from the registry) to meet |schema|, converting
+// types as necessary. Unconvertible types will show up as null values in the
+// result.
+std::unique_ptr<base::Value> POLICY_EXPORT
+ConvertRegistryValue(const base::Value& value, const Schema& schema);
+
 // A case-insensitive string comparison functor.
 struct POLICY_EXPORT CaseInsensitiveStringCompare {
   bool operator()(const std::string& a, const std::string& b) const;
