@@ -90,7 +90,6 @@ LocalStorageCachedArea::LocalStorageCachedArea(
   mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
   binding_.Bind(mojo::MakeRequest(&ptr_info),
                 main_thread_scheduler->IPCTaskRunner());
-  leveldb_->AddObserver(std::move(ptr_info));
 }
 
 LocalStorageCachedArea::LocalStorageCachedArea(
@@ -171,6 +170,18 @@ bool LocalStorageCachedArea::SetItem(const base::string16& key,
                 base::BindOnce(&LocalStorageCachedArea::OnSetItemComplete,
                                weak_factory_.GetWeakPtr(), key,
                                std::move(virtual_time_pauser)));
+  if (IsSessionStorage() &&
+      (old_nullable_value.is_null() || old_nullable_value.string() != value)) {
+    blink::WebStorageArea* originating_area = areas_[storage_area_id];
+    DCHECK_NE(nullptr, originating_area);
+    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
+        namespace_id_, nullptr);
+    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+        blink::WebString::FromUTF16(key),
+        blink::WebString::FromUTF16(old_nullable_value),
+        blink::WebString::FromUTF16(value), origin_.GetURL(), page_url,
+        session_namespace_for_event_dispatch, originating_area);
+  }
   return true;
 }
 
@@ -203,10 +214,26 @@ void LocalStorageCachedArea::RemoveItem(const base::string16& key,
                    base::BindOnce(&LocalStorageCachedArea::OnRemoveItemComplete,
                                   weak_factory_.GetWeakPtr(), key,
                                   std::move(virtual_time_pauser)));
+  if (IsSessionStorage() && old_value != base::string16()) {
+    blink::WebStorageArea* originating_area = areas_[storage_area_id];
+    DCHECK_NE(nullptr, originating_area);
+    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
+        namespace_id_, nullptr);
+    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+        blink::WebString::FromUTF16(key),
+        blink::WebString::FromUTF16(old_value), blink::WebString(),
+        origin_.GetURL(), page_url, session_namespace_for_event_dispatch,
+        originating_area);
+  }
 }
 
 void LocalStorageCachedArea::Clear(const GURL& page_url,
                                    const std::string& storage_area_id) {
+  bool already_empty = false;
+  if (IsSessionStorage()) {
+    EnsureLoaded();
+    already_empty = map_->Length() == 0u;
+  }
   // No need to prime the cache in this case.
   Reset();
   map_ = new DOMStorageMap(kPerStorageAreaQuota);
@@ -220,6 +247,16 @@ void LocalStorageCachedArea::Clear(const GURL& page_url,
                       base::BindOnce(&LocalStorageCachedArea::OnClearComplete,
                                      weak_factory_.GetWeakPtr(),
                                      std::move(virtual_time_pauser)));
+  if (IsSessionStorage() && !already_empty) {
+    blink::WebStorageArea* originating_area = areas_[storage_area_id];
+    DCHECK_NE(nullptr, originating_area);
+    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
+        namespace_id_, nullptr);
+    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
+        blink::WebString(), blink::WebString(), blink::WebString(),
+        origin_.GetURL(), page_url, session_namespace_for_event_dispatch,
+        originating_area);
+  }
 }
 
 void LocalStorageCachedArea::AreaCreated(LocalStorageArea* area) {
@@ -315,6 +352,7 @@ std::vector<uint8_t> LocalStorageCachedArea::String16ToUint8Vector(
 void LocalStorageCachedArea::KeyAdded(const std::vector<uint8_t>& key,
                                       const std::vector<uint8_t>& value,
                                       const std::string& source) {
+  DCHECK(!IsSessionStorage());
   base::NullableString16 null_value;
   KeyAddedOrChanged(key, value, null_value, source);
 }
@@ -323,6 +361,7 @@ void LocalStorageCachedArea::KeyChanged(const std::vector<uint8_t>& key,
                                         const std::vector<uint8_t>& new_value,
                                         const std::vector<uint8_t>& old_value,
                                         const std::string& source) {
+  DCHECK(!IsSessionStorage());
   base::NullableString16 old_value_str(
       Uint8VectorToString16(old_value, IsSessionStorage()), false);
   KeyAddedOrChanged(key, new_value, old_value_str, source);
@@ -331,6 +370,7 @@ void LocalStorageCachedArea::KeyChanged(const std::vector<uint8_t>& key,
 void LocalStorageCachedArea::KeyDeleted(const std::vector<uint8_t>& key,
                                         const std::vector<uint8_t>& old_value,
                                         const std::string& source) {
+  DCHECK(!IsSessionStorage());
   GURL page_url;
   std::string storage_area_id;
   UnpackSource(source, &page_url, &storage_area_id);
@@ -350,25 +390,15 @@ void LocalStorageCachedArea::KeyDeleted(const std::vector<uint8_t>& key,
       map_->RemoveItem(key_string, nullptr);
   }
 
-  if (IsSessionStorage()) {
-    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
-        namespace_id_, nullptr);
-    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
-        blink::WebString::FromUTF16(key_string),
-        blink::WebString::FromUTF16(
-            Uint8VectorToString16(old_value, IsSessionStorage())),
-        blink::WebString(), origin_.GetURL(), page_url,
-        session_namespace_for_event_dispatch, originating_area);
-  } else {
-    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
-        blink::WebString::FromUTF16(key_string),
-        blink::WebString::FromUTF16(
-            Uint8VectorToString16(old_value, IsSessionStorage())),
-        blink::WebString(), origin_.GetURL(), page_url, originating_area);
-  }
+  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+      blink::WebString::FromUTF16(key_string),
+      blink::WebString::FromUTF16(
+          Uint8VectorToString16(old_value, IsSessionStorage())),
+      blink::WebString(), origin_.GetURL(), page_url, originating_area);
 }
 
 void LocalStorageCachedArea::AllDeleted(const std::string& source) {
+  DCHECK(!IsSessionStorage());
   GURL page_url;
   std::string storage_area_id;
   UnpackSource(source, &page_url, &storage_area_id);
@@ -392,22 +422,13 @@ void LocalStorageCachedArea::AllDeleted(const std::string& source) {
     }
   }
 
-  if (IsSessionStorage()) {
-    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
-        namespace_id_, nullptr);
-    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
-        blink::WebString(), blink::WebString(), blink::WebString(),
-        origin_.GetURL(), page_url, session_namespace_for_event_dispatch,
-        originating_area);
-
-  } else {
-    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
-        blink::WebString(), blink::WebString(), blink::WebString(),
-        origin_.GetURL(), page_url, originating_area);
-  }
+  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+      blink::WebString(), blink::WebString(), blink::WebString(),
+      origin_.GetURL(), page_url, originating_area);
 }
 
 void LocalStorageCachedArea::ShouldSendOldValueOnMutations(bool value) {
+  DCHECK(!IsSessionStorage());
   should_send_old_value_on_mutations_ = value;
 }
 
@@ -416,6 +437,7 @@ void LocalStorageCachedArea::KeyAddedOrChanged(
     const std::vector<uint8_t>& new_value,
     const base::NullableString16& old_value,
     const std::string& source) {
+  DCHECK(!IsSessionStorage());
   GURL page_url;
   std::string storage_area_id;
   UnpackSource(source, &page_url, &storage_area_id);
@@ -442,22 +464,11 @@ void LocalStorageCachedArea::KeyAddedOrChanged(
     }
   }
 
-  if (IsSessionStorage()) {
-    SessionWebStorageNamespaceImpl session_namespace_for_event_dispatch(
-        namespace_id_, nullptr);
-    blink::WebStorageEventDispatcher::DispatchSessionStorageEvent(
-        blink::WebString::FromUTF16(key_string),
-        blink::WebString::FromUTF16(old_value),
-        blink::WebString::FromUTF16(new_value_string), origin_.GetURL(),
-        page_url, session_namespace_for_event_dispatch, originating_area);
-
-  } else {
-    blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
-        blink::WebString::FromUTF16(key_string),
-        blink::WebString::FromUTF16(old_value),
-        blink::WebString::FromUTF16(new_value_string), origin_.GetURL(),
-        page_url, originating_area);
-  }
+  blink::WebStorageEventDispatcher::DispatchLocalStorageEvent(
+      blink::WebString::FromUTF16(key_string),
+      blink::WebString::FromUTF16(old_value),
+      blink::WebString::FromUTF16(new_value_string), origin_.GetURL(), page_url,
+      originating_area);
 }
 
 void LocalStorageCachedArea::EnsureLoaded() {
