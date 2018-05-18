@@ -65,6 +65,13 @@ ALLOWED_EXCEPTIONS = [
     'pl/read -> org/chromium/net/UploadDataSink/onReadSucceeded:(Z)V',
 'org.chromium.net.urlconnection.CronetBufferedOutputStream$UploadDataProviderIm'
     'pl/rewind -> org/chromium/net/UploadDataSink/onRewindSucceeded:()V',
+'org.chromium.net.urlconnection.CronetHttpURLStreamHandler/org.chromium.net.url'
+    'connection.CronetHttpURLStreamHandler -> org/chromium/net/ExperimentalCron'
+    'etEngine/openConnection:(Ljava/net/URL;)Ljava/net/URLConnection;',
+'org.chromium.net.urlconnection.CronetHttpURLStreamHandler/org.chromium.net.url'
+    'connection.CronetHttpURLStreamHandler -> org/chromium/net/ExperimentalCron'
+    'etEngine/openConnection:(Ljava/net/URL;Ljava/net/Proxy;)Ljava/net/URLConne'
+    'ction;',
 # getMessage() is an java.lang.Exception member, and so cannot be removed.
 'org.chromium.net.impl.NetworkExceptionImpl/getMessage -> '
     'org/chromium/net/NetworkException/getMessage:()Ljava/lang/String;',

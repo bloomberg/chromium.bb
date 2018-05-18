@@ -5,9 +5,9 @@
 package org.chromium.net.urlconnection;
 
 import android.annotation.SuppressLint;
+import android.util.Log;
 import android.util.Pair;
 
-import org.chromium.base.Log;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;

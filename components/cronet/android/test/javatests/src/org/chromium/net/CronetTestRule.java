@@ -16,7 +16,6 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
-import org.chromium.net.impl.CronetEngineBase;
 import org.chromium.net.impl.JavaCronetEngine;
 import org.chromium.net.impl.JavaCronetProvider;
 import org.chromium.net.impl.UserAgent;
@@ -63,12 +62,10 @@ public class CronetTestRule implements TestRule {
      * Creates and holds pointer to CronetEngine.
      */
     public static class CronetTestFramework {
-        public CronetEngineBase mCronetEngine;
+        public ExperimentalCronetEngine mCronetEngine;
 
         public CronetTestFramework(Context context) {
-            mCronetEngine = (CronetEngineBase) new ExperimentalCronetEngine.Builder(context)
-                                    .enableQuic(true)
-                                    .build();
+            mCronetEngine = new ExperimentalCronetEngine.Builder(context).enableQuic(true).build();
             // Start collecting metrics.
             mCronetEngine.getGlobalMetricsDeltas();
         }
@@ -206,7 +203,7 @@ public class CronetTestRule implements TestRule {
         if (testingJavaImpl()) {
             ExperimentalCronetEngine.Builder builder = createJavaEngineBuilder();
             builder.setUserAgent(UserAgent.from(getContext()));
-            mCronetTestFramework.mCronetEngine = (CronetEngineBase) builder.build();
+            mCronetTestFramework.mCronetEngine = builder.build();
             // Make sure that the instantiated engine is JavaCronetEngine.
             assert mCronetTestFramework.mCronetEngine.getClass() == JavaCronetEngine.class;
         }

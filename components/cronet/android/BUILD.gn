@@ -339,7 +339,25 @@ cronet_impl_native_java_deps_to_package = [
   "//base:base_java",
   "//net/android:net_java",
   "//url:url_java",
+  ":cronet_urlconnection_impl_java",
 ]
+
+android_library("cronet_urlconnection_impl_java") {
+  java_files = [
+    "java/src/org/chromium/net/urlconnection/CronetBufferedOutputStream.java",
+    "java/src/org/chromium/net/urlconnection/CronetChunkedOutputStream.java",
+    "java/src/org/chromium/net/urlconnection/CronetFixedModeOutputStream.java",
+    "java/src/org/chromium/net/urlconnection/CronetHttpURLConnection.java",
+    "java/src/org/chromium/net/urlconnection/CronetHttpURLStreamHandler.java",
+    "java/src/org/chromium/net/urlconnection/CronetInputStream.java",
+    "java/src/org/chromium/net/urlconnection/CronetOutputStream.java",
+    "java/src/org/chromium/net/urlconnection/CronetURLStreamHandlerFactory.java",
+    "java/src/org/chromium/net/urlconnection/MessageLoop.java",
+  ]
+  deps = [
+    ":cronet_api_java",
+  ]
+}
 
 # cronet_impl_native_base_java.jar - native implementation of the Cronet engine.
 android_library("cronet_impl_native_base_java") {
@@ -355,17 +373,10 @@ android_library("cronet_impl_native_base_java") {
     "java/src/org/chromium/net/impl/NativeCronetEngineBuilderImpl.java",
     "java/src/org/chromium/net/impl/NativeCronetEngineBuilderWithLibraryLoaderImpl.java",
     "java/src/org/chromium/net/impl/NativeCronetProvider.java",
-    "java/src/org/chromium/net/urlconnection/CronetBufferedOutputStream.java",
-    "java/src/org/chromium/net/urlconnection/CronetChunkedOutputStream.java",
-    "java/src/org/chromium/net/urlconnection/CronetFixedModeOutputStream.java",
-    "java/src/org/chromium/net/urlconnection/CronetHttpURLConnection.java",
-    "java/src/org/chromium/net/urlconnection/CronetHttpURLStreamHandler.java",
-    "java/src/org/chromium/net/urlconnection/CronetInputStream.java",
-    "java/src/org/chromium/net/urlconnection/CronetOutputStream.java",
-    "java/src/org/chromium/net/urlconnection/CronetURLStreamHandlerFactory.java",
-    "java/src/org/chromium/net/urlconnection/MessageLoop.java",
   ]
 
+  # Adding deps here won't include those deps in the cronet_impl_native_java.jar.
+  # Please add to cronet_impl_native_java_deps_to_package instead.
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
