@@ -12,7 +12,6 @@
 #include "gpu/ipc/service/direct_composition_surface_win.h"
 #include "gpu/ipc/service/gpu_vsync_provider_win.h"
 #include "gpu/ipc/service/pass_through_image_transport_surface.h"
-#include "gpu/ipc/service/switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"

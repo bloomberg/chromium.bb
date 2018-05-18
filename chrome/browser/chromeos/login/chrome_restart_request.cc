@@ -41,7 +41,6 @@
 #include "content/public/common/content_switches.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/ipc/host/gpu_switches.h"
-#include "gpu/ipc/service/switches.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "services/service_manager/sandbox/switches.h"

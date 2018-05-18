@@ -17,10 +17,10 @@
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/config/gpu_finch_features.h"
 #include "gpu/ipc/service/direct_composition_child_surface_win.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
-#include "gpu/ipc/service/switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/geometry/size_conversions.h"
@@ -1245,7 +1245,7 @@ bool DirectCompositionSurfaceWin::AreOverlaysSupported() {
   if (command_line->HasSwitch(switches::kEnableDirectCompositionLayers))
     return true;
 
-  return base::FeatureList::IsEnabled(switches::kDirectCompositionOverlays) &&
+  return base::FeatureList::IsEnabled(features::kDirectCompositionOverlays) &&
          overlays_supported;
 }
 

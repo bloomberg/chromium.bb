@@ -39,8 +39,6 @@ component("service") {
     "pass_through_image_transport_surface.h",
     "raster_command_buffer_stub.cc",
     "raster_command_buffer_stub.h",
-    "switches.cc",
-    "switches.h",
   ]
   defines = [ "GPU_IPC_SERVICE_IMPLEMENTATION" ]
   if (is_chromecast) {
