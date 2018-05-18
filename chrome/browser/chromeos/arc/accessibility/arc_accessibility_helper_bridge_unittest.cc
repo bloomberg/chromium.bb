@@ -13,6 +13,7 @@
 #include "ash/system/message_center/arc/arc_notification_surface_manager.h"
 #include "ash/system/message_center/arc/arc_notification_view.h"
 #include "ash/system/message_center/arc/mock_arc_notification_item.h"
+#include "ash/system/message_center/arc/mock_arc_notification_surface.h"
 #include "base/command_line.h"
 #include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,6 +37,7 @@ using ash::ArcNotificationSurface;
 using ash::ArcNotificationSurfaceManager;
 using ash::ArcNotificationView;
 using ash::MockArcNotificationItem;
+using ash::MockArcNotificationSurface;
 
 namespace arc {
 
@@ -110,61 +112,6 @@ class ArcAccessibilityHelperBridgeTest : public views::ViewsTestBase {
    private:
     std::map<std::string, ArcNotificationSurface*> surfaces_;
     base::ObserverList<Observer> observers_;
-  };
-
-  class FakeArcNotificationSurface : public ArcNotificationSurface {
-   public:
-    explicit FakeArcNotificationSurface(std::string notification_key)
-        : notification_key_(notification_key),
-          ax_tree_id_(-1),
-          native_view_host_(nullptr),
-          window_(new aura::Window(nullptr)),
-          content_window_(new aura::Window(nullptr)) {
-      window_->Init(ui::LAYER_NOT_DRAWN);
-      content_window_->Init(ui::LAYER_NOT_DRAWN);
-    }
-
-    ~FakeArcNotificationSurface() override {
-      window_.reset();
-      content_window_.reset();
-    }
-
-    gfx::Size GetSize() const override { return gfx::Size(); }
-
-    aura::Window* GetWindow() const override { return window_.get(); }
-
-    aura::Window* GetContentWindow() const override {
-      return content_window_.get();
-    }
-
-    const std::string& GetNotificationKey() const override {
-      return notification_key_;
-    }
-
-    void Attach(views::NativeViewHost* native_view_host) override {
-      native_view_host_ = native_view_host;
-    }
-
-    void Detach() override { native_view_host_ = nullptr; }
-
-    bool IsAttached() const override { return native_view_host_ != nullptr; }
-
-    views::NativeViewHost* GetAttachedHost() const override {
-      return native_view_host_;
-    }
-
-    void FocusSurfaceWindow() override {}
-
-    void SetAXTreeId(int32_t ax_tree_id) override { ax_tree_id_ = ax_tree_id; }
-
-    int32_t GetAXTreeId() const override { return ax_tree_id_; }
-
-   private:
-    const std::string notification_key_;
-    int32_t ax_tree_id_;
-    views::NativeViewHost* native_view_host_;
-    std::unique_ptr<aura::Window> window_;
-    std::unique_ptr<aura::Window> content_window_;
   };
 
   ArcAccessibilityHelperBridgeTest() = default;
@@ -345,7 +292,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   EXPECT_EQ(1U, notification_key_to_tree_.size());
 
   // wayland: surface 1 added
-  FakeArcNotificationSurface test_surface(kNotificationKey);
+  MockArcNotificationSurface test_surface(kNotificationKey);
   arc_notification_surface_manager_->AddSurface(&test_surface);
 
   // Confirm that axtree id is set to the surface.
@@ -394,7 +341,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationEventArriveFirst) {
   EXPECT_EQ(1U, notification_key_to_tree_.size());
 
   // wayland: surface 2 added
-  FakeArcNotificationSurface test_surface_2(kNotificationKey);
+  MockArcNotificationSurface test_surface_2(kNotificationKey);
   arc_notification_surface_manager_->AddSurface(&test_surface_2);
 
   EXPECT_EQ(tree_data2.tree_id, test_surface_2.GetAXTreeId());
@@ -429,7 +376,7 @@ TEST_F(ArcAccessibilityHelperBridgeTest, NotificationSurfaceArriveFirst) {
   ASSERT_EQ(0U, notification_key_to_tree_.size());
 
   // wayland: surface 1 added
-  FakeArcNotificationSurface test_surface(kNotificationKey);
+  MockArcNotificationSurface test_surface(kNotificationKey);
   arc_notification_surface_manager_->AddSurface(&test_surface);
 
   // wayland: surface 1 removed
@@ -461,8 +408,8 @@ TEST_F(ArcAccessibilityHelperBridgeTest,
       chromeos::switches::kEnableChromeVoxArcSupport);
 
   // Prepare notification surface.
-  std::unique_ptr<FakeArcNotificationSurface> surface =
-      std::make_unique<FakeArcNotificationSurface>(kNotificationKey);
+  std::unique_ptr<MockArcNotificationSurface> surface =
+      std::make_unique<MockArcNotificationSurface>(kNotificationKey);
   arc_notification_surface_manager_->AddSurface(surface.get());
 
   // Prepare notification view with ArcNotificationContentView.
@@ -517,8 +464,8 @@ TEST_F(ArcAccessibilityHelperBridgeTest, TextSelectionChangedFocusContentView) {
       chromeos::switches::kEnableChromeVoxArcSupport);
 
   // Prepare notification surface.
-  std::unique_ptr<FakeArcNotificationSurface> surface =
-      std::make_unique<FakeArcNotificationSurface>(kNotificationKey);
+  std::unique_ptr<MockArcNotificationSurface> surface =
+      std::make_unique<MockArcNotificationSurface>(kNotificationKey);
   arc_notification_surface_manager_->AddSurface(surface.get());
 
   // Prepare notification view with ArcNotificationContentView.
