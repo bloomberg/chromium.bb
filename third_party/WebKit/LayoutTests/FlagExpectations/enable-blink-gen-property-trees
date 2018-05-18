@@ -293,6 +293,9 @@ Bug(none) compositing/masks/simple-composited-mask.html [ Failure ]
 Bug(none) compositing/overflow/scaled-overflow.html [ Failure ]
 Bug(none) compositing/overflow/tiled-mask.html [ Failure ]
 
+# Incorrect clipping.
+crbug.com/844429 compositing/culling/tile-occlusion-boundaries.html [ Failure ]
+
 # Failures that don't belong to any of above categories. Investigation needed.
 Bug(none) compositing/overflow/nested-render-surfaces-with-rotation.html [ Failure ]
 Bug(none) compositing/overflow/non-composited-sticky-element-in-main-thread-scrolled-composited-ancestor.html [ Failure ]
