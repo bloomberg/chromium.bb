@@ -1318,14 +1318,12 @@ void GLES2DecoderPassthroughImpl::ProcessPendingQueries(bool did_finish) {
 }
 
 bool GLES2DecoderPassthroughImpl::HasMoreIdleWork() const {
-  return gpu_tracer_->HasTracesToProcess() || !pending_read_pixels_.empty() ||
-         !pending_queries_.empty();
+  return gpu_tracer_->HasTracesToProcess() || !pending_read_pixels_.empty();
 }
 
 void GLES2DecoderPassthroughImpl::PerformIdleWork() {
   gpu_tracer_->ProcessTraces();
   ProcessReadPixels(false);
-  ProcessQueries(false);
 }
 
 bool GLES2DecoderPassthroughImpl::HasPollingWork() const {
