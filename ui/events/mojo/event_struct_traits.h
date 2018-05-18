@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
 #define UI_EVENTS_MOJO_EVENT_STRUCT_TRAITS_H_
 
+#include "mojo/public/cpp/bindings/type_converter.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/mojo/event.mojom.h"
 #include "ui/events/mojo/event_constants.mojom.h"
@@ -17,6 +18,16 @@ class LatencyInfo;
 namespace mojo {
 
 using EventUniquePtr = std::unique_ptr<ui::Event>;
+
+template <>
+struct TypeConverter<ui::mojom::EventType, ui::EventType> {
+  static ui::mojom::EventType Convert(ui::EventType type);
+};
+
+template <>
+struct TypeConverter<ui::EventType, ui::mojom::EventType> {
+  static ui::EventType Convert(ui::mojom::EventType type);
+};
 
 template <>
 struct StructTraits<ui::mojom::EventDataView, EventUniquePtr> {

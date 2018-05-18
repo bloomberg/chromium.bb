@@ -4,6 +4,8 @@
 
 #include "services/ui/ws/event_matcher.h"
 
+#include "ui/events/mojo/event_struct_traits.h"
+
 namespace ui {
 namespace ws {
 
@@ -16,31 +18,7 @@ EventMatcher::EventMatcher(const mojom::EventMatcher& matcher)
       pointer_type_(ui::EventPointerType::POINTER_TYPE_UNKNOWN) {
   if (matcher.type_matcher) {
     fields_to_match_ |= TYPE;
-    switch (matcher.type_matcher->type) {
-      case ui::mojom::EventType::POINTER_DOWN:
-        event_type_ = ui::ET_POINTER_DOWN;
-        break;
-      case ui::mojom::EventType::POINTER_MOVE:
-        event_type_ = ui::ET_POINTER_MOVED;
-        break;
-      case ui::mojom::EventType::MOUSE_EXIT:
-        event_type_ = ui::ET_POINTER_EXITED;
-        break;
-      case ui::mojom::EventType::POINTER_UP:
-        event_type_ = ui::ET_POINTER_UP;
-        break;
-      case ui::mojom::EventType::POINTER_CANCEL:
-        event_type_ = ui::ET_POINTER_CANCELLED;
-        break;
-      case ui::mojom::EventType::KEY_PRESSED:
-        event_type_ = ui::ET_KEY_PRESSED;
-        break;
-      case ui::mojom::EventType::KEY_RELEASED:
-        event_type_ = ui::ET_KEY_RELEASED;
-        break;
-      default:
-        NOTREACHED();
-    }
+    event_type_ = mojo::ConvertTo<ui::EventType>(matcher.type_matcher->type);
   }
   if (matcher.flags_matcher) {
     fields_to_match_ |= FLAGS;
