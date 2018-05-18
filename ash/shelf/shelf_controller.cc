@@ -17,6 +17,7 @@
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/auto_reset.h"
 #include "base/strings/utf_string_conversions.h"
@@ -233,7 +234,7 @@ void ShelfController::UpdateShelfItem(const ShelfItem& item) {
   base::AutoReset<bool> reset(&applying_remote_shelf_model_changes_, true);
 
   // Keep any existing image if the item was sent without one for efficiency.
-  ash::ShelfItem new_item = item;
+  ShelfItem new_item = item;
   if (item.image.isNull())
     new_item.image = model_.items()[index].image;
   model_.Set(index, new_item);
@@ -397,7 +398,7 @@ void ShelfController::OnNotificationAdded(const std::string& notification_id) {
   }
 
   // Skip this if the notification doesn't have a valid app id.
-  if (notification->notifier_id().id == ash::kDefaultArcNotifierId)
+  if (notification->notifier_id().id == kDefaultArcNotifierId)
     return;
 
   model_.AddNotificationRecord(notification->notifier_id().id, notification_id);
