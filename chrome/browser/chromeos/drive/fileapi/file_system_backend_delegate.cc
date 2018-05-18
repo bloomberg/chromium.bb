@@ -36,7 +36,7 @@ void GetRedirectURLForContentsOnUIThreadWithResourceEntry(
   GURL url;
   if (error == FILE_ERROR_OK && entry->has_file_specific_info() &&
       entry->file_specific_info().is_hosted_document()) {
-    url = GURL(entry->file_specific_info().alternate_url());
+    url = GURL(entry->alternate_url());
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(callback, url));

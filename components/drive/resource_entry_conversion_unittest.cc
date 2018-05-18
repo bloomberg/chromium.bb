@@ -71,12 +71,11 @@ TEST(ResourceEntryConversionTest, ConvertToResourceEntry_File) {
   EXPECT_EQ(0, entry.file_info().last_accessed());
   EXPECT_EQ(file_resource.created_date().ToInternalValue(),
             entry.file_info().creation_time());
+  EXPECT_EQ(file_resource.alternate_link().spec(), entry.alternate_url());
 
   EXPECT_EQ(file_resource.mime_type(),
             entry.file_specific_info().content_mime_type());
   EXPECT_FALSE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ(file_resource.alternate_link().spec(),
-            entry.file_specific_info().alternate_url());
 
   // Regular file specific fields.
   EXPECT_EQ(file_resource.file_size(), entry.file_info().size());
@@ -125,12 +124,11 @@ TEST(ResourceEntryConversionTest,
             entry.file_info().last_accessed());
   EXPECT_EQ(file_resource.created_date().ToInternalValue(),
             entry.file_info().creation_time());
+  EXPECT_EQ(file_resource.alternate_link().spec(), entry.alternate_url());
 
   EXPECT_EQ(file_resource.mime_type(),
             entry.file_specific_info().content_mime_type());
   EXPECT_TRUE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ(file_resource.alternate_link().spec(),
-            entry.file_specific_info().alternate_url());
 
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0, entry.file_info().size());
@@ -163,6 +161,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ(file_resource.title(), entry.title());
   EXPECT_EQ(file_resource.title(), entry.base_name());
   EXPECT_EQ(file_resource.file_id(), entry.resource_id());
+  EXPECT_EQ(file_resource.alternate_link().spec(), entry.alternate_url());
   // The parent resource ID should be obtained as this is a sub directory
   // under a non-root directory.
   EXPECT_EQ(parent.file_id(), parent_resource_id);
@@ -208,6 +207,7 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ(file_resource.title(), entry.title());
   EXPECT_EQ(file_resource.title() + ".gdoc", entry.base_name());
   EXPECT_EQ(file_resource.file_id(), entry.resource_id());
+  EXPECT_EQ(file_resource.alternate_link().spec(), entry.alternate_url());
   EXPECT_EQ("", parent_resource_id);
 
   EXPECT_TRUE(entry.deleted());  // The document was deleted.
@@ -227,8 +227,6 @@ TEST(ResourceEntryConversionTest,
   EXPECT_EQ(file_resource.mime_type(),
             entry.file_specific_info().content_mime_type());
   EXPECT_TRUE(entry.file_specific_info().is_hosted_document());
-  EXPECT_EQ(file_resource.alternate_link().spec(),
-            entry.file_specific_info().alternate_url());
 
   // The size should be 0 for a hosted document.
   EXPECT_EQ(0, entry.file_info().size());

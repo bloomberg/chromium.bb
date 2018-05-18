@@ -138,6 +138,7 @@ std::string FormatEntry(const base::FilePath& path,
   StringAppendF(&out, "  shared: %s\n", entry.shared() ? "true" : "false");
   StringAppendF(&out, "  shared_with_me: %s\n",
                 entry.shared_with_me() ? "true" : "false");
+  StringAppendF(&out, "  alternate_url: %s\n", entry.alternate_url().c_str());
 
   const drive::PlatformFileInfoProto& file_info = entry.file_info();
   StringAppendF(&out, "  file_info\n");
@@ -167,8 +168,6 @@ std::string FormatEntry(const base::FilePath& path,
   if (entry.has_file_specific_info()) {
     const drive::FileSpecificInfo& file_specific_info =
         entry.file_specific_info();
-    StringAppendF(&out, "    alternate_url: %s\n",
-                  file_specific_info.alternate_url().c_str());
     StringAppendF(&out, "    content_mime_type: %s\n",
                   file_specific_info.content_mime_type().c_str());
     StringAppendF(&out, "    file_md5: %s\n",

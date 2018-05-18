@@ -40,9 +40,7 @@ message Property {
 message FileSpecificInfo {
   // The argument with ID 1 (thumbnail_url) had been used, but got deleted.
 
-  // This URL is used for opening hosted documents with Google Drive's web
-  // interface.
-  optional string alternate_url = 2;
+  // The argument with ID 2 (alternate_url) had been used, but got deleted.
 
   // Content mime type like "text/plain".
   optional string content_mime_type = 3;
@@ -159,6 +157,10 @@ message ResourceEntry {
   // PlatformFileInfoProto, just because this field does not have a
   // corresponding field in base::File::Info.
   optional int64 last_modified_by_me = 21;
+
+  // This URL is used for opening hosted documents with Google Drive's web
+  // interface.
+  optional string alternate_url = 22;
 }
 
 // Container for the header part of ResourceMetadata.
