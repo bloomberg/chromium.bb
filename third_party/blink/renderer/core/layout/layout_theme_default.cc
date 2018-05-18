@@ -28,11 +28,11 @@
 #include "third_party/blink/public/platform/web_theme_engine.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
-#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -317,7 +317,7 @@ int LayoutThemeDefault::PopupInternalPaddingStart(
 }
 
 int LayoutThemeDefault::PopupInternalPaddingEnd(
-    const PlatformChromeClient* client,
+    const ChromeClient* client,
     const ComputedStyle& style) const {
   if (style.Appearance() == kNoControlPart)
     return 0;
@@ -344,7 +344,7 @@ int LayoutThemeDefault::MenuListArrowWidthInDIP() const {
 }
 
 float LayoutThemeDefault::ClampedMenuListArrowPaddingSize(
-    const PlatformChromeClient* client,
+    const ChromeClient* client,
     const ComputedStyle& style) const {
   if (cached_menu_list_arrow_padding_size_ > 0 &&
       style.EffectiveZoom() == cached_menu_list_arrow_zoom_level_)

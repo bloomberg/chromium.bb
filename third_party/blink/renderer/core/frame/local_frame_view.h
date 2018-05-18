@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/root_frame_viewport.h"
 #include "third_party/blink/renderer/core/layout/map_coordinates_flags.h"
 #include "third_party/blink/renderer/core/layout/scroll_anchor.h"
+#include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/core/paint/object_paint_properties.h"
@@ -53,7 +54,6 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_element_id.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
-#include "third_party/blink/renderer/platform/platform_frame_view.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar.h"
@@ -105,7 +105,6 @@ typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollectedFinalized<LocalFrameView>,
-      public PlatformFrameView,
       public FrameView,
       public PaintInvalidationCapableScrollableArea {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
@@ -510,7 +509,7 @@ class CORE_EXPORT LocalFrameView final
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
   // coordinate space.
-  PlatformChromeClient* GetChromeClient() const override;
+  ChromeClient* GetChromeClient() const override;
 
   SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
 
@@ -1379,11 +1378,6 @@ inline void LocalFrameView::IncrementVisuallyNonEmptyPixelCount(
     SetIsVisuallyNonEmpty();
 }
 
-DEFINE_TYPE_CASTS(LocalFrameView,
-                  PlatformFrameView,
-                  platform_frame_view,
-                  platform_frame_view->IsLocalFrameView(),
-                  platform_frame_view.IsLocalFrameView());
 DEFINE_TYPE_CASTS(LocalFrameView,
                   EmbeddedContentView,
                   embedded_content_view,

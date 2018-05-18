@@ -394,10 +394,8 @@ void ChromeClientImpl::InvalidateRect(const IntRect& update_rect) {
     web_view_->InvalidateRect(update_rect);
 }
 
-void ChromeClientImpl::ScheduleAnimation(
-    const PlatformFrameView* platform_frame_view) {
-  DCHECK(platform_frame_view->IsLocalFrameView());
-  LocalFrame& frame = ToLocalFrameView(platform_frame_view)->GetFrame();
+void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view) {
+  LocalFrame& frame = frame_view->GetFrame();
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
   DCHECK(web_frame);
   // If the frame is still being created, it might not yet have a WebWidget.
@@ -412,10 +410,10 @@ void ChromeClientImpl::ScheduleAnimation(
 
 IntRect ChromeClientImpl::ViewportToScreen(
     const IntRect& rect_in_viewport,
-    const PlatformFrameView* platform_frame_view) const {
+    const LocalFrameView* frame_view) const {
   WebRect screen_rect(rect_in_viewport);
 
-  LocalFrame& frame = ToLocalFrameView(platform_frame_view)->GetFrame();
+  LocalFrame& frame = frame_view->GetFrame();
 
   WebWidgetClient* client =
       WebLocalFrameImpl::FromFrame(&frame)->LocalRootFrameWidget()->Client();

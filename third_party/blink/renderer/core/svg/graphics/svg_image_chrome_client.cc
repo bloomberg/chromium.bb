@@ -91,7 +91,7 @@ void SVGImageChromeClient::ResumeAnimation() {
   ScheduleAnimation(nullptr);
 }
 
-void SVGImageChromeClient::ScheduleAnimation(const PlatformFrameView*) {
+void SVGImageChromeClient::ScheduleAnimation(const LocalFrameView*) {
   // Because a single SVGImage can be shared by multiple pages, we can't key
   // our svg image layout on the page's real animation frame. Therefore, we
   // run this fake animation timer to trigger layout in SVGImages. The name,

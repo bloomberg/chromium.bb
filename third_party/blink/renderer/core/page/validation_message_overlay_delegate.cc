@@ -39,7 +39,7 @@ class ValidationMessageChromeClient : public EmptyChromeClient {
 
   void InvalidateRect(const IntRect&) override { overlay_.Update(); }
 
-  void ScheduleAnimation(const PlatformFrameView* frame_view) override {
+  void ScheduleAnimation(const LocalFrameView*) override {
     // Need to pass LocalFrameView for the anchor element because the Frame for
     // this overlay doesn't have an associated WebFrameWidget, which schedules
     // animation.

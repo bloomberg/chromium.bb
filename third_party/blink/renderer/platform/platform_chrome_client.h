@@ -28,13 +28,10 @@
 
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/platform_frame_view.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 namespace blink {
-
-class IntRect;
 
 class PLATFORM_EXPORT PlatformChromeClient
     : public GarbageCollectedFinalized<PlatformChromeClient> {
@@ -45,18 +42,9 @@ class PLATFORM_EXPORT PlatformChromeClient
   virtual ~PlatformChromeClient() = default;
   virtual void Trace(blink::Visitor* visitor) {}
 
-  // Requests the host invalidate the contents.
-  virtual void InvalidateRect(const IntRect& update_rect) = 0;
-
-  // Converts the rect from the viewport coordinates to screen coordinates.
-  virtual IntRect ViewportToScreen(const IntRect&,
-                                   const PlatformFrameView*) const = 0;
-
   // Converts the scalar value from the window coordinates to the viewport
   // scale.
   virtual float WindowToViewportScalar(const float) const = 0;
-
-  virtual void ScheduleAnimation(const PlatformFrameView*) = 0;
 
   virtual bool IsPopup() { return false; }
 };

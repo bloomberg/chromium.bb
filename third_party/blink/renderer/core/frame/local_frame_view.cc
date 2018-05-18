@@ -122,7 +122,6 @@
 #include "third_party/blink/renderer/platform/json/json_values.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
-#include "third_party/blink/renderer/platform/platform_chrome_client.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_alignment.h"
@@ -2182,7 +2181,7 @@ void LocalFrameView::SetNeedsCompositingUpdate(
   }
 }
 
-PlatformChromeClient* LocalFrameView::GetChromeClient() const {
+ChromeClient* LocalFrameView::GetChromeClient() const {
   Page* page = GetFrame().GetPage();
   if (!page)
     return nullptr;
@@ -2823,7 +2822,7 @@ void LocalFrameView::ScrollbarStyleChanged() {
 }
 
 bool LocalFrameView::ScheduleAnimation() {
-  if (PlatformChromeClient* client = GetChromeClient()) {
+  if (ChromeClient* client = GetChromeClient()) {
     client->ScheduleAnimation(this);
     return true;
   }
@@ -4857,7 +4856,7 @@ void LocalFrameView::ScrollContentsIfNeeded() {
 }
 
 void LocalFrameView::ScrollContents(const IntSize& scroll_delta) {
-  PlatformChromeClient* client = GetChromeClient();
+  ChromeClient* client = GetChromeClient();
   if (!client)
     return;
 
@@ -4998,7 +4997,7 @@ IntPoint LocalFrameView::ContentsToViewport(
 }
 
 IntRect LocalFrameView::ContentsToScreen(const IntRect& rect) const {
-  PlatformChromeClient* client = GetChromeClient();
+  ChromeClient* client = GetChromeClient();
   if (!client)
     return IntRect();
   return client->ViewportToScreen(ContentsToViewport(rect), this);

@@ -28,16 +28,7 @@ class MockPlatformChromeClient : public PlatformChromeClient {
 
   void SetIsPopup(bool is_popup) { is_popup_ = is_popup; }
 
-  void InvalidateRect(const IntRect&) override {}
-
-  IntRect ViewportToScreen(const IntRect&,
-                           const PlatformFrameView*) const override {
-    return IntRect();
-  }
-
   float WindowToViewportScalar(const float) const override { return 0; }
-
-  void ScheduleAnimation(const PlatformFrameView*) override {}
 
  private:
   bool is_popup_;
