@@ -1874,6 +1874,7 @@ jumbo_source_set("unit_tests") {
     "html/parser/html_tree_builder_simulator_test.cc",
     "html/parser/html_view_source_parser_test.cc",
     "html/parser/text_resource_decoder_test.cc",
+    "html/shadow/progress_shadow_element_test.cc",
     "html/time_ranges_test.cc",
     "html/track/text_track_list_test.cc",
     "html/track/vtt/buffered_line_reader_test.cc",

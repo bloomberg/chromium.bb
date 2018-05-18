@@ -30,9 +30,9 @@
 
 #include "third_party/blink/renderer/core/html/shadow/progress_shadow_element.h"
 
+#include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/html/html_progress_element.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/layout/layout_object.h"
 
 namespace blink {
 
@@ -49,9 +49,8 @@ HTMLProgressElement* ProgressShadowElement::ProgressElement() const {
 
 bool ProgressShadowElement::LayoutObjectIsNeeded(
     const ComputedStyle& style) const {
-  LayoutObject* progress_layout_object = ProgressElement()->GetLayoutObject();
-  return progress_layout_object &&
-         !progress_layout_object->Style()->HasAppearance() &&
+  const ComputedStyle* progress_style = ProgressElement()->GetComputedStyle();
+  return progress_style && !progress_style->HasAppearance() &&
          HTMLDivElement::LayoutObjectIsNeeded(style);
 }
 
