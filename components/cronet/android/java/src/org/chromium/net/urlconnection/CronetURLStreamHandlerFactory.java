@@ -4,8 +4,7 @@
 
 package org.chromium.net.urlconnection;
 
-import org.chromium.net.CronetEngine;
-import org.chromium.net.impl.CronetEngineBase;
+import org.chromium.net.ExperimentalCronetEngine;
 
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
@@ -41,7 +40,7 @@ import java.net.URLStreamHandlerFactory;
  * {@hide}
  */
 public class CronetURLStreamHandlerFactory implements URLStreamHandlerFactory {
-    private final CronetEngineBase mCronetEngine;
+    private final ExperimentalCronetEngine mCronetEngine;
 
     /**
      * Creates a {@link CronetURLStreamHandlerFactory} to handle HTTP and HTTPS
@@ -49,7 +48,7 @@ public class CronetURLStreamHandlerFactory implements URLStreamHandlerFactory {
      * @param cronetEngine the {@link CronetEngine} to be used.
      * @throws NullPointerException if config is null.
      */
-    public CronetURLStreamHandlerFactory(CronetEngineBase cronetEngine) {
+    public CronetURLStreamHandlerFactory(ExperimentalCronetEngine cronetEngine) {
         if (cronetEngine == null) {
             throw new NullPointerException("CronetEngine is null.");
         }
