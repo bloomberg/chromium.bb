@@ -91,8 +91,7 @@ class SubresourceFilterBrowserTest : public InProcessBrowserTest {
   void ResetConfiguration(Configuration config);
 
   void ResetConfigurationToEnableOnPhishingSites(
-      bool measure_performance = false,
-      bool whitelist_site_on_reload = false);
+      bool measure_performance = false);
 
   TestSafeBrowsingDatabaseHelper* database_helper() {
     return database_helper_.get();

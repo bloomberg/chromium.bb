@@ -8,8 +8,6 @@
 #include "components/subresource_filter/content/browser/verified_ruleset_dealer.h"
 #include "content/public/browser/web_contents.h"
 
-class GURL;
-
 namespace content {
 class NavigationHandle;
 }  // namespace content
@@ -37,9 +35,6 @@ class SubresourceFilterClient {
       content::NavigationHandle* navigation_handle,
       bool activated,
       bool suppressing_notifications) = 0;
-
-  // Adds |url| to a per-WebContents whitelist.
-  virtual void WhitelistInCurrentWebContents(const GURL& url) = 0;
 
   virtual VerifiedRulesetDealer::Handle* GetRulesetDealer() = 0;
 

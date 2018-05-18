@@ -42,10 +42,6 @@ class SubresourceFilterSafeBrowsingActivationThrottle
 
   ~SubresourceFilterSafeBrowsingActivationThrottle() override;
 
-  // Returns whether the navigation handle is a page reload, based on the
-  // transition type and referrer.
-  static bool NavigationIsPageReload(content::NavigationHandle* handle);
-
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
       override;

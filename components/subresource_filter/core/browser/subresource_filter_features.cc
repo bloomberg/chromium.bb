@@ -173,10 +173,6 @@ Configuration ParseExperimentalConfiguration(
       ParseBool(TakeVariationParamOrReturnEmpty(
           params, kSuppressNotificationsParameterName));
 
-  configuration.activation_options.should_whitelist_site_on_reload =
-      ParseBool(TakeVariationParamOrReturnEmpty(
-          params, kWhitelistSiteOnReloadParameterName));
-
   // GeneralSettings:
   configuration.general_settings.ruleset_flavor =
       TakeVariationParamOrReturnEmpty(params, kRulesetFlavorParameterName);
@@ -266,7 +262,6 @@ const char kActivationPriorityParameterName[] = "activation_priority";
 const char kPerformanceMeasurementRateParameterName[] =
     "performance_measurement_rate";
 const char kSuppressNotificationsParameterName[] = "suppress_notifications";
-const char kWhitelistSiteOnReloadParameterName[] = "whitelist_site_on_reload";
 const char kRulesetFlavorParameterName[] = "ruleset_flavor";
 
 const char kEnablePresetsParameterName[] = "enable_presets";
@@ -337,7 +332,6 @@ bool Configuration::operator==(const Configuration& rhs) const {
                     config.activation_conditions.forced_activation,
                     config.activation_options.activation_level,
                     config.activation_options.performance_measurement_rate,
-                    config.activation_options.should_whitelist_site_on_reload,
                     config.activation_options.should_suppress_notifications,
                     config.general_settings.ruleset_flavor);
   };
@@ -369,8 +363,6 @@ std::unique_ptr<base::trace_event::TracedValue> Configuration::ToTracedValue()
                    activation_options.performance_measurement_rate);
   value->SetBoolean("should_suppress_notifications",
                     activation_options.should_suppress_notifications);
-  value->SetBoolean("should_whitelist_site_on_reload",
-                    activation_options.should_whitelist_site_on_reload);
   value->SetString("ruleset_flavor",
                    StreamToString(general_settings.ruleset_flavor));
   return value;

@@ -144,6 +144,12 @@ bool ChromeSubresourceFilterClient::OnPageActivationComputed(
   // edge cases like |should_suppress_notification| and DRYRUN activation.
 }
 
+void ChromeSubresourceFilterClient::WhitelistInCurrentWebContents(
+    const GURL& url) {
+  if (url.SchemeIsHTTPOrHTTPS())
+    whitelisted_hosts_.insert(url.host());
+}
+
 void ChromeSubresourceFilterClient::WhitelistByContentSettings(
     const GURL& top_level_url) {
   settings_manager_->WhitelistSite(top_level_url);
@@ -151,12 +157,6 @@ void ChromeSubresourceFilterClient::WhitelistByContentSettings(
 
 bool ChromeSubresourceFilterClient::ForceActivationInCurrentWebContents() {
   return activated_via_devtools_;
-}
-
-void ChromeSubresourceFilterClient::WhitelistInCurrentWebContents(
-    const GURL& url) {
-  if (url.SchemeIsHTTPOrHTTPS())
-    whitelisted_hosts_.insert(url.host());
 }
 
 void ChromeSubresourceFilterClient::ToggleForceActivationInCurrentWebContents(

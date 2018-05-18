@@ -121,14 +121,6 @@ SubresourceFilterSafeBrowsingActivationThrottle::
   }
 }
 
-bool SubresourceFilterSafeBrowsingActivationThrottle::NavigationIsPageReload(
-    content::NavigationHandle* handle) {
-  return ui::PageTransitionCoreTypeIs(handle->GetPageTransition(),
-                                      ui::PAGE_TRANSITION_RELOAD) ||
-         // Some pages 'reload' from JavaScript by navigating to themselves.
-         handle->GetURL() == handle->GetReferrer().url;
-}
-
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillRedirectRequest() {
   CheckCurrentUrl();
@@ -191,16 +183,6 @@ void SubresourceFilterSafeBrowsingActivationThrottle::CheckCurrentUrl() {
 void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult");
-  auto* driver_factory = ContentSubresourceFilterDriverFactory::FromWebContents(
-      navigation_handle()->GetWebContents());
-  DCHECK(driver_factory);
-  if (driver_factory->GetMatchedConfigurationForLastCommittedPageLoad()
-          .activation_options.should_whitelist_site_on_reload &&
-      NavigationIsPageReload(navigation_handle())) {
-    // Whitelist this host for the current as well as subsequent navigations.
-    client_->WhitelistInCurrentWebContents(navigation_handle()->GetURL());
-  }
-
   // Compute the matched list and notify observers of the check result.
   DCHECK(!database_client_ || !check_results_.empty());
   ActivationList matched_list = ActivationList::NONE;
@@ -253,6 +235,10 @@ void SubresourceFilterSafeBrowsingActivationThrottle::NotifyResult() {
   LogActivationDecision(
       navigation_handle(), activation_decision,
       matched_configuration.activation_options.activation_level);
+
+  auto* driver_factory = ContentSubresourceFilterDriverFactory::FromWebContents(
+      navigation_handle()->GetWebContents());
+  DCHECK(driver_factory);
   driver_factory->NotifyPageActivationComputed(
       navigation_handle(), activation_decision, matched_configuration, warning);
 

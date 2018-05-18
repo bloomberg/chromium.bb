@@ -229,13 +229,10 @@ void SubresourceFilterBrowserTest::ResetConfiguration(Configuration config) {
 }
 
 void SubresourceFilterBrowserTest::ResetConfigurationToEnableOnPhishingSites(
-    bool measure_performance,
-    bool whitelist_site_on_reload) {
+    bool measure_performance) {
   Configuration config = Configuration::MakePresetForLiveRunOnPhishingSites();
   config.activation_options.performance_measurement_rate =
       measure_performance ? 1.0 : 0.0;
-  config.activation_options.should_whitelist_site_on_reload =
-      whitelist_site_on_reload;
   ResetConfiguration(std::move(config));
 }
 

@@ -880,8 +880,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ExpectPerformanceHistogramsAreRecorded) {
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-  ResetConfigurationToEnableOnPhishingSites(
-      true /* measure_performance */, false /* whitelist_site_on_reload */);
+  ResetConfigurationToEnableOnPhishingSites(true /* measure_performance */);
   const GURL url = GetTestUrl(kTestFrameSetPath);
   ConfigureAsPhishingURL(url);
 
@@ -899,8 +898,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   scoped_tagging.InitAndDisableFeature(kAdTagging);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
-  ResetConfigurationToEnableOnPhishingSites(
-      true /* measure_performance */, false /* whitelist_site_on_reload */);
+  ResetConfigurationToEnableOnPhishingSites(true /* measure_performance */);
 
   const GURL url = GetTestUrl(kTestFrameSetPath);
   // Note: The |url| is not configured to be fishing.
@@ -941,7 +939,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       ActivationEnabledOnReloadByDefault) {
+                       ActivationEnabledOnReload) {
   GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
   ConfigureAsPhishingURL(url);
   ASSERT_NO_FATAL_FAILURE(
@@ -961,93 +959,6 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   tester.ExpectTotalCount(kActivationDecision, 2);
   tester.ExpectBucketCount(kActivationDecision,
                            static_cast<int>(ActivationDecision::ACTIVATED), 2);
-}
-
-IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
-                       WhitelistSiteOnReload_ActivationDisabledOnReload) {
-  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
-  ConfigureAsPhishingURL(url);
-  ASSERT_NO_FATAL_FAILURE(
-      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-  ResetConfigurationToEnableOnPhishingSites(
-      false /* measure_performance */, true /* whitelist_site_on_reload */);
-  base::HistogramTester tester;
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-
-  content::TestNavigationObserver observer(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      content::MessageLoopRunner::QuitMode::DEFERRED);
-  chrome::Reload(browser(), WindowOpenDisposition::CURRENT_TAB);
-  observer.Wait();
-  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-
-  tester.ExpectTotalCount(kActivationDecision, 2);
-  tester.ExpectBucketCount(kActivationDecision,
-                           static_cast<int>(ActivationDecision::ACTIVATED), 1);
-  tester.ExpectBucketCount(
-      kActivationDecision,
-      static_cast<int>(ActivationDecision::URL_WHITELISTED), 1);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    SubresourceFilterBrowserTest,
-    WhitelistSiteOnReload_ActivationDisabledOnReloadFromScript) {
-  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
-  ConfigureAsPhishingURL(url);
-  ASSERT_NO_FATAL_FAILURE(
-      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-  ResetConfigurationToEnableOnPhishingSites(
-      false /* measure_performance */, true /* whitelist_site_on_reload */);
-  base::HistogramTester tester;
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-
-  content::TestNavigationObserver observer(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      content::MessageLoopRunner::QuitMode::DEFERRED);
-  ASSERT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      "location.reload();"));
-  observer.Wait();
-  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-
-  tester.ExpectTotalCount(kActivationDecision, 2);
-  tester.ExpectBucketCount(kActivationDecision,
-                           static_cast<int>(ActivationDecision::ACTIVATED), 1);
-  tester.ExpectBucketCount(
-      kActivationDecision,
-      static_cast<int>(ActivationDecision::URL_WHITELISTED), 1);
-}
-
-IN_PROC_BROWSER_TEST_F(
-    SubresourceFilterBrowserTest,
-    WhitelistSiteOnReload_ActivationDisabledOnNavigationToSameURL) {
-  GURL url(GetTestUrl("subresource_filter/frame_with_included_script.html"));
-  ConfigureAsPhishingURL(url);
-  ASSERT_NO_FATAL_FAILURE(
-      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
-  ResetConfigurationToEnableOnPhishingSites(
-      false /* measure_performance */, true /* whitelist_site_on_reload */);
-  base::HistogramTester tester;
-  ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_FALSE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-
-  content::TestNavigationObserver observer(
-      browser()->tab_strip_model()->GetActiveWebContents(),
-      content::MessageLoopRunner::QuitMode::DEFERRED);
-  std::string nav_frame_script = "location.href = '" + url.spec() + "';";
-  ASSERT_TRUE(content::ExecuteScript(
-      browser()->tab_strip_model()->GetActiveWebContents(), nav_frame_script));
-  observer.Wait();
-  EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
-
-  tester.ExpectTotalCount(kActivationDecision, 2);
-  tester.ExpectBucketCount(kActivationDecision,
-                           static_cast<int>(ActivationDecision::ACTIVATED), 1);
-  tester.ExpectBucketCount(
-      kActivationDecision,
-      static_cast<int>(ActivationDecision::URL_WHITELISTED), 1);
 }
 
 }  // namespace subresource_filter
