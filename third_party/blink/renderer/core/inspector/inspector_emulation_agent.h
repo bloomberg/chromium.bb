@@ -47,7 +47,6 @@ class CORE_EXPORT InspectorEmulationAgent final
       protocol::Maybe<int> max_virtual_time_task_starvation_count,
       protocol::Maybe<bool> wait_for_navigation,
       protocol::Maybe<double> initial_virtual_time,
-      double* virtual_time_base_ms,
       double* virtual_time_ticks_base_ms) override;
   protocol::Response setNavigatorOverrides(const String& platform) override;
   protocol::Response setDefaultBackgroundColorOverride(

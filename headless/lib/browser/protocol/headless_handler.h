@@ -33,10 +33,7 @@ class HeadlessHandler : public DomainHandler,
   // Headless::Backend implementation
   Response Enable() override;
   Response Disable() override;
-  void BeginFrame(Maybe<double> in_frame_time,
-                  Maybe<double> in_frame_time_ticks,
-                  Maybe<double> in_deadline,
-                  Maybe<double> in_deadline_ticks,
+  void BeginFrame(Maybe<double> in_frame_time_ticks,
                   Maybe<double> in_interval,
                   Maybe<bool> no_display_updates,
                   Maybe<HeadlessExperimental::ScreenshotParams> screenshot,
