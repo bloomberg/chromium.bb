@@ -5,7 +5,6 @@
 #include "cc/layers/nine_patch_layer.h"
 
 #include "cc/animation/animation_host.h"
-#include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"

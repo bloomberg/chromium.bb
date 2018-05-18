@@ -11,8 +11,9 @@
 namespace cc {
 
 // Transfer resources to the parent and return the child to parent map.
-const ResourceProvider::ResourceIdMap& SendResourceAndGetChildToParentMap(
-    const ResourceProvider::ResourceIdArray& resource_ids,
+const std::unordered_map<viz::ResourceId, viz::ResourceId>&
+SendResourceAndGetChildToParentMap(
+    const std::vector<viz::ResourceId>& resource_ids,
     DisplayResourceProvider* resource_provider,
     LayerTreeResourceProvider* child_resource_provider,
     viz::ContextProvider* child_context_provider);

@@ -534,7 +534,7 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer some resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id1);
   resource_ids_to_transfer.push_back(id2);
 
@@ -543,7 +543,7 @@ TEST_P(ResourceProviderTest, OverlayPromotionHint) {
                                                 child_context_provider_.get());
   ASSERT_EQ(2u, list.size());
   resource_provider_->ReceiveFromChild(child_id, list);
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
   viz::ResourceId mapped_id1 = resource_map[list[0].id];
   viz::ResourceId mapped_id2 = resource_map[list[1].id];
@@ -626,7 +626,7 @@ TEST_P(ResourceProviderTest, TransferGLResources_NoSyncToken) {
   resource_provider_->SetChildNeedsSyncTokens(child_id, false);
   {
     // Transfer some resources to the parent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    std::vector<viz::ResourceId> resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id);
     std::vector<viz::TransferableResource> list;
     no_token_resource_provider->PrepareSendToParent(
@@ -678,7 +678,7 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
   int release_count = 0;
 
   // Transfer some resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   viz::ResourceId ids[2];
   for (size_t i = 0; i < arraysize(ids); i++) {
     ids[i] = CreateChildGpuMailboxWithCallback(
@@ -696,7 +696,7 @@ TEST_P(ResourceProviderTest, SetBatchPreventsReturn) {
   resource_provider_->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
   std::vector<std::unique_ptr<DisplayResourceProvider::ScopedReadLockGL>>
@@ -744,7 +744,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer some resources to the parent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    std::vector<viz::ResourceId> resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(id1);
 
     std::vector<viz::TransferableResource> list;
@@ -756,7 +756,7 @@ TEST_P(ResourceProviderTest, ReadLockCountStopsReturnToChildOrDelete) {
     resource_provider_->ReceiveFromChild(child_id, list);
 
     // In DisplayResourceProvider's namespace, use the mapped resource id.
-    ResourceProvider::ResourceIdMap resource_map =
+    std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
         resource_provider_->GetChildToParentMap(child_id);
     viz::ResourceId mapped_resource_id = resource_map[list[0].id];
     resource_provider_->WaitSyncToken(mapped_resource_id);
@@ -808,7 +808,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer some resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id1);
 
   std::vector<viz::TransferableResource> list;
@@ -821,7 +821,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceStopsReturnToChildOrDelete) {
   resource_provider_->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
   scoped_refptr<TestFence> fence(new TestFence);
@@ -867,7 +867,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id1);
   resource_ids_to_transfer.push_back(id2);
 
@@ -881,7 +881,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceDestroyChild) {
   resource_provider_->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
   scoped_refptr<TestFence> fence(new TestFence);
@@ -926,7 +926,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
 
   // Transfer resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(id1);
   resource_ids_to_transfer.push_back(id2);
 
@@ -940,7 +940,7 @@ TEST_P(ResourceProviderTest, ReadLockFenceContextLost) {
   resource_provider_->ReceiveFromChild(child_id, list);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider_->GetChildToParentMap(child_id);
 
   scoped_refptr<TestFence> fence(new TestFence);
@@ -996,7 +996,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   EXPECT_FALSE(release_sync_token.HasData());
   {
     // Transfer the resource, expect the sync points to be consistent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    std::vector<viz::ResourceId> resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
     std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(
@@ -1048,7 +1048,7 @@ TEST_P(ResourceProviderTest, TransferMailboxResources) {
   EXPECT_FALSE(release_sync_token.HasData());
   {
     // Transfer the resource, expect the sync points to be consistent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    std::vector<viz::ResourceId> resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
     std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(
@@ -1108,7 +1108,7 @@ TEST_P(ResourceProviderTest, LostMailboxInParent) {
       resource_provider_->CreateChild(GetReturnCallback(&returned_to_child));
   {
     // Transfer the resource to the parent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    std::vector<viz::ResourceId> resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource);
     std::vector<viz::TransferableResource> list;
     child_resource_provider_->PrepareSendToParent(
@@ -1255,7 +1255,7 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
   EXPECT_NE(0u, resource_id);
 
   // Transfer resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
 
   std::vector<viz::TransferableResource> send_to_parent;
@@ -1267,7 +1267,7 @@ TEST_P(ResourceProviderTest, ImportedResource_SharedMemory) {
   resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
   // In DisplayResourceProvider's namespace, use the mapped resource id.
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider->GetChildToParentMap(child_id);
   viz::ResourceId mapped_resource_id = resource_map[resource_id];
 
@@ -1349,7 +1349,7 @@ class ResourceProviderTestImportedResourceGLFilters
     Mock::VerifyAndClearExpectations(child_context);
 
     // Transfer resources to the parent.
-    ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+    std::vector<viz::ResourceId> resource_ids_to_transfer;
     resource_ids_to_transfer.push_back(resource_id);
 
     std::vector<viz::TransferableResource> send_to_parent;
@@ -1362,7 +1362,7 @@ class ResourceProviderTestImportedResourceGLFilters
     resource_provider->ReceiveFromChild(child_id, send_to_parent);
 
     // In DisplayResourceProvider's namespace, use the mapped resource id.
-    ResourceProvider::ResourceIdMap resource_map =
+    std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
         resource_provider->GetChildToParentMap(child_id);
     viz::ResourceId mapped_resource_id = resource_map[resource_id];
     {
@@ -1503,7 +1503,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
   Mock::VerifyAndClearExpectations(child_context);
 
   // Transfer resources to the parent.
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<viz::ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_id);
 
   std::vector<viz::TransferableResource> send_to_parent;
@@ -1516,7 +1516,7 @@ TEST_P(ResourceProviderTest, ImportedResource_GLTextureExternalOES) {
 
   // Before create DrawQuad in DisplayResourceProvider's namespace, get the
   // mapped resource id first.
-  ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<viz::ResourceId, viz::ResourceId> resource_map =
       resource_provider->GetChildToParentMap(child_id);
   viz::ResourceId mapped_resource_id = resource_map[resource_id];
   {
@@ -1730,7 +1730,7 @@ TEST_P(ResourceProviderTest, ImportedResource_PrepareSendToParent_NoSyncToken) {
   EXPECT_NE(0u, id);
   Mock::VerifyAndClearExpectations(context);
 
-  ResourceProvider::ResourceIdArray resource_ids_to_transfer{id};
+  std::vector<viz::ResourceId> resource_ids_to_transfer{id};
   std::vector<viz::TransferableResource> list;
   resource_provider->PrepareSendToParent(resource_ids_to_transfer, &list,
                                          context_provider.get());

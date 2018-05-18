@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "cc/resources/layer_tree_resource_provider.h"
-#include "cc/resources/resource_provider.h"
 #include "cc/test/fake_output_surface_client.h"
 #include "cc/test/fake_picture_layer_tiling_client.h"
 #include "cc/test/fake_raster_source.h"

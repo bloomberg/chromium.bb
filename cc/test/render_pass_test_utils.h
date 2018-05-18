@@ -8,9 +8,6 @@
 #include <stdint.h>
 
 #include "cc/paint/filter_operations.h"
-#include "cc/resources/display_resource_provider.h"
-#include "cc/resources/layer_tree_resource_provider.h"
-#include "cc/resources/resource_provider.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "third_party/skia/include/core/SkColor.h"
 
@@ -19,12 +16,19 @@ class Rect;
 class Transform;
 }
 
+namespace gpu {
+struct SyncToken;
+}
+
 namespace viz {
+class ContextProvider;
 class RenderPass;
 class SolidColorDrawQuad;
 }  // namespace viz
 
 namespace cc {
+class DisplayResourceProvider;
+class LayerTreeResourceProvider;
 
 // Adds a new render pass with the provided properties to the given
 // render pass list.

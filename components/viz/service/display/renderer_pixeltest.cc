@@ -241,7 +241,7 @@ void CreateTestTwoColoredTextureDrawQuad(
   }
 
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource}, resource_provider,
                                          child_resource_provider,
                                          child_context_provider.get());
@@ -302,7 +302,7 @@ void CreateTestTextureDrawQuad(
   }
 
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource}, resource_provider,
                                          child_resource_provider,
                                          child_context_provider.get());
@@ -395,14 +395,14 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
             resources.release_callbacks[media::VideoFrame::kAPlane])));
   }
 
-  cc::ResourceProvider::ResourceIdArray resource_ids_to_transfer;
+  std::vector<ResourceId> resource_ids_to_transfer;
   resource_ids_to_transfer.push_back(resource_y);
   resource_ids_to_transfer.push_back(resource_u);
   resource_ids_to_transfer.push_back(resource_v);
   if (with_alpha)
     resource_ids_to_transfer.push_back(resource_a);
   // Transfer resources to the parent, and get the resource map.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap(
           resource_ids_to_transfer, resource_provider, child_resource_provider,
           child_context_provider);
@@ -484,7 +484,7 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
       SingleReleaseCallback::Create(std::move(resources.release_callbacks[0])));
 
   // Transfer resources to the parent, and get the resource map.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource_y}, resource_provider,
                                          child_resource_provider,
                                          child_context_provider);
@@ -747,7 +747,7 @@ void CreateTestYUVVideoDrawQuad_NV12(
   ResourceId resource_a = 0;
 
   // Transfer resources to the parent, and get the resource map.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap(
           {resource_y, resource_u, resource_v}, resource_provider,
           child_resource_provider, child_context_provider.get());
@@ -2322,7 +2322,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   }
 
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({mask_resource_id},
                                          this->resource_provider_.get(),
                                          this->child_resource_provider_.get(),
@@ -2418,7 +2418,7 @@ TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
   }
 
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({mask_resource_id},
                                          this->resource_provider_.get(),
                                          this->child_resource_provider_.get(),
@@ -2898,7 +2898,7 @@ TEST_F(GLRendererPixelTest, TileDrawQuadForceAntiAliasingOff) {
   }
 
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource},
                                          this->resource_provider_.get(),
                                          this->child_resource_provider_.get(),
@@ -3331,7 +3331,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, TileDrawQuadNearestNeighbor) {
     resource = this->AllocateAndFillSoftwareResource(tile_size, bitmap);
   }
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource},
                                          this->resource_provider_.get(),
                                          this->child_resource_provider_.get(),
@@ -3382,7 +3382,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadNearestNeighbor) {
       this->AllocateAndFillSoftwareResource(tile_size, bitmap);
 
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource},
                                          this->resource_provider_.get(),
                                          this->child_resource_provider_.get(),
@@ -3435,7 +3435,7 @@ TYPED_TEST(SoftwareRendererPixelTest, TextureDrawQuadLinear) {
       this->AllocateAndFillSoftwareResource(tile_size, bitmap);
 
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource},
                                          this->resource_provider_.get(),
                                          this->child_resource_provider_.get(),
@@ -3783,7 +3783,7 @@ TEST_F(GLRendererPixelTest, TextureQuadBatching) {
       mask_rect.size(), RGBA_8888, gfx::ColorSpace(), bitmap.getPixels());
 
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource},
                                          this->resource_provider_.get(),
                                          this->child_resource_provider_.get(),
@@ -3863,7 +3863,7 @@ TEST_F(GLRendererPixelTest, TileQuadClamping) {
     resource = this->AllocateAndFillSoftwareResource(tile_size, bitmap);
   }
   // Return the mapped resource id.
-  cc::ResourceProvider::ResourceIdMap resource_map =
+  std::unordered_map<ResourceId, ResourceId> resource_map =
       SendResourceAndGetChildToParentMap({resource},
                                          this->resource_provider_.get(),
                                          this->child_resource_provider_.get(),
@@ -4053,7 +4053,7 @@ TEST_P(ColorTransformPixelTest, Basic) {
         rect.size(), RGBA_8888, src_color_space_, input_colors.data());
 
     // Return the mapped resource id.
-    cc::ResourceProvider::ResourceIdMap resource_map =
+    std::unordered_map<ResourceId, ResourceId> resource_map =
         SendResourceAndGetChildToParentMap({resource},
                                            this->resource_provider_.get(),
                                            this->child_resource_provider_.get(),

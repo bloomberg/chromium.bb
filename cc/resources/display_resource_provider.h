@@ -5,25 +5,73 @@
 #ifndef CC_RESOURCES_DISPLAY_RESOURCE_PROVIDER_H_
 #define CC_RESOURCES_DISPLAY_RESOURCE_PROVIDER_H_
 
+#include <stddef.h>
+#include <map>
+#include <unordered_map>
+#include <vector>
+
+#include "base/containers/flat_map.h"
+#include "base/containers/small_map.h"
+#include "base/macros.h"
+#include "base/threading/thread_checker.h"
+#include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
+#include "cc/cc_export.h"
 #include "cc/output/overlay_candidate.h"
-#include "cc/resources/resource_provider.h"
+#include "cc/resources/return_callback.h"
+#include "components/viz/common/resources/resource.h"
 #include "components/viz/common/resources/resource_fence.h"
+#include "components/viz/common/resources/resource_id.h"
 #include "components/viz/common/resources/resource_metadata.h"
+#include "components/viz/common/resources/transferable_resource.h"
+#include "third_party/khronos/GLES2/gl2.h"
+#include "third_party/khronos/GLES2/gl2ext.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+
+namespace gfx {
+class ColorSpace;
+class Size;
+}  // namespace gfx
+
+namespace gpu {
+namespace gles2 {
+class GLES2Interface;
+}
+}  // namespace gpu
 
 namespace viz {
+class ContextProvider;
 class SharedBitmapManager;
 }  // namespace viz
 
 namespace cc {
 
+// This class provides abstractions for receiving and using resources from other
+// modules/threads/processes. It abstracts away GL textures vs GpuMemoryBuffers
+// vs software bitmaps behind a single ResourceId so that code in common can
+// hold onto ResourceIds, as long as the code using them knows the correct type.
+// It accepts as input TransferableResources which it holds internally, tracks
+// state on, and exposes as a ResourceId.
+//
+// The resource's underlying type is accessed through locks that help to
+// scope and safeguard correct usage with DCHECKs.
+//
 // This class is not thread-safe and can only be called from the thread it was
 // created on.
-class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
+class CC_EXPORT DisplayResourceProvider
+    : public base::trace_event::MemoryDumpProvider {
  public:
   DisplayResourceProvider(viz::ContextProvider* compositor_context_provider,
                           viz::SharedBitmapManager* shared_bitmap_manager);
   ~DisplayResourceProvider() override;
+
+  bool IsSoftware() const { return !compositor_context_provider_; }
+  void DidLoseContextProvider() { lost_context_provider_ = true; }
+  size_t num_resources() const { return resources_.size(); }
+
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
 
 #if defined(OS_ANDROID)
   // Send an overlay promotion hint to all resources that requested it via
@@ -45,10 +93,9 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
 #endif
 
   viz::ResourceType GetResourceType(viz::ResourceId id);
-
+  GLenum GetResourceTextureTarget(viz::ResourceId id);
   // Return the format of the underlying buffer that can be used for scanout.
   gfx::BufferFormat GetBufferFormat(viz::ResourceId id);
-
   // Indicates if this resource may be used for a hardware overlay plane.
   bool IsOverlayCandidate(viz::ResourceId id);
 
@@ -223,7 +270,8 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
   void SetChildNeedsSyncTokens(int child, bool needs_sync_tokens);
 
   // Gets the child->parent resource ID map.
-  const ResourceIdMap& GetChildToParentMap(int child) const;
+  const std::unordered_map<viz::ResourceId, viz::ResourceId>&
+  GetChildToParentMap(int child) const;
 
   // Receives resources from a child, moving them from mailboxes. ResourceIds
   // passed are in the child namespace, and will be translated to the parent
@@ -246,6 +294,45 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
       const viz::ResourceIdSet& resources_from_child);
 
  private:
+  struct Child {
+    Child();
+    Child(const Child& other);
+    ~Child();
+
+    std::unordered_map<viz::ResourceId, viz::ResourceId> child_to_parent_map;
+    ReturnCallback return_callback;
+    bool marked_for_deletion = false;
+    bool needs_sync_tokens = true;
+  };
+
+  enum DeleteStyle {
+    NORMAL,
+    FOR_SHUTDOWN,
+  };
+
+  using ChildMap = std::unordered_map<int, Child>;
+  using ResourceMap =
+      std::unordered_map<viz::ResourceId, viz::internal::Resource>;
+
+  viz::internal::Resource* InsertResource(viz::ResourceId id,
+                                          viz::internal::Resource resource);
+  viz::internal::Resource* GetResource(viz::ResourceId id);
+
+  // TODO(ericrk): TryGetResource is part of a temporary workaround for cases
+  // where resources which should be available are missing. This version may
+  // return nullptr if a resource is not found. https://crbug.com/811858
+  viz::internal::Resource* TryGetResource(viz::ResourceId id);
+
+  void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
+                                    const viz::internal::Resource* resource);
+
+  void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
+
+  void WaitSyncTokenInternal(viz::internal::Resource* resource);
+
+  // Returns null if we do not have a viz::ContextProvider.
+  gpu::gles2::GLES2Interface* ContextGL() const;
+
   const viz::internal::Resource* LockForRead(viz::ResourceId id);
   void UnlockForRead(viz::ResourceId id);
 
@@ -271,37 +358,40 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
   void DeletePromotionHint(ResourceMap::iterator it, DeleteStyle style);
 #endif
 
-  struct Child {
-    Child();
-    Child(const Child& other);
-    ~Child();
-
-    ResourceIdMap child_to_parent_map;
-    ReturnCallback return_callback;
-    bool marked_for_deletion;
-    bool needs_sync_tokens;
-  };
-  using ChildMap = std::unordered_map<int, Child>;
-
-  void DeleteAndReturnUnusedResourcesToChild(ChildMap::iterator child_it,
-                                             DeleteStyle style,
-                                             const ResourceIdArray& unused);
+  void DeleteAndReturnUnusedResourcesToChild(
+      ChildMap::iterator child_it,
+      DeleteStyle style,
+      const std::vector<viz::ResourceId>& unused);
   void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
 
   void SetBatchReturnResources(bool aggregate);
 
-  scoped_refptr<viz::ResourceFence> current_read_lock_fence_;
+  THREAD_CHECKER(thread_checker_);
+  viz::ContextProvider* const compositor_context_provider_;
+  viz::SharedBitmapManager* const shared_bitmap_manager_;
+
+  ResourceMap resources_;
   ChildMap children_;
-  // Used as child id when creating a child.
-  int next_child_ = 1;
   base::flat_map<viz::ResourceId, sk_sp<SkImage>> resource_sk_image_;
-  viz::ResourceId next_id_;
-  viz::SharedBitmapManager* shared_bitmap_manager_;
+  // Maps from a child id to the set of resources to be returned to it.
+  base::small_map<std::map<int, std::vector<viz::ResourceId>>>
+      batched_returning_resources_;
+  scoped_refptr<viz::ResourceFence> current_read_lock_fence_;
   // Keep track of whether deleted resources should be batched up or returned
   // immediately.
   bool batch_return_resources_ = false;
-  // Maps from a child id to the set of resources to be returned to it.
-  base::small_map<std::map<int, ResourceIdArray>> batched_returning_resources_;
+  // Set to true when the ContextProvider becomes lost, to inform that resources
+  // modified by this class are now in an indeterminate state.
+  bool lost_context_provider_ = false;
+  // The ResourceIds in DisplayResourceProvider start from 2 to avoid
+  // conflicts with id from LayerTreeResourceProvider.
+  viz::ResourceId next_id_ = 2;
+  // Used as child id when creating a child.
+  int next_child_ = 1;
+  // A process-unique ID used for disambiguating memory dumps from different
+  // resource providers.
+  int tracing_id_;
+
 #if defined(OS_ANDROID)
   // Set of ResourceIds that would like to be notified about promotion hints.
   viz::ResourceIdSet wants_promotion_hints_set_;

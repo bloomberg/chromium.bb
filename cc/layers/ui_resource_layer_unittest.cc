@@ -6,7 +6,6 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation_host.h"
-#include "cc/resources/resource_provider.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/geometry_test_utils.h"

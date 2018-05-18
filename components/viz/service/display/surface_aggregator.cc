@@ -328,7 +328,7 @@ void SurfaceAggregator::EmitSurfaceContent(
   referenced_surfaces_.insert(surface_id);
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
-  cc::ResourceProvider::ResourceIdMap empty_map;
+  std::unordered_map<ResourceId, ResourceId> empty_map;
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
                 : empty_map;
@@ -769,7 +769,7 @@ void SurfaceAggregator::CopyPasses(const CompositorFrame& frame,
 
   // TODO(vmpstr): provider check is a hack for unittests that don't set up a
   // resource provider.
-  cc::ResourceProvider::ResourceIdMap empty_map;
+  std::unordered_map<ResourceId, ResourceId> empty_map;
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(ChildIdForSurface(surface))
                 : empty_map;
@@ -877,7 +877,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   referenced_resources.reserve(reserve_size);
 
   bool invalid_frame = false;
-  cc::ResourceProvider::ResourceIdMap empty_map;
+  std::unordered_map<ResourceId, ResourceId> empty_map;
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(child_id) : empty_map;
 

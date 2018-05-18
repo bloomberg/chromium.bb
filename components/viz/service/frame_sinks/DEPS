@@ -10,3 +10,9 @@ include_rules = [
   "+gpu/ipc/common",
   "+mojo/public",
 ]
+
+specific_include_rules = {
+  ".*unittest\.cc": [
+    "+third_party/khronos/GLES2",
+  ]
+}

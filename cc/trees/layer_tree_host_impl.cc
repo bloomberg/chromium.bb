@@ -2032,7 +2032,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
                                                "SwapBuffers");
 
   // Collect all resource ids in the render passes into a single array.
-  ResourceProvider::ResourceIdArray resources;
+  std::vector<viz::ResourceId> resources;
   for (const auto& render_pass : frame->render_passes) {
     for (auto* quad : render_pass->quad_list) {
       for (viz::ResourceId resource_id : quad->resources)
