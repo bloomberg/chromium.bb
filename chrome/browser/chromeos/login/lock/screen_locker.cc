@@ -238,7 +238,7 @@ void ScreenLocker::Init() {
   }
 
   // Start locking on ash side.
-  SessionControllerClient::Get()->StartLock(base::Bind(
+  SessionControllerClient::Get()->StartLock(base::BindOnce(
       &ScreenLocker::OnStartLockCallback, weak_factory_.GetWeakPtr()));
 }
 
@@ -574,7 +574,7 @@ void ScreenLocker::Hide() {
 
   DCHECK(screen_locker_);
   SessionControllerClient::Get()->RunUnlockAnimation(
-      base::Bind(&ScreenLocker::ScheduleDeletion));
+      base::BindOnce(&ScreenLocker::ScheduleDeletion));
 }
 
 // static

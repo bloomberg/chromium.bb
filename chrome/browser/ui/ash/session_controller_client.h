@@ -57,7 +57,7 @@ class SessionControllerClient
   // to indicate whether the lock is successful. If |locked| is true, the post
   // lock animation is finished and ash is fully locked. Otherwise, the lock
   // is failed somehow.
-  using StartLockCallback = base::Callback<void(bool locked)>;
+  using StartLockCallback = base::OnceCallback<void(bool locked)>;
   void StartLock(StartLockCallback callback);
 
   // Notifies SessionController that chrome lock animations are finished.
@@ -65,7 +65,7 @@ class SessionControllerClient
 
   // Calls ash SessionController to run unlock animation.
   // |animation_finished_callback| will be invoked when the animation finishes.
-  void RunUnlockAnimation(base::Closure animation_finished_callback);
+  void RunUnlockAnimation(base::OnceClosure animation_finished_callback);
 
   // Asks the session controller to show the window teleportation dialog.
   void ShowTeleportWarningDialog(
