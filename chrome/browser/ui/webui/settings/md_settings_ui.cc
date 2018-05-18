@@ -230,6 +230,8 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(chrome::kChromeUISettingsHost);
+  html_source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources 'self';");
 
 #if defined(OS_WIN)
   AddSettingsPageUIHandler(std::make_unique<ChromeCleanupHandler>(profile));
