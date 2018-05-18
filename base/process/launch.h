@@ -148,6 +148,10 @@ struct BASE_EXPORT LaunchOptions {
   // CREATE_BREAKAWAY_FROM_JOB flag which allows it to breakout of the parent
   // job if any.
   bool force_breakaway_from_job_ = false;
+
+  // If set to true, permission to bring windows to the foreground is passed to
+  // the launched process if the current process has such permission.
+  bool grant_foreground_privilege = false;
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Set/unset environment variables. These are applied on top of the parent
   // process environment.  Empty (the default) means to inherit the same
