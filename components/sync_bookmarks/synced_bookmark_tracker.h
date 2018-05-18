@@ -63,6 +63,10 @@ class SyncedBookmarkTracker {
   void Associate(const std::string& sync_id,
                  const bookmarks::BookmarkNode* bookmark_node);
 
+  // Removes the association that corresponds to |sync_id| from
+  // |sync_id_to_entities_map_|.
+  void Disassociate(const std::string& sync_id);
+
   // Returns number of tracked entities. Used only in test.
   std::size_t TrackedEntitiesCountForTest() const;
 

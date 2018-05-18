@@ -170,12 +170,12 @@ void BookmarkModelTypeProcessor::OnUpdateReceived(
   for (const syncer::UpdateResponseData* update : ReorderUpdates(updates)) {
     const syncer::EntityData& update_data = update->entity.value();
     // TODO(crbug.com/516866): Check |update_data| for sanity.
-    // 1. Has bookmark specifics.
+    // 1. Has bookmark specifics or no specifics in case of delete.
     // 2. All meta info entries in the specifics have unique keys.
     const SyncedBookmarkTracker::Entity* tracked_entity =
         bookmark_tracker_.GetEntityForSyncId(update_data.id);
     if (update_data.is_deleted()) {
-      // TODO(crbug.com/516866): Handle Delete.
+      ProcessRemoteDelete(update_data, tracked_entity);
       continue;
     }
     if (!tracked_entity) {
@@ -212,16 +212,33 @@ BookmarkModelTypeProcessor::ReorderUpdates(
   // should be fixed before enabling USS for bookmarks.
   std::vector<const syncer::UpdateResponseData*> ordered_updates;
   for (const syncer::UpdateResponseData& update : updates) {
-    if (update.entity.value().parent_id == "0") {
+    const syncer::EntityData& update_data = update.entity.value();
+    if (update_data.parent_id == "0") {
       continue;
     }
-    if (update.entity.value().parent_id == kBookmarksRootId) {
+    if (update_data.parent_id == kBookmarksRootId) {
       ordered_updates.push_back(&update);
     }
   }
   for (const syncer::UpdateResponseData& update : updates) {
-    if (update.entity.value().parent_id != "0" &&
-        update.entity.value().parent_id != kBookmarksRootId) {
+    const syncer::EntityData& update_data = update.entity.value();
+    // Deletions should come last.
+    if (update_data.is_deleted()) {
+      continue;
+    }
+    if (update_data.parent_id != "0" &&
+        update_data.parent_id != kBookmarksRootId) {
+      ordered_updates.push_back(&update);
+    }
+  }
+  // Now add deletions.
+  for (const syncer::UpdateResponseData& update : updates) {
+    const syncer::EntityData& update_data = update.entity.value();
+    if (!update_data.is_deleted()) {
+      continue;
+    }
+    if (update_data.parent_id != "0" &&
+        update_data.parent_id != kBookmarksRootId) {
       ordered_updates.push_back(&update);
     }
   }
@@ -309,6 +326,38 @@ void BookmarkModelTypeProcessor::ProcessRemoteUpdate(
   // TODO(crbug.com/516866): Handle reparenting.
   // TODO(crbug.com/516866): Handle the case of moving the bookmark to a new
   // position under the same parent (i.e. change in the unique position)
+}
+
+void BookmarkModelTypeProcessor::ProcessRemoteDelete(
+    const syncer::EntityData& update_data,
+    const SyncedBookmarkTracker::Entity* tracked_entity) {
+  DCHECK(update_data.is_deleted());
+
+  DCHECK_EQ(tracked_entity,
+            bookmark_tracker_.GetEntityForSyncId(update_data.id));
+
+  // Handle corner cases first.
+  if (tracked_entity == nullptr) {
+    // Local entity doesn't exist and update is tombstone.
+    DLOG(WARNING) << "Received remote delete for a non-existing item.";
+    return;
+  }
+
+  const bookmarks::BookmarkNode* node = tracked_entity->bookmark_node();
+  // Ignore changes to the permanent top-level nodes.  We only care about
+  // their children.
+  if (bookmark_model_->is_permanent_node(node)) {
+    return;
+  }
+  // TODO(crbug.com/516866): Allow deletions of non-empty direcoties if makes
+  // sense, and recursively delete children.
+  if (node->child_count() > 0) {
+    DLOG(WARNING) << "Trying to delete a non-empty folder.";
+    return;
+  }
+
+  bookmark_model_->Remove(node);
+  bookmark_tracker_.Disassociate(update_data.id);
 }
 
 const bookmarks::BookmarkNode* BookmarkModelTypeProcessor::GetParentNode(

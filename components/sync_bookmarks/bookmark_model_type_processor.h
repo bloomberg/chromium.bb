@@ -53,8 +53,9 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor {
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Reorders incoming updates such that parent creation is before child
-  // creation and child deletion is before parent deletion. The returned
-  // pointers point to the elements in the original |updates|.
+  // creation and child deletion is before parent deletion, and deletions should
+  // come last. The returned pointers point to the elements in the original
+  // |updates|.
   static std::vector<const syncer::UpdateResponseData*> ReorderUpdates(
       const syncer::UpdateResponseDataList& updates);
 
@@ -78,6 +79,14 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor {
   // of performing a lookup inside ProcessRemoteUpdate() to avoid wasting CPU
   // cycles for doing another lookup (this code runs on the UI thread).
   void ProcessRemoteUpdate(const syncer::EntityData& update_data,
+                           const SyncedBookmarkTracker::Entity* tracked_entity);
+
+  // Process a remote delete of a bookmark node. |update_data| must not be a
+  // deletion. |tracked_entity| is the tracked entity for that server_id. It is
+  // passed as a dependency instead of performing a lookup inside
+  // ProcessRemoteDelete() to avoid wasting CPU cycles for doing another lookup
+  // (this code runs on the UI thread).
+  void ProcessRemoteDelete(const syncer::EntityData& update_data,
                            const SyncedBookmarkTracker::Entity* tracked_entity);
 
   // Associates the permanent bookmark folders with the corresponding server

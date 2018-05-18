@@ -29,6 +29,17 @@ TEST(SyncedBookmarkTrackerTest, ShouldGetAssociatedNodes) {
   EXPECT_THAT(tracker.GetEntityForSyncId("unknown id"), IsNull());
 }
 
+TEST(SyncedBookmarkTrackerTest, ShouldReturnNullForDisassociatedNodes) {
+  SyncedBookmarkTracker tracker;
+  const std::string kSyncId = "SYNC_ID";
+  const int64_t kId = 1;
+  bookmarks::BookmarkNode node(kId, GURL());
+  tracker.Associate(kSyncId, &node);
+  ASSERT_THAT(tracker.GetEntityForSyncId(kSyncId), NotNull());
+  tracker.Disassociate(kSyncId);
+  EXPECT_THAT(tracker.GetEntityForSyncId(kSyncId), IsNull());
+}
+
 }  // namespace
 
 }  // namespace sync_bookmarks
