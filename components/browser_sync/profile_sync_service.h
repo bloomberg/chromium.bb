@@ -19,7 +19,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
 #include "components/sync/base/experiments.h"
@@ -45,7 +44,6 @@
 #include "components/sync/model/model_type_store.h"
 #include "components/version_info/version_info.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "net/base/backoff_entry.h"
 #include "url/gurl.h"
 
 class ProfileOAuth2TokenService;
@@ -53,10 +51,6 @@ class SigninManagerWrapper;
 
 namespace base {
 class MessageLoop;
-}
-
-namespace identity {
-class PrimaryAccountAccessTokenFetcher;
 }
 
 namespace sync_sessions {
@@ -497,6 +491,10 @@ class ProfileSyncService : public syncer::SyncService,
   void OnRefreshTokenRevoked();
   void OnCredentialsRejectedByClient();
 
+  // Called by SyncAuthManager when an access token fetch attempt finishes
+  // (successfully or not).
+  void AccessTokenFetched(const GoogleServiceAuthError& error);
+
   // KeyedService implementation.  This must be called exactly
   // once (before this object is destroyed).
   void Shutdown() override;
@@ -606,21 +604,9 @@ class ProfileSyncService : public syncer::SyncService,
   // deleted or kept when the engine shuts down.
   void StopImpl(SyncStopDataFate data_fate);
 
-  // Update the last auth error and notify observers of error state.
-  void UpdateAuthErrorState(const GoogleServiceAuthError& error);
-
   // Puts the engine's sync scheduler into NORMAL mode.
   // Called when configuration is complete.
   void StartSyncingWithServer();
-
-  // RequestAccessToken initiates RPC to request downscoped access token from
-  // refresh token. This happens when a new OAuth2 login token is loaded and
-  // when sync server returns AUTH_ERROR which indicates it is time to refresh
-  // token.
-  void RequestAccessToken();
-
-  void AccessTokenFetched(const GoogleServiceAuthError& error,
-                          const std::string& access_token);
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
@@ -716,6 +702,9 @@ class ProfileSyncService : public syncer::SyncService,
   // the Sync API component factory.
   const std::unique_ptr<syncer::SyncClient> sync_client_;
 
+  // The class that handles getting, setting, and persisting sync preferences.
+  syncer::SyncPrefs sync_prefs_;
+
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address.
   const std::unique_ptr<SigninManagerWrapper> signin_;
@@ -734,9 +723,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // This specifies where to find the sync server.
   const GURL sync_service_url_;
-
-  // The class that handles getting, setting, and persisting sync preferences.
-  syncer::SyncPrefs sync_prefs_;
 
   // A utility object containing logic and state relating to encryption. It is
   // never null.
@@ -826,22 +812,6 @@ class ProfileSyncService : public syncer::SyncService,
 
   // The set of currently enabled sync experiments.
   syncer::Experiments current_experiments_;
-
-  // ProfileSyncService needs to remember access token in order to invalidate it
-  // with OAuth2TokenService.
-  std::string access_token_;
-
-  // Pending request for an access token. Non-null iff there is a request
-  // ongoing.
-  std::unique_ptr<identity::PrimaryAccountAccessTokenFetcher>
-      ongoing_access_token_fetch_;
-
-  // If RequestAccessToken fails with transient error then retry requesting
-  // access token with exponential backoff.
-  base::OneShotTimer request_access_token_retry_timer_;
-  net::BackoffEntry request_access_token_backoff_;
-
-  SyncTokenStatus token_status_;
 
   // The gaia cookie manager. Used for monitoring cookie jar changes to detect
   // when the user signs out of the content area.
