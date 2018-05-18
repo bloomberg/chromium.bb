@@ -8,8 +8,7 @@
   await TestRunner.loadModule('audits2_test_runner');
   await TestRunner.showPanel('audits2');
 
-  Audits2TestRunner.openDialog();
-  Audits2TestRunner.dumpDialogState();
+  Audits2TestRunner.dumpStartAuditState();
 
   TestRunner.addResult(`\n=============== Lighthouse Status Updates ===============`);
   Audits2TestRunner.addStatusListener(msg => TestRunner.addResult(msg));
@@ -25,6 +24,10 @@
     var audit = results.audits[auditName];
     TestRunner.addResult(`${audit.name}: ${Boolean(audit.rawValue)}`);
   });
+
+  const resultsElement = Audits2TestRunner.getResultsElement();
+  const auditElements = resultsElement.querySelectorAll('.lh-audit');
+  TestRunner.addResult(`\n# of .lh-audit divs: ${auditElements.length}`);
 
   TestRunner.completeTest();
 })();

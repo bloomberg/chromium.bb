@@ -1,17 +1,13 @@
 Tests that audits panel works.
 
 
-========== Audits2 Dialog State ==========
-Dialog is visible
-
+========== Audits2 Start Audit State ==========
 [x] Performance
 [x] Progressive Web App
 [x] Best practices
 [x] Accessibility
 [x] SEO
 Run audit: enabled visible
-Cancel: enabled visible
-
 
 =============== Lighthouse Status Updates ===============
 Loading…
@@ -288,4 +284,6 @@ visual-order-follows-dom: false
 webapp-install-banner: false
 without-javascript: false
 works-offline: false
+
+# of .lh-audit divs: 109
 

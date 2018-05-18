@@ -2,9 +2,7 @@ Tests that audits panel prevents run of unauditable pages.
 
 **Prevents audit with no categories**
 
-========== Audits2 Dialog State ==========
-Dialog is visible
-
+========== Audits2 Start Audit State ==========
 [ ] Performance
 [ ] Progressive Web App
 [ ] Best practices
@@ -12,26 +10,18 @@ Dialog is visible
 [ ] SEO
 Help text: At least one category must be selected.
 Run audit: disabled visible
-Cancel: enabled visible
-
 **Allows audit with a single category**
 
-========== Audits2 Dialog State ==========
-Dialog is visible
-
+========== Audits2 Start Audit State ==========
 [x] Performance
 [ ] Progressive Web App
 [ ] Best practices
 [ ] Accessibility
 [ ] SEO
 Run audit: enabled visible
-Cancel: enabled visible
-
 **Prevents audit on undockable page**
 
-========== Audits2 Dialog State ==========
-Dialog is visible
-
+========== Audits2 Start Audit State ==========
 [x] Performance
 [ ] Progressive Web App
 [ ] Best practices
@@ -39,14 +29,10 @@ Dialog is visible
 [ ] SEO
 Help text: Can only audit tabs. Navigate to this page in a separate tab to start an audit.
 Run audit: disabled visible
-Cancel: enabled visible
-
 **Prevents audit on internal page**
 URL: about:blank
 
-========== Audits2 Dialog State ==========
-Dialog is visible
-
+========== Audits2 Start Audit State ==========
 [x] Performance
 [ ] Progressive Web App
 [ ] Best practices
@@ -54,6 +40,4 @@ Dialog is visible
 [ ] SEO
 Help text: Can only audit HTTP/HTTPS pages and Chrome extensions. Navigate to a different page to start an audit.
 Run audit: disabled visible
-Cancel: enabled visible
-
 
