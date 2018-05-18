@@ -160,6 +160,7 @@ static const char kOpusSmallCodecDelayHash_1[] =
     "-0.48,-0.09,1.27,1.06,1.54,-0.22,";
 static const char kOpusSmallCodecDelayHash_2[] =
     "0.29,0.15,-0.19,0.25,0.68,0.83,";
+static const char kOpusMonoOutputHash[] = "-2.41,-1.66,0.79,1.53,1.46,-0.91,";
 #else
 static const char kOpusEndTrimmingHash_1[] =
     "-4.57,-5.66,-6.52,-6.30,-4.37,-3.61,";
@@ -171,6 +172,7 @@ static const char kOpusSmallCodecDelayHash_1[] =
     "-0.48,-0.09,1.27,1.06,1.54,-0.22,";
 static const char kOpusSmallCodecDelayHash_2[] =
     "0.29,0.14,-0.20,0.24,0.68,0.83,";
+static const char kOpusMonoOutputHash[] = "-2.39,-1.66,0.81,1.54,1.48,-0.91,";
 #endif  // defined(ARCH_CPU_ARM64)
 
 #else
@@ -189,6 +191,8 @@ static const char kOpusSmallCodecDelayHash_1[] =
 // The above hash, plus an additional playthrough starting from T=1.414s.
 static const char kOpusSmallCodecDelayHash_2[] =
     "0.31,0.15,-0.18,0.25,0.70,0.84,";
+// For BasicPlaybackOpusWebmHashed_MonoOutput test case.
+static const char kOpusMonoOutputHash[] = "-2.36,-1.64,0.84,1.55,1.51,-0.90,";
 #endif  // defined(OPUS_FIXED_POINT)
 #endif  // !defined(MOJO_RENDERER)
 
@@ -1024,7 +1028,7 @@ TEST_F(PipelineIntegrationTest, BasicPlaybackOpusWebmHashed_MonoOutput) {
   ASSERT_TRUE(WaitUntilOnEnded());
 
   // Hash has very slight differences when phase inversion is enabled.
-  EXPECT_HASH_EQ("-2.36,-1.64,0.84,1.55,1.51,-0.90,", GetAudioHash());
+  EXPECT_HASH_EQ(kOpusMonoOutputHash, GetAudioHash());
 }
 
 TEST_F(PipelineIntegrationTest, BasicPlaybackOpusPrerollExceedsCodecDelay) {
