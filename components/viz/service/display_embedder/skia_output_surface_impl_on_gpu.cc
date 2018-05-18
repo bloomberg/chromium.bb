@@ -21,7 +21,6 @@
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/gl_switches_util.h"
 #include "ui/gl/gl_version_info.h"
 
 namespace viz {
@@ -49,14 +48,12 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     GpuServiceImpl* gpu_service,
     gpu::SurfaceHandle surface_handle,
     const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     const BufferPresentedCallback& buffer_presented_callback)
     : command_buffer_id_(gpu::CommandBufferId::FromUnsafeValue(
           g_next_command_buffer_id.GetNext() + 1)),
       gpu_service_(gpu_service),
       surface_handle_(surface_handle),
       did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
-      update_vsync_parameters_callback_(update_vsync_parameters_callback),
       buffer_presented_callback_(buffer_presented_callback),
       weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -314,18 +311,9 @@ void SkiaOutputSurfaceImplOnGpu::SetSnapshotRequestedCallback(
   NOTIMPLEMENTED();
 }
 
-void SkiaOutputSurfaceImplOnGpu::UpdateVSyncParameters(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!gl::IsPresentationCallbackEnabled());
-  update_vsync_parameters_callback_.Run(timebase, interval);
-}
-
 void SkiaOutputSurfaceImplOnGpu::BufferPresented(
     const gfx::PresentationFeedback& feedback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(gl::IsPresentationCallbackEnabled());
   uint64_t swap_id = pending_presented_ids_.front();
   pending_presented_ids_.pop_front();
   buffer_presented_callback_.Run(swap_id, feedback);
@@ -416,11 +404,7 @@ void SkiaOutputSurfaceImplOnGpu::PreprocessYUVResources(
 void SkiaOutputSurfaceImplOnGpu::OnSwapBuffers() {
   uint64_t swap_id = swap_id_++;
   pending_swap_completed_ids_.push_back(swap_id);
-
-  // Only push to |pending_presented_ids_| if presentation callbacks
-  // are enabled, otherwise these will never be popped.
-  if (gl::IsPresentationCallbackEnabled())
-    pending_presented_ids_.push_back(swap_id);
+  pending_presented_ids_.push_back(swap_id);
 }
 
 }  // namespace viz

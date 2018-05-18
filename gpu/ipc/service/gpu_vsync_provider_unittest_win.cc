@@ -118,11 +118,6 @@ class FakeDelegate : public ImageTransportSurfaceDelegate,
     return gpu_preferences_;
   }
   void SetSnapshotRequestedCallback(const base::Closure& callback) override {}
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override {
-    // This shouldn't be called by GpuVSyncProviderWin
-    NOTREACHED();
-  }
   void BufferPresented(const gfx::PresentationFeedback& feedback) override {}
 
   void AddFilter(IPC::MessageFilter* message_filter) override {

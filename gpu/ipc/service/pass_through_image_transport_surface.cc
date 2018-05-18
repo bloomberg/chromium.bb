@@ -12,7 +12,6 @@
 #include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/gl_switches_util.h"
 
 namespace gpu {
 
@@ -39,7 +38,6 @@ PassThroughImageTransportSurface::PassThroughImageTransportSurface(
       is_gpu_vsync_disabled_(HasSwitch(switches::kDisableGpuVsync)),
       is_multi_window_swap_vsync_override_enabled_(
           override_vsync_for_multi_window_swap),
-      is_presentation_callback_enabled_(gl::IsPresentationCallbackEnabled()),
       delegate_(delegate),
       weak_ptr_factory_(this) {}
 
@@ -49,8 +47,7 @@ PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {
 }
 
 bool PassThroughImageTransportSurface::Initialize(gl::GLSurfaceFormat format) {
-  DCHECK(!is_presentation_callback_enabled_ ||
-         gl::GLSurfaceAdapter::SupportsPresentationCallback());
+  DCHECK(gl::GLSurfaceAdapter::SupportsPresentationCallback());
   // The surface is assumed to have already been initialized.
   delegate_->SetSnapshotRequestedCallback(
       base::Bind(&PassThroughImageTransportSurface::SetSnapshotRequested,
@@ -179,19 +176,6 @@ bool PassThroughImageTransportSurface::GetAndResetSnapshotRequested() {
   return sr;
 }
 
-void PassThroughImageTransportSurface::SendVSyncUpdateIfAvailable() {
-  // When PresentationCallback is enabled, we will get VSYNC parameters from the
-  // PresentationCallback, so the VSYNC update is not necessary anymore.
-  if (is_presentation_callback_enabled_)
-    return;
-
-  gfx::VSyncProvider* vsync_provider = GetVSyncProvider();
-  if (vsync_provider) {
-    vsync_provider->GetVSyncParameters(base::Bind(
-        &ImageTransportSurfaceDelegate::UpdateVSyncParameters, delegate_));
-  }
-}
-
 void PassThroughImageTransportSurface::UpdateVSyncEnabled() {
   if (is_gpu_vsync_disabled_) {
     SetVSyncEnabled(false);
@@ -227,9 +211,6 @@ void PassThroughImageTransportSurface::UpdateVSyncEnabled() {
 
 void PassThroughImageTransportSurface::StartSwapBuffers(
     gfx::SwapResponse* response) {
-  // GetVsyncValues before SwapBuffers to work around Mali driver bug:
-  // crbug.com/223558.
-  SendVSyncUpdateIfAvailable();
   UpdateVSyncEnabled();
   allow_running_presentation_callback_ = false;
 
@@ -268,8 +249,6 @@ void PassThroughImageTransportSurface::BufferPresented(
     const GLSurface::PresentationCallback& callback,
     const gfx::PresentationFeedback& feedback) {
   DCHECK(allow_running_presentation_callback_);
-  if (!is_presentation_callback_enabled_)
-    return;
   callback.Run(feedback);
   if (delegate_)
     delegate_->BufferPresented(feedback);

@@ -93,8 +93,6 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void InitializeOnGpuThread(base::WaitableEvent* event);
   void RecreateRecorder();
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params);
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval);
   void BufferPresented(uint64_t swap_id,
                        const gfx::PresentationFeedback& feedback);
 

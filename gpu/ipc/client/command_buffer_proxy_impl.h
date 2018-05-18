@@ -192,8 +192,6 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   void OnConsoleMessage(const GPUCommandBufferConsoleMessage& message);
   void OnSignalAck(uint32_t id, const CommandBuffer::State& state);
   void OnSwapBuffersCompleted(const SwapBuffersCompleteParams& params);
-  void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval);
   void OnBufferPresented(uint64_t swap_id,
                          const gfx::PresentationFeedback& feedback);
   void OnGetGpuFenceHandleComplete(uint32_t gpu_fence_id,

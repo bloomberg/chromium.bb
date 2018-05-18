@@ -73,8 +73,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
  public:
   using DidSwapBufferCompleteCallback =
       base::RepeatingCallback<void(gpu::SwapBuffersCompleteParams)>;
-  using UpdateVSyncParametersCallback =
-      base::RepeatingCallback<void(base::TimeTicks, base::TimeDelta)>;
   using BufferPresentedCallback =
       base::RepeatingCallback<void(uint64_t swap_id,
                                    const gfx::PresentationFeedback& feedback)>;
@@ -82,7 +80,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       GpuServiceImpl* gpu_service,
       gpu::SurfaceHandle surface_handle,
       const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       const BufferPresentedCallback& buffer_presented_callback);
   ~SkiaOutputSurfaceImplOnGpu() override;
 
@@ -133,8 +130,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   const gpu::gles2::FeatureInfo* GetFeatureInfo() const override;
   const gpu::GpuPreferences& GetGpuPreferences() const override;
   void SetSnapshotRequestedCallback(const base::Closure& callback) override;
-  void UpdateVSyncParameters(base::TimeTicks timebase,
-                             base::TimeDelta interval) override;
   void BufferPresented(const gfx::PresentationFeedback& feedback) override;
   void AddFilter(IPC::MessageFilter* message_filter) override;
   int32_t GetRouteID() const override;
@@ -150,7 +145,6 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   GpuServiceImpl* const gpu_service_;
   const gpu::SurfaceHandle surface_handle_;
   DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
-  UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   BufferPresentedCallback buffer_presented_callback_;
   scoped_refptr<gpu::SyncPointClientState> sync_point_client_state_;
   gpu::GpuPreferences gpu_preferences_;

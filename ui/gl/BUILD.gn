@@ -126,8 +126,6 @@ component("gl") {
     "gl_surface_stub.h",
     "gl_switches.cc",
     "gl_switches.h",
-    "gl_switches_util.cc",
-    "gl_switches_util.h",
     "gl_utils.cc",
     "gl_utils.h",
     "gl_version_info.cc",

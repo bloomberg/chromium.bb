@@ -33,7 +33,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_switches_util.h"
 
 namespace gpu {
 
@@ -155,8 +154,6 @@ bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SignalAck, OnSignalAck);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_SwapBuffersCompleted,
                         OnSwapBuffersCompleted);
-    IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_UpdateVSyncParameters,
-                        OnUpdateVSyncParameters);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_BufferPresented, OnBufferPresented);
     IPC_MESSAGE_HANDLER(GpuCommandBufferMsg_GetGpuFenceHandleComplete,
                         OnGetGpuFenceHandleComplete);
@@ -819,17 +816,9 @@ void CommandBufferProxyImpl::OnSwapBuffersCompleted(
     gpu_control_client_->OnGpuControlSwapBuffersCompleted(params);
 }
 
-void CommandBufferProxyImpl::OnUpdateVSyncParameters(base::TimeTicks timebase,
-                                                     base::TimeDelta interval) {
-  DCHECK(!gl::IsPresentationCallbackEnabled());
-  if (!update_vsync_parameters_completion_callback_.is_null())
-    update_vsync_parameters_completion_callback_.Run(timebase, interval);
-}
-
 void CommandBufferProxyImpl::OnBufferPresented(
     uint64_t swap_id,
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(gl::IsPresentationCallbackEnabled());
   if (presentation_callback_)
     presentation_callback_.Run(swap_id, feedback);
 

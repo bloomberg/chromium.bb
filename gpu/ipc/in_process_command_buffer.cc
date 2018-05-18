@@ -62,7 +62,6 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_share_group.h"
-#include "ui/gl/gl_switches_util.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
@@ -1069,11 +1068,7 @@ void InProcessCommandBuffer::OnRescheduleAfterFinished() {
 
 void InProcessCommandBuffer::OnSwapBuffers(uint64_t swap_id, uint32_t flags) {
   pending_swap_completed_params_.push_back({swap_id, flags});
-
-  // Only push to |pending_presented_params_| if presentation callbacks
-  // are enabled, otherwise these will never be popped.
-  if (gl::IsPresentationCallbackEnabled())
-    pending_presented_params_.push_back({swap_id, flags});
+  pending_presented_params_.push_back({swap_id, flags});
 }
 
 void InProcessCommandBuffer::SignalSyncTokenOnGpuThread(
@@ -1284,18 +1279,6 @@ const GpuPreferences& InProcessCommandBuffer::GetGpuPreferences() const {
   return context_group_->gpu_preferences();
 }
 
-void InProcessCommandBuffer::UpdateVSyncParameters(base::TimeTicks timebase,
-                                                   base::TimeDelta interval) {
-  if (!origin_task_runner_) {
-    UpdateVSyncParametersOnOriginThread(timebase, interval);
-    return;
-  }
-  origin_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread,
-                 client_thread_weak_ptr_, timebase, interval));
-}
-
 void InProcessCommandBuffer::SetSnapshotRequestedCallback(
     const base::Closure& callback) {
   snapshot_requested_callback_ = callback;
@@ -1332,19 +1315,10 @@ void InProcessCommandBuffer::DidSwapBuffersCompleteOnOriginThread(
     gpu_control_client_->OnGpuControlSwapBuffersCompleted(params);
 }
 
-void InProcessCommandBuffer::UpdateVSyncParametersOnOriginThread(
-    base::TimeTicks timebase,
-    base::TimeDelta interval) {
-  DCHECK(!gl::IsPresentationCallbackEnabled());
-  if (!update_vsync_parameters_completion_callback_.is_null())
-    update_vsync_parameters_completion_callback_.Run(timebase, interval);
-}
-
 void InProcessCommandBuffer::BufferPresentedOnOriginThread(
     uint64_t swap_id,
     uint32_t flags,
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(gl::IsPresentationCallbackEnabled());
   if (flags & gpu::SwapBuffersFlags::kPresentationFeedback ||
       (flags & gpu::SwapBuffersFlags::kVSyncParams &&
        feedback.flags & gfx::PresentationFeedback::kVSync)) {

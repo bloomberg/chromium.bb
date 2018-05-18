@@ -61,9 +61,6 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
   void SetSnapshotRequested();
   bool GetAndResetSnapshotRequested();
 
-  // If updated vsync parameters can be determined, send this information to
-  // the browser.
-  void SendVSyncUpdateIfAvailable();
   void UpdateVSyncEnabled();
 
   void StartSwapBuffers(gfx::SwapResponse* response);
@@ -78,7 +75,6 @@ class PassThroughImageTransportSurface : public gl::GLSurfaceAdapter {
 
   const bool is_gpu_vsync_disabled_;
   const bool is_multi_window_swap_vsync_override_enabled_;
-  const bool is_presentation_callback_enabled_;
   base::WeakPtr<ImageTransportSurfaceDelegate> delegate_;
   bool snapshot_requested_ = false;
   int swap_generation_ = 0;
