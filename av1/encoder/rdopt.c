@@ -4243,7 +4243,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
       if (p->eobs[block] == 0) try_split = 0;
   }
 
-  if (!x->cb_partition_scan && try_split) {
+  if (x->e_mbd.bd == 8 && !x->cb_partition_scan && try_split) {
     const int threshold = cpi->sf.tx_type_search.ml_tx_split_thresh;
     if (threshold >= 0) {
       const int split_score =
