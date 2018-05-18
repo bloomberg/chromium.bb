@@ -23,8 +23,6 @@ source_set("location_bar") {
     "location_bar_url_loader.h",
     "location_bar_view_controller.h",
     "location_bar_view_controller.mm",
-    "omnibox_container_view.h",
-    "omnibox_container_view.mm",
   ]
   deps = [
     ":constants",
