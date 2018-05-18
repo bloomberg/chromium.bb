@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/python.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
@@ -324,23 +325,18 @@ executable("chromedriver") {
   ]
 }
 
-group("chromedriver_py_tests") {
+python_library("chromedriver_py_tests") {
   testonly = true
   deps = [
     ":chromedriver",
     "//chrome:chrome",
   ]
 
-  _py_files = read_file("test/run_py_tests.pydeps", "list lines")
-
-  # Filter out comments.
-  set_sources_assignment_filter([ "#*" ])
-  sources = _py_files
-  data = sources + [
-           "test/run_py_tests.pydeps",
-           "//chrome/test/data/chromedriver/",
-           "//testing/xvfb.py",
-         ]
+  pydeps_file = "test/run_py_tests.pydeps"
+  data = [
+    "//chrome/test/data/chromedriver/",
+    "//testing/xvfb.py",
+  ]
 
   data_deps = [
     "//chrome/test/chromedriver",

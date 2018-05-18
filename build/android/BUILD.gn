@@ -4,6 +4,7 @@
 
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/python.gni")
 
 if (enable_java_templates) {
   import("//third_party/ijar/ijar.gni")
@@ -109,36 +110,30 @@ action("cpplib_stripped") {
   ]
 }
 
-group("test_runner_py") {
-  _py_files = read_file("test_runner.pydeps", "list lines")
-
-  # Filter out comments.
-  set_sources_assignment_filter([ "#*" ])
-  sources = _py_files
-  data = sources + [
-           "test_runner.pydeps",
-           "devil_chromium.json",
-           "pylib/gtest/filter/",
-           "pylib/instrumentation/render_test.html.jinja",
-           "test_wrapper/logdog_wrapper.py",
-           "${android_sdk_build_tools}/aapt",
-           "${android_sdk_build_tools}/dexdump",
-           "${android_sdk_build_tools}/lib64/libc++.so",
-           "${android_sdk_build_tools}/split-select",
-           "${android_sdk_root}/platform-tools/adb",
-           "//third_party/catapult/third_party/gsutil/",
-           "//third_party/catapult/devil/devil/devil_dependencies.json",
-           "//third_party/proguard/lib/proguard.jar",
-         ]
+python_library("test_runner_py") {
+  pydeps_file = "test_runner.pydeps"
+  data = [
+    "devil_chromium.json",
+    "pylib/gtest/filter/",
+    "pylib/instrumentation/render_test.html.jinja",
+    "test_wrapper/logdog_wrapper.py",
+    "${android_sdk_build_tools}/aapt",
+    "${android_sdk_build_tools}/dexdump",
+    "${android_sdk_build_tools}/lib64/libc++.so",
+    "${android_sdk_build_tools}/split-select",
+    "${android_sdk_root}/platform-tools/adb",
+    "//third_party/catapult/third_party/gsutil/",
+    "//third_party/catapult/devil/devil/devil_dependencies.json",
+    "//third_party/proguard/lib/proguard.jar",
+  ]
 }
 
-group("logdog_wrapper_py") {
-  _py_files = read_file("test_wrapper/logdog_wrapper.pydeps", "list lines")
+python_library("logdog_wrapper_py") {
+  pydeps_file = "test_wrapper/logdog_wrapper.pydeps"
+}
 
-  # Filter out comments.
-  set_sources_assignment_filter([ "#*" ])
-  sources = _py_files
-  data = sources + [ "test_wrapper/logdog_wrapper.pydeps" ]
+python_library("resource_sizes_py") {
+  pydeps_file = "resource_sizes.pydeps"
 }
 
 # Create wrapper scripts in out/bin that takes care of setting the
