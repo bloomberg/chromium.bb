@@ -15,6 +15,7 @@
 #include "mojo/edk/embedder/process_error_callback.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/scoped_process_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -55,7 +56,7 @@ class BrokerHost : public Channel::Delegate,
   const ProcessErrorCallback process_error_callback_;
 
 #if defined(OS_WIN)
-  base::ProcessHandle client_process_;
+  ScopedProcessHandle client_process_;
 #endif
 
   scoped_refptr<Channel> channel_;
