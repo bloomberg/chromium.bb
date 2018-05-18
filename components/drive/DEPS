@@ -40,6 +40,7 @@ specific_include_rules = {
   r"|change_list_loader_unittest\.cc"
   r"|change_list_processor_unittest\.cc"
   r"|directory_loader_unittest\.cc"
+  r"|drive_file_util_unittest\.cc"
   r"|fake_file_system_unittest\.cc"
   r"|file_cache_unittest\.cc"
   r"|file_system_core_util_unittest\.cc"

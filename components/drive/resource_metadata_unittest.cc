@@ -182,7 +182,7 @@ TEST_F(ResourceMetadataTest, LargestChangestamp) {
 }
 
 TEST_F(ResourceMetadataTest, StartPageToken) {
-  constexpr char kStartPageToken[] = "a different token";
+  constexpr char kStartPageToken[] = "1234567";
   EXPECT_EQ(FILE_ERROR_OK,
             resource_metadata_->SetStartPageToken(kStartPageToken));
   std::string start_page_token;

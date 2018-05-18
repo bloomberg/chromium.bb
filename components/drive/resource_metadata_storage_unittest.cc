@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/drive/chromeos/drive_test_util.h"
 #include "components/drive/drive.pb.h"
+#include "components/drive/file_system_core_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -91,6 +92,14 @@ TEST_F(ResourceMetadataStorageTest, LargestChangestamp) {
   int64_t value = 0;
   EXPECT_EQ(FILE_ERROR_OK, storage_->GetLargestChangestamp(&value));
   EXPECT_EQ(kLargestChangestamp, value);
+}
+
+TEST_F(ResourceMetadataStorageTest, StartPageToken) {
+  constexpr char kStartPageToken[] = "123456";
+  EXPECT_EQ(FILE_ERROR_OK, storage_->SetStartPageToken(kStartPageToken));
+  std::string start_page_token;
+  EXPECT_EQ(FILE_ERROR_OK, storage_->GetStartPageToken(&start_page_token));
+  EXPECT_EQ(kStartPageToken, start_page_token);
 }
 
 TEST_F(ResourceMetadataStorageTest, PutEntry) {
