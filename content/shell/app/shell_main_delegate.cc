@@ -183,10 +183,11 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   }
 
   if (command_line.HasSwitch("run-layout-test")) {
-    std::cerr << "The switch --run-layout-test is obsolete. Please use --"
-              << switches::kRunWebTests << " instead.\n";
-    *exit_code = 1;
-    return true;
+    std::cerr << std::string(79, '*') << "\n"
+              << "* The flag --run-layout-test is obsolete. Please use --"
+              << switches::kRunWebTests << " instead. *\n"
+              << std::string(79, '*') << "\n";
+    command_line.AppendSwitch(switches::kRunWebTests);
   }
 
   if (command_line.HasSwitch(switches::kRunWebTests)) {
