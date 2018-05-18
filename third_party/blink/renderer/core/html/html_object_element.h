@@ -63,9 +63,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   bool IsEnumeratable() const override { return true; }
   bool IsInteractiveContent() const override;
 
-  bool ChildrenCanHaveStyle() const override {
-    return WillUseFallbackContentAtLayout();
-  }
+  bool ChildrenCanHaveStyle() const override { return UseFallbackContent(); }
 
   // Implementations of constraint validation API.
   // Note that the object elements are always barred from constraint validation.
