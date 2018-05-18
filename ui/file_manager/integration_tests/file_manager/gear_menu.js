@@ -403,3 +403,101 @@ testcase.showPasteIntoCurrentFolder = function() {
     },
   ]);
 };
+
+/**
+ * Test for the "select-all" menu item
+ */
+testcase.showSelectAllInCurrentFolder = function() {
+  const entrySet = [ENTRIES.newlyAdded];
+  var appId;
+  StepsRunner.run([
+    function() {
+      openNewWindow(null, RootPath.DOWNLOADS).then(this.next);
+    },
+    function(inAppId) {
+      appId = inAppId;
+      remoteCall.waitForElement(appId, '#detail-table').then(this.next);
+    },
+    function() {
+      remoteCall.waitForElement(appId, '#gear-button').then(this.next);
+    },
+
+    // 1. Before selecting entries
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for menu to appear.
+    function() {
+      remoteCall.waitForElement(appId, '#gear-menu:not([hidden])')
+          .then(this.next);
+    },
+    // #select-all command is shown. It should be disabled
+    // because no files yet
+    function(result) {
+      remoteCall
+          .waitForElement(
+              appId,
+              '#gear-menu cr-menu-item' +
+                  '[command=\'#select-all\']' +
+                  '[disabled]:not([hidden])')
+          .then(this.next);
+    },
+    // Hide gear menu
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#file-list'], this.next);
+    },
+    function() {
+      remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
+    },
+    // Add new file
+    function() {
+      addEntries(['local'], entrySet, this.next);
+    },
+    // Wait for the new files to appear in the file list.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForFiles(appId, TestEntryInfo.getExpectedRows(entrySet))
+          .then(this.next);
+    },
+    // Re-show gear menu again
+    function(result) {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-button'], this.next);
+    },
+    // Wait for menu to appear.
+    // The 'Select all' command appears enabled.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall
+          .waitForElement(
+              appId,
+              '#gear-menu:not([hidden]) cr-menu-item' +
+                  '[command=\'#select-all\']' +
+                  ':not([disabled]):not([hidden])')
+          .then(this.next);
+    },
+    // Click 'Select all' menu item.
+    function(results) {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#gear-menu-select-all'], this.next);
+    },
+    // Wait for selection.
+    function() {
+      remoteCall.waitForElement(appId, '#file-list li[selected]')
+          .then(this.next);
+    },
+    // Hide gear menu
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseClick', appId, ['#file-list'], this.next);
+    },
+    function() {
+      remoteCall.waitForElement(appId, '#gear-menu[hidden]').then(this.next);
+    },
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    },
+  ]);
+};
