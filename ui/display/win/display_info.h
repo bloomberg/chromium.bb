@@ -17,9 +17,12 @@ namespace win {
 // Gathers the parameters necessary to create a win::ScreenWinDisplay.
 class DISPLAY_EXPORT DisplayInfo final {
  public:
-  DisplayInfo(const MONITORINFOEX& monitor_info, float device_scale_factor);
   DisplayInfo(const MONITORINFOEX& monitor_info,
               float device_scale_factor,
+              float sdr_white_level);
+  DisplayInfo(const MONITORINFOEX& monitor_info,
+              float device_scale_factor,
+              float sdr_white_level,
               Display::Rotation rotation);
 
   static int64_t DeviceIdFromDeviceName(const wchar_t* device_name);
@@ -29,6 +32,7 @@ class DISPLAY_EXPORT DisplayInfo final {
   const gfx::Rect& screen_rect() const { return screen_rect_; }
   const gfx::Rect& screen_work_rect() const { return screen_work_rect_; }
   float device_scale_factor() const { return device_scale_factor_; }
+  float sdr_white_level() const { return sdr_white_level_; }
 
  private:
   int64_t id_;
@@ -36,6 +40,7 @@ class DISPLAY_EXPORT DisplayInfo final {
   gfx::Rect screen_rect_;
   gfx::Rect screen_work_rect_;
   float device_scale_factor_;
+  float sdr_white_level_;
 };
 
 }  // namespace win

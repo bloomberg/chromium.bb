@@ -37,19 +37,23 @@ Display::Rotation GetRotationForDevice(const wchar_t* device_name) {
 namespace win {
 
 DisplayInfo::DisplayInfo(const MONITORINFOEX& monitor_info,
-                         float device_scale_factor)
+                         float device_scale_factor,
+                         float sdr_white_level)
     : DisplayInfo(monitor_info,
                   device_scale_factor,
+                  sdr_white_level,
                   GetRotationForDevice(monitor_info.szDevice)) {}
 
 DisplayInfo::DisplayInfo(const MONITORINFOEX& monitor_info,
                          float device_scale_factor,
+                         float sdr_white_level,
                          Display::Rotation rotation)
     : id_(DeviceIdFromDeviceName(monitor_info.szDevice)),
       rotation_(rotation),
       screen_rect_(monitor_info.rcMonitor),
       screen_work_rect_(monitor_info.rcWork),
-      device_scale_factor_(device_scale_factor) {}
+      device_scale_factor_(device_scale_factor),
+      sdr_white_level_(sdr_white_level) {}
 
 // static
 int64_t DisplayInfo::DeviceIdFromDeviceName(const wchar_t* device_name) {
