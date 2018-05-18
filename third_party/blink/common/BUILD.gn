@@ -22,6 +22,7 @@ jumbo_source_set("common") {
     "feature_policy/feature_policy.cc",
     "frame/frame_policy.cc",
     "manifest/manifest.cc",
+    "manifest/manifest_share_target_util.cc",
     "message_port/cloneable_message.cc",
     "message_port/cloneable_message_struct_traits.cc",
     "message_port/cloneable_message_struct_traits.h",
@@ -66,6 +67,7 @@ jumbo_source_set("common_unittests_sources") {
   sources = [
     "device_memory/approximated_device_memory_unittest.cc",
     "feature_policy/feature_policy_unittest.cc",
+    "manifest/manifest_share_target_util_unittest.cc",
     "message_port/string_message_codec_unittest.cc",
     "mime_util/mime_util_unittest.cc",
     "origin_manifest/origin_manifest_unittest.cc",

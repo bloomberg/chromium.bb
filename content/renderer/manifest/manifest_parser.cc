@@ -13,9 +13,9 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "content/public/common/manifest_share_target_util.h"
 #include "content/public/common/manifest_util.h"
 #include "content/renderer/manifest/manifest_uma_util.h"
+#include "third_party/blink/public/common/manifest/manifest_share_target_util.h"
 #include "third_party/blink/public/platform/web_icon_sizes_parser.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -345,7 +345,7 @@ GURL ManifestParser::ParseShareTargetURLTemplate(
     const base::DictionaryValue& share_target) {
   GURL url_template = ParseURL(share_target, "url_template", manifest_url_,
                                ParseURLOriginRestrictions::kSameOriginOnly);
-  if (!ValidateWebShareUrlTemplate(url_template)) {
+  if (!blink::ValidateWebShareUrlTemplate(url_template)) {
     AddErrorInfo(
         "property 'url_template' ignored. Placeholders have incorrect "
         "syntax.");

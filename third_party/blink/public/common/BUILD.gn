@@ -40,6 +40,7 @@ source_set("headers") {
     "frame/frame_policy.h",
     "frame/sandbox_flags.h",
     "manifest/manifest.h",
+    "manifest/manifest_share_target_util.h",
     "manifest/web_display_mode.h",
     "message_port/cloneable_message.h",
     "message_port/message_port_channel.h",
