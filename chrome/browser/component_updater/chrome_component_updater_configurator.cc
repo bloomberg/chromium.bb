@@ -6,7 +6,6 @@
 
 #include <stdint.h>
 
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,6 +18,7 @@
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
+#include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/configurator_impl.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -83,7 +83,9 @@ class ChromeConfigurator : public update_client::Configurator {
 // a custom message signing protocol and it does not depend on using HTTPS.
 ChromeConfigurator::ChromeConfigurator(const base::CommandLine* cmdline,
                                        PrefService* pref_service)
-    : configurator_impl_(cmdline, false), pref_service_(pref_service) {
+    : configurator_impl_(ComponentUpdaterCommandLineConfigPolicy(cmdline),
+                         false),
+      pref_service_(pref_service) {
   DCHECK(pref_service_);
 }
 
