@@ -38,7 +38,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   ~ServiceWorkerDispatcher() override;
 
   // Returns the existing service worker or a newly created one with the given
-  // object info.
+  // object info. This is only to be used in service worker execution contexts,
+  // please use ServiceWorkerProviderContext::GetOrCreateServiceWorkerObject()
+  // instead in service worker client contexts.
   scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorker(
       blink::mojom::ServiceWorkerObjectInfoPtr info);
 
@@ -60,7 +62,9 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  // Keeps map from handle_id to ServiceWorker object.
+  // Keeps map from handle_id to ServiceWorker object. These functions are only
+  // to be called by those WebServiceWorkerImpls in service worker execution
+  // contexts, i.e. those created by GetOrCreateServiceWorker().
   void AddServiceWorker(int handle_id, WebServiceWorkerImpl* worker);
   void RemoveServiceWorker(int handle_id);
 

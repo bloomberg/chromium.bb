@@ -83,6 +83,7 @@ scoped_refptr<WebServiceWorkerRegistrationImpl>
 WebServiceWorkerRegistrationImpl::CreateForServiceWorkerClient(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info,
     base::WeakPtr<ServiceWorkerProviderContext> provider_context) {
+  DCHECK(provider_context);
   scoped_refptr<WebServiceWorkerRegistrationImpl> impl =
       new WebServiceWorkerRegistrationImpl(std::move(info),
                                            std::move(provider_context));
@@ -251,28 +252,26 @@ WebServiceWorkerRegistrationImpl::WebServiceWorkerRegistrationImpl(
     base::WeakPtr<ServiceWorkerProviderContext> provider_context)
     : proxy_(nullptr),
       binding_(this),
+      is_for_client_(provider_context),
       provider_context_for_client_(std::move(provider_context)) {
   Attach(std::move(info));
-
-  if (provider_context_for_client_)
-    provider_context_for_client_->AddServiceWorkerRegistration(
+  if (is_for_client_) {
+    provider_context_for_client_->AddServiceWorkerRegistrationObject(
         info_->registration_id, this);
+  }
 }
 
 WebServiceWorkerRegistrationImpl::~WebServiceWorkerRegistrationImpl() {
   if (provider_context_for_client_) {
-    provider_context_for_client_->RemoveServiceWorkerRegistration(
+    provider_context_for_client_->RemoveServiceWorkerRegistrationObject(
         info_->registration_id);
   }
 }
 
 void WebServiceWorkerRegistrationImpl::SetInstalling(
     blink::mojom::ServiceWorkerObjectInfoPtr info) {
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
   scoped_refptr<WebServiceWorkerImpl> service_worker =
-      dispatcher->GetOrCreateServiceWorker(std::move(info));
+      GetOrCreateServiceWorkerObject(std::move(info));
   if (proxy_)
     proxy_->SetInstalling(WebServiceWorkerImpl::CreateHandle(service_worker));
   else
@@ -281,11 +280,8 @@ void WebServiceWorkerRegistrationImpl::SetInstalling(
 
 void WebServiceWorkerRegistrationImpl::SetWaiting(
     blink::mojom::ServiceWorkerObjectInfoPtr info) {
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
   scoped_refptr<WebServiceWorkerImpl> service_worker =
-      dispatcher->GetOrCreateServiceWorker(std::move(info));
+      GetOrCreateServiceWorkerObject(std::move(info));
   if (proxy_)
     proxy_->SetWaiting(WebServiceWorkerImpl::CreateHandle(service_worker));
   else
@@ -294,11 +290,8 @@ void WebServiceWorkerRegistrationImpl::SetWaiting(
 
 void WebServiceWorkerRegistrationImpl::SetActive(
     blink::mojom::ServiceWorkerObjectInfoPtr info) {
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
   scoped_refptr<WebServiceWorkerImpl> service_worker =
-      dispatcher->GetOrCreateServiceWorker(std::move(info));
+      GetOrCreateServiceWorkerObject(std::move(info));
   if (proxy_)
     proxy_->SetActive(WebServiceWorkerImpl::CreateHandle(service_worker));
   else
@@ -311,14 +304,30 @@ void WebServiceWorkerRegistrationImpl::RefreshVersionAttributes() {
   SetActive(std::move(info_->active));
 }
 
+scoped_refptr<WebServiceWorkerImpl>
+WebServiceWorkerRegistrationImpl::GetOrCreateServiceWorkerObject(
+    blink::mojom::ServiceWorkerObjectInfoPtr info) {
+  scoped_refptr<WebServiceWorkerImpl> service_worker;
+  if (is_for_client_) {
+    if (provider_context_for_client_) {
+      service_worker =
+          provider_context_for_client_->GetOrCreateServiceWorkerObject(
+              std::move(info));
+    }
+  } else {
+    ServiceWorkerDispatcher* dispatcher =
+        ServiceWorkerDispatcher::GetThreadSpecificInstance();
+    DCHECK(dispatcher);
+    service_worker = dispatcher->GetOrCreateServiceWorker(std::move(info));
+  }
+  return service_worker;
+}
+
 void WebServiceWorkerRegistrationImpl::SetVersionAttributes(
     int changed_mask,
     blink::mojom::ServiceWorkerObjectInfoPtr installing,
     blink::mojom::ServiceWorkerObjectInfoPtr waiting,
     blink::mojom::ServiceWorkerObjectInfoPtr active) {
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
   ChangedVersionAttributesMask mask(changed_mask);
   DCHECK(mask.installing_changed() || !installing);
   if (mask.installing_changed()) {

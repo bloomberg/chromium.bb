@@ -25,7 +25,6 @@ class WebServiceWorkerProviderClient;
 
 namespace content {
 
-class ServiceWorkerDispatcher;
 class ServiceWorkerProviderContext;
 
 // This class corresponds to one ServiceWorkerContainer interface in
@@ -71,8 +70,6 @@ class CONTENT_EXPORT WebServiceWorkerProviderImpl
   int provider_id() const;
 
  private:
-  ServiceWorkerDispatcher* GetDispatcher();
-
   void OnRegistered(
       std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks,
       blink::mojom::ServiceWorkerErrorType error,

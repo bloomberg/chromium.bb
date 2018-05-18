@@ -285,7 +285,6 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
 
   // current() may be null in tests.
   if (ChildThreadImpl::current()) {
-    ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
         provider_id, provider_type, std::move(client_request),
         std::move(host_ptr_info), std::move(controller_info),

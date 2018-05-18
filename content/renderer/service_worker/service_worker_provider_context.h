@@ -37,6 +37,7 @@ namespace service_worker_provider_context_unittest {
 class ServiceWorkerProviderContextTest;
 }  // namespace service_worker_provider_context_unittest
 
+class WebServiceWorkerImpl;
 class WebServiceWorkerRegistrationImpl;
 struct ServiceWorkerProviderContextDeleter;
 
@@ -155,8 +156,13 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // For service worker clients. Returns the registration object described by
   // |info|. Creates a new object if needed, or else returns the existing one.
   scoped_refptr<WebServiceWorkerRegistrationImpl>
-  GetOrCreateRegistrationForServiceWorkerClient(
+  GetOrCreateServiceWorkerRegistrationObject(
       blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info);
+
+  // For service worker clients. Returns the service worker object described by
+  // |info|. Creates a new object if needed, or else returns the existing one.
+  scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorkerObject(
+      blink::mojom::ServiceWorkerObjectInfoPtr info);
 
   // Called when ServiceWorkerNetworkProvider is destructed. This function
   // severs the Mojo binding to the browser-side ServiceWorkerProviderHost. The
@@ -185,6 +191,7 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
                                           ServiceWorkerProviderContextDeleter>;
   friend class service_worker_provider_context_unittest::
       ServiceWorkerProviderContextTest;
+  friend class WebServiceWorkerImpl;
   friend class WebServiceWorkerRegistrationImpl;
   friend struct ServiceWorkerProviderContextDeleter;
   struct ProviderStateForClient;
@@ -206,11 +213,18 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // For service worker clients. Keeps the mapping from registration_id to
   // ServiceWorkerRegistration object.
-  void AddServiceWorkerRegistration(
+  void AddServiceWorkerRegistrationObject(
       int64_t registration_id,
       WebServiceWorkerRegistrationImpl* registration);
-  void RemoveServiceWorkerRegistration(int64_t registration_id);
-  bool ContainsServiceWorkerRegistrationForTesting(int64_t registration_id);
+  void RemoveServiceWorkerRegistrationObject(int64_t registration_id);
+  bool ContainsServiceWorkerRegistrationObjectForTesting(
+      int64_t registration_id);
+
+  // For service worker clients. Keeps the mapping from handle to
+  // ServiceWorker object.
+  void AddServiceWorkerObject(int handle_id, WebServiceWorkerImpl* worker);
+  void RemoveServiceWorkerObject(int handle_id);
+  bool ContainsServiceWorkerObjectForTesting(int handle_id);
 
   // S13nServiceWorker:
   // For service worker clients.
