@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/common/favicon_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,9 +38,14 @@ class FaviconDownloaderTest : public ChromeRenderViewHostTestHarness {
 
   ~FaviconDownloaderTest() override {}
 
+ protected:
+  base::HistogramTester histogram_tester_;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(FaviconDownloaderTest);
 };
+
+const char* kTestHistogramName = "FaviconDownloader.TestHistogram";
 
 }  // namespace
 
@@ -50,10 +56,10 @@ class TestFaviconDownloader : public FaviconDownloader {
       : FaviconDownloader(
             web_contents,
             extra_favicon_urls,
-            base::Bind(&TestFaviconDownloader::DownloadsComplete,
-                       base::Unretained(this))),
-        id_counter_(0) {
-  }
+            kTestHistogramName,
+            base::BindOnce(&TestFaviconDownloader::DownloadsComplete,
+                           base::Unretained(this))),
+        id_counter_(0) {}
   ~TestFaviconDownloader() override {}
 
   int DownloadImage(const GURL& url) override { return id_counter_++; }
@@ -118,6 +124,7 @@ TEST_F(FaviconDownloaderTest, SimpleDownload) {
 
   EXPECT_EQ(1u, downloader.favicon_map().size());
   EXPECT_EQ(1u, downloader.favicon_map()[favicon_url].size());
+  histogram_tester_.ExpectUniqueSample(kTestHistogramName, 2, 1);
 }
 
 TEST_F(FaviconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
@@ -143,6 +150,7 @@ TEST_F(FaviconDownloaderTest, DownloadWithUrlsFromWebContentsNotification) {
 
   EXPECT_EQ(1u, downloader.favicon_map().size());
   EXPECT_EQ(1u, downloader.favicon_map()[favicon_url].size());
+  histogram_tester_.ExpectUniqueSample(kTestHistogramName, 2, 1);
 }
 
 TEST_F(FaviconDownloaderTest, DownloadMultipleUrls) {
@@ -190,6 +198,7 @@ TEST_F(FaviconDownloaderTest, DownloadMultipleUrls) {
   EXPECT_EQ(0u, downloader.favicon_map()[empty_favicon].size());
   EXPECT_EQ(1u, downloader.favicon_map()[favicon_url_1].size());
   EXPECT_EQ(2u, downloader.favicon_map()[favicon_url_2].size());
+  histogram_tester_.ExpectUniqueSample(kTestHistogramName, 2, 3);
 }
 
 TEST_F(FaviconDownloaderTest, SkipPageFavicons) {
@@ -224,4 +233,5 @@ TEST_F(FaviconDownloaderTest, SkipPageFavicons) {
   EXPECT_EQ(1u, downloader.favicon_map().size());
   EXPECT_EQ(1u, downloader.favicon_map()[favicon_url_1].size());
   EXPECT_EQ(0u, downloader.favicon_map()[favicon_url_2].size());
+  histogram_tester_.ExpectUniqueSample(kTestHistogramName, 2, 1);
 }

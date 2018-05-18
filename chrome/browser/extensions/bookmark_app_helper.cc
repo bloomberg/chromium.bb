@@ -266,8 +266,9 @@ class BookmarkAppInstaller : public base::RefCounted<BookmarkAppInstaller>,
                      const GURL& validated_url) override {
     favicon_downloader_.reset(new FaviconDownloader(
         web_contents_.get(), urls_to_download_,
-        base::Bind(&BookmarkAppInstaller::OnIconsDownloaded,
-                    base::Unretained(this))));
+        "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnSync",
+        base::BindOnce(&BookmarkAppInstaller::OnIconsDownloaded,
+                       base::Unretained(this))));
 
     // Skip downloading the page favicons as everything in is the URL list.
     favicon_downloader_->SkipPageFavicons();
@@ -646,10 +647,11 @@ void BookmarkAppHelper::OnDidPerformInstallableCheck(
     web_app_info_.icons.push_back(primary_icon_info);
   }
 
-  favicon_downloader_.reset(
-      new FaviconDownloader(contents_, web_app_info_icon_urls,
-                            base::Bind(&BookmarkAppHelper::OnIconsDownloaded,
-                                       weak_factory_.GetWeakPtr())));
+  favicon_downloader_.reset(new FaviconDownloader(
+      contents_, web_app_info_icon_urls,
+      "Extensions.BookmarkApp.Icon.HttpStatusCodeClassOnCreate",
+      base::BindOnce(&BookmarkAppHelper::OnIconsDownloaded,
+                     weak_factory_.GetWeakPtr())));
 
   // If the manifest specified icons, don't use the page icons.
   if (!data.manifest->icons.empty())

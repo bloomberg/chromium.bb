@@ -34,18 +34,21 @@ class Size;
 class FaviconDownloader : public content::WebContentsObserver {
  public:
   typedef std::map<GURL, std::vector<SkBitmap> > FaviconMap;
-  typedef base::Callback<void(
-          bool,  /* success */
-          /* A map of icon urls to the bitmaps provided by that url. */
-          const FaviconMap&)>
+  typedef base::OnceCallback<void(
+      bool, /* success */
+      /* A map of icon urls to the bitmaps provided by that url. */
+      const FaviconMap&)>
       FaviconDownloaderCallback;
   // |extra_favicon_urls| allows callers to provide icon urls that aren't
   // provided by the renderer (e.g touch icons on non-android environments).
   // |skip_page_favicons| instructs the downloader to not query the page
   // for favicons (e.g. when a favicon URL has already been provided in
   // |extra_favicon_urls|).
+  // |https_status_code_class_histogram_name| optionally specifies a histogram
+  // to use for logging http status code class results from fetch attempts.
   FaviconDownloader(content::WebContents* web_contents,
                     const std::vector<GURL>& extra_favicon_urls,
+                    const char* https_status_code_class_histogram_name,
                     FaviconDownloaderCallback callback);
   ~FaviconDownloader() override;
 
@@ -105,6 +108,9 @@ class FaviconDownloader : public content::WebContentsObserver {
 
   // Callback to run on favicon download completion.
   FaviconDownloaderCallback callback_;
+
+  // The histogram name to log individual fetch results under.
+  std::string https_status_code_class_histogram_name_;
 
   base::WeakPtrFactory<FaviconDownloader> weak_ptr_factory_;
 
