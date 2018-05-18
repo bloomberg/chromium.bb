@@ -10,6 +10,7 @@
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/policy/core/common/cloud/policy_builder.h"
+#include "components/policy/core/common/policy_test_utils.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,10 +36,7 @@ using ResponseType = ComponentActiveDirectoryPolicyRetriever::ResponseType;
 
 class ComponentActiveDirectoryPolicyRetrieverTest : public testing::Test {
  protected:
-  ComponentActiveDirectoryPolicyRetrieverTest() {}
-
-  // testing::Test:
-  void SetUp() override {
+  ComponentActiveDirectoryPolicyRetrieverTest() {
     auto session_manager_client =
         std::make_unique<chromeos::FakeSessionManagerClient>();
     session_manager_client_ = session_manager_client.get();
