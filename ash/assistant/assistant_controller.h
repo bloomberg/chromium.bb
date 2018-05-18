@@ -121,6 +121,7 @@ class AssistantController
       mojom::AssistantCardRendererPtr assistant_card_renderer) override;
   void RequestScreenshot(const gfx::Rect& rect,
                          RequestScreenshotCallback callback) override;
+  void OnCardPressed(const GURL& url) override;
 
  private:
   mojo::BindingSet<mojom::AssistantController> assistant_controller_bindings_;

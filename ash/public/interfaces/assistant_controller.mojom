@@ -7,6 +7,7 @@ module ash.mojom;
 import "ash/public/interfaces/assistant_card_renderer.mojom";
 import "chromeos/services/assistant/public/mojom/assistant.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "url/mojom/url.mojom";
 
 // Interface for AssistantManagerService to communicate with
 // AssistantController.
@@ -22,4 +23,7 @@ interface AssistantController {
   // encoded in JPEG format. If |rect| is empty, it returns fullscreen
   // screenshot.
   RequestScreenshot(gfx.mojom.Rect rect) => (array<uint8> screenshot);
+
+  // Invoked on Assistant card pressed event to handle navigating to |url|.
+  OnCardPressed(url.mojom.Url url);
 };
