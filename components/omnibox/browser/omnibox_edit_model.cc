@@ -258,7 +258,7 @@ void OmniboxEditModel::OnChanged() {
       CurrentMatch(nullptr) : AutocompleteMatch();
 
   client_->OnTextChanged(current_match, user_input_in_progress_, user_text_,
-                         result(), PopupIsOpen(), has_focus());
+                         result(), has_focus());
   controller_->OnChanged();
 }
 

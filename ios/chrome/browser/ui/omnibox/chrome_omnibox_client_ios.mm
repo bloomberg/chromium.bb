@@ -135,8 +135,6 @@ bool ChromeOmniboxClientIOS::ProcessExtensionKeyword(
   return false;
 }
 
-void ChromeOmniboxClientIOS::OnInputStateChanged() {}
-
 void ChromeOmniboxClientIOS::OnFocusChanged(OmniboxFocusState state,
                                             OmniboxFocusChangeReason reason) {
   // TODO(crbug.com/754050): OnFocusChanged is not the correct place to be
@@ -189,10 +187,6 @@ void ChromeOmniboxClientIOS::OnResultChanged(
   }
 }
 
-void ChromeOmniboxClientIOS::OnCurrentMatchChanged(const AutocompleteMatch&) {}
-
-void ChromeOmniboxClientIOS::OnURLOpenedFromOmnibox(OmniboxLog* log) {}
-
 void ChromeOmniboxClientIOS::OnBookmarkLaunched() {
   RecordBookmarkLaunch(BOOKMARK_LAUNCH_LOCATION_OMNIBOX);
 }
@@ -212,15 +206,3 @@ gfx::Image ChromeOmniboxClientIOS::GetFavicon() const {
   return favicon::WebFaviconDriver::FromWebState(controller_->GetWebState())
       ->GetFavicon();
 }
-
-void ChromeOmniboxClientIOS::OnTextChanged(
-    const AutocompleteMatch& current_match,
-    bool user_input_in_progress,
-    const base::string16& user_text,
-    const AutocompleteResult& result,
-    bool is_popup_open,
-    bool has_focus) {}
-
-void ChromeOmniboxClientIOS::OnInputAccepted(const AutocompleteMatch& match) {}
-
-void ChromeOmniboxClientIOS::OnRevert() {}

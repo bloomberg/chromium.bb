@@ -369,7 +369,6 @@ void ChromeOmniboxClient::OnTextChanged(const AutocompleteMatch& current_match,
                                         bool user_input_in_progress,
                                         const base::string16& user_text,
                                         const AutocompleteResult& result,
-                                        bool is_popup_open,
                                         bool has_focus) {
   AutocompleteActionPredictor::Action recommended_action =
       AutocompleteActionPredictor::ACTION_NONE;
