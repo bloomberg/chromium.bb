@@ -103,3 +103,9 @@ Current patches:
   configure
     Check explicity for v4l2, else it seems to include v4l2-m2m in the build
     anyway.  https://crbug.com/841360 .
+
+  compat/atomics/win32/stdatomic.h
+    Remove unused fns that don't compile on windows (65d55e6e21e).
+
+  libavcodec/mpegaudio_parser.c
+    Don't invoke trailing garbage discard for every flush. (261398f81e5).
