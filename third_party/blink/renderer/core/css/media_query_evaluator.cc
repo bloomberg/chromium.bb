@@ -29,9 +29,9 @@
 
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/shape_properties.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
 #include "third_party/blink/renderer/core/css/css_to_length_conversion_data.h"

@@ -5,7 +5,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-using IconPurpose = content::Manifest::Icon::IconPurpose;
+using IconPurpose = blink::Manifest::Icon::IconPurpose;
 
 class InstallableTaskQueueUnitTest : public testing::Test {};
 

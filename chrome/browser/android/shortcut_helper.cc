@@ -26,8 +26,8 @@
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/manifest.h"
 #include "jni/ShortcutHelper_jni.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/color_analysis.h"
@@ -143,7 +143,7 @@ void AddShortcutWithSkBitmap(const ShortcutInfo& info,
 // static
 std::unique_ptr<ShortcutInfo> ShortcutHelper::CreateShortcutInfo(
     const GURL& manifest_url,
-    const content::Manifest& manifest,
+    const blink::Manifest& manifest,
     const GURL& primary_icon_url,
     const GURL& badge_icon_url) {
   auto shortcut_info = std::make_unique<ShortcutInfo>(GURL());
@@ -161,7 +161,7 @@ std::unique_ptr<ShortcutInfo> ShortcutHelper::CreateShortcutInfo(
       content::ManifestIconSelector::FindBestMatchingIcon(
           manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
           shortcut_info->minimum_splash_image_size_in_px,
-          content::Manifest::Icon::IconPurpose::ANY);
+          blink::Manifest::Icon::IconPurpose::ANY);
 
   return shortcut_info;
 }

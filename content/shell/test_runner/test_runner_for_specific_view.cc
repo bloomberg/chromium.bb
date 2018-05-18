@@ -304,7 +304,7 @@ void TestRunnerForSpecificView::GetManifestThen(
 void TestRunnerForSpecificView::GetManifestCallback(
     v8::UniquePersistent<v8::Function> callback,
     const GURL& manifest_url,
-    const content::Manifest& manifest) {
+    const blink::Manifest& manifest) {
   PostV8CallbackWithArgs(std::move(callback), 0, nullptr);
 }
 

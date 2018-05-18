@@ -11,7 +11,7 @@
 
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_lock_type.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
@@ -73,7 +73,7 @@ struct ShortcutInfo {
   ~ShortcutInfo();
 
   // Updates the info based on the given |manifest|.
-  void UpdateFromManifest(const content::Manifest& manifest);
+  void UpdateFromManifest(const blink::Manifest& manifest);
 
   // Updates the source of the shortcut.
   void UpdateSource(const Source source);

@@ -65,7 +65,7 @@
 #include "net/url_request/url_request.h"
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/platform/web_display_mode.h"
+#include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
@@ -337,7 +337,7 @@ namespace extensions {
 
 // static
 void BookmarkAppHelper::UpdateWebAppInfoFromManifest(
-    const content::Manifest& manifest,
+    const blink::Manifest& manifest,
     WebApplicationInfo* web_app_info,
     ForInstallableSite for_installable_site) {
   if (!manifest.short_name.is_null())

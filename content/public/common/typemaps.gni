@@ -4,7 +4,6 @@
 
 typemaps = [
   "//content/public/common/load_timing_info.typemap",
-  "//content/public/common/manifest.typemap",
   "//content/public/common/referrer.typemap",
   "//content/public/common/resource_type.typemap",
   "//content/public/common/speech_recognition_result.typemap",

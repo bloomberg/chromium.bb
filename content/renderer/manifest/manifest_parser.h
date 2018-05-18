@@ -14,8 +14,8 @@
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
-#include "content/public/common/manifest.h"
-#include "third_party/blink/public/platform/modules/manifest/manifest.mojom.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
@@ -40,7 +40,7 @@ class CONTENT_EXPORT ManifestParser {
   // http://w3c.github.io/manifest/#dfn-steps-for-processing-a-manifest
   void Parse();
 
-  const Manifest& manifest() const;
+  const blink::Manifest& manifest() const;
   bool failed() const;
 
   void TakeErrors(std::vector<blink::mojom::ManifestErrorPtr>* errors);
@@ -146,14 +146,14 @@ class CONTENT_EXPORT ManifestParser {
   // Returns a vector of Manifest::Icon::IconPurpose with the successfully
   // parsed icon purposes, and a vector with Manifest::Icon::IconPurpose::Any if
   // the parsing failed.
-  std::vector<Manifest::Icon::IconPurpose> ParseIconPurpose(
+  std::vector<blink::Manifest::Icon::IconPurpose> ParseIconPurpose(
       const base::DictionaryValue& icon);
 
   // Parses the 'icons' field of a Manifest, as defined in:
   // https://w3c.github.io/manifest/#dfn-steps-for-processing-an-array-of-images
   // Returns a vector of Manifest::Icon with the successfully parsed icons, if
   // any. An empty vector if the field was not present or empty.
-  std::vector<Manifest::Icon> ParseIcons(
+  std::vector<blink::Manifest::Icon> ParseIcons(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'url_template' field of a Share Target, as defined in:
@@ -165,7 +165,7 @@ class CONTENT_EXPORT ManifestParser {
   // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
   // Returns the parsed Web Share target. The returned Share Target is null if
   // the field didn't exist, parsing failed, or it was empty.
-  base::Optional<Manifest::ShareTarget> ParseShareTarget(
+  base::Optional<blink::Manifest::ShareTarget> ParseShareTarget(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'platform' field of a related application, as defined in:
@@ -190,7 +190,7 @@ class CONTENT_EXPORT ManifestParser {
   // Returns a vector of Manifest::RelatedApplication with the successfully
   // parsed applications, if any. An empty vector if the field was not present
   // or empty.
-  std::vector<Manifest::RelatedApplication> ParseRelatedApplications(
+  std::vector<blink::Manifest::RelatedApplication> ParseRelatedApplications(
       const base::DictionaryValue& dictionary);
 
   // Parses the 'prefer_related_applications' field on the manifest, as defined
@@ -231,7 +231,7 @@ class CONTENT_EXPORT ManifestParser {
   GURL document_url_;
 
   bool failed_;
-  Manifest manifest_;
+  blink::Manifest manifest_;
   std::vector<blink::mojom::ManifestErrorPtr> errors_;
 
   DISALLOW_COPY_AND_ASSIGN(ManifestParser);

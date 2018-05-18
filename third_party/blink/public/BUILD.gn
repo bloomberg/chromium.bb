@@ -69,8 +69,8 @@ buildflag_header("buildflags") {
 if (is_android) {
   java_cpp_enum("blink_headers_java_enums_srcjar") {
     sources = [
+      "./common/manifest/web_display_mode.h",
       "./platform/modules/remoteplayback/web_remote_playback_availability.h",
-      "./platform/web_display_mode.h",
       "./platform/web_focus_type.h",
       "./platform/web_input_event.h",
       "./platform/web_referrer_policy.h",
@@ -237,7 +237,6 @@ source_set("blink_headers") {
     "platform/web_data.h",
     "platform/web_data_consumer_handle.h",
     "platform/web_database_observer.h",
-    "platform/web_display_mode.h",
     "platform/web_distillability.h",
     "platform/web_document_subresource_filter.h",
     "platform/web_double_point.h",
@@ -705,7 +704,6 @@ mojom("mojo_bindings") {
     "platform/autoplay.mojom",
     "platform/content_security_policy.mojom",
     "platform/dedicated_worker_factory.mojom",
-    "platform/display_mode.mojom",
     "platform/media_download_in_product_help.mojom",
     "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",
@@ -722,8 +720,6 @@ mojom("mojo_bindings") {
     "platform/modules/insecure_input/insecure_input_service.mojom",
     "platform/modules/keyboard_lock/keyboard_lock.mojom",
     "platform/modules/locks/lock_manager.mojom",
-    "platform/modules/manifest/manifest.mojom",
-    "platform/modules/manifest/manifest_manager.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/payments/payment_app.mojom",

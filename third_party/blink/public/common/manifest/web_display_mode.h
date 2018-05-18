@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_MODE_H_
-#define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_MODE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_WEB_DISPLAY_MODE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_WEB_DISPLAY_MODE_H_
 
 namespace blink {
 
 // Enumerates values of the display property of the Web App Manifest.
 //
+// TODO(dgozman): instead of this enum, use blink.mojom.DisplayMode directly.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.blink_public.platform
 // GENERATED_JAVA_PREFIX_TO_STRIP: WebDisplayMode
 enum WebDisplayMode {
@@ -24,4 +25,4 @@ enum WebDisplayMode {
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_DISPLAY_MODE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_MANIFEST_WEB_DISPLAY_MODE_H_

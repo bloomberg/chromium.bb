@@ -22,7 +22,7 @@
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "content/public/common/manifest.h"
+#include "third_party/blink/public/common/manifest/manifest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
@@ -87,7 +87,7 @@ class InstallableManager
   FRIEND_TEST_ALL_PREFIXES(InstallableManagerBrowserTest,
                            ManifestUrlChangeFlushesState);
 
-  using IconPurpose = content::Manifest::Icon::IconPurpose;
+  using IconPurpose = blink::Manifest::Icon::IconPurpose;
 
   struct EligiblityProperty {
     InstallableStatusCode error = NO_ERROR_DETECTED;
@@ -97,7 +97,7 @@ class InstallableManager
   struct ManifestProperty {
     InstallableStatusCode error = NO_ERROR_DETECTED;
     GURL url;
-    content::Manifest manifest;
+    blink::Manifest manifest;
     bool fetched = false;
   };
 
@@ -177,10 +177,10 @@ class InstallableManager
   void CheckEligiblity();
   void FetchManifest();
   void OnDidGetManifest(const GURL& manifest_url,
-                        const content::Manifest& manifest);
+                        const blink::Manifest& manifest);
 
   void CheckManifestValid();
-  bool IsManifestValidForWebApp(const content::Manifest& manifest);
+  bool IsManifestValidForWebApp(const blink::Manifest& manifest);
   void CheckServiceWorker();
   void OnDidCheckHasServiceWorker(content::ServiceWorkerCapability capability);
 
@@ -201,7 +201,7 @@ class InstallableManager
   void WebContentsDestroyed() override;
 
   const GURL& manifest_url() const;
-  const content::Manifest& manifest() const;
+  const blink::Manifest& manifest() const;
   bool valid_manifest();
   bool has_worker();
 
