@@ -101,15 +101,6 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
 
 SkiaOutputSurfaceImplOnGpu::~SkiaOutputSurfaceImplOnGpu() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // Destroy the surface with the context current, some surface destructors
-  // make GL calls.
-  if (!gpu_service_->context_for_skia()->MakeCurrent(surface_.get())) {
-    LOG(FATAL) << "Failed to make current.";
-    // TODO(penghuang): Handle the failure.
-  }
-  surface_ = nullptr;
-  sync_point_client_state_ = nullptr;
 }
 
 void SkiaOutputSurfaceImplOnGpu::Reshape(
