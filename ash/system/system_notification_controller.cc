@@ -11,6 +11,7 @@
 #include "ash/system/screen_security/screen_security_notification_controller.h"
 #include "ash/system/session/session_limit_notification_controller.h"
 #include "ash/system/supervised/supervised_notification_controller.h"
+#include "ash/system/tracing_notification_controller.h"
 #include "ash/system/update/update_notification_controller.h"
 #include "ui/message_center/message_center.h"
 
@@ -24,6 +25,9 @@ SystemNotificationController::SystemNotificationController()
           std::make_unique<ScreenSecurityNotificationController>()),
       session_limit_(std::make_unique<SessionLimitNotificationController>()),
       supervised_(std::make_unique<SupervisedNotificationController>()),
+      tracing_(features::IsSystemTrayUnifiedEnabled()
+                   ? std::make_unique<TracingNotificationController>()
+                   : nullptr),
       update_(features::IsSystemTrayUnifiedEnabled()
                   ? std::make_unique<UpdateNotificationController>()
                   : nullptr),

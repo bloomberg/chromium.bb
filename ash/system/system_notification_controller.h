@@ -16,6 +16,7 @@ class PowerNotificationController;
 class ScreenSecurityNotificationController;
 class SessionLimitNotificationController;
 class SupervisedNotificationController;
+class TracingNotificationController;
 class UpdateNotificationController;
 class WifiToggleNotificationController;
 
@@ -31,6 +32,7 @@ class SystemNotificationController {
   const std::unique_ptr<ScreenSecurityNotificationController> screen_security_;
   const std::unique_ptr<SessionLimitNotificationController> session_limit_;
   const std::unique_ptr<SupervisedNotificationController> supervised_;
+  const std::unique_ptr<TracingNotificationController> tracing_;
   const std::unique_ptr<UpdateNotificationController> update_;
   const std::unique_ptr<WifiToggleNotificationController> wifi_toggle_;
 
