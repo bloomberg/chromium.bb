@@ -8,6 +8,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_task_environment.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -41,13 +42,15 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
 
   void SetUp() override {
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-    db_ = LevelDBSiteCharacteristicsDatabase::OpenOrCreateDatabase(
+    db_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
         temp_dir_.GetPath());
+    WaitForAsyncOperationsToComplete();
     EXPECT_TRUE(db_);
   }
 
   void TearDown() override {
     db_.reset();
+    WaitForAsyncOperationsToComplete();
     EXPECT_TRUE(temp_dir_.Delete());
   }
 
@@ -59,22 +62,22 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
                   SiteCharacteristicsProto* receiving_proto) {
     EXPECT_TRUE(receiving_proto);
     bool success = false;
-    bool init_called = false;
     auto init_callback = base::BindOnce(
-        [](SiteCharacteristicsProto* proto, bool* res, bool* init_called,
+        [](SiteCharacteristicsProto* receiving_proto, bool* success,
            base::Optional<SiteCharacteristicsProto> proto_opt) {
-          *res = proto_opt.has_value();
-          *init_called = true;
+          *success = proto_opt.has_value();
           if (proto_opt)
-            proto->CopyFrom(proto_opt.value());
+            receiving_proto->CopyFrom(proto_opt.value());
         },
-        base::Unretained(receiving_proto), base::Unretained(&success),
-        base::Unretained(&init_called));
+        base::Unretained(receiving_proto), base::Unretained(&success));
     db_->ReadSiteCharacteristicsFromDB(origin, std::move(init_callback));
-    EXPECT_TRUE(init_called);
+    WaitForAsyncOperationsToComplete();
     return success;
   }
 
+  void WaitForAsyncOperationsToComplete() { task_env_.RunUntilIdle(); }
+
+  base::test::ScopedTaskEnvironment task_env_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<LevelDBSiteCharacteristicsDatabase> db_;
 };
@@ -98,23 +101,25 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, InitAndStoreSiteCharacteristic) {
 TEST_F(LevelDBSiteCharacteristicsDatabaseTest, RemoveEntries) {
   // Add multiple origins to the database.
   const size_t kEntryCount = 10;
-  SiteCharacteristicsProto protos[kEntryCount];
   std::vector<std::string> site_origins;
   for (size_t i = 0; i < kEntryCount; ++i) {
+    SiteCharacteristicsProto proto_temp;
     std::string site_origin = base::StringPrintf("%zu.com", i);
-    InitSiteCharacteristicProto(&protos[i],
+    InitSiteCharacteristicProto(&proto_temp,
                                 static_cast<::google::protobuf::int64>(i));
-    db_->WriteSiteCharacteristicsIntoDB(site_origin, protos[i]);
+    EXPECT_TRUE(proto_temp.IsInitialized());
+    db_->WriteSiteCharacteristicsIntoDB(site_origin, proto_temp);
     site_origins.emplace_back(site_origin);
   }
 
-  for (size_t i = 0; i < kEntryCount; ++i)
-    EXPECT_TRUE(protos[i].IsInitialized());
+  WaitForAsyncOperationsToComplete();
 
   // Remove half the origins from the database.
   std::vector<std::string> site_origins_to_remove(
       site_origins.begin(), site_origins.begin() + kEntryCount / 2);
   db_->RemoveSiteCharacteristicsFromDB(site_origins_to_remove);
+
+  WaitForAsyncOperationsToComplete();
 
   // Verify that the origins were removed correctly.
   SiteCharacteristicsProto proto_temp;
@@ -128,6 +133,8 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, RemoveEntries) {
 
   // Clear the database.
   db_->ClearDatabase();
+
+  WaitForAsyncOperationsToComplete();
 
   // Verify that no origin remains.
   for (auto iter : site_origins)

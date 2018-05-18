@@ -63,6 +63,10 @@ class MockLocalSiteCharacteristicsDatabase
                     LocalSiteCharacteristicsDatabase::
                         ReadSiteCharacteristicsFromDBCallback&));
 
+  MOCK_METHOD2(WriteSiteCharacteristicsIntoDB,
+               void(const std::string& site_origin,
+                    const SiteCharacteristicsProto& site_characteristic_proto));
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLocalSiteCharacteristicsDatabase);
 };
@@ -100,6 +104,14 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
   }
 
  protected:
+  scoped_refptr<TestLocalSiteCharacteristicsDataImpl> GetDataImpl(
+      const char* origin,
+      LocalSiteCharacteristicsDataImpl::OnDestroyDelegate* destroy_delegate,
+      LocalSiteCharacteristicsDatabase* database) {
+    return base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
+        origin, destroy_delegate, database);
+  }
+
   base::SimpleTestTickClock test_clock_;
   ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_;
   // Use a NiceMock as there's no need to add expectations in these tests,
@@ -113,8 +125,7 @@ class LocalSiteCharacteristicsDataImplTest : public ::testing::Test {
 
 TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_, &database_);
+      GetDataImpl(kDummyOrigin, &destroy_delegate_, &database_);
 
   EXPECT_TRUE(
       local_site_data->site_characteristics_for_testing().IsInitialized());
@@ -172,8 +183,8 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, BasicTestEndToEnd) {
 
 TEST_F(LocalSiteCharacteristicsDataImplTest, LastLoadedTime) {
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_, &database_);
+      GetDataImpl(kDummyOrigin, &destroy_delegate_, &database_);
+
   // Create a second instance of this object, simulates having several tab
   // owning it.
   auto local_site_data2(local_site_data);
@@ -203,8 +214,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, LastLoadedTime) {
 
 TEST_F(LocalSiteCharacteristicsDataImplTest, GetFeatureUsageForUnloadedSite) {
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_, &database_);
+      GetDataImpl(kDummyOrigin, &destroy_delegate_, &database_);
 
   local_site_data->NotifySiteLoaded();
   local_site_data->NotifyUsesAudioInBackground();
@@ -256,8 +266,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, AllDurationGetSavedOnUnload) {
   // This test helps making sure that the observation/timestamp fields get saved
   // for all the features being tracked.
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_, &database_);
+      GetDataImpl(kDummyOrigin, &destroy_delegate_, &database_);
 
   const base::TimeDelta kInterval = base::TimeDelta::FromSeconds(1);
   const auto kIntervalInternalRepresentation =
@@ -329,8 +338,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest, DestroyNotifiesDelegate) {
       strict_delegate;
   {
     auto local_site_data =
-        base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-            kDummyOrigin, &strict_delegate, &database_);
+        GetDataImpl(kDummyOrigin, &strict_delegate, &database_);
     EXPECT_CALL(strict_delegate, OnLocalSiteCharacteristicsDataImplDestroyed(
                                      local_site_data.get()));
   }
@@ -358,8 +366,7 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
               OnReadSiteCharacteristicsFromDB(::testing::_, ::testing::_))
       .WillOnce(::testing::Invoke(read_from_db_mock_impl));
   auto local_site_data =
-      base::MakeRefCounted<TestLocalSiteCharacteristicsDataImpl>(
-          kDummyOrigin, &destroy_delegate_, &mock_db);
+      GetDataImpl(kDummyOrigin, &destroy_delegate_, &mock_db);
   ::testing::Mock::VerifyAndClear(&mock_db);
 
   // Simulates audio in background usage before the callback gets called.
@@ -433,7 +440,59 @@ TEST_F(LocalSiteCharacteristicsDataImplTest,
 
   EXPECT_TRUE(
       local_site_data->site_characteristics_for_testing().IsInitialized());
+
+  EXPECT_CALL(mock_db,
+              WriteSiteCharacteristicsIntoDB(::testing::_, ::testing::_));
+  local_site_data = nullptr;
+  ::testing::Mock::VerifyAndClear(&mock_db);
 }
+
+TEST_F(LocalSiteCharacteristicsDataImplTest, LateAsyncReadDoesntEraseData) {
+  // Ensure that no historical data get lost if an asynchronous read from the
+  // database finishes after the last reference to a
+  // LocalSiteCharacteristicsDataImpl gets destroyed.
+
+  ::testing::StrictMock<MockLocalSiteCharacteristicsDatabase> mock_db;
+  LocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDBCallback
+      read_cb;
+  auto read_from_db_mock_impl =
+      [&](const std::string& site_origin,
+          LocalSiteCharacteristicsDatabase::
+              ReadSiteCharacteristicsFromDBCallback& callback) {
+        read_cb = std::move(callback);
+      };
+
+  EXPECT_CALL(mock_db,
+              OnReadSiteCharacteristicsFromDB(::testing::_, ::testing::_))
+      .WillOnce(::testing::Invoke(read_from_db_mock_impl));
+  auto local_site_data_writer =
+      GetDataImpl(kDummyOrigin, &destroy_delegate_, &mock_db);
+  ::testing::Mock::VerifyAndClear(&mock_db);
+
+  local_site_data_writer->NotifySiteLoaded();
+  local_site_data_writer->NotifyUsesAudioInBackground();
+  EXPECT_EQ(SiteFeatureUsage::kSiteFeatureInUse,
+            local_site_data_writer->UsesAudioInBackground());
+
+  local_site_data_writer->NotifySiteUnloaded();
+
+  // Releasing |local_site_data_writer| should cause this object to get
+  // destroyed but there shouldn't be any write operation as the read hasn't
+  // complete.
+  EXPECT_CALL(destroy_delegate_,
+              OnLocalSiteCharacteristicsDataImplDestroyed(::testing::_));
+  EXPECT_CALL(mock_db,
+              WriteSiteCharacteristicsIntoDB(::testing::_, ::testing::_))
+      .Times(0);
+  local_site_data_writer = nullptr;
+  ::testing::Mock::VerifyAndClear(&destroy_delegate_);
+  ::testing::Mock::VerifyAndClear(&mock_db);
+
+  EXPECT_TRUE(read_cb.IsCancelled());
+}
+
+// TODO(sebmarchand): Add a test to ensure that an asynchronous read happening
+// after a clear event doesn't complete.
 
 }  // namespace internal
 }  // namespace resource_coordinator

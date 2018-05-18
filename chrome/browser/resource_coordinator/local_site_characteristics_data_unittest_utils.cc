@@ -14,7 +14,8 @@ MockLocalSiteCharacteristicsDataImplOnDestroyDelegate::
 
 NoopLocalSiteCharacteristicsDatabase::NoopLocalSiteCharacteristicsDatabase() =
     default;
-NoopLocalSiteCharacteristicsDatabase::~NoopLocalSiteCharacteristicsDatabase() {}
+NoopLocalSiteCharacteristicsDatabase::~NoopLocalSiteCharacteristicsDatabase() =
+    default;
 
 void NoopLocalSiteCharacteristicsDatabase::ReadSiteCharacteristicsFromDB(
     const std::string& site_origin,

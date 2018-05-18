@@ -46,6 +46,13 @@ class LocalSiteCharacteristicsDataStoreTest : public ::testing::Test {
         data_store_(&profile_) {
     test_clock_.SetNowTicks(base::TimeTicks::UnixEpoch());
     test_clock_.Advance(base::TimeDelta::FromHours(1));
+    WaitForAsyncOperationsToComplete();
+  }
+
+  void TearDown() override { WaitForAsyncOperationsToComplete(); }
+
+  void WaitForAsyncOperationsToComplete() {
+    test_browser_thread_bundle_.RunUntilIdle();
   }
 
  protected:
@@ -79,6 +86,8 @@ TEST_F(LocalSiteCharacteristicsDataStoreTest, EndToEnd) {
   auto reader2 = data_store_.GetReaderForOrigin(kTestOrigin2);
   EXPECT_EQ(2U, data_store_.origin_data_map_for_testing().size());
   reader2.reset();
+
+  WaitForAsyncOperationsToComplete();
   EXPECT_EQ(1U, data_store_.origin_data_map_for_testing().size());
   reader_copy.reset();
 
