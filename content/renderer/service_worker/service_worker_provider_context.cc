@@ -17,7 +17,6 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
-#include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_subresource_loader.h"
 #include "content/renderer/service_worker/web_service_worker_impl.h"
 #include "content/renderer/service_worker/web_service_worker_registration_impl.h"
@@ -85,6 +84,10 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
   // For service worker clients. Map from registration id to JavaScript
   // ServiceWorkerRegistration object.
   std::map<int64_t, WebServiceWorkerRegistrationImpl*> registrations_;
+
+  // For service worker clients. Map from handle id to JavaScript ServiceWorker
+  // object.
+  std::map<int, WebServiceWorkerImpl*> workers_;
 };
 
 // For service worker clients.
@@ -209,14 +212,11 @@ ServiceWorkerProviderContext::CloneContainerHostPtrInfo() {
 }
 
 scoped_refptr<WebServiceWorkerRegistrationImpl>
-ServiceWorkerProviderContext::GetOrCreateRegistrationForServiceWorkerClient(
+ServiceWorkerProviderContext::GetOrCreateServiceWorkerRegistrationObject(
     blink::mojom::ServiceWorkerRegistrationObjectInfoPtr info) {
   DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow,
             provider_type_);
   DCHECK(state_for_client_);
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
 
   auto found = state_for_client_->registrations_.find(info->registration_id);
   if (found != state_for_client_->registrations_.end()) {
@@ -224,13 +224,26 @@ ServiceWorkerProviderContext::GetOrCreateRegistrationForServiceWorkerClient(
     return found->second;
   }
 
-  // WebServiceWorkerRegistrationImpl constructor calls
-  // AddServiceWorkerRegistration to add itself into
-  // |state_for_client_->registrations_|.
-  scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
-      WebServiceWorkerRegistrationImpl::CreateForServiceWorkerClient(
-          std::move(info), weak_factory_.GetWeakPtr());
-  return registration;
+  return WebServiceWorkerRegistrationImpl::CreateForServiceWorkerClient(
+      std::move(info), weak_factory_.GetWeakPtr());
+}
+
+scoped_refptr<WebServiceWorkerImpl>
+ServiceWorkerProviderContext::GetOrCreateServiceWorkerObject(
+    blink::mojom::ServiceWorkerObjectInfoPtr info) {
+  DCHECK_EQ(blink::mojom::ServiceWorkerProviderType::kForWindow,
+            provider_type_);
+  DCHECK(state_for_client_);
+  if (!info)
+    return nullptr;
+
+  auto found = state_for_client_->workers_.find(info->handle_id);
+  if (found != state_for_client_->workers_.end()) {
+    return found->second;
+  }
+
+  return WebServiceWorkerImpl::CreateForServiceWorkerClient(
+      std::move(info), weak_factory_.GetWeakPtr());
 }
 
 void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
@@ -346,7 +359,7 @@ void ServiceWorkerProviderContext::PostMessageToClient(
   }
 }
 
-void ServiceWorkerProviderContext::AddServiceWorkerRegistration(
+void ServiceWorkerProviderContext::AddServiceWorkerRegistrationObject(
     int64_t registration_id,
     WebServiceWorkerRegistrationImpl* registration) {
   DCHECK(state_for_client_);
@@ -355,17 +368,37 @@ void ServiceWorkerProviderContext::AddServiceWorkerRegistration(
   state_for_client_->registrations_[registration_id] = registration;
 }
 
-void ServiceWorkerProviderContext::RemoveServiceWorkerRegistration(
+void ServiceWorkerProviderContext::RemoveServiceWorkerRegistrationObject(
     int64_t registration_id) {
   DCHECK(state_for_client_);
   DCHECK(base::ContainsKey(state_for_client_->registrations_, registration_id));
   state_for_client_->registrations_.erase(registration_id);
 }
 
-bool ServiceWorkerProviderContext::ContainsServiceWorkerRegistrationForTesting(
-    int64_t registration_id) {
+bool ServiceWorkerProviderContext::
+    ContainsServiceWorkerRegistrationObjectForTesting(int64_t registration_id) {
   DCHECK(state_for_client_);
   return base::ContainsKey(state_for_client_->registrations_, registration_id);
+}
+
+void ServiceWorkerProviderContext::AddServiceWorkerObject(
+    int handle_id,
+    WebServiceWorkerImpl* worker) {
+  DCHECK(state_for_client_);
+  DCHECK(!base::ContainsKey(state_for_client_->workers_, handle_id));
+  state_for_client_->workers_[handle_id] = worker;
+}
+
+void ServiceWorkerProviderContext::RemoveServiceWorkerObject(int handle_id) {
+  DCHECK(state_for_client_);
+  DCHECK(base::ContainsKey(state_for_client_->workers_, handle_id));
+  state_for_client_->workers_.erase(handle_id);
+}
+
+bool ServiceWorkerProviderContext::ContainsServiceWorkerObjectForTesting(
+    int handle_id) {
+  DCHECK(state_for_client_);
+  return base::ContainsKey(state_for_client_->workers_, handle_id);
 }
 
 void ServiceWorkerProviderContext::CountFeature(

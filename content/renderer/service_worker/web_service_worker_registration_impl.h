@@ -120,6 +120,9 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   // the {installing,waiting,active} service worker object infos from |info_|.
   void RefreshVersionAttributes();
 
+  scoped_refptr<WebServiceWorkerImpl> GetOrCreateServiceWorkerObject(
+      blink::mojom::ServiceWorkerObjectInfoPtr info);
+
   // Implements blink::mojom::ServiceWorkerRegistrationObject.
   void SetVersionAttributes(
       int changed_mask,
@@ -176,6 +179,9 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
 
   std::vector<QueuedTask> queued_tasks_;
 
+  // True means |this| is for service worker client contexts, otherwise |this|
+  // is for service worker execution contexts.
+  const bool is_for_client_;
   // For service worker client contexts, |this| is tracked (not owned) in
   // |provider_context_for_client_->controllee_state_->registrations_|.
   // For service worker execution contexts, |provider_context_for_client_| is

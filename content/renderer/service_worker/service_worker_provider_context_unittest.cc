@@ -293,8 +293,13 @@ class ServiceWorkerProviderContextTest : public testing::Test {
 
   bool ContainsRegistration(ServiceWorkerProviderContext* provider_context,
                             int64_t registration_id) {
-    return provider_context->ContainsServiceWorkerRegistrationForTesting(
+    return provider_context->ContainsServiceWorkerRegistrationObjectForTesting(
         registration_id);
+  }
+
+  bool ContainsServiceWorker(ServiceWorkerProviderContext* provider_context,
+                             int handle_id) {
+    return provider_context->ContainsServiceWorkerObjectForTesting(handle_id);
   }
 
  protected:
@@ -628,10 +633,10 @@ TEST_F(ServiceWorkerProviderContextTest, CountFeature) {
             *(++(client->used_features().begin())));
 }
 
-TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
+TEST_F(ServiceWorkerProviderContextTest, GetOrCreateRegistration) {
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration1;
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration2;
-  // Set up ServiceWorkerProviderContext for ServiceWorkerGlobalScope.
+  // Set up ServiceWorkerProviderContext for client contexts.
   const int kProviderId = 10;
   auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
       kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow, nullptr,
@@ -667,7 +672,7 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
     // Should return a registration object newly created with adopting the
     // refcounts.
     registration1 =
-        provider_context->GetOrCreateRegistrationForServiceWorkerClient(
+        provider_context->GetOrCreateServiceWorkerRegistrationObject(
             std::move(registration_info));
     EXPECT_TRUE(registration1);
     EXPECT_TRUE(ContainsRegistration(provider_context.get(), registration_id));
@@ -689,7 +694,7 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
     // Should return the same registration object without incrementing the
     // refcounts.
     registration2 =
-        provider_context->GetOrCreateRegistrationForServiceWorkerClient(
+        provider_context->GetOrCreateServiceWorkerRegistrationObject(
             std::move(registration_info));
     EXPECT_TRUE(registration2);
     EXPECT_EQ(registration1, registration2);
@@ -715,6 +720,62 @@ TEST_F(ServiceWorkerProviderContextTest, GetOrAdoptRegistration) {
   EXPECT_EQ(0, active_host->GetBindingCount());
   EXPECT_EQ(0, waiting_host->GetBindingCount());
   EXPECT_EQ(0, installing_host->GetBindingCount());
+}
+
+TEST_F(ServiceWorkerProviderContextTest, GetOrCreateServiceWorker) {
+  scoped_refptr<WebServiceWorkerImpl> worker1;
+  scoped_refptr<WebServiceWorkerImpl> worker2;
+  // Set up ServiceWorkerProviderContext for client contexts.
+  const int kProviderId = 10;
+  auto provider_context = base::MakeRefCounted<ServiceWorkerProviderContext>(
+      kProviderId, blink::mojom::ServiceWorkerProviderType::kForWindow, nullptr,
+      nullptr, nullptr /* controller_info */, nullptr /* loader_factory*/);
+  const int handle_id = 100;
+  auto mock_service_worker_object_host =
+      std::make_unique<MockServiceWorkerObjectHost>(handle_id,
+                                                    200 /* version_id */);
+  ASSERT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+
+  // Should return a worker object newly created with the 1st given |info|.
+  {
+    blink::mojom::ServiceWorkerObjectInfoPtr info =
+        mock_service_worker_object_host->CreateObjectInfo();
+    // ServiceWorkerObjectHost Mojo connection has been added.
+    EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+    ASSERT_FALSE(ContainsServiceWorker(provider_context.get(), handle_id));
+    worker1 = provider_context->GetOrCreateServiceWorkerObject(std::move(info));
+    EXPECT_TRUE(worker1);
+    EXPECT_TRUE(ContainsServiceWorker(provider_context.get(), handle_id));
+    // |worker1| is holding the 1st blink::mojom::ServiceWorkerObjectHost Mojo
+    // connection to |mock_service_worker_object_host|.
+    EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+  }
+
+  // Should return the same worker object and release the 2nd given |info|.
+  {
+    blink::mojom::ServiceWorkerObjectInfoPtr info =
+        mock_service_worker_object_host->CreateObjectInfo();
+    EXPECT_EQ(2, mock_service_worker_object_host->GetBindingCount());
+    worker2 = provider_context->GetOrCreateServiceWorkerObject(std::move(info));
+    EXPECT_EQ(worker1, worker2);
+    base::RunLoop().RunUntilIdle();
+    // The 2nd ServiceWorkerObjectHost Mojo connection in |info| has been
+    // dropped.
+    EXPECT_EQ(1, mock_service_worker_object_host->GetBindingCount());
+  }
+
+  // The dtor decrements the refcounts.
+  worker1 = nullptr;
+  worker2 = nullptr;
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(ContainsServiceWorker(provider_context.get(), handle_id));
+  // The 1st ServiceWorkerObjectHost Mojo connection got broken.
+  EXPECT_EQ(0, mock_service_worker_object_host->GetBindingCount());
+
+  // Should return nullptr when given nullptr.
+  scoped_refptr<WebServiceWorkerImpl> invalid_worker =
+      provider_context->GetOrCreateServiceWorkerObject(nullptr);
+  EXPECT_FALSE(invalid_worker);
 }
 
 }  // namespace service_worker_provider_context_unittest

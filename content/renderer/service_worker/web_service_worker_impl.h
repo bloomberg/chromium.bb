@@ -24,6 +24,8 @@ class WebServiceWorkerProxy;
 
 namespace content {
 
+class ServiceWorkerProviderContext;
+
 // WebServiceWorkerImpl represents a ServiceWorker object in JavaScript.
 // https://w3c.github.io/ServiceWorker/#serviceworker-interface
 //
@@ -51,7 +53,11 @@ class CONTENT_EXPORT WebServiceWorkerImpl
       public blink::WebServiceWorker,
       public base::RefCounted<WebServiceWorkerImpl> {
  public:
-  explicit WebServiceWorkerImpl(blink::mojom::ServiceWorkerObjectInfoPtr info);
+  static scoped_refptr<WebServiceWorkerImpl> CreateForServiceWorkerGlobalScope(
+      blink::mojom::ServiceWorkerObjectInfoPtr info);
+  static scoped_refptr<WebServiceWorkerImpl> CreateForServiceWorkerClient(
+      blink::mojom::ServiceWorkerObjectInfoPtr info,
+      base::WeakPtr<ServiceWorkerProviderContext> provider_context);
 
   // Implements blink::mojom::ServiceWorkerObject.
   void StateChanged(blink::mojom::ServiceWorkerState new_state) override;
@@ -72,6 +78,9 @@ class CONTENT_EXPORT WebServiceWorkerImpl
 
  private:
   friend class base::RefCounted<WebServiceWorkerImpl>;
+  WebServiceWorkerImpl(
+      blink::mojom::ServiceWorkerObjectInfoPtr info,
+      base::WeakPtr<ServiceWorkerProviderContext> provider_context);
   ~WebServiceWorkerImpl() override;
 
   // Both |host_| and |binding_| are bound on the main
@@ -90,6 +99,15 @@ class CONTENT_EXPORT WebServiceWorkerImpl
   blink::mojom::ServiceWorkerObjectInfoPtr info_;
   blink::mojom::ServiceWorkerState state_;
   blink::WebServiceWorkerProxy* proxy_;
+
+  // True means |this| is for service worker client contexts, otherwise |this|
+  // is for service worker execution contexts.
+  const bool is_for_client_;
+  // For service worker client contexts, |this| is tracked (not owned) in
+  // |context_for_client_->controllee_state_->workers_|.
+  // For service worker execution contexts, |context_for_client_| is
+  // null.
+  base::WeakPtr<ServiceWorkerProviderContext> context_for_client_;
 
   DISALLOW_COPY_AND_ASSIGN(WebServiceWorkerImpl);
 };

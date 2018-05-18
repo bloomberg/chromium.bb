@@ -98,7 +98,8 @@ ServiceWorkerDispatcher::GetOrCreateServiceWorker(
     return found->second;
   }
 
-  return base::MakeRefCounted<WebServiceWorkerImpl>(std::move(info));
+  return WebServiceWorkerImpl::CreateForServiceWorkerGlobalScope(
+      std::move(info));
 }
 
 void ServiceWorkerDispatcher::AddServiceWorker(
