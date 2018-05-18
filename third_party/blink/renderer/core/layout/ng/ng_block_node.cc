@@ -214,8 +214,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   if (IsBlockLayoutComplete(constraint_space, *layout_result)) {
     DCHECK(layout_result->PhysicalFragment());
 
-    if (block_flow && first_child && first_child.IsInline() &&
-        !constraint_space.IsIntermediateLayout()) {
+    if (block_flow && first_child && first_child.IsInline()) {
       NGBoxStrut scrollbars = GetScrollbarSizes();
       CopyFragmentDataToLayoutBoxForInlineChildren(
           ToNGPhysicalBoxFragment(*layout_result->PhysicalFragment()),
@@ -255,6 +254,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
       NGConstraintSpaceBuilder(Style().GetWritingMode(),
                                InitialContainingBlockSize())
           .SetTextDirection(Style().Direction())
+          .SetIsIntermediateLayout(true)
           .ToConstraintSpace(Style().GetWritingMode());
 
   if (!constraint_space)
@@ -281,6 +281,7 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
           .SetTextDirection(Style().Direction())
           .SetAvailableSize({LayoutUnit::Max(), LayoutUnit()})
           .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
+          .SetIsIntermediateLayout(true)
           .ToConstraintSpace(Style().GetWritingMode());
 
   layout_result = Layout(*infinite_constraint_space);

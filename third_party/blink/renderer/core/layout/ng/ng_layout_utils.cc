@@ -13,6 +13,8 @@ bool IsBlockLayoutComplete(const NGConstraintSpace& space,
                            const NGLayoutResult& result) {
   if (result.Status() != NGLayoutResult::kSuccess)
     return false;
+  if (space.IsIntermediateLayout())
+    return false;
   // Check that we're done positioning pending floats.
   return !result.AdjoiningFloatTypes() || result.BfcOffset() ||
          space.FloatsBfcOffset();
