@@ -253,6 +253,9 @@ void XRFrameProvider::ScheduleExclusiveFrame() {
 // alignment instead of doc RAF alignment.
 void XRFrameProvider::ScheduleNonExclusiveFrame() {
   TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(!exclusive_session_)
+      << "Scheduling should be done via the exclusive session if present.";
+
   if (pending_non_exclusive_vsync_)
     return;
 
@@ -266,6 +269,9 @@ void XRFrameProvider::ScheduleNonExclusiveFrame() {
 
   pending_non_exclusive_vsync_ = true;
 
+  // TODO(https://crbug.com/839253): Generalize the pass-through images
+  // code path so that it also works for exclusive sessions on an AR device
+  // with pass-through technology.
   if (device_->xrDisplayInfoPtr()
           ->capabilities->can_provide_pass_through_images) {
     DVLOG(2) << __FUNCTION__ << ": transfer_size "
@@ -273,6 +279,16 @@ void XRFrameProvider::ScheduleNonExclusiveFrame() {
              << ar_requested_transfer_size_.Height()
              << " angle=" << ar_requested_transfer_angle_;
     DCHECK(display::Display::IsValidRotation(ar_requested_transfer_angle_));
+
+    // TODO(https://crbug.com/836496): ensure valid frame sizes, including when
+    // using multiple sessions. Currently, we take the max size of all the
+    // active session's requested sizes and pass that to the browser as-is.
+    // Unsupported sizes such as zero or excessively large ones may be rejected
+    // by the device, resulting in null MagicWindowFrameData responses.
+    // Requests for frames of 0 size are making it to this point - we should
+    // ensure that frames are not scheduled until the frame context is ready.
+    // In the future, we should signal an error back to the client.
+
     device_->xrMagicWindowProviderPtr()->GetFrameData(
         ar_requested_transfer_size_,
         display::Display::DegreesToRotation(ar_requested_transfer_angle_),

@@ -38,7 +38,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(uint32_t device_id) {
   device->rightEye = nullptr;
   mojom::VREyeParametersPtr& left_eye = device->leftEye;
   left_eye->fieldOfView = mojom::VRFieldOfView::New();
-  left_eye->offset.resize(3);
   // TODO(lincolnfrog): get these values for real (see gvr device).
   uint width = 1080;
   uint height = 1795;
@@ -51,9 +50,7 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(uint32_t device_id) {
   left_eye->fieldOfView->rightDegrees = horizontal_degrees;
   left_eye->fieldOfView->upDegrees = vertical_degrees;
   left_eye->fieldOfView->downDegrees = vertical_degrees;
-  left_eye->offset[0] = 0.0f;
-  left_eye->offset[1] = 0.0f;
-  left_eye->offset[2] = 0.0f;
+  left_eye->offset = {0.0f, 0.0f, 0.0f};
   left_eye->renderWidth = width;
   left_eye->renderHeight = height;
   return device;
@@ -63,14 +60,13 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(uint32_t device_id) {
 
 ARCoreDevice::ARCoreDevice()
     : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      mailbox_bridge_(std::make_unique<vr::MailboxToSurfaceBridge>()),
       weak_ptr_factory_(this) {
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId()));
 
   // TODO(https://crbug.com/836524) clean up usage of mailbox bridge
   // and extract the methods in this class that interact with ARCore API
   // into a separate class that implements the ARCoreDriverAPI interface.
-  mailbox_bridge_ = std::make_unique<vr::MailboxToSurfaceBridge>();
-  DCHECK(mailbox_bridge_);
   mailbox_bridge_->CreateUnboundContextProvider(
       base::BindOnce(&ARCoreDevice::OnMailboxBridgeReady, GetWeakPtr()));
 }
@@ -83,29 +79,29 @@ ARCoreDevice::~ARCoreDevice() {
 
 void ARCoreDevice::OnMailboxBridgeReady() {
   DCHECK(IsOnMainThread());
+  DCHECK(!arcore_gl_thread_);
   // MailboxToSurfaceBridge's destructor's call to DestroyContext must
-  // happen on the GL thread, so moving it to that thread is appropriate.
+  // happen on the GL thread, so transferring it to that thread is appropriate.
   // TODO(https://crbug.com/836553): use same GL thread as GVR.
   arcore_gl_thread_ = std::make_unique<ARCoreGlThread>(
-      this, base::ResetAndReturn(&mailbox_bridge_), main_thread_task_runner_);
+      std::move(mailbox_bridge_),
+      CreateMainThreadCallback<bool>(base::BindOnce(
+          &ARCoreDevice::OnARCoreGlThreadInitialized, GetWeakPtr())));
   arcore_gl_thread_->Start();
 }
 
-mojom::VRPosePtr ARCoreDevice::Update() {
-  mojom::VRPosePtr pose = mojom::VRPose::New();
+void ARCoreDevice::OnARCoreGlThreadInitialized(bool success) {
+  if (!success) {
+    DLOG(ERROR) << "Failed to initialize ARCoreDevice/GL system!";
+    return;
+  }
 
-  pose->orientation.emplace(4);
-  pose->orientation.value()[0] = 0;
-  pose->orientation.value()[1] = 0;
-  pose->orientation.value()[2] = 0;
-  pose->orientation.value()[3] = 1;
+  is_arcore_gl_thread_initialized_ = true;
+}
 
-  pose->position.emplace(3);
-  pose->position.value()[0] = 0;
-  pose->position.value()[1] = 1;
-  pose->position.value()[2] = 0;
-
-  return pose;
+void ARCoreDevice::PostTaskToGlThread(base::OnceClosure task) {
+  arcore_gl_thread_->GetARCoreGl()->GetGlThreadTaskRunner()->PostTask(
+      FROM_HERE, std::move(task));
 }
 
 void ARCoreDevice::OnMagicWindowFrameDataRequest(
@@ -117,25 +113,20 @@ void ARCoreDevice::OnMagicWindowFrameDataRequest(
 
   // Check if ARCoreGl is ready.
   // TODO(https://crbug.com/837944): Delay callback until ready.
-  if (!arcore_gl_thread_ || !arcore_gl_thread_->GetARCoreGl() ||
-      !arcore_gl_thread_->GetARCoreGl()->IsInitialized()) {
+  if (!is_arcore_gl_thread_initialized_) {
+    // It is not safe to access arcore_gl_thread_->GetARCoreGl() until we are
+    // sure it has finished initializing / writing to that member variable.
+    // is_initialized_ is set by a callback we pass to the ARCoreGlThread
+    // constructor that is then run back here on the main thread.
     std::move(callback).Run(nullptr);
     return;
   }
 
-  arcore_gl_thread_->GetARCoreGl()->RequestFrame(frame_size, display_rotation,
-                                                 std::move(callback));
-}
-
-void ARCoreDevice::OnFrameData(
-    mojom::VRMagicWindowFrameDataPtr frame_data,
-    mojom::VRMagicWindowProvider::GetFrameDataCallback callback) {
-  TRACE_EVENT0("gpu", __FUNCTION__);
-  DCHECK(callback);
-  DCHECK(IsOnMainThread());
-  // Frame data for the pending frame has been received.
-  // Run the saved callback with the data for the frame.
-  std::move(callback).Run(std::move(frame_data));
+  PostTaskToGlThread(base::BindOnce(
+      &ARCoreGl::ProduceFrame, arcore_gl_thread_->GetARCoreGl()->GetWeakPtr(),
+      frame_size, display_rotation,
+      CreateMainThreadCallback<mojom::VRMagicWindowFrameDataPtr>(
+          std::move(callback))));
 }
 
 bool ARCoreDevice::IsOnMainThread() {

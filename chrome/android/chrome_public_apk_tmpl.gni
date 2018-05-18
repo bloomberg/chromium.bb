@@ -22,6 +22,7 @@ declare_args() {
 
 default_chrome_public_jinja_variables = [
   "channel=$android_channel",
+  "enable_arcore=$enable_arcore",
   "enable_leakcanary=$enable_leakcanary",
   "enable_vr=$enable_vr",
 ]
@@ -199,12 +200,11 @@ template("monochrome_public_apk_tmpl") {
     }
 
     if (enable_arcore_java) {
-      deps += [
-        "//third_party/arcore-android-sdk:libarcore_library",
-        "//third_party/arcore-android-sdk:libdynamite_client_java",
-      ]
+      deps += [ "//third_party/arcore-android-sdk:libdynamite_client_java" ]
     }
     if (enable_arcore) {
+      deps += [ "//third_party/arcore-android-sdk:libarcore_library" ]
+
       # We store this as a separate .so in the APK and only load as needed.
       loadable_modules = [ "${root_out_dir}/libarcore_sdk_c_minimal.so" ]
     }

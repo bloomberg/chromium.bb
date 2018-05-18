@@ -14,15 +14,12 @@
 
 namespace device {
 
-class ARCoreDevice;
 class ARCoreGl;
 
 class ARCoreGlThread : public base::android::JavaHandlerThread {
  public:
-  ARCoreGlThread(
-      ARCoreDevice* arcore_device,
-      std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge,
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
+  ARCoreGlThread(std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge,
+                 base::OnceCallback<void(bool)> initialized_callback);
   ~ARCoreGlThread() override;
   ARCoreGl* GetARCoreGl();
 
@@ -31,13 +28,12 @@ class ARCoreGlThread : public base::android::JavaHandlerThread {
   void CleanUp() override;
 
  private:
-  ARCoreDevice* arcore_device_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
+  base::OnceCallback<void(bool)> initialized_callback_;
 
   // Created on GL thread.
   std::unique_ptr<ARCoreGl> arcore_gl_;
-  // This state is used for initializing arcore_gl.
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
   DISALLOW_COPY_AND_ASSIGN(ARCoreGlThread);
 };
 

@@ -18,7 +18,11 @@
 #include "device/vr/vr_device_provider.h"
 
 #if defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_ARCORE)
 #include "device/vr/android/arcore/arcore_device_provider_factory.h"
+#endif
+
 #include "device/vr/android/gvr/gvr_device_provider.h"
 #endif
 
@@ -45,7 +49,9 @@ VRDeviceManager* VRDeviceManager::GetInstance() {
     // TODO(https://crbug.com/828321): when we support multiple devices and
     // choosing based on session parameters, add both.
     if (base::FeatureList::IsEnabled(features::kWebXrHitTest)) {
+#if BUILDFLAG(ENABLE_ARCORE)
       providers.emplace_back(device::ARCoreDeviceProviderFactory::Create());
+#endif
     } else {
       providers.emplace_back(std::make_unique<device::GvrDeviceProvider>());
     }

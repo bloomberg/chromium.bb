@@ -7,20 +7,16 @@
 #include <utility>
 #include "base/message_loop/message_loop.h"
 #include "base/version.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_device.h"
 #include "chrome/browser/android/vr/arcore_device/arcore_gl.h"
 
 namespace device {
 
 ARCoreGlThread::ARCoreGlThread(
-    ARCoreDevice* arcore_device,
     std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge,
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
+    base::OnceCallback<void(bool)> initialized_callback)
     : base::android::JavaHandlerThread("ARCoreGL"),
-      arcore_device_(arcore_device),
-      main_thread_task_runner_(std::move(main_thread_task_runner)) {
-  mailbox_bridge_ = std::move(mailbox_bridge);
-}
+      mailbox_bridge_(std::move(mailbox_bridge)),
+      initialized_callback_(std::move(initialized_callback)) {}
 
 ARCoreGlThread::~ARCoreGlThread() {
   Stop();
@@ -31,10 +27,16 @@ ARCoreGl* ARCoreGlThread::GetARCoreGl() {
 }
 
 void ARCoreGlThread::Init() {
-  arcore_gl_ = std::make_unique<ARCoreGl>(
-      arcore_device_, base::ResetAndReturn(&mailbox_bridge_),
-      main_thread_task_runner_);
-  arcore_gl_->Initialize();
+  DCHECK(!arcore_gl_);
+
+  arcore_gl_ =
+      std::make_unique<ARCoreGl>(base::ResetAndReturn(&mailbox_bridge_));
+  bool success = arcore_gl_->Initialize();
+  if (!success) {
+    CleanUp();
+  }
+
+  std::move(initialized_callback_).Run(success);
 }
 
 void ARCoreGlThread::CleanUp() {

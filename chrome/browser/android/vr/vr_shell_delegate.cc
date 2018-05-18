@@ -18,11 +18,15 @@
 #include "chrome/browser/vr/service/vr_device_manager.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
 #include "content/public/browser/webvr_service_provider.h"
-#include "device/vr/android/arcore/arcore_device_provider_factory.h"
 #include "device/vr/android/gvr/gvr_delegate_provider_factory.h"
 #include "device/vr/android/gvr/gvr_device.h"
+#include "device/vr/buildflags/buildflags.h"
 #include "jni/VrShellDelegate_jni.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
+
+#if BUILDFLAG(ENABLE_ARCORE)
+#include "device/vr/android/arcore/arcore_device_provider_factory.h"
+#endif
 
 using base::android::JavaParamRef;
 using base::android::JavaRef;
@@ -49,6 +53,7 @@ VrShellDelegateProviderFactory::CreateGvrDelegateProvider() {
   return VrShellDelegate::CreateVrShellDelegate();
 }
 
+#if BUILDFLAG(ENABLE_ARCORE)
 class ARCoreDeviceProviderFactoryImpl
     : public device::ARCoreDeviceProviderFactory {
  public:
@@ -64,6 +69,7 @@ std::unique_ptr<device::VRDeviceProvider>
 ARCoreDeviceProviderFactoryImpl::CreateDeviceProvider() {
   return std::make_unique<device::ARCoreDeviceProvider>();
 }
+#endif
 
 }  // namespace
 
@@ -353,10 +359,12 @@ static void JNI_VrShellDelegate_OnLibraryAvailable(
   device::GvrDelegateProviderFactory::Install(
       std::make_unique<VrShellDelegateProviderFactory>());
 
+#if BUILDFLAG(ENABLE_ARCORE)
   // TODO(https://crbug.com/837965): Move this to an ARCore-specific location
   // with similar timing (occurs before VRDeviceManager is initialized).
   device::ARCoreDeviceProviderFactory::Install(
       std::make_unique<ARCoreDeviceProviderFactoryImpl>());
+#endif
 }
 
 static void JNI_VrShellDelegate_RegisterVrAssetsComponent(

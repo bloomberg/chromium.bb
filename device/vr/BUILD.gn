@@ -65,11 +65,12 @@ if (enable_vr) {
         "android/gvr/gvr_gamepad_data_provider.h",
       ]
 
-      # TODO(https://crbug.com/837947): guard w/ enable_arcore_services.
-      sources += [
-        "android/arcore/arcore_device_provider_factory.cc",
-        "android/arcore/arcore_device_provider_factory.h",
-      ]
+      if (enable_arcore) {
+        sources += [
+          "android/arcore/arcore_device_provider_factory.cc",
+          "android/arcore/arcore_device_provider_factory.h",
+        ]
+      }
 
       deps += [
         ":jni_headers",

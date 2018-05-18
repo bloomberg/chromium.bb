@@ -5,6 +5,6 @@ specific_include_rules = {
   ],
   "chrome_jni_onload.cc": [
     "+device/vr/buildflags/buildflags.h",
-    "+third_party/gvr-android-sdk"
+    "+third_party/gvr-android-sdk",
   ],
 }

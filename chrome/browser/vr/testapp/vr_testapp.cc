@@ -142,6 +142,7 @@ class AppWindow : public ui::PlatformWindowDelegate {
     widget_ = widget;
   }
   void OnAcceleratedWidgetDestroyed() override { NOTREACHED(); }
+  void OnAcceleratedWidgetDestroying() override { NOTREACHED(); }
   void OnActivationChanged(bool active) override {}
 
  private:

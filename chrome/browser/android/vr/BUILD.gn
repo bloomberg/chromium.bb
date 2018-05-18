@@ -17,18 +17,6 @@ static_library("vr_android") {
     "android_ui_gesture_target.h",
     "android_vsync_helper.cc",
     "android_vsync_helper.h",
-    "arcore_device/arcore_device.cc",
-    "arcore_device/arcore_device.h",
-    "arcore_device/arcore_device_provider.cc",
-    "arcore_device/arcore_device_provider.h",
-    "arcore_device/arcore_gl.cc",
-    "arcore_device/arcore_gl.h",
-    "arcore_device/arcore_gl.h",
-    "arcore_device/arcore_gl_thread.cc",
-    "arcore_device/arcore_gl_thread.h",
-    "arcore_device/arcore_interface.h",
-    "arcore_device/fake_arcore.cc",
-    "arcore_device/fake_arcore.h",
     "autocomplete_controller.cc",
     "autocomplete_controller.h",
     "gl_browser_interface.h",
@@ -61,6 +49,30 @@ static_library("vr_android") {
     "vr_web_contents_observer.h",
   ]
 
+  if (enable_arcore) {
+    sources += [
+      "arcore_device/ar_image_transport.cc",
+      "arcore_device/ar_image_transport.h",
+      "arcore_device/arcore.h",
+      "arcore_device/arcore_device.cc",
+      "arcore_device/arcore_device.h",
+      "arcore_device/arcore_device_provider.cc",
+      "arcore_device/arcore_device_provider.h",
+      "arcore_device/arcore_gl.cc",
+      "arcore_device/arcore_gl.h",
+      "arcore_device/arcore_gl_thread.cc",
+      "arcore_device/arcore_gl_thread.h",
+      "arcore_device/arcore_impl.cc",
+      "arcore_device/arcore_impl.h",
+      "arcore_device/arcore_java_utils.cc",
+      "arcore_device/arcore_java_utils.h",
+      "arcore_device/arcore_shim.cc",
+      "arcore_device/arcore_shim.h",
+      "arcore_device/fake_arcore.cc",
+      "arcore_device/fake_arcore.h",
+    ]
+  }
+
   deps = [
     ":vr_shell_jni_headers",
     "//base",
@@ -83,6 +95,10 @@ static_library("vr_android") {
     "//ui/gl/init",
   ]
 
+  if (enable_arcore) {
+    deps += [ ":ar_jni_headers" ]
+  }
+
   public_deps = [
     "//device/vr/public/mojom",
   ]
@@ -93,6 +109,10 @@ static_library("vr_android") {
     "//third_party/gvr-android-keyboard:kb_config",
     "//third_party/gvr-android-sdk:libgvr_config",
   ]
+
+  if (enable_arcore) {
+    configs += [ "//third_party/arcore-android-sdk:libarcore_config" ]
+  }
 }
 
 generate_jni("vr_shell_jni_headers") {
@@ -107,4 +127,13 @@ generate_jni("vr_shell_jni_headers") {
     "//chrome/android/java/src/org/chromium/chrome/browser/vr_shell/keyboard/TextEditAction.java",
   ]
   jni_package = "vr_shell"
+}
+
+if (enable_arcore) {
+  generate_jni("ar_jni_headers") {
+    sources = [
+      "//chrome/android/java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java",
+    ]
+    jni_package = "vr"
+  }
 }

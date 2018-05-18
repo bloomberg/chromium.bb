@@ -18,6 +18,10 @@ Chromium that is not publicly distributed elsewhere. We have also stripped the
 
 Also, added BUILD.gn for compilation in chrome.
 
+IMPORTANT: make sure to change chrome/android/java/AndroidManifest.xml
+com.google.ar.core.min_apk_version attribute if a newer version of the
+ARCore APK is required to maintain compatibility with this SDK.
+
 The LICENSE file is taken from
  * https://github.com/google-ar/arcore-unity-sdk/blob/master/LICENSE
 
