@@ -98,6 +98,7 @@ struct YUVVideoQuadState {
   uint32 bits_per_channel;
   gfx.mojom.ColorSpace video_color_space;
   bool require_overlay;
+  bool is_protected_video;
 };
 
 union DrawQuadState {

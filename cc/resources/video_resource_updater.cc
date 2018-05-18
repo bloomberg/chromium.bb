@@ -481,6 +481,8 @@ void VideoResourceUpdater::AppendQuads(viz::RenderPass* render_pass,
           frame_resource_multiplier_, frame_bits_per_channel_);
       yuv_video_quad->require_overlay =
           frame->metadata()->IsTrue(media::VideoFrameMetadata::REQUIRE_OVERLAY);
+      yuv_video_quad->is_protected_video =
+          frame->metadata()->IsTrue(media::VideoFrameMetadata::PROTECTED_VIDEO);
 
       for (viz::ResourceId resource_id : yuv_video_quad->resources) {
         resource_provider_->ValidateResource(resource_id);

@@ -199,6 +199,7 @@ bool StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad>::Read(
     return false;
   }
   quad->require_overlay = data.require_overlay();
+  quad->is_protected_video = data.is_protected_video();
   return true;
 }
 

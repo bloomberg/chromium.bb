@@ -450,6 +450,11 @@ struct StructTraits<viz::mojom::YUVVideoQuadStateDataView, viz::DrawQuad> {
         viz::YUVVideoDrawQuad::MaterialCast(&input);
     return quad->require_overlay;
   }
+  static bool is_protected_video(const viz::DrawQuad& input) {
+    const viz::YUVVideoDrawQuad* quad =
+        viz::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->is_protected_video;
+  }
 
   static bool Read(viz::mojom::YUVVideoQuadStateDataView data,
                    viz::DrawQuad* out);
