@@ -1104,7 +1104,7 @@ def process_trigger_options(parser, options, args):
   # Secrets
   secret_bytes = None
   if options.secret_bytes_path:
-    with open(options.secret_bytes_path, 'r') as f:
+    with open(options.secret_bytes_path, 'rb') as f:
       secret_bytes = f.read().encode('base64')
 
   # Named caches
