@@ -208,10 +208,10 @@ void av1_make_inter_predictor(
 
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
-    const int subpel_x, const int subpel_y, const struct scale_factors *sf,
-    int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,
-    int xs, int ys, int plane, const WarpTypesAllowed *warp_types, int p_col,
-    int p_row, int ref, MACROBLOCKD *xd, int can_use_previous);
+    SubpelParams *subpel_params, const struct scale_factors *sf, int w, int h,
+    ConvolveParams *conv_params, InterpFilters interp_filters, int plane,
+    const WarpTypesAllowed *warp_types, int p_col, int p_row, int ref,
+    MACROBLOCKD *xd, int can_use_previous);
 
 // TODO(jkoleszar): yet another mv clamping function :-(
 static INLINE MV clamp_mv_to_umv_border_sb(const MACROBLOCKD *xd,

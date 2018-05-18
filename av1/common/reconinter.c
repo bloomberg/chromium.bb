@@ -632,10 +632,10 @@ static void build_masked_compound_highbd(
 
 void av1_make_masked_inter_predictor(
     const uint8_t *pre, int pre_stride, uint8_t *dst, int dst_stride,
-    const int subpel_x, const int subpel_y, const struct scale_factors *sf,
-    int w, int h, ConvolveParams *conv_params, InterpFilters interp_filters,
-    int xs, int ys, int plane, const WarpTypesAllowed *warp_types, int p_col,
-    int p_row, int ref, MACROBLOCKD *xd, int can_use_previous) {
+    SubpelParams *subpel_params, const struct scale_factors *sf, int w, int h,
+    ConvolveParams *conv_params, InterpFilters interp_filters, int plane,
+    const WarpTypesAllowed *warp_types, int p_col, int p_row, int ref,
+    MACROBLOCKD *xd, int can_use_previous) {
   const MB_MODE_INFO *mi = xd->mi[0];
   (void)dst;
   (void)dst_stride;
@@ -667,10 +667,11 @@ void av1_make_masked_inter_predictor(
   assert(conv_params->do_average == 0);
 
   // This will generate a prediction in tmp_buf for the second reference
-  av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE, subpel_x,
-                           subpel_y, sf, w, h, conv_params, interp_filters,
-                           warp_types, p_col, p_row, plane, ref, mi, 0, xs, ys,
-                           xd, can_use_previous);
+  av1_make_inter_predictor(pre, pre_stride, tmp_dst, MAX_SB_SIZE,
+                           subpel_params->subpel_x, subpel_params->subpel_y, sf,
+                           w, h, conv_params, interp_filters, warp_types, p_col,
+                           p_row, plane, ref, mi, 0, subpel_params->xs,
+                           subpel_params->ys, xd, can_use_previous);
 
   if (!plane && comp_data.interinter_compound_type == COMPOUND_DIFFWTD) {
     av1_build_compound_diffwtd_mask_d16(
@@ -984,11 +985,10 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
         // masked compound type has its own average mechanism
         conv_params.do_average = 0;
         av1_make_masked_inter_predictor(
-            pre, pre_buf->stride, dst, dst_buf->stride, subpel_params.subpel_x,
-            subpel_params.subpel_y, sf, bw, bh, &conv_params,
-            mi->interp_filters, subpel_params.xs, subpel_params.ys, plane,
-            &warp_types, mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y,
-            ref, xd, cm->allow_warped_motion);
+            pre, pre_buf->stride, dst, dst_buf->stride, &subpel_params, sf, bw,
+            bh, &conv_params, mi->interp_filters, plane, &warp_types,
+            mi_x >> pd->subsampling_x, mi_y >> pd->subsampling_y, ref, xd,
+            cm->allow_warped_motion);
       } else {
         conv_params.do_average = ref;
         av1_make_inter_predictor(
