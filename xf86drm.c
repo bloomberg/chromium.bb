@@ -2855,6 +2855,8 @@ static char *drmGetMinorNameForFD(int fd, int type)
             return strdup(dev_name);
         }
     }
+
+    closedir(sysdir);
     return NULL;
 #else
     struct stat sbuf;
