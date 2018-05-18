@@ -16,6 +16,7 @@
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
+#include "chromeos/network/network_handler.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/message_center/message_center.h"
@@ -133,10 +134,13 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       ui_delegate_(std::make_unique<UiDelegate>(this)),
       model_(std::make_unique<UnifiedSystemTrayModel>()) {
-  tray::NetworkTrayView* network_item = new tray::NetworkTrayView(nullptr);
-  network_state_delegate_ =
-      std::make_unique<NetworkStateDelegate>(network_item);
-  tray_container()->AddChildView(network_item);
+  // It is possible in unit tests that it's missing.
+  if (chromeos::NetworkHandler::IsInitialized()) {
+    tray::NetworkTrayView* network_item = new tray::NetworkTrayView(nullptr);
+    network_state_delegate_ =
+        std::make_unique<NetworkStateDelegate>(network_item);
+    tray_container()->AddChildView(network_item);
+  }
 
   tray_container()->AddChildView(new tray::PowerTrayView(nullptr));
 

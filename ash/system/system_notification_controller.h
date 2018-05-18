@@ -16,6 +16,7 @@ class PowerNotificationController;
 class ScreenSecurityNotificationController;
 class SessionLimitNotificationController;
 class SupervisedNotificationController;
+class UpdateNotificationController;
 class WifiToggleNotificationController;
 
 // Class that owns individual notification controllers.
@@ -30,6 +31,7 @@ class SystemNotificationController {
   const std::unique_ptr<ScreenSecurityNotificationController> screen_security_;
   const std::unique_ptr<SessionLimitNotificationController> session_limit_;
   const std::unique_ptr<SupervisedNotificationController> supervised_;
+  const std::unique_ptr<UpdateNotificationController> update_;
   const std::unique_ptr<WifiToggleNotificationController> wifi_toggle_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemNotificationController);
