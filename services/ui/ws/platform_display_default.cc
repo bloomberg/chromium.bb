@@ -258,8 +258,9 @@ void PlatformDisplayDefault::OnAcceleratedWidgetAvailable(
   frame_generator_->SetDeviceScaleFactor(metrics_.device_scale_factor);
 }
 
+void PlatformDisplayDefault::OnAcceleratedWidgetDestroying() {}
+
 void PlatformDisplayDefault::OnAcceleratedWidgetDestroyed() {
-  NOTREACHED();
 }
 
 void PlatformDisplayDefault::OnActivationChanged(bool active) {}

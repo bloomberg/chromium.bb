@@ -439,6 +439,12 @@ TEST_P(WaylandWindowTest, OnActivationChanged) {
   EXPECT_FALSE(window_->is_active());
 }
 
+TEST_P(WaylandWindowTest, OnAcceleratedWidgetDestroy) {
+  EXPECT_CALL(delegate_, OnAcceleratedWidgetDestroying()).Times(1);
+  EXPECT_CALL(delegate_, OnAcceleratedWidgetDestroyed()).Times(1);
+  window_.reset();
+}
+
 INSTANTIATE_TEST_CASE_P(XdgVersionV5Test,
                         WaylandWindowTest,
                         ::testing::Values(kXdgShellV5));

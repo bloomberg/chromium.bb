@@ -91,6 +91,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   // WindowTreeHostPlatform:
   void OnClosed() override;
   void OnCloseRequest() override;
+  void OnAcceleratedWidgetDestroying() override;
   void OnActivationChanged(bool active) override;
 
  private:

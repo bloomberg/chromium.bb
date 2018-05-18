@@ -44,6 +44,7 @@ class StubPlatformWindowDelegate : public PlatformWindowDelegate {
                                     float device_pixel_ratio) override {
     widget_ = widget;
   }
+  void OnAcceleratedWidgetDestroying() override {}
   void OnAcceleratedWidgetDestroyed() override {
     widget_ = gfx::kNullAcceleratedWidget;
   }

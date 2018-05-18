@@ -74,8 +74,10 @@ void DemoWindow::OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget,
   widget_ = widget;
 }
 
+void DemoWindow::OnAcceleratedWidgetDestroying() {}
+
 void DemoWindow::OnAcceleratedWidgetDestroyed() {
-  NOTREACHED();
+  widget_ = gfx::kNullAcceleratedWidget;
 }
 
 void DemoWindow::OnActivationChanged(bool active) {}
