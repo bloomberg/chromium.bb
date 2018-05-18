@@ -826,11 +826,13 @@ void LevelDBWrapperImpl::CommitChanges() {
 }
 
 void LevelDBWrapperImpl::OnCommitComplete(DatabaseError error) {
+  has_committed_data_ = true;
   --commit_batches_in_flight_;
   StartCommitTimer();
 
-  if (error != DatabaseError::OK)
+  if (error != DatabaseError::OK) {
     SetCacheMode(CacheMode::KEYS_AND_VALUES);
+  }
 
   // Call before |DidCommit| as delegate can destroy this object.
   UnloadMapIfPossible();
@@ -845,9 +847,11 @@ void LevelDBWrapperImpl::UnloadMapIfPossible() {
   // * There are pending tasks waiting on the key-value map being loaded, or
   // * There is no database connection.
   // * We have commit batches in-flight.
+  // * We haven't committed data yet.
   if (cache_mode_ != CacheMode::KEYS_ONLY_WHEN_POSSIBLE ||
       map_state_ != MapState::LOADED_KEYS_AND_VALUES ||
-      has_pending_load_tasks() || !database_ || commit_batches_in_flight_ > 0) {
+      has_pending_load_tasks() || !database_ || commit_batches_in_flight_ > 0 ||
+      !has_committed_data_) {
     return;
   }
 

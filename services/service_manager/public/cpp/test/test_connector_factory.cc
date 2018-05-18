@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/guid.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -18,7 +19,8 @@ namespace {
 
 class TestConnectorImplBase : public mojom::Connector {
  public:
-  TestConnectorImplBase() = default;
+  TestConnectorImplBase(std::string test_user_id)
+      : test_user_id_(std::move(test_user_id)) {}
   ~TestConnectorImplBase() override = default;
 
   void AddService(const std::string& service_name,
@@ -27,7 +29,7 @@ class TestConnectorImplBase : public mojom::Connector {
     service_contexts_.push_back(std::make_unique<ServiceContext>(
         std::move(service), mojo::MakeRequest(service_ptr)));
     (*service_ptr)
-        ->OnStart(Identity("TestConnectorFactory"),
+        ->OnStart(Identity("TestConnectorFactory", test_user_id_),
                   base::BindOnce(&TestConnectorImplBase::OnStartCallback,
                                  base::Unretained(this)));
   }
@@ -51,7 +53,8 @@ class TestConnectorImplBase : public mojom::Connector {
                         << target.name();
     (*service_ptr)
         ->OnBindInterface(
-            BindSourceInfo(Identity("TestConnectorFactory"), CapabilitySet()),
+            BindSourceInfo(Identity("TestConnectorFactory", test_user_id_),
+                           CapabilitySet()),
             interface_name, std::move(interface_pipe), base::DoNothing());
     std::move(callback).Run(mojom::ConnectResult::SUCCEEDED, Identity());
   }
@@ -85,6 +88,7 @@ class TestConnectorImplBase : public mojom::Connector {
     NOTREACHED();
   }
 
+  std::string test_user_id_;
   std::vector<std::unique_ptr<ServiceContext>> service_contexts_;
   mojo::BindingSet<mojom::Connector> bindings_;
 
@@ -93,7 +97,9 @@ class TestConnectorImplBase : public mojom::Connector {
 
 class UniqueServiceConnector : public TestConnectorImplBase {
  public:
-  explicit UniqueServiceConnector(std::unique_ptr<Service> service) {
+  explicit UniqueServiceConnector(std::unique_ptr<Service> service,
+                                  std::string test_user_id)
+      : TestConnectorImplBase(std::move(test_user_id)) {
     AddService(/*service_name=*/std::string(), std::move(service),
                &service_ptr_);
   }
@@ -111,7 +117,9 @@ class UniqueServiceConnector : public TestConnectorImplBase {
 class MultipleServiceConnector : public TestConnectorImplBase {
  public:
   explicit MultipleServiceConnector(
-      TestConnectorFactory::NameToServiceMap services) {
+      TestConnectorFactory::NameToServiceMap services,
+      std::string test_user_id)
+      : TestConnectorImplBase(std::move(test_user_id)) {
     for (auto& name_and_service : services) {
       mojom::ServicePtr service_ptr;
       const std::string& service_name = name_and_service.first;
@@ -138,8 +146,9 @@ class MultipleServiceConnector : public TestConnectorImplBase {
 }  // namespace
 
 TestConnectorFactory::TestConnectorFactory(
-    std::unique_ptr<mojom::Connector> impl)
-    : impl_(std::move(impl)) {}
+    std::unique_ptr<mojom::Connector> impl,
+    std::string test_user_id)
+    : impl_(std::move(impl)), test_user_id_(std::move(test_user_id)) {}
 
 TestConnectorFactory::~TestConnectorFactory() = default;
 
@@ -148,15 +157,19 @@ std::unique_ptr<TestConnectorFactory>
 TestConnectorFactory::CreateForUniqueService(std::unique_ptr<Service> service) {
   // Note that we are not using std::make_unique below so TestConnectorFactory's
   // constructor can be kept private.
+  std::string guid = base::GenerateGUID();
   return std::unique_ptr<TestConnectorFactory>(new TestConnectorFactory(
-      std::make_unique<UniqueServiceConnector>(std::move(service))));
+      std::make_unique<UniqueServiceConnector>(std::move(service), guid),
+      guid));
 }
 
 // static
 std::unique_ptr<TestConnectorFactory> TestConnectorFactory::CreateForServices(
     NameToServiceMap services) {
+  std::string guid = base::GenerateGUID();
   return std::unique_ptr<TestConnectorFactory>(new TestConnectorFactory(
-      std::make_unique<MultipleServiceConnector>(std::move(services))));
+      std::make_unique<MultipleServiceConnector>(std::move(services), guid),
+      guid));
 }
 
 std::unique_ptr<Connector> TestConnectorFactory::CreateConnector() {

@@ -59,6 +59,7 @@ class SERVICE_MANAGER_PUBLIC_CPP_EXPORT Service {
  private:
   friend class ForwardingService;
   friend class ServiceContext;
+  friend class TestServiceDecorator;
 
   // NOTE: This MUST be called before any public Service methods. ServiceContext
   // satisfies this guarantee for any Service instance it owns.

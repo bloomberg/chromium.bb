@@ -32,7 +32,8 @@ using leveldb::mojom::BatchedOperationPtr;
 // | version                                | 1                  |
 // Example area key: namespace-dabc53e1_8291_4de5_824f_dab8aa69c846-origin2
 //
-// Note: All number values are string conversions of numbers.
+// All number values (map numbers and the version) are string conversions of
+// numbers. Map keys are converted to UTF-8 and the values stay as UTF-16.
 
 // This is "map-" (without the quotes).
 constexpr const uint8_t kMapIdPrefixBytes[] = {'m', 'a', 'p', '-'};
@@ -54,15 +55,19 @@ std::vector<uint8_t> NumberToValue(int64_t map_number) {
 }
 }  // namespace
 
+constexpr const int64_t SessionStorageMetadata::kMinSessionStorageSchemaVersion;
+constexpr const int64_t
+    SessionStorageMetadata::kLatestSessionStorageSchemaVersion;
 constexpr const int64_t SessionStorageMetadata::kInvalidDatabaseVersion;
 constexpr const int64_t SessionStorageMetadata::kInvalidMapId;
 constexpr const uint8_t SessionStorageMetadata::kDatabaseVersionBytes[];
 constexpr const uint8_t SessionStorageMetadata::kNamespacePrefixBytes[];
 constexpr const uint8_t SessionStorageMetadata::kNextMapIdKeyBytes[];
 
-SessionStorageMetadata::MapData::MapData(int64_t map_number)
+SessionStorageMetadata::MapData::MapData(int64_t map_number, url::Origin origin)
     : number_as_bytes_(NumberToValue(map_number)),
-      key_prefix_(SessionStorageMetadata::GetMapPrefix(number_as_bytes_)) {}
+      key_prefix_(SessionStorageMetadata::GetMapPrefix(number_as_bytes_)),
+      origin_(std::move(origin)) {}
 SessionStorageMetadata::MapData::~MapData() = default;
 
 SessionStorageMetadata::SessionStorageMetadata() {}
@@ -70,8 +75,7 @@ SessionStorageMetadata::SessionStorageMetadata() {}
 SessionStorageMetadata::~SessionStorageMetadata() {}
 
 std::vector<leveldb::mojom::BatchedOperationPtr>
-SessionStorageMetadata::SetupNewDatabase(int64_t version) {
-  database_version_ = version;
+SessionStorageMetadata::SetupNewDatabase() {
   next_map_id_ = 0;
   next_map_id_from_namespaces_ = 0;
   namespace_origin_map_.clear();
@@ -82,7 +86,7 @@ SessionStorageMetadata::SetupNewDatabase(int64_t version) {
       BatchOperationType::PUT_KEY,
       std::vector<uint8_t>(std::begin(kDatabaseVersionBytes),
                            std::end(kDatabaseVersionBytes)),
-      DatabaseVersionAsVector()));
+      LatestDatabaseVersionAsVector()));
   operations.push_back(
       BatchedOperation::New(BatchOperationType::PUT_KEY,
                             std::vector<uint8_t>(std::begin(kNextMapIdKeyBytes),
@@ -92,16 +96,32 @@ SessionStorageMetadata::SetupNewDatabase(int64_t version) {
 }
 
 bool SessionStorageMetadata::ParseDatabaseVersion(
-    const std::vector<uint8_t>& value) {
-  if (!ValueToNumber(value, &database_version_)) {
-    database_version_ = kInvalidDatabaseVersion;
-    return false;
+    base::Optional<std::vector<uint8_t>> value,
+    std::vector<leveldb::mojom::BatchedOperationPtr>* upgrade_operations) {
+  if (!value) {
+    initial_database_version_from_disk_ = 0;
+  } else {
+    if (!ValueToNumber(value.value(), &initial_database_version_from_disk_)) {
+      initial_database_version_from_disk_ = kInvalidDatabaseVersion;
+      return false;
+    }
+    if (initial_database_version_from_disk_ ==
+        kLatestSessionStorageSchemaVersion)
+      return true;
   }
+  if (initial_database_version_from_disk_ < kMinSessionStorageSchemaVersion)
+    return false;
+  upgrade_operations->push_back(BatchedOperation::New(
+      BatchOperationType::PUT_KEY,
+      std::vector<uint8_t>(std::begin(kDatabaseVersionBytes),
+                           std::end(kDatabaseVersionBytes)),
+      LatestDatabaseVersionAsVector()));
   return true;
 }
 
 bool SessionStorageMetadata::ParseNamespaces(
-    std::vector<leveldb::mojom::KeyValuePtr> values) {
+    std::vector<leveldb::mojom::KeyValuePtr> values,
+    std::vector<leveldb::mojom::BatchedOperationPtr>* upgrade_operations) {
   namespace_origin_map_.clear();
   next_map_id_from_namespaces_ = 0;
   // Since the data is ordered, all namespace data is in one spot. This keeps a
@@ -112,18 +132,21 @@ bool SessionStorageMetadata::ParseNamespaces(
   bool error = false;
   for (const leveldb::mojom::KeyValuePtr& key_value : values) {
     size_t key_size = key_value->key.size();
-    if (key_size <= kNamespacePrefixLength) {
-      error = true;
-      break;
-    }
 
     base::StringPiece key_as_string =
         leveldb::Uint8VectorToStringPiece(key_value->key);
+
+    if (key_size < kNamespacePrefixLength) {
+      LOG(ERROR) << "Key size is less than prefix length: " << key_as_string;
+      error = true;
+      break;
+    }
 
     // The key must start with 'namespace-'.
     if (!key_as_string.starts_with(base::StringPiece(
             reinterpret_cast<const char*>(kNamespacePrefixBytes),
             kNamespacePrefixLength))) {
+      LOG(ERROR) << "Key must start with 'namespace-': " << key_as_string;
       error = true;
       break;
     }
@@ -132,10 +155,11 @@ bool SessionStorageMetadata::ParseNamespaces(
     if (key_size == kNamespacePrefixLength)
       continue;
 
-    // Check that we have a prefix of 'namespace-<guid>-'.
+    // Check that the prefix is 'namespace-<guid>-
     if (key_size < kPrefixBeforeOriginLength ||
         key_as_string[kPrefixBeforeOriginLength - 1] !=
             static_cast<const char>(kNamespaceOriginSeperatorByte)) {
+      LOG(ERROR) << "Prefix is not 'namespace-<guid>-': " << key_as_string;
       error = true;
       break;
     }
@@ -153,6 +177,8 @@ bool SessionStorageMetadata::ParseNamespaces(
     int64_t map_number;
     if (!ValueToNumber(key_value->value, &map_number)) {
       error = true;
+      LOG(ERROR) << "Could not parse map number "
+                 << leveldb::Uint8VectorToStringPiece(key_value->value);
       break;
     }
 
@@ -161,6 +187,7 @@ bool SessionStorageMetadata::ParseNamespaces(
 
     auto origin_gurl = GURL(origin_str);
     if (!origin_gurl.is_valid()) {
+      LOG(ERROR) << "Invalid origin " << origin_str;
       error = true;
       break;
     }
@@ -174,10 +201,11 @@ bool SessionStorageMetadata::ParseNamespaces(
     }
     auto map_it = maps.find(map_number);
     if (map_it == maps.end()) {
-      map_it = maps.emplace(std::piecewise_construct,
-                            std::forward_as_tuple(map_number),
-                            std::forward_as_tuple(new MapData(map_number)))
-                   .first;
+      map_it =
+          maps.emplace(std::piecewise_construct,
+                       std::forward_as_tuple(map_number),
+                       std::forward_as_tuple(new MapData(map_number, origin)))
+              .first;
     }
     map_it->second->IncReferenceCount();
 
@@ -190,6 +218,24 @@ bool SessionStorageMetadata::ParseNamespaces(
   }
   if (next_map_id_ == 0 || next_map_id_ < next_map_id_from_namespaces_)
     next_map_id_ = next_map_id_from_namespaces_;
+
+  // Namespace metadata migration.
+  DCHECK_NE(kInvalidDatabaseVersion, initial_database_version_from_disk_);
+  if (initial_database_version_from_disk_ == 0) {
+    // Remove the dummy 'namespaces-' entry.
+    upgrade_operations->push_back(BatchedOperation::New(
+        BatchOperationType::DELETE_KEY,
+        std::vector<uint8_t>(std::begin(kNamespacePrefixBytes),
+                             std::end(kNamespacePrefixBytes)),
+        base::nullopt));
+    // Remove all the refcount storage.
+    for (const auto& map_pair : maps) {
+      upgrade_operations->push_back(
+          BatchedOperation::New(BatchOperationType::DELETE_KEY,
+                                map_pair.second->KeyPrefix(), base::nullopt));
+    }
+  }
+
   return true;
 }
 
@@ -201,9 +247,9 @@ void SessionStorageMetadata::ParseNextMapId(
     next_map_id_ = next_map_id_from_namespaces_;
 }
 
-std::vector<uint8_t> SessionStorageMetadata::DatabaseVersionAsVector() const {
-  DCHECK_NE(database_version_, kInvalidDatabaseVersion);
-  return NumberToValue(database_version_);
+// static
+std::vector<uint8_t> SessionStorageMetadata::LatestDatabaseVersionAsVector() {
+  return NumberToValue(kLatestSessionStorageSchemaVersion);
 }
 
 scoped_refptr<SessionStorageMetadata::MapData>
@@ -211,7 +257,7 @@ SessionStorageMetadata::RegisterNewMap(
     NamespaceEntry namespace_entry,
     const url::Origin& origin,
     std::vector<leveldb::mojom::BatchedOperationPtr>* save_operations) {
-  auto new_map_data = base::MakeRefCounted<MapData>(next_map_id_);
+  auto new_map_data = base::MakeRefCounted<MapData>(next_map_id_, origin);
   ++next_map_id_;
 
   save_operations->push_back(BatchedOperation::New(

@@ -211,6 +211,8 @@ class LevelDBWrapperImplTest : public testing::Test,
   mojom::LevelDBWrapper* wrapper() { return level_db_wrapper_ptr_.get(); }
   LevelDBWrapperImpl* wrapper_impl() { return level_db_wrapper_.get(); }
 
+  void FlushWrapperBinding() { level_db_wrapper_ptr_.FlushForTesting(); }
+
   bool GetSync(mojom::LevelDBWrapper* wrapper,
                const std::vector<uint8_t>& key,
                std::vector<uint8_t>* result) {
@@ -255,7 +257,7 @@ class LevelDBWrapperImplTest : public testing::Test,
                                     const std::string& key) {
     std::vector<mojom::KeyValuePtr> data;
     leveldb::mojom::DatabaseError status =
-        test::GetAllSync(wrapper_impl, &data);
+        test::GetAllSyncOnDedicatedPipe(wrapper_impl, &data);
 
     if (status != leveldb::mojom::DatabaseError::OK)
       return "";
@@ -415,6 +417,7 @@ TEST_F(LevelDBWrapperImplTest, PutLoadsValuesAfterCacheModeUpgrade) {
 
   // Do a put to load the key-only cache.
   EXPECT_TRUE(PutSync(key, value1, base::nullopt));
+  BlockingCommit();
   EXPECT_EQ(LevelDBWrapperImpl::MapState::LOADED_KEYS_ONLY,
             wrapper_impl()->map_state_);
 
@@ -434,8 +437,7 @@ TEST_P(LevelDBWrapperImplParamTest, GetAll) {
   wrapper_impl()->SetCacheModeForTesting(GetParam());
 
   std::vector<mojom::KeyValuePtr> data;
-  leveldb::mojom::DatabaseError status =
-      test::GetAllSync(wrapper_impl(), &data);
+  leveldb::mojom::DatabaseError status = test::GetAllSync(wrapper(), &data);
 
   EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
   EXPECT_EQ(2u, data.size());
@@ -739,8 +741,7 @@ TEST_P(LevelDBWrapperImplParamTest, FixUpData) {
   delegate()->set_mock_changes(std::move(changes));
 
   std::vector<mojom::KeyValuePtr> data;
-  leveldb::mojom::DatabaseError status =
-      test::GetAllSync(wrapper_impl(), &data);
+  leveldb::mojom::DatabaseError status = test::GetAllSync(wrapper(), &data);
 
   EXPECT_EQ(leveldb::mojom::DatabaseError::OK, status);
   ASSERT_EQ(2u, data.size());
@@ -796,12 +797,26 @@ TEST_P(LevelDBWrapperImplParamTest, CommitOnDifferentCacheModes) {
   wrapper_impl()->SetCacheModeForTesting(GetParam());
   std::vector<uint8_t> key = test_key2_bytes_;
   std::vector<uint8_t> value = ToBytes("foo");
-  std::vector<uint8_t> value2 = ToBytes("foobar");
+  std::vector<uint8_t> value2 = ToBytes("foo2");
+  std::vector<uint8_t> value3 = ToBytes("foobar");
 
   // The initial map always has values, so a nullopt is fine for the old value.
   ASSERT_TRUE(PutSync(key, value, base::nullopt));
   ASSERT_TRUE(wrapper_impl()->commit_batch_);
 
+  // Wrapper stays in CacheMode::KEYS_AND_VALUES until the first commit has
+  // succeeded.
+  EXPECT_TRUE(wrapper_impl()->commit_batch_->changed_values.empty());
+  auto* changes = &wrapper_impl()->commit_batch_->changed_keys;
+  ASSERT_EQ(1u, changes->size());
+  EXPECT_EQ(key, *changes->begin());
+
+  BlockingCommit();
+
+  ASSERT_TRUE(PutSync(key, value2, value));
+  ASSERT_TRUE(wrapper_impl()->commit_batch_);
+
+  // Commit has occured, so the map type will diverge based on the cache mode.
   if (GetParam() == CacheMode::KEYS_AND_VALUES) {
     EXPECT_TRUE(wrapper_impl()->commit_batch_->changed_values.empty());
     auto* changes = &wrapper_impl()->commit_batch_->changed_keys;
@@ -813,19 +828,19 @@ TEST_P(LevelDBWrapperImplParamTest, CommitOnDifferentCacheModes) {
     ASSERT_EQ(1u, changes->size());
     auto it = changes->begin();
     EXPECT_EQ(key, it->first);
-    EXPECT_EQ(value, it->second);
+    EXPECT_EQ(value2, it->second);
   }
 
   BlockingCommit();
 
-  EXPECT_EQ("foo", get_mock_data(test_prefix_ + test_key2_));
+  EXPECT_EQ("foo2", get_mock_data(test_prefix_ + test_key2_));
   if (GetParam() == CacheMode::KEYS_AND_VALUES)
     EXPECT_EQ(2u, wrapper_impl()->keys_values_map_.size());
   else
     EXPECT_EQ(2u, wrapper_impl()->keys_only_map_.size());
-  ASSERT_TRUE(PutSync(key, value, value));
+  ASSERT_TRUE(PutSync(key, value2, value2));
   EXPECT_FALSE(wrapper_impl()->commit_batch_);
-  ASSERT_TRUE(PutSync(key, value2, value));
+  ASSERT_TRUE(PutSync(key, value3, value2));
   ASSERT_TRUE(wrapper_impl()->commit_batch_);
 
   if (GetParam() == CacheMode::KEYS_AND_VALUES) {
@@ -838,7 +853,7 @@ TEST_P(LevelDBWrapperImplParamTest, CommitOnDifferentCacheModes) {
     EXPECT_EQ(1u, changes->size());
     auto it = changes->find(key);
     ASSERT_NE(it, changes->end());
-    EXPECT_EQ(value2, it->second);
+    EXPECT_EQ(value3, it->second);
   }
 
   clear_mock_data();
@@ -870,14 +885,14 @@ TEST_F(LevelDBWrapperImplTest, GetAllWhenCacheOnlyKeys) {
   {
     IncrementalBarrier barrier(loop.QuitClosure());
 
-    wrapper_impl()->Put(key, value, value2, test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_result1));
+    wrapper()->Put(key, value, value2, test_source_,
+                   MakeSuccessCallback(barrier.Get(), &put_result1));
 
-    wrapper_impl()->GetAll(
-        GetAllCallback::CreateAndBind(&result, barrier.Get()),
-        MakeGetAllCallback(&status, &data));
-    wrapper_impl()->Put(key, value2, value, test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_result2));
+    wrapper()->GetAll(GetAllCallback::CreateAndBind(&result, barrier.Get()),
+                      MakeGetAllCallback(&status, &data));
+    wrapper()->Put(key, value2, value, test_source_,
+                   MakeSuccessCallback(barrier.Get(), &put_result2));
+    FlushWrapperBinding();
   }
 
   // GetAll triggers a commit when it's switching map types.
@@ -938,21 +953,22 @@ TEST_F(LevelDBWrapperImplTest, GetAllAfterSetCacheMode) {
   {
     IncrementalBarrier barrier(loop.QuitClosure());
 
-    wrapper_impl()->Put(key, value, value2, test_source_,
-                        MakeSuccessCallback(barrier.Get(), &put_success));
+    wrapper()->Put(key, value, value2, test_source_,
+                   MakeSuccessCallback(barrier.Get(), &put_success));
 
     // Put task triggers database upgrade, so there are no more changes
     // to commit.
+    FlushWrapperBinding();
     EXPECT_FALSE(wrapper_impl()->has_changes_to_commit());
     EXPECT_TRUE(wrapper_impl()->has_pending_load_tasks());
 
-    wrapper_impl()->GetAll(
+    wrapper()->GetAll(
         GetAllCallback::CreateAndBind(&get_all_success, barrier.Get()),
         MakeGetAllCallback(&status, &data));
 
     // This Delete() should not affect the value returned by GetAll().
-    wrapper_impl()->Delete(key, value, test_source_,
-                           MakeSuccessCallback(barrier.Get(), &delete_success));
+    wrapper()->Delete(key, value, test_source_,
+                      MakeSuccessCallback(barrier.Get(), &delete_success));
   }
   loop.Run();
 

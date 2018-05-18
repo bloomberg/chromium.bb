@@ -12,16 +12,14 @@
 #include "content/browser/dom_storage/session_storage_data_map.h"
 #include "content/browser/dom_storage/session_storage_leveldb_wrapper.h"
 #include "content/browser/dom_storage/session_storage_metadata.h"
-#include "content/browser/leveldb_wrapper_impl.h"
-#include "content/common/child_process_host_impl.h"
 #include "content/common/leveldb_wrapper.mojom.h"
 #include "content/common/storage_partition_service.mojom.h"
+#include "content/public/common/child_process_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "url/origin.h"
 
 namespace content {
-class LevelDBWrapperImpl;
 
 // Implements the mojo interface SessionStorageNamespace. Stores data maps per
 // origin, which are accessible using the LevelDBWrapper interface with the
@@ -65,13 +63,15 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // OpenArea.
   SessionStorageNamespaceImplMojo(
       std::string namespace_id,
-      leveldb::mojom::LevelDBDatabase* database,
       SessionStorageDataMap::Listener* data_map_listener,
       RegisterShallowClonedNamespace add_namespace_callback,
       SessionStorageLevelDBWrapper::RegisterNewAreaMap
           register_new_map_callback);
 
   ~SessionStorageNamespaceImplMojo() override;
+
+  // Returns if a storage area exists for the given origin in this map.
+  bool HasAreaForOrigin(const url::Origin& origin) const;
 
   void SetWaitingForClonePopulation() { waiting_on_clone_population_ = true; }
 
@@ -80,14 +80,22 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // Called when this is a new namespace, or when the namespace was loaded from
   // disk. Should be called before |Bind|.
   void PopulateFromMetadata(
-      SessionStorageMetadata::NamespaceEntry namespace_metadata);
+      leveldb::mojom::LevelDBDatabase* database,
+      SessionStorageMetadata::NamespaceEntry namespace_metadata,
+      const std::map<std::vector<uint8_t>, SessionStorageDataMap*>&
+          current_data_maps);
 
   // Can either be called before |Bind|, or if the source namespace isn't
   // available yet, |SetWaitingForClonePopulation| can be called. Then |Bind|
   // will work, and hold onto the request until after this method is called.
   void PopulateAsClone(
+      leveldb::mojom::LevelDBDatabase* database,
       SessionStorageMetadata::NamespaceEntry namespace_metadata,
       const OriginAreas& areas_to_clone);
+
+  // Resets to a pre-populated and pre-bound state. Used when the owner needs to
+  // delete & recreate the database.
+  void Reset();
 
   SessionStorageMetadata::NamespaceEntry namespace_entry() {
     return namespace_entry_;
@@ -105,6 +113,9 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
     return binding_.is_bound() || bind_waiting_on_clone_population_;
   }
 
+  // Removes any LevelDBWrappers bound in |OpenArea| that are no longer bound.
+  void PurgeUnboundWrappers();
+
   // Removes data for the given origin from this namespace. If there is no data
   // map for that given origin, this does nothing.
   void RemoveOriginData(const url::Origin& origin);
@@ -120,11 +131,7 @@ class CONTENT_EXPORT SessionStorageNamespaceImplMojo final
   // data.
   void Clone(const std::string& clone_to_namespace) override;
 
-  // Because LevelDBWrapper::GetAll is a sync call, for testing it's easier for
-  // us to call that directly on the wrapper. Unfortunate, but better than
-  // spinning up 3 threads.
-  LevelDBWrapperImpl* GetWrapperForOriginForTesting(
-      const url::Origin& origin) const;
+  void FlushOriginForTesting(const url::Origin& origin);
 
  private:
   const std::string namespace_id_;

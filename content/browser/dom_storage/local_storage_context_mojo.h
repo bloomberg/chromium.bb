@@ -134,7 +134,6 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   void GetStatistics(size_t* total_cache_size, size_t* unused_wrapper_count);
   void OnCommitResult(leveldb::mojom::DatabaseError error);
-  void OnReconnectedToDB();
 
   // These values are written to logs.  New enum values can be added, but
   // existing enums must never be renumbered or deleted and reused.

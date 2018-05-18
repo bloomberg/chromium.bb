@@ -99,6 +99,12 @@ class CONTENT_EXPORT SessionStorageDatabase
   // Adds memory statistics to |pmd| for chrome://tracing.
   void OnMemoryDump(base::trace_event::ProcessMemoryDump* pmd);
 
+  // Used in testing to set an easier to handle in-memory database. Should
+  // happen before any database operations.
+  void SetDatabaseForTesting(std::unique_ptr<leveldb::DB> db);
+
+  leveldb::DB* db() const { return db_.get(); }
+
  private:
   class DBOperation;
   friend class SessionStorageDatabase::DBOperation;

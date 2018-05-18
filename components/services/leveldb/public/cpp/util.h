@@ -5,6 +5,10 @@
 #ifndef COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_UTIL_H_
 #define COMPONENTS_SERVICES_LEVELDB_PUBLIC_CPP_UTIL_H_
 
+#include <string>
+#include <vector>
+
+#include "base/strings/string16.h"
 #include "components/services/leveldb/public/interfaces/leveldb.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 
@@ -42,6 +46,11 @@ std::vector<uint8_t> StdStringToUint8Vector(const std::string& input);
 base::StringPiece Uint8VectorToStringPiece(const std::vector<uint8_t>& input);
 
 std::vector<uint8_t> StringPieceToUint8Vector(base::StringPiece input);
+
+// The input size MUST be divisable by 2.
+base::string16 Uint8VectorToString16(const std::vector<uint8_t>& input);
+
+std::vector<uint8_t> String16ToUint8Vector(const base::string16& input);
 
 }  // namespace leveldb
 

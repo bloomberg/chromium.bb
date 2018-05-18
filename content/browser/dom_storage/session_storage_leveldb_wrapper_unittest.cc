@@ -81,8 +81,8 @@ class SessionStorageLevelDBWrapperTest : public testing::Test {
     leveldb_database_->Put(StdStringToUint8Vector("map-0-key1"),
                            StdStringToUint8Vector("data1"), base::DoNothing());
 
-    metadata_.SetupNewDatabase(1);
-    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+    std::vector<leveldb::mojom::BatchedOperationPtr> save_operations =
+        metadata_.SetupNewDatabase();
     auto map_id = metadata_.RegisterNewMap(
         metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
         &save_operations);
@@ -141,8 +141,7 @@ TEST_F(SessionStorageLevelDBWrapperTest, BasicUsage) {
       mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb));
 
   std::vector<mojom::KeyValuePtr> data;
-  DatabaseError status =
-      test::GetAllSync(ss_leveldb_impl->data_map()->level_db_wrapper(), &data);
+  DatabaseError status = test::GetAllSync(ss_leveldb.get(), &data);
   EXPECT_EQ(DatabaseError::OK, status);
   ASSERT_EQ(1ul, data.size());
   EXPECT_TRUE(base::ContainsValue(
@@ -191,7 +190,7 @@ TEST_F(SessionStorageLevelDBWrapperTest, Cloning) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(2);
+  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(1);
   EXPECT_TRUE(test::PutSync(ss_leveldb2.get(), StdStringToUint8Vector("key2"),
                             StdStringToUint8Vector("data2"), base::nullopt,
                             ""));
@@ -201,8 +200,7 @@ TEST_F(SessionStorageLevelDBWrapperTest, Cloning) {
 
   // Check map 1 data.
   std::vector<mojom::KeyValuePtr> data;
-  DatabaseError status =
-      test::GetAllSync(ss_leveldb_impl1->data_map()->level_db_wrapper(), &data);
+  DatabaseError status = test::GetAllSync(ss_leveldb1.get(), &data);
   EXPECT_EQ(DatabaseError::OK, status);
   ASSERT_EQ(1ul, data.size());
   EXPECT_TRUE(base::ContainsValue(
@@ -211,8 +209,7 @@ TEST_F(SessionStorageLevelDBWrapperTest, Cloning) {
 
   // Check map 2 data.
   data.clear();
-  status =
-      test::GetAllSync(ss_leveldb_impl2->data_map()->level_db_wrapper(), &data);
+  status = test::GetAllSync(ss_leveldb2.get(), &data);
   EXPECT_EQ(DatabaseError::OK, status);
   ASSERT_EQ(2ul, data.size());
   EXPECT_TRUE(base::ContainsValue(
@@ -300,6 +297,71 @@ TEST_F(SessionStorageLevelDBWrapperTest, ObserverTransfer) {
 
   // Wait for the commits.
   commit_waiters.Run();
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
+      .Times(1);
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("1")))
+      .Times(1);
+
+  ss_leveldb_impl1 = nullptr;
+  ss_leveldb_impl2 = nullptr;
+}
+
+TEST_F(SessionStorageLevelDBWrapperTest, DeleteAllOnShared) {
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
+      .Times(1);
+
+  auto ss_leveldb_impl1 = std::make_unique<SessionStorageLevelDBWrapper>(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
+      SessionStorageDataMap::Create(
+          &listener_,
+          metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
+              ->second[test_origin1_],
+          leveldb_database_.get()),
+      GetRegisterNewAreaMapCallback());
+
+  // Perform a shallow clone.
+  std::vector<leveldb::mojom::BatchedOperationPtr> save_operations;
+  metadata_.RegisterShallowClonedNamespace(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_),
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_),
+      &save_operations);
+  leveldb_database_->Write(std::move(save_operations), base::DoNothing());
+  auto ss_leveldb_impl2 = ss_leveldb_impl1->Clone(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id2_));
+
+  mojom::LevelDBWrapperAssociatedPtr ss_leveldb1;
+  ss_leveldb_impl1->Bind(
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
+  mojom::LevelDBWrapperAssociatedPtr ss_leveldb2;
+  ss_leveldb_impl2->Bind(
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
+
+  // Same maps are used.
+  EXPECT_EQ(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
+
+  // Create the observer, attach to the first namespace.
+  testing::StrictMock<test::MockLevelDBObserver> mock_observer;
+  mojo::AssociatedBinding<mojom::LevelDBObserver> observer_binding(
+      &mock_observer);
+  mojom::LevelDBObserverAssociatedPtrInfo observer_ptr_info;
+  observer_binding.Bind(mojo::MakeRequest(&observer_ptr_info));
+  ss_leveldb1->AddObserver(std::move(observer_ptr_info));
+
+  // The |DeleteAll| call will fork the maps, and the observer should see a
+  // DeleteAll.
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
+      .Times(1);
+  // There should be no commits, as we don't actually have to change any data.
+  // |ss_leveldb_impl1| should just switch to a new, empty map.
+  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(0);
+  EXPECT_CALL(mock_observer, AllDeleted("source")).Times(1);
+  EXPECT_TRUE(test::DeleteAllSync(ss_leveldb1.get(), "source"));
+
+  // The maps were forked on the above call.
+  EXPECT_NE(ss_leveldb_impl1->data_map(), ss_leveldb_impl2->data_map());
 
   EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
       .Times(1);

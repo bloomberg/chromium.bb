@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "url/gurl.h"
 
 namespace content {
 namespace {
@@ -75,7 +76,9 @@ class GetAllCallback : public mojom::LevelDBWrapperGetAllCallback {
 
 class SessionStorageDataMapTest : public testing::Test {
  public:
-  SessionStorageDataMapTest() : database_(&mock_data_) {
+  SessionStorageDataMapTest()
+      : test_origin_(url::Origin::Create(GURL("http://host1.com:1"))),
+        database_(&mock_data_) {
     // Should show up in first map.
     mock_data_[StdStringToUint8Vector("map-1-key1")] =
         StdStringToUint8Vector("data1");
@@ -88,6 +91,7 @@ class SessionStorageDataMapTest : public testing::Test {
  protected:
   base::test::ScopedTaskEnvironment task_environment_;
   testing::StrictMock<MockListener> listener_;
+  url::Origin test_origin_;
   std::map<std::vector<uint8_t>, std::vector<uint8_t>> mock_data_;
   FakeLevelDBDatabase database_;
 };
@@ -100,7 +104,8 @@ TEST_F(SessionStorageDataMapTest, BasicEmptyCreation) {
       .Times(1);
 
   scoped_refptr<SessionStorageDataMap> map = SessionStorageDataMap::Create(
-      &listener_, base::MakeRefCounted<SessionStorageMetadata::MapData>(1),
+      &listener_,
+      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
       &database_);
 
   leveldb::mojom::DatabaseError status;
@@ -131,7 +136,8 @@ TEST_F(SessionStorageDataMapTest, Clone) {
       .Times(1);
 
   scoped_refptr<SessionStorageDataMap> map1 = SessionStorageDataMap::Create(
-      &listener_, base::MakeRefCounted<SessionStorageMetadata::MapData>(1),
+      &listener_,
+      base::MakeRefCounted<SessionStorageMetadata::MapData>(1, test_origin_),
       &database_);
 
   EXPECT_CALL(listener_,
@@ -143,7 +149,9 @@ TEST_F(SessionStorageDataMapTest, Clone) {
 
   scoped_refptr<SessionStorageDataMap> map2 =
       SessionStorageDataMap::CreateClone(
-          &listener_, base::MakeRefCounted<SessionStorageMetadata::MapData>(2),
+          &listener_,
+          base::MakeRefCounted<SessionStorageMetadata::MapData>(2,
+                                                                test_origin_),
           map1->level_db_wrapper());
 
   leveldb::mojom::DatabaseError status;

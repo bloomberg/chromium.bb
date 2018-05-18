@@ -191,6 +191,7 @@ bool SessionStorageDatabase::CommitAreaChanges(
   if (!GetMapForArea(namespace_id, origin.GetURL().spec(),
                      leveldb::ReadOptions(), &exists, &map_id))
     return false;
+
   if (exists) {
     int64_t ref_count;
     if (!GetMapRefCount(map_id, &ref_count))
@@ -396,6 +397,12 @@ void SessionStorageDatabase::OnMemoryDump(
   mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
                  tracker_dump->GetSizeInternal());
+}
+
+void SessionStorageDatabase::SetDatabaseForTesting(
+    std::unique_ptr<leveldb::DB> db) {
+  CHECK(!db_);
+  db_ = std::move(db);
 }
 
 bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {

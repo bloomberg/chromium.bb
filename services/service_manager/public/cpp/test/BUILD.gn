@@ -51,6 +51,8 @@ source_set("test_support") {
   sources = [
     "test_connector_factory.cc",
     "test_connector_factory.h",
+    "test_service_decorator.cc",
+    "test_service_decorator.h",
   ]
 
   public_deps = [

@@ -42,8 +42,24 @@ bool PutSync(mojom::LevelDBWrapper* wrapper,
   return success;
 }
 
+bool GetSync(mojom::LevelDBWrapper* wrapper,
+             const std::vector<uint8_t>& key,
+             std::vector<uint8_t>* data_out) {
+  bool success = false;
+  base::RunLoop loop;
+  wrapper->Get(key,
+               base::BindLambdaForTesting(
+                   [&](bool success_in, const std::vector<uint8_t>& value) {
+                     success = success_in;
+                     *data_out = std::move(value);
+                     loop.Quit();
+                   }));
+  loop.Run();
+  return success;
+}
+
 leveldb::mojom::DatabaseError GetAllSync(
-    content::LevelDBWrapperImpl* wrapper,
+    mojom::LevelDBWrapper* wrapper,
     std::vector<mojom::KeyValuePtr>* data_out) {
   DCHECK(data_out);
   base::RunLoop loop;
@@ -52,6 +68,27 @@ leveldb::mojom::DatabaseError GetAllSync(
       leveldb::mojom::DatabaseError::INVALID_ARGUMENT;
   wrapper->GetAll(
       GetAllCallback::CreateAndBind(&complete, loop.QuitClosure()),
+      base::BindLambdaForTesting([&](leveldb::mojom::DatabaseError status_in,
+                                     std::vector<mojom::KeyValuePtr> data_in) {
+        status = status_in;
+        *data_out = std::move(data_in);
+      }));
+  loop.Run();
+  DCHECK(complete);
+  return status;
+}
+
+leveldb::mojom::DatabaseError GetAllSyncOnDedicatedPipe(
+    mojom::LevelDBWrapper* wrapper,
+    std::vector<mojom::KeyValuePtr>* data_out) {
+  DCHECK(data_out);
+  base::RunLoop loop;
+  bool complete = false;
+  leveldb::mojom::DatabaseError status =
+      leveldb::mojom::DatabaseError::INVALID_ARGUMENT;
+  wrapper->GetAll(
+      GetAllCallback::CreateAndBindOnDedicatedPipe(&complete,
+                                                   loop.QuitClosure()),
       base::BindLambdaForTesting([&](leveldb::mojom::DatabaseError status_in,
                                      std::vector<mojom::KeyValuePtr> data_in) {
         status = status_in;
@@ -106,6 +143,18 @@ MakeGetAllCallback(leveldb::mojom::DatabaseError* status_out,
 mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo
 GetAllCallback::CreateAndBind(bool* result, base::OnceClosure callback) {
   mojom::LevelDBWrapperGetAllCallbackAssociatedPtr ptr;
+  auto request = mojo::MakeRequest(&ptr);
+  mojo::MakeStrongAssociatedBinding(
+      base::WrapUnique(new GetAllCallback(result, std::move(callback))),
+      std::move(request));
+  return ptr.PassInterface();
+}
+
+// static
+mojom::LevelDBWrapperGetAllCallbackAssociatedPtrInfo
+GetAllCallback::CreateAndBindOnDedicatedPipe(bool* result,
+                                             base::OnceClosure callback) {
+  mojom::LevelDBWrapperGetAllCallbackAssociatedPtr ptr;
   auto request = mojo::MakeRequestAssociatedWithDedicatedPipe(&ptr);
   mojo::MakeStrongAssociatedBinding(
       base::WrapUnique(new GetAllCallback(result, std::move(callback))),
@@ -124,8 +173,14 @@ void GetAllCallback::Complete(bool success) {
     std::move(callback_).Run();
 }
 
-MockLevelDBObserver::MockLevelDBObserver() = default;
+MockLevelDBObserver::MockLevelDBObserver() : binding_(this) {}
 MockLevelDBObserver::~MockLevelDBObserver() = default;
+
+mojom::LevelDBObserverAssociatedPtrInfo MockLevelDBObserver::Bind() {
+  mojom::LevelDBObserverAssociatedPtrInfo ptr_info;
+  binding_.Bind(mojo::MakeRequest(&ptr_info));
+  return ptr_info;
+}
 
 }  // namespace test
 }  // namespace content
