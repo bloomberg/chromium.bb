@@ -1922,6 +1922,12 @@ crbug.com/613672 [ Mac ] synthetic_gestures/synthetic-pinch-zoom-gesture-touchsc
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.html [ Skip ]
+crbug.com/613672 [ Mac ] synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Skip ]
+crbug.com/613672 [ Mac ] synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow-desktop.html [ Skip ]
+crbug.com/613672 [ Mac ] synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-out-slow-desktop.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-desktop.html [ Skip ]
 
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/522648 virtual/mouseevent_fractional/fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]

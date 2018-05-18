@@ -151,6 +151,7 @@ class MockSyntheticGestureTarget : public SyntheticGestureTarget {
   }
 
   float GetTouchSlopInDips() const override { return kTouchSlopInDips; }
+  float GetSpanSlopInDips() const override { return 2 * kTouchSlopInDips; }
 
   int GetMouseWheelMinimumGranularity() const override {
     return kMouseWheelTickMultiplier;
@@ -340,10 +341,10 @@ class MockSyntheticTouchscreenPinchTouchTarget
     switch (zoom_direction_) {
       case ZOOM_IN:
         return last_pointer_distance_ /
-               (initial_pointer_distance_ + 2 * GetTouchSlopInDips());
+               (initial_pointer_distance_ + GetSpanSlopInDips());
       case ZOOM_OUT:
         return last_pointer_distance_ /
-               (initial_pointer_distance_ - 2 * GetTouchSlopInDips());
+               (initial_pointer_distance_ - GetSpanSlopInDips());
       case ZOOM_DIRECTION_UNKNOWN:
         return 1.0f;
       default:

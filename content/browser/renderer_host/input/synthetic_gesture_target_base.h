@@ -55,6 +55,8 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
 
   float GetTouchSlopInDips() const override;
 
+  float GetSpanSlopInDips() const override;
+
   float GetMinScalingSpanInDips() const override;
 
   int GetMouseWheelMinimumGranularity() const override;

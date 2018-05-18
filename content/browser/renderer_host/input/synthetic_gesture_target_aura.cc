@@ -161,9 +161,12 @@ float SyntheticGestureTargetAura::GetTouchSlopInDips() const {
          1;
 }
 
+float SyntheticGestureTargetAura::GetSpanSlopInDips() const {
+  return ui::GestureConfiguration::GetInstance()->span_slop();
+}
+
 float SyntheticGestureTargetAura::GetMinScalingSpanInDips() const {
-  return ui::GestureConfiguration::GetInstance()
-      ->min_distance_for_pinch_scroll_in_pixels();
+  return ui::GestureConfiguration::GetInstance()->min_scaling_span_in_pixels();
 }
 
 aura::Window* SyntheticGestureTargetAura::GetWindow() const {
