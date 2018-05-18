@@ -6,8 +6,7 @@ The [chromium.perf waterfall](http://build.chromium.org/p/chromium.perf/waterfal
 continuously builds and runs our performance tests on real Android, Windows,
 Mac, and Linux hardware. Results are reported to the
 [Performance Dashboard](https://chromeperf.appspot.com/) for analysis. The
-[Perfbot Health Sheriffing Rotation](perf_bot_sheriffing.md) keeps the build
-green and files bugs on regressions. They maintain
+[Perfbot Health Sheriffing Rotation](bot_health_sheriffing/main.md) ensures that the benchmarks stay green. The [Perf Sheriff Rotation](perf_regression_sheriffing.md) ensures that any regressions detected by those benchmarks are addressed quickly. Together, these rotations maintain
 [Chrome's Core Principles](https://www.chromium.org/developers/core-principles)
 of speed:
 
@@ -22,8 +21,8 @@ of speed:
 
 ## Links
 
-  * [Perfbot Health Sheriffing Rotation](perf_bot_sheriffing.md)
-  * [Debugging an Android Perf Failure](perf_bot_sheriffing.md#Android-Device-failures)
+  * [Perf Sheriff Rotation](perf_regression_sheriffing.md)
+  * [Perfbot Health Sheriffing Rotation](bot_health_sheriffing/main.md)
   * TODO: Page on how to repro failures locally
   * TODO: Page on how to connect to bot in lab
   * TODO: Page on how to hack on buildbot/recipe code
