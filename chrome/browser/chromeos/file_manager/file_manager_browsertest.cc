@@ -355,11 +355,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     GearMenu, /* gear_menu.js */
     FileManagerBrowserTest,
-    ::testing::Values(
-        TestCase("showHiddenFilesDownloads"),
-        TestCase("showHiddenFilesDrive"),
-        TestCase("toogleGoogleDocsDrive"),
-        TestCase("showPasteIntoCurrentFolder")));
+    ::testing::Values(TestCase("showHiddenFilesDownloads"),
+                      TestCase("showHiddenFilesDrive"),
+                      TestCase("toogleGoogleDocsDrive"),
+                      TestCase("showPasteIntoCurrentFolder"),
+                      TestCase("showSelectAllInCurrentFolder")));
 
 // Structure to describe an account info.
 struct TestAccountInfo {

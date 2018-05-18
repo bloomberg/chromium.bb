@@ -79,6 +79,7 @@ loadTimeData.data = new Proxy(
       UI_LOCALE: 'en_US',
       RECENT_ROOT_LABEL: 'Recent',
       SEARCH_TEXT_LABEL: 'Search',
+      SELECT_ALL_COMMAND_LABEL: 'Select all',
       SIZE_BYTES: '$1 bytes',
       SIZE_GB: '$1 GB',
       SIZE_KB: '$1 KB',

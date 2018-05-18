@@ -103,6 +103,11 @@
                shortcut="e|Ctrl">
       <command id="new-window" i18n-values="label:NEW_WINDOW_BUTTON_LABEL"
                shortcut="n|Ctrl">
+      <!-- Note that actual shortcut Ctrl/Meta+A is handled in
+               ListSelectionController.handleKeyDown -->
+      <command id="select-all"
+               i18n-values="label:SELECT_ALL_COMMAND_LABEL"
+               shortcut="a|Ctrl">
       <command id="drive-sync-settings"
                i18n-values="label:DRIVE_MOBILE_CONNECTION_OPTION">
       <command id="drive-hosted-settings"
@@ -241,6 +246,8 @@
       <cr-menu-item id="gear-menu-newfolder" command="#new-folder"></cr-menu-item>
       <hr>
       <cr-menu-item command="#configure"></cr-menu-item>
+      <cr-menu-item id="gear-menu-select-all"
+                    command="#select-all"></cr-menu-item>
       <cr-menu-item id="gear-menu-toggle-hidden-files"
                     command="#toggle-hidden-files"></cr-menu-item>
       <cr-menu-item id="gear-menu-drive-sync-settings"

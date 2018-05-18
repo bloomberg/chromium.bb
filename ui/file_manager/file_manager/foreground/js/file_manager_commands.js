@@ -730,6 +730,23 @@ CommandHandler.COMMANDS_['new-window'] = /** @type {Command} */ ({
   }
 });
 
+CommandHandler.COMMANDS_['select-all'] = /** @type {Command} */ ({
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  execute: function(event, fileManager) {
+    fileManager.directoryModel.getFileListSelection().selectAll();
+  },
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
+   */
+  canExecute: function(event, fileManager) {
+    event.canExecute = fileManager.directoryModel.getFileList().length > 0;
+  }
+});
+
 CommandHandler.COMMANDS_['toggle-hidden-files'] = /** @type {Command} */ ({
   /**
    * @param {!Event} event Command event.

@@ -628,6 +628,9 @@
   <message name="IDS_FILE_BROWSER_REMOVE_FOLDER_SHORTCUT_BUTTON_LABEL" desc="Menu item label, unpinning the selected folder from the left nav.">
     Remove shortcut
   </message>
+  <message name="IDS_FILE_BROWSER_SELECT_ALL_COMMAND_LABEL" desc="Menu item label, select all files and folders in the right view">
+    Select all
+  </message>
   <message name="IDS_FILE_BROWSER_SHARE_BUTTON_LABEL" desc="Menu item's label, showing dialog to share the selected Google Drive files. This message is also used as a tooltip label and a spoken feedback label of a button which also shows the dialog to share the files. The translation should be consistent with the sharing dialog's title in Google Drive Web UI.">
     Share with others
   </message>
