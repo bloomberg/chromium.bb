@@ -77,6 +77,7 @@ class FakeOutputSurface : public OutputSurface {
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
+  unsigned UpdateGpuFence() override;
 
   void set_framebuffer(GLint framebuffer, GLenum format) {
     framebuffer_ = framebuffer;

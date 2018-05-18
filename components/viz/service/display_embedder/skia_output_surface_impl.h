@@ -68,6 +68,7 @@ class SkiaOutputSurfaceImpl : public SkiaOutputSurface {
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
+  unsigned UpdateGpuFence() override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* GetSkCanvasForCurrentFrame() override;

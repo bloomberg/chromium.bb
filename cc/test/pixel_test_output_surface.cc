@@ -112,4 +112,8 @@ gpu::VulkanSurface* PixelTestOutputSurface::GetVulkanSurface() {
 }
 #endif
 
+unsigned PixelTestOutputSurface::UpdateGpuFence() {
+  return 0;
+}
+
 }  // namespace cc

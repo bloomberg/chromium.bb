@@ -138,6 +138,14 @@ class VIZ_SERVICE_EXPORT OutputSurface {
   virtual gpu::VulkanSurface* GetVulkanSurface() = 0;
 #endif
 
+  // Updates the GpuFence associated with this surface. The id of a newly
+  // created GpuFence is returned, or if an error occurs, or fences are not
+  // supported, the special id of 0 (meaning "no fence") is returned.  In all
+  // cases, any previously associated fence is destroyed. The returned fence id
+  // corresponds to the GL id used by the CHROMIUM_gpu_fence GL extension and
+  // can be passed directly to any related extension functions.
+  virtual unsigned UpdateGpuFence() = 0;
+
   // Returns true if any of the LatencyInfos provided contains a snapshot
   // request.
   static bool LatencyInfoHasSnapshotRequest(

@@ -72,6 +72,7 @@ class GpuBrowserCompositorOutputSurface : public BrowserCompositorOutputSurface,
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
+  unsigned UpdateGpuFence() override;
 
   void SetDrawRectangle(const gfx::Rect& rect) override;
 

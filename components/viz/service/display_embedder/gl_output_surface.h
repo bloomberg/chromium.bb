@@ -45,6 +45,7 @@ class GLOutputSurface : public OutputSurface {
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
+  unsigned UpdateGpuFence() override;
 
  protected:
   OutputSurfaceClient* client() const { return client_; }
@@ -70,6 +71,8 @@ class GLOutputSurface : public OutputSurface {
   // True if the draw rectangle has been set at all since the last resize.
   bool has_set_draw_rectangle_since_last_resize_ = false;
   gfx::Size size_;
+  bool use_gpu_fence_;
+  unsigned gpu_fence_id_ = 0;
 
   base::WeakPtrFactory<GLOutputSurface> weak_ptr_factory_;
 };

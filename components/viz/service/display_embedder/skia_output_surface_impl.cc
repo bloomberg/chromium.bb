@@ -276,6 +276,10 @@ gpu::VulkanSurface* SkiaOutputSurfaceImpl::GetVulkanSurface() {
 }
 #endif
 
+unsigned SkiaOutputSurfaceImpl::UpdateGpuFence() {
+  return 0;
+}
+
 SkCanvas* SkiaOutputSurfaceImpl::GetSkCanvasForCurrentFrame() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(recorder_);

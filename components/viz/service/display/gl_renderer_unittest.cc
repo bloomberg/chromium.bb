@@ -1907,6 +1907,7 @@ class MockOutputSurface : public OutputSurface {
   ~MockOutputSurface() override {}
 
   void BindToClient(OutputSurfaceClient*) override {}
+  unsigned UpdateGpuFence() override { return 0; }
 
   MOCK_METHOD0(EnsureBackbuffer, void());
   MOCK_METHOD0(DiscardBackbuffer, void());

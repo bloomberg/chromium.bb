@@ -61,6 +61,8 @@ class OffscreenBrowserCompositorOutputSurface
   gpu::VulkanSurface* GetVulkanSurface() override;
 #endif
 
+  unsigned UpdateGpuFence() override;
+
   void OnSwapBuffersComplete(const std::vector<ui::LatencyInfo>& latency_info,
                              uint64_t swap_id);
 

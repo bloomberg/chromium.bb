@@ -221,6 +221,7 @@ class OverlayOutputSurface : public OutputSurface {
   gfx::BufferFormat GetOverlayBufferFormat() const override {
     return gfx::BufferFormat::RGBX_8888;
   }
+  unsigned UpdateGpuFence() override { return 0; }
 
   void set_is_displayed_as_overlay_plane(bool value) {
     is_displayed_as_overlay_plane_ = value;

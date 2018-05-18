@@ -36,6 +36,7 @@ class ParentOutputSurface : public viz::OutputSurface {
   bool IsDisplayedAsOverlayPlane() const override;
   unsigned GetOverlayTextureId() const override;
   gfx::BufferFormat GetOverlayBufferFormat() const override;
+  unsigned UpdateGpuFence() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ParentOutputSurface);

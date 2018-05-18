@@ -3217,7 +3217,8 @@ void GLRenderer::ScheduleOverlays() {
     context_support_->ScheduleOverlayPlane(
         overlay_candidate.plane_z_order, overlay_candidate.transform,
         texture_id, ToNearestRect(overlay_candidate.display_rect),
-        overlay_candidate.uv_rect, !overlay_candidate.is_opaque, 0);
+        overlay_candidate.uv_rect, !overlay_candidate.is_opaque,
+        overlay_candidate.gpu_fence_id);
   }
 }
 

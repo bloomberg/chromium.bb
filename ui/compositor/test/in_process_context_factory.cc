@@ -124,6 +124,7 @@ class DirectOutputSurface : public viz::OutputSurface {
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override { return nullptr; }
 #endif
+  unsigned UpdateGpuFence() override { return 0; }
 
  private:
   void OnSwapBuffersComplete(uint64_t swap_id) {

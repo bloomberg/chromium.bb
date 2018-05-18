@@ -115,6 +115,7 @@ class TestOutputSurface : public BrowserCompositorOutputSurface {
 #if BUILDFLAG(ENABLE_VULKAN)
   gpu::VulkanSurface* GetVulkanSurface() override { return nullptr; }
 #endif
+  unsigned UpdateGpuFence() override { return 0; }
 
  private:
   std::unique_ptr<ReflectorTexture> reflector_texture_;
