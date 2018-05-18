@@ -445,6 +445,13 @@ void UserCloudPolicyManagerChromeOS::GetChromePolicy(PolicyMap* policy_map) {
   // given that this is an enterprise user.
   if (!store()->has_policy())
     return;
+
+  // Don't apply enterprise defaults for Child user.
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->FindUser(account_id_);
+  if (user && user->GetType() == user_manager::USER_TYPE_CHILD)
+    return;
+
   SetEnterpriseUsersDefaults(policy_map);
 }
 
