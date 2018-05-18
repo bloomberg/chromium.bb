@@ -24,6 +24,7 @@
   'android_webview_unittests': {
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -127,6 +128,11 @@
     ],
     'modifications': {
       # chromium.android
+      'android-kitkat-arm-rel': {
+        'swarming': {
+          'hard_timeout': 180,
+        },
+      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'hard_timeout': 180,
@@ -274,6 +280,7 @@
     'remove_from': [
       # Unclear why these largely aren't run on Android.
       # chromium.android:
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -404,6 +411,11 @@
     },
     'modifications': {
       # chromium.android
+      'android-kitkat-arm-rel': {
+        'swarming': {
+          'shards': 12,
+        },
+      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 20,
@@ -526,6 +538,15 @@
       'Android CFI',
     ],
     'modifications': {
+      'android-kitkat-arm-rel': {
+        'args': [
+          '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
+          '--additional-apk=//third_party/gvr-android-sdk/test-apks/vr_services/vr_services_current.apk',
+        ],
+        'swarming': {
+          'hard_timeout': 1920,
+        },
+      },
       'KitKat Phone Tester (rel)': {
         'args': [
           '--shared-prefs-file=//chrome/android/shared_preference_files/test/vr_cardboard_skipdon_setupcomplete.json',
@@ -1164,6 +1185,7 @@
       # TODO(kbr): these tests aren't run on Android except on one bot
       # on chromium.android.fyi, which might just be an accident.
       # Consider moving it to non_android_chromium_gtests.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -1912,6 +1934,7 @@
   'renderer_side_navigation_content_browsertests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -1950,6 +1973,7 @@
   'renderer_side_navigation_content_shell_test_apk': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -1983,6 +2007,7 @@
   'renderer_side_navigation_content_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -2013,6 +2038,7 @@
   'renderer_side_navigation_webview_instrumentation_test_apk': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -2266,6 +2292,7 @@
   'skia_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -2336,6 +2363,11 @@
     ],
     'modifications': {
       # chromium.android
+      'android-kitkat-arm-rel': {
+        'swarming': {
+          'hard_timeout': 180,
+        },
+      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'hard_timeout': 180,
@@ -2394,6 +2426,21 @@
   'telemetry_perf_unittests': {
     'modifications': {
       # chromium.android
+      'android-kitkat-arm-rel': {
+        'args': [
+          '--browser=android-chromium',
+          '--device=android',
+        ],
+        'swarming': {
+          'dimension_sets': [
+            {
+              'temp_band': '<30',
+            },
+          ],
+          'hard_timeout': 1500,
+          'shards': 15,
+        },
+      },
       'KitKat Phone Tester (rel)': {
         'args': [
           '--browser=android-chromium',
@@ -2663,6 +2710,7 @@
   'url_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -2748,6 +2796,7 @@
   'vr_common_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'Nougat Phone Tester chromium.android',
@@ -2794,6 +2843,7 @@
   'vr_pixeltests': {
     'remove_from': [
       # chromium.android
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -3099,6 +3149,7 @@
   'webkit_unit_tests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -3138,6 +3189,7 @@
     ],
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
@@ -3226,6 +3278,7 @@
   'wtf_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run.
+      'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Phone Tester (rel)',
       'KitKat Tablet Tester',
