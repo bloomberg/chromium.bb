@@ -1064,8 +1064,14 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   if (!is_inter_block(xd->mi[0])) {
     for (int plane = 0; plane < AOMMIN(2, av1_num_planes(&pbi->common));
          ++plane) {
-      if (xd->mi[0]->palette_mode_info.palette_size[plane])
-        av1_decode_palette_tokens(xd, plane, r);
+      const struct macroblockd_plane *const pd = &xd->plane[plane];
+      if (is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
+                              pd->subsampling_y)) {
+        if (xd->mi[0]->palette_mode_info.palette_size[plane])
+          av1_decode_palette_tokens(xd, plane, r);
+      } else {
+        assert(xd->mi[0]->palette_mode_info.palette_size[plane] == 0);
+      }
     }
   }
 
