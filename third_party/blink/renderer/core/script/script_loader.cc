@@ -68,7 +68,6 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
                            bool created_during_document_write)
     : element_(element),
       start_line_number_(WTF::OrdinalNumber::BeforeFirst()),
-      have_fired_load_(false),
       will_be_parser_executed_(false),
       will_execute_when_document_finished_parsing_(false),
       created_during_document_write_(created_during_document_write),
@@ -161,7 +160,6 @@ void ScriptLoader::DispatchErrorEvent() {
 
 void ScriptLoader::DispatchLoadEvent() {
   element_->DispatchLoadEvent();
-  SetHaveFiredLoadEvent(true);
 }
 
 namespace {

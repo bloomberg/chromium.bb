@@ -77,7 +77,7 @@ void SVGScriptElement::DidNotifySubtreeInsertionsToDocument() {
   loader_->DidNotifySubtreeInsertionsToDocument();
 
   if (!loader_->IsParserInserted())
-    loader_->SetHaveFiredLoadEvent(true);
+    have_fired_load_ = true;
 }
 
 void SVGScriptElement::ChildrenChanged(const ChildrenChange& change) {
@@ -96,11 +96,11 @@ bool SVGScriptElement::IsURLAttribute(const Attribute& attribute) const {
 
 void SVGScriptElement::FinishParsingChildren() {
   SVGElement::FinishParsingChildren();
-  loader_->SetHaveFiredLoadEvent(true);
+  have_fired_load_ = true;
 }
 
 bool SVGScriptElement::HaveLoadedRequiredResources() {
-  return loader_->HaveFiredLoadEvent();
+  return have_fired_load_;
 }
 
 String SVGScriptElement::SourceAttributeValue() const {
@@ -156,6 +156,7 @@ Element* SVGScriptElement::CloneWithoutAttributesAndChildren(
 
 void SVGScriptElement::DispatchLoadEvent() {
   DispatchEvent(Event::Create(EventTypeNames::load));
+  have_fired_load_ = true;
 }
 
 void SVGScriptElement::DispatchErrorEvent() {

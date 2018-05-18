@@ -103,6 +103,8 @@ class SVGScriptElement final : public SVGElement,
     return false;
   }
 
+  bool have_fired_load_ = false;
+
   TraceWrapperMember<ScriptLoader> loader_;
 };
 
