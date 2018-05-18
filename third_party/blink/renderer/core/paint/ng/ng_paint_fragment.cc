@@ -4,9 +4,11 @@
 
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
+#include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_physical_offset_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
@@ -16,6 +18,39 @@
 #include "third_party/blink/renderer/core/paint/ng/ng_inline_box_fragment_painter.h"
 
 namespace blink {
+
+namespace {
+
+NGPhysicalOffsetRect ExpandedSelectionRectForLineBreakIfNeeded(
+    const NGPhysicalOffsetRect& rect,
+    const NGPaintFragment& paint_fragment,
+    const LayoutSelectionStatus& selection_status) {
+  // Expand paint rect if selection covers multiple lines and
+  // this fragment is at the end of line.
+  if (selection_status.line_break == SelectLineBreak::kNotSelected)
+    return rect;
+  if (paint_fragment.GetLayoutObject()
+          ->EnclosingNGBlockFlow()
+          ->ShouldTruncateOverflowingText())
+    return rect;
+  // Copy from InlineTextBoxPainter.
+  const NGPaintFragment* container_line_box = paint_fragment.ContainerLineBox();
+  DCHECK(container_line_box);
+  const NGPhysicalLineBoxFragment& physical_line_box =
+      ToNGPhysicalLineBoxFragment(container_line_box->PhysicalFragment());
+  const LayoutUnit space_width(paint_fragment.Style().GetFont().SpaceWidth());
+  const NGPhysicalSize expanded_size(rect.size.width + space_width,
+                                     rect.size.height);
+  // TODO(yoichio): Support vertical writing mode.
+  // Consider sharing physical directional algorithm with ng_caret_rect.cc.
+  if (IsLtr(physical_line_box.BaseDirection()))
+    return NGPhysicalOffsetRect(rect.offset, expanded_size);
+  return NGPhysicalOffsetRect(
+      NGPhysicalOffset(rect.offset.left - space_width, rect.offset.top),
+      expanded_size);
+}
+
+}  // namespace
 
 NGPaintFragment::NGPaintFragment(
     scoped_refptr<const NGPhysicalFragment> fragment,
@@ -248,6 +283,17 @@ void NGPaintFragment::SetShouldDoFullPaintInvalidationForFirstLine() {
 
   if (NGPaintFragment* line_box = FirstLineBox())
     line_box->SetShouldDoFullPaintInvalidationRecursively();
+}
+
+NGPhysicalOffsetRect NGPaintFragment::ComputeLocalSelectionRect(
+    const LayoutSelectionStatus& selection_status) const {
+  const NGPhysicalOffsetRect& selection_rect =
+      ToNGPhysicalTextFragmentOrDie(PhysicalFragment())
+          .LocalRect(selection_status.start, selection_status.end);
+  const NGPhysicalOffsetRect line_break_extended_rect =
+      ExpandedSelectionRectForLineBreakIfNeeded(selection_rect, *this,
+                                                selection_status);
+  return line_break_extended_rect;
 }
 
 }  // namespace blink
