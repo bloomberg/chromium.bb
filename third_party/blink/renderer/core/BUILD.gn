@@ -2039,6 +2039,7 @@ jumbo_source_set("unit_tests") {
     "paint/paint_property_tree_printer_test.cc",
     "paint/paint_property_tree_update_tests.cc",
     "paint/pre_paint_tree_walk_test.cc",
+    "paint/raster_invalidation_test.cc",
     "paint/stub_chrome_client_for_spv2.h",
     "paint/table_painter_test.cc",
     "paint/text_painter_test.cc",

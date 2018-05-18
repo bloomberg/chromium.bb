@@ -626,7 +626,7 @@ RasterInvalidationTracking* GraphicsLayer::GetRasterInvalidationTracking()
 void GraphicsLayer::TrackRasterInvalidation(const DisplayItemClient& client,
                                             const IntRect& rect,
                                             PaintInvalidationReason reason) {
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+  if (RasterInvalidationTracking::ShouldAlwaysTrack())
     EnsureRasterInvalidator().EnsureTracking();
 
   // For SPv175, this only tracks invalidations that the cc::Layer is fully
@@ -1323,6 +1323,11 @@ std::unique_ptr<base::trace_event::TracedValue> GraphicsLayer::TakeDebugInfo(
 
   if (owner_node_id_)
     traced_value->SetInteger("owner_node", owner_node_id_);
+
+  if (auto* tracking = GetRasterInvalidationTracking()) {
+    tracking->AddToTracedValue(*traced_value);
+    tracking->ClearInvalidations();
+  }
 
   return traced_value;
 }

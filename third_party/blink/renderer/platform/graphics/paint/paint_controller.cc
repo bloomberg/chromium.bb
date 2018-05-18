@@ -26,7 +26,7 @@ void PaintController::SetTracksRasterInvalidations(bool value) {
       raster_invalidation_tracking_info_->old_client_debug_names.Set(
           &item.Client(), item.Client().DebugName());
     }
-  } else if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+  } else if (!RasterInvalidationTracking::ShouldAlwaysTrack()) {
     raster_invalidation_tracking_info_ = nullptr;
   }
 }
@@ -796,7 +796,7 @@ void PaintController::AddRasterInvalidation(const DisplayItemClient& client,
                                             const FloatRect& rect,
                                             PaintInvalidationReason reason) {
   new_paint_chunks_.AddRasterInvalidation(chunk, rect);
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+  if (RasterInvalidationTracking::ShouldAlwaysTrack())
     EnsureRasterInvalidationTracking();
   if (raster_invalidation_tracking_info_)
     TrackRasterInvalidation(client, chunk, reason);

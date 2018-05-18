@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_COMPOSITING_CONTENT_LAYER_CLIENT_IMPL_H_
 
 #include "cc/layers/content_layer_client.h"
+#include "cc/layers/layer_client.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/composited_layer_raster_invalidator.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
@@ -21,18 +22,14 @@ class JSONObject;
 class PaintArtifact;
 class PaintChunkSubset;
 
-class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
+class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
+                                               public cc::LayerClient {
   WTF_MAKE_NONCOPYABLE(ContentLayerClientImpl);
   USING_FAST_MALLOC(ContentLayerClientImpl);
 
  public:
-  ContentLayerClientImpl()
-      : cc_picture_layer_(cc::PictureLayer::Create(this)),
-        raster_invalidator_([this](const IntRect& rect) {
-          cc_picture_layer_->SetNeedsDisplayRect(rect);
-        }),
-        layer_state_(nullptr, nullptr, nullptr) {}
-  ~ContentLayerClientImpl() override = default;
+  ContentLayerClientImpl();
+  ~ContentLayerClientImpl() override;
 
   // cc::ContentLayerClient
   gfx::Rect PaintableRegion() override {
@@ -47,6 +44,11 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
     // TODO(jbroman): Actually calculate memory usage.
     return 0;
   }
+
+  // cc::LayerClient
+  std::unique_ptr<base::trace_event::TracedValue> TakeDebugInfo(
+      cc::Layer*) override;
+  void DidChangeScrollbarsHiddenIfOverlay(bool) override {}
 
   void SetTracksRasterInvalidations(bool should_track) {
     raster_invalidator_.SetTracksRasterInvalidations(should_track);
@@ -83,6 +85,8 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
 #if DCHECK_IS_ON()
   std::unique_ptr<JSONArray> paint_chunk_debug_data_;
 #endif
+
+  base::WeakPtrFactory<ContentLayerClientImpl> weak_ptr_factory_;
 };
 
 }  // namespace blink

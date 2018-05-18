@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "base/optional.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_chunks_to_cc_layer.h"
@@ -16,8 +17,21 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/json/json_values.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
+
+ContentLayerClientImpl::ContentLayerClientImpl()
+    : cc_picture_layer_(cc::PictureLayer::Create(this)),
+      raster_invalidator_([this](const IntRect& rect) {
+        cc_picture_layer_->SetNeedsDisplayRect(rect);
+      }),
+      layer_state_(nullptr, nullptr, nullptr),
+      weak_ptr_factory_(this) {
+  cc_picture_layer_->SetLayerClient(weak_ptr_factory_.GetWeakPtr());
+}
+
+ContentLayerClientImpl::~ContentLayerClientImpl() = default;
 
 static int GetTransformId(const TransformPaintPropertyNode* transform,
                           ContentLayerClientImpl::LayerAsJSONContext& context) {
@@ -124,6 +138,21 @@ std::unique_ptr<JSONObject> ContentLayerClientImpl::LayerAsJSON(
 #endif
 
   return json;
+}
+
+std::unique_ptr<base::trace_event::TracedValue>
+ContentLayerClientImpl::TakeDebugInfo(cc::Layer* layer) {
+  DCHECK_EQ(layer, cc_picture_layer_.get());
+  auto traced_value = std::make_unique<base::trace_event::TracedValue>();
+  traced_value->SetString("layer_name",
+                          WTF::StringUTF8Adaptor(debug_name_).AsStringPiece());
+  if (auto* tracking = raster_invalidator_.GetTracking()) {
+    tracking->AddToTracedValue(*traced_value);
+    tracking->ClearInvalidations();
+  }
+  // TODO(wangxianzhu): Do we need compositing_reasons,
+  // squashing_disallowed_reasons and owner_node_id?
+  return traced_value;
 }
 
 static SkColor DisplayItemBackgroundColor(const DisplayItem& item) {

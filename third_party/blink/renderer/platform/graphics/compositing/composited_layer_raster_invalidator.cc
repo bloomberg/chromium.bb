@@ -24,7 +24,7 @@ void CompositedLayerRasterInvalidator::SetTracksRasterInvalidations(
       tracking_info_->old_client_debug_names.Set(&info.id.client,
                                                  info.id.client.DebugName());
     }
-  } else if (!RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled()) {
+  } else if (!RasterInvalidationTracking::ShouldAlwaysTrack()) {
     tracking_info_ = nullptr;
   } else if (tracking_info_) {
     tracking_info_->tracking.ClearInvalidations();
@@ -290,7 +290,7 @@ void CompositedLayerRasterInvalidator::Generate(
   if (RuntimeEnabledFeatures::DisableRasterInvalidationEnabled())
     return;
 
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+  if (RasterInvalidationTracking::ShouldAlwaysTrack())
     EnsureTracking();
 
   if (tracking_info_) {

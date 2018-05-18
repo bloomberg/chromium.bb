@@ -5,11 +5,15 @@
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 
 #include "SkImageFilter.h"
+#include "base/trace_event/trace_event_argument.h"
 #include "third_party/blink/renderer/platform/geometry/geometry_as_json.h"
 #include "third_party/blink/renderer/platform/geometry/layout_rect.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 
 namespace blink {
 
@@ -17,6 +21,16 @@ static bool g_simulate_raster_under_invalidations = false;
 
 void RasterInvalidationTracking::SimulateRasterUnderInvalidations(bool enable) {
   g_simulate_raster_under_invalidations = enable;
+}
+
+bool RasterInvalidationTracking::ShouldAlwaysTrack() {
+  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+    return true;
+
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+      TRACE_DISABLED_BY_DEFAULT("blink.invalidation"), &tracing_enabled);
+  return tracing_enabled;
 }
 
 void RasterInvalidationTracking::AddInvalidation(
@@ -103,6 +117,38 @@ void RasterInvalidationTracking::AsJSON(JSONObject* json) {
     json->SetArray("underPaintInvalidations",
                    std::move(under_paint_invalidations_json));
   }
+}
+
+void RasterInvalidationTracking::AddToTracedValue(
+    base::trace_event::TracedValue& traced_value) {
+  if (!ShouldAlwaysTrack())
+    return;
+
+  // The names should be kept consistent with (except the intentional naming
+  // style difference: 'naming_style' here vs 'namingStyle' in trace viewer)
+  // third_party/catapult/tracing/tracing/extras/chrome/cc/layer_impl.html.
+  // Note that the difference between naming style is intentional.
+  traced_value.BeginArray("annotated_invalidation_rects");
+  std::sort(invalidations_.begin(), invalidations_.end(),
+            &CompareRasterInvalidationInfo);
+  for (auto& info : invalidations_) {
+    if (info.rect.IsEmpty())
+      continue;
+    traced_value.BeginDictionary();
+    traced_value.BeginArray("geometry_rect");
+    traced_value.AppendInteger(info.rect.X());
+    traced_value.AppendInteger(info.rect.Y());
+    traced_value.AppendInteger(info.rect.Width());
+    traced_value.AppendInteger(info.rect.Height());
+    traced_value.EndArray();
+    traced_value.SetString("reason",
+                           PaintInvalidationReasonToString(info.reason));
+    traced_value.SetString(
+        "client",
+        WTF::StringUTF8Adaptor(info.client_debug_name).AsStringPiece());
+    traced_value.EndDictionary();
+  }
+  traced_value.EndArray();
 }
 
 static bool PixelComponentsDiffer(int c1, int c2) {
