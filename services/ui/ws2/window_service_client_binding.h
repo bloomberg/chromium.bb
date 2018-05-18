@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
+#include "services/ui/ws2/window_service_client_binding.h"
 
 namespace aura {
 class Window;
@@ -30,8 +31,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClientBinding {
   ~WindowServiceClientBinding();
 
   // See WindowServiceClient for details on parameters and when to use.
+  // |window_tree_client_ptr| may be null for tests.
   void InitForEmbed(WindowService* window_service,
-                    mojom::WindowTreeClientPtr window_tree_client,
+                    mojom::WindowTreeClientPtr window_tree_client_ptr,
+                    mojom::WindowTreeClient* window_tree_client,
                     bool intercepts_events,
                     aura::Window* initial_root,
                     base::OnceClosure connection_lost_callback);
@@ -42,6 +45,10 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) WindowServiceClientBinding {
                        mojom::WindowTreeClientPtr window_tree_client,
                        bool intercepts_events,
                        base::OnceClosure connection_lost_callback);
+
+  WindowServiceClient* window_service_client() {
+    return window_service_client_.get();
+  }
 
  private:
   friend class WindowServiceClient;

@@ -45,16 +45,17 @@ class Client {
  public:
   Client(ws2::WindowService* window_service,
          aura::Window* root,
-         mojom::WindowTreeClientPtr tree_client) {
+         mojom::WindowTreeClientPtr tree_client_ptr) {
     window_ = std::make_unique<aura::Window>(nullptr);
     window_->Init(LAYER_NOT_DRAWN);
     window_->set_owned_by_parent(false);
     root->AddChild(window_.get());
     const bool intercepts_events = false;
     binding_ = std::make_unique<ws2::WindowServiceClientBinding>();
+    mojom::WindowTreeClient* tree_client = tree_client_ptr.get();
     binding_->InitForEmbed(
-        window_service, std::move(tree_client), intercepts_events,
-        window_.get(),
+        window_service, std::move(tree_client_ptr), tree_client,
+        intercepts_events, window_.get(),
         base::BindOnce(&Client::OnConnectionLost, base::Unretained(this)));
   }
 

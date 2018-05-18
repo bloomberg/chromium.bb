@@ -79,6 +79,9 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   void SetClientArea(const gfx::Insets& insets,
                      const std::vector<gfx::Rect>& additional_client_areas);
 
+  void set_capture_owner(WindowServiceClient* owner) { capture_owner_ = owner; }
+  WindowServiceClient* capture_owner() const { return capture_owner_; }
+
   // Returns true if the window is a top-level window and there is at least some
   // non-client area.
   bool HasNonClientArea() const;
@@ -130,6 +133,15 @@ class COMPONENT_EXPORT(WINDOW_SERVICE) ClientWindow {
   std::vector<gfx::Rect> additional_client_areas_;
 
   std::unique_ptr<ui::EventHandler> event_handler_;
+
+  // When a window has capture there are two possible clients that can get the
+  // events, either the embedder or the embedded client. When |window_| has
+  // capture this indicates which client gets the events. If null and |window_|
+  // has capture, then events are not sent to a client and not handled by the
+  // WindowService (meaning ui/events and aura's event processing continues).
+  // For example, a mouse press in the non-client area of a top-level results
+  // in views setting capture.
+  WindowServiceClient* capture_owner_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ClientWindow);
 };

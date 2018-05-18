@@ -11,6 +11,7 @@
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws2/ids.h"
 #include "ui/gfx/geometry/rect.h"
@@ -67,6 +68,14 @@ class WindowServiceClientTestHelper {
                          const std::string& name,
                          const std::vector<uint8_t>& value,
                          uint32_t change_id = 1);
+
+  // Creates a new embedding. On success the new WindowServiceClient is
+  // returned. The returned WindowServiceClient is owned by the
+  // WindowServiceClient this was created with (|window_service_client_|).
+  WindowServiceClient* Embed(aura::Window* window,
+                             mojom::WindowTreeClientPtr client_ptr,
+                             mojom::WindowTreeClient* client,
+                             uint32_t embed_flags = 0);
   void SetEventTargetingPolicy(aura::Window* window,
                                mojom::EventTargetingPolicy policy);
 
