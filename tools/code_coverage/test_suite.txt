@@ -29,6 +29,7 @@ device_unittests
 display_unittests
 events_unittests
 extensions_browsertests
+extensions_unittests
 filesystem_service_unittests
 gcm_unit_tests
 gfx_unittests
