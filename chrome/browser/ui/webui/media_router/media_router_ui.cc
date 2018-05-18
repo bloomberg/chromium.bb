@@ -223,8 +223,10 @@ void MediaRouterUI::Close() {
   }
 }
 
-void MediaRouterUI::UIInitialized() {
+void MediaRouterUI::OnUIInitialized() {
   TRACE_EVENT_NESTABLE_ASYNC_END0("media_router", "UI", initiator());
+
+  ui_initialized_ = true;
 
   // TODO(imcheng): We should be able to instantiate |issue_observer_| during
   // InitCommon by storing an initial Issue in this class.
@@ -232,8 +234,6 @@ void MediaRouterUI::UIInitialized() {
   issues_observer_ =
       std::make_unique<UIIssuesObserver>(GetIssueManager(), this);
   issues_observer_->Init();
-
-  ui_initialized_ = true;
 }
 
 bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
@@ -422,7 +422,7 @@ void MediaRouterUI::InitForTest(
         start_presentation_context()->presentation_request());
   }
 
-  UIInitialized();
+  OnUIInitialized();
 }
 
 void MediaRouterUI::InitForTest(
