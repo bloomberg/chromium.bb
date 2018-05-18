@@ -14,6 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/resource_coordinator/discard_reason.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit.h"
+#include "chrome/browser/resource_coordinator/tab_activity_watcher.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit_external.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/resource_coordinator/time.h"
@@ -110,6 +111,12 @@ class DiscardsDetailsProviderImpl : public mojom::DiscardsDetailsProvider {
       info->is_auto_discardable =
           tab_lifecycle_unit_external->IsAutoDiscardable();
       info->id = lifecycle_unit->GetID();
+      base::Optional<float> reactivation_score =
+          resource_coordinator::TabActivityWatcher::GetInstance()
+              ->CalculateReactivationScore(contents);
+      info->has_reactivation_score = reactivation_score.has_value();
+      if (info->has_reactivation_score)
+        info->reactivation_score = reactivation_score.value();
 
       infos.push_back(std::move(info));
     }

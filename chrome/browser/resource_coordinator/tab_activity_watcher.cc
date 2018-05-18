@@ -51,7 +51,7 @@ class TabActivityWatcher::WebContentsData
  public:
   ~WebContentsData() override = default;
 
-  // Calculates the tab reactivation score for a background tab. Returns false
+  // Calculates the tab reactivation score for a background tab. Returns nullopt
   // if the score could not be calculated, e.g. because the tab is in the
   // foreground.
   base::Optional<float> CalculateReactivationScore() {
