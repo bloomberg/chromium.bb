@@ -13,6 +13,10 @@ import("//build/toolchain/toolchain.gni")
 
 assert(is_android)
 
+declare_args() {
+  enable_jni_tracing = false
+}
+
 if (target_cpu == "arm") {
   _sanitizer_arch = "arm"
 } else if (target_cpu == "arm64") {
@@ -252,6 +256,9 @@ if (enable_java_templates) {
       if (defined(invoker.namespace)) {
         args += [ "-n ${invoker.namespace}" ]
       }
+      if (enable_jni_tracing) {
+        args += [ "--enable_tracing" ]
+      }
     }
 
     config("jni_includes_${target_name}") {
@@ -357,6 +364,9 @@ if (enable_java_templates) {
 
         if (enable_profiling) {
           args += [ "--enable_profiling" ]
+        }
+        if (enable_jni_tracing) {
+          args += [ "--enable_tracing" ]
         }
       }
     }
