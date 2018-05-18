@@ -145,6 +145,12 @@ float SyntheticGestureTargetBase::GetTouchSlopInDips() const {
   return kTouchSlopInDips;
 }
 
+float SyntheticGestureTargetBase::GetSpanSlopInDips() const {
+  // * 2 because span is the distance between two touch points in a pinch-zoom
+  // gesture so we're accounting for movement in two points.
+  return 2.f * GetTouchSlopInDips();
+}
+
 float SyntheticGestureTargetBase::GetMinScalingSpanInDips() const {
   // The minimum scaling distance is only relevant for touch gestures and the
   // base target doesn't support touch.

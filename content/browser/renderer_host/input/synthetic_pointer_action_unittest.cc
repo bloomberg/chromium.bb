@@ -75,6 +75,11 @@ class MockSyntheticPointerActionTarget : public SyntheticGestureTarget {
     return 0.0f;
   }
 
+  float GetSpanSlopInDips() const override {
+    NOTIMPLEMENTED();
+    return 0.0f;
+  }
+
   float GetMinScalingSpanInDips() const override {
     NOTIMPLEMENTED();
     return 0.0f;

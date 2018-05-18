@@ -41,6 +41,8 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
 
   float GetTouchSlopInDips() const override;
 
+  float GetSpanSlopInDips() const override;
+
   float GetMinScalingSpanInDips() const override;
 
  private:

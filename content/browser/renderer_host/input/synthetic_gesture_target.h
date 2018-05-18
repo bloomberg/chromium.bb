@@ -39,6 +39,10 @@ class CONTENT_EXPORT SyntheticGestureTarget {
   // considered moving by the platform.
   virtual float GetTouchSlopInDips() const = 0;
 
+  // Returns the maximum change in span (distance between touch points) in DIPs
+  // before being considered a pinch-zoom gesture by the platform.
+  virtual float GetSpanSlopInDips() const = 0;
+
   // Returns the minimum number of DIPs two touch pointers have to be apart
   // to perform a pinch-zoom.
   virtual float GetMinScalingSpanInDips() const = 0;
