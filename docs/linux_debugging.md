@@ -273,6 +273,18 @@ You can improve GDB load time significantly at the cost of link time by
 splitting symbols from the object files. In GN, set `use_debug_fission=false` in
 your "gn args".
 
+### Source level debug with -fdebug-prefix-map
+
+When you enable GN config `strip_absolute_paths_from_debug_symbols`, this is
+enabled by default for goma on Linux build, you need to add following command
+to your `~/.gdbinit` for source level debugging to load customized
+[gdbinit](../tools/gdb/gdbinit) or copy the content of the file to your
+`~/.gdbinit`.
+
+```
+source path/to/chromium/src/tools/gdb/gdbinit
+```
+
 ## Core files
 
 `ulimit -c unlimited` should cause all Chrome processes (run from that shell) to
