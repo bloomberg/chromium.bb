@@ -38,6 +38,11 @@ class MockWebMIDIAccessor : public blink::WebMIDIAccessor {
   void addOutputPort(midi::mojom::PortState state);
   void reportStartedSession(midi::mojom::Result result);
 
+  void RunDidReceiveMIDIData(unsigned port_index,
+                             const unsigned char* data,
+                             size_t length,
+                             base::TimeTicks time_stamp);
+
   blink::WebMIDIAccessorClient* client_;
   TestInterfaces* interfaces_;
   unsigned next_input_port_index_;

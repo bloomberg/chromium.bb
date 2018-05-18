@@ -58,14 +58,26 @@ void MockWebMIDIAccessor::StartSession() {
       interfaces_->GetTestRunner()->midiAccessorResult()));
 }
 
+void MockWebMIDIAccessor::RunDidReceiveMIDIData(unsigned port_index,
+                                                const unsigned char* data,
+                                                size_t length,
+                                                base::TimeTicks timestamp) {
+  client_->DidReceiveMIDIData(port_index, data, length, timestamp);
+}
+
 void MockWebMIDIAccessor::SendMIDIData(unsigned port_index,
                                        const unsigned char* data,
                                        size_t length,
                                        base::TimeTicks timestamp) {
   // Emulate a loopback device for testing. Make sure if an input port that has
   // the same index exists.
-  if (port_index < next_input_port_index_)
-    client_->DidReceiveMIDIData(port_index, data, length, timestamp);
+  if (port_index < next_input_port_index_) {
+    interfaces_->GetDelegate()->PostDelayedTask(
+        base::BindOnce(&MockWebMIDIAccessor::RunDidReceiveMIDIData,
+                       weak_factory_.GetWeakPtr(), port_index, data, length,
+                       timestamp),
+        std::max(base::TimeDelta(), timestamp - base::TimeTicks::Now()));
+  }
 
   // Handle special sysex messages for testing.
   // A special sequence is [0xf0, 0x00, 0x02, 0x0d, 0x7f, <function>, 0xf7].
