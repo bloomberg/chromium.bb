@@ -59,7 +59,6 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
                               v8::Isolate*,
                               WorkerThread*);
 
-  void RegisterWithProxyClientIfNeeded();
   Animator* GetAnimatorFor(int animation_id, const String& name);
   typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>
       DefinitionMap;
@@ -67,8 +66,6 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
 
   typedef HeapHashMap<int, TraceWrapperMember<Animator>> AnimatorMap;
   AnimatorMap animators_;
-
-  bool registered_ = false;
 };
 
 DEFINE_TYPE_CASTS(AnimationWorkletGlobalScope,
