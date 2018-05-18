@@ -40,6 +40,9 @@ static const RestorationType force_restore_type = RESTORE_TYPES;
 // Number of Wiener iterations
 #define NUM_WIENER_ITERS 5
 
+// Penalty factor for use of dual sgr
+#define DUAL_SGR_PENALTY_MULT 0.01
+
 const int frame_level_restore_bits[RESTORE_TYPES] = { 2, 2, 2, 2 };
 
 typedef int64_t (*sse_extractor_type)(const YV12_BUFFER_CONFIG *a,
@@ -90,6 +93,9 @@ typedef struct {
   int plane_height;
   RestUnitSearchInfo *rusi;
 
+  // Speed features
+  const SPEED_FEATURES *sf;
+
   uint8_t *dgd_buffer;
   int dgd_stride;
   const uint8_t *src_buffer;
@@ -123,14 +129,16 @@ static void reset_rsc(RestSearchCtxt *rsc) {
 }
 
 static void init_rsc(const YV12_BUFFER_CONFIG *src, const AV1_COMMON *cm,
-                     const MACROBLOCK *x, int plane, RestUnitSearchInfo *rusi,
-                     YV12_BUFFER_CONFIG *dst, RestSearchCtxt *rsc) {
+                     const MACROBLOCK *x, const SPEED_FEATURES *sf, int plane,
+                     RestUnitSearchInfo *rusi, YV12_BUFFER_CONFIG *dst,
+                     RestSearchCtxt *rsc) {
   rsc->src = src;
   rsc->dst = dst;
   rsc->cm = cm;
   rsc->x = x;
   rsc->plane = plane;
   rsc->rusi = rusi;
+  rsc->sf = sf;
 
   const YV12_BUFFER_CONFIG *dgd = cm->frame_to_show;
   const int is_uv = plane != AOM_PLANE_Y;
@@ -563,6 +571,8 @@ static void search_sgrproj(const RestorationTileLimits *limits,
       RDCOST_DBL(x->rdmult, bits_none >> 4, rusi->sse[RESTORE_NONE]);
   double cost_sgr =
       RDCOST_DBL(x->rdmult, bits_sgr >> 4, rusi->sse[RESTORE_SGRPROJ]);
+  if (rusi->sgrproj.ep < 10)
+    cost_sgr *= (1 + DUAL_SGR_PENALTY_MULT * rsc->sf->dual_sgr_penalty_level);
 
   RestorationType rtype =
       (cost_sgr < cost_none) ? RESTORE_SGRPROJ : RESTORE_NONE;
@@ -1186,6 +1196,8 @@ static void search_switchable(const RestorationTileLimits *limits,
     const int64_t coeff_bits = coeff_pcost << AV1_PROB_COST_SHIFT;
     const int64_t bits = x->switchable_restore_cost[r] + coeff_bits;
     double cost = RDCOST_DBL(x->rdmult, bits >> 4, sse);
+    if (r == RESTORE_SGRPROJ && rusi->sgrproj.ep < 10)
+      cost *= (1 + DUAL_SGR_PENALTY_MULT * rsc->sf->dual_sgr_penalty_level);
     if (r == 0 || cost < best_cost) {
       best_cost = cost;
       best_bits = bits;
@@ -1252,8 +1264,8 @@ void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
   const int plane_start = AOM_PLANE_Y;
   const int plane_end = num_planes > 1 ? AOM_PLANE_V : AOM_PLANE_Y;
   for (int plane = plane_start; plane <= plane_end; ++plane) {
-    init_rsc(src, &cpi->common, &cpi->td.mb, plane, rusi, &cpi->trial_frame_rst,
-             &rsc);
+    init_rsc(src, &cpi->common, &cpi->td.mb, &cpi->sf, plane, rusi,
+             &cpi->trial_frame_rst, &rsc);
 
     const int plane_ntiles = ntiles[plane > 0];
     const RestorationType num_rtypes =

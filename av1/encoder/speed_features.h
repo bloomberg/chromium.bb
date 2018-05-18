@@ -586,6 +586,11 @@ typedef struct SPEED_FEATURES {
 
   // Skip mv search in jnt_comp
   int jnt_comp_skip_mv_search;
+
+  // Decoder side speed feature to add penalty for use of dual-sgr filters.
+  // Takes values 0 - 10, 0 indicating no penalty and each additional level
+  // adding a penalty of 1%
+  int dual_sgr_penalty_level;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
