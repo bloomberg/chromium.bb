@@ -236,31 +236,6 @@ class MockVideoFrameReceiver : public media::VideoFrameReceiver {
   base::flat_map<int, media::mojom::VideoFrameInfoPtr> frame_infos_;
 };
 
-// A FrameSinkVideoCaptureDevice, but with CreateCapturer() overridden to bind
-// to a MockFrameSinkVideoCapturer instead of the real thing.
-class FrameSinkVideoCaptureDeviceForTest : public FrameSinkVideoCaptureDevice {
- public:
-  explicit FrameSinkVideoCaptureDeviceForTest(
-      MockFrameSinkVideoCapturer* capturer)
-      : capturer_(capturer) {}
-
- protected:
-  void CreateCapturer(CreatedCapturerCallback callback) final {
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(
-            [](FrameSinkVideoCaptureDeviceForTest* self) {
-              viz::mojom::FrameSinkVideoCapturerPtr capturer_ptr;
-              self->capturer_->Bind(mojo::MakeRequest(&capturer_ptr));
-              return capturer_ptr.PassInterface();
-            },
-            this),
-        std::move(callback));
-  }
-
-  MockFrameSinkVideoCapturer* const capturer_;
-};
-
 // Convenience macros to make a non-blocking FrameSinkVideoCaptureDevice method
 // call on the device thread.
 #define POST_DEVICE_METHOD_CALL0(method)                                \
@@ -283,11 +258,21 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
     // until complete.
     POST_DEVICE_TASK(base::BindOnce(
         [](FrameSinkVideoCaptureDeviceTest* test) {
-          test->device_ = std::make_unique<FrameSinkVideoCaptureDeviceForTest>(
-              &test->capturer_);
+          test->device_ = std::make_unique<FrameSinkVideoCaptureDevice>();
         },
         this));
     WAIT_FOR_DEVICE_TASKS();
+
+    // Set an override to "create" the mock capturer instance instead of the
+    // real thing.
+    device_->SetCapturerCreatorForTesting(base::BindRepeating(
+        [](MockFrameSinkVideoCapturer* capturer) {
+          DCHECK_CURRENTLY_ON(BrowserThread::UI);
+          viz::mojom::FrameSinkVideoCapturerPtr capturer_ptr;
+          capturer->Bind(mojo::MakeRequest(&capturer_ptr));
+          return capturer_ptr.PassInterface();
+        },
+        &capturer_));
   }
 
   void TearDown() override {

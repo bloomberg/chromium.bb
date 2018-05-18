@@ -38,7 +38,7 @@ ContentCaptureDeviceBrowserTestBase::~ContentCaptureDeviceBrowserTestBase() =
     default;
 
 void ContentCaptureDeviceBrowserTestBase::ChangePageContentColor(
-    SkColor color) {
+    std::string css_color_hex) {
   // See the HandleRequest() method for the original documents being modified
   // here.
   std::string script;
@@ -51,9 +51,7 @@ void ContentCaptureDeviceBrowserTestBase::ChangePageContentColor(
   } else {
     script = "document.body.style.backgroundColor = '#123456';";
   }
-  script.replace(script.find("123456"), 6,
-                 base::StringPrintf("%02x%02x%02x", SkColorGetR(color),
-                                    SkColorGetG(color), SkColorGetB(color)));
+  script.replace(script.find("123456"), 6, css_color_hex);
   CHECK(ExecuteScript(shell()->web_contents(), script));
 }
 

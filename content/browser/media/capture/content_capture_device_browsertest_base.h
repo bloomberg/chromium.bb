@@ -15,7 +15,6 @@
 #include "content/browser/media/capture/fake_video_capture_stack.h"
 #include "content/public/test/content_browser_test.h"
 #include "media/capture/video_capture_types.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace net {
@@ -42,7 +41,7 @@ class ContentCaptureDeviceBrowserTestBase : public ContentBrowserTest {
 
   // Alters the solid fill color making up the page content. This will trigger a
   // compositor update, which will trigger a frame capture.
-  void ChangePageContentColor(SkColor color);
+  void ChangePageContentColor(std::string css_color_hex);
 
   // Returns the captured source size, but also sanity-checks that it is not
   // changing during the test. Prefer to use this method instead of
