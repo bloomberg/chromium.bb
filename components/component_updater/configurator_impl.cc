@@ -8,7 +8,6 @@
 
 #include <algorithm>
 
-#include "base/command_line.h"
 #include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -16,6 +15,7 @@
 #include "build/build_config.h"
 #include "components/component_updater/component_updater_switches.h"
 #include "components/component_updater/component_updater_url_constants.h"
+#include "components/update_client/command_line_config_policy.h"
 #include "components/update_client/utils.h"
 #include "components/version_info/version_info.h"
 
@@ -31,83 +31,18 @@ namespace {
 const int kDelayOneMinute = 60;
 const int kDelayOneHour = kDelayOneMinute * 60;
 
-// Debug values you can pass to --component-updater=value1,value2. Do not
-// use these values in production code.
-
-// Speed up the initial component checking.
-const char kSwitchFastUpdate[] = "fast-update";
-
-// Add "testrequest=1" attribute to the update check request.
-const char kSwitchRequestParam[] = "test-request";
-
-// Disables pings. Pings are the requests sent to the update server that report
-// the success or the failure of component install or update attempts.
-const char kSwitchDisablePings[] = "disable-pings";
-
-// Sets the URL for updates.
-const char kSwitchUrlSource[] = "url-source";
-
-// Disables differential updates.
-const char kSwitchDisableDeltaUpdates[] = "disable-delta-updates";
-
-#if defined(OS_WIN)
-// Disables background downloads.
-const char kSwitchDisableBackgroundDownloads[] = "disable-background-downloads";
-#endif  // defined(OS_WIN)
-
-// If there is an element of |vec| of the form |test|=.*, returns the right-
-// hand side of that assignment. Otherwise, returns an empty string.
-// The right-hand side may contain additional '=' characters, allowing for
-// further nesting of switch arguments.
-std::string GetSwitchArgument(const std::vector<std::string>& vec,
-                              const char* test) {
-  if (vec.empty())
-    return std::string();
-  for (std::vector<std::string>::const_iterator it = vec.begin();
-       it != vec.end(); ++it) {
-    const std::size_t found = it->find("=");
-    if (found != std::string::npos) {
-      if (it->substr(0, found) == test) {
-        return it->substr(found + 1);
-      }
-    }
-  }
-  return std::string();
-}
-
 }  // namespace
 
-ConfiguratorImpl::ConfiguratorImpl(const base::CommandLine* cmdline,
-                                   bool require_encryption)
-    : fast_update_(false),
-      pings_enabled_(false),
-      deltas_enabled_(false),
-      background_downloads_enabled_(false),
-      require_encryption_(require_encryption) {
-  // Parse comma-delimited debug flags.
-  std::vector<std::string> switch_values = base::SplitString(
-      cmdline->GetSwitchValueASCII(switches::kComponentUpdater), ",",
-      base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  fast_update_ = base::ContainsValue(switch_values, kSwitchFastUpdate);
-  pings_enabled_ = !base::ContainsValue(switch_values, kSwitchDisablePings);
-  deltas_enabled_ =
-      !base::ContainsValue(switch_values, kSwitchDisableDeltaUpdates);
-
-#if defined(OS_WIN)
-  background_downloads_enabled_ =
-      !base::ContainsValue(switch_values, kSwitchDisableBackgroundDownloads);
-#else
-  background_downloads_enabled_ = false;
-#endif
-
-  const std::string switch_url_source =
-      GetSwitchArgument(switch_values, kSwitchUrlSource);
-  if (!switch_url_source.empty()) {
-    url_source_override_ = GURL(switch_url_source);
-    DCHECK(url_source_override_.is_valid());
-  }
-
-  if (base::ContainsValue(switch_values, kSwitchRequestParam))
+ConfiguratorImpl::ConfiguratorImpl(
+    const update_client::CommandLineConfigPolicy& config_policy,
+    bool require_encryption)
+    : background_downloads_enabled_(config_policy.BackgroundDownloadsEnabled()),
+      deltas_enabled_(config_policy.DeltaUpdatesEnabled()),
+      fast_update_(config_policy.FastUpdate()),
+      pings_enabled_(config_policy.PingsEnabled()),
+      require_encryption_(require_encryption),
+      url_source_override_(config_policy.UrlSourceOverride()) {
+  if (config_policy.TestRequest())
     extra_info_ += "testrequest=\"1\"";
 }
 

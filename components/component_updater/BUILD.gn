@@ -6,6 +6,8 @@ static_library("component_updater") {
   sources = [
     "component_installer.cc",
     "component_installer.h",
+    "component_updater_command_line_config_policy.cc",
+    "component_updater_command_line_config_policy.h",
     "component_updater_paths.cc",
     "component_updater_paths.h",
     "component_updater_service.cc",

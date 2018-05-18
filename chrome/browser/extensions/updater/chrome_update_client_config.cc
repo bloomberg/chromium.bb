@@ -10,6 +10,7 @@
 #include "base/no_destructor.h"
 #include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
+#include "chrome/browser/extensions/updater/extension_update_client_command_line_config_policy.h"
 #include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
@@ -93,7 +94,8 @@ void ExtensionActivityDataService::ClearActiveBit(const std::string& id) {
 ChromeUpdateClientConfig::ChromeUpdateClientConfig(
     content::BrowserContext* context)
     : context_(context),
-      impl_(base::CommandLine::ForCurrentProcess(),
+      impl_(ExtensionUpdateClientCommandLineConfigPolicy(
+                base::CommandLine::ForCurrentProcess()),
             /*require_encryption=*/true),
       pref_service_(ExtensionPrefs::Get(context)->pref_service()),
       activity_data_service_(std::make_unique<ExtensionActivityDataService>(

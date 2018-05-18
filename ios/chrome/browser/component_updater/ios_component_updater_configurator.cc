@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/version.h"
+#include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/component_updater/configurator_impl.h"
 #include "components/update_client/activity_data_service.h"
 #include "components/update_client/update_query_params.h"
@@ -66,7 +67,8 @@ class IOSConfigurator : public update_client::Configurator {
 // update backend. The security of the update checks is enforced using
 // a custom message signing protocol and it does not depend on using HTTPS.
 IOSConfigurator::IOSConfigurator(const base::CommandLine* cmdline)
-    : configurator_impl_(cmdline, false) {}
+    : configurator_impl_(ComponentUpdaterCommandLineConfigPolicy(cmdline),
+                         false) {}
 
 int IOSConfigurator::InitialDelay() const {
   return configurator_impl_.InitialDelay();
