@@ -3069,13 +3069,17 @@ registerLoadRequestForURL:(const GURL&)requestURL
     [self loadCancelled];
     self.navigationManagerImpl->DiscardNonCommittedItems();
     // If discarding the non-committed entries results in native content URL,
-    // reload it in its native view.
-    if (!self.nativeController) {
+    // reload it in its native view. For WKBasedNavigationManager, this is not
+    // necessary because WKWebView takes care of reloading the placeholder URL,
+    // which triggers native view upon completion.
+    if (!web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
+        !self.nativeController) {
       GURL lastCommittedURL = self.webState->GetLastCommittedURL();
       if ([self shouldLoadURLInNativeView:lastCommittedURL]) {
         [self loadCurrentURLInNativeView];
       }
     }
+
     web::NavigationContextImpl* navigationContext =
         [_navigationStates contextForNavigation:navigation];
 
