@@ -134,9 +134,8 @@ def _MergeControlChartJsonIntoEnabled(enabled_chart_json, control_chart_json):
   _RenameChartsAndPointsWithSuffix(enabled_charts, '_enabled')
   _RenameChartsAndPointsWithSuffix(control_charts, '_control')
   _RenameChartsAndPointsWithSuffix(diff_charts, '_diff')
-  # TODO(crbug.com/840524): Perf Dashboard doesn't handle large JSON correctly,
-  # we should merge all three charts after it's fixed.
-  enabled_chart_json['charts'] = diff_charts
+  _MergeCharts(enabled_charts, control_charts)
+  _MergeCharts(enabled_charts, diff_charts)
 
 @benchmark.Owner(emails=['chongz@chromium.org'])
 class LoadingDesktopNetworkService(loading.LoadingDesktop):
