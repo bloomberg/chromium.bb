@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 
 class AccountId;
+class GURL;
 
 namespace service_manager {
 class Connector;
@@ -44,9 +45,12 @@ class AssistantCardRenderer : public ash::mojom::AssistantCardRenderer {
   void ReleaseAll(
       const std::vector<base::UnguessableToken>& id_tokens) override;
 
+  // Invoked on card pressed event to handle navigating to |url|.
+  void OnCardPressed(const GURL& url);
+
  private:
-  mojo::Binding<ash::mojom::AssistantCardRenderer>
-      assistant_controller_binding_;
+  service_manager::Connector* const connector_;
+  mojo::Binding<ash::mojom::AssistantCardRenderer> binding_;
 
   std::unordered_map<base::UnguessableToken,
                      std::unique_ptr<AssistantCard>,

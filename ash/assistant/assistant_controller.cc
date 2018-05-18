@@ -212,6 +212,10 @@ void AssistantController::OnInteractionFinished(
   }
 }
 
+void AssistantController::OnCardPressed(const GURL& url) {
+  OnOpenUrlResponse(url);
+}
+
 void AssistantController::OnDialogPlateActionPressed(const std::string& text) {
   InputModality input_modality = assistant_interaction_model_.input_modality();
 

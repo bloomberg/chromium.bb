@@ -13,9 +13,11 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/renderer_preferences.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
@@ -30,9 +32,11 @@ constexpr char kDataUriPrefix[] = "data:text/html,";
 class AssistantCard : public content::WebContentsDelegate,
                       public content::WebContentsObserver {
  public:
-  AssistantCard(const AccountId& account_id,
+  AssistantCard(AssistantCardRenderer* assistant_card_renderer,
+                const AccountId& account_id,
                 ash::mojom::AssistantCardParamsPtr params,
-                ash::mojom::AssistantCardRenderer::RenderCallback callback) {
+                ash::mojom::AssistantCardRenderer::RenderCallback callback)
+      : assistant_card_renderer_(assistant_card_renderer) {
     const user_manager::User* user =
         user_manager::UserManager::Get()->FindUser(account_id);
 
@@ -69,12 +73,25 @@ class AssistantCard : public content::WebContentsDelegate,
     web_view_->SetPreferredSize(new_size);
   }
 
+  content::WebContents* OpenURLFromTab(
+      content::WebContents* source,
+      const content::OpenURLParams& params) override {
+    assistant_card_renderer_->OnCardPressed(params.url);
+    return nullptr;
+  }
+
  private:
   void InitWebContents(Profile* profile,
                        ash::mojom::AssistantCardParamsPtr params) {
     web_contents_ =
         content::WebContents::Create(content::WebContents::CreateParams(
             profile, content::SiteInstance::Create(profile)));
+
+    // Intercept navigation attempts so we can redirect to the browser.
+    content::RendererPreferences* renderer_prefs =
+        web_contents_->GetMutableRendererPrefs();
+    renderer_prefs->browser_handles_all_top_level_requests = true;
+    web_contents_->GetRenderViewHost()->SyncRendererPrefs();
 
     // Use a transparent background.
     views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
@@ -116,6 +133,8 @@ class AssistantCard : public content::WebContentsDelegate,
     // TODO(dmblack): Handle Mash case.
   }
 
+  AssistantCardRenderer* assistant_card_renderer_;
+
   std::unique_ptr<content::WebContents> web_contents_;
   std::unique_ptr<views::WebView> web_view_;
   base::Optional<base::UnguessableToken> embed_token_;
@@ -127,12 +146,12 @@ class AssistantCard : public content::WebContentsDelegate,
 
 AssistantCardRenderer::AssistantCardRenderer(
     service_manager::Connector* connector)
-    : assistant_controller_binding_(this) {
+    : connector_(connector), binding_(this) {
   // Bind to the Assistant controller in ash.
   ash::mojom::AssistantControllerPtr assistant_controller;
-  connector->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+  connector_->BindInterface(ash::mojom::kServiceName, &assistant_controller);
   ash::mojom::AssistantCardRendererPtr ptr;
-  assistant_controller_binding_.Bind(mojo::MakeRequest(&ptr));
+  binding_.Bind(mojo::MakeRequest(&ptr));
   assistant_controller->SetAssistantCardRenderer(std::move(ptr));
 }
 
@@ -145,7 +164,7 @@ void AssistantCardRenderer::Render(
     ash::mojom::AssistantCardRenderer::RenderCallback callback) {
   DCHECK(assistant_cards_.count(id_token) == 0);
   assistant_cards_[id_token] = std::make_unique<AssistantCard>(
-      account_id, std::move(params), std::move(callback));
+      this, account_id, std::move(params), std::move(callback));
 }
 
 void AssistantCardRenderer::Release(const base::UnguessableToken& id_token) {
@@ -156,4 +175,10 @@ void AssistantCardRenderer::ReleaseAll(
     const std::vector<base::UnguessableToken>& id_tokens) {
   for (const base::UnguessableToken& id_token : id_tokens)
     assistant_cards_.erase(id_token);
+}
+
+void AssistantCardRenderer::OnCardPressed(const GURL& url) {
+  ash::mojom::AssistantControllerPtr assistant_controller;
+  connector_->BindInterface(ash::mojom::kServiceName, &assistant_controller);
+  assistant_controller->OnCardPressed(url);
 }
