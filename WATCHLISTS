@@ -1596,9 +1596,14 @@
                   '|ash/virtual_keyboard',
     },
     'virtual_reality': {
-      'filepath': 'vr_shell/|'\
-                  '/vr/|'\
-                  'third_party/gvr',
+      # Includes VR, AR, and XR.
+      'filepath': 'vr_shell/'\
+                  '|/vr/'\
+                  '|/xr'\
+                  '|third_party/arcore'\
+                  '|third_party/gvr'\
+                  '|third_party/libovr'\
+                  '|third_party/openvr',
     },
     'wake_lock': {
       'filepath': 'wake_lock',
