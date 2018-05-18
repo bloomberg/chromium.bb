@@ -126,13 +126,11 @@ void PrintContext::ComputePageRectsWithPageSizeInternal(
     int page_logical_left = inline_direction_end > inline_direction_start
                                 ? inline_direction_start
                                 : inline_direction_start - page_logical_width;
-    if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      ScrollableArea* scrollable_area =
-          GetFrame()->View()->LayoutViewportScrollableArea();
-      IntSize frame_scroll = scrollable_area->ScrollOffsetInt();
-      page_logical_left -= frame_scroll.Width();
-      page_logical_top -= frame_scroll.Height();
-    }
+
+    auto* scrollable_area = GetFrame()->View()->LayoutViewportScrollableArea();
+    IntSize frame_scroll = scrollable_area->ScrollOffsetInt();
+    page_logical_left -= frame_scroll.Width();
+    page_logical_top -= frame_scroll.Height();
     IntRect page_rect(page_logical_left, page_logical_top, page_logical_width,
                       page_logical_height);
     if (!is_horizontal)

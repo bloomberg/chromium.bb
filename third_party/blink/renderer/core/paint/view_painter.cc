@@ -34,14 +34,7 @@ void ViewPainter::Paint(const PaintInfo& paint_info,
 
   DCHECK(!layout_view_.GetFrameView()->ShouldThrottleRendering());
 
-  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    BlockPainter(layout_view_).Paint(paint_info, paint_offset);
-    return;
-  }
-
-  layout_view_.PaintObject(paint_info, paint_offset);
-  BlockPainter(layout_view_)
-      .PaintOverflowControlsIfNeeded(paint_info, paint_offset);
+  BlockPainter(layout_view_).Paint(paint_info, paint_offset);
 }
 
 void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
@@ -67,12 +60,9 @@ void ViewPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info) {
   IntRect background_rect(
       PixelSnappedIntRect(layout_view_.OverflowClipRect(LayoutPoint())));
 
-  // When printing with root layer scrolling, we will paint the entire
-  // unclipped scrolling content area.
-  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() ||
-      paint_info.IsPrinting()) {
+  // When printing, paint the entire unclipped scrolling content area.
+  if (paint_info.IsPrinting())
     background_rect.Unite(layout_view_.DocumentRect());
-  }
 
   const DisplayItemClient* display_item_client = &layout_view_;
 
