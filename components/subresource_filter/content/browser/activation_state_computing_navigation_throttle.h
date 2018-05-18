@@ -67,10 +67,6 @@ class ActivationStateComputingNavigationThrottle
       VerifiedRuleset::Handle* ruleset_handle,
       const ActivationState& page_activation_state);
 
-  void set_destruction_closure(base::OnceClosure closure) {
-    destruction_closure_ = std::move(closure);
-  }
-
   // content::NavigationThrottle:
   content::NavigationThrottle::ThrottleCheckResult WillStartRequest() override;
   content::NavigationThrottle::ThrottleCheckResult WillRedirectRequest()
@@ -120,9 +116,6 @@ class ActivationStateComputingNavigationThrottle
   // Will be set when DEFER is called in WillProcessResponse. If nullptr, not
   // deferred.
   std::unique_ptr<base::ElapsedTimer> defer_timer_;
-
-  // Callback to be run in the destructor.
-  base::OnceClosure destruction_closure_;
 
   // Will become true when the throttle manager reaches ReadyToCommitNavigation.
   // Makes sure a caller cannot take ownership of the subresource filter unless

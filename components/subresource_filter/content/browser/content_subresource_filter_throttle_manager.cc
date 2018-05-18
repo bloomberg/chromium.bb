@@ -93,13 +93,9 @@ void ContentSubresourceFilterThrottleManager::ReadyToCommitNavigation(
   if (it == ongoing_activation_throttles_.end())
     return;
 
-  // TODO(crbug.com/736249): Remove CHECKs in this file when the root cause of
-  // the crash is found.
-  ActivationStateComputingNavigationThrottle* throttle = it->second.throttle;
-  CHECK_EQ(navigation_handle, throttle->navigation_handle());
-
   // Main frame throttles with disabled page-level activation will not have
   // associated filters.
+  ActivationStateComputingNavigationThrottle* throttle = it->second.throttle;
   AsyncDocumentSubresourceFilter* filter = throttle->filter();
   if (!filter)
     return;
@@ -278,9 +274,6 @@ void ContentSubresourceFilterThrottleManager::MaybeAppendNavigationThrottles(
           MaybeCreateActivationStateComputingThrottle(navigation_handle)) {
     ongoing_activation_throttles_[navigation_handle].throttle =
         activation_throttle.get();
-    activation_throttle->set_destruction_closure(base::BindOnce(
-        &ContentSubresourceFilterThrottleManager::OnActivationThrottleDestroyed,
-        weak_ptr_factory_.GetWeakPtr(), base::Unretained(navigation_handle)));
     throttles->push_back(std::move(activation_throttle));
   }
 }
@@ -390,12 +383,6 @@ void ContentSubresourceFilterThrottleManager::OnFrameIsAdSubframe(
   DCHECK(render_frame_host);
 
   ad_frames_.insert(render_frame_host);
-}
-
-void ContentSubresourceFilterThrottleManager::OnActivationThrottleDestroyed(
-    content::NavigationHandle* navigation_handle) {
-  size_t num_erased = ongoing_activation_throttles_.erase(navigation_handle);
-  CHECK_EQ(0u, num_erased);
 }
 
 void ContentSubresourceFilterThrottleManager::MaybeActivateSubframeSpecialUrls(
