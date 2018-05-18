@@ -520,11 +520,14 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
     callback(true);
   }.bind(this);
 
-  var onFailed = function() {
+  /** @param {DOMError} error error. */
+  var onFailed = function(error) {
     if (cancelled)
       return;
 
-    cr.dispatchSimpleEvent(this, 'scan-failed');
+    var event = new Event('scan-failed');
+    event.error = error;
+    this.dispatchEvent(event);
     callback(false);
   }.bind(this);
 
@@ -626,7 +629,7 @@ DirectoryModel.prototype.partialUpdate_ =
  * @param {boolean} refresh True to refresh metadata, or false to use cached
  *     one.
  * @param {function()} successCallback Callback on success.
- * @param {function()} failureCallback Callback on failure.
+ * @param {function(DOMError)} failureCallback Callback on failure.
  * @param {function()} updatedCallback Callback on update. Only on the last
  *     update, {@code successCallback} is called instead of this.
  * @param {function()} cancelledCallback Callback on cancel.
@@ -681,14 +684,18 @@ DirectoryModel.prototype.scan_ = function(
     maybeRunPendingRescan();
   }.bind(this);
 
-  var onFailure = function() {
+  var onFailure = function(event) {
     onFinished();
 
     this.runningScan_ = null;
     this.scanFailures_++;
-    failureCallback();
+    failureCallback(event.error);
 
     if (maybeRunPendingRescan())
+      return;
+
+    // Do not rescan for crostini errors.
+    if (event.error.name === DirectoryModel.CROSTINI_CONNECT_ERR)
       return;
 
     if (this.scanFailures_ <= 1)
@@ -1341,3 +1348,9 @@ DirectoryModel.prototype.clearSearch_ = function() {
     this.onClearSearch_ = null;
   }
 };
+
+/**
+ * DOMError type for crostini connection failure.
+ * @const {string}
+ */
+DirectoryModel.CROSTINI_CONNECT_ERR = 'CrostiniConnectErr';
