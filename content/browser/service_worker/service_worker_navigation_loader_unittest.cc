@@ -191,11 +191,12 @@ class MockNetworkURLLoaderFactory final
     client->OnComplete(status);
   }
 
-  void Clone(network::mojom::URLLoaderFactoryRequest factory) override {
-    NOTREACHED();
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
   }
 
  private:
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
   DISALLOW_COPY_AND_ASSIGN(MockNetworkURLLoaderFactory);
 };
 

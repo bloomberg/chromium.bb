@@ -195,7 +195,7 @@ class EmbeddedWorkerInstanceTest : public testing::Test,
 
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr CreateProviderInfo(
       int /* process_id */,
-      network::mojom::URLLoaderFactoryPtr /* non_network_loader_factory */) {
+      scoped_refptr<network::SharedURLLoaderFactory>) {
     provider_host_endpoints_.emplace_back(
         std::make_unique<ProviderHostEndpoints>());
     return provider_host_endpoints_.back()->CreateProviderInfoPtr();

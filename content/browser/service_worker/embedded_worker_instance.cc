@@ -16,10 +16,13 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_content_settings_proxy_impl.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/renderer.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/common/url_loader_factory_bundle.mojom.h"
+#include "content/common/url_schemes.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_process_host.h"
@@ -78,7 +81,7 @@ using SetupProcessCallback = base::OnceCallback<void(
     mojom::EmbeddedWorkerStartParamsPtr,
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
     std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
-    network::mojom::URLLoaderFactoryPtrInfo)>;
+    std::unique_ptr<URLLoaderFactoryBundleInfo>)>;
 
 // Allocates a renderer process for starting a worker and does setup like
 // registering with DevTools. Called on the UI thread. Calls |callback| on the
@@ -95,15 +98,14 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   auto process_info =
       std::make_unique<ServiceWorkerProcessManager::AllocatedProcessInfo>();
   std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy;
-  network::mojom::URLLoaderFactoryPtr non_network_loader_factory;
+  std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle;
 
   if (!process_manager) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT,
                        std::move(params), std::move(process_info),
-                       std::move(devtools_proxy),
-                       non_network_loader_factory.PassInterface()));
+                       std::move(devtools_proxy), std::move(factory_bundle)));
     return;
   }
 
@@ -116,7 +118,7 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(std::move(callback), status, std::move(params),
                        std::move(process_info), std::move(devtools_proxy),
-                       non_network_loader_factory.PassInterface()));
+                       std::move(factory_bundle)));
     return;
   }
   const int process_id = process_info->process_id;
@@ -134,8 +136,10 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   }
 
   // S13nServiceWorker:
-  // Create the script loader factory for non HTTP(S) URLs since we can't use
-  // NetworkService in that case.
+  // Create the loader factories for non-http(s) URLs, for example
+  // chrome-extension:// URLs. For performance, only do this step when the main
+  // script URL is non-http(s). We assume an http(s) service worker cannot
+  // importScripts a non-http(s) URL.
   if (ServiceWorkerUtils::IsServicificationEnabled() &&
       !params->script_url.SchemeIsHTTPOrHTTPS()) {
     ContentBrowserClient::NonNetworkURLLoaderFactoryMap factories;
@@ -143,12 +147,22 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
         ->browser()
         ->RegisterNonNetworkSubresourceURLLoaderFactories(
             rph->GetID(), MSG_ROUTING_NONE, &factories);
-    auto iter = factories.find(params->script_url.scheme());
-    if (iter != factories.end()) {
-      std::unique_ptr<network::mojom::URLLoaderFactory> factory_impl =
-          std::move(iter->second);
-      mojo::MakeStrongBinding(std::move(factory_impl),
-                              mojo::MakeRequest(&non_network_loader_factory));
+
+    factory_bundle = std::make_unique<URLLoaderFactoryBundleInfo>();
+    for (auto& pair : factories) {
+      const std::string& scheme = pair.first;
+      std::unique_ptr<network::mojom::URLLoaderFactory> factory =
+          std::move(pair.second);
+
+      // To be safe, ignore schemes that aren't allowed to register service
+      // workers. We assume that importScripts should fail on such schemes.
+      if (!base::ContainsValue(GetServiceWorkerSchemes(), scheme))
+        continue;
+      network::mojom::URLLoaderFactoryPtr factory_ptr;
+      mojo::MakeStrongBinding(std::move(factory),
+                              mojo::MakeRequest(&factory_ptr));
+      factory_bundle->factories_info().emplace(scheme,
+                                               factory_ptr.PassInterface());
     }
   }
 
@@ -175,12 +189,12 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
       GetContentClient()->browser()->IsDataSaverEnabled(
           process_manager->browser_context());
 
-  // Continue on the IO thread.
+  // Continue to OnSetupCompleted on the IO thread.
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(std::move(callback), status, std::move(params),
                      std::move(process_info), std::move(devtools_proxy),
-                     non_network_loader_factory.PassInterface()));
+                     std::move(factory_bundle)));
 }
 
 bool HasSentStartWorker(EmbeddedWorkerInstance::StartingPhase phase) {
@@ -379,8 +393,9 @@ class EmbeddedWorkerInstance::StartTask {
     DCHECK_EQ(params->embedded_worker_id, instance_->embedded_worker_id_);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ALLOCATING_PROCESS",
                                       this);
+    base::WeakPtr<ServiceWorkerContextCore> context = instance_->context_;
     base::WeakPtr<ServiceWorkerProcessManager> process_manager =
-        instance_->context_->process_manager()->AsWeakPtr();
+        context->process_manager()->AsWeakPtr();
 
     // Hop to the UI thread for process allocation and setup. We will continue
     // on the IO thread in StartTask::OnSetupCompleted().
@@ -388,8 +403,7 @@ class EmbeddedWorkerInstance::StartTask {
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(
             &SetupOnUIThread, process_manager, can_use_existing_process,
-            std::move(params), std::move(request_), instance_->context_.get(),
-            instance_->context_,
+            std::move(params), std::move(request_), context.get(), context,
             base::BindOnce(&StartTask::OnSetupCompleted,
                            weak_factory_.GetWeakPtr(), process_manager)));
   }
@@ -416,7 +430,7 @@ class EmbeddedWorkerInstance::StartTask {
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
           process_info,
       std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy> devtools_proxy,
-      network::mojom::URLLoaderFactoryPtrInfo non_network_loader_factory_info) {
+      std::unique_ptr<URLLoaderFactoryBundleInfo> factory_bundle) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     std::unique_ptr<WorkerProcessHandle> process_handle;
@@ -463,10 +477,30 @@ class EmbeddedWorkerInstance::StartTask {
     instance_->OnRegisteredToDevToolsManager(std::move(devtools_proxy),
                                              params->wait_for_debugger);
 
-    network::mojom::URLLoaderFactoryPtr non_network_loader_factory(
-        std::move(non_network_loader_factory_info));
+    // S13nServiceWorker: Build the URLLoaderFactory for loading new scripts.
+    scoped_refptr<network::SharedURLLoaderFactory> factory_for_new_scripts;
+    if (ServiceWorkerUtils::IsServicificationEnabled()) {
+      if (factory_bundle) {
+        network::mojom::URLLoaderFactoryPtr network_factory_ptr;
+        // The factory from CloneNetworkFactory() doesn't support reconnection
+        // to the network service after a crash, but it's probably OK since it's
+        // used for a single service worker startup until installation finishes
+        // (with the exception of https://crbug.com/719052).
+        instance_->context_->loader_factory_getter()->CloneNetworkFactory(
+            mojo::MakeRequest(&network_factory_ptr));
+        scoped_refptr<URLLoaderFactoryBundle> factory =
+            base::MakeRefCounted<URLLoaderFactoryBundle>(
+                std::move(factory_bundle));
+        factory->SetDefaultFactory(std::move(network_factory_ptr));
+        factory_for_new_scripts = std::move(factory);
+      } else {
+        factory_for_new_scripts =
+            instance_->context_->loader_factory_getter()->GetNetworkFactory();
+      }
+    }
+
     instance_->SendStartWorker(std::move(params),
-                               std::move(non_network_loader_factory));
+                               std::move(factory_for_new_scripts));
 
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker",
                                       "INITIALIZING_ON_RENDERER", this);
@@ -640,7 +674,7 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
 
 void EmbeddedWorkerInstance::SendStartWorker(
     mojom::EmbeddedWorkerStartParamsPtr params,
-    network::mojom::URLLoaderFactoryPtr non_network_loader_factory) {
+    scoped_refptr<network::SharedURLLoaderFactory> factory) {
   DCHECK(context_);
   DCHECK(params->dispatcher_request.is_pending());
   DCHECK(params->controller_request.is_pending());
@@ -655,8 +689,7 @@ void EmbeddedWorkerInstance::SendStartWorker(
   const bool is_script_streaming = !params->installed_scripts_info.is_null();
   inflight_start_task_->set_start_worker_sent_time(base::TimeTicks::Now());
   params->provider_info =
-      std::move(provider_info_getter_)
-          .Run(process_id(), std::move(non_network_loader_factory));
+      std::move(provider_info_getter_).Run(process_id(), std::move(factory));
   client_->StartWorker(std::move(params));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
 

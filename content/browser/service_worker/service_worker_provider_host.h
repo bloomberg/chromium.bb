@@ -397,15 +397,15 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // cycle.
   //
   // S13nServiceWorker:
-  // |non_network_loader_factory| is non-null if the service worker script URL
-  // has a non-http(s) scheme. The service worker script request is loaded
-  // using this factory, since the usual network factory cannot be used in that
-  // case.
+  // |loader_factory| is the factory to use for "network" requests for the
+  // service worker main script and import scripts. It is possibly not the
+  // simple direct network factory, since service worker scripts can have
+  // non-NetworkService schemes, e.g., chrome-extension:// URLs.
   mojom::ServiceWorkerProviderInfoForStartWorkerPtr
   CompleteStartWorkerPreparation(
       int process_id,
       scoped_refptr<ServiceWorkerVersion> hosted_version,
-      network::mojom::URLLoaderFactoryPtr non_network_loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
 
   // Called when the shared worker main script resource has finished loading.
   // After this is called, is_execution_ready() returns true.
