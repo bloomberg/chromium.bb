@@ -128,6 +128,16 @@ class CSSPropertiesWriter(CSSPropertyBaseWriter):
                     'fill_type': fill_type,
                     'fill_type_getter': 'Get' + fill_type if fill_type == "Image" or fill_type == "BlendMode" else fill_type
                 }
+            elif (property_name in [
+                    'BackgroundColor', 'BorderBottomColor', 'BorderLeftColor', 'BorderRightColor', 'BorderTopColor',
+                    'OutlineColor', 'TextDecorationColor', 'ColumnRuleColor', 'WebkitTextEmphasisColor', 'WebkitTextFillColor',
+                    'WebkitTextStrokeColor']):
+                property_['custom_apply'] = 'color'
+                property_['should_implement_apply_functions_in_cpp'] = True
+                property_['custom_apply_args'] = {'initial_color': 'StyleColor::CurrentColor'}
+                if property_name == 'BackgroundColor':
+                    property_['custom_apply_args']['initial_color'] = 'ComputedStyleInitialValues::InitialBackgroundColor'
+
         property_['should_implement_apply_functions'] = (
             property_['is_property'] and
             not property_['longhands'] and

@@ -848,6 +848,7 @@
       custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      converter: "ConvertStyleColor",
     },
     {
       name: "background-image",
@@ -918,6 +919,7 @@
       custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      converter: "ConvertStyleColor",
     },
     {
       name: "border-bottom-left-radius",
@@ -1030,6 +1032,7 @@
       custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      converter: "ConvertStyleColor",
     },
     {
       name: "border-left-style",
@@ -1071,6 +1074,7 @@
       custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      converter: "ConvertStyleColor",
     },
     {
       name: "border-right-style",
@@ -1112,6 +1116,7 @@
       custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      converter: "ConvertStyleColor",
     },
     {
       name: "border-top-left-radius",
@@ -2190,6 +2195,7 @@
       custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      converter: "ConvertStyleColor",
     },
     {
       name: "outline-offset",
@@ -2936,6 +2942,7 @@
       custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      converter: "ConvertStyleColor",
     },
     {
       name: "text-decoration-line",
@@ -3398,6 +3405,7 @@
       custom_apply_functions_all: true,
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      converter: "ConvertStyleColor",
     },
     {
       name: "column-rule-style",
@@ -3675,6 +3683,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      converter: "ConvertStyleColor",
     },
     {
       name: "-webkit-text-emphasis-position",
@@ -3704,6 +3713,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      converter: "ConvertStyleColor",
     },
     {
       name: "-webkit-text-security",
@@ -3726,6 +3736,7 @@
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
       custom_apply_functions_all: true,
+      converter: "ConvertStyleColor",
     },
     {
       name: "-webkit-text-stroke-width",
