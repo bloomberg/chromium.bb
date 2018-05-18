@@ -847,11 +847,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
                                          int parent_pass_id,
                                          bool will_draw,
                                          PrewalkResult* result) {
-  // This is for debugging a possible use after free.
-  // TODO(jbauman): Remove this once we have enough information.
-  // http://crbug.com/560181
-  base::WeakPtr<SurfaceAggregator> debug_weak_this = weak_factory_.GetWeakPtr();
-
   if (referenced_surfaces_.count(surface->surface_id()))
     return gfx::Rect();
 
@@ -870,7 +865,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     surface->RefResources(frame.resource_list);
     provider_->ReceiveFromChild(child_id, frame.resource_list);
   }
-  CHECK(debug_weak_this.get());
 
   std::vector<ResourceId> referenced_resources;
   size_t reserve_size = frame.resource_list.size();
@@ -881,7 +875,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   const auto& child_to_parent_map =
       provider_ ? provider_->GetChildToParentMap(child_id) : empty_map;
 
-  CHECK(debug_weak_this.get());
   RenderPassId remapped_pass_id =
       RemapPassId(frame.render_pass_list.back()->id, surface->surface_id());
   if (in_moved_pixel_surface)
@@ -982,14 +975,12 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
 
   if (invalid_frame)
     return gfx::Rect();
-  CHECK(debug_weak_this.get());
   valid_surfaces_.insert(surface->surface_id());
 
   ResourceIdSet resource_set(std::move(referenced_resources),
                              base::KEEP_FIRST_OF_DUPES);
   if (provider_)
     provider_->DeclareUsedResourcesFromChild(child_id, resource_set);
-  CHECK(debug_weak_this.get());
 
   gfx::Rect damage_rect;
   gfx::Rect full_damage;
@@ -1056,8 +1047,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
         surface_info.target_to_surface_transform, surface_damage));
   }
 
-  CHECK(debug_weak_this.get());
-
   if (!damage_rect.IsEmpty()) {
     // The following call can cause one or more copy requests to be added to the
     // Surface. Therefore, no code before this point should have assumed
@@ -1072,8 +1061,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   if (will_draw)
     surface->OnWillBeDrawn();
 
-  CHECK(debug_weak_this.get());
-
   for (const auto& surface_id : frame.metadata.referenced_surfaces) {
     if (!contained_surfaces_.count(surface_id)) {
       result->undrawn_surfaces.insert(surface_id);
@@ -1083,7 +1070,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     }
   }
 
-  CHECK(debug_weak_this.get());
   for (const auto& render_pass : frame.render_pass_list) {
     if (!render_pass->copy_requests.empty()) {
       RenderPassId remapped_pass_id =
@@ -1095,8 +1081,6 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
   }
 
   auto it = referenced_surfaces_.find(surface->surface_id());
-  // TODO(jbauman): Remove when https://crbug.com/745684 fixed.
-  CHECK(referenced_surfaces_.end() != it);
   referenced_surfaces_.erase(it);
   if (!damage_rect.IsEmpty() && frame.metadata.may_contain_video)
     result->may_contain_video = true;
