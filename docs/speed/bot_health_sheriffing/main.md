@@ -86,7 +86,7 @@ For example, if you disabled a story and snoozed an alert during your shift, you
 
 ## Frequently asked questions
 
-###Why do the benchmarks break so often?
+### Why do the benchmarks break so often?
 
 The bots runs Chrome benchmarks that are complicated integration tests of Chrome. Developers frequently submit code that breaks some part of Chrome and one of our integration tests (hopefully) tests that bit of code, resulting in a broken benchmark. In some sense, frequent breakages indicate that the benchmarks are working.
 
