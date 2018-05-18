@@ -84,7 +84,7 @@ bool SharedModuleInfo::IsSharedModule(const Extension* extension) {
 }
 
 // static
-bool SharedModuleInfo::IsExportAllowedByWhitelist(const Extension* extension,
+bool SharedModuleInfo::IsExportAllowedByAllowlist(const Extension* extension,
                                                   const std::string& other_id) {
   // Sanity check. In case the caller did not check |extension| to make sure it
   // is a shared module, we do not want it to appear that the extension with
@@ -92,9 +92,9 @@ bool SharedModuleInfo::IsExportAllowedByWhitelist(const Extension* extension,
   if (!SharedModuleInfo::IsSharedModule(extension))
     return false;
   const SharedModuleInfo& info = GetSharedModuleInfo(extension);
-  if (info.export_whitelist_.empty())
+  if (info.export_allowlist_.empty())
     return true;
-  if (info.export_whitelist_.find(other_id) != info.export_whitelist_.end())
+  if (info.export_allowlist_.find(other_id) != info.export_allowlist_.end())
     return true;
   return false;
 }
@@ -139,21 +139,30 @@ bool SharedModuleInfo::Parse(const Extension* extension,
       *error = base::ASCIIToUTF16(errors::kInvalidExport);
       return false;
     }
-    if (export_value->HasKey(keys::kWhitelist)) {
-      const base::ListValue* whitelist = NULL;
-      if (!export_value->GetList(keys::kWhitelist, &whitelist)) {
-        *error = base::ASCIIToUTF16(errors::kInvalidExportWhitelist);
+
+    // TODO(https://crbug.com/842354): Remove support for the legacy allowlist
+    // key.
+    const char* allowlist_key = nullptr;
+    if (export_value->HasKey(keys::kSharedModuleAllowlist))
+      allowlist_key = keys::kSharedModuleAllowlist;
+    else if (export_value->HasKey(keys::kSharedModuleLegacyAllowlist))
+      allowlist_key = keys::kSharedModuleLegacyAllowlist;
+
+    if (allowlist_key) {
+      const base::ListValue* allowlist_value = NULL;
+      if (!export_value->GetList(allowlist_key, &allowlist_value)) {
+        *error = base::ASCIIToUTF16(errors::kInvalidExportAllowlist);
         return false;
       }
-      for (size_t i = 0; i < whitelist->GetSize(); ++i) {
+      for (size_t i = 0; i < allowlist_value->GetSize(); ++i) {
         std::string extension_id;
-        if (!whitelist->GetString(i, &extension_id) ||
+        if (!allowlist_value->GetString(i, &extension_id) ||
             !crx_file::id_util::IdIsValid(extension_id)) {
           *error = ErrorUtils::FormatErrorMessageUTF16(
-              errors::kInvalidExportWhitelistString, base::NumberToString(i));
+              errors::kInvalidExportAllowlistString, base::NumberToString(i));
           return false;
         }
-        export_whitelist_.insert(extension_id);
+        export_allowlist_.insert(extension_id);
       }
     }
   }
