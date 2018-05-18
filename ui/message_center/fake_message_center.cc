@@ -48,6 +48,11 @@ Notification* FakeMessageCenter::FindVisibleNotificationById(
   return nullptr;
 }
 
+NotificationList::Notifications FakeMessageCenter::FindNotificationsByAppId(
+    const std::string& app_id) {
+  return NotificationList::Notifications();
+}
+
 const NotificationList::Notifications&
 FakeMessageCenter::GetVisibleNotifications() {
   return empty_notifications_;
