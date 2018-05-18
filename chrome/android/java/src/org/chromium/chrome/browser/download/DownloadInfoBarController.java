@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.download;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.Nullable;
@@ -12,10 +11,8 @@ import android.support.annotation.PluralsRes;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.infobar.DownloadProgressInfoBar;
 import org.chromium.chrome.browser.infobar.InfoBar;
@@ -23,6 +20,8 @@ import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
@@ -217,10 +216,21 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     // Represents the currently displayed InfoBar data.
     private DownloadProgressInfoBarData mCurrentInfo;
 
+    // The primary means of getting the currently active tab.
+    private TabModelSelector mTabModelSelector;
+
     /** Constructor. */
     public DownloadInfoBarController(boolean isIncognito) {
         mIsIncognito = isIncognito;
         mHandler.post(() -> getOfflineContentProvider().addObserver(this));
+    }
+
+    /**
+     * Sets the {@link TabModelSelector} that will be used to get the currently active tab.
+     * @param selector A {@link TabModelSelector} that represents the state of the system.
+     */
+    public void setTabModelSelector(TabModelSelector selector) {
+        mTabModelSelector = selector;
     }
 
     /**
@@ -544,7 +554,6 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         }
 
         info.resultState = offlineItemState;
-        info.forceReparent = infoBarState == DownloadInfoBarState.SHOW_RESULT;
 
         if (info.equals(mCurrentInfo)) return;
 
@@ -572,8 +581,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     private void setForceReparent(DownloadProgressInfoBarData info) {
         info.downloadCount = getDownloadCount();
-        info.forceReparent |=
-                info.downloadCount.equals(mCurrentInfo == null ? null : mCurrentInfo.downloadCount);
+        info.forceReparent = !info.downloadCount.equals(
+                mCurrentInfo == null ? null : mCurrentInfo.downloadCount);
     }
 
     private void clearEndTimerRunnable() {
@@ -681,11 +690,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
 
     @Nullable
     private Tab getCurrentTab() {
-        // TODO(shaktisahu): Use a TabModelSelector instead.
-        if (!ApplicationStatus.hasVisibleActivities()) return null;
-        Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
-        if (!(activity instanceof ChromeActivity)) return null;
-        return ((ChromeActivity) activity).getActivityTab();
+        if (mTabModelSelector == null) return null;
+        return TabModelUtils.getCurrentTab(mTabModelSelector.getModel(mIsIncognito));
     }
 
     private Context getContext() {
