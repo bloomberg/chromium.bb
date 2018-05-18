@@ -7,6 +7,7 @@
 
 #include "content/browser/dedicated_worker/dedicated_worker_host.h"
 
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/renderer_interface_binders.h"
 #include "content/browser/websockets/websocket_manager.h"
@@ -55,6 +56,15 @@ class DedicatedWorkerHost : public service_manager::mojom::InterfaceProvider {
     registry_.AddInterface(
         base::BindRepeating(&WebSocketManager::CreateWebSocket, process_id_,
                             parent_render_frame_id_, origin_));
+    registry_.AddInterface(base::BindRepeating(
+        &DedicatedWorkerHost::CreateUsbDeviceManager, base::Unretained(this)));
+  }
+
+  void CreateUsbDeviceManager(device::mojom::UsbDeviceManagerRequest request) {
+    auto* host =
+        RenderFrameHostImpl::FromID(process_id_, parent_render_frame_id_);
+    GetContentClient()->browser()->CreateUsbDeviceManager(host,
+                                                          std::move(request));
   }
 
   const int process_id_;

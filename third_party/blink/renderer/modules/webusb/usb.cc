@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/modules/webusb/usb.h"
 
+#include <utility>
+
 #include "device/usb/public/mojom/device.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -76,21 +78,14 @@ void USB::Dispose() {
 }
 
 ScriptPromise USB::getDevices(ScriptState* script_state) {
-  LocalFrame* frame = GetFrame();
-  if (!frame) {
+  if (!IsContextSupported()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kNotSupportedError));
   }
-
-  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kUsb)) {
-    if (!frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb)) {
-      return ScriptPromise::RejectWithDOMException(
-          script_state,
-          DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
-    }
-  } else if (!frame->IsMainFrame()) {
+  if (!IsFeatureEnabled()) {
     return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError, kIframeBlocked));
+        script_state,
+        DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
   }
 
   EnsureDeviceManagerConnection();
@@ -250,24 +245,19 @@ void USB::AddedEventListener(const AtomicString& event_type,
     return;
   }
 
-  LocalFrame* frame = GetFrame();
-  if (!frame)
+  if (!IsContextSupported() || !IsFeatureEnabled())
     return;
 
-  if (IsSupportedInFeaturePolicy(mojom::FeaturePolicyFeature::kUsb)) {
-    if (frame->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb))
-      EnsureDeviceManagerConnection();
-  } else if (frame->IsMainFrame()) {
-    EnsureDeviceManagerConnection();
-  }
+  EnsureDeviceManagerConnection();
 }
 
 void USB::EnsureDeviceManagerConnection() {
   if (device_manager_)
     return;
 
-  DCHECK(GetFrame());
-  GetFrame()->GetInterfaceProvider().GetInterface(
+  DCHECK(IsContextSupported());
+  DCHECK(IsFeatureEnabled());
+  GetExecutionContext()->GetInterfaceProvider()->GetInterface(
       mojo::MakeRequest(&device_manager_));
   device_manager_.set_connection_error_handler(WTF::Bind(
       &USB::OnDeviceManagerConnectionError, WrapWeakPersistent(this)));
@@ -277,6 +267,43 @@ void USB::EnsureDeviceManagerConnection() {
   device::mojom::blink::UsbDeviceManagerClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client));
   device_manager_->SetClient(std::move(client));
+}
+
+bool USB::IsContextSupported() const {
+  ExecutionContext* context = GetExecutionContext();
+  if (!context)
+    return false;
+
+  if (!(context->IsDedicatedWorkerGlobalScope() ||
+        context->IsSharedWorkerGlobalScope() || context->IsDocument()))
+    return false;
+
+  // Since WebUSB on Web Workers is in the process of being implemented, we
+  // check here if the runtime flag for this feature is enabled.
+  // TODO(https://crbug.com/837406): Remove this check once the feature has
+  // shipped.
+  if (!context->IsDocument() &&
+      !RuntimeEnabledFeatures::WebUSBOnDedicatedAndSharedWorkersEnabled())
+    return false;
+
+  return true;
+}
+
+bool USB::IsFeatureEnabled() const {
+  // At the moment, FeaturePolicy is not supported in workers, so we skip the
+  // check on workers.
+  // TODO(https://crbug.com/843780): Enable the FeaturePolicy check for the
+  // supported worker contexts once it is available for workers.
+  if (GetExecutionContext()->IsDocument()) {
+    FeaturePolicy* policy =
+        GetExecutionContext()->GetSecurityContext().GetFeaturePolicy();
+    return policy->IsFeatureEnabled(mojom::FeaturePolicyFeature::kUsb);
+  }
+  if (GetExecutionContext()->IsDedicatedWorkerGlobalScope() ||
+      GetExecutionContext()->IsSharedWorkerGlobalScope()) {
+    return true;
+  }
+  return false;
 }
 
 void USB::Trace(blink::Visitor* visitor) {
