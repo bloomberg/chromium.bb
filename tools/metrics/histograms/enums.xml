@@ -26580,6 +26580,7 @@ from previous Chrome versions.
   <int value="-1946595906" label="enable-push-api-background-mode"/>
   <int value="-1946522787" label="VrCustomTabBrowsing:disabled"/>
   <int value="-1945524394" label="EnableBackgroundBlur:disabled"/>
+  <int value="-1943817505" label="SingleClickAutofill:enabled"/>
   <int value="-1943507605" label="enable-new-video-renderer"/>
   <int value="-1943313820" label="SystemKeyboardLock:disabled"/>
   <int value="-1941852572" label="floating-virtual-keyboard"/>
@@ -27223,6 +27224,7 @@ from previous Chrome versions.
   <int value="-548082154" label="protect-sync-credential:disabled"/>
   <int value="-541611402" label="OfflinePagesPrefetching:enabled"/>
   <int value="-536289234" label="ssl-interstitial-v2-colorful"/>
+  <int value="-536230323" label="SingleClickAutofill:disabled"/>
   <int value="-535662704" label="BundledConnectionHelp:enabled"/>
   <int value="-535208779" label="enable-native-cups"/>
   <int value="-531810064" label="saveas-menu-label"/>
