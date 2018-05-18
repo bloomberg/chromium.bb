@@ -13,17 +13,12 @@
 #include "components/language/core/browser/url_language_histogram.h"
 
 namespace base {
-struct Feature;
 class DictionaryValue;
 }  // namespace base
 
 class PrefService;
 
 namespace language {
-
-// The feature that enables the heuristic model of user language. If disabled,
-// the baseline model is used instead.
-extern const base::Feature kUseHeuristicLanguageModel;
 
 // A model that heuristically assigns scores to languages that appear in the
 // user's various language lists.

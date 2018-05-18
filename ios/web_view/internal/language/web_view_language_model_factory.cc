@@ -12,6 +12,7 @@
 #include "components/language/core/browser/heuristic_language_model.h"
 #include "components/language/core/browser/language_model.h"
 #include "components/language/core/browser/pref_names.h"
+#include "components/language/core/common/language_experiments.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "ios/web_view/internal/app/application_context.h"
@@ -40,15 +41,19 @@ WebViewLanguageModelFactory::WebViewLanguageModelFactory()
 std::unique_ptr<KeyedService>
 WebViewLanguageModelFactory::BuildServiceInstanceFor(
     web::BrowserState* const context) const {
+  language::OverrideLanguageModel override_model_mode =
+      language::GetOverrideLanguageModel();
   WebViewBrowserState* const web_view_browser_state =
       WebViewBrowserState::FromBrowserState(context);
 
-  if (base::FeatureList::IsEnabled(language::kUseHeuristicLanguageModel)) {
+  if (override_model_mode == language::OverrideLanguageModel::HEURISTIC) {
     return std::make_unique<language::HeuristicLanguageModel>(
         web_view_browser_state->GetPrefs(),
         ApplicationContext::GetInstance()->GetApplicationLocale(),
         prefs::kAcceptLanguages, language::prefs::kUserLanguageProfile);
   }
+
+  // language::OverrideLanguageModel::GEO is not supported on iOS yet.
 
   return std::make_unique<language::BaselineLanguageModel>(
       web_view_browser_state->GetPrefs(),

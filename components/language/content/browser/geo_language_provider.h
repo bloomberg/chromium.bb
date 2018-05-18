@@ -54,6 +54,7 @@ class GeoLanguageProvider {
   std::vector<std::string> CurrentGeoLanguages() const;
 
  private:
+  friend class GeoLanguageModelTest;
   friend class GeoLanguageProviderTest;
 
   GeoLanguageProvider();

@@ -37,6 +37,8 @@ source_set("language_code_locator") {
 
 static_library("browser") {
   sources = [
+    "geo_language_model.cc",
+    "geo_language_model.h",
     "geo_language_provider.cc",
     "geo_language_provider.h",
   ]
@@ -44,6 +46,7 @@ static_library("browser") {
   deps = [
     ":language_code_locator",
     "//base",
+    "//components/language/core/browser:browser",
     "//net",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
@@ -53,8 +56,11 @@ static_library("browser") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "geo_language_model_unittest.cc",
     "geo_language_provider_unittest.cc",
     "language_code_locator_unittest.cc",
+    "test_utils.cc",
+    "test_utils.h",
   ]
   deps = [
     ":browser",
