@@ -16,6 +16,10 @@ namespace device {
 FakeARCore::FakeARCore() = default;
 FakeARCore::~FakeARCore() = default;
 
+bool FakeARCore::Initialize() {
+  return true;
+}
+
 void FakeARCore::SetDisplayGeometry(
     const gfx::Size& frame_size,
     display::Display::Rotation display_rotation) {
@@ -23,7 +27,7 @@ void FakeARCore::SetDisplayGeometry(
   frame_size_ = frame_size;
 }
 
-void FakeARCore::SetCameraTexture(uint texture) {
+void FakeARCore::SetCameraTexture(GLuint texture) {
   // We need a GL_TEXTURE_EXTERNAL_OES to be compatible with the real ARCore.
   // The content doesn't really matter, just create an AHardwareBuffer-backed
   // GLImage and bind it to the texture.
@@ -107,9 +111,8 @@ void FakeARCore::SetCameraTexture(uint texture) {
   glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
 }
 
-void FakeARCore::TransformDisplayUvCoords(int num_elements,
-                                          const float* uvs_in,
-                                          float* uvs_out) {
+std::vector<float> FakeARCore::TransformDisplayUvCoords(
+    const base::span<const float> uvs) {
   // Try to match ARCore's transfore values.
   //
   // Sample ARCore input: width=1080, height=1795, rotation=0,
@@ -180,9 +183,13 @@ void FakeARCore::TransformDisplayUvCoords(int num_elements,
     DVLOG(3) << ": too narrow. u0=" << u0 << " urange=" << urange;
   }
 
-  for (int i = 0; i < num_elements; i += 2) {
-    float x = uvs_in[i];
-    float y = uvs_in[i + 1];
+  size_t num_elements = uvs.size();
+  DCHECK(num_elements % 2 == 0);
+  std::vector<float> uvs_out;
+  uvs_out.reserve(num_elements);
+  for (size_t i = 0; i < num_elements; i += 2) {
+    float x = uvs[i];
+    float y = uvs[i + 1];
     float u, v;
     switch (display_rotation_) {
       case display::Display::Rotation::ROTATE_90:
@@ -202,13 +209,14 @@ void FakeARCore::TransformDisplayUvCoords(int num_elements,
         v = 1.f - (u0 + x * urange);
         break;
     }
-    uvs_out[i] = u;
-    uvs_out[i + 1] = v;
+    uvs_out.push_back(u);
+    uvs_out.push_back(v);
     DVLOG(2) << __FUNCTION__ << ": uv[" << i << "]=(" << u << ", " << v << ")";
   }
+  return uvs_out;
 }
 
-void FakeARCore::GetProjectionMatrix(float* out, float near, float far) {
+gfx::Transform FakeARCore::GetProjectionMatrix(float near, float far) {
   // Get a projection matrix matching the current screen orientation and
   // aspect. Currently, this uses a hardcoded FOV angle for the smaller screen
   // dimension, and adjusts the other angle to preserve the aspect. A better
@@ -229,22 +237,14 @@ void FakeARCore::GetProjectionMatrix(float* out, float near, float far) {
     right_tan = base_tan * frame_size_.width() / frame_size_.height();
   }
   // Calculate a perspective matrix based on the FOV values.
-  out[0] = 1.f / right_tan;
-  out[1] = 0.0f;
-  out[2] = 0.0f;
-  out[3] = 0.0f;
-  out[4] = 0.0f;
-  out[5] = 1.f / up_tan;
-  out[6] = 0.0f;
-  out[7] = 0.0f;
-  out[8] = 0.0f;
-  out[9] = 0.0f;
-  out[10] = (near + far) / (near - far);
-  out[11] = -1.0f;
-  out[12] = 0.0f;
-  out[13] = 0.0f;
-  out[14] = (2.0f * far * near) / (near - far);
-  out[15] = 0.0f;
+  gfx::Transform result;
+  result.matrix().set(0, 0, 1.f / right_tan);
+  result.matrix().set(1, 1, 1.f / up_tan);
+  result.matrix().set(2, 2, (near + far) / (near - far));
+  result.matrix().set(3, 2, -1.0f);
+  result.matrix().set(2, 3, (2.0f * far * near) / (near - far));
+  result.matrix().set(3, 3, 0.0f);
+  return result;
 }
 
 mojom::VRPosePtr FakeARCore::Update() {

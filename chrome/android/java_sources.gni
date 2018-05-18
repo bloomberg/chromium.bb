@@ -4,6 +4,7 @@
 
 import("//components/feed/features.gni")
 import("//components/offline_pages/buildflags/features.gni")
+import("//device/vr/buildflags/buildflags.gni")
 
 chrome_java_sources = [
   "java/src/com/google/android/apps/chrome/appwidget/bookmarks/BookmarkThumbnailWidgetProvider.java",
@@ -2124,4 +2125,11 @@ if (enable_offline_pages_harness) {
 if (enable_feed_in_chrome) {
   chrome_junit_test_java_sources +=
       [ "junit/src/org/chromium/chrome/browser/feed/FeedImageLoaderTest.java" ]
+}
+
+# This is enable_arcore_java, not enable_arcore because the apk merger would complain that
+# the java classes.dex differs between 32bit and 64bit.
+if (enable_arcore_java) {
+  chrome_java_sources +=
+      [ "java/src/org/chromium/chrome/browser/vr/ArCoreJavaUtils.java" ]
 }

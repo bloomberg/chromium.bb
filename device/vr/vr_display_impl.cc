@@ -97,11 +97,13 @@ void VRDisplayImpl::GetFrameData(const gfx::Size& frame_size,
     return;
   }
 
-  // Sanity check the size.
+  // Check for a valid frame size.
   // While Mojo should handle negative values, we also do not want to allow 0.
+  // TODO(https://crbug.com/841062): Reconsider how we check the sizes.
   if (frame_size.width() <= 0 || frame_size.height() <= 0 ||
       frame_size.width() > kMaxImageHeightOrWidth ||
       frame_size.height() > kMaxImageHeightOrWidth) {
+    DLOG(ERROR) << "Invalid frame size passed to GetFrameData().";
     std::move(callback).Run(nullptr);
     return;
   }

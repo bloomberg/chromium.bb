@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/vr/arcore_device/arcore_interface.h"
+#include "chrome/browser/android/vr/arcore_device/arcore.h"
 
 namespace gl {
 class GLImageAHardwareBuffer;
@@ -20,19 +20,19 @@ namespace device {
 // Minimal fake ARCore implementation for testing. It can populate
 // the camera texture with a GL_TEXTURE_OES image and do UV transform
 // calculations.
-class FakeARCore : public ARCoreInterface {
+class FakeARCore : public ARCore {
  public:
   FakeARCore();
   ~FakeARCore() override;
 
   // ARCoreDriverBase implementation.
-  void SetCameraTexture(uint texture) override;
+  bool Initialize() override;
+  void SetCameraTexture(GLuint texture) override;
   void SetDisplayGeometry(const gfx::Size& frame_size,
                           display::Display::Rotation display_rotation) override;
-  void TransformDisplayUvCoords(int num_elements,
-                                const float* uvs_in,
-                                float* uvs_out) override;
-  void GetProjectionMatrix(float* matrix_out, float near, float far) override;
+  std::vector<float> TransformDisplayUvCoords(
+      const base::span<const float> uvs) override;
+  gfx::Transform GetProjectionMatrix(float near, float far) override;
   mojom::VRPosePtr Update() override;
 
   void SetCameraAspect(float aspect) { camera_aspect_ = aspect; }

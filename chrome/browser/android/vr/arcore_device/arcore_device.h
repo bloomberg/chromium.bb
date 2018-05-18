@@ -25,17 +25,6 @@ class ARCoreDevice : public VRDeviceBase {
   ARCoreDevice();
   ~ARCoreDevice() override;
 
-  mojom::VRPosePtr Update();
-  void OnFrameData(mojom::VRMagicWindowFrameDataPtr frame_data,
-                   mojom::VRMagicWindowProvider::GetFrameDataCallback callback);
-  scoped_refptr<base::SingleThreadTaskRunner> getTaskRunner() {
-    return main_thread_task_runner_;
-  }
-
-  vr::MailboxToSurfaceBridge* GetMailboxBridge() {
-    return mailbox_bridge_.get();
-  }
-
   base::WeakPtr<ARCoreDevice> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
   }
@@ -45,11 +34,35 @@ class ARCoreDevice : public VRDeviceBase {
       const gfx::Size& frame_size,
       display::Display::Rotation frame_rotation,
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
+  void OnMagicWindowFrameDataRequestComplete(
+      mojom::VRMagicWindowProvider::GetFrameDataCallback callback,
+      mojom::VRMagicWindowFrameDataPtr frame_data);
   void OnMailboxBridgeReady();
+  void OnARCoreGlThreadInitialized(bool success);
+
+  template <typename DataType>
+  static void RunCallbackOnTaskRunner(
+      scoped_refptr<base::TaskRunner> task_runner,
+      base::OnceCallback<void(DataType)> callback,
+      DataType data) {
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(std::move(callback), std::move(data)));
+  }
+  template <typename DataType>
+  base::OnceCallback<void(DataType)> CreateMainThreadCallback(
+      base::OnceCallback<void(DataType)> callback) {
+    return base::BindOnce(&ARCoreDevice::RunCallbackOnTaskRunner<DataType>,
+                          main_thread_task_runner_, std::move(callback));
+  }
+
+  void PostTaskToGlThread(base::OnceClosure task);
+
   bool IsOnMainThread();
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;
   std::unique_ptr<ARCoreGlThread> arcore_gl_thread_;
+
+  bool is_arcore_gl_thread_initialized_ = false;
 
   // Must be last.
   base::WeakPtrFactory<ARCoreDevice> weak_ptr_factory_;
