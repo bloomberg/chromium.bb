@@ -1788,16 +1788,15 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   EXPECT_EQ(3, end_offset);
   EXPECT_NE(base::string16::npos,
             base::string16(text_attributes).find(L"font-family:Helvetica"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-weight:normal"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-style:normal"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"font-weight:"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"font-style:"));
   EXPECT_NE(
       base::string16::npos,
       base::string16(text_attributes).find(L"text-underline-style:solid"));
-  EXPECT_NE(
-      base::string16::npos,
-      base::string16(text_attributes).find(L"text-underline-type:single"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"text-underline-type:"));
   // For compatibility with Firefox, spelling attributes should also be
   // propagated to the parent of static text leaves.
   EXPECT_NE(base::string16::npos,
@@ -1811,16 +1810,15 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   EXPECT_EQ(3, end_offset);
   EXPECT_NE(base::string16::npos,
             base::string16(text_attributes).find(L"font-family:Helvetica"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-weight:normal"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-style:normal"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"font-weight:"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"font-style:"));
   EXPECT_NE(
       base::string16::npos,
       base::string16(text_attributes).find(L"text-underline-style:solid"));
-  EXPECT_NE(
-      base::string16::npos,
-      base::string16(text_attributes).find(L"text-underline-type:single"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"text-underline-type:"));
   EXPECT_NE(base::string16::npos,
             base::string16(text_attributes).find(L"invalid:spelling"));
   text_attributes.Reset();
@@ -1834,14 +1832,13 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
     EXPECT_EQ(15, end_offset);
     base::string16 attributes(text_attributes);
     EXPECT_NE(base::string16::npos, attributes.find(L"font-family:Helvetica"));
-    EXPECT_NE(base::string16::npos, attributes.find(L"font-weight:normal"));
-    EXPECT_NE(base::string16::npos, attributes.find(L"font-style:normal"));
-    EXPECT_NE(
+    EXPECT_EQ(base::string16::npos, attributes.find(L"font-weight:"));
+    EXPECT_EQ(base::string16::npos, attributes.find(L"font-style:"));
+    EXPECT_EQ(
         base::string16::npos,
-        base::string16(text_attributes).find(L"text-underline-style:none"));
-    EXPECT_NE(
-        base::string16::npos,
-        base::string16(text_attributes).find(L"text-underline-type:none"));
+        base::string16(text_attributes).find(L"text-underline-style:solid"));
+    EXPECT_EQ(base::string16::npos,
+              base::string16(text_attributes).find(L"text-underline-type:"));
     EXPECT_EQ(base::string16::npos, attributes.find(L"invalid:spelling"));
     text_attributes.Reset();
   }
@@ -1869,14 +1866,14 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   EXPECT_EQ(7, end_offset);
   EXPECT_NE(base::string16::npos,
             base::string16(text_attributes).find(L"font-family:Helvetica"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-weight:normal"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"font-style:normal"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"text-underline-style:none"));
-  EXPECT_NE(base::string16::npos,
-            base::string16(text_attributes).find(L"text-underline-type:none"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"font-weight:"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"font-style:"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"text-underline-style:"));
+  EXPECT_EQ(base::string16::npos,
+            base::string16(text_attributes).find(L"text-underline-type:"));
   EXPECT_EQ(base::string16::npos,
             base::string16(text_attributes).find(L"invalid:spelling"));
   text_attributes.Reset();
@@ -1965,11 +1962,9 @@ TEST_F(BrowserAccessibilityTest, TestExistingMisspellingsInSimpleTextFields) {
   for (LONG offset = 0; offset < value1_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(S_FALSE, hr);
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(value1_length, end_offset);
-    EXPECT_EQ(base::string16::npos,
-              base::string16(text_attributes).find(L"invalid:spelling"));
     text_attributes.Reset();
   }
 
@@ -1990,11 +1985,9 @@ TEST_F(BrowserAccessibilityTest, TestExistingMisspellingsInSimpleTextFields) {
        ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(S_FALSE, hr);
     EXPECT_EQ(value1_length + 4, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
-    EXPECT_EQ(base::string16::npos,
-              base::string16(text_attributes).find(L"invalid:spelling"));
     text_attributes.Reset();
   }
 
@@ -2068,11 +2061,9 @@ TEST_F(BrowserAccessibilityTest, TestNewMisspellingsInSimpleTextFields) {
   for (LONG offset = 0; offset < combo_box_value_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(S_FALSE, hr);
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
-    EXPECT_EQ(base::string16::npos,
-              base::string16(text_attributes).find(L"invalid:spelling"));
     text_attributes.Reset();
   }
 
@@ -2095,11 +2086,9 @@ TEST_F(BrowserAccessibilityTest, TestNewMisspellingsInSimpleTextFields) {
   for (LONG offset = 0; offset < value1_length; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(S_FALSE, hr);
     EXPECT_EQ(0, start_offset);
     EXPECT_EQ(value1_length, end_offset);
-    EXPECT_EQ(base::string16::npos,
-              base::string16(text_attributes).find(L"invalid:spelling"));
     text_attributes.Reset();
   }
 
@@ -2120,11 +2109,9 @@ TEST_F(BrowserAccessibilityTest, TestNewMisspellingsInSimpleTextFields) {
        ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
-    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(S_FALSE, hr);
     EXPECT_EQ(value1_length + 4, start_offset);
     EXPECT_EQ(combo_box_value_length, end_offset);
-    EXPECT_EQ(base::string16::npos,
-              base::string16(text_attributes).find(L"invalid:spelling"));
     text_attributes.Reset();
   }
 
