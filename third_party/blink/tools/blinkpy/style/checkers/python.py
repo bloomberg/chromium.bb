@@ -83,6 +83,7 @@ class PythonChecker(object):
             get_blinkpy_thirdparty_dir(),
             finder.path_from_blink_source('bindings', 'scripts'),
             finder.path_from_chromium_base('build', 'android'),
+            finder.path_from_chromium_base('third_party'),  # for jinja2
             finder.path_from_chromium_base('third_party', 'catapult', 'devil'),
             finder.path_from_chromium_base('third_party', 'pymock'),
         ])
