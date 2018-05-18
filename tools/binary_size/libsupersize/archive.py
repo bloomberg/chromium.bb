@@ -77,6 +77,8 @@ class SectionSizeKnobs(object):
       'assets/unwind_cfi_32': '../../base/trace_event/cfi_backtrace_android.cc',
       'assets/webapk_dex_version.txt': (
           '../../chrome/android/webapk/libs/runtime_library_version.gni'),
+      'lib/armeabi-v7a/libarcore_sdk_c_minimal.so': (
+          '../../third_party/arcore-android-sdk'),
     }
 
     self.apk_expected_other_files = set([
@@ -797,13 +799,15 @@ class _ResourceSourceMapper(object):
       renames = {}
       for line in info_file.readlines():
         dest, source = line.strip().split(',')
-        # Allow one level of indirection due to renames.
+        # Allow indirection due to renames.
         if dest.startswith('Rename:'):
           dest = dest.split(':', 1)[1]
           renames[dest] = source
         else:
           res_info[dest] = source
       for dest, renamed_dest in renames.iteritems():
+        # Allow one more level of indirection due to renaming renamed files
+        renamed_dest = renames.get(renamed_dest, renamed_dest)
         actual_source = res_info.get(renamed_dest);
         if actual_source:
           res_info[dest] = actual_source
@@ -940,7 +944,7 @@ def _ParseApkOtherSymbols(section_sizes, apk_path, apk_so_path,
       apk_symbols.append(models.Symbol(
             models.SECTION_OTHER, zip_info.compress_size,
             source_path=source_path,
-            full_name=os.path.basename(zip_info.filename)))
+            full_name=zip_info.filename))  # Full name must disambiguate
   overhead_size = os.path.getsize(apk_path) - zip_info_total
   assert overhead_size >= 0, 'Apk overhead must be non-negative'
   zip_overhead_symbol = models.Symbol(
