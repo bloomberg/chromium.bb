@@ -57,10 +57,13 @@ static_library("test_support") {
   sources = [
     "mock_arc_notification_item.cc",
     "mock_arc_notification_item.h",
+    "mock_arc_notification_surface.cc",
+    "mock_arc_notification_surface.h",
   ]
 
   deps = [
     ":arc",
+    "//ui/aura",
     "//ui/gl:test_support",
   ]
 }
