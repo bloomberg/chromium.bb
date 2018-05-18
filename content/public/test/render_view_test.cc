@@ -39,6 +39,7 @@
 #include "content/test/mock_render_process.h"
 #include "content/test/test_content_client.h"
 #include "content/test/test_render_frame.h"
+#include "net/base/escape.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/leak_detector/leak_detector.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_main_thread_scheduler.h"
@@ -196,7 +197,7 @@ bool RenderViewTest::ExecuteJavaScriptAndReturnIntValue(
 
 void RenderViewTest::LoadHTML(const char* html) {
   std::string url_string = "data:text/html;charset=utf-8,";
-  url_string.append(html);
+  url_string.append(net::EscapeQueryParamValue(html, false));
   GURL url(url_string);
   WebURLRequest request(url);
   request.SetCheckForBrowserSideNavigation(false);
