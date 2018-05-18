@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_URL_PATTERN_INDEX_COPYING_FILE_STREAM_H_
-#define COMPONENTS_URL_PATTERN_INDEX_COPYING_FILE_STREAM_H_
+#ifndef COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_COPYING_FILE_STREAM_H_
+#define COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_COPYING_FILE_STREAM_H_
 
 #include "base/files/file.h"
 #include "base/macros.h"
@@ -48,4 +48,4 @@ class CopyingFileOutputStream
 
 }  // namespace url_pattern_index
 
-#endif  // COMPONENTS_URL_PATTERN_INDEX_COPYING_FILE_STREAM_H_
+#endif  // COMPONENTS_SUBRESOURCE_FILTER_CORE_BROWSER_COPYING_FILE_STREAM_H_

@@ -4,6 +4,8 @@
 
 static_library("browser") {
   sources = [
+    "copying_file_stream.cc",
+    "copying_file_stream.h",
     "ruleset_service.cc",
     "ruleset_service.h",
     "ruleset_service_delegate.h",
