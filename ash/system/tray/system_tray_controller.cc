@@ -4,6 +4,7 @@
 
 #include "ash/system/tray/system_tray_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 #include "ash/system/model/clock_model.h"
@@ -13,6 +14,7 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/update/tray_update.h"
 
 namespace ash {
@@ -157,11 +159,6 @@ void SystemTrayController::SetClient(mojom::SystemTrayClientPtr client) {
 }
 
 void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
-  ash::SystemTray* tray =
-      Shell::GetPrimaryRootWindowController()->GetSystemTray();
-  if (!tray)
-    return;
-
   // We disable the UI to prevent user from interacting with UI elements,
   // particularly with the system tray menu. However, in case if the system tray
   // bubble is opened at this point, it remains opened and interactive even
@@ -169,10 +166,29 @@ void SystemTrayController::SetPrimaryTrayEnabled(bool enabled) {
   // (http://crbug.com/497080). Close the menu to fix it. Calling
   // SystemTray::SetEnabled(false) guarantees, that the menu will not be opened
   // until the UI is enabled again.
-  if (!enabled && tray->HasSystemBubble())
-    tray->CloseBubble();
 
-  tray->SetEnabled(enabled);
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    UnifiedSystemTray* tray = Shell::GetPrimaryRootWindowController()
+                                  ->GetStatusAreaWidget()
+                                  ->unified_system_tray();
+    if (!tray)
+      return;
+
+    if (!enabled && tray->IsBubbleShown())
+      tray->CloseBubble();
+
+    tray->SetEnabled(enabled);
+  } else {
+    ash::SystemTray* tray =
+        Shell::GetPrimaryRootWindowController()->GetSystemTray();
+    if (!tray)
+      return;
+
+    if (!enabled && tray->HasSystemBubble())
+      tray->CloseBubble();
+
+    tray->SetEnabled(enabled);
+  }
 }
 
 void SystemTrayController::SetPrimaryTrayVisible(bool visible) {
