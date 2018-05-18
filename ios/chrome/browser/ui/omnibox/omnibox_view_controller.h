@@ -18,7 +18,8 @@
 // Designated initializer.
 - (instancetype)initWithFont:(UIFont*)font
                    textColor:(UIColor*)textColor
-                   tintColor:(UIColor*)tintColor;
+                   tintColor:(UIColor*)tintColor
+                   incognito:(BOOL)isIncognito;
 
 @end
 

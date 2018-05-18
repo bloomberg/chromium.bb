@@ -33,11 +33,11 @@
                     textColor:(UIColor*)textColor
                     tintColor:(UIColor*)tintColor;
 
-@property(nonatomic, assign) BOOL incognito;
+// Sets the edit view to use in the editing state. This must be set before the
+// view of this view controller is initialized. This must only be called once.
+- (void)setEditView:(UIView*)editView;
 
-// The omnibox textfield displayed in the editing mode. Exposed for being passed
-// to the OmniboxCoordinator.
-@property(nonatomic, strong, readonly) OmniboxTextFieldIOS* textField;
+@property(nonatomic, assign) BOOL incognito;
 
 // The dispatcher for the share button action.
 @property(nonatomic, weak)

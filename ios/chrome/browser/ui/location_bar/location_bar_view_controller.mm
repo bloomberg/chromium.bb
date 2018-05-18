@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #include "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
-#include "ios/chrome/browser/ui/location_bar/omnibox_container_view.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 
@@ -28,8 +27,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }  // namespace
 
 @interface LocationBarViewController ()
-// Location bar view that contains the omnibox and leading/trailing buttons.
-@property(nonatomic, strong) OmniboxContainerView* locationBarEditView;
+// The injected edit view.
+@property(nonatomic, strong) UIView* locationBarEditView;
 
 // The view that displays current location when the omnibox is not focused.
 @property(nonatomic, strong) LocationBarSteadyView* locationBarSteadyView;
@@ -59,11 +58,6 @@ typedef NS_ENUM(int, TrailingButtonState) {
                     tintColor:(UIColor*)tintColor {
   self = [super init];
   if (self) {
-    _locationBarEditView =
-        [[OmniboxContainerView alloc] initWithFrame:frame
-                                               font:font
-                                          textColor:textColor
-                                          tintColor:tintColor];
     _locationBarSteadyView = [[LocationBarSteadyView alloc] init];
     [_locationBarSteadyView addTarget:self
                                action:@selector(locationBarSteadyViewTapped)
@@ -72,18 +66,18 @@ typedef NS_ENUM(int, TrailingButtonState) {
   return self;
 }
 
+- (void)setEditView:(UIView*)editView {
+  DCHECK(!self.locationBarEditView);
+  self.locationBarEditView = editView;
+}
+
 - (void)switchToEditing:(BOOL)editing {
   self.locationBarEditView.hidden = !editing;
   self.locationBarSteadyView.hidden = editing;
 }
 
-- (OmniboxTextFieldIOS*)textField {
-  return self.locationBarEditView.textField;
-}
-
 - (void)setIncognito:(BOOL)incognito {
   _incognito = incognito;
-  self.locationBarEditView.incognito = incognito;
 }
 
 - (void)setDispatcher:
@@ -121,6 +115,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
 
 - (void)viewDidLoad {
   [super viewDidLoad];
+
+  DCHECK(self.locationBarEditView) << "The edit view must be set at this point";
 
   [self.view addSubview:self.locationBarEditView];
   self.locationBarEditView.translatesAutoresizingMaskIntoConstraints = NO;

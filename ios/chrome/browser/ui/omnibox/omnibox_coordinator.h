@@ -18,9 +18,6 @@ class WebOmniboxEditController;
 
 // The coordinator for the omnibox.
 @interface OmniboxCoordinator : NSObject
-// The textfield coordinated by this object. This has to be created elsewhere
-// and passed into this object before it's started.
-@property(nonatomic, strong) OmniboxTextFieldIOS* textField;
 // The edit controller interfacing the |textField| and the omnibox components
 // code. Needs to be set before the coordinator is started.
 @property(nonatomic, assign) WebOmniboxEditController* editController;
@@ -28,6 +25,10 @@ class WebOmniboxEditController;
 @property(nonatomic, assign) ios::ChromeBrowserState* browserState;
 // The dispatcher for this view controller.
 @property(nonatomic, weak) CommandDispatcher* dispatcher;
+
+// The view controller managed by this coordinator. The parent of this
+// coordinator is expected to add it to the responder chain.
+- (UIViewController*)managedViewController;
 
 // Start this coordinator. When it starts, it expects to have |textField| and
 // |editController|.
