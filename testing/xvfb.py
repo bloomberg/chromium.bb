@@ -84,6 +84,8 @@ def run_executable(cmd, env, stdoutfile=None):
         kill(xcompmgr_proc)
     else:
       env['_CHROMIUM_INSIDE_XVFB'] = '1'
+      if stdoutfile:
+        env['_XVFB_EXECUTABLE_STDOUTFILE'] = stdoutfile
       xvfb_script = __file__
       if xvfb_script.endswith('.pyc'):
         xvfb_script = xvfb_script[:-1]
@@ -109,7 +111,10 @@ def main():
     print >> sys.stderr, USAGE
     return 3
 
-  return run_executable(sys.argv[1:], os.environ.copy())
+  stdoutfile = os.environ.get('_XVFB_EXECUTABLE_STDOUTFILE')
+  if stdoutfile:
+    del os.environ['_XVFB_EXECUTABLE_STDOUTFILE']
+  return run_executable(sys.argv[1:], os.environ.copy(), stdoutfile)
 
 
 if __name__ == "__main__":
