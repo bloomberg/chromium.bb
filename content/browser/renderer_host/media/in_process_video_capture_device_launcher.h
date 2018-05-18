@@ -71,6 +71,12 @@ class InProcessVideoCaptureDeviceLauncher : public VideoCaptureDeviceLauncher {
       std::unique_ptr<media::VideoFrameReceiver> receiver,
       ReceiveDeviceCallback result_callback);
 
+  void DoStartAuraWindowCaptureOnDeviceThread(
+      const DesktopMediaID& device_id,
+      const media::VideoCaptureParams& params,
+      std::unique_ptr<media::VideoFrameReceiver> receiver,
+      ReceiveDeviceCallback result_callback);
+
   void DoStartDesktopCaptureOnDeviceThread(
       const DesktopMediaID& desktop_id,
       const media::VideoCaptureParams& params,
