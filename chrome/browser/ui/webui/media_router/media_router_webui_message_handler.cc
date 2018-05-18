@@ -556,7 +556,7 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
   initial_data.SetBoolean("useTabMirroring", use_tab_mirroring);
 
   web_ui()->CallJavascriptFunctionUnsafe(kSetInitialData, initial_data);
-  media_router_ui_->UIInitialized();
+  media_router_ui_->OnUIInitialized();
 }
 
 void MediaRouterWebUIMessageHandler::OnCreateRoute(

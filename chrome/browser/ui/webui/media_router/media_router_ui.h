@@ -42,7 +42,7 @@ class MediaRouterUI
   void Close();
 
   // Notifies this instance that the UI has been initialized.
-  virtual void UIInitialized();
+  virtual void OnUIInitialized();
 
   // MediaRouterUIBase:
   bool CreateRoute(const MediaSink::Id& sink_id,

@@ -91,7 +91,7 @@ class MockMediaRouterUI : public MediaRouterUI {
       : MediaRouterUI(web_ui) {}
   ~MockMediaRouterUI() override {}
 
-  MOCK_METHOD0(UIInitialized, void());
+  MOCK_METHOD0(OnUIInitialized, void());
   MOCK_CONST_METHOD0(UserSelectedTabMirroringForCurrentOrigin, bool());
   MOCK_METHOD1(RecordCastModeSelection, void(MediaCastMode cast_mode));
   MOCK_CONST_METHOD0(GetPresentationRequestSourceName, std::string());
