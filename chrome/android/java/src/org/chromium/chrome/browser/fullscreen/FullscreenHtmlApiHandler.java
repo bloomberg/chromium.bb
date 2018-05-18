@@ -209,7 +209,7 @@ public class FullscreenHtmlApiHandler {
         mIsPersistentMode = false;
 
         if (mWebContentsInFullscreen != null && mTabInFullscreen != null) {
-            exitFullscreen(mWebContentsInFullscreen, mTabInFullscreen);
+            exitFullscreen(mWebContentsInFullscreen, mContentViewInFullscreen, mTabInFullscreen);
         } else {
             if (!mDelegate.cancelPendingEnterFullscreen()) {
                 assert false : "No content view previously set to fullscreen.";
@@ -229,8 +229,7 @@ public class FullscreenHtmlApiHandler {
         return mIsPersistentMode;
     }
 
-    private void exitFullscreen(final WebContents webContents, final Tab tab) {
-        final View contentView = tab.getContentView();
+    private void exitFullscreen(WebContents webContents, View contentView, Tab tab) {
         hideNotificationToast();
         mHandler.removeMessages(MSG_ID_SET_FULLSCREEN_SYSTEM_UI_FLAGS);
         mHandler.removeMessages(MSG_ID_CLEAR_LAYOUT_FULLSCREEN_FLAG);
