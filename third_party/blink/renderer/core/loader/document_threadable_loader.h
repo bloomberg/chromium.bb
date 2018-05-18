@@ -86,6 +86,9 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void Detach() override;
   void SetDefersLoading(bool);
 
+  // Exposed for thread-correctness DCHECKs in WorkerThreadableLoader.
+  ExecutionContext* GetExecutionContext() const;
+
   void Trace(blink::Visitor*) override;
 
  private:
@@ -188,8 +191,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // Returns null if the loader is not associated with Document.
   // TODO(kinuko): Remove dependency to document.
   Document* GetDocument() const;
-
-  ExecutionContext* GetExecutionContext() const;
 
   ThreadableLoaderClient* client_;
   Member<ThreadableLoadingContext> loading_context_;
