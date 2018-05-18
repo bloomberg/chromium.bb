@@ -77,6 +77,7 @@ FormData::FormData(const FormData& data)
       main_frame_origin(data.main_frame_origin),
       is_form_tag(data.is_form_tag),
       is_formless_checkout(data.is_formless_checkout),
+      unique_renderer_id(data.unique_renderer_id),
       fields(data.fields) {}
 
 FormData::~FormData() {
