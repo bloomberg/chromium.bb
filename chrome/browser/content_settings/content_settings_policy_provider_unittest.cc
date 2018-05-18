@@ -267,15 +267,20 @@ TEST_F(PolicyProviderTest, AutoSelectCertificateList) {
                       &provider, youtube_url, youtube_url,
                       CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
                       std::string(), false));
-  std::unique_ptr<base::Value> cert_filter(TestUtils::GetContentSettingValue(
-      &provider, google_url, google_url,
-      CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), false));
+  std::unique_ptr<base::Value> cert_filter_setting(
+      TestUtils::GetContentSettingValue(
+          &provider, google_url, google_url,
+          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), false));
 
-  ASSERT_EQ(base::Value::Type::DICTIONARY, cert_filter->type());
-  base::DictionaryValue* dict_value =
-      static_cast<base::DictionaryValue*>(cert_filter.get());
+  ASSERT_EQ(base::Value::Type::DICTIONARY, cert_filter_setting->type());
+  base::Value* cert_filters =
+      cert_filter_setting->FindKeyOfType("filters", base::Value::Type::LIST);
+  ASSERT_TRUE(cert_filters);
+  ASSERT_FALSE(cert_filters->GetList().empty());
+  base::DictionaryValue* filter;
+  ASSERT_TRUE(cert_filters->GetList().front().GetAsDictionary(&filter));
   std::string actual_common_name;
-  ASSERT_TRUE(dict_value->GetString("ISSUER.CN", &actual_common_name));
+  ASSERT_TRUE(filter->GetString("ISSUER.CN", &actual_common_name));
   EXPECT_EQ("issuer name", actual_common_name);
   provider.ShutdownOnUIThread();
 }

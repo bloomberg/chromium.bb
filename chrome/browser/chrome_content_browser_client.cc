@@ -2509,6 +2509,62 @@ void ChromeContentBrowserClient::AllowCertificateError(
       callback, SSLErrorHandler::BlockingPageReadyCallback());
 }
 
+namespace {
+
+// Attempts to auto-select a client certificate according to the value of
+// |CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE| content setting for
+// |requesting_url|. If no certificate was auto-selected, returns nullptr.
+std::unique_ptr<net::ClientCertIdentity> AutoSelectCertificate(
+    Profile* profile,
+    const GURL& requesting_url,
+    net::ClientCertIdentityList& client_certs) {
+  HostContentSettingsMap* host_content_settings_map =
+      HostContentSettingsMapFactory::GetForProfile(profile);
+  std::unique_ptr<base::Value> setting =
+      host_content_settings_map->GetWebsiteSetting(
+          requesting_url, requesting_url,
+          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), NULL);
+
+  if (!setting)
+    return nullptr;
+
+  const base::DictionaryValue* setting_dict;
+  if (!setting->GetAsDictionary(&setting_dict)) {
+    NOTREACHED();
+    return nullptr;
+  }
+
+  const base::Value* filters =
+      setting_dict->FindKeyOfType("filters", base::Value::Type::LIST);
+  if (filters) {
+    for (const base::Value& filter : filters->GetList()) {
+      const base::DictionaryValue* filter_dict;
+      if (!filter.GetAsDictionary(&filter_dict)) {
+        NOTREACHED();
+        continue;
+      }
+      // Use the first certificate that is matched by the filter.
+      for (size_t i = 0; i < client_certs.size(); ++i) {
+        if (CertMatchesFilter(*client_certs[i]->certificate(), *filter_dict)) {
+          return std::move(client_certs[i]);
+        }
+      }
+    }
+  } else {
+    // |setting_dict| has the wrong format (e.g. single filter instead of a
+    // list of filters). This content setting is only provided by
+    // the |PolicyProvider|, which should always set it to a valid format.
+    // Therefore, delete the invalid value.
+    host_content_settings_map->SetWebsiteSettingDefaultScope(
+        requesting_url, requesting_url,
+        CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), nullptr);
+  }
+
+  return nullptr;
+}
+
+}  // namespace
+
 void ChromeContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
@@ -2561,35 +2617,18 @@ void ChromeContentBrowserClient::SelectClientCertificate(
   }
 #endif  // defined(OS_CHROMEOS)
 
-  std::unique_ptr<base::Value> filter =
-      HostContentSettingsMapFactory::GetForProfile(profile)->GetWebsiteSetting(
-          requesting_url, requesting_url,
-          CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE, std::string(), NULL);
-
-  if (filter.get()) {
-    // Try to automatically select a client certificate.
-    if (filter->is_dict()) {
-      base::DictionaryValue* filter_dict =
-          static_cast<base::DictionaryValue*>(filter.get());
-
-      for (size_t i = 0; i < client_certs.size(); ++i) {
-        if (CertMatchesFilter(*client_certs[i]->certificate(), *filter_dict)) {
-          // Use the first certificate that is matched by the filter.
-          // The callback will own |client_certs[i]| and |delegate|, keeping
-          // them alive until after ContinueWithCertificate is called.
-          scoped_refptr<net::X509Certificate> cert =
-              client_certs[i]->certificate();
-          net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
-              std::move(client_certs[i]),
-              base::Bind(
-                  &content::ClientCertificateDelegate::ContinueWithCertificate,
-                  base::Passed(&delegate), std::move(cert)));
-          return;
-        }
-      }
-    } else {
-      NOTREACHED();
-    }
+  std::unique_ptr<net::ClientCertIdentity> auto_selected_identity =
+      AutoSelectCertificate(profile, requesting_url, client_certs);
+  if (auto_selected_identity) {
+    // The callback will own |auto_selected_identity| and |delegate|, keeping
+    // them alive until after ContinueWithCertificate is called.
+    scoped_refptr<net::X509Certificate> cert =
+        auto_selected_identity->certificate();
+    net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
+        std::move(auto_selected_identity),
+        base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
+                   base::Passed(&delegate), std::move(cert)));
+    return;
   }
 
   if (!may_show_cert_selection) {

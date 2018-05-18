@@ -2349,12 +2349,16 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
   // cert selection.
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(profile);
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("ISSUER.CN", "pywebsocket");
+  std::unique_ptr<base::DictionaryValue> setting =
+      std::make_unique<base::DictionaryValue>();
+  base::Value* filters = setting->SetKey("filters", base::ListValue());
+  base::DictionaryValue filter = base::DictionaryValue();
+  filter.SetString("ISSUER.CN", "pywebsocket");
+  filters->GetList().push_back(std::move(filter));
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-          std::string(), std::move(dict));
+          std::string(), std::move(setting));
 
   // Visit a HTTPS page which requires client certs.
   ui_test_utils::NavigateToURL(browser(), url);
@@ -2425,11 +2429,14 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, TestBrowserUseClientCertStore) {
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   Profile* profile = Profile::FromBrowserContext(tab->GetBrowserContext());
   DCHECK(profile);
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
+  std::unique_ptr<base::DictionaryValue> setting =
+      std::make_unique<base::DictionaryValue>();
+  base::Value* filters = setting->SetKey("filters", base::ListValue());
+  filters->GetList().push_back(base::DictionaryValue());
   HostContentSettingsMapFactory::GetForProfile(profile)
       ->SetWebsiteSettingDefaultScope(
           https_url, GURL(), CONTENT_SETTINGS_TYPE_AUTO_SELECT_CERTIFICATE,
-          std::string(), std::move(dict));
+          std::string(), std::move(setting));
 
   // Visit a HTTPS page which requires client certs.
   ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(),
