@@ -30,7 +30,7 @@ const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
 struct BookmarkInfo {
   std::string server_id;
   std::string title;
-  std::string url;
+  std::string url;  // empty for folders.
   std::string parent_id;
   std::string server_tag;
 };
@@ -44,7 +44,11 @@ syncer::UpdateResponseData CreateUpdateData(const BookmarkInfo& bookmark_info) {
   sync_pb::BookmarkSpecifics* bookmark_specifics =
       data.specifics.mutable_bookmark();
   bookmark_specifics->set_title(bookmark_info.title);
-  bookmark_specifics->set_url(bookmark_info.url);
+  if (bookmark_info.url.empty()) {
+    data.is_folder = true;
+  } else {
+    bookmark_specifics->set_url(bookmark_info.url);
+  }
 
   syncer::UpdateResponseData response_data;
   response_data.entity = data.PassToPtr();
@@ -91,6 +95,17 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
   AssertState(processor, bookmarks);
 }
 
+syncer::UpdateResponseData CreateTombstone(const std::string& server_id) {
+  // EntityData is considered to represent a deletion if its
+  // specifics hasn't been set.
+  syncer::EntityData data;
+  data.id = server_id;
+
+  syncer::UpdateResponseData response_data;
+  response_data.entity = data.PassToPtr();
+  return response_data;
+}
+
 syncer::UpdateResponseData CreateBookmarkRootUpdateData() {
   return CreateUpdateData({syncer::ModelTypeToRootTag(syncer::BOOKMARKS),
                            std::string(), std::string(), kRootParentTag,
@@ -134,7 +149,8 @@ TEST_F(BookmarkModelTypeProcessorTest, ReorderUpdatesShouldIgnoreRootNodes) {
 }
 
 // TODO(crbug.com/516866): This should change to cover the general case of
-// testing parents before children for non-deletions.
+// parents before children for non-deletions, and another test should be added
+// for children before parents for deletions.
 TEST_F(BookmarkModelTypeProcessorTest,
        ReorderUpdatesShouldPlacePermanentNodesFirstForNonDeletions) {
   const std::string kNode1Id = "node1";
@@ -215,6 +231,75 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   EXPECT_THAT(bookmark_bar->GetChild(0), Eq(bookmark_node));
   EXPECT_THAT(bookmark_node->GetTitle(), Eq(ASCIIToUTF16(kNewTitle)));
   EXPECT_THAT(bookmark_node->url(), Eq(GURL(kNewUrl)));
+}
+
+TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
+  BookmarkModelTypeProcessor processor(sync_client());
+  // Build this structure
+  // bookmark_bar
+  //  |- folder1
+  //      |- title1
+  //      |- title2
+  //  |- folder2
+  //      |- title3
+
+  // Then send delete updates in this order
+  // folder1 -> title2 -> title1
+  // to exercise the code of creating a |foster_parent|.
+
+  const std::string kTitle1 = "title1";
+  const std::string kTitle1Id = "title1Id";
+  const std::string kTitle2 = "title2";
+  const std::string kTitle2Id = "title2Id";
+  const std::string kTitle3 = "title3";
+  const std::string kTitle3Id = "title3Id";
+  const std::string kFolder1 = "folder1";
+  const std::string kFolder1Id = "folder1Id";
+  const std::string kFolder2 = "folder2";
+  const std::string kFolder2Id = "folder2Id";
+  const std::string kUrl = "http://www.url.com";
+
+  std::vector<BookmarkInfo> bookmarks = {
+      {kFolder1Id, kFolder1, /*url=*/std::string(), kBookmarkBarTag,
+       /*server_tag=*/std::string()},
+      {kTitle1Id, kTitle1, kUrl, kFolder1Id, /*server_tag=*/std::string()},
+      {kTitle2Id, kTitle2, kUrl, kFolder1Id, /*server_tag=*/std::string()},
+      {kFolder2Id, kFolder2, /*url=*/std::string(), kBookmarkBarTag,
+       /*server_tag=*/std::string()},
+      {kTitle3Id, kTitle3, kUrl, kFolder2Id, /*server_tag=*/std::string()},
+  };
+
+  InitWithSyncedBookmarks(bookmarks, &processor);
+
+  const bookmarks::BookmarkNode* bookmarkbar =
+      bookmark_model()->bookmark_bar_node();
+
+  ASSERT_THAT(bookmarkbar->child_count(), Eq(2));
+  ASSERT_THAT(bookmarkbar->GetChild(0)->GetTitle(), Eq(ASCIIToUTF16(kFolder1)));
+  ASSERT_THAT(bookmarkbar->GetChild(0)->child_count(), Eq(2));
+  ASSERT_THAT(bookmarkbar->GetChild(1)->GetTitle(), Eq(ASCIIToUTF16(kFolder2)));
+  ASSERT_THAT(bookmarkbar->GetChild(1)->child_count(), Eq(1));
+  ASSERT_THAT(bookmarkbar->GetChild(1)->GetChild(0)->GetTitle(),
+              Eq(ASCIIToUTF16(kTitle3)));
+
+  // Process delete updates
+  syncer::UpdateResponseDataList updates;
+  updates.push_back(CreateTombstone(kTitle2Id));
+  updates.push_back(CreateTombstone(kTitle1Id));
+  updates.push_back(CreateTombstone(kFolder1Id));
+
+  const sync_pb::ModelTypeState model_type_state;
+  processor.OnUpdateReceived(model_type_state, updates);
+
+  // The structure should be
+  // bookmark_bar
+  //  |- folder2
+  //      |- title3
+  EXPECT_THAT(bookmarkbar->child_count(), Eq(1));
+  EXPECT_THAT(bookmarkbar->GetChild(0)->GetTitle(), Eq(ASCIIToUTF16(kFolder2)));
+  EXPECT_THAT(bookmarkbar->GetChild(0)->child_count(), Eq(1));
+  EXPECT_THAT(bookmarkbar->GetChild(0)->GetChild(0)->GetTitle(),
+              Eq(ASCIIToUTF16(kTitle3)));
 }
 
 }  // namespace
