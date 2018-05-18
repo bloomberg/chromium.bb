@@ -16,12 +16,16 @@
 #include "chrome/browser/chromeos/policy/login_policy_test_base.h"
 #include "chrome/browser/chromeos/policy/user_policy_test_helper.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "components/arc/arc_features.h"
+#include "components/arc/arc_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
@@ -128,6 +132,12 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, StartSession) {
   // User should be marked as requiring policy.
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
+
+  // It is expected that if ArcEnabled policy is not set then it is managed
+  // by default and user is not able manually set it.
+  EXPECT_TRUE(
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
+          arc::prefs::kArcEnabled));
 }
 
 IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerTest, ErrorLoadingPolicy) {
@@ -319,6 +329,12 @@ IN_PROC_BROWSER_TEST_F(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
   // User of CHILD type should be marked as requiring policy.
   EXPECT_EQ(user_manager::known_user::ProfileRequiresPolicy::kPolicyRequired,
             user_manager::known_user::GetProfileRequiresPolicy(account_id));
+
+  // It is expected that if ArcEnabled policy is not set then it is not managed
+  // by default and user is able manually set it.
+  EXPECT_FALSE(
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->IsManagedPreference(
+          arc::prefs::kArcEnabled));
 }
 
 }  // namespace policy
