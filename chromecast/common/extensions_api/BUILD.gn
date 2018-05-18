@@ -19,6 +19,7 @@ schema_sources = [
   "history.json",
   "identity.idl",
   "i18n.json",
+  "notifications.idl",
 ]
 
 root_namespace = "extensions::cast::api::%(namespace)s"

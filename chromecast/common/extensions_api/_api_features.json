@@ -73,6 +73,10 @@
     "contexts": ["blessed_extension"],
     "extension_types": ["platform_app"]
   },
+  "notifications": {
+    "dependencies": ["permission:notifications"],
+    "contexts": ["blessed_extension"]
+  },
   // Setup related functions for a Google Cloud Devices (GCD) target device.
   "shell.gcd": {
     "channel": "dev",
