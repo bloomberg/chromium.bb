@@ -64,6 +64,8 @@ drm_private void util_hash_table_foreach(struct util_hash_table *ht,
 			void (*callback)(void *key, void *value, void *data),
 			void *data);
 
+drm_private size_t util_hash_table_count(struct util_hash_table *ht);
+
 drm_private void util_hash_table_destroy(struct util_hash_table *ht);
 
 #endif /* U_HASH_TABLE_H_ */

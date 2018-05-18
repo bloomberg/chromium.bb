@@ -237,6 +237,18 @@ drm_private void util_hash_table_foreach(struct util_hash_table *ht,
 	}
 }
 
+static void util_hash_table_inc(void *k, void *v, void *d)
+{
+	++*(size_t *)d;
+}
+
+drm_private size_t util_hash_table_count(struct util_hash_table *ht)
+{
+	size_t count = 0;
+	util_hash_table_foreach(ht, util_hash_table_inc, &count);
+	return count;
+}
+
 drm_private void util_hash_table_destroy(struct util_hash_table *ht)
 {
 	struct util_hash_iter iter;
