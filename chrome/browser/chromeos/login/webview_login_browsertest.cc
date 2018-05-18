@@ -429,11 +429,14 @@ class WebviewClientCertsLoginTest : public WebviewLoginTest {
   }
 
   // Sets up the DeviceLoginScreenAutoSelectCertificateForUrls policy.
-  void SetAutoSelectCertificatePattern(const std::string& autoselect_pattern) {
+  void SetAutoSelectCertificatePatterns(
+      const std::vector<std::string>& autoselect_patterns) {
     em::ChromeDeviceSettingsProto& proto(
         device_policy_test_helper_.device_policy()->payload());
-    proto.mutable_device_login_screen_auto_select_certificate_for_urls()
-        ->add_login_screen_auto_select_certificate_rules(autoselect_pattern);
+    auto* field =
+        proto.mutable_device_login_screen_auto_select_certificate_for_urls();
+    for (const std::string& autoselect_pattern : autoselect_patterns)
+      field->add_login_screen_auto_select_certificate_rules(autoselect_pattern);
 
     device_policy_test_helper_.device_policy()->Build();
 
@@ -610,9 +613,42 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ssl_options.request_client_certificate = true;
   ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
 
-  const std::string autoselect_pattern =
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})";
-  SetAutoSelectCertificatePattern(autoselect_pattern);
+  const std::vector<std::string> autoselect_patterns = {
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
+  SetAutoSelectCertificatePatterns(autoselect_patterns);
+
+  WaitForGaiaPageLoad();
+
+  std::string https_reply_content = RequestClientCertTestPageInFrame(
+      gaia_frame_parent_, false /* watch_new_webcontents */);
+  EXPECT_EQ(
+      "got client cert with fingerprint: "
+      "c66145f49caca4d1325db96ace0f12f615ba4981",
+      https_reply_content);
+}
+
+// Test that client certificate autoselect selects the right certificate even
+// with multiple filters for the same pattern.
+//
+// Disabled due to flaky timeouts: https://crbug.com/830337.
+#if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER)
+#define MAYBE_SigninFrameCertMultipleFiltersAutoSelected \
+  DISABLED_SigninFrameCertMultipleFiltersAutoSelected
+#else
+#define MAYBE_SigninFrameCertMultipleFiltersAutoSelected \
+  SigninFrameCertMultipleFiltersAutoSelected
+#endif
+IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
+                       MAYBE_SigninFrameCertMultipleFiltersAutoSelected) {
+  ASSERT_NO_FATAL_FAILURE(SetUpClientCertInSystemSlot());
+  net::SpawnedTestServer::SSLOptions ssl_options;
+  ssl_options.request_client_certificate = true;
+  ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
+
+  const std::vector<std::string> autoselect_patterns = {
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})",
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "foo baz bar"}}})"};
+  SetAutoSelectCertificatePatterns(autoselect_patterns);
 
   WaitForGaiaPageLoad();
 
@@ -669,9 +705,9 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ssl_options.client_authorities.push_back(ca_path);
   ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
 
-  const std::string autoselect_pattern =
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})";
-  SetAutoSelectCertificatePattern(autoselect_pattern);
+  const std::vector<std::string> autoselect_patterns = {
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
+  SetAutoSelectCertificatePatterns(autoselect_patterns);
 
   WaitForGaiaPageLoad();
 
@@ -706,9 +742,9 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ssl_options.client_authorities.push_back(ca_path);
   ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
 
-  const std::string autoselect_pattern =
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})";
-  SetAutoSelectCertificatePattern(autoselect_pattern);
+  const std::vector<std::string> autoselect_patterns = {
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
+  SetAutoSelectCertificatePatterns(autoselect_patterns);
 
   WaitForGaiaPageLoad();
 
@@ -741,9 +777,9 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ssl_options.client_authorities.push_back(ca_path);
   ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
 
-  const std::string autoselect_pattern =
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})";
-  SetAutoSelectCertificatePattern(autoselect_pattern);
+  const std::vector<std::string> autoselect_patterns = {
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
+  SetAutoSelectCertificatePatterns(autoselect_patterns);
 
   WaitForGaiaPageLoad();
 
@@ -775,9 +811,10 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ssl_options.client_authorities.push_back(ca_path);
   ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
 
-  const std::string autoselect_pattern =
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})";
-  SetAutoSelectCertificatePattern(autoselect_pattern);
+  const std::vector<std::string> autoselect_patterns = {
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
+  SetAutoSelectCertificatePatterns(autoselect_patterns);
+
   base::FilePath intermediate_ca_path =
       net::GetTestCertsDirectory().Append(FILE_PATH_LITERAL("client_1_ca.pem"));
   ASSERT_NO_FATAL_FAILURE(
@@ -803,9 +840,9 @@ IN_PROC_BROWSER_TEST_F(WebviewClientCertsLoginTest,
   ssl_options.request_client_certificate = true;
   ASSERT_NO_FATAL_FAILURE(StartHttpsServer(ssl_options));
 
-  const std::string autoselect_pattern =
-      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})";
-  SetAutoSelectCertificatePattern(autoselect_pattern);
+  const std::vector<std::string> autoselect_patterns = {
+      R"({"pattern": "*", "filter": {"ISSUER": {"CN": "B CA"}}})"};
+  SetAutoSelectCertificatePatterns(autoselect_patterns);
 
   ShowEulaScreen();
 
