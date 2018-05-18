@@ -1662,6 +1662,47 @@ TEST_F(ImplicitRootScrollerSimTest, ImplicitRootScrollerAddOverflow) {
       << "Adding overflow should cause 'container' to be promoted.";
 }
 
+// Tests that we don't crash if an implicit candidate is no longer a box. This
+// test passes if it doesn't crash.
+TEST_F(ImplicitRootScrollerSimTest, CandidateLosesLayoutBoxDontCrash) {
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+          <!DOCTYPE html>
+          <style>
+            #spacer {
+              width: 300px;
+              height: 300px;
+            }
+
+            .box {
+              width: 200px;
+              height: 200px;
+              overflow: scroll;
+              display: block;
+            }
+
+            .nonbox {
+              display: inline;
+            }
+          </style>
+          <b id="container">
+            <div id="spacer"></div>
+          </b>
+      )HTML");
+  Element* container = GetDocument().getElementById("container");
+
+  // An overflowing box will be added to the implicit candidates list.
+  container->setAttribute(HTMLNames::classAttr, "box");
+  Compositor().BeginFrame();
+
+  // This will make change from a box to an inline. Ensure we don't crash when
+  // we reevaluate the candidates list.
+  container->setAttribute(HTMLNames::classAttr, "nonbox");
+  Compositor().BeginFrame();
+}
+
 // Test that a valid implicit root scroller wont be promoted/will be demoted if
 // the main document has overflow.
 TEST_F(ImplicitRootScrollerSimTest,
