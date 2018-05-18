@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/core/paint/theme_painter.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_fallback_theme_engine.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
@@ -35,11 +34,13 @@
 #include "third_party/blink/renderer/core/input_type_names.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/paint/fallback_theme.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/theme.h"
+#include "ui/native_theme/native_theme.h"
 
 // The methods in this file are shared by all themes on every platform.
 
@@ -47,15 +48,15 @@ namespace blink {
 
 namespace {
 
-WebFallbackThemeEngine::State GetWebFallbackThemeState(const Node* node) {
+ui::NativeTheme::State GetFallbackThemeState(const Node* node) {
   if (!LayoutTheme::IsEnabled(node))
-    return WebFallbackThemeEngine::kStateDisabled;
+    return ui::NativeTheme::kDisabled;
   if (LayoutTheme::IsPressed(node))
-    return WebFallbackThemeEngine::kStatePressed;
+    return ui::NativeTheme::kPressed;
   if (LayoutTheme::IsHovered(node))
-    return WebFallbackThemeEngine::kStateHover;
+    return ui::NativeTheme::kHovered;
 
-  return WebFallbackThemeEngine::kStateNormal;
+  return ui::NativeTheme::kNormal;
 }
 
 }  // anonymous namespace
@@ -359,8 +360,7 @@ bool ThemePainter::PaintCheckboxUsingFallbackTheme(const Node* node,
                                                    const ComputedStyle& style,
                                                    const PaintInfo& paint_info,
                                                    const IntRect& paint_rect) {
-  WebFallbackThemeEngine::ExtraParams extra_params;
-  PaintCanvas* canvas = paint_info.context.Canvas();
+  ui::NativeTheme::ExtraParams extra_params;
   extra_params.button.checked = LayoutTheme::IsChecked(node);
   extra_params.button.indeterminate = LayoutTheme::IsIndeterminate(node);
 
@@ -375,9 +375,9 @@ bool ThemePainter::PaintCheckboxUsingFallbackTheme(const Node* node,
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
-  Platform::Current()->FallbackThemeEngine()->Paint(
-      canvas, WebFallbackThemeEngine::kPartCheckbox,
-      GetWebFallbackThemeState(node), WebRect(unzoomed_rect), &extra_params);
+  GetFallbackTheme().Paint(
+      paint_info.context.Canvas(), ui::NativeTheme::kCheckbox,
+      GetFallbackThemeState(node), unzoomed_rect, extra_params);
   return false;
 }
 
@@ -385,10 +385,8 @@ bool ThemePainter::PaintRadioUsingFallbackTheme(const Node* node,
                                                 const ComputedStyle& style,
                                                 const PaintInfo& paint_info,
                                                 const IntRect& paint_rect) {
-  WebFallbackThemeEngine::ExtraParams extra_params;
-  WebCanvas* canvas = paint_info.context.Canvas();
+  ui::NativeTheme::ExtraParams extra_params;
   extra_params.button.checked = LayoutTheme::IsChecked(node);
-  extra_params.button.indeterminate = LayoutTheme::IsIndeterminate(node);
 
   float zoom_level = style.EffectiveZoom();
   GraphicsContextStateSaver state_saver(paint_info.context);
@@ -401,9 +399,9 @@ bool ThemePainter::PaintRadioUsingFallbackTheme(const Node* node,
     paint_info.context.Translate(-unzoomed_rect.X(), -unzoomed_rect.Y());
   }
 
-  Platform::Current()->FallbackThemeEngine()->Paint(
-      canvas, WebFallbackThemeEngine::kPartRadio,
-      GetWebFallbackThemeState(node), WebRect(unzoomed_rect), &extra_params);
+  GetFallbackTheme().Paint(paint_info.context.Canvas(), ui::NativeTheme::kRadio,
+                           GetFallbackThemeState(node), unzoomed_rect,
+                           extra_params);
   return false;
 }
 

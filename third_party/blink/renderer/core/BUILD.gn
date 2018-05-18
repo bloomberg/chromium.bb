@@ -130,6 +130,7 @@ source_set("prerequisites") {
     "//third_party/snappy",
     "//third_party/zlib",
     "//ui/gfx/geometry",
+    "//ui/native_theme",
     "//url",
     "//v8",
   ]

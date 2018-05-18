@@ -97,7 +97,6 @@ class WebCookieJar;
 class WebCrypto;
 class WebDatabaseObserver;
 class WebPlatformEventListener;
-class WebFallbackThemeEngine;
 class WebFileSystem;
 class WebGestureCurve;
 class WebGraphicsContext3DProvider;
@@ -164,8 +163,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // May return null on some platforms.
   virtual WebThemeEngine* ThemeEngine() { return nullptr; }
-
-  virtual WebFallbackThemeEngine* FallbackThemeEngine() { return nullptr; }
 
   // May return null.
   virtual std::unique_ptr<WebSpeechSynthesizer> CreateSpeechSynthesizer(

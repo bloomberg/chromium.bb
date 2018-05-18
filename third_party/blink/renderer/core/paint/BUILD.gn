@@ -82,6 +82,8 @@ blink_core_sources("paint") {
     "embedded_object_paint_invalidator.h",
     "embedded_object_painter.cc",
     "embedded_object_painter.h",
+    "fallback_theme.cc",
+    "fallback_theme.h",
     "fieldset_painter.cc",
     "fieldset_painter.h",
     "file_upload_control_painter.cc",

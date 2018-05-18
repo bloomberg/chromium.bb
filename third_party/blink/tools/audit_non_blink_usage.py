@@ -267,6 +267,15 @@ _CONFIG = [
         ],
         'allowed': ['sql::.+'],
     },
+    {
+        'paths': [
+            'third_party/blink/renderer/core/layout/layout_theme.cc',
+            'third_party/blink/renderer/core/paint/fallback_theme.cc',
+            'third_party/blink/renderer/core/paint/fallback_theme.h',
+            'third_party/blink/renderer/core/paint/theme_painter.cc',
+        ],
+        'allowed': ['ui::NativeTheme.*'],
+    },
 ]
 
 

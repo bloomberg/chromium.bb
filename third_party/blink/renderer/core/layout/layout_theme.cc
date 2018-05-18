@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_fallback_theme_engine.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
@@ -47,6 +46,7 @@
 #include "third_party/blink/renderer/core/layout/layout_theme_mobile.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/fallback_theme.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/platform/file_metadata.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
@@ -57,6 +57,7 @@
 #include "third_party/blink/renderer/platform/text/string_truncator.h"
 #include "third_party/blink/renderer/platform/theme.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
+#include "ui/native_theme/native_theme.h"
 
 // The methods in this file are shared by all themes on every platform.
 
@@ -883,8 +884,9 @@ void LayoutTheme::AdjustCheckboxStyleUsingFallbackTheme(
   if (!style.Width().IsIntrinsicOrAuto() && !style.Height().IsAuto())
     return;
 
-  IntSize size = Platform::Current()->FallbackThemeEngine()->GetSize(
-      WebFallbackThemeEngine::kPartCheckbox);
+  IntSize size(GetFallbackTheme().GetPartSize(ui::NativeTheme::kCheckbox,
+                                              ui::NativeTheme::kNormal,
+                                              ui::NativeTheme::ExtraParams()));
   float zoom_level = style.EffectiveZoom();
   size.SetWidth(size.Width() * zoom_level);
   size.SetHeight(size.Height() * zoom_level);
@@ -906,8 +908,9 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   if (!style.Width().IsIntrinsicOrAuto() && !style.Height().IsAuto())
     return;
 
-  IntSize size = Platform::Current()->FallbackThemeEngine()->GetSize(
-      WebFallbackThemeEngine::kPartRadio);
+  IntSize size(GetFallbackTheme().GetPartSize(ui::NativeTheme::kRadio,
+                                              ui::NativeTheme::kNormal,
+                                              ui::NativeTheme::ExtraParams()));
   float zoom_level = style.EffectiveZoom();
   size.SetWidth(size.Width() * zoom_level);
   size.SetHeight(size.Height() * zoom_level);

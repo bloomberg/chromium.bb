@@ -10,6 +10,9 @@
 
 namespace blink {
 
+IntSize::IntSize(const gfx::Size& size)
+    : IntSize(size.width(), size.height()) {}
+
 IntSize::operator gfx::Size() const {
   return gfx::Size(Width(), Height());
 }
