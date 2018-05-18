@@ -11,6 +11,10 @@ namespace ash {
 // is provided with an empty app id.
 constexpr char kDefaultArcNotifierId[] = "ARC_NOTIFICATION";
 
+// The prefix used when ARC generates a notification id, which is used in Chrome
+// world, from a notification key, which is used in Android.
+constexpr char kArcNotificationIdPrefix[] = "ARC_NOTIFICATION_";
+
 }  // namespace ash
 
 #endif  // ASH_SYSTEM_MESSAGE_CENTER_ARC_ARC_NOTIFICATION_CONSTANTS_H_

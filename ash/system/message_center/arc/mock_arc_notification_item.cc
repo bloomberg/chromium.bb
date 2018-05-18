@@ -6,20 +6,15 @@
 
 #include <utility>
 
+#include "ash/system/message_center/arc/arc_notification_constants.h"
 #include "base/bind_helpers.h"
 
 namespace ash {
 
-namespace {
-
-constexpr char kNotificationIdPrefix[] = "ARC_NOTIFICATION_";
-
-}  // namespace
-
 MockArcNotificationItem::MockArcNotificationItem(
     const std::string& notification_key)
     : notification_key_(notification_key),
-      notification_id_(kNotificationIdPrefix + notification_key),
+      notification_id_(kArcNotificationIdPrefix + notification_key),
       weak_factory_(this) {}
 
 MockArcNotificationItem::~MockArcNotificationItem() {
