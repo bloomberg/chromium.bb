@@ -9,6 +9,7 @@
 #include "base/base64.h"
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
@@ -57,25 +58,6 @@ using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 
 namespace headless {
-
-#define EXPECT_CHILD_CONTENTS_CREATED(obs)                                    \
-  EXPECT_CALL((obs), OnChildContentsCreated(::testing::_, ::testing::_))      \
-      .WillOnce(::testing::DoAll(::testing::SaveArg<0>(&((obs).last_parent)), \
-                                 ::testing::SaveArg<1>(&((obs).last_child))))
-
-class MockHeadlessBrowserContextObserver
-    : public HeadlessBrowserContext::Observer {
- public:
-  MOCK_METHOD2(OnChildContentsCreated,
-               void(HeadlessWebContents*, HeadlessWebContents*));
-
-  MockHeadlessBrowserContextObserver() = default;
-  ~MockHeadlessBrowserContextObserver() override = default;
-
-  HeadlessWebContents* last_parent;
-  HeadlessWebContents* last_child;
-};
-
 class HeadlessWebContentsTest : public HeadlessBrowserTest {};
 
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Navigation) {
@@ -100,10 +82,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
-  MockHeadlessBrowserContextObserver observer;
-  browser_context->AddObserver(&observer);
-  EXPECT_CHILD_CONTENTS_CREATED(observer);
-
   HeadlessWebContents* web_contents =
       browser_context->CreateWebContentsBuilder()
           .SetInitialURL(embedded_test_server()->GetURL("/window_open.html"))
@@ -112,8 +90,16 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
 
   EXPECT_EQ(2u, browser_context->GetAllWebContents().size());
 
-  auto* parent = HeadlessWebContentsImpl::From(observer.last_parent);
-  auto* child = HeadlessWebContentsImpl::From(observer.last_child);
+  HeadlessWebContentsImpl* child = nullptr;
+  HeadlessWebContentsImpl* parent = nullptr;
+  for (HeadlessWebContents* c : browser_context->GetAllWebContents()) {
+    HeadlessWebContentsImpl* impl = HeadlessWebContentsImpl::From(c);
+    if (impl->window_id() == 1)
+      parent = impl;
+    else if (impl->window_id() == 2)
+      child = impl;
+  }
+
   EXPECT_NE(nullptr, parent);
   EXPECT_NE(nullptr, child);
   EXPECT_NE(parent, child);
@@ -131,8 +117,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, WindowOpen) {
   EXPECT_EQ(expected_bounds.size(),
             child->web_contents()->GetContainerBounds().size());
 #endif  // !defined(OS_MACOSX)
-
-  browser_context->RemoveObserver(&observer);
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest,
@@ -440,10 +424,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, BrowserOpenInTab) {
   HeadlessBrowserContext* browser_context =
       browser()->CreateBrowserContextBuilder().Build();
 
-  MockHeadlessBrowserContextObserver observer;
-  browser_context->AddObserver(&observer);
-  EXPECT_CHILD_CONTENTS_CREATED(observer);
-
   HeadlessWebContents* web_contents =
       browser_context->CreateWebContentsBuilder()
           .SetInitialURL(embedded_test_server()->GetURL("/link.html"))
@@ -460,7 +440,6 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, BrowserOpenInTab) {
 
   // Check that we have a new tab.
   EXPECT_EQ(2u, browser_context->GetAllWebContents().size());
-  browser_context->RemoveObserver(&observer);
 }
 
 namespace {

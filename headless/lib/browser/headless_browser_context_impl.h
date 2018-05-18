@@ -112,9 +112,6 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
   void SetRemoveHeaders(bool should_remove_headers);
   bool ShouldRemoveHeaders() const;
 
-  void NotifyChildContentsCreated(HeadlessWebContentsImpl* parent,
-                                  HeadlessWebContentsImpl* child);
-
   // This will be called on the IO thread.
   void NotifyUrlRequestFailed(net::URLRequest* request,
                               int net_error,
