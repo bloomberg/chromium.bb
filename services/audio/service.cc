@@ -38,6 +38,21 @@ Service::Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
 
 Service::~Service() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  metrics_.reset();
+
+  // |ref_factory_| may reentrantly call its |quit_closure| when we reset the
+  // members below. Destroy it ahead of time to prevent this.
+  ref_factory_.reset();
+
+  // Stop all streams cleanly before shutting down the audio manager.
+  stream_factory_.reset();
+
+  // Reset |debug_recording_| to disable debug recording before AudioManager
+  // shutdown.
+  debug_recording_.reset();
+
+  audio_manager_accessor_->Shutdown();
 }
 
 void Service::OnStart() {
@@ -78,12 +93,6 @@ void Service::OnBindInterface(
 
 bool Service::OnServiceManagerConnectionLost() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  metrics_.reset();
-
-  // Reset |debug_recording_| to disable debug recording before AudioManager
-  // shutdown.
-  debug_recording_.reset();
-  audio_manager_accessor_->Shutdown();
   return true;
 }
 
