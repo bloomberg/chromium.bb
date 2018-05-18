@@ -53,10 +53,6 @@ class ContentSubresourceFilterDriverFactory
       const Configuration& matched_configuration,
       bool warning);
 
-  // Returns whether or not the current WebContents is allowed to create a new
-  // window.
-  bool ShouldDisallowNewWindow(const content::OpenURLParams* open_url_params);
-
   // Returns the Configuration for the current main frame document.
   const Configuration& GetMatchedConfigurationForLastCommittedPageLoad() const {
     return matched_configuration_;

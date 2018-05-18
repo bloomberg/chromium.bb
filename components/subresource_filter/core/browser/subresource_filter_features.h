@@ -87,10 +87,6 @@ struct Configuration {
     // Whether notifications indicating that a subresource was disallowed should
     // be suppressed in the UI.
     bool should_suppress_notifications = false;
-
-    // Whether to whitelist a site when a page loaded from that site is
-    // reloaded.
-    bool should_whitelist_site_on_reload = false;
   };
 
   // General settings that apply outside of the scope of a navigation.

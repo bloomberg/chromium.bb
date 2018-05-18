@@ -94,11 +94,6 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
     return whitelisted_hosts_.count(handle->GetURL().host());
   }
 
-  void WhitelistInCurrentWebContents(const GURL& url) override {
-    ASSERT_TRUE(url.SchemeIsHTTPOrHTTPS());
-    whitelisted_hosts_.insert(url.host());
-  }
-
   VerifiedRulesetDealer::Handle* GetRulesetDealer() override {
     return ruleset_dealer_.get();
   }
@@ -106,6 +101,11 @@ class MockSubresourceFilterClient : public SubresourceFilterClient {
   MOCK_METHOD0(ShowNotification, void());
   MOCK_METHOD0(OnNewNavigationStarted, void());
   MOCK_METHOD0(ForceActivationInCurrentWebContents, bool());
+
+  void WhitelistInCurrentWebContents(const GURL& url) {
+    ASSERT_TRUE(url.SchemeIsHTTPOrHTTPS());
+    whitelisted_hosts_.insert(url.host());
+  }
 
   void ClearWhitelist() { whitelisted_hosts_.clear(); }
 
@@ -224,11 +224,6 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
     content::RenderViewHostTestHarness::TearDown();
   }
 
-  ContentSubresourceFilterDriverFactory* factory() {
-    return ContentSubresourceFilterDriverFactory::FromWebContents(
-        RenderViewHostTestHarness::web_contents());
-  }
-
   TestSubresourceFilterObserver* observer() { return observer_.get(); }
 
   // content::WebContentsObserver:
@@ -241,7 +236,9 @@ class SubresourceFilterSafeBrowsingActivationThrottleTest
               fake_safe_browsing_database_));
     }
     std::vector<std::unique_ptr<content::NavigationThrottle>> throttles;
-    factory()->throttle_manager()->MaybeAppendNavigationThrottles(
+    auto* factory = ContentSubresourceFilterDriverFactory::FromWebContents(
+        navigation_handle->GetWebContents());
+    factory->throttle_manager()->MaybeAppendNavigationThrottles(
         navigation_handle, &throttles);
     for (auto& it : throttles) {
       navigation_handle->RegisterThrottleForTesting(std::move(it));
@@ -515,7 +512,6 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   config2.activation_conditions.priority = 1;
 
   Configuration config3(ActivationLevel::ENABLED, ActivationScope::ALL_SITES);
-  config3.activation_options.should_whitelist_site_on_reload = true;
   config3.activation_conditions.priority = 0;
 
   scoped_configuration()->ResetConfiguration({config1, config2, config3});
@@ -536,15 +532,6 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   SimulateNavigateAndCommit({non_match_url}, main_rfh());
   EXPECT_EQ(ActivationDecision::ACTIVATED,
             *observer()->GetPageActivationForLastCommittedLoad());
-
-  // Should match |config3|, but a reload, so this should get whitelisted.
-  auto reload_simulator = content::NavigationSimulator::CreateRendererInitiated(
-      non_match_url, main_rfh());
-  reload_simulator->SetTransition(ui::PAGE_TRANSITION_RELOAD);
-  reload_simulator->Start();
-  SimulateCommit(reload_simulator.get());
-  EXPECT_EQ(ActivationDecision::URL_WHITELISTED,
-            *observer()->GetPageActivationForLastCommittedLoad());
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
@@ -564,7 +551,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
             *observer()->GetPageActivationForLastCommittedLoad());
 
   // Whitelisting occurs last, so the decision should still be DISABLED.
-  factory()->client()->WhitelistInCurrentWebContents(url);
+  client()->WhitelistInCurrentWebContents(url);
   SimulateNavigateAndCommit({url}, main_rfh());
   EXPECT_EQ(ActivationDecision::ACTIVATION_DISABLED,
             *observer()->GetPageActivationForLastCommittedLoad());
@@ -626,48 +613,6 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
   EXPECT_CALL(*client(), ShowNotification()).Times(0);
   EXPECT_CALL(*client(), OnNewNavigationStarted()).Times(0);
   EXPECT_FALSE(CreateAndNavigateDisallowedSubframe(rfh));
-}
-
-TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
-       WhitelistSiteOnReload) {
-  const struct {
-    content::Referrer referrer;
-    ui::PageTransition transition;
-    ActivationDecision expected_activation_decision;
-  } kTestCases[] = {
-      {content::Referrer(), ui::PAGE_TRANSITION_LINK,
-       ActivationDecision::ACTIVATED},
-      {content::Referrer(GURL(kUrlA), blink::kWebReferrerPolicyDefault),
-       ui::PAGE_TRANSITION_LINK, ActivationDecision::ACTIVATED},
-      {content::Referrer(GURL(kURL), blink::kWebReferrerPolicyDefault),
-       ui::PAGE_TRANSITION_LINK, ActivationDecision::URL_WHITELISTED},
-      {content::Referrer(), ui::PAGE_TRANSITION_RELOAD,
-       ActivationDecision::URL_WHITELISTED}};
-
-  Configuration config(ActivationLevel::ENABLED, ActivationScope::ALL_SITES);
-  config.activation_options.should_whitelist_site_on_reload = true;
-  scoped_configuration()->ResetConfiguration(std::move(config));
-
-  for (const auto& test_case : kTestCases) {
-    SCOPED_TRACE(::testing::Message("referrer = \"")
-                 << test_case.referrer.url << "\""
-                 << " transition = \"" << test_case.transition << "\"");
-
-    auto simulator = content::NavigationSimulator::CreateRendererInitiated(
-        GURL(kURL), main_rfh());
-    simulator->SetTransition(test_case.transition);
-    simulator->SetReferrer(test_case.referrer);
-    SimulateCommit(simulator.get());
-    EXPECT_EQ(test_case.expected_activation_decision,
-              *observer()->GetPageActivationForLastCommittedLoad());
-    // Verify that if the first URL failed to activate, subsequent same-origin
-    // navigations also fail to activate.
-    simulator = content::NavigationSimulator::CreateRendererInitiated(
-        GURL(kURLWithParams), main_rfh());
-    SimulateCommit(simulator.get());
-    EXPECT_EQ(test_case.expected_activation_decision,
-              *observer()->GetPageActivationForLastCommittedLoad());
-  }
 }
 
 TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
@@ -885,7 +830,7 @@ TEST_P(SubresourceFilterSafeBrowsingActivationThrottleScopeTest,
   EXPECT_EQ(test_data.expected_activation_decision,
             *observer()->GetPageActivationForLastCommittedLoad());
   if (test_data.url_matches_activation_list) {
-    factory()->client()->WhitelistInCurrentWebContents(test_url);
+    client()->WhitelistInCurrentWebContents(test_url);
     ActivationDecision expected_decision =
         test_data.expected_activation_decision;
     if (expected_decision == ActivationDecision::ACTIVATED)
