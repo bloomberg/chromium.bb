@@ -12,35 +12,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
-#include "components/rappor/public/rappor_utils.h"
-#include "components/rappor/rappor_service_impl.h"
 #include "net/http/http_response_headers.h"
 #include "ui/base/page_transition_types.h"
 
 namespace {
-
-// The number of buckets in the bitfield histogram. These buckets are described
-// in rappor.xml in PageLoad.CoarseTiming.NavigationToFirstContentfulPaint.
-// The bucket flag is defined by 1 << bucket_index, and is the bitfield
-// representing which timing bucket the page load falls into, i.e. 000010
-// would be the bucket flag showing that the page took between 2 and 4 seconds
-// to load.
-const size_t kNumRapporHistogramBuckets = 6;
-
-uint64_t RapporHistogramBucketIndex(base::TimeDelta time) {
-  int64_t seconds = time.InSeconds();
-  if (seconds < 2)
-    return 0;
-  if (seconds < 4)
-    return 1;
-  if (seconds < 8)
-    return 2;
-  if (seconds < 16)
-    return 3;
-  if (seconds < 32)
-    return 4;
-  return 5;
-}
 
 // TODO(bmcquade): If other observers want to log histograms based on load type,
 // promote this enum to page_load_metrics_observer.h.
@@ -202,12 +177,6 @@ const char kHistogramForegroundToFirstContentfulPaint[] =
     "PageLoad.PaintTiming.ForegroundToFirstContentfulPaint";
 const char kHistogramForegroundToFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.ForegroundToFirstMeaningfulPaint";
-
-const char kRapporMetricsNameCoarseTiming[] =
-    "PageLoad.CoarseTiming.NavigationToFirstContentfulPaint";
-
-const char kRapporMetricsNameFirstMeaningfulPaintNotRecorded[] =
-    "PageLoad.Experimental.PaintTiming.FirstMeaningfulPaintNotRecorded";
 
 const char kHistogramFirstContentfulPaintUserInitiated[] =
     "PageLoad.PaintTiming.NavigationToFirstContentfulPaint.UserInitiated";
@@ -638,7 +607,6 @@ void CorePageLoadMetricsObserver::OnComplete(
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordTimingHistograms(timing, info);
   RecordByteAndResourceHistograms(timing, info);
-  RecordRappor(timing, info);
   RecordForegroundDurationHistograms(timing, info, base::TimeTicks());
 }
 
@@ -841,50 +809,4 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
                                 num_cache_resources_);
   PAGE_RESOURCE_COUNT_HISTOGRAM(internal::kHistogramTotalCompletedResources,
                                 num_cache_resources_ + num_network_resources_);
-}
-
-void CorePageLoadMetricsObserver::RecordRappor(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
-  // During the browser process shutdown path, calling
-  // BrowserProcess::rappor_service() can reinitialize multiple destroyed
-  // objects. This alters shutdown ordering, so we avoid it by testing
-  // IsShuttingDown() first.
-  if (g_browser_process->IsShuttingDown())
-    return;
-  rappor::RapporServiceImpl* rappor_service =
-      g_browser_process->rappor_service();
-  if (!rappor_service)
-    return;
-  if (!info.did_commit)
-    return;
-
-  // Log the eTLD+1 of sites that show poor loading performance.
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
-    std::unique_ptr<rappor::Sample> sample =
-        rappor_service->CreateSample(rappor::UMA_RAPPOR_TYPE);
-    sample->SetStringField(
-        "Domain", rappor::GetDomainAndRegistrySampleFromGURL(info.url));
-    uint64_t bucket_index = RapporHistogramBucketIndex(
-        timing.paint_timing->first_contentful_paint.value());
-    sample->SetFlagsField("Bucket", uint64_t(1) << bucket_index,
-                          kNumRapporHistogramBuckets);
-    // The IsSlow flag is just a one bit boolean if the first contentful paint
-    // was > 10s.
-    sample->SetFlagsField(
-        "IsSlow",
-        timing.paint_timing->first_contentful_paint.value().InSecondsF() >= 10,
-        1);
-    rappor_service->RecordSample(internal::kRapporMetricsNameCoarseTiming,
-                                 std::move(sample));
-  }
-
-  // Log the eTLD+1 of sites that did not report first meaningful paint.
-  if (timing.paint_timing->first_paint &&
-      !timing.paint_timing->first_meaningful_paint) {
-    rappor::SampleDomainAndRegistryFromGURL(
-        rappor_service,
-        internal::kRapporMetricsNameFirstMeaningfulPaintNotRecorded, info.url);
-  }
 }
