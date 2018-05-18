@@ -34,7 +34,6 @@
 #include "ui/gl/gl_switches.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_client.h"
-#include "ui/views/mus/test_utils.h"
 #include "ui/views/test/platform_test_helper.h"
 #include "ui/views/test/views_test_helper_aura.h"
 #include "ui/views/views_delegate.h"
@@ -101,8 +100,11 @@ class ServiceManagerConnection {
   }
 
   std::unique_ptr<MusClient> CreateMusClient() {
-    return test::MusClientTestApi::Create(GetConnector(),
-                                          service_manager_identity_);
+    MusClient::InitParams params;
+    params.connector = GetConnector();
+    params.identity = service_manager_identity_;
+    params.bind_test_ws_interfaces = true;
+    return std::make_unique<MusClient>(params);
   }
 
  private:

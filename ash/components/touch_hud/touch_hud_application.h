@@ -33,6 +33,8 @@ class TouchHudApplication : public service_manager::Service,
   ~TouchHudApplication() override;
 
  private:
+  friend class TouchHudApplicationTestApi;
+
   // Starts showing touches on all displays.
   void Start();
 

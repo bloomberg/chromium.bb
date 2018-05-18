@@ -113,7 +113,6 @@ jumbo_static_library("test_support") {
 
   sources = [
     "../test/native_widget_factory_aura_mus.cc",
-    "test_utils.h",
     "views_mus_test_suite.cc",
     "views_mus_test_suite.h",
   ]
