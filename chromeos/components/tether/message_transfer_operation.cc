@@ -18,10 +18,10 @@ namespace tether {
 
 namespace {
 
-std::vector<cryptauth::RemoteDevice> RemoveDuplicatesFromVector(
-    const std::vector<cryptauth::RemoteDevice>& remote_devices) {
-  std::vector<cryptauth::RemoteDevice> updated_remote_devices;
-  std::set<cryptauth::RemoteDevice> remote_devices_set;
+cryptauth::RemoteDeviceRefList RemoveDuplicatesFromVector(
+    const cryptauth::RemoteDeviceRefList& remote_devices) {
+  cryptauth::RemoteDeviceRefList updated_remote_devices;
+  std::set<cryptauth::RemoteDeviceRef> remote_devices_set;
   for (const auto& remote_device : remote_devices) {
     // Only add the device to the output vector if it has not already been put
     // into the set.
@@ -43,7 +43,7 @@ const uint32_t MessageTransferOperation::kMaxGattConnectionAttemptsPerDevice =
     6;
 
 MessageTransferOperation::MessageTransferOperation(
-    const std::vector<cryptauth::RemoteDevice>& devices_to_connect,
+    const cryptauth::RemoteDeviceRefList& devices_to_connect,
     BleConnectionManager* connection_manager)
     : remote_devices_(RemoveDuplicatesFromVector(devices_to_connect)),
       connection_manager_(connection_manager),
@@ -63,7 +63,7 @@ MessageTransferOperation::~MessageTransferOperation() {
   // connections will continue to stay alive until the Tether component is shut
   // down (see crbug.com/761106). Note that a copy of |remote_devices_| is used
   // here because UnregisterDevice() will modify |remote_devices_| internally.
-  std::vector<cryptauth::RemoteDevice> remote_devices_copy = remote_devices_;
+  cryptauth::RemoteDeviceRefList remote_devices_copy = remote_devices_;
   for (const auto& remote_device : remote_devices_copy)
     UnregisterDevice(remote_device);
 }
@@ -104,7 +104,8 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
     const cryptauth::SecureChannel::Status& old_status,
     const cryptauth::SecureChannel::Status& new_status,
     BleConnectionManager::StateChangeDetail status_change_detail) {
-  cryptauth::RemoteDevice* remote_device = GetRemoteDevice(device_id);
+  base::Optional<cryptauth::RemoteDeviceRef> remote_device =
+      GetRemoteDevice(device_id);
   if (!remote_device) {
     // If the device whose status has changed does not correspond to any of the
     // devices passed to this MessageTransferOperation instance, ignore the
@@ -133,7 +134,8 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
 
 void MessageTransferOperation::OnMessageReceived(const std::string& device_id,
                                                  const std::string& payload) {
-  cryptauth::RemoteDevice* remote_device = GetRemoteDevice(device_id);
+  base::Optional<cryptauth::RemoteDeviceRef> remote_device =
+      GetRemoteDevice(device_id);
   if (!remote_device) {
     // If the device from which the message has been received does not
     // correspond to any of the devices passed to this MessageTransferOperation
@@ -149,13 +151,13 @@ void MessageTransferOperation::OnMessageReceived(const std::string& device_id,
 }
 
 void MessageTransferOperation::UnregisterDevice(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   // Note: This function may be called from the destructor. It is invalid to
   // invoke any virtual methods if |shutting_down_| is true.
 
   // Make a copy of |remote_device| before continuing, since the code below may
   // cause the original reference to be deleted.
-  cryptauth::RemoteDevice remote_device_copy = remote_device;
+  cryptauth::RemoteDeviceRef remote_device_copy = remote_device;
 
   remote_device_to_attempts_map_.erase(remote_device_copy);
   remote_devices_.erase(std::remove(remote_devices_.begin(),
@@ -172,7 +174,7 @@ void MessageTransferOperation::UnregisterDevice(
 }
 
 int MessageTransferOperation::SendMessageToDevice(
-    const cryptauth::RemoteDevice& remote_device,
+    cryptauth::RemoteDeviceRef remote_device,
     std::unique_ptr<MessageWrapper> message_wrapper) {
   return connection_manager_->SendMessage(remote_device.GetDeviceId(),
                                           message_wrapper->ToRawMessage());
@@ -183,7 +185,7 @@ uint32_t MessageTransferOperation::GetTimeoutSeconds() {
 }
 
 void MessageTransferOperation::HandleDeviceDisconnection(
-    const cryptauth::RemoteDevice& remote_device,
+    cryptauth::RemoteDeviceRef remote_device,
     BleConnectionManager::StateChangeDetail status_change_detail) {
   ConnectAttemptCounts& attempts_for_device =
       remote_device_to_attempts_map_[remote_device];
@@ -246,7 +248,7 @@ void MessageTransferOperation::HandleDeviceDisconnection(
 }
 
 void MessageTransferOperation::StartTimerForDevice(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   PA_LOG(INFO) << "Starting timer for operation with message type "
                << message_type_for_connection_ << " from device with ID "
                << remote_device.GetTruncatedDeviceIdForLogs() << ".";
@@ -260,7 +262,7 @@ void MessageTransferOperation::StartTimerForDevice(
 }
 
 void MessageTransferOperation::StopTimerForDeviceIfRunning(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   if (!remote_device_to_timer_map_[remote_device])
     return;
 
@@ -269,7 +271,7 @@ void MessageTransferOperation::StopTimerForDeviceIfRunning(
 }
 
 void MessageTransferOperation::OnTimeout(
-    const cryptauth::RemoteDevice& remote_device) {
+    cryptauth::RemoteDeviceRef remote_device) {
   PA_LOG(WARNING) << "Timed out operation for message type "
                   << message_type_for_connection_ << " from device with ID "
                   << remote_device.GetTruncatedDeviceIdForLogs() << ".";
@@ -278,14 +280,14 @@ void MessageTransferOperation::OnTimeout(
   UnregisterDevice(remote_device);
 }
 
-cryptauth::RemoteDevice* MessageTransferOperation::GetRemoteDevice(
-    const std::string& device_id) {
+base::Optional<cryptauth::RemoteDeviceRef>
+MessageTransferOperation::GetRemoteDevice(const std::string& device_id) {
   for (auto& remote_device : remote_devices_) {
     if (remote_device.GetDeviceId() == device_id)
-      return &remote_device;
+      return remote_device;
   }
 
-  return nullptr;
+  return base::nullopt;
 }
 
 void MessageTransferOperation::SetTimerFactoryForTest(

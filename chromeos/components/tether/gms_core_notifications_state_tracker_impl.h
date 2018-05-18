@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "chromeos/components/tether/gms_core_notifications_state_tracker.h"
 #include "chromeos/components/tether/host_scanner_operation.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -36,7 +36,7 @@ class GmsCoreNotificationsStateTrackerImpl
   void OnTetherAvailabilityResponse(
       const std::vector<HostScannerOperation::ScannedDeviceInfo>&
           scanned_device_list_so_far,
-      const std::vector<cryptauth::RemoteDevice>&
+      const cryptauth::RemoteDeviceRefList&
           gms_core_notifications_disabled_devices,
       bool is_final_scan_result) override;
 

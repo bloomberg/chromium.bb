@@ -33,7 +33,7 @@ class OperationDeletedHandler {
 
 class FakeKeepAliveOperation : public KeepAliveOperation {
  public:
-  FakeKeepAliveOperation(const cryptauth::RemoteDevice& device_to_connect,
+  FakeKeepAliveOperation(cryptauth::RemoteDeviceRef device_to_connect,
                          BleConnectionManager* connection_manager,
                          OperationDeletedHandler* handler)
       : KeepAliveOperation(device_to_connect, connection_manager),
@@ -47,11 +47,11 @@ class FakeKeepAliveOperation : public KeepAliveOperation {
     OnOperationFinished();
   }
 
-  cryptauth::RemoteDevice remote_device() { return remote_device_; }
+  cryptauth::RemoteDeviceRef remote_device() { return remote_device_; }
 
  private:
   OperationDeletedHandler* handler_;
-  const cryptauth::RemoteDevice remote_device_;
+  const cryptauth::RemoteDeviceRef remote_device_;
 };
 
 class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
@@ -71,7 +71,7 @@ class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
 
  protected:
   std::unique_ptr<KeepAliveOperation> BuildInstance(
-      const cryptauth::RemoteDevice& device_to_connect,
+      cryptauth::RemoteDeviceRef device_to_connect,
       BleConnectionManager* connection_manager) override {
     num_created_++;
     last_created_ =
@@ -90,7 +90,7 @@ class FakeKeepAliveOperationFactory final : public KeepAliveOperation::Factory,
 class KeepAliveSchedulerTest : public testing::Test {
  protected:
   KeepAliveSchedulerTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(2)) {}
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2)) {}
 
   void SetUp() override {
     fake_active_host_ = std::make_unique<FakeActiveHost>();
@@ -131,7 +131,7 @@ class KeepAliveSchedulerTest : public testing::Test {
             cell_provider, battery_percentage, connection_strength)));
   }
 
-  void VerifyCacheUpdated(const cryptauth::RemoteDevice& remote_device,
+  void VerifyCacheUpdated(cryptauth::RemoteDeviceRef remote_device,
                           const std::string& carrier,
                           int battery_percentage,
                           int signal_strength) {
@@ -144,7 +144,7 @@ class KeepAliveSchedulerTest : public testing::Test {
     EXPECT_EQ(signal_strength, entry->signal_strength);
   }
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;

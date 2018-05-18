@@ -59,7 +59,7 @@ class CryptAuthRemoteDeviceLoaderTest : public testing::Test {
   ~CryptAuthRemoteDeviceLoaderTest() {}
 
   void OnRemoteDevicesLoaded(
-      const std::vector<cryptauth::RemoteDevice>& remote_devices) {
+      const cryptauth::RemoteDeviceList& remote_devices) {
     remote_devices_ = remote_devices;
     LoadCompleted();
   }
@@ -76,7 +76,7 @@ class CryptAuthRemoteDeviceLoaderTest : public testing::Test {
   std::string user_private_key_;
 
   // Stores the result of the RemoteDeviceLoader.
-  std::vector<cryptauth::RemoteDevice> remote_devices_;
+  cryptauth::RemoteDeviceList remote_devices_;
 
   DISALLOW_COPY_AND_ASSIGN(CryptAuthRemoteDeviceLoaderTest);
 };
@@ -86,7 +86,6 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, LoadZeroDevices) {
   RemoteDeviceLoader loader(device_infos, user_private_key_, kUserId,
                             std::move(secure_message_delegate_));
 
-  std::vector<cryptauth::RemoteDevice> result;
   EXPECT_CALL(*this, LoadCompleted());
   loader.Load(
       false, base::Bind(&CryptAuthRemoteDeviceLoaderTest::OnRemoteDevicesLoaded,
@@ -101,7 +100,6 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, LoadOneDeviceWithBeaconSeeds) {
   RemoteDeviceLoader loader(device_infos, user_private_key_, kUserId,
                             std::move(secure_message_delegate_));
 
-  std::vector<cryptauth::RemoteDevice> result;
   EXPECT_CALL(*this, LoadCompleted());
   loader.Load(
       true, base::Bind(&CryptAuthRemoteDeviceLoaderTest::OnRemoteDevicesLoaded,
@@ -163,7 +161,6 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, BooleanAttributes) {
   RemoteDeviceLoader loader(device_infos, user_private_key_, kUserId,
                             std::move(secure_message_delegate_));
 
-  std::vector<cryptauth::RemoteDevice> result;
   EXPECT_CALL(*this, LoadCompleted());
   loader.Load(
       false, base::Bind(&CryptAuthRemoteDeviceLoaderTest::OnRemoteDevicesLoaded,
@@ -192,7 +189,6 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, LastUpdateTimeMillis) {
   RemoteDeviceLoader loader(device_infos, user_private_key_, kUserId,
                             std::move(secure_message_delegate_));
 
-  std::vector<cryptauth::RemoteDevice> result;
   EXPECT_CALL(*this, LoadCompleted());
   loader.Load(
       false, base::Bind(&CryptAuthRemoteDeviceLoaderTest::OnRemoteDevicesLoaded,
@@ -222,7 +218,6 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, SoftwareFeatures) {
   RemoteDeviceLoader loader(device_infos, user_private_key_, kUserId,
                             std::move(secure_message_delegate_));
 
-  std::vector<cryptauth::RemoteDevice> result;
   EXPECT_CALL(*this, LoadCompleted());
   loader.Load(
       false, base::Bind(&CryptAuthRemoteDeviceLoaderTest::OnRemoteDevicesLoaded,
@@ -231,11 +226,11 @@ TEST_F(CryptAuthRemoteDeviceLoaderTest, SoftwareFeatures) {
   EXPECT_EQ(1u, remote_devices_.size());
 
   EXPECT_EQ(SoftwareFeatureState::kSupported,
-            remote_devices_[0].GetSoftwareFeatureState(BETTER_TOGETHER_CLIENT));
+            remote_devices_[0].software_features[BETTER_TOGETHER_CLIENT]);
   EXPECT_EQ(SoftwareFeatureState::kEnabled,
-            remote_devices_[0].GetSoftwareFeatureState(BETTER_TOGETHER_HOST));
+            remote_devices_[0].software_features[BETTER_TOGETHER_HOST]);
   EXPECT_EQ(SoftwareFeatureState::kNotSupported,
-            remote_devices_[0].GetSoftwareFeatureState(MAGIC_TETHER_HOST));
+            remote_devices_[0].software_features[MAGIC_TETHER_HOST]);
 }
 
 }  // namespace cryptauth

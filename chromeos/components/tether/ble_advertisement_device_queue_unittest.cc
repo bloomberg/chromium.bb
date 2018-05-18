@@ -22,7 +22,7 @@ typedef BleAdvertisementDeviceQueue::PrioritizedDeviceId PrioritizedDeviceId;
 class BleAdvertisementDeviceQueueTest : public testing::Test {
  protected:
   BleAdvertisementDeviceQueueTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(5)) {}
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(5)) {}
 
   void SetUp() override {
     device_queue_ = std::make_unique<BleAdvertisementDeviceQueue>();
@@ -30,7 +30,7 @@ class BleAdvertisementDeviceQueueTest : public testing::Test {
 
   std::unique_ptr<BleAdvertisementDeviceQueue> device_queue_;
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(BleAdvertisementDeviceQueueTest);

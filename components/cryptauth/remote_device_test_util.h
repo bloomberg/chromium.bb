@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
 
@@ -15,10 +15,30 @@ namespace cryptauth {
 extern const char kTestRemoteDeviceName[];
 extern const char kTestRemoteDevicePublicKey[];
 
-// Returns a BLE RemoteDevice used for tests.
+class RemoteDeviceRefBuilder {
+ public:
+  RemoteDeviceRefBuilder();
+  ~RemoteDeviceRefBuilder();
+  RemoteDeviceRefBuilder& SetUserId(const std::string& user_id);
+  RemoteDeviceRefBuilder& SetName(const std::string& name);
+  RemoteDeviceRefBuilder& SetPublicKey(const std::string& public_key);
+  RemoteDeviceRefBuilder& SetSupportsMobileHotspot(
+      bool supports_mobile_hotspot);
+  RemoteDeviceRefBuilder& SetLastUpdateTimeMillis(
+      int64_t last_update_time_millis);
+  RemoteDeviceRef Build();
+
+ private:
+  std::shared_ptr<RemoteDevice> remote_device_;
+};
+
 RemoteDevice CreateRemoteDeviceForTest();
 
-std::vector<RemoteDevice> GenerateTestRemoteDevices(size_t num_to_create);
+RemoteDeviceRef CreateRemoteDeviceRefForTest();
+
+RemoteDeviceList CreateRemoteDeviceListForTest(size_t num_to_create);
+
+RemoteDeviceRefList CreateRemoteDeviceRefListForTest(size_t num_to_create);
 
 }  // namespace cryptauth
 

@@ -16,7 +16,7 @@
 #include "components/cryptauth/authenticator.h"
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_finder.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
 class SecureContext;
@@ -32,13 +32,12 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
  public:
   // Creates the life cycle for controlling the given |remote_device|.
   // |proximity_auth_client| is not owned.
-  explicit RemoteDeviceLifeCycleImpl(
-      const cryptauth::RemoteDevice& remote_device);
+  explicit RemoteDeviceLifeCycleImpl(cryptauth::RemoteDeviceRef remote_device);
   ~RemoteDeviceLifeCycleImpl() override;
 
   // RemoteDeviceLifeCycle:
   void Start() override;
-  cryptauth::RemoteDevice GetRemoteDevice() const override;
+  cryptauth::RemoteDeviceRef GetRemoteDevice() const override;
   cryptauth::Connection* GetConnection() const override;
   RemoteDeviceLifeCycle::State GetState() const override;
   Messenger* GetMessenger() override;
@@ -78,7 +77,7 @@ class RemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycle,
   void OnDisconnected() override;
 
   // The remote device being controlled.
-  const cryptauth::RemoteDevice remote_device_;
+  const cryptauth::RemoteDeviceRef remote_device_;
 
   // The current state in the life cycle.
   RemoteDeviceLifeCycle::State state_;

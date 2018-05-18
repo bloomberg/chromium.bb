@@ -28,7 +28,7 @@ bool ContainsDeviceWithId(
 
 bool ContainsDeviceWithId(
     const std::string& device_id,
-    const std::vector<cryptauth::RemoteDevice>& remote_device_list) {
+    const cryptauth::RemoteDeviceRefList& remote_device_list) {
   for (const auto& device_info : remote_device_list) {
     if (device_info.GetDeviceId() == device_id)
       return true;
@@ -61,14 +61,14 @@ std::vector<std::string> GmsCoreNotificationsStateTrackerImpl::
 void GmsCoreNotificationsStateTrackerImpl::OnTetherAvailabilityResponse(
     const std::vector<HostScannerOperation::ScannedDeviceInfo>&
         scanned_device_list_so_far,
-    const std::vector<cryptauth::RemoteDevice>&
+    const cryptauth::RemoteDeviceRefList&
         gms_core_notifications_disabled_devices,
     bool is_final_scan_result) {
   size_t old_size = device_id_to_name_map_.size();
 
   // Insert all names gathered by this scan to |device_id_to_name_map_|.
   for (const auto& remote_device : gms_core_notifications_disabled_devices)
-    device_id_to_name_map_[remote_device.GetDeviceId()] = remote_device.name;
+    device_id_to_name_map_[remote_device.GetDeviceId()] = remote_device.name();
 
   bool names_changed = old_size < device_id_to_name_map_.size();
 
@@ -109,7 +109,7 @@ void GmsCoreNotificationsStateTrackerImpl::SendDeviceNamesChangeEvent() {
   if (!device_id_to_name_map_.empty()) {
     for (const auto& map_entry : device_id_to_name_map_) {
       ss << "{name: \"" << map_entry.second << "\", id: \""
-         << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(map_entry.first)
+         << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(map_entry.first)
          << "\"},";
     }
     // Move backward one character so that the final trailing comma will be

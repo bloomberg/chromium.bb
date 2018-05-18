@@ -25,7 +25,7 @@ namespace secure_channel {
 class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
  protected:
   SecureChannelAuthenticatedChannelImplTest()
-      : test_device_(cryptauth::CreateRemoteDeviceForTest()) {}
+      : test_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
 
   ~SecureChannelAuthenticatedChannelImplTest() override = default;
 
@@ -100,7 +100,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDevice test_device_;
+  const cryptauth::RemoteDeviceRef test_device_;
 
   int num_times_send_message_called_ = 0;
 

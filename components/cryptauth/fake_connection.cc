@@ -11,11 +11,11 @@
 
 namespace cryptauth {
 
-FakeConnection::FakeConnection(const RemoteDevice& remote_device)
+FakeConnection::FakeConnection(RemoteDeviceRef remote_device)
     : FakeConnection(remote_device, /* should_auto_connect */ true) {}
 
-FakeConnection::FakeConnection(
-    const RemoteDevice& remote_device, bool should_auto_connect)
+FakeConnection::FakeConnection(RemoteDeviceRef remote_device,
+                               bool should_auto_connect)
     : Connection(remote_device), should_auto_connect_(should_auto_connect) {
   if (should_auto_connect_) {
     Connect();

@@ -61,7 +61,7 @@ class StubSecureContext : public cryptauth::SecureContext {
 
 class FakeConnectionFinder : public cryptauth::ConnectionFinder {
  public:
-  explicit FakeConnectionFinder(const cryptauth::RemoteDevice& remote_device)
+  explicit FakeConnectionFinder(cryptauth::RemoteDeviceRef remote_device)
       : remote_device_(remote_device), connection_(nullptr) {}
   ~FakeConnectionFinder() override {}
 
@@ -83,7 +83,7 @@ class FakeConnectionFinder : public cryptauth::ConnectionFinder {
     connection_callback_ = connection_callback;
   }
 
-  const cryptauth::RemoteDevice remote_device_;
+  const cryptauth::RemoteDeviceRef remote_device_;
 
   cryptauth::FakeConnection* connection_;
 
@@ -101,7 +101,7 @@ class FakeAuthenticator : public cryptauth::Authenticator {
     // complete in order not to outlive the underlying connection.
     EXPECT_FALSE(callback_.is_null());
     EXPECT_EQ(cryptauth::kTestRemoteDevicePublicKey,
-              connection_->remote_device().public_key);
+              connection_->remote_device().public_key());
   }
 
   void OnAuthenticationResult(cryptauth::Authenticator::Result result) {
@@ -129,8 +129,7 @@ class FakeAuthenticator : public cryptauth::Authenticator {
 // Subclass of RemoteDeviceLifeCycleImpl to make it testable.
 class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
  public:
-  TestableRemoteDeviceLifeCycleImpl(
-      const cryptauth::RemoteDevice& remote_device)
+  TestableRemoteDeviceLifeCycleImpl(cryptauth::RemoteDeviceRef remote_device)
       : RemoteDeviceLifeCycleImpl(remote_device),
         remote_device_(remote_device) {}
 
@@ -156,7 +155,7 @@ class TestableRemoteDeviceLifeCycleImpl : public RemoteDeviceLifeCycleImpl {
     return std::move(scoped_authenticator);
   }
 
-  const cryptauth::RemoteDevice remote_device_;
+  const cryptauth::RemoteDeviceRef remote_device_;
   FakeConnectionFinder* connection_finder_;
   FakeAuthenticator* authenticator_;
 
@@ -170,7 +169,7 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
       public RemoteDeviceLifeCycle::Observer {
  protected:
   ProximityAuthRemoteDeviceLifeCycleImplTest()
-      : life_cycle_(cryptauth::CreateRemoteDeviceForTest()),
+      : life_cycle_(cryptauth::CreateRemoteDeviceRefForTest()),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {}
 
@@ -243,14 +242,14 @@ class ProximityAuthRemoteDeviceLifeCycleImplTest
 };
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, GetRemoteDevice) {
-  cryptauth::RemoteDevice expected_remote_device =
-      cryptauth::CreateRemoteDeviceForTest();
-  cryptauth::RemoteDevice remote_device = life_cycle_.GetRemoteDevice();
-  EXPECT_EQ(expected_remote_device.user_id, remote_device.user_id);
-  EXPECT_EQ(expected_remote_device.name, remote_device.name);
-  EXPECT_EQ(expected_remote_device.public_key, remote_device.public_key);
-  EXPECT_EQ(expected_remote_device.persistent_symmetric_key,
-            remote_device.persistent_symmetric_key);
+  cryptauth::RemoteDeviceRef expected_remote_device =
+      cryptauth::CreateRemoteDeviceRefForTest();
+  cryptauth::RemoteDeviceRef remote_device = life_cycle_.GetRemoteDevice();
+  EXPECT_EQ(expected_remote_device.user_id(), remote_device.user_id());
+  EXPECT_EQ(expected_remote_device.name(), remote_device.name());
+  EXPECT_EQ(expected_remote_device.public_key(), remote_device.public_key());
+  EXPECT_EQ(expected_remote_device.persistent_symmetric_key(),
+            remote_device.persistent_symmetric_key());
 }
 
 TEST_F(ProximityAuthRemoteDeviceLifeCycleImplTest, AuthenticateAndDisconnect) {

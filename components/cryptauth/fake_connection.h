@@ -15,8 +15,8 @@ class ConnectionObserver;
 // A fake implementation of Connection to use in tests.
 class FakeConnection : public Connection {
  public:
-  FakeConnection(const RemoteDevice& remote_device);
-  FakeConnection(const RemoteDevice& remote_device, bool should_auto_connect);
+  FakeConnection(RemoteDeviceRef remote_device);
+  FakeConnection(RemoteDeviceRef remote_device, bool should_auto_connect);
   ~FakeConnection() override;
 
   // Connection:

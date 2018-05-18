@@ -9,8 +9,8 @@
 
 #include "base/macros.h"
 #include "chromeos/components/tether/tether_host_fetcher.h"
-#include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_provider.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
 class RemoteDeviceProvider;
@@ -60,7 +60,7 @@ class TetherHostFetcherImpl : public TetherHostFetcher,
 
   cryptauth::RemoteDeviceProvider* remote_device_provider_;
 
-  cryptauth::RemoteDeviceList current_remote_device_list_;
+  cryptauth::RemoteDeviceRefList current_remote_device_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TetherHostFetcherImpl);
 };

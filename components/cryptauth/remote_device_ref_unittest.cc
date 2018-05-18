@@ -66,8 +66,9 @@ TEST_F(RemoteDeviceRefTest, TestFields) {
                 cryptauth::SoftwareFeature::BETTER_TOGETHER_HOST));
 
   EXPECT_EQ(remote_device_->GetDeviceId(), remote_device_ref.GetDeviceId());
-  EXPECT_EQ(remote_device_->GetTruncatedDeviceIdForLogs(),
-            remote_device_ref.GetTruncatedDeviceIdForLogs());
+  EXPECT_EQ(
+      RemoteDeviceRef::TruncateDeviceIdForLogs(remote_device_->GetDeviceId()),
+      remote_device_ref.GetTruncatedDeviceIdForLogs());
 }
 
 TEST_F(RemoteDeviceRefTest, TestCopyAndAssign) {

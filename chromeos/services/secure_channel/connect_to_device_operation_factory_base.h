@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation_factory.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -27,7 +27,7 @@ class ConnectToDeviceOperationFactoryBase
 
  protected:
   ConnectToDeviceOperationFactoryBase(
-      const cryptauth::RemoteDevice& device_to_connect_to)
+      const cryptauth::RemoteDeviceRef& device_to_connect_to)
       : device_to_connect_to_(device_to_connect_to), weak_ptr_factory_(this) {}
 
   // Derived types should overload this function, passing the provided
@@ -39,7 +39,7 @@ class ConnectToDeviceOperationFactoryBase
           FailureDetailType>::ConnectionSuccessCallback success_callback,
       typename ConnectToDeviceOperation<
           FailureDetailType>::ConnectionFailedCallback failure_callback,
-      const cryptauth::RemoteDevice& device_to_connect_to,
+      const cryptauth::RemoteDeviceRef& device_to_connect_to,
       base::OnceClosure destructor_callback) = 0;
 
  private:
@@ -68,7 +68,7 @@ class ConnectToDeviceOperationFactoryBase
 
   void OnPreviousOperationDeleted() { is_last_operation_active_ = false; }
 
-  const cryptauth::RemoteDevice device_to_connect_to_;
+  const cryptauth::RemoteDeviceRef device_to_connect_to_;
   bool is_last_operation_active_ = false;
 
   base::WeakPtrFactory<ConnectToDeviceOperationFactoryBase> weak_ptr_factory_;

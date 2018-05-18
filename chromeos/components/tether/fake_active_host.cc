@@ -8,7 +8,9 @@
 
 #include "base/base64.h"
 #include "base/bind.h"
-#include "components/cryptauth/remote_device.h"
+#include "base/optional.h"
+#include "components/cryptauth/remote_device_ref.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -45,20 +47,18 @@ void FakeActiveHost::SetActiveHostConnected(
 
 void FakeActiveHost::GetActiveHost(
     const ActiveHost::ActiveHostCallback& active_host_callback) {
-  std::unique_ptr<cryptauth::RemoteDevice> remote_device;
-  if (GetActiveHostStatus() == ActiveHost::ActiveHostStatus::DISCONNECTED) {
-    remote_device = nullptr;
-  } else {
+  base::Optional<cryptauth::RemoteDeviceRef> remote_device;
+  if (GetActiveHostStatus() != ActiveHost::ActiveHostStatus::DISCONNECTED) {
     // Convert the active host ID to a public key.
     std::string public_key;
     ASSERT_TRUE(base::Base64Decode(GetActiveHostDeviceId(), &public_key));
 
     // Create a new RemoteDevice and set its public key.
-    remote_device = std::make_unique<cryptauth::RemoteDevice>();
-    remote_device->public_key = public_key;
+    remote_device = base::make_optional<cryptauth::RemoteDeviceRef>(
+        cryptauth::RemoteDeviceRefBuilder().SetPublicKey(public_key).Build());
   }
 
-  active_host_callback.Run(GetActiveHostStatus(), std::move(remote_device),
+  active_host_callback.Run(GetActiveHostStatus(), remote_device,
                            GetTetherNetworkGuid(), GetWifiNetworkGuid());
 }
 

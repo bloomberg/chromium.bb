@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "components/cryptauth/remote_device.h"
 #include "components/cryptauth/remote_device_provider.h"
 
 namespace chromeos {
@@ -69,11 +70,13 @@ void TetherHostFetcherImpl::OnSyncDeviceListChanged() {
 }
 
 void TetherHostFetcherImpl::CacheCurrentTetherHosts() {
-  cryptauth::RemoteDeviceList updated_list;
+  cryptauth::RemoteDeviceRefList updated_list;
   for (const auto& remote_device :
        remote_device_provider_->GetSyncedDevices()) {
-    if (remote_device.supports_mobile_hotspot)
-      updated_list.push_back(remote_device);
+    if (remote_device.supports_mobile_hotspot) {
+      updated_list.push_back(cryptauth::RemoteDeviceRef(
+          std::make_shared<cryptauth::RemoteDevice>(remote_device)));
+    }
   }
 
   if (updated_list == current_remote_device_list_)

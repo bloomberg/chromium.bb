@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/observer_list.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 class PrefService;
 
@@ -49,7 +49,7 @@ class TetherHostResponseRecorder {
   // time that a response is received from a potential host, even if a
   // connection is not started.
   virtual void RecordSuccessfulTetherAvailabilityResponse(
-      const cryptauth::RemoteDevice& remote_device);
+      cryptauth::RemoteDeviceRef remote_device);
 
   // Gets device IDs corresponding to hosts which have sent
   // TetherAvailabilityResponses with a response code indicating that tethering
@@ -61,7 +61,7 @@ class TetherHostResponseRecorder {
   // Records a ConnectTetheringResponse. This function should be called each
   // time that a response is received from a host.
   virtual void RecordSuccessfulConnectTetheringResponse(
-      const cryptauth::RemoteDevice& remote_device);
+      cryptauth::RemoteDeviceRef remote_device);
 
   // Gets device IDs corresponding to hosts which have sent
   // ConnectTetheringResponses with a response code indicating that they have

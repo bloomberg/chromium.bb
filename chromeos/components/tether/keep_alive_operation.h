@@ -22,14 +22,14 @@ class KeepAliveOperation : public MessageTransferOperation {
   class Factory {
    public:
     static std::unique_ptr<KeepAliveOperation> NewInstance(
-        const cryptauth::RemoteDevice& device_to_connect,
+        cryptauth::RemoteDeviceRef device_to_connect,
         BleConnectionManager* connection_manager);
 
     static void SetInstanceForTesting(Factory* factory);
 
    protected:
     virtual std::unique_ptr<KeepAliveOperation> BuildInstance(
-        const cryptauth::RemoteDevice& device_to_connect,
+        cryptauth::RemoteDeviceRef device_to_connect,
         BleConnectionManager* connection_manager);
 
    private:
@@ -41,7 +41,7 @@ class KeepAliveOperation : public MessageTransferOperation {
     // |device_status| points to a valid DeviceStatus if the operation completed
     // successfully and is null if the operation was not successful.
     virtual void OnOperationFinished(
-        const cryptauth::RemoteDevice& remote_device,
+        cryptauth::RemoteDeviceRef remote_device,
         std::unique_ptr<DeviceStatus> device_status) = 0;
   };
 
@@ -51,14 +51,13 @@ class KeepAliveOperation : public MessageTransferOperation {
   void RemoveObserver(Observer* observer);
 
  protected:
-  KeepAliveOperation(const cryptauth::RemoteDevice& device_to_connect,
+  KeepAliveOperation(cryptauth::RemoteDeviceRef device_to_connect,
                      BleConnectionManager* connection_manager);
 
   // MessageTransferOperation:
-  void OnDeviceAuthenticated(
-      const cryptauth::RemoteDevice& remote_device) override;
+  void OnDeviceAuthenticated(cryptauth::RemoteDeviceRef remote_device) override;
   void OnMessageReceived(std::unique_ptr<MessageWrapper> message_wrapper,
-                         const cryptauth::RemoteDevice& remote_device) override;
+                         cryptauth::RemoteDeviceRef remote_device) override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
 
@@ -69,7 +68,7 @@ class KeepAliveOperation : public MessageTransferOperation {
 
   void SetClockForTest(base::Clock* clock_for_test);
 
-  cryptauth::RemoteDevice remote_device_;
+  cryptauth::RemoteDeviceRef remote_device_;
   base::Clock* clock_;
   base::ObserverList<Observer> observer_list_;
 

@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chromeos/components/tether/connect_tethering_operation.h"
 #include "chromeos/components/tether/host_connection_metrics_logger.h"
 #include "chromeos/components/tether/tether_connector.h"
@@ -62,13 +63,13 @@ class TetherConnectorImpl : public TetherConnector,
 
   // ConnectTetheringOperation::Observer:
   void OnConnectTetheringRequestSent(
-      const cryptauth::RemoteDevice& remote_device) override;
+      cryptauth::RemoteDeviceRef remote_device) override;
   void OnSuccessfulConnectTetheringResponse(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       const std::string& ssid,
       const std::string& password) override;
   void OnConnectTetheringFailure(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       ConnectTetheringOperation::HostResponseErrorCode error_code) override;
 
  private:
@@ -82,7 +83,7 @@ class TetherConnectorImpl : public TetherConnector,
 
   void OnTetherHostToConnectFetched(
       const std::string& device_id,
-      std::unique_ptr<cryptauth::RemoteDevice> tether_host_to_connect);
+      base::Optional<cryptauth::RemoteDeviceRef> tether_host_to_connect);
   void OnWifiConnection(const std::string& device_id,
                         const std::string& wifi_network_guid);
   HostConnectionMetricsLogger::ConnectionToHostResult

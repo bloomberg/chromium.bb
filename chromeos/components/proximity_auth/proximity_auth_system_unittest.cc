@@ -15,13 +15,14 @@
 #include "chromeos/components/proximity_auth/proximity_auth_profile_pref_manager.h"
 #include "chromeos/components/proximity_auth/switches.h"
 #include "chromeos/components/proximity_auth/unlock_manager.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "components/cryptauth/software_feature_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using cryptauth::RemoteDevice;
-using cryptauth::RemoteDeviceList;
+using cryptauth::RemoteDeviceRefList;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::InSequence;
@@ -42,24 +43,23 @@ const int64_t kLastPasswordEntryTimestampMs = 123456L;
 const int64_t kTimestampBeforeReauthMs = 123457L;
 const int64_t kTimestampAfterReauthMs = 123457890123L;
 
-void CompareRemoteDeviceLists(const RemoteDeviceList& list1,
-                              const RemoteDeviceList& list2) {
+void CompareRemoteDeviceRefLists(const RemoteDeviceRefList& list1,
+                                 const RemoteDeviceRefList& list2) {
   ASSERT_EQ(list1.size(), list2.size());
   for (size_t i = 0; i < list1.size(); ++i) {
-    RemoteDevice device1 = list1[i];
-    RemoteDevice device2 = list2[i];
-    EXPECT_EQ(device1.public_key, device2.public_key);
+    cryptauth::RemoteDeviceRef device1 = list1[i];
+    cryptauth::RemoteDeviceRef device2 = list2[i];
+    EXPECT_EQ(device1.public_key(), device2.public_key());
   }
 }
 
-// Creates a RemoteDevice object for |user_id| with |name|.
-RemoteDevice CreateRemoteDevice(const std::string& user_id,
-                                const std::string& name) {
-  return RemoteDevice(
-      user_id, name + "_pk", name, name + "_psk", true /* unlock_key */,
-      true /* supports_mobile_hotspot */, 0 /* last_update_time_millis */,
-      std::map<cryptauth::SoftwareFeature,
-               cryptauth::SoftwareFeatureState>() /* software_features */);
+// Creates a RemoteDeviceRef object for |user_id| with |name|.
+cryptauth::RemoteDeviceRef CreateRemoteDevice(const std::string& user_id,
+                                              const std::string& name) {
+  return cryptauth::RemoteDeviceRefBuilder()
+      .SetUserId(user_id)
+      .SetName(name)
+      .Build();
 }
 
 // Mock implementation of UnlockManager.
@@ -107,7 +107,7 @@ class TestableProximityAuthSystem : public ProximityAuthSystem {
 
  private:
   std::unique_ptr<RemoteDeviceLifeCycle> CreateRemoteDeviceLifeCycle(
-      const RemoteDevice& remote_device) override {
+      cryptauth::RemoteDeviceRef remote_device) override {
     std::unique_ptr<FakeRemoteDeviceLifeCycle> life_cycle(
         new FakeRemoteDeviceLifeCycle(remote_device));
     life_cycle_ = life_cycle.get();
@@ -192,8 +192,8 @@ class ProximityAuthSystemTest : public testing::Test {
   base::SimpleTestClock clock_;
   std::unique_ptr<MockProximityAuthPrefManager> pref_manager_;
 
-  RemoteDeviceList user1_remote_devices_;
-  RemoteDeviceList user2_remote_devices_;
+  RemoteDeviceRefList user1_remote_devices_;
+  RemoteDeviceRefList user2_remote_devices_;
 
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
@@ -214,16 +214,16 @@ TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_NotStarted) {
   proximity_auth_system_->SetRemoteDevicesForUser(account2,
                                                   user2_remote_devices_);
 
-  CompareRemoteDeviceLists(
+  CompareRemoteDeviceRefLists(
       user1_remote_devices_,
       proximity_auth_system_->GetRemoteDevicesForUser(account1));
 
-  CompareRemoteDeviceLists(
+  CompareRemoteDeviceRefLists(
       user2_remote_devices_,
       proximity_auth_system_->GetRemoteDevicesForUser(account2));
 
-  CompareRemoteDeviceLists(
-      RemoteDeviceList(),
+  CompareRemoteDeviceRefLists(
+      RemoteDeviceRefList(),
       proximity_auth_system_->GetRemoteDevicesForUser(
           AccountId::FromUserEmail("non_existent_user@google.com")));
 }
@@ -238,11 +238,11 @@ TEST_F(ProximityAuthSystemTest, SetRemoteDevicesForUser_Started) {
   proximity_auth_system_->SetRemoteDevicesForUser(account2,
                                                   user2_remote_devices_);
 
-  CompareRemoteDeviceLists(
+  CompareRemoteDeviceRefLists(
       user1_remote_devices_,
       proximity_auth_system_->GetRemoteDevicesForUser(account1));
 
-  CompareRemoteDeviceLists(
+  CompareRemoteDeviceRefLists(
       user2_remote_devices_,
       proximity_auth_system_->GetRemoteDevicesForUser(account2));
 }
@@ -260,7 +260,7 @@ TEST_F(ProximityAuthSystemTest, FocusRegisteredUser) {
   EXPECT_EQ(life_cycle(), unlock_manager_life_cycle);
   EXPECT_TRUE(life_cycle());
   EXPECT_TRUE(life_cycle()->started());
-  EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_id);
+  EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_id());
 
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
       .Times(AtLeast(1));
@@ -284,7 +284,7 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredUsers) {
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
       .WillOnce(SaveArg<0>(&life_cycle1));
   FocusUser(kUser1);
-  EXPECT_EQ(kUser1, life_cycle1->GetRemoteDevice().user_id);
+  EXPECT_EQ(kUser1, life_cycle1->GetRemoteDevice().user_id());
 
   RemoteDeviceLifeCycle* life_cycle2 = nullptr;
   {
@@ -295,7 +295,7 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredUsers) {
         .WillOnce(SaveArg<0>(&life_cycle2));
   }
   FocusUser(kUser2);
-  EXPECT_EQ(kUser2, life_cycle2->GetRemoteDevice().user_id);
+  EXPECT_EQ(kUser2, life_cycle2->GetRemoteDevice().user_id());
 
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
       .Times(AtLeast(1));
@@ -318,7 +318,7 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredAndUnregisteredUsers) {
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
       .WillOnce(SaveArg<0>(&life_cycle));
   FocusUser(kUser1);
-  EXPECT_EQ(kUser1, life_cycle->GetRemoteDevice().user_id);
+  EXPECT_EQ(kUser1, life_cycle->GetRemoteDevice().user_id());
 
   // User 2 has not been registered yet, so focusing them should not create a
   // new life cycle.
@@ -332,7 +332,7 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_RegisteredAndUnregisteredUsers) {
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
       .WillOnce(SaveArg<0>(&life_cycle));
   FocusUser(kUser1);
-  EXPECT_EQ(kUser1, life_cycle->GetRemoteDevice().user_id);
+  EXPECT_EQ(kUser1, life_cycle->GetRemoteDevice().user_id());
 
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
       .Times(AtLeast(1));
@@ -343,7 +343,7 @@ TEST_F(ProximityAuthSystemTest, ToggleFocus_SameUserRefocused) {
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(_))
       .WillOnce(SaveArg<0>(&life_cycle));
   FocusUser(kUser1);
-  EXPECT_EQ(kUser1, life_cycle->GetRemoteDevice().user_id);
+  EXPECT_EQ(kUser1, life_cycle->GetRemoteDevice().user_id());
 
   // Focusing the user again should be idempotent. The screenlock UI may call
   // focus on the same user multiple times.
@@ -375,7 +375,7 @@ TEST_F(ProximityAuthSystemTest, StopSystem_RegisteredUserFocused) {
 
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(NotNull()));
   proximity_auth_system_->Start();
-  EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_id);
+  EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_id());
 }
 
 TEST_F(ProximityAuthSystemTest, OnLifeCycleStateChanged) {
@@ -421,7 +421,7 @@ TEST_F(ProximityAuthSystemTest, Suspend_RegisteredUserFocused) {
     SimulateSuspend();
   }
 
-  EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_id);
+  EXPECT_EQ(kUser1, life_cycle()->GetRemoteDevice().user_id());
 
   EXPECT_CALL(*unlock_manager_, SetRemoteDeviceLifeCycle(nullptr))
       .Times(AtLeast(1));

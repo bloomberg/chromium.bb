@@ -56,7 +56,7 @@ class BluetoothLowEnergyWeaveClientConnection
   class Factory {
    public:
     static std::unique_ptr<Connection> NewInstance(
-        const RemoteDevice& remote_device,
+        RemoteDeviceRef remote_device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const device::BluetoothUUID remote_service_uuid,
         device::BluetoothDevice* bluetooth_device,
@@ -65,7 +65,7 @@ class BluetoothLowEnergyWeaveClientConnection
 
    protected:
     virtual std::unique_ptr<Connection> BuildInstance(
-        const RemoteDevice& remote_device,
+        RemoteDeviceRef remote_device,
         scoped_refptr<device::BluetoothAdapter> adapter,
         const device::BluetoothUUID remote_service_uuid,
         device::BluetoothDevice* bluetooth_device,
@@ -91,7 +91,7 @@ class BluetoothLowEnergyWeaveClientConnection
   // Constructs the Connection object; a subsequent call to Connect() is
   // necessary to initiate the BLE connection.
   BluetoothLowEnergyWeaveClientConnection(
-      const RemoteDevice& remote_device,
+      RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
       device::BluetoothDevice* bluetooth_device,

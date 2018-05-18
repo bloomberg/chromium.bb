@@ -75,20 +75,22 @@ bool DisconnectTetheringRequestSenderImpl::HasPendingRequests() {
 
 void DisconnectTetheringRequestSenderImpl::OnTetherHostFetched(
     const std::string& device_id,
-    std::unique_ptr<cryptauth::RemoteDevice> tether_host) {
+    base::Optional<cryptauth::RemoteDeviceRef> tether_host) {
   num_pending_host_fetches_--;
   DCHECK(num_pending_host_fetches_ >= 0);
 
   if (!tether_host) {
     PA_LOG(ERROR) << "Could not fetch device with ID "
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         device_id)
                   << ". Unable to send DisconnectTetheringRequest.";
     return;
   }
 
   PA_LOG(INFO) << "Attempting to send DisconnectTetheringRequest to device "
                << "with ID "
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id);
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                      device_id);
 
   std::unique_ptr<DisconnectTetheringOperation> disconnect_tethering_operation =
       DisconnectTetheringOperation::Factory::NewInstance(
@@ -109,11 +111,12 @@ void DisconnectTetheringRequestSenderImpl::OnOperationFinished(
   if (success) {
     PA_LOG(INFO) << "Successfully sent DisconnectTetheringRequest to device "
                  << "with ID "
-                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id);
+                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                        device_id);
   } else {
     PA_LOG(ERROR) << "Failed to send DisconnectTetheringRequest to device "
                   << "with ID "
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                          device_id);
   }
 
@@ -127,7 +130,7 @@ void DisconnectTetheringRequestSenderImpl::OnOperationFinished(
   } else {
     PA_LOG(ERROR)
         << "Operation finished, but device with ID "
-        << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+        << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
         << " was not being tracked by DisconnectTetheringRequestSender.";
   }
 

@@ -36,8 +36,6 @@ namespace {
 
 const char kTetherFeature[] = "magic_tether";
 
-const char kUserId[] = "userId";
-
 const char kBluetoothAddress1[] = "11:22:33:44:55:66";
 const char kBluetoothAddress2[] = "22:33:44:55:66:77";
 const char kBluetoothAddress3[] = "33:44:55:66:77:88";
@@ -246,7 +244,7 @@ class TestMetricsObserver final : public BleConnectionManager::MetricsObserver {
 
 class FakeConnectionWithAddress : public cryptauth::FakeConnection {
  public:
-  FakeConnectionWithAddress(const cryptauth::RemoteDevice& remote_device,
+  FakeConnectionWithAddress(cryptauth::RemoteDeviceRef remote_device,
                             const std::string& device_address)
       : FakeConnection(remote_device, false /* should_auto_connect */),
         device_address_(device_address) {}
@@ -269,7 +267,7 @@ class FakeConnectionFactory final
         expected_remote_service_uuid_(expected_remote_service_uuid) {}
 
   std::unique_ptr<cryptauth::Connection> BuildInstance(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       scoped_refptr<device::BluetoothAdapter> adapter,
       const device::BluetoothUUID remote_service_uuid,
       device::BluetoothDevice* bluetooth_device,
@@ -286,13 +284,8 @@ class FakeConnectionFactory final
   const device::BluetoothUUID expected_remote_service_uuid_;
 };
 
-std::vector<cryptauth::RemoteDevice> CreateTestDevices(size_t num_to_create) {
-  std::vector<cryptauth::RemoteDevice> test_devices =
-      cryptauth::GenerateTestRemoteDevices(num_to_create);
-  for (auto& device : test_devices) {
-    device.user_id = kUserId;
-  }
-  return test_devices;
+cryptauth::RemoteDeviceRefList CreateTestDevices(size_t num_to_create) {
+  return cryptauth::CreateRemoteDeviceRefListForTest(num_to_create);
 }
 
 }  // namespace
@@ -470,7 +463,7 @@ class BleConnectionManagerTest : public testing::Test {
     }
   }
 
-  void VerifyNoTimeoutSet(const cryptauth::RemoteDevice& remote_device) {
+  void VerifyNoTimeoutSet(cryptauth::RemoteDeviceRef remote_device) {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
         manager_->GetConnectionMetadata(remote_device.GetDeviceId());
     EXPECT_TRUE(connection_metadata);
@@ -479,18 +472,17 @@ class BleConnectionManagerTest : public testing::Test {
   }
 
   void VerifyFailImmediatelyTimeoutSet(
-      const cryptauth::RemoteDevice& remote_device) {
+      cryptauth::RemoteDeviceRef remote_device) {
     VerifyTimeoutSet(remote_device,
                      BleConnectionManager::kFailImmediatelyTimeoutMillis);
   }
 
-  void VerifyAdvertisingTimeoutSet(
-      const cryptauth::RemoteDevice& remote_device) {
+  void VerifyAdvertisingTimeoutSet(cryptauth::RemoteDeviceRef remote_device) {
     VerifyTimeoutSet(remote_device,
                      BleConnectionManager::kAdvertisingTimeoutMillis);
   }
 
-  void VerifyTimeoutSet(const cryptauth::RemoteDevice& remote_device,
+  void VerifyTimeoutSet(cryptauth::RemoteDeviceRef remote_device,
                         int64_t expected_num_millis) {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
         manager_->GetConnectionMetadata(remote_device.GetDeviceId());
@@ -502,7 +494,7 @@ class BleConnectionManagerTest : public testing::Test {
                   ->GetCurrentDelay());
   }
 
-  void FireTimerForDevice(const cryptauth::RemoteDevice& remote_device) {
+  void FireTimerForDevice(cryptauth::RemoteDeviceRef remote_device) {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
         manager_->GetConnectionMetadata(remote_device.GetDeviceId());
     EXPECT_TRUE(connection_metadata);
@@ -515,7 +507,7 @@ class BleConnectionManagerTest : public testing::Test {
 
   void NotifyReceivedAdvertisementFromDevice(
       const std::string& bluetooth_address,
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       bool is_background_advertisement) {
     device::MockBluetoothDevice device(
         mock_adapter_.get(), 0u /* bluetooth_class */, "name",
@@ -525,7 +517,7 @@ class BleConnectionManagerTest : public testing::Test {
   }
 
   FakeSecureChannel* GetChannelForDevice(
-      const cryptauth::RemoteDevice& remote_device) {
+      cryptauth::RemoteDeviceRef remote_device) {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
         manager_->GetConnectionMetadata(remote_device.GetDeviceId());
     EXPECT_TRUE(connection_metadata);
@@ -534,13 +526,13 @@ class BleConnectionManagerTest : public testing::Test {
         connection_metadata->secure_channel_.get());
   }
 
-  void VerifyDeviceRegistered(const cryptauth::RemoteDevice& remote_device) {
+  void VerifyDeviceRegistered(cryptauth::RemoteDeviceRef remote_device) {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
         manager_->GetConnectionMetadata(remote_device.GetDeviceId());
     EXPECT_TRUE(connection_metadata);
   }
 
-  void VerifyDeviceNotRegistered(const cryptauth::RemoteDevice& remote_device) {
+  void VerifyDeviceNotRegistered(cryptauth::RemoteDeviceRef remote_device) {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
         manager_->GetConnectionMetadata(remote_device.GetDeviceId());
     if (connection_metadata)
@@ -550,7 +542,7 @@ class BleConnectionManagerTest : public testing::Test {
   // Registers |remote_device|, creates a connection to that device at
   // |bluetooth_address|, and authenticates the resulting channel.
   FakeSecureChannel* ConnectSuccessfully(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       const std::string& bluetooth_address,
       const ConnectionReason connection_reason,
       bool is_background_advertisement) {
@@ -575,7 +567,7 @@ class BleConnectionManagerTest : public testing::Test {
   // Creates a connection to |remote_device| at |bluetooth_address|. The device
   // must be registered before calling this function.
   FakeSecureChannel* ReceiveAdvertisementAndConnectChannel(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       const std::string& bluetooth_address,
       bool is_background_advertisement) {
     VerifyDeviceRegistered(remote_device);
@@ -591,7 +583,7 @@ class BleConnectionManagerTest : public testing::Test {
   // Authenticates the SecureChannel associated with |remote_device|. The device
   // must be registered and already have an associated channel before calling
   // this function.
-  void AuthenticateChannel(const cryptauth::RemoteDevice& remote_device,
+  void AuthenticateChannel(cryptauth::RemoteDeviceRef remote_device,
                            bool is_background_advertisement) {
     VerifyDeviceRegistered(remote_device);
 
@@ -643,7 +635,7 @@ class BleConnectionManagerTest : public testing::Test {
     EXPECT_EQ(sequence_number, sent_sequence_numbers_after_finished.back());
   }
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;

@@ -10,7 +10,7 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_beacon_seed_fetcher.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
 
@@ -64,14 +64,16 @@ BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
   if (!remote_beacon_seed_fetcher->FetchSeedsForDeviceId(
           device_id, &remote_beacon_seeds)) {
     PA_LOG(WARNING) << "Error fetching beacon seeds for device with ID "
-                    << RemoteDevice::TruncateDeviceIdForLogs(device_id) << ". "
+                    << RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
+                    << ". "
                     << "Cannot advertise without seeds.";
     return nullptr;
   }
 
   if (remote_beacon_seeds.empty()) {
     PA_LOG(WARNING) << "No synced seeds exist for device with ID "
-                    << RemoteDevice::TruncateDeviceIdForLogs(device_id) << ". "
+                    << RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
+                    << ". "
                     << "Cannot advertise without seeds.";
     return nullptr;
   }
@@ -81,7 +83,8 @@ BleAdvertisementGenerator::GenerateBleAdvertisementInternal(
                                             remote_beacon_seeds);
   if (!service_data) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
-                    << RemoteDevice::TruncateDeviceIdForLogs(device_id) << ". "
+                    << RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
+                    << ". "
                     << "Cannot advertise.";
     return nullptr;
   }

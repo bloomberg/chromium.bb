@@ -22,7 +22,7 @@ FakeNotificationPresenter::FakeNotificationPresenter()
 
 FakeNotificationPresenter::~FakeNotificationPresenter() = default;
 
-cryptauth::RemoteDevice&
+base::Optional<cryptauth::RemoteDeviceRef>
 FakeNotificationPresenter::GetPotentialHotspotRemoteDevice() {
   EXPECT_EQ(potential_hotspot_state_,
             NotificationPresenter::PotentialHotspotNotificationState::
@@ -31,7 +31,7 @@ FakeNotificationPresenter::GetPotentialHotspotRemoteDevice() {
 }
 
 void FakeNotificationPresenter::NotifyPotentialHotspotNearby(
-    const cryptauth::RemoteDevice& remote_device,
+    cryptauth::RemoteDeviceRef remote_device,
     int signal_strength) {
   potential_hotspot_state_ = NotificationPresenter::
       PotentialHotspotNotificationState::SINGLE_HOTSPOT_NEARBY_SHOWN;

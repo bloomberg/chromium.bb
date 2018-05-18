@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 
@@ -24,7 +24,7 @@ class HostScanDevicePrioritizerImpl : public HostScanDevicePrioritizer {
 
   // HostScanDevicePrioritizer:
   void SortByHostScanOrder(
-      std::vector<cryptauth::RemoteDevice>* remote_devices) const override;
+      cryptauth::RemoteDeviceRefList* remote_devices) const override;
 
  private:
   TetherHostResponseRecorder* tether_host_response_recorder_;

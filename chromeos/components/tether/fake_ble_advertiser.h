@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chromeos/components/tether/ble_advertiser.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace chromeos {
 

@@ -456,8 +456,8 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
   std::set<std::string> paired_devices;
   if (device_list) {
     EasyUnlockDeviceKeyDataList parsed_paired;
-    EasyUnlockKeyManager::RemoteDeviceListToDeviceDataList(*device_list,
-                                                           &parsed_paired);
+    EasyUnlockKeyManager::RemoteDeviceRefListToDeviceDataList(*device_list,
+                                                              &parsed_paired);
     for (const auto& device_key_data : parsed_paired)
       paired_devices.insert(device_key_data.psk);
   }
@@ -670,7 +670,7 @@ EasyUnlockAuthEvent EasyUnlockService::GetPasswordAuthEvent() const {
 
 void EasyUnlockService::SetProximityAuthDevices(
     const AccountId& account_id,
-    const cryptauth::RemoteDeviceList& remote_devices) {
+    const cryptauth::RemoteDeviceRefList& remote_devices) {
   UMA_HISTOGRAM_COUNTS_100("SmartLock.EnabledDevicesCount",
                            remote_devices.size());
 

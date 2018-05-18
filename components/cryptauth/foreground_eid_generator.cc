@@ -15,7 +15,7 @@
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
 #include "components/cryptauth/raw_eid_generator.h"
 #include "components/cryptauth/raw_eid_generator_impl.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 
 namespace cryptauth {
 
@@ -125,8 +125,9 @@ std::string ForegroundEidGenerator::IdentifyRemoteDeviceByAdvertisement(
 
   for (const auto& device_id : device_ids) {
     std::vector<std::string> possible_advertisements =
-        GeneratePossibleAdvertisements(RemoteDevice::DerivePublicKey(device_id),
-                                       scanning_device_beacon_seeds);
+        GeneratePossibleAdvertisements(
+            RemoteDeviceRef::DerivePublicKey(device_id),
+            scanning_device_beacon_seeds);
     for (const auto& possible_advertisement : possible_advertisements) {
       if (service_data_without_flags == possible_advertisement) {
         return device_id;

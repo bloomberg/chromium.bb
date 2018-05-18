@@ -61,7 +61,7 @@ class DisconnectTetheringOperationTest : public testing::Test {
  protected:
   DisconnectTetheringOperationTest()
       : disconnect_tethering_request_string_(CreateDisconnectTetheringString()),
-        test_device_(cryptauth::GenerateTestRemoteDevices(1)[0]) {}
+        test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1)[0]) {}
 
   void SetUp() override {
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -107,7 +107,7 @@ class DisconnectTetheringOperationTest : public testing::Test {
   }
 
   const std::string disconnect_tethering_request_string_;
-  const cryptauth::RemoteDevice test_device_;
+  const cryptauth::RemoteDeviceRef test_device_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<TestObserver> test_observer_;

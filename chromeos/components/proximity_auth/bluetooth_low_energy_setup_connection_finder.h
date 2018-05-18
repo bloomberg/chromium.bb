@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "chromeos/components/proximity_auth/bluetooth_low_energy_connection_finder.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace proximity_auth {

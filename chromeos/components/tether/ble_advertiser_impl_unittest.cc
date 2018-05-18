@@ -124,7 +124,7 @@ class DeletingObserver final : public BleAdvertiser::Observer {
 class BleAdvertiserImplTest : public testing::Test {
  protected:
   BleAdvertiserImplTest()
-      : fake_devices_(cryptauth::GenerateTestRemoteDevices(3)),
+      : fake_devices_(cryptauth::CreateRemoteDeviceRefListForTest(3)),
         fake_advertisements_(GenerateFakeAdvertisements()) {}
 
   void SetUp() override {
@@ -179,7 +179,7 @@ class BleAdvertiserImplTest : public testing::Test {
   }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const std::vector<cryptauth::RemoteDevice> fake_devices_;
+  const cryptauth::RemoteDeviceRefList fake_devices_;
   const std::vector<cryptauth::DataWithTimestamp> fake_advertisements_;
 
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;

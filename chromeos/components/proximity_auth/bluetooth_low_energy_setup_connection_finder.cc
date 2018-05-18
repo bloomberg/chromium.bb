@@ -12,6 +12,8 @@
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/connection.h"
+#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -23,7 +25,8 @@ BluetoothLowEnergySetupConnectionFinder::
     BluetoothLowEnergySetupConnectionFinder(
         const std::string& remote_service_uuid)
     : BluetoothLowEnergyConnectionFinder(
-          cryptauth::RemoteDevice(),
+          cryptauth::RemoteDeviceRef(
+              std::make_shared<cryptauth::RemoteDevice>()),
           remote_service_uuid,
           std::make_unique<cryptauth::BackgroundEidGenerator>()),
       remote_service_uuid_(device::BluetoothUUID(remote_service_uuid)) {}

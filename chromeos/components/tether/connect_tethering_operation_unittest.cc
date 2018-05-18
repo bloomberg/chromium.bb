@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/optional.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "chromeos/components/tether/ble_constants.h"
@@ -41,7 +42,9 @@ class TestObserver final : public ConnectTetheringOperation::Observer {
   TestObserver() = default;
   ~TestObserver() = default;
 
-  const cryptauth::RemoteDevice& remote_device() { return remote_device_; }
+  base::Optional<cryptauth::RemoteDeviceRef> remote_device() {
+    return remote_device_;
+  }
   const std::string& ssid() { return ssid_; }
   const std::string& password() { return password_; }
   bool has_received_failure() { return has_received_failure_; }
@@ -52,12 +55,12 @@ class TestObserver final : public ConnectTetheringOperation::Observer {
 
   // ConnectTetheringOperation::Observer:
   void OnConnectTetheringRequestSent(
-      const cryptauth::RemoteDevice& remote_device) override {
+      cryptauth::RemoteDeviceRef remote_device) override {
     has_sent_request_ = true;
   }
 
   void OnSuccessfulConnectTetheringResponse(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       const std::string& ssid,
       const std::string& password) override {
     remote_device_ = remote_device;
@@ -66,7 +69,7 @@ class TestObserver final : public ConnectTetheringOperation::Observer {
   }
 
   void OnConnectTetheringFailure(
-      const cryptauth::RemoteDevice& remote_device,
+      cryptauth::RemoteDeviceRef remote_device,
       ConnectTetheringOperation::HostResponseErrorCode error_code) override {
     has_received_failure_ = true;
     remote_device_ = remote_device;
@@ -74,7 +77,7 @@ class TestObserver final : public ConnectTetheringOperation::Observer {
   }
 
  private:
-  cryptauth::RemoteDevice remote_device_;
+  base::Optional<cryptauth::RemoteDeviceRef> remote_device_;
   std::string ssid_;
   std::string password_;
   bool has_received_failure_ = false;
@@ -114,7 +117,7 @@ class ConnectTetheringOperationTest : public testing::Test {
   ConnectTetheringOperationTest()
       : connect_tethering_request_string_(
             CreateConnectTetheringRequestString()),
-        test_device_(cryptauth::GenerateTestRemoteDevices(1)[0]) {}
+        test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1)[0]) {}
 
   void SetUp() override {
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -207,7 +210,7 @@ class ConnectTetheringOperationTest : public testing::Test {
   }
 
   const std::string connect_tethering_request_string_;
-  const cryptauth::RemoteDevice test_device_;
+  const cryptauth::RemoteDeviceRef test_device_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<StrictMock<MockTetherHostResponseRecorder>>

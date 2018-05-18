@@ -66,7 +66,7 @@ void SaveValidateHelloMessageResult(bool* validated_out,
 // Connection implementation for testing.
 class FakeConnection : public Connection {
  public:
-  FakeConnection(const RemoteDevice& remote_device)
+  FakeConnection(RemoteDeviceRef remote_device)
       : Connection(remote_device), connection_blocked_(false) {}
   ~FakeConnection() override {}
 
@@ -148,7 +148,7 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
 class CryptAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
  public:
   CryptAuthDeviceToDeviceAuthenticatorTest()
-      : remote_device_(CreateRemoteDeviceForTest()),
+      : remote_device_(CreateRemoteDeviceRefForTest()),
         connection_(remote_device_),
         secure_message_delegate_(new FakeSecureMessageDelegate),
         authenticator_(&connection_,
@@ -191,7 +191,7 @@ class CryptAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
     bool validated = false;
     std::string local_session_public_key;
     DeviceToDeviceResponderOperations::ValidateHelloMessage(
-        hello_message, remote_device_.persistent_symmetric_key,
+        hello_message, remote_device_.persistent_symmetric_key(),
         secure_message_delegate_,
         base::Bind(&SaveValidateHelloMessageResult, &validated,
                    &local_session_public_key));
@@ -211,7 +211,7 @@ class CryptAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
     std::string responder_auth_message;
     DeviceToDeviceResponderOperations::CreateResponderAuthMessage(
         hello_message, remote_session_public_key_, remote_session_private_key_,
-        remote_device_private_key, remote_device_.persistent_symmetric_key,
+        remote_device_private_key, remote_device_.persistent_symmetric_key(),
         secure_message_delegate_,
         base::Bind(&SaveStringResult, &responder_auth_message));
     EXPECT_FALSE(responder_auth_message.empty());
@@ -232,7 +232,7 @@ class CryptAuthDeviceToDeviceAuthenticatorTest : public testing::Test {
   MOCK_METHOD1(OnAuthenticationResultProxy, void(Authenticator::Result result));
 
   // Contains information about the remote device.
-  const RemoteDevice remote_device_;
+  const RemoteDeviceRef remote_device_;
 
   // Simulates the connection to the remote device.
   FakeConnection connection_;
@@ -273,7 +273,7 @@ TEST_F(CryptAuthDeviceToDeviceAuthenticatorTest, AuthenticateSucceeds) {
   bool initiator_auth_validated = false;
   DeviceToDeviceResponderOperations::ValidateInitiatorAuthMessage(
       initiator_auth, SessionKeys(session_symmetric_key_),
-      remote_device_.persistent_symmetric_key, responder_auth_message,
+      remote_device_.persistent_symmetric_key(), responder_auth_message,
       secure_message_delegate_,
       base::Bind(&SaveBooleanResult, &initiator_auth_validated));
   ASSERT_TRUE(initiator_auth_validated);

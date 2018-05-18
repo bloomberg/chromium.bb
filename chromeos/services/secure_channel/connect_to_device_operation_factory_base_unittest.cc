@@ -26,7 +26,7 @@ class TestConnectToDeviceOperationFactory
     : public ConnectToDeviceOperationFactoryBase<std::string> {
  public:
   TestConnectToDeviceOperationFactory(
-      const cryptauth::RemoteDevice& device_to_connect_to)
+      const cryptauth::RemoteDeviceRef& device_to_connect_to)
       : ConnectToDeviceOperationFactoryBase<std::string>(device_to_connect_to),
         remote_device_(device_to_connect_to) {}
 
@@ -43,7 +43,7 @@ class TestConnectToDeviceOperationFactory
           success_callback,
       typename ConnectToDeviceOperation<std::string>::ConnectionFailedCallback
           failure_callback,
-      const cryptauth::RemoteDevice& device_to_connect_to,
+      const cryptauth::RemoteDeviceRef& device_to_connect_to,
       base::OnceClosure destructor_callback) override {
     // The previous destructor callback should have been invoked by the time
     // this function runs.
@@ -57,7 +57,7 @@ class TestConnectToDeviceOperationFactory
   }
 
  private:
-  const cryptauth::RemoteDevice remote_device_;
+  const cryptauth::RemoteDeviceRef remote_device_;
 
   base::OnceClosure last_destructor_callback_;
 };
@@ -68,7 +68,7 @@ class SecureChannelConnectToDeviceOperationFactoryBaseTest
     : public testing::Test {
  protected:
   SecureChannelConnectToDeviceOperationFactoryBaseTest()
-      : test_device_(cryptauth::CreateRemoteDeviceForTest()) {}
+      : test_device_(cryptauth::CreateRemoteDeviceRefForTest()) {}
 
   ~SecureChannelConnectToDeviceOperationFactoryBaseTest() override = default;
 
@@ -101,7 +101,7 @@ class SecureChannelConnectToDeviceOperationFactoryBaseTest
   }
 
  private:
-  const cryptauth::RemoteDevice test_device_;
+  const cryptauth::RemoteDeviceRef test_device_;
 
   std::unique_ptr<TestConnectToDeviceOperationFactory> test_factory_;
 

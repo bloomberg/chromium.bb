@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "chromeos/components/proximity_auth/proximity_monitor.h"
 #include "components/cryptauth/connection.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_device.h"
 
 namespace device {

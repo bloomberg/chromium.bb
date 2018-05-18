@@ -11,7 +11,7 @@
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
 #include "components/cryptauth/ble/ble_advertisement_generator.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
 namespace chromeos {
@@ -87,7 +87,7 @@ bool BleAdvertiserImpl::StartAdvertisingToDevice(const std::string& device_id) {
           device_id, local_device_data_provider_, remote_beacon_seed_fetcher_);
   if (!service_data) {
     PA_LOG(WARNING) << "Error generating advertisement for device with ID "
-                    << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
                     << ". Cannot advertise.";
     return false;

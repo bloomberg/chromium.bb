@@ -37,7 +37,7 @@ class TestObserver final : public TetherHostResponseRecorder::Observer {
 class TetherHostResponseRecorderTest : public testing::Test {
  protected:
   TetherHostResponseRecorderTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(10)) {}
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(10)) {}
 
   void SetUp() override {
     pref_service_ =
@@ -51,7 +51,7 @@ class TetherHostResponseRecorderTest : public testing::Test {
     recorder_->AddObserver(test_observer_.get());
   }
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable> pref_service_;
   std::unique_ptr<TestObserver> test_observer_;

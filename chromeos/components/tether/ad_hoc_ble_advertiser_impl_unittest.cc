@@ -132,7 +132,7 @@ class TestTimerFactory : public TimerFactory {
 class AdHocBleAdvertiserImplTest : public testing::Test {
  protected:
   AdHocBleAdvertiserImplTest()
-      : fake_devices_(cryptauth::GenerateTestRemoteDevices(2)),
+      : fake_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2)),
         fake_advertisements_(GenerateFakeAdvertisements()) {}
 
   void SetUp() override {
@@ -175,7 +175,7 @@ class AdHocBleAdvertiserImplTest : public testing::Test {
             fake_advertisements_[0]));
   }
 
-  void FireTimer(const cryptauth::RemoteDevice& remote_device) {
+  void FireTimer(cryptauth::RemoteDeviceRef remote_device) {
     base::MockTimer* timer =
         test_timer_factory_->GetTimerForDeviceId(remote_device.GetDeviceId());
     ASSERT_TRUE(timer);
@@ -184,9 +184,8 @@ class AdHocBleAdvertiserImplTest : public testing::Test {
     timer->Fire();
   }
 
-  void FinishStoppingAdvertisement(
-      size_t expected_index,
-      const cryptauth::RemoteDevice& remote_device) {
+  void FinishStoppingAdvertisement(size_t expected_index,
+                                   cryptauth::RemoteDeviceRef remote_device) {
     FakeErrorTolerantBleAdvertisement* advertisement =
         fake_advertisement_factory_->active_advertisements()[expected_index];
     ASSERT_TRUE(advertisement);
@@ -194,7 +193,7 @@ class AdHocBleAdvertiserImplTest : public testing::Test {
     advertisement->InvokeStopCallback();
   }
 
-  const std::vector<cryptauth::RemoteDevice> fake_devices_;
+  const cryptauth::RemoteDeviceRefList fake_devices_;
   const std::vector<cryptauth::DataWithTimestamp> fake_advertisements_;
 
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;

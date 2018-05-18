@@ -52,7 +52,7 @@ class FakeRemoteDeviceProviderFactory
 class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
  protected:
   AsynchronousShutdownObjectContainerImplTest()
-      : test_device_(cryptauth::GenerateTestRemoteDevices(1u)[0]) {}
+      : test_device_(cryptauth::CreateRemoteDeviceRefListForTest(1u)[0]) {}
 
   void SetUp() override {
     was_shutdown_callback_invoked_ = false;
@@ -113,7 +113,7 @@ class AsynchronousShutdownObjectContainerImplTest : public testing::Test {
   void OnShutdownComplete() { was_shutdown_callback_invoked_ = true; }
 
   const base::test::ScopedTaskEnvironment scoped_task_environment_;
-  const cryptauth::RemoteDevice test_device_;
+  const cryptauth::RemoteDeviceRef test_device_;
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;

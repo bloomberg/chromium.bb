@@ -13,7 +13,8 @@
 #include "chromeos/components/tether/host_scan_test_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_state_test.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
+#include "components/cryptauth/remote_device_test_util.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 
 namespace chromeos {
@@ -51,9 +52,8 @@ class NotificationRemoverTest : public NetworkStateTest {
   }
 
   void NotifyPotentialHotspotNearby() {
-    cryptauth::RemoteDevice remote_device;
     notification_presenter_->NotifyPotentialHotspotNearby(
-        remote_device, 100 /* signal_strength */);
+        cryptauth::CreateRemoteDeviceRefForTest(), 100 /* signal_strength */);
   }
 
   void SetAndRemoveHostScanResult() {

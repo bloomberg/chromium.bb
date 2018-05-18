@@ -116,7 +116,7 @@ void DeviceToDeviceAuthenticator::OnKeyPairGenerated(
   // Create the [Initiator Hello] message to send to the remote device.
   state_ = State::SENDING_HELLO;
   helper_->CreateHelloMessage(
-      public_key, connection_->remote_device().persistent_symmetric_key,
+      public_key, connection_->remote_device().persistent_symmetric_key(),
       secure_message_delegate_.get(),
       base::Bind(&DeviceToDeviceAuthenticator::OnHelloMessageCreated,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -170,7 +170,7 @@ void DeviceToDeviceAuthenticator::OnResponderAuthValidated(
 
   // Create the [Initiator Auth] message to send to the remote device.
   helper_->CreateInitiatorAuthMessage(
-      session_keys_, connection_->remote_device().persistent_symmetric_key,
+      session_keys_, connection_->remote_device().persistent_symmetric_key(),
       responder_auth_message_, secure_message_delegate_.get(),
       base::Bind(&DeviceToDeviceAuthenticator::OnInitiatorAuthCreated,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -243,10 +243,10 @@ void DeviceToDeviceAuthenticator::OnMessageReceived(
 
     // Attempt to validate the [Responder Auth] message received from the remote
     // device.
-    std::string responder_public_key = connection.remote_device().public_key;
+    std::string responder_public_key = connection.remote_device().public_key();
     helper_->ValidateResponderAuthMessage(
         responder_auth_message_, responder_public_key,
-        connection_->remote_device().persistent_symmetric_key,
+        connection_->remote_device().persistent_symmetric_key(),
         local_session_private_key_, hello_message_,
         secure_message_delegate_.get(),
         base::Bind(&DeviceToDeviceAuthenticator::OnResponderAuthValidated,

@@ -12,7 +12,7 @@
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
 #include "components/cryptauth/cryptauth_service.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
 namespace chromeos {
@@ -203,7 +203,8 @@ void BleConnectionManager::ConnectionMetadata::OnMessageSent(
     int sequence_number) {
   DCHECK(secure_channel_.get() == secure_channel);
   PA_LOG(INFO) << "Message sent successfully to device with ID \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id_)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                      device_id_)
                << "\"; message sequence number: " << sequence_number;
   manager_->NotifyMessageSent(sequence_number);
 }
@@ -245,7 +246,7 @@ void BleConnectionManager::RegisterRemoteDevice(
   has_registered_observer_ = true;
 
   PA_LOG(INFO) << "Register - Device ID: \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\", Reason: " << ConnectionReasonToString(connection_reason);
 
   ConnectionMetadata* connection_metadata = GetConnectionMetadata(device_id);
@@ -263,7 +264,7 @@ void BleConnectionManager::UnregisterRemoteDevice(
   if (!connection_metadata) {
     PA_LOG(WARNING) << "Tried to unregister device, but was not registered - "
                     << "Device ID: \""
-                    << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                    << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                            device_id)
                     << "\", Reason: "
                     << ConnectionReasonToString(connection_reason);
@@ -271,7 +272,7 @@ void BleConnectionManager::UnregisterRemoteDevice(
   }
 
   PA_LOG(INFO) << "Unregister - Device ID: \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\", Reason: " << ConnectionReasonToString(connection_reason);
 
   connection_metadata->UnregisterConnectionReason(connection_reason);
@@ -306,13 +307,14 @@ int BleConnectionManager::SendMessage(const std::string& device_id,
           cryptauth::SecureChannel::Status::AUTHENTICATED) {
     PA_LOG(ERROR) << "SendMessage(): Error - no authenticated channel. "
                   << "Device ID: \""
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         device_id)
                   << "\", Message: \"" << message << "\"";
     return -1;
   }
 
   PA_LOG(INFO) << "SendMessage(): Device ID: \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\", Message: \"" << message << "\"";
   return connection_metadata->SendMessage(message);
 }
@@ -345,7 +347,7 @@ void BleConnectionManager::RemoveMetricsObserver(MetricsObserver* observer) {
 }
 
 void BleConnectionManager::OnReceivedAdvertisementFromDevice(
-    const cryptauth::RemoteDevice& remote_device,
+    cryptauth::RemoteDeviceRef remote_device,
     device::BluetoothDevice* bluetooth_device,
     bool is_background_advertisement) {
   const std::string device_id = remote_device.GetDeviceId();
@@ -452,7 +454,7 @@ void BleConnectionManager::UpdateConnectionAttempts() {
   // modified during iteration.
   for (const auto& device_id_to_stop : device_ids_to_stop) {
     PA_LOG(INFO) << "Connection attempt for device ID \""
-                 << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(
+                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
                         device_id_to_stop)
                  << "\" interrupted by higher-priority connection.";
     EndUnsuccessfulAttempt(
@@ -493,7 +495,7 @@ void BleConnectionManager::StartConnectionAttempt(
   DCHECK(connection_metadata);
 
   PA_LOG(INFO) << "Attempting connection - Device ID: \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\"";
 
   bool success = ble_scanner_->RegisterScanFilterForDevice(device_id) &&
@@ -540,7 +542,7 @@ void BleConnectionManager::StopConnectionAttemptAndMoveToEndOfQueue(
 void BleConnectionManager::OnConnectionAttemptTimeout(
     const std::string& device_id) {
   PA_LOG(INFO) << "Connection attempt timeout - Device ID \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\".";
   EndUnsuccessfulAttempt(
       device_id,
@@ -578,7 +580,8 @@ void BleConnectionManager::OnGattCharacteristicsNotAvailable(
     const std::string& device_id) {
   PA_LOG(WARNING) << "Previous connection attempt failed due to unavailable "
                   << "GATT services for device ID \""
-                  << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+                  << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                         device_id)
                   << "\".";
   ad_hoc_ble_advertisement_->RequestGattServicesForDevice(device_id);
 }
@@ -593,7 +596,7 @@ void BleConnectionManager::NotifyAdvertisementReceived(
 void BleConnectionManager::NotifyMessageReceived(std::string device_id,
                                                  std::string payload) {
   PA_LOG(INFO) << "Message received - Device ID: \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\", Message: \"" << payload << "\".";
   for (auto& observer : observer_list_)
     observer.OnMessageReceived(device_id, payload);
@@ -605,7 +608,7 @@ void BleConnectionManager::NotifySecureChannelStatusChanged(
     cryptauth::SecureChannel::Status new_status,
     StateChangeDetail state_change_detail) {
   PA_LOG(INFO) << "Status change - Device ID: \""
-               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id)
+               << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(device_id)
                << "\": " << cryptauth::SecureChannel::StatusToString(old_status)
                << " => " << cryptauth::SecureChannel::StatusToString(new_status)
                << ", State change detail: "

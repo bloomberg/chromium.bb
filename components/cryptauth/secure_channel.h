@@ -12,7 +12,7 @@
 #include "components/cryptauth/connection.h"
 #include "components/cryptauth/connection_observer.h"
 #include "components/cryptauth/device_to_device_authenticator.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/secure_context.h"
 
 namespace cryptauth {

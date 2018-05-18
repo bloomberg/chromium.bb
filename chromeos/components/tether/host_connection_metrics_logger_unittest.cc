@@ -10,7 +10,7 @@
 #include "base/test/simple_test_clock.h"
 #include "chromeos/components/tether/fake_active_host.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -27,7 +27,7 @@ const char kWifiNetworkGuid[] = "wifiNetworkGuid";
 class HostConnectionMetricsLoggerTest : public testing::Test {
  protected:
   HostConnectionMetricsLoggerTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(2u)) {}
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2u)) {}
 
   void SetUp() override {
     fake_ble_connection_manager_ = std::make_unique<FakeBleConnectionManager>();
@@ -116,7 +116,7 @@ class HostConnectionMetricsLoggerTest : public testing::Test {
     fake_active_host_->SetActiveHostConnecting(device_id, kTetherNetworkGuid);
   }
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeBleConnectionManager> fake_ble_connection_manager_;
   std::unique_ptr<FakeActiveHost> fake_active_host_;

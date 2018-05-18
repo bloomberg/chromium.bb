@@ -13,7 +13,7 @@
 #include "chromeos/components/tether/fake_tether_session_completion_logger.h"
 #include "chromeos/components/tether/fake_wifi_hotspot_disconnector.h"
 #include "chromeos/components/tether/tether_session_completion_logger.h"
-#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +31,7 @@ const char kWifiNetworkGuid[] = "wifiNetworkGuid";
 class TetherDisconnectorImplTest : public testing::Test {
  public:
   TetherDisconnectorImplTest()
-      : test_devices_(cryptauth::GenerateTestRemoteDevices(2u)) {}
+      : test_devices_(cryptauth::CreateRemoteDeviceRefListForTest(2u)) {}
   ~TetherDisconnectorImplTest() override = default;
 
   void SetUp() override {
@@ -107,7 +107,7 @@ class TetherDisconnectorImplTest : public testing::Test {
                      ->last_session_completion_reason());
   }
 
-  const std::vector<cryptauth::RemoteDevice> test_devices_;
+  const cryptauth::RemoteDeviceRefList test_devices_;
 
   std::unique_ptr<FakeActiveHost> fake_active_host_;
   std::unique_ptr<FakeWifiHotspotDisconnector> fake_wifi_hotspot_disconnector_;

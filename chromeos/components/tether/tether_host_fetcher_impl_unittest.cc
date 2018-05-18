@@ -9,7 +9,10 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/optional.h"
 #include "components/cryptauth/fake_remote_device_provider.h"
+#include "components/cryptauth/remote_device.h"
+#include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,14 +23,6 @@ namespace tether {
 namespace {
 
 const size_t kNumTestDevices = 5;
-
-cryptauth::RemoteDeviceList CreateTestDevices() {
-  cryptauth::RemoteDeviceList list =
-      cryptauth::GenerateTestRemoteDevices(kNumTestDevices);
-  for (auto& remote_device : list)
-    remote_device.supports_mobile_hotspot = true;
-  return list;
-}
 
 class TestObserver : public TetherHostFetcher::Observer {
  public:
@@ -47,15 +42,16 @@ class TestObserver : public TetherHostFetcher::Observer {
 
 class TetherHostFetcherImplTest : public testing::Test {
  public:
-  TetherHostFetcherImplTest() : test_devices_(CreateTestDevices()) {}
+  TetherHostFetcherImplTest()
+      : test_remote_device_list_(CreateTestRemoteDeviceList()),
+        test_remote_device_ref_list_(
+            CreateTestRemoteDeviceRefList(test_remote_device_list_)) {}
 
   void SetUp() override {
-    last_fetched_list_.clear();
-    last_fetched_single_host_.reset();
-
     fake_remote_device_provider_ =
         std::make_unique<cryptauth::FakeRemoteDeviceProvider>();
-    fake_remote_device_provider_->set_synced_remote_devices(test_devices_);
+    fake_remote_device_provider_->set_synced_remote_devices(
+        test_remote_device_list_);
 
     tether_host_fetcher_ = TetherHostFetcherImpl::Factory::NewInstance(
         fake_remote_device_provider_.get());
@@ -64,38 +60,61 @@ class TetherHostFetcherImplTest : public testing::Test {
     tether_host_fetcher_->AddObserver(test_observer_.get());
   }
 
-  void OnTetherHostListFetched(const cryptauth::RemoteDeviceList& device_list) {
+  void OnTetherHostListFetched(
+      const cryptauth::RemoteDeviceRefList& device_list) {
     last_fetched_list_ = device_list;
   }
 
   void OnSingleTetherHostFetched(
-      std::unique_ptr<cryptauth::RemoteDevice> device) {
-    last_fetched_single_host_ = std::move(device);
+      base::Optional<cryptauth::RemoteDeviceRef> device) {
+    last_fetched_single_host_ = device;
   }
 
-  void VerifyAllTetherHosts(const cryptauth::RemoteDeviceList expected_list) {
+  void VerifyAllTetherHosts(
+      const cryptauth::RemoteDeviceRefList expected_list) {
     tether_host_fetcher_->FetchAllTetherHosts(
         base::Bind(&TetherHostFetcherImplTest::OnTetherHostListFetched,
                    base::Unretained(this)));
     EXPECT_EQ(expected_list, last_fetched_list_);
   }
 
-  void VerifySingleTetherHost(const std::string& device_id,
-                              const cryptauth::RemoteDevice* expected_device) {
+  void VerifySingleTetherHost(
+      const std::string& device_id,
+      base::Optional<cryptauth::RemoteDeviceRef> expected_device) {
     tether_host_fetcher_->FetchTetherHost(
         device_id,
         base::Bind(&TetherHostFetcherImplTest::OnSingleTetherHostFetched,
                    base::Unretained(this)));
     if (expected_device)
-      EXPECT_EQ(*expected_device, *last_fetched_single_host_);
+      EXPECT_EQ(expected_device, last_fetched_single_host_);
     else
-      EXPECT_EQ(nullptr, last_fetched_single_host_);
+      EXPECT_EQ(base::nullopt, last_fetched_single_host_);
   }
 
-  const cryptauth::RemoteDeviceList test_devices_;
+  cryptauth::RemoteDeviceList CreateTestRemoteDeviceList() {
+    cryptauth::RemoteDeviceList list =
+        cryptauth::CreateRemoteDeviceListForTest(kNumTestDevices);
+    for (auto device : list)
+      device.supports_mobile_hotspot = true;
 
-  cryptauth::RemoteDeviceList last_fetched_list_;
-  std::unique_ptr<cryptauth::RemoteDevice> last_fetched_single_host_;
+    return list;
+  }
+
+  cryptauth::RemoteDeviceRefList CreateTestRemoteDeviceRefList(
+      cryptauth::RemoteDeviceList remote_device_list) {
+    cryptauth::RemoteDeviceRefList list;
+    for (const auto& device : remote_device_list) {
+      list.push_back(cryptauth::RemoteDeviceRef(
+          std::make_shared<cryptauth::RemoteDevice>(device)));
+    }
+    return list;
+  }
+
+  cryptauth::RemoteDeviceList test_remote_device_list_;
+  cryptauth::RemoteDeviceRefList test_remote_device_ref_list_;
+
+  cryptauth::RemoteDeviceRefList last_fetched_list_;
+  base::Optional<cryptauth::RemoteDeviceRef> last_fetched_single_host_;
   std::unique_ptr<TestObserver> test_observer_;
 
   std::unique_ptr<cryptauth::FakeRemoteDeviceProvider>
@@ -125,8 +144,8 @@ TEST_F(TetherHostFetcherImplTest, TestHasSyncedTetherHosts) {
   EXPECT_EQ(1u, test_observer_->num_updates());
 
   // Update the list to include device 0 only.
-  cryptauth::RemoteDeviceList device_0_list = {test_devices_[0]};
-  fake_remote_device_provider_->set_synced_remote_devices(device_0_list);
+  fake_remote_device_provider_->set_synced_remote_devices(
+      {test_remote_device_list_[0]});
   fake_remote_device_provider_->NotifyObserversDeviceListChanged();
   EXPECT_TRUE(tether_host_fetcher_->HasSyncedTetherHosts());
   EXPECT_EQ(2u, test_observer_->num_updates());
@@ -139,54 +158,56 @@ TEST_F(TetherHostFetcherImplTest, TestHasSyncedTetherHosts) {
 }
 
 TEST_F(TetherHostFetcherImplTest, TestFetchAllTetherHosts) {
-  VerifyAllTetherHosts(test_devices_);
+  // Create a list of test devices, only some of which are valid tether hosts.
+  // Ensure that only that subset is fetched.
 
-  // Since none of these devices support mobile data, the list should be empty.
-  cryptauth::RemoteDeviceList list_without_mobile_support = test_devices_;
-  for (auto& remote_device : list_without_mobile_support)
-    remote_device.supports_mobile_hotspot = false;
+  test_remote_device_list_[3].supports_mobile_hotspot = false;
+  test_remote_device_list_[4].supports_mobile_hotspot = false;
+
+  cryptauth::RemoteDeviceRefList host_device_list(CreateTestRemoteDeviceRefList(
+      {test_remote_device_list_[0], test_remote_device_list_[1],
+       test_remote_device_list_[2]}));
+
   fake_remote_device_provider_->set_synced_remote_devices(
-      list_without_mobile_support);
+      test_remote_device_list_);
   fake_remote_device_provider_->NotifyObserversDeviceListChanged();
-  VerifyAllTetherHosts(cryptauth::RemoteDeviceList());
-
-  // The list contains devices 0, 1, and 2, all of which support mobile data.
-  cryptauth::RemoteDeviceList smaller_list = {
-      test_devices_[0], test_devices_[1], test_devices_[2]};
-  fake_remote_device_provider_->set_synced_remote_devices(smaller_list);
-  fake_remote_device_provider_->NotifyObserversDeviceListChanged();
-  VerifyAllTetherHosts(smaller_list);
+  VerifyAllTetherHosts(host_device_list);
 }
 
 TEST_F(TetherHostFetcherImplTest, TestSingleTetherHost) {
-  VerifySingleTetherHost(test_devices_[0].GetDeviceId(), &test_devices_[0]);
+  VerifySingleTetherHost(test_remote_device_ref_list_[0].GetDeviceId(),
+                         test_remote_device_ref_list_[0]);
 
   // Now, set device 0 as the only device. It should still be returned when
   // requested.
-  cryptauth::RemoteDevice device_0 = test_devices_[0];
   fake_remote_device_provider_->set_synced_remote_devices(
-      cryptauth::RemoteDeviceList{device_0});
+      cryptauth::RemoteDeviceList{test_remote_device_list_[0]});
   fake_remote_device_provider_->NotifyObserversDeviceListChanged();
-  VerifySingleTetherHost(test_devices_[0].GetDeviceId(), &device_0);
+  VerifySingleTetherHost(test_remote_device_ref_list_[0].GetDeviceId(),
+                         test_remote_device_ref_list_[0]);
 
-  // Now, set device 0 as the only device, but remove its mobile data support.
-  // It should not be returned.
-  device_0.supports_mobile_hotspot = false;
+  // Now, set another device as the only device, but remove its mobile data
+  // support. It should not be returned.
+  cryptauth::RemoteDevice remote_device = cryptauth::RemoteDevice();
+  remote_device.supports_mobile_hotspot = false;
+
   fake_remote_device_provider_->set_synced_remote_devices(
-      cryptauth::RemoteDeviceList{device_0});
+      cryptauth::RemoteDeviceList{remote_device});
   fake_remote_device_provider_->NotifyObserversDeviceListChanged();
-  VerifySingleTetherHost(test_devices_[0].GetDeviceId(), nullptr);
+  VerifySingleTetherHost(test_remote_device_ref_list_[0].GetDeviceId(),
+                         base::nullopt);
 
   // Update the list; now, there are no more devices.
   fake_remote_device_provider_->set_synced_remote_devices(
       cryptauth::RemoteDeviceList());
   fake_remote_device_provider_->NotifyObserversDeviceListChanged();
-  VerifySingleTetherHost(test_devices_[0].GetDeviceId(), nullptr);
+  VerifySingleTetherHost(test_remote_device_ref_list_[0].GetDeviceId(),
+                         base::nullopt);
 }
 
 TEST_F(TetherHostFetcherImplTest,
        TestSingleTetherHost_IdDoesNotCorrespondToDevice) {
-  VerifySingleTetherHost("nonexistentId", nullptr);
+  VerifySingleTetherHost("nonexistentId", base::nullopt);
 }
 
 }  // namespace tether

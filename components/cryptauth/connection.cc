@@ -14,7 +14,7 @@
 
 namespace cryptauth {
 
-Connection::Connection(const RemoteDevice& remote_device)
+Connection::Connection(RemoteDeviceRef remote_device)
     : remote_device_(remote_device),
       status_(Status::DISCONNECTED),
       is_sending_message_(false) {}
