@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
@@ -57,7 +58,11 @@
     <settings-toggle-button
         pref="{{prefs.settings.a11y.select_to_speak}}"
         label="$i18n{selectToSpeakTitle}"
-        sub-label="$i18n{selectToSpeakDescription}">
+        sub-label="[[getSelectToSpeakDescription_(
+            prefs.settings.a11y.select_to_speak.value, hasKeyboard_,
+            '$i18nPolymer{selectToSpeakDisabledDescription}',
+            '$i18nPolymer{selectToSpeakDescription}',
+            '$i18nPolymer{selectToSpeakDescriptionWithoutKeyboard}')]]">
     </settings-toggle-button>
     <iron-collapse opened="[[prefs.settings.a11y.select_to_speak.value]]">
       <div class="settings-box"
