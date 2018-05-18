@@ -746,7 +746,10 @@ Value RunNotNeeded(Scope* scope,
     for (const Value& cur : value->list_value()) {
       if (!cur.VerifyTypeIs(Value::STRING, err))
         return Value();
-      source->MarkUsed(cur.string_value());
+      if (!source->GetValue(cur.string_value(), true)) {
+        *err = Err(cur, "Undefined identifier");
+        return Value();
+      }
     }
     return Value();
   }
