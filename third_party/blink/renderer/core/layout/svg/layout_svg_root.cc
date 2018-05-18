@@ -518,9 +518,6 @@ bool LayoutSVGRoot::NodeAtPoint(HitTestResult& result,
 
       for (LayoutObject* child = LastChild(); child;
            child = child->PreviousSibling()) {
-        if (child->IsBoxModelObject() &&
-            ToLayoutBoxModelObject(child)->HasSelfPaintingLayer())
-          continue;
         // FIXME: nodeAtFloatPoint() doesn't handle rect-based hit tests yet.
         if (child->NodeAtFloatPoint(result, local_point, hit_test_action)) {
           UpdateHitTestResult(result, point_in_border_box);

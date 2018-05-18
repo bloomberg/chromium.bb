@@ -60,14 +60,6 @@ class LayoutSVGForeignObject final : public LayoutSVGBlock {
     return ObjectBoundingBox();
   }
 
-  bool ShouldUseTransformFromContainer(
-      const LayoutObject* container) const override {
-    return true;
-  }
-  void GetTransformFromContainer(const LayoutObject* container,
-                                 const LayoutSize& offset_in_container,
-                                 TransformationMatrix&) const override;
-
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,
                    const LayoutPoint&,

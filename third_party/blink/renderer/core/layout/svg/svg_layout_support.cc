@@ -94,7 +94,7 @@ LayoutRect SVGLayoutSupport::TransformVisualRect(
   return LayoutRect(EnclosingIntRect(adjusted_rect));
 }
 
-const LayoutSVGRoot& SVGLayoutSupport::ComputeTransformToSVGRoot(
+static const LayoutSVGRoot& ComputeTransformToSVGRoot(
     const LayoutObject& object,
     AffineTransform& root_border_box_transform) {
   DCHECK(object.IsSVGChild());
