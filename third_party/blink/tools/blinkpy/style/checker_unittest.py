@@ -405,7 +405,6 @@ class CheckerDispatcherDispatchTest(unittest.TestCase):
         paths = [
             "foo.py",
             "Tools/Scripts/modules/text_style.py",
-            os.path.join("Tools", "Scripts", "check-webkit-style"),
         ]
 
         for path in paths:
