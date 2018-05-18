@@ -1,17 +1,13 @@
 Tests that audits panel works when only performance category is selected.
 
 
-========== Audits2 Dialog State ==========
-Dialog is visible
-
+========== Audits2 Start Audit State ==========
 [x] Performance
 [ ] Progressive Web App
 [ ] Best practices
 [ ] Accessibility
 [ ] SEO
 Run audit: enabled visible
-Cancel: enabled visible
-
 
 =============== Lighthouse Results ===============
 bootup-time: true

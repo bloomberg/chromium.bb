@@ -8,8 +8,7 @@
   await TestRunner.loadModule('audits2_test_runner');
   await TestRunner.showPanel('audits2');
 
-  Audits2TestRunner.openDialog();
-  var dialogElement = Audits2TestRunner.getDialogElement();
+  var dialogElement = Audits2TestRunner.getContainerElement();
   var checkboxes = dialogElement.querySelectorAll('.checkbox');
   for (var checkbox of checkboxes) {
     if (checkbox.textElement.textContent === 'Performance')
@@ -18,7 +17,7 @@
     checkbox.checkboxElement.click();
   }
 
-  Audits2TestRunner.dumpDialogState();
+  Audits2TestRunner.dumpStartAuditState();
   Audits2TestRunner.getRunButton().click();
 
   var results = await Audits2TestRunner.waitForResults();

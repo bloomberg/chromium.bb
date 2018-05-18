@@ -19,32 +19,30 @@
   await TestRunner.showPanel('audits2');
 
   TestRunner.addResult('**Prevents audit with no categories**');
-  Audits2TestRunner.openDialog();
-  var dialogElement = Audits2TestRunner.getDialogElement();
-  var checkboxes = dialogElement.querySelectorAll('.checkbox');
+  Audits2TestRunner.openStartAudit();
+  var containerElement = Audits2TestRunner.getContainerElement();
+  var checkboxes = containerElement.querySelectorAll('.checkbox');
   checkboxes.forEach(checkbox => checkbox.checkboxElement.click());
-  Audits2TestRunner.dumpDialogState();
+  Audits2TestRunner.dumpStartAuditState();
 
   TestRunner.addResult('**Allows audit with a single category**');
   checkboxes[0].checkboxElement.click();
-  Audits2TestRunner.dumpDialogState();
+  Audits2TestRunner.dumpStartAuditState();
 
   TestRunner.addResult('**Prevents audit on undockable page**');
   // The content shell of the test runner is an undockable page that would normally always show the error
   // Temporarily fool the audits panel into thinking we're not under test so the validation logic will be triggered.
   Host.isUnderTest = () => false;
-  Audits2TestRunner.getCancelButton().click();
-  Audits2TestRunner.openDialog();
-  Audits2TestRunner.dumpDialogState();
+  Audits2TestRunner.forcePageAuditabilityCheck();
+  Audits2TestRunner.dumpStartAuditState();
   // Reset our test state
   Host.isUnderTest = () => true;
-  Audits2TestRunner.getCancelButton().click();
-  Audits2TestRunner.openDialog();
+  Audits2TestRunner.forcePageAuditabilityCheck();
 
   TestRunner.addResult('**Prevents audit on internal page**');
   await navigateToAboutBlankAndWait();
   TestRunner.addResult(`URL: ${TestRunner.mainTarget.inspectedURL()}`);
-  Audits2TestRunner.dumpDialogState();
+  Audits2TestRunner.dumpStartAuditState();
 
   TestRunner.completeTest();
 })();
