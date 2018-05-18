@@ -721,6 +721,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/client-rects-cross
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/client-rects-crossing-boundaries.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/client-rects-rtl.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/client-rects.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/column-clamping.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/column-count-with-rules.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/column-rules.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/columns-shorthand-parsing.html [ Failure ]
