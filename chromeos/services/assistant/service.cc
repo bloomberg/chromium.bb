@@ -207,13 +207,14 @@ void Service::FinalizeAssistantManagerService() {
   AddAshSessionObserver();
   registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
       &Service::BindAssistantConnection, base::Unretained(this)));
-  client_->OnAssistantStatusChanged(true);
-  DVLOG(1) << "Assistant is running";
 
   assistant_settings_manager_ =
       assistant_manager_service_.get()->GetAssistantSettingsManager();
   registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
       &Service::BindAssistantSettingsManager, base::Unretained(this)));
+
+  client_->OnAssistantStatusChanged(true);
+  DVLOG(1) << "Assistant is running";
 }
 
 void Service::AddAshSessionObserver() {

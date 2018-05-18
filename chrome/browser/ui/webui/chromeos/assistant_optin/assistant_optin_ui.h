@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "chrome/browser/chromeos/arc/voice_interaction/voice_interaction_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_handler.h"
 #include "chrome/browser/ui/webui/chromeos/assistant_optin/assistant_optin_screen_exit_code.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
@@ -20,12 +21,20 @@
 namespace chromeos {
 
 // Controller for chrome://assistant-optin/ page.
-class AssistantOptInUI : public ui::WebDialogUI {
+class AssistantOptInUI
+    : public ui::WebDialogUI,
+      public arc::VoiceInteractionControllerClient::Observer {
  public:
   explicit AssistantOptInUI(content::WebUI* web_ui);
   ~AssistantOptInUI() override;
 
+  // arc::VoiceInteractionControllerClient::Observer overrides
+  void OnStateChanged(ash::mojom::VoiceInteractionState state) override;
+
  private:
+  // Initilize connection to settings manager.
+  void Initialize();
+
   // Add message handler for optin screens.
   void AddScreenHandler(std::unique_ptr<BaseWebUIHandler> handler);
 
@@ -33,8 +42,8 @@ class AssistantOptInUI : public ui::WebDialogUI {
   void OnExit(AssistantOptInScreenExitCode exit_code);
 
   // Handle response from the settings manager.
-  void HandleGetSettingsResponse(const std::string& settings);
-  void HandleUpdateSettingsResponse(const std::string& settings);
+  void OnGetSettingsResponse(const std::string& settings);
+  void OnUpdateSettingsResponse(const std::string& settings);
 
   // Consent token used to complete the opt-in.
   std::string consent_token_;

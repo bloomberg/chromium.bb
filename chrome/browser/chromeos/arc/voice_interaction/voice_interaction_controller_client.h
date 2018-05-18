@@ -24,12 +24,25 @@ class VoiceInteractionControllerClient
       public content::NotificationObserver,
       public user_manager::UserManager::UserSessionStateObserver {
  public:
+  class Observer {
+   public:
+    // Called when voice interaction session state changes.
+    virtual void OnStateChanged(ash::mojom::VoiceInteractionState state) = 0;
+  };
+
   VoiceInteractionControllerClient();
   ~VoiceInteractionControllerClient() override;
   static VoiceInteractionControllerClient* Get();
 
   // Notify the controller about state changes.
   void NotifyStatusChanged(ash::mojom::VoiceInteractionState state);
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  const ash::mojom::VoiceInteractionState& voice_interaction_state() const {
+    return voice_interaction_state_;
+  }
 
   // Testing methods.
   void SetControllerForTesting(
@@ -68,6 +81,11 @@ class VoiceInteractionControllerClient
       session_state_observer_;
 
   Profile* profile_ = nullptr;
+
+  ash::mojom::VoiceInteractionState voice_interaction_state_ =
+      ash::mojom::VoiceInteractionState::STOPPED;
+
+  base::ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionControllerClient);
 };
