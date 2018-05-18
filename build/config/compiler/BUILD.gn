@@ -94,10 +94,12 @@ declare_args() {
   # branches)
   optimize_for_fuzzing = false
 
-  # Optimize symbol files for maximizing goma cache hit rate. This isn't
-  # on by default when goma is enabled because setting this to true may make
-  # it harder to debug binaries.
-  strip_absolute_paths_from_debug_symbols = false
+  # Optimize symbol files for maximizing goma cache hit rate. This is on by
+  # default only when goma is enabled on Linux because setting this to true may
+  # make it harder to debug binaries.
+  # See below reference for detail.
+  # https://chromium.googlesource.com/chromium/src/+/master/docs/linux_debugging.md#Source-level-debug-with-fdebug-prefix-map
+  strip_absolute_paths_from_debug_symbols = is_linux && use_goma
 
   # Allow projects that wish to stay on C++11 to override Chromium's default.
   use_cxx11 = false

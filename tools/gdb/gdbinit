@@ -1,0 +1,14 @@
+# This is run-hook for source level debugging with -fdebug-prefix-map
+# compile option.
+define hook-run
+  python
+
+import os
+
+for i in gdb.objfiles():
+  # Add source dir relative to build dir.
+  compile_dir = os.path.dirname(i.filename)
+  gdb.execute("dir %s" % compile_dir)
+
+  end
+end
