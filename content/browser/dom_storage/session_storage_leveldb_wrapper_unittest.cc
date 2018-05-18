@@ -190,7 +190,8 @@ TEST_F(SessionStorageLevelDBWrapperTest, Cloning) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("1"), testing::_))
       .Times(1);
-  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK)).Times(1);
+  EXPECT_CALL(listener_, OnCommitResult(DatabaseError::OK))
+      .Times(testing::AnyNumber());
   EXPECT_TRUE(test::PutSync(ss_leveldb2.get(), StdStringToUint8Vector("key2"),
                             StdStringToUint8Vector("data2"), base::nullopt,
                             ""));
