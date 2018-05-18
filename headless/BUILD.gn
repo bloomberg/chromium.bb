@@ -759,6 +759,7 @@ test("headless_browsertests") {
     "public/util/testing/test_in_memory_protocol_handler.h",
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
+    "test/headless_protocol_browsertest.cc",
     "test/headless_test_launcher.cc",
     "test/test_protocol_handler.cc",
     "test/test_protocol_handler.h",
