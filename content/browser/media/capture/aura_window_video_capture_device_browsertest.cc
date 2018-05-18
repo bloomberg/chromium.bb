@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/media/capture/web_contents_video_capture_device.h"
+#include "content/browser/media/capture/aura_window_video_capture_device.h"
 
 #include <tuple>
 
@@ -14,14 +14,13 @@
 #include "content/browser/media/capture/fake_video_capture_stack.h"
 #include "content/browser/media/capture/frame_test_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_widget_host_view.h"
+#include "content/public/browser/desktop_media_id.h"
 #include "content/public/browser/web_contents.h"
 #include "content/shell/browser/shell.h"
 #include "media/base/video_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -29,11 +28,34 @@
 namespace content {
 namespace {
 
-class WebContentsVideoCaptureDeviceBrowserTest
+class AuraWindowVideoCaptureDeviceBrowserTest
     : public ContentCaptureDeviceBrowserTestBase {
  public:
-  WebContentsVideoCaptureDeviceBrowserTest() = default;
-  ~WebContentsVideoCaptureDeviceBrowserTest() override = default;
+  AuraWindowVideoCaptureDeviceBrowserTest() = default;
+  ~AuraWindowVideoCaptureDeviceBrowserTest() override = default;
+
+  aura::Window* GetCapturedWindow() const {
+#if defined(OS_CHROMEOS)
+    // Since the LameWindowCapturerChromeOS will be used, just return the normal
+    // shell window.
+    return shell()->window();
+#else
+    // Note: The Window with an associated compositor frame sink (required for
+    // capture) is the root window, which is an immediate ancestor of the
+    // aura::Window provided by shell()->window().
+    return shell()->window()->GetRootWindow();
+#endif
+  }
+
+  // Returns the location of the content within the window.
+  gfx::Rect GetWebContentsRect() const {
+    aura::Window* const contents_window =
+        shell()->web_contents()->GetNativeView();
+    gfx::Rect rect = gfx::Rect(contents_window->bounds().size());
+    aura::Window::ConvertRectToTarget(contents_window, GetCapturedWindow(),
+                                      &rect);
+    return rect;
+  }
 
   // Runs the browser until a frame whose content matches the given |color| is
   // found in the captured frames queue, or until a testing failure has
@@ -55,52 +77,59 @@ class WebContentsVideoCaptureDeviceBrowserTest
         const SkBitmap rgb_frame = capture_stack()->NextCapturedFrame();
         EXPECT_FALSE(rgb_frame.empty());
 
-        // Three regions of the frame will be analyzed: 1) the upper-left
-        // quadrant of the content region where the iframe draws; 2) the
-        // remaining three quadrants of the content region where the main frame
-        // draws; and 3) the non-content (i.e., letterboxed) region.
+        // Three regions of the frame will be analyzed: 1) the WebContents
+        // region containing a solid color, 2) the remaining part of the
+        // captured window containing the content shell UI, and 3) the
+        // solid-black letterboxed region surrounding them.
         const gfx::Size frame_size(rgb_frame.width(), rgb_frame.height());
-        const gfx::Size source_size = GetExpectedSourceSize();
-        const gfx::Rect iframe_rect(0, 0, source_size.width() / 2,
-                                    source_size.height() / 2);
+        const gfx::Size window_size = GetExpectedSourceSize();
+        const gfx::Rect webcontents_rect = GetWebContentsRect();
 
         // Compute the Rects representing where the three regions would be in
-        // the |rgb_frame|.
-        const gfx::RectF content_in_frame_rect_f(
-            IsFixedAspectRatioTest() ? media::ComputeLetterboxRegion(
-                                           gfx::Rect(frame_size), source_size)
-                                     : gfx::Rect(frame_size));
-        const gfx::RectF iframe_in_frame_rect_f =
-            FrameTestUtil::TransformSimilarly(
-                gfx::Rect(source_size), content_in_frame_rect_f, iframe_rect);
-        const gfx::Rect content_in_frame_rect =
-            gfx::ToEnclosingRect(content_in_frame_rect_f);
-        const gfx::Rect iframe_in_frame_rect =
-            gfx::ToEnclosingRect(iframe_in_frame_rect_f);
-
-        // Determine the average RGB color in the three regions-of-interest in
         // the frame.
-        const auto average_iframe_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, iframe_in_frame_rect, gfx::Rect());
-        const auto average_mainframe_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, content_in_frame_rect, iframe_in_frame_rect);
-        const auto average_letterbox_rgb = FrameTestUtil::ComputeAverageColor(
-            rgb_frame, gfx::Rect(frame_size), content_in_frame_rect);
+        const gfx::RectF window_in_frame_rect_f(
+            IsFixedAspectRatioTest() ? media::ComputeLetterboxRegion(
+                                           gfx::Rect(frame_size), window_size)
+                                     : gfx::Rect(frame_size));
+        const gfx::RectF webcontents_in_frame_rect_f =
+            FrameTestUtil::TransformSimilarly(gfx::Rect(window_size),
+                                              window_in_frame_rect_f,
+                                              webcontents_rect);
+        const gfx::Rect window_in_frame_rect =
+            gfx::ToEnclosingRect(window_in_frame_rect_f);
+        const gfx::Rect webcontents_in_frame_rect =
+            gfx::ToEnclosingRect(webcontents_in_frame_rect_f);
 
-        VLOG(1)
-            << "Video frame analysis: size=" << frame_size.ToString()
-            << ", captured upper-left quadrant of content should be at "
-            << iframe_in_frame_rect.ToString() << " and has average color "
-            << average_iframe_rgb
-            << ", captured remaining quadrants of content should be bound by "
-            << content_in_frame_rect.ToString() << " and has average color "
-            << average_mainframe_rgb << ", letterbox region has average color "
-            << average_letterbox_rgb;
+        // Determine the average RGB color in the three regions of the frame.
+        const auto average_webcontents_rgb = FrameTestUtil::ComputeAverageColor(
+            rgb_frame, webcontents_in_frame_rect, gfx::Rect());
+        const auto average_window_rgb = FrameTestUtil::ComputeAverageColor(
+            rgb_frame, window_in_frame_rect, webcontents_in_frame_rect);
+        const auto average_letterbox_rgb = FrameTestUtil::ComputeAverageColor(
+            rgb_frame, gfx::Rect(frame_size), window_in_frame_rect);
+
+        // TODO(crbug/810131): Once color space issues are fixed, remove this.
+        // At first, it seemed only to affect ChromeOS; but then on Linux, in
+        // software compositing mode, it seems that sometimes compositing is
+        // switching color spaces during the test (e.g., expected a 255 red, but
+        // we see two frames of 238 followed by a "close-enough" frame of 251).
+        constexpr int max_color_diff =
+            FrameTestUtil::kMaxInaccurateColorDifference;
+
+        VLOG(1) << "Video frame analysis: size=" << frame_size.ToString()
+                << ", captured webcontents should be at "
+                << webcontents_in_frame_rect.ToString()
+                << " and has average color " << average_webcontents_rgb
+                << ", captured window should be at "
+                << window_in_frame_rect.ToString() << " and has average color "
+                << average_window_rgb << ", letterbox region has average color "
+                << average_letterbox_rgb
+                << ", maximum color error=" << max_color_diff;
 
         // The letterboxed region should always be black.
         if (IsFixedAspectRatioTest()) {
           EXPECT_TRUE(FrameTestUtil::IsApproximatelySameColor(
-              SK_ColorBLACK, average_letterbox_rgb));
+              SK_ColorBLACK, average_letterbox_rgb, max_color_diff));
         }
 
         if (testing::Test::HasFailure()) {
@@ -109,19 +138,9 @@ class WebContentsVideoCaptureDeviceBrowserTest
           return;
         }
 
-        // Return if the content region(s) now has/have the expected color(s).
-        if (IsCrossSiteCaptureTest() &&
-            FrameTestUtil::IsApproximatelySameColor(color,
-                                                    average_iframe_rgb) &&
-            FrameTestUtil::IsApproximatelySameColor(SK_ColorWHITE,
-                                                    average_mainframe_rgb)) {
-          VLOG(1) << "Observed desired frame.";
-          return;
-        } else if (!IsCrossSiteCaptureTest() &&
-                   FrameTestUtil::IsApproximatelySameColor(
-                       color, average_iframe_rgb) &&
-                   FrameTestUtil::IsApproximatelySameColor(
-                       color, average_mainframe_rgb)) {
+        // Return if the WebContents region now has the new |color|.
+        if (FrameTestUtil::IsApproximatelySameColor(
+                color, average_webcontents_rgb, max_color_diff)) {
           VLOG(1) << "Observed desired frame.";
           return;
         } else {
@@ -141,49 +160,45 @@ class WebContentsVideoCaptureDeviceBrowserTest
   }
 
  protected:
-  // Don't call this. Call <BaseClass>::GetExpectedSourceSize() instead.
+  // Note: Test code should call <BaseClass>::GetExpectedSourceSize() instead of
+  // this method since it has extra code to sanity-check that the source size is
+  // not changing during the test.
   gfx::Size GetCapturedSourceSize() const final {
-    return shell()
-        ->web_contents()
-        ->GetMainFrame()
-        ->GetView()
-        ->GetViewBounds()
-        .size();
+    return GetCapturedWindow()->bounds().size();
   }
 
   std::unique_ptr<FrameSinkVideoCaptureDevice> CreateDevice() final {
-    auto* const main_frame = shell()->web_contents()->GetMainFrame();
-    return std::make_unique<WebContentsVideoCaptureDevice>(
-        main_frame->GetProcess()->GetID(), main_frame->GetRoutingID());
+    const DesktopMediaID source_id = DesktopMediaID::RegisterAuraWindow(
+        DesktopMediaID::TYPE_WINDOW, GetCapturedWindow());
+    EXPECT_TRUE(DesktopMediaID::GetAuraWindowById(source_id));
+    return std::make_unique<AuraWindowVideoCaptureDevice>(source_id);
   }
 
   void WaitForFirstFrame() final { WaitForFrameWithColor(SK_ColorBLACK); }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebContentsVideoCaptureDeviceBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(AuraWindowVideoCaptureDeviceBrowserTest);
 };
 
-// Tests that the device refuses to start if the WebContents target was
-// destroyed before the device could start.
-IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       ErrorsOutIfWebContentsHasGoneBeforeDeviceStart) {
+// Tests that the device refuses to start if the target window was destroyed
+// before the device could start.
+IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
+                       ErrorsOutIfWindowHasGoneBeforeDeviceStart) {
   NavigateToInitialDocument();
 
-  auto* const main_frame = shell()->web_contents()->GetMainFrame();
-  const auto render_process_id = main_frame->GetProcess()->GetID();
-  const auto render_frame_id = main_frame->GetRoutingID();
+  const DesktopMediaID source_id = DesktopMediaID::RegisterAuraWindow(
+      DesktopMediaID::TYPE_WINDOW, GetCapturedWindow());
+  EXPECT_TRUE(DesktopMediaID::GetAuraWindowById(source_id));
   const auto capture_params = SnapshotCaptureParams();
 
-  // Delete the WebContents instance and the Shell. This makes the
-  // render_frame_id invalid.
-  shell()->web_contents()->Close();
-  ASSERT_FALSE(RenderFrameHost::FromID(render_process_id, render_frame_id));
+  // Close the Shell. This should close the window it owned, making the capture
+  // target invalid.
+  shell()->Close();
 
   // Create the device.
-  auto device = std::make_unique<WebContentsVideoCaptureDevice>(
-      render_process_id, render_frame_id);
-  // Running the pending UI tasks should cause the device to realize the
-  // WebContents is gone.
+  auto device = std::make_unique<AuraWindowVideoCaptureDevice>(source_id);
+  // Running the pending UI tasks should cause the device to realize the window
+  // is gone.
   RunUntilIdle();
 
   // Attempt to start the device, and expect the video capture stack to have
@@ -199,9 +214,10 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 }
 
 // Tests that the device starts, captures a frame, and then gracefully
-// errors-out because the WebContents is destroyed before the device is stopped.
-IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
-                       ErrorsOutWhenWebContentsIsDestroyed) {
+// errors-out because the target window is destroyed before the device is
+// stopped.
+IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
+                       ErrorsOutWhenWindowIsDestroyed) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
@@ -209,9 +225,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   ChangePageContentColor(SK_ColorRED);
   WaitForFrameWithColor(SK_ColorRED);
 
-  // Delete the WebContents instance and the Shell, and allow the the "target
+  // Close the Shell. This should close the window it owned, causing a "target
   // permanently lost" error to propagate to the video capture stack.
-  shell()->web_contents()->Close();
+  shell()->Close();
   RunUntilIdle();
   EXPECT_TRUE(capture_stack()->error_occurred());
   capture_stack()->ExpectHasLogMessages();
@@ -222,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 // Tests that the device stops delivering frames while suspended. When resumed,
 // any content changes that occurred during the suspend should cause a new frame
 // to be delivered, to ensure the client is up-to-date.
-IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
+IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
                        SuspendsAndResumes) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
@@ -256,7 +272,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
 
 // Tests that the device delivers refresh frames when asked, while the source
 // content is not changing.
-IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
+IN_PROC_BROWSER_TEST_F(AuraWindowVideoCaptureDeviceBrowserTest,
                        DeliversRefreshFramesUponRequest) {
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
@@ -276,9 +292,9 @@ IN_PROC_BROWSER_TEST_F(WebContentsVideoCaptureDeviceBrowserTest,
   StopAndDeAllocate();
 }
 
-class WebContentsVideoCaptureDeviceBrowserTestP
-    : public WebContentsVideoCaptureDeviceBrowserTest,
-      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+class AuraWindowVideoCaptureDeviceBrowserTestP
+    : public AuraWindowVideoCaptureDeviceBrowserTest,
+      public testing::WithParamInterface<std::tuple<bool, bool>> {
  public:
   bool IsSoftwareCompositingTest() const override {
     return std::get<0>(GetParam());
@@ -286,40 +302,31 @@ class WebContentsVideoCaptureDeviceBrowserTestP
   bool IsFixedAspectRatioTest() const override {
     return std::get<1>(GetParam());
   }
-  bool IsCrossSiteCaptureTest() const override {
-    return std::get<2>(GetParam());
-  }
 };
 
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(
     ,
-    WebContentsVideoCaptureDeviceBrowserTestP,
+    AuraWindowVideoCaptureDeviceBrowserTestP,
     testing::Combine(
         // Note: On ChromeOS, software compositing is not an option.
         testing::Values(false /* GPU-accelerated compositing */),
         testing::Values(false /* variable aspect ratio */,
-                        true /* fixed aspect ratio */),
-        testing::Values(false /* page has only a main frame */,
-                        true /* page contains a cross-site iframe */)));
+                        true /* fixed aspect ratio */)));
 #else
 INSTANTIATE_TEST_CASE_P(
     ,
-    WebContentsVideoCaptureDeviceBrowserTestP,
-    testing::Combine(
-        testing::Values(false /* GPU-accelerated compositing */,
-                        true /* software compositing */),
-        testing::Values(false /* variable aspect ratio */,
-                        true /* fixed aspect ratio */),
-        testing::Values(false /* page has only a main frame */,
-                        true /* page contains a cross-site iframe */)));
+    AuraWindowVideoCaptureDeviceBrowserTestP,
+    testing::Combine(testing::Values(false /* GPU-accelerated compositing */,
+                                     true /* software compositing */),
+                     testing::Values(false /* variable aspect ratio */,
+                                     true /* fixed aspect ratio */)));
 #endif  // defined(OS_CHROMEOS)
 
 // Tests that the device successfully captures a series of content changes,
 // whether the browser is running with software compositing or GPU-accelerated
-// compositing, whether the WebContents is visible/hidden or occluded/unoccluded
-// and whether the main document contains a cross-site iframe.
-IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
+// compositing.
+IN_PROC_BROWSER_TEST_P(AuraWindowVideoCaptureDeviceBrowserTestP,
                        CapturesContentChanges) {
   SCOPED_TRACE(testing::Message()
                << "Test parameters: "
@@ -332,49 +339,16 @@ IN_PROC_BROWSER_TEST_P(WebContentsVideoCaptureDeviceBrowserTestP,
   NavigateToInitialDocument();
   AllocateAndStartAndWaitForFirstFrame();
 
-  for (int visilibilty_case = 0; visilibilty_case < 3; ++visilibilty_case) {
-    switch (visilibilty_case) {
-      case 0: {
-        SCOPED_TRACE(testing::Message()
-                     << "Visibility case: WebContents is showing.");
-        shell()->web_contents()->WasShown();
-        base::RunLoop().RunUntilIdle();
-        ASSERT_EQ(shell()->web_contents()->GetVisibility(),
-                  content::Visibility::VISIBLE);
-        break;
-      }
+  ASSERT_EQ(shell()->web_contents()->GetVisibility(),
+            content::Visibility::VISIBLE);
 
-      case 1: {
-        SCOPED_TRACE(testing::Message()
-                     << "Visibility case: WebContents is hidden.");
-        shell()->web_contents()->WasHidden();
-        base::RunLoop().RunUntilIdle();
-        ASSERT_EQ(shell()->web_contents()->GetVisibility(),
-                  content::Visibility::HIDDEN);
-        break;
-      }
-
-      case 2: {
-        SCOPED_TRACE(
-            testing::Message()
-            << "Visibility case: WebContents is showing, but occluded.");
-        shell()->web_contents()->WasShown();
-        shell()->web_contents()->WasOccluded();
-        base::RunLoop().RunUntilIdle();
-        ASSERT_EQ(shell()->web_contents()->GetVisibility(),
-                  content::Visibility::OCCLUDED);
-        break;
-      }
-    }
-
-    static constexpr SkColor kColorsToCycleThrough[] = {
-        SK_ColorRED,  SK_ColorGREEN,   SK_ColorBLUE,  SK_ColorYELLOW,
-        SK_ColorCYAN, SK_ColorMAGENTA, SK_ColorWHITE,
-    };
-    for (SkColor color : kColorsToCycleThrough) {
-      ChangePageContentColor(color);
-      WaitForFrameWithColor(color);
-    }
+  static constexpr SkColor kColorsToCycleThrough[] = {
+      SK_ColorRED,  SK_ColorGREEN,   SK_ColorBLUE,  SK_ColorYELLOW,
+      SK_ColorCYAN, SK_ColorMAGENTA, SK_ColorWHITE,
+  };
+  for (SkColor color : kColorsToCycleThrough) {
+    ChangePageContentColor(color);
+    WaitForFrameWithColor(color);
   }
 
   StopAndDeAllocate();
