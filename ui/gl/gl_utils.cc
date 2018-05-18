@@ -12,7 +12,7 @@
 namespace gl {
 
 int GetGLColorSpace(const gfx::ColorSpace& color_space) {
-  if (color_space == gfx::ColorSpace::CreateSCRGBLinear())
+  if (color_space.IsHDR())
     return GL_COLOR_SPACE_SCRGB_LINEAR_CHROMIUM;
   return GL_COLOR_SPACE_UNSPECIFIED_CHROMIUM;
 }

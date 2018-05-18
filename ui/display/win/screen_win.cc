@@ -63,6 +63,68 @@ float GetMonitorScaleFactor(HMONITOR monitor) {
   return GetDPIScale();
 }
 
+bool GetPathInfo(HMONITOR monitor, DISPLAYCONFIG_PATH_INFO* path_info) {
+  LONG result;
+  uint32_t num_path_array_elements = 0;
+  uint32_t num_mode_info_array_elements = 0;
+  std::vector<DISPLAYCONFIG_PATH_INFO> path_infos;
+  std::vector<DISPLAYCONFIG_MODE_INFO> mode_infos;
+
+  // Get the monitor name.
+  MONITORINFOEXW view_info;
+  view_info.cbSize = sizeof(view_info);
+  if (!GetMonitorInfoW(monitor, &view_info))
+    return false;
+
+  // Get all path infos.
+  do {
+    if (GetDisplayConfigBufferSizes(
+            QDC_ONLY_ACTIVE_PATHS, &num_path_array_elements,
+            &num_mode_info_array_elements) == ERROR_SUCCESS)
+      return false;
+    path_infos.resize(num_path_array_elements);
+    mode_infos.resize(num_mode_info_array_elements);
+    result = QueryDisplayConfig(
+        QDC_ONLY_ACTIVE_PATHS, &num_path_array_elements, path_infos.data(),
+        &num_mode_info_array_elements, mode_infos.data(), nullptr);
+  } while (result == ERROR_INSUFFICIENT_BUFFER);
+
+  // Iterate of the path infos and see if we find one with a matching name.
+  if (result == ERROR_SUCCESS) {
+    for (uint32_t p = 0; p < num_path_array_elements; p++) {
+      DISPLAYCONFIG_SOURCE_DEVICE_NAME device_name;
+      device_name.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+      device_name.header.size = sizeof(device_name);
+      device_name.header.adapterId = path_infos[p].sourceInfo.adapterId;
+      device_name.header.id = path_infos[p].sourceInfo.id;
+      if (DisplayConfigGetDeviceInfo(&device_name.header) == ERROR_SUCCESS) {
+        if (wcscmp(view_info.szDevice, device_name.viewGdiDeviceName) == 0) {
+          *path_info = path_infos[p];
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+float GetMonitorSDRWhiteLevel(HMONITOR monitor) {
+  float ret = 200.0;  // default value
+  DISPLAYCONFIG_PATH_INFO path_info = {};
+  if (!GetPathInfo(monitor, &path_info))
+    return ret;
+
+  DISPLAYCONFIG_SDR_WHITE_LEVEL white_level = {};
+  white_level.header.type = DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
+  white_level.header.size = sizeof(white_level);
+  white_level.header.adapterId = path_info.targetInfo.adapterId;
+  white_level.header.id = path_info.targetInfo.id;
+  if (DisplayConfigGetDeviceInfo(&white_level.header) != ERROR_SUCCESS)
+    return ret;
+  ret = white_level.SDRWhiteLevel * 80.0 / 1000.0;
+  return ret;
+}
+
 std::vector<DisplayInfo> FindAndRemoveTouchingDisplayInfos(
     const DisplayInfo& ref_display_info,
     std::vector<DisplayInfo>* display_infos) {
@@ -94,7 +156,9 @@ Display CreateDisplayFromDisplayInfo(const DisplayInfo& display_info,
   display.set_rotation(display_info.rotation());
   if (!Display::HasForceColorProfile()) {
     if (hdr_enabled) {
-      display.SetColorSpaceAndDepth(gfx::ColorSpace::CreateSCRGBLinear());
+      display.SetColorSpaceAndDepth(
+          gfx::ColorSpace::CreateSCRGBLinear().GetScaledColorSpace(
+              80.0 / display_info.sdr_white_level()));
     } else {
       display.SetColorSpaceAndDepth(
           color_profile_reader->GetDisplayColorSpace(display_info.id()));
@@ -191,7 +255,8 @@ BOOL CALLBACK EnumMonitorForDisplayInfoCallback(HMONITOR monitor,
       reinterpret_cast<std::vector<DisplayInfo>*>(data);
   DCHECK(display_infos);
   display_infos->push_back(DisplayInfo(MonitorInfoFromHMONITOR(monitor),
-                                       GetMonitorScaleFactor(monitor)));
+                                       GetMonitorScaleFactor(monitor),
+                                       GetMonitorSDRWhiteLevel(monitor)));
   return TRUE;
 }
 
