@@ -45,15 +45,6 @@ class ComparablePermission {
 };
 using ComparablePermissions = std::vector<ComparablePermission>;
 
-void DropPermissionParameter(APIPermission::ID id,
-                             PermissionIDSet* permissions) {
-  if (permissions->ContainsID(id)) {
-    // Erase the permission, and insert it again without a parameter.
-    permissions->erase(id);
-    permissions->insert(id);
-  }
-}
-
 }  // namespace
 
 typedef std::set<PermissionMessage> PermissionMsgSet;
@@ -182,21 +173,6 @@ bool ChromePermissionMessageProvider::IsAPIOrManifestPrivilegeIncrease(
   PermissionIDSet potential_total_ids = granted_ids;
   AddAPIPermissions(requested_permissions, &potential_total_ids);
   AddManifestPermissions(requested_permissions, &potential_total_ids);
-
-  // Ugly hack: Before M46 beta, we didn't store the parameter for settings
-  // override permissions in prefs (which is where |granted_permissions| is
-  // coming from). To avoid a spurious permission increase warning, drop the
-  // parameter.
-  // See crbug.com/533086 and crbug.com/619759.
-  // TODO(treib,devlin): Remove this for M56, when hopefully all users will have
-  // updated prefs.
-  const APIPermission::ID kSettingsOverrideIDs[] = {
-      APIPermission::kHomepage, APIPermission::kSearchProvider,
-      APIPermission::kStartupPages};
-  for (auto id : kSettingsOverrideIDs) {
-    DropPermissionParameter(id, &granted_ids);
-    DropPermissionParameter(id, &potential_total_ids);
-  }
 
   // For M62, we added a new permission ID for new tab page overrides. Consider
   // the addition of this permission to not result in a privilege increase for
