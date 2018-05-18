@@ -99,7 +99,6 @@ class MockScriptLoader final : public ScriptLoader {
     loader->SetAsyncExecTypeForTesting(ScriptRunner::kAsync);
     MockPendingScript* pending_script = MockPendingScript::Create();
     loader->mock_pending_script_ = pending_script;
-    loader->mock_pending_script_if_script_is_async_ = pending_script;
     return loader;
   }
 
@@ -109,26 +108,20 @@ class MockScriptLoader final : public ScriptLoader {
 
   void Trace(blink::Visitor*) override;
 
-  PendingScript* GetPendingScriptIfScriptOfAsyncScript() override {
-    return mock_pending_script_if_script_is_async_.Get();
-  }
-  MockPendingScript* GetMockPendingScript() {
+  MockPendingScript* GetPendingScriptIfControlledByScriptRunner() override {
     return mock_pending_script_.Get();
   }
-  bool IsReady() const { return mock_pending_script_->IsReady(); }
 
  private:
   explicit MockScriptLoader()
       : ScriptLoader(MockScriptElementBase::Create(), false, false, false) {}
 
   Member<MockPendingScript> mock_pending_script_;
-  Member<MockPendingScript> mock_pending_script_if_script_is_async_;
 };
 
 void MockScriptLoader::Trace(blink::Visitor* visitor) {
   ScriptLoader::Trace(visitor);
   visitor->Trace(mock_pending_script_);
-  visitor->Trace(mock_pending_script_if_script_is_async_);
 }
 
 class ScriptRunnerTest : public testing::Test {
@@ -151,7 +144,8 @@ class ScriptRunnerTest : public testing::Test {
  protected:
   void NotifyScriptReady(MockScriptLoader* script_loader,
                          ScriptRunner::AsyncExecutionType execution_type) {
-    script_loader->GetMockPendingScript()->SetIsReady(true);
+    script_loader->GetPendingScriptIfControlledByScriptRunner()->SetIsReady(
+        true);
     script_runner_->NotifyScriptReady(script_loader, execution_type);
   }
 
@@ -496,7 +490,8 @@ TEST_F(ScriptRunnerTest, TasksWithDeadScriptRunner) {
 
 TEST_F(ScriptRunnerTest, TryStreamWhenEnqueingScript) {
   auto* script_loader1 = MockScriptLoader::CreateAsync();
-  script_loader1->GetMockPendingScript()->SetIsReady(true);
+  script_loader1->GetPendingScriptIfControlledByScriptRunner()->SetIsReady(
+      true);
   script_runner_->QueueScriptForExecution(script_loader1, ScriptRunner::kAsync);
 }
 
@@ -507,20 +502,23 @@ TEST_F(ScriptRunnerTest, DontExecuteWhileStreaming) {
   script_runner_->QueueScriptForExecution(script_loader, ScriptRunner::kAsync);
 
   // Simulate script load and mark the pending script as streaming ready.
-  script_loader->GetMockPendingScript()->SetIsReady(true);
-  script_loader->GetMockPendingScript()->PrepareForStreaming();
+  script_loader->GetPendingScriptIfControlledByScriptRunner()->SetIsReady(true);
+  script_loader->GetPendingScriptIfControlledByScriptRunner()
+      ->PrepareForStreaming();
   NotifyScriptReady(script_loader, ScriptRunner::kAsync);
 
   // ScriptLoader should have started streaming by now.
-  EXPECT_EQ(script_loader->GetMockPendingScript()->state(),
-            MockPendingScript::State::kStreaming);
+  EXPECT_EQ(
+      script_loader->GetPendingScriptIfControlledByScriptRunner()->state(),
+      MockPendingScript::State::kStreaming);
 
   // Note that there is no expectation for ScriptLoader::Execute() yet,
   // so the mock will fail if it's called anyway.
   platform_->RunUntilIdle();
 
   // Finish streaming.
-  script_loader->GetMockPendingScript()->SimulateStreamingEnd();
+  script_loader->GetPendingScriptIfControlledByScriptRunner()
+      ->SimulateStreamingEnd();
 
   // Now that streaming is finished, expect Execute() to be called.
   EXPECT_CALL(*script_loader, Execute()).Times(1);
