@@ -3366,11 +3366,13 @@ source_set("simple_quic_tools") {
   ]
   deps = [
     ":net",
-    ":net_quic_trace_proto",
     "//base",
     "//base/third_party/dynamic_annotations",
     "//third_party/protobuf:protobuf_lite",
     "//url",
+  ]
+  public_deps = [
+    ":net_quic_trace_proto",
   ]
 }
 
@@ -3445,6 +3447,18 @@ if (!is_ios) {
     ]
     deps = [
       ":net",
+      "//base",
+      "//build/config:exe_and_shlib_deps",
+      "//build/win:default_exe_manifest",
+    ]
+  }
+  executable("quic_trace_to_time_sequence_gnuplot") {
+    sources = [
+      "third_party/quic/tools/trace/quic_trace_to_time_sequence_gnuplot.cc",
+    ]
+    deps = [
+      ":net",
+      ":simple_quic_tools",
       "//base",
       "//build/config:exe_and_shlib_deps",
       "//build/win:default_exe_manifest",
