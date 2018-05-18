@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
-#include "base/debug/alias.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
@@ -17,31 +16,13 @@
 #include "base/task_scheduler/scheduler_worker_pool_params.h"
 #include "base/task_scheduler/sequence.h"
 #include "base/task_scheduler/sequence_sort_key.h"
+#include "base/task_scheduler/service_thread.h"
 #include "base/task_scheduler/task.h"
 #include "base/task_scheduler/task_tracker.h"
-#include "base/threading/thread.h"
+#include "base/time/time.h"
 
 namespace base {
 namespace internal {
-
-namespace {
-
-// A ServiceThread is merely a base::Thread with an aliased Run() method to
-// enforce ServiceThread::Run() to be on the stack and make it easier to
-// identify the service thread in stack traces.
-class ServiceThread : public Thread {
- public:
-  using Thread::Thread;
-
- private:
-  NOINLINE void Run(RunLoop* run_loop) override {
-    const int line_number = __LINE__;
-    Thread::Run(run_loop);
-    base::debug::Alias(&line_number);
-  }
-};
-
-}  // namespace
 
 TaskSchedulerImpl::TaskSchedulerImpl(StringPiece histogram_label)
     : TaskSchedulerImpl(histogram_label,
@@ -50,9 +31,8 @@ TaskSchedulerImpl::TaskSchedulerImpl(StringPiece histogram_label)
 TaskSchedulerImpl::TaskSchedulerImpl(
     StringPiece histogram_label,
     std::unique_ptr<TaskTrackerImpl> task_tracker)
-    : service_thread_(
-          std::make_unique<ServiceThread>("TaskSchedulerServiceThread")),
-      task_tracker_(std::move(task_tracker)),
+    : task_tracker_(std::move(task_tracker)),
+      service_thread_(std::make_unique<ServiceThread>(task_tracker_.get())),
       single_thread_task_runner_manager_(task_tracker_->GetTrackedRef(),
                                          &delayed_task_manager_) {
   DCHECK(!histogram_label.empty());
@@ -94,7 +74,7 @@ void TaskSchedulerImpl::Start(
   // Start the service thread. On platforms that support it (POSIX except NaCL
   // SFI), the service thread runs a MessageLoopForIO which is used to support
   // FileDescriptorWatcher in the scope in which tasks run.
-  Thread::Options service_thread_options;
+  ServiceThread::Options service_thread_options;
   service_thread_options.message_loop_type =
 #if defined(OS_POSIX) && !defined(OS_NACL_SFI)
       MessageLoop::TYPE_IO;

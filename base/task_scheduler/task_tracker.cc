@@ -77,8 +77,12 @@ constexpr char kRunFunctionName[] = "TaskScheduler RunTask";
 constexpr char kTaskSchedulerFlowTracingCategory[] =
     TRACE_DISABLED_BY_DEFAULT("task_scheduler.flow");
 
-HistogramBase* GetTaskLatencyHistogram(StringPiece histogram_label,
-                                       StringPiece task_type_suffix) {
+// Constructs a histogram to track latency which is logging to
+// "TaskScheduler.{histogram_name}.{histogram_label}.{task_type_suffix}".
+HistogramBase* GetLatencyHistogram(StringPiece histogram_name,
+                                   StringPiece histogram_label,
+                                   StringPiece task_type_suffix) {
+  DCHECK(!histogram_name.empty());
   DCHECK(!histogram_label.empty());
   DCHECK(!task_type_suffix.empty());
   // Mimics the UMA_HISTOGRAM_TIMES macro except we don't specify bounds with
@@ -87,11 +91,10 @@ HistogramBase* GetTaskLatencyHistogram(StringPiece histogram_label,
   // coverage for buckets giving us good info for tasks that have a latency
   // below 1ms (most of them) and enough info to assess how bad the latency is
   // for tasks that exceed this threshold.
-  std::string histogram_name =
-      JoinString({"TaskScheduler.TaskLatencyMicroseconds", histogram_label,
-                  task_type_suffix},
-                 ".");
-  return Histogram::FactoryGet(histogram_name, 1, 20000, 50,
+  const std::string histogram = JoinString(
+      {"TaskScheduler", histogram_name, histogram_label, task_type_suffix},
+      ".");
+  return Histogram::FactoryGet(histogram, 1, 20000, 50,
                                HistogramBase::kUmaTargetedHistogramFlag);
 }
 
@@ -252,15 +255,43 @@ TaskTracker::TaskTracker(StringPiece histogram_label,
       max_num_scheduled_background_sequences_(
           max_num_scheduled_background_sequences),
       task_latency_histograms_{
-          {GetTaskLatencyHistogram(histogram_label, "BackgroundTaskPriority"),
-           GetTaskLatencyHistogram(histogram_label,
-                                   "BackgroundTaskPriority_MayBlock")},
-          {GetTaskLatencyHistogram(histogram_label, "UserVisibleTaskPriority"),
-           GetTaskLatencyHistogram(histogram_label,
-                                   "UserVisibleTaskPriority_MayBlock")},
-          {GetTaskLatencyHistogram(histogram_label, "UserBlockingTaskPriority"),
-           GetTaskLatencyHistogram(histogram_label,
-                                   "UserBlockingTaskPriority_MayBlock")}},
+          {GetLatencyHistogram("TaskLatencyMicroseconds",
+                               histogram_label,
+                               "BackgroundTaskPriority"),
+           GetLatencyHistogram("TaskLatencyMicroseconds",
+                               histogram_label,
+                               "BackgroundTaskPriority_MayBlock")},
+          {GetLatencyHistogram("TaskLatencyMicroseconds",
+                               histogram_label,
+                               "UserVisibleTaskPriority"),
+           GetLatencyHistogram("TaskLatencyMicroseconds",
+                               histogram_label,
+                               "UserVisibleTaskPriority_MayBlock")},
+          {GetLatencyHistogram("TaskLatencyMicroseconds",
+                               histogram_label,
+                               "UserBlockingTaskPriority"),
+           GetLatencyHistogram("TaskLatencyMicroseconds",
+                               histogram_label,
+                               "UserBlockingTaskPriority_MayBlock")}},
+      heartbeat_latency_histograms_{
+          {GetLatencyHistogram("HeartbeatLatencyMicroseconds",
+                               histogram_label,
+                               "BackgroundTaskPriority"),
+           GetLatencyHistogram("HeartbeatLatencyMicroseconds",
+                               histogram_label,
+                               "BackgroundTaskPriority_MayBlock")},
+          {GetLatencyHistogram("HeartbeatLatencyMicroseconds",
+                               histogram_label,
+                               "UserVisibleTaskPriority"),
+           GetLatencyHistogram("HeartbeatLatencyMicroseconds",
+                               histogram_label,
+                               "UserVisibleTaskPriority_MayBlock")},
+          {GetLatencyHistogram("HeartbeatLatencyMicroseconds",
+                               histogram_label,
+                               "UserBlockingTaskPriority"),
+           GetLatencyHistogram("HeartbeatLatencyMicroseconds",
+                               histogram_label,
+                               "UserBlockingTaskPriority_MayBlock")}},
       tracked_ref_factory_(this) {
   // Confirm that all |task_latency_histograms_| have been initialized above.
   DCHECK(*(&task_latency_histograms_[static_cast<int>(TaskPriority::HIGHEST) +
@@ -414,10 +445,30 @@ void TaskTracker::SetHasShutdownStartedForTesting() {
   state_->StartShutdown();
 }
 
+void TaskTracker::RecordLatencyHistogram(
+    LatencyHistogramType latency_histogram_type,
+    TaskTraits task_traits,
+    TimeTicks posted_time) const {
+  const TimeDelta task_latency = TimeTicks::Now() - posted_time;
+
+  DCHECK(latency_histogram_type == LatencyHistogramType::TASK_LATENCY ||
+         latency_histogram_type == LatencyHistogramType::HEARTBEAT_LATENCY);
+  auto& histograms =
+      latency_histogram_type == LatencyHistogramType::TASK_LATENCY
+          ? task_latency_histograms_
+          : heartbeat_latency_histograms_;
+  histograms[static_cast<int>(task_traits.priority())]
+            [task_traits.may_block() || task_traits.with_base_sync_primitives()
+                 ? 1
+                 : 0]
+                ->Add(task_latency.InMicroseconds());
+}
+
 void TaskTracker::RunOrSkipTask(Task task,
                                 Sequence* sequence,
                                 bool can_run_task) {
-  RecordTaskLatencyHistogram(task);
+  RecordLatencyHistogram(LatencyHistogramType::TASK_LATENCY, task.traits,
+                         task.sequenced_time);
 
   const bool previous_singleton_allowed =
       ThreadRestrictions::SetSingletonAllowed(
@@ -773,16 +824,6 @@ scoped_refptr<Sequence> TaskTracker::ManageBackgroundSequencesAfterRunningTask(
     SchedulePreemptedBackgroundSequence(std::move(sequence_to_schedule));
 
   return nullptr;
-}
-
-void TaskTracker::RecordTaskLatencyHistogram(const Task& task) {
-  const TimeDelta task_latency = TimeTicks::Now() - task.sequenced_time;
-  task_latency_histograms_[static_cast<int>(task.traits.priority())]
-                          [task.traits.may_block() ||
-                                   task.traits.with_base_sync_primitives()
-                               ? 1
-                               : 0]
-                              ->Add(task_latency.InMicroseconds());
 }
 
 void TaskTracker::CallFlushCallbackForTesting() {
