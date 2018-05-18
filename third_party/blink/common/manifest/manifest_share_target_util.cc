@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/common/manifest_share_target_util.h"
+#include "third_party/blink/public/common/manifest/manifest_share_target_util.h"
 
 #include <map>
 
@@ -11,7 +11,7 @@
 #include "net/base/escape.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 // Determines whether a character is allowed in a URL template placeholder.
@@ -52,7 +52,8 @@ bool ReplacePlaceholders(base::StringPiece template_string,
       if (template_string[i] == '}') {
         // Error: Saw close, with no corresponding open.
         return false;
-      } else if (template_string[i] == '{') {
+      }
+      if (template_string[i] == '{') {
         out->push_back(template_string.substr(start_index_to_copy,
                                               i - start_index_to_copy));
 
@@ -124,4 +125,4 @@ bool ReplaceWebShareUrlPlaceholders(const GURL& url_template,
   return true;
 }
 
-}  // namespace content
+}  // namespace blink

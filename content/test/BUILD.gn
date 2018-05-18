@@ -1558,7 +1558,6 @@ test("content_unittests") {
     "../common/input/touch_event_stream_validator_unittest.cc",
     "../common/inter_process_time_ticks_converter_unittest.cc",
     "../common/mac/attributed_string_coder_unittest.mm",
-    "../common/manifest_share_target_util_unittest.cc",
     "../common/manifest_util_unittest.cc",
     "../common/media/media_devices_unittest.cc",
     "../common/notifications/notification_struct_traits_unittest.cc",

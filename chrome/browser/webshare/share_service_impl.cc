@@ -20,8 +20,8 @@
 #include "chrome/browser/webshare/webshare_target.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/common/manifest_share_target_util.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "third_party/blink/public/common/manifest/manifest_share_target_util.h"
 
 ShareServiceImpl::ShareServiceImpl() : weak_factory_(this) {}
 ShareServiceImpl::~ShareServiceImpl() = default;
@@ -123,9 +123,9 @@ void ShareServiceImpl::OnPickerClosed(const std::string& title,
   }
 
   GURL url_template_filled;
-  if (!content::ReplaceWebShareUrlPlaceholders(result->url_template(), title,
-                                               text, share_url,
-                                               &url_template_filled)) {
+  if (!blink::ReplaceWebShareUrlPlaceholders(result->url_template(), title,
+                                             text, share_url,
+                                             &url_template_filled)) {
     // This error should not be possible at share time. content::ManifestParser
     // should have filtered out invalid targets at manifest parse time.
     std::move(callback).Run(blink::mojom::ShareError::INTERNAL_ERROR);

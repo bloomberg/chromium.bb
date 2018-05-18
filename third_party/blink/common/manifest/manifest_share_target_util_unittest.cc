@@ -5,11 +5,11 @@
 #include <map>
 #include <utility>
 
-#include "content/public/common/manifest_share_target_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/manifest/manifest_share_target_util.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace blink {
 namespace {
 
 constexpr char kTitle[] = "My title";
@@ -263,4 +263,4 @@ TEST(ManifestShareTargetUtilTest, ReplaceWebShareUrlPlaceholders_Escaping) {
   EXPECT_EQ("http://example.com/#%F0%9F%92%A9", url_template_filled.spec());
 }
 
-}  // namespace content
+}  // namespace blink
