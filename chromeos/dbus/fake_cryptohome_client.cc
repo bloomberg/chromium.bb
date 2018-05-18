@@ -565,7 +565,8 @@ void FakeCryptohomeClient::MountEx(
   mount->set_sanitized_username(GetStubSanitizedUsername(cryptohome_id));
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kTestEncryptionMigrationUI) &&
-      !request.to_migrate_from_ecryptfs()) {
+      !request.to_migrate_from_ecryptfs() &&
+      request.force_dircrypto_if_available()) {
     error = cryptohome::CRYPTOHOME_ERROR_MOUNT_OLD_ENCRYPTION;
   }
   reply.set_error(error);

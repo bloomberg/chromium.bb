@@ -196,11 +196,20 @@ void RecordPasswordChangeFlow(LoginPasswordChangeFlow flow) {
                             LOGIN_PASSWORD_CHANGE_FLOW_COUNT);
 }
 
+bool IsTestingMigrationUI() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kTestEncryptionMigrationUI);
+}
+
 bool ShouldForceDircrypto(const AccountId& account_id) {
+  if (IsTestingMigrationUI())
+    return true;
+
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kDisableEncryptionMigration)) {
     return false;
   }
+
   // If the device is not officially supported to run ARC, we don't need to
   // force Ext4 dircrypto.
   if (!arc::IsArcAvailable())
@@ -250,6 +259,9 @@ apu::EcryptfsMigrationAction GetEcryptfsMigrationAction(
     PolicyFetchResult policy_fetch_result,
     enterprise_management::CloudPolicySettings* policy_payload,
     bool active_directory_user) {
+  if (IsTestingMigrationUI())
+    return apu::EcryptfsMigrationAction::kAskUser;
+
   switch (policy_fetch_result) {
     case PolicyFetchResult::NO_POLICY:
       // There was no policy, the user is unmanaged. They get to choose
